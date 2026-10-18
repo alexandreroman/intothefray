@@ -14,19 +14,22 @@ import (
 
 const (
 	villainKind = "villain"
+	leaderKind  = "leader"
 	modularKind = "modular"
 )
 
-// villainSet is a villain set with the pack it belongs to.
+// villainSet is a scenario candidate, a villain or leader set, with the pack it
+// belongs to.
 type villainSet struct {
 	set       pack.Set
 	pack      string
-	firstCard *pack.Card // lowest-code card whose first face is a villain, if any
+	firstCard *pack.Card // lowest-code card whose first face is a villain or leader, if any
 }
 
-// BuildScenarios lists a scenario for every villain set and merges the curated
-// definitions into the ones whose cards all exist. cards and sets are keyed by
-// pack code. The scenario of a villain set belongs to the pack of that set.
+// BuildScenarios lists a scenario for every villain or leader set and merges
+// the curated definitions into the ones whose cards all exist. A definition
+// absorbs the sets it covers: they are not listed separately. cards and sets
+// are keyed by pack code. The scenario of a set belongs to the pack of that set.
 // The references are ordered by the code of the first villain card of the set.
 //
 //nolint:revive // BuildScenarios is the name fixed by the plan.
@@ -46,12 +49,19 @@ func BuildScenarios(
 	modularCodes := modularCodesByName(sets)
 	cerebroNames := cerebroNamesByID(cb)
 	defsBySet := make(map[string]curated.ScenarioDef, len(defs))
+	covered := make(map[string]bool)
 	for _, def := range defs {
 		defsBySet[def.VillainSet] = def
+		for _, code := range def.Covers {
+			covered[code] = true
+		}
 	}
 
 	scenarios = make(map[string][]pack.Scenario)
 	for _, villain := range villains {
+		if covered[villain.set.Code] && !isDefinedSet(defsBySet, villain.set.Code) {
+			continue
+		}
 		ref := pack.ScenarioRef{
 			ID:          villain.set.Code,
 			Name:        villain.set.Name,
@@ -89,24 +99,33 @@ func BuildScenarios(
 	}
 
 	for _, def := range defs {
-		if !slices.ContainsFunc(villains, func(v villainSet) bool { return v.set.Code == def.VillainSet }) {
-			problems = append(problems, report.Unsupported{
-				Code:   def.VillainSet,
-				Name:   def.ID,
-				Reason: fmt.Sprintf("scenario %s names unknown villain set %s", def.ID, def.VillainSet),
-			})
+		for _, code := range append([]string{def.VillainSet}, def.Covers...) {
+			if !slices.ContainsFunc(villains, func(v villainSet) bool { return v.set.Code == code }) {
+				problems = append(problems, report.Unsupported{
+					Code:   code,
+					Name:   def.ID,
+					Reason: fmt.Sprintf("scenario %s names unknown villain set %s", def.ID, code),
+				})
+			}
 		}
 	}
 	return scenarios, refs, problems
 }
 
-// villainSetsOf returns the villain sets ordered by the code of their first
+// isDefinedSet reports whether a definition has the set as its own villain set,
+// which then keeps its entry even when another definition covers it.
+func isDefinedSet(defsBySet map[string]curated.ScenarioDef, code string) bool {
+	_, found := defsBySet[code]
+	return found
+}
+
+// villainSetsOf returns the villain and leader sets ordered by the code of their first
 // villain card. A set without villain card sorts by its set code.
 func villainSetsOf(sets map[string][]pack.Set, cardsByCode map[string]pack.Card) []villainSet {
 	var villains []villainSet
 	for packCode, packSets := range sets {
 		for _, set := range packSets {
-			if set.Kind != villainKind {
+			if set.Kind != villainKind && set.Kind != leaderKind {
 				continue
 			}
 			villains = append(villains, villainSet{
@@ -131,7 +150,7 @@ func (v villainSet) sortKey() string {
 func firstVillainCard(set pack.Set, cardsByCode map[string]pack.Card) *pack.Card {
 	for _, code := range slices.Sorted(slices.Values(set.Cards)) {
 		card, found := cardsByCode[code]
-		if found && card.Faces[0].Type == "villain" {
+		if found && (card.Faces[0].Type == villainKind || card.Faces[0].Type == leaderKind) {
 			return &card
 		}
 	}
@@ -170,12 +189,19 @@ func missingCards(def curated.ScenarioDef, cardsByCode map[string]pack.Card) []s
 	})
 }
 
+// modularCodesByName maps a lower-cased set name to a modular set code. Names
+// are not unique (two sets are called "Campaign"): the lowest code wins, so the
+// result does not depend on the map iteration order.
 func modularCodesByName(sets map[string][]pack.Set) map[string]string {
 	codes := make(map[string]string)
 	for _, packSets := range sets {
 		for _, set := range packSets {
-			if set.Kind == modularKind {
-				codes[strings.ToLower(set.Name)] = set.Code
+			if set.Kind != modularKind {
+				continue
+			}
+			name := strings.ToLower(set.Name)
+			if existing, found := codes[name]; !found || set.Code < existing {
+				codes[name] = set.Code
 			}
 		}
 	}

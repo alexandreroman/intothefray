@@ -176,3 +176,72 @@ func TestScenarioRefsFollowVillainCardOrder(t *testing.T) {
 		t.Errorf("got order %v, want %v", ids, want)
 	}
 }
+
+// leaderFixture has two leader sets, each with a leader card, in pack p.
+func leaderFixture() (map[string][]pack.Card, map[string][]pack.Set) {
+	leader := func(code, set string) pack.Card {
+		return pack.Card{Code: code, Set: set, Faces: []pack.Face{{Type: "leader", Images: []string{"https://x/" + code}}}}
+	}
+	cards := map[string][]pack.Card{"p": {leader("50001", "boss"), leader("50002", "lieutenant")}}
+	sets := map[string][]pack.Set{"p": {
+		{Code: "boss", Name: "Boss", Kind: "leader", Cards: []string{"50001"}},
+		{Code: "lieutenant", Name: "Lieutenant", Kind: "leader", Cards: []string{"50002"}},
+	}}
+	return cards, sets
+}
+
+func TestScenarioListsLeaderSets(t *testing.T) {
+	cards, sets := leaderFixture()
+
+	_, refs, _ := BuildScenarios(nil, cards, sets, nil)
+
+	if len(refs) != 2 || refs[0].ID != "boss" || refs[0].Image != "https://x/50001" {
+		t.Errorf("got refs %+v, want boss then lieutenant", refs)
+	}
+}
+
+func TestScenarioDefCoversOtherSets(t *testing.T) {
+	cards, sets := leaderFixture()
+	def := curated.ScenarioDef{
+		ID:         "gang",
+		VillainSet: "boss",
+		Covers:     []string{"lieutenant"},
+		Piles:      []pack.Pile{{Key: "villain", Label: "Villain", Cards: []string{"50001", "50002"}}},
+	}
+
+	scenarios, refs, problems := BuildScenarios([]curated.ScenarioDef{def}, cards, sets, nil)
+
+	if len(problems) != 0 {
+		t.Errorf("got problems %+v, want none", problems)
+	}
+	if len(refs) != 1 || refs[0].ID != "gang" || !refs[0].Supported {
+		t.Errorf("got refs %+v, want only the supported gang", refs)
+	}
+	if len(scenarios["p"]) != 1 {
+		t.Errorf("got scenarios %+v, want gang", scenarios)
+	}
+}
+
+func TestScenarioDefCoveringUnknownSetIsReported(t *testing.T) {
+	cards, sets := leaderFixture()
+	def := curated.ScenarioDef{ID: "gang", VillainSet: "boss", Covers: []string{"nobody"}}
+
+	_, _, problems := BuildScenarios([]curated.ScenarioDef{def}, cards, sets, nil)
+
+	if len(problems) != 1 || !strings.Contains(problems[0].Reason, "nobody") {
+		t.Errorf("got problems %+v, want one mentioning nobody", problems)
+	}
+}
+
+func TestModularCodesKeepLowestCodeOfDuplicatedName(t *testing.T) {
+	sets := map[string][]pack.Set{
+		"b": {{Code: "campaign_a", Name: "Campaign", Kind: "modular"}},
+		"a": {{Code: "campaign_b", Name: "Campaign", Kind: "modular"}},
+	}
+
+	for range 20 { // map iteration order is random
+		if got := modularCodesByName(sets)["campaign"]; got != "campaign_a" {
+			t.Fatalf("got %q, want campaign_a", got)
+		}
+	}
+}

@@ -953,6 +953,54 @@
       "recommended": [
         "trickster_magic"
       ]
+    },
+    {
+      "id": "iron_man_leader",
+      "name": "Iron Man",
+      "pack": "cw",
+      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56059.jpg",
+      "supported": false,
+      "recommended": []
+    },
+    {
+      "id": "captain_marvel_leader",
+      "name": "Captain Marvel",
+      "pack": "cw",
+      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56092.jpg",
+      "supported": false,
+      "recommended": []
+    },
+    {
+      "id": "captain_america_leader",
+      "name": "Captain America",
+      "pack": "cw",
+      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56137.jpg",
+      "supported": false,
+      "recommended": []
+    },
+    {
+      "id": "spider_woman_leader",
+      "name": "Spider Woman",
+      "pack": "cw",
+      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56168.jpg",
+      "supported": false,
+      "recommended": []
+    },
+    {
+      "id": "she_hulk_leader",
+      "name": "She-Hulk",
+      "pack": "synthezoid",
+      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57001.jpg",
+      "supported": false,
+      "recommended": []
+    },
+    {
+      "id": "vision_leader",
+      "name": "Vision",
+      "pack": "synthezoid",
+      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57040.jpg",
+      "supported": false,
+      "recommended": []
     }
   ],
   "sets": [

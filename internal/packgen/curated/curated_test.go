@@ -63,3 +63,38 @@ func TestLoadRejectsUnknownField(t *testing.T) {
 		t.Fatalf("got error %v, want one naming bad.json", err)
 	}
 }
+
+func TestLoadRejectsDuplicateDefs(t *testing.T) {
+	tests := []struct {
+		name   string
+		second string
+		want   string
+	}{
+		{"same id", `{"id":"one","villainSet":"other"}`, `scenario id "one"`},
+		{"same villain set", `{"id":"other","villainSet":"one_set"}`, `villain set "one_set"`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			dir := t.TempDir()
+			scenarios := filepath.Join(dir, "scenarios")
+			if err := os.Mkdir(scenarios, 0o750); err != nil {
+				t.Fatal(err)
+			}
+			files := map[string]string{
+				"a.json": `{"id":"one","villainSet":"one_set"}`,
+				"b.json": tt.second,
+			}
+			for name, content := range files {
+				if err := os.WriteFile(filepath.Join(scenarios, name), []byte(content), 0o600); err != nil {
+					t.Fatal(err)
+				}
+			}
+
+			_, err := Load(dir)
+			if err == nil || !strings.Contains(err.Error(), tt.want) ||
+				!strings.Contains(err.Error(), "a.json") || !strings.Contains(err.Error(), "b.json") {
+				t.Fatalf("got error %v, want one naming a.json, b.json and %s", err, tt.want)
+			}
+		})
+	}
+}

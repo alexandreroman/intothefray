@@ -21,11 +21,14 @@ type CardOverride struct {
 // ScenarioDef is a hand-written scenario setup, completed at build time with
 // the data derived from the sources.
 type ScenarioDef struct {
-	ID         string                         `json:"id"`
-	VillainSet string                         `json:"villainSet"`
-	Piles      []pack.Pile                    `json:"piles"`
-	Start      map[pack.Difficulty]pack.Start `json:"start"`
-	SetAside   []string                       `json:"setAside,omitempty"`
+	ID         string `json:"id"`
+	VillainSet string `json:"villainSet"`
+	// Covers lists other candidate sets whose scenario entries are merged
+	// into this one, for scenarios made of several villain or leader sets.
+	Covers   []string                       `json:"covers,omitempty"`
+	Piles    []pack.Pile                    `json:"piles"`
+	Start    map[pack.Difficulty]pack.Start `json:"start"`
+	SetAside []string                       `json:"setAside,omitempty"`
 }
 
 // Curated is the content of a curated data directory.
@@ -43,11 +46,21 @@ func Load(dir string) (Curated, error) {
 	if err != nil {
 		return Curated{}, fmt.Errorf("list curated scenarios: %w", err)
 	}
+	idFiles := make(map[string]string)
+	villainSetFiles := make(map[string]string)
 	for _, path := range paths { // Glob returns the paths sorted
 		var def ScenarioDef
 		if err := readStrict(path, &def); err != nil {
 			return Curated{}, err
 		}
+		if other, taken := idFiles[def.ID]; taken {
+			return Curated{}, fmt.Errorf("scenario id %q is defined in %s and %s", def.ID, other, path)
+		}
+		if other, taken := villainSetFiles[def.VillainSet]; taken {
+			return Curated{}, fmt.Errorf("villain set %q is defined in %s and %s", def.VillainSet, other, path)
+		}
+		idFiles[def.ID] = path
+		villainSetFiles[def.VillainSet] = path
 		curated.Scenarios = append(curated.Scenarios, def)
 	}
 
