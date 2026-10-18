@@ -1,6 +1,11 @@
-import { fireEvent, render, screen } from '@testing-library/svelte';
+import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import { createRawSnippet } from 'svelte';
 import TopBar from './TopBar.svelte';
+
+afterEach(() => {
+  Reflect.deleteProperty(document.documentElement, 'requestFullscreen');
+  document.body.classList.remove('fs-fallback');
+});
 
 describe('TopBar', () => {
   it('pluralises the spectator count', () => {
@@ -37,5 +42,34 @@ describe('TopBar', () => {
     } finally {
       Reflect.deleteProperty(document, 'fullscreenElement');
     }
+  });
+
+  it('falls back to a class without the Fullscreen API', async () => {
+    render(TopBar, { title: 'T', spectators: 0 });
+
+    await fireEvent.click(screen.getByRole('button', { name: '⛶ Fullscreen' }));
+    expect(document.body.classList).toContain('fs-fallback');
+
+    await fireEvent.click(screen.getByRole('button', { name: '⛶ Exit fullscreen' }));
+    expect(document.body.classList).not.toContain('fs-fallback');
+    expect(screen.getByRole('button', { name: '⛶ Fullscreen' })).toBeTruthy();
+  });
+
+  it('falls back to a class when fullscreen is refused', async () => {
+    document.documentElement.requestFullscreen = vi.fn().mockRejectedValue(new Error('denied'));
+    render(TopBar, { title: 'T', spectators: 0 });
+
+    await fireEvent.click(screen.getByRole('button', { name: '⛶ Fullscreen' }));
+    await waitFor(() => {
+      expect(document.body.classList).toContain('fs-fallback');
+    });
+    expect(screen.getByRole('button', { name: '⛶ Exit fullscreen' })).toBeTruthy();
+  });
+
+  it('keeps the fallback from one top bar to the next', () => {
+    // The lobby and the table each have their own top bar.
+    document.body.classList.add('fs-fallback');
+    render(TopBar, { title: 'T', spectators: 0 });
+    expect(screen.getByRole('button', { name: '⛶ Exit fullscreen' })).toBeTruthy();
   });
 });

@@ -7,3 +7,14 @@ class NoResizeObserver {
 }
 
 globalThis.ResizeObserver ??= NoResizeObserver;
+
+// jsdom has no matchMedia either. By default no media query matches, which is
+// the wide-screen layout; tests of the narrow one install their own lists.
+window.matchMedia ??= (query: string): MediaQueryList =>
+  Object.assign(new EventTarget(), {
+    media: query,
+    matches: false,
+    onchange: null,
+    addListener: () => {},
+    removeListener: () => {},
+  });

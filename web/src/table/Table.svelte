@@ -5,6 +5,7 @@
 -->
 <script lang="ts">
   import { tick } from 'svelte';
+  import { MediaQuery } from 'svelte/reactivity';
   import TopBar from '../components/TopBar.svelte';
   import { knownCard, loadAllCards } from '../lib/catalog';
   import { getPref, setPref } from '../lib/prefs';
@@ -176,7 +177,20 @@
   // does not play at load; it plays on every toggle after that.
   let sideHidden = $state(getPref('itf-side-hidden') === '1');
 
+  // The breakpoint of the @media rules below. On a narrow screen the side
+  // panel is a drawer over the table, closed until asked for, and the stored
+  // column preference does not apply to it.
+  const narrow = new MediaQuery('max-width: 900px');
+  let drawerOpen = $state(false);
+
+  const drawerShown = $derived(narrow.current && drawerOpen);
+  const sideShown = $derived(narrow.current ? drawerShown : !sideHidden);
+
   function toggleSide(): void {
+    if (narrow.current) {
+      drawerOpen = !drawerOpen;
+      return;
+    }
     sideHidden = !sideHidden;
     setPref('itf-side-hidden', sideHidden ? '1' : '');
   }
@@ -254,7 +268,7 @@
     <TopBar
       title="INTO THE FRAY"
       spectators={view.spectators}
-      side={{ hidden: sideHidden, ontoggle: toggleSide }}
+      side={{ hidden: !sideShown, ontoggle: toggleSide }}
       onend={view.you.host ? () => session.lobby('end') : undefined}
     />
   </div>
@@ -287,16 +301,22 @@
   <ZoomControl {zoom} onzoom={zoomWithButtons} />
 
   {#if handCards}
-    <Hand cards={handCards} {faceOf} />
+    <Hand cards={handCards} {faceOf} narrow={narrow.current} />
   {/if}
 
-  <aside class="side" aria-label="Preview and history">
+  <aside
+    class="side"
+    class:open={drawerShown}
+    aria-label="Preview and history"
+    inert={narrow.current && !drawerShown}
+  >
     <SidePanel
       {preview}
       log={view.log}
       canUndo={view.canUndo}
       undoText={view.undoText}
       onundo={() => session.act({ kind: 'undo' })}
+      onclose={narrow.current ? () => (drawerOpen = false) : undefined}
     />
   </aside>
 </div>
@@ -410,8 +430,21 @@
         'table';
     }
 
+    /* The drawer slides in from the right, over the table. */
     .side {
-      display: none;
+      position: fixed;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: min(320px, 88vw);
+      z-index: 50;
+      transform: translateX(100%);
+      transition: transform 0.2s;
+      box-shadow: -8px 0 24px #000a;
+    }
+
+    .side.open {
+      transform: none;
     }
   }
 </style>

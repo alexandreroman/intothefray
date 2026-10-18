@@ -23,6 +23,7 @@
     canUndo = false,
     undoText,
     onundo,
+    onclose,
   }: {
     preview: Preview | null;
     /** Oldest first, as the server sends it. */
@@ -31,6 +32,8 @@
     /** The text of the line Undo would take back. */
     undoText?: string;
     onundo: () => void;
+    /** Closes the panel, when it is a drawer (on a narrow screen). */
+    onclose?: () => void;
   } = $props();
 
   interface Part {
@@ -139,6 +142,9 @@
     title={canUndo ? `Undo your last action: ${undoText ?? ''}` : 'Nothing of yours to undo'}
     onclick={onundo}>Undo</button
   >
+  {#if onclose}
+    <button aria-label="Close" onclick={onclose}>×</button>
+  {/if}
 </div>
 
 <ul class="log" aria-labelledby="history-title">

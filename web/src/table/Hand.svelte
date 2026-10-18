@@ -9,21 +9,26 @@
   import CardFace from './CardFace.svelte';
   import { isHidden } from './face.svelte';
   import { hover } from './hover.svelte';
-  import { cardBox, fanPositions, HAND_CARD } from './layout';
+  import { cardBox, fanPositions, HAND_CARD, HAND_CARD_NARROW } from './layout';
 
   let {
     cards,
     faceOf,
+    narrow = false,
   }: {
     /** The hand, in its order. */
     cards: TableCard[];
     /** The catalog face a card shows, null while unknown. */
     faceOf: (card: TableCard) => PackFace | null;
+    /** A narrow screen, where the cards are smaller. */
+    narrow?: boolean;
   } = $props();
+
+  const cardSize = $derived(narrow ? HAND_CARD_NARROW : HAND_CARD);
 
   // The whole hand's width, padding included: fanPositions keeps that padding free.
   let width = $state(0);
-  const slots = $derived(fanPositions(cards.length, width));
+  const slots = $derived(fanPositions(cards.length, width, cardSize.w));
 
   let open = $state(false);
   let list = $state<HTMLElement>();
@@ -71,8 +76,8 @@
   class="hand"
   class:open
   aria-label="Your hand"
-  style:--card-w="{HAND_CARD.w}px"
-  style:--card-h="{HAND_CARD.h}px"
+  style:--card-w="{cardSize.w}px"
+  style:--card-h="{cardSize.h}px"
   bind:this={list}
   bind:clientWidth={width}
 >
@@ -125,7 +130,10 @@
     align-self: end;
     position: relative;
     z-index: 20;
-    /* Border box: the padding around one card. */
+    /*
+      Border box: the padding around one card. The prototype's min-heights (218 px, 180 px on a
+      narrow screen) are below this, so its hand grows to the same height around its card row.
+    */
     min-height: calc(26px + var(--card-h) + 18px);
     margin: 0;
     padding: 26px 18px 18px;

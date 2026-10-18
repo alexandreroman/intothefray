@@ -122,6 +122,9 @@ export interface FanSlot {
 /** A card in the hand. */
 export const HAND_CARD = { w: 132, h: 185 } as const;
 
+/** A card in the hand on a narrow screen (900 px wide or less). */
+export const HAND_CARD_NARROW = { w: 100, h: 140 } as const;
+
 const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
 
 /**

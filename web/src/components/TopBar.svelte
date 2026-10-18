@@ -25,19 +25,34 @@
     onend?.();
   }
 
-  let fullscreen = $state(Boolean(document.fullscreenElement));
+  const FALLBACK_CLASS = 'fs-fallback';
+
+  let native = $state(Boolean(document.fullscreenElement));
+  // On the body rather than in this component: the lobby and the table each
+  // have their own top bar, and the fallback outlives either.
+  let fallback = $state(document.body.classList.contains(FALLBACK_CLASS));
+  const fullscreen = $derived(native || fallback);
 
   function syncFullscreen(): void {
-    fullscreen = Boolean(document.fullscreenElement);
+    native = Boolean(document.fullscreenElement);
+  }
+
+  function setFallback(on: boolean): void {
+    fallback = on;
+    document.body.classList.toggle(FALLBACK_CLASS, on);
   }
 
   function toggleFullscreen(): void {
-    // Not every browser (or embedded view) offers the Fullscreen API, and a
-    // request can be denied: the button then does nothing.
-    if (document.fullscreenElement) {
+    if (fallback) {
+      setFallback(false);
+    } else if (document.fullscreenElement) {
       void document.exitFullscreen?.().catch(() => {});
+    } else if (document.documentElement.requestFullscreen) {
+      // A request can be denied (no user gesture, a policy of the embedding page).
+      void document.documentElement.requestFullscreen().catch(() => setFallback(true));
     } else {
-      void document.documentElement.requestFullscreen?.().catch(() => {});
+      // Not every browser offers the Fullscreen API (iPhone Safari, some embedded views).
+      setFallback(true);
     }
   }
 </script>
