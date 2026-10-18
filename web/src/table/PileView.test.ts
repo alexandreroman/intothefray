@@ -72,6 +72,7 @@ describe('PileView', () => {
     expect(el.style.top).toBe('20px');
     expect(el.style.width).toBe('100px');
     expect(el.style.height).toBe('140px');
+    expect(el.dataset.id).toBe('enc');
   });
 
   it('a player deck shows the player back', () => {

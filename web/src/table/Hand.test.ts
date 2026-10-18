@@ -40,6 +40,7 @@ describe('Hand', () => {
 
     const names = handCards().map((item) => within(item).getByRole('img').getAttribute('alt'));
     expect(names).toEqual(['Backflip', 'Swinging Web Kick', 'Energy']);
+    expect(handCards().map((item) => item.dataset.id)).toEqual(['h1', 'h2', 'h3']);
     expect(
       within(handCards()[0] as HTMLElement)
         .getByRole('img')

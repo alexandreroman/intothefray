@@ -267,7 +267,8 @@
   });
 </script>
 
-<div class="app" class:side-hidden={sideHidden}>
+<!-- The zoom is set on the whole page, so a layer outside the table (a drag ghost) can follow it. -->
+<div class="app" class:side-hidden={sideHidden} style:--z={zoom}>
   <div class="top">
     <TopBar
       spectators={view.spectators}
@@ -277,7 +278,7 @@
   </div>
 
   <div class="tablewrap" role="presentation" bind:this={wrap} onpointerover={onTableOver}>
-    <div class="table" style:--z={zoom}>
+    <div class="table">
       {#each zones as zone, i (zone.area)}
         <Zone
           area={zone.area}

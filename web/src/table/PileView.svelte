@@ -43,6 +43,7 @@
 <div
   class="card pile"
   role="presentation"
+  data-id={pile.id}
   class:empty
   class:inert={empty}
   class:out={badge !== undefined}

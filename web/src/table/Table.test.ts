@@ -269,14 +269,13 @@ describe('Table', () => {
     expect(localStorage.getItem('itf-zoom')).toBe('1');
   });
 
-  it('restores the stored zoom and applies it as --z', () => {
+  it('restores the stored zoom and applies it as --z to the whole page', () => {
     localStorage.setItem('itf-zoom', '1.5');
     const { container } = render(Table, { session: fakeSession(), view: makeView() });
 
     expect(zoomLabel().textContent).toBe('150%');
-    expect(container.querySelector<HTMLElement>('.table')?.style.getPropertyValue('--z')).toBe(
-      '1.5',
-    );
+    // On the page rather than the table only: a drag layer outside the table needs it too.
+    expect(container.querySelector<HTMLElement>('.app')?.style.getPropertyValue('--z')).toBe('1.5');
   });
 
   it('Ctrl + wheel zooms, a plain wheel does not', async () => {

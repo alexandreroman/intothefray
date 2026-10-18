@@ -86,6 +86,7 @@
     {@const face = faceOf(card)}
     <li
       class="hcard"
+      data-id={card.id}
       style:--x="{slot?.x ?? 0}px"
       onpointerenter={() => (hover.hovered = { kind: 'card', id: card.id })}
     >

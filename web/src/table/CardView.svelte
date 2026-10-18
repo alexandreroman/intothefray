@@ -40,6 +40,7 @@
 <div
   class="card"
   role="presentation"
+  data-id={card.id}
   class:exhausted={card.exhausted}
   class:highlighted={hover.highlighted.has(card.id)}
   style:left="{card.x}px"

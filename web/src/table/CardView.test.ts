@@ -73,6 +73,7 @@ describe('CardView', () => {
     expect(el.style.zIndex).toBe('7');
     expect(el.style.width).toBe('140px');
     expect(el.style.height).toBe('100px');
+    expect(el.dataset.id).toBe('c1');
   });
 
   it('an unknown face is a std placeholder', () => {
