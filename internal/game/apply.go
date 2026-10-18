@@ -804,11 +804,14 @@ func applyReorderTop(t *Table, a Action) error {
 }
 
 func applyHandOrder(t *Table, a Action) error {
-	if !validArea(a.Area) {
-		return invalid("unknown area %q", a.Area)
+	if !validArea(a.Area) || a.Area == AreaVillain {
+		return invalid("area %q has no hand", a.Area)
 	}
 	if !samePermutation(t.Hands[a.Area], a.Cards) {
 		return invalid("hand order of %q is not a permutation of the hand", a.Area)
+	}
+	if t.Hands == nil {
+		t.Hands = map[Area][]string{}
 	}
 	t.Hands[a.Area] = slices.Clone(a.Cards)
 	return nil

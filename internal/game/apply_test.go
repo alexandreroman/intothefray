@@ -565,8 +565,13 @@ func TestDiscardTopRejectsBadInput(t *testing.T) {
 		"not a deck": {Kind: ActDiscardTop, Pile: "disc:p0", N: 1},
 	} {
 		t.Run(name, func(t *testing.T) {
-			if err := apply(newTestTable(), a); !errors.Is(err, ErrInvalid) {
+			table := newTestTable()
+			before := table.Clone()
+			if err := apply(table, a); !errors.Is(err, ErrInvalid) {
 				t.Errorf("err = %v, want ErrInvalid", err)
+			}
+			if !reflect.DeepEqual(table, before) {
+				t.Error("table changed after a rejected action")
 			}
 		})
 	}
@@ -689,6 +694,37 @@ func TestLeavingTableRemovesArrows(t *testing.T) {
 	mustApply(t, table, Action{Kind: ActDiscard, Card: "c1"})
 
 	want := []Arrow{{From: "c7", To: "c9", Seat: 1}}
+	if !reflect.DeepEqual(table.Arrows, want) {
+		t.Errorf("arrows = %v, want %v", table.Arrows, want)
+	}
+}
+
+func TestHandOrderWithNilHands(t *testing.T) {
+	table := newTestTable()
+	table.Hands = nil
+
+	mustApply(t, table, Action{Kind: ActHandOrder, Area: "p1", Cards: []string{}})
+
+	if len(table.Hands["p1"]) != 0 {
+		t.Errorf("hand = %v, want empty", table.Hands["p1"])
+	}
+}
+
+func TestHandOrderRefusesVillainArea(t *testing.T) {
+	err := apply(newTestTable(), Action{Kind: ActHandOrder, Area: AreaVillain, Cards: []string{}})
+	if !errors.Is(err, ErrInvalid) {
+		t.Errorf("err = %v, want ErrInvalid", err)
+	}
+}
+
+func TestChooseStageRemovesArrowsOfPreviousCard(t *testing.T) {
+	table := newStageTable()
+	mustApply(t, table, Action{Kind: ActArrowAdd, Card: "c20", Target: "c7", Seat: 0})
+	mustApply(t, table, Action{Kind: ActArrowAdd, Card: "c7", Target: "c1", Seat: 0})
+
+	mustApply(t, table, Action{Kind: ActChooseStage, Stage: "villain", Card: "c22", Face: 0})
+
+	want := []Arrow{{From: "c7", To: "c1", Seat: 0}}
 	if !reflect.DeepEqual(table.Arrows, want) {
 		t.Errorf("arrows = %v, want %v", table.Arrows, want)
 	}
