@@ -375,6 +375,41 @@ describe('Table', () => {
     expect(placed.classList).not.toContain('highlighted');
   });
 
+  it("shows the viewer's hand in order; spectators have none", async () => {
+    const view = makeView();
+    view.table?.cards.push(card('h2', { code: '01094', owner: 1, zone: 'hand' }));
+    view.table = { ...view.table!, hand: ['h2', 'h'] };
+    const player = render(Table, { session: fakeSession(), view });
+
+    const hand = screen.getByRole('list', { name: 'Your hand' });
+    await within(hand).findByRole('img', { name: 'Spider-Man' });
+    const names = within(hand)
+      .getAllByRole('img')
+      .map((image) => image.getAttribute('alt'));
+    expect(names).toEqual(['Rhino', 'Spider-Man']);
+    player.unmount();
+
+    render(Table, {
+      session: fakeSession(),
+      view: { ...view, you: { role: 'spectator', name: 'Kim', color: -1, host: false } },
+    });
+    expect(screen.queryByRole('list', { name: 'Your hand' })).toBeNull();
+  });
+
+  it('hovering a hand card previews it', async () => {
+    const view = makeView();
+    view.table = { ...view.table!, hand: ['h'] };
+    render(Table, { session: fakeSession(), view });
+    const hand = screen.getByRole('list', { name: 'Your hand' });
+    const inHand = await within(hand).findByRole('img', { name: 'Spider-Man' });
+
+    await fireEvent.pointerEnter(inHand.closest('li') as HTMLElement);
+    const preview = screen.getByLabelText('Card preview');
+    expect(within(preview).getByRole('img', { name: 'Spider-Man' }).getAttribute('src')).toBe(
+      '01001.png',
+    );
+  });
+
   it('undo sends the undo action', async () => {
     const session = fakeSession();
     const view = { ...makeView(), canUndo: true, undoText: 'exhausted Rhino' };

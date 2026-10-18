@@ -126,4 +126,18 @@ describe('SidePanel', () => {
     await fireEvent.pointerLeave(entry);
     expect(hover.highlighted.size).toBe(0);
   });
+
+  it('a hovered line that leaves the list stops highlighting', async () => {
+    const log = [
+      line({ text: 'exhausted Spider-Man', cards: ['c1'] }),
+      line({ text: 'readied Spider-Man', cards: ['c1'] }),
+    ];
+    const { rerender } = render(SidePanel, { preview: null, log, onundo: () => {} });
+
+    // The newest line is gone with no pointerleave (a new history, say).
+    await fireEvent.pointerEnter(historyLines()[0] as HTMLElement);
+    expect([...hover.highlighted]).toEqual(['c1']);
+    await rerender({ preview: null, log: log.slice(0, 1), onundo: () => {} });
+    expect(hover.highlighted.size).toBe(0);
+  });
 });

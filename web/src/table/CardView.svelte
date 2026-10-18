@@ -97,19 +97,6 @@
     transform: rotate(var(--exhaust-angle));
   }
 
-  /* The white ring of a highlighted card, drawn around the cut card (the cut would clip it on the image). */
-  .card.highlighted::before {
-    content: '';
-    position: absolute;
-    inset: 1%;
-    border-radius: 7px;
-    pointer-events: none;
-    z-index: 1;
-    box-shadow:
-      0 0 0 2px #ffffffb0,
-      0 0 22px 6px #ffffff38;
-  }
-
   .tokens {
     position: absolute;
     left: 4px;

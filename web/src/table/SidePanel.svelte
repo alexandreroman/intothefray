@@ -83,19 +83,30 @@
       .reverse(),
   );
 
-  // The line whose full text floats over the list (only a truncated line shows it).
+  // The line under the pointer, and the one whose full text floats over the
+  // list (only a truncated line shows it).
+  let hoveredLine = $state<number | null>(null);
   let expanded = $state<number | null>(null);
 
   function enterLine(event: PointerEvent, key: number, cards: string[] | undefined): void {
+    hoveredLine = key;
     hover.highlighted = new Set(cards ?? []);
     const text = (event.currentTarget as HTMLElement).querySelector('.txt');
     expanded = text && text.scrollWidth > text.clientWidth + 1 ? key : null;
   }
 
   function leaveLine(): void {
+    hoveredLine = null;
     hover.highlighted = new Set();
     expanded = null;
   }
+
+  // A line removed from under the pointer gets no pointerleave: its ring would stay on.
+  $effect(() => {
+    if (hoveredLine !== null && !lines.some((line) => line.key === hoveredLine)) {
+      leaveLine();
+    }
+  });
 </script>
 
 {#snippet lineText(entry: LogView, parts: Part[])}

@@ -11,6 +11,7 @@
   import type { GameSession } from '../lib/session.svelte';
   import type { Area, CardView as TableCard, PackFace, PileView, Size, View } from '../lib/types';
   import { isHidden, pileBack } from './face.svelte';
+  import Hand from './Hand.svelte';
   import { hover, type Hovered } from './hover.svelte';
   import { zoneMinHeight, zoneOrder, zoneWidth } from './layout';
   import SidePanel, { type Preview } from './SidePanel.svelte';
@@ -42,6 +43,16 @@
   const piles = $derived(view.table?.piles ?? []);
   const cardsById = $derived(new Map(cards.map((card) => [card.id, card])));
   const ownArea = $derived(view.you.role === 'player' ? view.you.area : undefined);
+
+  // Spectators have no hand.
+  const handCards = $derived(
+    ownArea
+      ? (view.table?.hand ?? []).flatMap((id) => {
+          const card = cardsById.get(id);
+          return card ? [card] : [];
+        })
+      : undefined,
+  );
 
   function topOf(pile: PileView): TableCard | undefined {
     const topId = pile.cards?.at(-1);
@@ -275,6 +286,10 @@
 
   <ZoomControl {zoom} onzoom={zoomWithButtons} />
 
+  {#if handCards}
+    <Hand cards={handCards} {faceOf} />
+  {/if}
+
   <aside class="side" aria-label="Preview and history">
     <SidePanel
       {preview}
@@ -317,6 +332,22 @@
   .table {
     padding: 0 20px 250px;
     position: relative;
+  }
+
+  /*
+    The white ring of the cards of the hovered history line, for cards and piles alike. It is
+    drawn around the cut card: the cut would clip it on the image.
+  */
+  .table :global(.card.highlighted)::before {
+    content: '';
+    position: absolute;
+    inset: 1%;
+    border-radius: 7px;
+    pointer-events: none;
+    z-index: 1;
+    box-shadow:
+      0 0 0 2px #ffffffb0,
+      0 0 22px 6px #ffffff38;
   }
 
   .side {
