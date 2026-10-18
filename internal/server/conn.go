@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"runtime/debug"
 	"slices"
 	"sync"
 	"time"
@@ -18,8 +19,9 @@ import (
 )
 
 const (
-	// sendQueueSize is the number of messages waiting for a viewer. A viewer
-	// that falls further behind is dropped rather than slowing the others.
+	// sendQueueSize is the number of messages other than views waiting for a
+	// viewer. A viewer that falls further behind is dropped rather than
+	// slowing the others.
 	sendQueueSize = 64
 	// maxMessageBytes bounds a message from a viewer.
 	maxMessageBytes = 64 << 10
@@ -29,14 +31,21 @@ const (
 	pingInterval = 30 * time.Second
 	pongTimeout  = readTimeout - pingInterval
 	writeTimeout = 60 * time.Second
+	// publishTimeout bounds telling the other instances about a change.
+	publishTimeout = 2 * time.Second
 )
 
 // errInvalidMessage reports a message that breaks the protocol.
 var errInvalidMessage = errors.New("invalid message")
 
-// conn is one viewer's WebSocket connection. Messages to the viewer go
-// through a bounded queue drained by the write loop, so that a slow viewer
-// never holds up the others: when its queue overflows, it is dropped.
+// conn is one viewer's WebSocket connection, written by its write loop so
+// that a slow viewer never holds up the others.
+//
+// Views are coalesced: the connection holds at most one pending view, and a
+// newer one replaces it, so a viewer that reads slowly during a burst of
+// changes skips the intermediate versions and ends on the latest. Every other
+// message goes through a bounded queue; when it overflows, the viewer is
+// dropped.
 type conn struct {
 	ws     *websocket.Conn
 	gameID string
@@ -49,27 +58,32 @@ type conn struct {
 	tooSlow  chan struct{}
 	dropOnce sync.Once
 
-	// viewMu keeps the queued views in version order when several
-	// broadcasts run at once.
+	// viewReady signals that pendingView is set. Its buffer of one is enough:
+	// the write loop always takes the latest pending view.
+	viewReady chan struct{}
+	// viewMu guards the view state, so that concurrent broadcasts leave the
+	// newest version pending.
 	viewMu      sync.Mutex
+	pendingView []byte
 	lastVersion int64
 }
 
 func newConn(ws *websocket.Conn, gameID string, logger *slog.Logger) *conn {
 	return &conn{
-		ws:      ws,
-		gameID:  gameID,
-		logger:  logger,
-		queue:   make(chan []byte, sendQueueSize),
-		tooSlow: make(chan struct{}),
+		ws:        ws,
+		gameID:    gameID,
+		logger:    logger,
+		queue:     make(chan []byte, sendQueueSize),
+		tooSlow:   make(chan struct{}),
+		viewReady: make(chan struct{}, 1),
 	}
 }
 
-// send queues msg for the viewer.
+// send queues msg for the viewer, and drops the viewer when its queue is
+// full.
 func (c *conn) send(msg any) {
-	data, err := json.Marshal(msg)
+	data, err := c.encode(msg)
 	if err != nil {
-		c.logger.Error("encode message", "game_id", c.gameID, "error", err)
 		return
 	}
 	select {
@@ -79,8 +93,8 @@ func (c *conn) send(msg any) {
 	}
 }
 
-// sendView queues the viewer's view of g, unless the viewer already has
-// this version or a newer one.
+// sendView makes the viewer's view of g the pending view, unless the viewer
+// already has this version or a newer one.
 func (c *conn) sendView(g *game.Game, version int64) {
 	c.viewMu.Lock()
 	defer c.viewMu.Unlock()
@@ -88,8 +102,35 @@ func (c *conn) sendView(g *game.Game, version int64) {
 	if version <= c.lastVersion {
 		return
 	}
+	data, err := c.encode(viewMessage{Type: typeView, Version: version, View: g.ViewFor(c.token)})
+	if err != nil {
+		return
+	}
 	c.lastVersion = version
-	c.send(viewMessage{Type: typeView, Version: version, View: g.ViewFor(c.token)})
+	c.pendingView = data
+	select {
+	case c.viewReady <- struct{}{}:
+	default: // already signalled
+	}
+}
+
+// takeView returns the pending view, or nil when an earlier signal already
+// took it.
+func (c *conn) takeView() []byte {
+	c.viewMu.Lock()
+	defer c.viewMu.Unlock()
+
+	data := c.pendingView
+	c.pendingView = nil
+	return data
+}
+
+func (c *conn) encode(msg any) ([]byte, error) {
+	data, err := json.Marshal(msg)
+	if err != nil {
+		c.logger.Error("encode message", "game_id", c.gameID, "error", err)
+	}
+	return data, err
 }
 
 func (c *conn) writeLoop(ctx context.Context) {
@@ -97,10 +138,38 @@ func (c *conn) writeLoop(ctx context.Context) {
 		select {
 		case <-ctx.Done():
 			return
+		case <-c.tooSlow:
+			// Leave the connection to the close frame.
+			return
 		case data := <-c.queue:
 			if err := c.write(ctx, data); err != nil {
 				return
 			}
+		case <-c.viewReady:
+			// Queued messages go first: the welcome must reach the viewer
+			// before its first view.
+			if err := c.writeQueued(ctx); err != nil {
+				return
+			}
+			if data := c.takeView(); data != nil {
+				if err := c.write(ctx, data); err != nil {
+					return
+				}
+			}
+		}
+	}
+}
+
+// writeQueued writes the queued messages until the queue is empty.
+func (c *conn) writeQueued(ctx context.Context) error {
+	for {
+		select {
+		case data := <-c.queue:
+			if err := c.write(ctx, data); err != nil {
+				return err
+			}
+		default:
+			return nil
 		}
 	}
 }
@@ -150,18 +219,21 @@ func (s *Server) serveConn(ctx context.Context, ws *websocket.Conn, gameID strin
 	ws.SetReadLimit(maxMessageBytes)
 	c := newConn(ws, gameID, s.deps.Logger)
 	ctx, cancel := context.WithCancel(ctx)
-
 	var wg sync.WaitGroup
+	// Deferred, so that even a panic leaves neither the hub entry nor the
+	// socket behind.
+	defer func() {
+		s.hub.unregister(c)
+		cancel()
+		wg.Wait()
+		_ = ws.CloseNow()
+	}()
+
 	wg.Go(func() { c.writeLoop(ctx) })
 	wg.Go(func() { c.pingLoop(ctx) })
 	wg.Go(func() { c.closeWhenTooSlow(ctx) })
 
 	s.readLoop(ctx, c)
-
-	s.hub.unregister(c)
-	cancel()
-	wg.Wait()
-	_ = ws.CloseNow()
 }
 
 // readLoop handles the viewer's messages one at a time, until the
@@ -172,15 +244,42 @@ func (s *Server) readLoop(ctx context.Context, c *conn) {
 		if err != nil {
 			return
 		}
-		var msg clientMessage
-		if typ != websocket.MessageText || json.Unmarshal(data, &msg) != nil {
-			s.replyError(c, 0, errInvalidMessage)
-			continue
+		msg, err := decodeMessage(typ, data)
+		if err == nil {
+			err = s.handleSafely(ctx, c, msg)
 		}
-		if err := s.handle(ctx, c, msg); err != nil {
+		if err != nil {
 			s.replyError(c, msg.ID, err)
 		}
 	}
+}
+
+// decodeMessage decodes a viewer's message. On failure, the message returned
+// still holds the id when it can be read, so that the error reply echoes it.
+func decodeMessage(typ websocket.MessageType, data []byte) (clientMessage, error) {
+	if typ != websocket.MessageText {
+		return clientMessage{}, fmt.Errorf("%w: binary message", errInvalidMessage)
+	}
+	var msg clientMessage
+	if err := json.Unmarshal(data, &msg); err != nil {
+		var head struct {
+			ID int64 `json:"id"`
+		}
+		_ = json.Unmarshal(data, &head) // a missing or broken id stays 0
+		return clientMessage{ID: head.ID}, fmt.Errorf("%w: %w", errInvalidMessage, err)
+	}
+	return msg, nil
+}
+
+// handleSafely handles msg and turns a panic into an internal error, so that
+// one bad message does not cost the viewer its connection.
+func (s *Server) handleSafely(ctx context.Context, c *conn, msg clientMessage) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("panic handling %s message: %v\n%s", msg.Type, r, debug.Stack())
+		}
+	}()
+	return s.handle(ctx, c, msg)
 }
 
 func (s *Server) handle(ctx context.Context, c *conn, msg clientMessage) error {
@@ -232,7 +331,11 @@ func (s *Server) hello(ctx context.Context, c *conn, msg clientMessage) error {
 	// is either in this view or broadcast to c.
 	g, version, err := s.deps.Store.Load(ctx, c.gameID)
 	if err != nil {
-		return err
+		// The viewer is registered but has no view to start from: it must
+		// reconnect, as an error reply would leave it waiting for one.
+		s.deps.Logger.Error("load game after join", "game_id", c.gameID, "error", err)
+		_ = c.ws.Close(websocket.StatusInternalError, "internal error")
+		return nil
 	}
 	c.sendView(g, version)
 	return nil
@@ -337,6 +440,11 @@ func (s *Server) update(ctx context.Context, gameID string, change func(*game.Ga
 // is stored already, so a failure is only logged: their viewers catch up
 // with the next change.
 func (s *Server) publishUpdated(ctx context.Context, gameID string, version int64) {
+	// The viewer leaving must not keep the others from hearing of a change
+	// that is stored already.
+	ctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), publishTimeout)
+	defer cancel()
+
 	payload, err := json.Marshal(gameEvent{Kind: eventUpdated, Version: version})
 	if err == nil {
 		err = s.deps.Store.Publish(ctx, gameID, payload)

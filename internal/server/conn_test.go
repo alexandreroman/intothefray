@@ -3,13 +3,13 @@ package server
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"net"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"regexp"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -184,6 +184,9 @@ func TestHelloWithUnknownTokenGetsFreshToken(t *testing.T) {
 	if strings.Contains(string(hostView.raw), welcome.Token) {
 		t.Error("the host view contains Bob's token")
 	}
+	if strings.Contains(string(view.raw), created.Token) {
+		t.Error("Bob's view contains the host token")
+	}
 }
 
 func TestActionErrorCode(t *testing.T) {
@@ -338,37 +341,159 @@ func (l smallBufferListener) Accept() (net.Conn, error) {
 	return conn, err
 }
 
-func TestSlowClientIsDropped(t *testing.T) {
-	const updates = 600
+// newSmallBufferServer starts a test server whose sockets have small send
+// buffers.
+func newSmallBufferServer(t *testing.T) *httptest.Server {
+	t.Helper()
 
 	srv, _ := newServer(t)
 	ts := httptest.NewUnstartedServer(srv.Handler())
 	ts.Listener = smallBufferListener{Listener: ts.Listener}
 	ts.Start()
 	t.Cleanup(ts.Close)
-	created := createGame(t, ts, "Alex")
+	return ts
+}
 
-	slow := connectWith(t, ts, created.ID, &websocket.DialOptions{HTTPClient: smallReadBufferClient()})
-	slow.send(map[string]any{"type": "hello", "token": created.Token, "name": "Alex"})
+// connectSlow connects a client with a small receive buffer.
+func connectSlow(t *testing.T, ts *httptest.Server, gameID string) *testClient {
+	t.Helper()
+	return connectWith(t, ts, gameID, &websocket.DialOptions{HTTPClient: smallReadBufferClient()})
+}
+
+func TestSlowClientIsDropped(t *testing.T) {
+	const requests = 50000
+
+	ts := newSmallBufferServer(t)
+	created := createGame(t, ts, "Alex")
+	slow := connectSlow(t, ts, created.ID)
+	slow.hello(created.Token, "Alex")
 	fast := connect(t, ts, created.ID)
 	fast.hello("", "Bob")
 
-	// Bob leaves his seat and takes it back: every change sends both
-	// viewers a view, and the slow one never reads them.
-	for i := range updates {
-		fast.lobby([]string{"leave", "takeSeat"}[i%2], nil)
-		fast.expect("view")
+	// Every unknown message is answered with an error, which goes through
+	// the bounded queue, and the slow client never reads the answers.
+	for range requests {
+		if err := wsjson.Write(t.Context(), slow.ws, map[string]any{"type": "dance"}); err != nil {
+			break // already dropped
+		}
 	}
 
-	viewsRead, err := drain(t, slow.ws)
-	if errors.Is(err, context.DeadlineExceeded) || viewsRead >= updates {
-		t.Fatalf("slow client read %d messages then %v, want it dropped before %d", viewsRead, err, updates)
+	read, err := drain(t, slow.ws)
+	if status := websocket.CloseStatus(err); status != websocket.StatusPolicyViolation {
+		t.Fatalf("slow client read %d messages then %v, want close status %v",
+			read, err, websocket.StatusPolicyViolation)
 	}
-	if status := websocket.CloseStatus(err); status != -1 && status != websocket.StatusPolicyViolation {
-		t.Errorf("close status = %v, want %v", status, websocket.StatusPolicyViolation)
+	if read >= requests {
+		t.Errorf("slow client read %d messages, want it dropped before %d", read, requests)
 	}
+	// The other viewer is unaffected.
 	fast.lobby("leave", nil)
 	fast.expect("view")
+}
+
+func TestSlowViewReaderIsKept(t *testing.T) {
+	const updates = 600
+
+	ts := newSmallBufferServer(t)
+	created := createGame(t, ts, "Alex")
+	slow := connectSlow(t, ts, created.ID)
+	slow.hello(created.Token, "Alex")
+	fast := connect(t, ts, created.ID)
+	fast.hello("", "Bob")
+	slow.expect("view") // Bob's arrival
+
+	// Bob leaves his seat and takes it back: every change sends both
+	// viewers a view, and the slow one does not read them yet.
+	var latest int64
+	for i := range updates {
+		fast.lobby([]string{"leave", "takeSeat"}[i%2], nil)
+		latest = fast.expect("view").Version
+	}
+
+	// The slow viewer was not dropped: it skips the versions it missed and
+	// ends on the latest one.
+	read := 0
+	for {
+		msg := slow.expect("view")
+		read++
+		if msg.Version == latest {
+			break
+		}
+	}
+	if read >= updates {
+		t.Errorf("slow viewer read %d views, want the intermediate versions skipped", read)
+	}
+}
+
+func TestPanicIsAnsweredAsInternal(t *testing.T) {
+	var clockBroken atomic.Bool
+	ts, _ := newTestServerWith(t, func(s *Server) {
+		s.deps.Now = func() time.Time {
+			if clockBroken.Load() {
+				panic("clock broke")
+			}
+			return time.Now()
+		}
+	})
+	created := createGame(t, ts, "Alex")
+	host := connect(t, ts, created.ID)
+	host.hello(created.Token, "Alex")
+
+	// Actions read the clock, which now panics.
+	clockBroken.Store(true)
+	host.send(map[string]any{"type": "action", "id": 3, "action": map[string]any{"kind": "draw", "n": 1}})
+
+	reply := host.expect("error")
+	if reply.Code != "internal" || reply.ID != 3 || strings.Contains(reply.Message, "clock") {
+		t.Errorf("error = %s, want code internal with id 3 and a fixed message", reply.raw)
+	}
+	// The connection, and the store, still work.
+	host.lobby("takeSeat", nil)
+	host.expect("view")
+}
+
+func TestSecondHelloIsRefused(t *testing.T) {
+	ts, _ := newTestServer(t)
+	created := createGame(t, ts, "Alex")
+	host := connect(t, ts, created.ID)
+	host.hello(created.Token, "Alex")
+
+	host.send(map[string]any{"type": "hello", "token": created.Token, "name": "Alex"})
+
+	if reply := host.expect("error"); reply.Code != "invalid" {
+		t.Errorf("error = %s, want code invalid", reply.raw)
+	}
+}
+
+func TestMalformedActionKeepsItsID(t *testing.T) {
+	ts, _ := newTestServer(t)
+	created := createGame(t, ts, "Alex")
+	host := connect(t, ts, created.ID)
+	host.hello(created.Token, "Alex")
+
+	host.send(map[string]any{"type": "action", "id": 9, "action": "not an action"})
+
+	if reply := host.expect("error"); reply.Code != "invalid" || reply.ID != 9 {
+		t.Errorf("error = %s, want code invalid with id 9", reply.raw)
+	}
+}
+
+func TestMessageOverReadLimitClosesConnection(t *testing.T) {
+	ts, _ := newTestServer(t)
+	created := createGame(t, ts, "Alex")
+	host := connect(t, ts, created.ID)
+	big := `{"type":"hello","name":"` + strings.Repeat("a", maxMessageBytes) + `"}`
+
+	if err := host.ws.Write(t.Context(), websocket.MessageText, []byte(big)); err != nil {
+		t.Fatal(err)
+	}
+
+	ctx, cancel := context.WithTimeout(t.Context(), readTimeoutInTests)
+	defer cancel()
+	_, _, err := host.ws.Read(ctx)
+	if status := websocket.CloseStatus(err); status != websocket.StatusMessageTooBig {
+		t.Errorf("read = %v, want close status %v", err, websocket.StatusMessageTooBig)
+	}
 }
 
 // smallReadBufferClient dials connections with a small receive buffer.
