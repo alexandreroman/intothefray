@@ -36,7 +36,7 @@ func BuildCards(
 		cerebroIDs[strings.ToUpper(card.ID)] = card.ID
 	}
 
-	entriesByCard, reprints := groupEntries(mc)
+	entriesByCard, _, reprints := groupEntries(mc)
 	reprintsByCard, unresolved := resolveReprints(reprints, entriesByCard)
 	unsupported = append(unsupported, unresolved...)
 
@@ -70,9 +70,23 @@ func BuildCards(
 	return cards, unsupported
 }
 
+// CanonicalCodes maps the code of each marvelcdb record that is a card or a
+// face of a card to the canonical code of that card. Reprints and summary
+// records of distinct lettered cards are not mapped.
+func CanonicalCodes(mc []marvelcdb.Card) map[string]string {
+	_, codes, _ := groupEntries(mc)
+	return codes
+}
+
 // groupEntries splits the records into the entries of each card, keyed by the
-// card code and ordered by face letter, and the reprints, which are not cards.
-func groupEntries(mc []marvelcdb.Card) (entries map[string][]marvelcdb.Card, reprints []marvelcdb.Card) {
+// card code and ordered by face letter, the canonical code of each entry, and
+// the reprints, which are not cards. It is the single place that decides what
+// the canonical code of a record is.
+func groupEntries(mc []marvelcdb.Card) (
+	entries map[string][]marvelcdb.Card,
+	canonical map[string]string,
+	reprints []marvelcdb.Card,
+) {
 	byBase := make(map[string][]marvelcdb.Card)
 	for _, card := range mc {
 		if card.DuplicateOf != "" {
@@ -84,12 +98,16 @@ func groupEntries(mc []marvelcdb.Card) (entries map[string][]marvelcdb.Card, rep
 	}
 
 	entries = make(map[string][]marvelcdb.Card)
+	canonical = make(map[string]string)
 	for base, group := range byBase {
 		for code, cardEntries := range splitGroup(base, group) {
 			entries[code] = cardEntries
+			for _, entry := range cardEntries {
+				canonical[entry.Code] = code
+			}
 		}
 	}
-	return entries, reprints
+	return entries, canonical, reprints
 }
 
 // splitGroup turns the entries sharing a base code into cards. marvelcdb uses

@@ -20,10 +20,12 @@ func BuildSets(mc []marvelcdb.Card, mcPacks []marvelcdb.Pack) map[string][]pack.
 		knownPacks[mcPack.Code] = true
 	}
 
+	canonical := CanonicalCodes(mc)
 	setsByCode := make(map[string]*pack.Set)
 	packOf := make(map[string]string)
 	for _, card := range sortedByCode(mc) {
-		if card.DuplicateOf != "" || card.SetCode == "" || !knownPacks[card.PackCode] {
+		code, isCard := canonical[card.Code]
+		if !isCard || card.SetCode == "" || !knownPacks[card.PackCode] {
 			continue
 		}
 
@@ -33,8 +35,8 @@ func BuildSets(mc []marvelcdb.Card, mcPacks []marvelcdb.Pack) map[string][]pack.
 			setsByCode[card.SetCode] = set
 			packOf[card.SetCode] = card.PackCode
 		}
-		if base := baseCode(card.Code); !slices.Contains(set.Cards, base) {
-			set.Cards = append(set.Cards, base)
+		if !slices.Contains(set.Cards, code) {
+			set.Cards = append(set.Cards, code)
 		}
 	}
 
@@ -53,33 +55,36 @@ func BuildSets(mc []marvelcdb.Card, mcPacks []marvelcdb.Pack) map[string][]pack.
 //
 //nolint:revive // BuildHeroes is the name fixed by the plan.
 func BuildHeroes(mc []marvelcdb.Card) map[string][]pack.Hero {
+	canonical := CanonicalCodes(mc)
 	obligations := make(map[string]string) // set code -> lowest obligation code
 	existingSets := make(map[string]bool)
 	for _, card := range sortedByCode(mc) {
-		if card.DuplicateOf != "" {
+		code, isCard := canonical[card.Code]
+		if !isCard {
 			continue
 		}
 		existingSets[card.SetCode] = true
 		if _, found := obligations[card.SetCode]; !found && card.TypeCode == "obligation" {
-			obligations[card.SetCode] = baseCode(card.Code)
+			obligations[card.SetCode] = code
 		}
 	}
 
 	heroes := make(map[string][]pack.Hero)
 	seen := make(map[string]bool)
 	for _, card := range sortedByCode(mc) {
-		if card.DuplicateOf != "" || card.TypeCode != "hero" {
+		code, isCard := canonical[card.Code]
+		if !isCard || card.TypeCode != "hero" {
 			continue
 		}
 		// Both faces of a hero such as Ant-Man (12001a, 12001b) are "hero"
 		// cards: emit the identity only once.
-		if seen[baseCode(card.Code)] {
+		if seen[code] {
 			continue
 		}
-		seen[baseCode(card.Code)] = true
+		seen[code] = true
 
 		hero := pack.Hero{
-			Identity:   baseCode(card.Code),
+			Identity:   code,
 			Set:        card.SetCode,
 			Obligation: obligations[card.SetCode],
 		}

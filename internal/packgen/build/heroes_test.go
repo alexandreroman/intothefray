@@ -84,7 +84,7 @@ func keys[V any](m map[string]V) func(func(string) bool) {
 
 func TestBuildHeroesEmitsOneHeroWhenBothFacesAreHeroCards(t *testing.T) {
 	cards := []marvelcdb.Card{
-		{Code: "12001a", TypeCode: "hero", PackCode: "ant", SetCode: "ant_man"},
+		{Code: "12001a", TypeCode: "hero", PackCode: "ant", SetCode: "ant_man", LinkedTo: "12001b"},
 		{Code: "12001b", TypeCode: "hero", PackCode: "ant", SetCode: "ant_man"},
 	}
 
@@ -93,5 +93,36 @@ func TestBuildHeroesEmitsOneHeroWhenBothFacesAreHeroCards(t *testing.T) {
 	want := []pack.Hero{{Identity: "12001", Set: "ant_man"}}
 	if !reflect.DeepEqual(heroes["ant"], want) {
 		t.Errorf("got heroes %+v, want %+v", heroes["ant"], want)
+	}
+}
+
+func TestBuildSetsListsLetteredDistinctCards(t *testing.T) {
+	cards := []marvelcdb.Card{
+		{Code: "01043a", PackCode: "core", SetCode: "ultron", SetName: "Ultron", SetType: "villain"},
+		{Code: "01043d", PackCode: "core", SetCode: "ultron", SetName: "Ultron", SetType: "villain"},
+		{Code: "01044", PackCode: "core", SetCode: "ultron", SetName: "Ultron", SetType: "villain"},
+	}
+
+	sets := BuildSets(cards, corePacks)
+
+	want := []string{"01043a", "01043d", "01044"}
+	if got := sets["core"][0].Cards; !slices.Equal(got, want) {
+		t.Errorf("got cards %v, want %v", got, want)
+	}
+}
+
+func TestBuildHeroesUsesCanonicalCodes(t *testing.T) {
+	cards := []marvelcdb.Card{
+		{Code: "03001a", TypeCode: "hero", PackCode: "gamma", SetCode: "hulk", LinkedTo: "03001b"},
+		{Code: "03001b", TypeCode: "alter_ego", PackCode: "gamma", SetCode: "hulk"},
+		{Code: "03020a", TypeCode: "obligation", PackCode: "gamma", SetCode: "hulk"},
+		{Code: "03020b", TypeCode: "obligation", PackCode: "gamma", SetCode: "hulk"},
+	}
+
+	heroes := BuildHeroes(cards)
+
+	want := []pack.Hero{{Identity: "03001", Set: "hulk", Obligation: "03020a"}}
+	if !reflect.DeepEqual(heroes["gamma"], want) {
+		t.Errorf("got heroes %+v, want %+v", heroes["gamma"], want)
 	}
 }
