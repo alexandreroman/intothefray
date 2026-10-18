@@ -2,9 +2,9 @@
   import NamePrompt from '../components/NamePrompt.svelte';
   import { getPref, setPref } from '../lib/prefs';
   import { GameSession } from '../lib/session.svelte';
+  import Table from '../table/Table.svelte';
   import Ended from './Ended.svelte';
   import Lobby from './Lobby.svelte';
-  import TablePlaceholder from './TablePlaceholder.svelte';
 
   // The parent keys this component on the game id: one instance per game.
   let { id }: { id: string } = $props();
@@ -54,7 +54,7 @@
     {#if session.view.phase === 'lobby'}
       <Lobby {session} view={session.view} />
     {:else if session.view.phase === 'playing'}
-      <TablePlaceholder view={session.view} />
+      <Table view={session.view} />
     {:else}
       <Ended />
     {/if}

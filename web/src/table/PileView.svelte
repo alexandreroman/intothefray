@@ -109,8 +109,13 @@
 </div>
 
 <style>
+  /*
+    Its own stacking context keeps the out-of-play tray (z-index -1) and the badge inside the pile.
+    At level 0, table cards (server z from 0, drawn after the piles) stay on top of it.
+  */
   .card {
     position: absolute;
+    z-index: 0;
     border-radius: 6px;
     user-select: none;
     -webkit-user-select: none;

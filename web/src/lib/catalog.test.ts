@@ -88,6 +88,24 @@ describe('catalog', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2); // index + one pack
   });
 
+  it('knows a card synchronously once every pack is loaded', async () => {
+    const { knownCard, loadAllCards } = await loadCatalog();
+    expect(knownCard('01001')).toBeNull();
+
+    await loadAllCards();
+    expect(knownCard('01001B')?.face).toBe(1);
+    expect(knownCard('99999')).toBeNull();
+  });
+
+  it('shares one load between loadAllCards and cardByCode, and retries after a failure', async () => {
+    const { cardByCode, loadAllCards } = await loadCatalog();
+    fetchMock.mockImplementationOnce(() => Promise.reject(new Error('offline')));
+    await expect(loadAllCards()).rejects.toThrow('offline');
+
+    await Promise.all([loadAllCards(), cardByCode('01043')]);
+    expect(fetchMock).toHaveBeenCalledTimes(3); // failed index, then index + one pack
+  });
+
   it('lists the images of a face in order', async () => {
     const { imageUrls } = await loadCatalog();
     expect(imageUrls(face)).toEqual(['a.png', 'b.png']);

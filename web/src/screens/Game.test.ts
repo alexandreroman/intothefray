@@ -4,14 +4,23 @@ import { GameSession } from '../lib/session.svelte';
 import type { View } from '../lib/types';
 
 vi.mock('../lib/session.svelte', () => ({ GameSession: vi.fn() }));
+// The table loads the card catalog: keep the tests off the network.
+vi.mock('../lib/catalog', () => ({
+  loadAllCards: vi.fn(() => Promise.resolve()),
+  knownCard: vi.fn(() => null),
+  cardByCode: vi.fn(() => Promise.resolve(null)),
+}));
 
 const sessionMock = vi.mocked(GameSession);
 
 const playingView = {
   id: 'x',
   phase: 'playing',
+  you: { role: 'spectator', color: -1, host: false },
+  players: [],
   spectators: 2,
-  table: { cards: [{}, {}, {}] },
+  table: { cards: [], piles: [], stages: [], firstPlayer: { area: 'villain', x: 0, y: 0 } },
+  log: [],
 } as unknown as View;
 
 function mockSession(fields: object): {
@@ -103,12 +112,12 @@ describe('Game', () => {
     expect(screen.getByRole('link', { name: 'Back to home' }).getAttribute('href')).toBe('#/');
   });
 
-  it('shows the table placeholder while playing', () => {
+  it('shows the table while playing', () => {
     localStorage.setItem('itf-name', 'Alex');
     mockSession({ view: playingView });
     render(Game, { id: 'x' });
 
-    expect(screen.getByText('3 cards on the table')).toBeTruthy();
+    expect(screen.getByRole('region', { name: /^Villain/ })).toBeTruthy();
     expect(screen.getByText('2 spectators')).toBeTruthy();
   });
 

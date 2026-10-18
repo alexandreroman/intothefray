@@ -60,19 +60,28 @@ async function loadAllPacks(): Promise<void> {
   files.forEach(register);
 }
 
-/** Resolves a canonical code or an alias, like pack.Catalog.Card. */
-export async function cardByCode(code: string): Promise<CardInfo | null> {
-  const key = code.toLowerCase();
-  const known = cards.get(key);
-  if (known) {
-    return known;
-  }
+/** Loads every pack once; later calls share the same load, and a failure lets the next call retry. */
+export function loadAllCards(): Promise<void> {
   packsPromise ??= loadAllPacks().catch((error: unknown) => {
     packsPromise = null; // let the next call retry
     throw error;
   });
-  await packsPromise;
-  return cards.get(key) ?? null;
+  return packsPromise;
+}
+
+/** Resolves a code like cardByCode, but only from the packs already loaded (see loadAllCards). */
+export function knownCard(code: string): CardInfo | null {
+  return cards.get(code.toLowerCase()) ?? null;
+}
+
+/** Resolves a canonical code or an alias, like pack.Catalog.Card. */
+export async function cardByCode(code: string): Promise<CardInfo | null> {
+  const known = knownCard(code);
+  if (known) {
+    return known;
+  }
+  await loadAllCards();
+  return knownCard(code);
 }
 
 export function imageUrls(face: PackFace): string[] {
