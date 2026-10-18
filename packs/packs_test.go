@@ -42,6 +42,28 @@ func TestEmbeddedCoreSet(t *testing.T) {
 		}
 	})
 
+	t.Run("curated face sizes", func(t *testing.T) {
+		tests := []struct {
+			code string
+			want pack.Size
+		}{
+			{"12001c", pack.SizeDoubleStd},
+			{"42001c", pack.SizeDoubleLand},
+		}
+		for _, tt := range tests {
+			card, face, err := catalog.Card(tt.code)
+			if err != nil {
+				t.Fatalf("Card(%s) error = %v", tt.code, err)
+			}
+			if face != 2 {
+				t.Errorf("Card(%s) face = %d, want 2", tt.code, face)
+			}
+			if got := card.Faces[2].Size; got != tt.want {
+				t.Errorf("Card(%s) size = %q, want %q", tt.code, got, tt.want)
+			}
+		}
+	})
+
 	t.Run("hero obligation", func(t *testing.T) {
 		hero, ok := catalog.HeroByIdentity("01001a")
 		if !ok {

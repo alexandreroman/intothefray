@@ -29,7 +29,7 @@
         {
           "name": "Archangel",
           "type": "hero",
-          "size": "std",
+          "size": "dland",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42001C.jpg",
             "https://marvelcdb.com/bundles/cards/42001c.png"
