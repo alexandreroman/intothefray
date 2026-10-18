@@ -18,7 +18,7 @@
         }
       ],
       "set": "she_hulk_leader",
-      "back": "player",
+      "back": "villain",
       "quantity": 1
     },
     {
@@ -36,7 +36,7 @@
         }
       ],
       "set": "she_hulk_leader",
-      "back": "player",
+      "back": "villain",
       "quantity": 1
     },
     {
@@ -54,7 +54,7 @@
         }
       ],
       "set": "she_hulk_leader",
-      "back": "player",
+      "back": "villain",
       "quantity": 1
     },
     {
@@ -72,7 +72,7 @@
         }
       ],
       "set": "she_hulk_leader",
-      "back": "player",
+      "back": "villain",
       "quantity": 1
     },
     {
@@ -157,7 +157,7 @@
         }
       ],
       "set": "she_hulk_leader",
-      "back": "player",
+      "back": "encounter",
       "quantity": 2
     },
     {
@@ -174,7 +174,7 @@
         }
       ],
       "set": "she_hulk_leader",
-      "back": "player",
+      "back": "encounter",
       "quantity": 2
     },
     {
@@ -191,7 +191,7 @@
         }
       ],
       "set": "she_hulk_leader",
-      "back": "player",
+      "back": "encounter",
       "quantity": 2
     },
     {
@@ -208,7 +208,7 @@
         }
       ],
       "set": "she_hulk_leader",
-      "back": "player",
+      "back": "encounter",
       "quantity": 2
     },
     {
@@ -225,7 +225,7 @@
         }
       ],
       "set": "she_hulk_leader",
-      "back": "player",
+      "back": "encounter",
       "quantity": 1
     },
     {
@@ -246,7 +246,7 @@
         }
       ],
       "set": "she_hulk_leader",
-      "back": "player",
+      "back": "encounter",
       "quantity": 1
     },
     {
@@ -669,7 +669,7 @@
         }
       ],
       "set": "vision_leader",
-      "back": "player",
+      "back": "villain",
       "quantity": 1
     },
     {
@@ -687,7 +687,7 @@
         }
       ],
       "set": "vision_leader",
-      "back": "player",
+      "back": "villain",
       "quantity": 1
     },
     {
@@ -705,7 +705,7 @@
         }
       ],
       "set": "vision_leader",
-      "back": "player",
+      "back": "villain",
       "quantity": 1
     },
     {
@@ -723,7 +723,7 @@
         }
       ],
       "set": "vision_leader",
-      "back": "player",
+      "back": "villain",
       "quantity": 1
     },
     {
@@ -815,7 +815,7 @@
         }
       ],
       "set": "vision_leader",
-      "back": "player",
+      "back": "encounter",
       "quantity": 1,
       "aliases": [
         "57046a",
@@ -836,7 +836,7 @@
         }
       ],
       "set": "vision_leader",
-      "back": "player",
+      "back": "encounter",
       "quantity": 1
     },
     {
@@ -853,7 +853,7 @@
         }
       ],
       "set": "vision_leader",
-      "back": "player",
+      "back": "encounter",
       "quantity": 1
     },
     {
@@ -870,7 +870,7 @@
         }
       ],
       "set": "vision_leader",
-      "back": "player",
+      "back": "encounter",
       "quantity": 1
     },
     {
@@ -887,7 +887,7 @@
         }
       ],
       "set": "vision_leader",
-      "back": "player",
+      "back": "encounter",
       "quantity": 1
     },
     {
@@ -904,7 +904,7 @@
         }
       ],
       "set": "vision_leader",
-      "back": "player",
+      "back": "encounter",
       "quantity": 2
     },
     {
@@ -921,7 +921,7 @@
         }
       ],
       "set": "vision_leader",
-      "back": "player",
+      "back": "encounter",
       "quantity": 1
     },
     {
@@ -938,7 +938,7 @@
         }
       ],
       "set": "vision_leader",
-      "back": "player",
+      "back": "encounter",
       "quantity": 1
     },
     {
@@ -959,7 +959,7 @@
         }
       ],
       "set": "vision_leader",
-      "back": "player",
+      "back": "encounter",
       "quantity": 1
     },
     {

@@ -3436,7 +3436,7 @@
         }
       ],
       "set": "executive_board_evidence",
-      "back": "player",
+      "back": "encounter",
       "quantity": 1
     },
     {
@@ -3453,7 +3453,7 @@
         }
       ],
       "set": "executive_board_evidence",
-      "back": "player",
+      "back": "encounter",
       "quantity": 1
     },
     {
@@ -3470,7 +3470,7 @@
         }
       ],
       "set": "executive_board_evidence",
-      "back": "player",
+      "back": "encounter",
       "quantity": 1
     },
     {
@@ -3487,7 +3487,7 @@
         }
       ],
       "set": "executive_board_evidence",
-      "back": "player",
+      "back": "encounter",
       "quantity": 1
     },
     {
@@ -3504,7 +3504,7 @@
         }
       ],
       "set": "executive_board_evidence",
-      "back": "player",
+      "back": "encounter",
       "quantity": 1
     },
     {
@@ -3521,7 +3521,7 @@
         }
       ],
       "set": "executive_board_evidence",
-      "back": "player",
+      "back": "encounter",
       "quantity": 1
     },
     {
@@ -3538,7 +3538,7 @@
         }
       ],
       "set": "executive_board_evidence",
-      "back": "player",
+      "back": "encounter",
       "quantity": 1
     },
     {
@@ -3555,7 +3555,7 @@
         }
       ],
       "set": "executive_board_evidence",
-      "back": "player",
+      "back": "encounter",
       "quantity": 1
     },
     {
@@ -3572,7 +3572,7 @@
         }
       ],
       "set": "executive_board_evidence",
-      "back": "player",
+      "back": "encounter",
       "quantity": 1
     }
   ],

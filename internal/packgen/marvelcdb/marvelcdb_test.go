@@ -27,6 +27,7 @@ func TestDecodeMarvelcdbCard(t *testing.T) {
 		Code:            "01097b",
 		Name:            "The Break-In!",
 		TypeCode:        "main_scheme",
+		FactionCode:     "encounter",
 		PackCode:        "core",
 		SetCode:         "rhino",
 		SetName:         "Rhino",

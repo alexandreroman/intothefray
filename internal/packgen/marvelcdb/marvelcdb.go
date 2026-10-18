@@ -16,6 +16,7 @@ type Card struct {
 	Name            string `json:"name"`
 	Subname         string `json:"subname"`
 	TypeCode        string `json:"type_code"`
+	FactionCode     string `json:"faction_code"`
 	PackCode        string `json:"pack_code"`
 	SetCode         string `json:"card_set_code"`
 	SetName         string `json:"card_set_name"`

@@ -273,9 +273,12 @@ func sizeOf(typeCode string) pack.Size {
 	}
 }
 
+// backOf picks the back from the card type, then from the set type, then from
+// the faction. The faction alone is not enough: campaign sets mix encounter
+// and player cards, but an encounter faction always has an encounter back.
 func backOf(entry marvelcdb.Card) pack.Back {
 	switch entry.TypeCode {
-	case "villain", "main_scheme":
+	case "villain", "main_scheme", "leader":
 		return pack.BackVillain
 	case "obligation":
 		return pack.BackEncounter
@@ -283,9 +286,11 @@ func backOf(entry marvelcdb.Card) pack.Back {
 	switch entry.SetType {
 	case "villain", "modular", "standard", "expert", "nemesis":
 		return pack.BackEncounter
-	default:
-		return pack.BackPlayer
 	}
+	if entry.FactionCode == "encounter" {
+		return pack.BackEncounter
+	}
+	return pack.BackPlayer
 }
 
 // aliasesOf lists the codes that resolve to the card: its face codes and its
