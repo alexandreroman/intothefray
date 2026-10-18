@@ -57,9 +57,11 @@ curl http://localhost:8080/healthz
 Run `make` to list every available target. The most common ones:
 
 ```bash
-make dev        # start Redis, then the server with hot reload
+make dev        # start Redis, then the server and the web app with hot reload
 make test       # run the test suite (race detector on)
-make check      # run the tests, then golangci-lint
+make check      # run the tests, the web checks, then golangci-lint
+make web-check  # type-check, lint and test the web app
+make web-build  # build the web app into web/dist
 make build      # build bin/intothefray
 make packs      # regenerate the card packs in packs/dist
 make infra-down # stop Redis
@@ -68,8 +70,8 @@ make app-logs   # follow the logs of the containerised stack
 make app-down   # stop and remove the containerised stack
 ```
 
-`make check` also runs the frontend checks: run `make web-install`
-once on a fresh clone first.
+`make dev` and `make check` need the frontend dependencies: run
+`make web-install` once on a fresh clone first.
 
 `make dev` and `make app-up` both bind port 8080: stop one before
 starting the other.
@@ -110,9 +112,8 @@ The backend must accept the Pages origin: add it to
 
 ## Architecture
 
-The target design: a static frontend served on its own (GitHub
-Pages), talking to stateless Go instances that share game state
-through Redis.
+A static frontend served on its own (GitHub Pages) talks to
+stateless Go instances that share game state through Redis.
 
 ```mermaid
 graph TD
@@ -135,6 +136,8 @@ graph TD
 | `internal/pack/`    | Card pack schema and catalog                   |
 | `internal/packgen/` | Generator internals (fetch, build, images...)  |
 | `packs/`            | Curated files, generated and committed `dist/` |
+| `web/`              | Svelte frontend (Vite, pnpm)                   |
+| `.github/`          | GitHub Actions (Pages deployment)              |
 
 ## License
 

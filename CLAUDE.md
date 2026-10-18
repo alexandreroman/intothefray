@@ -19,10 +19,13 @@ See [README.md](README.md) for full documentation.
 ## Build & run
 
 ```bash
-make dev    # Redis in a container, then the server under Air
-make test   # go test -race -shuffle=on ./...
-make check  # tests, then golangci-lint
-make build  # bin/intothefray
+make dev          # Redis in a container, then the server under Air and Vite
+make test         # go test -race -shuffle=on ./...
+make check        # tests, web-check, then golangci-lint
+make build        # bin/intothefray
+make web-install  # pnpm install --frozen-lockfile in web/
+make web-check    # svelte-check, eslint + prettier, vitest
+make web-build    # production build into web/dist/
 ```
 
 ## Modules
@@ -42,6 +45,9 @@ make build  # bin/intothefray
 - `packs/` — `curated/` hand-written scenarios and card overrides,
   `dist/` generated JSON (committed, never edited by hand), and the
   `embed` package that loads it
+- `web/` — Svelte 5 + Vite SPA (standalone pnpm project; screens, lib,
+  components)
+- `.github/workflows/` — `pages.yml` publishes `web/` to GitHub Pages
 - `Dockerfile` — container image of the server
 - `compose.yaml` — local stack: Redis (in memory) and the app service
 
