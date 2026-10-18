@@ -30,7 +30,10 @@
     name = chosen;
   }
 
-  const waiting = $derived(session?.status === 'connecting' || session?.status === 'reconnecting');
+  // Also covers the gap between the socket opening and the first view.
+  const waiting = $derived(
+    session?.status !== 'closed' && (session?.status !== 'open' || !session.view),
+  );
   const notFound = $derived(session?.status === 'closed' && session.lastError?.code === 'notFound');
 </script>
 

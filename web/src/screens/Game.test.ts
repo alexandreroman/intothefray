@@ -74,6 +74,19 @@ describe('Game', () => {
     expect(screen.getByText('Reconnecting…')).toBeTruthy();
   });
 
+  it('shows Connecting until the first view arrives, even on an open socket', () => {
+    localStorage.setItem('itf-name', 'Alex');
+    mockSession({ status: 'open', view: null });
+    render(Game, { id: 'x' });
+    expect(screen.getByText('Connecting…')).toBeTruthy();
+  });
+
+  it('keeps the name dialog mandatory', () => {
+    mockSession({});
+    render(Game, { id: 'x' });
+    expect(screen.queryByRole('button', { name: 'Cancel' })).toBeNull();
+  });
+
   it('shows no status line once open', () => {
     localStorage.setItem('itf-name', 'Alex');
     mockSession({ status: 'open', view: playingView });
