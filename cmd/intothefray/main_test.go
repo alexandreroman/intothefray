@@ -86,3 +86,18 @@ func portOf(t *testing.T, rawURL string) string {
 	}
 	return port
 }
+
+func TestHTTPServerTimeouts(t *testing.T) {
+	srv := newHTTPServer("127.0.0.1:0", http.NotFoundHandler())
+
+	if srv.ReadHeaderTimeout <= 0 {
+		t.Errorf("ReadHeaderTimeout = %v, want a bound on slow headers", srv.ReadHeaderTimeout)
+	}
+	if srv.IdleTimeout <= 0 {
+		t.Errorf("IdleTimeout = %v, want idle keep-alive connections closed", srv.IdleTimeout)
+	}
+	// Both would also cut the WebSocket connections, which outlive any request.
+	if srv.ReadTimeout != 0 || srv.WriteTimeout != 0 {
+		t.Errorf("ReadTimeout = %v, WriteTimeout = %v, want none", srv.ReadTimeout, srv.WriteTimeout)
+	}
+}

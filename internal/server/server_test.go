@@ -1,9 +1,11 @@
 package server
 
 import (
+	"bufio"
 	"encoding/json"
 	"io"
 	"log/slog"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"regexp"
@@ -321,6 +323,34 @@ func TestCORSAndWebSocketAgree(t *testing.T) {
 				_ = conn.CloseNow()
 			}
 		})
+	}
+}
+
+func TestCreateGameSlowBody(t *testing.T) {
+	ts, _ := newTestServerWith(t, func(s *Server) { s.createBodyTimeout = 50 * time.Millisecond })
+	conn, err := net.Dial("tcp", ts.Listener.Addr().String())
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = conn.Close() })
+
+	// The body announces more bytes than it sends, and never ends.
+	_, err = io.WriteString(conn, "POST /api/games HTTP/1.1\r\nHost: test\r\n"+
+		"Content-Type: application/json\r\nContent-Length: 64\r\n\r\n{\"name\":")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err := conn.SetReadDeadline(time.Now().Add(waitTimeout)); err != nil {
+		t.Fatal(err)
+	}
+	resp, err := http.ReadResponse(bufio.NewReader(conn), nil)
+	if err != nil {
+		t.Fatalf("no answer to a stalled body: %v", err)
+	}
+	_ = resp.Body.Close()
+	if resp.StatusCode != http.StatusBadRequest {
+		t.Errorf("status = %d, want %d", resp.StatusCode, http.StatusBadRequest)
 	}
 }
 

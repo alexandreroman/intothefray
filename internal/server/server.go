@@ -33,6 +33,9 @@ const (
 	tokenBytes        = 32
 	// maxCreateBodyBytes bounds the create-game request, which only holds a name.
 	maxCreateBodyBytes = 1 << 10
+	// createBodyTimeout bounds how long a client may take to send the
+	// create-game request body.
+	createBodyTimeout = 10 * time.Second
 )
 
 // Deps are the collaborators of a Server.
@@ -58,11 +61,20 @@ type Server struct {
 	// touchInterval is how often Run resets the expiry of the games with
 	// local viewers; tests shorten it.
 	touchInterval time.Duration
+	// createBodyTimeout is the read deadline of a create-game request body;
+	// tests shorten it.
+	createBodyTimeout time.Duration
 }
 
 // New builds a Server from its dependencies.
 func New(d Deps) *Server {
-	s := &Server{deps: d, hub: newHub(), newID: newGameID, touchInterval: touchInterval}
+	s := &Server{
+		deps:              d,
+		hub:               newHub(),
+		newID:             newGameID,
+		touchInterval:     touchInterval,
+		createBodyTimeout: createBodyTimeout,
+	}
 	for _, origin := range d.Config.AllowedOrigins {
 		s.originPatterns = append(s.originPatterns, patternEscaper.Replace(origin))
 	}
@@ -120,9 +132,8 @@ func (s *Server) withCORS(next http.Handler) http.Handler {
 }
 
 func (s *Server) handleCreateGame(w http.ResponseWriter, r *http.Request) {
-	r.Body = http.MaxBytesReader(w, r.Body, maxCreateBodyBytes)
-	var req createGameRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.Name == "" {
+	req, err := s.readCreateRequest(w, r)
+	if err != nil || req.Name == "" {
 		writeError(w, http.StatusBadRequest, "a name is required")
 		return
 	}
@@ -146,6 +157,23 @@ func (s *Server) handleCreateGame(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusCreated, createGameResponse{ID: id, Token: token})
+}
+
+// readCreateRequest decodes the create-game request body, bounded in size
+// and in time. The read deadline is set here rather than as
+// http.Server.ReadTimeout, which would also cut the WebSocket connections.
+// It must stay in force until the reply is written, as net/http then drains
+// the unread body; net/http resets it before the next request.
+func (s *Server) readCreateRequest(w http.ResponseWriter, r *http.Request) (createGameRequest, error) {
+	deadline := time.Now().Add(s.createBodyTimeout)
+	if err := http.NewResponseController(w).SetReadDeadline(deadline); err != nil {
+		// The body stays bounded in size: the request may go on.
+		s.deps.Logger.Warn("set create-game read deadline", "error", err)
+	}
+
+	var req createGameRequest
+	err := json.NewDecoder(http.MaxBytesReader(w, r.Body, maxCreateBodyBytes)).Decode(&req)
+	return req, err
 }
 
 // createGame stores a new game under a fresh id and returns that id. A taken

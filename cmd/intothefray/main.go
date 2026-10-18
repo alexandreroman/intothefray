@@ -25,6 +25,7 @@ import (
 
 const (
 	readHeaderTimeout  = 10 * time.Second
+	idleTimeout        = 2 * time.Minute
 	shutdownTimeout    = 10 * time.Second
 	redisPingTimeout   = 5 * time.Second
 	healthcheckTimeout = 3 * time.Second
@@ -79,12 +80,7 @@ func run() error {
 	})
 
 	addr := net.JoinHostPort("0.0.0.0", cfg.Port)
-	httpServer := &http.Server{
-		Addr:    addr,
-		Handler: app.Handler(),
-		// Bounds how long a client may take to send headers (Slowloris protection).
-		ReadHeaderTimeout: readHeaderTimeout,
-	}
+	httpServer := newHTTPServer(addr, app.Handler())
 
 	group, groupCtx := errgroup.WithContext(ctx)
 	group.Go(func() error {
@@ -117,6 +113,20 @@ func run() error {
 	}
 	slog.Info("server stopped")
 	return nil
+}
+
+// newHTTPServer configures the HTTP server. It sets no ReadTimeout nor
+// WriteTimeout: they would also cut the WebSocket connections, which outlive
+// any request. The create-game handler bounds its body read itself.
+func newHTTPServer(addr string, handler http.Handler) *http.Server {
+	return &http.Server{
+		Addr:    addr,
+		Handler: handler,
+		// Bounds how long a client may take to send headers (Slowloris protection).
+		ReadHeaderTimeout: readHeaderTimeout,
+		// Closes the keep-alive connections nobody uses any more.
+		IdleTimeout: idleTimeout,
+	}
 }
 
 // connectRedis opens the Redis client and fails fast when the server is
