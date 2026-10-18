@@ -1,0 +1,43 @@
+{
+  "code": "core",
+  "name": "Core Set",
+  "position": 1,
+  "cards": [
+    {
+      "code": "01001",
+      "faces": [
+        {"name": "Spider-Man", "type": "hero", "size": "std", "images": ["01001a.jpg"], "handSize": 5},
+        {"name": "Peter Parker", "type": "alter_ego", "size": "std", "images": ["01001b.jpg"], "handSize": 6}
+      ],
+      "set": "spider_man",
+      "back": "player",
+      "quantity": 1,
+      "aliases": ["01001a", "01001b"]
+    },
+    {
+      "code": "27049",
+      "faces": [
+        {"name": "Backflip", "type": "event", "size": "std", "images": ["27049.jpg"]}
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": ["52022"]
+    },
+    {
+      "code": "01097",
+      "faces": [
+        {"name": "Rhino", "type": "main_scheme", "stage": "1A", "size": "land", "images": ["01097a.jpg"]},
+        {"name": "Rhino", "type": "main_scheme", "stage": "1B", "size": "land", "images": ["01097b.jpg"]}
+      ],
+      "back": "encounter",
+      "quantity": 1,
+      "aliases": ["01097a", "01097b"]
+    }
+  ],
+  "sets": [
+    {"code": "rhino", "name": "Rhino", "kind": "villain", "cards": ["01097"]}
+  ],
+  "heroes": [
+    {"identity": "01001", "set": "spider_man", "obligation": "01165", "nemesis": "spider_man_nemesis"}
+  ]
+}
