@@ -131,9 +131,11 @@ func (c *Catalog) addAlias(alias string, target aliasTarget) error {
 
 // aliasFace returns the face named by an alias made of five digits and a
 // letter (a is face 0, b is face 1...), whatever the digits: a reprint keeps
-// the face letters of the original card. Any other alias names face 0.
+// the face letters of the original card. Any other alias names face 0, and so
+// does any alias of a single-face card: its letter then only tells the
+// reprint apart from the other cards sharing its number.
 func aliasFace(alias string, faceCount int) (int, error) {
-	if !isFaceCode(alias) {
+	if faceCount == 1 || !isFaceCode(alias) {
 		return 0, nil
 	}
 	face := int(alias[len(alias)-1] - 'a')

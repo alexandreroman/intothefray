@@ -254,12 +254,15 @@ func TestReprintChainAttachesToRoot(t *testing.T) {
 }
 
 func TestUnattachableReprintsAreReported(t *testing.T) {
-	entries := marvelcdbCards(t, "27049")
+	entries := append(marvelcdbCards(t, "27049"),
+		marvelcdb.Card{Code: "40001a", Name: "Two faces", PackCode: "p", ImageSrc: "/a.png", LinkedTo: "40001b"},
+		marvelcdb.Card{Code: "40001b", Name: "Two faces", PackCode: "p", ImageSrc: "/b.png"},
+	)
 	reprints := []marvelcdb.Card{
 		{Code: "50001", Name: "Lost", PackCode: "p", DuplicateOf: "99999"},
 		{Code: "50002", Name: "Loop A", PackCode: "p", DuplicateOf: "50003"},
 		{Code: "50003", Name: "Loop B", PackCode: "p", DuplicateOf: "50002"},
-		{Code: "50004b", Name: "Extra face", PackCode: "p", DuplicateOf: "27049"},
+		{Code: "50004c", Name: "Extra face", PackCode: "p", DuplicateOf: "40001a"},
 	}
 
 	cards, unsupported := BuildCards(append(entries, reprints...), nil, nil)
@@ -268,7 +271,7 @@ func TestUnattachableReprintsAreReported(t *testing.T) {
 		{Code: "50001", Name: "Lost", Pack: "p", Reason: "original not found"},
 		{Code: "50002", Name: "Loop A", Pack: "p", Reason: "reprint cycle"},
 		{Code: "50003", Name: "Loop B", Pack: "p", Reason: "reprint cycle"},
-		{Code: "50004b", Name: "Extra face", Pack: "p", Reason: "reprint face missing from original"},
+		{Code: "50004c", Name: "Extra face", Pack: "p", Reason: "reprint face missing from original"},
 	}
 	if !reflect.DeepEqual(unsupported, want) {
 		t.Errorf("unsupported = %+v, want %+v", unsupported, want)
@@ -327,11 +330,29 @@ func TestReprintOfDistinctLetteredCard(t *testing.T) {
 
 	cards, unsupported := BuildCards(append(entries, reprints...), nil, nil)
 
-	if aliases := findCard(t, cards, "core", "01043b").Aliases; !reflect.DeepEqual(aliases, []string{"99001"}) {
-		t.Errorf("aliases = %v, want [99001]", aliases)
+	// A reprint letter on a single-face card names its only face.
+	want := []string{"99001", "99002b"}
+	if aliases := findCard(t, cards, "core", "01043b").Aliases; !reflect.DeepEqual(aliases, want) {
+		t.Errorf("aliases = %v, want %v", aliases, want)
 	}
+	if len(unsupported) != 0 {
+		t.Errorf("unsupported = %+v, want none", unsupported)
+	}
+}
+
+func TestReprintsOfUnsupportedRootAreReported(t *testing.T) {
+	cards := []marvelcdb.Card{
+		{Code: "60001", Name: "No art", PackCode: "p"},
+		{Code: "70001", Name: "No art", PackCode: "q", DuplicateOf: "60001"},
+		{Code: "80001", Name: "No art", PackCode: "r", DuplicateOf: "70001"},
+	}
+
+	_, unsupported := BuildCards(cards, nil, nil)
+
 	want := []report.Unsupported{
-		{Code: "99002b", Name: "W", Pack: "other", Reason: "reprint face missing from original"},
+		{Code: "60001", Name: "No art", Pack: "p", Reason: "no image"},
+		{Code: "70001", Name: "No art", Pack: "q", Reason: "original has no image"},
+		{Code: "80001", Name: "No art", Pack: "r", Reason: "original has no image"},
 	}
 	if !reflect.DeepEqual(unsupported, want) {
 		t.Errorf("unsupported = %+v, want %+v", unsupported, want)

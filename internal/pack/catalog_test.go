@@ -102,7 +102,7 @@ func TestLoadErrors(t *testing.T) {
 		},
 		{
 			"alias face out of range",
-			`{"code":"a","cards":[{"code":"00001","faces":[{}],"aliases":["00001b"]}]}`,
+			`{"code":"a","cards":[{"code":"00001","faces":[{},{}],"aliases":["00001c"]}]}`,
 			`{"code":"b"}`,
 		},
 		{
@@ -152,5 +152,27 @@ func TestCatalogLetteredCanonicalCode(t *testing.T) {
 	}
 	if card.Code != "01043d" || face != 0 {
 		t.Errorf("Card() = (%s, %d), want (01043d, 0)", card.Code, face)
+	}
+}
+
+func TestCatalogLetterAliasOfSingleFaceCardNamesFaceZero(t *testing.T) {
+	fsys := fstest.MapFS{
+		"en/index.json": {Data: []byte(`{"version":1,"lang":"en","packs":[{"code":"a","file":"a.json"}]}`)},
+		"en/a.json": {Data: []byte(
+			`{"code":"a","cards":[{"code":"01043b","faces":[{}],"aliases":["99002b","99002c"]}]}`)},
+	}
+
+	catalog, err := Load(fsys, "en")
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+	for _, code := range []string{"99002b", "99002c"} {
+		card, face, err := catalog.Card(code)
+		if err != nil {
+			t.Fatalf("Card(%s) error = %v", code, err)
+		}
+		if card.Code != "01043b" || face != 0 {
+			t.Errorf("Card(%s) = (%s, %d), want (01043b, 0)", code, card.Code, face)
+		}
 	}
 }

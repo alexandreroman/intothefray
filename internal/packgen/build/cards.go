@@ -51,6 +51,9 @@ func BuildCards(
 				Pack:   first.PackCode,
 				Reason: "no image",
 			})
+			for _, reprint := range reprintsByCard[code] {
+				unsupported = append(unsupported, reportReprint(reprint, "original has no image"))
+			}
 			continue
 		}
 		cards[first.PackCode] = append(cards[first.PackCode], pack.Card{
@@ -148,27 +151,27 @@ func hasLinkedChain(group []marvelcdb.Card) bool {
 	return false
 }
 
-// resolveReprints attaches each reprint code to the card at the end of its
+// resolveReprints attaches each reprint to the card at the end of its
 // duplicate_of_code chain. Reprints that cannot be attached are reported.
 func resolveReprints(
 	reprints []marvelcdb.Card,
 	entries map[string][]marvelcdb.Card,
-) (aliases map[string][]string, unsupported []report.Unsupported) {
+) (attached map[string][]marvelcdb.Card, unsupported []report.Unsupported) {
 	originalOf := make(map[string]string, len(reprints))
 	for _, reprint := range reprints {
 		originalOf[reprint.Code] = reprint.DuplicateOf
 	}
 
-	aliases = make(map[string][]string)
+	attached = make(map[string][]marvelcdb.Card)
 	for _, reprint := range reprints {
 		root, reason := rootOf(reprint, originalOf, entries)
 		if reason != "" {
 			unsupported = append(unsupported, reportReprint(reprint, reason))
 			continue
 		}
-		aliases[root] = append(aliases[root], reprint.Code)
+		attached[root] = append(attached[root], reprint)
 	}
-	return aliases, unsupported
+	return attached, unsupported
 }
 
 // rootOf follows the reprint chain and returns the code of the original card,
@@ -199,9 +202,9 @@ func rootOf(
 		return "", "original not found"
 	}
 	// The catalog maps an alias with a face letter to the face of that letter,
-	// so a letter beyond the faces of the card (always the case for the b, c...
-	// reprints of a single-face distinct card) cannot be loaded.
-	if len(reprint.Code) > baseCodeLength && int(reprint.Code[baseCodeLength]-'a') >= len(faces) {
+	// so a letter beyond the faces of a multi-face card cannot be loaded. The
+	// catalog maps any letter of a single-face card to its only face.
+	if len(faces) > 1 && len(reprint.Code) > baseCodeLength && int(reprint.Code[baseCodeLength]-'a') >= len(faces) {
 		return "", "reprint face missing from original"
 	}
 	return root, ""
@@ -295,12 +298,14 @@ func backOf(entry marvelcdb.Card) pack.Back {
 
 // aliasesOf lists the codes that resolve to the card: its face codes and its
 // reprint codes. The canonical code is excluded, the catalog rejects it.
-func aliasesOf(code string, entries []marvelcdb.Card, reprints []string) []string {
+func aliasesOf(code string, entries []marvelcdb.Card, reprints []marvelcdb.Card) []string {
 	var aliases []string
 	for _, entry := range entries {
 		aliases = append(aliases, entry.Code)
 	}
-	aliases = append(aliases, reprints...)
+	for _, reprint := range reprints {
+		aliases = append(aliases, reprint.Code)
+	}
 
 	slices.Sort(aliases)
 	aliases = slices.Compact(aliases)
