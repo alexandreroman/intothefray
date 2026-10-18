@@ -7,8 +7,6 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 # One deployment at a time; a newer push supersedes a queued one.
 concurrency:
@@ -21,6 +19,8 @@ jobs:
     steps:
       # The full checkout is needed: the web build copies ../packs/dist.
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       # Reads the pnpm version from "packageManager" in web/package.json.
       - uses: pnpm/action-setup@v6
@@ -37,9 +37,19 @@ jobs:
         working-directory: web
         run: pnpm install --frozen-lockfile
 
+      - name: Verify
+        working-directory: web
+        run: pnpm check && pnpm lint && pnpm test
+
+      # An unset variable would silently ship a frontend aimed at localhost.
       - name: Build
         working-directory: web
-        run: pnpm build
+        run: |
+          if [ -z "$VITE_API_URL" ]; then
+            echo "::error::The API_URL repository variable is not set"
+            exit 1
+          fi
+          pnpm build
         env:
           VITE_API_URL: ${{ vars.API_URL }}
 
@@ -50,6 +60,9 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
