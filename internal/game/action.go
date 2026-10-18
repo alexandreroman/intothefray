@@ -181,6 +181,15 @@ func checkCards(t *Table, seat int, ids ...string) error {
 	return nil
 }
 
+// usableCard returns the card with the given id when seat may touch it.
+func usableCard(t *Table, seat int, id string) (*Card, error) {
+	c, err := t.card(id)
+	if err != nil {
+		return nil, err
+	}
+	return c, checkCard(t, seat, c)
+}
+
 func checkCard(t *Table, seat int, c *Card) error {
 	switch c.Zone {
 	case ZoneHand:
@@ -196,10 +205,10 @@ func checkCard(t *Table, seat int, c *Card) error {
 }
 
 func resolveToHand(t *Table, seat int, a Action) (Action, error) {
-	if err := checkCards(t, seat, a.Card); err != nil {
+	c, err := usableCard(t, seat, a.Card)
+	if err != nil {
 		return a, err
 	}
-	c := t.Cards[a.Card]
 	if c.Owner == NoOwner {
 		return a, forbidden("encounter card %q cannot go to a hand", c.ID)
 	}
@@ -210,7 +219,7 @@ func resolveToHand(t *Table, seat int, a Action) (Action, error) {
 }
 
 func resolveToPile(t *Table, seat int, a Action) (Action, error) {
-	if err := checkCards(t, seat, a.Card); err != nil {
+	if _, err := usableCard(t, seat, a.Card); err != nil {
 		return a, err
 	}
 	target, err := t.pile(a.Target)
@@ -221,10 +230,10 @@ func resolveToPile(t *Table, seat int, a Action) (Action, error) {
 }
 
 func resolveToDeck(t *Table, seat int, a Action, rng *rand.Rand) (Action, error) {
-	if err := checkCards(t, seat, a.Card); err != nil {
+	c, err := usableCard(t, seat, a.Card)
+	if err != nil {
 		return a, err
 	}
-	c := t.Cards[a.Card]
 	deck, err := t.pile(c.Home)
 	if err != nil {
 		return a, err
@@ -232,8 +241,12 @@ func resolveToDeck(t *Table, seat int, a Action, rng *rand.Rand) (Action, error)
 	if err := checkPile(deck, seat, false); err != nil {
 		return a, err
 	}
-	if a.Where == whereShuffle {
+	switch a.Where {
+	case whereTop, whereBottom:
+	case whereShuffle:
 		a.Cards = shuffled(append(without(deck.Cards, c.ID), c.ID), rng)
+	default:
+		return a, invalid("unknown position %q", a.Where)
 	}
 	return a, nil
 }

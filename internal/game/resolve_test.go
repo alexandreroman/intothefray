@@ -131,6 +131,10 @@ func TestResolveRejectsInvalidInput(t *testing.T) {
 	}{
 		{"unknown kind", Action{Kind: "teleport"}},
 		{"unknown card", Action{Kind: ActExhaust, Card: "nope"}},
+		{"toHand without card", Action{Kind: ActToHand}},
+		{"toDeck without card", Action{Kind: ActToDeck, Where: "top"}},
+		{"toPile without card", Action{Kind: ActToPile, Target: PileVictory}},
+		{"toDeck unknown position", Action{Kind: ActToDeck, Card: f.ownTable, Where: "middle"}},
 		{"unknown pile", Action{Kind: ActShuffle, Pile: "nope"}},
 		{"negative x", Action{Kind: ActMove, Card: f.ownTable, Area: "p0", X: -1}},
 		{"x too large", Action{Kind: ActMove, Card: f.ownTable, Area: "p0", X: 20001}},
