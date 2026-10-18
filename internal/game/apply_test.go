@@ -494,12 +494,29 @@ func TestDrawMovesTopCards(t *testing.T) {
 	}
 }
 
+// TestDrawTakesRecordedCardsAnywhere draws cards that are no longer on top of
+// the deck, as a rebuild after an undo may: they leave from where they are and
+// reach the hand in the recorded order.
+func TestDrawTakesRecordedCardsAnywhere(t *testing.T) {
+	table := newTestTable()
+
+	mustApply(t, table, Action{Kind: ActDraw, Area: "p0", Cards: []string{"c4", "c6"}})
+
+	if got := table.Piles["deck:p0"].Cards; !slices.Equal(got, []string{"c5"}) {
+		t.Errorf("deck = %v, want [c5]", got)
+	}
+	if got := table.Hands["p0"]; !slices.Equal(got, []string{"c3", "c4", "c6"}) {
+		t.Errorf("hand = %v, want [c3 c4 c6]", got)
+	}
+	checkIntegrity(t, table)
+}
+
 func TestDrawRejectsWrongCards(t *testing.T) {
 	for name, cards := range map[string][]string{
-		"not the top": {"c5"},
-		"wrong order": {"c5", "c6"},
-		"too many":    {"c6", "c5", "c4", "c3"},
-		"none":        nil,
+		"not in the deck": {"c8"},
+		"twice":           {"c6", "c6"},
+		"too many":        {"c6", "c5", "c4", "c3"},
+		"none":            nil,
 	} {
 		t.Run(name, func(t *testing.T) {
 			table := newTestTable()
@@ -525,6 +542,26 @@ func TestRevealPutsTopCardOnPilePosition(t *testing.T) {
 	}
 	if len(table.Piles[PileEncounter].Cards) != 0 {
 		t.Errorf("enc = %v, want empty", table.Piles[PileEncounter].Cards)
+	}
+}
+
+func TestRevealAndDealTakeRecordedCardAnywhere(t *testing.T) {
+	for _, kind := range []Kind{ActReveal, ActDeal} {
+		t.Run(string(kind), func(t *testing.T) {
+			table := newTestTable()
+			table.Piles[PileEncounter].Cards = []string{"c8", "c9"}
+			table.Cards["c9"] = &Card{ID: "c9", Owner: NoOwner, Home: PileEncounter, Zone: ZonePile, Pile: PileEncounter}
+
+			mustApply(t, table, Action{Kind: kind, Area: "p1", Cards: []string{"c8"}})
+
+			if c := table.Cards["c8"]; c.Zone != ZoneTable {
+				t.Errorf("c8 = %+v, want it on the table", c)
+			}
+			if got := table.Piles[PileEncounter].Cards; !slices.Equal(got, []string{"c9"}) {
+				t.Errorf("enc = %v, want [c9]", got)
+			}
+			checkIntegrity(t, table)
+		})
 	}
 }
 
@@ -608,11 +645,26 @@ func TestDiscardTop(t *testing.T) {
 	}
 }
 
+func TestDiscardTopTakesRecordedCardsAnywhere(t *testing.T) {
+	table := newTestTable()
+
+	mustApply(t, table, Action{Kind: ActDiscardTop, Pile: "deck:p0", N: 2, Cards: []string{"c4", "c6"}})
+
+	if got := table.Piles["deck:p0"].Cards; !slices.Equal(got, []string{"c5"}) {
+		t.Errorf("deck = %v, want [c5]", got)
+	}
+	if got := table.Piles["disc:p0"].Cards; !slices.Equal(got, []string{"c4", "c6"}) {
+		t.Errorf("discard = %v, want [c4 c6]", got)
+	}
+	checkIntegrity(t, table)
+}
+
 func TestDiscardTopRejectsBadInput(t *testing.T) {
 	for name, a := range map[string]Action{
 		"zero":        {Kind: ActDiscardTop, Pile: "deck:p0", N: 0},
 		"too many":    {Kind: ActDiscardTop, Pile: "deck:p0", N: 4, Cards: []string{"c6", "c5", "c4", "c8"}},
-		"not the top": {Kind: ActDiscardTop, Pile: "deck:p0", N: 1, Cards: []string{"c4"}},
+		"not in pile": {Kind: ActDiscardTop, Pile: "deck:p0", N: 1, Cards: []string{"c8"}},
+		"twice":       {Kind: ActDiscardTop, Pile: "deck:p0", N: 2, Cards: []string{"c6", "c6"}},
 		"not a deck":  {Kind: ActDiscardTop, Pile: "disc:p0", N: 1, Cards: []string{"c6"}},
 	} {
 		t.Run(name, func(t *testing.T) {

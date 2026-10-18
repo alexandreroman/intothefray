@@ -126,10 +126,10 @@ func (g *Game) ViewFor(token string) View {
 		v.Table = g.Table.viewFor(seat)
 	}
 	v.Log = g.logViews(v.Table)
-	if player != nil {
-		if stack := g.Undo[token]; len(stack) > 0 {
+	if player != nil && g.History != nil {
+		if burst := g.History.lastUndoable(seat); burst != nil {
 			v.CanUndo = true
-			v.UndoText = g.Log[stack[len(stack)-1].LogIndex].Text
+			v.UndoText = g.Log[g.History.Events[burst[0]].Log].Text
 		}
 	}
 	return v

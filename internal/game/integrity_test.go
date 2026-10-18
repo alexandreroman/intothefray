@@ -5,6 +5,7 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"reflect"
 	"slices"
 	"strconv"
 	"testing"
@@ -91,6 +92,34 @@ func checkIntegrity(t *testing.T, table *Table) {
 	}
 }
 
+// checkHistory verifies the history of g against its events, applied one by
+// one to the initial table: the live table (open views aside) and every
+// snapshot must equal what their events give.
+func checkHistory(t *testing.T, g *Game) {
+	t.Helper()
+	h := g.History
+	snapshots := map[int]*Table{}
+	for _, s := range h.Snapshots {
+		snapshots[s.Event] = s.Table
+	}
+
+	table := h.Initial.Clone()
+	for i, e := range h.Events {
+		if e.live() && !viewOnlyKinds[e.Action.Kind] {
+			if err := apply(table, e.Action); err != nil {
+				t.Errorf("event %d (%s) does not apply to its predecessors: %v", i, e.Action.Kind, err)
+				return
+			}
+		}
+		if s, ok := snapshots[i+1]; ok && !reflect.DeepEqual(s, table) {
+			t.Errorf("snapshot after %d events differs from its events", i+1)
+		}
+	}
+	if !reflect.DeepEqual(withoutViews(g.Table), table) {
+		t.Error("the live table differs from its events")
+	}
+}
+
 // stageKeyOf returns the key of the stage listing card id, or "".
 func stageKeyOf(table *Table, id string) string {
 	for _, stage := range table.Stages {
@@ -129,16 +158,16 @@ func TestIntegrityAfterActions(t *testing.T) {
 	f.mustDo(t, "h", Action{Kind: ActCloseView, Where: whereShuffle}, at(14))
 	checkIntegrity(t, f.g.Table)
 
-	checkSnapshots(t, f.g)
+	checkHistory(t, f.g)
 
 	for range 3 {
 		f.mustDo(t, "h", Action{Kind: ActUndo}, at(20))
 		checkIntegrity(t, f.g.Table)
-		checkSnapshots(t, f.g)
+		checkHistory(t, f.g)
 	}
 	f.mustDo(t, "b", Action{Kind: ActUndo}, at(21))
 	checkIntegrity(t, f.g.Table)
-	checkSnapshots(t, f.g)
+	checkHistory(t, f.g)
 }
 
 func TestGameJSONRoundTrip(t *testing.T) {

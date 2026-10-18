@@ -340,6 +340,23 @@ func resolveHandOrder(seat int, a Action) (Action, error) {
 	return a, nil
 }
 
+// resolveShuffleKind resolves a shuffle-producing action (see producesShuffle)
+// on t. A rebuild uses it when the recorded outcome no longer fits.
+func resolveShuffleKind(t *Table, seat int, a Action, rng *rand.Rand) (Action, error) {
+	switch a.Kind {
+	case ActShuffle:
+		return resolveShuffle(t, seat, a, rng)
+	case ActShuffleBack:
+		return resolveShuffleBack(t, seat, a, rng)
+	case ActShuffleIn:
+		return resolveShuffleIn(t, seat, a, rng)
+	case ActToDeck:
+		return resolveToDeck(t, seat, a, rng)
+	default:
+		return a, invalid("%q does not shuffle", a.Kind)
+	}
+}
+
 func resolveShuffle(t *Table, seat int, a Action, rng *rand.Rand) (Action, error) {
 	pile, err := ownPile(t, seat, a.Pile)
 	if err != nil {

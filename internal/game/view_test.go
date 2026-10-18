@@ -4,7 +4,6 @@ import (
 	"cmp"
 	"encoding/json"
 	"fmt"
-	"math/rand/v2"
 	"regexp"
 	"slices"
 	"strings"
@@ -68,7 +67,7 @@ func newViewFixture(t *testing.T) *viewFixture {
 			t.Fatal(err)
 		}
 	}
-	if err := g.Start(hostToken, cat, newTestRNG(), testNow); err != nil {
+	if err := g.Start(hostToken, cat, testSeed, testNow); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := g.Join(specToken, "Sam"); err != nil {
@@ -76,7 +75,7 @@ func newViewFixture(t *testing.T) *viewFixture {
 	}
 
 	f := &viewFixture{
-		doFixture: &doFixture{g: g, cat: cat, rng: rand.New(rand.NewPCG(7, 8))}, //nolint:gosec // deterministic, and unlike setup so that ids never repeat
+		doFixture: &doFixture{g: g, cat: cat},
 		hostCode:  extra[0],
 		bobCode:   extra[1],
 	}
@@ -86,6 +85,8 @@ func newViewFixture(t *testing.T) *viewFixture {
 	// few cards never takes it.
 	deck := g.Table.Piles["deck:p0"]
 	deck.Cards = append([]string{f.hostCard}, without(deck.Cards, f.hostCard)...)
+	// The history starts from the table as the fixture leaves it.
+	g.History.Initial = withoutViews(g.Table)
 	return f
 }
 

@@ -91,30 +91,15 @@ type LogEntry struct {
 	Cards  []string  `json:"cards,omitempty"`
 }
 
-// UndoEntry restores the table as it was before one action.
-type UndoEntry struct {
-	LogIndex int       `json:"logIndex"`
-	Before   *Table    `json:"before"`
-	Merge    string    `json:"merge"`
-	At       time.Time `json:"at"`
-	Shuffled []string  `json:"shuffled,omitempty"` // piles shuffled since Before, re-shuffled on undo
-	// Cards are the cards the undone action moved, with their attachments:
-	// undo puts them back where they were in Before (see movedCards and
-	// keepLiveArrangement).
-	Cards []string `json:"cards,omitempty"`
-	// Reordered are the piles reordered by reorderTop since Before.
-	Reordered []string `json:"reordered,omitempty"`
-}
-
 // Game is the whole state of one game.
 type Game struct {
-	ID         string                 `json:"id"`
-	Phase      Phase                  `json:"phase"`
-	CreatedAt  time.Time              `json:"createdAt"`
-	Players    []*Player              `json:"players"` // arrival order
-	Spectators []*Spectator           `json:"spectators"`
-	Config     LobbyConfig            `json:"config"`
-	Table      *Table                 `json:"table,omitempty"`
-	Log        []LogEntry             `json:"log"`
-	Undo       map[string][]UndoEntry `json:"undo,omitempty"` // by player token
+	ID         string       `json:"id"`
+	Phase      Phase        `json:"phase"`
+	CreatedAt  time.Time    `json:"createdAt"`
+	Players    []*Player    `json:"players"` // arrival order
+	Spectators []*Spectator `json:"spectators"`
+	Config     LobbyConfig  `json:"config"`
+	Table      *Table       `json:"table,omitempty"` // the live table
+	Log        []LogEntry   `json:"log"`
+	History    *History     `json:"history,omitempty"` // set at start; never shown to viewers
 }

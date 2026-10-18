@@ -24,7 +24,6 @@ func NewGame(id, hostToken, hostName string, now time.Time) *Game {
 		Phase:     PhaseLobby,
 		CreatedAt: now,
 		Players:   []*Player{{Token: hostToken, Name: cleanName(hostName), Color: 0, Host: true}},
-		Undo:      map[string][]UndoEntry{},
 	}
 }
 

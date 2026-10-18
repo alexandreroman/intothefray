@@ -2,7 +2,6 @@ package game
 
 import (
 	"fmt"
-	"maps"
 	"math/rand/v2"
 	"reflect"
 	"slices"
@@ -20,6 +19,16 @@ const (
 	ActUndo      Kind = "undo"
 )
 
+// viewOnlyKinds are recorded like every other action, so that a replay
+// reproduces the game, but a rebuild skips them: they leave the shared table
+// alone.
+var viewOnlyKinds = map[Kind]bool{
+	ActLook:      true,
+	ActSearch:    true,
+	ActCloseView: true,
+	ActUndo:      true,
+}
+
 // Modes of a PrivateView.
 const (
 	viewModeTop    = "top"
@@ -30,46 +39,47 @@ const (
 	// mergeWindow is how close two changes of one thing must be to share a
 	// history line.
 	mergeWindow = 15 * time.Second
-	// maxUndoDepth is the number of undo entries kept per player. Each entry
-	// holds a whole table, so this bounds the size of a stored game.
+	// maxUndoDepth is the number of bursts a player can undo in a row.
 	maxUndoDepth = 10
 )
 
 // Do performs one action for the player holding token: it changes the table,
-// writes the history line and keeps every player's undo stack up to date. An
-// error leaves the game unchanged.
-func (g *Game) Do(token string, a Action, cat *pack.Catalog, rng *rand.Rand, now time.Time) error {
+// writes the history line and records the event. An error leaves the game
+// unchanged.
+func (g *Game) Do(token string, a Action, cat *pack.Catalog, now time.Time) error {
 	player := g.player(token)
 	if player == nil {
 		return forbidden("only players can act")
 	}
-	if g.Phase != PhasePlaying || g.Table == nil {
+	if g.Phase != PhasePlaying || g.Table == nil || g.History == nil {
 		return fmt.Errorf("%w: the game is not being played", ErrPhase)
 	}
-	seat := slices.Index(g.Players, player)
-
-	var err error
-	switch a.Kind {
-	case ActUndo:
-		err = g.undo(player, rng, now)
-	case ActLook, ActSearch:
-		err = g.openView(player, seat, a, now)
-	case ActCloseView:
-		err = g.closeView(player, seat, a, cat, rng, now)
-	default:
-		err = g.perform(player, seat, a, cat, rng, now)
-	}
-	return err
+	return g.do(slices.Index(g.Players, player), a, cat, now)
 }
 
-// perform resolves and applies a table action, replays it onto the undo
-// snapshots and records it. Actions fall in three groups:
-//   - undoable: a history line and an undo entry;
-//   - shuffles: a history line only, since undoing one would bring back an
-//     order a player may have seen;
-//   - arranging the table (see arrangingKinds): no line at all, and no replay
-//     either, since undo keeps the live arrangement (see keepLiveArrangement).
-func (g *Game) perform(p *Player, seat int, a Action, cat *pack.Catalog, rng *rand.Rand, now time.Time) error {
+// do performs a for the player at seat. Its randomness is the stream of the
+// first event it records, so that a replay draws the same.
+func (g *Game) do(seat int, a Action, cat *pack.Catalog, now time.Time) error {
+	rng := g.History.rngFor(g.History.LastSeq + 1)
+	switch a.Kind {
+	case ActUndo:
+		return g.undo(seat, rng, now)
+	case ActLook, ActSearch:
+		return g.openView(seat, a, now)
+	case ActCloseView:
+		return g.closeView(seat, a, cat, rng, now)
+	default:
+		return g.perform(seat, a, cat, rng, now)
+	}
+}
+
+// perform resolves, applies and records a table action. Actions fall in three
+// groups:
+//   - undoable: a tracked event with a history line;
+//   - shuffles: a tracked event with a history line, never undoable, since
+//     undoing one would bring back an order a player may have seen;
+//   - arranging the table (see arrangingKinds): an untracked event, no line.
+func (g *Game) perform(seat int, a Action, cat *pack.Catalog, rng *rand.Rand, now time.Time) error {
 	resolved, err := resolve(g, seat, a, rng)
 	if err != nil {
 		return err
@@ -84,81 +94,18 @@ func (g *Game) perform(p *Player, seat int, a Action, cat *pack.Catalog, rng *ra
 	}
 
 	n := narrator{game: g, cat: cat, seat: seat, before: before, after: g.Table}
-	e, logged := n.describe(resolved)
+	line, logged := n.describe(resolved)
 	if !logged {
-		if resolved.Kind == ActReorderTop {
-			g.noteReordered(resolved.Pile)
-		}
+		g.recordArranging(seat, resolved, rng, now)
 		return nil
 	}
-	shuffled := shuffledPiles(before, resolved)
-	undoable := len(shuffled) == 0
-
-	// The actor's own snapshots also get what they cannot undo, so that undo
-	// takes back only their last undoable action and nothing done since.
-	skip := ""
-	if undoable {
-		skip = p.Token
+	if burst := g.mergeTarget(seat, resolved, now); burst != nil {
+		g.merge(seat, burst, resolved, line, rng, now)
+		return nil
 	}
-	g.replay(resolved, shuffled, skip)
-
-	if undoable {
-		g.record(p, resolved, e, before, now)
-	} else {
-		g.appendLog(p, e.text, e.cards, now)
-	}
+	g.appendLog(seat, line.text, line.cards, now)
+	g.History.record(Event{Seat: seat, Action: resolved, Tracked: true, Log: len(g.Log) - 1, At: now}, g.Table)
 	return nil
-}
-
-// noteReordered notes on every undo entry that pile was reordered, so that
-// undo keeps the new order if it can (see keepPileOrders).
-func (g *Game) noteReordered(pile string) {
-	for _, stack := range g.Undo {
-		for i := range stack {
-			entry := &stack[i]
-			if !slices.Contains(entry.Reordered, pile) {
-				entry.Reordered = append(entry.Reordered, pile)
-			}
-		}
-	}
-}
-
-// inPlaceKinds change cards without moving any: undoing them keeps the live
-// position of every card, their own included.
-var inPlaceKinds = map[Kind]bool{
-	ActExhaust: true,
-	ActFlip:    true,
-	ActToken:   true,
-	ActStatus:  true,
-}
-
-// movedCards returns the cards a moves, with everything tucked under them
-// before or after a, sorted: undoing a puts them back in place. before and
-// after are the tables around a. Kinds that move no card give none.
-func movedCards(before, after *Table, a Action) []string {
-	if inPlaceKinds[a.Kind] {
-		return nil
-	}
-	ids := slices.Concat([]string{a.Card, a.Target}, a.Cards)
-	if a.Kind == ActChooseStage {
-		if stage := before.stage(a.Stage); stage != nil {
-			ids = append(ids, stage.Cards...)
-		}
-	}
-
-	moved := map[string]bool{}
-	for _, id := range ids {
-		if _, ok := before.Cards[id]; !ok {
-			continue // empty, or a pile id
-		}
-		moved[id] = true
-		for _, table := range []*Table{before, after} {
-			for _, child := range table.descendants(id) {
-				moved[child.ID] = true
-			}
-		}
-	}
-	return slices.Sorted(maps.Keys(moved))
 }
 
 // changedNothing reports whether a left its card as it was: a counter already
@@ -173,105 +120,94 @@ func changedNothing(before, after *Table, a Action) bool {
 	}
 }
 
-// shuffledPiles returns the ids of the piles a gives a new random order. t is
-// the table a applies to.
-func shuffledPiles(t *Table, a Action) []string {
-	switch a.Kind {
-	case ActShuffle:
-		return []string{a.Pile}
-	case ActShuffleBack:
-		deck, _ := deckOfDiscard(a.Pile)
-		return []string{deck}
-	case ActShuffleIn:
-		return []string{PileEncounter}
-	case ActToDeck:
-		if a.Where == whereShuffle {
-			return []string{t.Cards[a.Card].Home}
-		}
-	}
-	return nil
-}
-
-// replay applies a to the undo snapshots of every player but skip, so that
-// undoing an older action keeps this one. A snapshot may no longer allow it
-// (the card has moved since, for instance): such errors are ignored, and that
-// snapshot simply misses the change. Shuffled piles are noted on every entry,
-// whether the replay worked or not, so that undo re-shuffles them.
-func (g *Game) replay(a Action, shuffled []string, skip string) {
-	for token, stack := range g.Undo {
-		if token == skip {
-			continue
-		}
-		for i := range stack {
-			entry := &stack[i]
-			_ = apply(entry.Before, a)
-			for _, id := range shuffled {
-				if !slices.Contains(entry.Shuffled, id) {
-					entry.Shuffled = append(entry.Shuffled, id)
-				}
-			}
-		}
-	}
-}
-
-// record writes the history line of an undoable action, or merges it into the
-// actor's previous line.
-func (g *Game) record(p *Player, a Action, e event, before *Table, now time.Time) {
-	cards := movedCards(before, g.Table, a)
-	if entry := g.mergeable(p.Token, e.merge, now); entry != nil {
-		entry.Cards = mergeIDs(entry.Cards, cards)
-		g.merge(p.Token, entry, a, e, now)
+// recordArranging records an arranging action, which a has already applied
+// to the live table. Dragging a card around makes many moves: a move that
+// follows the same player's move of the same card replaces it, which keeps
+// the history short.
+func (g *Game) recordArranging(seat int, a Action, rng *rand.Rand, now time.Time) {
+	h := g.History
+	e := Event{Seat: seat, Action: a, Log: -1, At: now}
+	last := len(h.Events) - 1
+	if last < 0 || !replacesMove(h.Events[last], e) {
+		h.record(e, g.Table)
 		return
 	}
-	g.pushUndo(p.Token, UndoEntry{LogIndex: len(g.Log), Before: before, Merge: e.merge, At: now, Cards: cards})
-	g.appendLog(p, e.text, e.cards, now)
+
+	h.LastSeq++
+	e.Seq = h.LastSeq
+	events := slices.Clone(h.Events)
+	events[last] = e
+	// The live table holds both moves; rebuilding it with the last one only
+	// keeps it equal to its events, Z order included.
+	g.install(h.rebuild(events, last, rng))
 }
 
-// mergeIDs returns the sorted union of two id lists.
-func mergeIDs(a, b []string) []string {
-	merged := slices.Concat(a, b)
-	slices.Sort(merged)
-	return slices.Compact(merged)
+// replacesMove reports whether next replaces prev: both are moves of the same
+// card by the same player, and prev is still live.
+func replacesMove(prev, next Event) bool {
+	return prev.Action.Kind == ActMove && next.Action.Kind == ActMove &&
+		prev.Seat == next.Seat && prev.Action.Card == next.Action.Card &&
+		!prev.Tracked && prev.live()
 }
 
-func (g *Game) appendLog(p *Player, text string, cards []string, now time.Time) {
-	g.Log = append(g.Log, LogEntry{Who: p.Name, Color: p.Color, Text: text, At: now, Cards: cards})
-}
-
-// mergeable returns the actor's last undo entry when a change with the given
-// merge key extends it: same key, the entry still owns the last history
-// line, and the previous change is less than mergeWindow old.
-func (g *Game) mergeable(token, key string, now time.Time) *UndoEntry {
-	stack := g.Undo[token]
-	if key == "" || len(stack) == 0 || len(g.Log) == 0 {
+// mergeTarget returns the event indices of the burst that a extends, or nil.
+// The burst must be the player's last undoable one, with the same merge key,
+// still own the last history line, and have changed less than mergeWindow
+// ago.
+func (g *Game) mergeTarget(seat int, a Action, now time.Time) []int {
+	key := mergeKey(a)
+	burst := g.History.lastUndoable(seat)
+	if key == "" || burst == nil {
 		return nil
 	}
-	entry := &stack[len(stack)-1]
-	last := len(g.Log) - 1
-	if entry.Merge != key || entry.LogIndex != last || g.Log[last].Undone {
+	latest := g.History.Events[burst[len(burst)-1]]
+	lastLine := len(g.Log) - 1
+	if mergeKey(latest.Action) != key || latest.Log != lastLine || g.Log[lastLine].Undone {
 		return nil
 	}
-	if now.Sub(entry.At) >= mergeWindow {
+	if now.Sub(latest.At) >= mergeWindow {
 		return nil
 	}
-	return entry
+	return burst
 }
 
-// merge folds a change into the last history line. The undo entry keeps its
-// snapshot, so undo goes back to before the whole burst.
-func (g *Game) merge(token string, entry *UndoEntry, a Action, e event, now time.Time) {
-	last := len(g.Log) - 1
-	if a.Kind == ActFlip && sameSide(entry.Before, g.Table, a.Card) {
-		// Flipping back to the starting side cancels the burst entirely.
-		g.Log = g.Log[:last]
-		stack := g.Undo[token]
-		g.Undo[token] = stack[:len(stack)-1]
+// merge records a, already applied, as part of burst and folds its line into
+// the last history line. Flipping a card back to the side it showed before
+// the burst cancels the whole burst instead.
+func (g *Game) merge(seat int, burst []int, a Action, line logLine, rng *rand.Rand, now time.Time) {
+	h := g.History
+	id := h.Events[burst[0]].Burst
+	if id == 0 {
+		id = h.newBurst()
+		h.Events[burst[0]].Burst = id
+	}
+	lastLine := len(g.Log) - 1
+	h.record(Event{Seat: seat, Action: a, Tracked: true, Burst: id, Log: lastLine, At: now}, g.Table)
+
+	if a.Kind == ActFlip && g.cancelFlipBurst(append(burst, len(h.Events)-1), a.Card, rng) {
+		g.Log = g.Log[:lastLine]
 		return
 	}
-	g.Log[last].Text = e.mergedText()
-	g.Log[last].Cards = e.cards
-	g.Log[last].At = now
-	entry.At = now
+	g.Log[lastLine].Text = line.mergedText()
+	g.Log[lastLine].Cards = line.cards
+	g.Log[lastLine].At = now
+}
+
+// cancelFlipBurst undoes a burst of flips of card, the last one included,
+// when the card now shows the side it showed before the burst. It reports
+// whether it did. The burst then has no history line any more.
+func (g *Game) cancelFlipBurst(burst []int, card string, rng *rand.Rand) bool {
+	events := slices.Clone(g.History.Events)
+	for _, i := range burst {
+		events[i].Undone = true
+		events[i].Log = -1
+	}
+	table, events, snapshots := g.History.rebuild(events, burst[0], rng)
+	if !sameSide(table, g.Table, card) {
+		return false
+	}
+	g.install(table, events, snapshots)
+	return true
 }
 
 // sameSide reports whether card id shows the same side in both tables.
@@ -281,71 +217,46 @@ func sameSide(a, b *Table, id string) bool {
 	return okA && okB && ca.Face == cb.Face && ca.FaceDown == cb.FaceDown
 }
 
-// pushUndo adds an entry on top of a player's stack, dropping the oldest
-// entry beyond maxUndoDepth.
-func (g *Game) pushUndo(token string, entry UndoEntry) {
-	if g.Undo == nil {
-		g.Undo = map[string][]UndoEntry{}
-	}
-	stack := g.Undo[token]
-	stack = append(stack, entry)
-	if len(stack) > maxUndoDepth {
-		stack = slices.Delete(stack, 0, len(stack)-maxUndoDepth)
-	}
-	g.Undo[token] = stack
+// install makes a rebuilt table live, with the events and snapshots of the
+// same rebuild. Open views are each player's own business, not part of the
+// history: they are carried over, minus the cards that no longer exist.
+func (g *Game) install(table *Table, events []Event, snapshots []Snapshot) {
+	table.Views = keptViews(g.Table.Views, table)
+	g.Table = table
+	g.History.Events = events
+	g.History.Snapshots = snapshots
 }
 
-// undo restores the table as it was before the player's last undoable
-// action. The snapshot already holds every later tracked change but that
-// player's undoable ones (see replay); the live arrangement is carried over
-// (see keepLiveArrangement). What the undo changes is then carried into the
-// other players' snapshots, so that their own undo does not bring it back.
-func (g *Game) undo(p *Player, rng *rand.Rand, now time.Time) error {
-	stack := g.Undo[p.Token]
-	if len(stack) == 0 {
+func (g *Game) appendLog(seat int, text string, cards []string, now time.Time) {
+	p := g.Players[seat]
+	g.Log = append(g.Log, LogEntry{Who: p.Name, Color: p.Color, Text: text, At: now, Cards: cards})
+}
+
+// undo takes back the player's last undoable burst: the burst is marked
+// undone and the live table is rebuilt without it, every later event of
+// every player re-applied. rng re-resolves the shuffles the rebuild changes.
+func (g *Game) undo(seat int, rng *rand.Rand, now time.Time) error {
+	h := g.History
+	burst := h.lastUndoable(seat)
+	if burst == nil {
 		return invalid("nothing to undo")
 	}
-	entry := stack[len(stack)-1]
-	g.Undo[p.Token] = stack[:len(stack)-1]
-
-	live := g.Table
-	restored := entry.Before
-	keepLiveArrangement(restored, live, &entry)
-	// Open Looks and Searches are each player's own business, not part of
-	// what is undone: keep them as they are now.
-	restored.Views = live.Views
-	// A pile shuffled since the snapshot must not come back in an order a
-	// player may have seen before the shuffle.
-	for _, id := range entry.Shuffled {
-		if pile, ok := restored.Piles[id]; ok {
-			// New ids too: the old ones are known to whoever saw the pile.
-			renames, order := reidentify(restored, pile.Cards, rng)
-			renameCards(restored, renames)
-			pile.Cards = order
-		}
+	events := slices.Clone(h.Events)
+	for _, i := range burst {
+		events[i].Undone = true
 	}
+	g.install(h.rebuild(events, burst[0], rng))
 
-	patch := diffTables(live, restored)
-	for token, others := range g.Undo {
-		if token == p.Token {
-			continue
-		}
-		for i := range others {
-			patch.applyTo(others[i].Before)
-			repairPlaces(others[i].Before)
-		}
-	}
-	g.Table = restored
-
-	original := &g.Log[entry.LogIndex]
+	original := &g.Log[h.Events[burst[0]].Log]
 	original.Undone = true
-	g.appendLog(p, "undid “"+original.Text+"”", nil, now)
+	g.appendLog(seat, "undid “"+original.Text+"”", nil, now)
+	h.record(Event{Seat: seat, Action: Action{Kind: ActUndo}, Log: len(g.Log) - 1, At: now}, g.Table)
 	return nil
 }
 
 // openView opens a Look or a Search on a pile for the player. It is logged
 // but cannot be undone.
-func (g *Game) openView(p *Player, seat int, a Action, now time.Time) error {
+func (g *Game) openView(seat int, a Action, now time.Time) error {
 	pile, err := g.Table.pile(a.Pile)
 	if err != nil {
 		return err
@@ -379,13 +290,16 @@ func (g *Game) openView(p *Player, seat int, a Action, now time.Time) error {
 		g.Table.Views = map[Area]*PrivateView{}
 	}
 	g.Table.Views[PlayerArea(seat)] = view
-	g.appendLog(p, text, nil, now)
+	g.appendLog(seat, text, nil, now)
+	recorded := Action{Kind: a.Kind, Pile: a.Pile, N: a.N}
+	g.History.record(Event{Seat: seat, Action: recorded, Log: len(g.Log) - 1, At: now}, g.Table)
 	return nil
 }
 
 // closeView closes the player's open view. Closing with a shuffle shuffles the
-// viewed pile, as a regular shuffle action.
-func (g *Game) closeView(p *Player, seat int, a Action, cat *pack.Catalog, rng *rand.Rand, now time.Time) error {
+// viewed pile, as a regular shuffle action: it is recorded as that shuffle,
+// then a plain close.
+func (g *Game) closeView(seat int, a Action, cat *pack.Catalog, rng *rand.Rand, now time.Time) error {
 	area := PlayerArea(seat)
 	view := g.Table.Views[area]
 	if view == nil {
@@ -394,12 +308,13 @@ func (g *Game) closeView(p *Player, seat int, a Action, cat *pack.Catalog, rng *
 	switch a.Where {
 	case "":
 	case whereShuffle:
-		if err := g.perform(p, seat, Action{Kind: ActShuffle, Pile: view.Pile}, cat, rng, now); err != nil {
+		if err := g.perform(seat, Action{Kind: ActShuffle, Pile: view.Pile}, cat, rng, now); err != nil {
 			return err
 		}
 	default:
 		return invalid("unknown way to close a view %q", a.Where)
 	}
 	delete(g.Table.Views, area)
+	g.History.record(Event{Seat: seat, Action: Action{Kind: ActCloseView}, Log: -1, At: now}, g.Table)
 	return nil
 }

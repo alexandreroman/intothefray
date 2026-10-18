@@ -353,7 +353,7 @@ func applyToDeck(t *Table, a Action) error {
 		if err := checkRenames(t, a, expected); err != nil {
 			return err
 		}
-		newOrder = slices.Clone(a.Cards)
+		newOrder = cardList(a.Cards)
 	default:
 		return invalid("unknown position %q", a.Where)
 	}
@@ -374,6 +374,13 @@ func applyToDeck(t *Table, a Action) error {
 		deck.Cards = newOrder
 	}
 	return nil
+}
+
+// cardList returns a copy of the card list of an action, to become a pile or
+// a hand. It is never nil, as no pile or hand is: an empty list is left out
+// of a stored action, and replaying it must still give an empty list.
+func cardList(ids []string) []string {
+	return append([]string{}, ids...)
 }
 
 // without returns ids minus id, in a new slice.
@@ -590,6 +597,25 @@ func topCards(pile *Pile, n int) []string {
 	return top
 }
 
+// checkInPile verifies that ids names at least one card, each card once, and
+// that every one of them lies in pile.
+func checkInPile(pile *Pile, ids []string) error {
+	if len(ids) == 0 {
+		return invalid("no card of pile %q is given", pile.ID)
+	}
+	seen := make(map[string]bool, len(ids))
+	for _, id := range ids {
+		if seen[id] {
+			return invalid("card %q is given twice", id)
+		}
+		seen[id] = true
+		if !slices.Contains(pile.Cards, id) {
+			return invalid("card %q is not in pile %q", id, pile.ID)
+		}
+	}
+	return nil
+}
+
 // pile returns the pile with the given id, or an ErrInvalid error.
 func (t *Table) pile(id string) (*Pile, error) {
 	pile, ok := t.Piles[id]
@@ -614,6 +640,9 @@ func (t *Table) placeOnTable(c *Card, area Area, x, y int) {
 	c.Z = t.nextZ()
 }
 
+// applyDraw moves the recorded cards from the deck to the hand, in the recorded
+// order. Resolve records the top cards, but an undo may have put other cards
+// above them since: they are taken wherever they are in the deck.
 func applyDraw(t *Table, a Action) error {
 	if !validArea(a.Area) || a.Area == AreaVillain {
 		return invalid("area %q has no hand", a.Area)
@@ -622,11 +651,8 @@ func applyDraw(t *Table, a Action) error {
 	if err != nil {
 		return err
 	}
-	if len(a.Cards) == 0 || len(a.Cards) > len(deck.Cards) {
-		return invalid("cannot draw %d cards from pile %q", len(a.Cards), deck.ID)
-	}
-	if !slices.Equal(a.Cards, topCards(deck, len(a.Cards))) {
-		return invalid("drawn cards are not the top of pile %q", deck.ID)
+	if err := checkInPile(deck, a.Cards); err != nil {
+		return err
 	}
 
 	if t.Hands == nil {
@@ -643,22 +669,24 @@ func applyDraw(t *Table, a Action) error {
 	return nil
 }
 
+// applyReveal reveals the recorded card wherever it is in the encounter deck
+// (see applyDraw).
 func applyReveal(t *Table, a Action) error {
 	enc, err := t.pile(PileEncounter)
 	if err != nil {
 		return err
 	}
-	if len(enc.Cards) == 0 {
-		return invalid("encounter deck is empty")
-	}
 	if len(t.revealed()) > 0 {
 		return invalid("an encounter card is already revealed")
 	}
-	if !slices.Equal(a.Cards, topCards(enc, 1)) {
-		return invalid("revealed card is not the top of pile %q", enc.ID)
+	if len(a.Cards) != 1 {
+		return invalid("reveal takes exactly one card, not %d", len(a.Cards))
+	}
+	if err := checkInPile(enc, a.Cards); err != nil {
+		return err
 	}
 
-	c := t.Cards[enc.Cards[len(enc.Cards)-1]]
+	c := t.Cards[a.Cards[0]]
 	t.leave(c)
 	t.placeOnTable(c, AreaVillain, enc.X, enc.Y)
 	c.OnPile = PileEncounter
@@ -694,8 +722,10 @@ func (t *Table) dealtCard() string {
 	return enc.Cards[len(enc.Cards)-1]
 }
 
-// applyDeal deals the top encounter card face down. Revealed cards are first
-// put back face down on top of the encounter deck (see dealtCard).
+// applyDeal deals the recorded encounter card face down, wherever it is in the
+// encounter deck (see applyDraw). Revealed cards are first put back face down
+// on top of the encounter deck, so a revealed card can be dealt too (see
+// dealtCard).
 func applyDeal(t *Table, a Action) error {
 	if !validArea(a.Area) {
 		return invalid("unknown area %q", a.Area)
@@ -704,14 +734,15 @@ func applyDeal(t *Table, a Action) error {
 	if err != nil {
 		return err
 	}
-	dealt := t.dealtCard()
-	if dealt == "" {
-		return invalid("encounter deck is empty")
+	if len(a.Cards) != 1 {
+		return invalid("deal takes exactly one card, not %d", len(a.Cards))
 	}
-	if !slices.Equal(a.Cards, []string{dealt}) {
-		return invalid("dealt card is not the top of pile %q", enc.ID)
-	}
+	dealt := a.Cards[0]
 	covering := t.revealed()
+	isCovering := slices.ContainsFunc(covering, func(c *Card) bool { return c.ID == dealt })
+	if !isCovering && !slices.Contains(enc.Cards, dealt) {
+		return invalid("dealt card %q is neither in pile %q nor revealed on it", dealt, enc.ID)
+	}
 	for _, c := range covering {
 		if err := t.checkLeave(c); err != nil {
 			return err
@@ -721,7 +752,7 @@ func applyDeal(t *Table, a Action) error {
 	for _, c := range covering {
 		t.putOnPile(enc, c)
 	}
-	c := t.Cards[enc.Cards[len(enc.Cards)-1]]
+	c := t.Cards[dealt]
 	t.leave(c)
 	t.placeOnTable(c, a.Area, snap(a.X), snap(a.Y))
 	c.FaceDown = true
@@ -750,6 +781,8 @@ func discardPileOf(deckID string) (string, bool) {
 	return "", false
 }
 
+// applyDiscardTop discards the recorded cards, wherever they are in the deck
+// (see applyDraw), in the recorded order.
 func applyDiscardTop(t *Table, a Action) error {
 	discardID, ok := discardPileOf(a.Pile)
 	if !ok {
@@ -763,11 +796,8 @@ func applyDiscardTop(t *Table, a Action) error {
 	if err != nil {
 		return err
 	}
-	if len(a.Cards) == 0 || len(a.Cards) > len(deck.Cards) {
-		return invalid("cannot discard %d cards from pile %q", len(a.Cards), deck.ID)
-	}
-	if !slices.Equal(a.Cards, topCards(deck, len(a.Cards))) {
-		return invalid("discarded cards are not the top of pile %q", deck.ID)
+	if err := checkInPile(deck, a.Cards); err != nil {
+		return err
 	}
 
 	for _, id := range a.Cards {
@@ -785,7 +815,7 @@ func applyShuffle(t *Table, a Action) error {
 		return err
 	}
 	renameCards(t, a.Renames)
-	pile.Cards = slices.Clone(a.Cards)
+	pile.Cards = cardList(a.Cards)
 	return nil
 }
 
@@ -830,7 +860,7 @@ func mergeAndOrder(t *Table, a Action, destID string, wanted func(*Card) bool) e
 		t.putOnPile(dest, t.Cards[id])
 	}
 	renameCards(t, a.Renames)
-	dest.Cards = slices.Clone(a.Cards)
+	dest.Cards = cardList(a.Cards)
 	return nil
 }
 
@@ -863,7 +893,7 @@ func applyHandOrder(t *Table, a Action) error {
 	if t.Hands == nil {
 		t.Hands = map[Area][]string{}
 	}
-	t.Hands[a.Area] = slices.Clone(a.Cards)
+	t.Hands[a.Area] = cardList(a.Cards)
 	return nil
 }
 

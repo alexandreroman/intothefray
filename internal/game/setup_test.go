@@ -11,7 +11,10 @@ import (
 	"github.com/alexandreroman/intothefray/internal/pack"
 )
 
-// newTestRNG returns a fixed-seed generator: setup must be reproducible.
+// testSeed is the seed of the test games: setup must be reproducible.
+const testSeed = 1
+
+// newTestRNG returns a fixed-seed generator for the functions that take one.
 func newTestRNG() *rand.Rand {
 	return rand.New(rand.NewPCG(1, 2)) //nolint:gosec // deterministic test fixture
 }
@@ -98,7 +101,7 @@ func startedGame(t *testing.T, cfg LobbyConfig) *Game {
 			t.Fatal(err)
 		}
 	}
-	if err := g.Start("h", cat, newTestRNG(), testNow); err != nil {
+	if err := g.Start("h", cat, testSeed, testNow); err != nil {
 		t.Fatal(err)
 	}
 	return g
@@ -418,7 +421,7 @@ func TestStartRequiresDecks(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err := g.Start("h", cat, newTestRNG(), testNow)
+	err := g.Start("h", cat, testSeed, testNow)
 	if !errors.Is(err, ErrInvalid) {
 		t.Errorf("Start without a deck = %v, want ErrInvalid", err)
 	}
@@ -429,26 +432,25 @@ func TestStartRequiresDecks(t *testing.T) {
 
 func TestStartGuards(t *testing.T) {
 	cat := newCatalog(t)
-	rng := newTestRNG()
 
 	t.Run("not configured", func(t *testing.T) {
 		g := NewGame("g1", "h", "Host", testNow)
 		if err := g.SetDeck("h", spiderManDeck(t, cat), cat); err != nil {
 			t.Fatal(err)
 		}
-		if err := g.Start("h", cat, rng, testNow); !errors.Is(err, ErrInvalid) {
+		if err := g.Start("h", cat, testSeed, testNow); !errors.Is(err, ErrInvalid) {
 			t.Errorf("Start = %v, want ErrInvalid", err)
 		}
 	})
 	t.Run("not the host", func(t *testing.T) {
 		g := startedGame(t, rhinoConfig())
-		if err := g.Start("b", cat, rng, testNow); !errors.Is(err, ErrForbidden) {
+		if err := g.Start("b", cat, testSeed, testNow); !errors.Is(err, ErrForbidden) {
 			t.Errorf("Start = %v, want ErrForbidden", err)
 		}
 	})
 	t.Run("already started", func(t *testing.T) {
 		g := startedGame(t, rhinoConfig())
-		if err := g.Start("h", cat, rng, testNow); !errors.Is(err, ErrPhase) {
+		if err := g.Start("h", cat, testSeed, testNow); !errors.Is(err, ErrPhase) {
 			t.Errorf("Start = %v, want ErrPhase", err)
 		}
 	})

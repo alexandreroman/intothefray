@@ -33,8 +33,9 @@ const (
 
 // Start builds the table with the standard setup and begins the game. No
 // opening hand is drawn: players draw their own, since some heroes and cards
-// change it.
-func (g *Game) Start(hostToken string, cat *pack.Catalog, rng *rand.Rand, now time.Time) error {
+// change it. All the randomness of the game, setup and actions alike, derives
+// from seed, so that the game can be replayed (see Replay).
+func (g *Game) Start(hostToken string, cat *pack.Catalog, seed uint64, now time.Time) error {
 	if err := g.requireHost(hostToken); err != nil {
 		return err
 	}
@@ -51,7 +52,7 @@ func (g *Game) Start(hostToken string, cat *pack.Catalog, rng *rand.Rand, now ti
 	}
 
 	// The table is built apart so that a failed setup leaves the lobby intact.
-	b := &tableBuilder{cat: cat, rng: rng, table: newEmptyTable(len(g.Players))}
+	b := &tableBuilder{cat: cat, rng: setupRNG(seed), table: newEmptyTable(len(g.Players))}
 	scenario, err := b.setupScenario(g.Config)
 	if err != nil {
 		return err
@@ -71,6 +72,7 @@ func (g *Game) Start(hostToken string, cat *pack.Catalog, rng *rand.Rand, now ti
 	description := strings.Join(append([]string{scenario.Name}, modulars...), ", ")
 
 	g.Table = b.table
+	g.History = newHistory(seed, b.table, now)
 	g.Phase = PhasePlaying
 	g.Log = append(g.Log, LogEntry{
 		Who:   host.Name,

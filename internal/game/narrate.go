@@ -59,19 +59,31 @@ func (g *Game) playerName(seat int) string {
 	return g.Players[seat].Name
 }
 
-// event is the history line of one recorded action.
-type event struct {
+// logLine is the history line of one recorded action.
+type logLine struct {
 	text   string
 	cards  []string // touched cards everyone can see after the action
-	merge  string   // merge key, "" when the line never merges
 	merged string   // text of a merged line, "" to keep text
 }
 
-func (e event) mergedText() string {
-	if e.merged != "" {
-		return e.merged
+func (l logLine) mergedText() string {
+	if l.merged != "" {
+		return l.merged
 	}
-	return e.text
+	return l.text
+}
+
+// mergeKey returns the key under which successive changes share a history
+// line (see mergeWindow), or "" when a never merges.
+func mergeKey(a Action) string {
+	switch a.Kind {
+	case ActFlip:
+		return "flip:" + a.Card
+	case ActToken, ActStatus:
+		return fmt.Sprintf("%s:%s:%s", a.Kind, a.Card, a.Name)
+	default:
+		return ""
+	}
 }
 
 // counterNoun is how a token or status reads in a history line.
@@ -120,7 +132,7 @@ var arrangingKinds = map[Kind]bool{
 
 // describe writes the history line of a, which has just been applied. It
 // returns false for the arranging kinds (see arrangingKinds).
-func (n narrator) describe(a Action) (event, bool) {
+func (n narrator) describe(a Action) (logLine, bool) {
 	switch a.Kind {
 	case ActToHand:
 		return n.toHandEvent(a), true
@@ -131,18 +143,18 @@ func (n narrator) describe(a Action) (event, bool) {
 		if n.before.Cards[a.Card].Zone == ZoneHand {
 			text += " from hand"
 		}
-		return event{text: text, cards: n.visibleCards(a.Card)}, true
+		return logLine{text: text, cards: n.visibleCards(a.Card)}, true
 	case ActToPile:
 		text := fmt.Sprintf("moved %s to %s", n.name(a.Card), n.game.pileName(n.seat, a.Target))
-		return event{text: text, cards: n.visibleCards(a.Card)}, true
+		return logLine{text: text, cards: n.visibleCards(a.Card)}, true
 	case ActPlay:
-		return event{text: "played " + n.name(a.Card), cards: n.visibleCards(a.Card)}, true
+		return logLine{text: "played " + n.name(a.Card), cards: n.visibleCards(a.Card)}, true
 	case ActExhaust:
 		verb := "readied "
 		if n.after.Cards[a.Card].Exhausted {
 			verb = "exhausted "
 		}
-		return event{text: verb + n.name(a.Card), cards: n.visibleCards(a.Card)}, true
+		return logLine{text: verb + n.name(a.Card), cards: n.visibleCards(a.Card)}, true
 	case ActFlip:
 		return n.flipEvent(a), true
 	case ActToken, ActStatus:
@@ -151,40 +163,40 @@ func (n narrator) describe(a Action) (event, bool) {
 		return n.stageEvent(a), true
 	case ActDraw:
 		if len(a.Cards) == 1 {
-			return event{text: "drew 1 card"}, true
+			return logLine{text: "drew 1 card"}, true
 		}
-		return event{text: fmt.Sprintf("drew %d cards", len(a.Cards))}, true
+		return logLine{text: fmt.Sprintf("drew %d cards", len(a.Cards))}, true
 	case ActReveal:
 		id := a.Cards[0]
-		return event{text: "revealed " + n.name(id), cards: n.visibleCards(id)}, true
+		return logLine{text: "revealed " + n.name(id), cards: n.visibleCards(id)}, true
 	case ActDeal:
-		return event{text: "dealt an encounter card face down to " + n.areaName(a.Area)}, true
+		return logLine{text: "dealt an encounter card face down to " + n.areaName(a.Area)}, true
 	case ActDiscardTop:
 		text := fmt.Sprintf("discarded %s of %s", topCount(len(a.Cards)), n.game.pileName(n.seat, a.Pile))
-		return event{text: text, cards: n.visibleCards(a.Cards...)}, true
+		return logLine{text: text, cards: n.visibleCards(a.Cards...)}, true
 	case ActShuffle:
-		return event{text: "shuffled " + n.game.pileName(n.seat, a.Pile)}, true
+		return logLine{text: "shuffled " + n.game.pileName(n.seat, a.Pile)}, true
 	case ActShuffleBack:
 		deck, _ := deckOfDiscard(a.Pile)
-		return event{text: fmt.Sprintf("shuffled %s into %s",
+		return logLine{text: fmt.Sprintf("shuffled %s into %s",
 			n.game.pileName(n.seat, a.Pile), n.game.pileName(n.seat, deck))}, true
 	case ActShuffleIn:
-		return event{text: fmt.Sprintf("shuffled %s into %s",
+		return logLine{text: fmt.Sprintf("shuffled %s into %s",
 			n.game.pileName(n.seat, a.Pile), n.game.pileName(n.seat, PileEncounter))}, true
 	default:
-		return event{}, false
+		return logLine{}, false
 	}
 }
 
-func (n narrator) toHandEvent(a Action) event {
+func (n narrator) toHandEvent(a Action) logLine {
 	c := n.before.Cards[a.Card]
 	if c.Zone == ZonePile && !visible(n.before, a.Card) {
-		return event{text: "took a card from " + n.game.pileName(n.seat, c.Pile) + " into hand"}
+		return logLine{text: "took a card from " + n.game.pileName(n.seat, c.Pile) + " into hand"}
 	}
-	return event{text: "took " + n.name(a.Card) + " into hand"}
+	return logLine{text: "took " + n.name(a.Card) + " into hand"}
 }
 
-func (n narrator) toDeckEvent(a Action) event {
+func (n narrator) toDeckEvent(a Action) logLine {
 	card := n.name(a.Card)
 	deck := n.game.pileName(n.seat, n.before.Cards[a.Card].Home)
 	var text string
@@ -196,10 +208,10 @@ func (n narrator) toDeckEvent(a Action) event {
 	default:
 		text = fmt.Sprintf("put %s on top of %s", card, deck)
 	}
-	return event{text: text}
+	return logLine{text: text}
 }
 
-func (n narrator) flipEvent(a Action) event {
+func (n narrator) flipEvent(a Action) logLine {
 	old, cur := n.before.Cards[a.Card], n.after.Cards[a.Card]
 	var text string
 	if old.FaceDown {
@@ -215,10 +227,10 @@ func (n narrator) flipEvent(a Action) event {
 			text += " to " + to
 		}
 	}
-	return event{text: text, cards: n.visibleCards(a.Card), merge: "flip:" + a.Card}
+	return logLine{text: text, cards: n.visibleCards(a.Card)}
 }
 
-func (n narrator) counterEvent(a Action) event {
+func (n narrator) counterEvent(a Action) logLine {
 	before, after := counterValue(n.before, a), counterValue(n.after, a)
 	noun := counterNouns[a.Name]
 	card := n.name(a.Card)
@@ -231,12 +243,7 @@ func (n narrator) counterEvent(a Action) event {
 	case diff < 0:
 		text = fmt.Sprintf("removed %d %s from %s", -diff, noun.count(-diff), card)
 	}
-	return event{
-		text:   text,
-		cards:  n.visibleCards(a.Card),
-		merge:  fmt.Sprintf("%s:%s:%s", a.Kind, a.Card, a.Name),
-		merged: set,
-	}
+	return logLine{text: text, cards: n.visibleCards(a.Card), merged: set}
 }
 
 // counterValue returns the token or status named by a on its card in t.
@@ -248,17 +255,17 @@ func counterValue(t *Table, a Action) int {
 	return c.Tokens[a.Name]
 }
 
-func (n narrator) stageEvent(a Action) event {
+func (n narrator) stageEvent(a Action) logLine {
 	stage := n.before.stage(a.Stage)
 	label := "the " + strings.ToLower(stage.Label)
 	previous, chosen := n.before.Cards[stage.Current], n.after.Cards[a.Card]
 	if previous.ID == chosen.ID {
-		return event{
+		return logLine{
 			text:  fmt.Sprintf("turned %s to %s", label, n.stageName(chosen)),
 			cards: n.visibleCards(chosen.ID),
 		}
 	}
-	return event{
+	return logLine{
 		text:  fmt.Sprintf("replaced %s %s with %s", label, n.stageName(previous), n.stageName(chosen)),
 		cards: n.visibleCards(previous.ID, chosen.ID),
 	}
