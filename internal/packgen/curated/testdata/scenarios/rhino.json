@@ -1,0 +1,12 @@
+{
+  "id": "rhino",
+  "villainSet": "rhino",
+  "piles": [
+    {"key": "villain", "label": "Villain", "cards": ["01094", "01095", "01096"]}
+  ],
+  "start": {
+    "standard": {"top": {"villain": {"card": "01094", "face": 0}}},
+    "expert": {"top": {"villain": {"card": "01095", "face": 0}}, "inPlay": [{"card": "01108", "face": 0}]}
+  },
+  "setAside": ["01097"]
+}

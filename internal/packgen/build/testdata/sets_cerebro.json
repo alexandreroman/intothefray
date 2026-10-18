@@ -1,0 +1,48 @@
+[
+ {
+  "Deleted": false,
+  "Id": "cefd4238-88b7-47d4-aff8-b955b86c7247",
+  "Official": true,
+  "AuthorId": null,
+  "Name": "Bomb Scare",
+  "Type": "Modular Set",
+  "CanSimulate": true,
+  "Deviation": false,
+  "Modulars": null,
+  "PackId": "25ab9c3e-d172-4501-87b6-40e3768cb267",
+  "Requires": null,
+  "Recommends": null
+ },
+ {
+  "Deleted": false,
+  "Id": "ea7258fb-8521-4bb5-afda-cd207ed9782f",
+  "Official": true,
+  "AuthorId": null,
+  "Name": "Rhino",
+  "Type": "Villain Set",
+  "CanSimulate": true,
+  "Deviation": false,
+  "Modulars": 1,
+  "PackId": "25ab9c3e-d172-4501-87b6-40e3768cb267",
+  "Requires": null,
+  "Recommends": [
+   "cefd4238-88b7-47d4-aff8-b955b86c7247"
+  ]
+ },
+ {
+  "Deleted": false,
+  "Id": "9fc7ccda-7e3e-4194-8c0f-58118f1d8063",
+  "Official": true,
+  "AuthorId": null,
+  "Name": "Klaw",
+  "Type": "Villain Set",
+  "CanSimulate": true,
+  "Deviation": false,
+  "Modulars": 1,
+  "PackId": "25ab9c3e-d172-4501-87b6-40e3768cb267",
+  "Requires": null,
+  "Recommends": [
+   "86aafc81-51c3-4bd1-af41-e614981ed404"
+  ]
+ }
+]
