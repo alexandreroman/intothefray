@@ -10,21 +10,9 @@ import (
 
 const baseURL = "https://cerebro-beta-bot.herokuapp.com"
 
-// Card is a Cerebro card. GroupID is null for cards outside a group.
+// Card is a Cerebro card. Only its ID is used: it names the card image.
 type Card struct {
-	ID        string     `json:"Id"`
-	Name      string     `json:"Name"`
-	Type      string     `json:"Type"`
-	Stage     string     `json:"Stage"`
-	GroupID   *string    `json:"GroupId"`
-	Printings []Printing `json:"Printings"`
-}
-
-// Printing links a card to the pack and set it was printed in.
-type Printing struct {
-	ArtificialID string `json:"ArtificialId"`
-	PackID       string `json:"PackId"`
-	SetID        string `json:"SetId"`
+	ID string `json:"Id"`
 }
 
 // Set is a Cerebro card set. Recommends is null for sets without suggestions.
@@ -36,12 +24,6 @@ type Set struct {
 	Recommends []string `json:"Recommends"`
 }
 
-// Pack is a Cerebro pack.
-type Pack struct {
-	ID   string `json:"Id"`
-	Name string `json:"Name"`
-}
-
 // FetchCards returns every card.
 func FetchCards(ctx context.Context, c *fetch.Client) ([]Card, error) {
 	return fetchList[Card](ctx, c, baseURL, "cards")
@@ -50,11 +32,6 @@ func FetchCards(ctx context.Context, c *fetch.Client) ([]Card, error) {
 // FetchSets returns every set.
 func FetchSets(ctx context.Context, c *fetch.Client) ([]Set, error) {
 	return fetchList[Set](ctx, c, baseURL, "sets")
-}
-
-// FetchPacks returns every pack.
-func FetchPacks(ctx context.Context, c *fetch.Client) ([]Pack, error) {
-	return fetchList[Pack](ctx, c, baseURL, "packs")
 }
 
 // The base URL is a parameter so tests can target a local server.
