@@ -235,6 +235,9 @@ export interface FanSlot {
   angle: number;
 }
 
+/** The first player token, in table units. */
+export const FIRST_PLAYER_BOX = { w: 84, h: 70 } as const;
+
 /** A card in the hand. */
 export const HAND_CARD = { w: 132, h: 185 } as const;
 

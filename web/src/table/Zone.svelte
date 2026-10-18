@@ -30,9 +30,9 @@
   import CardView from './CardView.svelte';
   import { snap } from './drag';
   import { footprints, hiddenAside, placeOutPiles, zoneWidth, type Footprint } from './layout';
+  import FirstPlayerToken from './FirstPlayerToken.svelte';
   import { interaction } from './interaction.svelte';
   import PileView from './PileView.svelte';
-  import { firstPlayerUrl } from './theme';
 
   let {
     area,
@@ -47,6 +47,7 @@
     zoom,
     first = false,
     firstPlayer,
+    tokenMovable = false,
     above,
   }: {
     area: Area;
@@ -68,12 +69,14 @@
     first?: boolean;
     /** Where the first player token lies, when it is in this zone. */
     firstPlayer?: { x: number; y: number };
+    /** Whether the viewer can drag the token: any player can, spectators cannot. */
+    tokenMovable?: boolean;
     above?: ResizeAbove;
   } = $props();
 
   // The scroller pads the surface so glows, tilted cards and outlines near an edge stay visible.
   const SCROLL_PADDING = 24;
-  const FIRST_PLAYER_BOX = { w: 84, h: 70 };
+  const TOKEN_TIP = "First player — drag it into the next player's area";
 
   const titleId = $derived(`zone-${area}-title`);
   // The space before the bracketed part belongs to the text, not to the dimmed span.
@@ -128,9 +131,6 @@
     void [surfaceWidth, scrollerWidth, zoom];
     updateEdges();
   });
-
-  const tokenUrl = firstPlayerUrl();
-  let tokenBroken = $state(false);
 
   let resizing = $state<{ startY: number; startHeight: number } | null>(null);
 
@@ -224,76 +224,17 @@
         {#each cards as card (card.id)}
           <CardView {card} face={faceOf(card)} />
         {/each}
-        {#if firstPlayer}
-          <!-- The token has no actions: hovering it drops the previous element at once. -->
-          <div
-            class="fptoken"
-            role="presentation"
+        {#if firstPlayer && !interaction.tokenMoving}
+          <!-- The token has no bar: hovering it drops the previous element at once. -->
+          <FirstPlayerToken
+            x={firstPlayer.x}
+            y={firstPlayer.y}
+            tip={tokenMovable ? TOKEN_TIP : undefined}
             onpointerenter={(event) => interaction.enterNothing(event)}
-            style:left="{firstPlayer.x}px"
-            style:top="{firstPlayer.y}px"
-            style:width="{FIRST_PLAYER_BOX.w}px"
-            style:height="{FIRST_PLAYER_BOX.h}px"
-          >
-            {#if tokenUrl && !tokenBroken}
-              <img
-                src={tokenUrl}
-                alt="First player"
-                draggable="false"
-                onerror={() => (tokenBroken = true)}
-              />
-            {:else}
-              <!-- The drawn stand-in: a cardboard roundel, gold rim, red field, white star. -->
-              <svg viewBox="0 0 64 64" role="img" aria-label="First player">
-                <defs>
-                  <radialGradient id="fp-red" cx="38%" cy="32%" r="75%">
-                    <stop offset="0" stop-color="#ff6b5c" />
-                    <stop offset=".5" stop-color="#c8161f" />
-                    <stop offset="1" stop-color="#5e070c" />
-                  </radialGradient>
-                  <linearGradient id="fp-gold" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0" stop-color="#fff1a6" />
-                    <stop offset=".45" stop-color="#e3a923" />
-                    <stop offset="1" stop-color="#7a4c00" />
-                  </linearGradient>
-                  <path id="fp-top" d="M13 32a19 19 0 0 1 38 0" />
-                  <path id="fp-bot" d="M10.5 32a21.5 21.5 0 0 0 43 0" />
-                </defs>
-                <circle
-                  cx="32"
-                  cy="32"
-                  r="31"
-                  fill="url(#fp-gold)"
-                  stroke="#3d2600"
-                  stroke-width="1.2"
-                />
-                <circle
-                  cx="32"
-                  cy="32"
-                  r="26.5"
-                  fill="url(#fp-red)"
-                  stroke="#3d0003"
-                  stroke-width="1"
-                />
-                <circle cx="32" cy="32" r="16" fill="none" stroke="#ffffff55" stroke-width="1" />
-                <path
-                  d="M32 19.5l3.6 7.4 8.1 1.2-5.9 5.7 1.4 8.1L32 38.1l-7.2 3.8 1.4-8.1-5.9-5.7 8.1-1.2z"
-                  fill="#fff"
-                  stroke="#3d0003"
-                  stroke-width=".8"
-                  stroke-linejoin="round"
-                />
-                <text class="fp-text"
-                  ><textPath href="#fp-top" startOffset="50%" text-anchor="middle">FIRST</textPath
-                  ></text
-                >
-                <text class="fp-text"
-                  ><textPath href="#fp-bot" startOffset="50%" text-anchor="middle">PLAYER</textPath
-                  ></text
-                >
-              </svg>
-            {/if}
-          </div>
+            onpointerdown={tokenMovable
+              ? (event) => interaction.press({ kind: 'firstPlayer' }, event)
+              : undefined}
+          />
         {/if}
       </div>
     </div>
@@ -449,28 +390,5 @@
   .sep-handle:hover::after,
   .sep-handle.active::after {
     opacity: 1;
-  }
-
-  .fptoken {
-    position: absolute;
-    z-index: 500;
-    filter: drop-shadow(0 3px 4px #000c) drop-shadow(0 1px 0 #2a1a00);
-  }
-
-  .fptoken img,
-  .fptoken svg {
-    width: 100%;
-    height: 100%;
-    display: block;
-    object-fit: contain;
-    pointer-events: none;
-  }
-
-  .fp-text {
-    font-family: system-ui, sans-serif;
-    font-weight: 900;
-    font-size: 7.2px;
-    letter-spacing: 1.2px;
-    fill: #fff;
   }
 </style>

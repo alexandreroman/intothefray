@@ -24,11 +24,13 @@
   import {
     actionsFor,
     counterName,
+    seatOf,
     type ActionItem,
     type CountQuestion,
     type LocalAction,
     type TableElement,
   } from './actions';
+  import Arrows from './Arrows.svelte';
   import AskCount from './AskCount.svelte';
   import type { LocalBox, ShownBox } from './boxes';
   import CardBox from './CardBox.svelte';
@@ -447,6 +449,20 @@
     localBox = null;
   }
 
+  /** The table card an element belongs to, if any: arrows link table cards only. */
+  function tableCardOf(element: Element | null): string | undefined {
+    return element?.closest<HTMLElement>('.surface .card:not(.pile)')?.dataset.id;
+  }
+
+  /** A click on an empty spot clears the viewer's own arrows, when there are any. */
+  function clearOwnArrows(): void {
+    const seat = ownArea ? seatOf(ownArea) : null;
+    const arrows = view.table?.arrows ?? [];
+    if (seat !== null && arrows.some((arrow) => arrow.seat === seat)) {
+      session.act({ kind: 'arrowClear' });
+    }
+  }
+
   /** An empty spot: the table itself, a zone's surface or scroller, or its header. */
   function isEmptySpot(target: HTMLElement): boolean {
     return (
@@ -458,25 +474,57 @@
     );
   }
 
-  // In the capture phase: in arrow mode, the click picks the target, and must not reach the card.
+  /** Draws the arrow being picked to that card: the server draws arrows between two table cards only. */
+  function endArrowAt(to: string | undefined): void {
+    const from = interaction.arrowFrom;
+    if (from !== null && to && to !== from) {
+      session.act({ kind: 'arrowAdd', card: from, target: to });
+    }
+    interaction.endArrow();
+    // On touch, the tap goes on to the card as a click, which would select it;
+    // a Shift + drag released on its own card would click it.
+    interaction.swallowNextClick();
+  }
+
+  /**
+   * In the capture phase, so that the card pressed does not see it. One press
+   * does the first of: picking the target of the arrow mode (or cancelling
+   * it), starting a Shift + drag arrow from a card, or, on an empty spot,
+   * releasing the selection and clearing the viewer's own arrows, as in the
+   * prototype.
+   */
   function onTablePointerDown(event: PointerEvent): void {
     const target = event.target as HTMLElement;
-    const from = interaction.arrowFrom;
-    if (from !== null) {
+    if (interaction.arrowFrom !== null && !interaction.arrowDrag) {
       event.preventDefault();
       event.stopPropagation();
-      const to = target.closest<HTMLElement>('.surface .card:not(.pile)')?.dataset.id;
-      // The server draws arrows between two table cards only.
-      if (to && to !== from) {
-        session.act({ kind: 'arrowAdd', card: from, target: to });
-      }
-      interaction.endArrow();
-      // On touch, the tap goes on to the card as a click, which would select it.
-      interaction.swallowNextClick();
+      endArrowAt(tableCardOf(target));
+      return;
+    }
+    const pressed = tableCardOf(target);
+    if (event.shiftKey && event.button === 0 && pressed && view.you.role === 'player') {
+      // Neither a drag of the card nor a text selection.
+      event.preventDefault();
+      event.stopPropagation();
+      interaction.startArrow(pressed, true);
       return;
     }
     if (isEmptySpot(target)) {
       interaction.release();
+      clearOwnArrows();
+    }
+  }
+
+  /** A Shift + drag arrow goes to the card the button is let go over. */
+  function onPointerUp(event: PointerEvent): void {
+    if (interaction.arrowDrag) {
+      endArrowAt(tableCardOf(document.elementFromPoint(event.clientX, event.clientY)));
+    }
+  }
+
+  function onPointerCancel(): void {
+    if (interaction.arrowDrag) {
+      interaction.endArrow();
     }
   }
 
@@ -602,6 +650,8 @@
   onpointermove={(event) => interaction.pointerMoved(event)}
   onpointerdowncapture={(event) => interaction.pointerPressed(event)}
   onclickcapture={(event) => interaction.clicked(event)}
+  onpointerup={onPointerUp}
+  onpointercancel={onPointerCancel}
   onkeydown={onKeydown}
 />
 
@@ -643,9 +693,11 @@
           {zoom}
           first={i === 0}
           firstPlayer={firstPlayer?.area === zone.area ? firstPlayer : undefined}
+          tokenMovable={view.you.role === 'player'}
           above={resizeAbove(zones[i - 1])}
         />
       {/each}
+      <Arrows {view} root={app} layout={[zoom, zones]} />
     </div>
   </div>
 

@@ -26,3 +26,7 @@ window.matchMedia ??= (query: string): MediaQueryList =>
 beforeEach(() => {
   clearPrefMemory();
 });
+
+// jsdom lays nothing out, so no element is ever under a point; tests that
+// need one install their own.
+document.elementFromPoint ??= (): Element | null => null;

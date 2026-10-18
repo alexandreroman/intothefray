@@ -3,14 +3,8 @@
 // the pointer, measures the screen and calls them.
 
 import type { Action, Area, CardView, View } from '../lib/types';
-import {
-  asidePileOf,
-  discardPileOf,
-  homeDeckOf,
-  seatOf,
-  stageHeldBy,
-  type TableElement,
-} from './actions';
+import { asidePileOf, discardPileOf, homeDeckOf, seatOf, stageHeldBy } from './actions';
+import type { Pressable } from './interaction.svelte';
 import { GRID } from './layout';
 
 /** A press turns into a drag once the pointer has moved this far, in screen pixels. */
@@ -62,7 +56,9 @@ export type DragSource =
   /** The top card of a pile that shows its cards. */
   | { kind: 'pile'; pile: string; card: string }
   /** The unknown top card of the encounter deck, dealt face down. */
-  | { kind: 'encounter'; pile: string };
+  | { kind: 'encounter'; pile: string }
+  /** The first player token (spec 5.8), from where it lies. */
+  | { kind: 'firstPlayer'; area: Area; x: number; y: number };
 
 /** A spot of a zone, in table units. */
 export interface TablePoint {
@@ -150,6 +146,10 @@ export function dropAction(
   if (target === null) {
     return null;
   }
+  // The token lies anywhere in a zone, over cards and piles alike.
+  if (drag.kind === 'firstPlayer') {
+    return 'area' in target ? place(drag, at) : null;
+  }
   switch (target.kind) {
     case 'hand':
       return drag.kind === 'hand' ? reorder(drag, target.index) : null;
@@ -164,7 +164,10 @@ export function dropAction(
   }
 }
 
-function onCard(drag: DragSource, card: string, at: TablePoint): Action | null {
+/** What can be dropped onto a card or a pile: everything but the token. */
+type CardSource = Exclude<DragSource, { kind: 'firstPlayer' }>;
+
+function onCard(drag: CardSource, card: string, at: TablePoint): Action | null {
   switch (drag.kind) {
     case 'card':
       return { kind: 'attach', card: drag.card, target: card };
@@ -192,7 +195,7 @@ function reorder(drag: Extract<DragSource, { kind: 'hand' }>, index: number): Ac
   return { kind: 'handOrder', area: drag.area, cards };
 }
 
-function onPile(drag: DragSource, pile: string, drop: PileDrop): Action | null {
+function onPile(drag: CardSource, pile: string, drop: PileDrop): Action | null {
   // Back onto the pile it came from: a pile's top card, or a card revealed on its deck.
   if (
     (drag.kind === 'pile' && drag.pile === pile) ||
@@ -228,6 +231,11 @@ function place(drag: DragSource, at: TablePoint): Action | null {
       return { kind: 'play', card: drag.card, area: at.area, x, y };
     case 'encounter':
       return { kind: 'deal', area: at.area, x, y };
+    case 'firstPlayer':
+      if (at.area === drag.area && x === drag.x && y === drag.y) {
+        return null;
+      }
+      return { kind: 'firstPlayer', area: at.area, x, y };
   }
 }
 
@@ -236,15 +244,18 @@ function place(drag: DragSource, at: TablePoint): Action | null {
  * cannot be dragged: a spectator, a deck, an empty pile, another player's
  * set-aside cards, or a card that is no longer there. During a drag from a
  * pile, `taken` is the card taken from it: the drag follows that card while
- * it is still in the pile, whatever lands on top of it.
+ * it is still in the pile, whatever lands on top of it. Any player can move
+ * the first player token.
  */
-export function sourceOf(element: TableElement, view: View, taken?: string): DragSource | null {
+export function sourceOf(element: Pressable, view: View, taken?: string): DragSource | null {
   const table = view.table;
   const area = view.you.area;
   if (view.you.role !== 'player' || !area || !table) {
     return null;
   }
   switch (element.kind) {
+    case 'firstPlayer':
+      return { kind: 'firstPlayer', ...table.firstPlayer };
     case 'card': {
       const card = table.cards.find((c) => c.id === element.id);
       if (card?.zone !== 'table' || !card.area) {
@@ -315,6 +326,9 @@ export function pileTargets(drag: DragSource, view: View): PileTarget[] {
   const table = view.table;
   const seat = view.you.area ? seatOf(view.you.area) : null;
   if (!table || seat === null) {
+    return [];
+  }
+  if (drag.kind === 'firstPlayer') {
     return [];
   }
   const exists = (target: PileTarget) => table.piles.some((p) => p.id === target.pile);

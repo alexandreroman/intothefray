@@ -536,3 +536,44 @@ describe('the hand', () => {
     expect(insertIndex([100, 200, 300], 900)).toBe(3);
   });
 });
+
+describe('the first player token', () => {
+  const token: DragSource = { kind: 'firstPlayer', area: 'p0', x: 860, y: 40 };
+  const card: DropRect = { kind: 'card', card: 'c', area: 'p1', z: 1, rect: rect(0, 0, 1, 1) };
+  const discard: DropRect = {
+    kind: 'pile',
+    pile: 'disc:p1',
+    area: 'p1',
+    drop: 'discard',
+    label: 'Discard',
+    rect: rect(0, 0, 1, 1),
+  };
+
+  it('is taken by a player from where it lies, never by a spectator', () => {
+    expect(sourceOf({ kind: 'firstPlayer' }, makeView())).toEqual({
+      kind: 'firstPlayer',
+      area: 'p0',
+      x: 0,
+      y: 0,
+    });
+    expect(sourceOf({ kind: 'firstPlayer' }, makeView({ spectator: true }))).toBeNull();
+  });
+
+  it('goes where it lands, snapped, even over a card or a pile', () => {
+    const at = { area: 'p1' as const, x: 164, y: 43 };
+    const moved = { kind: 'firstPlayer', area: 'p1', x: 160, y: 40 };
+
+    expect(dropAction(token, { kind: 'zone', area: 'p1', rect: rect(0, 0, 1, 1) }, at)).toEqual(
+      moved,
+    );
+    expect(dropAction(token, card, at)).toEqual(moved);
+    expect(dropAction(token, discard, at)).toEqual(moved);
+  });
+
+  it('sends nothing when put back where it was, and goes to no pile or hand', () => {
+    const zone: DropRect = { kind: 'zone', area: 'p0', rect: rect(0, 0, 1, 1) };
+    expect(dropAction(token, zone, { area: 'p0', x: 858, y: 42 })).toBeNull();
+    expect(pileTargets(token, makeView())).toEqual([]);
+    expect(goesToHand(token, makeView())).toBe(false);
+  });
+});

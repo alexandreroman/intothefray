@@ -543,6 +543,8 @@ describe('actionsFor', () => {
       const items = itemsFor({ kind: 'pile', id }, view, spectator);
       expect(items.map((it) => it.id)).toEqual(['browse']);
       expect(items[0]?.run?.()).toEqual({ local: 'browseBox' });
+      // Spectators have no game keys (P5b-R6): the tooltip shows none.
+      expect(items[0]?.key).toBeUndefined();
     }
     const stage = itemsFor({ kind: 'card', id: 'v' }, view, spectator);
     expect(stage.map((it) => it.id)).toEqual(['stage']);

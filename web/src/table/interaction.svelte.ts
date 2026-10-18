@@ -13,12 +13,16 @@ export interface CounterTarget {
   name: string;
 }
 
+/** What a press can drag: a table element, or the first player token. */
+export type Pressable = TableElement | { kind: 'firstPlayer' };
+
 /**
- * A card, a pile or a hand card pressed: it becomes a drag once the pointer
- * moves (drag.ts). Ids only, so the drag outlives new views.
+ * A card, a pile, a hand card or the first player token pressed: it becomes
+ * a drag once the pointer moves (drag.ts). Ids only, so the drag outlives new
+ * views.
  */
 export interface Held {
-  element: TableElement;
+  element: Pressable;
   pointerId: number;
   /** Where it was pressed, on the screen. */
   start: { x: number; y: number };
@@ -39,7 +43,7 @@ export interface Landing {
   /** The id the session gave the action, which the server echoes in an error. */
   action: number;
   /** What was dragged, as in Held. */
-  element: TableElement;
+  element: Pressable;
   card: string | null;
   /** The table and hand cards still hidden in their old places. */
   lifted: readonly string[];
@@ -74,6 +78,8 @@ class TableInteraction {
   locked = $state(false);
   /** The card an arrow starts from, while the viewer picks its target. */
   arrowFrom = $state<string | null>(null);
+  /** The arrow is drawn with Shift + drag: releasing the button picks its target. */
+  arrowDrag = $state(false);
   /** The id of the bar item whose dropdown is open. */
   menu = $state<string | null>(null);
   /** The pointer is on the bar or its dropdown. */
@@ -133,8 +139,8 @@ class TableInteraction {
     return this.held?.moved ? this.held : null;
   }
 
-  /** A press on a card, a pile or a hand card, with the main button or a finger. */
-  press(element: TableElement, event: PointerEvent): void {
+  /** A press on a card, a pile, a hand card or the token, with the main button or a finger. */
+  press(element: Pressable, event: PointerEvent): void {
     // A second finger does not take over a drag.
     if (event.button !== 0 || this.dragging !== null) {
       return;
@@ -176,6 +182,11 @@ class TableInteraction {
   /** Whether the card is dragged or just dropped, its ghost drawn in the drag layer instead. */
   isLifted(id: string): boolean {
     return this.#moving().some((moving) => moving.lifted.includes(id));
+  }
+
+  /** Whether the first player token is dragged or just dropped, drawn in the drag layer instead. */
+  get tokenMoving(): boolean {
+    return this.#moving().some((moving) => moving.element.kind === 'firstPlayer');
   }
 
   /**
@@ -354,13 +365,16 @@ class TableInteraction {
     this.menu = null;
   }
 
-  startArrow(from: string): void {
+  /** Starts an arrow from that card: picked with a click, or, with `drag`, where the button is let go. */
+  startArrow(from: string, drag = false): void {
     this.menu = null;
     this.arrowFrom = from;
+    this.arrowDrag = drag;
   }
 
   endArrow(): void {
     this.arrowFrom = null;
+    this.arrowDrag = false;
   }
 
   /** Escape closes the open dropdown, or cancels the arrow, or releases the selection. */
@@ -368,7 +382,7 @@ class TableInteraction {
     if (this.menu !== null) {
       this.menu = null;
     } else if (this.arrowFrom !== null) {
-      this.arrowFrom = null;
+      this.endArrow();
     } else {
       this.release();
     }
@@ -381,7 +395,7 @@ class TableInteraction {
     this.endLanding();
     this.#swallowClick = false;
     this.highlighted = new Set();
-    this.arrowFrom = null;
+    this.endArrow();
     this.onBar = false;
     this.onPill = false;
     this.#pointer = { x: NaN, y: NaN };
