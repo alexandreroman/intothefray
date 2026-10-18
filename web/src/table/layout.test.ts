@@ -114,9 +114,13 @@ describe('zone size', () => {
 });
 
 describe('fanPositions', () => {
-  const radius = 900;
   const cardWidth = 132;
   const cardHeight = (cardWidth * 185) / 132;
+
+  /** The distance between two neighbouring cards. */
+  function pitchOf(fan: { x: number }[]): number {
+    return fan[1]!.x - fan[0]!.x;
+  }
 
   // Width of the box around the rotated outer cards, centre to centre plus their overhang.
   function boundingWidth(fan: { x: number; angle: number }[]): number {
@@ -128,49 +132,52 @@ describe('fanPositions', () => {
     return Math.max(...bounds.map((b) => b.right)) - Math.min(...bounds.map((b) => b.left));
   }
 
+  it('overlaps the cards by 28 when there is room', () => {
+    expect(pitchOf(fanPositions(5, 1200))).toBeCloseTo(104);
+    expect(pitchOf(fanPositions(5, 1200, 100))).toBeCloseTo(72);
+  });
+
   it.each([
-    [1, 900],
-    [5, 900],
-    [12, 900],
+    [12, 85.6],
+    [15, 67.3],
+  ])('overlaps %i cards more to fit 1200', (n, pitch) => {
+    const fan = fanPositions(n, 1200);
+    expect(pitchOf(fan)).toBeCloseTo(pitch, 1);
+    fan.forEach((p, i) => expect(p.x).toBeCloseTo((i - (n - 1) / 2) * pitchOf(fan)));
+  });
+
+  it.each([
+    [5, 1200],
+    [12, 1200],
+    [15, 1200],
     [12, 700],
-    [12, 400],
-  ])('fits the width for %i cards in %i', (n, width) => {
-    expect(boundingWidth(fanPositions(n, width))).toBeLessThanOrEqual(width - 36 + 1e-6);
+    [30, 900],
+  ])('keeps %i cards inside %i', (n, width) => {
+    expect(boundingWidth(fanPositions(n, width))).toBeLessThanOrEqual(width);
   });
 
-  it('honours a custom card width', () => {
-    const fan = fanPositions(12, 600, 100);
-    const a = (fan[11]!.angle * Math.PI) / 180;
-    const outer = 2 * fan[11]!.x + 100 * Math.cos(a) + ((100 * 185) / 132) * Math.sin(a);
-    expect(outer).toBeLessThanOrEqual(600 - 36 + 1e-6);
-  });
-
-  it.each([900, 700, 300])('stays on the arc at width %i', (width) => {
-    for (const p of fanPositions(12, width)) {
-      const a = (p.angle * Math.PI) / 180;
-      expect(p.x).toBeCloseTo(radius * Math.sin(a), 6);
-      expect(p.y).toBeCloseTo(radius * (1 - Math.cos(a)), 6);
-    }
-  });
-
-  it('reduces the angle step when the fan does not fit', () => {
-    const roomy = fanPositions(12, 1600).map((p) => p.angle);
-    const tight = fanPositions(12, 700).map((p) => p.angle);
-    expect(tight[11]!).toBeLessThan(roomy[11]!);
-    expect(tight[11]!).toBeGreaterThan(0);
-  });
-
-  it('flattens the fan when there is no room at all', () => {
-    for (const p of fanPositions(12, 100)) {
+  it('piles the cards up rather than reversing them when there is no room', () => {
+    for (const p of fanPositions(12, 0)) {
       expect(p.x).toBeCloseTo(0);
-      expect(p.y).toBeCloseTo(0);
-      expect(p.angle).toBeCloseTo(0);
     }
   });
 
-  it('is symmetric around angle 0', () => {
-    for (const width of [900, 700]) {
-      const fan = fanPositions(5, width);
+  it('turns the cards 5 degrees apart, at most 44 in total, whatever the width', () => {
+    expect(fanPositions(3, 900).map((p) => p.angle)).toEqual([-5, 0, 5]);
+    expect(fanPositions(3, 0).map((p) => p.angle)).toEqual([-5, 0, 5]);
+    const wide = fanPositions(30, 900).map((p) => p.angle);
+    expect(wide[wide.length - 1]! - wide[0]!).toBeCloseTo(44);
+  });
+
+  it('sags along a circle of radius 900', () => {
+    for (const p of fanPositions(12, 1200)) {
+      expect(p.y).toBeCloseTo(900 * (1 - Math.cos((p.angle * Math.PI) / 180)), 6);
+    }
+  });
+
+  it('is symmetric around the middle card', () => {
+    for (const n of [5, 12]) {
+      const fan = fanPositions(n, 1200);
       fan.forEach((p, i) => {
         const mirror = fan[fan.length - 1 - i]!;
         expect(p.angle).toBeCloseTo(-mirror.angle);
@@ -182,12 +189,6 @@ describe('fanPositions', () => {
 
   it('puts a single card upright at the centre', () => {
     expect(fanPositions(1, 900)).toEqual([{ x: 0, y: 0, angle: 0 }]);
-  });
-
-  it('spreads 5 degrees apart, at most 44 degrees in total', () => {
-    expect(fanPositions(3, 900).map((p) => p.angle)).toEqual([-5, 0, 5]);
-    const wide = fanPositions(30, 5000).map((p) => p.angle);
-    expect(wide[wide.length - 1]! - wide[0]!).toBeCloseTo(44);
   });
 
   it('returns nothing for no card', () => {

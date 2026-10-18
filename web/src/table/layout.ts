@@ -28,7 +28,10 @@ const ZONE_MIN_HEIGHT = PORTRAIT_CARD.h + 60;
 const FAN_RADIUS = 900;
 const FAN_MAX_STEP_DEG = 5;
 const FAN_MAX_TOTAL_DEG = 44;
-const FAN_SIDE_MARGIN = 36;
+const FAN_OVERLAP = 28;
+// Kept free beside the row, and the share of a card the tilted outer cards take beyond it.
+const FAN_SIDE_ROOM = 80;
+const FAN_TILT_ROOM = 0.35;
 
 /** The box a card takes on the table. */
 export function cardBox(size: Size, opts: { faceDown?: boolean; onPile?: boolean }): Box {
@@ -116,59 +119,39 @@ export interface FanSlot {
   angle: number;
 }
 
-/** Width of the hand cards (Task 5) and their height-to-width ratio. */
-const HAND_CARD_WIDTH = 132;
-const HAND_CARD_RATIO = 185 / 132;
+/** A card in the hand. */
+export const HAND_CARD = { w: 132, h: 185 } as const;
 
 const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
 
 /**
- * Places `n` cards of a hand on an arc of radius 900, spread 5 degrees apart.
- * When that does not fit `width - 36`, or exceeds 44 degrees in total, the
- * step shrinks (down to 0, where the cards pile up) and the cards stay on the
- * arc.
+ * Lays out `n` cards of a hand, as the prototype does: the cards overlap by
+ * 28, more when the row does not fit `width` (keeping 80 plus a third of a
+ * card for the tilted outer cards), and turn 5 degrees apart, 44 at most in
+ * total. Each card sags by how far a circle of radius 900 falls away from its
+ * top at that angle.
  *
  * Coordinates are relative to the fan centre, the middle of the middle card:
- * `x` grows to the right, `y` grows downward from the top of the arc (outer
- * cards sit lower), `angle` is in degrees, clockwise. The fit counts the
- * rotated bounding box of the outer cards, `cardWidth` wide.
+ * `x` grows to the right, `y` grows downward (outer cards sit lower), `angle`
+ * is in degrees, clockwise.
  */
-export function fanPositions(n: number, width: number, cardWidth = HAND_CARD_WIDTH): FanSlot[] {
+export function fanPositions(n: number, width: number, cardWidth: number = HAND_CARD.w): FanSlot[] {
   if (n <= 0) {
     return [];
   }
-  const cardHeight = cardWidth * HAND_CARD_RATIO;
-  const available = width - FAN_SIDE_MARGIN;
-
-  // Width of the whole fan when its outer cards sit at `outerDeg`.
-  const fanWidth = (outerDeg: number) => {
-    const a = toRadians(outerDeg);
-    return 2 * FAN_RADIUS * Math.sin(a) + cardWidth * Math.cos(a) + cardHeight * Math.sin(a);
-  };
-
-  const gaps = n - 1;
-  let step = n === 1 ? 0 : Math.min(FAN_MAX_STEP_DEG, FAN_MAX_TOTAL_DEG / gaps);
-  if (gaps > 0 && fanWidth((gaps / 2) * step) > available) {
-    // The width grows with the step: bisect for the largest step that fits.
-    let low = 0;
-    let high = step;
-    for (let i = 0; i < 40; i++) {
-      const middle = (low + high) / 2;
-      if (fanWidth((gaps / 2) * middle) > available) {
-        high = middle;
-      } else {
-        low = middle;
-      }
-    }
-    step = low;
-  }
+  const gaps = Math.max(1, n - 1);
+  const step = Math.min(FAN_MAX_STEP_DEG, FAN_MAX_TOTAL_DEG / gaps);
+  const roomy = cardWidth - FAN_OVERLAP;
+  const fitted = (width - FAN_SIDE_ROOM - (1 + FAN_TILT_ROOM) * cardWidth) / gaps;
+  // Never below 0: with no room at all, the cards pile up rather than swap places.
+  const pitch = Math.max(0, Math.min(roomy, fitted));
 
   return Array.from({ length: n }, (_, i) => {
-    const angle = (i - gaps / 2) * step;
-    const radians = toRadians(angle);
+    const t = i - (n - 1) / 2;
+    const angle = t * step;
     return {
-      x: FAN_RADIUS * Math.sin(radians),
-      y: FAN_RADIUS * (1 - Math.cos(radians)),
+      x: t * pitch,
+      y: FAN_RADIUS * (1 - Math.cos(toRadians(angle))),
       angle,
     };
   });

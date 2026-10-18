@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import Hand from './Hand.svelte';
 import { hover } from './hover.svelte';
-import { fanPositions } from './layout';
+import { fanPositions, HAND_CARD } from './layout';
 import type { CardView as TableCard, PackFace } from '../lib/types';
 
 const NAMES: Record<string, string> = {
@@ -50,6 +50,10 @@ describe('Hand', () => {
   it('lays the cards out on the fan of the measured width', () => {
     vi.spyOn(Element.prototype, 'clientWidth', 'get').mockReturnValue(1200);
     render(Hand, { cards: CARDS, faceOf });
+
+    // The card size comes from one place: the layout.
+    expect(handList().style.getPropertyValue('--card-w')).toBe(`${HAND_CARD.w}px`);
+    expect(handList().style.getPropertyValue('--card-h')).toBe(`${HAND_CARD.h}px`);
 
     const slots = fanPositions(3, 1200);
     const fans = handCards().map((item) => item.querySelector<HTMLElement>('.fan'));

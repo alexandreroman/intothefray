@@ -9,7 +9,7 @@
   import CardFace from './CardFace.svelte';
   import { isHidden } from './face.svelte';
   import { hover } from './hover.svelte';
-  import { cardBox, fanPositions } from './layout';
+  import { cardBox, fanPositions, HAND_CARD } from './layout';
 
   let {
     cards,
@@ -21,11 +21,9 @@
     faceOf: (card: TableCard) => PackFace | null;
   } = $props();
 
-  const CARD_WIDTH = 132;
-
   // The whole hand's width, padding included: fanPositions keeps that padding free.
   let width = $state(0);
-  const slots = $derived(fanPositions(cards.length, width, CARD_WIDTH));
+  const slots = $derived(fanPositions(cards.length, width));
 
   let open = $state(false);
   let list = $state<HTMLElement>();
@@ -69,7 +67,15 @@
 
 <div class="veil" class:open></div>
 
-<ul class="hand" class:open aria-label="Your hand" bind:this={list} bind:clientWidth={width}>
+<ul
+  class="hand"
+  class:open
+  aria-label="Your hand"
+  style:--card-w="{HAND_CARD.w}px"
+  style:--card-h="{HAND_CARD.h}px"
+  bind:this={list}
+  bind:clientWidth={width}
+>
   {#each cards as card, i (card.id)}
     {@const slot = slots[i]}
     {@const face = faceOf(card)}
@@ -119,7 +125,8 @@
     align-self: end;
     position: relative;
     z-index: 20;
-    min-height: 218px;
+    /* Border box: the padding around one card. */
+    min-height: calc(26px + var(--card-h) + 18px);
     margin: 0;
     padding: 26px 18px 18px;
     list-style: none;
@@ -141,9 +148,10 @@
   .hcard {
     position: absolute;
     top: 26px;
-    left: calc(50% + var(--x) - 66px);
-    width: 132px;
-    height: 185px;
+    left: calc(50% + var(--x));
+    width: var(--card-w);
+    height: var(--card-h);
+    transform: translateX(-50%);
     pointer-events: auto;
     cursor: grab;
     touch-action: none;
