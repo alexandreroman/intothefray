@@ -68,14 +68,61 @@ export function zoneOrder(view: View): Area[] {
   return areas;
 }
 
-interface Extent {
-  right: number;
-  bottom: number;
-}
-
 /** A victory display or set-aside pile: placed by the client, not counted as content. */
 export function isOutOfPlay(pile: PileView): boolean {
   return OUT_OF_PLAY_ORDER.includes(pile.kind);
+}
+
+/** Where a card or a pile lies in its zone, in table units. */
+export interface Footprint {
+  id: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+/** The table cards of one area, then its piles, with the room each takes. */
+export function footprints(
+  cards: CardView[],
+  piles: PileView[],
+  area: Area,
+  sizeOf: (c: CardView) => Size,
+): Footprint[] {
+  const onTable = cards
+    .filter((c) => c.zone === 'table' && c.area === area)
+    .map((c) => {
+      const { w, h } = cardBox(sizeOf(c), { faceDown: c.faceDown, onPile: !!c.onPile });
+      return { id: c.id, x: c.x, y: c.y, w, h };
+    });
+  const stacked = piles
+    .filter((p) => p.area === area)
+    .map((p) => ({ id: p.id, x: p.x, y: p.y, ...PILE_BOX }));
+  return [...onTable, ...stacked];
+}
+
+// Less than this much of an item showing at the edge counts as hidden.
+const EDGE_SLACK = 10;
+
+/**
+ * What lies out of view on each side of a zone scrolled to show table units
+ * `left` to `right`, each side ordered from left to right.
+ */
+export function hiddenAside(
+  items: Footprint[],
+  left: number,
+  right: number,
+): { left: Footprint[]; right: Footprint[] } {
+  const byX = [...items].sort((a, b) => a.x - b.x);
+  return {
+    left: byX.filter((item) => item.x + item.w <= left + EDGE_SLACK),
+    right: byX.filter((item) => item.x >= right - EDGE_SLACK),
+  };
+}
+
+interface Extent {
+  right: number;
+  bottom: number;
 }
 
 /**
@@ -89,22 +136,16 @@ function extentOf(
   area: Area,
   sizeOf: (c: CardView) => Size,
 ): Extent {
-  const extent: Extent = { right: 0, bottom: 0 };
-  const grow = (x: number, y: number, box: { w: number; h: number }) => {
-    extent.right = Math.max(extent.right, x + box.w);
-    extent.bottom = Math.max(extent.bottom, y + box.h);
+  const inPlay = footprints(
+    cards,
+    piles.filter((p) => !isOutOfPlay(p)),
+    area,
+    sizeOf,
+  );
+  return {
+    right: Math.max(0, ...inPlay.map((item) => item.x + item.w)),
+    bottom: Math.max(0, ...inPlay.map((item) => item.y + item.h)),
   };
-  for (const c of cards) {
-    if (c.zone === 'table' && c.area === area) {
-      grow(c.x, c.y, cardBox(sizeOf(c), { faceDown: c.faceDown, onPile: !!c.onPile }));
-    }
-  }
-  for (const p of piles) {
-    if (p.area === area && !isOutOfPlay(p)) {
-      grow(p.x, p.y, PILE_BOX);
-    }
-  }
-  return extent;
 }
 
 /** Height a zone needs: its lowest bottom plus a margin, and never under one card row plus 60. */

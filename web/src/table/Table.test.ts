@@ -347,6 +347,47 @@ describe('Table', () => {
     expect(outPileLeft(/^Villain/, 'Set-aside cards')).toBe('870px');
   });
 
+  it('chips count what is scrolled out of a zone, and scroll to it', async () => {
+    localStorage.setItem('itf-zoom', '1');
+    // Each zone scroller shows 200 table units.
+    const width = vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(248);
+    try {
+      render(Table, { session: fakeSession(), view: makeView() });
+      const villain = await screen.findByRole('region', { name: /Rhino/ });
+      const scroller = villain.querySelector<HTMLElement>('.zscroll');
+      if (!scroller) {
+        throw new Error('no scroller');
+      }
+      const scrollTo = vi.fn();
+      scroller.scrollTo = scrollTo;
+
+      // At the start, the encounter deck (x 500) is out of view on the right.
+      expect(within(villain).queryByRole('button', { name: /on the left/ })).toBeNull();
+      const right = within(villain).getByRole('button', { name: '1 more on the right' });
+      expect(right.textContent?.trim()).toBe('1 →');
+      await fireEvent.click(right);
+      expect(scrollTo).toHaveBeenLastCalledWith({ left: 484, behavior: 'smooth' });
+
+      // Scrolled to 600 px: Rhino and the main scheme are out on the left.
+      Object.defineProperty(scroller, 'scrollLeft', { value: 600, configurable: true });
+      await fireEvent.scroll(scroller);
+      const left = within(villain).getByRole('button', { name: '2 more on the left' });
+      expect(left.textContent?.trim()).toBe('← 2');
+      expect(within(villain).queryByRole('button', { name: /on the right/ })).toBeNull();
+      // Back to the nearest one, the main scheme at 130.
+      await fireEvent.click(left);
+      expect(scrollTo).toHaveBeenLastCalledWith({ left: 114, behavior: 'smooth' });
+    } finally {
+      width.mockRestore();
+    }
+  });
+
+  it('shows no chip before the zone is measured', async () => {
+    render(Table, { session: fakeSession(), view: makeView() });
+    const villain = await screen.findByRole('region', { name: /Rhino/ });
+    expect(within(villain).queryByRole('button', { name: /more on the/ })).toBeNull();
+  });
+
   it('places the first player token in its zone', async () => {
     render(Table, { session: fakeSession(), view: makeView() });
 

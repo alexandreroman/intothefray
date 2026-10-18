@@ -3,6 +3,8 @@ import type { Area, CardView, PileView, PlayerView, View } from '../lib/types';
 import {
   cardBox,
   fanPositions,
+  footprints,
+  hiddenAside,
   placeOutPiles,
   zoneMinHeight,
   zoneOrder,
@@ -175,6 +177,40 @@ describe('placeOutPiles', () => {
   it('does not change the piles it is given', () => {
     placeOutPiles(villainPiles, 'villain', 880);
     expect(villainPiles[0]).toMatchObject({ x: 1200, y: 30 });
+  });
+});
+
+describe('footprints', () => {
+  it("lists a zone's table cards with their sizes, then its piles as 100x140", () => {
+    const cards = [
+      card({ id: 'a', area: 'villain', x: 10, y: 20 }),
+      card({ id: 'b', area: 'villain', x: 200, faceDown: true }),
+      card({ id: 'h', area: 'villain', zone: 'hand' }),
+      card({ id: 'o', area: 'p0' }),
+    ];
+    const piles = [pile({ id: 'enc', area: 'villain', x: 500 }), pile({ id: 'd', area: 'p0' })];
+    expect(footprints(cards, piles, 'villain', () => 'land')).toEqual([
+      { id: 'a', x: 10, y: 20, w: 140, h: 100 },
+      { id: 'b', x: 200, y: 0, w: 100, h: 140 },
+      { id: 'enc', x: 500, y: 0, w: 100, h: 140 },
+    ]);
+  });
+});
+
+describe('hiddenAside', () => {
+  const at = (id: string, x: number) => ({ id, x, y: 0, w: 100, h: 140 });
+  const ids = (list: { id: string }[]) => list.map((item) => item.id);
+
+  it('finds what is scrolled out on each side, 10 units of it showing at most', () => {
+    const items = [at('far right', 900), at('in', 300), at('right', 595), at('left', 10)];
+    items.push(at('edge left', 0), at('peeking', 15), at('peeking right', 585));
+    const hidden = hiddenAside(items, 100, 600);
+    expect(ids(hidden.left)).toEqual(['edge left', 'left']);
+    expect(ids(hidden.right)).toEqual(['right', 'far right']);
+  });
+
+  it('finds nothing when everything shows', () => {
+    expect(hiddenAside([at('a', 0), at('b', 500)], 0, 600)).toEqual({ left: [], right: [] });
   });
 });
 
