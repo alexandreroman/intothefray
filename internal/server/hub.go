@@ -19,8 +19,8 @@ const (
 	// touchInterval is how often the games with a viewer on this instance
 	// get their expiry reset.
 	touchInterval = 10 * time.Minute
-	// storeCallTimeout bounds each store call of the background work, which
-	// handles the events of every game one at a time.
+	// storeCallTimeout bounds each store call of the background work: the
+	// event loop handles the events of every game one at a time.
 	storeCallTimeout = 2 * time.Second
 )
 
@@ -184,8 +184,13 @@ func (s *Server) Run(ctx context.Context) error {
 	}
 	defer func() { _ = closeEvents() }()
 
-	ticker := time.NewTicker(s.touchInterval)
-	defer ticker.Stop()
+	// The touch rounds run apart from the event loop: their store calls must
+	// not hold up the updates and presence of the games.
+	touchCtx, stopTouching := context.WithCancel(ctx)
+	var touching sync.WaitGroup
+	touching.Go(func() { s.touchLoop(touchCtx) })
+	defer touching.Wait()
+	defer stopTouching()
 
 	for {
 		select {
@@ -199,6 +204,19 @@ func (s *Server) Run(ctx context.Context) error {
 				return errSubscriptionEnded
 			}
 			s.handleEvent(ctx, ev)
+		}
+	}
+}
+
+// touchLoop runs a touch round every touchInterval until ctx ends.
+func (s *Server) touchLoop(ctx context.Context) {
+	ticker := time.NewTicker(s.touchInterval)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
 		case <-ticker.C:
 			s.touchLocalGames(ctx)
 		}

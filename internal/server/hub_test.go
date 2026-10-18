@@ -8,14 +8,17 @@ import (
 	"net/http/httptest"
 	"slices"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
 	"github.com/alicebob/miniredis/v2"
 	"github.com/coder/websocket"
+	"github.com/redis/go-redis/v9"
 
 	"github.com/alexandreroman/intothefray/internal/decks"
 	"github.com/alexandreroman/intothefray/internal/game"
+	"github.com/alexandreroman/intothefray/internal/store"
 )
 
 const (
@@ -463,6 +466,62 @@ func TestTouchKeepsConnectedGamesAlive(t *testing.T) {
 	}
 	if mr.Exists("game:" + idle.ID) {
 		t.Error("the game without viewers is still stored, want it expired")
+	}
+}
+
+// expireBlocker is a Redis hook that holds every EXPIRE command, the one a
+// touch round sends, until release is closed.
+type expireBlocker struct {
+	entered     chan struct{}
+	enteredOnce sync.Once
+	release     chan struct{}
+}
+
+func (b *expireBlocker) DialHook(next redis.DialHook) redis.DialHook { return next }
+
+func (b *expireBlocker) ProcessPipelineHook(next redis.ProcessPipelineHook) redis.ProcessPipelineHook {
+	return next
+}
+
+func (b *expireBlocker) ProcessHook(next redis.ProcessHook) redis.ProcessHook {
+	return func(ctx context.Context, cmd redis.Cmder) error {
+		if cmd.Name() == "expire" {
+			b.enteredOnce.Do(func() { close(b.entered) })
+			<-b.release
+		}
+		return next(ctx, cmd)
+	}
+}
+
+func TestSlowTouchDoesNotDelayPresence(t *testing.T) {
+	mr := miniredis.RunT(t)
+	blocker := &expireBlocker{entered: make(chan struct{}), release: make(chan struct{})}
+	ts := startInstance(t, mr, func(s *Server) {
+		rdb := redis.NewClient(&redis.Options{Addr: mr.Addr()})
+		rdb.AddHook(blocker)
+		t.Cleanup(func() { _ = rdb.Close() })
+		s.deps.Store = store.New(rdb, time.Hour)
+		s.touchInterval = 10 * time.Millisecond
+	})
+	// Registered after startInstance, so it runs first and lets Run stop.
+	t.Cleanup(func() { close(blocker.release) })
+
+	created := createGame(t, ts, "Alex")
+	alex := connect(t, ts, created.ID)
+	alex.hello(created.Token, "Alex")
+	bob := connect(t, ts, created.ID)
+	bob.hello("", "Bob")
+	alex.awaitView(func(v game.View) bool { return len(v.Players) == 2 })
+	select {
+	case <-blocker.entered:
+	case <-time.After(waitTimeout):
+		t.Fatal("no touch round started")
+	}
+
+	bob.send(map[string]any{"type": "presence", "preview": "c1"})
+
+	if got := alex.expect("presence"); got.Name != "Bob" {
+		t.Errorf("presence = %s, want Bob's", got.raw)
 	}
 }
 
