@@ -1,6 +1,8 @@
 package server
 
 import (
+	"encoding/json"
+
 	"github.com/alexandreroman/intothefray/internal/decks"
 	"github.com/alexandreroman/intothefray/internal/game"
 )
@@ -27,6 +29,7 @@ const (
 	typeHello     = "hello"
 	typeLobby     = "lobby"
 	typeAction    = "action"
+	typePresence  = "presence"
 	typeWelcome   = "welcome"
 	typeView      = "view"
 	typeError     = "error"
@@ -84,6 +87,13 @@ type clientMessage struct {
 	// action
 	ID     int64        `json:"id"` // client sequence number, echoed in errors
 	Action *game.Action `json:"action"`
+
+	// presence
+	Cursor  *presencePoint `json:"cursor"`
+	Preview *string        `json:"preview"`
+	// Drag is kept raw to tell an ended drag (null) from an absent one.
+	Drag json.RawMessage `json:"drag"`
+	Ping *presencePoint  `json:"ping"`
 }
 
 // welcomeMessage answers a successful hello. It is the only message that
@@ -115,11 +125,61 @@ type deckErrorMessage struct {
 	Unsupported []decks.Unsupported `json:"unsupported"`
 }
 
-// eventUpdated is the kind of the event published after a game changes.
-const eventUpdated = "updated"
+// Kinds of the events published on a game's channel.
+const (
+	// eventUpdated is published after a game changes.
+	eventUpdated = "updated"
+	// eventPresence carries a viewer's presence to the other viewers.
+	eventPresence = "presence"
+)
 
-// gameEvent is published on a game's channel for the other instances.
-type gameEvent struct {
+// updatedEvent is published on a game's channel after the game changes.
+type updatedEvent struct {
 	Kind    string `json:"kind"`
 	Version int64  `json:"version"`
+}
+
+// presencePoint is a spot of the table: where a cursor is, or what a ping
+// points at.
+type presencePoint struct {
+	Area string `json:"area"`
+	X    int    `json:"x"`
+	Y    int    `json:"y"`
+}
+
+// presenceDrag is a drag in progress: the cards dragged and where they are.
+type presenceDrag struct {
+	Cards []string `json:"cards"`
+	Area  string   `json:"area"`
+	X     int      `json:"x"`
+	Y     int      `json:"y"`
+}
+
+// presenceFields are the relayed fields of a presence message; each is
+// absent when it did not change. Drag is the JSON of a presenceDrag, or null
+// once the drag ends.
+type presenceFields struct {
+	Cursor  *presencePoint  `json:"cursor,omitempty"`
+	Preview *string         `json:"preview,omitempty"`
+	Drag    json.RawMessage `json:"drag,omitempty"`
+	Ping    *presencePoint  `json:"ping,omitempty"`
+}
+
+// presenceEvent is published on a game's channel for the viewers of every
+// instance. From identifies the sender's connection without revealing its
+// token; it never reaches a client.
+type presenceEvent struct {
+	Kind  string `json:"kind"`
+	From  string `json:"from"`
+	Color int    `json:"color"`
+	Name  string `json:"name"`
+	presenceFields
+}
+
+// presenceMessage relays a viewer's presence to the other viewers.
+type presenceMessage struct {
+	Type  string `json:"type"`
+	Color int    `json:"color"`
+	Name  string `json:"name"`
+	presenceFields
 }

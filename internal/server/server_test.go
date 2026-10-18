@@ -47,15 +47,23 @@ func newTestServerWith(t *testing.T, configure func(*Server)) (*httptest.Server,
 func newServer(t *testing.T) (*Server, *miniredis.Miniredis) {
 	t.Helper()
 
+	mr := miniredis.RunT(t)
+	return newServerOn(t, mr), mr
+}
+
+// newServerOn builds a Server like newServer, backed by mr, which several
+// servers may share to act as instances of one deployment.
+func newServerOn(t *testing.T, mr *miniredis.Miniredis) *Server {
+	t.Helper()
+
 	cat, err := testCatalog()
 	if err != nil {
 		t.Fatal(err)
 	}
-	mr := miniredis.RunT(t)
 	rdb := redis.NewClient(&redis.Options{Addr: mr.Addr()})
 	t.Cleanup(func() { _ = rdb.Close() })
 
-	srv := New(Deps{
+	return New(Deps{
 		Config: config.Config{
 			AllowedOrigins: []string{allowedOrigin},
 			GameTTL:        time.Hour,
@@ -66,7 +74,6 @@ func newServer(t *testing.T) (*Server, *miniredis.Miniredis) {
 		Now:     time.Now,
 		Logger:  slog.New(slog.NewTextHandler(io.Discard, nil)),
 	})
-	return srv, mr
 }
 
 // testCatalog loads the embedded packs once for the whole test binary.

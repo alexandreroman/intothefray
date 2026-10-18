@@ -54,11 +54,14 @@ type Server struct {
 	// originPatterns are the host[:port] of the allowed origins, as expected
 	// by websocket.AcceptOptions.
 	originPatterns []string
+	// touchInterval is how often Run resets the expiry of the games with
+	// local viewers; tests shorten it.
+	touchInterval time.Duration
 }
 
 // New builds a Server from its dependencies.
 func New(d Deps) *Server {
-	s := &Server{deps: d, hub: newHub(), newID: newGameID}
+	s := &Server{deps: d, hub: newHub(), newID: newGameID, touchInterval: touchInterval}
 	for _, origin := range d.Config.AllowedOrigins {
 		u, err := url.Parse(origin)
 		if err != nil || u.Host == "" {
@@ -78,13 +81,6 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("POST /api/games", s.handleCreateGame)
 	mux.HandleFunc("GET /ws/games/{id}", s.handleGameSocket)
 	return s.withCORS(mux)
-}
-
-// Run blocks until ctx ends. It will own the background work of the server
-// (event subscription) once there is some.
-func (s *Server) Run(ctx context.Context) error {
-	<-ctx.Done()
-	return nil
 }
 
 func handleHealthz(w http.ResponseWriter, _ *http.Request) {

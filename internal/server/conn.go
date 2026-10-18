@@ -50,9 +50,12 @@ type conn struct {
 	ws     *websocket.Conn
 	gameID string
 	logger *slog.Logger
-	// token is set by a successful hello, before the hub sees the
-	// connection, and never changes afterwards.
-	token string
+	// token and presenceID are set by a successful hello, before the hub
+	// registers the connection, and never change afterwards.
+	token      string
+	presenceID string
+	// presenceLimit is only used by the read loop.
+	presenceLimit rateLimiter
 
 	queue    chan []byte
 	tooSlow  chan struct{}
@@ -66,16 +69,20 @@ type conn struct {
 	viewMu      sync.Mutex
 	pendingView []byte
 	lastVersion int64
+	// you is who the viewer is in the last view sent, which presence
+	// messages are signed with.
+	you game.YouView
 }
 
 func newConn(ws *websocket.Conn, gameID string, logger *slog.Logger) *conn {
 	return &conn{
-		ws:        ws,
-		gameID:    gameID,
-		logger:    logger,
-		queue:     make(chan []byte, sendQueueSize),
-		tooSlow:   make(chan struct{}),
-		viewReady: make(chan struct{}, 1),
+		ws:            ws,
+		gameID:        gameID,
+		logger:        logger,
+		queue:         make(chan []byte, sendQueueSize),
+		tooSlow:       make(chan struct{}),
+		viewReady:     make(chan struct{}, 1),
+		presenceLimit: rateLimiter{limit: maxPresencePerSecond},
 	}
 }
 
@@ -93,6 +100,19 @@ func (c *conn) send(msg any) {
 	}
 }
 
+// sendPresence queues a presence message for the viewer. Presence is
+// cosmetic: it is dropped when the queue is more than half full, so that it
+// never costs a viewer its connection nor crowds out the other messages.
+func (c *conn) sendPresence(data []byte) {
+	if len(c.queue) > cap(c.queue)/2 {
+		return
+	}
+	select {
+	case c.queue <- data:
+	default: // filled up meanwhile
+	}
+}
+
 // sendView makes the viewer's view of g the pending view, unless the viewer
 // already has this version or a newer one.
 func (c *conn) sendView(g *game.Game, version int64) {
@@ -102,16 +122,25 @@ func (c *conn) sendView(g *game.Game, version int64) {
 	if version <= c.lastVersion {
 		return
 	}
-	data, err := c.encode(viewMessage{Type: typeView, Version: version, View: g.ViewFor(c.token)})
+	view := g.ViewFor(c.token)
+	data, err := c.encode(viewMessage{Type: typeView, Version: version, View: view})
 	if err != nil {
 		return
 	}
+	c.you = view.You
 	c.lastVersion = version
 	c.pendingView = data
 	select {
 	case c.viewReady <- struct{}{}:
 	default: // already signalled
 	}
+}
+
+// identity returns who the viewer is in the last view sent.
+func (c *conn) identity() game.YouView {
+	c.viewMu.Lock()
+	defer c.viewMu.Unlock()
+	return c.you
 }
 
 // takeView returns the pending view, or nil when an earlier signal already
@@ -218,12 +247,16 @@ func (c *conn) closeWhenTooSlow(ctx context.Context) {
 func (s *Server) serveConn(ctx context.Context, ws *websocket.Conn, gameID string) {
 	ws.SetReadLimit(maxMessageBytes)
 	c := newConn(ws, gameID, s.deps.Logger)
+	if !s.hub.add(c) {
+		_ = ws.Close(websocket.StatusGoingAway, "server shutting down")
+		return
+	}
 	ctx, cancel := context.WithCancel(ctx)
 	var wg sync.WaitGroup
 	// Deferred, so that even a panic leaves neither the hub entry nor the
 	// socket behind.
 	defer func() {
-		s.hub.unregister(c)
+		s.hub.remove(c)
 		cancel()
 		wg.Wait()
 		_ = ws.CloseNow()
@@ -293,6 +326,8 @@ func (s *Server) handle(ctx context.Context, c *conn, msg clientMessage) error {
 		return s.lobby(ctx, c, msg)
 	case typeAction:
 		return s.act(ctx, c, msg)
+	case typePresence:
+		return s.presence(ctx, c, msg)
 	default:
 		return fmt.Errorf("%w: unknown type %q", errInvalidMessage, msg.Type)
 	}
@@ -325,6 +360,7 @@ func (s *Server) hello(ctx context.Context, c *conn, msg clientMessage) error {
 	}
 
 	c.token = token
+	c.presenceID = presenceID(token)
 	c.send(welcomeMessage{Type: typeWelcome, Token: token, Role: role})
 	s.hub.register(c)
 	// Loading after registering leaves no gap: an update made since the join
@@ -440,17 +476,25 @@ func (s *Server) update(ctx context.Context, gameID string, change func(*game.Ga
 // is stored already, so a failure is only logged: their viewers catch up
 // with the next change.
 func (s *Server) publishUpdated(ctx context.Context, gameID string, version int64) {
+	payload, err := json.Marshal(updatedEvent{Kind: eventUpdated, Version: version})
+	if err != nil {
+		s.deps.Logger.Error("encode game update", "game_id", gameID, "error", err)
+		return
+	}
+	s.publish(ctx, gameID, payload)
+}
+
+// publish sends an event to the viewers of the game on every instance,
+// this one included. A failure is only logged: game changes are stored
+// already and presence is cosmetic.
+func (s *Server) publish(ctx context.Context, gameID string, payload []byte) {
 	// The viewer leaving must not keep the others from hearing of a change
 	// that is stored already.
 	ctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), publishTimeout)
 	defer cancel()
 
-	payload, err := json.Marshal(gameEvent{Kind: eventUpdated, Version: version})
-	if err == nil {
-		err = s.deps.Store.Publish(ctx, gameID, payload)
-	}
-	if err != nil {
-		s.deps.Logger.Warn("publish game update", "game_id", gameID, "error", err)
+	if err := s.deps.Store.Publish(ctx, gameID, payload); err != nil {
+		s.deps.Logger.Warn("publish game event", "game_id", gameID, "error", err)
 	}
 }
 

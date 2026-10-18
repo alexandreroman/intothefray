@@ -46,7 +46,11 @@ type received struct {
 	Code        string              `json:"code"`
 	Message     string              `json:"message"`
 	Unsupported []decks.Unsupported `json:"unsupported"`
-	raw         []byte
+	// presence; Color is a pointer as 0 is a valid colour.
+	Color  *int           `json:"color"`
+	Name   string         `json:"name"`
+	Cursor *presencePoint `json:"cursor"`
+	raw    []byte
 }
 
 // testClient is a viewer connected to the test server.
