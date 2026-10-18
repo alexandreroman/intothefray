@@ -300,6 +300,8 @@
     const at = { x: event.clientX, y: event.clientY };
     const found = isStillThere(pressed, from) ? locate(from, at) : null;
     end();
+    // The click this release fires is the end of the drag, not a tap on what lies there.
+    interaction.swallowNextClick();
     if (found?.action) {
       act(found.action);
     }
@@ -311,11 +313,8 @@
     }
   }
 
-  /** The drag is over: the ghost goes, and the click that ends it selects nothing. */
+  /** The drag is over: dropped, or cancelled. */
   function end(): void {
-    if (interaction.dragging) {
-      interaction.swallowNextClick();
-    }
     interaction.letGo();
     pointer = null;
     hint = null;

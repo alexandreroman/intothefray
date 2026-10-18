@@ -384,6 +384,26 @@ describe('dragging a table card', () => {
     expect(session.act).toHaveBeenCalledOnce();
   });
 
+  it('leaves the next click alone when a drag ends without a release', async () => {
+    await renderTable();
+    const zoomIn = screen.getByRole('button', { name: 'Zoom in' });
+
+    // Cancelled by the browser.
+    await press(placed('mine'), 50, 400);
+    await moveTo(150, 420);
+    await fireEvent.pointerCancel(window, { clientX: 150, clientY: 420 });
+    // A click from the keyboard: no pointer press comes before it.
+    await fireEvent.click(zoomIn);
+    expect(screen.getByRole('button', { name: 'Back to 100%' }).textContent).toBe('110%');
+
+    // Let go outside the window.
+    await press(placed('mine'), 50, 400);
+    await moveTo(150, 420);
+    await moveTo(160, 420, 0);
+    await fireEvent.click(zoomIn);
+    expect(screen.getByRole('button', { name: 'Back to 100%' }).textContent).toBe('120%');
+  });
+
   it('does not select the card with the tap that ends a touch drag', async () => {
     await renderTable();
     await press(placed('mine'), 50, 400, 'touch');
