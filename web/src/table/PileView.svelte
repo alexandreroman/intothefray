@@ -172,18 +172,6 @@
     filter: none;
   }
 
-  /* A drop would go onto this pile. */
-  .card.drop-pile::before {
-    content: '';
-    position: absolute;
-    inset: 1%;
-    border-radius: 7px;
-    pointer-events: none;
-    z-index: 1;
-    outline: 3px dashed var(--sel);
-    outline-offset: 3px;
-  }
-
   .card.inert {
     cursor: default;
   }

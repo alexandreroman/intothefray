@@ -141,27 +141,6 @@
     transition: scale 0.12s;
   }
 
-  /* Where a drop would go: under this card (orange), or onto the pile it covers (blue). */
-  .card.drop-target::before,
-  .card.drop-pile::before {
-    content: '';
-    position: absolute;
-    inset: 1%;
-    border-radius: 7px;
-    pointer-events: none;
-    z-index: 1;
-  }
-
-  .card.drop-target::before {
-    outline: 3px dashed var(--warn);
-    outline-offset: 2px;
-  }
-
-  .card.drop-pile::before {
-    outline: 3px dashed var(--sel);
-    outline-offset: 3px;
-  }
-
   /* Selected by a tap: a ring around the cut card. */
   .card.locked::before {
     content: '';

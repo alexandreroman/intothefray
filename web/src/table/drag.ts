@@ -3,7 +3,14 @@
 // the pointer, measures the screen and calls them.
 
 import type { Action, Area, CardView, View } from '../lib/types';
-import { seatOf, stageHeldBy, type TableElement } from './actions';
+import {
+  asidePileOf,
+  discardPileOf,
+  homeDeckOf,
+  seatOf,
+  stageHeldBy,
+  type TableElement,
+} from './actions';
 import { GRID } from './layout';
 
 /** A press turns into a drag once the pointer has moved this far, in screen pixels. */
@@ -292,7 +299,8 @@ export function pileTargets(drag: DragSource, view: View): PileTarget[] {
   }
   const exists = (target: PileTarget) => table.piles.some((p) => p.id === target.pile);
   if (drag.kind === 'encounter') {
-    return [{ pile: 'encd', drop: 'discard' as const, label: 'Discard' }].filter(exists);
+    const encounterDiscard: PileTarget = { pile: 'encd', drop: 'discard', label: 'Discard' };
+    return [encounterDiscard].filter(exists);
   }
 
   const card = table.cards.find((c) => c.id === drag.card);
@@ -300,20 +308,15 @@ export function pileTargets(drag: DragSource, view: View): PileTarget[] {
   if (!card || stageHeldBy(card, table)) {
     return [];
   }
-  const encounter = card.owner === -1;
-  const own = card.owner === seat;
   const targets: PileTarget[] = [];
-  if (own || encounter) {
-    targets.push({
-      pile: encounter ? 'enc' : `deck:p${card.owner}`,
-      drop: 'top',
-      label: 'Top of deck',
-    });
+  // A deck is private to its owner: the viewer's own cards and encounter cards only.
+  if (card.owner === seat || card.owner === -1) {
+    targets.push({ pile: homeDeckOf(card), drop: 'top', label: 'Top of deck' });
   }
   targets.push(
-    { pile: encounter ? 'encd' : `disc:p${card.owner}`, drop: 'discard', label: 'Discard' },
+    { pile: discardPileOf(card), drop: 'discard', label: 'Discard' },
     { pile: 'vic', drop: 'pile', label: 'Victory display' },
-    { pile: own ? `aside:p${seat}` : 'saside', drop: 'pile', label: 'Set aside' },
+    { pile: asidePileOf(card, seat), drop: 'pile', label: 'Set aside' },
   );
   return targets.filter(exists);
 }

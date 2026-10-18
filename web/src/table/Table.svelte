@@ -628,19 +628,35 @@
   }
 
   /*
-    The white ring of the cards of the hovered history line, for cards and piles alike. It is
-    drawn around the cut card: the cut would clip it on the image.
+    Rings drawn around the cut card, for cards and piles alike (the cut would clip them on the
+    image): the white ring of the cards of the hovered history line, and the drop outlines.
   */
-  .table :global(.card.highlighted)::before {
+  .table :global(.card.highlighted)::before,
+  .table :global(.card.drop-target)::before,
+  .table :global(.card.drop-pile)::before {
     content: '';
     position: absolute;
     inset: 1%;
     border-radius: 7px;
     pointer-events: none;
     z-index: 1;
+  }
+
+  .table :global(.card.highlighted)::before {
     box-shadow:
       0 0 0 2px #ffffffb0,
       0 0 22px 6px #ffffff38;
+  }
+
+  /* Where a drop would go: under a card (the prototype's threat orange), or onto a pile. */
+  .table :global(.card.drop-target)::before {
+    outline: 3px dashed var(--warn);
+    outline-offset: 2px;
+  }
+
+  .table :global(.card.drop-pile)::before {
+    outline: 3px dashed var(--sel);
+    outline-offset: 3px;
   }
 
   /* The 10-unit grid shows more clearly while something is dragged. */

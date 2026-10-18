@@ -283,7 +283,7 @@ function moveMenu(card: CardView, context: Context): ActionItem[] {
   }
   // A card returns to its home deck, which is private to its owner.
   const encounter = card.owner === -1;
-  if ((own || encounter) && hasPile(context.table, encounter ? 'enc' : `deck:p${card.owner}`)) {
+  if ((own || encounter) && hasPile(context.table, homeDeckOf(card))) {
     menu.push(
       { id: 'deckTop', label: 'Top of deck', group: 0, run: () => toDeck(card, 'top') },
       { id: 'deckBottom', label: 'Bottom of deck', group: 0, run: () => toDeck(card, 'bottom') },
@@ -305,8 +305,7 @@ function moveMenu(card: CardView, context: Context): ActionItem[] {
       run: () => toPile(card, 'vic'),
     });
   }
-  // Own cards go to the player's set-aside pile, any other to the scenario's.
-  const aside = own ? `aside:p${context.seat}` : 'saside';
+  const aside = asidePileOf(card, context.seat);
   if (hasPile(context.table, aside)) {
     outOfPlay.push({ id: 'aside', label: 'Set aside', group: 0, run: () => toPile(card, aside) });
   }
@@ -315,6 +314,23 @@ function moveMenu(card: CardView, context: Context): ActionItem[] {
     menu.push(SEPARATOR);
   }
   return [...menu, ...outOfPlay];
+}
+
+// The piles a card goes to, as the server names them (internal/game/state.go).
+
+/** The deck a card goes back to: the encounter deck for an encounter card, else its owner's. */
+export function homeDeckOf(card: CardView): string {
+  return card.owner === -1 ? 'enc' : `deck:p${card.owner}`;
+}
+
+/** The discard pile a card goes to, as discardPileID has it. */
+export function discardPileOf(card: CardView): string {
+  return card.owner === -1 ? 'encd' : `disc:p${card.owner}`;
+}
+
+/** The set-aside pile for a card: the viewer's own for their cards, the scenario's for any other. */
+export function asidePileOf(card: CardView, seat: number): string {
+  return card.owner === seat ? `aside:p${seat}` : 'saside';
 }
 
 function toDeck(card: CardView, where: 'top' | 'bottom' | 'shuffle'): Action {
