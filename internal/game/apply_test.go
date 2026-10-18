@@ -273,3 +273,176 @@ func TestPlayRefusesCardsOutsideHand(t *testing.T) {
 		}
 	}
 }
+
+// newStageTable adds a two-card villain stage to the test table: Rhino I (c20)
+// is current, on the table with 3 dmg and an attachment (c21); Rhino II (c22)
+// waits in the stage zone.
+func newStageTable() *Table {
+	table := newTestTable()
+	table.Cards["c20"] = &Card{
+		ID: "c20", Owner: NoOwner, Zone: ZoneTable, Area: AreaVillain, X: 280, Y: 0, Z: 7, Faces: 2,
+		Tokens: map[string]int{"dmg": 3}, Status: map[string]int{"tough": 1}, Exhausted: true,
+	}
+	table.Cards["c21"] = &Card{
+		ID: "c21", Owner: NoOwner, Zone: ZoneTable, Area: AreaVillain, X: 280, Y: 20, Z: 6, Parent: "c20",
+	}
+	table.Cards["c22"] = &Card{ID: "c22", Owner: NoOwner, Zone: ZoneStage, Faces: 2}
+	table.Stages = []*Stage{{Key: "villain", Label: "Villain", Current: "c20", Cards: []string{"c20", "c22"}}}
+	return table
+}
+
+func TestTokenNeverNegative(t *testing.T) {
+	table := newTestTable()
+
+	mustApply(t, table, Action{Kind: ActToken, Card: "c1", Name: "dmg", Delta: 3})
+	if got := table.Cards["c1"].Tokens["dmg"]; got != 5 {
+		t.Errorf("dmg = %d, want 5", got)
+	}
+
+	mustApply(t, table, Action{Kind: ActToken, Card: "c1", Name: "dmg", Delta: -10})
+	if _, ok := table.Cards["c1"].Tokens["dmg"]; ok {
+		t.Errorf("tokens = %v, want the dmg entry deleted", table.Cards["c1"].Tokens)
+	}
+
+	mustApply(t, table, Action{Kind: ActToken, Card: "c2", Name: "thr", Delta: -1})
+	if len(table.Cards["c2"].Tokens) != 0 {
+		t.Errorf("tokens = %v, want none", table.Cards["c2"].Tokens)
+	}
+}
+
+func TestStatusNeverNegative(t *testing.T) {
+	table := newTestTable()
+
+	mustApply(t, table, Action{Kind: ActStatus, Card: "c1", Name: "tough", Delta: 1})
+	mustApply(t, table, Action{Kind: ActStatus, Card: "c1", Name: "stunned", Delta: -4})
+
+	status := table.Cards["c1"].Status
+	if status["tough"] != 1 || len(status) != 1 {
+		t.Errorf("status = %v, want only tough=1", status)
+	}
+}
+
+func TestTokenAndStatusRejectBadInput(t *testing.T) {
+	tests := []Action{
+		{Kind: ActToken, Card: "c1", Name: "stunned", Delta: 1},
+		{Kind: ActToken, Card: "c1", Name: "bogus", Delta: 1},
+		{Kind: ActStatus, Card: "c1", Name: "dmg", Delta: 1},
+		{Kind: ActToken, Card: "c3", Name: "dmg", Delta: 1}, // in hand
+		{Kind: ActStatus, Card: "c999", Name: "tough", Delta: 1},
+	}
+	for _, a := range tests {
+		table := newTestTable()
+		before := table.Clone()
+
+		if err := apply(table, a); !errors.Is(err, ErrInvalid) {
+			t.Errorf("%+v: err = %v, want ErrInvalid", a, err)
+		}
+		if !reflect.DeepEqual(before, table) {
+			t.Errorf("%+v: table changed by a rejected action", a)
+		}
+	}
+}
+
+func TestExhaustToggles(t *testing.T) {
+	table := newTestTable()
+
+	mustApply(t, table, Action{Kind: ActExhaust, Card: "c1"})
+	if table.Cards["c1"].Exhausted {
+		t.Error("c1 still exhausted after the first toggle")
+	}
+	mustApply(t, table, Action{Kind: ActExhaust, Card: "c1"})
+	if !table.Cards["c1"].Exhausted {
+		t.Error("c1 not exhausted after the second toggle")
+	}
+	if err := apply(table, Action{Kind: ActExhaust, Card: "c3"}); !errors.Is(err, ErrInvalid) {
+		t.Errorf("hand card: err = %v, want ErrInvalid", err)
+	}
+}
+
+func TestFlipCyclesAndRevealsFaceDown(t *testing.T) {
+	table := newTestTable()
+	c1 := table.Cards["c1"] // Face 1 of 2
+
+	mustApply(t, table, Action{Kind: ActFlip, Card: "c1"})
+	if c1.Face != 0 {
+		t.Errorf("face = %d, want 0 after wrapping", c1.Face)
+	}
+	mustApply(t, table, Action{Kind: ActFlip, Card: "c1"})
+	if c1.Face != 1 {
+		t.Errorf("face = %d, want 1", c1.Face)
+	}
+
+	c1.FaceDown = true
+	mustApply(t, table, Action{Kind: ActFlip, Card: "c1"})
+	if c1.FaceDown || c1.Face != 1 {
+		t.Errorf("faceDown = %v, face = %d, want face up on face 1", c1.FaceDown, c1.Face)
+	}
+}
+
+func TestFlipSingleFacedCardStaysOnFaceZero(t *testing.T) {
+	table := newTestTable() // c7 has no Faces set
+
+	mustApply(t, table, Action{Kind: ActFlip, Card: "c7"})
+
+	if table.Cards["c7"].Face != 0 {
+		t.Errorf("face = %d, want 0", table.Cards["c7"].Face)
+	}
+}
+
+func TestChooseStageKeepsTokensOnPreviousCard(t *testing.T) {
+	table := newStageTable()
+
+	mustApply(t, table, Action{Kind: ActChooseStage, Stage: "villain", Card: "c22", Face: 1})
+
+	next, prev, attachment := table.Cards["c22"], table.Cards["c20"], table.Cards["c21"]
+	if next.Zone != ZoneTable || next.Area != AreaVillain || next.X != 280 || next.Y != 0 || next.Z != 7 {
+		t.Errorf("c22 = %+v, want on the table at the position of c20", next)
+	}
+	if next.Face != 1 || next.Exhausted {
+		t.Errorf("c22 face = %d, exhausted = %v, want face 1, ready", next.Face, next.Exhausted)
+	}
+	if prev.Zone != ZoneStage || prev.Tokens["dmg"] != 3 || prev.Status["tough"] != 1 {
+		t.Errorf("c20 = %+v, want in the stage zone keeping dmg=3 and tough=1", prev)
+	}
+	if prev.Exhausted || prev.Area != "" || prev.X != 0 || prev.Y != 0 {
+		t.Errorf("c20 = %+v, want ready and without a position", prev)
+	}
+	if attachment.Parent != "c22" {
+		t.Errorf("attachment parent = %q, want c22", attachment.Parent)
+	}
+	if table.Stages[0].Current != "c22" {
+		t.Errorf("current = %q, want c22", table.Stages[0].Current)
+	}
+}
+
+func TestChooseStageOtherFaceOfCurrent(t *testing.T) {
+	table := newStageTable()
+	before := table.Clone()
+
+	mustApply(t, table, Action{Kind: ActChooseStage, Stage: "villain", Card: "c20", Face: 1})
+
+	before.Cards["c20"].Face = 1
+	if !reflect.DeepEqual(before, table) {
+		t.Error("table differs from the original by more than the face of c20")
+	}
+}
+
+func TestChooseStageRejectsBadInput(t *testing.T) {
+	tests := []Action{
+		{Kind: ActChooseStage, Stage: "nope", Card: "c22"},
+		{Kind: ActChooseStage, Stage: "villain", Card: "c1"},           // not in the stage
+		{Kind: ActChooseStage, Stage: "villain", Card: "c22", Face: 2}, // face out of range
+		{Kind: ActChooseStage, Stage: "villain", Card: "c22", Face: -1},
+	}
+	for _, a := range tests {
+		table := newStageTable()
+		before := table.Clone()
+
+		if err := apply(table, a); !errors.Is(err, ErrInvalid) {
+			t.Errorf("%+v: err = %v, want ErrInvalid", a, err)
+		}
+		if !reflect.DeepEqual(before, table) {
+			t.Errorf("%+v: table changed by a rejected action", a)
+		}
+	}
+}

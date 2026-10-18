@@ -13,6 +13,12 @@ const (
 	ActDiscard Kind = "discard"
 	ActToPile  Kind = "toPile"
 	ActPlay    Kind = "play"
+
+	ActExhaust     Kind = "exhaust"
+	ActFlip        Kind = "flip"
+	ActToken       Kind = "token"
+	ActStatus      Kind = "status"
+	ActChooseStage Kind = "chooseStage"
 )
 
 // Action is one resolved player action. Which fields matter depends on Kind;

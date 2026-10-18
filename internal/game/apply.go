@@ -40,6 +40,16 @@ func apply(t *Table, a Action) error {
 		return applyToPile(t, a)
 	case ActPlay:
 		return applyPlay(t, a)
+	case ActExhaust:
+		return applyExhaust(t, a)
+	case ActFlip:
+		return applyFlip(t, a)
+	case ActToken:
+		return applyCounter(t, a, tokenNames, func(c *Card) *map[string]int { return &c.Tokens })
+	case ActStatus:
+		return applyCounter(t, a, statusNames, func(c *Card) *map[string]int { return &c.Status })
+	case ActChooseStage:
+		return applyChooseStage(t, a)
 	default:
 		return fmt.Errorf("%w: unknown action kind %q", ErrInvalid, a.Kind)
 	}
@@ -396,5 +406,125 @@ func applyPlay(t *Table, a Action) error {
 	c.Pile = ""
 	c.Area, c.X, c.Y = a.Area, snap(a.X), snap(a.Y)
 	c.Z = t.nextZ()
+	return nil
+}
+
+// Counter names a card can carry.
+var (
+	tokenNames  = []string{"dmg", "thr", "gen"}
+	statusNames = []string{"stunned", "confused", "tough"}
+)
+
+func applyExhaust(t *Table, a Action) error {
+	c, err := t.tableCard(a.Card)
+	if err != nil {
+		return err
+	}
+	c.Exhausted = !c.Exhausted
+	return nil
+}
+
+// faceCount returns the number of faces of c; cards built without a face
+// count have a single face.
+func faceCount(c *Card) int {
+	return max(c.Faces, 1)
+}
+
+func applyFlip(t *Table, a Action) error {
+	c, err := t.tableCard(a.Card)
+	if err != nil {
+		return err
+	}
+	if c.FaceDown {
+		c.FaceDown = false
+		return nil
+	}
+	c.Face = (c.Face + 1) % faceCount(c)
+	return nil
+}
+
+// applyCounter adds a.Delta to the counter a.Name of a card. The field
+// function selects the map (tokens or statuses) and allowed lists its valid
+// names. A counter never goes below 0 and is deleted at 0.
+func applyCounter(t *Table, a Action, allowed []string, field func(*Card) *map[string]int) error {
+	c, err := t.tableCard(a.Card)
+	if err != nil {
+		return err
+	}
+	if !slices.Contains(allowed, a.Name) {
+		return invalid("unknown counter %q", a.Name)
+	}
+
+	counters := field(c)
+	value := max((*counters)[a.Name]+a.Delta, 0)
+	if value == 0 {
+		delete(*counters, a.Name)
+		return nil
+	}
+	if *counters == nil {
+		*counters = map[string]int{}
+	}
+	(*counters)[a.Name] = value
+	return nil
+}
+
+func applyChooseStage(t *Table, a Action) error {
+	stage := t.stage(a.Stage)
+	if stage == nil {
+		return invalid("unknown stage %q", a.Stage)
+	}
+	if !slices.Contains(stage.Cards, a.Card) {
+		return invalid("card %q is not in stage %q", a.Card, stage.Key)
+	}
+	chosen, err := t.card(a.Card)
+	if err != nil {
+		return err
+	}
+	if a.Face < 0 || a.Face >= faceCount(chosen) {
+		return invalid("card %q has no face %d", chosen.ID, a.Face)
+	}
+	if chosen.ID == stage.Current {
+		chosen.Face = a.Face
+		return nil
+	}
+	previous, err := t.tableCard(stage.Current)
+	if err != nil {
+		return err
+	}
+	if chosen.Zone != ZoneStage {
+		return invalid("card %q is not waiting in the stage zone", chosen.ID)
+	}
+
+	// The chosen card takes the place of the previous one, children included.
+	for _, child := range t.descendants(previous.ID) {
+		if child.Parent == previous.ID {
+			child.Parent = chosen.ID
+		}
+	}
+	chosen.Zone = ZoneTable
+	chosen.Area, chosen.X, chosen.Y, chosen.Z = previous.Area, previous.X, previous.Y, previous.Z
+	chosen.Parent = previous.Parent
+	chosen.OnPile = previous.OnPile
+	chosen.Face = a.Face
+	chosen.FaceDown = false
+	chosen.Exhausted = false
+
+	// Tokens and statuses stay on the previous card, so going back restores them.
+	previous.Zone = ZoneStage
+	previous.Area, previous.X, previous.Y, previous.Z = "", 0, 0, 0
+	previous.Parent = ""
+	previous.OnPile = ""
+	previous.Exhausted = false
+	stage.Current = chosen.ID
+	return nil
+}
+
+// stage returns the stage with the given key, or nil.
+func (t *Table) stage(key string) *Stage {
+	for _, s := range t.Stages {
+		if s.Key == key {
+			return s
+		}
+	}
 	return nil
 }
