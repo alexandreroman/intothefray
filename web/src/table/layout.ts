@@ -171,9 +171,10 @@ function extentOf(
     sizeOf,
   );
   const boxes = inPlay.map(visualBox);
+  // Rounded up: a turned card's box ends between two units.
   return {
-    right: Math.max(0, ...boxes.map((box) => box.right)),
-    bottom: Math.max(0, ...boxes.map((box) => box.bottom)),
+    right: Math.ceil(Math.max(0, ...boxes.map((box) => box.right))),
+    bottom: Math.ceil(Math.max(0, ...boxes.map((box) => box.bottom))),
   };
 }
 

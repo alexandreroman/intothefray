@@ -162,10 +162,11 @@ describe('an exhausted card', () => {
     });
   });
 
-  it('makes its zone taller and wider', () => {
+  it('makes its zone taller and wider, rounded up to whole units', () => {
     const cards = [card({ area: 'villain', x: 400, y: 300, exhausted: true })];
-    expect(zoneMinHeight(cards, [], 'villain', alwaysStd)).toBeCloseTo(370 + turnedHeight / 2 + 20);
-    expect(zoneWidth(cards, [], 'villain', alwaysStd)).toBeCloseTo(450 + turnedWidth / 2 + 140);
+    // 470.56 and 656.41.
+    expect(zoneMinHeight(cards, [], 'villain', alwaysStd)).toBe(471);
+    expect(zoneWidth(cards, [], 'villain', alwaysStd)).toBe(657);
   });
 
   it('is not scrolled out on the left while its turned corner shows', () => {
