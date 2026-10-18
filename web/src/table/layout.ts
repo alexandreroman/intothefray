@@ -116,35 +116,60 @@ export interface FanSlot {
   angle: number;
 }
 
+/** Width of the hand cards (Task 5) and their height-to-width ratio. */
+const HAND_CARD_WIDTH = 132;
+const HAND_CARD_RATIO = 185 / 132;
+
+const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
+
 /**
- * Places `n` cards of a hand on an arc of radius 900, spread 5 degrees apart
- * (less when 44 degrees would be exceeded).
+ * Places `n` cards of a hand on an arc of radius 900, spread 5 degrees apart.
+ * When that does not fit `width - 36`, or exceeds 44 degrees in total, the
+ * step shrinks (down to 0, where the cards pile up) and the cards stay on the
+ * arc.
  *
- * Coordinates are relative to the fan centre, the middle of the centre card:
+ * Coordinates are relative to the fan centre, the middle of the middle card:
  * `x` grows to the right, `y` grows downward from the top of the arc (outer
- * cards sit lower), `angle` is in degrees, clockwise. The horizontal offsets
- * are squeezed so that the fan, card width included, fits `width - 36`.
+ * cards sit lower), `angle` is in degrees, clockwise. The fit counts the
+ * rotated bounding box of the outer cards, `cardWidth` wide.
  */
-export function fanPositions(n: number, width: number): FanSlot[] {
+export function fanPositions(n: number, width: number, cardWidth = HAND_CARD_WIDTH): FanSlot[] {
   if (n <= 0) {
     return [];
   }
-  const step = n === 1 ? 0 : Math.min(FAN_MAX_STEP_DEG, FAN_MAX_TOTAL_DEG / (n - 1));
-  const slots = Array.from({ length: n }, (_, i) => {
-    const angle = (i - (n - 1) / 2) * step;
-    const radians = (angle * Math.PI) / 180;
+  const cardHeight = cardWidth * HAND_CARD_RATIO;
+  const available = width - FAN_SIDE_MARGIN;
+
+  // Width of the whole fan when its outer cards sit at `outerDeg`.
+  const fanWidth = (outerDeg: number) => {
+    const a = toRadians(outerDeg);
+    return 2 * FAN_RADIUS * Math.sin(a) + cardWidth * Math.cos(a) + cardHeight * Math.sin(a);
+  };
+
+  const gaps = n - 1;
+  let step = n === 1 ? 0 : Math.min(FAN_MAX_STEP_DEG, FAN_MAX_TOTAL_DEG / gaps);
+  if (gaps > 0 && fanWidth((gaps / 2) * step) > available) {
+    // The width grows with the step: bisect for the largest step that fits.
+    let low = 0;
+    let high = step;
+    for (let i = 0; i < 40; i++) {
+      const middle = (low + high) / 2;
+      if (fanWidth((gaps / 2) * middle) > available) {
+        high = middle;
+      } else {
+        low = middle;
+      }
+    }
+    step = low;
+  }
+
+  return Array.from({ length: n }, (_, i) => {
+    const angle = (i - gaps / 2) * step;
+    const radians = toRadians(angle);
     return {
       x: FAN_RADIUS * Math.sin(radians),
       y: FAN_RADIUS * (1 - Math.cos(radians)),
       angle,
     };
   });
-
-  const centresSpan = slots[n - 1]!.x - slots[0]!.x;
-  const available = width - FAN_SIDE_MARGIN - PORTRAIT_CARD.w;
-  if (centresSpan <= available) {
-    return slots;
-  }
-  const squeeze = Math.max(available, 0) / centresSpan;
-  return slots.map((s) => ({ ...s, x: s.x * squeeze }));
 }

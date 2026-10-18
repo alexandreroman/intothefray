@@ -114,30 +114,70 @@ describe('zone size', () => {
 });
 
 describe('fanPositions', () => {
-  const cardWidth = 100;
+  const radius = 900;
+  const cardWidth = 132;
+  const cardHeight = (cardWidth * 185) / 132;
 
-  it.each([1, 5, 12])('fits the width for %i cards', (n) => {
-    const fan = fanPositions(n, 900);
-    const xs = fan.map((p) => p.x);
-    const span = Math.max(...xs) - Math.min(...xs) + cardWidth;
-    expect(fan).toHaveLength(n);
-    expect(span).toBeLessThanOrEqual(864);
+  // Width of the box around the rotated outer cards, centre to centre plus their overhang.
+  function boundingWidth(fan: { x: number; angle: number }[]): number {
+    const bounds = fan.map((p) => {
+      const a = (Math.abs(p.angle) * Math.PI) / 180;
+      const half = (cardWidth * Math.cos(a) + cardHeight * Math.sin(a)) / 2;
+      return { left: p.x - half, right: p.x + half };
+    });
+    return Math.max(...bounds.map((b) => b.right)) - Math.min(...bounds.map((b) => b.left));
+  }
+
+  it.each([
+    [1, 900],
+    [5, 900],
+    [12, 900],
+    [12, 700],
+    [12, 400],
+  ])('fits the width for %i cards in %i', (n, width) => {
+    expect(boundingWidth(fanPositions(n, width))).toBeLessThanOrEqual(width - 36 + 1e-6);
   });
 
-  it('shrinks the fan in a narrow container', () => {
-    const fan = fanPositions(12, 400);
-    const xs = fan.map((p) => p.x);
-    expect(Math.max(...xs) - Math.min(...xs) + cardWidth).toBeLessThanOrEqual(364);
+  it('honours a custom card width', () => {
+    const fan = fanPositions(12, 600, 100);
+    const a = (fan[11]!.angle * Math.PI) / 180;
+    const outer = 2 * fan[11]!.x + 100 * Math.cos(a) + ((100 * 185) / 132) * Math.sin(a);
+    expect(outer).toBeLessThanOrEqual(600 - 36 + 1e-6);
+  });
+
+  it.each([900, 700, 300])('stays on the arc at width %i', (width) => {
+    for (const p of fanPositions(12, width)) {
+      const a = (p.angle * Math.PI) / 180;
+      expect(p.x).toBeCloseTo(radius * Math.sin(a), 6);
+      expect(p.y).toBeCloseTo(radius * (1 - Math.cos(a)), 6);
+    }
+  });
+
+  it('reduces the angle step when the fan does not fit', () => {
+    const roomy = fanPositions(12, 1600).map((p) => p.angle);
+    const tight = fanPositions(12, 700).map((p) => p.angle);
+    expect(tight[11]!).toBeLessThan(roomy[11]!);
+    expect(tight[11]!).toBeGreaterThan(0);
+  });
+
+  it('flattens the fan when there is no room at all', () => {
+    for (const p of fanPositions(12, 100)) {
+      expect(p.x).toBeCloseTo(0);
+      expect(p.y).toBeCloseTo(0);
+      expect(p.angle).toBeCloseTo(0);
+    }
   });
 
   it('is symmetric around angle 0', () => {
-    const fan = fanPositions(5, 900);
-    fan.forEach((p, i) => {
-      const mirror = fan[fan.length - 1 - i]!;
-      expect(p.angle).toBeCloseTo(-mirror.angle);
-      expect(p.x).toBeCloseTo(-mirror.x);
-      expect(p.y).toBeCloseTo(mirror.y);
-    });
+    for (const width of [900, 700]) {
+      const fan = fanPositions(5, width);
+      fan.forEach((p, i) => {
+        const mirror = fan[fan.length - 1 - i]!;
+        expect(p.angle).toBeCloseTo(-mirror.angle);
+        expect(p.x).toBeCloseTo(-mirror.x);
+        expect(p.y).toBeCloseTo(mirror.y);
+      });
+    }
   });
 
   it('puts a single card upright at the centre', () => {
