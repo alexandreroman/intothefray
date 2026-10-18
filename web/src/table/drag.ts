@@ -220,9 +220,11 @@ function place(drag: DragSource, at: TablePoint): Action | null {
 /**
  * What pressing the element drags, in the current view, or null when it
  * cannot be dragged: a spectator, a deck, an empty pile, another player's
- * set-aside cards, or a card that is no longer there.
+ * set-aside cards, or a card that is no longer there. During a drag from a
+ * pile, `taken` is the card taken from it: the drag follows that card while
+ * it is still in the pile, whatever lands on top of it.
  */
-export function sourceOf(element: TableElement, view: View): DragSource | null {
+export function sourceOf(element: TableElement, view: View, taken?: string): DragSource | null {
   const table = view.table;
   const area = view.you.area;
   if (view.you.role !== 'player' || !area || !table) {
@@ -261,8 +263,9 @@ export function sourceOf(element: TableElement, view: View): DragSource | null {
         pile.kind === 'encounterDiscard' ||
         pile.kind === 'victory' ||
         (pile.kind === 'aside' && (pile.owner === -1 || `p${pile.owner}` === area));
-      const top = pile.cards?.at(-1);
-      return open && top !== undefined ? { kind: 'pile', pile: pile.id, card: top } : null;
+      const card = taken ?? pile.cards?.at(-1);
+      const inPile = card !== undefined && (pile.cards ?? []).includes(card);
+      return open && inPile ? { kind: 'pile', pile: pile.id, card } : null;
     }
   }
 }

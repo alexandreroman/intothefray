@@ -70,8 +70,9 @@
   );
 
   function topOf(pile: PileView): TableCard | undefined {
-    // While its top card is dragged, a pile shows the card under it.
-    const topId = pile.cards?.at(interaction.isLiftedFrom(pile.id) ? -2 : -1);
+    // While a card is dragged from a pile, the pile shows its top card without it.
+    const taken = interaction.isLiftedFrom(pile.id) ? interaction.dragging?.card : undefined;
+    const topId = (pile.cards ?? []).filter((id) => id !== taken).at(-1);
     return topId === undefined ? undefined : cardsById.get(topId);
   }
 

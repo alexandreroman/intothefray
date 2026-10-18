@@ -60,6 +60,9 @@ const PILES = [
   pile('disc:p0', { kind: 'discard', owner: 0, area: 'p0', x: 720, count: 0, cards: [] }),
 ];
 
+// The cards that can lie in Alex's discard pile: two Spider-Man, then a Rhino.
+const DISCARD_CODES: Record<string, string> = { d1: '01001', d2: '01094' };
+
 /** Alex (p0) alone with Rhino; `discarded` lists his discard pile, bottom to top. */
 function makeView(
   extra: { cards?: TableCard[]; spectator?: boolean; discarded?: string[] } = {},
@@ -68,7 +71,9 @@ function makeView(
   const piles = PILES.map((p) =>
     p.id === 'disc:p0' ? { ...p, count: discarded.length, cards: discarded } : p,
   );
-  const inPile = discarded.map((id) => card(id, { zone: 'pile', area: undefined }));
+  const inPile = discarded.map((id) =>
+    card(id, { code: DISCARD_CODES[id], zone: 'pile', area: undefined }),
+  );
   return {
     id: 'g1',
     phase: 'playing',
@@ -409,6 +414,40 @@ describe('dragging from a pile', () => {
       card: 'd1',
       target: 'other',
     });
+  });
+
+  it('keeps the card it took when another card is put on the pile meanwhile', async () => {
+    const { session, rerender } = await renderTable(makeView({ discarded: ['d1'] }));
+    await press(placed('disc:p0'), 790, 410);
+    await moveTo(300, 450);
+
+    // Another player discards the Rhino onto it.
+    await rerender(makeView({ discarded: ['d1', 'd2'] }));
+    expect(ghosts().map((g) => g.dataset.id)).toEqual(['d1']);
+    // The pile shows its new top card, without the one being dragged.
+    const pileView = placed('disc:p0');
+    expect(pileView.querySelector('img')?.getAttribute('alt')).toBe('Rhino');
+    expect(pileView.querySelector('.count')?.textContent).toBe('1');
+
+    await release(300, 450);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({
+      kind: 'play',
+      card: 'd1',
+      area: 'p0',
+      x: 230,
+      y: 40,
+    });
+  });
+
+  it('is cancelled when the card it took leaves the pile meanwhile', async () => {
+    const { session, rerender } = await renderTable(makeView({ discarded: ['d1'] }));
+    await press(placed('disc:p0'), 790, 410);
+    await moveTo(300, 450);
+
+    await rerender(makeView({ discarded: [] }));
+    expect(ghosts()).toEqual([]);
+    await release(300, 450);
+    expect(session.act).not.toHaveBeenCalled();
   });
 
   it('deals the encounter card where it lands, even over a card', async () => {

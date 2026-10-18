@@ -80,7 +80,7 @@
   const cardsById = $derived(new Map(cards.map((card) => [card.id, card])));
   const held = $derived(interaction.dragging);
   // Read from the current view at every redraw: the drag follows its card by id.
-  const source = $derived(held ? sourceOf(held.element, view) : null);
+  const source = $derived(held ? sourceOf(held.element, view, held.card ?? undefined) : null);
   const overHand = $derived(interaction.handGap !== null);
 
   /** The card a source moves; null for the encounter deck's hidden top card. */
@@ -93,9 +93,9 @@
     return from !== null && movedCard(from) === drag.card;
   }
 
-  // A new view keeps the drag going. When the dragged card left the table or
-  // the hand meanwhile, or a pile's top card changed, it is cancelled and the
-  // drop will send nothing.
+  // A new view keeps the drag going. When the dragged card left the table,
+  // the hand or its pile meanwhile, it is cancelled and the drop will send
+  // nothing.
   $effect(() => {
     if (held && !isStillThere(held, source)) {
       end();
@@ -296,7 +296,7 @@
       interaction.letGo();
       return;
     }
-    const from = sourceOf(pressed.element, view);
+    const from = sourceOf(pressed.element, view, pressed.card ?? undefined);
     const at = { x: event.clientX, y: event.clientY };
     const found = isStillThere(pressed, from) ? locate(from, at) : null;
     end();

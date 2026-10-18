@@ -361,6 +361,19 @@ describe('sourceOf', () => {
     expect(sourceOf({ kind: 'pile', id: 'enc' }, view)).toEqual({ kind: 'encounter', pile: 'enc' });
   });
 
+  it('follows the card taken from a pile while it is still in it', () => {
+    const grown = makeView({
+      cards: [card('top', { zone: 'pile' }), card('new', { zone: 'pile' })],
+      piles: [pile('encd', { kind: 'encounterDiscard', count: 2, cards: ['top', 'new'] })],
+    });
+    expect(sourceOf({ kind: 'pile', id: 'encd' }, grown, 'top')).toEqual({
+      kind: 'pile',
+      pile: 'encd',
+      card: 'top',
+    });
+    expect(sourceOf({ kind: 'pile', id: 'encd' }, grown, 'gone')).toBeNull();
+  });
+
   it("leaves decks, empty piles and other players' set-aside cards where they are", () => {
     expect(sourceOf({ kind: 'pile', id: 'deck:p0' }, view)).toBeNull();
     expect(sourceOf({ kind: 'pile', id: 'vic' }, view)).toBeNull();
