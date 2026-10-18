@@ -71,9 +71,18 @@ const PILES = [
 // The cards that can lie in Alex's discard pile: two Spider-Man, then a Rhino.
 const DISCARD_CODES: Record<string, string> = { d1: '01001', d2: '01094' };
 
-/** Alex (p0) alone with Rhino; `discarded` lists his discard pile, bottom to top. */
+/**
+ * Alex (p0) with Rhino, alone or with Sam (p1); `discarded` lists his discard
+ * pile, bottom to top, and `firstPlayer` is the area the token lies in.
+ */
 function makeView(
-  extra: { cards?: TableCard[]; spectator?: boolean; discarded?: string[] } = {},
+  extra: {
+    cards?: TableCard[];
+    spectator?: boolean;
+    discarded?: string[];
+    withSam?: boolean;
+    firstPlayer?: Area;
+  } = {},
 ): View {
   const discarded = extra.discarded ?? [];
   const piles = PILES.map((p) =>
@@ -98,6 +107,9 @@ function makeView(
         ready: true,
         handCount: 3,
       },
+      ...(extra.withSam
+        ? [{ name: 'Sam', color: 1, host: false, area: 'p1' as const, ready: true, handCount: 0 }]
+        : []),
     ],
     spectators: 0,
     config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
@@ -106,7 +118,7 @@ function makeView(
       piles,
       hand: ['h1', 'h2', 'h3'],
       stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
-      firstPlayer: { area: 'p0', x: 860, y: 40 },
+      firstPlayer: { area: extra.firstPlayer ?? 'p0', x: 860, y: 40 },
     },
     log: [],
   };
@@ -138,7 +150,7 @@ function domRect(left: number, top: number, width: number, height: number): DOMR
 // The screen, at zoom 1: the villain's zone on top, Alex's below, each surface
 // 20 px in from the left and 40 px below the top of its zone; the hand at the
 // bottom, its three cards side by side.
-const ZONE_TOP: Record<string, number> = { villain: 0, p0: 300 };
+const ZONE_TOP: Record<string, number> = { villain: 0, p0: 300, p1: 600 };
 const SURFACE = { left: 20, top: 40 };
 const HAND_TOP = 700;
 
@@ -159,6 +171,15 @@ function layOut(view: () => View, zoom: number): void {
     }
     if (this.classList.contains('surface') && zoneTop !== undefined) {
       return domRect(SURFACE.left, zoneTop + SURFACE.top, 960 * zoom, 240 * zoom);
+    }
+    const token = view().table?.firstPlayer;
+    if (this.closest('.surface') && this.classList.contains('fptoken') && token) {
+      return domRect(
+        SURFACE.left + token.x * zoom,
+        ZONE_TOP[token.area]! + SURFACE.top + token.y * zoom,
+        84 * zoom,
+        70 * zoom,
+      );
     }
     const id = (this as HTMLElement).dataset.id;
     if (this.closest('.surface') && id && zoneTop !== undefined) {
@@ -807,5 +828,59 @@ describe('a drop waiting for the server', () => {
     expect(ghost?.style.left).toBe('250px');
     expect(ghost?.style.top).toBe('380px');
     expect(placed('enc').querySelector('.count')?.textContent).toBe('19');
+  });
+});
+
+describe('dragging the first player token', () => {
+  function token(): HTMLElement | null {
+    return document.querySelector<HTMLElement>('.surface .fptoken');
+  }
+
+  function tokenGhost(): HTMLElement | null {
+    return document.querySelector<HTMLElement>('.draglayer .fptoken');
+  }
+
+  it("moves it to another player's zone, snapped to the grid", async () => {
+    const { session, rerender } = await renderTable(makeView({ withSam: true }));
+    // The token lies at 880, 380 on the screen: it is held 20 px in from its corner.
+    await press(token()!, 900, 400);
+    await moveTo(204, 703);
+    expect(token()).toBeNull();
+    expect(tokenGhost()).not.toBeNull();
+
+    await release(204, 703);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({
+      kind: 'firstPlayer',
+      area: 'p1',
+      x: 160,
+      y: 40,
+    });
+    // It waits where it was dropped until the next view.
+    expect(token()).toBeNull();
+    expect(tokenGhost()).not.toBeNull();
+
+    await rerender(makeView({ withSam: true, firstPlayer: 'p1' }));
+    expect(tokenGhost()).toBeNull();
+    expect(document.querySelector('.zsec[data-area="p1"] .fptoken')).not.toBeNull();
+  });
+
+  it('sends nothing when put back where it was', async () => {
+    const { session } = await renderTable(makeView({ withSam: true }));
+    await press(token()!, 900, 400);
+    await moveTo(910, 400);
+    await release(901, 401);
+
+    expect(session.act).not.toHaveBeenCalled();
+    expect(token()).not.toBeNull();
+  });
+
+  it('a spectator cannot drag it', async () => {
+    const { session } = await renderTable(makeView({ withSam: true, spectator: true }));
+    await press(token()!, 900, 400);
+    await moveTo(204, 703);
+    await release(204, 703);
+
+    expect(session.act).not.toHaveBeenCalled();
+    expect(tokenGhost()).toBeNull();
   });
 });

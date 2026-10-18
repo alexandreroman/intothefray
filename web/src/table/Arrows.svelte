@@ -180,9 +180,12 @@
     }
   }
 
-  // After every redraw of the table: a new view, a zoom, resized zones, the arrow mode.
+  // After every redraw of the table: a new view, a zoom, resized zones, the arrow mode, and a
+  // drag that starts or ends (a drop that sends nothing, or that the server refuses, brings no view).
   $effect(() => {
     void layout;
+    void interaction.dragging;
+    void interaction.landing;
     measure();
   });
 

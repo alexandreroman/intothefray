@@ -134,8 +134,13 @@ function spectatorActions(el: TableElement, table: TableView): ActionItem[] {
     case 'pile': {
       const pile = table.piles.find((p) => p.id === el.id);
       // The server lists the cards of the public piles only.
+      if (!pile || pile.count === 0 || pile.cards === undefined) {
+        return [];
+      }
       // No key: spectators get no game keys (P5b-R6).
-      return pile && pile.count > 0 && pile.cards !== undefined ? [browseItem({ key: false })] : [];
+      const browse = browseItem();
+      delete browse.key;
+      return [browse];
     }
     case 'hand':
       return [];
@@ -538,18 +543,15 @@ function shuffleBackItem(pile: PileView): ActionItem {
 }
 
 /** Browse… needs no server: public piles are face up, their cards listed. */
-function browseItem({ key = true } = {}): ActionItem {
-  const item: ActionItem = {
+function browseItem(): ActionItem {
+  return {
     id: 'browse',
     label: 'Browse…',
+    key: 'K',
     tip: 'Browse…',
     group: 0,
     run: () => ({ local: 'browseBox' }),
   };
-  if (key) {
-    item.key = 'K';
-  }
-  return item;
 }
 
 function shuffleInItem(pile: PileView): ActionItem {

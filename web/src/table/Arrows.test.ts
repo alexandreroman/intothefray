@@ -63,7 +63,7 @@ const CARDS = [
  * The viewer is Alex, or a spectator.
  */
 function makeView(
-  extra: { cards?: TableCard[]; arrows?: Arrow[]; spectator?: boolean; firstPlayer?: Area } = {},
+  extra: { cards?: TableCard[]; arrows?: Arrow[]; spectator?: boolean } = {},
 ): View {
   return {
     id: 'g1',
@@ -82,7 +82,7 @@ function makeView(
       piles: [],
       hand: extra.spectator ? undefined : ['h'],
       stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
-      firstPlayer: { area: extra.firstPlayer ?? 'p0', x: 860, y: 40 },
+      firstPlayer: { area: 'p0', x: 860, y: 40 },
       arrows: extra.arrows,
     },
     log: [],
@@ -117,7 +117,9 @@ function domRect(left: number, top: number, width: number, height: number): DOMR
 const ZONE_TOP: Record<string, number> = { villain: 0, p0: 300, p1: 600 };
 const SURFACE = { left: 20, top: 40 };
 const LAYER_TOP = 10;
-const TOKEN = { w: 84, h: 70 };
+// Wherever the pointer is, a dragged card's ghost lies there on the screen.
+const GHOST = { left: 800, top: 600 };
+const GHOST_MIDDLE = [850, 660];
 
 /** How far each zone is scrolled to the left, in screen pixels. */
 let scrolled: Record<string, number> = {};
@@ -137,6 +139,9 @@ function layOut(view: () => View): void {
     if (this.classList.contains('arrows')) {
       return domRect(0, LAYER_TOP, 1000, 900);
     }
+    if (this.closest('.draglayer') && this.classList.contains('card')) {
+      return domRect(GHOST.left, GHOST.top, 100, 140);
+    }
     if (area === undefined || zoneTop === undefined) {
       return domRect(0, 0, 0, 0);
     }
@@ -150,12 +155,6 @@ function layOut(view: () => View): void {
     }
     if (this.classList.contains('surface')) {
       return domRect(surfaceLeft, surfaceTop, 1200, 240);
-    }
-    if (this.classList.contains('fptoken')) {
-      const token = view().table?.firstPlayer;
-      return token
-        ? domRect(surfaceLeft + token.x, surfaceTop + token.y, TOKEN.w, TOKEN.h)
-        : domRect(0, 0, 0, 0);
     }
     const id = (this as HTMLElement).dataset.id;
     const placed = view().table?.cards.find((c) => c.id === id && c.zone === 'table');
@@ -198,10 +197,6 @@ function surfaceOf(area: Area): HTMLElement {
   return surface;
 }
 
-function token(): HTMLElement | null {
-  return document.querySelector<HTMLElement>('.surface .fptoken');
-}
-
 /** The arrows drawn between cards, the rubber band left out. */
 function shafts(): SVGPathElement[] {
   return [...document.querySelectorAll<SVGPathElement>('.arrows path.shaft:not(.rubber)')];
@@ -223,9 +218,11 @@ function endOf(path: SVGPathElement): number[] {
   return numbers.slice(-2).map(Number);
 }
 
-/** The card element found under the pointer, for the drop of a Shift + drag. */
+/** The card element found under the pointer, for the rubber band and the drop of a Shift + drag. */
 function pointAt(id: string | null): void {
-  document.elementFromPoint = vi.fn(() => (id === null ? null : placed(id)));
+  vi.spyOn(document, 'elementFromPoint').mockImplementation(() =>
+    id === null ? null : placed(id),
+  );
 }
 
 beforeEach(() => {
@@ -301,6 +298,21 @@ describe('arrows', () => {
     await waitFor(() => expect(startOf(shafts()[0]!)).toEqual([12, 400]));
   });
 
+  it('goes back to its card when a drag of that card ends without a new view', async () => {
+    await renderTable(makeView({ arrows: [{ from: 'mine', to: 'v', seat: 0 }] }));
+    expect(startOf(shafts()[0]!)).toEqual([70, 400]);
+
+    // While dragged, the arrow follows the card's ghost.
+    await fireEvent.pointerDown(placed('mine'), { clientX: 50, clientY: 400 });
+    await fireEvent.pointerMove(window, { clientX: 300, clientY: 450, buttons: 1 });
+    await fireEvent.pointerMove(window, { clientX: 310, clientY: 460, buttons: 1 });
+    await waitFor(() => expect(startOf(shafts()[0]!)).toEqual(GHOST_MIDDLE));
+
+    // Let go outside every zone: nothing is sent, no view comes, the card is back in its place.
+    await fireEvent.pointerUp(window, { clientX: 500, clientY: 950 });
+    await waitFor(() => expect(startOf(shafts()[0]!)).toEqual([70, 400]));
+  });
+
   it('shows a rubber band from the source card in arrow mode', async () => {
     await renderTable();
     pointAt(null);
@@ -314,10 +326,11 @@ describe('arrows', () => {
     expect(startOf(rubber()!)).toEqual([70, 400]);
     expect(endOf(rubber()!)).toEqual([600, 490]);
 
-    // Over another card, it snaps to that card's edge.
+    // Over another card, it snaps to that card's edge: "other" spans 420-520, its middle at 470,
+    // and the arrow stops 10 px into it.
     pointAt('other');
     await fireEvent.pointerMove(window, { clientX: 470, clientY: 420 });
-    await waitFor(() => expect(endOf(rubber()!)).not.toEqual([470, 410]));
+    await waitFor(() => expect(endOf(rubber()!)).toEqual([430, 400]));
 
     await fireEvent.keyDown(window, { key: 'Escape' });
     await waitFor(() => expect(rubber()).toBeNull());
@@ -380,6 +393,32 @@ describe('a click on an empty spot', () => {
     expect(interaction.locked).toBe(false);
   });
 
+  it('clears them with the main button only', async () => {
+    const { session } = await renderTable(
+      makeView({ arrows: [{ from: 'mine', to: 'v', seat: 0 }] }),
+    );
+    await fireEvent.pointerDown(surfaceOf('villain'), { button: 2 });
+    await fireEvent.pointerDown(surfaceOf('villain'), { button: 1 });
+
+    expect(session.act).not.toHaveBeenCalled();
+  });
+
+  it("does not clear them from a zone's scrollbar", async () => {
+    const { session } = await renderTable(
+      makeView({ arrows: [{ from: 'mine', to: 'v', seat: 0 }] }),
+    );
+    // Alex's scroller spans 330-600 on the screen; its scrollbar takes the bottom 16 px.
+    const scroller = document.querySelector<HTMLElement>('.zsec[data-area="p0"] .zscroll')!;
+    Object.defineProperty(scroller, 'clientHeight', { value: 254 });
+
+    await fireEvent.pointerDown(scroller, { clientX: 500, clientY: 590 });
+    expect(session.act).not.toHaveBeenCalled();
+
+    // Above the scrollbar, the scroller is an empty spot like any other.
+    await fireEvent.pointerDown(scroller, { clientX: 500, clientY: 570 });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'arrowClear' });
+  });
+
   it("sends nothing without arrows of one's own", async () => {
     const { session } = await renderTable(
       makeView({ arrows: [{ from: 'sam', to: 'v', seat: 1 }] }),
@@ -408,51 +447,5 @@ describe('a click on an empty spot', () => {
     await fireEvent.pointerDown(surfaceOf('villain'));
 
     expect(session.act).not.toHaveBeenCalled();
-  });
-});
-
-describe('the first player token', () => {
-  it("is dragged to another player's zone, snapped to the grid", async () => {
-    const { session, rerender } = await renderTable();
-    // The token lies at 880, 380 on the screen: it is held 20 px in from its corner.
-    await fireEvent.pointerDown(token()!, { clientX: 900, clientY: 400 });
-    await fireEvent.pointerMove(window, { clientX: 204, clientY: 703, buttons: 1 });
-    expect(token()).toBeNull();
-    expect(document.querySelector('.draglayer .fptoken')).not.toBeNull();
-
-    await fireEvent.pointerUp(window, { clientX: 204, clientY: 703 });
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({
-      kind: 'firstPlayer',
-      area: 'p1',
-      x: 160,
-      y: 40,
-    });
-    // It waits where it was dropped until the next view.
-    expect(token()).toBeNull();
-    expect(document.querySelector('.draglayer .fptoken')).not.toBeNull();
-
-    await rerender(makeView({ firstPlayer: 'p1' }));
-    expect(document.querySelector('.draglayer .fptoken')).toBeNull();
-    expect(document.querySelector('.zsec[data-area="p1"] .fptoken')).not.toBeNull();
-  });
-
-  it('sends nothing when put back where it was', async () => {
-    const { session } = await renderTable();
-    await fireEvent.pointerDown(token()!, { clientX: 900, clientY: 400 });
-    await fireEvent.pointerMove(window, { clientX: 910, clientY: 400, buttons: 1 });
-    await fireEvent.pointerUp(window, { clientX: 901, clientY: 401 });
-
-    expect(session.act).not.toHaveBeenCalled();
-    expect(token()).not.toBeNull();
-  });
-
-  it('a spectator cannot drag it', async () => {
-    const { session } = await renderTable(makeView({ spectator: true }));
-    await fireEvent.pointerDown(token()!, { clientX: 900, clientY: 400 });
-    await fireEvent.pointerMove(window, { clientX: 204, clientY: 703, buttons: 1 });
-    await fireEvent.pointerUp(window, { clientX: 204, clientY: 703 });
-
-    expect(session.act).not.toHaveBeenCalled();
-    expect(document.querySelector('.draglayer .fptoken')).toBeNull();
   });
 });

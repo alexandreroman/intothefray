@@ -463,6 +463,18 @@
     }
   }
 
+  /**
+   * A press on a zone's horizontal scrollbar: on the scroller, below its
+   * content (the event's offsetY past its clientHeight).
+   */
+  function onScrollbar(event: PointerEvent, target: HTMLElement): boolean {
+    if (!target.classList.contains('zscroll')) {
+      return false;
+    }
+    const offsetY = event.clientY - target.getBoundingClientRect().top - target.clientTop;
+    return offsetY > target.clientHeight;
+  }
+
   /** An empty spot: the table itself, a zone's surface or scroller, or its header. */
   function isEmptySpot(target: HTMLElement): boolean {
     return (
@@ -511,7 +523,10 @@
     }
     if (isEmptySpot(target)) {
       interaction.release();
-      clearOwnArrows();
+      // Ruling P5c-R7: not with another button, nor while scrolling a zone with its scrollbar.
+      if (event.button === 0 && !onScrollbar(event, target)) {
+        clearOwnArrows();
+      }
     }
   }
 
