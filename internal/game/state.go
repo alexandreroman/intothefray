@@ -135,13 +135,7 @@ func (t *Table) Clone() *Table {
 	clone.Cards = cloneMapOfPtrs(t.Cards, (*Card).clone)
 	clone.Piles = cloneMapOfPtrs(t.Piles, (*Pile).clone)
 	clone.Hands = cloneMapOfSlices(t.Hands)
-	clone.Stages = nil
-	if t.Stages != nil {
-		clone.Stages = make([]*Stage, len(t.Stages))
-		for i, stage := range t.Stages {
-			clone.Stages[i] = stage.clone()
-		}
-	}
+	clone.Stages = cloneStages(t.Stages)
 	clone.Arrows = slices.Clone(t.Arrows)
 	clone.Views = cloneMapOfPtrs(t.Views, (*PrivateView).clone)
 	return &clone
@@ -170,6 +164,18 @@ func (v *PrivateView) clone() *PrivateView {
 	clone := *v
 	clone.Cards = slices.Clone(v.Cards)
 	return &clone
+}
+
+// cloneStages deep-copies a list of stages; nil stays nil.
+func cloneStages(stages []*Stage) []*Stage {
+	if stages == nil {
+		return nil
+	}
+	clone := make([]*Stage, len(stages))
+	for i, stage := range stages {
+		clone[i] = stage.clone()
+	}
+	return clone
 }
 
 // cloneMapOfPtrs deep-copies a map whose values are pointers; nil stays nil.

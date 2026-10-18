@@ -98,6 +98,11 @@ type UndoEntry struct {
 	Merge    string    `json:"merge"`
 	At       time.Time `json:"at"`
 	Shuffled []string  `json:"shuffled,omitempty"` // piles shuffled since Before, re-shuffled on undo
+	// Cards are the cards the undone action touched, with their attachments:
+	// undo puts them back as they were in Before (see keepLiveArrangement).
+	Cards []string `json:"cards,omitempty"`
+	// Reordered are the piles reordered by reorderTop since Before.
+	Reordered []string `json:"reordered,omitempty"`
 }
 
 // Game is the whole state of one game.

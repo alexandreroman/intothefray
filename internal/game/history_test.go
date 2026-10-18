@@ -3,6 +3,7 @@ package game
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"math/rand/v2"
 	"slices"
 	"strings"
@@ -551,18 +552,175 @@ func TestFailedShuffleReplayIsReshuffled(t *testing.T) {
 func TestUndoKeepsOwnUntrackedActions(t *testing.T) {
 	f := newDoFixture(t)
 	rhino := f.villain()
+	identity := f.identity(t)
 	f.mustDo(t, "h", Action{Kind: ActExhaust, Card: rhino}, at(1))
-	f.mustDo(t, "h", Action{Kind: ActMove, Card: rhino, Area: AreaVillain, X: 500, Y: 300}, at(2))
+	f.mustDo(t, "h", Action{Kind: ActMove, Card: identity, Area: "p0", X: 500, Y: 300}, at(2))
 
 	f.mustDo(t, "h", Action{Kind: ActUndo}, at(3))
 
-	c := f.g.Table.Cards[rhino]
-	if c.Exhausted {
+	if f.g.Table.Cards[rhino].Exhausted {
 		t.Error("the exhaust was not undone")
 	}
-	if c.X != 500 || c.Y != 300 {
-		t.Errorf("Rhino at (%d,%d) after undo, want the moved position (500,300)", c.X, c.Y)
+	if c := f.g.Table.Cards[identity]; c.X != 500 || c.Y != 300 {
+		t.Errorf("identity at (%d,%d) after undo, want the moved position (500,300)", c.X, c.Y)
 	}
+}
+
+func TestUndoIsCarriedIntoOthersSnapshots(t *testing.T) {
+	f := newDoFixture(t)
+	rhino := f.villain()
+	deck := slices.Clone(f.g.Table.Piles["deck:p1"].Cards)
+
+	f.mustDo(t, "b", Action{Kind: ActDraw, N: 2}, at(1))
+	f.mustDo(t, "h", Action{Kind: ActExhaust, Card: rhino}, at(2))
+	f.mustDo(t, "h", Action{Kind: ActUndo}, at(3))
+	f.mustDo(t, "b", Action{Kind: ActUndo}, at(4))
+
+	if f.g.Table.Cards[rhino].Exhausted {
+		t.Error("Bob's undo brought back Host's undone exhaust")
+	}
+	if got := f.g.Table.Hands["p1"]; len(got) != 0 {
+		t.Errorf("p1 hand = %v, want empty", got)
+	}
+	if got := f.g.Table.Piles["deck:p1"].Cards; !slices.Equal(got, deck) {
+		t.Errorf("deck:p1 = %v, want the drawn cards back on top: %v", got, deck)
+	}
+	checkIntegrity(t, f.g.Table)
+}
+
+// TestUndoCarriesReshuffledIDs undoes an action older than a shuffle, which
+// re-shuffles the pile with fresh ids: the other players' snapshots must get
+// them too.
+func TestUndoCarriesReshuffledIDs(t *testing.T) {
+	f := newDoFixture(t)
+	f.mustDo(t, "b", Action{Kind: ActExhaust, Card: f.identity(t)}, at(1))
+	f.mustDo(t, "h", Action{Kind: ActExhaust, Card: f.villain()}, at(2))
+	f.mustDo(t, "h", Action{Kind: ActShuffle, Pile: PileEncounter}, at(3))
+	f.mustDo(t, "h", Action{Kind: ActUndo}, at(4))
+	reshuffled := slices.Clone(f.g.Table.Piles[PileEncounter].Cards)
+
+	snapshot := f.g.Undo["b"][0].Before
+	if got := snapshot.Piles[PileEncounter].Cards; !slices.Equal(got, reshuffled) {
+		t.Errorf("Bob's snapshot encounter deck = %v, want the re-shuffled %v", got, reshuffled)
+	}
+	checkIntegrity(t, snapshot)
+}
+
+func TestUndoKeepsLiveArrangement(t *testing.T) {
+	f := newDoFixture(t)
+	rhino := f.villain()
+	bobIdentity := ""
+	for id, c := range f.g.Table.Cards {
+		if c.Zone == ZoneTable && c.Area == "p1" && c.Owner == 1 {
+			bobIdentity = id
+		}
+	}
+	f.mustDo(t, "b", Action{Kind: ActDraw, N: 3}, at(1))
+	f.mustDo(t, "h", Action{Kind: ActExhaust, Card: rhino}, at(2))
+	f.mustDo(t, "b", Action{Kind: ActMove, Card: bobIdentity, Area: "p1", X: 700, Y: 400}, at(3))
+	order := slices.Clone(f.g.Table.Hands["p1"])
+	slices.Reverse(order)
+	f.mustDo(t, "b", Action{Kind: ActHandOrder, Area: "p1", Cards: order}, at(4))
+
+	f.mustDo(t, "h", Action{Kind: ActUndo}, at(5))
+
+	if f.g.Table.Cards[rhino].Exhausted {
+		t.Error("Rhino is still exhausted")
+	}
+	if c := f.g.Table.Cards[bobIdentity]; c.X != 700 || c.Y != 400 {
+		t.Errorf("Bob's identity at (%d,%d), want where Bob put it (700,400)", c.X, c.Y)
+	}
+	if got := f.g.Table.Hands["p1"]; !slices.Equal(got, order) {
+		t.Errorf("p1 hand = %v, want Bob's order %v", got, order)
+	}
+	checkIntegrity(t, f.g.Table)
+}
+
+func TestUndoKeepsReorderedPile(t *testing.T) {
+	f := newDoFixture(t)
+	f.mustDo(t, "h", Action{Kind: ActExhaust, Card: f.villain()}, at(1))
+	top := topCards(f.g.Table.Piles["deck:p0"], 3)
+	slices.Reverse(top)
+	f.mustDo(t, "h", Action{Kind: ActReorderTop, Pile: "deck:p0", Cards: top}, at(2))
+	reordered := slices.Clone(f.g.Table.Piles["deck:p0"].Cards)
+
+	f.mustDo(t, "h", Action{Kind: ActUndo}, at(3))
+
+	if got := f.g.Table.Piles["deck:p0"].Cards; !slices.Equal(got, reordered) {
+		t.Errorf("deck:p0 = %v, want the reordered %v", got, reordered)
+	}
+}
+
+func TestUntrackedActionsAreNotReplayed(t *testing.T) {
+	f := newDoFixture(t)
+	f.mustDo(t, "b", Action{Kind: ActDraw, N: 2}, at(1))
+	f.mustDo(t, "h", Action{Kind: ActDraw, N: 2}, at(2))
+	rhino, identity := f.villain(), f.identity(t)
+	hand := slices.Clone(f.g.Table.Hands["p0"])
+	slices.Reverse(hand)
+	top := topCards(f.g.Table.Piles["deck:p0"], 2)
+	slices.Reverse(top)
+
+	actions := []Action{
+		{Kind: ActMove, Card: rhino, Area: AreaVillain, X: 500, Y: 300},
+		{Kind: ActAttach, Card: identity, Target: rhino},
+		{Kind: ActHandOrder, Area: "p0", Cards: hand},
+		{Kind: ActReorderTop, Pile: "deck:p0", Cards: top},
+		{Kind: ActFirstPlayer, Area: "p1", X: 100, Y: 100},
+		{Kind: ActArrowAdd, Card: rhino, Target: identity},
+		{Kind: ActArrowClear},
+	}
+	for i, a := range actions {
+		snapshots := map[string]string{}
+		for token, stack := range f.g.Undo {
+			for j, entry := range stack {
+				snapshots[fmt.Sprintf("%s/%d", token, j)] = mustJSON(t, entry.Before)
+			}
+		}
+
+		f.mustDo(t, "h", a, at(10+i))
+
+		for token, stack := range f.g.Undo {
+			for j, entry := range stack {
+				if mustJSON(t, entry.Before) != snapshots[fmt.Sprintf("%s/%d", token, j)] {
+					t.Errorf("%s changed the snapshot %s/%d", a.Kind, token, j)
+				}
+			}
+		}
+	}
+}
+
+func TestUndoEntryRecordsTouchedCards(t *testing.T) {
+	f := newDoFixture(t)
+	stage := f.g.Table.stage(pileKeyVillain)
+	rhino, identity := stage.Current, f.identity(t)
+	f.mustDo(t, "h", Action{Kind: ActAttach, Card: identity, Target: rhino}, at(1))
+
+	f.mustDo(t, "h", Action{Kind: ActChooseStage, Stage: stage.Key, Card: stage.Cards[1]}, at(2))
+
+	got := f.g.Undo["h"][0].Cards
+	for _, id := range append(slices.Clone(stage.Cards), identity) {
+		if !slices.Contains(got, id) {
+			t.Errorf("entry cards %v miss %s", got, id)
+		}
+	}
+}
+
+// TestUndoOfStageChangeKeepsAttachmentsRight replaces the villain carrying an
+// attachment, then undoes: the attachment goes back under the first villain.
+func TestUndoOfStageChangeKeepsAttachmentsRight(t *testing.T) {
+	f := newDoFixture(t)
+	stage := f.g.Table.stage(pileKeyVillain)
+	rhino, identity := stage.Current, f.identity(t)
+	f.mustDo(t, "h", Action{Kind: ActAttach, Card: identity, Target: rhino}, at(1))
+	f.mustDo(t, "h", Action{Kind: ActChooseStage, Stage: stage.Key, Card: stage.Cards[1]}, at(2))
+
+	f.mustDo(t, "h", Action{Kind: ActUndo}, at(3))
+
+	if got := f.g.Table.Cards[identity].Parent; got != rhino {
+		t.Errorf("identity parent = %q, want the first villain %q", got, rhino)
+	}
+	checkIntegrity(t, f.g.Table)
 }
 
 func TestNoOpActionsAreNotTracked(t *testing.T) {

@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"maps"
 	"math/rand/v2"
 	"reflect"
 	"slices"
@@ -29,8 +30,9 @@ const (
 	// mergeWindow is how close two changes of one thing must be to share a
 	// history line.
 	mergeWindow = 15 * time.Second
-	// maxUndoDepth is the number of undo entries kept per player.
-	maxUndoDepth = 30
+	// maxUndoDepth is the number of undo entries kept per player. Each entry
+	// holds a whole table, so this bounds the size of a stored game.
+	maxUndoDepth = 10
 )
 
 // Do performs one action for the player holding token: it changes the table,
@@ -65,7 +67,8 @@ func (g *Game) Do(token string, a Action, cat *pack.Catalog, rng *rand.Rand, now
 //   - undoable: a history line and an undo entry;
 //   - shuffles: a history line only, since undoing one would bring back an
 //     order a player may have seen;
-//   - arranging the table (see narrator.describe): no line at all.
+//   - arranging the table (see arrangingKinds): no line at all, and no replay
+//     either, since undo keeps the live arrangement (see keepLiveArrangement).
 func (g *Game) perform(p *Player, seat int, a Action, cat *pack.Catalog, rng *rand.Rand, now time.Time) error {
 	resolved, err := resolve(g, seat, a, rng)
 	if err != nil {
@@ -82,8 +85,14 @@ func (g *Game) perform(p *Player, seat int, a Action, cat *pack.Catalog, rng *ra
 
 	n := narrator{game: g, cat: cat, seat: seat, before: before, after: g.Table}
 	e, logged := n.describe(resolved)
+	if !logged {
+		if resolved.Kind == ActReorderTop {
+			g.noteReordered(resolved.Pile)
+		}
+		return nil
+	}
 	shuffled := shuffledPiles(before, resolved)
-	undoable := logged && len(shuffled) == 0
+	undoable := len(shuffled) == 0
 
 	// The actor's own snapshots also get what they cannot undo, so that undo
 	// takes back only their last undoable action and nothing done since.
@@ -93,13 +102,50 @@ func (g *Game) perform(p *Player, seat int, a Action, cat *pack.Catalog, rng *ra
 	}
 	g.replay(resolved, shuffled, skip)
 
-	switch {
-	case undoable:
+	if undoable {
 		g.record(p, resolved, e, before, now)
-	case logged:
+	} else {
 		g.appendLog(p, e.text, e.cards, now)
 	}
 	return nil
+}
+
+// noteReordered notes on every undo entry that pile was reordered, so that
+// undo keeps the new order if it can (see keepPileOrders).
+func (g *Game) noteReordered(pile string) {
+	for _, stack := range g.Undo {
+		for i := range stack {
+			entry := &stack[i]
+			if !slices.Contains(entry.Reordered, pile) {
+				entry.Reordered = append(entry.Reordered, pile)
+			}
+		}
+	}
+}
+
+// touchedCards returns the cards a touches, with everything tucked under them
+// before or after a, sorted. before and after are the tables around a.
+func touchedCards(before, after *Table, a Action) []string {
+	ids := slices.Concat([]string{a.Card, a.Target}, a.Cards)
+	if a.Kind == ActChooseStage {
+		if stage := before.stage(a.Stage); stage != nil {
+			ids = append(ids, stage.Cards...)
+		}
+	}
+
+	touched := map[string]bool{}
+	for _, id := range ids {
+		if _, ok := before.Cards[id]; !ok {
+			continue // empty, or a pile id
+		}
+		touched[id] = true
+		for _, table := range []*Table{before, after} {
+			for _, child := range table.descendants(id) {
+				touched[child.ID] = true
+			}
+		}
+	}
+	return slices.Sorted(maps.Keys(touched))
 }
 
 // changedNothing reports whether a left its card as it was: a counter already
@@ -158,12 +204,21 @@ func (g *Game) replay(a Action, shuffled []string, skip string) {
 // record writes the history line of an undoable action, or merges it into the
 // actor's previous line.
 func (g *Game) record(p *Player, a Action, e event, before *Table, now time.Time) {
+	cards := touchedCards(before, g.Table, a)
 	if entry := g.mergeable(p.Token, e.merge, now); entry != nil {
+		entry.Cards = mergeIDs(entry.Cards, cards)
 		g.merge(p.Token, entry, a, e, now)
 		return
 	}
-	g.pushUndo(p.Token, UndoEntry{LogIndex: len(g.Log), Before: before, Merge: e.merge, At: now})
+	g.pushUndo(p.Token, UndoEntry{LogIndex: len(g.Log), Before: before, Merge: e.merge, At: now, Cards: cards})
 	g.appendLog(p, e.text, e.cards, now)
+}
+
+// mergeIDs returns the sorted union of two id lists.
+func mergeIDs(a, b []string) []string {
+	merged := slices.Concat(a, b)
+	slices.Sort(merged)
+	return slices.Compact(merged)
 }
 
 func (g *Game) appendLog(p *Player, text string, cards []string, now time.Time) {
@@ -228,8 +283,10 @@ func (g *Game) pushUndo(token string, entry UndoEntry) {
 }
 
 // undo restores the table as it was before the player's last undoable
-// action. The snapshot already holds every later change but that player's
-// undoable ones (see replay).
+// action. The snapshot already holds every later tracked change but that
+// player's undoable ones (see replay); the live arrangement is carried over
+// (see keepLiveArrangement). What the undo changes is then carried into the
+// other players' snapshots, so that their own undo does not bring it back.
 func (g *Game) undo(p *Player, rng *rand.Rand, now time.Time) error {
 	stack := g.Undo[p.Token]
 	if len(stack) == 0 {
@@ -238,10 +295,12 @@ func (g *Game) undo(p *Player, rng *rand.Rand, now time.Time) error {
 	entry := stack[len(stack)-1]
 	g.Undo[p.Token] = stack[:len(stack)-1]
 
+	live := g.Table
 	restored := entry.Before
+	keepLiveArrangement(restored, live, &entry)
 	// Open Looks and Searches are each player's own business, not part of
 	// what is undone: keep them as they are now.
-	restored.Views = g.Table.Views
+	restored.Views = live.Views
 	// A pile shuffled since the snapshot must not come back in an order a
 	// player may have seen before the shuffle.
 	for _, id := range entry.Shuffled {
@@ -250,6 +309,16 @@ func (g *Game) undo(p *Player, rng *rand.Rand, now time.Time) error {
 			renames, order := reidentify(restored, pile.Cards, rng)
 			renameCards(restored, renames)
 			pile.Cards = order
+		}
+	}
+
+	patch := diffTables(live, restored)
+	for token, others := range g.Undo {
+		if token == p.Token {
+			continue
+		}
+		for i := range others {
+			patch.applyTo(others[i].Before)
 		}
 	}
 	g.Table = restored
