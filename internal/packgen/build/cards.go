@@ -35,7 +35,9 @@ func BuildCards(
 		cerebroIDs[strings.ToUpper(card.ID)] = card.ID
 	}
 
-	entriesByBase, reprintsByBase := groupEntries(mc)
+	entriesByBase, reprints := groupEntries(mc)
+	reprintsByBase, unresolved := resolveReprints(reprints, entriesByBase)
+	unsupported = append(unsupported, unresolved...)
 
 	cards = make(map[string][]pack.Card)
 	for base, entries := range entriesByBase {
@@ -68,17 +70,15 @@ func BuildCards(
 }
 
 // groupEntries splits the records into the entries of each base code, ordered
-// by face letter, and the reprint codes attached to each base code.
-func groupEntries(mc []marvelcdb.Card) (entries map[string][]marvelcdb.Card, reprints map[string][]string) {
+// by face letter, and the reprints, which are not cards.
+func groupEntries(mc []marvelcdb.Card) (entries map[string][]marvelcdb.Card, reprints []marvelcdb.Card) {
 	entries = make(map[string][]marvelcdb.Card)
-	reprints = make(map[string][]string)
 	for _, card := range mc {
-		base := baseCode(card.Code)
 		if card.DuplicateOf != "" {
-			original := baseCode(card.DuplicateOf)
-			reprints[original] = append(reprints[original], card.Code)
+			reprints = append(reprints, card)
 			continue
 		}
+		base := baseCode(card.Code)
 		entries[base] = append(entries[base], card)
 	}
 
@@ -90,14 +90,63 @@ func groupEntries(mc []marvelcdb.Card) (entries map[string][]marvelcdb.Card, rep
 		slices.SortFunc(group, func(a, b marvelcdb.Card) int { return cmp.Compare(a.Code, b.Code) })
 		entries[base] = group
 	}
-
-	// Reprints of a card that is not in the input have nothing to attach to.
-	for original := range reprints {
-		if _, found := entries[original]; !found {
-			delete(reprints, original)
-		}
-	}
 	return entries, reprints
+}
+
+// resolveReprints attaches each reprint code to the base card at the end of
+// its duplicate_of_code chain. Reprints that cannot be attached are reported.
+func resolveReprints(
+	reprints []marvelcdb.Card,
+	entries map[string][]marvelcdb.Card,
+) (aliases map[string][]string, unsupported []report.Unsupported) {
+	originalOf := make(map[string]string, len(reprints))
+	for _, reprint := range reprints {
+		originalOf[reprint.Code] = reprint.DuplicateOf
+	}
+
+	aliases = make(map[string][]string)
+	for _, reprint := range reprints {
+		root, reason := rootOf(reprint, originalOf, entries)
+		if reason != "" {
+			unsupported = append(unsupported, reportReprint(reprint, reason))
+			continue
+		}
+		aliases[root] = append(aliases[root], reprint.Code)
+	}
+	return aliases, unsupported
+}
+
+// rootOf follows the reprint chain and returns the base code of the original
+// card, or the reason why the reprint cannot be attached to one.
+func rootOf(
+	reprint marvelcdb.Card,
+	originalOf map[string]string,
+	entries map[string][]marvelcdb.Card,
+) (root, reason string) {
+	visited := map[string]bool{reprint.Code: true}
+	current := reprint.DuplicateOf
+	for originalOf[current] != "" {
+		if visited[current] {
+			return "", "reprint cycle"
+		}
+		visited[current] = true
+		current = originalOf[current]
+	}
+
+	root = baseCode(current)
+	faces, found := entries[root]
+	if !found {
+		return "", "original not found"
+	}
+	// The catalog maps an alias with a face letter to the face of that letter.
+	if len(reprint.Code) > baseCodeLength && int(reprint.Code[baseCodeLength]-'a') >= len(faces) {
+		return "", "reprint face missing from original"
+	}
+	return root, ""
+}
+
+func reportReprint(reprint marvelcdb.Card, reason string) report.Unsupported {
+	return report.Unsupported{Code: reprint.Code, Name: reprint.Name, Pack: reprint.PackCode, Reason: reason}
 }
 
 func baseCode(code string) string {

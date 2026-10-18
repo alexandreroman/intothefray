@@ -232,3 +232,43 @@ func TestCardsSortedByCode(t *testing.T) {
 		t.Errorf("cards = %+v, want sorted by code", cards["p"])
 	}
 }
+
+func TestReprintChainAttachesToRoot(t *testing.T) {
+	entries := marvelcdbCards(t, "27049", "52022")
+	chained := marvelcdb.Card{Code: "43027", Name: "Spider-Man", PackCode: "other", DuplicateOf: "52022"}
+
+	cards, unsupported := BuildCards(append(entries, chained), nil, nil)
+
+	if len(unsupported) != 0 {
+		t.Fatalf("unsupported = %+v", unsupported)
+	}
+	card := findCard(t, cards, "sm", "27049")
+	if want := []string{"43027", "52022"}; !reflect.DeepEqual(card.Aliases, want) {
+		t.Errorf("aliases = %v, want %v", card.Aliases, want)
+	}
+}
+
+func TestUnattachableReprintsAreReported(t *testing.T) {
+	entries := marvelcdbCards(t, "27049")
+	reprints := []marvelcdb.Card{
+		{Code: "50001", Name: "Lost", PackCode: "p", DuplicateOf: "99999"},
+		{Code: "50002", Name: "Loop A", PackCode: "p", DuplicateOf: "50003"},
+		{Code: "50003", Name: "Loop B", PackCode: "p", DuplicateOf: "50002"},
+		{Code: "50004b", Name: "Extra face", PackCode: "p", DuplicateOf: "27049"},
+	}
+
+	cards, unsupported := BuildCards(append(entries, reprints...), nil, nil)
+
+	want := []report.Unsupported{
+		{Code: "50001", Name: "Lost", Pack: "p", Reason: "original not found"},
+		{Code: "50002", Name: "Loop A", Pack: "p", Reason: "reprint cycle"},
+		{Code: "50003", Name: "Loop B", Pack: "p", Reason: "reprint cycle"},
+		{Code: "50004b", Name: "Extra face", Pack: "p", Reason: "reprint face missing from original"},
+	}
+	if !reflect.DeepEqual(unsupported, want) {
+		t.Errorf("unsupported = %+v, want %+v", unsupported, want)
+	}
+	if aliases := findCard(t, cards, "sm", "27049").Aliases; len(aliases) != 0 {
+		t.Errorf("aliases = %v, want none", aliases)
+	}
+}
