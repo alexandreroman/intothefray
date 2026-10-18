@@ -5,17 +5,24 @@ import { modal } from '../components/modal.svelte';
 function renderAsk(max = 30) {
   const onconfirm = vi.fn();
   const oncancel = vi.fn();
-  render(AskCount, {
+  const props = {
     title: 'Draw cards',
     question: 'How many cards do you draw?',
     max,
     ok: 'Draw',
     onconfirm,
     oncancel,
-  });
+  };
+  const { rerender } = render(AskCount, props);
   const dialog = screen.getByRole('dialog', { name: 'Draw cards' });
   const value = within(dialog).getByRole('textbox') as HTMLInputElement;
-  return { dialog, value, onconfirm, oncancel };
+  return {
+    dialog,
+    value,
+    onconfirm,
+    oncancel,
+    setMax: (next: number) => rerender({ ...props, max: next }),
+  };
 }
 
 describe('AskCount', () => {
@@ -32,6 +39,20 @@ describe('AskCount', () => {
   it('defaults to the most there is when fewer than 5', () => {
     const { value } = renderAsk(3);
     expect(value.value).toBe('3');
+  });
+
+  it('lowers the value to a maximum that drops below it, and keeps it when it rises', async () => {
+    const { value, onconfirm, setMax } = renderAsk(30);
+    await fireEvent.input(value, { target: { value: '12' } });
+
+    // Another player draws from the pile meanwhile.
+    await setMax(8);
+    expect(value.value).toBe('8');
+    await setMax(20);
+    expect(value.value).toBe('8');
+
+    await fireEvent.keyDown(value, { key: 'Enter' });
+    expect(onconfirm).toHaveBeenCalledWith(8);
   });
 
   it('− and + stay between 1 and the maximum', async () => {

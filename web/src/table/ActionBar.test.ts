@@ -243,6 +243,50 @@ describe('ActionBar', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
+  it('the count question follows its pile while it is open', async () => {
+    const { session, rerender } = await renderTable();
+    await fireEvent.pointerEnter(placed('enc'));
+    await fireEvent.click(within(bar()!).getByRole('button', { name: 'Look' }));
+    await fireEvent.click(screen.getByRole('menuitem', { name: /Look at top…/ }));
+    const dialog = screen.getByRole('dialog', { name: 'Look at the top cards' });
+    const value = within(dialog).getByRole('textbox') as HTMLInputElement;
+    expect(value.value).toBe('5');
+
+    // Sam deals encounter cards meanwhile: three are left.
+    const shrunk = (count: number) =>
+      makeView({
+        piles: makeView().table!.piles.map((p) => (p.id === 'enc' ? { ...p, count } : p)),
+      });
+    await rerender({ view: shrunk(3) });
+    expect(value.value).toBe('3');
+    await fireEvent.click(within(dialog).getByRole('button', { name: 'One more' }));
+    expect(value.value).toBe('3');
+    await fireEvent.click(within(dialog).getByRole('button', { name: 'Look' }));
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'look', pile: 'enc', n: 3 });
+  });
+
+  it('the count question closes when its pile empties or goes', async () => {
+    const { rerender } = await renderTable();
+    const ask = async () => {
+      await fireEvent.pointerEnter(placed('enc'));
+      await fireEvent.click(within(bar()!).getByRole('button', { name: 'Deck' }));
+      await fireEvent.click(screen.getByRole('menuitem', { name: /Discard top…/ }));
+      expect(screen.getByRole('dialog', { name: 'Discard from the top' })).toBeTruthy();
+    };
+    const piles = makeView().table!.piles;
+
+    await ask();
+    await rerender({
+      view: makeView({ piles: piles.map((p) => (p.id === 'enc' ? { ...p, count: 0 } : p)) }),
+    });
+    expect(screen.queryByRole('dialog')).toBeNull();
+
+    await rerender({ view: makeView() });
+    await ask();
+    await rerender({ view: makeView({ piles: piles.filter((p) => p.id !== 'enc') }) });
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
   it('spectator sees no bar', async () => {
     const view = makeView();
     view.you = { role: 'spectator', name: 'Kim', color: -1, host: false };

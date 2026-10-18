@@ -4,6 +4,7 @@
   a click outside cancels.
 -->
 <script lang="ts">
+  import { untrack } from 'svelte';
   import Dialog from '../components/Dialog.svelte';
 
   let {
@@ -27,6 +28,16 @@
   // The default is only the starting value: a changed max does not reset what was typed.
   // svelte-ignore state_referenced_locally
   let text = $state(String(Math.min(5, max)));
+
+  // A max that drops below the value (the pile shrank) lowers it; one that rises leaves it.
+  $effect(() => {
+    const limit = max;
+    untrack(() => {
+      if ((parseInt(text, 10) || 0) > limit) {
+        text = String(limit);
+      }
+    });
+  });
 
   /** The typed value, kept between 1 and max. */
   function value(): number {

@@ -296,6 +296,18 @@
   /** The "How many cards?" question being asked, if any. */
   let asking = $state<CountQuestion | null>(null);
 
+  // The pile can shrink while the question is open (another player deals from
+  // it): the answer never asks for more cards than it holds.
+  const askedPile = $derived(asking ? piles.find((pile) => pile.id === asking?.pile) : undefined);
+  const askedMax = $derived(asking && askedPile ? Math.min(asking.max, askedPile.count) : 0);
+
+  // Nothing is left to ask about once the pile is empty or gone.
+  $effect(() => {
+    if (asking && askedMax === 0) {
+      asking = null;
+    }
+  });
+
   function runItem(item: ActionItem): void {
     const element = interaction.hovered;
     if (!item.run || item.disabled || !element) {
@@ -568,7 +580,7 @@
     <AskCount
       title={asking.title}
       question={asking.question}
-      max={asking.max}
+      max={askedMax}
       ok={asking.ok}
       onconfirm={answer}
       oncancel={() => (asking = null)}

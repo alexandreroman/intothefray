@@ -18,6 +18,8 @@ export type TableElement =
 export interface CountQuestion {
   title: string;
   question: string;
+  /** The pile the cards come from: while the question is open, the answer follows its count. */
+  pile: string;
   max: number;
   ok: string;
   make: (n: number) => Action;
@@ -423,6 +425,7 @@ function lookMenu(pile: PileView, pileName: string): ActionItem {
       ask: {
         title: 'Look at the top cards',
         question: `How many cards from the top of ${pileName}?`,
+        pile: pile.id,
         max: countLimit(pile),
         ok: 'Look',
         make: (n) => ({ kind: 'look', pile: pile.id, n }),
@@ -444,6 +447,7 @@ function deckMenu(pile: PileView, pileName: string, withDraw: boolean): ActionIt
         ask: {
           title: 'Draw cards',
           question: 'How many cards do you draw?',
+          pile: pile.id,
           max: countLimit(pile),
           ok: 'Draw',
           make: (n) => ({ kind: 'draw', n }),
@@ -460,6 +464,7 @@ function deckMenu(pile: PileView, pileName: string, withDraw: boolean): ActionIt
         ask: {
           title: 'Discard from the top',
           question: `How many cards from the top of ${pileName} go to the discard pile?`,
+          pile: pile.id,
           max: countLimit(pile),
           ok: 'Discard',
           make: (n) => ({ kind: 'discardTop', pile: pile.id, n }),

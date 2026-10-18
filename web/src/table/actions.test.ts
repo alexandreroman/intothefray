@@ -387,6 +387,7 @@ describe('actionsFor', () => {
     expect(lookTop.ask).toMatchObject({
       title: 'Look at the top cards',
       question: 'How many cards from the top of your deck?',
+      pile: 'deck:p0',
       max: 30,
       ok: 'Look',
     });
@@ -407,6 +408,7 @@ describe('actionsFor', () => {
     expect(drawN.ask).toMatchObject({
       title: 'Draw cards',
       question: 'How many cards do you draw?',
+      pile: 'deck:p0',
       max: 30,
       ok: 'Draw',
     });
@@ -418,6 +420,7 @@ describe('actionsFor', () => {
     expect(discardTop.ask).toMatchObject({
       title: 'Discard from the top',
       question: 'How many cards from the top of your deck go to the discard pile?',
+      pile: 'deck:p0',
       max: 30,
       ok: 'Discard',
     });
