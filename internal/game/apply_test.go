@@ -374,49 +374,45 @@ func TestTokenAndStatusRejectBadInput(t *testing.T) {
 	}
 }
 
-func TestExhaustToggles(t *testing.T) {
-	table := newTestTable()
+func TestExhaustSetsTheRecordedState(t *testing.T) {
+	table := newTestTable() // c1 is exhausted
 
-	mustApply(t, table, Action{Kind: ActExhaust, Card: "c1"})
-	if table.Cards["c1"].Exhausted {
-		t.Error("c1 still exhausted after the first toggle")
-	}
-	mustApply(t, table, Action{Kind: ActExhaust, Card: "c1"})
+	mustApply(t, table, Action{Kind: ActExhaust, Card: "c1", Exhausted: new(true)})
 	if !table.Cards["c1"].Exhausted {
-		t.Error("c1 not exhausted after the second toggle")
+		t.Error("c1 is ready, want it kept exhausted")
 	}
-	if err := apply(table, Action{Kind: ActExhaust, Card: "c3"}); !errors.Is(err, ErrInvalid) {
-		t.Errorf("hand card: err = %v, want ErrInvalid", err)
+	mustApply(t, table, Action{Kind: ActExhaust, Card: "c1", Exhausted: new(false)})
+	if table.Cards["c1"].Exhausted {
+		t.Error("c1 is still exhausted")
+	}
+	for name, a := range map[string]Action{
+		"hand card":    {Kind: ActExhaust, Card: "c3", Exhausted: new(true)},
+		"not resolved": {Kind: ActExhaust, Card: "c1"},
+	} {
+		if err := apply(table, a); !errors.Is(err, ErrInvalid) {
+			t.Errorf("%s: err = %v, want ErrInvalid", name, err)
+		}
 	}
 }
 
-func TestFlipCyclesAndRevealsFaceDown(t *testing.T) {
+func TestFlipSetsTheRecordedSide(t *testing.T) {
 	table := newTestTable()
-	c1 := table.Cards["c1"] // Face 1 of 2
-
-	mustApply(t, table, Action{Kind: ActFlip, Card: "c1"})
-	if c1.Face != 0 {
-		t.Errorf("face = %d, want 0 after wrapping", c1.Face)
-	}
-	mustApply(t, table, Action{Kind: ActFlip, Card: "c1"})
-	if c1.Face != 1 {
-		t.Errorf("face = %d, want 1", c1.Face)
-	}
-
+	c1 := table.Cards["c1"] // face 1 of 2
 	c1.FaceDown = true
-	mustApply(t, table, Action{Kind: ActFlip, Card: "c1"})
-	if c1.FaceDown || c1.Face != 1 {
-		t.Errorf("faceDown = %v, face = %d, want face up on face 1", c1.FaceDown, c1.Face)
+
+	mustApply(t, table, Action{Kind: ActFlip, Card: "c1", Face: 0, FaceDown: new(false)})
+
+	if c1.FaceDown || c1.Face != 0 {
+		t.Errorf("faceDown = %v, face = %d, want face up on face 0", c1.FaceDown, c1.Face)
 	}
-}
-
-func TestFlipSingleFacedCardStaysOnFaceZero(t *testing.T) {
-	table := newTestTable() // c7 has no Faces set
-
-	mustApply(t, table, Action{Kind: ActFlip, Card: "c7"})
-
-	if table.Cards["c7"].Face != 0 {
-		t.Errorf("face = %d, want 0", table.Cards["c7"].Face)
+	for name, a := range map[string]Action{
+		"no such face": {Kind: ActFlip, Card: "c1", Face: 2, FaceDown: new(false)},
+		"not resolved": {Kind: ActFlip, Card: "c1"},
+		"hand card":    {Kind: ActFlip, Card: "c3", FaceDown: new(false)},
+	} {
+		if err := apply(table, a); !errors.Is(err, ErrInvalid) {
+			t.Errorf("%s: err = %v, want ErrInvalid", name, err)
+		}
 	}
 }
 

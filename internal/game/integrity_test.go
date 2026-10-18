@@ -105,7 +105,7 @@ func checkHistory(t *testing.T, g *Game) {
 
 	table := h.Initial.Clone()
 	for i, e := range h.Events {
-		if e.live() && !viewOnlyKinds[e.Action.Kind] {
+		if e.live() && !notReplayedKinds[e.Action.Kind] {
 			if err := apply(table, e.Action); err != nil {
 				t.Errorf("event %d (%s) does not apply to its predecessors: %v", i, e.Action.Kind, err)
 				return

@@ -44,6 +44,12 @@ func (e Event) live() bool {
 	return !e.Undone && !e.Dropped
 }
 
+// cancelled reports whether e belongs to a burst cancelled by flipping back:
+// it is undone and has lost its history line (see Game.cancelFlipBurst).
+func (e Event) cancelled() bool {
+	return e.Tracked && e.Undone && e.Log < 0
+}
+
 // Snapshot is the table after the first Event events, without open views.
 type Snapshot struct {
 	Event int    `json:"event"`
@@ -111,12 +117,13 @@ func withoutViews(t *Table) *Table {
 // ascending list of its event indices. They are taken among the seat's last
 // maxUndoDepth tracked bursts, undone ones included so that undoing never
 // reaches further back. Shuffles never count (P2-R17): undoing one would bring
-// back an order a player may have seen.
+// back an order a player may have seen. Nor do bursts cancelled by flipping
+// back, which changed nothing.
 func (h *History) undoableBursts(seat int) [][]int {
 	var bursts [][]int
 	for i := len(h.Events) - 1; i >= 0; i-- {
 		e := h.Events[i]
-		if e.Seat != seat || !e.Tracked || producesShuffle(e.Action) {
+		if e.Seat != seat || !e.Tracked || producesShuffle(e.Action) || e.cancelled() {
 			continue
 		}
 		if n := len(bursts); n > 0 && e.Burst > 0 && h.Events[bursts[n-1][0]].Burst == e.Burst {
@@ -184,7 +191,7 @@ func refreshSnapshot(snapshots []Snapshot, n int, table *Table) {
 // e keeps the new outcome so that later rebuilds stay stable. Any other event
 // that fails is marked Dropped.
 func replayEvent(t *Table, e *Event, rng *rand.Rand) {
-	if !e.live() || viewOnlyKinds[e.Action.Kind] {
+	if !e.live() || notReplayedKinds[e.Action.Kind] {
 		return
 	}
 	if apply(t, e.Action) == nil {

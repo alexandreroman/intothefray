@@ -35,13 +35,13 @@ func TestRecordNumbersEventsAndKeepsTheLastSnapshots(t *testing.T) {
 	}
 }
 
-// historyWithSnapshots returns a history of n exhausts of c1 with a snapshot
-// every snapshotEvery events; its live table is returned too.
+// historyWithSnapshots returns a history of n damage tokens added to c1, with
+// a snapshot every snapshotEvery events; its live table is returned too.
 func historyWithSnapshots(n int) (*History, *Table) {
-	live := newTestTable()
+	live := newTestTable() // c1 has 2 damage
 	h := newHistory(testSeed, live, testNow)
 	for range n {
-		a := Action{Kind: ActExhaust, Card: "c1"}
+		a := Action{Kind: ActToken, Card: "c1", Name: "dmg", Delta: 1}
 		_ = apply(live, a)
 		h.record(Event{Action: a, Tracked: true, Log: -1}, live)
 	}
@@ -94,7 +94,7 @@ func TestRefreshSnapshot(t *testing.T) {
 func TestReplayEvent(t *testing.T) {
 	t.Run("applies a live event", func(t *testing.T) {
 		table := newTestTable()
-		e := Event{Action: Action{Kind: ActExhaust, Card: "c1"}}
+		e := Event{Action: Action{Kind: ActExhaust, Card: "c1", Exhausted: new(false)}}
 		replayEvent(table, &e, newTestRNG())
 		if table.Cards["c1"].Exhausted || e.Dropped {
 			t.Errorf("c1 exhausted = %t, dropped = %t; want the exhaust applied", table.Cards["c1"].Exhausted, e.Dropped)
@@ -117,7 +117,7 @@ func TestReplayEvent(t *testing.T) {
 	})
 	t.Run("drops what fails", func(t *testing.T) {
 		table := newTestTable()
-		e := Event{Action: Action{Kind: ActExhaust, Card: "c4"}} // c4 lies in the deck
+		e := Event{Action: Action{Kind: ActExhaust, Card: "c4", Exhausted: new(true)}} // c4 lies in the deck
 		replayEvent(table, &e, newTestRNG())
 		if !e.Dropped {
 			t.Error("the event is not dropped")
@@ -196,10 +196,9 @@ func TestRebuildLeavesTheHistoryAlone(t *testing.T) {
 	if !rebuilt[12].Undone || len(snapshots) != len(h.Snapshots) {
 		t.Errorf("rebuild returned events %d undone = %t and %d snapshots", 12, rebuilt[12].Undone, len(snapshots))
 	}
-	// 24 exhausts of an exhausted card: it ends exhausted again.
-	if !table.Cards["c1"].Exhausted || snapshots[1].Table.Cards["c1"].Exhausted {
-		t.Errorf("c1 exhausted = %t live, %t after 20 events; want true, false",
-			table.Cards["c1"].Exhausted, snapshots[1].Table.Cards["c1"].Exhausted)
+	// c1 starts with 2 damage, and one of the 25 tokens is undone.
+	if live, at20 := table.Cards["c1"].Tokens["dmg"], snapshots[1].Table.Cards["c1"].Tokens["dmg"]; live != 26 || at20 != 21 {
+		t.Errorf("c1 has %d damage live and %d after 20 events, want 26 and 21", live, at20)
 	}
 }
 
@@ -214,5 +213,22 @@ func TestKeptViews(t *testing.T) {
 	}
 	if len(views["p0"].Cards) != 3 {
 		t.Error("keptViews changed the views it was given")
+	}
+}
+
+// TestUndoableBurstsSkipCancelledFlips checks that a burst cancelled by
+// flipping back, which changed nothing, takes no room in the undo window.
+func TestUndoableBurstsSkipCancelledFlips(t *testing.T) {
+	h := newHistory(testSeed, newTestTable(), testNow)
+	h.Events = append(h.Events, Event{Action: Action{Kind: ActExhaust, Card: "c1"}, Tracked: true, Log: 1})
+	for i := range maxUndoDepth {
+		flip := Action{Kind: ActFlip, Card: "c1"}
+		h.Events = append(h.Events,
+			Event{Action: flip, Tracked: true, Burst: i + 1, Undone: true, Log: -1},
+			Event{Action: flip, Tracked: true, Burst: i + 1, Undone: true, Log: -1})
+	}
+
+	if got := h.lastUndoable(0); !slices.Equal(got, []int{0}) {
+		t.Errorf("lastUndoable = %v, want the exhaust [0] behind the cancelled flips", got)
 	}
 }

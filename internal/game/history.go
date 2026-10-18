@@ -19,10 +19,11 @@ const (
 	ActUndo      Kind = "undo"
 )
 
-// viewOnlyKinds are recorded like every other action, so that a replay
-// reproduces the game, but a rebuild skips them: they leave the shared table
-// alone.
-var viewOnlyKinds = map[Kind]bool{
+// notReplayedKinds are recorded like every other action, so that a replay
+// reproduces the game, but a rebuild skips them: looks, searches and closes
+// only touch a player's private view, and an undo's effect is the undone
+// flags it sets on other events.
+var notReplayedKinds = map[Kind]bool{
 	ActLook:      true,
 	ActSearch:    true,
 	ActCloseView: true,
@@ -225,6 +226,23 @@ func (g *Game) install(table *Table, events []Event, snapshots []Snapshot) {
 	g.Table = table
 	g.History.Events = events
 	g.History.Snapshots = snapshots
+	g.strikeDeadLines()
+}
+
+// strikeDeadLines marks undone every history line whose events are all undone
+// or dropped: what they tell no longer shows on the table.
+func (g *Game) strikeDeadLines() {
+	alive := map[int]bool{}
+	for _, e := range g.History.Events {
+		if e.Log >= 0 {
+			alive[e.Log] = alive[e.Log] || e.live()
+		}
+	}
+	for line, isAlive := range alive {
+		if !isAlive {
+			g.Log[line].Undone = true
+		}
+	}
 }
 
 func (g *Game) appendLog(seat int, text string, cards []string, now time.Time) {
@@ -245,10 +263,10 @@ func (g *Game) undo(seat int, rng *rand.Rand, now time.Time) error {
 	for _, i := range burst {
 		events[i].Undone = true
 	}
+	// Installing strikes the burst's line, and those of the events dropped.
 	g.install(h.rebuild(events, burst[0], rng))
 
-	original := &g.Log[h.Events[burst[0]].Log]
-	original.Undone = true
+	original := g.Log[h.Events[burst[0]].Log]
 	g.appendLog(seat, "undid “"+original.Text+"”", nil, now)
 	h.record(Event{Seat: seat, Action: Action{Kind: ActUndo}, Log: len(g.Log) - 1, At: now}, g.Table)
 	return nil

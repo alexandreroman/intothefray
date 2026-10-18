@@ -467,12 +467,17 @@ var (
 	statusNames = []string{"stunned", "confused", "tough"}
 )
 
+// applyExhaust sets the exhausted state resolve recorded (see
+// resolveExhaust).
 func applyExhaust(t *Table, a Action) error {
 	c, err := t.tableCard(a.Card)
 	if err != nil {
 		return err
 	}
-	c.Exhausted = !c.Exhausted
+	if a.Exhausted == nil {
+		return invalid("exhaust of card %q has no resulting state", c.ID)
+	}
+	c.Exhausted = *a.Exhausted
 	return nil
 }
 
@@ -482,16 +487,20 @@ func faceCount(c *Card) int {
 	return max(c.Faces, 1)
 }
 
+// applyFlip sets the side resolve recorded (see resolveFlip).
 func applyFlip(t *Table, a Action) error {
 	c, err := t.tableCard(a.Card)
 	if err != nil {
 		return err
 	}
-	if c.FaceDown {
-		c.FaceDown = false
-		return nil
+	if a.FaceDown == nil {
+		return invalid("flip of card %q has no resulting side", c.ID)
 	}
-	c.Face = (c.Face + 1) % faceCount(c)
+	if a.Face < 0 || a.Face >= faceCount(c) {
+		return invalid("card %q has no face %d", c.ID, a.Face)
+	}
+	c.Face = a.Face
+	c.FaceDown = *a.FaceDown
 	return nil
 }
 

@@ -357,3 +357,28 @@ func TestResolveShuffleDependsOnSeed(t *testing.T) {
 		t.Error("five seeds gave a single order")
 	}
 }
+
+// TestResolveRecordsTheResultingState checks that exhaust and flip record the
+// state they lead to, so that a rebuild on another table sets that state
+// instead of toggling it again.
+func TestResolveRecordsTheResultingState(t *testing.T) {
+	f := newResolveFixture(t)
+	c := f.g.Table.Cards[f.ownTable]
+
+	exhaust, err := resolve(f.g, 0, Action{Kind: ActExhaust, Card: f.ownTable}, newTestRNG())
+	if err != nil || exhaust.Exhausted == nil || *exhaust.Exhausted != !c.Exhausted {
+		t.Errorf("exhaust = %+v, %v; want Exhausted %t", exhaust, err, !c.Exhausted)
+	}
+
+	c.Faces, c.Face = 2, 1
+	flip, err := resolve(f.g, 0, Action{Kind: ActFlip, Card: f.ownTable, Face: 1}, newTestRNG())
+	if err != nil || flip.Face != 0 || flip.FaceDown == nil || *flip.FaceDown {
+		t.Errorf("flip of face 1 of 2 = %+v, %v; want face 0, face up", flip, err)
+	}
+
+	c.FaceDown = true
+	flip, err = resolve(f.g, 0, Action{Kind: ActFlip, Card: f.ownTable}, newTestRNG())
+	if err != nil || flip.Face != 1 || flip.FaceDown == nil || *flip.FaceDown {
+		t.Errorf("flip of a face-down card = %+v, %v; want face 1, face up", flip, err)
+	}
+}

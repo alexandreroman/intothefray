@@ -45,8 +45,8 @@ func (g *Game) ReplaySetup() (ReplaySetup, error) {
 // recorded with. The result is the game that recorded the events, its table,
 // log and history alike. Players get placeholder tokens.
 func Replay(cat *pack.Catalog, setup ReplaySetup, events []Event) (*Game, error) {
-	if len(setup.Players) == 0 {
-		return nil, fmt.Errorf("%w: a replay needs players", ErrInvalid)
+	if err := checkReplayPlayers(setup.Players); err != nil {
+		return nil, err
 	}
 	g := &Game{Phase: PhaseLobby, CreatedAt: setup.StartedAt, Config: setup.Config}
 	for seat, rp := range setup.Players {
@@ -77,4 +77,20 @@ func Replay(cat *pack.Catalog, setup ReplaySetup, events []Event) (*Game, error)
 		}
 	}
 	return g, nil
+}
+
+// checkReplayPlayers enforces what the lobby guarantees: one to maxPlayers
+// players, each with their own colour in 0..maxPlayers-1.
+func checkReplayPlayers(players []ReplayPlayer) error {
+	if len(players) == 0 || len(players) > maxPlayers {
+		return fmt.Errorf("%w: a replay needs 1 to %d players, not %d", ErrInvalid, maxPlayers, len(players))
+	}
+	taken := map[int]bool{}
+	for _, p := range players {
+		if p.Color < 0 || p.Color >= maxPlayers || taken[p.Color] {
+			return fmt.Errorf("%w: %s has colour %d, which is out of range or taken", ErrInvalid, p.Name, p.Color)
+		}
+		taken[p.Color] = true
+	}
+	return nil
 }

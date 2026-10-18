@@ -37,9 +37,13 @@ func newRandomPlay(f *doFixture, seed uint64) *randomPlay {
 func (p *randomPlay) step() bool {
 	seat := p.r.IntN(len(p.f.g.Players))
 	a := randomAction(p.r, p.f.g.Table, seat)
-	// Repeating a counter change or a flip makes bursts.
-	if last := p.last[seat]; mergeKey(last) != "" && p.r.IntN(2) == 0 {
+	// Repeating a counter change or a flip makes bursts; moving the same
+	// card again replaces the last move.
+	if last := p.last[seat]; (mergeKey(last) != "" || last.Kind == ActMove) && p.r.IntN(2) == 0 {
 		a = last
+		if a.Kind == ActMove {
+			a.X, a.Y = 10*p.r.IntN(100), 10*p.r.IntN(40)
+		}
 	}
 	p.last[seat] = a
 	// Short gaps let counters and flips merge, long ones break the bursts.
@@ -303,17 +307,22 @@ func fourPlayerGame(t *testing.T) *doFixture {
 // included.
 const maxGameJSON = 512 << 10
 
+// TestGameSizeAfterALongGame plays 300 accepted random actions, undos
+// included, in a four-player game.
 func TestGameSizeAfterALongGame(t *testing.T) {
+	const actions = 300
 	f := fourPlayerGame(t)
 	play := newRandomPlay(f, 1)
-	for range 300 {
-		play.step()
+	for accepted := 0; accepted < actions; {
+		if play.step() {
+			accepted++
+		}
 	}
 
 	size := len(mustJSON(t, f.g))
 	h := f.g.History
-	t.Logf("4 players, 300 random actions, %d events, %d snapshots: %d bytes (%d KiB)",
-		len(h.Events), len(h.Snapshots), size, size>>10)
+	t.Logf("4 players, %d accepted actions out of %d tried, %d events, %d snapshots: %d bytes (%d KiB)",
+		actions, len(play.trace), len(h.Events), len(h.Snapshots), size, size>>10)
 	t.Logf("table %d, initial %d, snapshots %d, events %d, log %d bytes",
 		len(mustJSON(t, f.g.Table)), len(mustJSON(t, h.Initial)), len(mustJSON(t, h.Snapshots)),
 		len(mustJSON(t, h.Events)), len(mustJSON(t, f.g.Log)))
@@ -362,11 +371,12 @@ func TestReplayRecordedGame(t *testing.T) {
 }
 
 // recordRandomGame plays a random Rhino game and stores its setup and events
-// at recording, and its live table at golden.
+// at recording, and its live table at golden. Seed 13 gives a varied game:
+// bursts, replaced moves, dropped events, looks and most action kinds.
 func recordRandomGame(t *testing.T, recording, golden string) {
 	t.Helper()
 	f := newDoFixture(t)
-	play := newRandomPlay(f, 7)
+	play := newRandomPlay(f, 13)
 	for range 120 {
 		play.step()
 	}

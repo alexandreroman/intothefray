@@ -53,7 +53,7 @@ type Action struct {
 	N      int      `json:"n,omitempty"`
 	Name   string   `json:"name,omitempty"` // token or status name
 	Delta  int      `json:"delta,omitempty"`
-	Face   int      `json:"face,omitempty"`
+	Face   int      `json:"face,omitempty"`  // chosen stage face; resulting face of a flip
 	Where  string   `json:"where,omitempty"` // "top" | "bottom" | "shuffle"
 	Stage  string   `json:"stage,omitempty"`
 	Cards  []string `json:"cards,omitempty"` // resolved: ids taken from a pile top (top first), new orders
@@ -61,6 +61,11 @@ type Action struct {
 	// shuffled pile. Cards then holds the new order, in new ids.
 	Renames map[string]string `json:"renames,omitempty"`
 	Seat    int               `json:"seat,omitempty"` // acting seat, filled server-side (arrows)
+	// Exhausted and FaceDown are the state an exhaust or a flip leads to,
+	// filled by resolve: replaying them on a rebuilt table sets that state
+	// instead of toggling whatever the card shows there.
+	Exhausted *bool `json:"exhausted,omitempty"`
+	FaceDown  *bool `json:"faceDown,omitempty"`
 }
 
 // Limits applied to client-provided numbers.
@@ -92,8 +97,12 @@ func resolve(g *Game, seat int, a Action, rng *rand.Rand) (Action, error) {
 	t := g.Table
 
 	switch a.Kind {
-	case ActMove, ActExhaust, ActFlip, ActToken, ActStatus, ActChooseStage, ActDiscard, ActPlay:
+	case ActMove, ActToken, ActStatus, ActChooseStage, ActDiscard, ActPlay:
 		return a, checkCards(t, seat, a.Card)
+	case ActExhaust:
+		return resolveExhaust(t, seat, a)
+	case ActFlip:
+		return resolveFlip(t, seat, a)
 	case ActAttach, ActArrowAdd:
 		return a, checkCards(t, seat, a.Card, a.Target)
 	case ActToHand:
@@ -230,6 +239,45 @@ func checkCard(t *Table, seat int, c *Card) error {
 	return nil
 }
 
+// resolveExhaust records whether the card ends exhausted (see
+// Action.Exhausted).
+func resolveExhaust(t *Table, seat int, a Action) (Action, error) {
+	c, err := usableTableCard(t, seat, a.Card)
+	if err != nil {
+		return a, err
+	}
+	a.Exhausted = new(!c.Exhausted)
+	return a, nil
+}
+
+// resolveFlip records the side the card ends on: a face-down card turns face
+// up, any other goes to its next face.
+func resolveFlip(t *Table, seat int, a Action) (Action, error) {
+	c, err := usableTableCard(t, seat, a.Card)
+	if err != nil {
+		return a, err
+	}
+	a.Face = c.Face
+	if !c.FaceDown {
+		a.Face = (c.Face + 1) % faceCount(c)
+	}
+	a.FaceDown = new(false)
+	return a, nil
+}
+
+// usableTableCard returns the table card with the given id when seat may
+// touch it.
+func usableTableCard(t *Table, seat int, id string) (*Card, error) {
+	c, err := usableCard(t, seat, id)
+	if err != nil {
+		return nil, err
+	}
+	if c.Zone != ZoneTable {
+		return nil, invalid("card %q is not on the table", id)
+	}
+	return c, nil
+}
+
 func resolveToHand(t *Table, seat int, a Action) (Action, error) {
 	c, err := usableCard(t, seat, a.Card)
 	if err != nil {
@@ -293,8 +341,8 @@ func resolveDraw(t *Table, seat int, a Action) (Action, error) {
 	return a, nil
 }
 
-// resolveReveal records the card to reveal, so that a replay onto a table
-// with another card on top fails instead of revealing that card.
+// resolveReveal records the card to reveal: a rebuild after an undo reveals
+// that card, wherever it is in the deck, never the card then on top.
 func resolveReveal(t *Table, a Action) (Action, error) {
 	enc, err := t.pile(PileEncounter)
 	if err != nil {
@@ -307,7 +355,8 @@ func resolveReveal(t *Table, a Action) (Action, error) {
 	return a, nil
 }
 
-// resolveDeal records the card to deal, for the same reason as resolveReveal.
+// resolveDeal records the card to deal, so that a rebuild deals that card
+// (see resolveReveal).
 func resolveDeal(t *Table, a Action) (Action, error) {
 	id := t.dealtCard()
 	if id == "" {

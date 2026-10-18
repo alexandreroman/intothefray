@@ -195,6 +195,98 @@
       "seq": 1,
       "seat": 0,
       "action": {
+        "kind": "status",
+        "card": "cvczayu4v",
+        "name": "tough",
+        "delta": 1
+      },
+      "tracked": true,
+      "log": 1,
+      "at": "2026-10-18T12:00:09Z"
+    },
+    {
+      "seq": 2,
+      "seat": 0,
+      "action": {
+        "kind": "deal",
+        "area": "p0",
+        "x": 280,
+        "y": 160,
+        "cards": [
+          "csdbghyga"
+        ]
+      },
+      "tracked": true,
+      "log": 2,
+      "at": "2026-10-18T12:00:18Z"
+    },
+    {
+      "seq": 3,
+      "seat": 0,
+      "action": {
+        "kind": "move",
+        "card": "csdbghyga",
+        "area": "p0",
+        "x": 160,
+        "y": 330
+      },
+      "log": -1,
+      "at": "2026-10-18T12:00:19Z"
+    },
+    {
+      "seq": 4,
+      "seat": 0,
+      "action": {
+        "kind": "discardTop",
+        "pile": "deck:p0",
+        "n": 1,
+        "cards": [
+          "cd7q8redz"
+        ]
+      },
+      "tracked": true,
+      "log": 3,
+      "undone": true,
+      "at": "2026-10-18T12:00:28Z"
+    },
+    {
+      "seq": 5,
+      "seat": 1,
+      "action": {
+        "kind": "flip",
+        "card": "cwwnhqp2r",
+        "seat": 1,
+        "faceDown": false
+      },
+      "tracked": true,
+      "log": 4,
+      "at": "2026-10-18T12:00:39Z"
+    },
+    {
+      "seq": 6,
+      "seat": 1,
+      "action": {
+        "kind": "arrowAdd",
+        "card": "csdbghyga",
+        "target": "cwwnhqp2r",
+        "seat": 1
+      },
+      "log": -1,
+      "at": "2026-10-18T12:00:44Z"
+    },
+    {
+      "seq": 7,
+      "seat": 0,
+      "action": {
+        "kind": "undo"
+      },
+      "log": 5,
+      "at": "2026-10-18T12:00:45Z"
+    },
+    {
+      "seq": 8,
+      "seat": 0,
+      "action": {
         "kind": "draw",
         "area": "p0",
         "n": 3,
@@ -205,616 +297,668 @@
         ]
       },
       "tracked": true,
-      "log": 1,
-      "undone": true,
-      "at": "2026-10-18T12:00:29Z"
-    },
-    {
-      "seq": 2,
-      "seat": 1,
-      "action": {
-        "kind": "draw",
-        "area": "p1",
-        "n": 3,
-        "cards": [
-          "cab89hsja",
-          "c4p53zsux",
-          "c3cyzdgvj"
-        ],
-        "seat": 1
-      },
-      "tracked": true,
-      "log": 2,
-      "at": "2026-10-18T12:00:41Z"
-    },
-    {
-      "seq": 3,
-      "seat": 1,
-      "action": {
-        "kind": "draw",
-        "area": "p1",
-        "n": 3,
-        "cards": [
-          "cuqku3y77",
-          "c8kv4m2nz",
-          "cfnyscqrg"
-        ],
-        "seat": 1
-      },
-      "tracked": true,
-      "log": 3,
-      "undone": true,
-      "at": "2026-10-18T12:00:46Z"
-    },
-    {
-      "seq": 4,
-      "seat": 1,
-      "action": {
-        "kind": "exhaust",
-        "card": "cvczayu4v",
-        "seat": 1
-      },
-      "tracked": true,
-      "log": 4,
-      "undone": true,
-      "at": "2026-10-18T12:00:52Z"
-    },
-    {
-      "seq": 5,
-      "seat": 0,
-      "action": {
-        "kind": "undo"
-      },
-      "log": 5,
-      "at": "2026-10-18T12:00:58Z"
-    },
-    {
-      "seq": 6,
-      "seat": 1,
-      "action": {
-        "kind": "undo"
-      },
       "log": 6,
-      "at": "2026-10-18T12:00:59Z"
-    },
-    {
-      "seq": 7,
-      "seat": 0,
-      "action": {
-        "kind": "draw",
-        "area": "p0",
-        "n": 1,
-        "cards": [
-          "cd7q8redz"
-        ]
-      },
-      "tracked": true,
-      "log": 7,
-      "at": "2026-10-18T12:01:20Z"
-    },
-    {
-      "seq": 8,
-      "seat": 0,
-      "action": {
-        "kind": "status",
-        "card": "cn5ph3gpe",
-        "name": "tough",
-        "delta": 1
-      },
-      "tracked": true,
-      "log": 8,
-      "at": "2026-10-18T12:01:27Z"
+      "undone": true,
+      "at": "2026-10-18T12:00:48Z"
     },
     {
       "seq": 9,
-      "seat": 0,
+      "seat": 1,
       "action": {
-        "kind": "status",
-        "card": "cn5ph3gpe",
-        "name": "tough",
-        "delta": 1
+        "kind": "move",
+        "card": "cz3w3cktw",
+        "area": "p1",
+        "x": 580,
+        "y": 320,
+        "seat": 1
       },
-      "tracked": true,
-      "log": 9,
-      "at": "2026-10-18T12:01:50Z"
+      "log": -1,
+      "at": "2026-10-18T12:00:51Z"
     },
     {
       "seq": 10,
       "seat": 0,
       "action": {
-        "kind": "shuffle",
-        "pile": "deck:p0",
-        "cards": [
-          "cbv3vac5u",
-          "ck5bxuser",
-          "chjbkpy5g",
-          "cndxpugmk",
-          "cdjfmxhvb",
-          "c7f76ae98",
-          "crk5pb9xj",
-          "cvnwsz5mu",
-          "c3s34cymv",
-          "ctrk6yaft",
-          "c2983zxfc",
-          "c4979xb3b",
-          "cktpewvkx",
-          "cradvdn2b",
-          "cc646p8fv",
-          "cqzzfqdfe",
-          "c3ntgqcm2"
-        ],
-        "renames": {
-          "c273dnchn": "chjbkpy5g",
-          "c4ywphvfg": "cktpewvkx",
-          "c7ckr85dr": "cradvdn2b",
-          "c7mucxf5b": "crk5pb9xj",
-          "c92e77kve": "cndxpugmk",
-          "cb3cuqvpp": "c3s34cymv",
-          "cdgvjtgjt": "c2983zxfc",
-          "cekpkknhp": "c7f76ae98",
-          "cjth2th77": "c3ntgqcm2",
-          "cjyqcketf": "cvnwsz5mu",
-          "cpaavspaf": "ctrk6yaft",
-          "cps64jqzr": "cdjfmxhvb",
-          "cryahddaw": "cc646p8fv",
-          "cs82wv276": "c4979xb3b",
-          "cvgzafqyy": "cbv3vac5u",
-          "cvvdq2sfu": "ck5bxuser",
-          "cy9y8chnb": "cqzzfqdfe"
-        }
+        "kind": "undo"
       },
-      "tracked": true,
-      "log": 10,
-      "at": "2026-10-18T12:01:57Z"
+      "log": 7,
+      "at": "2026-10-18T12:01:00Z"
     },
     {
       "seq": 11,
-      "seat": 0,
+      "seat": 1,
       "action": {
-        "kind": "draw",
-        "area": "p0",
-        "n": 3,
+        "kind": "shuffle",
+        "pile": "deck:p1",
         "cards": [
-          "c3ntgqcm2",
-          "cqzzfqdfe",
-          "cc646p8fv"
-        ]
+          "cfexperac",
+          "cykx5z7ju",
+          "c3n7tavz7",
+          "cg3zewk7u",
+          "c4b2mkfh3",
+          "cv4473q46",
+          "cy6vmx3y6",
+          "cpwb7abqa",
+          "crjsaksm9",
+          "cnppnrucq",
+          "c732r7r2w",
+          "c9nhpsjrp",
+          "c6vxgtprb",
+          "cvwtd89p5",
+          "c3cm8pujd",
+          "cmsjkbbee",
+          "cc94x36d7",
+          "csczhef9v"
+        ],
+        "renames": {
+          "c3cyzdgvj": "cc94x36d7",
+          "c4p53zsux": "cmsjkbbee",
+          "c6hkf3zr2": "cykx5z7ju",
+          "c8kv4m2nz": "csczhef9v",
+          "c924ab66c": "c732r7r2w",
+          "ca5t6vu3k": "cg3zewk7u",
+          "cab89hsja": "crjsaksm9",
+          "cb4bggw4j": "cv4473q46",
+          "cfnyscqrg": "c3n7tavz7",
+          "cgtbskpn9": "c9nhpsjrp",
+          "cjkut5jwq": "c4b2mkfh3",
+          "cm2mj3upt": "cnppnrucq",
+          "cpjmsz9a2": "cfexperac",
+          "cr98acnzk": "c6vxgtprb",
+          "csv8euzmh": "c3cm8pujd",
+          "cu24n5u73": "cpwb7abqa",
+          "cuqku3y77": "cvwtd89p5",
+          "cxht678q4": "cy6vmx3y6"
+        },
+        "seat": 1
       },
       "tracked": true,
-      "log": 11,
-      "at": "2026-10-18T12:02:21Z"
+      "log": 8,
+      "at": "2026-10-18T12:01:13Z"
     },
     {
       "seq": 12,
-      "seat": 0,
+      "seat": 1,
       "action": {
-        "kind": "deal",
-        "area": "p0",
-        "x": 530,
-        "y": 330,
+        "kind": "shuffle",
+        "pile": "enc",
         "cards": [
-          "csdbghyga"
-        ]
+          "cm455yzug",
+          "cmrc4ujq3",
+          "cfw65rxwx",
+          "cgae6xd5v",
+          "csac88g4h",
+          "c5nzu5wvk",
+          "ccy96g8bh",
+          "cqw7ak2ft",
+          "czha9aqka",
+          "ca6y7sz7y",
+          "cys4rhcv4",
+          "cbs9bqkr2",
+          "ck5acv6b7",
+          "cdu6v5nsr",
+          "c5uyksm9x",
+          "c2v95scdy",
+          "cddzzs9xn",
+          "ccj78mfrv",
+          "czhevb5n6",
+          "c27pt6s3h",
+          "cfazrcym7",
+          "crdse8csu",
+          "c6qcxnfza",
+          "c4ucn74ta",
+          "cbxs7ppt6",
+          "cu9e4bmpb",
+          "cr5vt4qmk",
+          "cjg69eskk",
+          "cu3cjcnfw",
+          "cfcr5z4y3",
+          "cakvu9hy6"
+        ],
+        "renames": {
+          "c3cemeqkn": "cjg69eskk",
+          "c3x9p3n3g": "ca6y7sz7y",
+          "c47k4e5zw": "ccj78mfrv",
+          "c5hh54epy": "cddzzs9xn",
+          "c66v3h9h3": "ccy96g8bh",
+          "c7y5gahqk": "cakvu9hy6",
+          "c8a9nh4ms": "c6qcxnfza",
+          "cakppdr8j": "crdse8csu",
+          "canmw7tvz": "cm455yzug",
+          "cb4csaj78": "cgae6xd5v",
+          "cc3682nmv": "cbxs7ppt6",
+          "ccd3zsuqs": "c4ucn74ta",
+          "ccrd2bste": "cu3cjcnfw",
+          "ce4mvug9r": "c2v95scdy",
+          "cheg6ywnb": "cbs9bqkr2",
+          "chu3vr82v": "czhevb5n6",
+          "chwcs3svj": "cys4rhcv4",
+          "ck74g5nvg": "cu9e4bmpb",
+          "cmkhxubs6": "cr5vt4qmk",
+          "cmz6hn336": "c5uyksm9x",
+          "cn2mcn6af": "cfcr5z4y3",
+          "cnrfzav8b": "cfw65rxwx",
+          "cq2eb4e94": "c5nzu5wvk",
+          "cqtcrpjrh": "czha9aqka",
+          "crs59n3ag": "cfazrcym7",
+          "ctrgjry5c": "cdu6v5nsr",
+          "ctx7b4s9j": "ck5acv6b7",
+          "cvqagdae9": "cmrc4ujq3",
+          "cwd9nampq": "csac88g4h",
+          "cxwjjgpq3": "cqw7ak2ft",
+          "cybfkz8vu": "c27pt6s3h"
+        },
+        "seat": 1
       },
       "tracked": true,
-      "log": 12,
-      "at": "2026-10-18T12:02:26Z"
+      "log": 9,
+      "at": "2026-10-18T12:01:17Z"
     },
     {
       "seq": 13,
-      "seat": 0,
-      "action": {
-        "kind": "handOrder",
-        "area": "p0",
-        "cards": [
-          "cc646p8fv",
-          "cqzzfqdfe",
-          "c3ntgqcm2",
-          "cd7q8redz"
-        ]
-      },
-      "log": -1,
-      "at": "2026-10-18T12:02:33Z"
-    },
-    {
-      "seq": 14,
-      "seat": 0,
-      "action": {
-        "kind": "deal",
-        "area": "p0",
-        "x": 420,
-        "y": 380,
-        "cards": [
-          "chwcs3svj"
-        ]
-      },
-      "tracked": true,
-      "log": 13,
-      "at": "2026-10-18T12:02:41Z"
-    },
-    {
-      "seq": 15,
-      "seat": 0,
-      "action": {
-        "kind": "move",
-        "card": "chwcs3svj",
-        "area": "p0",
-        "x": 700,
-        "y": 110
-      },
-      "log": -1,
-      "at": "2026-10-18T12:02:50Z"
-    },
-    {
-      "seq": 16,
-      "seat": 0,
-      "action": {
-        "kind": "move",
-        "card": "cwwnhqp2r",
-        "area": "p0",
-        "x": 650
-      },
-      "log": -1,
-      "at": "2026-10-18T12:02:58Z"
-    },
-    {
-      "seq": 17,
-      "seat": 0,
-      "action": {
-        "kind": "status",
-        "card": "chwcs3svj",
-        "name": "tough",
-        "delta": 1
-      },
-      "tracked": true,
-      "burst": 1,
-      "log": 14,
-      "undone": true,
-      "at": "2026-10-18T12:03:06Z"
-    },
-    {
-      "seq": 18,
-      "seat": 0,
-      "action": {
-        "kind": "status",
-        "card": "chwcs3svj",
-        "name": "tough",
-        "delta": 1
-      },
-      "tracked": true,
-      "burst": 1,
-      "log": 14,
-      "undone": true,
-      "at": "2026-10-18T12:03:16Z"
-    },
-    {
-      "seq": 19,
       "seat": 1,
-      "action": {
-        "kind": "undo"
-      },
-      "log": 15,
-      "at": "2026-10-18T12:03:25Z"
-    },
-    {
-      "seq": 20,
-      "seat": 0,
-      "action": {
-        "kind": "shuffleIn",
-        "pile": "saside",
-        "cards": [
-          "cjs4ga7wq",
-          "cabemns75",
-          "c4esaxpnh",
-          "cpyd3kea4",
-          "cnaaena6g",
-          "cycgrhcuk",
-          "cu9p855q3",
-          "c8wdh5cyu",
-          "cb9pke2hw",
-          "cguruyerk",
-          "cv26arww9",
-          "c5kp7538j",
-          "cwpafndmd",
-          "cuw584czt",
-          "c5cjtjm83",
-          "cbwq4mzjd",
-          "cdp45ahmu",
-          "cweax3ps7",
-          "cmqpgfbnk",
-          "cgqbm8stk",
-          "ce4dja3n5",
-          "cbz9jmezb",
-          "c7k7zf955",
-          "cb7kekffv",
-          "ctgn42jx3",
-          "cjgne8xkk",
-          "c7dxc5s6m",
-          "c62csq83h",
-          "c22zgjbka",
-          "cvqj5mth2"
-        ],
-        "renames": {
-          "c3cemeqkn": "ctgn42jx3",
-          "c3x9p3n3g": "cv26arww9",
-          "c47k4e5zw": "c7k7zf955",
-          "c5hh54epy": "cabemns75",
-          "c66v3h9h3": "cjgne8xkk",
-          "c7y5gahqk": "cnaaena6g",
-          "c8a9nh4ms": "c7dxc5s6m",
-          "cakppdr8j": "cb9pke2hw",
-          "canmw7tvz": "cpyd3kea4",
-          "cb4csaj78": "cu9p855q3",
-          "cc3682nmv": "cjs4ga7wq",
-          "ccd3zsuqs": "cbwq4mzjd",
-          "ccrd2bste": "c5kp7538j",
-          "ce4mvug9r": "cuw584czt",
-          "cheg6ywnb": "cvqj5mth2",
-          "chu3vr82v": "c22zgjbka",
-          "ck74g5nvg": "ce4dja3n5",
-          "cmkhxubs6": "cycgrhcuk",
-          "cmz6hn336": "cwpafndmd",
-          "cn2mcn6af": "cb7kekffv",
-          "cnrfzav8b": "c4esaxpnh",
-          "cq2eb4e94": "cweax3ps7",
-          "cqtcrpjrh": "c8wdh5cyu",
-          "crs59n3ag": "cgqbm8stk",
-          "ctrgjry5c": "cguruyerk",
-          "ctx7b4s9j": "c62csq83h",
-          "cvqagdae9": "cbz9jmezb",
-          "cwd9nampq": "cmqpgfbnk",
-          "cxwjjgpq3": "c5cjtjm83",
-          "cybfkz8vu": "cdp45ahmu"
-        }
-      },
-      "tracked": true,
-      "log": 16,
-      "at": "2026-10-18T12:03:29Z"
-    },
-    {
-      "seq": 21,
-      "seat": 1,
-      "action": {
-        "kind": "discard",
-        "card": "cwwnhqp2r",
-        "seat": 1
-      },
-      "tracked": true,
-      "log": 17,
-      "at": "2026-10-18T12:03:31Z"
-    },
-    {
-      "seq": 22,
-      "seat": 0,
-      "action": {
-        "kind": "reorderTop",
-        "pile": "deck:p0",
-        "cards": [
-          "cktpewvkx",
-          "cradvdn2b"
-        ]
-      },
-      "log": -1,
-      "at": "2026-10-18T12:03:35Z"
-    },
-    {
-      "seq": 23,
-      "seat": 1,
-      "action": {
-        "kind": "reveal",
-        "cards": [
-          "cvqj5mth2"
-        ],
-        "seat": 1
-      },
-      "tracked": true,
-      "log": 18,
-      "at": "2026-10-18T12:03:45Z"
-    },
-    {
-      "seq": 24,
-      "seat": 0,
-      "action": {
-        "kind": "undo"
-      },
-      "log": 19,
-      "at": "2026-10-18T12:03:46Z"
-    },
-    {
-      "seq": 25,
-      "seat": 0,
-      "action": {
-        "kind": "arrowAdd",
-        "card": "chwcs3svj",
-        "target": "cz3w3cktw"
-      },
-      "log": -1,
-      "at": "2026-10-18T12:03:52Z"
-    },
-    {
-      "seq": 26,
-      "seat": 0,
       "action": {
         "kind": "discardTop",
         "pile": "enc",
         "n": 1,
         "cards": [
-          "c22zgjbka"
+          "cakvu9hy6"
+        ],
+        "seat": 1
+      },
+      "tracked": true,
+      "log": 10,
+      "at": "2026-10-18T12:01:34Z"
+    },
+    {
+      "seq": 14,
+      "seat": 1,
+      "action": {
+        "kind": "draw",
+        "area": "p1",
+        "n": 1,
+        "cards": [
+          "csczhef9v"
+        ],
+        "seat": 1
+      },
+      "tracked": true,
+      "log": 11,
+      "at": "2026-10-18T12:01:39Z"
+    },
+    {
+      "seq": 15,
+      "seat": 0,
+      "action": {
+        "kind": "reveal",
+        "cards": [
+          "cfcr5z4y3"
         ]
       },
       "tracked": true,
-      "log": 20,
-      "at": "2026-10-18T12:03:58Z"
+      "log": 12,
+      "undone": true,
+      "at": "2026-10-18T12:01:45Z"
     },
     {
-      "seq": 27,
+      "seq": 16,
       "seat": 0,
       "action": {
-        "kind": "exhaust",
-        "card": "cz3w3cktw"
+        "kind": "shuffle",
+        "pile": "deck:p0",
+        "cards": [
+          "cygtmhk4u",
+          "cpzbnkd7x",
+          "c9eth3cd8",
+          "cyk7pmqug",
+          "c73q67ynt",
+          "c8qsjnyyy",
+          "c5y33akwv",
+          "cz6veaxup",
+          "ce38hzuwr",
+          "c8udgvgwb",
+          "cp7e78kby",
+          "ccwtkkt32",
+          "ccjze6jfe",
+          "cmdt7uvka",
+          "cv3a84m9r",
+          "cmpntg4mu",
+          "cq9zt6zra",
+          "cyqme4vgh"
+        ],
+        "renames": {
+          "c273dnchn": "c5y33akwv",
+          "c4ywphvfg": "c73q67ynt",
+          "c7ckr85dr": "c8udgvgwb",
+          "c7mucxf5b": "cmdt7uvka",
+          "c92e77kve": "ccjze6jfe",
+          "cb3cuqvpp": "cyqme4vgh",
+          "cd7q8redz": "cz6veaxup",
+          "cdgvjtgjt": "cygtmhk4u",
+          "cekpkknhp": "cmpntg4mu",
+          "cjth2th77": "ccwtkkt32",
+          "cjyqcketf": "cp7e78kby",
+          "cpaavspaf": "c9eth3cd8",
+          "cps64jqzr": "ce38hzuwr",
+          "cryahddaw": "cq9zt6zra",
+          "cs82wv276": "cyk7pmqug",
+          "cvgzafqyy": "c8qsjnyyy",
+          "cvvdq2sfu": "cpzbnkd7x",
+          "cy9y8chnb": "cv3a84m9r"
+        }
       },
       "tracked": true,
-      "log": 21,
-      "at": "2026-10-18T12:04:06Z"
+      "log": 13,
+      "at": "2026-10-18T12:01:55Z"
     },
     {
-      "seq": 28,
+      "seq": 20,
       "seat": 1,
       "action": {
-        "kind": "attach",
-        "card": "cz3w3cktw",
-        "target": "chwcs3svj",
+        "kind": "move",
+        "card": "cfcr5z4y3",
+        "area": "p1",
+        "x": 360,
+        "y": 170,
         "seat": 1
       },
       "log": -1,
-      "at": "2026-10-18T12:04:16Z"
+      "dropped": true,
+      "at": "2026-10-18T12:02:29Z"
     },
     {
-      "seq": 29,
+      "seq": 21,
       "seat": 1,
       "action": {
-        "kind": "play",
-        "card": "c4p53zsux",
-        "area": "p1",
-        "x": 180,
-        "y": 190,
+        "kind": "toHand",
+        "card": "cz3w3cktw",
         "seat": 1
       },
       "tracked": true,
-      "log": 22,
-      "at": "2026-10-18T12:04:17Z"
+      "log": 14,
+      "at": "2026-10-18T12:02:35Z"
     },
     {
-      "seq": 30,
+      "seq": 22,
       "seat": 1,
+      "action": {
+        "kind": "deal",
+        "area": "p1",
+        "x": 230,
+        "y": 30,
+        "cards": [
+          "cu3cjcnfw"
+        ],
+        "seat": 1
+      },
+      "tracked": true,
+      "log": 15,
+      "at": "2026-10-18T12:02:45Z"
+    },
+    {
+      "seq": 23,
+      "seat": 0,
+      "action": {
+        "kind": "undo"
+      },
+      "log": 16,
+      "at": "2026-10-18T12:02:57Z"
+    },
+    {
+      "seq": 24,
+      "seat": 0,
       "action": {
         "kind": "search",
         "pile": "enc",
         "n": 3
       },
-      "log": 23,
-      "at": "2026-10-18T12:04:27Z"
+      "log": 17,
+      "at": "2026-10-18T12:02:59Z"
+    },
+    {
+      "seq": 25,
+      "seat": 0,
+      "action": {
+        "kind": "deal",
+        "area": "p0",
+        "x": 760,
+        "y": 340,
+        "cards": [
+          "cfcr5z4y3"
+        ]
+      },
+      "tracked": true,
+      "log": 18,
+      "at": "2026-10-18T12:03:08Z"
+    },
+    {
+      "seq": 26,
+      "seat": 0,
+      "action": {
+        "kind": "shuffleBack",
+        "pile": "disc:p0",
+        "cards": [
+          "c2qkzkxu5",
+          "ch9upmfgz",
+          "ctkzmxg26",
+          "cvnyu5u44",
+          "cxcxwauyj",
+          "cacftgfez",
+          "cm73s5z3f",
+          "cvr8gw75y",
+          "cxf55seqb",
+          "cc969hbm2",
+          "crxej4rq4",
+          "cq9u6azr9",
+          "c9a9ptrs5",
+          "c2fnkdean",
+          "c86ybhrpy",
+          "c6dqdrhm9",
+          "c3f6t32xv",
+          "csawd6fcx"
+        ],
+        "renames": {
+          "c5y33akwv": "csawd6fcx",
+          "c73q67ynt": "c9a9ptrs5",
+          "c8qsjnyyy": "cvnyu5u44",
+          "c8udgvgwb": "cxcxwauyj",
+          "c9eth3cd8": "cacftgfez",
+          "ccjze6jfe": "cc969hbm2",
+          "ccwtkkt32": "c2qkzkxu5",
+          "ce38hzuwr": "cvr8gw75y",
+          "cmdt7uvka": "cxf55seqb",
+          "cmpntg4mu": "cq9u6azr9",
+          "cp7e78kby": "cm73s5z3f",
+          "cpzbnkd7x": "ctkzmxg26",
+          "cq9zt6zra": "c6dqdrhm9",
+          "cv3a84m9r": "ch9upmfgz",
+          "cygtmhk4u": "c3f6t32xv",
+          "cyk7pmqug": "c2fnkdean",
+          "cyqme4vgh": "crxej4rq4",
+          "cz6veaxup": "c86ybhrpy"
+        }
+      },
+      "tracked": true,
+      "log": 19,
+      "at": "2026-10-18T12:03:13Z"
+    },
+    {
+      "seq": 27,
+      "seat": 0,
+      "action": {
+        "kind": "closeView"
+      },
+      "log": -1,
+      "at": "2026-10-18T12:03:25Z"
+    },
+    {
+      "seq": 28,
+      "seat": 1,
+      "action": {
+        "kind": "arrowClear",
+        "seat": 1
+      },
+      "log": -1,
+      "at": "2026-10-18T12:03:37Z"
+    },
+    {
+      "seq": 29,
+      "seat": 0,
+      "action": {
+        "kind": "toPile",
+        "card": "cfcr5z4y3",
+        "target": "saside"
+      },
+      "tracked": true,
+      "log": 20,
+      "at": "2026-10-18T12:03:41Z"
+    },
+    {
+      "seq": 30,
+      "seat": 1,
+      "action": {
+        "kind": "token",
+        "card": "cn5ph3gpe",
+        "name": "thr",
+        "delta": 1,
+        "seat": 1
+      },
+      "tracked": true,
+      "log": 21,
+      "at": "2026-10-18T12:03:47Z"
     },
     {
       "seq": 31,
       "seat": 0,
       "action": {
-        "kind": "move",
-        "card": "cz3w3cktw",
-        "area": "p0",
-        "x": 980,
-        "y": 310
+        "kind": "token",
+        "card": "cvczayu4v",
+        "name": "dmg",
+        "delta": 1
       },
-      "log": -1,
-      "at": "2026-10-18T12:04:33Z"
+      "tracked": true,
+      "log": 22,
+      "at": "2026-10-18T12:03:52Z"
     },
     {
       "seq": 32,
       "seat": 1,
       "action": {
-        "kind": "status",
-        "card": "c4p53zsux",
-        "name": "tough",
+        "kind": "token",
+        "card": "cn5ph3gpe",
+        "name": "thr",
         "delta": 1,
         "seat": 1
       },
       "tracked": true,
-      "log": 24,
-      "at": "2026-10-18T12:04:44Z"
+      "burst": 1,
+      "log": 23,
+      "at": "2026-10-18T12:03:58Z"
     },
     {
       "seq": 33,
-      "seat": 0,
+      "seat": 1,
       "action": {
-        "kind": "toPile",
-        "card": "cz3w3cktw",
-        "target": "aside:p0"
+        "kind": "token",
+        "card": "cn5ph3gpe",
+        "name": "thr",
+        "delta": 1,
+        "seat": 1
       },
       "tracked": true,
-      "log": 25,
-      "at": "2026-10-18T12:04:46Z"
+      "burst": 1,
+      "log": 23,
+      "at": "2026-10-18T12:04:06Z"
     },
     {
       "seq": 34,
-      "seat": 0,
+      "seat": 1,
       "action": {
-        "kind": "toDeck",
-        "card": "c3ntgqcm2",
-        "where": "top"
+        "kind": "token",
+        "card": "cn5ph3gpe",
+        "name": "thr",
+        "delta": 1,
+        "seat": 1
       },
       "tracked": true,
-      "log": 26,
-      "undone": true,
-      "at": "2026-10-18T12:05:09Z"
+      "burst": 1,
+      "log": 23,
+      "at": "2026-10-18T12:04:11Z"
     },
     {
       "seq": 35,
       "seat": 1,
       "action": {
-        "kind": "status",
-        "card": "c4p53zsux",
-        "name": "tough",
-        "delta": 1,
+        "kind": "discardTop",
+        "pile": "enc",
+        "n": 2,
+        "cards": [
+          "cjg69eskk",
+          "cr5vt4qmk"
+        ],
         "seat": 1
       },
       "tracked": true,
-      "log": 27,
-      "at": "2026-10-18T12:05:10Z"
+      "log": 24,
+      "undone": true,
+      "at": "2026-10-18T12:04:17Z"
     },
     {
       "seq": 36,
       "seat": 0,
       "action": {
-        "kind": "undo"
+        "kind": "token",
+        "card": "cvczayu4v",
+        "name": "dmg",
+        "delta": 1
       },
-      "log": 28,
-      "at": "2026-10-18T12:05:11Z"
+      "tracked": true,
+      "log": 25,
+      "at": "2026-10-18T12:04:29Z"
     },
     {
       "seq": 37,
       "seat": 0,
       "action": {
         "kind": "chooseStage",
-        "card": "cn5ph3gpe",
-        "stage": "scheme"
+        "card": "ckesc9e6h",
+        "stage": "villain"
       },
       "tracked": true,
-      "log": 29,
-      "at": "2026-10-18T12:05:31Z"
+      "log": 26,
+      "at": "2026-10-18T12:04:35Z"
     },
     {
       "seq": 38,
       "seat": 1,
       "action": {
-        "kind": "chooseStage",
-        "card": "cn5ph3gpe",
-        "face": 1,
-        "stage": "scheme",
+        "kind": "play",
+        "card": "cz3w3cktw",
+        "area": "p1",
+        "x": 70,
+        "y": 140,
         "seat": 1
       },
       "tracked": true,
-      "log": 30,
-      "at": "2026-10-18T12:05:36Z"
+      "log": 27,
+      "undone": true,
+      "at": "2026-10-18T12:04:45Z"
     },
     {
       "seq": 39,
       "seat": 0,
       "action": {
-        "kind": "status",
-        "card": "cn5ph3gpe",
-        "name": "tough",
-        "delta": 1
+        "kind": "discardTop",
+        "pile": "deck:p0",
+        "n": 2,
+        "cards": [
+          "csawd6fcx",
+          "c3f6t32xv"
+        ]
       },
       "tracked": true,
-      "log": 31,
-      "at": "2026-10-18T12:05:44Z"
+      "log": 28,
+      "undone": true,
+      "at": "2026-10-18T12:04:46Z"
     },
     {
       "seq": 40,
       "seat": 1,
       "action": {
+        "kind": "undo"
+      },
+      "log": 29,
+      "at": "2026-10-18T12:04:56Z"
+    },
+    {
+      "seq": 41,
+      "seat": 1,
+      "action": {
+        "kind": "attach",
+        "card": "cwwnhqp2r",
+        "target": "cn5ph3gpe",
+        "seat": 1
+      },
+      "log": -1,
+      "at": "2026-10-18T12:05:12Z"
+    },
+    {
+      "seq": 42,
+      "seat": 0,
+      "action": {
+        "kind": "move",
+        "card": "cwwnhqp2r",
+        "area": "p0",
+        "x": 380,
+        "y": 100
+      },
+      "log": -1,
+      "at": "2026-10-18T12:05:19Z"
+    },
+    {
+      "seq": 43,
+      "seat": 1,
+      "action": {
+        "kind": "undo"
+      },
+      "log": 30,
+      "at": "2026-10-18T12:05:20Z"
+    },
+    {
+      "seq": 44,
+      "seat": 0,
+      "action": {
+        "kind": "move",
+        "card": "cwwnhqp2r",
+        "area": "p0",
+        "x": 870,
+        "y": 130
+      },
+      "log": -1,
+      "at": "2026-10-18T12:05:28Z"
+    },
+    {
+      "seq": 45,
+      "seat": 0,
+      "action": {
+        "kind": "arrowClear"
+      },
+      "log": -1,
+      "at": "2026-10-18T12:05:37Z"
+    },
+    {
+      "seq": 46,
+      "seat": 1,
+      "action": {
+        "kind": "exhaust",
+        "card": "csdbghyga",
+        "seat": 1,
+        "exhausted": true
+      },
+      "tracked": true,
+      "log": 31,
+      "at": "2026-10-18T12:05:46Z"
+    },
+    {
+      "seq": 47,
+      "seat": 1,
+      "action": {
+        "kind": "move",
+        "card": "cu3cjcnfw",
+        "area": "p1",
+        "x": 250,
+        "y": 120,
+        "seat": 1
+      },
+      "log": -1,
+      "at": "2026-10-18T12:05:58Z"
+    },
+    {
+      "seq": 48,
+      "seat": 1,
+      "action": {
         "kind": "status",
-        "card": "cn5ph3gpe",
+        "card": "cwwnhqp2r",
         "name": "tough",
         "delta": 1,
         "seat": 1
@@ -822,458 +966,173 @@
       "tracked": true,
       "log": 32,
       "undone": true,
-      "at": "2026-10-18T12:05:52Z"
-    },
-    {
-      "seq": 41,
-      "seat": 1,
-      "action": {
-        "kind": "exhaust",
-        "card": "csdbghyga",
-        "seat": 1
-      },
-      "tracked": true,
-      "log": 33,
-      "undone": true,
       "at": "2026-10-18T12:06:04Z"
     },
     {
-      "seq": 42,
-      "seat": 0,
-      "action": {
-        "kind": "deal",
-        "area": "p0",
-        "x": 450,
-        "y": 250,
-        "cards": [
-          "cvqj5mth2"
-        ]
-      },
-      "tracked": true,
-      "log": 34,
-      "at": "2026-10-18T12:06:05Z"
-    },
-    {
-      "seq": 43,
-      "seat": 0,
-      "action": {
-        "kind": "arrowAdd",
-        "card": "chwcs3svj",
-        "target": "cn5ph3gpe"
-      },
-      "log": -1,
-      "at": "2026-10-18T12:06:13Z"
-    },
-    {
-      "seq": 44,
+      "seq": 49,
       "seat": 1,
       "action": {
         "kind": "undo"
       },
-      "log": 35,
-      "at": "2026-10-18T12:06:16Z"
-    },
-    {
-      "seq": 45,
-      "seat": 1,
-      "action": {
-        "kind": "move",
-        "card": "cvczayu4v",
-        "area": "p1",
-        "x": 120,
-        "y": 370,
-        "seat": 1
-      },
-      "log": -1,
-      "at": "2026-10-18T12:06:21Z"
-    },
-    {
-      "seq": 46,
-      "seat": 1,
-      "action": {
-        "kind": "move",
-        "card": "cvqj5mth2",
-        "area": "p1",
-        "x": 970,
-        "y": 20,
-        "seat": 1
-      },
-      "log": -1,
-      "at": "2026-10-18T12:06:25Z"
-    },
-    {
-      "seq": 47,
-      "seat": 0,
-      "action": {
-        "kind": "move",
-        "card": "cvczayu4v",
-        "area": "p0",
-        "x": 80,
-        "y": 70
-      },
-      "log": -1,
-      "at": "2026-10-18T12:06:26Z"
-    },
-    {
-      "seq": 48,
-      "seat": 0,
-      "action": {
-        "kind": "shuffle",
-        "pile": "enc",
-        "cards": [
-          "czp7qjngy",
-          "c3vmt27nv",
-          "c8wspn4xq",
-          "c3hvs5j9j",
-          "cbduw8xct",
-          "c5u3wjgcm",
-          "csnkpmy3g",
-          "csj62jje5",
-          "cct2awg9w",
-          "c7yg75rhr",
-          "cacdn7udq",
-          "cc5c9p6b2",
-          "ceycgcse3",
-          "c9fz2989z",
-          "cbhsjs8dh",
-          "cnvyp6ur5",
-          "c8sryz9zj",
-          "ctvdrtdej",
-          "cxycw628m",
-          "cqxjrp4uj",
-          "cm6nt5mx6",
-          "c6phyz93s",
-          "cmkr5pa9p",
-          "ccechmac7",
-          "c63pnbgt8",
-          "cs7bwt7vx",
-          "cxz74pgx9",
-          "c2nykahhq"
-        ],
-        "renames": {
-          "c4esaxpnh": "ctvdrtdej",
-          "c5cjtjm83": "c7yg75rhr",
-          "c5kp7538j": "c5u3wjgcm",
-          "c62csq83h": "csnkpmy3g",
-          "c7dxc5s6m": "cbduw8xct",
-          "c7k7zf955": "csj62jje5",
-          "c8wdh5cyu": "c63pnbgt8",
-          "cabemns75": "c6phyz93s",
-          "cb7kekffv": "cxycw628m",
-          "cb9pke2hw": "cm6nt5mx6",
-          "cbwq4mzjd": "cs7bwt7vx",
-          "cbz9jmezb": "cct2awg9w",
-          "cdp45ahmu": "ccechmac7",
-          "ce4dja3n5": "c3hvs5j9j",
-          "cgqbm8stk": "czp7qjngy",
-          "cguruyerk": "c9fz2989z",
-          "cjgne8xkk": "cacdn7udq",
-          "cjs4ga7wq": "cc5c9p6b2",
-          "cmqpgfbnk": "c3vmt27nv",
-          "cnaaena6g": "c2nykahhq",
-          "cpyd3kea4": "cbhsjs8dh",
-          "ctgn42jx3": "cnvyp6ur5",
-          "cu9p855q3": "cmkr5pa9p",
-          "cuw584czt": "ceycgcse3",
-          "cv26arww9": "c8wspn4xq",
-          "cweax3ps7": "c8sryz9zj",
-          "cwpafndmd": "cxz74pgx9",
-          "cycgrhcuk": "cqxjrp4uj"
-        }
-      },
-      "tracked": true,
-      "log": 36,
-      "at": "2026-10-18T12:06:35Z"
-    },
-    {
-      "seq": 49,
-      "seat": 0,
-      "action": {
-        "kind": "draw",
-        "area": "p0",
-        "n": 2,
-        "cards": [
-          "cktpewvkx",
-          "cradvdn2b"
-        ]
-      },
-      "tracked": true,
-      "log": 37,
-      "at": "2026-10-18T12:06:42Z"
+      "log": 33,
+      "at": "2026-10-18T12:06:05Z"
     },
     {
       "seq": 50,
       "seat": 1,
       "action": {
-        "kind": "undo"
-      },
-      "log": 38,
-      "at": "2026-10-18T12:06:54Z"
-    },
-    {
-      "seq": 51,
-      "seat": 1,
-      "action": {
-        "kind": "shuffle",
-        "pile": "enc",
-        "cards": [
-          "c7s5yvkdr",
-          "csstg6dh5",
-          "c6j5v2csn",
-          "ch9zbhham",
-          "c887djrs4",
-          "c93ams4ep",
-          "cha5p8gjj",
-          "cn2fn38pj",
-          "cxcbk3npr",
-          "c7e67xqyq",
-          "cw74d4m2t",
-          "cxz7e5zfk",
-          "cchcgzer4",
-          "c39p6bvg4",
-          "c25bme4u8",
-          "c6kjq6w8n",
-          "ckmvjzcu4",
-          "cj5fbct94",
-          "cpxpn3bch",
-          "c3cp2s5cq",
-          "c2m9zptnw",
-          "cx2xk24th",
-          "cqqbw6a8m",
-          "cu7jdww6u",
-          "cv5mt678u",
-          "cuqrpukum",
-          "cdpycmqfj",
-          "c9y9tx522"
-        ],
-        "renames": {
-          "c2nykahhq": "cj5fbct94",
-          "c3hvs5j9j": "cv5mt678u",
-          "c3vmt27nv": "c6kjq6w8n",
-          "c5u3wjgcm": "cu7jdww6u",
-          "c63pnbgt8": "ckmvjzcu4",
-          "c6phyz93s": "c7e67xqyq",
-          "c7yg75rhr": "cuqrpukum",
-          "c8sryz9zj": "cx2xk24th",
-          "c8wspn4xq": "c25bme4u8",
-          "c9fz2989z": "cn2fn38pj",
-          "cacdn7udq": "c887djrs4",
-          "cbduw8xct": "cchcgzer4",
-          "cbhsjs8dh": "c3cp2s5cq",
-          "cc5c9p6b2": "cxz7e5zfk",
-          "ccechmac7": "cqqbw6a8m",
-          "cct2awg9w": "c93ams4ep",
-          "ceycgcse3": "c7s5yvkdr",
-          "cm6nt5mx6": "cxcbk3npr",
-          "cmkr5pa9p": "cw74d4m2t",
-          "cnvyp6ur5": "cha5p8gjj",
-          "cqxjrp4uj": "csstg6dh5",
-          "cs7bwt7vx": "cpxpn3bch",
-          "csj62jje5": "c2m9zptnw",
-          "csnkpmy3g": "cdpycmqfj",
-          "ctvdrtdej": "c9y9tx522",
-          "cxycw628m": "c39p6bvg4",
-          "cxz74pgx9": "ch9zbhham",
-          "czp7qjngy": "c6j5v2csn"
-        },
+        "kind": "toPile",
+        "card": "cu3cjcnfw",
+        "target": "vic",
         "seat": 1
       },
       "tracked": true,
-      "log": 39,
-      "at": "2026-10-18T12:07:04Z"
+      "log": 34,
+      "at": "2026-10-18T12:06:07Z"
+    },
+    {
+      "seq": 51,
+      "seat": 0,
+      "action": {
+        "kind": "undo"
+      },
+      "log": 35,
+      "at": "2026-10-18T12:06:28Z"
     },
     {
       "seq": 52,
       "seat": 1,
       "action": {
-        "kind": "closeView"
+        "kind": "play",
+        "card": "csczhef9v",
+        "area": "p1",
+        "x": 310,
+        "y": 330,
+        "seat": 1
       },
-      "log": -1,
-      "at": "2026-10-18T12:07:04Z"
+      "tracked": true,
+      "log": 36,
+      "at": "2026-10-18T12:06:39Z"
     },
     {
       "seq": 53,
       "seat": 1,
       "action": {
-        "kind": "status",
-        "card": "cvczayu4v",
-        "name": "tough",
-        "delta": 1,
+        "kind": "reorderTop",
+        "pile": "deck:p1",
+        "cards": [
+          "cmsjkbbee",
+          "cc94x36d7"
+        ],
         "seat": 1
       },
-      "tracked": true,
-      "log": 40,
-      "at": "2026-10-18T12:07:16Z"
+      "log": -1,
+      "at": "2026-10-18T12:06:51Z"
     },
     {
       "seq": 54,
-      "seat": 0,
+      "seat": 1,
       "action": {
-        "kind": "handOrder",
-        "area": "p0",
+        "kind": "reorderTop",
+        "pile": "deck:p1",
         "cards": [
-          "cradvdn2b",
-          "cktpewvkx",
-          "cd7q8redz",
-          "c3ntgqcm2",
-          "cqzzfqdfe",
-          "cc646p8fv"
-        ]
+          "cc94x36d7",
+          "cmsjkbbee"
+        ],
+        "seat": 1
       },
       "log": -1,
-      "at": "2026-10-18T12:07:20Z"
+      "at": "2026-10-18T12:07:00Z"
     },
     {
       "seq": 55,
-      "seat": 0,
+      "seat": 1,
       "action": {
-        "kind": "status",
-        "card": "chwcs3svj",
-        "name": "tough",
-        "delta": 1
+        "kind": "reveal",
+        "cards": [
+          "cjg69eskk"
+        ],
+        "seat": 1
       },
       "tracked": true,
-      "log": 41,
-      "at": "2026-10-18T12:07:21Z"
+      "log": 37,
+      "at": "2026-10-18T12:07:03Z"
     },
     {
       "seq": 56,
-      "seat": 0,
+      "seat": 1,
       "action": {
-        "kind": "shuffle",
-        "pile": "enc",
+        "kind": "draw",
+        "area": "p1",
+        "n": 1,
         "cards": [
-          "c9wm73deh",
-          "cy3dp64hk",
-          "c752ajff4",
-          "c9kr3ytyf",
-          "cnp5d6xun",
-          "c9cuvznge",
-          "c4fuct3vu",
-          "cseta8eu5",
-          "ckqzjc5ej",
-          "c3t6g9smv",
-          "cu8fzc58m",
-          "cadxbwpft",
-          "c5qefpjhc",
-          "ck89ewbew",
-          "cbdww4ue8",
-          "crbea8r7b",
-          "cgf68tesq",
-          "cxtccaypx",
-          "c8cfasfae",
-          "cqc4hjw69",
-          "cb7du5p9y",
-          "cvzs7dp6u",
-          "c9nb9v8hu",
-          "cnw7v2gfj",
-          "ckkcbw3ez",
-          "cf877y4mq",
-          "c2e2b2fpz",
-          "cxavkmzq6"
+          "cc94x36d7"
         ],
-        "renames": {
-          "c25bme4u8": "cseta8eu5",
-          "c2m9zptnw": "cvzs7dp6u",
-          "c39p6bvg4": "cqc4hjw69",
-          "c3cp2s5cq": "c9cuvznge",
-          "c6j5v2csn": "cgf68tesq",
-          "c6kjq6w8n": "c9nb9v8hu",
-          "c7e67xqyq": "c3t6g9smv",
-          "c7s5yvkdr": "cu8fzc58m",
-          "c887djrs4": "ck89ewbew",
-          "c93ams4ep": "c752ajff4",
-          "c9y9tx522": "cadxbwpft",
-          "cchcgzer4": "c2e2b2fpz",
-          "cdpycmqfj": "ckqzjc5ej",
-          "ch9zbhham": "c9kr3ytyf",
-          "cha5p8gjj": "cf877y4mq",
-          "cj5fbct94": "c8cfasfae",
-          "ckmvjzcu4": "c4fuct3vu",
-          "cn2fn38pj": "c5qefpjhc",
-          "cpxpn3bch": "cxavkmzq6",
-          "cqqbw6a8m": "crbea8r7b",
-          "csstg6dh5": "cy3dp64hk",
-          "cu7jdww6u": "cb7du5p9y",
-          "cuqrpukum": "cnw7v2gfj",
-          "cv5mt678u": "cnp5d6xun",
-          "cw74d4m2t": "c9wm73deh",
-          "cx2xk24th": "cxtccaypx",
-          "cxcbk3npr": "ckkcbw3ez",
-          "cxz7e5zfk": "cbdww4ue8"
-        }
+        "seat": 1
       },
       "tracked": true,
-      "log": 42,
-      "at": "2026-10-18T12:07:33Z"
+      "log": 38,
+      "at": "2026-10-18T12:07:10Z"
     },
     {
       "seq": 57,
       "seat": 0,
       "action": {
-        "kind": "discardTop",
-        "pile": "deck:p0",
-        "n": 2,
-        "cards": [
-          "c4979xb3b",
-          "c2983zxfc"
-        ]
+        "kind": "toPile",
+        "card": "cjg69eskk",
+        "target": "aside:p0"
       },
       "tracked": true,
-      "log": 43,
+      "log": 39,
       "undone": true,
-      "at": "2026-10-18T12:07:43Z"
+      "at": "2026-10-18T12:07:15Z"
     },
     {
       "seq": 58,
       "seat": 0,
       "action": {
-        "kind": "toDeck",
-        "card": "c3ntgqcm2",
-        "where": "bottom"
+        "kind": "reveal",
+        "cards": [
+          "cr5vt4qmk"
+        ]
       },
       "tracked": true,
-      "log": 44,
+      "log": 40,
       "undone": true,
-      "at": "2026-10-18T12:07:45Z"
+      "at": "2026-10-18T12:07:17Z"
     },
     {
       "seq": 59,
       "seat": 1,
       "action": {
-        "kind": "status",
-        "card": "cvczayu4v",
-        "name": "tough",
-        "delta": 1,
+        "kind": "move",
+        "card": "cn5ph3gpe",
+        "area": "p1",
+        "x": 280,
+        "y": 190,
         "seat": 1
       },
-      "tracked": true,
-      "log": 45,
-      "at": "2026-10-18T12:07:49Z"
+      "log": -1,
+      "at": "2026-10-18T12:07:25Z"
     },
     {
       "seq": 60,
       "seat": 0,
       "action": {
-        "kind": "undo"
+        "kind": "handOrder",
+        "area": "p0"
       },
-      "log": 46,
-      "at": "2026-10-18T12:07:56Z"
+      "log": -1,
+      "at": "2026-10-18T12:07:33Z"
     },
     {
       "seq": 61,
       "seat": 0,
       "action": {
-        "kind": "reorderTop",
-        "pile": "deck:p0",
-        "cards": [
-          "c3s34cymv",
-          "ctrk6yaft"
-        ]
+        "kind": "undo"
       },
-      "log": -1,
-      "dropped": true,
-      "at": "2026-10-18T12:08:04Z"
+      "log": 41,
+      "at": "2026-10-18T12:07:38Z"
     },
     {
       "seq": 62,
@@ -1281,25 +1140,24 @@
       "action": {
         "kind": "undo"
       },
-      "log": 47,
-      "at": "2026-10-18T12:08:11Z"
+      "log": 42,
+      "at": "2026-10-18T12:07:45Z"
     },
     {
       "seq": 63,
       "seat": 0,
       "action": {
-        "kind": "discardTop",
-        "pile": "deck:p0",
-        "n": 2,
+        "kind": "draw",
+        "area": "p0",
+        "n": 1,
         "cards": [
-          "c4979xb3b",
-          "c2983zxfc"
+          "csawd6fcx"
         ]
       },
       "tracked": true,
-      "log": 48,
+      "log": 43,
       "undone": true,
-      "at": "2026-10-18T12:08:26Z"
+      "at": "2026-10-18T12:07:55Z"
     },
     {
       "seq": 64,
@@ -1307,41 +1165,37 @@
       "action": {
         "kind": "undo"
       },
-      "log": 49,
-      "at": "2026-10-18T12:08:34Z"
+      "log": 44,
+      "at": "2026-10-18T12:08:01Z"
     },
     {
       "seq": 65,
-      "seat": 0,
-      "action": {
-        "kind": "discardTop",
-        "pile": "enc",
-        "n": 2,
-        "cards": [
-          "cxavkmzq6",
-          "c2e2b2fpz"
-        ]
-      },
-      "tracked": true,
-      "log": 50,
-      "at": "2026-10-18T12:08:41Z"
-    },
-    {
-      "seq": 66,
       "seat": 0,
       "action": {
         "kind": "draw",
         "area": "p0",
         "n": 2,
         "cards": [
-          "c4979xb3b",
-          "c2983zxfc"
+          "csawd6fcx",
+          "c3f6t32xv"
         ]
       },
       "tracked": true,
-      "log": 51,
+      "log": 45,
       "undone": true,
-      "at": "2026-10-18T12:08:49Z"
+      "at": "2026-10-18T12:08:08Z"
+    },
+    {
+      "seq": 66,
+      "seat": 1,
+      "action": {
+        "kind": "attach",
+        "card": "csdbghyga",
+        "target": "ckesc9e6h",
+        "seat": 1
+      },
+      "log": -1,
+      "at": "2026-10-18T12:08:12Z"
     },
     {
       "seq": 67,
@@ -1351,534 +1205,578 @@
         "area": "p1",
         "n": 3,
         "cards": [
-          "cuqku3y77",
-          "c8kv4m2nz",
-          "cfnyscqrg"
+          "cmsjkbbee",
+          "c3cm8pujd",
+          "cvwtd89p5"
         ],
         "seat": 1
       },
       "tracked": true,
-      "log": 52,
-      "at": "2026-10-18T12:08:57Z"
+      "log": 46,
+      "at": "2026-10-18T12:08:13Z"
     },
     {
       "seq": 68,
-      "seat": 0,
-      "action": {
-        "kind": "undo"
-      },
-      "log": 53,
-      "at": "2026-10-18T12:09:00Z"
-    },
-    {
-      "seq": 69,
-      "seat": 0,
-      "action": {
-        "kind": "draw",
-        "area": "p0",
-        "n": 1,
-        "cards": [
-          "c4979xb3b"
-        ]
-      },
-      "tracked": true,
-      "log": 54,
-      "at": "2026-10-18T12:09:01Z"
-    },
-    {
-      "seq": 70,
-      "seat": 0,
-      "action": {
-        "kind": "draw",
-        "area": "p0",
-        "n": 1,
-        "cards": [
-          "c2983zxfc"
-        ]
-      },
-      "tracked": true,
-      "log": 55,
-      "at": "2026-10-18T12:09:13Z"
-    },
-    {
-      "seq": 71,
       "seat": 1,
       "action": {
-        "kind": "toPile",
-        "card": "chwcs3svj",
-        "target": "saside",
+        "kind": "draw",
+        "area": "p1",
+        "n": 3,
+        "cards": [
+          "c6vxgtprb",
+          "c9nhpsjrp",
+          "c732r7r2w"
+        ],
         "seat": 1
       },
       "tracked": true,
-      "log": 56,
-      "undone": true,
-      "at": "2026-10-18T12:09:21Z"
-    },
-    {
-      "seq": 72,
-      "seat": 0,
-      "action": {
-        "kind": "play",
-        "card": "cqzzfqdfe",
-        "area": "p0",
-        "x": 10,
-        "y": 10
-      },
-      "tracked": true,
-      "log": 57,
-      "undone": true,
-      "at": "2026-10-18T12:09:25Z"
+      "log": 47,
+      "at": "2026-10-18T12:08:16Z"
     },
     {
       "seq": 73,
       "seat": 1,
       "action": {
-        "kind": "handOrder",
+        "kind": "move",
+        "card": "csdbghyga",
         "area": "p1",
-        "cards": [
-          "cfnyscqrg",
-          "c8kv4m2nz",
-          "cuqku3y77",
-          "c3cyzdgvj",
-          "cab89hsja"
-        ],
+        "x": 240,
+        "y": 340,
         "seat": 1
       },
       "log": -1,
-      "at": "2026-10-18T12:09:33Z"
+      "at": "2026-10-18T12:09:03Z"
     },
     {
       "seq": 74,
-      "seat": 1,
+      "seat": 0,
       "action": {
         "kind": "attach",
-        "card": "cvqj5mth2",
-        "target": "csdbghyga",
-        "seat": 1
+        "card": "cjg69eskk",
+        "target": "cn5ph3gpe"
       },
       "log": -1,
-      "at": "2026-10-18T12:09:43Z"
+      "at": "2026-10-18T12:09:05Z"
     },
     {
       "seq": 75,
       "seat": 0,
       "action": {
-        "kind": "move",
-        "card": "c4p53zsux",
+        "kind": "draw",
         "area": "p0",
-        "x": 910,
-        "y": 350
+        "n": 2,
+        "cards": [
+          "c6dqdrhm9",
+          "c86ybhrpy"
+        ]
       },
-      "log": -1,
-      "at": "2026-10-18T12:09:53Z"
+      "tracked": true,
+      "log": 48,
+      "undone": true,
+      "at": "2026-10-18T12:09:07Z"
     },
     {
       "seq": 76,
-      "seat": 1,
-      "action": {
-        "kind": "undo"
-      },
-      "log": 58,
-      "at": "2026-10-18T12:10:05Z"
-    },
-    {
-      "seq": 77,
       "seat": 0,
       "action": {
         "kind": "undo"
       },
-      "log": 59,
-      "at": "2026-10-18T12:10:06Z"
+      "log": 49,
+      "at": "2026-10-18T12:09:19Z"
+    },
+    {
+      "seq": 77,
+      "seat": 1,
+      "action": {
+        "kind": "discardTop",
+        "pile": "deck:p1",
+        "n": 2,
+        "cards": [
+          "cnppnrucq",
+          "crjsaksm9"
+        ],
+        "seat": 1
+      },
+      "tracked": true,
+      "log": 50,
+      "at": "2026-10-18T12:09:21Z"
     },
     {
       "seq": 78,
       "seat": 1,
       "action": {
-        "kind": "deal",
+        "kind": "move",
+        "card": "cjg69eskk",
         "area": "p1",
-        "x": 130,
-        "y": 110,
-        "cards": [
-          "cf877y4mq"
-        ],
+        "x": 500,
+        "y": 90,
         "seat": 1
       },
-      "tracked": true,
-      "log": 60,
-      "at": "2026-10-18T12:10:14Z"
+      "log": -1,
+      "at": "2026-10-18T12:09:25Z"
     },
     {
       "seq": 79,
       "seat": 0,
       "action": {
-        "kind": "play",
-        "card": "cktpewvkx",
-        "area": "p0",
-        "x": 500,
-        "y": 10
+        "kind": "undo"
       },
-      "tracked": true,
-      "log": 61,
-      "at": "2026-10-18T12:10:15Z"
+      "log": 51,
+      "at": "2026-10-18T12:09:29Z"
     },
     {
       "seq": 80,
       "seat": 0,
       "action": {
-        "kind": "reorderTop",
-        "pile": "deck:p0",
-        "cards": [
-          "c3s34cymv",
-          "ctrk6yaft"
-        ]
+        "kind": "status",
+        "card": "cn5ph3gpe",
+        "name": "tough",
+        "delta": 1
       },
-      "log": -1,
-      "at": "2026-10-18T12:10:16Z"
+      "tracked": true,
+      "log": 52,
+      "at": "2026-10-18T12:09:37Z"
     },
     {
       "seq": 81,
       "seat": 1,
       "action": {
-        "kind": "deal",
-        "area": "p1",
-        "x": 570,
-        "cards": [
-          "ckkcbw3ez"
-        ],
-        "seat": 1
+        "kind": "flip",
+        "card": "cwwnhqp2r",
+        "face": 1,
+        "seat": 1,
+        "faceDown": false
       },
       "tracked": true,
-      "log": 62,
-      "at": "2026-10-18T12:10:19Z"
+      "log": 53,
+      "at": "2026-10-18T12:09:45Z"
     },
     {
       "seq": 82,
-      "seat": 1,
+      "seat": 0,
       "action": {
-        "kind": "toDeck",
-        "card": "cuqku3y77",
-        "where": "top",
-        "seat": 1
+        "kind": "shuffleIn",
+        "pile": "saside",
+        "cards": [
+          "casxsapsr",
+          "c6e952ntx",
+          "cqsbznvc9",
+          "camu4bbx9",
+          "cydwnjj9g",
+          "crnka32xn",
+          "cbtkb8ywn",
+          "ct9uyn9wj",
+          "cz3q5z7kx",
+          "czadtnhhk",
+          "cbxuqycq5",
+          "crtwds2ft",
+          "ctb4qae6d",
+          "cwueq7mtq",
+          "cmu9tckhg",
+          "c5guxqch4",
+          "cjkkvk2rg",
+          "ceqspn8md",
+          "c99crz6dx",
+          "c8jmhw8fh",
+          "cad6edhfn",
+          "cfkcjads3",
+          "c6w3whmn5",
+          "ch8reg96y",
+          "c7td7vtnw",
+          "cax53u9xs",
+          "cgr9a46zp",
+          "cbgg6fbxp"
+        ],
+        "renames": {
+          "c27pt6s3h": "cydwnjj9g",
+          "c2v95scdy": "cmu9tckhg",
+          "c4ucn74ta": "czadtnhhk",
+          "c5nzu5wvk": "crtwds2ft",
+          "c5uyksm9x": "crnka32xn",
+          "c6qcxnfza": "cjkkvk2rg",
+          "ca6y7sz7y": "casxsapsr",
+          "cbs9bqkr2": "cgr9a46zp",
+          "cbxs7ppt6": "cax53u9xs",
+          "ccj78mfrv": "c5guxqch4",
+          "ccy96g8bh": "cfkcjads3",
+          "cddzzs9xn": "camu4bbx9",
+          "cdu6v5nsr": "ch8reg96y",
+          "cfazrcym7": "cbtkb8ywn",
+          "cfcr5z4y3": "cad6edhfn",
+          "cfw65rxwx": "cwueq7mtq",
+          "cgae6xd5v": "c7td7vtnw",
+          "ck5acv6b7": "cqsbznvc9",
+          "cm455yzug": "c99crz6dx",
+          "cmrc4ujq3": "ceqspn8md",
+          "cqw7ak2ft": "c6e952ntx",
+          "cr5vt4qmk": "cbxuqycq5",
+          "crdse8csu": "cz3q5z7kx",
+          "csac88g4h": "ctb4qae6d",
+          "cu9e4bmpb": "c6w3whmn5",
+          "cys4rhcv4": "ct9uyn9wj",
+          "czha9aqka": "cbgg6fbxp",
+          "czhevb5n6": "c8jmhw8fh"
+        }
       },
       "tracked": true,
-      "log": 63,
-      "at": "2026-10-18T12:10:31Z"
+      "log": 54,
+      "at": "2026-10-18T12:09:53Z"
     },
     {
       "seq": 83,
       "seat": 0,
       "action": {
-        "kind": "search",
-        "pile": "encd",
-        "n": 3
+        "kind": "deal",
+        "area": "p0",
+        "x": 200,
+        "y": 310,
+        "cards": [
+          "cbgg6fbxp"
+        ]
       },
-      "log": 64,
-      "at": "2026-10-18T12:10:43Z"
+      "tracked": true,
+      "log": 55,
+      "undone": true,
+      "at": "2026-10-18T12:10:04Z"
     },
     {
       "seq": 84,
       "seat": 0,
       "action": {
-        "kind": "shuffleBack",
-        "pile": "disc:p0",
-        "cards": [
-          "cfccbts8m",
-          "cdxzteypb",
-          "c4sjurvfg",
-          "c6dxf7tpw",
-          "cs9edw6cu",
-          "ctypp9sm4",
-          "cndv7exg7",
-          "c9q8phhtf",
-          "cq5qs5hfn",
-          "cctwgygwu",
-          "cjhcsx8hx"
-        ],
-        "renames": {
-          "c3s34cymv": "c6dxf7tpw",
-          "c7f76ae98": "cctwgygwu",
-          "cbv3vac5u": "cq5qs5hfn",
-          "cdjfmxhvb": "cndv7exg7",
-          "chjbkpy5g": "cjhcsx8hx",
-          "ck5bxuser": "c9q8phhtf",
-          "cndxpugmk": "c4sjurvfg",
-          "crk5pb9xj": "ctypp9sm4",
-          "ctrk6yaft": "cfccbts8m",
-          "cvnwsz5mu": "cs9edw6cu",
-          "cwwnhqp2r": "cdxzteypb"
-        }
+        "kind": "undo"
       },
-      "tracked": true,
-      "log": 65,
-      "at": "2026-10-18T12:10:54Z"
+      "log": 56,
+      "at": "2026-10-18T12:10:14Z"
     },
     {
       "seq": 85,
-      "seat": 0,
+      "seat": 1,
       "action": {
-        "kind": "toPile",
-        "card": "cvqj5mth2",
-        "target": "vic"
+        "kind": "flip",
+        "card": "cwwnhqp2r",
+        "seat": 1,
+        "faceDown": false
       },
       "tracked": true,
-      "log": 66,
-      "at": "2026-10-18T12:11:05Z"
+      "log": 57,
+      "at": "2026-10-18T12:10:24Z"
     },
     {
       "seq": 86,
-      "seat": 0,
+      "seat": 1,
       "action": {
         "kind": "play",
-        "card": "cd7q8redz",
-        "area": "p0",
-        "x": 540,
-        "y": 250
+        "card": "c3cm8pujd",
+        "area": "p1",
+        "x": 160,
+        "y": 230,
+        "seat": 1
       },
       "tracked": true,
-      "log": 67,
-      "at": "2026-10-18T12:11:11Z"
+      "log": 58,
+      "at": "2026-10-18T12:10:33Z"
     },
     {
       "seq": 87,
       "seat": 0,
       "action": {
-        "kind": "deal",
-        "area": "p0",
-        "x": 420,
-        "y": 310,
-        "cards": [
-          "cnw7v2gfj"
-        ]
+        "kind": "status",
+        "card": "cwwnhqp2r",
+        "name": "tough",
+        "delta": 1
       },
       "tracked": true,
-      "log": 68,
-      "at": "2026-10-18T12:11:16Z"
+      "log": 59,
+      "at": "2026-10-18T12:10:42Z"
     },
     {
       "seq": 88,
-      "seat": 0,
+      "seat": 1,
       "action": {
         "kind": "toPile",
-        "card": "csdbghyga",
-        "target": "saside"
+        "card": "c3cm8pujd",
+        "target": "saside",
+        "seat": 1
       },
       "tracked": true,
-      "log": 69,
-      "at": "2026-10-18T12:11:23Z"
+      "log": 60,
+      "at": "2026-10-18T12:10:49Z"
     },
     {
       "seq": 89,
       "seat": 0,
       "action": {
-        "kind": "flip",
-        "card": "chwcs3svj"
+        "kind": "status",
+        "card": "cwwnhqp2r",
+        "name": "tough",
+        "delta": 1
       },
       "tracked": true,
-      "log": 70,
-      "at": "2026-10-18T12:11:32Z"
+      "burst": 2,
+      "log": 61,
+      "undone": true,
+      "at": "2026-10-18T12:10:58Z"
     },
     {
       "seq": 90,
       "seat": 1,
       "action": {
-        "kind": "token",
-        "card": "ckkcbw3ez",
-        "name": "dmg",
-        "delta": 1,
+        "kind": "attach",
+        "card": "ckesc9e6h",
+        "target": "cn5ph3gpe",
         "seat": 1
       },
-      "tracked": true,
-      "burst": 2,
-      "log": 71,
-      "at": "2026-10-18T12:11:35Z"
+      "log": -1,
+      "at": "2026-10-18T12:11:04Z"
     },
     {
       "seq": 91,
-      "seat": 1,
+      "seat": 0,
       "action": {
-        "kind": "token",
-        "card": "ckkcbw3ez",
-        "name": "dmg",
-        "delta": 1,
-        "seat": 1
+        "kind": "status",
+        "card": "cwwnhqp2r",
+        "name": "tough",
+        "delta": 1
       },
       "tracked": true,
       "burst": 2,
-      "log": 71,
-      "at": "2026-10-18T12:11:38Z"
+      "log": 61,
+      "undone": true,
+      "at": "2026-10-18T12:11:09Z"
     },
     {
       "seq": 92,
-      "seat": 1,
+      "seat": 0,
       "action": {
-        "kind": "token",
-        "card": "cvczayu4v",
-        "name": "dmg",
-        "delta": 1,
-        "seat": 1
+        "kind": "reorderTop",
+        "pile": "deck:p0",
+        "cards": [
+          "c3f6t32xv",
+          "csawd6fcx"
+        ]
       },
-      "tracked": true,
-      "log": 72,
-      "at": "2026-10-18T12:11:47Z"
+      "log": -1,
+      "at": "2026-10-18T12:11:18Z"
     },
     {
       "seq": 93,
-      "seat": 0,
-      "action": {
-        "kind": "toDeck",
-        "card": "cc646p8fv",
-        "where": "top"
-      },
-      "tracked": true,
-      "log": 73,
-      "at": "2026-10-18T12:11:56Z"
-    },
-    {
-      "seq": 94,
       "seat": 1,
       "action": {
-        "kind": "token",
-        "card": "cd7q8redz",
-        "name": "thr",
-        "delta": 1,
+        "kind": "reveal",
+        "cards": [
+          "cbgg6fbxp"
+        ],
         "seat": 1
       },
       "tracked": true,
-      "log": 74,
-      "at": "2026-10-18T12:12:05Z"
+      "log": 62,
+      "undone": true,
+      "at": "2026-10-18T12:11:24Z"
+    },
+    {
+      "seq": 94,
+      "seat": 0,
+      "action": {
+        "kind": "toPile",
+        "card": "cwwnhqp2r",
+        "target": "vic"
+      },
+      "tracked": true,
+      "log": 63,
+      "undone": true,
+      "at": "2026-10-18T12:11:32Z"
     },
     {
       "seq": 95,
       "seat": 0,
       "action": {
-        "kind": "reveal",
-        "cards": [
-          "c9nb9v8hu"
-        ]
+        "kind": "handOrder",
+        "area": "p0"
       },
-      "tracked": true,
-      "log": 75,
-      "at": "2026-10-18T12:12:13Z"
+      "log": -1,
+      "at": "2026-10-18T12:11:35Z"
     },
     {
       "seq": 96,
       "seat": 1,
       "action": {
-        "kind": "handOrder",
-        "area": "p1",
-        "cards": [
-          "cab89hsja",
-          "c3cyzdgvj",
-          "c8kv4m2nz",
-          "cfnyscqrg"
-        ],
-        "seat": 1
+        "kind": "undo"
       },
-      "log": -1,
-      "at": "2026-10-18T12:12:23Z"
+      "log": 64,
+      "at": "2026-10-18T12:11:54Z"
     },
     {
       "seq": 97,
       "seat": 0,
       "action": {
-        "kind": "chooseStage",
-        "card": "cn5ph3gpe",
-        "stage": "scheme"
+        "kind": "undo"
       },
-      "tracked": true,
-      "log": 76,
-      "at": "2026-10-18T12:12:24Z"
+      "log": 65,
+      "at": "2026-10-18T12:12:00Z"
     },
     {
       "seq": 98,
-      "seat": 0,
+      "seat": 1,
       "action": {
-        "kind": "draw",
-        "area": "p0",
-        "n": 3,
-        "cards": [
-          "cc646p8fv",
-          "cjhcsx8hx",
-          "cctwgygwu"
-        ]
+        "kind": "token",
+        "card": "csdbghyga",
+        "name": "thr",
+        "delta": 1,
+        "seat": 1
       },
       "tracked": true,
-      "log": 77,
-      "at": "2026-10-18T12:12:28Z"
+      "log": 66,
+      "at": "2026-10-18T12:12:03Z"
     },
     {
       "seq": 99,
       "seat": 0,
       "action": {
-        "kind": "shuffle",
-        "pile": "enc",
+        "kind": "shuffleBack",
+        "pile": "disc:p0",
         "cards": [
-          "cgyd8u9zq",
-          "ctd95y5hg",
-          "cgewqhdkh",
-          "c7sb587re",
-          "cs9zm3mte",
-          "cqg9jzpqy",
-          "cevecrku6",
-          "c83ta9cpj",
-          "crz9cd6cw",
-          "c33enerna",
-          "cyn3fjxdn",
-          "cwpdk4822",
-          "c8wrvdr7m",
-          "cj53rmw4q",
-          "c262zgujb",
-          "cd8qxzvp3",
           "c4jga2epk",
-          "cwyya2gwn",
-          "c3kdzuysw",
-          "c5cr5g8dq",
+          "cwpdk4822",
+          "cevecrku6",
           "c2h88af6u",
-          "cfh5auggd"
+          "c3kdzuysw",
+          "c7sb587re",
+          "cgewqhdkh",
+          "cwyya2gwn",
+          "cs9zm3mte",
+          "crz9cd6cw",
+          "cgyd8u9zq",
+          "c33enerna",
+          "c5cr5g8dq",
+          "c262zgujb",
+          "cyn3fjxdn",
+          "c83ta9cpj",
+          "cfh5auggd",
+          "c8wrvdr7m"
         ],
         "renames": {
-          "c3t6g9smv": "c33enerna",
-          "c4fuct3vu": "c3kdzuysw",
-          "c5qefpjhc": "c4jga2epk",
-          "c752ajff4": "cwpdk4822",
-          "c8cfasfae": "cj53rmw4q",
-          "c9cuvznge": "crz9cd6cw",
-          "c9kr3ytyf": "c83ta9cpj",
-          "c9wm73deh": "c2h88af6u",
-          "cadxbwpft": "cwyya2gwn",
-          "cb7du5p9y": "cd8qxzvp3",
-          "cbdww4ue8": "cfh5auggd",
-          "cgf68tesq": "cgewqhdkh",
-          "ck89ewbew": "cgyd8u9zq",
-          "ckqzjc5ej": "c5cr5g8dq",
-          "cnp5d6xun": "c8wrvdr7m",
-          "cqc4hjw69": "ctd95y5hg",
-          "crbea8r7b": "cevecrku6",
-          "cseta8eu5": "cyn3fjxdn",
-          "cu8fzc58m": "c7sb587re",
-          "cvzs7dp6u": "cqg9jzpqy",
-          "cxtccaypx": "c262zgujb",
-          "cy3dp64hk": "cs9zm3mte"
+          "c2fnkdean": "cgyd8u9zq",
+          "c2qkzkxu5": "c2h88af6u",
+          "c3f6t32xv": "c262zgujb",
+          "c6dqdrhm9": "cevecrku6",
+          "c86ybhrpy": "cfh5auggd",
+          "c9a9ptrs5": "c4jga2epk",
+          "cacftgfez": "crz9cd6cw",
+          "cc969hbm2": "c33enerna",
+          "ch9upmfgz": "cs9zm3mte",
+          "cm73s5z3f": "c3kdzuysw",
+          "cq9u6azr9": "cwyya2gwn",
+          "crxej4rq4": "c7sb587re",
+          "csawd6fcx": "cgewqhdkh",
+          "ctkzmxg26": "cwpdk4822",
+          "cvnyu5u44": "c83ta9cpj",
+          "cvr8gw75y": "cyn3fjxdn",
+          "cxcxwauyj": "c8wrvdr7m",
+          "cxf55seqb": "c5cr5g8dq"
         }
       },
       "tracked": true,
-      "log": 78,
-      "at": "2026-10-18T12:12:31Z"
+      "log": 67,
+      "at": "2026-10-18T12:12:04Z"
     },
     {
       "seq": 100,
       "seat": 1,
       "action": {
-        "kind": "reorderTop",
+        "kind": "discardTop",
         "pile": "deck:p1",
+        "n": 1,
         "cards": [
-          "cpjmsz9a2",
-          "cuqku3y77"
+          "cpwb7abqa"
         ],
         "seat": 1
       },
+      "tracked": true,
+      "log": 68,
+      "undone": true,
+      "at": "2026-10-18T12:12:12Z"
+    },
+    {
+      "seq": 101,
+      "seat": 0,
+      "action": {
+        "kind": "undo"
+      },
+      "log": 69,
+      "at": "2026-10-18T12:12:14Z"
+    },
+    {
+      "seq": 102,
+      "seat": 1,
+      "action": {
+        "kind": "undo"
+      },
+      "log": 70,
+      "at": "2026-10-18T12:12:15Z"
+    },
+    {
+      "seq": 103,
+      "seat": 1,
+      "action": {
+        "kind": "deal",
+        "area": "p1",
+        "x": 100,
+        "y": 190,
+        "cards": [
+          "cbgg6fbxp"
+        ],
+        "seat": 1
+      },
+      "tracked": true,
+      "log": 71,
+      "at": "2026-10-18T12:12:26Z"
+    },
+    {
+      "seq": 104,
+      "seat": 1,
+      "action": {
+        "kind": "move",
+        "card": "ckesc9e6h",
+        "area": "p1",
+        "x": 610,
+        "y": 340,
+        "seat": 1
+      },
       "log": -1,
-      "at": "2026-10-18T12:12:54Z"
+      "at": "2026-10-18T12:12:33Z"
+    },
+    {
+      "seq": 105,
+      "seat": 1,
+      "action": {
+        "kind": "arrowClear",
+        "seat": 1
+      },
+      "log": -1,
+      "at": "2026-10-18T12:12:37Z"
+    },
+    {
+      "seq": 106,
+      "seat": 0,
+      "action": {
+        "kind": "arrowAdd",
+        "card": "cwwnhqp2r",
+        "target": "csdbghyga"
+      },
+      "log": -1,
+      "at": "2026-10-18T12:12:38Z"
+    },
+    {
+      "seq": 107,
+      "seat": 0,
+      "action": {
+        "kind": "exhaust",
+        "card": "csczhef9v",
+        "exhausted": true
+      },
+      "tracked": true,
+      "log": 72,
+      "at": "2026-10-18T12:12:42Z"
     }
   ]
 }

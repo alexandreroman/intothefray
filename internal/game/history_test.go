@@ -1081,6 +1081,9 @@ func TestUndoDropsWhatNoLongerApplies(t *testing.T) {
 	if exhaust.Action.Kind != ActExhaust || !exhaust.Dropped {
 		t.Errorf("event 2 = %+v, want Bob's exhaust, dropped", exhaust)
 	}
+	if line := f.g.Log[exhaust.Log]; !line.Undone {
+		t.Errorf("Bob's line %q is not struck, though its action was dropped", line.Text)
+	}
 	if err := f.do("b", Action{Kind: ActUndo}, at(33)); !errors.Is(err, ErrInvalid) {
 		t.Errorf("Bob's undo = %v, want ErrInvalid: his only action was dropped", err)
 	}
@@ -1106,6 +1109,7 @@ func TestMoveReplacesTheSamePlayersLastMove(t *testing.T) {
 		t.Errorf("%d events, want 3: a move by another player is kept apart", got)
 	}
 	checkHistory(t, f.g)
+	checkReplay(t, f) // the replaced move leaves a gap in the numbering
 }
 
 func TestArrangingActionsAreUntrackedEvents(t *testing.T) {
@@ -1150,5 +1154,98 @@ func TestViewNeverShowsTheHistory(t *testing.T) {
 				t.Errorf("the view of %q holds %s", token, key)
 			}
 		}
+	}
+}
+
+// TestUndoKeepsAnotherPlayersReady has Bob ready the villain Host exhausted:
+// Host's undo must leave it ready, as Bob left it.
+func TestUndoKeepsAnotherPlayersReady(t *testing.T) {
+	f := newDoFixture(t)
+	rhino := f.villain()
+	f.mustDo(t, "h", Action{Kind: ActExhaust, Card: rhino}, at(1))
+	f.mustDo(t, "b", Action{Kind: ActExhaust, Card: rhino}, at(2))
+
+	f.mustDo(t, "h", Action{Kind: ActUndo}, at(3))
+
+	if f.g.Table.Cards[rhino].Exhausted {
+		t.Error("Rhino is exhausted again after Host's undo, want Bob's ready kept")
+	}
+	if f.g.Log[len(f.g.Log)-2].Undone {
+		t.Error("Bob's ready line is struck")
+	}
+	checkHistory(t, f.g)
+}
+
+// TestUndoKeepsAnotherPlayersFlip has Bob flip back the identity Host
+// flipped: Host's undo must leave it on the side Bob chose.
+func TestUndoKeepsAnotherPlayersFlip(t *testing.T) {
+	f := newDoFixture(t)
+	identity := f.identity(t)
+	start := f.g.Table.Cards[identity].Face
+	f.mustDo(t, "h", Action{Kind: ActFlip, Card: identity}, at(1))
+	f.mustDo(t, "b", Action{Kind: ActFlip, Card: identity}, at(2))
+
+	f.mustDo(t, "h", Action{Kind: ActUndo}, at(3))
+
+	if got := f.g.Table.Cards[identity].Face; got != start {
+		t.Errorf("identity face = %d after Host's undo, want %d where Bob left it", got, start)
+	}
+	checkHistory(t, f.g)
+}
+
+// TestOlderUndoReshufflesTheEncounterDeck undoes a reveal older than Bob's
+// shuffle of the encounter deck: the revealed card goes back, the recorded
+// shuffle no longer fits, and the deck is shuffled again with fresh ids.
+func TestOlderUndoReshufflesTheEncounterDeck(t *testing.T) {
+	f := newDoFixture(t)
+	f.mustDo(t, "h", Action{Kind: ActReveal}, at(1))
+	revealed := f.g.Table.revealed()[0].ID
+	seen := append(slices.Clone(f.g.Table.Piles[PileEncounter].Cards), revealed)
+	f.mustDo(t, "b", Action{Kind: ActShuffle, Pile: PileEncounter}, at(2))
+	shuffled := slices.Clone(f.g.Table.Piles[PileEncounter].Cards)
+
+	f.mustDo(t, "h", Action{Kind: ActUndo}, at(3))
+
+	enc := f.g.Table.Piles[PileEncounter].Cards
+	if len(enc) != len(seen) {
+		t.Errorf("encounter deck holds %d cards, want %d", len(enc), len(seen))
+	}
+	for _, id := range enc {
+		if slices.Contains(seen, id) || slices.Contains(shuffled, id) {
+			t.Errorf("encounter card %s keeps an id from before the undo", id)
+		}
+	}
+	if got := f.g.Table.revealed(); len(got) != 0 {
+		t.Errorf("revealed = %v, want none", got)
+	}
+	checkIntegrity(t, f.g.Table)
+	checkHistory(t, f.g)
+	checkReplay(t, f)
+}
+
+func TestReplayChecksThePlayers(t *testing.T) {
+	f := newDoFixture(t)
+	setup, err := f.g.ReplaySetup()
+	if err != nil {
+		t.Fatal(err)
+	}
+	tests := map[string]func(s *ReplaySetup){
+		"no player":    func(s *ReplaySetup) { s.Players = nil },
+		"five players": func(s *ReplaySetup) { s.Players = slices.Repeat(s.Players[:1], 5) },
+		"same colour":  func(s *ReplaySetup) { s.Players[1].Color = s.Players[0].Color },
+		"bad colour":   func(s *ReplaySetup) { s.Players[1].Color = maxPlayers },
+	}
+	for name, change := range tests {
+		t.Run(name, func(t *testing.T) {
+			s := setup
+			s.Players = slices.Clone(setup.Players)
+			change(&s)
+			if _, err := Replay(f.cat, s, nil); !errors.Is(err, ErrInvalid) {
+				t.Errorf("Replay = %v, want ErrInvalid", err)
+			}
+		})
+	}
+	if _, err := Replay(f.cat, setup, nil); err != nil {
+		t.Errorf("Replay of the valid setup = %v", err)
 	}
 }
