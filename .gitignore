@@ -5,3 +5,6 @@ bin/
 .env.local
 /intothefray
 packs/.cache/
+web/node_modules/
+web/dist/
+web/public/packs/

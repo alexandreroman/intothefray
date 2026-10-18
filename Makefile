@@ -13,7 +13,7 @@ endif
 # Local overrides, loaded only for dev/test targets so that
 # deploy/release targets see the canonical .env values only.
 # Sequential include means later assignments win.
-DEV_TARGETS := dev test check infra-up infra-down infra-logs
+DEV_TARGETS := dev test check web-install web-check infra-up infra-down infra-logs
 GOALS := $(or $(MAKECMDGOALS),$(.DEFAULT_GOAL))
 ifneq (,$(filter $(DEV_TARGETS),$(GOALS)))
 ifneq (,$(wildcard .env.local))
@@ -56,13 +56,28 @@ app-logs: ## Follow logs from the full stack
 ##@ Develop
 
 .PHONY: dev
-dev: infra-up ## Start infra, then run the app locally with hot reload
+dev: infra-up web-install ## Start infra, then run the API and the web app with hot reload
 	# Trap reaps the whole process group (kill 0) on exit or signal, so no
 	# orphaned processes survive Ctrl-C or a child crash. For multiple dev
 	# processes, background each as `( cmd; kill 0 ) &` before the wait.
 	@trap 'kill 0' EXIT INT TERM; \
-		air & \
+		( air; kill 0 ) & \
+		( cd web && pnpm dev; kill 0 ) & \
 		wait
+
+##@ Web
+
+.PHONY: web-install
+web-install: ## Install the web dependencies
+	cd web && pnpm install --frozen-lockfile
+
+.PHONY: web-check
+web-check: ## Type-check, lint and test the web app
+	cd web && pnpm check && pnpm lint && pnpm test
+
+.PHONY: web-build
+web-build: ## Build the web app into web/dist/
+	cd web && pnpm build
 
 ##@ Data
 
@@ -77,7 +92,7 @@ test: ## Run the test suite
 	go test -race -shuffle=on ./...
 
 .PHONY: check
-check: test ## Run tests and static checks
+check: test web-check ## Run tests and static checks
 	golangci-lint run ./...
 
 ##@ Build
