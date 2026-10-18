@@ -134,7 +134,7 @@ function zoneOf(element: Element): Area | undefined {
 }
 
 /** Lays the table out on the screen; `view` gives the table cards and piles their place. */
-function layOut(view: () => View): void {
+function layOut(view: () => View, zoom: number): void {
   vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (this: Element) {
     const area = zoneOf(this);
     const zoneTop = area ? ZONE_TOP[area] : undefined;
@@ -145,7 +145,7 @@ function layOut(view: () => View): void {
       return domRect(0, zoneTop, 1000, 300);
     }
     if (this.classList.contains('surface') && zoneTop !== undefined) {
-      return domRect(SURFACE.left, zoneTop + SURFACE.top, 960, 240);
+      return domRect(SURFACE.left, zoneTop + SURFACE.top, 960 * zoom, 240 * zoom);
     }
     const id = (this as HTMLElement).dataset.id;
     if (this.closest('.surface') && id && zoneTop !== undefined) {
@@ -154,7 +154,12 @@ function layOut(view: () => View): void {
         table?.cards.find((c) => c.id === id && c.zone === 'table') ??
         table?.piles.find((p) => p.id === id);
       if (placed) {
-        return domRect(SURFACE.left + placed.x, zoneTop + SURFACE.top + placed.y, 100, 140);
+        return domRect(
+          SURFACE.left + placed.x * zoom,
+          zoneTop + SURFACE.top + placed.y * zoom,
+          100 * zoom,
+          140 * zoom,
+        );
       }
     }
     const hcard = this.closest<HTMLElement>('.hcard');
@@ -186,10 +191,12 @@ function ghosts(): HTMLElement[] {
   return [...document.querySelectorAll<HTMLElement>('.draglayer .card')];
 }
 
+/** Draws the table at the stored zoom (itf-zoom), 1 by default. */
 async function renderTable(view: View = makeView()) {
+  const zoom = Number(localStorage.getItem('itf-zoom') ?? '1');
   const session = fakeSession();
   let current = view;
-  layOut(() => current);
+  layOut(() => current, zoom);
   const result = render(Table, { session, view });
   // The bar needs the catalog.
   await Promise.resolve();
@@ -253,6 +260,38 @@ describe('dragging a table card', () => {
     });
     expect(ghosts()).toEqual([]);
     expect(placed('mine').classList).not.toContain('lifted');
+  });
+
+  it('counts the move in table units at another zoom', async () => {
+    localStorage.setItem('itf-zoom', '2');
+    const { session } = await renderTable();
+    // "mine" is drawn 200 by 280 at 20, 340: held 60 px in from its left edge, 120 down.
+    await press(placed('mine'), 80, 460);
+    await moveTo(480, 560);
+    expect(ghosts().map((g) => g.dataset.id)).toEqual(['mine']);
+
+    await release(480, 560);
+    // Its corner at 420, 440 on the screen: 400, 100 px into the surface, 200, 50 units.
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({
+      kind: 'move',
+      card: 'mine',
+      area: 'p0',
+      x: 200,
+      y: 50,
+    });
+  });
+
+  it('measures only the cards and piles of the zone under the pointer', async () => {
+    await renderTable();
+    await press(placed('mine'), 50, 400);
+    const measure = vi.mocked(Element.prototype.getBoundingClientRect);
+    measure.mockClear();
+    await moveTo(254, 452);
+
+    const measured = measure.mock.contexts as Element[];
+    expect(measured).not.toContain(placed('v'));
+    expect(measured).not.toContain(placed('enc'));
+    expect(measured).toContain(placed('other'));
   });
 
   it('drag survives a new view', async () => {

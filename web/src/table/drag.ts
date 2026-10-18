@@ -40,7 +40,7 @@ export type DropRect =
   | { kind: 'pile'; pile: string; area: Area; drop: PileDrop; label: string; rect: Rect }
   | { kind: 'card'; card: string; area: Area; z: number; rect: Rect };
 
-type ZoneRect = Extract<DropRect, { kind: 'zone' }>;
+export type ZoneRect = Extract<DropRect, { kind: 'zone' }>;
 type PileRect = Extract<DropRect, { kind: 'pile' }>;
 type CardRect = Extract<DropRect, { kind: 'card' }>;
 
@@ -74,7 +74,7 @@ export function intersect(a: Rect, b: Rect): Rect {
   };
 }
 
-function contains(rect: Rect, point: Point): boolean {
+export function contains(rect: Rect, point: Point): boolean {
   return (
     point.x >= rect.left && point.x <= rect.right && point.y >= rect.top && point.y <= rect.bottom
   );

@@ -11,6 +11,7 @@
   import CardFace from './CardFace.svelte';
   import CardView from './CardView.svelte';
   import {
+    contains,
     DRAG_THRESHOLD,
     dropAction,
     dropTarget,
@@ -26,6 +27,7 @@
     type PileDrop,
     type Point,
     type Rect,
+    type ZoneRect,
   } from './drag';
   import { isHidden } from './face';
   import { interaction, type DropOn, type Held } from './interaction.svelte';
@@ -215,22 +217,35 @@
         rect: handBand(others, table, window.innerHeight),
       });
     }
-    for (const section of root.querySelectorAll<HTMLElement>('.zsec[data-area]')) {
-      const area = section.dataset.area as Area;
-      targets.push({ kind: 'zone', area, rect: intersect(section.getBoundingClientRect(), table) });
+    const zones: ZoneRect[] = [...root.querySelectorAll<HTMLElement>('.zsec[data-area]')].map(
+      (section) => ({
+        kind: 'zone',
+        area: section.dataset.area as Area,
+        rect: intersect(section.getBoundingClientRect(), table),
+      }),
+    );
+    targets.push(...zones);
+
+    // Only the zone under the pointer takes the drop: its piles and cards are the only ones measured.
+    const under = zones.find((zone) => contains(zone.rect, at));
+    if (!under) {
+      return targets;
     }
     for (const target of pileTargets(from, view)) {
       const pile = view.table?.piles.find((p) => p.id === target.pile);
-      const rect = placedRect('.pile', target.pile);
+      const rect = pile?.area === under.area ? placedRect('.pile', target.pile) : undefined;
       if (pile && rect) {
         targets.push({ kind: 'pile', ...target, area: pile.area, rect });
       }
     }
     const lifted = interaction.dragging?.lifted ?? [];
     for (const card of cards) {
+      if (card.zone !== 'table' || card.area !== under.area || lifted.includes(card.id)) {
+        continue;
+      }
       const rect = placedRect('.card:not(.pile)', card.id);
-      if (card.zone === 'table' && card.area && !lifted.includes(card.id) && rect) {
-        targets.push({ kind: 'card', card: card.id, area: card.area, z: card.z, rect });
+      if (rect) {
+        targets.push({ kind: 'card', card: card.id, area: under.area, z: card.z, rect });
       }
     }
     return targets;
