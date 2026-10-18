@@ -280,10 +280,25 @@ func TestPlayFromHand(t *testing.T) {
 	}
 }
 
-func TestPlayRefusesCardsOutsideHand(t *testing.T) {
+func TestPlayFromPile(t *testing.T) {
 	table := newTestTable()
+	table.Cards["c4"].FaceDown = true
 
-	for _, id := range []string{"c1", "c4"} {
+	mustApply(t, table, Action{Kind: ActPlay, Card: "c4", Area: "p0", X: 300, Y: 100})
+
+	c4 := table.Cards["c4"]
+	if c4.Zone != ZoneTable || c4.Pile != "" || c4.FaceDown || c4.X != 300 || c4.Y != 100 {
+		t.Errorf("c4 = %+v, want face up on the table at (300,100)", c4)
+	}
+	if got := table.Piles["deck:p0"].Cards; !slices.Equal(got, []string{"c5", "c6"}) {
+		t.Errorf("deck = %v, want [c5 c6]", got)
+	}
+}
+
+func TestPlayRefusesCardsOutsideHandAndPiles(t *testing.T) {
+	table := newStageTable()
+
+	for _, id := range []string{"c1", "c22"} {
 		if err := apply(table, Action{Kind: ActPlay, Card: id, Area: "p0"}); !errors.Is(err, ErrInvalid) {
 			t.Errorf("card %s: err = %v, want ErrInvalid", id, err)
 		}

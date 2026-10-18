@@ -693,3 +693,67 @@ func TestShuffleActionsThroughDo(t *testing.T) {
 		})
 	}
 }
+
+func TestPlayFromPileThroughDo(t *testing.T) {
+	tests := []struct {
+		name  string
+		token string
+		// card prepares the table and returns the card to play.
+		card func(t *testing.T, f *doFixture) string
+		want error // nil = allowed
+	}{
+		{"own set-aside pile", "h", func(t *testing.T, f *doFixture) string {
+			id := topCards(f.g.Table.Piles["deck:p0"], 1)[0]
+			f.mustDo(t, "h", Action{Kind: ActToPile, Card: id, Target: "aside:p0"}, at(1))
+			return id
+		}, nil},
+		{"encounter discard pile", "b", func(t *testing.T, f *doFixture) string {
+			f.mustDo(t, "h", Action{Kind: ActDiscardTop, Pile: PileEncounter, N: 1}, at(1))
+			return topCards(f.g.Table.Piles[PileEncounterDiscard], 1)[0]
+		}, nil},
+		{"own deck", "h", func(_ *testing.T, f *doFixture) string {
+			return f.g.Table.Piles["deck:p0"].Cards[3]
+		}, nil},
+		{"another player's deck", "b", func(_ *testing.T, f *doFixture) string {
+			return f.g.Table.Piles["deck:p0"].Cards[3]
+		}, ErrForbidden},
+		{"another player's set-aside pile", "b", func(t *testing.T, f *doFixture) string {
+			id := topCards(f.g.Table.Piles["deck:p0"], 1)[0]
+			f.mustDo(t, "h", Action{Kind: ActToPile, Card: id, Target: "aside:p0"}, at(1))
+			return id
+		}, ErrForbidden},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			f := newDoFixture(t)
+			id := tt.card(t, f)
+			lines := len(f.g.Log)
+
+			err := f.do(tt.token, Action{Kind: ActPlay, Card: id, Area: "p1", X: 400, Y: 200}, at(5))
+
+			if tt.want != nil {
+				if !errors.Is(err, tt.want) {
+					t.Errorf("play = %v, want %v", err, tt.want)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("play = %v, want allowed", err)
+			}
+			c := f.g.Table.Cards[id]
+			if c.Zone != ZoneTable || c.FaceDown || c.Area != "p1" || c.X != 400 || c.Y != 200 {
+				t.Errorf("played card = %+v, want face up on the table at p1 (400,200)", c)
+			}
+			if got := len(f.g.Log); got != lines+1 {
+				t.Fatalf("play wrote %d lines, want 1", got-lines)
+			}
+			if got, want := f.lastLog().Text, "played "+f.nameOf(t, id); got != want {
+				t.Errorf("line = %q, want %q", got, want)
+			}
+			if got := f.lastLog().Cards; !slices.Equal(got, []string{id}) {
+				t.Errorf("line cards = %v, want [%s]", got, id)
+			}
+			checkIntegrity(t, f.g.Table)
+		})
+	}
+}

@@ -430,13 +430,14 @@ func isPlainTargetPile(id string) bool {
 	return id == PileVictory || id == PileScenarioAside || strings.HasPrefix(id, "aside:")
 }
 
+// applyPlay puts a card from a hand or a pile face up on the table.
 func applyPlay(t *Table, a Action) error {
 	c, err := t.card(a.Card)
 	if err != nil {
 		return err
 	}
-	if c.Zone != ZoneHand {
-		return invalid("card %q is not in a hand", c.ID)
+	if c.Zone != ZoneHand && c.Zone != ZonePile {
+		return invalid("card %q is neither in a hand nor in a pile", c.ID)
 	}
 	if !validArea(a.Area) {
 		return invalid("unknown area %q", a.Area)
