@@ -613,6 +613,24 @@ describe('Table', () => {
     expect(surfaceOf(/^Villain/).style.height).toBe('200px');
   });
 
+  it('does not keep the heights measured before the catalog is loaded', async () => {
+    let loaded = () => {};
+    vi.mocked(loadAllCards).mockReturnValue(new Promise<void>((resolve) => (loaded = resolve)));
+    // The main scheme is landscape (100 high), but counts as std (140) until its size is known.
+    const view = makeView({
+      cards: [card('s', { code: '01097', area: 'villain', x: 0, y: 300 })],
+      piles: [],
+    });
+    render(Table, { session: fakeSession(), view });
+    expect(surfaceOf(/^Villain/).style.height).toBe('460px');
+
+    loaded();
+    // 300 + 100 + 20.
+    await waitFor(() => {
+      expect(surfaceOf(/^Villain/).style.height).toBe('420px');
+    });
+  });
+
   it('a separator drag captures the pointer, keeping the resize cursor', async () => {
     render(Table, { session: fakeSession(), view: makeView() });
     const handle = await screen.findByTitle("Drag to resize the villain's zone");

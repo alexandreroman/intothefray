@@ -111,7 +111,12 @@
 
   // A resizable zone only grows on its own: once its cards made it taller, it
   // stays that tall when they move back up, until it is resized by hand.
+  // Not while the catalog loads: every card counts as std until then, which
+  // can be taller than its real size.
   $effect.pre(() => {
+    if (catalog === 'loading') {
+      return;
+    }
     for (const zone of zones) {
       if (resizable(zone.area) && zone.height > (chosenHeights[zone.area] ?? 0)) {
         chosenHeights[zone.area] = zone.height;
