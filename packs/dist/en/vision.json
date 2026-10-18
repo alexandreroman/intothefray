@@ -1,0 +1,535 @@
+{
+  "code": "vision",
+  "name": "Vision",
+  "position": 26,
+  "cards": [
+    {
+      "code": "26001",
+      "faces": [
+        {
+          "name": "Vision",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26001A.jpg",
+            "https://marvelcdb.com/bundles/cards/26001a.png"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "Vision",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26001B.jpg",
+            "https://marvelcdb.com/bundles/cards/26001b.png"
+          ],
+          "handSize": 5
+        }
+      ],
+      "set": "vision",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "26001a",
+        "26001b"
+      ]
+    },
+    {
+      "code": "26002",
+      "faces": [
+        {
+          "name": "Intangible",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/26002a.jpg"
+          ]
+        }
+      ],
+      "set": "vision",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "26003",
+      "faces": [
+        {
+          "name": "Vivian",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26003.jpg",
+            "https://marvelcdb.com/bundles/cards/26003.png"
+          ]
+        }
+      ],
+      "set": "vision",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "26004",
+      "faces": [
+        {
+          "name": "616 Hickory Branch Lane",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26004.jpg",
+            "https://marvelcdb.com/bundles/cards/26004.png"
+          ]
+        }
+      ],
+      "set": "vision",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "26005",
+      "faces": [
+        {
+          "name": "Solar Gem",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26005.jpg",
+            "https://marvelcdb.com/bundles/cards/26005.png"
+          ]
+        }
+      ],
+      "set": "vision",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "26006",
+      "faces": [
+        {
+          "name": "Vision's Cape",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26006.jpg",
+            "https://marvelcdb.com/bundles/cards/26006.png"
+          ]
+        }
+      ],
+      "set": "vision",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "26007",
+      "faces": [
+        {
+          "name": "Density Control",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26007.jpg",
+            "https://marvelcdb.com/bundles/cards/26007.png"
+          ]
+        }
+      ],
+      "set": "vision",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "26008",
+      "faces": [
+        {
+          "name": "Solar Beam",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26008.jpg",
+            "https://marvelcdb.com/bundles/cards/26008.png"
+          ]
+        }
+      ],
+      "set": "vision",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "26009",
+      "faces": [
+        {
+          "name": "Superdense Strike",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26009.jpg",
+            "https://marvelcdb.com/bundles/cards/26009.png"
+          ]
+        }
+      ],
+      "set": "vision",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "26010",
+      "faces": [
+        {
+          "name": "Just Passing Through",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26010.jpg",
+            "https://marvelcdb.com/bundles/cards/26010.png"
+          ]
+        }
+      ],
+      "set": "vision",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "26011",
+      "faces": [
+        {
+          "name": "Phase Disruption",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26011.jpg",
+            "https://marvelcdb.com/bundles/cards/26011.png"
+          ]
+        }
+      ],
+      "set": "vision",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "26012",
+      "faces": [
+        {
+          "name": "Mass Increase",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26012.jpg",
+            "https://marvelcdb.com/bundles/cards/26012.png"
+          ]
+        }
+      ],
+      "set": "vision",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "26013",
+      "faces": [
+        {
+          "name": "Jocasta",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26013.jpg",
+            "https://marvelcdb.com/bundles/cards/26013.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "26014",
+      "faces": [
+        {
+          "name": "Protector",
+          "subname": "Alexis",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26014.jpg",
+            "https://marvelcdb.com/bundles/cards/26014.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "26015",
+      "faces": [
+        {
+          "name": "Victor Mancha",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26015.jpg",
+            "https://marvelcdb.com/bundles/cards/26015.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "26016",
+      "faces": [
+        {
+          "name": "Flow Like Water",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26016.jpg",
+            "https://marvelcdb.com/bundles/cards/26016.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "26018",
+      "faces": [
+        {
+          "name": "Defiance",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26018.jpg",
+            "https://marvelcdb.com/bundles/cards/26018.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "26022",
+      "faces": [
+        {
+          "name": "Machine Man",
+          "subname": "Aaron Stack",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26022.jpg",
+            "https://marvelcdb.com/bundles/cards/26022.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "26024",
+      "faces": [
+        {
+          "name": "Reboot",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26024.jpg",
+            "https://marvelcdb.com/bundles/cards/26024.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "26028",
+      "faces": [
+        {
+          "name": "Corrupted Programming",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26028.jpg",
+            "https://marvelcdb.com/bundles/cards/26028.png"
+          ]
+        }
+      ],
+      "set": "vision",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "26029",
+      "faces": [
+        {
+          "name": "Ultron",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26029.jpg",
+            "https://marvelcdb.com/bundles/cards/26029.png"
+          ]
+        }
+      ],
+      "set": "vision_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "26030",
+      "faces": [
+        {
+          "name": "Ultron Unleashed",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26030.jpg",
+            "https://marvelcdb.com/bundles/cards/26030.png"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "vision_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "26031",
+      "faces": [
+        {
+          "name": "Ultron Drones",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/26031.png"
+          ]
+        }
+      ],
+      "set": "vision_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "26032",
+      "faces": [
+        {
+          "name": "Relentless Android",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26032.jpg",
+            "https://marvelcdb.com/bundles/cards/26032.png"
+          ]
+        }
+      ],
+      "set": "vision_nemesis",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "26033",
+      "faces": [
+        {
+          "name": "Assault Training",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26033.jpg",
+            "https://marvelcdb.com/bundles/cards/26033.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "26034",
+      "faces": [
+        {
+          "name": "Chance Encounter",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26034.jpg",
+            "https://marvelcdb.com/bundles/cards/26034.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "60025"
+      ]
+    },
+    {
+      "code": "26035",
+      "faces": [
+        {
+          "name": "Joining Forces",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26035.jpg",
+            "https://marvelcdb.com/bundles/cards/26035.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "26036",
+      "faces": [
+        {
+          "name": "Meditation",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26036.jpg",
+            "https://marvelcdb.com/bundles/cards/26036.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    }
+  ],
+  "sets": [
+    {
+      "code": "vision",
+      "name": "Vision",
+      "kind": "hero",
+      "cards": [
+        "26001",
+        "26002",
+        "26003",
+        "26004",
+        "26005",
+        "26006",
+        "26007",
+        "26008",
+        "26009",
+        "26010",
+        "26011",
+        "26012",
+        "26028"
+      ]
+    },
+    {
+      "code": "vision_nemesis",
+      "name": "Vision Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "26029",
+        "26030",
+        "26031",
+        "26032"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "26001",
+      "set": "vision",
+      "obligation": "26028",
+      "nemesis": "vision_nemesis"
+    }
+  ]
+}

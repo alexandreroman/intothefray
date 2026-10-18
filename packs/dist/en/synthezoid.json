@@ -1,0 +1,1531 @@
+{
+  "code": "synthezoid",
+  "name": "Synthezoid Smackdown",
+  "position": 57,
+  "cards": [
+    {
+      "code": "57001",
+      "faces": [
+        {
+          "name": "She-Hulk",
+          "type": "leader",
+          "stage": "I",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57001.jpg",
+            "https://marvelcdb.com/bundles/cards/57001.jpg"
+          ]
+        }
+      ],
+      "set": "she_hulk_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "57002",
+      "faces": [
+        {
+          "name": "She-Hulk",
+          "type": "leader",
+          "stage": "II",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57002.jpg",
+            "https://marvelcdb.com/bundles/cards/57002.jpg"
+          ]
+        }
+      ],
+      "set": "she_hulk_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "57003",
+      "faces": [
+        {
+          "name": "She-Hulk",
+          "type": "leader",
+          "stage": "III",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57003.jpg",
+            "https://marvelcdb.com/bundles/cards/57003.jpg"
+          ]
+        }
+      ],
+      "set": "she_hulk_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "57004",
+      "faces": [
+        {
+          "name": "She-Hulk",
+          "type": "leader",
+          "stage": "IV",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57004.jpg",
+            "https://marvelcdb.com/bundles/cards/57004.jpg"
+          ]
+        }
+      ],
+      "set": "she_hulk_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "57005",
+      "faces": [
+        {
+          "name": "Superhero Registration Act",
+          "type": "main_scheme",
+          "stage": "1A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57005A.jpg"
+          ]
+        },
+        {
+          "name": "Enforce the Law",
+          "type": "main_scheme",
+          "stage": "1B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57005B.jpg"
+          ],
+          "startingThreat": {
+            "value": 0,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "synthezoid_registration",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "57005a",
+        "57005b"
+      ]
+    },
+    {
+      "code": "57006",
+      "faces": [
+        {
+          "name": "Pro-Registration Tactics",
+          "type": "main_scheme",
+          "stage": "2A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57006A.jpg"
+          ]
+        },
+        {
+          "name": "Mighty Avengers",
+          "type": "main_scheme",
+          "stage": "2B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57006B.jpg"
+          ],
+          "startingThreat": {
+            "value": 0,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "synthezoid_registration",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "57006a",
+        "57006b"
+      ]
+    },
+    {
+      "code": "57007",
+      "faces": [
+        {
+          "name": "Superhuman Strength",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57007.jpg",
+            "https://marvelcdb.com/bundles/cards/57007.jpg"
+          ]
+        }
+      ],
+      "set": "she_hulk_leader",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "57008",
+      "faces": [
+        {
+          "name": "Focused Rage",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57008.jpg",
+            "https://marvelcdb.com/bundles/cards/57008.jpg"
+          ]
+        }
+      ],
+      "set": "she_hulk_leader",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "57009",
+      "faces": [
+        {
+          "name": "One-Two Punch",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57009.jpg",
+            "https://marvelcdb.com/bundles/cards/57009.jpg"
+          ]
+        }
+      ],
+      "set": "she_hulk_leader",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "57010",
+      "faces": [
+        {
+          "name": "Ground Stomp",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57010.jpg",
+            "https://marvelcdb.com/bundles/cards/57010.jpg"
+          ]
+        }
+      ],
+      "set": "she_hulk_leader",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "57011",
+      "faces": [
+        {
+          "name": "Gamma Slam",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57011.jpg",
+            "https://marvelcdb.com/bundles/cards/57011.jpg"
+          ]
+        }
+      ],
+      "set": "she_hulk_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "57012",
+      "faces": [
+        {
+          "name": "Legal Practice",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57012.jpg",
+            "https://marvelcdb.com/bundles/cards/57012.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "she_hulk_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "57013",
+      "faces": [
+        {
+          "name": "S.H.I.E.L.D. Operator",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57013.jpg",
+            "https://marvelcdb.com/bundles/cards/57013.jpg"
+          ]
+        }
+      ],
+      "set": "shield_ops",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "57014",
+      "faces": [
+        {
+          "name": "Strategic Overwatch",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57014.jpg",
+            "https://marvelcdb.com/bundles/cards/57014.jpg"
+          ]
+        }
+      ],
+      "set": "shield_ops",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "57015",
+      "faces": [
+        {
+          "name": "Rapid Response",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/57015.jpg"
+          ]
+        }
+      ],
+      "set": "shield_ops",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "57016",
+      "faces": [
+        {
+          "name": "Homeland Security",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57016.jpg",
+            "https://marvelcdb.com/bundles/cards/57016.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "shield_ops",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "57017",
+      "faces": [
+        {
+          "name": "Atlas",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57017.jpg",
+            "https://marvelcdb.com/bundles/cards/57017.jpg"
+          ]
+        }
+      ],
+      "set": "thunderbolts_modular",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "57018",
+      "faces": [
+        {
+          "name": "Songbird",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57018.jpg",
+            "https://marvelcdb.com/bundles/cards/57018.jpg"
+          ]
+        }
+      ],
+      "set": "thunderbolts_modular",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "57019",
+      "faces": [
+        {
+          "name": "Penance",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57019.jpg",
+            "https://marvelcdb.com/bundles/cards/57019.jpg"
+          ]
+        }
+      ],
+      "set": "thunderbolts_modular",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "57020",
+      "faces": [
+        {
+          "name": "Justice Like Lightning",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/57020.jpg"
+          ]
+        }
+      ],
+      "set": "thunderbolts_modular",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "57021",
+      "faces": [
+        {
+          "name": "The Thunderbolts",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57021.jpg",
+            "https://marvelcdb.com/bundles/cards/57021.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "thunderbolts_modular",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "57022",
+      "faces": [
+        {
+          "name": "Taskmaster",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57022.jpg",
+            "https://marvelcdb.com/bundles/cards/57022.jpg"
+          ]
+        }
+      ],
+      "set": "taskmaster_modular",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "57023",
+      "faces": [
+        {
+          "name": "Taskmaster's Sword",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57023.jpg",
+            "https://marvelcdb.com/bundles/cards/57023.jpg"
+          ]
+        }
+      ],
+      "set": "taskmaster_modular",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "57024",
+      "faces": [
+        {
+          "name": "Taskmaster's Shield",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57024.jpg",
+            "https://marvelcdb.com/bundles/cards/57024.jpg"
+          ]
+        }
+      ],
+      "set": "taskmaster_modular",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "57025",
+      "faces": [
+        {
+          "name": "Mimicked Move",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57025.jpg",
+            "https://marvelcdb.com/bundles/cards/57025.jpg"
+          ]
+        }
+      ],
+      "set": "taskmaster_modular",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "57026",
+      "faces": [
+        {
+          "name": "Taskmaster's Academy",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57026.jpg",
+            "https://marvelcdb.com/bundles/cards/57026.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "taskmaster_modular",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "57027",
+      "faces": [
+        {
+          "name": "Jester",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57027.jpg",
+            "https://marvelcdb.com/bundles/cards/57027.jpg"
+          ]
+        }
+      ],
+      "set": "deadly_duo",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "57028",
+      "faces": [
+        {
+          "name": "Jack O'Lantern",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57028.jpg",
+            "https://marvelcdb.com/bundles/cards/57028.jpg"
+          ]
+        }
+      ],
+      "set": "deadly_duo",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "57029",
+      "faces": [
+        {
+          "name": "Mad Jack's Platform",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57029.jpg",
+            "https://marvelcdb.com/bundles/cards/57029.jpg"
+          ]
+        }
+      ],
+      "set": "deadly_duo",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "57030",
+      "faces": [
+        {
+          "name": "Jester's Yo-Yo",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57030.jpg",
+            "https://marvelcdb.com/bundles/cards/57030.jpg"
+          ]
+        }
+      ],
+      "set": "deadly_duo",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "57031",
+      "faces": [
+        {
+          "name": "Deadly Duo",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57031.jpg",
+            "https://marvelcdb.com/bundles/cards/57031.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "deadly_duo",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "57032",
+      "faces": [
+        {
+          "name": "You're Out of Order!",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57032.jpg",
+            "https://marvelcdb.com/bundles/cards/57032.jpg"
+          ]
+        }
+      ],
+      "set": "she_hulk_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "57033",
+      "faces": [
+        {
+          "name": "She-Hulk Smash",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57033.jpg",
+            "https://marvelcdb.com/bundles/cards/57033.jpg"
+          ]
+        }
+      ],
+      "set": "she_hulk_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "57034",
+      "faces": [
+        {
+          "name": "Make Me Angry",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57034.jpg",
+            "https://marvelcdb.com/bundles/cards/57034.jpg"
+          ]
+        }
+      ],
+      "set": "she_hulk_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "57035",
+      "faces": [
+        {
+          "name": "Legal Counsel",
+          "type": "resource",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57035.jpg",
+            "https://marvelcdb.com/bundles/cards/57035.jpg"
+          ]
+        }
+      ],
+      "set": "she_hulk_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "57040",
+      "faces": [
+        {
+          "name": "Vision",
+          "type": "leader",
+          "stage": "I",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57040.jpg",
+            "https://marvelcdb.com/bundles/cards/57040.jpg"
+          ]
+        }
+      ],
+      "set": "vision_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "57041",
+      "faces": [
+        {
+          "name": "Vision",
+          "type": "leader",
+          "stage": "II",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57041.jpg",
+            "https://marvelcdb.com/bundles/cards/57041.jpg"
+          ]
+        }
+      ],
+      "set": "vision_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "57042",
+      "faces": [
+        {
+          "name": "Vision",
+          "type": "leader",
+          "stage": "III",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57042.jpg",
+            "https://marvelcdb.com/bundles/cards/57042.jpg"
+          ]
+        }
+      ],
+      "set": "vision_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "57043",
+      "faces": [
+        {
+          "name": "Vision",
+          "type": "leader",
+          "stage": "IV",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57043.jpg",
+            "https://marvelcdb.com/bundles/cards/57043.jpg"
+          ]
+        }
+      ],
+      "set": "vision_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "57044",
+      "faces": [
+        {
+          "name": "Superhero Resistance",
+          "type": "main_scheme",
+          "stage": "1A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57044A.jpg"
+          ]
+        },
+        {
+          "name": "Protect Secret Identities",
+          "type": "main_scheme",
+          "stage": "1B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57044B.jpg"
+          ],
+          "startingThreat": {
+            "value": 0,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "synthezoid_resistance",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "57044a",
+        "57044b"
+      ]
+    },
+    {
+      "code": "57045",
+      "faces": [
+        {
+          "name": "Resistance Tactics",
+          "type": "main_scheme",
+          "stage": "2A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57045A.jpg"
+          ]
+        },
+        {
+          "name": "Expose Overreach",
+          "type": "main_scheme",
+          "stage": "2B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57045B.jpg"
+          ],
+          "startingThreat": {
+            "value": 0,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "synthezoid_resistance",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "57045a",
+        "57045b"
+      ]
+    },
+    {
+      "code": "57046",
+      "faces": [
+        {
+          "name": "Dense",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57046A.jpg"
+          ]
+        },
+        {
+          "name": "Intangible",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57046B.jpg"
+          ]
+        }
+      ],
+      "set": "vision_leader",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "57046a",
+        "57046b"
+      ]
+    },
+    {
+      "code": "57047",
+      "faces": [
+        {
+          "name": "Solar Gem",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57047.jpg",
+            "https://marvelcdb.com/bundles/cards/57047.jpg"
+          ]
+        }
+      ],
+      "set": "vision_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "57048",
+      "faces": [
+        {
+          "name": "Vision's Cape",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57048.jpg",
+            "https://marvelcdb.com/bundles/cards/57048.jpg"
+          ]
+        }
+      ],
+      "set": "vision_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "57049",
+      "faces": [
+        {
+          "name": "Mass Increase",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57049.jpg",
+            "https://marvelcdb.com/bundles/cards/57049.jpg"
+          ]
+        }
+      ],
+      "set": "vision_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "57050",
+      "faces": [
+        {
+          "name": "Density Control",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57050.jpg",
+            "https://marvelcdb.com/bundles/cards/57050.jpg"
+          ]
+        }
+      ],
+      "set": "vision_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "57051",
+      "faces": [
+        {
+          "name": "Solar Beam",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57051.jpg",
+            "https://marvelcdb.com/bundles/cards/57051.jpg"
+          ]
+        }
+      ],
+      "set": "vision_leader",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "57052",
+      "faces": [
+        {
+          "name": "Superdense Strike",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57052.jpg",
+            "https://marvelcdb.com/bundles/cards/57052.jpg"
+          ]
+        }
+      ],
+      "set": "vision_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "57053",
+      "faces": [
+        {
+          "name": "Phase Disruption",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57053.jpg",
+            "https://marvelcdb.com/bundles/cards/57053.jpg"
+          ]
+        }
+      ],
+      "set": "vision_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "57054",
+      "faces": [
+        {
+          "name": "Just Passing Through",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57054.jpg",
+            "https://marvelcdb.com/bundles/cards/57054.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "vision_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "57055",
+      "faces": [
+        {
+          "name": "Patriot",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57055.jpg",
+            "https://marvelcdb.com/bundles/cards/57055.jpg"
+          ]
+        }
+      ],
+      "set": "young_avengers",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "57056",
+      "faces": [
+        {
+          "name": "Hawkeye",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57056.jpg",
+            "https://marvelcdb.com/bundles/cards/57056.jpg"
+          ]
+        }
+      ],
+      "set": "young_avengers",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "57057",
+      "faces": [
+        {
+          "name": "Stature",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57057.jpg",
+            "https://marvelcdb.com/bundles/cards/57057.jpg"
+          ]
+        }
+      ],
+      "set": "young_avengers",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "57058",
+      "faces": [
+        {
+          "name": "Teenage Superheroes",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57058.jpg",
+            "https://marvelcdb.com/bundles/cards/57058.jpg"
+          ]
+        }
+      ],
+      "set": "young_avengers",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "57059",
+      "faces": [
+        {
+          "name": "Young Avengers",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57059.jpg",
+            "https://marvelcdb.com/bundles/cards/57059.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "young_avengers",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "57060",
+      "faces": [
+        {
+          "name": "Speed",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57060.jpg",
+            "https://marvelcdb.com/bundles/cards/57060.jpg"
+          ]
+        }
+      ],
+      "set": "scarlet_twins",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "57061",
+      "faces": [
+        {
+          "name": "Wiccan",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57061.jpg",
+            "https://marvelcdb.com/bundles/cards/57061.jpg"
+          ]
+        }
+      ],
+      "set": "scarlet_twins",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "57062",
+      "faces": [
+        {
+          "name": "Superspeed",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57062.jpg",
+            "https://marvelcdb.com/bundles/cards/57062.jpg"
+          ]
+        }
+      ],
+      "set": "scarlet_twins",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "57063",
+      "faces": [
+        {
+          "name": "Spellcasting",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57063.jpg",
+            "https://marvelcdb.com/bundles/cards/57063.jpg"
+          ]
+        }
+      ],
+      "set": "scarlet_twins",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "57064",
+      "faces": [
+        {
+          "name": "Superpowered Siblings",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57064.jpg",
+            "https://marvelcdb.com/bundles/cards/57064.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "scarlet_twins",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "57065",
+      "faces": [
+        {
+          "name": "Moon Knight",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57065.jpg",
+            "https://marvelcdb.com/bundles/cards/57065.jpg"
+          ]
+        }
+      ],
+      "set": "moon_knight_modular",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "57066",
+      "faces": [
+        {
+          "name": "Crescent Dart",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57066.jpg",
+            "https://marvelcdb.com/bundles/cards/57066.jpg"
+          ]
+        }
+      ],
+      "set": "moon_knight_modular",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "57067",
+      "faces": [
+        {
+          "name": "Fist of Khonshu",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57067.jpg",
+            "https://marvelcdb.com/bundles/cards/57067.jpg"
+          ]
+        }
+      ],
+      "set": "moon_knight_modular",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "57068",
+      "faces": [
+        {
+          "name": "Khonshu's Avatar",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57068.jpg",
+            "https://marvelcdb.com/bundles/cards/57068.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "moon_knight_modular",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "57069",
+      "faces": [
+        {
+          "name": "Janus",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57069.jpg",
+            "https://marvelcdb.com/bundles/cards/57069.jpg"
+          ]
+        }
+      ],
+      "set": "royal_guard",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "57070",
+      "faces": [
+        {
+          "name": "Amir",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57070.jpg",
+            "https://marvelcdb.com/bundles/cards/57070.jpg"
+          ]
+        }
+      ],
+      "set": "royal_guard",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "57071",
+      "faces": [
+        {
+          "name": "Atlanteans",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/57071.jpg"
+          ]
+        }
+      ],
+      "set": "royal_guard",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "57072",
+      "faces": [
+        {
+          "name": "Blood Debt",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57072.jpg",
+            "https://marvelcdb.com/bundles/cards/57072.jpg"
+          ]
+        }
+      ],
+      "set": "royal_guard",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "57073",
+      "faces": [
+        {
+          "name": "The Royal Guard",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57073.jpg",
+            "https://marvelcdb.com/bundles/cards/57073.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "royal_guard",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "57074",
+      "faces": [
+        {
+          "name": "Calculated Risk",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57074.jpg",
+            "https://marvelcdb.com/bundles/cards/57074.jpg"
+          ]
+        }
+      ],
+      "set": "vision_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "57075",
+      "faces": [
+        {
+          "name": "Synthezoid Strike",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57075.jpg",
+            "https://marvelcdb.com/bundles/cards/57075.jpg"
+          ]
+        }
+      ],
+      "set": "vision_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "57076",
+      "faces": [
+        {
+          "name": "Phased Out",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57076.jpg",
+            "https://marvelcdb.com/bundles/cards/57076.jpg"
+          ]
+        }
+      ],
+      "set": "vision_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "57077",
+      "faces": [
+        {
+          "name": "Android Assistance",
+          "type": "resource",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57077.jpg",
+            "https://marvelcdb.com/bundles/cards/57077.jpg"
+          ]
+        }
+      ],
+      "set": "vision_leader",
+      "back": "player",
+      "quantity": 1
+    }
+  ],
+  "sets": [
+    {
+      "code": "deadly_duo",
+      "name": "Deadly Duo",
+      "kind": "modular",
+      "cards": [
+        "57027",
+        "57028",
+        "57029",
+        "57030",
+        "57031"
+      ]
+    },
+    {
+      "code": "moon_knight_modular",
+      "name": "Moon Knight",
+      "kind": "modular",
+      "cards": [
+        "57065",
+        "57066",
+        "57067",
+        "57068"
+      ]
+    },
+    {
+      "code": "royal_guard",
+      "name": "Royal Guard",
+      "kind": "modular",
+      "cards": [
+        "57069",
+        "57070",
+        "57071",
+        "57072",
+        "57073"
+      ]
+    },
+    {
+      "code": "scarlet_twins",
+      "name": "Scarlet Twins",
+      "kind": "modular",
+      "cards": [
+        "57060",
+        "57061",
+        "57062",
+        "57063",
+        "57064"
+      ]
+    },
+    {
+      "code": "she_hulk_leader",
+      "name": "She-Hulk",
+      "kind": "leader",
+      "cards": [
+        "57001",
+        "57002",
+        "57003",
+        "57004",
+        "57007",
+        "57008",
+        "57009",
+        "57010",
+        "57011",
+        "57012",
+        "57032",
+        "57033",
+        "57034",
+        "57035"
+      ]
+    },
+    {
+      "code": "shield_ops",
+      "name": "S.H.I.E.L.D. Ops",
+      "kind": "modular",
+      "cards": [
+        "57013",
+        "57014",
+        "57015",
+        "57016"
+      ]
+    },
+    {
+      "code": "synthezoid_registration",
+      "name": "Registration",
+      "kind": "main_scheme",
+      "cards": [
+        "57005",
+        "57006"
+      ]
+    },
+    {
+      "code": "synthezoid_resistance",
+      "name": "Resistance",
+      "kind": "main_scheme",
+      "cards": [
+        "57044",
+        "57045"
+      ]
+    },
+    {
+      "code": "taskmaster_modular",
+      "name": "Taskmaster",
+      "kind": "modular",
+      "cards": [
+        "57022",
+        "57023",
+        "57024",
+        "57025",
+        "57026"
+      ]
+    },
+    {
+      "code": "thunderbolts_modular",
+      "name": "Thunderbolts",
+      "kind": "modular",
+      "cards": [
+        "57017",
+        "57018",
+        "57019",
+        "57020",
+        "57021"
+      ]
+    },
+    {
+      "code": "vision_leader",
+      "name": "Vision",
+      "kind": "leader",
+      "cards": [
+        "57040",
+        "57041",
+        "57042",
+        "57043",
+        "57046",
+        "57047",
+        "57048",
+        "57049",
+        "57050",
+        "57051",
+        "57052",
+        "57053",
+        "57054",
+        "57074",
+        "57075",
+        "57076",
+        "57077"
+      ]
+    },
+    {
+      "code": "young_avengers",
+      "name": "Young Avengers",
+      "kind": "modular",
+      "cards": [
+        "57055",
+        "57056",
+        "57057",
+        "57058",
+        "57059"
+      ]
+    }
+  ]
+}

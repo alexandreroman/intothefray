@@ -1,0 +1,63 @@
+{
+  "id": "ultron",
+  "villainSet": "ultron",
+  "piles": [
+    {
+      "key": "villain",
+      "label": "Villain",
+      "cards": [
+        "01134",
+        "01135",
+        "01136"
+      ]
+    },
+    {
+      "key": "scheme",
+      "label": "Main scheme",
+      "cards": [
+        "01137",
+        "01138",
+        "01139"
+      ]
+    }
+  ],
+  "start": {
+    "standard": {
+      "top": {
+        "villain": {
+          "card": "01134",
+          "face": 0
+        },
+        "scheme": {
+          "card": "01137",
+          "face": 1
+        }
+      },
+      "inPlay": [
+        {
+          "card": "01140",
+          "face": 0
+        }
+      ]
+    },
+    "expert": {
+      "top": {
+        "villain": {
+          "card": "01135",
+          "face": 0
+        },
+        "scheme": {
+          "card": "01137",
+          "face": 1
+        }
+      },
+      "inPlay": [
+        {
+          "card": "01140",
+          "face": 0
+        }
+      ]
+    }
+  },
+  "setAside": []
+}

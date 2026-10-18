@@ -1,0 +1,1030 @@
+{
+  "code": "deadpool",
+  "name": "Deadpool",
+  "position": 44,
+  "cards": [
+    {
+      "code": "44001",
+      "faces": [
+        {
+          "name": "Deadpool",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44001A.jpg",
+            "https://marvelcdb.com/bundles/cards/44001a.png"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "Wade Wilson",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44001B.jpg",
+            "https://marvelcdb.com/bundles/cards/44001b.png"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "deadpool",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "44001a",
+        "44001b"
+      ]
+    },
+    {
+      "code": "44002",
+      "faces": [
+        {
+          "name": "Cable",
+          "subname": "Nathan Summers",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44002.jpg",
+            "https://marvelcdb.com/bundles/cards/44002.png"
+          ]
+        }
+      ],
+      "set": "deadpool",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "44003",
+      "faces": [
+        {
+          "name": "Exhausting Personality",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44003.jpg",
+            "https://marvelcdb.com/bundles/cards/44003.png"
+          ]
+        }
+      ],
+      "set": "deadpool",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "44004",
+      "faces": [
+        {
+          "name": "Maximum Effort",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44004.jpg",
+            "https://marvelcdb.com/bundles/cards/44004.png"
+          ]
+        }
+      ],
+      "set": "deadpool",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "44005",
+      "faces": [
+        {
+          "name": "Metaknowledge",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44005.jpg",
+            "https://marvelcdb.com/bundles/cards/44005.png"
+          ]
+        }
+      ],
+      "set": "deadpool",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "44006",
+      "faces": [
+        {
+          "name": "\"Yoo-Hoo!\"",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44006.jpg",
+            "https://marvelcdb.com/bundles/cards/44006.png"
+          ]
+        }
+      ],
+      "set": "deadpool",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "44007",
+      "faces": [
+        {
+          "name": "Montage",
+          "type": "resource",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44007.jpg",
+            "https://marvelcdb.com/bundles/cards/44007.png"
+          ]
+        }
+      ],
+      "set": "deadpool",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "44008",
+      "faces": [
+        {
+          "name": "Chimichanga Truck",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44008.jpg",
+            "https://marvelcdb.com/bundles/cards/44008.png"
+          ]
+        }
+      ],
+      "set": "deadpool",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "44009",
+      "faces": [
+        {
+          "name": "Armed to the Teeth",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44009.jpg",
+            "https://marvelcdb.com/bundles/cards/44009.png"
+          ]
+        }
+      ],
+      "set": "deadpool",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "44010",
+      "faces": [
+        {
+          "name": "Deadpool's Katana",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44010.jpg",
+            "https://marvelcdb.com/bundles/cards/44010.png"
+          ]
+        }
+      ],
+      "set": "deadpool",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "44011",
+      "faces": [
+        {
+          "name": "It Ain't Over...",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44011.jpg",
+            "https://marvelcdb.com/bundles/cards/44011.png"
+          ]
+        }
+      ],
+      "set": "deadpool",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "44012",
+      "faces": [
+        {
+          "name": "This Card is Fire",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44012.jpg",
+            "https://marvelcdb.com/bundles/cards/44012.png"
+          ]
+        }
+      ],
+      "set": "deadpool",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "44013",
+      "faces": [
+        {
+          "name": "Dogpool",
+          "subname": "Wilson",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44013.jpg",
+            "https://marvelcdb.com/bundles/cards/44013.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "44014",
+      "faces": [
+        {
+          "name": "Headpool",
+          "subname": "Wade \"Shorty\" Wilson",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44014.jpg",
+            "https://marvelcdb.com/bundles/cards/44014.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "44015",
+      "faces": [
+        {
+          "name": "Kidpool",
+          "subname": "Wade \"Tito\" Wilson",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44015.jpg",
+            "https://marvelcdb.com/bundles/cards/44015.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "44016",
+      "faces": [
+        {
+          "name": "Lady Deadpool",
+          "subname": "Wanda Wilson",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44016.jpg",
+            "https://marvelcdb.com/bundles/cards/44016.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "44017",
+      "faces": [
+        {
+          "name": "Barely a Scratch",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44017.jpg",
+            "https://marvelcdb.com/bundles/cards/44017.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "44018",
+      "faces": [
+        {
+          "name": "Cutupper",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44018.jpg",
+            "https://marvelcdb.com/bundles/cards/44018.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "44019",
+      "faces": [
+        {
+          "name": "Da Bomb",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44019.jpg",
+            "https://marvelcdb.com/bundles/cards/44019.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "44020",
+      "faces": [
+        {
+          "name": "Get Rage-y",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44020.jpg",
+            "https://marvelcdb.com/bundles/cards/44020.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "44021",
+      "faces": [
+        {
+          "name": "\"I Got This\"",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44021.jpg",
+            "https://marvelcdb.com/bundles/cards/44021.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "44022",
+      "faces": [
+        {
+          "name": "Not my Responsibility",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44022.jpg",
+            "https://marvelcdb.com/bundles/cards/44022.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "44023",
+      "faces": [
+        {
+          "name": "'Pool Inspection",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44023.jpg",
+            "https://marvelcdb.com/bundles/cards/44023.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "44024",
+      "faces": [
+        {
+          "name": "Live Dangerously",
+          "type": "player_side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44024.jpg",
+            "https://marvelcdb.com/bundles/cards/44024.png"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": true
+          }
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "44025",
+      "faces": [
+        {
+          "name": "Self Confidence",
+          "type": "resource",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44025.jpg",
+            "https://marvelcdb.com/bundles/cards/44025.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "44026",
+      "faces": [
+        {
+          "name": "Self Control",
+          "type": "resource",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44026.jpg",
+            "https://marvelcdb.com/bundles/cards/44026.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "44027",
+      "faces": [
+        {
+          "name": "Self Preservation",
+          "type": "resource",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44027.jpg",
+            "https://marvelcdb.com/bundles/cards/44027.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "44028",
+      "faces": [
+        {
+          "name": "Git Gud",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44028.jpg",
+            "https://marvelcdb.com/bundles/cards/44028.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "44029",
+      "faces": [
+        {
+          "name": "Healing Factor",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44029.jpg",
+            "https://marvelcdb.com/bundles/cards/44029.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "44030",
+      "faces": [
+        {
+          "name": "Stick-To-Itiveness",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44030.jpg",
+            "https://marvelcdb.com/bundles/cards/44030.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "44032",
+      "faces": [
+        {
+          "name": "The Merc with the Mouth",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44032.jpg",
+            "https://marvelcdb.com/bundles/cards/44032.png"
+          ]
+        }
+      ],
+      "set": "deadpool",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "44033",
+      "faces": [
+        {
+          "name": "Butler",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44033.jpg",
+            "https://marvelcdb.com/bundles/cards/44033.png"
+          ]
+        }
+      ],
+      "set": "deadpool_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "44034",
+      "faces": [
+        {
+          "name": "Involuntary Procedures",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44034.jpg",
+            "https://marvelcdb.com/bundles/cards/44034.png"
+          ],
+          "startingThreat": {
+            "value": 6,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "deadpool_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "44035",
+      "faces": [
+        {
+          "name": "Tabula Rasa 16",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44035.jpg",
+            "https://marvelcdb.com/bundles/cards/44035.png"
+          ]
+        }
+      ],
+      "set": "deadpool_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "44036",
+      "faces": [
+        {
+          "name": "Mutated Soldier",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44036.jpg",
+            "https://marvelcdb.com/bundles/cards/44036.png"
+          ]
+        }
+      ],
+      "set": "deadpool_nemesis",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "44037",
+      "faces": [
+        {
+          "name": "Crisis of Infinite Deadpools",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44037.jpg",
+            "https://marvelcdb.com/bundles/cards/44037.png"
+          ]
+        }
+      ],
+      "set": "dreadpool",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "44038",
+      "faces": [
+        {
+          "name": "Dreadpool",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44038.jpg",
+            "https://marvelcdb.com/bundles/cards/44038.png"
+          ]
+        }
+      ],
+      "set": "dreadpool",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "44039",
+      "faces": [
+        {
+          "name": "Dreadful Deeds",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44039.jpg",
+            "https://marvelcdb.com/bundles/cards/44039.png"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "dreadpool",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "44040",
+      "faces": [
+        {
+          "name": "Anti-Regeneration Ray",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44040.jpg",
+            "https://marvelcdb.com/bundles/cards/44040.png"
+          ]
+        }
+      ],
+      "set": "dreadpool",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "44041",
+      "faces": [
+        {
+          "name": "'Pool-ized",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44041.jpg",
+            "https://marvelcdb.com/bundles/cards/44041.png"
+          ]
+        }
+      ],
+      "set": "dreadpool",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "44042",
+      "faces": [
+        {
+          "name": "Metacidal Tendencies",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44042.jpg",
+            "https://marvelcdb.com/bundles/cards/44042.png"
+          ]
+        }
+      ],
+      "set": "dreadpool",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "44043",
+      "faces": [
+        {
+          "name": "Bob, Agent of Hydra",
+          "subname": "Bob Dobalina",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44043.jpg",
+            "https://marvelcdb.com/bundles/cards/44043.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "44044",
+      "faces": [
+        {
+          "name": "Negasonic Teenage Warhead",
+          "subname": "Ellie Phimister",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44044.jpg",
+            "https://marvelcdb.com/bundles/cards/44044.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "44045",
+      "faces": [
+        {
+          "name": "Pandapool",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44045.jpg",
+            "https://marvelcdb.com/bundles/cards/44045.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "44046",
+      "faces": [
+        {
+          "name": "Break Time",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44046.jpg",
+            "https://marvelcdb.com/bundles/cards/44046.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "44047",
+      "faces": [
+        {
+          "name": "Get in Front of Me!",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44047.jpg",
+            "https://marvelcdb.com/bundles/cards/44047.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "44048",
+      "faces": [
+        {
+          "name": "Mulligan",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44048.jpg",
+            "https://marvelcdb.com/bundles/cards/44048.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "44049",
+      "faces": [
+        {
+          "name": "Deadpool Corps Ship",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44049.jpg",
+            "https://marvelcdb.com/bundles/cards/44049.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "44050",
+      "faces": [
+        {
+          "name": "Plot Convenience",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44050.jpg",
+            "https://marvelcdb.com/bundles/cards/44050.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "44051",
+      "faces": [
+        {
+          "name": "Ambush",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44051.jpg",
+            "https://marvelcdb.com/bundles/cards/44051.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "44052",
+      "faces": [
+        {
+          "name": "Bazooka",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44052.jpg",
+            "https://marvelcdb.com/bundles/cards/44052.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "44053",
+      "faces": [
+        {
+          "name": "Blackout",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44053.jpg",
+            "https://marvelcdb.com/bundles/cards/44053.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "44054",
+      "faces": [
+        {
+          "name": "Distraction",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44054.jpg",
+            "https://marvelcdb.com/bundles/cards/44054.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "44055",
+      "faces": [
+        {
+          "name": "Laser Swords",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44055.jpg",
+            "https://marvelcdb.com/bundles/cards/44055.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "44056",
+      "faces": [
+        {
+          "name": "Rock, Paper, Scissors",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44056.jpg",
+            "https://marvelcdb.com/bundles/cards/44056.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "44057",
+      "faces": [
+        {
+          "name": "Tic-Tac-Toe",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44057.jpg",
+            "https://marvelcdb.com/bundles/cards/44057.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "44058",
+      "faces": [
+        {
+          "name": "War",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44058.jpg",
+            "https://marvelcdb.com/bundles/cards/44058.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    }
+  ],
+  "sets": [
+    {
+      "code": "deadpool",
+      "name": "Deadpool",
+      "kind": "hero",
+      "cards": [
+        "44001",
+        "44002",
+        "44003",
+        "44004",
+        "44005",
+        "44006",
+        "44007",
+        "44008",
+        "44009",
+        "44010",
+        "44011",
+        "44012",
+        "44032"
+      ]
+    },
+    {
+      "code": "deadpool_nemesis",
+      "name": "Deadpool Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "44033",
+        "44034",
+        "44035",
+        "44036"
+      ]
+    },
+    {
+      "code": "dreadpool",
+      "name": "Dreadpool",
+      "kind": "modular",
+      "cards": [
+        "44037",
+        "44038",
+        "44039",
+        "44040",
+        "44041",
+        "44042"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "44001",
+      "set": "deadpool",
+      "obligation": "44032",
+      "nemesis": "deadpool_nemesis"
+    }
+  ]
+}

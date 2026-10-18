@@ -1,0 +1,511 @@
+{
+  "code": "bkw",
+  "name": "Black Widow",
+  "position": 7,
+  "cards": [
+    {
+      "code": "08001",
+      "faces": [
+        {
+          "name": "Black Widow",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08001A.jpg",
+            "https://marvelcdb.com/bundles/cards/08001a.png"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "Natasha Romanoff",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08001B.jpg",
+            "https://marvelcdb.com/bundles/cards/08001b.png"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "black_widow",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "08001a",
+        "08001b"
+      ]
+    },
+    {
+      "code": "08002",
+      "faces": [
+        {
+          "name": "Winter Soldier",
+          "subname": "Bucky Barnes",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08002.jpg",
+            "https://marvelcdb.com/bundles/cards/08002.png"
+          ]
+        }
+      ],
+      "set": "black_widow",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "08003",
+      "faces": [
+        {
+          "name": "Covert Ops",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08003.jpg",
+            "https://marvelcdb.com/bundles/cards/08003.png"
+          ]
+        }
+      ],
+      "set": "black_widow",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "08004",
+      "faces": [
+        {
+          "name": "Dance of Death",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08004.jpg",
+            "https://marvelcdb.com/bundles/cards/08004.png"
+          ]
+        }
+      ],
+      "set": "black_widow",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "08005",
+      "faces": [
+        {
+          "name": "Safe House #29",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08005.jpg",
+            "https://marvelcdb.com/bundles/cards/08005.png"
+          ]
+        }
+      ],
+      "set": "black_widow",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "08006",
+      "faces": [
+        {
+          "name": "Attacrobatics",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08006.jpg",
+            "https://marvelcdb.com/bundles/cards/08006.png"
+          ]
+        }
+      ],
+      "set": "black_widow",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "08007",
+      "faces": [
+        {
+          "name": "Black Widow's Gauntlet",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08007.jpg",
+            "https://marvelcdb.com/bundles/cards/08007.png"
+          ]
+        }
+      ],
+      "set": "black_widow",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "08008",
+      "faces": [
+        {
+          "name": "Grappling Hook",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08008.jpg",
+            "https://marvelcdb.com/bundles/cards/08008.png"
+          ]
+        }
+      ],
+      "set": "black_widow",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "08009",
+      "faces": [
+        {
+          "name": "Synth-Suit",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08009.jpg",
+            "https://marvelcdb.com/bundles/cards/08009.png"
+          ]
+        }
+      ],
+      "set": "black_widow",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "08010",
+      "faces": [
+        {
+          "name": "Widow's Bite",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08010.jpg",
+            "https://marvelcdb.com/bundles/cards/08010.png"
+          ]
+        }
+      ],
+      "set": "black_widow",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "08011",
+      "faces": [
+        {
+          "name": "Agent Coulson",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08011.jpg",
+            "https://marvelcdb.com/bundles/cards/08011.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "50047"
+      ]
+    },
+    {
+      "code": "08012",
+      "faces": [
+        {
+          "name": "Quake",
+          "subname": "Daisy Johnson",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08012.jpg",
+            "https://marvelcdb.com/bundles/cards/08012.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "50048"
+      ]
+    },
+    {
+      "code": "08013",
+      "faces": [
+        {
+          "name": "Stealth Strike",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08013.jpg",
+            "https://marvelcdb.com/bundles/cards/08013.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "37014"
+      ]
+    },
+    {
+      "code": "08017",
+      "faces": [
+        {
+          "name": "Counterintelligence",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08017.jpg",
+            "https://marvelcdb.com/bundles/cards/08017.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "08018",
+      "faces": [
+        {
+          "name": "Spycraft",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08018.jpg",
+            "https://marvelcdb.com/bundles/cards/08018.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "08023",
+      "faces": [
+        {
+          "name": "Quincarrier",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08023.jpg",
+            "https://marvelcdb.com/bundles/cards/08023.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "13025",
+        "23023",
+        "59034"
+      ]
+    },
+    {
+      "code": "08024",
+      "faces": [
+        {
+          "name": "Target Acquired",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08024.jpg",
+            "https://marvelcdb.com/bundles/cards/08024.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "08025",
+      "faces": [
+        {
+          "name": "Burn Notice",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08025.jpg",
+            "https://marvelcdb.com/bundles/cards/08025.png"
+          ]
+        }
+      ],
+      "set": "black_widow",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "08026",
+      "faces": [
+        {
+          "name": "Taskmaster",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08026.jpg",
+            "https://marvelcdb.com/bundles/cards/08026.png"
+          ]
+        }
+      ],
+      "set": "black_widow_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "08027",
+      "faces": [
+        {
+          "name": "Killer for Hire",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08027.jpg",
+            "https://marvelcdb.com/bundles/cards/08027.png"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "black_widow_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "08028",
+      "faces": [
+        {
+          "name": "Hydra Mercenary",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/08028.png"
+          ]
+        }
+      ],
+      "set": "black_widow_nemesis",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "08029",
+      "faces": [
+        {
+          "name": "Deadly Shot",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08029.jpg",
+            "https://marvelcdb.com/bundles/cards/08029.png"
+          ]
+        }
+      ],
+      "set": "black_widow_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "08030",
+      "faces": [
+        {
+          "name": "Counterattack",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08030.jpg",
+            "https://marvelcdb.com/bundles/cards/08030.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "08031",
+      "faces": [
+        {
+          "name": "Rapid Response",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08031.jpg",
+            "https://marvelcdb.com/bundles/cards/08031.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "08032",
+      "faces": [
+        {
+          "name": "Defensive Stance",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08032.jpg",
+            "https://marvelcdb.com/bundles/cards/08032.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "08033",
+      "faces": [
+        {
+          "name": "Espionage",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08033.jpg",
+            "https://marvelcdb.com/bundles/cards/08033.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    }
+  ],
+  "sets": [
+    {
+      "code": "black_widow",
+      "name": "Black Widow",
+      "kind": "hero",
+      "cards": [
+        "08001",
+        "08002",
+        "08003",
+        "08004",
+        "08005",
+        "08006",
+        "08007",
+        "08008",
+        "08009",
+        "08010",
+        "08025"
+      ]
+    },
+    {
+      "code": "black_widow_nemesis",
+      "name": "Black Widow Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "08026",
+        "08027",
+        "08028",
+        "08029"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "08001",
+      "set": "black_widow",
+      "obligation": "08025",
+      "nemesis": "black_widow_nemesis"
+    }
+  ]
+}

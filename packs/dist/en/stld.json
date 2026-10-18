@@ -1,0 +1,539 @@
+{
+  "code": "stld",
+  "name": "Star-Lord",
+  "position": 17,
+  "cards": [
+    {
+      "code": "17001",
+      "faces": [
+        {
+          "name": "Star-Lord",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/17001A.jpg",
+            "https://marvelcdb.com/bundles/cards/17001a.png"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "Peter Quill",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/17001B.jpg",
+            "https://marvelcdb.com/bundles/cards/17001b.png"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "stld",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "17001a",
+        "17001b"
+      ]
+    },
+    {
+      "code": "17002",
+      "faces": [
+        {
+          "name": "Nova Prime",
+          "subname": "Richard Rider",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/17002.jpg",
+            "https://marvelcdb.com/bundles/cards/17002.png"
+          ]
+        }
+      ],
+      "set": "stld",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "17003",
+      "faces": [
+        {
+          "name": "Daring Escape",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/17003.jpg",
+            "https://marvelcdb.com/bundles/cards/17003.png"
+          ]
+        }
+      ],
+      "set": "stld",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "17004",
+      "faces": [
+        {
+          "name": "Gutsy Move",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/17004.jpg",
+            "https://marvelcdb.com/bundles/cards/17004.png"
+          ]
+        }
+      ],
+      "set": "stld",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "17005",
+      "faces": [
+        {
+          "name": "Sliding Shot",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/17005.jpg",
+            "https://marvelcdb.com/bundles/cards/17005.png"
+          ]
+        }
+      ],
+      "set": "stld",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "17006",
+      "faces": [
+        {
+          "name": "Bad Boy",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/17006.jpg",
+            "https://marvelcdb.com/bundles/cards/17006.png"
+          ]
+        }
+      ],
+      "set": "stld",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "17007",
+      "faces": [
+        {
+          "name": "Element Gun",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/17007.jpg",
+            "https://marvelcdb.com/bundles/cards/17007.png"
+          ]
+        }
+      ],
+      "set": "stld",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "17008",
+      "faces": [
+        {
+          "name": "Jet Boots",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/17008.jpg",
+            "https://marvelcdb.com/bundles/cards/17008.png"
+          ]
+        }
+      ],
+      "set": "stld",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "17009",
+      "faces": [
+        {
+          "name": "Leader of the Guardians",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/17009.jpg",
+            "https://marvelcdb.com/bundles/cards/17009.png"
+          ]
+        }
+      ],
+      "set": "stld",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "17010",
+      "faces": [
+        {
+          "name": "Star-Lord's Helmet",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/17010.jpg",
+            "https://marvelcdb.com/bundles/cards/17010.png"
+          ]
+        }
+      ],
+      "set": "stld",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "17011",
+      "faces": [
+        {
+          "name": "Adam Warlock",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/17011.jpg",
+            "https://marvelcdb.com/bundles/cards/17011.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "53014"
+      ]
+    },
+    {
+      "code": "17012",
+      "faces": [
+        {
+          "name": "Beta Ray Bill",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/17012.jpg",
+            "https://marvelcdb.com/bundles/cards/17012.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "17013",
+      "faces": [
+        {
+          "name": "Yondu",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/17013.jpg",
+            "https://marvelcdb.com/bundles/cards/17013.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "17014",
+      "faces": [
+        {
+          "name": "Air Supremacy",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/17014.jpg",
+            "https://marvelcdb.com/bundles/cards/17014.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "17015",
+      "faces": [
+        {
+          "name": "Blaze of Glory",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/17015.jpg",
+            "https://marvelcdb.com/bundles/cards/17015.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "17017",
+      "faces": [
+        {
+          "name": "Target Practice",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/17017.jpg",
+            "https://marvelcdb.com/bundles/cards/17017.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "17019",
+      "faces": [
+        {
+          "name": "Laser Blaster",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/17019.jpg",
+            "https://marvelcdb.com/bundles/cards/17019.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "17020",
+      "faces": [
+        {
+          "name": "Cosmo",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/17020.jpg",
+            "https://marvelcdb.com/bundles/cards/17020.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "22020"
+      ]
+    },
+    {
+      "code": "17021",
+      "faces": [
+        {
+          "name": "C.I.T.T.",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/17021.jpg",
+            "https://marvelcdb.com/bundles/cards/17021.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "17022",
+      "faces": [
+        {
+          "name": "Knowhere",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/17022.jpg",
+            "https://marvelcdb.com/bundles/cards/17022.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "22021"
+      ]
+    },
+    {
+      "code": "17023",
+      "faces": [
+        {
+          "name": "Pulse Grenade",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/17023.jpg",
+            "https://marvelcdb.com/bundles/cards/17023.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "17024",
+      "faces": [
+        {
+          "name": "Banishment",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/17024.jpg",
+            "https://marvelcdb.com/bundles/cards/17024.png"
+          ]
+        }
+      ],
+      "set": "stld",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "17025",
+      "faces": [
+        {
+          "name": "Budding Crime Syndicate",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/17025.jpg",
+            "https://marvelcdb.com/bundles/cards/17025.png"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "stld_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "17026",
+      "faces": [
+        {
+          "name": "Mister Knife",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/17026.jpg",
+            "https://marvelcdb.com/bundles/cards/17026.png"
+          ]
+        }
+      ],
+      "set": "stld_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "17027",
+      "faces": [
+        {
+          "name": "Spartoi Cunning",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/17027.jpg",
+            "https://marvelcdb.com/bundles/cards/17027.png"
+          ]
+        }
+      ],
+      "set": "stld_nemesis",
+      "back": "encounter",
+      "quantity": 3
+    },
+    {
+      "code": "17028",
+      "faces": [
+        {
+          "name": "Dive Bomb",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/17028.jpg",
+            "https://marvelcdb.com/bundles/cards/17028.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "17029",
+      "faces": [
+        {
+          "name": "Agile Flight",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/17029.jpg",
+            "https://marvelcdb.com/bundles/cards/17029.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "17030",
+      "faces": [
+        {
+          "name": "Ever Vigilant",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/17030.jpg",
+            "https://marvelcdb.com/bundles/cards/17030.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "42015"
+      ]
+    }
+  ],
+  "sets": [
+    {
+      "code": "stld",
+      "name": "Star-Lord",
+      "kind": "hero",
+      "cards": [
+        "17001",
+        "17002",
+        "17003",
+        "17004",
+        "17005",
+        "17006",
+        "17007",
+        "17008",
+        "17009",
+        "17010",
+        "17024"
+      ]
+    },
+    {
+      "code": "stld_nemesis",
+      "name": "Star-Lord Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "17025",
+        "17026",
+        "17027"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "17001",
+      "set": "stld",
+      "obligation": "17024",
+      "nemesis": "stld_nemesis"
+    }
+  ]
+}

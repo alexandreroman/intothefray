@@ -1,0 +1,62 @@
+{
+  "id": "klaw",
+  "villainSet": "klaw",
+  "piles": [
+    {
+      "key": "villain",
+      "label": "Villain",
+      "cards": [
+        "01113",
+        "01114",
+        "01115"
+      ]
+    },
+    {
+      "key": "scheme",
+      "label": "Main scheme",
+      "cards": [
+        "01116",
+        "01117"
+      ]
+    }
+  ],
+  "start": {
+    "standard": {
+      "top": {
+        "villain": {
+          "card": "01113",
+          "face": 0
+        },
+        "scheme": {
+          "card": "01116",
+          "face": 1
+        }
+      },
+      "inPlay": [
+        {
+          "card": "01125",
+          "face": 0
+        }
+      ]
+    },
+    "expert": {
+      "top": {
+        "villain": {
+          "card": "01114",
+          "face": 0
+        },
+        "scheme": {
+          "card": "01116",
+          "face": 1
+        }
+      },
+      "inPlay": [
+        {
+          "card": "01125",
+          "face": 0
+        }
+      ]
+    }
+  },
+  "setAside": []
+}

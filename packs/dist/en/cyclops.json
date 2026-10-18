@@ -1,0 +1,591 @@
+{
+  "code": "cyclops",
+  "name": "Cyclops",
+  "position": 33,
+  "cards": [
+    {
+      "code": "33001",
+      "faces": [
+        {
+          "name": "Cyclops",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33001A.jpg",
+            "https://marvelcdb.com/bundles/cards/33001a.png"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "Scott Summers",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33001B.jpg",
+            "https://marvelcdb.com/bundles/cards/33001b.png"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "cyclops",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "33001a",
+        "33001b"
+      ]
+    },
+    {
+      "code": "33002",
+      "faces": [
+        {
+          "name": "Phoenix",
+          "subname": "Jean Grey",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33002.jpg",
+            "https://marvelcdb.com/bundles/cards/33002.png"
+          ]
+        }
+      ],
+      "set": "cyclops",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "33003",
+      "faces": [
+        {
+          "name": "Ruby Quartz Visor",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33003.jpg",
+            "https://marvelcdb.com/bundles/cards/33003.png"
+          ]
+        }
+      ],
+      "set": "cyclops",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "33004",
+      "faces": [
+        {
+          "name": "Field Commander",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33004.jpg",
+            "https://marvelcdb.com/bundles/cards/33004.png"
+          ]
+        }
+      ],
+      "set": "cyclops",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "33005",
+      "faces": [
+        {
+          "name": "Exploit Weakness",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33005.jpg",
+            "https://marvelcdb.com/bundles/cards/33005.png"
+          ]
+        }
+      ],
+      "set": "cyclops",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "33006",
+      "faces": [
+        {
+          "name": "Practiced Defense",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33006.jpg",
+            "https://marvelcdb.com/bundles/cards/33006.png"
+          ]
+        }
+      ],
+      "set": "cyclops",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "33007",
+      "faces": [
+        {
+          "name": "Priority Target",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33007.jpg",
+            "https://marvelcdb.com/bundles/cards/33007.png"
+          ]
+        }
+      ],
+      "set": "cyclops",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "33008",
+      "faces": [
+        {
+          "name": "Full Blast",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33008.jpg",
+            "https://marvelcdb.com/bundles/cards/33008.png"
+          ]
+        }
+      ],
+      "set": "cyclops",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "33009",
+      "faces": [
+        {
+          "name": "Ricochet Beam",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33009.jpg",
+            "https://marvelcdb.com/bundles/cards/33009.png"
+          ]
+        }
+      ],
+      "set": "cyclops",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "33010",
+      "faces": [
+        {
+          "name": "Tactical Brilliance",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33010.jpg",
+            "https://marvelcdb.com/bundles/cards/33010.png"
+          ]
+        }
+      ],
+      "set": "cyclops",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "33011",
+      "faces": [
+        {
+          "name": "Beast",
+          "subname": "Hank McCoy",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33011.jpg",
+            "https://marvelcdb.com/bundles/cards/33011.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "33012",
+      "faces": [
+        {
+          "name": "Dust",
+          "subname": "Sooraya Qadir",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33012.jpg",
+            "https://marvelcdb.com/bundles/cards/33012.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "33013",
+      "faces": [
+        {
+          "name": "Rockslide",
+          "subname": "Santo Vaccarro",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33013.jpg",
+            "https://marvelcdb.com/bundles/cards/33013.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "33014",
+      "faces": [
+        {
+          "name": "Blindfold",
+          "subname": "Ruth Aldine",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33014.jpg",
+            "https://marvelcdb.com/bundles/cards/33014.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "33015",
+      "faces": [
+        {
+          "name": "Danger Room Training",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33015.jpg",
+            "https://marvelcdb.com/bundles/cards/33015.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "33016",
+      "faces": [
+        {
+          "name": "Coordinated Attack",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33016.jpg",
+            "https://marvelcdb.com/bundles/cards/33016.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "33018",
+      "faces": [
+        {
+          "name": "Effective Leadership",
+          "type": "resource",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33018.jpg",
+            "https://marvelcdb.com/bundles/cards/33018.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 2,
+      "aliases": [
+        "36021"
+      ]
+    },
+    {
+      "code": "33019",
+      "faces": [
+        {
+          "name": "Angel",
+          "subname": "Warren Worthington III",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33019.jpg",
+            "https://marvelcdb.com/bundles/cards/33019.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "33020",
+      "faces": [
+        {
+          "name": "Utopia",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33020.jpg",
+            "https://marvelcdb.com/bundles/cards/33020.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "36024"
+      ]
+    },
+    {
+      "code": "33021",
+      "faces": [
+        {
+          "name": "Danger Room",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33021.jpg",
+            "https://marvelcdb.com/bundles/cards/33021.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "33022",
+      "faces": [
+        {
+          "name": "Game Time",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33022.jpg",
+            "https://marvelcdb.com/bundles/cards/33022.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "33023",
+      "faces": [
+        {
+          "name": "Psychic Rapport",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33023.jpg",
+            "https://marvelcdb.com/bundles/cards/33023.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "34023"
+      ]
+    },
+    {
+      "code": "33027",
+      "faces": [
+        {
+          "name": "Lost Visor",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33027.jpg",
+            "https://marvelcdb.com/bundles/cards/33027.png"
+          ]
+        }
+      ],
+      "set": "cyclops",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "33028",
+      "faces": [
+        {
+          "name": "Mister Sinister",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33028.jpg",
+            "https://marvelcdb.com/bundles/cards/33028.png"
+          ]
+        }
+      ],
+      "set": "cyclops_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "33029",
+      "faces": [
+        {
+          "name": "Genetic Manipulation",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33029.jpg",
+            "https://marvelcdb.com/bundles/cards/33029.png"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "cyclops_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "33030",
+      "faces": [
+        {
+          "name": "Gene Therapy",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33030.jpg",
+            "https://marvelcdb.com/bundles/cards/33030.png"
+          ]
+        }
+      ],
+      "set": "cyclops_nemesis",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "33031",
+      "faces": [
+        {
+          "name": "Concussive Force",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33031.jpg",
+            "https://marvelcdb.com/bundles/cards/33031.png"
+          ]
+        }
+      ],
+      "set": "cyclops_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "33032",
+      "faces": [
+        {
+          "name": "Marked",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33032.jpg",
+            "https://marvelcdb.com/bundles/cards/33032.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "33033",
+      "faces": [
+        {
+          "name": "Befuddle",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33033.jpg",
+            "https://marvelcdb.com/bundles/cards/33033.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "33034",
+      "faces": [
+        {
+          "name": "Pinned Down",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33034.jpg",
+            "https://marvelcdb.com/bundles/cards/33034.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "33035",
+      "faces": [
+        {
+          "name": "Honorary X-Men",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33035.jpg",
+            "https://marvelcdb.com/bundles/cards/33035.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    }
+  ],
+  "sets": [
+    {
+      "code": "cyclops",
+      "name": "Cyclops",
+      "kind": "hero",
+      "cards": [
+        "33001",
+        "33002",
+        "33003",
+        "33004",
+        "33005",
+        "33006",
+        "33007",
+        "33008",
+        "33009",
+        "33010",
+        "33027"
+      ]
+    },
+    {
+      "code": "cyclops_nemesis",
+      "name": "Cyclops Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "33028",
+        "33029",
+        "33030",
+        "33031"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "33001",
+      "set": "cyclops",
+      "obligation": "33027",
+      "nemesis": "cyclops_nemesis"
+    }
+  ]
+}

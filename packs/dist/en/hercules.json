@@ -1,0 +1,718 @@
+{
+  "code": "hercules",
+  "name": "Hercules",
+  "position": 59,
+  "cards": [
+    {
+      "code": "59001",
+      "faces": [
+        {
+          "name": "Hercules",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59001A.jpg",
+            "https://marvelcdb.com/bundles/cards/59001a.png"
+          ],
+          "handSize": 4
+        },
+        {
+          "name": "Hercules",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59001B.jpg",
+            "https://marvelcdb.com/bundles/cards/59001b.png"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "hercules",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "59001a",
+        "59001b"
+      ]
+    },
+    {
+      "code": "59002",
+      "faces": [
+        {
+          "name": "Defeat the Hydra",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59002.jpg",
+            "https://marvelcdb.com/bundles/cards/59002.jpg"
+          ]
+        }
+      ],
+      "set": "hercules_labor_deck",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "59003",
+      "faces": [
+        {
+          "name": "Embody Pathos",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59003.jpg",
+            "https://marvelcdb.com/bundles/cards/59003.jpg"
+          ]
+        }
+      ],
+      "set": "hercules_labor_deck",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "59004",
+      "faces": [
+        {
+          "name": "Protect Humanity",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59004.jpg",
+            "https://marvelcdb.com/bundles/cards/59004.jpg"
+          ]
+        }
+      ],
+      "set": "hercules_labor_deck",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "59005",
+      "faces": [
+        {
+          "name": "Nemean Lion Skin",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59005.jpg",
+            "https://marvelcdb.com/bundles/cards/59005.jpg"
+          ]
+        }
+      ],
+      "set": "hercules_gift_deck",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "59006",
+      "faces": [
+        {
+          "name": "Shield of Perseus",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59006.jpg",
+            "https://marvelcdb.com/bundles/cards/59006.jpg"
+          ]
+        }
+      ],
+      "set": "hercules_gift_deck",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "59007",
+      "faces": [
+        {
+          "name": "Sword of Peleus",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59007.jpg",
+            "https://marvelcdb.com/bundles/cards/59007.jpg"
+          ]
+        }
+      ],
+      "set": "hercules_gift_deck",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "59008",
+      "faces": [
+        {
+          "name": "Amadeus Cho",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59008.jpg",
+            "https://marvelcdb.com/bundles/cards/59008.jpg"
+          ]
+        }
+      ],
+      "set": "hercules",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "59009",
+      "faces": [
+        {
+          "name": "The Gift of Battle",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59009.jpg",
+            "https://marvelcdb.com/bundles/cards/59009.jpg"
+          ]
+        }
+      ],
+      "set": "hercules",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "59010",
+      "faces": [
+        {
+          "name": "Son of Zeus",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59010.jpg",
+            "https://marvelcdb.com/bundles/cards/59010.jpg"
+          ]
+        }
+      ],
+      "set": "hercules",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "59011",
+      "faces": [
+        {
+          "name": "Wisdom of Athena",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59011.jpg",
+            "https://marvelcdb.com/bundles/cards/59011.jpg"
+          ]
+        }
+      ],
+      "set": "hercules",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "59012",
+      "faces": [
+        {
+          "name": "Olympus",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59012.jpg",
+            "https://marvelcdb.com/bundles/cards/59012.jpg"
+          ]
+        }
+      ],
+      "set": "hercules",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "59013",
+      "faces": [
+        {
+          "name": "Gauntlets of Hercules",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59013.jpg",
+            "https://marvelcdb.com/bundles/cards/59013.jpg"
+          ]
+        }
+      ],
+      "set": "hercules",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "59014",
+      "faces": [
+        {
+          "name": "Golden Mace",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59014.jpg",
+            "https://marvelcdb.com/bundles/cards/59014.jpg"
+          ]
+        }
+      ],
+      "set": "hercules",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "59015",
+      "faces": [
+        {
+          "name": "Herc's Helm",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59015.jpg",
+            "https://marvelcdb.com/bundles/cards/59015.jpg"
+          ]
+        }
+      ],
+      "set": "hercules",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "59016",
+      "faces": [
+        {
+          "name": "Lion of Olympus",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59016.jpg",
+            "https://marvelcdb.com/bundles/cards/59016.jpg"
+          ]
+        }
+      ],
+      "set": "hercules",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "59017",
+      "faces": [
+        {
+          "name": "Prince of Power",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59017.jpg",
+            "https://marvelcdb.com/bundles/cards/59017.jpg"
+          ]
+        }
+      ],
+      "set": "hercules",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "59018",
+      "faces": [
+        {
+          "name": "Deathcry",
+          "subname": "Sharra Neramani",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59018.jpg",
+            "https://marvelcdb.com/bundles/cards/59018.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "59019",
+      "faces": [
+        {
+          "name": "Namora",
+          "subname": "Aquaria Neptunia",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59019.jpg",
+            "https://marvelcdb.com/bundles/cards/59019.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "59020",
+      "faces": [
+        {
+          "name": "Thor",
+          "subname": "Odinson",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59020.jpg",
+            "https://marvelcdb.com/bundles/cards/59020.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "59023",
+      "faces": [
+        {
+          "name": "Recruitment Drive",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59023.jpg",
+            "https://marvelcdb.com/bundles/cards/59023.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "59024",
+      "faces": [
+        {
+          "name": "\"Avenge Me!\"",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59024.jpg",
+            "https://marvelcdb.com/bundles/cards/59024.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "59025",
+      "faces": [
+        {
+          "name": "Gilgamesh",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59025.jpg",
+            "https://marvelcdb.com/bundles/cards/59025.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "59026",
+      "faces": [
+        {
+          "name": "Ancient Rivalry",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59026.jpg",
+            "https://marvelcdb.com/bundles/cards/59026.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "59028",
+      "faces": [
+        {
+          "name": "Evaluate Threat",
+          "type": "player_side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59028.jpg",
+            "https://marvelcdb.com/bundles/cards/59028.jpg"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": true
+          }
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "59035",
+      "faces": [
+        {
+          "name": "Appeal to Athena",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59035.jpg",
+            "https://marvelcdb.com/bundles/cards/59035.jpg"
+          ]
+        }
+      ],
+      "set": "hercules",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "59036",
+      "faces": [
+        {
+          "name": "Ares",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59036.jpg",
+            "https://marvelcdb.com/bundles/cards/59036.jpg"
+          ]
+        }
+      ],
+      "set": "hercules_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "59037",
+      "faces": [
+        {
+          "name": "Lernean Hydra",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59037.jpg",
+            "https://marvelcdb.com/bundles/cards/59037.jpg"
+          ]
+        }
+      ],
+      "set": "hercules_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "59038",
+      "faces": [
+        {
+          "name": "Olympic Feud",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59038.jpg",
+            "https://marvelcdb.com/bundles/cards/59038.jpg"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "hercules_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "59039",
+      "faces": [
+        {
+          "name": "Ares's Axe",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59039.jpg",
+            "https://marvelcdb.com/bundles/cards/59039.jpg"
+          ]
+        }
+      ],
+      "set": "hercules_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "59040",
+      "faces": [
+        {
+          "name": "God of War",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59040.jpg",
+            "https://marvelcdb.com/bundles/cards/59040.jpg"
+          ]
+        }
+      ],
+      "set": "hercules_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "59041",
+      "faces": [
+        {
+          "name": "All Versus All",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59041.jpg",
+            "https://marvelcdb.com/bundles/cards/59041.jpg"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "all_versus_all",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "59042",
+      "faces": [
+        {
+          "name": "Hecate",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59042.jpg",
+            "https://marvelcdb.com/bundles/cards/59042.jpg"
+          ]
+        }
+      ],
+      "set": "all_versus_all",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "59043",
+      "faces": [
+        {
+          "name": "Kyknos",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59043.jpg",
+            "https://marvelcdb.com/bundles/cards/59043.jpg"
+          ]
+        }
+      ],
+      "set": "all_versus_all",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "59044",
+      "faces": [
+        {
+          "name": "Bewitched Officer",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59044.jpg",
+            "https://marvelcdb.com/bundles/cards/59044.jpg"
+          ]
+        }
+      ],
+      "set": "all_versus_all",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "59045",
+      "faces": [
+        {
+          "name": "Roving Mobs",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59045.jpg",
+            "https://marvelcdb.com/bundles/cards/59045.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "all_versus_all",
+      "back": "encounter",
+      "quantity": 1
+    }
+  ],
+  "sets": [
+    {
+      "code": "all_versus_all",
+      "name": "All Versus All",
+      "kind": "modular",
+      "cards": [
+        "59041",
+        "59042",
+        "59043",
+        "59044",
+        "59045"
+      ]
+    },
+    {
+      "code": "hercules",
+      "name": "Hercules",
+      "kind": "hero",
+      "cards": [
+        "59001",
+        "59008",
+        "59009",
+        "59010",
+        "59011",
+        "59012",
+        "59013",
+        "59014",
+        "59015",
+        "59016",
+        "59017",
+        "59035"
+      ]
+    },
+    {
+      "code": "hercules_gift_deck",
+      "name": "Gift Deck",
+      "kind": "hero_special",
+      "cards": [
+        "59005",
+        "59006",
+        "59007"
+      ]
+    },
+    {
+      "code": "hercules_labor_deck",
+      "name": "Labor Deck",
+      "kind": "hero_special",
+      "cards": [
+        "59002",
+        "59003",
+        "59004"
+      ]
+    },
+    {
+      "code": "hercules_nemesis",
+      "name": "Hercules Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "59036",
+        "59037",
+        "59038",
+        "59039",
+        "59040"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "59001",
+      "set": "hercules",
+      "obligation": "59035",
+      "nemesis": "hercules_nemesis"
+    }
+  ]
+}

@@ -1,0 +1,1134 @@
+{
+  "code": "fne",
+  "name": "Fear No Evil",
+  "position": 60,
+  "cards": [
+    {
+      "code": "60001",
+      "faces": [
+        {
+          "name": "Daredevil",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60001A.jpg",
+            "https://marvelcdb.com/bundles/cards/60001a.png"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "Matt Murdock",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60001B.jpg",
+            "https://marvelcdb.com/bundles/cards/60001b.png"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "daredevil",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "60001a",
+        "60001b"
+      ]
+    },
+    {
+      "code": "60002",
+      "faces": [
+        {
+          "name": "Acute Tactility",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60002.jpg",
+            "https://marvelcdb.com/bundles/cards/60002.jpg"
+          ]
+        }
+      ],
+      "set": "daredevil_sense_deck",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "60003",
+      "faces": [
+        {
+          "name": "Enhanced Olfaction",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60003.jpg",
+            "https://marvelcdb.com/bundles/cards/60003.jpg"
+          ]
+        }
+      ],
+      "set": "daredevil_sense_deck",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "60004",
+      "faces": [
+        {
+          "name": "Heightened Hearing",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60004.jpg",
+            "https://marvelcdb.com/bundles/cards/60004.jpg"
+          ]
+        }
+      ],
+      "set": "daredevil_sense_deck",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "60005",
+      "faces": [
+        {
+          "name": "Radar Sense",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60005.jpg",
+            "https://marvelcdb.com/bundles/cards/60005.jpg"
+          ]
+        }
+      ],
+      "set": "daredevil_sense_deck",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "60006",
+      "faces": [
+        {
+          "name": "Superior Taste",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60006.jpg",
+            "https://marvelcdb.com/bundles/cards/60006.jpg"
+          ]
+        }
+      ],
+      "set": "daredevil_sense_deck",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "60007",
+      "faces": [
+        {
+          "name": "Elektra",
+          "subname": "Elektra Natchios",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60007.jpg",
+            "https://marvelcdb.com/bundles/cards/60007.jpg"
+          ]
+        }
+      ],
+      "set": "daredevil",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "60008",
+      "faces": [
+        {
+          "name": "Cross-Examination",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60008.jpg",
+            "https://marvelcdb.com/bundles/cards/60008.jpg"
+          ]
+        }
+      ],
+      "set": "daredevil",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "60009",
+      "faces": [
+        {
+          "name": "Deposition",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60009.jpg",
+            "https://marvelcdb.com/bundles/cards/60009.jpg"
+          ]
+        }
+      ],
+      "set": "daredevil",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "60010",
+      "faces": [
+        {
+          "name": "Living Lie Detector",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60010.jpg",
+            "https://marvelcdb.com/bundles/cards/60010.jpg"
+          ]
+        }
+      ],
+      "set": "daredevil",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "60011",
+      "faces": [
+        {
+          "name": "Raising Hell",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60011.jpg",
+            "https://marvelcdb.com/bundles/cards/60011.jpg"
+          ]
+        }
+      ],
+      "set": "daredevil",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "60012",
+      "faces": [
+        {
+          "name": "Focus the Senses",
+          "type": "player_side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60012.jpg",
+            "https://marvelcdb.com/bundles/cards/60012.jpg"
+          ],
+          "startingThreat": {
+            "value": 4,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "daredevil",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "60013",
+      "faces": [
+        {
+          "name": "Foggy Nelson",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60013.jpg",
+            "https://marvelcdb.com/bundles/cards/60013.jpg"
+          ]
+        }
+      ],
+      "set": "daredevil",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "60014",
+      "faces": [
+        {
+          "name": "Karen Page",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60014.jpg",
+            "https://marvelcdb.com/bundles/cards/60014.jpg"
+          ]
+        }
+      ],
+      "set": "daredevil",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "60015",
+      "faces": [
+        {
+          "name": "Nelson and Murdock",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60015.jpg",
+            "https://marvelcdb.com/bundles/cards/60015.jpg"
+          ]
+        }
+      ],
+      "set": "daredevil",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "60016",
+      "faces": [
+        {
+          "name": "Sister Maggie",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60016.jpg",
+            "https://marvelcdb.com/bundles/cards/60016.jpg"
+          ]
+        }
+      ],
+      "set": "daredevil",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "60017",
+      "faces": [
+        {
+          "name": "Daredevil's Billy Club",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60017.jpg",
+            "https://marvelcdb.com/bundles/cards/60017.jpg"
+          ]
+        }
+      ],
+      "set": "daredevil",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "60018",
+      "faces": [
+        {
+          "name": "The Man Without Fear",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60018.jpg",
+            "https://marvelcdb.com/bundles/cards/60018.jpg"
+          ]
+        }
+      ],
+      "set": "daredevil",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "60019",
+      "faces": [
+        {
+          "name": "Blindspot",
+          "subname": "Sam Chung",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60019.jpg",
+            "https://marvelcdb.com/bundles/cards/60019.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "60020",
+      "faces": [
+        {
+          "name": "Cloak",
+          "subname": "Tyrone Johnson",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60020.jpg",
+            "https://marvelcdb.com/bundles/cards/60020.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "60021",
+      "faces": [
+        {
+          "name": "Dagger",
+          "subname": "Tandy Bowen",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60021.jpg",
+            "https://marvelcdb.com/bundles/cards/60021.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "60022",
+      "faces": [
+        {
+          "name": "Ghost Rider",
+          "subname": "Johnny Blaze",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60022.jpg",
+            "https://marvelcdb.com/bundles/cards/60022.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "60023",
+      "faces": [
+        {
+          "name": "Know Your Enemy",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60023.jpg",
+            "https://marvelcdb.com/bundles/cards/60023.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "60024",
+      "faces": [
+        {
+          "name": "De-escalation",
+          "type": "player_side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60024.jpg",
+            "https://marvelcdb.com/bundles/cards/60024.jpg"
+          ],
+          "startingThreat": {
+            "value": 4,
+            "perPlayer": false
+          }
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "60026",
+      "faces": [
+        {
+          "name": "Legal Trouble",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60026.jpg",
+            "https://marvelcdb.com/bundles/cards/60026.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "60027",
+      "faces": [
+        {
+          "name": "Move in Shadow",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60027.jpg",
+            "https://marvelcdb.com/bundles/cards/60027.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "60028",
+      "faces": [
+        {
+          "name": "Stealth Training",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60028.jpg",
+            "https://marvelcdb.com/bundles/cards/60028.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "60029",
+      "faces": [
+        {
+          "name": "Stick",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60029.jpg",
+            "https://marvelcdb.com/bundles/cards/60029.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "60030",
+      "faces": [
+        {
+          "name": "Contingency Planning",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60030.jpg",
+            "https://marvelcdb.com/bundles/cards/60030.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "60031",
+      "faces": [
+        {
+          "name": "Dance with the Devil",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60031.jpg",
+            "https://marvelcdb.com/bundles/cards/60031.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "60032",
+      "faces": [
+        {
+          "name": "Sensory Overload",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60032.jpg",
+            "https://marvelcdb.com/bundles/cards/60032.jpg"
+          ]
+        }
+      ],
+      "set": "daredevil",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60033",
+      "faces": [
+        {
+          "name": "Bullseye",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60033.jpg",
+            "https://marvelcdb.com/bundles/cards/60033.jpg"
+          ]
+        }
+      ],
+      "set": "daredevil_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60034",
+      "faces": [
+        {
+          "name": "Deadliest Man Alive",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60034.jpg",
+            "https://marvelcdb.com/bundles/cards/60034.jpg"
+          ],
+          "startingThreat": {
+            "value": 5,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "daredevil_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60035",
+      "faces": [
+        {
+          "name": "Stolen Sai",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60035.jpg",
+            "https://marvelcdb.com/bundles/cards/60035.jpg"
+          ]
+        }
+      ],
+      "set": "daredevil_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60036",
+      "faces": [
+        {
+          "name": "Eye on the Target",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60036.jpg",
+            "https://marvelcdb.com/bundles/cards/60036.jpg"
+          ]
+        }
+      ],
+      "set": "daredevil_nemesis",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "60037",
+      "faces": [
+        {
+          "name": "Echo",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60037A.jpg",
+            "https://marvelcdb.com/bundles/cards/60037a.png"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "Maya Lopez",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60037B.jpg",
+            "https://marvelcdb.com/bundles/cards/60037b.png"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "echo",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "60037a",
+        "60037b"
+      ]
+    },
+    {
+      "code": "60038",
+      "faces": [
+        {
+          "name": "Innate Reflexes",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60038.jpg",
+            "https://marvelcdb.com/bundles/cards/60038.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "60039",
+      "faces": [
+        {
+          "name": "Daredevil",
+          "subname": "Matt Murdock",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60039.jpg",
+            "https://marvelcdb.com/bundles/cards/60039.jpg"
+          ]
+        }
+      ],
+      "set": "echo",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "60040",
+      "faces": [
+        {
+          "name": "Photographic Reflexes",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60040A.jpg"
+          ]
+        },
+        {
+          "name": "Photographic Reflexes",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60040B.jpg"
+          ]
+        },
+        {
+          "name": "Photographic Reflexes",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60040C.jpg"
+          ]
+        }
+      ],
+      "set": "echo",
+      "back": "player",
+      "quantity": 2,
+      "aliases": [
+        "60040a",
+        "60040b",
+        "60040c"
+      ]
+    },
+    {
+      "code": "60041",
+      "faces": [
+        {
+          "name": "Study the Tape",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60041.jpg",
+            "https://marvelcdb.com/bundles/cards/60041.jpg"
+          ]
+        }
+      ],
+      "set": "echo",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "60042",
+      "faces": [
+        {
+          "name": "The Rez",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60042.jpg",
+            "https://marvelcdb.com/bundles/cards/60042.jpg"
+          ]
+        }
+      ],
+      "set": "echo",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "60043",
+      "faces": [
+        {
+          "name": "American Sign Language",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60043.jpg",
+            "https://marvelcdb.com/bundles/cards/60043.jpg"
+          ]
+        }
+      ],
+      "set": "echo",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "60044",
+      "faces": [
+        {
+          "name": "Choreography",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60044.jpg",
+            "https://marvelcdb.com/bundles/cards/60044.jpg"
+          ]
+        }
+      ],
+      "set": "echo",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "60045",
+      "faces": [
+        {
+          "name": "Echo's Katana",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60045.jpg",
+            "https://marvelcdb.com/bundles/cards/60045.jpg"
+          ]
+        }
+      ],
+      "set": "echo",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "60046",
+      "faces": [
+        {
+          "name": "Improvisation",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60046.jpg",
+            "https://marvelcdb.com/bundles/cards/60046.jpg"
+          ]
+        }
+      ],
+      "set": "echo",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "60047",
+      "faces": [
+        {
+          "name": "Muscle Memory",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60047.jpg",
+            "https://marvelcdb.com/bundles/cards/60047.jpg"
+          ]
+        }
+      ],
+      "set": "echo",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "60048",
+      "faces": [
+        {
+          "name": "Army of One",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60048.jpg",
+            "https://marvelcdb.com/bundles/cards/60048.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "60049",
+      "faces": [
+        {
+          "name": "Get Their Attention",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60049.jpg",
+            "https://marvelcdb.com/bundles/cards/60049.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "60050",
+      "faces": [
+        {
+          "name": "In Harm's Way",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60050.jpg",
+            "https://marvelcdb.com/bundles/cards/60050.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "60052",
+      "faces": [
+        {
+          "name": "The Best Offense...",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60052.jpg",
+            "https://marvelcdb.com/bundles/cards/60052.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "60053",
+      "faces": [
+        {
+          "name": "Ronin",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60053.jpg",
+            "https://marvelcdb.com/bundles/cards/60053.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "60054",
+      "faces": [
+        {
+          "name": "Stand Alone",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60054.jpg",
+            "https://marvelcdb.com/bundles/cards/60054.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "60055",
+      "faces": [
+        {
+          "name": "See No Evil, Hear No Evil",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60055.jpg",
+            "https://marvelcdb.com/bundles/cards/60055.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "60060",
+      "faces": [
+        {
+          "name": "Raised by the Kingpin",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60060.jpg",
+            "https://marvelcdb.com/bundles/cards/60060.jpg"
+          ]
+        }
+      ],
+      "set": "echo",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60061",
+      "faces": [
+        {
+          "name": "Kingpin",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60061.jpg",
+            "https://marvelcdb.com/bundles/cards/60061.jpg"
+          ]
+        }
+      ],
+      "set": "echo_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60062",
+      "faces": [
+        {
+          "name": "Master Manipulator",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60062.jpg",
+            "https://marvelcdb.com/bundles/cards/60062.jpg"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "echo_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60063",
+      "faces": [
+        {
+          "name": "Kingpin's Henchman",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60063.jpg",
+            "https://marvelcdb.com/bundles/cards/60063.jpg"
+          ]
+        }
+      ],
+      "set": "echo_nemesis",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "60064",
+      "faces": [
+        {
+          "name": "Pawn of the Kingpin",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60064.jpg",
+            "https://marvelcdb.com/bundles/cards/60064.jpg"
+          ]
+        }
+      ],
+      "set": "echo_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    }
+  ],
+  "sets": [
+    {
+      "code": "daredevil",
+      "name": "Daredevil",
+      "kind": "hero",
+      "cards": [
+        "60001",
+        "60007",
+        "60008",
+        "60009",
+        "60010",
+        "60011",
+        "60012",
+        "60013",
+        "60014",
+        "60015",
+        "60016",
+        "60017",
+        "60018",
+        "60032"
+      ]
+    },
+    {
+      "code": "daredevil_nemesis",
+      "name": "Daredevil Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "60033",
+        "60034",
+        "60035",
+        "60036"
+      ]
+    },
+    {
+      "code": "daredevil_sense_deck",
+      "name": "Sense Deck",
+      "kind": "hero_special",
+      "cards": [
+        "60002",
+        "60003",
+        "60004",
+        "60005",
+        "60006"
+      ]
+    },
+    {
+      "code": "echo",
+      "name": "Echo",
+      "kind": "hero",
+      "cards": [
+        "60037",
+        "60039",
+        "60040",
+        "60041",
+        "60042",
+        "60043",
+        "60044",
+        "60045",
+        "60046",
+        "60047",
+        "60060"
+      ]
+    },
+    {
+      "code": "echo_nemesis",
+      "name": "Echo Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "60061",
+        "60062",
+        "60063",
+        "60064"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "60001",
+      "set": "daredevil",
+      "obligation": "60032",
+      "nemesis": "daredevil_nemesis"
+    },
+    {
+      "identity": "60037",
+      "set": "echo",
+      "obligation": "60060",
+      "nemesis": "echo_nemesis"
+    }
+  ]
+}

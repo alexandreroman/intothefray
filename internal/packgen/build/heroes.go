@@ -66,10 +66,17 @@ func BuildHeroes(mc []marvelcdb.Card) map[string][]pack.Hero {
 	}
 
 	heroes := make(map[string][]pack.Hero)
+	seen := make(map[string]bool)
 	for _, card := range sortedByCode(mc) {
 		if card.DuplicateOf != "" || card.TypeCode != "hero" {
 			continue
 		}
+		// Both faces of a hero such as Ant-Man (12001a, 12001b) are "hero"
+		// cards: emit the identity only once.
+		if seen[baseCode(card.Code)] {
+			continue
+		}
+		seen[baseCode(card.Code)] = true
 
 		hero := pack.Hero{
 			Identity:   baseCode(card.Code),

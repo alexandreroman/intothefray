@@ -1,0 +1,1454 @@
+{
+  "code": "tt",
+  "name": "Trickster Takeover",
+  "position": 55,
+  "cards": [
+    {
+      "code": "55001",
+      "faces": [
+        {
+          "name": "Enchantress",
+          "type": "villain",
+          "stage": "I",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55001.jpg",
+            "https://marvelcdb.com/bundles/cards/55001.jpg"
+          ]
+        }
+      ],
+      "set": "enchantress_villain",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "55002",
+      "faces": [
+        {
+          "name": "Enchantress",
+          "type": "villain",
+          "stage": "II",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55002.jpg",
+            "https://marvelcdb.com/bundles/cards/55002.jpg"
+          ]
+        }
+      ],
+      "set": "enchantress_villain",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "55003",
+      "faces": [
+        {
+          "name": "Enchantress",
+          "type": "villain",
+          "stage": "III",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55003.jpg",
+            "https://marvelcdb.com/bundles/cards/55003.jpg"
+          ]
+        }
+      ],
+      "set": "enchantress_villain",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "55004",
+      "faces": [
+        {
+          "name": "Prime Real Estate",
+          "type": "main_scheme",
+          "stage": "1A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55004A.jpg"
+          ]
+        },
+        {
+          "name": "Prime Real Estate",
+          "type": "main_scheme",
+          "stage": "1B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55004B.jpg"
+          ],
+          "startingThreat": {
+            "value": 1,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "enchantress_villain",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "55004a",
+        "55004b"
+      ]
+    },
+    {
+      "code": "55005",
+      "faces": [
+        {
+          "name": "Sovereign Sorceress",
+          "type": "main_scheme",
+          "stage": "2A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55005A.jpg"
+          ]
+        },
+        {
+          "name": "Sovereign Sorceress",
+          "type": "main_scheme",
+          "stage": "2B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55005B.jpg"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "enchantress_villain",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "55005a",
+        "55005b"
+      ]
+    },
+    {
+      "code": "55006",
+      "faces": [
+        {
+          "name": "Future of Despair",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55006.jpg",
+            "https://marvelcdb.com/bundles/cards/55006.jpg"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "enchantress_villain",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "55007",
+      "faces": [
+        {
+          "name": "Hypnotic Gaze",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55007A.jpg"
+          ]
+        },
+        {
+          "name": "Trance of Envy",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55007B.jpg"
+          ]
+        }
+      ],
+      "set": "enchantress_villain",
+      "back": "encounter",
+      "quantity": 1,
+      "aliases": [
+        "55007a",
+        "55007b"
+      ]
+    },
+    {
+      "code": "55008",
+      "faces": [
+        {
+          "name": "Hypnotic Gaze",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55008A.jpg"
+          ]
+        },
+        {
+          "name": "Trance of Greed",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55008B.jpg"
+          ]
+        }
+      ],
+      "set": "enchantress_villain",
+      "back": "encounter",
+      "quantity": 1,
+      "aliases": [
+        "55008a",
+        "55008b"
+      ]
+    },
+    {
+      "code": "55009",
+      "faces": [
+        {
+          "name": "Hypnotic Gaze",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55009A.jpg"
+          ]
+        },
+        {
+          "name": "Trance of Pride",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55009B.jpg"
+          ]
+        }
+      ],
+      "set": "enchantress_villain",
+      "back": "encounter",
+      "quantity": 1,
+      "aliases": [
+        "55009a",
+        "55009b"
+      ]
+    },
+    {
+      "code": "55010",
+      "faces": [
+        {
+          "name": "Hypnotic Gaze",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55010A.jpg"
+          ]
+        },
+        {
+          "name": "Trance of Sloth",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55010B.jpg"
+          ]
+        }
+      ],
+      "set": "enchantress_villain",
+      "back": "encounter",
+      "quantity": 1,
+      "aliases": [
+        "55010a",
+        "55010b"
+      ]
+    },
+    {
+      "code": "55011",
+      "faces": [
+        {
+          "name": "Hypnotic Gaze",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55011A.jpg"
+          ]
+        },
+        {
+          "name": "Trance of Wrath",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55011B.jpg"
+          ]
+        }
+      ],
+      "set": "enchantress_villain",
+      "back": "encounter",
+      "quantity": 1,
+      "aliases": [
+        "55011a",
+        "55011b"
+      ]
+    },
+    {
+      "code": "55012",
+      "faces": [
+        {
+          "name": "Alluring Call",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55012.jpg",
+            "https://marvelcdb.com/bundles/cards/55012.jpg"
+          ]
+        }
+      ],
+      "set": "enchantress_villain",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "55013",
+      "faces": [
+        {
+          "name": "Kiss of Temptation",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55013.jpg",
+            "https://marvelcdb.com/bundles/cards/55013.jpg"
+          ]
+        }
+      ],
+      "set": "enchantress_villain",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "55014",
+      "faces": [
+        {
+          "name": "Love Concoction",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55014.jpg",
+            "https://marvelcdb.com/bundles/cards/55014.jpg"
+          ]
+        }
+      ],
+      "set": "enchantress_villain",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "55015",
+      "faces": [
+        {
+          "name": "Seduced",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/55015.jpg"
+          ]
+        }
+      ],
+      "set": "enchantress_villain",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "55016",
+      "faces": [
+        {
+          "name": "Crown of the Enchantress",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55016.jpg",
+            "https://marvelcdb.com/bundles/cards/55016.jpg"
+          ]
+        }
+      ],
+      "set": "enchantress_villain",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "55017",
+      "faces": [
+        {
+          "name": "Enthralled Lackey",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55017.jpg",
+            "https://marvelcdb.com/bundles/cards/55017.jpg"
+          ]
+        }
+      ],
+      "set": "enchantress_villain",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "55018",
+      "faces": [
+        {
+          "name": "Enthralled Brute",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55018.jpg",
+            "https://marvelcdb.com/bundles/cards/55018.jpg"
+          ]
+        }
+      ],
+      "set": "enchantress_villain",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "55019",
+      "faces": [
+        {
+          "name": "Sindr",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55019.jpg",
+            "https://marvelcdb.com/bundles/cards/55019.jpg"
+          ]
+        }
+      ],
+      "set": "enchantress_villain",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "55020",
+      "faces": [
+        {
+          "name": "Ulik",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55020.jpg",
+            "https://marvelcdb.com/bundles/cards/55020.jpg"
+          ]
+        }
+      ],
+      "set": "enchantress_villain",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "55021",
+      "faces": [
+        {
+          "name": "Law of Attraction",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55021.jpg",
+            "https://marvelcdb.com/bundles/cards/55021.jpg"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "enchantress_villain",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "55022",
+      "faces": [
+        {
+          "name": "Spellbound",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55022.jpg",
+            "https://marvelcdb.com/bundles/cards/55022.jpg"
+          ],
+          "startingThreat": {
+            "value": 4,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "enchantress_villain",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "55023",
+      "faces": [
+        {
+          "name": "\"Do My Bidding\"",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55023.jpg",
+            "https://marvelcdb.com/bundles/cards/55023.jpg"
+          ]
+        }
+      ],
+      "set": "enchantress_villain",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "55024",
+      "faces": [
+        {
+          "name": "Magical Restraints",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55024.jpg",
+            "https://marvelcdb.com/bundles/cards/55024.jpg"
+          ]
+        }
+      ],
+      "set": "enchantress_villain",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "55025",
+      "faces": [
+        {
+          "name": "Spell Blast",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55025.jpg",
+            "https://marvelcdb.com/bundles/cards/55025.jpg"
+          ]
+        }
+      ],
+      "set": "enchantress_villain",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "55026",
+      "faces": [
+        {
+          "name": "Spell Shards",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55026.jpg",
+            "https://marvelcdb.com/bundles/cards/55026.jpg"
+          ]
+        }
+      ],
+      "set": "enchantress_villain",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "55027",
+      "faces": [
+        {
+          "name": "Loki, God of Lies",
+          "type": "villain",
+          "stage": "1",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55027A.jpg"
+          ]
+        },
+        {
+          "name": "Loki, God of Lies",
+          "type": "villain",
+          "stage": "2",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55027B.jpg"
+          ]
+        }
+      ],
+      "set": "god_of_lies",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "55027a",
+        "55027b"
+      ]
+    },
+    {
+      "code": "55028",
+      "faces": [
+        {
+          "name": "Worlds Collide",
+          "type": "main_scheme",
+          "stage": "A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55028A.jpg"
+          ]
+        },
+        {
+          "name": "Worlds Collide",
+          "type": "main_scheme",
+          "stage": "B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55028B.jpg"
+          ]
+        }
+      ],
+      "set": "god_of_lies",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "55028a",
+        "55028b"
+      ]
+    },
+    {
+      "code": "55029",
+      "faces": [
+        {
+          "name": "Loki the Rascal",
+          "type": "villain",
+          "stage": "A1",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55029A.jpg"
+          ]
+        },
+        {
+          "name": "Fading Figment",
+          "type": "villain",
+          "stage": "A2",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55029B.jpg"
+          ]
+        }
+      ],
+      "set": "god_of_lies",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "55029a",
+        "55029b"
+      ]
+    },
+    {
+      "code": "55030",
+      "faces": [
+        {
+          "name": "Loki the Miscreant",
+          "type": "villain",
+          "stage": "B1",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55030A.jpg"
+          ]
+        },
+        {
+          "name": "Fading Figment",
+          "type": "villain",
+          "stage": "B2",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55030B.jpg"
+          ]
+        }
+      ],
+      "set": "god_of_lies",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "55030a",
+        "55030b"
+      ]
+    },
+    {
+      "code": "55031",
+      "faces": [
+        {
+          "name": "Loki the Knave",
+          "type": "villain",
+          "stage": "C1",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55031A.jpg"
+          ]
+        },
+        {
+          "name": "Fading Figment",
+          "type": "villain",
+          "stage": "C2",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55031B.jpg"
+          ]
+        }
+      ],
+      "set": "god_of_lies",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "55031a",
+        "55031b"
+      ]
+    },
+    {
+      "code": "55032",
+      "faces": [
+        {
+          "name": "Loki the Wretch",
+          "type": "villain",
+          "stage": "D1",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55032A.jpg"
+          ]
+        },
+        {
+          "name": "Fading Figment",
+          "type": "villain",
+          "stage": "D2",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55032B.jpg"
+          ]
+        }
+      ],
+      "set": "god_of_lies",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "55032a",
+        "55032b"
+      ]
+    },
+    {
+      "code": "55033",
+      "faces": [
+        {
+          "name": "Mischief and Mayhem",
+          "type": "main_scheme",
+          "stage": "1A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55033A.jpg"
+          ]
+        },
+        {
+          "name": "Mischief and Mayhem",
+          "type": "main_scheme",
+          "stage": "1B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55033B.jpg"
+          ],
+          "startingThreat": {
+            "value": 0,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "god_of_lies",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "55033a",
+        "55033b"
+      ]
+    },
+    {
+      "code": "55034",
+      "faces": [
+        {
+          "name": "Intense Focus",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55034A.jpg"
+          ]
+        },
+        {
+          "name": "Total Focus",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55034B.jpg"
+          ]
+        }
+      ],
+      "set": "god_of_lies",
+      "back": "encounter",
+      "quantity": 1,
+      "aliases": [
+        "55034a",
+        "55034b"
+      ]
+    },
+    {
+      "code": "55035",
+      "faces": [
+        {
+          "name": "Wrapped in Chains",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55035.jpg",
+            "https://marvelcdb.com/bundles/cards/55035.jpg"
+          ]
+        }
+      ],
+      "set": "god_of_lies",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "55036",
+      "faces": [
+        {
+          "name": "Dark Scepter",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55036.jpg",
+            "https://marvelcdb.com/bundles/cards/55036.jpg"
+          ]
+        }
+      ],
+      "set": "god_of_lies",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "55037",
+      "faces": [
+        {
+          "name": "Draugr Buddy",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55037.jpg",
+            "https://marvelcdb.com/bundles/cards/55037.jpg"
+          ]
+        }
+      ],
+      "set": "god_of_lies",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "55038",
+      "faces": [
+        {
+          "name": "Grendell",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55038.jpg",
+            "https://marvelcdb.com/bundles/cards/55038.jpg"
+          ]
+        }
+      ],
+      "set": "god_of_lies",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "55039",
+      "faces": [
+        {
+          "name": "Malekith",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55039.jpg",
+            "https://marvelcdb.com/bundles/cards/55039.jpg"
+          ]
+        }
+      ],
+      "set": "god_of_lies",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "55040",
+      "faces": [
+        {
+          "name": "Minotaur",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55040.jpg",
+            "https://marvelcdb.com/bundles/cards/55040.jpg"
+          ]
+        }
+      ],
+      "set": "god_of_lies",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "55041",
+      "faces": [
+        {
+          "name": "The Mangog",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55041.jpg",
+            "https://marvelcdb.com/bundles/cards/55041.jpg"
+          ]
+        }
+      ],
+      "set": "god_of_lies",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "55042",
+      "faces": [
+        {
+          "name": "Fenris Wolf",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55042.jpg",
+            "https://marvelcdb.com/bundles/cards/55042.jpg"
+          ]
+        }
+      ],
+      "set": "god_of_lies",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "55043",
+      "faces": [
+        {
+          "name": "Hraesvelgr",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55043.jpg",
+            "https://marvelcdb.com/bundles/cards/55043.jpg"
+          ]
+        }
+      ],
+      "set": "god_of_lies",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "55044",
+      "faces": [
+        {
+          "name": "Laufey",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55044.jpg",
+            "https://marvelcdb.com/bundles/cards/55044.jpg"
+          ]
+        }
+      ],
+      "set": "god_of_lies",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "55045",
+      "faces": [
+        {
+          "name": "Aura of Stasis",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55045.jpg",
+            "https://marvelcdb.com/bundles/cards/55045.jpg"
+          ],
+          "startingThreat": {
+            "value": 4,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "god_of_lies",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "55046",
+      "faces": [
+        {
+          "name": "Door Between Worlds",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55046.jpg",
+            "https://marvelcdb.com/bundles/cards/55046.jpg"
+          ],
+          "startingThreat": {
+            "value": 7,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "god_of_lies",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "55047",
+      "faces": [
+        {
+          "name": "Lofty Goals",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55047.jpg",
+            "https://marvelcdb.com/bundles/cards/55047.jpg"
+          ],
+          "startingThreat": {
+            "value": 5,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "god_of_lies",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "55048",
+      "faces": [
+        {
+          "name": "New Jotunheim",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55048.jpg",
+            "https://marvelcdb.com/bundles/cards/55048.jpg"
+          ],
+          "startingThreat": {
+            "value": 6,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "god_of_lies",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "55049",
+      "faces": [
+        {
+          "name": "Dark Arts",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55049.jpg",
+            "https://marvelcdb.com/bundles/cards/55049.jpg"
+          ]
+        }
+      ],
+      "set": "god_of_lies",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "55050",
+      "faces": [
+        {
+          "name": "Dirty Trick",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55050.jpg",
+            "https://marvelcdb.com/bundles/cards/55050.jpg"
+          ]
+        }
+      ],
+      "set": "god_of_lies",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "55051",
+      "faces": [
+        {
+          "name": "Stories and Lies",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55051.jpg",
+            "https://marvelcdb.com/bundles/cards/55051.jpg"
+          ]
+        }
+      ],
+      "set": "god_of_lies",
+      "back": "encounter",
+      "quantity": 3
+    },
+    {
+      "code": "55052",
+      "faces": [
+        {
+          "name": "Domineering Force",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55052.jpg",
+            "https://marvelcdb.com/bundles/cards/55052.jpg"
+          ]
+        }
+      ],
+      "set": "god_of_lies",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "55053",
+      "faces": [
+        {
+          "name": "Feigned Retreat",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55053.jpg",
+            "https://marvelcdb.com/bundles/cards/55053.jpg"
+          ]
+        }
+      ],
+      "set": "god_of_lies",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "55054",
+      "faces": [
+        {
+          "name": "Mounting Resistance",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55054.jpg",
+            "https://marvelcdb.com/bundles/cards/55054.jpg"
+          ]
+        }
+      ],
+      "set": "god_of_lies",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "55055",
+      "faces": [
+        {
+          "name": "Unified Front",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55055.jpg",
+            "https://marvelcdb.com/bundles/cards/55055.jpg"
+          ]
+        }
+      ],
+      "set": "god_of_lies",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "55056",
+      "faces": [
+        {
+          "name": "Absorbing Man",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55056.jpg",
+            "https://marvelcdb.com/bundles/cards/55056.jpg"
+          ]
+        }
+      ],
+      "set": "trickster_magic",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "55057",
+      "faces": [
+        {
+          "name": "Titania",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55057.jpg",
+            "https://marvelcdb.com/bundles/cards/55057.jpg"
+          ]
+        }
+      ],
+      "set": "trickster_magic",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "55058",
+      "faces": [
+        {
+          "name": "Whirlwind",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55058.jpg",
+            "https://marvelcdb.com/bundles/cards/55058.jpg"
+          ]
+        }
+      ],
+      "set": "trickster_magic",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "55059",
+      "faces": [
+        {
+          "name": "Zzzax",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55059.jpg",
+            "https://marvelcdb.com/bundles/cards/55059.jpg"
+          ]
+        }
+      ],
+      "set": "trickster_magic",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "55060",
+      "faces": [
+        {
+          "name": "The Trickster Tango",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55060.jpg",
+            "https://marvelcdb.com/bundles/cards/55060.jpg"
+          ],
+          "startingThreat": {
+            "value": 4,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "trickster_magic",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "55061",
+      "faces": [
+        {
+          "name": "Puppet Master",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55061.jpg",
+            "https://marvelcdb.com/bundles/cards/55061.jpg"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "trickster_magic",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "55062",
+      "faces": [
+        {
+          "name": "Love Triangle",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55062.jpg",
+            "https://marvelcdb.com/bundles/cards/55062.jpg"
+          ]
+        }
+      ],
+      "set": "trickster_magic",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "55063",
+      "faces": [
+        {
+          "name": "Absorbing Man",
+          "subname": "Carl Creel",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55063.jpg",
+            "https://marvelcdb.com/bundles/cards/55063.jpg"
+          ]
+        }
+      ],
+      "set": "trickster_magic",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "55064",
+      "faces": [
+        {
+          "name": "Titania",
+          "subname": "Mary MacPherran",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55064.jpg",
+            "https://marvelcdb.com/bundles/cards/55064.jpg"
+          ]
+        }
+      ],
+      "set": "trickster_magic",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "55065",
+      "faces": [
+        {
+          "name": "Whirlwind",
+          "subname": "David Cannon",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55065.jpg",
+            "https://marvelcdb.com/bundles/cards/55065.jpg"
+          ]
+        }
+      ],
+      "set": "trickster_magic",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "55066",
+      "faces": [
+        {
+          "name": "Zzzax",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55066.jpg",
+            "https://marvelcdb.com/bundles/cards/55066.jpg"
+          ]
+        }
+      ],
+      "set": "trickster_magic",
+      "back": "encounter",
+      "quantity": 1
+    }
+  ],
+  "sets": [
+    {
+      "code": "enchantress_villain",
+      "name": "Enchantress",
+      "kind": "villain",
+      "cards": [
+        "55001",
+        "55002",
+        "55003",
+        "55004",
+        "55005",
+        "55006",
+        "55007",
+        "55008",
+        "55009",
+        "55010",
+        "55011",
+        "55012",
+        "55013",
+        "55014",
+        "55015",
+        "55016",
+        "55017",
+        "55018",
+        "55019",
+        "55020",
+        "55021",
+        "55022",
+        "55023",
+        "55024",
+        "55025",
+        "55026"
+      ]
+    },
+    {
+      "code": "god_of_lies",
+      "name": "God of Lies",
+      "kind": "villain",
+      "cards": [
+        "55027",
+        "55028",
+        "55029",
+        "55030",
+        "55031",
+        "55032",
+        "55033",
+        "55034",
+        "55035",
+        "55036",
+        "55037",
+        "55038",
+        "55039",
+        "55040",
+        "55041",
+        "55042",
+        "55043",
+        "55044",
+        "55045",
+        "55046",
+        "55047",
+        "55048",
+        "55049",
+        "55050",
+        "55051",
+        "55052",
+        "55053",
+        "55054",
+        "55055"
+      ]
+    },
+    {
+      "code": "trickster_magic",
+      "name": "Trickster Magic",
+      "kind": "modular",
+      "cards": [
+        "55056",
+        "55057",
+        "55058",
+        "55059",
+        "55060",
+        "55061",
+        "55062",
+        "55063",
+        "55064",
+        "55065",
+        "55066"
+      ]
+    }
+  ]
+}

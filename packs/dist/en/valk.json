@@ -1,0 +1,531 @@
+{
+  "code": "valk",
+  "name": "Valkyrie",
+  "position": 25,
+  "cards": [
+    {
+      "code": "25001",
+      "faces": [
+        {
+          "name": "Valkyrie",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25001A.jpg",
+            "https://marvelcdb.com/bundles/cards/25001a.png"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "Brunnhilde",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25001B.jpg",
+            "https://marvelcdb.com/bundles/cards/25001b.png"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "valk",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "25001a",
+        "25001b"
+      ]
+    },
+    {
+      "code": "25002",
+      "faces": [
+        {
+          "name": "Death-Glow",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25002.jpg",
+            "https://marvelcdb.com/bundles/cards/25002.png"
+          ]
+        }
+      ],
+      "set": "valk",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "25003",
+      "faces": [
+        {
+          "name": "Annabelle Riggs",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25003.jpg",
+            "https://marvelcdb.com/bundles/cards/25003.png"
+          ]
+        }
+      ],
+      "set": "valk",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "25004",
+      "faces": [
+        {
+          "name": "Valhalla",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25004.jpg",
+            "https://marvelcdb.com/bundles/cards/25004.png"
+          ]
+        }
+      ],
+      "set": "valk",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "25005",
+      "faces": [
+        {
+          "name": "Valkyrie's Spear",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25005.jpg",
+            "https://marvelcdb.com/bundles/cards/25005.png"
+          ]
+        }
+      ],
+      "set": "valk",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "25006",
+      "faces": [
+        {
+          "name": "Dragonfang",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25006.jpg",
+            "https://marvelcdb.com/bundles/cards/25006.png"
+          ]
+        }
+      ],
+      "set": "valk",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "25007",
+      "faces": [
+        {
+          "name": "Aragorn",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25007.jpg",
+            "https://marvelcdb.com/bundles/cards/25007.png"
+          ]
+        }
+      ],
+      "set": "valk",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "25008",
+      "faces": [
+        {
+          "name": "Flight of the Valkyrior",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25008.jpg",
+            "https://marvelcdb.com/bundles/cards/25008.png"
+          ]
+        }
+      ],
+      "set": "valk",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "25009",
+      "faces": [
+        {
+          "name": "Visit Valhalla",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25009.jpg",
+            "https://marvelcdb.com/bundles/cards/25009.png"
+          ]
+        }
+      ],
+      "set": "valk",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "25010",
+      "faces": [
+        {
+          "name": "Chooser of the Slain",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25010.jpg",
+            "https://marvelcdb.com/bundles/cards/25010.png"
+          ]
+        }
+      ],
+      "set": "valk",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "25011",
+      "faces": [
+        {
+          "name": "Shieldmaiden",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25011.jpg",
+            "https://marvelcdb.com/bundles/cards/25011.png"
+          ]
+        }
+      ],
+      "set": "valk",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "25012",
+      "faces": [
+        {
+          "name": "Have at Thee!",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25012.jpg",
+            "https://marvelcdb.com/bundles/cards/25012.png"
+          ]
+        }
+      ],
+      "set": "valk",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "25013",
+      "faces": [
+        {
+          "name": "Thor",
+          "subname": "Odinson",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25013.jpg",
+            "https://marvelcdb.com/bundles/cards/25013.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "25014",
+      "faces": [
+        {
+          "name": "Throg",
+          "subname": "Puddlegulp",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25014.jpg",
+            "https://marvelcdb.com/bundles/cards/25014.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "25018",
+      "faces": [
+        {
+          "name": "Quick Strike",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25018.jpg",
+            "https://marvelcdb.com/bundles/cards/25018.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "25019",
+      "faces": [
+        {
+          "name": "Smash the Problem",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25019.jpg",
+            "https://marvelcdb.com/bundles/cards/25019.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "25020",
+      "faces": [
+        {
+          "name": "The Best Defense…",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25020.jpg",
+            "https://marvelcdb.com/bundles/cards/25020.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "25023",
+      "faces": [
+        {
+          "name": "The Bifrost",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25023.jpg",
+            "https://marvelcdb.com/bundles/cards/25023.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "25024",
+      "faces": [
+        {
+          "name": "Godlike Stamina",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25024.jpg",
+            "https://marvelcdb.com/bundles/cards/25024.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "25028",
+      "faces": [
+        {
+          "name": "Trouble in Otherworld",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25028.jpg",
+            "https://marvelcdb.com/bundles/cards/25028.png"
+          ]
+        }
+      ],
+      "set": "valk",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "25029",
+      "faces": [
+        {
+          "name": "Enchantress",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/25029.png"
+          ]
+        }
+      ],
+      "set": "valk_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "25030",
+      "faces": [
+        {
+          "name": "Powerful Enchantments",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25030.jpg",
+            "https://marvelcdb.com/bundles/cards/25030.png"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "valk_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "25031",
+      "faces": [
+        {
+          "name": "Beguiled",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/25031.png"
+          ]
+        }
+      ],
+      "set": "valk_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "25032",
+      "faces": [
+        {
+          "name": "Seduced",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/25032.png"
+          ]
+        }
+      ],
+      "set": "valk_nemesis",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "25033",
+      "faces": [
+        {
+          "name": "Problem Solvers",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25033.jpg",
+            "https://marvelcdb.com/bundles/cards/25033.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "25034",
+      "faces": [
+        {
+          "name": "Leadership Training",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25034.jpg",
+            "https://marvelcdb.com/bundles/cards/25034.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "25035",
+      "faces": [
+        {
+          "name": "Anticipation",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25035.jpg",
+            "https://marvelcdb.com/bundles/cards/25035.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "25036",
+      "faces": [
+        {
+          "name": "Cosmic Alliance",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25036.jpg",
+            "https://marvelcdb.com/bundles/cards/25036.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    }
+  ],
+  "sets": [
+    {
+      "code": "valk",
+      "name": "Valkyrie",
+      "kind": "hero",
+      "cards": [
+        "25001",
+        "25002",
+        "25003",
+        "25004",
+        "25005",
+        "25006",
+        "25007",
+        "25008",
+        "25009",
+        "25010",
+        "25011",
+        "25012",
+        "25028"
+      ]
+    },
+    {
+      "code": "valk_nemesis",
+      "name": "Valkyrie Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "25029",
+        "25030",
+        "25031",
+        "25032"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "25001",
+      "set": "valk",
+      "obligation": "25028",
+      "nemesis": "valk_nemesis"
+    }
+  ]
+}

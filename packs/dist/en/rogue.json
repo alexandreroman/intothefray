@@ -1,0 +1,562 @@
+{
+  "code": "rogue",
+  "name": "Rogue",
+  "position": 38,
+  "cards": [
+    {
+      "code": "38001",
+      "faces": [
+        {
+          "name": "Rogue",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38001A.jpg",
+            "https://marvelcdb.com/bundles/cards/38001a.png"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "Anna Marie",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38001B.jpg",
+            "https://marvelcdb.com/bundles/cards/38001b.png"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "rogue",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "38001a",
+        "38001b"
+      ]
+    },
+    {
+      "code": "38002",
+      "faces": [
+        {
+          "name": "Touched",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38002.jpg",
+            "https://marvelcdb.com/bundles/cards/38002.png"
+          ]
+        }
+      ],
+      "set": "rogue",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "38003",
+      "faces": [
+        {
+          "name": "Gambit",
+          "subname": "Remy LeBeau",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38003.jpg",
+            "https://marvelcdb.com/bundles/cards/38003.png"
+          ]
+        }
+      ],
+      "set": "rogue",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "38004",
+      "faces": [
+        {
+          "name": "Rogue's Jacket",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38004.jpg",
+            "https://marvelcdb.com/bundles/cards/38004.png"
+          ]
+        }
+      ],
+      "set": "rogue",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "38005",
+      "faces": [
+        {
+          "name": "Goin' Rogue",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38005.jpg",
+            "https://marvelcdb.com/bundles/cards/38005.png"
+          ]
+        }
+      ],
+      "set": "rogue",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "38006",
+      "faces": [
+        {
+          "name": "Southern Cross",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38006.jpg",
+            "https://marvelcdb.com/bundles/cards/38006.png"
+          ]
+        }
+      ],
+      "set": "rogue",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "38007",
+      "faces": [
+        {
+          "name": "Energy Transfer",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38007.jpg",
+            "https://marvelcdb.com/bundles/cards/38007.png"
+          ]
+        }
+      ],
+      "set": "rogue",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "38008",
+      "faces": [
+        {
+          "name": "Bulletproof Belle",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38008.jpg",
+            "https://marvelcdb.com/bundles/cards/38008.png"
+          ]
+        }
+      ],
+      "set": "rogue",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "38009",
+      "faces": [
+        {
+          "name": "Superpower Adaptation",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38009.jpg",
+            "https://marvelcdb.com/bundles/cards/38009.png"
+          ]
+        }
+      ],
+      "set": "rogue",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "38010",
+      "faces": [
+        {
+          "name": "Iceman",
+          "subname": "Bobby Drake",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38010.jpg",
+            "https://marvelcdb.com/bundles/cards/38010.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "38011",
+      "faces": [
+        {
+          "name": "Karma",
+          "subname": "Xi'an Coy Manh",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38011.jpg",
+            "https://marvelcdb.com/bundles/cards/38011.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "38012",
+      "faces": [
+        {
+          "name": "Armor",
+          "subname": "Hisako Ichiki",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38012.jpg",
+            "https://marvelcdb.com/bundles/cards/38012.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "38014",
+      "faces": [
+        {
+          "name": "Judoka Skill",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38014.jpg",
+            "https://marvelcdb.com/bundles/cards/38014.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "38016",
+      "faces": [
+        {
+          "name": "Not Today!",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38016.jpg",
+            "https://marvelcdb.com/bundles/cards/38016.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "52015"
+      ]
+    },
+    {
+      "code": "38018",
+      "faces": [
+        {
+          "name": "Moira MacTaggert",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38018.jpg",
+            "https://marvelcdb.com/bundles/cards/38018.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "48022"
+      ]
+    },
+    {
+      "code": "38019",
+      "faces": [
+        {
+          "name": "X-Gene",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38019.jpg",
+            "https://marvelcdb.com/bundles/cards/38019.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "47020"
+      ]
+    },
+    {
+      "code": "38024",
+      "faces": [
+        {
+          "name": "Deadly Touch",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38024.jpg",
+            "https://marvelcdb.com/bundles/cards/38024.png"
+          ]
+        }
+      ],
+      "set": "rogue",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "38025",
+      "faces": [
+        {
+          "name": "Mystique",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38025.jpg",
+            "https://marvelcdb.com/bundles/cards/38025.png"
+          ]
+        }
+      ],
+      "set": "rogue_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "38026",
+      "faces": [
+        {
+          "name": "Mystique's Manipulations",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38026.jpg",
+            "https://marvelcdb.com/bundles/cards/38026.png"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "rogue_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "38027",
+      "faces": [
+        {
+          "name": "Misled",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38027.jpg",
+            "https://marvelcdb.com/bundles/cards/38027.png"
+          ]
+        }
+      ],
+      "set": "rogue_nemesis",
+      "back": "encounter",
+      "quantity": 3
+    },
+    {
+      "code": "38028",
+      "faces": [
+        {
+          "name": "Med Lab",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38028.jpg",
+            "https://marvelcdb.com/bundles/cards/38028.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "38029",
+      "faces": [
+        {
+          "name": "Donald Pierce",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38029.jpg",
+            "https://marvelcdb.com/bundles/cards/38029.png"
+          ]
+        }
+      ],
+      "set": "reavers",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "38030",
+      "faces": [
+        {
+          "name": "Skullbuster",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38030.jpg",
+            "https://marvelcdb.com/bundles/cards/38030.png"
+          ]
+        }
+      ],
+      "set": "reavers",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "38031",
+      "faces": [
+        {
+          "name": "Bonebreaker",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38031.jpg",
+            "https://marvelcdb.com/bundles/cards/38031.png"
+          ]
+        }
+      ],
+      "set": "reavers",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "38032",
+      "faces": [
+        {
+          "name": "Wade Cole",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38032.jpg",
+            "https://marvelcdb.com/bundles/cards/38032.png"
+          ]
+        }
+      ],
+      "set": "reavers",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "38033",
+      "faces": [
+        {
+          "name": "Murray Reese",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38033.jpg",
+            "https://marvelcdb.com/bundles/cards/38033.png"
+          ]
+        }
+      ],
+      "set": "reavers",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "38034",
+      "faces": [
+        {
+          "name": "The Reavers",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38034.jpg",
+            "https://marvelcdb.com/bundles/cards/38034.png"
+          ],
+          "startingThreat": {
+            "value": 5,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "reavers",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "38035",
+      "faces": [
+        {
+          "name": "Cybernetic Enhancements",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38035.jpg",
+            "https://marvelcdb.com/bundles/cards/38035.png"
+          ]
+        }
+      ],
+      "set": "reavers",
+      "back": "encounter",
+      "quantity": 2
+    }
+  ],
+  "sets": [
+    {
+      "code": "reavers",
+      "name": "Reavers",
+      "kind": "modular",
+      "cards": [
+        "38029",
+        "38030",
+        "38031",
+        "38032",
+        "38033",
+        "38034",
+        "38035"
+      ]
+    },
+    {
+      "code": "rogue",
+      "name": "Rogue",
+      "kind": "hero",
+      "cards": [
+        "38001",
+        "38002",
+        "38003",
+        "38004",
+        "38005",
+        "38006",
+        "38007",
+        "38008",
+        "38009",
+        "38024"
+      ]
+    },
+    {
+      "code": "rogue_nemesis",
+      "name": "Rogue Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "38025",
+        "38026",
+        "38027"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "38001",
+      "set": "rogue",
+      "obligation": "38024",
+      "nemesis": "rogue_nemesis"
+    }
+  ]
+}

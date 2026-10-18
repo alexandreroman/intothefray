@@ -1,0 +1,622 @@
+{
+  "code": "silk",
+  "name": "Silk",
+  "position": 52,
+  "cards": [
+    {
+      "code": "52001",
+      "faces": [
+        {
+          "name": "Silk",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52001A.jpg",
+            "https://marvelcdb.com/bundles/cards/52001a.png"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "Cindy Moon",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52001B.jpg",
+            "https://marvelcdb.com/bundles/cards/52001b.png"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "silk",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "52001a",
+        "52001b"
+      ]
+    },
+    {
+      "code": "52002",
+      "faces": [
+        {
+          "name": "Smooth as Silk",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52002.jpg",
+            "https://marvelcdb.com/bundles/cards/52002.jpg"
+          ]
+        }
+      ],
+      "set": "silk",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "52003",
+      "faces": [
+        {
+          "name": "Swinging Silk Kick",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52003.jpg",
+            "https://marvelcdb.com/bundles/cards/52003.jpg"
+          ]
+        }
+      ],
+      "set": "silk",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "52004",
+      "faces": [
+        {
+          "name": "Wallcrawl",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52004.jpg",
+            "https://marvelcdb.com/bundles/cards/52004.jpg"
+          ]
+        }
+      ],
+      "set": "silk",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "52005",
+      "faces": [
+        {
+          "name": "Get the Scoop",
+          "type": "player_side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52005.jpg",
+            "https://marvelcdb.com/bundles/cards/52005.jpg"
+          ],
+          "startingThreat": {
+            "value": 4,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "silk",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "52006",
+      "faces": [
+        {
+          "name": "Albert Moon",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52006.jpg",
+            "https://marvelcdb.com/bundles/cards/52006.jpg"
+          ]
+        }
+      ],
+      "set": "silk",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "52007",
+      "faces": [
+        {
+          "name": "J. Jonah Jameson",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52007.jpg",
+            "https://marvelcdb.com/bundles/cards/52007.jpg"
+          ]
+        }
+      ],
+      "set": "silk",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "52008",
+      "faces": [
+        {
+          "name": "Eidetic Memory",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52008.jpg",
+            "https://marvelcdb.com/bundles/cards/52008.jpg"
+          ]
+        }
+      ],
+      "set": "silk",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "52009",
+      "faces": [
+        {
+          "name": "Organic Webbing",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52009.jpg",
+            "https://marvelcdb.com/bundles/cards/52009.jpg"
+          ]
+        }
+      ],
+      "set": "silk",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "52010",
+      "faces": [
+        {
+          "name": "Outwit",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52010.jpg",
+            "https://marvelcdb.com/bundles/cards/52010.jpg"
+          ]
+        }
+      ],
+      "set": "silk",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "52011",
+      "faces": [
+        {
+          "name": "Spider Claws",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52011.jpg",
+            "https://marvelcdb.com/bundles/cards/52011.jpg"
+          ]
+        }
+      ],
+      "set": "silk",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "52012",
+      "faces": [
+        {
+          "name": "Spider Reflexes",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52012.jpg",
+            "https://marvelcdb.com/bundles/cards/52012.jpg"
+          ]
+        }
+      ],
+      "set": "silk",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "52013",
+      "faces": [
+        {
+          "name": "Scarlet Spider",
+          "subname": "Ben Reilly",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52013.jpg",
+            "https://marvelcdb.com/bundles/cards/52013.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "52014",
+      "faces": [
+        {
+          "name": "Spider-Byte",
+          "subname": "Margo Kess",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52014.jpg",
+            "https://marvelcdb.com/bundles/cards/52014.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "52016",
+      "faces": [
+        {
+          "name": "\"Stop Hitting Yourself\"",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52016.jpg",
+            "https://marvelcdb.com/bundles/cards/52016.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "52017",
+      "faces": [
+        {
+          "name": "Dr. Sinclair",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52017.jpg",
+            "https://marvelcdb.com/bundles/cards/52017.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "52018",
+      "faces": [
+        {
+          "name": "Energy Shield",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52018.jpg",
+            "https://marvelcdb.com/bundles/cards/52018.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "52019",
+      "faces": [
+        {
+          "name": "Ready for a Fight",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52019.jpg",
+            "https://marvelcdb.com/bundles/cards/52019.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "52020",
+      "faces": [
+        {
+          "name": "Stun Gun",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52020.jpg",
+            "https://marvelcdb.com/bundles/cards/52020.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "52021",
+      "faces": [
+        {
+          "name": "Madame Web",
+          "subname": "Julia Carpenter",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52021.jpg",
+            "https://marvelcdb.com/bundles/cards/52021.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "52024",
+      "faces": [
+        {
+          "name": "Investigative Journalism",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52024.jpg",
+            "https://marvelcdb.com/bundles/cards/52024.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "52028",
+      "faces": [
+        {
+          "name": "Silk Sense Overload",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52028.jpg",
+            "https://marvelcdb.com/bundles/cards/52028.jpg"
+          ]
+        }
+      ],
+      "set": "silk",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "52029",
+      "faces": [
+        {
+          "name": "Morlun",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52029.jpg",
+            "https://marvelcdb.com/bundles/cards/52029.jpg"
+          ]
+        }
+      ],
+      "set": "silk_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "52030",
+      "faces": [
+        {
+          "name": "The Great Hunt",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52030.jpg",
+            "https://marvelcdb.com/bundles/cards/52030.jpg"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "silk_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "52031",
+      "faces": [
+        {
+          "name": "Hunting the Spider-Bride",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52031.jpg",
+            "https://marvelcdb.com/bundles/cards/52031.jpg"
+          ]
+        }
+      ],
+      "set": "silk_nemesis",
+      "back": "encounter",
+      "quantity": 3
+    },
+    {
+      "code": "52032",
+      "faces": [
+        {
+          "name": "Spider-Man 2099",
+          "subname": "Miguel O'Hara",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52032.jpg",
+            "https://marvelcdb.com/bundles/cards/52032.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "52033",
+      "faces": [
+        {
+          "name": "Spider-Woman",
+          "subname": "Jessica Drew",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52033.jpg",
+            "https://marvelcdb.com/bundles/cards/52033.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "52034",
+      "faces": [
+        {
+          "name": "Quick Quip",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52034.jpg",
+            "https://marvelcdb.com/bundles/cards/52034.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "52035",
+      "faces": [
+        {
+          "name": "Atlas",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52035.jpg",
+            "https://marvelcdb.com/bundles/cards/52035.jpg"
+          ]
+        }
+      ],
+      "set": "growing_strong",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "52036",
+      "faces": [
+        {
+          "name": "Grow Invulnerable",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52036.jpg",
+            "https://marvelcdb.com/bundles/cards/52036.jpg"
+          ],
+          "startingThreat": {
+            "value": 5,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "growing_strong",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "52037",
+      "faces": [
+        {
+          "name": "Growing Strong",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52037.jpg",
+            "https://marvelcdb.com/bundles/cards/52037.jpg"
+          ]
+        }
+      ],
+      "set": "growing_strong",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "52038",
+      "faces": [
+        {
+          "name": "Titanic Proportions",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52038.jpg",
+            "https://marvelcdb.com/bundles/cards/52038.jpg"
+          ]
+        }
+      ],
+      "set": "growing_strong",
+      "back": "encounter",
+      "quantity": 2
+    }
+  ],
+  "sets": [
+    {
+      "code": "growing_strong",
+      "name": "Growing Strong",
+      "kind": "modular",
+      "cards": [
+        "52035",
+        "52036",
+        "52037",
+        "52038"
+      ]
+    },
+    {
+      "code": "silk",
+      "name": "Silk",
+      "kind": "hero",
+      "cards": [
+        "52001",
+        "52002",
+        "52003",
+        "52004",
+        "52005",
+        "52006",
+        "52007",
+        "52008",
+        "52009",
+        "52010",
+        "52011",
+        "52012",
+        "52028"
+      ]
+    },
+    {
+      "code": "silk_nemesis",
+      "name": "Silk Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "52029",
+        "52030",
+        "52031"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "52001",
+      "set": "silk",
+      "obligation": "52028",
+      "nemesis": "silk_nemesis"
+    }
+  ]
+}

@@ -1,0 +1,4225 @@
+{
+  "code": "cw",
+  "name": "Civil War",
+  "position": 56,
+  "cards": [
+    {
+      "code": "56001",
+      "faces": [
+        {
+          "name": "Tigra",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56001A.jpg",
+            "https://marvelcdb.com/bundles/cards/56001a.png"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "Greer Nelson",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56001B.jpg",
+            "https://marvelcdb.com/bundles/cards/56001b.png"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "tigra",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "56001a",
+        "56001b"
+      ]
+    },
+    {
+      "code": "56002",
+      "faces": [
+        {
+          "name": "Moon Knight",
+          "subname": "Marc Spector",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56002.jpg",
+            "https://marvelcdb.com/bundles/cards/56002.jpg"
+          ]
+        }
+      ],
+      "set": "tigra",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56003",
+      "faces": [
+        {
+          "name": "Precinct HQ",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56003.jpg",
+            "https://marvelcdb.com/bundles/cards/56003.jpg"
+          ]
+        }
+      ],
+      "set": "tigra",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56004",
+      "faces": [
+        {
+          "name": "Cat's Head Amulet",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56004.jpg",
+            "https://marvelcdb.com/bundles/cards/56004.jpg"
+          ]
+        }
+      ],
+      "set": "tigra",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56005",
+      "faces": [
+        {
+          "name": "Sharp Claws",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56005.jpg",
+            "https://marvelcdb.com/bundles/cards/56005.jpg"
+          ]
+        }
+      ],
+      "set": "tigra",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "56006",
+      "faces": [
+        {
+          "name": "Cat-Like Reflexes",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56006.jpg",
+            "https://marvelcdb.com/bundles/cards/56006.jpg"
+          ]
+        }
+      ],
+      "set": "tigra",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "56007",
+      "faces": [
+        {
+          "name": "Hunted",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56007.jpg",
+            "https://marvelcdb.com/bundles/cards/56007.jpg"
+          ]
+        }
+      ],
+      "set": "tigra",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "56008",
+      "faces": [
+        {
+          "name": "Tooth and Claw",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56008.jpg",
+            "https://marvelcdb.com/bundles/cards/56008.jpg"
+          ]
+        }
+      ],
+      "set": "tigra",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "56009",
+      "faces": [
+        {
+          "name": "Feline Senses",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56009.jpg",
+            "https://marvelcdb.com/bundles/cards/56009.jpg"
+          ]
+        }
+      ],
+      "set": "tigra",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "56010",
+      "faces": [
+        {
+          "name": "Two-Gun Kid",
+          "subname": "Matthew Hawk",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56010.jpg",
+            "https://marvelcdb.com/bundles/cards/56010.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56012",
+      "faces": [
+        {
+          "name": "Air Cover",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56012.jpg",
+            "https://marvelcdb.com/bundles/cards/56012.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "56013",
+      "faces": [
+        {
+          "name": "Aggressive Conditioning",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56013.jpg",
+            "https://marvelcdb.com/bundles/cards/56013.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "56016",
+      "faces": [
+        {
+          "name": "Coup de Grâce",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56016.jpg",
+            "https://marvelcdb.com/bundles/cards/56016.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "56017",
+      "faces": [
+        {
+          "name": "Savage Strike",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56017.jpg",
+            "https://marvelcdb.com/bundles/cards/56017.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "56019",
+      "faces": [
+        {
+          "name": "Yellow Jacket",
+          "subname": "Hank Pym",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56019.jpg",
+            "https://marvelcdb.com/bundles/cards/56019.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56023",
+      "faces": [
+        {
+          "name": "In Too Deep",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56023.jpg",
+            "https://marvelcdb.com/bundles/cards/56023.jpg"
+          ]
+        }
+      ],
+      "set": "tigra",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56024",
+      "faces": [
+        {
+          "name": "The Hood",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56024.jpg",
+            "https://marvelcdb.com/bundles/cards/56024.jpg"
+          ]
+        }
+      ],
+      "set": "tigra_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56025",
+      "faces": [
+        {
+          "name": "Criminal Underworld",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56025.jpg",
+            "https://marvelcdb.com/bundles/cards/56025.jpg"
+          ],
+          "startingThreat": {
+            "value": 4,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "tigra_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56026",
+      "faces": [
+        {
+          "name": "The Hood's Mantle",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56026.jpg",
+            "https://marvelcdb.com/bundles/cards/56026.jpg"
+          ]
+        }
+      ],
+      "set": "tigra_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56027",
+      "faces": [
+        {
+          "name": "Madame Masque",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56027.jpg",
+            "https://marvelcdb.com/bundles/cards/56027.jpg"
+          ]
+        }
+      ],
+      "set": "tigra_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56028",
+      "faces": [
+        {
+          "name": "Jigsaw",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56028.jpg",
+            "https://marvelcdb.com/bundles/cards/56028.jpg"
+          ]
+        }
+      ],
+      "set": "tigra_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56029",
+      "faces": [
+        {
+          "name": "Hulkling",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56029A.jpg",
+            "https://marvelcdb.com/bundles/cards/56029a.png"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "Teddy Altman",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56029B.jpg",
+            "https://marvelcdb.com/bundles/cards/56029b.png"
+          ],
+          "handSize": 5
+        }
+      ],
+      "set": "hulkling",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "56029a",
+        "56029b"
+      ]
+    },
+    {
+      "code": "56030",
+      "faces": [
+        {
+          "name": "Wiccan",
+          "subname": "William Kaplan",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56030.jpg",
+            "https://marvelcdb.com/bundles/cards/56030.jpg"
+          ]
+        }
+      ],
+      "set": "hulkling",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56031",
+      "faces": [
+        {
+          "name": "Altman Residence",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56031.jpg",
+            "https://marvelcdb.com/bundles/cards/56031.jpg"
+          ]
+        }
+      ],
+      "set": "hulkling",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56032",
+      "faces": [
+        {
+          "name": "Winged Shape",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56032.jpg",
+            "https://marvelcdb.com/bundles/cards/56032.jpg"
+          ]
+        }
+      ],
+      "set": "hulkling",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56033",
+      "faces": [
+        {
+          "name": "Hulk Shape",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56033.jpg",
+            "https://marvelcdb.com/bundles/cards/56033.jpg"
+          ]
+        }
+      ],
+      "set": "hulkling",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56034",
+      "faces": [
+        {
+          "name": "Armored Shape",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56034.jpg",
+            "https://marvelcdb.com/bundles/cards/56034.jpg"
+          ]
+        }
+      ],
+      "set": "hulkling",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56035",
+      "faces": [
+        {
+          "name": "Imitation Shape",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56035.jpg",
+            "https://marvelcdb.com/bundles/cards/56035.jpg"
+          ]
+        }
+      ],
+      "set": "hulkling",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56036",
+      "faces": [
+        {
+          "name": "Alien Physiology",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56036.jpg",
+            "https://marvelcdb.com/bundles/cards/56036.jpg"
+          ]
+        }
+      ],
+      "set": "hulkling",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56037",
+      "faces": [
+        {
+          "name": "Shapeshifter Strike",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56037.jpg",
+            "https://marvelcdb.com/bundles/cards/56037.jpg"
+          ]
+        }
+      ],
+      "set": "hulkling",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "56038",
+      "faces": [
+        {
+          "name": "Armored Defense",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56038.jpg",
+            "https://marvelcdb.com/bundles/cards/56038.jpg"
+          ]
+        }
+      ],
+      "set": "hulkling",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "56039",
+      "faces": [
+        {
+          "name": "Impersonation",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56039.jpg",
+            "https://marvelcdb.com/bundles/cards/56039.jpg"
+          ]
+        }
+      ],
+      "set": "hulkling",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "56040",
+      "faces": [
+        {
+          "name": "Shapeshifter",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56040.jpg",
+            "https://marvelcdb.com/bundles/cards/56040.jpg"
+          ]
+        }
+      ],
+      "set": "hulkling",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56041",
+      "faces": [
+        {
+          "name": "Patriot",
+          "subname": "Elijah Bradley",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56041.jpg",
+            "https://marvelcdb.com/bundles/cards/56041.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56043",
+      "faces": [
+        {
+          "name": "Hidden Base",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56043.jpg",
+            "https://marvelcdb.com/bundles/cards/56043.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56045",
+      "faces": [
+        {
+          "name": "Excelsior",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56045.jpg",
+            "https://marvelcdb.com/bundles/cards/56045.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56046",
+      "faces": [
+        {
+          "name": "Defensive Conditioning",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56046.jpg",
+            "https://marvelcdb.com/bundles/cards/56046.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "56047",
+      "faces": [
+        {
+          "name": "\"I Can Do This All Day\"",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56047.jpg",
+            "https://marvelcdb.com/bundles/cards/56047.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "56050",
+      "faces": [
+        {
+          "name": "Cuts Both Ways",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56050.jpg",
+            "https://marvelcdb.com/bundles/cards/56050.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "56052",
+      "faces": [
+        {
+          "name": "Iron Lad",
+          "subname": "Nathaniel Richards",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56052.jpg",
+            "https://marvelcdb.com/bundles/cards/56052.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56054",
+      "faces": [
+        {
+          "name": "Complicated Lineage",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56054.jpg",
+            "https://marvelcdb.com/bundles/cards/56054.jpg"
+          ]
+        }
+      ],
+      "set": "hulkling",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56055",
+      "faces": [
+        {
+          "name": "Super Skrull",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56055.jpg",
+            "https://marvelcdb.com/bundles/cards/56055.jpg"
+          ]
+        }
+      ],
+      "set": "hulkling_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56056",
+      "faces": [
+        {
+          "name": "Skrull Business",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56056.jpg",
+            "https://marvelcdb.com/bundles/cards/56056.jpg"
+          ],
+          "startingThreat": {
+            "value": 5,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "hulkling_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56057",
+      "faces": [
+        {
+          "name": "Fantastic Powers",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56057.jpg",
+            "https://marvelcdb.com/bundles/cards/56057.jpg"
+          ]
+        }
+      ],
+      "set": "hulkling_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56058",
+      "faces": [
+        {
+          "name": "You're Coming With Me!",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56058.jpg",
+            "https://marvelcdb.com/bundles/cards/56058.jpg"
+          ]
+        }
+      ],
+      "set": "hulkling_nemesis",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "56059",
+      "faces": [
+        {
+          "name": "Iron Man",
+          "type": "leader",
+          "stage": "I",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56059.jpg",
+            "https://marvelcdb.com/bundles/cards/56059.jpg"
+          ]
+        }
+      ],
+      "set": "iron_man_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56060",
+      "faces": [
+        {
+          "name": "Iron Man",
+          "type": "leader",
+          "stage": "II",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56060.jpg",
+            "https://marvelcdb.com/bundles/cards/56060.jpg"
+          ]
+        }
+      ],
+      "set": "iron_man_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56061",
+      "faces": [
+        {
+          "name": "Iron Man",
+          "type": "leader",
+          "stage": "III",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56061.jpg",
+            "https://marvelcdb.com/bundles/cards/56061.jpg"
+          ]
+        }
+      ],
+      "set": "iron_man_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56062",
+      "faces": [
+        {
+          "name": "Iron Man",
+          "type": "leader",
+          "stage": "IV",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56062.jpg",
+            "https://marvelcdb.com/bundles/cards/56062.jpg"
+          ]
+        }
+      ],
+      "set": "iron_man_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56063",
+      "faces": [
+        {
+          "name": "Superhero Registration Act",
+          "type": "main_scheme",
+          "stage": "1A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56063A.jpg"
+          ]
+        },
+        {
+          "name": "Cut Off Support",
+          "type": "main_scheme",
+          "stage": "1B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56063B.jpg"
+          ],
+          "startingThreat": {
+            "value": 0,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "registration",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "56063a",
+        "56063b"
+      ]
+    },
+    {
+      "code": "56064",
+      "faces": [
+        {
+          "name": "Pro-Registration Tactics",
+          "type": "main_scheme",
+          "stage": "2A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56064A.jpg"
+          ]
+        },
+        {
+          "name": "Negative Zone Prison",
+          "type": "main_scheme",
+          "stage": "2B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56064B.jpg"
+          ],
+          "startingThreat": {
+            "value": 0,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "registration",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "56064a",
+        "56064b"
+      ]
+    },
+    {
+      "code": "56065",
+      "faces": [
+        {
+          "name": "Powered Gauntlets",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56065.jpg",
+            "https://marvelcdb.com/bundles/cards/56065.jpg"
+          ]
+        }
+      ],
+      "set": "iron_man_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56066",
+      "faces": [
+        {
+          "name": "Rocket Boots",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56066.jpg",
+            "https://marvelcdb.com/bundles/cards/56066.jpg"
+          ]
+        }
+      ],
+      "set": "iron_man_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56067",
+      "faces": [
+        {
+          "name": "Mark V Helmet",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56067.jpg",
+            "https://marvelcdb.com/bundles/cards/56067.jpg"
+          ]
+        }
+      ],
+      "set": "iron_man_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56068",
+      "faces": [
+        {
+          "name": "Arc Reactor",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56068.jpg",
+            "https://marvelcdb.com/bundles/cards/56068.jpg"
+          ]
+        }
+      ],
+      "set": "iron_man_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56069",
+      "faces": [
+        {
+          "name": "Mark V Armor",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56069.jpg",
+            "https://marvelcdb.com/bundles/cards/56069.jpg"
+          ]
+        }
+      ],
+      "set": "iron_man_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56070",
+      "faces": [
+        {
+          "name": "Repulsor Blast",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56070.jpg",
+            "https://marvelcdb.com/bundles/cards/56070.jpg"
+          ]
+        }
+      ],
+      "set": "iron_man_leader",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "56071",
+      "faces": [
+        {
+          "name": "Supersonic Punch",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56071.jpg",
+            "https://marvelcdb.com/bundles/cards/56071.jpg"
+          ]
+        }
+      ],
+      "set": "iron_man_leader",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "56072",
+      "faces": [
+        {
+          "name": "Stark Tower",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56072.jpg",
+            "https://marvelcdb.com/bundles/cards/56072.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "iron_man_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56073",
+      "faces": [
+        {
+          "name": "Yellow Jacket",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56073.jpg",
+            "https://marvelcdb.com/bundles/cards/56073.jpg"
+          ]
+        }
+      ],
+      "set": "mighty_avengers",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56074",
+      "faces": [
+        {
+          "name": "Wasp",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56074.jpg",
+            "https://marvelcdb.com/bundles/cards/56074.jpg"
+          ]
+        }
+      ],
+      "set": "mighty_avengers",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56075",
+      "faces": [
+        {
+          "name": "U.S. Agent",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56075.jpg",
+            "https://marvelcdb.com/bundles/cards/56075.jpg"
+          ]
+        }
+      ],
+      "set": "mighty_avengers",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56076",
+      "faces": [
+        {
+          "name": "Mighty Avengers",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56076.jpg",
+            "https://marvelcdb.com/bundles/cards/56076.jpg"
+          ]
+        }
+      ],
+      "set": "mighty_avengers",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56077",
+      "faces": [
+        {
+          "name": "Earth's Mightiest Heroes",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56077.jpg",
+            "https://marvelcdb.com/bundles/cards/56077.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "mighty_avengers",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56078",
+      "faces": [
+        {
+          "name": "Doc Samson",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56078.jpg",
+            "https://marvelcdb.com/bundles/cards/56078.jpg"
+          ]
+        }
+      ],
+      "set": "the_initiative",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56079",
+      "faces": [
+        {
+          "name": "Hellcat",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56079.jpg",
+            "https://marvelcdb.com/bundles/cards/56079.jpg"
+          ]
+        }
+      ],
+      "set": "the_initiative",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56080",
+      "faces": [
+        {
+          "name": "Drafted",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56080.jpg",
+            "https://marvelcdb.com/bundles/cards/56080.jpg"
+          ]
+        }
+      ],
+      "set": "the_initiative",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56081",
+      "faces": [
+        {
+          "name": "Mighty Avengers",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/56081.jpg"
+          ]
+        }
+      ],
+      "set": "the_initiative",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56082",
+      "faces": [
+        {
+          "name": "The Fifty State Initiative",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56082.jpg",
+            "https://marvelcdb.com/bundles/cards/56082.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "the_initiative",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56083",
+      "faces": [
+        {
+          "name": "Maria Hill",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56083.jpg",
+            "https://marvelcdb.com/bundles/cards/56083.jpg"
+          ]
+        }
+      ],
+      "set": "maria_hill_modular",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56084",
+      "faces": [
+        {
+          "name": "Life Model Decoy",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56084.jpg",
+            "https://marvelcdb.com/bundles/cards/56084.jpg"
+          ]
+        }
+      ],
+      "set": "maria_hill_modular",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "56085",
+      "faces": [
+        {
+          "name": "Executive Order",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56085.jpg",
+            "https://marvelcdb.com/bundles/cards/56085.jpg"
+          ]
+        }
+      ],
+      "set": "maria_hill_modular",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56086",
+      "faces": [
+        {
+          "name": "S.H.I.E.L.D. Helicarrier",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56086.jpg",
+            "https://marvelcdb.com/bundles/cards/56086.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "maria_hill_modular",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56087",
+      "faces": [
+        {
+          "name": "Venom",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56087.jpg",
+            "https://marvelcdb.com/bundles/cards/56087.jpg"
+          ]
+        }
+      ],
+      "set": "dangerous_recruits",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56088",
+      "faces": [
+        {
+          "name": "Bullseye",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56088.jpg",
+            "https://marvelcdb.com/bundles/cards/56088.jpg"
+          ]
+        }
+      ],
+      "set": "dangerous_recruits",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56089",
+      "faces": [
+        {
+          "name": "Justice Like Lightning",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56089.jpg",
+            "https://marvelcdb.com/bundles/cards/56089.jpg"
+          ]
+        }
+      ],
+      "set": "dangerous_recruits",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56090",
+      "faces": [
+        {
+          "name": "Excessive Force",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56090.jpg",
+            "https://marvelcdb.com/bundles/cards/56090.jpg"
+          ]
+        }
+      ],
+      "set": "dangerous_recruits",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56091",
+      "faces": [
+        {
+          "name": "Dangerous Recruits",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56091.jpg",
+            "https://marvelcdb.com/bundles/cards/56091.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "dangerous_recruits",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56092",
+      "faces": [
+        {
+          "name": "Captain Marvel",
+          "type": "leader",
+          "stage": "I",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56092.jpg",
+            "https://marvelcdb.com/bundles/cards/56092.jpg"
+          ]
+        }
+      ],
+      "set": "captain_marvel_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56093",
+      "faces": [
+        {
+          "name": "Captain Marvel",
+          "type": "leader",
+          "stage": "II",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56093.jpg",
+            "https://marvelcdb.com/bundles/cards/56093.jpg"
+          ]
+        }
+      ],
+      "set": "captain_marvel_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56094",
+      "faces": [
+        {
+          "name": "Captain Marvel",
+          "type": "leader",
+          "stage": "III",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56094.jpg",
+            "https://marvelcdb.com/bundles/cards/56094.jpg"
+          ]
+        }
+      ],
+      "set": "captain_marvel_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56095",
+      "faces": [
+        {
+          "name": "Captain Marvel",
+          "type": "leader",
+          "stage": "IV",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56095.jpg",
+            "https://marvelcdb.com/bundles/cards/56095.jpg"
+          ]
+        }
+      ],
+      "set": "captain_marvel_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56096",
+      "faces": [
+        {
+          "name": "Superhero Registration Act",
+          "type": "main_scheme",
+          "stage": "1A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56096A.jpg"
+          ]
+        },
+        {
+          "name": "S.H.I.E.L.D. Recruits",
+          "type": "main_scheme",
+          "stage": "1B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56096B.jpg"
+          ],
+          "startingThreat": {
+            "value": 0,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "registration",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "56096a",
+        "56096b"
+      ]
+    },
+    {
+      "code": "56097",
+      "faces": [
+        {
+          "name": "Pro-Registration Tactics",
+          "type": "main_scheme",
+          "stage": "2A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56097A.jpg"
+          ]
+        },
+        {
+          "name": "Hunting Rebel Heroes",
+          "type": "main_scheme",
+          "stage": "2B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56097B.jpg"
+          ],
+          "startingThreat": {
+            "value": 0,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "registration",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "56097a",
+        "56097b"
+      ]
+    },
+    {
+      "code": "56098",
+      "faces": [
+        {
+          "name": "Energy Channel",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56098.jpg",
+            "https://marvelcdb.com/bundles/cards/56098.jpg"
+          ]
+        }
+      ],
+      "set": "captain_marvel_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56099",
+      "faces": [
+        {
+          "name": "Captain Marvel's Helmet",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56099.jpg",
+            "https://marvelcdb.com/bundles/cards/56099.jpg"
+          ]
+        }
+      ],
+      "set": "captain_marvel_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56100",
+      "faces": [
+        {
+          "name": "Cosmic Flight",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56100.jpg",
+            "https://marvelcdb.com/bundles/cards/56100.jpg"
+          ]
+        }
+      ],
+      "set": "captain_marvel_leader",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "56101",
+      "faces": [
+        {
+          "name": "Photonic Blast",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56101.jpg",
+            "https://marvelcdb.com/bundles/cards/56101.jpg"
+          ]
+        }
+      ],
+      "set": "captain_marvel_leader",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "56102",
+      "faces": [
+        {
+          "name": "Crisis Interdiction",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56102.jpg",
+            "https://marvelcdb.com/bundles/cards/56102.jpg"
+          ]
+        }
+      ],
+      "set": "captain_marvel_leader",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "56103",
+      "faces": [
+        {
+          "name": "Energy Absorption",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56103.jpg",
+            "https://marvelcdb.com/bundles/cards/56103.jpg"
+          ]
+        }
+      ],
+      "set": "captain_marvel_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56104",
+      "faces": [
+        {
+          "name": "Alpha Flight Station",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56104.jpg",
+            "https://marvelcdb.com/bundles/cards/56104.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "captain_marvel_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56105",
+      "faces": [
+        {
+          "name": "Cape-Killer",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56105.jpg",
+            "https://marvelcdb.com/bundles/cards/56105.jpg"
+          ]
+        }
+      ],
+      "set": "cape_killer",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "56106",
+      "faces": [
+        {
+          "name": "Unregistered Super",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56106.jpg",
+            "https://marvelcdb.com/bundles/cards/56106.jpg"
+          ]
+        }
+      ],
+      "set": "cape_killer",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56107",
+      "faces": [
+        {
+          "name": "Bring Them In",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56107.jpg",
+            "https://marvelcdb.com/bundles/cards/56107.jpg"
+          ]
+        }
+      ],
+      "set": "cape_killer",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56108",
+      "faces": [
+        {
+          "name": "Arrest Order",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56108.jpg",
+            "https://marvelcdb.com/bundles/cards/56108.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "cape_killer",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56109",
+      "faces": [
+        {
+          "name": "S.H.I.E.L.D. Soldier",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56109.jpg",
+            "https://marvelcdb.com/bundles/cards/56109.jpg"
+          ]
+        }
+      ],
+      "set": "martial_law",
+      "back": "encounter",
+      "quantity": 3
+    },
+    {
+      "code": "56110",
+      "faces": [
+        {
+          "name": "Rapid Response",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56110.jpg",
+            "https://marvelcdb.com/bundles/cards/56110.jpg"
+          ]
+        }
+      ],
+      "set": "martial_law",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56111",
+      "faces": [
+        {
+          "name": "S.H.I.E.L.D. Patrol",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56111.jpg",
+            "https://marvelcdb.com/bundles/cards/56111.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "martial_law",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56112",
+      "faces": [
+        {
+          "name": "Colleen Wing",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56112.jpg",
+            "https://marvelcdb.com/bundles/cards/56112.jpg"
+          ]
+        }
+      ],
+      "set": "heroes_for_hire",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56113",
+      "faces": [
+        {
+          "name": "Shang-Chi",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56113.jpg",
+            "https://marvelcdb.com/bundles/cards/56113.jpg"
+          ]
+        }
+      ],
+      "set": "heroes_for_hire",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56114",
+      "faces": [
+        {
+          "name": "Unregistered Super",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/56114.jpg"
+          ]
+        }
+      ],
+      "set": "heroes_for_hire",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56115",
+      "faces": [
+        {
+          "name": "Bounty Hunting",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56115.jpg",
+            "https://marvelcdb.com/bundles/cards/56115.jpg"
+          ]
+        }
+      ],
+      "set": "heroes_for_hire",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56116",
+      "faces": [
+        {
+          "name": "Heroes for Hire",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56116.jpg",
+            "https://marvelcdb.com/bundles/cards/56116.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "heroes_for_hire",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56117",
+      "faces": [
+        {
+          "name": "Paladin",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56117.jpg",
+            "https://marvelcdb.com/bundles/cards/56117.jpg"
+          ]
+        }
+      ],
+      "set": "paladin",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56118",
+      "faces": [
+        {
+          "name": "Paladin's Pistol",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56118.jpg",
+            "https://marvelcdb.com/bundles/cards/56118.jpg"
+          ]
+        }
+      ],
+      "set": "paladin",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "56119",
+      "faces": [
+        {
+          "name": "Bounty Hunting",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/56119.jpg"
+          ]
+        }
+      ],
+      "set": "paladin",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56120",
+      "faces": [
+        {
+          "name": "Government Contractor",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56120.jpg",
+            "https://marvelcdb.com/bundles/cards/56120.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "paladin",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56121",
+      "faces": [
+        {
+          "name": "Superhero Registration Act",
+          "type": "main_scheme",
+          "stage": "1A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56121A.jpg"
+          ]
+        },
+        {
+          "name": "Homeland Security",
+          "type": "main_scheme",
+          "stage": "1B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56121B.jpg"
+          ],
+          "startingThreat": {
+            "value": 0,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "registration",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "56121a",
+        "56121b"
+      ]
+    },
+    {
+      "code": "56122",
+      "faces": [
+        {
+          "name": "Superhero Registration Act",
+          "type": "main_scheme",
+          "stage": "1A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56122A.jpg"
+          ]
+        },
+        {
+          "name": "Public Outrage",
+          "type": "main_scheme",
+          "stage": "1B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56122B.jpg"
+          ],
+          "startingThreat": {
+            "value": 0,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "registration",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "56122a",
+        "56122b"
+      ]
+    },
+    {
+      "code": "56123",
+      "faces": [
+        {
+          "name": "Pro-Registration Tactics",
+          "type": "main_scheme",
+          "stage": "2A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56123A.jpg"
+          ]
+        },
+        {
+          "name": "The Initiative",
+          "type": "main_scheme",
+          "stage": "2B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56123B.jpg"
+          ],
+          "startingThreat": {
+            "value": 0,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "registration",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "56123a",
+        "56123b"
+      ]
+    },
+    {
+      "code": "56124",
+      "faces": [
+        {
+          "name": "Pro-Registration Tactics",
+          "type": "main_scheme",
+          "stage": "2A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56124A.jpg"
+          ]
+        },
+        {
+          "name": "No Going Back",
+          "type": "main_scheme",
+          "stage": "2B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56124B.jpg"
+          ],
+          "startingThreat": {
+            "value": 0,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "registration",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "56124a",
+        "56124b"
+      ]
+    },
+    {
+      "code": "56125",
+      "faces": [
+        {
+          "name": "Righteous Cause",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56125.jpg",
+            "https://marvelcdb.com/bundles/cards/56125.jpg"
+          ]
+        }
+      ],
+      "set": "standard_pvp",
+      "back": "encounter",
+      "quantity": 1,
+      "aliases": [
+        "57036"
+      ]
+    },
+    {
+      "code": "56126",
+      "faces": [
+        {
+          "name": "Whatever It Takes",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56126.jpg",
+            "https://marvelcdb.com/bundles/cards/56126.jpg"
+          ]
+        }
+      ],
+      "set": "standard_pvp",
+      "back": "encounter",
+      "quantity": 1,
+      "aliases": [
+        "57037"
+      ]
+    },
+    {
+      "code": "56127",
+      "faces": [
+        {
+          "name": "Targeted Strike",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56127.jpg",
+            "https://marvelcdb.com/bundles/cards/56127.jpg"
+          ]
+        }
+      ],
+      "set": "standard_pvp",
+      "back": "encounter",
+      "quantity": 2,
+      "aliases": [
+        "57038"
+      ]
+    },
+    {
+      "code": "56128",
+      "faces": [
+        {
+          "name": "Choosing Sides",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56128A.jpg"
+          ],
+          "startingThreat": {
+            "value": 4,
+            "perPlayer": true
+          }
+        },
+        {
+          "name": "Now It's Personal",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56128B.jpg"
+          ]
+        }
+      ],
+      "set": "standard_pvp",
+      "back": "encounter",
+      "quantity": 1,
+      "aliases": [
+        "56128a",
+        "56128b",
+        "57039a",
+        "57039b"
+      ]
+    },
+    {
+      "code": "56129",
+      "faces": [
+        {
+          "name": "The Futurist",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56129.jpg",
+            "https://marvelcdb.com/bundles/cards/56129.jpg"
+          ]
+        }
+      ],
+      "set": "iron_man_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56130",
+      "faces": [
+        {
+          "name": "Target Lock",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56130.jpg",
+            "https://marvelcdb.com/bundles/cards/56130.jpg"
+          ]
+        }
+      ],
+      "set": "iron_man_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56131",
+      "faces": [
+        {
+          "name": "High-Tech Suit",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56131.jpg",
+            "https://marvelcdb.com/bundles/cards/56131.jpg"
+          ]
+        }
+      ],
+      "set": "iron_man_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56132",
+      "faces": [
+        {
+          "name": "Suit Up",
+          "type": "resource",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56132.jpg",
+            "https://marvelcdb.com/bundles/cards/56132.jpg"
+          ]
+        }
+      ],
+      "set": "iron_man_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56133",
+      "faces": [
+        {
+          "name": "Provoked Response",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56133.jpg",
+            "https://marvelcdb.com/bundles/cards/56133.jpg"
+          ]
+        }
+      ],
+      "set": "captain_marvel_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56134",
+      "faces": [
+        {
+          "name": "You Started This",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56134.jpg",
+            "https://marvelcdb.com/bundles/cards/56134.jpg"
+          ]
+        }
+      ],
+      "set": "captain_marvel_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56135",
+      "faces": [
+        {
+          "name": "Alpha Flight Recruit",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56135.jpg",
+            "https://marvelcdb.com/bundles/cards/56135.jpg"
+          ]
+        }
+      ],
+      "set": "captain_marvel_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56136",
+      "faces": [
+        {
+          "name": "Raw Power",
+          "type": "resource",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56136.jpg",
+            "https://marvelcdb.com/bundles/cards/56136.jpg"
+          ]
+        }
+      ],
+      "set": "captain_marvel_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56137",
+      "faces": [
+        {
+          "name": "Captain America",
+          "type": "leader",
+          "stage": "I",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56137.jpg",
+            "https://marvelcdb.com/bundles/cards/56137.jpg"
+          ]
+        }
+      ],
+      "set": "captain_america_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56138",
+      "faces": [
+        {
+          "name": "Captain America",
+          "type": "leader",
+          "stage": "II",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56138.jpg",
+            "https://marvelcdb.com/bundles/cards/56138.jpg"
+          ]
+        }
+      ],
+      "set": "captain_america_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56139",
+      "faces": [
+        {
+          "name": "Captain America",
+          "type": "leader",
+          "stage": "III",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56139.jpg",
+            "https://marvelcdb.com/bundles/cards/56139.jpg"
+          ]
+        }
+      ],
+      "set": "captain_america_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56140",
+      "faces": [
+        {
+          "name": "Captain America",
+          "type": "leader",
+          "stage": "IV",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56140.jpg",
+            "https://marvelcdb.com/bundles/cards/56140.jpg"
+          ]
+        }
+      ],
+      "set": "captain_america_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56141",
+      "faces": [
+        {
+          "name": "Superhero Resistance",
+          "type": "main_scheme",
+          "stage": "1A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56141A.jpg"
+          ]
+        },
+        {
+          "name": "Gathering Support",
+          "type": "main_scheme",
+          "stage": "1B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56141B.jpg"
+          ],
+          "startingThreat": {
+            "value": 0,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "resistance",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "56141a",
+        "56141b"
+      ]
+    },
+    {
+      "code": "56142",
+      "faces": [
+        {
+          "name": "Resistance Tactics",
+          "type": "main_scheme",
+          "stage": "2A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56142A.jpg"
+          ]
+        },
+        {
+          "name": "Secret Avengers",
+          "type": "main_scheme",
+          "stage": "2B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56142B.jpg"
+          ],
+          "startingThreat": {
+            "value": 0,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "resistance",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "56142a",
+        "56142b"
+      ]
+    },
+    {
+      "code": "56143",
+      "faces": [
+        {
+          "name": "Cap's Shield",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56143.jpg",
+            "https://marvelcdb.com/bundles/cards/56143.jpg"
+          ]
+        }
+      ],
+      "set": "captain_america_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56144",
+      "faces": [
+        {
+          "name": "Cap's Helmet",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56144.jpg",
+            "https://marvelcdb.com/bundles/cards/56144.jpg"
+          ]
+        }
+      ],
+      "set": "captain_america_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56145",
+      "faces": [
+        {
+          "name": "Super-Soldier Serum",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56145.jpg",
+            "https://marvelcdb.com/bundles/cards/56145.jpg"
+          ]
+        }
+      ],
+      "set": "captain_america_leader",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "56146",
+      "faces": [
+        {
+          "name": "Shield Block",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56146.jpg",
+            "https://marvelcdb.com/bundles/cards/56146.jpg"
+          ]
+        }
+      ],
+      "set": "captain_america_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56147",
+      "faces": [
+        {
+          "name": "Shield Toss",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56147.jpg",
+            "https://marvelcdb.com/bundles/cards/56147.jpg"
+          ]
+        }
+      ],
+      "set": "captain_america_leader",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "56148",
+      "faces": [
+        {
+          "name": "Heroic Strike",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56148.jpg",
+            "https://marvelcdb.com/bundles/cards/56148.jpg"
+          ]
+        }
+      ],
+      "set": "captain_america_leader",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "56149",
+      "faces": [
+        {
+          "name": "Fearless Determination",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56149.jpg",
+            "https://marvelcdb.com/bundles/cards/56149.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "captain_america_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56150",
+      "faces": [
+        {
+          "name": "Falcon",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56150.jpg",
+            "https://marvelcdb.com/bundles/cards/56150.jpg"
+          ]
+        }
+      ],
+      "set": "new_avengers",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56151",
+      "faces": [
+        {
+          "name": "Hercules",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56151.jpg",
+            "https://marvelcdb.com/bundles/cards/56151.jpg"
+          ]
+        }
+      ],
+      "set": "new_avengers",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56152",
+      "faces": [
+        {
+          "name": "Goliath",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56152.jpg",
+            "https://marvelcdb.com/bundles/cards/56152.jpg"
+          ]
+        }
+      ],
+      "set": "new_avengers",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56153",
+      "faces": [
+        {
+          "name": "Freedom Fighters",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56153.jpg",
+            "https://marvelcdb.com/bundles/cards/56153.jpg"
+          ]
+        }
+      ],
+      "set": "new_avengers",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56154",
+      "faces": [
+        {
+          "name": "New Avengers",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56154.jpg",
+            "https://marvelcdb.com/bundles/cards/56154.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "new_avengers",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56155",
+      "faces": [
+        {
+          "name": "Black Panther",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56155.jpg",
+            "https://marvelcdb.com/bundles/cards/56155.jpg"
+          ]
+        }
+      ],
+      "set": "secret_avengers",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56156",
+      "faces": [
+        {
+          "name": "Spectrum",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56156.jpg",
+            "https://marvelcdb.com/bundles/cards/56156.jpg"
+          ]
+        }
+      ],
+      "set": "secret_avengers",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56157",
+      "faces": [
+        {
+          "name": "Freedom Fighters",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/56157.jpg"
+          ]
+        }
+      ],
+      "set": "secret_avengers",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56158",
+      "faces": [
+        {
+          "name": "Switching Sides",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56158.jpg",
+            "https://marvelcdb.com/bundles/cards/56158.jpg"
+          ]
+        }
+      ],
+      "set": "secret_avengers",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56159",
+      "faces": [
+        {
+          "name": "Secret Avengers",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56159.jpg",
+            "https://marvelcdb.com/bundles/cards/56159.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "secret_avengers",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56160",
+      "faces": [
+        {
+          "name": "Namor",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56160.jpg",
+            "https://marvelcdb.com/bundles/cards/56160.jpg"
+          ]
+        }
+      ],
+      "set": "namor_modular",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56161",
+      "faces": [
+        {
+          "name": "Neptune's Trident",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56161.jpg",
+            "https://marvelcdb.com/bundles/cards/56161.jpg"
+          ]
+        }
+      ],
+      "set": "namor_modular",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56162",
+      "faces": [
+        {
+          "name": "Horn of Proteus",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56162.jpg",
+            "https://marvelcdb.com/bundles/cards/56162.jpg"
+          ]
+        }
+      ],
+      "set": "namor_modular",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56163",
+      "faces": [
+        {
+          "name": "Imperius Rex!",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56163.jpg",
+            "https://marvelcdb.com/bundles/cards/56163.jpg"
+          ]
+        }
+      ],
+      "set": "namor_modular",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56164",
+      "faces": [
+        {
+          "name": "Ruler of Atlantis",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56164.jpg",
+            "https://marvelcdb.com/bundles/cards/56164.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "namor_modular",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56165",
+      "faces": [
+        {
+          "name": "Atlantean Guard",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56165.jpg",
+            "https://marvelcdb.com/bundles/cards/56165.jpg"
+          ]
+        }
+      ],
+      "set": "atlanteans",
+      "back": "encounter",
+      "quantity": 3
+    },
+    {
+      "code": "56166",
+      "faces": [
+        {
+          "name": "Atlanteans",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56166.jpg",
+            "https://marvelcdb.com/bundles/cards/56166.jpg"
+          ]
+        }
+      ],
+      "set": "atlanteans",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56167",
+      "faces": [
+        {
+          "name": "Atlantis Attacks",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56167.jpg",
+            "https://marvelcdb.com/bundles/cards/56167.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "atlanteans",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56168",
+      "faces": [
+        {
+          "name": "Spider-Woman",
+          "type": "leader",
+          "stage": "I",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56168.jpg",
+            "https://marvelcdb.com/bundles/cards/56168.jpg"
+          ]
+        }
+      ],
+      "set": "spider_woman_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56169",
+      "faces": [
+        {
+          "name": "Spider-Woman",
+          "type": "leader",
+          "stage": "II",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56169.jpg",
+            "https://marvelcdb.com/bundles/cards/56169.jpg"
+          ]
+        }
+      ],
+      "set": "spider_woman_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56170",
+      "faces": [
+        {
+          "name": "Spider-Woman",
+          "type": "leader",
+          "stage": "III",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56170.jpg",
+            "https://marvelcdb.com/bundles/cards/56170.jpg"
+          ]
+        }
+      ],
+      "set": "spider_woman_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56171",
+      "faces": [
+        {
+          "name": "Spider-Woman",
+          "type": "leader",
+          "stage": "IV",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56171.jpg",
+            "https://marvelcdb.com/bundles/cards/56171.jpg"
+          ]
+        }
+      ],
+      "set": "spider_woman_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56172",
+      "faces": [
+        {
+          "name": "Superhero Resistance",
+          "type": "main_scheme",
+          "stage": "1A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56172A.jpg"
+          ]
+        },
+        {
+          "name": "Open Rebellion",
+          "type": "main_scheme",
+          "stage": "1B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56172B.jpg"
+          ],
+          "startingThreat": {
+            "value": 0,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "resistance",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "56172a",
+        "56172b"
+      ]
+    },
+    {
+      "code": "56173",
+      "faces": [
+        {
+          "name": "Resistance Tactics",
+          "type": "main_scheme",
+          "stage": "2A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56173A.jpg"
+          ]
+        },
+        {
+          "name": "Neighborhood Protectors",
+          "type": "main_scheme",
+          "stage": "2B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56173B.jpg"
+          ],
+          "startingThreat": {
+            "value": 0,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "resistance",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "56173a",
+        "56173b"
+      ]
+    },
+    {
+      "code": "56174",
+      "faces": [
+        {
+          "name": "Finesse",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56174.jpg",
+            "https://marvelcdb.com/bundles/cards/56174.jpg"
+          ]
+        }
+      ],
+      "set": "spider_woman_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56175",
+      "faces": [
+        {
+          "name": "Contaminant Immunity",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56175.jpg",
+            "https://marvelcdb.com/bundles/cards/56175.jpg"
+          ]
+        }
+      ],
+      "set": "spider_woman_leader",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "56176",
+      "faces": [
+        {
+          "name": "Pheromones",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56176.jpg",
+            "https://marvelcdb.com/bundles/cards/56176.jpg"
+          ]
+        }
+      ],
+      "set": "spider_woman_leader",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "56177",
+      "faces": [
+        {
+          "name": "Venom Blast",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56177.jpg",
+            "https://marvelcdb.com/bundles/cards/56177.jpg"
+          ]
+        }
+      ],
+      "set": "spider_woman_leader",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "56178",
+      "faces": [
+        {
+          "name": "Inconspicuous",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56178.jpg",
+            "https://marvelcdb.com/bundles/cards/56178.jpg"
+          ]
+        }
+      ],
+      "set": "spider_woman_leader",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "56179",
+      "faces": [
+        {
+          "name": "Self-propelled Glide",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56179.jpg",
+            "https://marvelcdb.com/bundles/cards/56179.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "spider_woman_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56180",
+      "faces": [
+        {
+          "name": "Spider-Man",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56180.jpg",
+            "https://marvelcdb.com/bundles/cards/56180.jpg"
+          ]
+        }
+      ],
+      "set": "spider_man_modular",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56181",
+      "faces": [
+        {
+          "name": "Tangled Up",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56181.jpg",
+            "https://marvelcdb.com/bundles/cards/56181.jpg"
+          ]
+        }
+      ],
+      "set": "spider_man_modular",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "56182",
+      "faces": [
+        {
+          "name": "Spectacular!",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56182.jpg",
+            "https://marvelcdb.com/bundles/cards/56182.jpg"
+          ]
+        }
+      ],
+      "set": "spider_man_modular",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56183",
+      "faces": [
+        {
+          "name": "Neighborhood Hero",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56183.jpg",
+            "https://marvelcdb.com/bundles/cards/56183.jpg"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "spider_man_modular",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56184",
+      "faces": [
+        {
+          "name": "Luke Cage",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56184.jpg",
+            "https://marvelcdb.com/bundles/cards/56184.jpg"
+          ]
+        }
+      ],
+      "set": "defenders",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56185",
+      "faces": [
+        {
+          "name": "Jessica Jones",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56185.jpg",
+            "https://marvelcdb.com/bundles/cards/56185.jpg"
+          ]
+        }
+      ],
+      "set": "defenders",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56186",
+      "faces": [
+        {
+          "name": "Protect the Innocent",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56186.jpg",
+            "https://marvelcdb.com/bundles/cards/56186.jpg"
+          ]
+        }
+      ],
+      "set": "defenders",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56187",
+      "faces": [
+        {
+          "name": "Street Defenders",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56187.jpg",
+            "https://marvelcdb.com/bundles/cards/56187.jpg"
+          ]
+        }
+      ],
+      "set": "defenders",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56188",
+      "faces": [
+        {
+          "name": "The Defenders",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56188.jpg",
+            "https://marvelcdb.com/bundles/cards/56188.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "defenders",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56189",
+      "faces": [
+        {
+          "name": "Daredevil",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56189.jpg",
+            "https://marvelcdb.com/bundles/cards/56189.jpg"
+          ]
+        }
+      ],
+      "set": "hells_kitchen",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56190",
+      "faces": [
+        {
+          "name": "Iron Fist",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56190.jpg",
+            "https://marvelcdb.com/bundles/cards/56190.jpg"
+          ]
+        }
+      ],
+      "set": "hells_kitchen",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56191",
+      "faces": [
+        {
+          "name": "Resistance Fighter",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56191.jpg",
+            "https://marvelcdb.com/bundles/cards/56191.jpg"
+          ]
+        }
+      ],
+      "set": "hells_kitchen",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56192",
+      "faces": [
+        {
+          "name": "Street Defenders",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/56192.jpg"
+          ]
+        }
+      ],
+      "set": "hells_kitchen",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56193",
+      "faces": [
+        {
+          "name": "Defend Hell's Kitchen",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56193.jpg",
+            "https://marvelcdb.com/bundles/cards/56193.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "hells_kitchen",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56194",
+      "faces": [
+        {
+          "name": "Cloak",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56194.jpg",
+            "https://marvelcdb.com/bundles/cards/56194.jpg"
+          ]
+        }
+      ],
+      "set": "cloak_and_dagger_modular",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56195",
+      "faces": [
+        {
+          "name": "Dagger",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56195.jpg",
+            "https://marvelcdb.com/bundles/cards/56195.jpg"
+          ]
+        }
+      ],
+      "set": "cloak_and_dagger_modular",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56196",
+      "faces": [
+        {
+          "name": "Darkforce",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56196.jpg",
+            "https://marvelcdb.com/bundles/cards/56196.jpg"
+          ]
+        }
+      ],
+      "set": "cloak_and_dagger_modular",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56197",
+      "faces": [
+        {
+          "name": "Lightforce",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56197.jpg",
+            "https://marvelcdb.com/bundles/cards/56197.jpg"
+          ]
+        }
+      ],
+      "set": "cloak_and_dagger_modular",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56198",
+      "faces": [
+        {
+          "name": "Cloak and Dagger",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56198.jpg",
+            "https://marvelcdb.com/bundles/cards/56198.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "cloak_and_dagger_modular",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "56199",
+      "faces": [
+        {
+          "name": "Superhero Resistance",
+          "type": "main_scheme",
+          "stage": "1A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56199A.jpg"
+          ]
+        },
+        {
+          "name": "Rallying Call",
+          "type": "main_scheme",
+          "stage": "1B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56199B.jpg"
+          ],
+          "startingThreat": {
+            "value": 0,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "resistance",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "56199a",
+        "56199b"
+      ]
+    },
+    {
+      "code": "56200",
+      "faces": [
+        {
+          "name": "Superhero Resistance",
+          "type": "main_scheme",
+          "stage": "1A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56200A.jpg"
+          ]
+        },
+        {
+          "name": "Going Underground",
+          "type": "main_scheme",
+          "stage": "1B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56200B.jpg"
+          ],
+          "startingThreat": {
+            "value": 0,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "resistance",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "56200a",
+        "56200b"
+      ]
+    },
+    {
+      "code": "56201",
+      "faces": [
+        {
+          "name": "Resistance Tactics",
+          "type": "main_scheme",
+          "stage": "2A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56201A.jpg"
+          ]
+        },
+        {
+          "name": "Guerilla Warfare",
+          "type": "main_scheme",
+          "stage": "2B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56201B.jpg"
+          ],
+          "startingThreat": {
+            "value": 0,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "resistance",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "56201a",
+        "56201b"
+      ]
+    },
+    {
+      "code": "56202",
+      "faces": [
+        {
+          "name": "Resistance Tactics",
+          "type": "main_scheme",
+          "stage": "2A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56202A.jpg"
+          ]
+        },
+        {
+          "name": "Superhero Jailbreak",
+          "type": "main_scheme",
+          "stage": "2B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56202B.jpg"
+          ],
+          "startingThreat": {
+            "value": 0,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "resistance",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "56202a",
+        "56202b"
+      ]
+    },
+    {
+      "code": "56203",
+      "faces": [
+        {
+          "name": "Righteous Cause",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/56203.jpg"
+          ]
+        }
+      ],
+      "set": "standard_pvp",
+      "back": "encounter",
+      "quantity": 1,
+      "aliases": [
+        "57078"
+      ]
+    },
+    {
+      "code": "56204",
+      "faces": [
+        {
+          "name": "Whatever It Takes",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/56204.jpg"
+          ]
+        }
+      ],
+      "set": "standard_pvp",
+      "back": "encounter",
+      "quantity": 1,
+      "aliases": [
+        "57079"
+      ]
+    },
+    {
+      "code": "56205",
+      "faces": [
+        {
+          "name": "Targeted Strike",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/56205.jpg"
+          ]
+        }
+      ],
+      "set": "standard_pvp",
+      "back": "encounter",
+      "quantity": 2,
+      "aliases": [
+        "57080"
+      ]
+    },
+    {
+      "code": "56207",
+      "faces": [
+        {
+          "name": "No, You Move!",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56207.jpg",
+            "https://marvelcdb.com/bundles/cards/56207.jpg"
+          ]
+        }
+      ],
+      "set": "captain_america_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56208",
+      "faces": [
+        {
+          "name": "Fighting Dirty",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56208.jpg",
+            "https://marvelcdb.com/bundles/cards/56208.jpg"
+          ]
+        }
+      ],
+      "set": "captain_america_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56209",
+      "faces": [
+        {
+          "name": "Recruited by Cap",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56209.jpg",
+            "https://marvelcdb.com/bundles/cards/56209.jpg"
+          ]
+        }
+      ],
+      "set": "captain_america_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56210",
+      "faces": [
+        {
+          "name": "The People's Hero",
+          "type": "resource",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56210.jpg",
+            "https://marvelcdb.com/bundles/cards/56210.jpg"
+          ]
+        }
+      ],
+      "set": "captain_america_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56211",
+      "faces": [
+        {
+          "name": "Double Agent",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56211.jpg",
+            "https://marvelcdb.com/bundles/cards/56211.jpg"
+          ]
+        }
+      ],
+      "set": "spider_woman_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56212",
+      "faces": [
+        {
+          "name": "Spider-Blast",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56212.jpg",
+            "https://marvelcdb.com/bundles/cards/56212.jpg"
+          ]
+        }
+      ],
+      "set": "spider_woman_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56213",
+      "faces": [
+        {
+          "name": "Hard to Hit",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56213.jpg",
+            "https://marvelcdb.com/bundles/cards/56213.jpg"
+          ]
+        }
+      ],
+      "set": "spider_woman_leader",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "56214",
+      "faces": [
+        {
+          "name": "Secret Contact",
+          "type": "resource",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56214.jpg",
+            "https://marvelcdb.com/bundles/cards/56214.jpg"
+          ]
+        }
+      ],
+      "set": "spider_woman_leader",
+      "back": "player",
+      "quantity": 1
+    }
+  ],
+  "sets": [
+    {
+      "code": "atlanteans",
+      "name": "Atlanteans",
+      "kind": "modular",
+      "cards": [
+        "56165",
+        "56166",
+        "56167"
+      ]
+    },
+    {
+      "code": "cape_killer",
+      "name": "Cape-Killer",
+      "kind": "modular",
+      "cards": [
+        "56105",
+        "56106",
+        "56107",
+        "56108"
+      ]
+    },
+    {
+      "code": "captain_america_leader",
+      "name": "Captain America",
+      "kind": "leader",
+      "cards": [
+        "56137",
+        "56138",
+        "56139",
+        "56140",
+        "56143",
+        "56144",
+        "56145",
+        "56146",
+        "56147",
+        "56148",
+        "56149",
+        "56207",
+        "56208",
+        "56209",
+        "56210"
+      ]
+    },
+    {
+      "code": "captain_marvel_leader",
+      "name": "Captain Marvel",
+      "kind": "leader",
+      "cards": [
+        "56092",
+        "56093",
+        "56094",
+        "56095",
+        "56098",
+        "56099",
+        "56100",
+        "56101",
+        "56102",
+        "56103",
+        "56104",
+        "56133",
+        "56134",
+        "56135",
+        "56136"
+      ]
+    },
+    {
+      "code": "cloak_and_dagger_modular",
+      "name": "Cloak \u0026 Dagger",
+      "kind": "modular",
+      "cards": [
+        "56194",
+        "56195",
+        "56196",
+        "56197",
+        "56198"
+      ]
+    },
+    {
+      "code": "dangerous_recruits",
+      "name": "Dangerous Recruits",
+      "kind": "modular",
+      "cards": [
+        "56087",
+        "56088",
+        "56089",
+        "56090",
+        "56091"
+      ]
+    },
+    {
+      "code": "defenders",
+      "name": "Defenders",
+      "kind": "modular",
+      "cards": [
+        "56184",
+        "56185",
+        "56186",
+        "56187",
+        "56188"
+      ]
+    },
+    {
+      "code": "hells_kitchen",
+      "name": "Hell's Kitchen",
+      "kind": "modular",
+      "cards": [
+        "56189",
+        "56190",
+        "56191",
+        "56192",
+        "56193"
+      ]
+    },
+    {
+      "code": "heroes_for_hire",
+      "name": "Heroes for Hire",
+      "kind": "modular",
+      "cards": [
+        "56112",
+        "56113",
+        "56114",
+        "56115",
+        "56116"
+      ]
+    },
+    {
+      "code": "hulkling",
+      "name": "Hulkling",
+      "kind": "hero",
+      "cards": [
+        "56029",
+        "56030",
+        "56031",
+        "56032",
+        "56033",
+        "56034",
+        "56035",
+        "56036",
+        "56037",
+        "56038",
+        "56039",
+        "56040",
+        "56054"
+      ]
+    },
+    {
+      "code": "hulkling_nemesis",
+      "name": "Hulkling Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "56055",
+        "56056",
+        "56057",
+        "56058"
+      ]
+    },
+    {
+      "code": "iron_man_leader",
+      "name": "Iron Man",
+      "kind": "leader",
+      "cards": [
+        "56059",
+        "56060",
+        "56061",
+        "56062",
+        "56065",
+        "56066",
+        "56067",
+        "56068",
+        "56069",
+        "56070",
+        "56071",
+        "56072",
+        "56129",
+        "56130",
+        "56131",
+        "56132"
+      ]
+    },
+    {
+      "code": "maria_hill_modular",
+      "name": "Maria Hill",
+      "kind": "modular",
+      "cards": [
+        "56083",
+        "56084",
+        "56085",
+        "56086"
+      ]
+    },
+    {
+      "code": "martial_law",
+      "name": "Martial Law",
+      "kind": "modular",
+      "cards": [
+        "56109",
+        "56110",
+        "56111"
+      ]
+    },
+    {
+      "code": "mighty_avengers",
+      "name": "Mighty Avengers",
+      "kind": "modular",
+      "cards": [
+        "56073",
+        "56074",
+        "56075",
+        "56076",
+        "56077"
+      ]
+    },
+    {
+      "code": "namor_modular",
+      "name": "Namor",
+      "kind": "modular",
+      "cards": [
+        "56160",
+        "56161",
+        "56162",
+        "56163",
+        "56164"
+      ]
+    },
+    {
+      "code": "new_avengers",
+      "name": "New Avengers",
+      "kind": "modular",
+      "cards": [
+        "56150",
+        "56151",
+        "56152",
+        "56153",
+        "56154"
+      ]
+    },
+    {
+      "code": "paladin",
+      "name": "Paladin",
+      "kind": "modular",
+      "cards": [
+        "56117",
+        "56118",
+        "56119",
+        "56120"
+      ]
+    },
+    {
+      "code": "registration",
+      "name": "Registration",
+      "kind": "main_scheme",
+      "cards": [
+        "56063",
+        "56064",
+        "56096",
+        "56097",
+        "56121",
+        "56122",
+        "56123",
+        "56124"
+      ]
+    },
+    {
+      "code": "resistance",
+      "name": "Resistance",
+      "kind": "main_scheme",
+      "cards": [
+        "56141",
+        "56142",
+        "56172",
+        "56173",
+        "56199",
+        "56200",
+        "56201",
+        "56202"
+      ]
+    },
+    {
+      "code": "secret_avengers",
+      "name": "Secret Avengers",
+      "kind": "modular",
+      "cards": [
+        "56155",
+        "56156",
+        "56157",
+        "56158",
+        "56159"
+      ]
+    },
+    {
+      "code": "spider_man_modular",
+      "name": "Spider-Man",
+      "kind": "modular",
+      "cards": [
+        "56180",
+        "56181",
+        "56182",
+        "56183"
+      ]
+    },
+    {
+      "code": "spider_woman_leader",
+      "name": "Spider Woman",
+      "kind": "leader",
+      "cards": [
+        "56168",
+        "56169",
+        "56170",
+        "56171",
+        "56174",
+        "56175",
+        "56176",
+        "56177",
+        "56178",
+        "56179",
+        "56211",
+        "56212",
+        "56213",
+        "56214"
+      ]
+    },
+    {
+      "code": "standard_pvp",
+      "name": "Standard PVP",
+      "kind": "standard",
+      "cards": [
+        "56125",
+        "56126",
+        "56127",
+        "56128",
+        "56203",
+        "56204",
+        "56205"
+      ]
+    },
+    {
+      "code": "the_initiative",
+      "name": "The Initiative",
+      "kind": "modular",
+      "cards": [
+        "56078",
+        "56079",
+        "56080",
+        "56081",
+        "56082"
+      ]
+    },
+    {
+      "code": "tigra",
+      "name": "Tigra",
+      "kind": "hero",
+      "cards": [
+        "56001",
+        "56002",
+        "56003",
+        "56004",
+        "56005",
+        "56006",
+        "56007",
+        "56008",
+        "56009",
+        "56023"
+      ]
+    },
+    {
+      "code": "tigra_nemesis",
+      "name": "Tigra Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "56024",
+        "56025",
+        "56026",
+        "56027",
+        "56028"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "56001",
+      "set": "tigra",
+      "obligation": "56023",
+      "nemesis": "tigra_nemesis"
+    },
+    {
+      "identity": "56029",
+      "set": "hulkling",
+      "obligation": "56054",
+      "nemesis": "hulkling_nemesis"
+    }
+  ]
+}

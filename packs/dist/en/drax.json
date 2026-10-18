@@ -1,0 +1,503 @@
+{
+  "code": "drax",
+  "name": "Drax",
+  "position": 19,
+  "cards": [
+    {
+      "code": "19001",
+      "faces": [
+        {
+          "name": "Drax",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/19001A.jpg",
+            "https://marvelcdb.com/bundles/cards/19001a.png"
+          ],
+          "handSize": 4
+        },
+        {
+          "name": "Drax",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/19001B.jpg",
+            "https://marvelcdb.com/bundles/cards/19001b.png"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "drax",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "19001a",
+        "19001b"
+      ]
+    },
+    {
+      "code": "19002",
+      "faces": [
+        {
+          "name": "Mantis",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/19002.jpg",
+            "https://marvelcdb.com/bundles/cards/19002.png"
+          ]
+        }
+      ],
+      "set": "drax",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "19003",
+      "faces": [
+        {
+          "name": "\"Fight Me, Coward!\"",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/19003.jpg",
+            "https://marvelcdb.com/bundles/cards/19003.png"
+          ]
+        }
+      ],
+      "set": "drax",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "19004",
+      "faces": [
+        {
+          "name": "Intimidation",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/19004.jpg",
+            "https://marvelcdb.com/bundles/cards/19004.png"
+          ]
+        }
+      ],
+      "set": "drax",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "19005",
+      "faces": [
+        {
+          "name": "Knife Leap",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/19005.jpg",
+            "https://marvelcdb.com/bundles/cards/19005.png"
+          ]
+        }
+      ],
+      "set": "drax",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "19006",
+      "faces": [
+        {
+          "name": "Parry",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/19006.jpg",
+            "https://marvelcdb.com/bundles/cards/19006.png"
+          ]
+        }
+      ],
+      "set": "drax",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "19007",
+      "faces": [
+        {
+          "name": "Payback",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/19007.jpg",
+            "https://marvelcdb.com/bundles/cards/19007.png"
+          ]
+        }
+      ],
+      "set": "drax",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "19008",
+      "faces": [
+        {
+          "name": "Drax's Knife",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/19008.jpg",
+            "https://marvelcdb.com/bundles/cards/19008.png"
+          ]
+        }
+      ],
+      "set": "drax",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "19009",
+      "faces": [
+        {
+          "name": "Drax's Other Knife",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/19009.jpg",
+            "https://marvelcdb.com/bundles/cards/19009.png"
+          ]
+        }
+      ],
+      "set": "drax",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "19010",
+      "faces": [
+        {
+          "name": "DWI Theet Mastery",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/19010.jpg",
+            "https://marvelcdb.com/bundles/cards/19010.png"
+          ]
+        }
+      ],
+      "set": "drax",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "19011",
+      "faces": [
+        {
+          "name": "Too Stubborn to Die",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/19011.jpg",
+            "https://marvelcdb.com/bundles/cards/19011.png"
+          ]
+        }
+      ],
+      "set": "drax",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "19012",
+      "faces": [
+        {
+          "name": "Martyr",
+          "subname": "Phyla-Vell",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/19012.jpg",
+            "https://marvelcdb.com/bundles/cards/19012.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "19013",
+      "faces": [
+        {
+          "name": "Moondragon",
+          "subname": "Heather Douglas",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/19013.jpg",
+            "https://marvelcdb.com/bundles/cards/19013.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "19015",
+      "faces": [
+        {
+          "name": "Deflection",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/19015.jpg",
+            "https://marvelcdb.com/bundles/cards/19015.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "19016",
+      "faces": [
+        {
+          "name": "Hard Knocks",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/19016.jpg",
+            "https://marvelcdb.com/bundles/cards/19016.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "19017",
+      "faces": [
+        {
+          "name": "Leading Blow",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/19017.jpg",
+            "https://marvelcdb.com/bundles/cards/19017.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "19018",
+      "faces": [
+        {
+          "name": "Subdue",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/19018.jpg",
+            "https://marvelcdb.com/bundles/cards/19018.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "19020",
+      "faces": [
+        {
+          "name": "Gamora",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/19020.jpg",
+            "https://marvelcdb.com/bundles/cards/19020.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "19025",
+      "faces": [
+        {
+          "name": "Memories of Another Life",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/19025.jpg",
+            "https://marvelcdb.com/bundles/cards/19025.png"
+          ]
+        }
+      ],
+      "set": "drax",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "19026",
+      "faces": [
+        {
+          "name": "Cull the Weak",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/19026.jpg",
+            "https://marvelcdb.com/bundles/cards/19026.png"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "drax_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "19027",
+      "faces": [
+        {
+          "name": "Yotat the Destroyer",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/19027.jpg",
+            "https://marvelcdb.com/bundles/cards/19027.png"
+          ]
+        }
+      ],
+      "set": "drax_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "19028",
+      "faces": [
+        {
+          "name": "Challenge Accepted",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/19028.jpg",
+            "https://marvelcdb.com/bundles/cards/19028.png"
+          ]
+        }
+      ],
+      "set": "drax_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "19029",
+      "faces": [
+        {
+          "name": "\"I Will Destroy You!\"",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/19029.jpg",
+            "https://marvelcdb.com/bundles/cards/19029.png"
+          ]
+        }
+      ],
+      "set": "drax_nemesis",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "19030",
+      "faces": [
+        {
+          "name": "\"Bring It!\"",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/19030.jpg",
+            "https://marvelcdb.com/bundles/cards/19030.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "56015"
+      ]
+    },
+    {
+      "code": "19031",
+      "faces": [
+        {
+          "name": "\"Think Fast!\"",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/19031.jpg",
+            "https://marvelcdb.com/bundles/cards/19031.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "19032",
+      "faces": [
+        {
+          "name": "Regroup",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/19032.jpg",
+            "https://marvelcdb.com/bundles/cards/19032.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    }
+  ],
+  "sets": [
+    {
+      "code": "drax",
+      "name": "Drax",
+      "kind": "hero",
+      "cards": [
+        "19001",
+        "19002",
+        "19003",
+        "19004",
+        "19005",
+        "19006",
+        "19007",
+        "19008",
+        "19009",
+        "19010",
+        "19011",
+        "19025"
+      ]
+    },
+    {
+      "code": "drax_nemesis",
+      "name": "Drax Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "19026",
+        "19027",
+        "19028",
+        "19029"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "19001",
+      "set": "drax",
+      "obligation": "19025",
+      "nemesis": "drax_nemesis"
+    }
+  ]
+}

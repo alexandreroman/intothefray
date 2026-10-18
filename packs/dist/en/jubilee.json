@@ -1,0 +1,693 @@
+{
+  "code": "jubilee",
+  "name": "Jubilee",
+  "position": 47,
+  "cards": [
+    {
+      "code": "47001",
+      "faces": [
+        {
+          "name": "Jubilee",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47001A.jpg",
+            "https://marvelcdb.com/bundles/cards/47001a.png"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "Jubilation Lee",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47001B.jpg",
+            "https://marvelcdb.com/bundles/cards/47001b.png"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "jubilee",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "47001a",
+        "47001b"
+      ]
+    },
+    {
+      "code": "47002",
+      "faces": [
+        {
+          "name": "Wolverine",
+          "subname": "Logan",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47002.jpg",
+            "https://marvelcdb.com/bundles/cards/47002.jpg"
+          ]
+        }
+      ],
+      "set": "jubilee",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "47003",
+      "faces": [
+        {
+          "name": "Shopping Spree",
+          "type": "player_side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47003.jpg",
+            "https://marvelcdb.com/bundles/cards/47003.jpg"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "jubilee",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "47004",
+      "faces": [
+        {
+          "name": "Jubilee's Coat",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47004.jpg",
+            "https://marvelcdb.com/bundles/cards/47004.jpg"
+          ]
+        }
+      ],
+      "set": "jubilee",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "47005",
+      "faces": [
+        {
+          "name": "Jubilee's Sunglasses",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47005.jpg",
+            "https://marvelcdb.com/bundles/cards/47005.jpg"
+          ]
+        }
+      ],
+      "set": "jubilee",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "47006",
+      "faces": [
+        {
+          "name": "Blinding Flash",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47006.jpg",
+            "https://marvelcdb.com/bundles/cards/47006.jpg"
+          ]
+        }
+      ],
+      "set": "jubilee",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "47007",
+      "faces": [
+        {
+          "name": "Firecracker",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47007A.jpg"
+          ]
+        },
+        {
+          "name": "Firecracker",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47007B.jpg"
+          ]
+        },
+        {
+          "name": "Firecracker",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47007C.jpg"
+          ]
+        }
+      ],
+      "set": "jubilee",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "47007a",
+        "47007b",
+        "47007c"
+      ]
+    },
+    {
+      "code": "47008",
+      "faces": [
+        {
+          "name": "Flash of Light",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47008A.jpg"
+          ]
+        },
+        {
+          "name": "Flash of Light",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47008B.jpg"
+          ]
+        },
+        {
+          "name": "Flash of Light",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47008C.jpg"
+          ]
+        }
+      ],
+      "set": "jubilee",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "47008a",
+        "47008b",
+        "47008c"
+      ]
+    },
+    {
+      "code": "47009",
+      "faces": [
+        {
+          "name": "Grande Finale",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47009.jpg",
+            "https://marvelcdb.com/bundles/cards/47009.jpg"
+          ]
+        }
+      ],
+      "set": "jubilee",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "47010",
+      "faces": [
+        {
+          "name": "Plasmoid Energy",
+          "type": "resource",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47010A.jpg"
+          ]
+        },
+        {
+          "name": "Plasmoid Energy",
+          "type": "resource",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47010B.jpg"
+          ]
+        },
+        {
+          "name": "Plasmoid Energy",
+          "type": "resource",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47010C.jpg"
+          ]
+        }
+      ],
+      "set": "jubilee",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "47010a",
+        "47010b",
+        "47010c"
+      ]
+    },
+    {
+      "code": "47011",
+      "faces": [
+        {
+          "name": "Chamber",
+          "subname": "Jono Starsmore",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47011.jpg",
+            "https://marvelcdb.com/bundles/cards/47011.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "47012",
+      "faces": [
+        {
+          "name": "Husk",
+          "subname": "Paige Guthrie",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47012.jpg",
+            "https://marvelcdb.com/bundles/cards/47012.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "47013",
+      "faces": [
+        {
+          "name": "Disguise",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47013.jpg",
+            "https://marvelcdb.com/bundles/cards/47013.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "47014",
+      "faces": [
+        {
+          "name": "Waylay",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47014.jpg",
+            "https://marvelcdb.com/bundles/cards/47014.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "47015",
+      "faces": [
+        {
+          "name": "Three Steps Ahead",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47015.jpg",
+            "https://marvelcdb.com/bundles/cards/47015.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "47016",
+      "faces": [
+        {
+          "name": "Generation X",
+          "type": "player_side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47016.jpg",
+            "https://marvelcdb.com/bundles/cards/47016.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": true
+          }
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "47018",
+      "faces": [
+        {
+          "name": "Synch",
+          "subname": "Everett Thomas",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47018.jpg",
+            "https://marvelcdb.com/bundles/cards/47018.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "47019",
+      "faces": [
+        {
+          "name": "Cell Phone",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47019.jpg",
+            "https://marvelcdb.com/bundles/cards/47019.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "47021",
+      "faces": [
+        {
+          "name": "Multitalented",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47021.jpg",
+            "https://marvelcdb.com/bundles/cards/47021.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "47022",
+      "faces": [
+        {
+          "name": "Unlikely Duo",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47022.jpg",
+            "https://marvelcdb.com/bundles/cards/47022.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "47023",
+      "faces": [
+        {
+          "name": "Grounded",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47023.jpg",
+            "https://marvelcdb.com/bundles/cards/47023.jpg"
+          ]
+        }
+      ],
+      "set": "jubilee",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "47024",
+      "faces": [
+        {
+          "name": "Nanny",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47024.jpg",
+            "https://marvelcdb.com/bundles/cards/47024.jpg"
+          ]
+        }
+      ],
+      "set": "jubilee_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "47025",
+      "faces": [
+        {
+          "name": "Naughty Children",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47025.jpg",
+            "https://marvelcdb.com/bundles/cards/47025.jpg"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "jubilee_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "47026",
+      "faces": [
+        {
+          "name": "Battle Suit",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47026.jpg",
+            "https://marvelcdb.com/bundles/cards/47026.jpg"
+          ]
+        }
+      ],
+      "set": "jubilee_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "47027",
+      "faces": [
+        {
+          "name": "\"Lost\" Child",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47027.jpg",
+            "https://marvelcdb.com/bundles/cards/47027.jpg"
+          ]
+        }
+      ],
+      "set": "jubilee_nemesis",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "47028",
+      "faces": [
+        {
+          "name": "Mutant Mayhem",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47028.jpg",
+            "https://marvelcdb.com/bundles/cards/47028.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "47029",
+      "faces": [
+        {
+          "name": "Serve and Protect",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47029.jpg",
+            "https://marvelcdb.com/bundles/cards/47029.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "47030",
+      "faces": [
+        {
+          "name": "Arcade",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47030.jpg",
+            "https://marvelcdb.com/bundles/cards/47030.jpg"
+          ]
+        }
+      ],
+      "set": "arcade",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "47031",
+      "faces": [
+        {
+          "name": "Welcome to Murderworld",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47031.jpg",
+            "https://marvelcdb.com/bundles/cards/47031.jpg"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "arcade",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "47032",
+      "faces": [
+        {
+          "name": "Arcade's Funhouse",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47032.jpg",
+            "https://marvelcdb.com/bundles/cards/47032.jpg"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "arcade",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "47033",
+      "faces": [
+        {
+          "name": "Hall of Mirrors",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47033.jpg",
+            "https://marvelcdb.com/bundles/cards/47033.jpg"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "arcade",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "47034",
+      "faces": [
+        {
+          "name": "Elaborate Trap",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47034.jpg",
+            "https://marvelcdb.com/bundles/cards/47034.jpg"
+          ]
+        }
+      ],
+      "set": "arcade",
+      "back": "encounter",
+      "quantity": 1
+    }
+  ],
+  "sets": [
+    {
+      "code": "arcade",
+      "name": "Arcade",
+      "kind": "modular",
+      "cards": [
+        "47030",
+        "47031",
+        "47032",
+        "47033",
+        "47034"
+      ]
+    },
+    {
+      "code": "jubilee",
+      "name": "Jubilee",
+      "kind": "hero",
+      "cards": [
+        "47001",
+        "47002",
+        "47003",
+        "47004",
+        "47005",
+        "47006",
+        "47007",
+        "47008",
+        "47009",
+        "47010",
+        "47023"
+      ]
+    },
+    {
+      "code": "jubilee_nemesis",
+      "name": "Jubilee Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "47024",
+        "47025",
+        "47026",
+        "47027"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "47001",
+      "set": "jubilee",
+      "obligation": "47023",
+      "nemesis": "jubilee_nemesis"
+    }
+  ]
+}

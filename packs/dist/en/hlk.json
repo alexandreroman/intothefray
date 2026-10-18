@@ -1,0 +1,502 @@
+{
+  "code": "hlk",
+  "name": "Hulk",
+  "position": 9,
+  "cards": [
+    {
+      "code": "10001",
+      "faces": [
+        {
+          "name": "Hulk",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/10001A.jpg",
+            "https://marvelcdb.com/bundles/cards/10001a.png"
+          ],
+          "handSize": 4
+        },
+        {
+          "name": "Bruce Banner",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/10001B.jpg",
+            "https://marvelcdb.com/bundles/cards/10001b.png"
+          ],
+          "handSize": 5
+        }
+      ],
+      "set": "hulk",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "10001a",
+        "10001b"
+      ]
+    },
+    {
+      "code": "10002",
+      "faces": [
+        {
+          "name": "Crushing Blow",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/10002.jpg",
+            "https://marvelcdb.com/bundles/cards/10002.png"
+          ]
+        }
+      ],
+      "set": "hulk",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "10003",
+      "faces": [
+        {
+          "name": "Hulk Smash",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/10003.jpg",
+            "https://marvelcdb.com/bundles/cards/10003.png"
+          ]
+        }
+      ],
+      "set": "hulk",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "10004",
+      "faces": [
+        {
+          "name": "Sub-Orbital Leap",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/10004.jpg",
+            "https://marvelcdb.com/bundles/cards/10004.png"
+          ]
+        }
+      ],
+      "set": "hulk",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "10005",
+      "faces": [
+        {
+          "name": "Thunderclap",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/10005.jpg",
+            "https://marvelcdb.com/bundles/cards/10005.png"
+          ]
+        }
+      ],
+      "set": "hulk",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "10006",
+      "faces": [
+        {
+          "name": "Unstoppable Force",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/10006.jpg",
+            "https://marvelcdb.com/bundles/cards/10006.png"
+          ]
+        }
+      ],
+      "set": "hulk",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "10007",
+      "faces": [
+        {
+          "name": "Limitless Strength",
+          "type": "resource",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/10007.jpg",
+            "https://marvelcdb.com/bundles/cards/10007.png"
+          ]
+        }
+      ],
+      "set": "hulk",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "10008",
+      "faces": [
+        {
+          "name": "Banner's Laboratory",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/10008.jpg",
+            "https://marvelcdb.com/bundles/cards/10008.png"
+          ]
+        }
+      ],
+      "set": "hulk",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "10009",
+      "faces": [
+        {
+          "name": "Boundless Rage",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/10009.jpg",
+            "https://marvelcdb.com/bundles/cards/10009.png"
+          ]
+        }
+      ],
+      "set": "hulk",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "10010",
+      "faces": [
+        {
+          "name": "Immovable Object",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/10010.jpg",
+            "https://marvelcdb.com/bundles/cards/10010.png"
+          ]
+        }
+      ],
+      "set": "hulk",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "10011",
+      "faces": [
+        {
+          "name": "Brawn",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/10011.jpg",
+            "https://marvelcdb.com/bundles/cards/10011.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "10012",
+      "faces": [
+        {
+          "name": "Sentry",
+          "subname": "Robert Reynolds",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/10012.jpg",
+            "https://marvelcdb.com/bundles/cards/10012.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "10013",
+      "faces": [
+        {
+          "name": "She-Hulk",
+          "subname": "Jennifer Walters",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/10013.jpg",
+            "https://marvelcdb.com/bundles/cards/10013.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "10014",
+      "faces": [
+        {
+          "name": "Drop Kick",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/10014.jpg",
+            "https://marvelcdb.com/bundles/cards/10014.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "10015",
+      "faces": [
+        {
+          "name": "Toe to Toe",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/10015.jpg",
+            "https://marvelcdb.com/bundles/cards/10015.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "32046"
+      ]
+    },
+    {
+      "code": "10016",
+      "faces": [
+        {
+          "name": "\"You'll Pay for That!\"",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/10016.jpg",
+            "https://marvelcdb.com/bundles/cards/10016.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "10018",
+      "faces": [
+        {
+          "name": "Martial Prowess",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/10018.jpg",
+            "https://marvelcdb.com/bundles/cards/10018.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "10019",
+      "faces": [
+        {
+          "name": "To the Rescue!",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/10019.jpg",
+            "https://marvelcdb.com/bundles/cards/10019.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "10025",
+      "faces": [
+        {
+          "name": "Inner Demons",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/10025.jpg",
+            "https://marvelcdb.com/bundles/cards/10025.png"
+          ]
+        }
+      ],
+      "set": "hulk",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "10026",
+      "faces": [
+        {
+          "name": "Abomination",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/10026.jpg",
+            "https://marvelcdb.com/bundles/cards/10026.png"
+          ]
+        }
+      ],
+      "set": "hulk_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "10027",
+      "faces": [
+        {
+          "name": "Total Destruction",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/10027.jpg",
+            "https://marvelcdb.com/bundles/cards/10027.png"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "hulk_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "10028",
+      "faces": [
+        {
+          "name": "Clash Of The Titans",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/10028.jpg",
+            "https://marvelcdb.com/bundles/cards/10028.png"
+          ]
+        }
+      ],
+      "set": "hulk_nemesis",
+      "back": "encounter",
+      "quantity": 3
+    },
+    {
+      "code": "10029",
+      "faces": [
+        {
+          "name": "Beat Cop",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/10029.jpg",
+            "https://marvelcdb.com/bundles/cards/10029.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "10030",
+      "faces": [
+        {
+          "name": "Inspiring Presence",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/10030.jpg",
+            "https://marvelcdb.com/bundles/cards/10030.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "10031",
+      "faces": [
+        {
+          "name": "Electrostatic Armor",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/10031.jpg",
+            "https://marvelcdb.com/bundles/cards/10031.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "10032",
+      "faces": [
+        {
+          "name": "Resourceful",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/10032.jpg",
+            "https://marvelcdb.com/bundles/cards/10032.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "20020"
+      ]
+    }
+  ],
+  "sets": [
+    {
+      "code": "hulk",
+      "name": "Hulk",
+      "kind": "hero",
+      "cards": [
+        "10001",
+        "10002",
+        "10003",
+        "10004",
+        "10005",
+        "10006",
+        "10007",
+        "10008",
+        "10009",
+        "10010",
+        "10025"
+      ]
+    },
+    {
+      "code": "hulk_nemesis",
+      "name": "Hulk Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "10026",
+        "10027",
+        "10028"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "10001",
+      "set": "hulk",
+      "obligation": "10025",
+      "nemesis": "hulk_nemesis"
+    }
+  ]
+}

@@ -1,0 +1,1464 @@
+{
+  "code": "hood",
+  "name": "The Hood",
+  "position": 24,
+  "cards": [
+    {
+      "code": "24001",
+      "faces": [
+        {
+          "name": "The Hood",
+          "type": "villain",
+          "stage": "I",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24001.jpg",
+            "https://marvelcdb.com/bundles/cards/24001.png"
+          ]
+        }
+      ],
+      "set": "the_hood",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "24002",
+      "faces": [
+        {
+          "name": "The Hood",
+          "type": "villain",
+          "stage": "II",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24002.jpg",
+            "https://marvelcdb.com/bundles/cards/24002.png"
+          ]
+        }
+      ],
+      "set": "the_hood",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "24003",
+      "faces": [
+        {
+          "name": "The Hood",
+          "type": "villain",
+          "stage": "III",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24003.jpg",
+            "https://marvelcdb.com/bundles/cards/24003.png"
+          ]
+        }
+      ],
+      "set": "the_hood",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "24004",
+      "faces": [
+        {
+          "name": "Making Connections",
+          "type": "main_scheme",
+          "stage": "1A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24004A.jpg",
+            "https://marvelcdb.com/bundles/cards/24004a.png"
+          ]
+        },
+        {
+          "name": "Making Connections",
+          "type": "main_scheme",
+          "stage": "1B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24004B.jpg",
+            "https://marvelcdb.com/bundles/cards/24004b.png"
+          ],
+          "startingThreat": {
+            "value": 1,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "the_hood",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "24004a",
+        "24004b"
+      ]
+    },
+    {
+      "code": "24005",
+      "faces": [
+        {
+          "name": "Promised Prosperity",
+          "type": "main_scheme",
+          "stage": "2A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24005A.jpg",
+            "https://marvelcdb.com/bundles/cards/24005a.png"
+          ]
+        },
+        {
+          "name": "Promised Prosperity",
+          "type": "main_scheme",
+          "stage": "2B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24005B.jpg",
+            "https://marvelcdb.com/bundles/cards/24005b.png"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "the_hood",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "24005a",
+        "24005b"
+      ]
+    },
+    {
+      "code": "24006",
+      "faces": [
+        {
+          "name": "Crime State",
+          "type": "main_scheme",
+          "stage": "3A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24006A.jpg",
+            "https://marvelcdb.com/bundles/cards/24006a.png"
+          ]
+        },
+        {
+          "name": "Crime State",
+          "type": "main_scheme",
+          "stage": "3B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24006B.jpg",
+            "https://marvelcdb.com/bundles/cards/24006b.png"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "the_hood",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "24006a",
+        "24006b"
+      ]
+    },
+    {
+      "code": "24007",
+      "faces": [
+        {
+          "name": "Established Dominance",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24007.jpg",
+            "https://marvelcdb.com/bundles/cards/24007.png"
+          ]
+        }
+      ],
+      "set": "the_hood",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24008",
+      "faces": [
+        {
+          "name": "The Hood's Mantle",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24008.jpg",
+            "https://marvelcdb.com/bundles/cards/24008.png"
+          ]
+        }
+      ],
+      "set": "the_hood",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24009",
+      "faces": [
+        {
+          "name": "The Hood's Pistol",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24009.jpg",
+            "https://marvelcdb.com/bundles/cards/24009.png"
+          ]
+        }
+      ],
+      "set": "the_hood",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "24010",
+      "faces": [
+        {
+          "name": "Madame Masque",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24010.jpg",
+            "https://marvelcdb.com/bundles/cards/24010.png"
+          ]
+        }
+      ],
+      "set": "the_hood",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24011",
+      "faces": [
+        {
+          "name": "Unbridled Ambition",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24011.jpg",
+            "https://marvelcdb.com/bundles/cards/24011.png"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "the_hood",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24012",
+      "faces": [
+        {
+          "name": "Field Recruitment",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24012.jpg",
+            "https://marvelcdb.com/bundles/cards/24012.png"
+          ]
+        }
+      ],
+      "set": "the_hood",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24013",
+      "faces": [
+        {
+          "name": "Upper Hand",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24013.jpg",
+            "https://marvelcdb.com/bundles/cards/24013.png"
+          ]
+        }
+      ],
+      "set": "the_hood",
+      "back": "encounter",
+      "quantity": 3
+    },
+    {
+      "code": "24014",
+      "faces": [
+        {
+          "name": "Beast Mode",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24014.jpg",
+            "https://marvelcdb.com/bundles/cards/24014.png"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "beasty_boys",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24015",
+      "faces": [
+        {
+          "name": "Griffin",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24015.jpg",
+            "https://marvelcdb.com/bundles/cards/24015.png"
+          ]
+        }
+      ],
+      "set": "beasty_boys",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24016",
+      "faces": [
+        {
+          "name": "Mandrill",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24016.jpg",
+            "https://marvelcdb.com/bundles/cards/24016.png"
+          ]
+        }
+      ],
+      "set": "beasty_boys",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24017",
+      "faces": [
+        {
+          "name": "Double Trouble",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24017.jpg",
+            "https://marvelcdb.com/bundles/cards/24017.png"
+          ]
+        }
+      ],
+      "set": "beasty_boys",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24018",
+      "faces": [
+        {
+          "name": "Brothers Grimm",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24018.jpg",
+            "https://marvelcdb.com/bundles/cards/24018.png"
+          ]
+        }
+      ],
+      "set": "brothers_grimm",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24019",
+      "faces": [
+        {
+          "name": "Blackbird Pellets",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24019.jpg",
+            "https://marvelcdb.com/bundles/cards/24019.png"
+          ]
+        }
+      ],
+      "set": "brothers_grimm",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24020",
+      "faces": [
+        {
+          "name": "Corrosive Egg Bomb",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24020.jpg",
+            "https://marvelcdb.com/bundles/cards/24020.png"
+          ]
+        }
+      ],
+      "set": "brothers_grimm",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24021",
+      "faces": [
+        {
+          "name": "Paralytic Stardust",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24021.jpg",
+            "https://marvelcdb.com/bundles/cards/24021.png"
+          ]
+        }
+      ],
+      "set": "brothers_grimm",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24022",
+      "faces": [
+        {
+          "name": "Unbreakable Thread",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24022.jpg",
+            "https://marvelcdb.com/bundles/cards/24022.png"
+          ]
+        }
+      ],
+      "set": "brothers_grimm",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24023",
+      "faces": [
+        {
+          "name": "Out for Blood",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24023.jpg",
+            "https://marvelcdb.com/bundles/cards/24023.png"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "crossfire_crew",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24024",
+      "faces": [
+        {
+          "name": "Controller",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24024.jpg",
+            "https://marvelcdb.com/bundles/cards/24024.png"
+          ]
+        }
+      ],
+      "set": "crossfire_crew",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24025",
+      "faces": [
+        {
+          "name": "Corruptor",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24025.jpg",
+            "https://marvelcdb.com/bundles/cards/24025.png"
+          ]
+        }
+      ],
+      "set": "crossfire_crew",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24026",
+      "faces": [
+        {
+          "name": "Crossfire",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24026.jpg",
+            "https://marvelcdb.com/bundles/cards/24026.png"
+          ]
+        }
+      ],
+      "set": "crossfire_crew",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24027",
+      "faces": [
+        {
+          "name": "Mister Fear",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24027.jpg",
+            "https://marvelcdb.com/bundles/cards/24027.png"
+          ]
+        }
+      ],
+      "set": "crossfire_crew",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24028",
+      "faces": [
+        {
+          "name": "Caught in the Crossfire",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24028.jpg",
+            "https://marvelcdb.com/bundles/cards/24028.png"
+          ]
+        }
+      ],
+      "set": "crossfire_crew",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24029",
+      "faces": [
+        {
+          "name": "Cruel Intentions",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24029.jpg",
+            "https://marvelcdb.com/bundles/cards/24029.png"
+          ]
+        }
+      ],
+      "set": "expert_ii",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24030",
+      "faces": [
+        {
+          "name": "Ruination",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24030.jpg",
+            "https://marvelcdb.com/bundles/cards/24030.png"
+          ]
+        }
+      ],
+      "set": "expert_ii",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24031",
+      "faces": [
+        {
+          "name": "Seek and Destroy",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24031.jpg",
+            "https://marvelcdb.com/bundles/cards/24031.png"
+          ]
+        }
+      ],
+      "set": "expert_ii",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24032",
+      "faces": [
+        {
+          "name": "Slug It Out",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24032.jpg",
+            "https://marvelcdb.com/bundles/cards/24032.png"
+          ]
+        }
+      ],
+      "set": "expert_ii",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24033",
+      "faces": [
+        {
+          "name": "Self-Experimentation",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24033.jpg",
+            "https://marvelcdb.com/bundles/cards/24033.png"
+          ],
+          "startingThreat": {
+            "value": 5,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "mister_hyde",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24034",
+      "faces": [
+        {
+          "name": "Calvin Zabo",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24034.jpg",
+            "https://marvelcdb.com/bundles/cards/24034.png"
+          ]
+        }
+      ],
+      "set": "mister_hyde",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24035",
+      "faces": [
+        {
+          "name": "Mister Hyde",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24035.jpg",
+            "https://marvelcdb.com/bundles/cards/24035.png"
+          ]
+        }
+      ],
+      "set": "mister_hyde",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24036",
+      "faces": [
+        {
+          "name": "Hyde Formula",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24036.jpg",
+            "https://marvelcdb.com/bundles/cards/24036.png"
+          ]
+        }
+      ],
+      "set": "mister_hyde",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24037",
+      "faces": [
+        {
+          "name": "Flamethrower",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24037.jpg",
+            "https://marvelcdb.com/bundles/cards/24037.png"
+          ]
+        }
+      ],
+      "set": "ransacked_armory",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24038",
+      "faces": [
+        {
+          "name": "Holoshield Generator",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24038.jpg",
+            "https://marvelcdb.com/bundles/cards/24038.png"
+          ]
+        }
+      ],
+      "set": "ransacked_armory",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24039",
+      "faces": [
+        {
+          "name": "Jetpack",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24039.jpg",
+            "https://marvelcdb.com/bundles/cards/24039.png"
+          ]
+        }
+      ],
+      "set": "ransacked_armory",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24040",
+      "faces": [
+        {
+          "name": "Tech Gauntlets",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24040.jpg",
+            "https://marvelcdb.com/bundles/cards/24040.png"
+          ]
+        }
+      ],
+      "set": "ransacked_armory",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "24041",
+      "faces": [
+        {
+          "name": "Armored Guard",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/24041.png"
+          ]
+        }
+      ],
+      "set": "ransacked_armory",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "24042",
+      "faces": [
+        {
+          "name": "Crime Pays",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24042.jpg",
+            "https://marvelcdb.com/bundles/cards/24042.png"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "sinister_syndicate",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24043",
+      "faces": [
+        {
+          "name": "Beetle",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24043.jpg",
+            "https://marvelcdb.com/bundles/cards/24043.png"
+          ]
+        }
+      ],
+      "set": "sinister_syndicate",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24044",
+      "faces": [
+        {
+          "name": "Boomerang",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24044.jpg",
+            "https://marvelcdb.com/bundles/cards/24044.png"
+          ]
+        }
+      ],
+      "set": "sinister_syndicate",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24045",
+      "faces": [
+        {
+          "name": "Shocker",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24045.jpg",
+            "https://marvelcdb.com/bundles/cards/24045.png"
+          ]
+        }
+      ],
+      "set": "sinister_syndicate",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24046",
+      "faces": [
+        {
+          "name": "Speed Demon",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24046.jpg",
+            "https://marvelcdb.com/bundles/cards/24046.png"
+          ]
+        }
+      ],
+      "set": "sinister_syndicate",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24047",
+      "faces": [
+        {
+          "name": "White Rabbit",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24047.jpg",
+            "https://marvelcdb.com/bundles/cards/24047.png"
+          ]
+        }
+      ],
+      "set": "sinister_syndicate",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24048",
+      "faces": [
+        {
+          "name": "Sinister Onslaught",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24048.jpg",
+            "https://marvelcdb.com/bundles/cards/24048.png"
+          ]
+        }
+      ],
+      "set": "sinister_syndicate",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24049",
+      "faces": [
+        {
+          "name": "Formidable Foe",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24049A.jpg",
+            "https://marvelcdb.com/bundles/cards/24049a.png"
+          ]
+        },
+        {
+          "name": "Formidable Foe",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24049B.jpg",
+            "https://marvelcdb.com/bundles/cards/24049b.png"
+          ]
+        }
+      ],
+      "set": "standard_ii",
+      "back": "encounter",
+      "quantity": 1,
+      "aliases": [
+        "24049a",
+        "24049b"
+      ]
+    },
+    {
+      "code": "24050",
+      "faces": [
+        {
+          "name": "Dark Dealings",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24050.jpg",
+            "https://marvelcdb.com/bundles/cards/24050.png"
+          ]
+        }
+      ],
+      "set": "standard_ii",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "24051",
+      "faces": [
+        {
+          "name": "Mob Mentality",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24051.jpg",
+            "https://marvelcdb.com/bundles/cards/24051.png"
+          ]
+        }
+      ],
+      "set": "standard_ii",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24052",
+      "faces": [
+        {
+          "name": "Overwhelming Force",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24052.jpg",
+            "https://marvelcdb.com/bundles/cards/24052.png"
+          ]
+        }
+      ],
+      "set": "standard_ii",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24053",
+      "faces": [
+        {
+          "name": "Shadow of the Past",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/24053.png"
+          ]
+        }
+      ],
+      "set": "standard_ii",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24054",
+      "faces": [
+        {
+          "name": "Total Annihilation",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24054.jpg",
+            "https://marvelcdb.com/bundles/cards/24054.png"
+          ]
+        }
+      ],
+      "set": "standard_ii",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "24055",
+      "faces": [
+        {
+          "name": "Feisty Heist",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24055.jpg",
+            "https://marvelcdb.com/bundles/cards/24055.png"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "state_of_emergency",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24056",
+      "faces": [
+        {
+          "name": "Disaster at the Docks",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24056.jpg",
+            "https://marvelcdb.com/bundles/cards/24056.png"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "state_of_emergency",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24057",
+      "faces": [
+        {
+          "name": "Offshore Inferno",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24057.jpg",
+            "https://marvelcdb.com/bundles/cards/24057.png"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "state_of_emergency",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24058",
+      "faces": [
+        {
+          "name": "Hot Pursuit",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24058.jpg",
+            "https://marvelcdb.com/bundles/cards/24058.png"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "state_of_emergency",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24059",
+      "faces": [
+        {
+          "name": "Citywide Crisis",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24059.jpg",
+            "https://marvelcdb.com/bundles/cards/24059.png"
+          ]
+        }
+      ],
+      "set": "state_of_emergency",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "24060",
+      "faces": [
+        {
+          "name": "Back-Alley Enclave",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24060.jpg",
+            "https://marvelcdb.com/bundles/cards/24060.png"
+          ]
+        }
+      ],
+      "set": "streets_of_mayhem",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24061",
+      "faces": [
+        {
+          "name": "Secret Lair",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24061.jpg",
+            "https://marvelcdb.com/bundles/cards/24061.png"
+          ]
+        }
+      ],
+      "set": "streets_of_mayhem",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24062",
+      "faces": [
+        {
+          "name": "Sewer Tunnels",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24062.jpg",
+            "https://marvelcdb.com/bundles/cards/24062.png"
+          ]
+        }
+      ],
+      "set": "streets_of_mayhem",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24063",
+      "faces": [
+        {
+          "name": "Warehouse District",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24063.jpg",
+            "https://marvelcdb.com/bundles/cards/24063.png"
+          ]
+        }
+      ],
+      "set": "streets_of_mayhem",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24064",
+      "faces": [
+        {
+          "name": "Top Talent",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24064.jpg",
+            "https://marvelcdb.com/bundles/cards/24064.png"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "wrecking_crew_modular",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24065",
+      "faces": [
+        {
+          "name": "Wrecker",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24065.jpg",
+            "https://marvelcdb.com/bundles/cards/24065.png"
+          ]
+        }
+      ],
+      "set": "wrecking_crew_modular",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24066",
+      "faces": [
+        {
+          "name": "Bulldozer",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24066.jpg",
+            "https://marvelcdb.com/bundles/cards/24066.png"
+          ]
+        }
+      ],
+      "set": "wrecking_crew_modular",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24067",
+      "faces": [
+        {
+          "name": "Piledriver",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24067.jpg",
+            "https://marvelcdb.com/bundles/cards/24067.png"
+          ]
+        }
+      ],
+      "set": "wrecking_crew_modular",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24068",
+      "faces": [
+        {
+          "name": "Thunderball",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24068.jpg",
+            "https://marvelcdb.com/bundles/cards/24068.png"
+          ]
+        }
+      ],
+      "set": "wrecking_crew_modular",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24069",
+      "faces": [
+        {
+          "name": "Combined Effort",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24069.jpg",
+            "https://marvelcdb.com/bundles/cards/24069.png"
+          ]
+        }
+      ],
+      "set": "wrecking_crew_modular",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "24070",
+      "faces": [
+        {
+          "name": "Magic Muscle",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24070.jpg",
+            "https://marvelcdb.com/bundles/cards/24070.png"
+          ]
+        }
+      ],
+      "set": "wrecking_crew_modular",
+      "back": "encounter",
+      "quantity": 1
+    }
+  ],
+  "sets": [
+    {
+      "code": "beasty_boys",
+      "name": "Beasty Boys",
+      "kind": "modular",
+      "cards": [
+        "24014",
+        "24015",
+        "24016",
+        "24017"
+      ]
+    },
+    {
+      "code": "brothers_grimm",
+      "name": "Brothers Grimm",
+      "kind": "modular",
+      "cards": [
+        "24018",
+        "24019",
+        "24020",
+        "24021",
+        "24022"
+      ]
+    },
+    {
+      "code": "crossfire_crew",
+      "name": "Crossfire's Crew",
+      "kind": "modular",
+      "cards": [
+        "24023",
+        "24024",
+        "24025",
+        "24026",
+        "24027",
+        "24028"
+      ]
+    },
+    {
+      "code": "expert_ii",
+      "name": "Expert II",
+      "kind": "expert",
+      "cards": [
+        "24029",
+        "24030",
+        "24031",
+        "24032"
+      ]
+    },
+    {
+      "code": "mister_hyde",
+      "name": "Mister Hyde",
+      "kind": "modular",
+      "cards": [
+        "24033",
+        "24034",
+        "24035",
+        "24036"
+      ]
+    },
+    {
+      "code": "ransacked_armory",
+      "name": "Ransacked Armory",
+      "kind": "modular",
+      "cards": [
+        "24037",
+        "24038",
+        "24039",
+        "24040",
+        "24041"
+      ]
+    },
+    {
+      "code": "sinister_syndicate",
+      "name": "Sinister Syndicate",
+      "kind": "modular",
+      "cards": [
+        "24042",
+        "24043",
+        "24044",
+        "24045",
+        "24046",
+        "24047",
+        "24048"
+      ]
+    },
+    {
+      "code": "standard_ii",
+      "name": "Standard II",
+      "kind": "standard",
+      "cards": [
+        "24049",
+        "24050",
+        "24051",
+        "24052",
+        "24053",
+        "24054"
+      ]
+    },
+    {
+      "code": "state_of_emergency",
+      "name": "State of Emergency",
+      "kind": "modular",
+      "cards": [
+        "24055",
+        "24056",
+        "24057",
+        "24058",
+        "24059"
+      ]
+    },
+    {
+      "code": "streets_of_mayhem",
+      "name": "Streets of Mayhem",
+      "kind": "modular",
+      "cards": [
+        "24060",
+        "24061",
+        "24062",
+        "24063"
+      ]
+    },
+    {
+      "code": "the_hood",
+      "name": "The Hood",
+      "kind": "villain",
+      "cards": [
+        "24001",
+        "24002",
+        "24003",
+        "24004",
+        "24005",
+        "24006",
+        "24007",
+        "24008",
+        "24009",
+        "24010",
+        "24011",
+        "24012",
+        "24013"
+      ]
+    },
+    {
+      "code": "wrecking_crew_modular",
+      "name": "Wrecking Crew",
+      "kind": "modular",
+      "cards": [
+        "24064",
+        "24065",
+        "24066",
+        "24067",
+        "24068",
+        "24069",
+        "24070"
+      ]
+    }
+  ]
+}

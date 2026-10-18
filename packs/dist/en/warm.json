@@ -1,0 +1,505 @@
+{
+  "code": "warm",
+  "name": "War Machine",
+  "position": 23,
+  "cards": [
+    {
+      "code": "23001",
+      "faces": [
+        {
+          "name": "War Machine",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/23001A.jpg",
+            "https://marvelcdb.com/bundles/cards/23001a.png"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "James Rhodes",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/23001B.jpg",
+            "https://marvelcdb.com/bundles/cards/23001b.png"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "warm",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "23001a",
+        "23001b"
+      ]
+    },
+    {
+      "code": "23002",
+      "faces": [
+        {
+          "name": "Iron Man",
+          "subname": "Tony Stark",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/23002.jpg",
+            "https://marvelcdb.com/bundles/cards/23002.png"
+          ]
+        }
+      ],
+      "set": "warm",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "23003",
+      "faces": [
+        {
+          "name": "Munitions Bunker",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/23003.jpg",
+            "https://marvelcdb.com/bundles/cards/23003.png"
+          ]
+        }
+      ],
+      "set": "warm",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "23004",
+      "faces": [
+        {
+          "name": "Upgraded Chassis",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/23004.jpg",
+            "https://marvelcdb.com/bundles/cards/23004.png"
+          ]
+        }
+      ],
+      "set": "warm",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "23005",
+      "faces": [
+        {
+          "name": "Gauntlet Gun",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/23005.jpg",
+            "https://marvelcdb.com/bundles/cards/23005.png"
+          ]
+        }
+      ],
+      "set": "warm",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "23006",
+      "faces": [
+        {
+          "name": "Missile Launcher",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/23006.jpg",
+            "https://marvelcdb.com/bundles/cards/23006.png"
+          ]
+        }
+      ],
+      "set": "warm",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "23007",
+      "faces": [
+        {
+          "name": "Shoulder Cannon",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/23007.jpg",
+            "https://marvelcdb.com/bundles/cards/23007.png"
+          ]
+        }
+      ],
+      "set": "warm",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "23008",
+      "faces": [
+        {
+          "name": "Repulsor Beam",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/23008.jpg",
+            "https://marvelcdb.com/bundles/cards/23008.png"
+          ]
+        }
+      ],
+      "set": "warm",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "23009",
+      "faces": [
+        {
+          "name": "Targeted Strike",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/23009.jpg",
+            "https://marvelcdb.com/bundles/cards/23009.png"
+          ]
+        }
+      ],
+      "set": "warm",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "23010",
+      "faces": [
+        {
+          "name": "Scorched Earth",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/23010.jpg",
+            "https://marvelcdb.com/bundles/cards/23010.png"
+          ]
+        }
+      ],
+      "set": "warm",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "23011",
+      "faces": [
+        {
+          "name": "Full Auto",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/23011.jpg",
+            "https://marvelcdb.com/bundles/cards/23011.png"
+          ]
+        }
+      ],
+      "set": "warm",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "23012",
+      "faces": [
+        {
+          "name": "Black Panther",
+          "subname": "T'Challa",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/23012.jpg",
+            "https://marvelcdb.com/bundles/cards/23012.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "23013",
+      "faces": [
+        {
+          "name": "Captain Marvel",
+          "subname": "Carol Danvers",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/23013.jpg",
+            "https://marvelcdb.com/bundles/cards/23013.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "23016",
+      "faces": [
+        {
+          "name": "Command Team",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/23016.jpg",
+            "https://marvelcdb.com/bundles/cards/23016.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "50016"
+      ]
+    },
+    {
+      "code": "23017",
+      "faces": [
+        {
+          "name": "Sneak Attack",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/23017.jpg",
+            "https://marvelcdb.com/bundles/cards/23017.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "23018",
+      "faces": [
+        {
+          "name": "Save the Day",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/23018.jpg",
+            "https://marvelcdb.com/bundles/cards/23018.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "23019",
+      "faces": [
+        {
+          "name": "Go Down Swinging",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/23019.jpg",
+            "https://marvelcdb.com/bundles/cards/23019.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "23024",
+      "faces": [
+        {
+          "name": "Two Against the World",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/23024.jpg",
+            "https://marvelcdb.com/bundles/cards/23024.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "23028",
+      "faces": [
+        {
+          "name": "Equipment Malfunction",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/23028.jpg",
+            "https://marvelcdb.com/bundles/cards/23028.png"
+          ]
+        }
+      ],
+      "set": "warm",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "23029",
+      "faces": [
+        {
+          "name": "Living Laser",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/23029.jpg",
+            "https://marvelcdb.com/bundles/cards/23029.png"
+          ]
+        }
+      ],
+      "set": "warm_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "23030",
+      "faces": [
+        {
+          "name": "Deadly Light Show",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/23030.jpg",
+            "https://marvelcdb.com/bundles/cards/23030.png"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "warm_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "23031",
+      "faces": [
+        {
+          "name": "Laser Strike",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/23031.jpg",
+            "https://marvelcdb.com/bundles/cards/23031.png"
+          ]
+        }
+      ],
+      "set": "warm_nemesis",
+      "back": "encounter",
+      "quantity": 3
+    },
+    {
+      "code": "23032",
+      "faces": [
+        {
+          "name": "As One!",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/23032.jpg",
+            "https://marvelcdb.com/bundles/cards/23032.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "23033",
+      "faces": [
+        {
+          "name": "Vigilante Training",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/23033.jpg",
+            "https://marvelcdb.com/bundles/cards/23033.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "23034",
+      "faces": [
+        {
+          "name": "Stand Together",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/23034.jpg",
+            "https://marvelcdb.com/bundles/cards/23034.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "23035",
+      "faces": [
+        {
+          "name": "Sidearm",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/23035.jpg",
+            "https://marvelcdb.com/bundles/cards/23035.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "40030"
+      ]
+    }
+  ],
+  "sets": [
+    {
+      "code": "warm",
+      "name": "War Machine",
+      "kind": "hero",
+      "cards": [
+        "23001",
+        "23002",
+        "23003",
+        "23004",
+        "23005",
+        "23006",
+        "23007",
+        "23008",
+        "23009",
+        "23010",
+        "23011",
+        "23028"
+      ]
+    },
+    {
+      "code": "warm_nemesis",
+      "name": "War Machine Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "23029",
+        "23030",
+        "23031"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "23001",
+      "set": "warm",
+      "obligation": "23028",
+      "nemesis": "warm_nemesis"
+    }
+  ]
+}

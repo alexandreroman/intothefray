@@ -1,0 +1,602 @@
+{
+  "code": "wonder_man",
+  "name": "Wonder Man",
+  "position": 58,
+  "cards": [
+    {
+      "code": "58001",
+      "faces": [
+        {
+          "name": "Wonder Man",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58001A.jpg",
+            "https://marvelcdb.com/bundles/cards/58001a.png"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "Simon Williams",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58001B.jpg",
+            "https://marvelcdb.com/bundles/cards/58001b.png"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "wonder_man",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "58001a",
+        "58001b"
+      ]
+    },
+    {
+      "code": "58002",
+      "faces": [
+        {
+          "name": "Ionic Physiology",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58002.jpg",
+            "https://marvelcdb.com/bundles/cards/58002.jpg"
+          ]
+        }
+      ],
+      "set": "wonder_man",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "58003",
+      "faces": [
+        {
+          "name": "Active Altruism",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58003.jpg",
+            "https://marvelcdb.com/bundles/cards/58003.jpg"
+          ]
+        }
+      ],
+      "set": "wonder_man",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "58004",
+      "faces": [
+        {
+          "name": "Ionic Blast",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58004.jpg",
+            "https://marvelcdb.com/bundles/cards/58004.jpg"
+          ]
+        }
+      ],
+      "set": "wonder_man",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "58005",
+      "faces": [
+        {
+          "name": "Starstruck",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58005.jpg",
+            "https://marvelcdb.com/bundles/cards/58005.jpg"
+          ]
+        }
+      ],
+      "set": "wonder_man",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "58006",
+      "faces": [
+        {
+          "name": "Energy Siphon",
+          "type": "resource",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58006.jpg",
+            "https://marvelcdb.com/bundles/cards/58006.jpg"
+          ]
+        }
+      ],
+      "set": "wonder_man",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "58007",
+      "faces": [
+        {
+          "name": "Wonder Fans",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58007.jpg",
+            "https://marvelcdb.com/bundles/cards/58007.jpg"
+          ]
+        }
+      ],
+      "set": "wonder_man",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "58008",
+      "faces": [
+        {
+          "name": "Jet Belt",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58008.jpg",
+            "https://marvelcdb.com/bundles/cards/58008.jpg"
+          ]
+        }
+      ],
+      "set": "wonder_man",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "58009",
+      "faces": [
+        {
+          "name": "Mr. Hollywood",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58009.jpg",
+            "https://marvelcdb.com/bundles/cards/58009.jpg"
+          ]
+        }
+      ],
+      "set": "wonder_man",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "58010",
+      "faces": [
+        {
+          "name": "Signature Sunglasses",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58010.jpg",
+            "https://marvelcdb.com/bundles/cards/58010.jpg"
+          ]
+        }
+      ],
+      "set": "wonder_man",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "58011",
+      "faces": [
+        {
+          "name": "\"What Are You?\"",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58011.jpg",
+            "https://marvelcdb.com/bundles/cards/58011.jpg"
+          ]
+        }
+      ],
+      "set": "wonder_man",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "58012",
+      "faces": [
+        {
+          "name": "Firebird",
+          "subname": "Bonita Juarez",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58012.jpg",
+            "https://marvelcdb.com/bundles/cards/58012.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "58013",
+      "faces": [
+        {
+          "name": "Hawkeye",
+          "subname": "Clint Barton",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58013.jpg",
+            "https://marvelcdb.com/bundles/cards/58013.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "58014",
+      "faces": [
+        {
+          "name": "Scarlet Witch",
+          "subname": "Wanda Maximoff",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58014.jpg",
+            "https://marvelcdb.com/bundles/cards/58014.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "58015",
+      "faces": [
+        {
+          "name": "Sentry",
+          "subname": "Robert Reynolds",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58015.jpg",
+            "https://marvelcdb.com/bundles/cards/58015.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "58016",
+      "faces": [
+        {
+          "name": "Battlefield Benevolence",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58016.jpg",
+            "https://marvelcdb.com/bundles/cards/58016.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "58018",
+      "faces": [
+        {
+          "name": "Everywhere All at Once",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58018.jpg",
+            "https://marvelcdb.com/bundles/cards/58018.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "58019",
+      "faces": [
+        {
+          "name": "Stronger Together",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58019.jpg",
+            "https://marvelcdb.com/bundles/cards/58019.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "58020",
+      "faces": [
+        {
+          "name": "Unified Strike",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58020.jpg",
+            "https://marvelcdb.com/bundles/cards/58020.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "58021",
+      "faces": [
+        {
+          "name": "Heroic Conditioning",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58021.jpg",
+            "https://marvelcdb.com/bundles/cards/58021.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "58022",
+      "faces": [
+        {
+          "name": "Swordsman",
+          "subname": "Jacques Duquesne",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58022.jpg",
+            "https://marvelcdb.com/bundles/cards/58022.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "58024",
+      "faces": [
+        {
+          "name": "Jarvis",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58024.jpg",
+            "https://marvelcdb.com/bundles/cards/58024.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "58025",
+      "faces": [
+        {
+          "name": "Pacifism",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58025.jpg",
+            "https://marvelcdb.com/bundles/cards/58025.jpg"
+          ]
+        }
+      ],
+      "set": "wonder_man",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "58026",
+      "faces": [
+        {
+          "name": "Grim Reaper",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58026.jpg",
+            "https://marvelcdb.com/bundles/cards/58026.jpg"
+          ]
+        }
+      ],
+      "set": "wonder_man_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "58027",
+      "faces": [
+        {
+          "name": "Brother vs. Brother",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58027.jpg",
+            "https://marvelcdb.com/bundles/cards/58027.jpg"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "wonder_man_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "58028",
+      "faces": [
+        {
+          "name": "Scythe Strike",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58028.jpg",
+            "https://marvelcdb.com/bundles/cards/58028.jpg"
+          ]
+        }
+      ],
+      "set": "wonder_man_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "58029",
+      "faces": [
+        {
+          "name": "Death Cannot Die",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58029.jpg",
+            "https://marvelcdb.com/bundles/cards/58029.jpg"
+          ]
+        }
+      ],
+      "set": "wonder_man_nemesis",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "58030",
+      "faces": [
+        {
+          "name": "Caught in the Crossfire",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58030.jpg",
+            "https://marvelcdb.com/bundles/cards/58030.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "58031",
+      "faces": [
+        {
+          "name": "Cameo",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58031.jpg",
+            "https://marvelcdb.com/bundles/cards/58031.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "58032",
+      "faces": [
+        {
+          "name": "Coordinated Effort",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58032.jpg",
+            "https://marvelcdb.com/bundles/cards/58032.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "58033",
+      "faces": [
+        {
+          "name": "Disarming Defense",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58033.jpg",
+            "https://marvelcdb.com/bundles/cards/58033.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "58034",
+      "faces": [
+        {
+          "name": "Avengers Compound",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58034.jpg",
+            "https://marvelcdb.com/bundles/cards/58034.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "59032"
+      ]
+    }
+  ],
+  "sets": [
+    {
+      "code": "wonder_man",
+      "name": "Wonder Man",
+      "kind": "hero",
+      "cards": [
+        "58001",
+        "58002",
+        "58003",
+        "58004",
+        "58005",
+        "58006",
+        "58007",
+        "58008",
+        "58009",
+        "58010",
+        "58011",
+        "58025"
+      ]
+    },
+    {
+      "code": "wonder_man_nemesis",
+      "name": "Wonder Man Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "58026",
+        "58027",
+        "58028",
+        "58029"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "58001",
+      "set": "wonder_man",
+      "obligation": "58025",
+      "nemesis": "wonder_man_nemesis"
+    }
+  ]
+}

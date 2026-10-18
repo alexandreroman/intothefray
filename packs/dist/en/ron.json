@@ -1,0 +1,105 @@
+{
+  "code": "ron",
+  "name": "Ronan Modular Set",
+  "position": 900,
+  "cards": [
+    {
+      "code": "90001",
+      "faces": [
+        {
+          "name": "Ronan the Accuser",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/90001.png"
+          ]
+        }
+      ],
+      "set": "kree_fanatic",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "90002",
+      "faces": [
+        {
+          "name": "Judge, Jury, Executioner",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/90002.png"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "kree_fanatic",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "90003",
+      "faces": [
+        {
+          "name": "The Accused",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/90003.png"
+          ]
+        }
+      ],
+      "set": "kree_fanatic",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "90004",
+      "faces": [
+        {
+          "name": "Bring the Hammer Down",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/90004.png"
+          ]
+        }
+      ],
+      "set": "kree_fanatic",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "90005",
+      "faces": [
+        {
+          "name": "You Dare Oppose Me?",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/90005.png"
+          ]
+        }
+      ],
+      "set": "kree_fanatic",
+      "back": "encounter",
+      "quantity": 2
+    }
+  ],
+  "sets": [
+    {
+      "code": "kree_fanatic",
+      "name": "Kree Fanatic",
+      "kind": "modular",
+      "cards": [
+        "90001",
+        "90002",
+        "90003",
+        "90004",
+        "90005"
+      ]
+    }
+  ]
+}

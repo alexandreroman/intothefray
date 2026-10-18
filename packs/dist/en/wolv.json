@@ -1,0 +1,586 @@
+{
+  "code": "wolv",
+  "name": "Wolverine",
+  "position": 35,
+  "cards": [
+    {
+      "code": "35001",
+      "faces": [
+        {
+          "name": "Wolverine",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35001A.jpg",
+            "https://marvelcdb.com/bundles/cards/35001a.png"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "Logan",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35001B.jpg",
+            "https://marvelcdb.com/bundles/cards/35001b.png"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "wolverine",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "35001a",
+        "35001b"
+      ]
+    },
+    {
+      "code": "35002",
+      "faces": [
+        {
+          "name": "Wolverine's Claws",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35002.jpg",
+            "https://marvelcdb.com/bundles/cards/35002.png"
+          ]
+        }
+      ],
+      "set": "wolverine",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "35003",
+      "faces": [
+        {
+          "name": "Jubilee",
+          "subname": "Jubilation Lee",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35003.jpg",
+            "https://marvelcdb.com/bundles/cards/35003.png"
+          ]
+        }
+      ],
+      "set": "wolverine",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "35004",
+      "faces": [
+        {
+          "name": "Adamantium Skeleton",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35004.jpg",
+            "https://marvelcdb.com/bundles/cards/35004.png"
+          ]
+        }
+      ],
+      "set": "wolverine",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "35005",
+      "faces": [
+        {
+          "name": "Berserker Frenzy",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35005.jpg",
+            "https://marvelcdb.com/bundles/cards/35005.png"
+          ]
+        }
+      ],
+      "set": "wolverine",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "35006",
+      "faces": [
+        {
+          "name": "\"I Got Better\"",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35006.jpg",
+            "https://marvelcdb.com/bundles/cards/35006.png"
+          ]
+        }
+      ],
+      "set": "wolverine",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "35007",
+      "faces": [
+        {
+          "name": "Logan's Cabin",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35007.jpg",
+            "https://marvelcdb.com/bundles/cards/35007.png"
+          ]
+        }
+      ],
+      "set": "wolverine",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "35008",
+      "faces": [
+        {
+          "name": "Berserker Barrage",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35008.jpg",
+            "https://marvelcdb.com/bundles/cards/35008.png"
+          ]
+        }
+      ],
+      "set": "wolverine",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "35009",
+      "faces": [
+        {
+          "name": "Slice and Dice",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35009.jpg",
+            "https://marvelcdb.com/bundles/cards/35009.png"
+          ]
+        }
+      ],
+      "set": "wolverine",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "35010",
+      "faces": [
+        {
+          "name": "Lunging Strike",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35010.jpg",
+            "https://marvelcdb.com/bundles/cards/35010.png"
+          ]
+        }
+      ],
+      "set": "wolverine",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "35011",
+      "faces": [
+        {
+          "name": "Track by Scent",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35011.jpg",
+            "https://marvelcdb.com/bundles/cards/35011.png"
+          ]
+        }
+      ],
+      "set": "wolverine",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "35012",
+      "faces": [
+        {
+          "name": "Regenerative Healing",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35012.jpg",
+            "https://marvelcdb.com/bundles/cards/35012.png"
+          ]
+        }
+      ],
+      "set": "wolverine",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "35013",
+      "faces": [
+        {
+          "name": "Psylocke",
+          "subname": "Betsy Braddock",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35013.jpg",
+            "https://marvelcdb.com/bundles/cards/35013.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "35014",
+      "faces": [
+        {
+          "name": "Sunfire",
+          "subname": "Shiro Yoshida",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35014.jpg",
+            "https://marvelcdb.com/bundles/cards/35014.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "35016",
+      "faces": [
+        {
+          "name": "Warrior Skill",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35016.jpg",
+            "https://marvelcdb.com/bundles/cards/35016.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "35017",
+      "faces": [
+        {
+          "name": "Outta My Way!",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35017.jpg",
+            "https://marvelcdb.com/bundles/cards/35017.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "35018",
+      "faces": [
+        {
+          "name": "Precision Strike",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35018.jpg",
+            "https://marvelcdb.com/bundles/cards/35018.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "35022",
+      "faces": [
+        {
+          "name": "Weapon X",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35022.jpg",
+            "https://marvelcdb.com/bundles/cards/35022.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "35023",
+      "faces": [
+        {
+          "name": "Fastball Special",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35023.jpg",
+            "https://marvelcdb.com/bundles/cards/35023.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "35027",
+      "faces": [
+        {
+          "name": "Past Demons",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35027.jpg",
+            "https://marvelcdb.com/bundles/cards/35027.png"
+          ]
+        }
+      ],
+      "set": "wolverine",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "35028",
+      "faces": [
+        {
+          "name": "Omega Red",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35028.jpg",
+            "https://marvelcdb.com/bundles/cards/35028.png"
+          ]
+        }
+      ],
+      "set": "wolverine_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "35029",
+      "faces": [
+        {
+          "name": "The Carbonadium Synthesizer",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35029.jpg",
+            "https://marvelcdb.com/bundles/cards/35029.png"
+          ],
+          "startingThreat": {
+            "value": 5,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "wolverine_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "35030",
+      "faces": [
+        {
+          "name": "Death Factor",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35030.jpg",
+            "https://marvelcdb.com/bundles/cards/35030.png"
+          ]
+        }
+      ],
+      "set": "wolverine_nemesis",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "35031",
+      "faces": [
+        {
+          "name": "Tentacle Strike",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35031.jpg",
+            "https://marvelcdb.com/bundles/cards/35031.png"
+          ]
+        }
+      ],
+      "set": "wolverine_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "35032",
+      "faces": [
+        {
+          "name": "Command Center",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35032.jpg",
+            "https://marvelcdb.com/bundles/cards/35032.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "35033",
+      "faces": [
+        {
+          "name": "Longshot",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35033.jpg",
+            "https://marvelcdb.com/bundles/cards/35033.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "35034",
+      "faces": [
+        {
+          "name": "Lady Deathstrike",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35034.jpg",
+            "https://marvelcdb.com/bundles/cards/35034.png"
+          ]
+        }
+      ],
+      "set": "deathstrike",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "35035",
+      "faces": [
+        {
+          "name": "Seeking Vengeance",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35035.jpg",
+            "https://marvelcdb.com/bundles/cards/35035.png"
+          ],
+          "startingThreat": {
+            "value": 5,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "deathstrike",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "35036",
+      "faces": [
+        {
+          "name": "Adamantium Upgrades",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35036.jpg",
+            "https://marvelcdb.com/bundles/cards/35036.png"
+          ]
+        }
+      ],
+      "set": "deathstrike",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "35037",
+      "faces": [
+        {
+          "name": "Hack 'n' Slash",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35037.jpg",
+            "https://marvelcdb.com/bundles/cards/35037.png"
+          ]
+        }
+      ],
+      "set": "deathstrike",
+      "back": "encounter",
+      "quantity": 2
+    }
+  ],
+  "sets": [
+    {
+      "code": "deathstrike",
+      "name": "Deathstrike",
+      "kind": "modular",
+      "cards": [
+        "35034",
+        "35035",
+        "35036",
+        "35037"
+      ]
+    },
+    {
+      "code": "wolverine",
+      "name": "Wolverine",
+      "kind": "hero",
+      "cards": [
+        "35001",
+        "35002",
+        "35003",
+        "35004",
+        "35005",
+        "35006",
+        "35007",
+        "35008",
+        "35009",
+        "35010",
+        "35011",
+        "35012",
+        "35027"
+      ]
+    },
+    {
+      "code": "wolverine_nemesis",
+      "name": "Wolverine Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "35028",
+        "35029",
+        "35030",
+        "35031"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "35001",
+      "set": "wolverine",
+      "obligation": "35027",
+      "nemesis": "wolverine_nemesis"
+    }
+  ]
+}

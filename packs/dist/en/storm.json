@@ -1,0 +1,612 @@
+{
+  "code": "storm",
+  "name": "Storm",
+  "position": 36,
+  "cards": [
+    {
+      "code": "36001",
+      "faces": [
+        {
+          "name": "Storm",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36001A.jpg",
+            "https://marvelcdb.com/bundles/cards/36001a.png"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "Ororo Munroe",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36001B.jpg",
+            "https://marvelcdb.com/bundles/cards/36001b.png"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "storm",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "36001a",
+        "36001b"
+      ]
+    },
+    {
+      "code": "36002",
+      "faces": [
+        {
+          "name": "Clear Skies",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36002.jpg",
+            "https://marvelcdb.com/bundles/cards/36002.png"
+          ]
+        }
+      ],
+      "set": "storm_weather_deck",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "36003",
+      "faces": [
+        {
+          "name": "Hurricane",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36003.jpg",
+            "https://marvelcdb.com/bundles/cards/36003.png"
+          ]
+        }
+      ],
+      "set": "storm_weather_deck",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "36004",
+      "faces": [
+        {
+          "name": "Thunderstorm",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36004.jpg",
+            "https://marvelcdb.com/bundles/cards/36004.png"
+          ]
+        }
+      ],
+      "set": "storm_weather_deck",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "36005",
+      "faces": [
+        {
+          "name": "Blizzard",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36005.jpg",
+            "https://marvelcdb.com/bundles/cards/36005.png"
+          ]
+        }
+      ],
+      "set": "storm_weather_deck",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "36006",
+      "faces": [
+        {
+          "name": "Storm's Crown",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36006.jpg",
+            "https://marvelcdb.com/bundles/cards/36006.png"
+          ]
+        }
+      ],
+      "set": "storm",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "36007",
+      "faces": [
+        {
+          "name": "Storm's Cape",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36007.jpg",
+            "https://marvelcdb.com/bundles/cards/36007.png"
+          ]
+        }
+      ],
+      "set": "storm",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "36008",
+      "faces": [
+        {
+          "name": "Ororo's Garden",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36008.jpg",
+            "https://marvelcdb.com/bundles/cards/36008.png"
+          ]
+        }
+      ],
+      "set": "storm",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "36009",
+      "faces": [
+        {
+          "name": "Weather Goddess",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36009.jpg",
+            "https://marvelcdb.com/bundles/cards/36009.png"
+          ]
+        }
+      ],
+      "set": "storm",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "36010",
+      "faces": [
+        {
+          "name": "Torrential Rain",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36010.jpg",
+            "https://marvelcdb.com/bundles/cards/36010.png"
+          ]
+        }
+      ],
+      "set": "storm",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "36011",
+      "faces": [
+        {
+          "name": "Lightning Bolt",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36011.jpg",
+            "https://marvelcdb.com/bundles/cards/36011.png"
+          ]
+        }
+      ],
+      "set": "storm",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "36012",
+      "faces": [
+        {
+          "name": "Flash Freeze",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36012.jpg",
+            "https://marvelcdb.com/bundles/cards/36012.png"
+          ]
+        }
+      ],
+      "set": "storm",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "36013",
+      "faces": [
+        {
+          "name": "Blast of Wind",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36013.jpg",
+            "https://marvelcdb.com/bundles/cards/36013.png"
+          ]
+        }
+      ],
+      "set": "storm",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "36014",
+      "faces": [
+        {
+          "name": "Havok",
+          "subname": "Alex Summers",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36014.jpg",
+            "https://marvelcdb.com/bundles/cards/36014.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "36015",
+      "faces": [
+        {
+          "name": "Mirage",
+          "subname": "Dani Moonstar",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36015.jpg",
+            "https://marvelcdb.com/bundles/cards/36015.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "36016",
+      "faces": [
+        {
+          "name": "Gentle",
+          "subname": "Nezhno Abidemi",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36016.jpg",
+            "https://marvelcdb.com/bundles/cards/36016.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "36017",
+      "faces": [
+        {
+          "name": "Pixie",
+          "subname": "Megan Gwynn",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36017.jpg",
+            "https://marvelcdb.com/bundles/cards/36017.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "36018",
+      "faces": [
+        {
+          "name": "Uncanny X-Men",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36018.jpg",
+            "https://marvelcdb.com/bundles/cards/36018.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "36019",
+      "faces": [
+        {
+          "name": "Leadership Skill",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36019.jpg",
+            "https://marvelcdb.com/bundles/cards/36019.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "36020",
+      "faces": [
+        {
+          "name": "\"To Me, My X-Men!\"",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36020.jpg",
+            "https://marvelcdb.com/bundles/cards/36020.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "36022",
+      "faces": [
+        {
+          "name": "Forge",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36022.jpg",
+            "https://marvelcdb.com/bundles/cards/36022.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "36030",
+      "faces": [
+        {
+          "name": "Claustrophobia",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36030.jpg",
+            "https://marvelcdb.com/bundles/cards/36030.png"
+          ]
+        }
+      ],
+      "set": "storm",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "36031",
+      "faces": [
+        {
+          "name": "Callisto",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36031.jpg",
+            "https://marvelcdb.com/bundles/cards/36031.png"
+          ]
+        }
+      ],
+      "set": "storm_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "36032",
+      "faces": [
+        {
+          "name": "Leader of the Morlocks",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36032.jpg",
+            "https://marvelcdb.com/bundles/cards/36032.png"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "storm_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "36033",
+      "faces": [
+        {
+          "name": "Switchblade",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36033.jpg",
+            "https://marvelcdb.com/bundles/cards/36033.png"
+          ]
+        }
+      ],
+      "set": "storm_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "36034",
+      "faces": [
+        {
+          "name": "Knife Fight",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36034.jpg",
+            "https://marvelcdb.com/bundles/cards/36034.png"
+          ]
+        }
+      ],
+      "set": "storm_nemesis",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "36035",
+      "faces": [
+        {
+          "name": "Hangar Bay",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36035.jpg",
+            "https://marvelcdb.com/bundles/cards/36035.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "36036",
+      "faces": [
+        {
+          "name": "The Shadow King",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36036.jpg",
+            "https://marvelcdb.com/bundles/cards/36036.png"
+          ]
+        }
+      ],
+      "set": "shadow_king",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "36037",
+      "faces": [
+        {
+          "name": "Ruler of the Astral Plane",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36037.jpg",
+            "https://marvelcdb.com/bundles/cards/36037.png"
+          ],
+          "startingThreat": {
+            "value": 6,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "shadow_king",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "36038",
+      "faces": [
+        {
+          "name": "Possessed",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36038.jpg",
+            "https://marvelcdb.com/bundles/cards/36038.png"
+          ]
+        }
+      ],
+      "set": "shadow_king",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "36039",
+      "faces": [
+        {
+          "name": "Astral Attack",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36039.jpg",
+            "https://marvelcdb.com/bundles/cards/36039.png"
+          ]
+        }
+      ],
+      "set": "shadow_king",
+      "back": "encounter",
+      "quantity": 1
+    }
+  ],
+  "sets": [
+    {
+      "code": "shadow_king",
+      "name": "Shadow King",
+      "kind": "modular",
+      "cards": [
+        "36036",
+        "36037",
+        "36038",
+        "36039"
+      ]
+    },
+    {
+      "code": "storm",
+      "name": "Storm",
+      "kind": "hero",
+      "cards": [
+        "36001",
+        "36006",
+        "36007",
+        "36008",
+        "36009",
+        "36010",
+        "36011",
+        "36012",
+        "36013",
+        "36030"
+      ]
+    },
+    {
+      "code": "storm_nemesis",
+      "name": "Storm Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "36031",
+        "36032",
+        "36033",
+        "36034"
+      ]
+    },
+    {
+      "code": "storm_weather_deck",
+      "name": "Weather Deck",
+      "kind": "hero_special",
+      "cards": [
+        "36002",
+        "36003",
+        "36004",
+        "36005"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "36001",
+      "set": "storm",
+      "obligation": "36030",
+      "nemesis": "storm_nemesis"
+    }
+  ]
+}

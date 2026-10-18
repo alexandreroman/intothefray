@@ -1,0 +1,494 @@
+{
+  "code": "scw",
+  "name": "Scarlet Witch",
+  "position": 15,
+  "cards": [
+    {
+      "code": "15001",
+      "faces": [
+        {
+          "name": "Scarlet Witch",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15001A.jpg",
+            "https://marvelcdb.com/bundles/cards/15001a.png"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "Wanda Maximoff",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15001B.jpg",
+            "https://marvelcdb.com/bundles/cards/15001b.png"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "scw",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "15001a",
+        "15001b"
+      ]
+    },
+    {
+      "code": "15002",
+      "faces": [
+        {
+          "name": "Quicksilver",
+          "subname": "Pietro Maximoff",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15002.jpg",
+            "https://marvelcdb.com/bundles/cards/15002.png"
+          ]
+        }
+      ],
+      "set": "scw",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "15003",
+      "faces": [
+        {
+          "name": "Chaos Magic",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15003.jpg",
+            "https://marvelcdb.com/bundles/cards/15003.png"
+          ]
+        }
+      ],
+      "set": "scw",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "15004",
+      "faces": [
+        {
+          "name": "Hex Bolt",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15004.jpg",
+            "https://marvelcdb.com/bundles/cards/15004.png"
+          ]
+        }
+      ],
+      "set": "scw",
+      "back": "player",
+      "quantity": 4
+    },
+    {
+      "code": "15005",
+      "faces": [
+        {
+          "name": "Molecular Decay",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15005.jpg",
+            "https://marvelcdb.com/bundles/cards/15005.png"
+          ]
+        }
+      ],
+      "set": "scw",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "15006",
+      "faces": [
+        {
+          "name": "Warp Reality",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15006.jpg",
+            "https://marvelcdb.com/bundles/cards/15006.png"
+          ]
+        }
+      ],
+      "set": "scw",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "15007",
+      "faces": [
+        {
+          "name": "Agatha Harkness",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15007.jpg",
+            "https://marvelcdb.com/bundles/cards/15007.png"
+          ]
+        }
+      ],
+      "set": "scw",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "15008",
+      "faces": [
+        {
+          "name": "Magic Shield",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15008.jpg",
+            "https://marvelcdb.com/bundles/cards/15008.png"
+          ]
+        }
+      ],
+      "set": "scw",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "15009",
+      "faces": [
+        {
+          "name": "Scarlet Witch's Crest",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15009.jpg",
+            "https://marvelcdb.com/bundles/cards/15009.png"
+          ]
+        }
+      ],
+      "set": "scw",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "15010",
+      "faces": [
+        {
+          "name": "Speed",
+          "subname": "Thomas Shepherd",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15010.jpg",
+            "https://marvelcdb.com/bundles/cards/15010.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "15011",
+      "faces": [
+        {
+          "name": "Wiccan",
+          "subname": "William Kaplan",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15011.jpg",
+            "https://marvelcdb.com/bundles/cards/15011.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "15012",
+      "faces": [
+        {
+          "name": "Crisis Averted",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15012.jpg",
+            "https://marvelcdb.com/bundles/cards/15012.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "15013",
+      "faces": [
+        {
+          "name": "Multitasking",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15013.jpg",
+            "https://marvelcdb.com/bundles/cards/15013.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "15014",
+      "faces": [
+        {
+          "name": "Swift Retribution",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15014.jpg",
+            "https://marvelcdb.com/bundles/cards/15014.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "34019"
+      ]
+    },
+    {
+      "code": "15015",
+      "faces": [
+        {
+          "name": "Turn the Tide",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15015.jpg",
+            "https://marvelcdb.com/bundles/cards/15015.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "15019",
+      "faces": [
+        {
+          "name": "Spiritual Meditation",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15019.jpg",
+            "https://marvelcdb.com/bundles/cards/15019.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "45052"
+      ]
+    },
+    {
+      "code": "15023",
+      "faces": [
+        {
+          "name": "Slipping Sanity",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15023.jpg",
+            "https://marvelcdb.com/bundles/cards/15023.png"
+          ]
+        }
+      ],
+      "set": "scw",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "15024",
+      "faces": [
+        {
+          "name": "The Next Evolution",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15024.jpg",
+            "https://marvelcdb.com/bundles/cards/15024.png"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "scw_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "15025",
+      "faces": [
+        {
+          "name": "Luminous",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15025.jpg",
+            "https://marvelcdb.com/bundles/cards/15025.png"
+          ]
+        }
+      ],
+      "set": "scw_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "15026",
+      "faces": [
+        {
+          "name": "Magical Suspension",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15026.jpg",
+            "https://marvelcdb.com/bundles/cards/15026.png"
+          ]
+        }
+      ],
+      "set": "scw_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "15027",
+      "faces": [
+        {
+          "name": "Chaos Manipulation",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15027.jpg",
+            "https://marvelcdb.com/bundles/cards/15027.png"
+          ]
+        }
+      ],
+      "set": "scw_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "15028",
+      "faces": [
+        {
+          "name": "Browbeat",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15028.jpg",
+            "https://marvelcdb.com/bundles/cards/15028.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "15029",
+      "faces": [
+        {
+          "name": "Last Stand",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15029.jpg",
+            "https://marvelcdb.com/bundles/cards/15029.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "15030",
+      "faces": [
+        {
+          "name": "Bait and Switch",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15030.jpg",
+            "https://marvelcdb.com/bundles/cards/15030.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "27013",
+        "32015"
+      ]
+    },
+    {
+      "code": "15031",
+      "faces": [
+        {
+          "name": "Recuperation",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15031.jpg",
+            "https://marvelcdb.com/bundles/cards/15031.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "46022"
+      ]
+    }
+  ],
+  "sets": [
+    {
+      "code": "scw",
+      "name": "Scarlet Witch",
+      "kind": "hero",
+      "cards": [
+        "15001",
+        "15002",
+        "15003",
+        "15004",
+        "15005",
+        "15006",
+        "15007",
+        "15008",
+        "15009",
+        "15023"
+      ]
+    },
+    {
+      "code": "scw_nemesis",
+      "name": "Scarlet Witch Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "15024",
+        "15025",
+        "15026",
+        "15027"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "15001",
+      "set": "scw",
+      "obligation": "15023",
+      "nemesis": "scw_nemesis"
+    }
+  ]
+}

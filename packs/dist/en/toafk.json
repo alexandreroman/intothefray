@@ -1,0 +1,1128 @@
+{
+  "code": "toafk",
+  "name": "The Once and Future Kang",
+  "position": 11,
+  "cards": [
+    {
+      "code": "11001",
+      "faces": [
+        {
+          "name": "Kang (The Conqueror)",
+          "type": "villain",
+          "stage": "I",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11001.jpg",
+            "https://marvelcdb.com/bundles/cards/11001.png"
+          ]
+        }
+      ],
+      "set": "kang",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "11002",
+      "faces": [
+        {
+          "name": "Kang (Immortus)",
+          "type": "villain",
+          "stage": "II",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11002.jpg",
+            "https://marvelcdb.com/bundles/cards/11002.png"
+          ]
+        }
+      ],
+      "set": "kang",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "11003",
+      "faces": [
+        {
+          "name": "Kang (Iron Lad)",
+          "type": "villain",
+          "stage": "II",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11003.jpg",
+            "https://marvelcdb.com/bundles/cards/11003.png"
+          ]
+        }
+      ],
+      "set": "kang",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "11004",
+      "faces": [
+        {
+          "name": "Kang (Rama-Tut)",
+          "type": "villain",
+          "stage": "II",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11004.jpg",
+            "https://marvelcdb.com/bundles/cards/11004.png"
+          ]
+        }
+      ],
+      "set": "kang",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "11005",
+      "faces": [
+        {
+          "name": "Kang (Scarlet Centurion)",
+          "type": "villain",
+          "stage": "II",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11005.jpg",
+            "https://marvelcdb.com/bundles/cards/11005.png"
+          ]
+        }
+      ],
+      "set": "kang",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "11006",
+      "faces": [
+        {
+          "name": "Kang (The Conqueror)",
+          "type": "villain",
+          "stage": "III",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11006.jpg",
+            "https://marvelcdb.com/bundles/cards/11006.png"
+          ]
+        }
+      ],
+      "set": "kang",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "11007",
+      "faces": [
+        {
+          "name": "Kang's Arrival",
+          "type": "main_scheme",
+          "stage": "1A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11007A.jpg",
+            "https://marvelcdb.com/bundles/cards/11007a.png"
+          ]
+        },
+        {
+          "name": "Kang's Arrival",
+          "type": "main_scheme",
+          "stage": "1B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11007B.jpg"
+          ],
+          "startingThreat": {
+            "value": 0,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "kang",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "11007a",
+        "11007b"
+      ]
+    },
+    {
+      "code": "11008",
+      "faces": [
+        {
+          "name": "The Master of Time",
+          "type": "main_scheme",
+          "stage": "2A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11008A.jpg",
+            "https://marvelcdb.com/bundles/cards/11008a.png"
+          ]
+        },
+        {
+          "name": "The Master of Time",
+          "type": "main_scheme",
+          "stage": "2B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11008B.jpg"
+          ]
+        }
+      ],
+      "set": "kang",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "11008a",
+        "11008b"
+      ]
+    },
+    {
+      "code": "11009",
+      "faces": [
+        {
+          "name": "The Chronopolis",
+          "type": "main_scheme",
+          "stage": "3A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11009A.jpg",
+            "https://marvelcdb.com/bundles/cards/11009a.png"
+          ]
+        },
+        {
+          "name": "The Chronopolis",
+          "type": "main_scheme",
+          "stage": "3B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11009B.jpg"
+          ],
+          "startingThreat": {
+            "value": 0,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "kang",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "11009a",
+        "11009b"
+      ]
+    },
+    {
+      "code": "11010",
+      "faces": [
+        {
+          "name": "Inexorable Fate",
+          "type": "main_scheme",
+          "stage": "3A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11010A.jpg",
+            "https://marvelcdb.com/bundles/cards/11010a.png"
+          ]
+        },
+        {
+          "name": "Inexorable Fate",
+          "type": "main_scheme",
+          "stage": "3B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11010B.jpg",
+            "https://marvelcdb.com/bundles/cards/11010b.png"
+          ],
+          "startingThreat": {
+            "value": 1,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "kang",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "11010a",
+        "11010b"
+      ]
+    },
+    {
+      "code": "11011",
+      "faces": [
+        {
+          "name": "The Realm of Rama-Tut",
+          "type": "main_scheme",
+          "stage": "3A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11011A.jpg",
+            "https://marvelcdb.com/bundles/cards/11011a.png"
+          ]
+        },
+        {
+          "name": "The Realm of Rama-Tut",
+          "type": "main_scheme",
+          "stage": "3B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11011B.jpg",
+            "https://marvelcdb.com/bundles/cards/11011b.png"
+          ],
+          "startingThreat": {
+            "value": 1,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "kang",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "11011a",
+        "11011b"
+      ]
+    },
+    {
+      "code": "11012",
+      "faces": [
+        {
+          "name": "The Present Future War",
+          "type": "main_scheme",
+          "stage": "3A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11012A.jpg",
+            "https://marvelcdb.com/bundles/cards/11012a.png"
+          ]
+        },
+        {
+          "name": "The Present Future War",
+          "type": "main_scheme",
+          "stage": "3B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11012B.jpg",
+            "https://marvelcdb.com/bundles/cards/11012b.png"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "kang",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "11012a",
+        "11012b"
+      ]
+    },
+    {
+      "code": "11013",
+      "faces": [
+        {
+          "name": "Kang's Wrath",
+          "type": "main_scheme",
+          "stage": "4A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11013A.jpg",
+            "https://marvelcdb.com/bundles/cards/11013a.png"
+          ]
+        },
+        {
+          "name": "Kang's Wrath",
+          "type": "main_scheme",
+          "stage": "4B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11013B.jpg",
+            "https://marvelcdb.com/bundles/cards/11013b.png"
+          ],
+          "startingThreat": {
+            "value": 0,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "kang",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "11013a",
+        "11013b"
+      ]
+    },
+    {
+      "code": "11014",
+      "faces": [
+        {
+          "name": "Temporal Shield",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11014.jpg",
+            "https://marvelcdb.com/bundles/cards/11014.png"
+          ]
+        }
+      ],
+      "set": "kang",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "11015",
+      "faces": [
+        {
+          "name": "Future Weapon",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11015.jpg",
+            "https://marvelcdb.com/bundles/cards/11015.png"
+          ]
+        }
+      ],
+      "set": "kang",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "11016",
+      "faces": [
+        {
+          "name": "Frozen in Time",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11016.jpg",
+            "https://marvelcdb.com/bundles/cards/11016.png"
+          ]
+        }
+      ],
+      "set": "kang",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "11017",
+      "faces": [
+        {
+          "name": "Macrobots",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11017.jpg",
+            "https://marvelcdb.com/bundles/cards/11017.png"
+          ]
+        }
+      ],
+      "set": "kang",
+      "back": "encounter",
+      "quantity": 3
+    },
+    {
+      "code": "11018",
+      "faces": [
+        {
+          "name": "Weakened",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11018.jpg",
+            "https://marvelcdb.com/bundles/cards/11018.png"
+          ]
+        }
+      ],
+      "set": "kang",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "11019",
+      "faces": [
+        {
+          "name": "Stolen Memories",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11019.jpg",
+            "https://marvelcdb.com/bundles/cards/11019.png"
+          ]
+        }
+      ],
+      "set": "kang",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "11020",
+      "faces": [
+        {
+          "name": "Depowered",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11020.jpg",
+            "https://marvelcdb.com/bundles/cards/11020.png"
+          ]
+        }
+      ],
+      "set": "kang",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "11021",
+      "faces": [
+        {
+          "name": "Time-Travel Hijinks",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11021.jpg",
+            "https://marvelcdb.com/bundles/cards/11021.png"
+          ]
+        }
+      ],
+      "set": "kang",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "11022",
+      "faces": [
+        {
+          "name": "Corrupted Timestream",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11022.jpg",
+            "https://marvelcdb.com/bundles/cards/11022.png"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "kang",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "11023",
+      "faces": [
+        {
+          "name": "Kang's Dominion",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11023.jpg",
+            "https://marvelcdb.com/bundles/cards/11023.png"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "kang",
+      "back": "encounter",
+      "quantity": 4
+    },
+    {
+      "code": "11024",
+      "faces": [
+        {
+          "name": "Pinned Down",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11024.jpg",
+            "https://marvelcdb.com/bundles/cards/11024.png"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "kang",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "11025",
+      "faces": [
+        {
+          "name": "Rampage",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11025.jpg",
+            "https://marvelcdb.com/bundles/cards/11025.png"
+          ],
+          "startingThreat": {
+            "value": 4,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "kang",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "11026",
+      "faces": [
+        {
+          "name": "Energy Blast",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11026.jpg",
+            "https://marvelcdb.com/bundles/cards/11026.png"
+          ]
+        }
+      ],
+      "set": "kang",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "11027",
+      "faces": [
+        {
+          "name": "Manipulated Timestream",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11027.jpg",
+            "https://marvelcdb.com/bundles/cards/11027.png"
+          ]
+        }
+      ],
+      "set": "kang",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "11028",
+      "faces": [
+        {
+          "name": "Time-Travel Tactics",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11028.jpg",
+            "https://marvelcdb.com/bundles/cards/11028.png"
+          ]
+        }
+      ],
+      "set": "kang",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "11029",
+      "faces": [
+        {
+          "name": "Past Machinations",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11029.jpg",
+            "https://marvelcdb.com/bundles/cards/11029.png"
+          ]
+        }
+      ],
+      "set": "kang",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "11030",
+      "faces": [
+        {
+          "name": "Ancient Warrior",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11030.jpg",
+            "https://marvelcdb.com/bundles/cards/11030.png"
+          ]
+        }
+      ],
+      "set": "temporal",
+      "back": "encounter",
+      "quantity": 3
+    },
+    {
+      "code": "11031",
+      "faces": [
+        {
+          "name": "Chitauri Soldier",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11031.jpg",
+            "https://marvelcdb.com/bundles/cards/11031.png"
+          ]
+        }
+      ],
+      "set": "temporal",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "11032",
+      "faces": [
+        {
+          "name": "Tyrannosaurus Rex",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11032.jpg",
+            "https://marvelcdb.com/bundles/cards/11032.png"
+          ]
+        }
+      ],
+      "set": "temporal",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "11033",
+      "faces": [
+        {
+          "name": "Time Portal",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11033.jpg",
+            "https://marvelcdb.com/bundles/cards/11033.png"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "temporal",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "11034",
+      "faces": [
+        {
+          "name": "Kang (The Conqueror)",
+          "type": "villain",
+          "stage": "I",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11034.jpg",
+            "https://marvelcdb.com/bundles/cards/11034.png"
+          ]
+        }
+      ],
+      "set": "exp_kang",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "11035",
+      "faces": [
+        {
+          "name": "Kang (Immortus)",
+          "type": "villain",
+          "stage": "II",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11035.jpg",
+            "https://marvelcdb.com/bundles/cards/11035.png"
+          ]
+        }
+      ],
+      "set": "exp_kang",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "11036",
+      "faces": [
+        {
+          "name": "Kang (Iron Lad)",
+          "type": "villain",
+          "stage": "II",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11036.jpg",
+            "https://marvelcdb.com/bundles/cards/11036.png"
+          ]
+        }
+      ],
+      "set": "exp_kang",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "11037",
+      "faces": [
+        {
+          "name": "Kang (Rama-Tut)",
+          "type": "villain",
+          "stage": "II",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11037.jpg",
+            "https://marvelcdb.com/bundles/cards/11037.png"
+          ]
+        }
+      ],
+      "set": "exp_kang",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "11038",
+      "faces": [
+        {
+          "name": "Kang (Scarlet Centurion)",
+          "type": "villain",
+          "stage": "II",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11038.jpg",
+            "https://marvelcdb.com/bundles/cards/11038.png"
+          ]
+        }
+      ],
+      "set": "exp_kang",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "11039",
+      "faces": [
+        {
+          "name": "Kang (The Conqueror)",
+          "type": "villain",
+          "stage": "III",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11039.jpg",
+            "https://marvelcdb.com/bundles/cards/11039.png"
+          ]
+        }
+      ],
+      "set": "exp_kang",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "11040",
+      "faces": [
+        {
+          "name": "Apocryphus",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11040.jpg",
+            "https://marvelcdb.com/bundles/cards/11040.png"
+          ]
+        }
+      ],
+      "set": "anachronauts",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "11041",
+      "faces": [
+        {
+          "name": "Deathunt 9000",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11041.jpg",
+            "https://marvelcdb.com/bundles/cards/11041.png"
+          ]
+        }
+      ],
+      "set": "anachronauts",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "11042",
+      "faces": [
+        {
+          "name": "Sir Raston",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11042.jpg",
+            "https://marvelcdb.com/bundles/cards/11042.png"
+          ]
+        }
+      ],
+      "set": "anachronauts",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "11043",
+      "faces": [
+        {
+          "name": "Terminatrix",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11043.jpg",
+            "https://marvelcdb.com/bundles/cards/11043.png"
+          ]
+        }
+      ],
+      "set": "anachronauts",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "11044",
+      "faces": [
+        {
+          "name": "Wildrun",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11044.jpg",
+            "https://marvelcdb.com/bundles/cards/11044.png"
+          ]
+        }
+      ],
+      "set": "anachronauts",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "11045",
+      "faces": [
+        {
+          "name": "The Anachronauts",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11045.jpg",
+            "https://marvelcdb.com/bundles/cards/11045.png"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "anachronauts",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "11046",
+      "faces": [
+        {
+          "name": "Kang's Chosen",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11046.jpg",
+            "https://marvelcdb.com/bundles/cards/11046.png"
+          ]
+        }
+      ],
+      "set": "anachronauts",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "11047",
+      "faces": [
+        {
+          "name": "Kang (Master of Time)",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11047.jpg",
+            "https://marvelcdb.com/bundles/cards/11047.png"
+          ]
+        }
+      ],
+      "set": "mot",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "11048",
+      "faces": [
+        {
+          "name": "Time-Displaced Soldier",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11048.jpg",
+            "https://marvelcdb.com/bundles/cards/11048.png"
+          ]
+        }
+      ],
+      "set": "mot",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "11049",
+      "faces": [
+        {
+          "name": "Fear of Kang",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11049.jpg",
+            "https://marvelcdb.com/bundles/cards/11049.png"
+          ]
+        }
+      ],
+      "set": "mot",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "11050",
+      "faces": [
+        {
+          "name": "Light of Centuries Sphere",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11050.jpg",
+            "https://marvelcdb.com/bundles/cards/11050.png"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "mot",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "11051",
+      "faces": [
+        {
+          "name": "Ancient Grudge",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11051.jpg",
+            "https://marvelcdb.com/bundles/cards/11051.png"
+          ]
+        }
+      ],
+      "set": "mot",
+      "back": "encounter",
+      "quantity": 2
+    }
+  ],
+  "sets": [
+    {
+      "code": "anachronauts",
+      "name": "Anachronauts",
+      "kind": "modular",
+      "cards": [
+        "11040",
+        "11041",
+        "11042",
+        "11043",
+        "11044",
+        "11045",
+        "11046"
+      ]
+    },
+    {
+      "code": "exp_kang",
+      "name": "Expert Kang",
+      "kind": "modular",
+      "cards": [
+        "11034",
+        "11035",
+        "11036",
+        "11037",
+        "11038",
+        "11039"
+      ]
+    },
+    {
+      "code": "kang",
+      "name": "Kang",
+      "kind": "villain",
+      "cards": [
+        "11001",
+        "11002",
+        "11003",
+        "11004",
+        "11005",
+        "11006",
+        "11007",
+        "11008",
+        "11009",
+        "11010",
+        "11011",
+        "11012",
+        "11013",
+        "11014",
+        "11015",
+        "11016",
+        "11017",
+        "11018",
+        "11019",
+        "11020",
+        "11021",
+        "11022",
+        "11023",
+        "11024",
+        "11025",
+        "11026",
+        "11027",
+        "11028",
+        "11029"
+      ]
+    },
+    {
+      "code": "mot",
+      "name": "Master of Time",
+      "kind": "modular",
+      "cards": [
+        "11047",
+        "11048",
+        "11049",
+        "11050",
+        "11051"
+      ]
+    },
+    {
+      "code": "temporal",
+      "name": "Temporal",
+      "kind": "modular",
+      "cards": [
+        "11030",
+        "11031",
+        "11032",
+        "11033"
+      ]
+    }
+  ]
+}

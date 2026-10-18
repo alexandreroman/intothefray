@@ -1,0 +1,567 @@
+{
+  "code": "iceman",
+  "name": "Iceman",
+  "position": 46,
+  "cards": [
+    {
+      "code": "46001",
+      "faces": [
+        {
+          "name": "Iceman",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46001A.jpg",
+            "https://marvelcdb.com/bundles/cards/46001a.png"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "Bobby Drake",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46001B.jpg",
+            "https://marvelcdb.com/bundles/cards/46001b.png"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "iceman",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "46001a",
+        "46001b"
+      ]
+    },
+    {
+      "code": "46002",
+      "faces": [
+        {
+          "name": "Frostbite",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46002.jpg",
+            "https://marvelcdb.com/bundles/cards/46002.jpg"
+          ]
+        }
+      ],
+      "set": "iceman_frostbite",
+      "back": "player",
+      "quantity": 6
+    },
+    {
+      "code": "46003",
+      "faces": [
+        {
+          "name": "Snow Clone",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46003.jpg",
+            "https://marvelcdb.com/bundles/cards/46003.jpg"
+          ]
+        }
+      ],
+      "set": "iceman",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "46004",
+      "faces": [
+        {
+          "name": "Power Belt",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46004.jpg",
+            "https://marvelcdb.com/bundles/cards/46004.jpg"
+          ]
+        }
+      ],
+      "set": "iceman",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "46005",
+      "faces": [
+        {
+          "name": "Cryokinetic Perception",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46005.jpg",
+            "https://marvelcdb.com/bundles/cards/46005.jpg"
+          ]
+        }
+      ],
+      "set": "iceman",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "46006",
+      "faces": [
+        {
+          "name": "Ice Slide",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46006.jpg",
+            "https://marvelcdb.com/bundles/cards/46006.jpg"
+          ]
+        }
+      ],
+      "set": "iceman",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "46007",
+      "faces": [
+        {
+          "name": "Frozen Solid",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46007.jpg",
+            "https://marvelcdb.com/bundles/cards/46007.jpg"
+          ]
+        }
+      ],
+      "set": "iceman",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "46008",
+      "faces": [
+        {
+          "name": "Ice Wall",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46008.jpg",
+            "https://marvelcdb.com/bundles/cards/46008.jpg"
+          ]
+        }
+      ],
+      "set": "iceman",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "46009",
+      "faces": [
+        {
+          "name": "Arctic Attack",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46009.jpg",
+            "https://marvelcdb.com/bundles/cards/46009.jpg"
+          ]
+        }
+      ],
+      "set": "iceman",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "46010",
+      "faces": [
+        {
+          "name": "Ice Blast",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46010.jpg",
+            "https://marvelcdb.com/bundles/cards/46010.jpg"
+          ]
+        }
+      ],
+      "set": "iceman",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "46011",
+      "faces": [
+        {
+          "name": "Chill Out!",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46011.jpg",
+            "https://marvelcdb.com/bundles/cards/46011.jpg"
+          ]
+        }
+      ],
+      "set": "iceman",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "46012",
+      "faces": [
+        {
+          "name": "Shark-Girl",
+          "subname": "Iara Dos Santos",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46012.jpg",
+            "https://marvelcdb.com/bundles/cards/46012.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "46013",
+      "faces": [
+        {
+          "name": "Glob",
+          "subname": "Robert Herman",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46013.jpg",
+            "https://marvelcdb.com/bundles/cards/46013.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "46014",
+      "faces": [
+        {
+          "name": "Suppressing Fire",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46014.jpg",
+            "https://marvelcdb.com/bundles/cards/46014.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "56014"
+      ]
+    },
+    {
+      "code": "46015",
+      "faces": [
+        {
+          "name": "Surprise Move",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46015.jpg",
+            "https://marvelcdb.com/bundles/cards/46015.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "46016",
+      "faces": [
+        {
+          "name": "Take That!",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46016.jpg",
+            "https://marvelcdb.com/bundles/cards/46016.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "46018",
+      "faces": [
+        {
+          "name": "Keep Up the Pressure",
+          "type": "player_side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46018.jpg",
+            "https://marvelcdb.com/bundles/cards/46018.jpg"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": true
+          }
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "46019",
+      "faces": [
+        {
+          "name": "Shadowcat",
+          "subname": "Kitty Pryde",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46019.jpg",
+            "https://marvelcdb.com/bundles/cards/46019.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "46020",
+      "faces": [
+        {
+          "name": "Beak",
+          "subname": "Barnell Bohusk",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46020.jpg",
+            "https://marvelcdb.com/bundles/cards/46020.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "46024",
+      "faces": [
+        {
+          "name": "Hot-Headed",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46024.jpg",
+            "https://marvelcdb.com/bundles/cards/46024.jpg"
+          ]
+        }
+      ],
+      "set": "iceman",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "46025",
+      "faces": [
+        {
+          "name": "Pyro",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46025.jpg",
+            "https://marvelcdb.com/bundles/cards/46025.jpg"
+          ]
+        }
+      ],
+      "set": "iceman_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "46026",
+      "faces": [
+        {
+          "name": "Playing with Fire",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46026.jpg",
+            "https://marvelcdb.com/bundles/cards/46026.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "iceman_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "46027",
+      "faces": [
+        {
+          "name": "Pyro's Flamethrower",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46027.jpg",
+            "https://marvelcdb.com/bundles/cards/46027.jpg"
+          ]
+        }
+      ],
+      "set": "iceman_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "46028",
+      "faces": [
+        {
+          "name": "Burn!",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46028.jpg",
+            "https://marvelcdb.com/bundles/cards/46028.jpg"
+          ]
+        }
+      ],
+      "set": "iceman_nemesis",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "46029",
+      "faces": [
+        {
+          "name": "Sauron",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46029.jpg",
+            "https://marvelcdb.com/bundles/cards/46029.jpg"
+          ]
+        }
+      ],
+      "set": "sauron",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "46030",
+      "faces": [
+        {
+          "name": "Sauron Lives!",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46030.jpg",
+            "https://marvelcdb.com/bundles/cards/46030.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "sauron",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "46031",
+      "faces": [
+        {
+          "name": "Life Drain",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46031.jpg",
+            "https://marvelcdb.com/bundles/cards/46031.jpg"
+          ]
+        }
+      ],
+      "set": "sauron",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "46032",
+      "faces": [
+        {
+          "name": "The Eye of Sauron",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46032.jpg",
+            "https://marvelcdb.com/bundles/cards/46032.jpg"
+          ]
+        }
+      ],
+      "set": "sauron",
+      "back": "encounter",
+      "quantity": 3
+    }
+  ],
+  "sets": [
+    {
+      "code": "iceman",
+      "name": "Iceman",
+      "kind": "hero",
+      "cards": [
+        "46001",
+        "46003",
+        "46004",
+        "46005",
+        "46006",
+        "46007",
+        "46008",
+        "46009",
+        "46010",
+        "46011",
+        "46024"
+      ]
+    },
+    {
+      "code": "iceman_frostbite",
+      "name": "Frostbite",
+      "kind": "hero_special",
+      "cards": [
+        "46002"
+      ]
+    },
+    {
+      "code": "iceman_nemesis",
+      "name": "Iceman Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "46025",
+        "46026",
+        "46027",
+        "46028"
+      ]
+    },
+    {
+      "code": "sauron",
+      "name": "Sauron",
+      "kind": "modular",
+      "cards": [
+        "46029",
+        "46030",
+        "46031",
+        "46032"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "46001",
+      "set": "iceman",
+      "obligation": "46024",
+      "nemesis": "iceman_nemesis"
+    }
+  ]
+}

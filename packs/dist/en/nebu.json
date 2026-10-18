@@ -1,0 +1,501 @@
+{
+  "code": "nebu",
+  "name": "Nebula",
+  "position": 22,
+  "cards": [
+    {
+      "code": "22001",
+      "faces": [
+        {
+          "name": "Nebula",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22001A.jpg",
+            "https://marvelcdb.com/bundles/cards/22001a.png"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "Nebula",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22001B.jpg",
+            "https://marvelcdb.com/bundles/cards/22001b.png"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "nebu",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "22001a",
+        "22001b"
+      ]
+    },
+    {
+      "code": "22002",
+      "faces": [
+        {
+          "name": "Gamora",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22002.jpg",
+            "https://marvelcdb.com/bundles/cards/22002.png"
+          ]
+        }
+      ],
+      "set": "nebu",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "22003",
+      "faces": [
+        {
+          "name": "Nebula's Ship",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22003.jpg",
+            "https://marvelcdb.com/bundles/cards/22003.png"
+          ]
+        }
+      ],
+      "set": "nebu",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "22004",
+      "faces": [
+        {
+          "name": "Cutthroat Ambition",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22004.jpg",
+            "https://marvelcdb.com/bundles/cards/22004.png"
+          ]
+        }
+      ],
+      "set": "nebu",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "22005",
+      "faces": [
+        {
+          "name": "Evasive Maneuvering",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22005.jpg",
+            "https://marvelcdb.com/bundles/cards/22005.png"
+          ]
+        }
+      ],
+      "set": "nebu",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "22006",
+      "faces": [
+        {
+          "name": "Unyielding Persistence",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22006.jpg",
+            "https://marvelcdb.com/bundles/cards/22006.png"
+          ]
+        }
+      ],
+      "set": "nebu",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "22007",
+      "faces": [
+        {
+          "name": "Weapons Master",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22007.jpg",
+            "https://marvelcdb.com/bundles/cards/22007.png"
+          ]
+        }
+      ],
+      "set": "nebu",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "22008",
+      "faces": [
+        {
+          "name": "Wide Stance",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22008.jpg",
+            "https://marvelcdb.com/bundles/cards/22008.png"
+          ]
+        }
+      ],
+      "set": "nebu",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "22009",
+      "faces": [
+        {
+          "name": "Combat Ready",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22009.jpg",
+            "https://marvelcdb.com/bundles/cards/22009.png"
+          ]
+        }
+      ],
+      "set": "nebu",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "22010",
+      "faces": [
+        {
+          "name": "Lethal Intent",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22010.jpg",
+            "https://marvelcdb.com/bundles/cards/22010.png"
+          ]
+        }
+      ],
+      "set": "nebu",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "22011",
+      "faces": [
+        {
+          "name": "Eros",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22011.jpg",
+            "https://marvelcdb.com/bundles/cards/22011.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "22012",
+      "faces": [
+        {
+          "name": "Wraith",
+          "subname": "Zak-Del",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22012.jpg",
+            "https://marvelcdb.com/bundles/cards/22012.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "22013",
+      "faces": [
+        {
+          "name": "Venom",
+          "subname": "Flash Thompson",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22013.jpg",
+            "https://marvelcdb.com/bundles/cards/22013.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "22014",
+      "faces": [
+        {
+          "name": "Justice Served",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22014.jpg",
+            "https://marvelcdb.com/bundles/cards/22014.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "22015",
+      "faces": [
+        {
+          "name": "One Way or Another",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22015.jpg",
+            "https://marvelcdb.com/bundles/cards/22015.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "30017"
+      ]
+    },
+    {
+      "code": "22018",
+      "faces": [
+        {
+          "name": "Brains Over Brawn",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22018.jpg",
+            "https://marvelcdb.com/bundles/cards/22018.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "22022",
+      "faces": [
+        {
+          "name": "Daughters of Thanos",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22022.jpg",
+            "https://marvelcdb.com/bundles/cards/22022.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "22027",
+      "faces": [
+        {
+          "name": "Inferiority Complex",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22027.jpg",
+            "https://marvelcdb.com/bundles/cards/22027.png"
+          ]
+        }
+      ],
+      "set": "nebu",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "22028",
+      "faces": [
+        {
+          "name": "Gamora",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22028.jpg",
+            "https://marvelcdb.com/bundles/cards/22028.png"
+          ]
+        }
+      ],
+      "set": "nebu_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "22029",
+      "faces": [
+        {
+          "name": "Self-Preservation",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22029.jpg",
+            "https://marvelcdb.com/bundles/cards/22029.png"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "nebu_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "22030",
+      "faces": [
+        {
+          "name": "Lethal Weapon",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22030.jpg",
+            "https://marvelcdb.com/bundles/cards/22030.png"
+          ]
+        }
+      ],
+      "set": "nebu_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "22031",
+      "faces": [
+        {
+          "name": "Old Rivals",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22031.jpg",
+            "https://marvelcdb.com/bundles/cards/22031.png"
+          ]
+        }
+      ],
+      "set": "nebu_nemesis",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "22032",
+      "faces": [
+        {
+          "name": "Energy Spear",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22032.jpg",
+            "https://marvelcdb.com/bundles/cards/22032.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "22033",
+      "faces": [
+        {
+          "name": "Guardians of the Galaxy",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22033.jpg",
+            "https://marvelcdb.com/bundles/cards/22033.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "22034",
+      "faces": [
+        {
+          "name": "Defensive Training",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22034.jpg",
+            "https://marvelcdb.com/bundles/cards/22034.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "22035",
+      "faces": [
+        {
+          "name": "Honorary Guardian",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22035.jpg",
+            "https://marvelcdb.com/bundles/cards/22035.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    }
+  ],
+  "sets": [
+    {
+      "code": "nebu",
+      "name": "Nebula",
+      "kind": "hero",
+      "cards": [
+        "22001",
+        "22002",
+        "22003",
+        "22004",
+        "22005",
+        "22006",
+        "22007",
+        "22008",
+        "22009",
+        "22010",
+        "22027"
+      ]
+    },
+    {
+      "code": "nebu_nemesis",
+      "name": "Nebula Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "22028",
+        "22029",
+        "22030",
+        "22031"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "22001",
+      "set": "nebu",
+      "obligation": "22027",
+      "nemesis": "nebu_nemesis"
+    }
+  ]
+}

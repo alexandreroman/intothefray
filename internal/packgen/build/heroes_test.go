@@ -81,3 +81,17 @@ func keys[V any](m map[string]V) func(func(string) bool) {
 		}
 	}
 }
+
+func TestBuildHeroesEmitsOneHeroWhenBothFacesAreHeroCards(t *testing.T) {
+	cards := []marvelcdb.Card{
+		{Code: "12001a", TypeCode: "hero", PackCode: "ant", SetCode: "ant_man"},
+		{Code: "12001b", TypeCode: "hero", PackCode: "ant", SetCode: "ant_man"},
+	}
+
+	heroes := BuildHeroes(cards)
+
+	want := []pack.Hero{{Identity: "12001", Set: "ant_man"}}
+	if !reflect.DeepEqual(heroes["ant"], want) {
+		t.Errorf("got heroes %+v, want %+v", heroes["ant"], want)
+	}
+}

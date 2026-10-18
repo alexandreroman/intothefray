@@ -1,0 +1,732 @@
+{
+  "code": "ironheart",
+  "name": "Ironheart",
+  "position": 29,
+  "cards": [
+    {
+      "code": "29001",
+      "faces": [
+        {
+          "name": "Ironheart",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29001A.jpg",
+            "https://marvelcdb.com/bundles/cards/29001a.png"
+          ],
+          "handSize": 4
+        },
+        {
+          "name": "Riri Williams",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29001B.jpg",
+            "https://marvelcdb.com/bundles/cards/29001b.png"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "ironheart",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "29001a",
+        "29001b"
+      ]
+    },
+    {
+      "code": "29002",
+      "faces": [
+        {
+          "name": "Ironheart",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29002A.jpg"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "Riri Williams",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29002B.jpg"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "ironheart",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "29002a",
+        "29002b"
+      ]
+    },
+    {
+      "code": "29003",
+      "faces": [
+        {
+          "name": "Ironheart",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29003A.jpg"
+          ],
+          "handSize": 6
+        },
+        {
+          "name": "Riri Williams",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29003B.jpg"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "ironheart",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "29003a",
+        "29003b"
+      ]
+    },
+    {
+      "code": "29004",
+      "faces": [
+        {
+          "name": "Brawn",
+          "subname": "Amadeus Cho",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29004.jpg",
+            "https://marvelcdb.com/bundles/cards/29004.png"
+          ]
+        }
+      ],
+      "set": "ironheart",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "29005",
+      "faces": [
+        {
+          "name": "Fly Over",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29005.jpg",
+            "https://marvelcdb.com/bundles/cards/29005.png"
+          ]
+        }
+      ],
+      "set": "ironheart",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "29006",
+      "faces": [
+        {
+          "name": "Photon Beam",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29006.jpg",
+            "https://marvelcdb.com/bundles/cards/29006.png"
+          ]
+        }
+      ],
+      "set": "ironheart",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "29007",
+      "faces": [
+        {
+          "name": "New and Improved",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29007.jpg",
+            "https://marvelcdb.com/bundles/cards/29007.png"
+          ]
+        }
+      ],
+      "set": "ironheart",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "29008",
+      "faces": [
+        {
+          "name": "Sector Scan",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29008.jpg",
+            "https://marvelcdb.com/bundles/cards/29008.png"
+          ]
+        }
+      ],
+      "set": "ironheart",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "29009",
+      "faces": [
+        {
+          "name": "Stroke of Genius",
+          "type": "resource",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29009.jpg",
+            "https://marvelcdb.com/bundles/cards/29009.png"
+          ]
+        }
+      ],
+      "set": "ironheart",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "29010",
+      "faces": [
+        {
+          "name": "Ronnie Williams",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29010.jpg",
+            "https://marvelcdb.com/bundles/cards/29010.png"
+          ]
+        }
+      ],
+      "set": "ironheart",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "29011",
+      "faces": [
+        {
+          "name": "Tony Stark A.I.",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29011.jpg",
+            "https://marvelcdb.com/bundles/cards/29011.png"
+          ]
+        }
+      ],
+      "set": "ironheart",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "29012",
+      "faces": [
+        {
+          "name": "Photon Blasters",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29012.jpg",
+            "https://marvelcdb.com/bundles/cards/29012.png"
+          ]
+        }
+      ],
+      "set": "ironheart",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "29013",
+      "faces": [
+        {
+          "name": "Propulsion Jets",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29013.jpg",
+            "https://marvelcdb.com/bundles/cards/29013.png"
+          ]
+        }
+      ],
+      "set": "ironheart",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "29014",
+      "faces": [
+        {
+          "name": "Cloud 9",
+          "subname": "Abby Boylen",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29014.jpg",
+            "https://marvelcdb.com/bundles/cards/29014.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "53016"
+      ]
+    },
+    {
+      "code": "29015",
+      "faces": [
+        {
+          "name": "Falcon",
+          "subname": "Joaquin Torres",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29015.jpg",
+            "https://marvelcdb.com/bundles/cards/29015.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "29016",
+      "faces": [
+        {
+          "name": "Patriot",
+          "subname": "Rayshaun Lucas",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29016.jpg",
+            "https://marvelcdb.com/bundles/cards/29016.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "29017",
+      "faces": [
+        {
+          "name": "Go All Out",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29017.jpg",
+            "https://marvelcdb.com/bundles/cards/29017.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "29018",
+      "faces": [
+        {
+          "name": "Push Ahead",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29018.jpg",
+            "https://marvelcdb.com/bundles/cards/29018.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "29020",
+      "faces": [
+        {
+          "name": "R\u0026D Facility",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29020.jpg",
+            "https://marvelcdb.com/bundles/cards/29020.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "29023",
+      "faces": [
+        {
+          "name": "Snowguard",
+          "subname": "Amka Aliyak",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29023.jpg",
+            "https://marvelcdb.com/bundles/cards/29023.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "29024",
+      "faces": [
+        {
+          "name": "Vivian",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29024.jpg",
+            "https://marvelcdb.com/bundles/cards/29024.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "29025",
+      "faces": [
+        {
+          "name": "\"Go for Champions!\"",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29025.jpg",
+            "https://marvelcdb.com/bundles/cards/29025.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "29027",
+      "faces": [
+        {
+          "name": "Ingenuity",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29027.jpg",
+            "https://marvelcdb.com/bundles/cards/29027.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "29028",
+      "faces": [
+        {
+          "name": "A Minor Setback",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29028.jpg",
+            "https://marvelcdb.com/bundles/cards/29028.png"
+          ]
+        }
+      ],
+      "set": "ironheart",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "29029",
+      "faces": [
+        {
+          "name": "Rule by Force",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29029.jpg",
+            "https://marvelcdb.com/bundles/cards/29029.png"
+          ],
+          "startingThreat": {
+            "value": 4,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "ironheart_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "29030",
+      "faces": [
+        {
+          "name": "Lucia von Bardas",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29030.jpg",
+            "https://marvelcdb.com/bundles/cards/29030.png"
+          ]
+        }
+      ],
+      "set": "ironheart_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "29031",
+      "faces": [
+        {
+          "name": "Cyborg Tech",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29031.jpg",
+            "https://marvelcdb.com/bundles/cards/29031.png"
+          ]
+        }
+      ],
+      "set": "ironheart_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "29032",
+      "faces": [
+        {
+          "name": "Political Retribution",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29032.jpg",
+            "https://marvelcdb.com/bundles/cards/29032.png"
+          ]
+        }
+      ],
+      "set": "ironheart_nemesis",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "29033",
+      "faces": [
+        {
+          "name": "Bombshell",
+          "subname": "Lana Baumgartner",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29033.jpg",
+            "https://marvelcdb.com/bundles/cards/29033.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "29034",
+      "faces": [
+        {
+          "name": "Wasp",
+          "subname": "Nadia Van Dyne",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29034.jpg",
+            "https://marvelcdb.com/bundles/cards/29034.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "29035",
+      "faces": [
+        {
+          "name": "Pinpoint",
+          "subname": "Qureshi Gupta",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29035.jpg",
+            "https://marvelcdb.com/bundles/cards/29035.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "29036",
+      "faces": [
+        {
+          "name": "Feedback Loop",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29036.jpg",
+            "https://marvelcdb.com/bundles/cards/29036.png"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "zzzax",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "29037",
+      "faces": [
+        {
+          "name": "Zzzax",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29037.jpg",
+            "https://marvelcdb.com/bundles/cards/29037.png"
+          ]
+        }
+      ],
+      "set": "zzzax",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "29038",
+      "faces": [
+        {
+          "name": "Haywire",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29038.jpg",
+            "https://marvelcdb.com/bundles/cards/29038.png"
+          ]
+        }
+      ],
+      "set": "zzzax",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "29039",
+      "faces": [
+        {
+          "name": "Air Static",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29039.jpg",
+            "https://marvelcdb.com/bundles/cards/29039.png"
+          ]
+        }
+      ],
+      "set": "zzzax",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "29040",
+      "faces": [
+        {
+          "name": "Zzzap!",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29040.jpg",
+            "https://marvelcdb.com/bundles/cards/29040.png"
+          ]
+        }
+      ],
+      "set": "zzzax",
+      "back": "encounter",
+      "quantity": 2
+    }
+  ],
+  "sets": [
+    {
+      "code": "ironheart",
+      "name": "Ironheart",
+      "kind": "hero",
+      "cards": [
+        "29001",
+        "29002",
+        "29003",
+        "29004",
+        "29005",
+        "29006",
+        "29007",
+        "29008",
+        "29009",
+        "29010",
+        "29011",
+        "29012",
+        "29013",
+        "29028"
+      ]
+    },
+    {
+      "code": "ironheart_nemesis",
+      "name": "Ironheart Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "29029",
+        "29030",
+        "29031",
+        "29032"
+      ]
+    },
+    {
+      "code": "zzzax",
+      "name": "Zzzax",
+      "kind": "modular",
+      "cards": [
+        "29036",
+        "29037",
+        "29038",
+        "29039",
+        "29040"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "29001",
+      "set": "ironheart",
+      "obligation": "29028",
+      "nemesis": "ironheart_nemesis"
+    },
+    {
+      "identity": "29002",
+      "set": "ironheart",
+      "obligation": "29028",
+      "nemesis": "ironheart_nemesis"
+    },
+    {
+      "identity": "29003",
+      "set": "ironheart",
+      "obligation": "29028",
+      "nemesis": "ironheart_nemesis"
+    }
+  ]
+}

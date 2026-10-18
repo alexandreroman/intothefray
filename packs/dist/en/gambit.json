@@ -1,0 +1,537 @@
+{
+  "code": "gambit",
+  "name": "Gambit",
+  "position": 37,
+  "cards": [
+    {
+      "code": "37001",
+      "faces": [
+        {
+          "name": "Gambit",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37001A.jpg",
+            "https://marvelcdb.com/bundles/cards/37001a.png"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "Remy LeBeau",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37001B.jpg",
+            "https://marvelcdb.com/bundles/cards/37001b.png"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "gambit",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "37001a",
+        "37001b"
+      ]
+    },
+    {
+      "code": "37002",
+      "faces": [
+        {
+          "name": "Rogue",
+          "subname": "Anna Marie",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37002.jpg",
+            "https://marvelcdb.com/bundles/cards/37002.png"
+          ]
+        }
+      ],
+      "set": "gambit",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "37003",
+      "faces": [
+        {
+          "name": "The Thieves Guild",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37003.jpg",
+            "https://marvelcdb.com/bundles/cards/37003.png"
+          ]
+        }
+      ],
+      "set": "gambit",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "37004",
+      "faces": [
+        {
+          "name": "Gambit's Staff",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37004.jpg",
+            "https://marvelcdb.com/bundles/cards/37004.png"
+          ]
+        }
+      ],
+      "set": "gambit",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "37005",
+      "faces": [
+        {
+          "name": "Gambit's Guild Armor",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37005.jpg",
+            "https://marvelcdb.com/bundles/cards/37005.png"
+          ]
+        }
+      ],
+      "set": "gambit",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "37006",
+      "faces": [
+        {
+          "name": "Charged Card",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37006.jpg",
+            "https://marvelcdb.com/bundles/cards/37006.png"
+          ]
+        }
+      ],
+      "set": "gambit",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "37007",
+      "faces": [
+        {
+          "name": "Royal Flush",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37007.jpg",
+            "https://marvelcdb.com/bundles/cards/37007.png"
+          ]
+        }
+      ],
+      "set": "gambit",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "37008",
+      "faces": [
+        {
+          "name": "Natural Agility",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37008.jpg",
+            "https://marvelcdb.com/bundles/cards/37008.png"
+          ]
+        }
+      ],
+      "set": "gambit",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "37009",
+      "faces": [
+        {
+          "name": "Creole Charmer",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37009.jpg",
+            "https://marvelcdb.com/bundles/cards/37009.png"
+          ]
+        }
+      ],
+      "set": "gambit",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "37010",
+      "faces": [
+        {
+          "name": "Molecular Acceleration",
+          "type": "resource",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37010.jpg",
+            "https://marvelcdb.com/bundles/cards/37010.png"
+          ]
+        }
+      ],
+      "set": "gambit",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "37011",
+      "faces": [
+        {
+          "name": "Bishop",
+          "subname": "Lucas Bishop",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37011.jpg",
+            "https://marvelcdb.com/bundles/cards/37011.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "37012",
+      "faces": [
+        {
+          "name": "Dazzler",
+          "subname": "Alison Blaire",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37012.jpg",
+            "https://marvelcdb.com/bundles/cards/37012.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "37013",
+      "faces": [
+        {
+          "name": "Operative Skill",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37013.jpg",
+            "https://marvelcdb.com/bundles/cards/37013.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "37015",
+      "faces": [
+        {
+          "name": "Breaking and Entering",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37015.jpg",
+            "https://marvelcdb.com/bundles/cards/37015.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "37019",
+      "faces": [
+        {
+          "name": "Beauty and the Thief",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37019.jpg",
+            "https://marvelcdb.com/bundles/cards/37019.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "38020"
+      ]
+    },
+    {
+      "code": "37021",
+      "faces": [
+        {
+          "name": "Mutant Education",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37021.jpg",
+            "https://marvelcdb.com/bundles/cards/37021.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "37025",
+      "faces": [
+        {
+          "name": "Guild Business",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37025.jpg",
+            "https://marvelcdb.com/bundles/cards/37025.png"
+          ]
+        }
+      ],
+      "set": "gambit",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "37026",
+      "faces": [
+        {
+          "name": "Belladonna",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37026.jpg",
+            "https://marvelcdb.com/bundles/cards/37026.png"
+          ]
+        }
+      ],
+      "set": "gambit_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "37027",
+      "faces": [
+        {
+          "name": "The Assassins Guild",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37027.jpg",
+            "https://marvelcdb.com/bundles/cards/37027.png"
+          ],
+          "startingThreat": {
+            "value": 4,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "gambit_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "37028",
+      "faces": [
+        {
+          "name": "Guild Assassin",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37028.jpg",
+            "https://marvelcdb.com/bundles/cards/37028.png"
+          ]
+        }
+      ],
+      "set": "gambit_nemesis",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "37029",
+      "faces": [
+        {
+          "name": "Assassination Attempt",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37029.jpg",
+            "https://marvelcdb.com/bundles/cards/37029.png"
+          ]
+        }
+      ],
+      "set": "gambit_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "37030",
+      "faces": [
+        {
+          "name": "War Room",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37030.jpg",
+            "https://marvelcdb.com/bundles/cards/37030.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "37031",
+      "faces": [
+        {
+          "name": "X-Men Instruction",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37031.jpg",
+            "https://marvelcdb.com/bundles/cards/37031.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "37032",
+      "faces": [
+        {
+          "name": "Exodus",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37032.jpg",
+            "https://marvelcdb.com/bundles/cards/37032.png"
+          ]
+        }
+      ],
+      "set": "exodus",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "37033",
+      "faces": [
+        {
+          "name": "Herald of Avalon",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37033.jpg",
+            "https://marvelcdb.com/bundles/cards/37033.png"
+          ],
+          "startingThreat": {
+            "value": 6,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "exodus",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "37034",
+      "faces": [
+        {
+          "name": "Psionic Shield",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37034.jpg",
+            "https://marvelcdb.com/bundles/cards/37034.png"
+          ]
+        }
+      ],
+      "set": "exodus",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "37035",
+      "faces": [
+        {
+          "name": "Acolyte Frenzy",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37035.jpg",
+            "https://marvelcdb.com/bundles/cards/37035.png"
+          ]
+        }
+      ],
+      "set": "exodus",
+      "back": "encounter",
+      "quantity": 2
+    }
+  ],
+  "sets": [
+    {
+      "code": "exodus",
+      "name": "Exodus",
+      "kind": "modular",
+      "cards": [
+        "37032",
+        "37033",
+        "37034",
+        "37035"
+      ]
+    },
+    {
+      "code": "gambit",
+      "name": "Gambit",
+      "kind": "hero",
+      "cards": [
+        "37001",
+        "37002",
+        "37003",
+        "37004",
+        "37005",
+        "37006",
+        "37007",
+        "37008",
+        "37009",
+        "37010",
+        "37025"
+      ]
+    },
+    {
+      "code": "gambit_nemesis",
+      "name": "Gambit Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "37026",
+        "37027",
+        "37028",
+        "37029"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "37001",
+      "set": "gambit",
+      "obligation": "37025",
+      "nemesis": "gambit_nemesis"
+    }
+  ]
+}

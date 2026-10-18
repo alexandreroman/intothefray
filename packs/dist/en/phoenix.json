@@ -1,0 +1,568 @@
+{
+  "code": "phoenix",
+  "name": "Phoenix",
+  "position": 34,
+  "cards": [
+    {
+      "code": "34001",
+      "faces": [
+        {
+          "name": "Phoenix",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34001A.jpg",
+            "https://marvelcdb.com/bundles/cards/34001a.png"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "Jean Grey",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34001B.jpg",
+            "https://marvelcdb.com/bundles/cards/34001b.png"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "phoenix",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "34001a",
+        "34001b"
+      ]
+    },
+    {
+      "code": "34002",
+      "faces": [
+        {
+          "name": "Phoenix Force",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34002A.jpg",
+            "https://marvelcdb.com/bundles/cards/34002a.png"
+          ]
+        },
+        {
+          "name": "Phoenix Force",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34002B.jpg",
+            "https://marvelcdb.com/bundles/cards/34002b.png"
+          ]
+        }
+      ],
+      "set": "phoenix",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "34002a",
+        "34002b"
+      ]
+    },
+    {
+      "code": "34003",
+      "faces": [
+        {
+          "name": "Cyclops",
+          "subname": "Scott Summers",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34003.jpg",
+            "https://marvelcdb.com/bundles/cards/34003.png"
+          ]
+        }
+      ],
+      "set": "phoenix",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "34004",
+      "faces": [
+        {
+          "name": "White Hot Room",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34004.jpg",
+            "https://marvelcdb.com/bundles/cards/34004.png"
+          ]
+        }
+      ],
+      "set": "phoenix",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "34005",
+      "faces": [
+        {
+          "name": "Phoenix Suit",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34005.jpg",
+            "https://marvelcdb.com/bundles/cards/34005.png"
+          ]
+        }
+      ],
+      "set": "phoenix",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "34006",
+      "faces": [
+        {
+          "name": "Rise from the Ashes",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34006.jpg",
+            "https://marvelcdb.com/bundles/cards/34006.png"
+          ]
+        }
+      ],
+      "set": "phoenix",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "34007",
+      "faces": [
+        {
+          "name": "Telekinetic Shield",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34007.jpg",
+            "https://marvelcdb.com/bundles/cards/34007.png"
+          ]
+        }
+      ],
+      "set": "phoenix",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "34008",
+      "faces": [
+        {
+          "name": "Mental Paralysis",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34008.jpg",
+            "https://marvelcdb.com/bundles/cards/34008.png"
+          ]
+        }
+      ],
+      "set": "phoenix",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "34009",
+      "faces": [
+        {
+          "name": "Mind Control",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34009.jpg",
+            "https://marvelcdb.com/bundles/cards/34009.png"
+          ]
+        }
+      ],
+      "set": "phoenix",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "34010",
+      "faces": [
+        {
+          "name": "Telekinetic Attack",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34010.jpg",
+            "https://marvelcdb.com/bundles/cards/34010.png"
+          ]
+        }
+      ],
+      "set": "phoenix",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "34011",
+      "faces": [
+        {
+          "name": "Psychic Blast",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34011.jpg",
+            "https://marvelcdb.com/bundles/cards/34011.png"
+          ]
+        }
+      ],
+      "set": "phoenix",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "34012",
+      "faces": [
+        {
+          "name": "Telepathic Trickery",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34012.jpg",
+            "https://marvelcdb.com/bundles/cards/34012.png"
+          ]
+        }
+      ],
+      "set": "phoenix",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "34013",
+      "faces": [
+        {
+          "name": "Phoenix Firebird",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34013.jpg",
+            "https://marvelcdb.com/bundles/cards/34013.png"
+          ]
+        }
+      ],
+      "set": "phoenix",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "34014",
+      "faces": [
+        {
+          "name": "Banshee",
+          "subname": "Sean Cassidy",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34014.jpg",
+            "https://marvelcdb.com/bundles/cards/34014.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "34015",
+      "faces": [
+        {
+          "name": "Marvel Girl",
+          "subname": "Rachel Summers",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34015.jpg",
+            "https://marvelcdb.com/bundles/cards/34015.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "34016",
+      "faces": [
+        {
+          "name": "Mission Training",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34016.jpg",
+            "https://marvelcdb.com/bundles/cards/34016.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "34017",
+      "faces": [
+        {
+          "name": "Psychic Manipulation",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34017.jpg",
+            "https://marvelcdb.com/bundles/cards/34017.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "34018",
+      "faces": [
+        {
+          "name": "Mutant Peacekeepers",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34018.jpg",
+            "https://marvelcdb.com/bundles/cards/34018.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "34020",
+      "faces": [
+        {
+          "name": "Passion for Justice",
+          "type": "resource",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34020.jpg",
+            "https://marvelcdb.com/bundles/cards/34020.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 2,
+      "aliases": [
+        "37016"
+      ]
+    },
+    {
+      "code": "34021",
+      "faces": [
+        {
+          "name": "Storm",
+          "subname": "Ororo Munroe",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34021.jpg",
+            "https://marvelcdb.com/bundles/cards/34021.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "34022",
+      "faces": [
+        {
+          "name": "Cerebro",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34022.jpg",
+            "https://marvelcdb.com/bundles/cards/34022.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "34028",
+      "faces": [
+        {
+          "name": "Burning Hunger",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34028.jpg",
+            "https://marvelcdb.com/bundles/cards/34028.png"
+          ]
+        }
+      ],
+      "set": "phoenix",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "34029",
+      "faces": [
+        {
+          "name": "Dark Phoenix",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34029.jpg",
+            "https://marvelcdb.com/bundles/cards/34029.png"
+          ]
+        }
+      ],
+      "set": "phoenix_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "34030",
+      "faces": [
+        {
+          "name": "Consume the World",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34030.jpg",
+            "https://marvelcdb.com/bundles/cards/34030.png"
+          ],
+          "startingThreat": {
+            "value": 6,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "phoenix_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "34031",
+      "faces": [
+        {
+          "name": "Fiery Rage",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34031.jpg",
+            "https://marvelcdb.com/bundles/cards/34031.png"
+          ]
+        }
+      ],
+      "set": "phoenix_nemesis",
+      "back": "encounter",
+      "quantity": 3
+    },
+    {
+      "code": "34032",
+      "faces": [
+        {
+          "name": "Psychic Assault",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34032.jpg",
+            "https://marvelcdb.com/bundles/cards/34032.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "34033",
+      "faces": [
+        {
+          "name": "Psychic Misdirection",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34033.jpg",
+            "https://marvelcdb.com/bundles/cards/34033.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "34034",
+      "faces": [
+        {
+          "name": "Psychic Kicker",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34034.jpg",
+            "https://marvelcdb.com/bundles/cards/34034.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "34035",
+      "faces": [
+        {
+          "name": "Soul Sisters",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34035.jpg",
+            "https://marvelcdb.com/bundles/cards/34035.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    }
+  ],
+  "sets": [
+    {
+      "code": "phoenix",
+      "name": "Phoenix",
+      "kind": "hero",
+      "cards": [
+        "34001",
+        "34002",
+        "34003",
+        "34004",
+        "34005",
+        "34006",
+        "34007",
+        "34008",
+        "34009",
+        "34010",
+        "34011",
+        "34012",
+        "34013",
+        "34028"
+      ]
+    },
+    {
+      "code": "phoenix_nemesis",
+      "name": "Phoenix Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "34029",
+        "34030",
+        "34031"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "34001",
+      "set": "phoenix",
+      "obligation": "34028",
+      "nemesis": "phoenix_nemesis"
+    }
+  ]
+}

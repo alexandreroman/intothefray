@@ -1,0 +1,629 @@
+{
+  "code": "x23",
+  "name": "X-23",
+  "position": 43,
+  "cards": [
+    {
+      "code": "43001",
+      "faces": [
+        {
+          "name": "X-23",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/43001A.jpg",
+            "https://marvelcdb.com/bundles/cards/43001a.png"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "Laura Kinney",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/43001B.jpg",
+            "https://marvelcdb.com/bundles/cards/43001b.png"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "x23",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "43001a",
+        "43001b"
+      ]
+    },
+    {
+      "code": "43002",
+      "faces": [
+        {
+          "name": "X-23's Claws",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/43002.jpg",
+            "https://marvelcdb.com/bundles/cards/43002.png"
+          ]
+        }
+      ],
+      "set": "x23",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "43003",
+      "faces": [
+        {
+          "name": "Honey Badger",
+          "subname": "Gabby Kinney",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/43003.jpg",
+            "https://marvelcdb.com/bundles/cards/43003.png"
+          ]
+        }
+      ],
+      "set": "x23",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "43004",
+      "faces": [
+        {
+          "name": "Animal Instinct",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/43004.jpg",
+            "https://marvelcdb.com/bundles/cards/43004.png"
+          ]
+        }
+      ],
+      "set": "x23",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "43005",
+      "faces": [
+        {
+          "name": "Claw Mastery",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/43005.jpg",
+            "https://marvelcdb.com/bundles/cards/43005.png"
+          ]
+        }
+      ],
+      "set": "x23",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "43006",
+      "faces": [
+        {
+          "name": "Regenerative Longevity",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/43006.jpg",
+            "https://marvelcdb.com/bundles/cards/43006.png"
+          ]
+        }
+      ],
+      "set": "x23",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "43007",
+      "faces": [
+        {
+          "name": "Sisterly Bond",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/43007.jpg",
+            "https://marvelcdb.com/bundles/cards/43007.png"
+          ]
+        }
+      ],
+      "set": "x23",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "43008",
+      "faces": [
+        {
+          "name": "Sisterhood",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/43008.jpg",
+            "https://marvelcdb.com/bundles/cards/43008.png"
+          ]
+        }
+      ],
+      "set": "x23",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "43009",
+      "faces": [
+        {
+          "name": "Adamantium Lacing",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/43009.jpg",
+            "https://marvelcdb.com/bundles/cards/43009.png"
+          ]
+        }
+      ],
+      "set": "x23",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "43010",
+      "faces": [
+        {
+          "name": "Grim Resolve",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/43010.jpg",
+            "https://marvelcdb.com/bundles/cards/43010.png"
+          ]
+        }
+      ],
+      "set": "x23",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "43011",
+      "faces": [
+        {
+          "name": "Pain Tolerance",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/43011.jpg",
+            "https://marvelcdb.com/bundles/cards/43011.png"
+          ]
+        }
+      ],
+      "set": "x23",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "43012",
+      "faces": [
+        {
+          "name": "Puncture Wound",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/43012.jpg",
+            "https://marvelcdb.com/bundles/cards/43012.png"
+          ]
+        }
+      ],
+      "set": "x23",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "43013",
+      "faces": [
+        {
+          "name": "Boom Boom",
+          "subname": "Tabitha Smith",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/43013.jpg",
+            "https://marvelcdb.com/bundles/cards/43013.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "43014",
+      "faces": [
+        {
+          "name": "Rictor",
+          "subname": "Julio Richter",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/43014.jpg",
+            "https://marvelcdb.com/bundles/cards/43014.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "43015",
+      "faces": [
+        {
+          "name": "Shatterstar",
+          "subname": "Gaveedra Seven",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/43015.jpg",
+            "https://marvelcdb.com/bundles/cards/43015.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "43016",
+      "faces": [
+        {
+          "name": "Critical Hit",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/43016.jpg",
+            "https://marvelcdb.com/bundles/cards/43016.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "43018",
+      "faces": [
+        {
+          "name": "Keep Them Busy",
+          "type": "player_side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/43018.jpg",
+            "https://marvelcdb.com/bundles/cards/43018.png"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": true
+          }
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "43019",
+      "faces": [
+        {
+          "name": "\"Now I'm Mad\"",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/43019.jpg",
+            "https://marvelcdb.com/bundles/cards/43019.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "43020",
+      "faces": [
+        {
+          "name": "The Direct Approach",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/43020.jpg",
+            "https://marvelcdb.com/bundles/cards/43020.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "43021",
+      "faces": [
+        {
+          "name": "Specialized Training",
+          "type": "player_side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/43021.jpg",
+            "https://marvelcdb.com/bundles/cards/43021.png"
+          ],
+          "startingThreat": {
+            "value": 5,
+            "perPlayer": true
+          }
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "43028",
+      "faces": [
+        {
+          "name": "Self-Isolation",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/43028.jpg",
+            "https://marvelcdb.com/bundles/cards/43028.png"
+          ]
+        }
+      ],
+      "set": "x23",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "43029",
+      "faces": [
+        {
+          "name": "Lady Deathstrike",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/43029.jpg",
+            "https://marvelcdb.com/bundles/cards/43029.png"
+          ]
+        }
+      ],
+      "set": "x23_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "43030",
+      "faces": [
+        {
+          "name": "In the Name of Vengeance",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/43030.jpg",
+            "https://marvelcdb.com/bundles/cards/43030.png"
+          ],
+          "startingThreat": {
+            "value": 6,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "x23_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "43031",
+      "faces": [
+        {
+          "name": "Cybermods",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/43031.jpg",
+            "https://marvelcdb.com/bundles/cards/43031.png"
+          ]
+        }
+      ],
+      "set": "x23_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "43032",
+      "faces": [
+        {
+          "name": "Critical Wound",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/43032.jpg",
+            "https://marvelcdb.com/bundles/cards/43032.png"
+          ]
+        }
+      ],
+      "set": "x23_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "43033",
+      "faces": [
+        {
+          "name": "Hack 'n' Slash",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/43033.png"
+          ]
+        }
+      ],
+      "set": "x23_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "43034",
+      "faces": [
+        {
+          "name": "Combat Specialist",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/43034.jpg",
+            "https://marvelcdb.com/bundles/cards/43034.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "43035",
+      "faces": [
+        {
+          "name": "Defense Specialist",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/43035.jpg",
+            "https://marvelcdb.com/bundles/cards/43035.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "43036",
+      "faces": [
+        {
+          "name": "Front Line Specialist",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/43036.jpg",
+            "https://marvelcdb.com/bundles/cards/43036.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "43037",
+      "faces": [
+        {
+          "name": "Surveillance Specialist",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/43037.jpg",
+            "https://marvelcdb.com/bundles/cards/43037.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "43038",
+      "faces": [
+        {
+          "name": "Predictable Ploy",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/43038.jpg",
+            "https://marvelcdb.com/bundles/cards/43038.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "43039",
+      "faces": [
+        {
+          "name": "Rally the Troops",
+          "type": "player_side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/43039.jpg",
+            "https://marvelcdb.com/bundles/cards/43039.png"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": true
+          }
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "43040",
+      "faces": [
+        {
+          "name": "Anticipated Attack",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/43040.jpg",
+            "https://marvelcdb.com/bundles/cards/43040.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    }
+  ],
+  "sets": [
+    {
+      "code": "x23",
+      "name": "X-23",
+      "kind": "hero",
+      "cards": [
+        "43001",
+        "43002",
+        "43003",
+        "43004",
+        "43005",
+        "43006",
+        "43007",
+        "43008",
+        "43009",
+        "43010",
+        "43011",
+        "43012",
+        "43028"
+      ]
+    },
+    {
+      "code": "x23_nemesis",
+      "name": "X-23 Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "43029",
+        "43030",
+        "43031",
+        "43032",
+        "43033"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "43001",
+      "set": "x23",
+      "obligation": "43028",
+      "nemesis": "x23_nemesis"
+    }
+  ]
+}

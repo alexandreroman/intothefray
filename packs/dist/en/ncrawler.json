@@ -1,0 +1,625 @@
+{
+  "code": "ncrawler",
+  "name": "Nightcrawler",
+  "position": 48,
+  "cards": [
+    {
+      "code": "48001",
+      "faces": [
+        {
+          "name": "Nightcrawler",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48001A.jpg",
+            "https://marvelcdb.com/bundles/cards/48001a.png"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "Kurt Wagner",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48001B.jpg",
+            "https://marvelcdb.com/bundles/cards/48001b.png"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "nightcrawler",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "48001a",
+        "48001b"
+      ]
+    },
+    {
+      "code": "48002",
+      "faces": [
+        {
+          "name": "Daytripper",
+          "subname": "Amanda Sefton",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48002.jpg",
+            "https://marvelcdb.com/bundles/cards/48002.jpg"
+          ]
+        }
+      ],
+      "set": "nightcrawler",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "48003",
+      "faces": [
+        {
+          "name": "Kurt's Chapel",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48003.jpg",
+            "https://marvelcdb.com/bundles/cards/48003.jpg"
+          ]
+        }
+      ],
+      "set": "nightcrawler",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "48004",
+      "faces": [
+        {
+          "name": "Kurt's Cutlasses",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48004.jpg",
+            "https://marvelcdb.com/bundles/cards/48004.jpg"
+          ]
+        }
+      ],
+      "set": "nightcrawler",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "48005",
+      "faces": [
+        {
+          "name": "Prehensile Tail",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48005.jpg",
+            "https://marvelcdb.com/bundles/cards/48005.jpg"
+          ]
+        }
+      ],
+      "set": "nightcrawler",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "48006",
+      "faces": [
+        {
+          "name": "Bamf!",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48006.jpg",
+            "https://marvelcdb.com/bundles/cards/48006.jpg"
+          ]
+        }
+      ],
+      "set": "nightcrawler",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "48007",
+      "faces": [
+        {
+          "name": "'Port and Punch",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48007.jpg",
+            "https://marvelcdb.com/bundles/cards/48007.jpg"
+          ]
+        }
+      ],
+      "set": "nightcrawler",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "48008",
+      "faces": [
+        {
+          "name": "Teleport Drop",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48008.jpg",
+            "https://marvelcdb.com/bundles/cards/48008.jpg"
+          ]
+        }
+      ],
+      "set": "nightcrawler",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "48009",
+      "faces": [
+        {
+          "name": "Scout Ahead",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48009.jpg",
+            "https://marvelcdb.com/bundles/cards/48009.jpg"
+          ]
+        }
+      ],
+      "set": "nightcrawler",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "48010",
+      "faces": [
+        {
+          "name": "'Port Away",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48010.jpg",
+            "https://marvelcdb.com/bundles/cards/48010.jpg"
+          ]
+        }
+      ],
+      "set": "nightcrawler",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "48011",
+      "faces": [
+        {
+          "name": "Tally Ho!",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48011.jpg",
+            "https://marvelcdb.com/bundles/cards/48011.jpg"
+          ]
+        }
+      ],
+      "set": "nightcrawler",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "48012",
+      "faces": [
+        {
+          "name": "Rogue",
+          "subname": "Anna Marie",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48012.jpg",
+            "https://marvelcdb.com/bundles/cards/48012.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "48013",
+      "faces": [
+        {
+          "name": "Northstar",
+          "subname": "Jean-Paul Beaubier",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48013.jpg",
+            "https://marvelcdb.com/bundles/cards/48013.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "48014",
+      "faces": [
+        {
+          "name": "Change of Fortune",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48014.jpg",
+            "https://marvelcdb.com/bundles/cards/48014.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "48015",
+      "faces": [
+        {
+          "name": "Under Control",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48015.jpg",
+            "https://marvelcdb.com/bundles/cards/48015.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "48016",
+      "faces": [
+        {
+          "name": "\"Come Get Me, Bub!\"",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48016.jpg",
+            "https://marvelcdb.com/bundles/cards/48016.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "48018",
+      "faces": [
+        {
+          "name": "Riposte",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48018.jpg",
+            "https://marvelcdb.com/bundles/cards/48018.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "48020",
+      "faces": [
+        {
+          "name": "Astonishing X-Men",
+          "type": "player_side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48020.jpg",
+            "https://marvelcdb.com/bundles/cards/48020.jpg"
+          ],
+          "startingThreat": {
+            "value": 5,
+            "perPlayer": false
+          }
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "48021",
+      "faces": [
+        {
+          "name": "Gambit",
+          "subname": "Remy LeBeau",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48021.jpg",
+            "https://marvelcdb.com/bundles/cards/48021.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "48026",
+      "faces": [
+        {
+          "name": "Crisis of Faith",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48026.jpg",
+            "https://marvelcdb.com/bundles/cards/48026.jpg"
+          ]
+        }
+      ],
+      "set": "nightcrawler",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "48027",
+      "faces": [
+        {
+          "name": "Azazel",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48027.jpg",
+            "https://marvelcdb.com/bundles/cards/48027.jpg"
+          ]
+        }
+      ],
+      "set": "nightcrawler_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "48028",
+      "faces": [
+        {
+          "name": "Brimstone Dimension",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48028.jpg",
+            "https://marvelcdb.com/bundles/cards/48028.jpg"
+          ],
+          "startingThreat": {
+            "value": 5,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "nightcrawler_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "48029",
+      "faces": [
+        {
+          "name": "Azazel's Sword",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48029.jpg",
+            "https://marvelcdb.com/bundles/cards/48029.jpg"
+          ]
+        }
+      ],
+      "set": "nightcrawler_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "48030",
+      "faces": [
+        {
+          "name": "Brimstone Strike",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48030.jpg",
+            "https://marvelcdb.com/bundles/cards/48030.jpg"
+          ]
+        }
+      ],
+      "set": "nightcrawler_nemesis",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "48031",
+      "faces": [
+        {
+          "name": "Combine Forces",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48031.jpg",
+            "https://marvelcdb.com/bundles/cards/48031.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "48032",
+      "faces": [
+        {
+          "name": "Gunboat Diplomacy",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48032.jpg",
+            "https://marvelcdb.com/bundles/cards/48032.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "48033",
+      "faces": [
+        {
+          "name": "The Crazy Gang",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48033.jpg",
+            "https://marvelcdb.com/bundles/cards/48033.jpg"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "crazy_gang",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "48034",
+      "faces": [
+        {
+          "name": "Queen of Hearts",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48034.jpg",
+            "https://marvelcdb.com/bundles/cards/48034.jpg"
+          ]
+        }
+      ],
+      "set": "crazy_gang",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "48035",
+      "faces": [
+        {
+          "name": "Jester",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48035.jpg",
+            "https://marvelcdb.com/bundles/cards/48035.jpg"
+          ]
+        }
+      ],
+      "set": "crazy_gang",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "48036",
+      "faces": [
+        {
+          "name": "Executioner",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48036.jpg",
+            "https://marvelcdb.com/bundles/cards/48036.jpg"
+          ]
+        }
+      ],
+      "set": "crazy_gang",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "48037",
+      "faces": [
+        {
+          "name": "Tweedledope",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48037.jpg",
+            "https://marvelcdb.com/bundles/cards/48037.jpg"
+          ]
+        }
+      ],
+      "set": "crazy_gang",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "48038",
+      "faces": [
+        {
+          "name": "\"Off with His Head!\"",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48038.jpg",
+            "https://marvelcdb.com/bundles/cards/48038.jpg"
+          ]
+        }
+      ],
+      "set": "crazy_gang",
+      "back": "encounter",
+      "quantity": 1
+    }
+  ],
+  "sets": [
+    {
+      "code": "crazy_gang",
+      "name": "Crazy Gang",
+      "kind": "modular",
+      "cards": [
+        "48033",
+        "48034",
+        "48035",
+        "48036",
+        "48037",
+        "48038"
+      ]
+    },
+    {
+      "code": "nightcrawler",
+      "name": "Nightcrawler",
+      "kind": "hero",
+      "cards": [
+        "48001",
+        "48002",
+        "48003",
+        "48004",
+        "48005",
+        "48006",
+        "48007",
+        "48008",
+        "48009",
+        "48010",
+        "48011",
+        "48026"
+      ]
+    },
+    {
+      "code": "nightcrawler_nemesis",
+      "name": "Nightcrawler Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "48027",
+        "48028",
+        "48029",
+        "48030"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "48001",
+      "set": "nightcrawler",
+      "obligation": "48026",
+      "nemesis": "nightcrawler_nemesis"
+    }
+  ]
+}

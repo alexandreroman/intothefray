@@ -1,0 +1,609 @@
+{
+  "code": "psylocke",
+  "name": "Psylocke",
+  "position": 41,
+  "cards": [
+    {
+      "code": "41001",
+      "faces": [
+        {
+          "name": "Psylocke",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41001A.jpg",
+            "https://marvelcdb.com/bundles/cards/41001a.png"
+          ],
+          "handSize": 4
+        },
+        {
+          "name": "Betsy Braddock",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41001B.jpg",
+            "https://marvelcdb.com/bundles/cards/41001b.png"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "psylocke",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "41001a",
+        "41001b"
+      ]
+    },
+    {
+      "code": "41002",
+      "faces": [
+        {
+          "name": "Psi-Knife",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41002A.jpg"
+          ]
+        },
+        {
+          "name": "Psi-Katana",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41002B.jpg"
+          ]
+        }
+      ],
+      "set": "psylocke",
+      "back": "player",
+      "quantity": 2,
+      "aliases": [
+        "41002a",
+        "41002b"
+      ]
+    },
+    {
+      "code": "41003",
+      "faces": [
+        {
+          "name": "Angel",
+          "subname": "Warren Worthington III",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41003.jpg",
+            "https://marvelcdb.com/bundles/cards/41003.png"
+          ]
+        }
+      ],
+      "set": "psylocke",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "41004",
+      "faces": [
+        {
+          "name": "Flurry of Blades",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41004.jpg",
+            "https://marvelcdb.com/bundles/cards/41004.png"
+          ]
+        }
+      ],
+      "set": "psylocke",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "41005",
+      "faces": [
+        {
+          "name": "Mental Detection",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41005.jpg",
+            "https://marvelcdb.com/bundles/cards/41005.png"
+          ]
+        }
+      ],
+      "set": "psylocke",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "41006",
+      "faces": [
+        {
+          "name": "Psionic Redirect",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41006.jpg",
+            "https://marvelcdb.com/bundles/cards/41006.png"
+          ]
+        }
+      ],
+      "set": "psylocke",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "41007",
+      "faces": [
+        {
+          "name": "Telepathic Suggestion",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41007.jpg",
+            "https://marvelcdb.com/bundles/cards/41007.png"
+          ]
+        }
+      ],
+      "set": "psylocke",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "41008",
+      "faces": [
+        {
+          "name": "Training Regimen",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41008.jpg",
+            "https://marvelcdb.com/bundles/cards/41008.png"
+          ]
+        }
+      ],
+      "set": "psylocke",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "41009",
+      "faces": [
+        {
+          "name": "Martial Arts Training",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41009.jpg",
+            "https://marvelcdb.com/bundles/cards/41009.png"
+          ]
+        }
+      ],
+      "set": "psylocke",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "41010",
+      "faces": [
+        {
+          "name": "Psionic Training",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41010.jpg",
+            "https://marvelcdb.com/bundles/cards/41010.png"
+          ]
+        }
+      ],
+      "set": "psylocke",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "41011",
+      "faces": [
+        {
+          "name": "Weapons Training",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41011.jpg",
+            "https://marvelcdb.com/bundles/cards/41011.png"
+          ]
+        }
+      ],
+      "set": "psylocke",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "41012",
+      "faces": [
+        {
+          "name": "Captain Britain",
+          "subname": "Brian Braddock",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41012.jpg",
+            "https://marvelcdb.com/bundles/cards/41012.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "41013",
+      "faces": [
+        {
+          "name": "Cypher",
+          "subname": "Doug Ramsey",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41013.jpg",
+            "https://marvelcdb.com/bundles/cards/41013.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "41015",
+      "faces": [
+        {
+          "name": "Upside the Head",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41015.jpg",
+            "https://marvelcdb.com/bundles/cards/41015.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "41016",
+      "faces": [
+        {
+          "name": "Lay the Trap",
+          "type": "player_side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41016.jpg",
+            "https://marvelcdb.com/bundles/cards/41016.png"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": true
+          }
+        }
+      ],
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "61021"
+      ]
+    },
+    {
+      "code": "41017",
+      "faces": [
+        {
+          "name": "Float Like a Butterfly",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41017.jpg",
+            "https://marvelcdb.com/bundles/cards/41017.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "41018",
+      "faces": [
+        {
+          "name": "Pete Wisdom",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41018.jpg",
+            "https://marvelcdb.com/bundles/cards/41018.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "41019",
+      "faces": [
+        {
+          "name": "Directed Force",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41019.jpg",
+            "https://marvelcdb.com/bundles/cards/41019.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "41020",
+      "faces": [
+        {
+          "name": "Soaring Hearts",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41020.jpg",
+            "https://marvelcdb.com/bundles/cards/41020.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "42021"
+      ]
+    },
+    {
+      "code": "41022",
+      "faces": [
+        {
+          "name": "IPAC",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41022.jpg",
+            "https://marvelcdb.com/bundles/cards/41022.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "43025"
+      ]
+    },
+    {
+      "code": "41023",
+      "faces": [
+        {
+          "name": "X-Bunker",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41023.jpg",
+            "https://marvelcdb.com/bundles/cards/41023.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "43026"
+      ]
+    },
+    {
+      "code": "41024",
+      "faces": [
+        {
+          "name": "Telepathy",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41024.jpg",
+            "https://marvelcdb.com/bundles/cards/41024.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "41025",
+      "faces": [
+        {
+          "name": "Body Swapped",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41025.jpg",
+            "https://marvelcdb.com/bundles/cards/41025.png"
+          ]
+        }
+      ],
+      "set": "psylocke",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "41026",
+      "faces": [
+        {
+          "name": "Chimera",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41026.jpg",
+            "https://marvelcdb.com/bundles/cards/41026.png"
+          ]
+        }
+      ],
+      "set": "psylocke_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "41027",
+      "faces": [
+        {
+          "name": "Interdimensional Plunder",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41027.jpg",
+            "https://marvelcdb.com/bundles/cards/41027.png"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "psylocke_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "41028",
+      "faces": [
+        {
+          "name": "Psionic Illusion",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41028.jpg",
+            "https://marvelcdb.com/bundles/cards/41028.png"
+          ]
+        }
+      ],
+      "set": "psylocke_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "41029",
+      "faces": [
+        {
+          "name": "Telekinetic Dragon",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41029.jpg",
+            "https://marvelcdb.com/bundles/cards/41029.png"
+          ]
+        }
+      ],
+      "set": "psylocke_nemesis",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "41030",
+      "faces": [
+        {
+          "name": "Psi-Bow Attack",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41030.jpg",
+            "https://marvelcdb.com/bundles/cards/41030.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "41031",
+      "faces": [
+        {
+          "name": "Domino",
+          "subname": "Neena Thurman",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41031.jpg",
+            "https://marvelcdb.com/bundles/cards/41031.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "41032",
+      "faces": [
+        {
+          "name": "Psi-Flail Strike",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41032.jpg",
+            "https://marvelcdb.com/bundles/cards/41032.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "41033",
+      "faces": [
+        {
+          "name": "Telekinesis",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41033.jpg",
+            "https://marvelcdb.com/bundles/cards/41033.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    }
+  ],
+  "sets": [
+    {
+      "code": "psylocke",
+      "name": "Psylocke",
+      "kind": "hero",
+      "cards": [
+        "41001",
+        "41002",
+        "41003",
+        "41004",
+        "41005",
+        "41006",
+        "41007",
+        "41008",
+        "41009",
+        "41010",
+        "41011",
+        "41025"
+      ]
+    },
+    {
+      "code": "psylocke_nemesis",
+      "name": "Psylocke Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "41026",
+        "41027",
+        "41028",
+        "41029"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "41001",
+      "set": "psylocke",
+      "obligation": "41025",
+      "nemesis": "psylocke_nemesis"
+    }
+  ]
+}

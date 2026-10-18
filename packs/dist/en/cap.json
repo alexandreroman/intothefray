@@ -1,0 +1,528 @@
+{
+  "code": "cap",
+  "name": "Captain America",
+  "position": 4,
+  "cards": [
+    {
+      "code": "03001",
+      "faces": [
+        {
+          "name": "Captain America",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03001A.jpg",
+            "https://marvelcdb.com/bundles/cards/03001a.png"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "Steve Rogers",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03001B.jpg",
+            "https://marvelcdb.com/bundles/cards/03001b.png"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "captain_america",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "03001a",
+        "03001b"
+      ]
+    },
+    {
+      "code": "03002",
+      "faces": [
+        {
+          "name": "Agent 13",
+          "subname": "Sharon Carter",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03002.jpg",
+            "https://marvelcdb.com/bundles/cards/03002.png"
+          ]
+        }
+      ],
+      "set": "captain_america",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "03003",
+      "faces": [
+        {
+          "name": "Fearless Determination",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03003.jpg",
+            "https://marvelcdb.com/bundles/cards/03003.png"
+          ]
+        }
+      ],
+      "set": "captain_america",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "03004",
+      "faces": [
+        {
+          "name": "Heroic Strike",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03004.jpg",
+            "https://marvelcdb.com/bundles/cards/03004.png"
+          ]
+        }
+      ],
+      "set": "captain_america",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "03005",
+      "faces": [
+        {
+          "name": "Shield Block",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03005.jpg",
+            "https://marvelcdb.com/bundles/cards/03005.png"
+          ]
+        }
+      ],
+      "set": "captain_america",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "03006",
+      "faces": [
+        {
+          "name": "Shield Toss",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03006.jpg",
+            "https://marvelcdb.com/bundles/cards/03006.png"
+          ]
+        }
+      ],
+      "set": "captain_america",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "03007",
+      "faces": [
+        {
+          "name": "Steve's Apartment",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03007.jpg",
+            "https://marvelcdb.com/bundles/cards/03007.png"
+          ]
+        }
+      ],
+      "set": "captain_america",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "03008",
+      "faces": [
+        {
+          "name": "Captain America's Helmet",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03008.jpg",
+            "https://marvelcdb.com/bundles/cards/03008.png"
+          ]
+        }
+      ],
+      "set": "captain_america",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "03009",
+      "faces": [
+        {
+          "name": "Captain America's Shield",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03009.jpg",
+            "https://marvelcdb.com/bundles/cards/03009.png"
+          ]
+        }
+      ],
+      "set": "captain_america",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "03010",
+      "faces": [
+        {
+          "name": "Super-Soldier Serum",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03010.jpg",
+            "https://marvelcdb.com/bundles/cards/03010.png"
+          ]
+        }
+      ],
+      "set": "captain_america",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "03011",
+      "faces": [
+        {
+          "name": "Falcon",
+          "subname": "Sam Wilson",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03011.jpg",
+            "https://marvelcdb.com/bundles/cards/03011.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "23014"
+      ]
+    },
+    {
+      "code": "03013",
+      "faces": [
+        {
+          "name": "Squirrel Girl",
+          "subname": "Doreen Green",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03013.jpg",
+            "https://marvelcdb.com/bundles/cards/03013.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "03014",
+      "faces": [
+        {
+          "name": "Wonder Man",
+          "subname": "Simon Williams",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03014.jpg",
+            "https://marvelcdb.com/bundles/cards/03014.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "03015",
+      "faces": [
+        {
+          "name": "Avengers Assemble!",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03015.jpg",
+            "https://marvelcdb.com/bundles/cards/03015.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "03017",
+      "faces": [
+        {
+          "name": "Strength In Numbers",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03017.jpg",
+            "https://marvelcdb.com/bundles/cards/03017.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "03019",
+      "faces": [
+        {
+          "name": "Quinjet",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03019.jpg",
+            "https://marvelcdb.com/bundles/cards/03019.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "03024",
+      "faces": [
+        {
+          "name": "Avengers Tower",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03024.jpg",
+            "https://marvelcdb.com/bundles/cards/03024.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "04021",
+        "21020"
+      ]
+    },
+    {
+      "code": "03025",
+      "faces": [
+        {
+          "name": "Honorary Avenger",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03025.jpg",
+            "https://marvelcdb.com/bundles/cards/03025.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "03026",
+      "faces": [
+        {
+          "name": "Man Out of Time",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03026.jpg",
+            "https://marvelcdb.com/bundles/cards/03026.png"
+          ]
+        }
+      ],
+      "set": "captain_america",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "03027",
+      "faces": [
+        {
+          "name": "Hit Squad",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03027.jpg",
+            "https://marvelcdb.com/bundles/cards/03027.png"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "captain_america_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "03028",
+      "faces": [
+        {
+          "name": "Baron Zemo",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03028.jpg",
+            "https://marvelcdb.com/bundles/cards/03028.png"
+          ]
+        }
+      ],
+      "set": "captain_america_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "03029",
+      "faces": [
+        {
+          "name": "Hydra Soldier",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/03029.png"
+          ]
+        }
+      ],
+      "set": "captain_america_nemesis",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "03030",
+      "faces": [
+        {
+          "name": "Hail Hydra!",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03030.jpg",
+            "https://marvelcdb.com/bundles/cards/03030.png"
+          ]
+        }
+      ],
+      "set": "captain_america_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "03031",
+      "faces": [
+        {
+          "name": "Enraged",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03031.jpg",
+            "https://marvelcdb.com/bundles/cards/03031.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "03032",
+      "faces": [
+        {
+          "name": "Followed",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03032.jpg",
+            "https://marvelcdb.com/bundles/cards/03032.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "30018"
+      ]
+    },
+    {
+      "code": "03033",
+      "faces": [
+        {
+          "name": "Expert Defense",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03033.jpg",
+            "https://marvelcdb.com/bundles/cards/03033.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "03034",
+      "faces": [
+        {
+          "name": "Enhanced Awareness",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03034.jpg",
+            "https://marvelcdb.com/bundles/cards/03034.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "17031"
+      ]
+    }
+  ],
+  "sets": [
+    {
+      "code": "captain_america",
+      "name": "Captain America",
+      "kind": "hero",
+      "cards": [
+        "03001",
+        "03002",
+        "03003",
+        "03004",
+        "03005",
+        "03006",
+        "03007",
+        "03008",
+        "03009",
+        "03010",
+        "03026"
+      ]
+    },
+    {
+      "code": "captain_america_nemesis",
+      "name": "Captain America Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "03027",
+        "03028",
+        "03029",
+        "03030"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "03001",
+      "set": "captain_america",
+      "obligation": "03026",
+      "nemesis": "captain_america_nemesis"
+    }
+  ]
+}

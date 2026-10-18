@@ -1,0 +1,468 @@
+{
+  "code": "vnm",
+  "name": "Venom",
+  "position": 20,
+  "cards": [
+    {
+      "code": "20001",
+      "faces": [
+        {
+          "name": "Venom",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20001A.jpg",
+            "https://marvelcdb.com/bundles/cards/20001a.png"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "Flash Thompson",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20001B.jpg",
+            "https://marvelcdb.com/bundles/cards/20001b.png"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "vnm",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "20001a",
+        "20001b"
+      ]
+    },
+    {
+      "code": "20002",
+      "faces": [
+        {
+          "name": "Behind Enemy Lines",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20002.jpg",
+            "https://marvelcdb.com/bundles/cards/20002.png"
+          ]
+        }
+      ],
+      "set": "vnm",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "20003",
+      "faces": [
+        {
+          "name": "Grasping Tendrils",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20003.jpg",
+            "https://marvelcdb.com/bundles/cards/20003.png"
+          ]
+        }
+      ],
+      "set": "vnm",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "20004",
+      "faces": [
+        {
+          "name": "Locked and Loaded",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20004.jpg",
+            "https://marvelcdb.com/bundles/cards/20004.png"
+          ]
+        }
+      ],
+      "set": "vnm",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "20005",
+      "faces": [
+        {
+          "name": "Run and Gun",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20005.jpg",
+            "https://marvelcdb.com/bundles/cards/20005.png"
+          ]
+        }
+      ],
+      "set": "vnm",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "20006",
+      "faces": [
+        {
+          "name": "Savage Attack",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20006.jpg",
+            "https://marvelcdb.com/bundles/cards/20006.png"
+          ]
+        }
+      ],
+      "set": "vnm",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "20007",
+      "faces": [
+        {
+          "name": "Project Rebirth 2.0",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20007.jpg",
+            "https://marvelcdb.com/bundles/cards/20007.png"
+          ]
+        }
+      ],
+      "set": "vnm",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "20008",
+      "faces": [
+        {
+          "name": "Multi-Gun",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20008.jpg",
+            "https://marvelcdb.com/bundles/cards/20008.png"
+          ]
+        }
+      ],
+      "set": "vnm",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "20009",
+      "faces": [
+        {
+          "name": "Spider-Sense",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20009.jpg",
+            "https://marvelcdb.com/bundles/cards/20009.png"
+          ]
+        }
+      ],
+      "set": "vnm",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "20010",
+      "faces": [
+        {
+          "name": "Venom's Pistol",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20010.jpg",
+            "https://marvelcdb.com/bundles/cards/20010.png"
+          ]
+        }
+      ],
+      "set": "vnm",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "20011",
+      "faces": [
+        {
+          "name": "Jack Flag",
+          "subname": "Jack Harrison",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20011.jpg",
+            "https://marvelcdb.com/bundles/cards/20011.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "20012",
+      "faces": [
+        {
+          "name": "Scare Tactic",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20012.jpg",
+            "https://marvelcdb.com/bundles/cards/20012.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "20013",
+      "faces": [
+        {
+          "name": "Making an Entrance",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20013.jpg",
+            "https://marvelcdb.com/bundles/cards/20013.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "30016"
+      ]
+    },
+    {
+      "code": "20015",
+      "faces": [
+        {
+          "name": "Sonic Rifle",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20015.jpg",
+            "https://marvelcdb.com/bundles/cards/20015.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "51020"
+      ]
+    },
+    {
+      "code": "20016",
+      "faces": [
+        {
+          "name": "Star-Lord",
+          "subname": "Peter Quill",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20016.jpg",
+            "https://marvelcdb.com/bundles/cards/20016.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "20021",
+      "faces": [
+        {
+          "name": "Side Holster",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20021.jpg",
+            "https://marvelcdb.com/bundles/cards/20021.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "20022",
+      "faces": [
+        {
+          "name": "Plasma Pistol",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20022.jpg",
+            "https://marvelcdb.com/bundles/cards/20022.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "20023",
+      "faces": [
+        {
+          "name": "Struggle for Control",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20023.jpg",
+            "https://marvelcdb.com/bundles/cards/20023.png"
+          ]
+        }
+      ],
+      "set": "vnm",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "20024",
+      "faces": [
+        {
+          "name": "Klyntar Frenzy",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20024.jpg",
+            "https://marvelcdb.com/bundles/cards/20024.png"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "vnm_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "20025",
+      "faces": [
+        {
+          "name": "Enraged Symbiote",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20025.jpg",
+            "https://marvelcdb.com/bundles/cards/20025.png"
+          ]
+        }
+      ],
+      "set": "vnm_nemesis",
+      "back": "encounter",
+      "quantity": 4
+    },
+    {
+      "code": "20026",
+      "faces": [
+        {
+          "name": "Fusillade",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20026.jpg",
+            "https://marvelcdb.com/bundles/cards/20026.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "20027",
+      "faces": [
+        {
+          "name": "\"Welcome Aboard\"",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20027.jpg",
+            "https://marvelcdb.com/bundles/cards/20027.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "20028",
+      "faces": [
+        {
+          "name": "Shake it Off",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20028.jpg",
+            "https://marvelcdb.com/bundles/cards/20028.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "20029",
+      "faces": [
+        {
+          "name": "Crew Quarters",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20029.jpg",
+            "https://marvelcdb.com/bundles/cards/20029.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    }
+  ],
+  "sets": [
+    {
+      "code": "vnm",
+      "name": "Venom",
+      "kind": "hero",
+      "cards": [
+        "20001",
+        "20002",
+        "20003",
+        "20004",
+        "20005",
+        "20006",
+        "20007",
+        "20008",
+        "20009",
+        "20010",
+        "20023"
+      ]
+    },
+    {
+      "code": "vnm_nemesis",
+      "name": "Venom Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "20024",
+        "20025"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "20001",
+      "set": "vnm",
+      "obligation": "20023",
+      "nemesis": "vnm_nemesis"
+    }
+  ]
+}

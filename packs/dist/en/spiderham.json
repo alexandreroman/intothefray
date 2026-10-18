@@ -1,0 +1,634 @@
+{
+  "code": "spiderham",
+  "name": "Spider-Ham",
+  "position": 30,
+  "cards": [
+    {
+      "code": "30001",
+      "faces": [
+        {
+          "name": "Spider-Ham",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30001A.jpg",
+            "https://marvelcdb.com/bundles/cards/30001a.png"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "Peter Porker",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30001B.jpg",
+            "https://marvelcdb.com/bundles/cards/30001b.png"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "spiderham",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "30001a",
+        "30001b"
+      ]
+    },
+    {
+      "code": "30002",
+      "faces": [
+        {
+          "name": "Captain Americat",
+          "subname": "Steve Mouser",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30002.jpg",
+            "https://marvelcdb.com/bundles/cards/30002.png"
+          ]
+        }
+      ],
+      "set": "spiderham",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "30003",
+      "faces": [
+        {
+          "name": "Ham It Up",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30003.jpg",
+            "https://marvelcdb.com/bundles/cards/30003.png"
+          ]
+        }
+      ],
+      "set": "spiderham",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "30004",
+      "faces": [
+        {
+          "name": "Hogwashed",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30004.jpg",
+            "https://marvelcdb.com/bundles/cards/30004.png"
+          ]
+        }
+      ],
+      "set": "spiderham",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "30005",
+      "faces": [
+        {
+          "name": "\"I Don't Think So!\"",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30005.jpg",
+            "https://marvelcdb.com/bundles/cards/30005.png"
+          ]
+        }
+      ],
+      "set": "spiderham",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "30006",
+      "faces": [
+        {
+          "name": "Petulant Pig",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30006.jpg",
+            "https://marvelcdb.com/bundles/cards/30006.png"
+          ]
+        }
+      ],
+      "set": "spiderham",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "30007",
+      "faces": [
+        {
+          "name": "Swinging Web Pig",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30007.jpg",
+            "https://marvelcdb.com/bundles/cards/30007.png"
+          ]
+        }
+      ],
+      "set": "spiderham",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "30008",
+      "faces": [
+        {
+          "name": "The Daily Beagle",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30008.jpg",
+            "https://marvelcdb.com/bundles/cards/30008.png"
+          ]
+        }
+      ],
+      "set": "spiderham",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "30009",
+      "faces": [
+        {
+          "name": "Cartoon Physics",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30009.jpg",
+            "https://marvelcdb.com/bundles/cards/30009.png"
+          ]
+        }
+      ],
+      "set": "spiderham",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "30010",
+      "faces": [
+        {
+          "name": "Huge Wooden Hammer",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30010.jpg",
+            "https://marvelcdb.com/bundles/cards/30010.png"
+          ]
+        }
+      ],
+      "set": "spiderham",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "30011",
+      "faces": [
+        {
+          "name": "Organic Webbing",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30011.jpg",
+            "https://marvelcdb.com/bundles/cards/30011.png"
+          ]
+        }
+      ],
+      "set": "spiderham",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "30012",
+      "faces": [
+        {
+          "name": "Lady Spider",
+          "subname": "May Reilly",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30012.jpg",
+            "https://marvelcdb.com/bundles/cards/30012.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "30013",
+      "faces": [
+        {
+          "name": "Spider-Man",
+          "subname": "Pavitr Prabhakar",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30013.jpg",
+            "https://marvelcdb.com/bundles/cards/30013.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "30014",
+      "faces": [
+        {
+          "name": "Even the Odds",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30014.jpg",
+            "https://marvelcdb.com/bundles/cards/30014.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "40052"
+      ]
+    },
+    {
+      "code": "30019",
+      "faces": [
+        {
+          "name": "Overwatch",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30019.jpg",
+            "https://marvelcdb.com/bundles/cards/30019.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "40055"
+      ]
+    },
+    {
+      "code": "30020",
+      "faces": [
+        {
+          "name": "Scarlet Spider",
+          "subname": "Kaine",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30020.jpg",
+            "https://marvelcdb.com/bundles/cards/30020.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "30021",
+      "faces": [
+        {
+          "name": "SP//dr",
+          "subname": "Peni Parker",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30021.jpg",
+            "https://marvelcdb.com/bundles/cards/30021.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "30024",
+      "faces": [
+        {
+          "name": "\"I Really Want a Hot Dog!\"",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30024.jpg",
+            "https://marvelcdb.com/bundles/cards/30024.png"
+          ]
+        }
+      ],
+      "set": "spiderham",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "30025",
+      "faces": [
+        {
+          "name": "Nefarious Trap",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30025.jpg",
+            "https://marvelcdb.com/bundles/cards/30025.png"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "spiderham_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "30026",
+      "faces": [
+        {
+          "name": "The Green Gobbler",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30026.jpg",
+            "https://marvelcdb.com/bundles/cards/30026.png"
+          ]
+        }
+      ],
+      "set": "spiderham_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "30027",
+      "faces": [
+        {
+          "name": "Gobbler Glider",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30027.jpg",
+            "https://marvelcdb.com/bundles/cards/30027.png"
+          ]
+        }
+      ],
+      "set": "spiderham_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "30028",
+      "faces": [
+        {
+          "name": "\"Feast on This!\"",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30028.jpg",
+            "https://marvelcdb.com/bundles/cards/30028.png"
+          ]
+        }
+      ],
+      "set": "spiderham_nemesis",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "30029",
+      "faces": [
+        {
+          "name": "Warrior of the Great Web",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30029.jpg",
+            "https://marvelcdb.com/bundles/cards/30029.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "30030",
+      "faces": [
+        {
+          "name": "Hunting the Spider-Totems",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30030.jpg",
+            "https://marvelcdb.com/bundles/cards/30030.png"
+          ],
+          "startingThreat": {
+            "value": 6,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "inheritors",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "30031",
+      "faces": [
+        {
+          "name": "Bora",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30031.jpg",
+            "https://marvelcdb.com/bundles/cards/30031.png"
+          ]
+        }
+      ],
+      "set": "inheritors",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "30032",
+      "faces": [
+        {
+          "name": "Brix",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30032.jpg",
+            "https://marvelcdb.com/bundles/cards/30032.png"
+          ]
+        }
+      ],
+      "set": "inheritors",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "30033",
+      "faces": [
+        {
+          "name": "Daemos",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30033.jpg",
+            "https://marvelcdb.com/bundles/cards/30033.png"
+          ]
+        }
+      ],
+      "set": "inheritors",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "30034",
+      "faces": [
+        {
+          "name": "Jennix",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30034.jpg",
+            "https://marvelcdb.com/bundles/cards/30034.png"
+          ]
+        }
+      ],
+      "set": "inheritors",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "30035",
+      "faces": [
+        {
+          "name": "Karn",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30035.jpg",
+            "https://marvelcdb.com/bundles/cards/30035.png"
+          ]
+        }
+      ],
+      "set": "inheritors",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "30036",
+      "faces": [
+        {
+          "name": "Morlun",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30036.jpg",
+            "https://marvelcdb.com/bundles/cards/30036.png"
+          ]
+        }
+      ],
+      "set": "inheritors",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "30037",
+      "faces": [
+        {
+          "name": "Solus",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30037.jpg",
+            "https://marvelcdb.com/bundles/cards/30037.png"
+          ]
+        }
+      ],
+      "set": "inheritors",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "30038",
+      "faces": [
+        {
+          "name": "Verna",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30038.jpg",
+            "https://marvelcdb.com/bundles/cards/30038.png"
+          ]
+        }
+      ],
+      "set": "inheritors",
+      "back": "encounter",
+      "quantity": 1
+    }
+  ],
+  "sets": [
+    {
+      "code": "inheritors",
+      "name": "The Inheritors",
+      "kind": "modular",
+      "cards": [
+        "30030",
+        "30031",
+        "30032",
+        "30033",
+        "30034",
+        "30035",
+        "30036",
+        "30037",
+        "30038"
+      ]
+    },
+    {
+      "code": "spiderham",
+      "name": "Spider-Ham",
+      "kind": "hero",
+      "cards": [
+        "30001",
+        "30002",
+        "30003",
+        "30004",
+        "30005",
+        "30006",
+        "30007",
+        "30008",
+        "30009",
+        "30010",
+        "30011",
+        "30024"
+      ]
+    },
+    {
+      "code": "spiderham_nemesis",
+      "name": "Spider-Ham Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "30025",
+        "30026",
+        "30027",
+        "30028"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "30001",
+      "set": "spiderham",
+      "obligation": "30024",
+      "nemesis": "spiderham_nemesis"
+    }
+  ]
+}

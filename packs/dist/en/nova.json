@@ -1,0 +1,585 @@
+{
+  "code": "nova",
+  "name": "Nova",
+  "position": 28,
+  "cards": [
+    {
+      "code": "28001",
+      "faces": [
+        {
+          "name": "Nova",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28001A.jpg",
+            "https://marvelcdb.com/bundles/cards/28001a.png"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "Sam Alexander",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28001B.jpg",
+            "https://marvelcdb.com/bundles/cards/28001b.png"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "nova",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "28001a",
+        "28001b"
+      ]
+    },
+    {
+      "code": "28002",
+      "faces": [
+        {
+          "name": "Ms. Marvel",
+          "subname": "Kamala Khan",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28002.jpg",
+            "https://marvelcdb.com/bundles/cards/28002.png"
+          ]
+        }
+      ],
+      "set": "nova",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "28003",
+      "faces": [
+        {
+          "name": "Forcefield Projection",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28003.jpg",
+            "https://marvelcdb.com/bundles/cards/28003.png"
+          ]
+        }
+      ],
+      "set": "nova",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "28004",
+      "faces": [
+        {
+          "name": "Lightspeed Flight",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28004.jpg",
+            "https://marvelcdb.com/bundles/cards/28004.png"
+          ]
+        }
+      ],
+      "set": "nova",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "28005",
+      "faces": [
+        {
+          "name": "Pot Shot",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28005.jpg",
+            "https://marvelcdb.com/bundles/cards/28005.png"
+          ]
+        }
+      ],
+      "set": "nova",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "28006",
+      "faces": [
+        {
+          "name": "Unleash Nova Force",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28006.jpg",
+            "https://marvelcdb.com/bundles/cards/28006.png"
+          ]
+        }
+      ],
+      "set": "nova",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "28007",
+      "faces": [
+        {
+          "name": "Connection to the Worldmind",
+          "type": "resource",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28007.jpg",
+            "https://marvelcdb.com/bundles/cards/28007.png"
+          ]
+        }
+      ],
+      "set": "nova",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "28008",
+      "faces": [
+        {
+          "name": "Jesse Alexander",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28008.jpg",
+            "https://marvelcdb.com/bundles/cards/28008.png"
+          ]
+        }
+      ],
+      "set": "nova",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "28009",
+      "faces": [
+        {
+          "name": "Supernova Helmet",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28009.jpg",
+            "https://marvelcdb.com/bundles/cards/28009.png"
+          ]
+        }
+      ],
+      "set": "nova",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "28010",
+      "faces": [
+        {
+          "name": "The Locust",
+          "subname": "Fernanda Rodriguez",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28010.jpg",
+            "https://marvelcdb.com/bundles/cards/28010.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "28012",
+      "faces": [
+        {
+          "name": "Pitchback",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28012.jpg",
+            "https://marvelcdb.com/bundles/cards/28012.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "28013",
+      "faces": [
+        {
+          "name": "No Quarter",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28013.jpg",
+            "https://marvelcdb.com/bundles/cards/28013.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "28014",
+      "faces": [
+        {
+          "name": "One by One",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28014.jpg",
+            "https://marvelcdb.com/bundles/cards/28014.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "54015"
+      ]
+    },
+    {
+      "code": "28016",
+      "faces": [
+        {
+          "name": "Fluid Motion",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28016.jpg",
+            "https://marvelcdb.com/bundles/cards/28016.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "28017",
+      "faces": [
+        {
+          "name": "Honed Technique",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28017.jpg",
+            "https://marvelcdb.com/bundles/cards/28017.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "28018",
+      "faces": [
+        {
+          "name": "Moon Girl",
+          "subname": "Lunella Lafayette",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28018.jpg",
+            "https://marvelcdb.com/bundles/cards/28018.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "28019",
+      "faces": [
+        {
+          "name": "Everyday Hero",
+          "type": "resource",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28019.jpg",
+            "https://marvelcdb.com/bundles/cards/28019.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "28020",
+      "faces": [
+        {
+          "name": "Champions Mobile Bunker",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28020.jpg",
+            "https://marvelcdb.com/bundles/cards/28020.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "28021",
+      "faces": [
+        {
+          "name": "Weight of the World",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28021.jpg",
+            "https://marvelcdb.com/bundles/cards/28021.png"
+          ]
+        }
+      ],
+      "set": "nova",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "28022",
+      "faces": [
+        {
+          "name": "\"Bring the War!\"",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28022.jpg",
+            "https://marvelcdb.com/bundles/cards/28022.png"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "nova_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "28023",
+      "faces": [
+        {
+          "name": "Warbringer",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28023.jpg",
+            "https://marvelcdb.com/bundles/cards/28023.png"
+          ]
+        }
+      ],
+      "set": "nova_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "28024",
+      "faces": [
+        {
+          "name": "War Delivery",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28024.jpg",
+            "https://marvelcdb.com/bundles/cards/28024.png"
+          ]
+        }
+      ],
+      "set": "nova_nemesis",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "28025",
+      "faces": [
+        {
+          "name": "\"The War's Been Brought\"",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28025.jpg",
+            "https://marvelcdb.com/bundles/cards/28025.png"
+          ]
+        }
+      ],
+      "set": "nova_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "28026",
+      "faces": [
+        {
+          "name": "Yaw and Roll",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28026.jpg",
+            "https://marvelcdb.com/bundles/cards/28026.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "28027",
+      "faces": [
+        {
+          "name": "Height Advantage",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28027.jpg",
+            "https://marvelcdb.com/bundles/cards/28027.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "28028",
+      "faces": [
+        {
+          "name": "Armored Assault",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28028.jpg",
+            "https://marvelcdb.com/bundles/cards/28028.png"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "armadillo",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "28029",
+      "faces": [
+        {
+          "name": "Armadillo",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28029.jpg",
+            "https://marvelcdb.com/bundles/cards/28029.png"
+          ]
+        }
+      ],
+      "set": "armadillo",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "28030",
+      "faces": [
+        {
+          "name": "Rollin', Rollin'",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28030.jpg",
+            "https://marvelcdb.com/bundles/cards/28030.png"
+          ]
+        }
+      ],
+      "set": "armadillo",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "28031",
+      "faces": [
+        {
+          "name": "Tough and Tumble",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28031.jpg",
+            "https://marvelcdb.com/bundles/cards/28031.png"
+          ]
+        }
+      ],
+      "set": "armadillo",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "28032",
+      "faces": [
+        {
+          "name": "Tough It Out",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28032.jpg",
+            "https://marvelcdb.com/bundles/cards/28032.png"
+          ]
+        }
+      ],
+      "set": "armadillo",
+      "back": "encounter",
+      "quantity": 2
+    }
+  ],
+  "sets": [
+    {
+      "code": "armadillo",
+      "name": "Armadillo",
+      "kind": "modular",
+      "cards": [
+        "28028",
+        "28029",
+        "28030",
+        "28031",
+        "28032"
+      ]
+    },
+    {
+      "code": "nova",
+      "name": "Nova",
+      "kind": "hero",
+      "cards": [
+        "28001",
+        "28002",
+        "28003",
+        "28004",
+        "28005",
+        "28006",
+        "28007",
+        "28008",
+        "28009",
+        "28021"
+      ]
+    },
+    {
+      "code": "nova_nemesis",
+      "name": "Nova Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "28022",
+        "28023",
+        "28024",
+        "28025"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "28001",
+      "set": "nova",
+      "obligation": "28021",
+      "nemesis": "nova_nemesis"
+    }
+  ]
+}

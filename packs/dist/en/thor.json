@@ -1,0 +1,547 @@
+{
+  "code": "thor",
+  "name": "Thor",
+  "position": 6,
+  "cards": [
+    {
+      "code": "06001",
+      "faces": [
+        {
+          "name": "Thor",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06001A.jpg",
+            "https://marvelcdb.com/bundles/cards/06001a.png"
+          ],
+          "handSize": 4
+        },
+        {
+          "name": "Odinson",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06001B.jpg",
+            "https://marvelcdb.com/bundles/cards/06001b.png"
+          ],
+          "handSize": 5
+        }
+      ],
+      "set": "thor",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "06001a",
+        "06001b"
+      ]
+    },
+    {
+      "code": "06002",
+      "faces": [
+        {
+          "name": "Lady Sif",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06002.jpg",
+            "https://marvelcdb.com/bundles/cards/06002.png"
+          ]
+        }
+      ],
+      "set": "thor",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "06003",
+      "faces": [
+        {
+          "name": "Defender of the Nine Realms",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06003.jpg",
+            "https://marvelcdb.com/bundles/cards/06003.png"
+          ]
+        }
+      ],
+      "set": "thor",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "06004",
+      "faces": [
+        {
+          "name": "For Asgard!",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06004.jpg",
+            "https://marvelcdb.com/bundles/cards/06004.png"
+          ]
+        }
+      ],
+      "set": "thor",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "06005",
+      "faces": [
+        {
+          "name": "Hammer Throw",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06005.jpg",
+            "https://marvelcdb.com/bundles/cards/06005.png"
+          ]
+        }
+      ],
+      "set": "thor",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "06006",
+      "faces": [
+        {
+          "name": "Lightning Strike",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06006.jpg",
+            "https://marvelcdb.com/bundles/cards/06006.png"
+          ]
+        }
+      ],
+      "set": "thor",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "06007",
+      "faces": [
+        {
+          "name": "Asgard",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06007.jpg",
+            "https://marvelcdb.com/bundles/cards/06007.png"
+          ]
+        }
+      ],
+      "set": "thor",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "06008",
+      "faces": [
+        {
+          "name": "God of Thunder",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06008.jpg",
+            "https://marvelcdb.com/bundles/cards/06008.png"
+          ]
+        }
+      ],
+      "set": "thor",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "06009",
+      "faces": [
+        {
+          "name": "Mjolnir",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06009.jpg",
+            "https://marvelcdb.com/bundles/cards/06009.png"
+          ]
+        }
+      ],
+      "set": "thor",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "06010",
+      "faces": [
+        {
+          "name": "Thor's Helmet",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06010.jpg",
+            "https://marvelcdb.com/bundles/cards/06010.png"
+          ]
+        }
+      ],
+      "set": "thor",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "06011",
+      "faces": [
+        {
+          "name": "Hercules",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06011.jpg",
+            "https://marvelcdb.com/bundles/cards/06011.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "06012",
+      "faces": [
+        {
+          "name": "Valkyrie",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06012.jpg",
+            "https://marvelcdb.com/bundles/cards/06012.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "06014",
+      "faces": [
+        {
+          "name": "Get Over Here!",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06014.jpg",
+            "https://marvelcdb.com/bundles/cards/06014.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "06015",
+      "faces": [
+        {
+          "name": "Mean Swing",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06015.jpg",
+            "https://marvelcdb.com/bundles/cards/06015.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "35019"
+      ]
+    },
+    {
+      "code": "06017",
+      "faces": [
+        {
+          "name": "Hall of Heroes",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06017.jpg",
+            "https://marvelcdb.com/bundles/cards/06017.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "25016"
+      ]
+    },
+    {
+      "code": "06018",
+      "faces": [
+        {
+          "name": "Battle Fury",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06018.jpg",
+            "https://marvelcdb.com/bundles/cards/06018.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "35015"
+      ]
+    },
+    {
+      "code": "06019",
+      "faces": [
+        {
+          "name": "Jarnbjorn",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06019.jpg",
+            "https://marvelcdb.com/bundles/cards/06019.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "06020",
+      "faces": [
+        {
+          "name": "Heimdall",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06020.jpg",
+            "https://marvelcdb.com/bundles/cards/06020.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "06021",
+      "faces": [
+        {
+          "name": "Invulnerability",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06021.jpg",
+            "https://marvelcdb.com/bundles/cards/06021.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "06026",
+      "faces": [
+        {
+          "name": "Odin's Anger",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06026.jpg",
+            "https://marvelcdb.com/bundles/cards/06026.png"
+          ]
+        }
+      ],
+      "set": "thor",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "06027",
+      "faces": [
+        {
+          "name": "Family Feud",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06027.jpg",
+            "https://marvelcdb.com/bundles/cards/06027.png"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "thor_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "06028",
+      "faces": [
+        {
+          "name": "Loki",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06028.jpg",
+            "https://marvelcdb.com/bundles/cards/06028.png"
+          ]
+        }
+      ],
+      "set": "thor_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "06029",
+      "faces": [
+        {
+          "name": "Frost Giant",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06029.jpg",
+            "https://marvelcdb.com/bundles/cards/06029.png"
+          ]
+        }
+      ],
+      "set": "thor_nemesis",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "06030",
+      "faces": [
+        {
+          "name": "Trickster",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06030.jpg",
+            "https://marvelcdb.com/bundles/cards/06030.png"
+          ]
+        }
+      ],
+      "set": "thor_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "06031",
+      "faces": [
+        {
+          "name": "Under Surveillance",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06031.jpg",
+            "https://marvelcdb.com/bundles/cards/06031.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "50053"
+      ]
+    },
+    {
+      "code": "06032",
+      "faces": [
+        {
+          "name": "Teamwork",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06032.jpg",
+            "https://marvelcdb.com/bundles/cards/06032.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "33017",
+        "59021"
+      ]
+    },
+    {
+      "code": "06033",
+      "faces": [
+        {
+          "name": "Second Wind",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06033.jpg",
+            "https://marvelcdb.com/bundles/cards/06033.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "06034",
+      "faces": [
+        {
+          "name": "Enhanced Physique",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06034.jpg",
+            "https://marvelcdb.com/bundles/cards/06034.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "19033"
+      ]
+    }
+  ],
+  "sets": [
+    {
+      "code": "thor",
+      "name": "Thor",
+      "kind": "hero",
+      "cards": [
+        "06001",
+        "06002",
+        "06003",
+        "06004",
+        "06005",
+        "06006",
+        "06007",
+        "06008",
+        "06009",
+        "06010",
+        "06026"
+      ]
+    },
+    {
+      "code": "thor_nemesis",
+      "name": "Thor Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "06027",
+        "06028",
+        "06029",
+        "06030"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "06001",
+      "set": "thor",
+      "obligation": "06026",
+      "nemesis": "thor_nemesis"
+    }
+  ]
+}

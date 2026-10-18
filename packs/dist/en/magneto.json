@@ -1,0 +1,725 @@
+{
+  "code": "magneto",
+  "name": "Magneto",
+  "position": 49,
+  "cards": [
+    {
+      "code": "49001",
+      "faces": [
+        {
+          "name": "Magneto",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49001A.jpg",
+            "https://marvelcdb.com/bundles/cards/49001a.png"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "Erik Lehnsherr",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49001B.jpg",
+            "https://marvelcdb.com/bundles/cards/49001b.png"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "magneto",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "49001a",
+        "49001b"
+      ]
+    },
+    {
+      "code": "49002",
+      "faces": [
+        {
+          "name": "Asteroid M",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49002.jpg",
+            "https://marvelcdb.com/bundles/cards/49002.jpg"
+          ]
+        }
+      ],
+      "set": "magneto",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "49003",
+      "faces": [
+        {
+          "name": "Magneto's Helmet",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49003.jpg",
+            "https://marvelcdb.com/bundles/cards/49003.jpg"
+          ]
+        }
+      ],
+      "set": "magneto",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "49004",
+      "faces": [
+        {
+          "name": "Magneto's Armor",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49004.jpg",
+            "https://marvelcdb.com/bundles/cards/49004.jpg"
+          ]
+        }
+      ],
+      "set": "magneto",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "49005",
+      "faces": [
+        {
+          "name": "Magneto's Cape",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49005.jpg",
+            "https://marvelcdb.com/bundles/cards/49005.jpg"
+          ]
+        }
+      ],
+      "set": "magneto",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "49006",
+      "faces": [
+        {
+          "name": "Magnetic Bubble",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49006.jpg",
+            "https://marvelcdb.com/bundles/cards/49006.jpg"
+          ]
+        }
+      ],
+      "set": "magneto",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "49007",
+      "faces": [
+        {
+          "name": "Wrapped in Metal",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49007.jpg",
+            "https://marvelcdb.com/bundles/cards/49007.jpg"
+          ]
+        }
+      ],
+      "set": "magneto",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "49008",
+      "faces": [
+        {
+          "name": "Electromagnetic Blast",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49008.jpg",
+            "https://marvelcdb.com/bundles/cards/49008.jpg"
+          ]
+        }
+      ],
+      "set": "magneto",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "49009",
+      "faces": [
+        {
+          "name": "Metal Shards",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49009.jpg",
+            "https://marvelcdb.com/bundles/cards/49009.jpg"
+          ]
+        }
+      ],
+      "set": "magneto",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "49010",
+      "faces": [
+        {
+          "name": "Magnetic Missile",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49010.jpg",
+            "https://marvelcdb.com/bundles/cards/49010.jpg"
+          ]
+        }
+      ],
+      "set": "magneto",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "49011",
+      "faces": [
+        {
+          "name": "Master of Magnetism",
+          "type": "resource",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49011.jpg",
+            "https://marvelcdb.com/bundles/cards/49011.jpg"
+          ]
+        }
+      ],
+      "set": "magneto",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "49012",
+      "faces": [
+        {
+          "name": "M",
+          "subname": "Monet St. Croix",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49012.jpg",
+            "https://marvelcdb.com/bundles/cards/49012.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "49013",
+      "faces": [
+        {
+          "name": "Kid Omega",
+          "subname": "Quentin Quire",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49013.jpg",
+            "https://marvelcdb.com/bundles/cards/49013.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "49014",
+      "faces": [
+        {
+          "name": "Phoenix",
+          "subname": "Jean Grey",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49014.jpg",
+            "https://marvelcdb.com/bundles/cards/49014.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "49015",
+      "faces": [
+        {
+          "name": "Cyclops",
+          "subname": "Scott Summers",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49015.jpg",
+            "https://marvelcdb.com/bundles/cards/49015.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "49016",
+      "faces": [
+        {
+          "name": "Won't Stay Down",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49016.jpg",
+            "https://marvelcdb.com/bundles/cards/49016.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "49017",
+      "faces": [
+        {
+          "name": "Squared Off",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49017.jpg",
+            "https://marvelcdb.com/bundles/cards/49017.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "49018",
+      "faces": [
+        {
+          "name": "Noble Sacrifice",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49018.jpg",
+            "https://marvelcdb.com/bundles/cards/49018.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "49019",
+      "faces": [
+        {
+          "name": "\"You Got This!\"",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49019.jpg",
+            "https://marvelcdb.com/bundles/cards/49019.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "49020",
+      "faces": [
+        {
+          "name": "New Recruits",
+          "type": "player_side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49020.jpg",
+            "https://marvelcdb.com/bundles/cards/49020.jpg"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": true
+          }
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "49021",
+      "faces": [
+        {
+          "name": "White Queen",
+          "subname": "Emma Frost",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49021.jpg",
+            "https://marvelcdb.com/bundles/cards/49021.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "49022",
+      "faces": [
+        {
+          "name": "Face the Past",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49022.jpg",
+            "https://marvelcdb.com/bundles/cards/49022.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "49027",
+      "faces": [
+        {
+          "name": "Old Grievances",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49027.jpg",
+            "https://marvelcdb.com/bundles/cards/49027.jpg"
+          ]
+        }
+      ],
+      "set": "magneto",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "49028",
+      "faces": [
+        {
+          "name": "Exodus",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49028.jpg",
+            "https://marvelcdb.com/bundles/cards/49028.jpg"
+          ]
+        }
+      ],
+      "set": "magneto_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "49029",
+      "faces": [
+        {
+          "name": "Martyr for Mutants",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49029.jpg",
+            "https://marvelcdb.com/bundles/cards/49029.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "magneto_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "49030",
+      "faces": [
+        {
+          "name": "Fabian Cortez",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49030.jpg",
+            "https://marvelcdb.com/bundles/cards/49030.jpg"
+          ]
+        }
+      ],
+      "set": "magneto_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "49031",
+      "faces": [
+        {
+          "name": "Frenzy",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49031.jpg",
+            "https://marvelcdb.com/bundles/cards/49031.jpg"
+          ]
+        }
+      ],
+      "set": "magneto_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "49032",
+      "faces": [
+        {
+          "name": "Angry Acolyte",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49032.jpg",
+            "https://marvelcdb.com/bundles/cards/49032.jpg"
+          ]
+        }
+      ],
+      "set": "magneto_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "49033",
+      "faces": [
+        {
+          "name": "Surge",
+          "subname": "Noriko Ashida",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49033.jpg",
+            "https://marvelcdb.com/bundles/cards/49033.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "49034",
+      "faces": [
+        {
+          "name": "Anole",
+          "subname": "Victor Borkowski",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49034.jpg",
+            "https://marvelcdb.com/bundles/cards/49034.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "49035",
+      "faces": [
+        {
+          "name": "Bling!",
+          "subname": "Roxanne Washington",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49035.jpg",
+            "https://marvelcdb.com/bundles/cards/49035.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "49036",
+      "faces": [
+        {
+          "name": "Indra",
+          "subname": "Paras Gavaskar",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49036.jpg",
+            "https://marvelcdb.com/bundles/cards/49036.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "49037",
+      "faces": [
+        {
+          "name": "Children of the Atom",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49037.jpg",
+            "https://marvelcdb.com/bundles/cards/49037.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "49038",
+      "faces": [
+        {
+          "name": "Sebastian Shaw",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49038.jpg",
+            "https://marvelcdb.com/bundles/cards/49038.jpg"
+          ]
+        }
+      ],
+      "set": "hellfire",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "49039",
+      "faces": [
+        {
+          "name": "Selene",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49039.jpg",
+            "https://marvelcdb.com/bundles/cards/49039.jpg"
+          ]
+        }
+      ],
+      "set": "hellfire",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "49040",
+      "faces": [
+        {
+          "name": "Hellfire Pawn",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/49040.jpg"
+          ]
+        }
+      ],
+      "set": "hellfire",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "49041",
+      "faces": [
+        {
+          "name": "The Inner Circle",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49041.jpg",
+            "https://marvelcdb.com/bundles/cards/49041.jpg"
+          ],
+          "startingThreat": {
+            "value": 4,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "hellfire",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "49042",
+      "faces": [
+        {
+          "name": "Power and Decadence",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49042.jpg",
+            "https://marvelcdb.com/bundles/cards/49042.jpg"
+          ]
+        }
+      ],
+      "set": "hellfire",
+      "back": "encounter",
+      "quantity": 1
+    }
+  ],
+  "sets": [
+    {
+      "code": "hellfire",
+      "name": "Hellfire",
+      "kind": "modular",
+      "cards": [
+        "49038",
+        "49039",
+        "49040",
+        "49041",
+        "49042"
+      ]
+    },
+    {
+      "code": "magneto",
+      "name": "Magneto",
+      "kind": "hero",
+      "cards": [
+        "49001",
+        "49002",
+        "49003",
+        "49004",
+        "49005",
+        "49006",
+        "49007",
+        "49008",
+        "49009",
+        "49010",
+        "49011",
+        "49027"
+      ]
+    },
+    {
+      "code": "magneto_nemesis",
+      "name": "Magneto Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "49028",
+        "49029",
+        "49030",
+        "49031",
+        "49032"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "49001",
+      "set": "magneto",
+      "obligation": "49027",
+      "nemesis": "magneto_nemesis"
+    }
+  ]
+}

@@ -1,0 +1,554 @@
+{
+  "code": "wsp",
+  "name": "Wasp",
+  "position": 13,
+  "cards": [
+    {
+      "code": "13001",
+      "faces": [
+        {
+          "name": "Wasp",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13001A.jpg",
+            "https://marvelcdb.com/bundles/cards/13001a.png"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "Nadia Van Dyne",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13001B.jpg",
+            "https://marvelcdb.com/bundles/cards/13001b.png"
+          ],
+          "handSize": 6
+        },
+        {
+          "name": "Wasp",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13001C.jpg",
+            "https://marvelcdb.com/bundles/cards/13001c.png"
+          ],
+          "handSize": 5
+        }
+      ],
+      "set": "wsp",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "13001a",
+        "13001b",
+        "13001c"
+      ]
+    },
+    {
+      "code": "13002",
+      "faces": [
+        {
+          "name": "Ant-Man",
+          "subname": "Scott Lang",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13002.jpg",
+            "https://marvelcdb.com/bundles/cards/13002.png"
+          ]
+        }
+      ],
+      "set": "wsp",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "13003",
+      "faces": [
+        {
+          "name": "Giant Help",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13003.jpg",
+            "https://marvelcdb.com/bundles/cards/13003.png"
+          ]
+        }
+      ],
+      "set": "wsp",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "13004",
+      "faces": [
+        {
+          "name": "Pinpoint Strike",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13004.jpg",
+            "https://marvelcdb.com/bundles/cards/13004.png"
+          ]
+        }
+      ],
+      "set": "wsp",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "13005",
+      "faces": [
+        {
+          "name": "Rapid Growth",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13005.jpg",
+            "https://marvelcdb.com/bundles/cards/13005.png"
+          ]
+        }
+      ],
+      "set": "wsp",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "13006",
+      "faces": [
+        {
+          "name": "Wasp Sting",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13006.jpg",
+            "https://marvelcdb.com/bundles/cards/13006.png"
+          ]
+        }
+      ],
+      "set": "wsp",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "13007",
+      "faces": [
+        {
+          "name": "Pym Particles",
+          "type": "resource",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/13007.png"
+          ]
+        }
+      ],
+      "set": "wsp",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "13008",
+      "faces": [
+        {
+          "name": "Red Room Training",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13008.jpg",
+            "https://marvelcdb.com/bundles/cards/13008.png"
+          ]
+        }
+      ],
+      "set": "wsp",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "13009",
+      "faces": [
+        {
+          "name": "Bio-Synthetic Wings",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13009.jpg",
+            "https://marvelcdb.com/bundles/cards/13009.png"
+          ]
+        }
+      ],
+      "set": "wsp",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "13010",
+      "faces": [
+        {
+          "name": "Wasp's Helmet",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13010.jpg",
+            "https://marvelcdb.com/bundles/cards/13010.png"
+          ]
+        }
+      ],
+      "set": "wsp",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "13011",
+      "faces": [
+        {
+          "name": "Thor",
+          "subname": "Jane Foster",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13011.jpg",
+            "https://marvelcdb.com/bundles/cards/13011.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "13012",
+      "faces": [
+        {
+          "name": "Wasp",
+          "subname": "Janet Van Dyne",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13012.jpg",
+            "https://marvelcdb.com/bundles/cards/13012.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "13013",
+      "faces": [
+        {
+          "name": "Into the Fray",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13013.jpg",
+            "https://marvelcdb.com/bundles/cards/13013.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "16042"
+      ]
+    },
+    {
+      "code": "13014",
+      "faces": [
+        {
+          "name": "Surprise Attack",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13014.jpg",
+            "https://marvelcdb.com/bundles/cards/13014.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "13016",
+      "faces": [
+        {
+          "name": "Boot Camp",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13016.jpg",
+            "https://marvelcdb.com/bundles/cards/13016.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "13017",
+      "faces": [
+        {
+          "name": "Lie in Wait",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13017.jpg",
+            "https://marvelcdb.com/bundles/cards/13017.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "13018",
+      "faces": [
+        {
+          "name": "Ironheart",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13018.jpg",
+            "https://marvelcdb.com/bundles/cards/13018.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "13019",
+      "faces": [
+        {
+          "name": "Spider-Man",
+          "subname": "Miles Morales",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13019.jpg",
+            "https://marvelcdb.com/bundles/cards/13019.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "13024",
+      "faces": [
+        {
+          "name": "The Power in All of Us",
+          "type": "resource",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13024.jpg",
+            "https://marvelcdb.com/bundles/cards/13024.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 2,
+      "aliases": [
+        "46023"
+      ]
+    },
+    {
+      "code": "13026",
+      "faces": [
+        {
+          "name": "Red Dreams",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13026.jpg",
+            "https://marvelcdb.com/bundles/cards/13026.png"
+          ]
+        }
+      ],
+      "set": "wsp",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "13027",
+      "faces": [
+        {
+          "name": "Mother's Orders",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13027.jpg",
+            "https://marvelcdb.com/bundles/cards/13027.png"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "wsp_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "13028",
+      "faces": [
+        {
+          "name": "Beetle",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13028.jpg",
+            "https://marvelcdb.com/bundles/cards/13028.png"
+          ]
+        }
+      ],
+      "set": "wsp_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "13029",
+      "faces": [
+        {
+          "name": "Beetle Armor MK IV",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13029.jpg",
+            "https://marvelcdb.com/bundles/cards/13029.png"
+          ]
+        }
+      ],
+      "set": "wsp_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "13030",
+      "faces": [
+        {
+          "name": "Beetle Mania",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13030.jpg",
+            "https://marvelcdb.com/bundles/cards/13030.png"
+          ]
+        }
+      ],
+      "set": "wsp_nemesis",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "13031",
+      "faces": [
+        {
+          "name": "Running Interference",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13031.jpg",
+            "https://marvelcdb.com/bundles/cards/13031.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "13032",
+      "faces": [
+        {
+          "name": "All for One",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13032.jpg",
+            "https://marvelcdb.com/bundles/cards/13032.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "13033",
+      "faces": [
+        {
+          "name": "Perseverance",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13033.jpg",
+            "https://marvelcdb.com/bundles/cards/13033.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "32016"
+      ]
+    },
+    {
+      "code": "13034",
+      "faces": [
+        {
+          "name": "Athletic Conditioning",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13034.jpg",
+            "https://marvelcdb.com/bundles/cards/13034.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "19021"
+      ]
+    }
+  ],
+  "sets": [
+    {
+      "code": "wsp",
+      "name": "Wasp",
+      "kind": "hero",
+      "cards": [
+        "13001",
+        "13002",
+        "13003",
+        "13004",
+        "13005",
+        "13006",
+        "13007",
+        "13008",
+        "13009",
+        "13010",
+        "13026"
+      ]
+    },
+    {
+      "code": "wsp_nemesis",
+      "name": "Wasp Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "13027",
+        "13028",
+        "13029",
+        "13030"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "13001",
+      "set": "wsp",
+      "obligation": "13026",
+      "nemesis": "wsp_nemesis"
+    }
+  ]
+}

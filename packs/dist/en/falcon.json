@@ -1,0 +1,669 @@
+{
+  "code": "falcon",
+  "name": "Falcon",
+  "position": 53,
+  "cards": [
+    {
+      "code": "53001",
+      "faces": [
+        {
+          "name": "Falcon",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53001A.jpg",
+            "https://marvelcdb.com/bundles/cards/53001a.png"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "Sam Wilson",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53001B.jpg",
+            "https://marvelcdb.com/bundles/cards/53001b.png"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "falcon",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "53001a",
+        "53001b"
+      ]
+    },
+    {
+      "code": "53002",
+      "faces": [
+        {
+          "name": "Redwing",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53002.jpg",
+            "https://marvelcdb.com/bundles/cards/53002.jpg"
+          ]
+        }
+      ],
+      "set": "falcon",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "53003",
+      "faces": [
+        {
+          "name": "Bird of Prey",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53003.jpg",
+            "https://marvelcdb.com/bundles/cards/53003.jpg"
+          ]
+        }
+      ],
+      "set": "falcon",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "53004",
+      "faces": [
+        {
+          "name": "Bird's-Eye View",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53004.jpg",
+            "https://marvelcdb.com/bundles/cards/53004.jpg"
+          ]
+        }
+      ],
+      "set": "falcon",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "53005",
+      "faces": [
+        {
+          "name": "Up, Up, and Away",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53005.jpg",
+            "https://marvelcdb.com/bundles/cards/53005.jpg"
+          ]
+        }
+      ],
+      "set": "falcon",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "53006",
+      "faces": [
+        {
+          "name": "Falcon's Flock",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53006.jpg",
+            "https://marvelcdb.com/bundles/cards/53006.jpg"
+          ]
+        }
+      ],
+      "set": "falcon",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "53007",
+      "faces": [
+        {
+          "name": "Soup Kitchen",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53007.jpg",
+            "https://marvelcdb.com/bundles/cards/53007.jpg"
+          ]
+        }
+      ],
+      "set": "falcon",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "53008",
+      "faces": [
+        {
+          "name": "Aerial Evacuation",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53008.jpg",
+            "https://marvelcdb.com/bundles/cards/53008.jpg"
+          ]
+        }
+      ],
+      "set": "falcon",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "53009",
+      "faces": [
+        {
+          "name": "Aerial Recon",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53009.jpg",
+            "https://marvelcdb.com/bundles/cards/53009.jpg"
+          ]
+        }
+      ],
+      "set": "falcon",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "53010",
+      "faces": [
+        {
+          "name": "Battlefield Awareness",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53010.jpg",
+            "https://marvelcdb.com/bundles/cards/53010.jpg"
+          ]
+        }
+      ],
+      "set": "falcon",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "53011",
+      "faces": [
+        {
+          "name": "Draw Their Fire",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53011.jpg",
+            "https://marvelcdb.com/bundles/cards/53011.jpg"
+          ]
+        }
+      ],
+      "set": "falcon",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "53012",
+      "faces": [
+        {
+          "name": "Talon Line",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53012.jpg",
+            "https://marvelcdb.com/bundles/cards/53012.jpg"
+          ]
+        }
+      ],
+      "set": "falcon",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "53013",
+      "faces": [
+        {
+          "name": "Vibranium Microweave",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53013.jpg",
+            "https://marvelcdb.com/bundles/cards/53013.jpg"
+          ]
+        }
+      ],
+      "set": "falcon",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "53015",
+      "faces": [
+        {
+          "name": "Aero",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53015.jpg",
+            "https://marvelcdb.com/bundles/cards/53015.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "53017",
+      "faces": [
+        {
+          "name": "Hugin \u0026 Munin",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53017.jpg",
+            "https://marvelcdb.com/bundles/cards/53017.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "53018",
+      "faces": [
+        {
+          "name": "Spectrum",
+          "subname": "Monica Rambeau",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53018.jpg",
+            "https://marvelcdb.com/bundles/cards/53018.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "53019",
+      "faces": [
+        {
+          "name": "Strength in Diversity",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53019.jpg",
+            "https://marvelcdb.com/bundles/cards/53019.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "53020",
+      "faces": [
+        {
+          "name": "Flight Squadron",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53020.jpg",
+            "https://marvelcdb.com/bundles/cards/53020.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "53021",
+      "faces": [
+        {
+          "name": "Resource Reserve",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53021.jpg",
+            "https://marvelcdb.com/bundles/cards/53021.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "53023",
+      "faces": [
+        {
+          "name": "Captain America",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53023.jpg",
+            "https://marvelcdb.com/bundles/cards/53023.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "53024",
+      "faces": [
+        {
+          "name": "Wingman",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53024.jpg",
+            "https://marvelcdb.com/bundles/cards/53024.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "53029",
+      "faces": [
+        {
+          "name": "Harlem's Protector",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53029.jpg",
+            "https://marvelcdb.com/bundles/cards/53029.jpg"
+          ]
+        }
+      ],
+      "set": "falcon",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "53030",
+      "faces": [
+        {
+          "name": "Viper",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53030.jpg",
+            "https://marvelcdb.com/bundles/cards/53030.jpg"
+          ]
+        }
+      ],
+      "set": "falcon_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "53031",
+      "faces": [
+        {
+          "name": "Serpent Solutions",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53031.jpg",
+            "https://marvelcdb.com/bundles/cards/53031.jpg"
+          ],
+          "startingThreat": {
+            "value": 6,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "falcon_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "53032",
+      "faces": [
+        {
+          "name": "Serpent Soldier",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53032.jpg",
+            "https://marvelcdb.com/bundles/cards/53032.jpg"
+          ]
+        }
+      ],
+      "set": "falcon_nemesis",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "53033",
+      "faces": [
+        {
+          "name": "Adder-tisement",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53033.jpg",
+            "https://marvelcdb.com/bundles/cards/53033.jpg"
+          ]
+        }
+      ],
+      "set": "falcon_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "53034",
+      "faces": [
+        {
+          "name": "Captain America's Shield",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53034.jpg",
+            "https://marvelcdb.com/bundles/cards/53034.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "53035",
+      "faces": [
+        {
+          "name": "Winter Soldier",
+          "subname": "Bucky Barnes",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53035.jpg",
+            "https://marvelcdb.com/bundles/cards/53035.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "53036",
+      "faces": [
+        {
+          "name": "Misty Knight",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53036.jpg",
+            "https://marvelcdb.com/bundles/cards/53036.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "53037",
+      "faces": [
+        {
+          "name": "Ops Room",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53037.jpg",
+            "https://marvelcdb.com/bundles/cards/53037.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "53038",
+      "faces": [
+        {
+          "name": "Fixer",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53038.jpg",
+            "https://marvelcdb.com/bundles/cards/53038.jpg"
+          ]
+        }
+      ],
+      "set": "techno",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "53039",
+      "faces": [
+        {
+          "name": "Jet Pack",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53039.jpg",
+            "https://marvelcdb.com/bundles/cards/53039.jpg"
+          ]
+        }
+      ],
+      "set": "techno",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "53040",
+      "faces": [
+        {
+          "name": "Tech-Pac",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53040.jpg",
+            "https://marvelcdb.com/bundles/cards/53040.jpg"
+          ]
+        }
+      ],
+      "set": "techno",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "53041",
+      "faces": [
+        {
+          "name": "Technological Innovation",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53041.jpg",
+            "https://marvelcdb.com/bundles/cards/53041.jpg"
+          ],
+          "startingThreat": {
+            "value": 4,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "techno",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "53042",
+      "faces": [
+        {
+          "name": "Techno",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53042.jpg",
+            "https://marvelcdb.com/bundles/cards/53042.jpg"
+          ]
+        }
+      ],
+      "set": "techno",
+      "back": "encounter",
+      "quantity": 2
+    }
+  ],
+  "sets": [
+    {
+      "code": "falcon",
+      "name": "Falcon",
+      "kind": "hero",
+      "cards": [
+        "53001",
+        "53002",
+        "53003",
+        "53004",
+        "53005",
+        "53006",
+        "53007",
+        "53008",
+        "53009",
+        "53010",
+        "53011",
+        "53012",
+        "53013",
+        "53029"
+      ]
+    },
+    {
+      "code": "falcon_nemesis",
+      "name": "Falcon Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "53030",
+        "53031",
+        "53032",
+        "53033"
+      ]
+    },
+    {
+      "code": "techno",
+      "name": "Techno",
+      "kind": "modular",
+      "cards": [
+        "53038",
+        "53039",
+        "53040",
+        "53041",
+        "53042"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "53001",
+      "set": "falcon",
+      "obligation": "53029",
+      "nemesis": "falcon_nemesis"
+    }
+  ]
+}

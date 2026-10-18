@@ -1,0 +1,691 @@
+{
+  "code": "jj",
+  "name": "Jessica Jones",
+  "position": 61,
+  "cards": [
+    {
+      "code": "61001",
+      "faces": [
+        {
+          "name": "Jessica Jones",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61001A.jpg",
+            "https://marvelcdb.com/bundles/cards/61001a.png"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "Jessica Jones",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61001B.jpg",
+            "https://marvelcdb.com/bundles/cards/61001b.png"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "jessica_jones",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "61001a",
+        "61001b"
+      ]
+    },
+    {
+      "code": "61002",
+      "faces": [
+        {
+          "name": "Alias Investigations",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61002.jpg"
+          ]
+        }
+      ],
+      "set": "jessica_jones",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "61003",
+      "faces": [
+        {
+          "name": "Luke Cage",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61003.jpg"
+          ]
+        }
+      ],
+      "set": "jessica_jones",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "61004",
+      "faces": [
+        {
+          "name": "\"Big Mistake\"",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61004.jpg"
+          ]
+        }
+      ],
+      "set": "jessica_jones",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "61005",
+      "faces": [
+        {
+          "name": "Breakthrough",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61005.jpg"
+          ]
+        }
+      ],
+      "set": "jessica_jones",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "61006",
+      "faces": [
+        {
+          "name": "Snooping Around",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61006.jpg"
+          ]
+        }
+      ],
+      "set": "jessica_jones",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "61007",
+      "faces": [
+        {
+          "name": "Piecing It All Together",
+          "type": "player_side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61007.jpg"
+          ],
+          "startingThreat": {
+            "value": 6,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "jessica_jones",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "61008",
+      "faces": [
+        {
+          "name": "Calling in Favors",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61008.jpg"
+          ]
+        }
+      ],
+      "set": "jessica_jones",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "61009",
+      "faces": [
+        {
+          "name": "4K Digital Camcorder",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61009.jpg"
+          ]
+        }
+      ],
+      "set": "jessica_jones",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "61010",
+      "faces": [
+        {
+          "name": "Circumstantial Evidence",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61010.jpg"
+          ]
+        }
+      ],
+      "set": "jessica_jones",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "61011",
+      "faces": [
+        {
+          "name": "Leather Jacket",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61011.jpg"
+          ]
+        }
+      ],
+      "set": "jessica_jones",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "61012",
+      "faces": [
+        {
+          "name": "\"Now I'm Ticked Off!\"",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61012.jpg"
+          ]
+        }
+      ],
+      "set": "jessica_jones",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "61013",
+      "faces": [
+        {
+          "name": "Reluctant Flier",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61013.jpg"
+          ]
+        }
+      ],
+      "set": "jessica_jones",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "61014",
+      "faces": [
+        {
+          "name": "Stakeout",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61014.jpg"
+          ]
+        }
+      ],
+      "set": "jessica_jones",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "61015",
+      "faces": [
+        {
+          "name": "Captain Marvel",
+          "subname": "Carol Danvers",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61015.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "61016",
+      "faces": [
+        {
+          "name": "Spider-Woman",
+          "subname": "Mattie Franklin",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61016.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "61017",
+      "faces": [
+        {
+          "name": "Squirrel Girl",
+          "subname": "Doreen Green",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61017.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "61019",
+      "faces": [
+        {
+          "name": "Strategy Session",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61019.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "61020",
+      "faces": [
+        {
+          "name": "Run Them to Ground",
+          "type": "player_side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61020.jpg"
+          ],
+          "startingThreat": {
+            "value": 4,
+            "perPlayer": true
+          }
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "61023",
+      "faces": [
+        {
+          "name": "Grapnel Launcher",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61023.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "61024",
+      "faces": [
+        {
+          "name": "Entrapment",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61024.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "61025",
+      "faces": [
+        {
+          "name": "Hellcat",
+          "subname": "Patsy Walker",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61025.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "61026",
+      "faces": [
+        {
+          "name": "Joys of Life",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61026.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "61027",
+      "faces": [
+        {
+          "name": "Unbreakable Bond",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61027.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "62024"
+      ]
+    },
+    {
+      "code": "61028",
+      "faces": [
+        {
+          "name": "Second Chance",
+          "type": "player_side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61028.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": true
+          }
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "61029",
+      "faces": [
+        {
+          "name": "Defend Our City",
+          "type": "player_side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61029.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": true
+          }
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "61030",
+      "faces": [
+        {
+          "name": "Work-Life Balance",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61030.jpg"
+          ]
+        }
+      ],
+      "set": "jessica_jones",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "61031",
+      "faces": [
+        {
+          "name": "Purple Man",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61031.jpg"
+          ]
+        }
+      ],
+      "set": "jessica_jones_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "61032",
+      "faces": [
+        {
+          "name": "Indomitable Will",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61032.jpg"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "jessica_jones_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "61033",
+      "faces": [
+        {
+          "name": "Suggestion ([energy])",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61033A.jpg"
+          ]
+        },
+        {
+          "name": "Suggestion ([mental])",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61033B.jpg"
+          ]
+        },
+        {
+          "name": "Suggestion ([physical])",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61033C.jpg"
+          ]
+        }
+      ],
+      "set": "jessica_jones_nemesis",
+      "back": "encounter",
+      "quantity": 1,
+      "aliases": [
+        "61033a",
+        "61033b",
+        "61033c"
+      ]
+    },
+    {
+      "code": "61034",
+      "faces": [
+        {
+          "name": "Innate Aggression",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61034.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "61035",
+      "faces": [
+        {
+          "name": "Shakedown",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61035.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "61036",
+      "faces": [
+        {
+          "name": "Innate Perception",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61036.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "61037",
+      "faces": [
+        {
+          "name": "Innate Inspiration",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61037.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "61038",
+      "faces": [
+        {
+          "name": "Echo",
+          "subname": "Maya Lopez",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61038.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "61039",
+      "faces": [
+        {
+          "name": "Lay Low",
+          "type": "player_side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61039.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": true
+          }
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "61040",
+      "faces": [
+        {
+          "name": "Mitigated Threat",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61040.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    }
+  ],
+  "sets": [
+    {
+      "code": "jessica_jones",
+      "name": "Jessica Jones",
+      "kind": "hero",
+      "cards": [
+        "61001",
+        "61002",
+        "61003",
+        "61004",
+        "61005",
+        "61006",
+        "61007",
+        "61008",
+        "61009",
+        "61010",
+        "61011",
+        "61012",
+        "61013",
+        "61014",
+        "61030"
+      ]
+    },
+    {
+      "code": "jessica_jones_nemesis",
+      "name": "Jessica Jones Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "61031",
+        "61032",
+        "61033"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "61001",
+      "set": "jessica_jones",
+      "obligation": "61030",
+      "nemesis": "jessica_jones_nemesis"
+    }
+  ]
+}

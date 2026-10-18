@@ -1,0 +1,577 @@
+{
+  "code": "ant",
+  "name": "Ant-Man",
+  "position": 12,
+  "cards": [
+    {
+      "code": "12001",
+      "faces": [
+        {
+          "name": "Ant-Man",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12001A.jpg",
+            "https://marvelcdb.com/bundles/cards/12001a.png"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "Scott Lang",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12001B.jpg",
+            "https://marvelcdb.com/bundles/cards/12001b.png"
+          ],
+          "handSize": 6
+        },
+        {
+          "name": "Ant-Man",
+          "type": "hero",
+          "size": "dstd",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12001C.jpg",
+            "https://marvelcdb.com/bundles/cards/12001c.png"
+          ],
+          "handSize": 4
+        }
+      ],
+      "set": "ant",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "12001a",
+        "12001b",
+        "12001c"
+      ]
+    },
+    {
+      "code": "12002",
+      "faces": [
+        {
+          "name": "Wasp",
+          "subname": "Nadia Van Dyne",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12002.jpg",
+            "https://marvelcdb.com/bundles/cards/12002.png"
+          ]
+        }
+      ],
+      "set": "ant",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "12003",
+      "faces": [
+        {
+          "name": "Giant Stomp",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12003.jpg",
+            "https://marvelcdb.com/bundles/cards/12003.png"
+          ]
+        }
+      ],
+      "set": "ant",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "12004",
+      "faces": [
+        {
+          "name": "Hive Mind",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12004.jpg",
+            "https://marvelcdb.com/bundles/cards/12004.png"
+          ]
+        }
+      ],
+      "set": "ant",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "12005",
+      "faces": [
+        {
+          "name": "Resize",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12005.jpg",
+            "https://marvelcdb.com/bundles/cards/12005.png"
+          ]
+        }
+      ],
+      "set": "ant",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "12006",
+      "faces": [
+        {
+          "name": "Pym Particles",
+          "type": "resource",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12006.jpg",
+            "https://marvelcdb.com/bundles/cards/12006.png"
+          ]
+        }
+      ],
+      "set": "ant",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "12007",
+      "faces": [
+        {
+          "name": "Army of Ants",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12007.jpg",
+            "https://marvelcdb.com/bundles/cards/12007.png"
+          ]
+        }
+      ],
+      "set": "ant",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "12008",
+      "faces": [
+        {
+          "name": "Ant-Man's Helmet",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12008.jpg",
+            "https://marvelcdb.com/bundles/cards/12008.png"
+          ]
+        }
+      ],
+      "set": "ant",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "12009",
+      "faces": [
+        {
+          "name": "Giant Strength",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12009.jpg",
+            "https://marvelcdb.com/bundles/cards/12009.png"
+          ]
+        }
+      ],
+      "set": "ant",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "12010",
+      "faces": [
+        {
+          "name": "Wrist Gauntlets",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12010.jpg",
+            "https://marvelcdb.com/bundles/cards/12010.png"
+          ]
+        }
+      ],
+      "set": "ant",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "12011",
+      "faces": [
+        {
+          "name": "Ant-Man",
+          "subname": "Hank Pym",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12011.jpg",
+            "https://marvelcdb.com/bundles/cards/12011.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "12012",
+      "faces": [
+        {
+          "name": "Giant-Man",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12012.jpg",
+            "https://marvelcdb.com/bundles/cards/12012.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "12013",
+      "faces": [
+        {
+          "name": "Ronin",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12013.jpg",
+            "https://marvelcdb.com/bundles/cards/12013.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "12014",
+      "faces": [
+        {
+          "name": "Stinger",
+          "subname": "Cassie Lang",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12014.jpg",
+            "https://marvelcdb.com/bundles/cards/12014.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "12015",
+      "faces": [
+        {
+          "name": "Call for Aid",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12015.jpg",
+            "https://marvelcdb.com/bundles/cards/12015.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "12016",
+      "faces": [
+        {
+          "name": "Moxie",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12016.jpg",
+            "https://marvelcdb.com/bundles/cards/12016.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "21017"
+      ]
+    },
+    {
+      "code": "12017",
+      "faces": [
+        {
+          "name": "Power Gloves",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12017.jpg",
+            "https://marvelcdb.com/bundles/cards/12017.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "12018",
+      "faces": [
+        {
+          "name": "Reinforced Suit",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12018.jpg",
+            "https://marvelcdb.com/bundles/cards/12018.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "12020",
+      "faces": [
+        {
+          "name": "Swarm Tactics",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12020.jpg",
+            "https://marvelcdb.com/bundles/cards/12020.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "13020"
+      ]
+    },
+    {
+      "code": "12024",
+      "faces": [
+        {
+          "name": "Team-Building Exercise",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12024.jpg",
+            "https://marvelcdb.com/bundles/cards/12024.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "30022",
+        "46021"
+      ]
+    },
+    {
+      "code": "12025",
+      "faces": [
+        {
+          "name": "Care for Cassie",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12025.jpg",
+            "https://marvelcdb.com/bundles/cards/12025.png"
+          ]
+        }
+      ],
+      "set": "ant",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "12026",
+      "faces": [
+        {
+          "name": "Tech Theft",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12026.jpg",
+            "https://marvelcdb.com/bundles/cards/12026.png"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "ant_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "12027",
+      "faces": [
+        {
+          "name": "Yellowjacket",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12027.jpg",
+            "https://marvelcdb.com/bundles/cards/12027.png"
+          ]
+        }
+      ],
+      "set": "ant_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "12028",
+      "faces": [
+        {
+          "name": "Size Increase",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12028.jpg",
+            "https://marvelcdb.com/bundles/cards/12028.png"
+          ]
+        }
+      ],
+      "set": "ant_nemesis",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "12029",
+      "faces": [
+        {
+          "name": "Yellowjacket's Plan",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12029.jpg",
+            "https://marvelcdb.com/bundles/cards/12029.png"
+          ]
+        }
+      ],
+      "set": "ant_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "12030",
+      "faces": [
+        {
+          "name": "Moment of Triumph",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12030.jpg",
+            "https://marvelcdb.com/bundles/cards/12030.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "43017"
+      ]
+    },
+    {
+      "code": "12031",
+      "faces": [
+        {
+          "name": "Lay Down the Law",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12031.jpg",
+            "https://marvelcdb.com/bundles/cards/12031.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "61018"
+      ]
+    },
+    {
+      "code": "12032",
+      "faces": [
+        {
+          "name": "Muster Courage",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12032.jpg",
+            "https://marvelcdb.com/bundles/cards/12032.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "12033",
+      "faces": [
+        {
+          "name": "Assess the Situation",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12033.jpg",
+            "https://marvelcdb.com/bundles/cards/12033.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "56053"
+      ]
+    }
+  ],
+  "sets": [
+    {
+      "code": "ant",
+      "name": "Ant-Man",
+      "kind": "hero",
+      "cards": [
+        "12001",
+        "12002",
+        "12003",
+        "12004",
+        "12005",
+        "12006",
+        "12007",
+        "12008",
+        "12009",
+        "12010",
+        "12025"
+      ]
+    },
+    {
+      "code": "ant_nemesis",
+      "name": "Ant-Man Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "12026",
+        "12027",
+        "12028",
+        "12029"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "12001",
+      "set": "ant",
+      "obligation": "12025",
+      "nemesis": "ant_nemesis"
+    }
+  ]
+}

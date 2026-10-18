@@ -1,0 +1,536 @@
+{
+  "code": "qsv",
+  "name": "Quicksilver",
+  "position": 14,
+  "cards": [
+    {
+      "code": "14001",
+      "faces": [
+        {
+          "name": "Quicksilver",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14001A.jpg",
+            "https://marvelcdb.com/bundles/cards/14001a.png"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "Pietro Maximoff",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14001B.jpg"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "qsv",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "14001a",
+        "14001b"
+      ]
+    },
+    {
+      "code": "14002",
+      "faces": [
+        {
+          "name": "Scarlet Witch",
+          "subname": "Wanda Maximoff",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14002.jpg",
+            "https://marvelcdb.com/bundles/cards/14002.png"
+          ]
+        }
+      ],
+      "set": "qsv",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "14003",
+      "faces": [
+        {
+          "name": "Always Be Running",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14003.jpg",
+            "https://marvelcdb.com/bundles/cards/14003.png"
+          ]
+        }
+      ],
+      "set": "qsv",
+      "back": "player",
+      "quantity": 4
+    },
+    {
+      "code": "14004",
+      "faces": [
+        {
+          "name": "Double Time",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14004.jpg",
+            "https://marvelcdb.com/bundles/cards/14004.png"
+          ]
+        }
+      ],
+      "set": "qsv",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "14005",
+      "faces": [
+        {
+          "name": "Maximum Velocity",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14005.jpg",
+            "https://marvelcdb.com/bundles/cards/14005.png"
+          ]
+        }
+      ],
+      "set": "qsv",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "14006",
+      "faces": [
+        {
+          "name": "Speed Cyclone",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14006.jpg",
+            "https://marvelcdb.com/bundles/cards/14006.png"
+          ]
+        }
+      ],
+      "set": "qsv",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "14007",
+      "faces": [
+        {
+          "name": "Serval Industries",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14007.jpg",
+            "https://marvelcdb.com/bundles/cards/14007.png"
+          ]
+        }
+      ],
+      "set": "qsv",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "14008",
+      "faces": [
+        {
+          "name": "Accelerated Reflex",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14008.jpg",
+            "https://marvelcdb.com/bundles/cards/14008.png"
+          ]
+        }
+      ],
+      "set": "qsv",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "14009",
+      "faces": [
+        {
+          "name": "Friction Resistance",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14009.jpg",
+            "https://marvelcdb.com/bundles/cards/14009.png"
+          ]
+        }
+      ],
+      "set": "qsv",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "14010",
+      "faces": [
+        {
+          "name": "Hyper Perception",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14010.jpg",
+            "https://marvelcdb.com/bundles/cards/14010.png"
+          ]
+        }
+      ],
+      "set": "qsv",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "14011",
+      "faces": [
+        {
+          "name": "Reinforced Sinew",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14011.jpg",
+            "https://marvelcdb.com/bundles/cards/14011.png"
+          ]
+        }
+      ],
+      "set": "qsv",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "14012",
+      "faces": [
+        {
+          "name": "Multiple Man",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14012.jpg",
+            "https://marvelcdb.com/bundles/cards/14012.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "14013",
+      "faces": [
+        {
+          "name": "Warlock",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14013.jpg",
+            "https://marvelcdb.com/bundles/cards/14013.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "14014",
+      "faces": [
+        {
+          "name": "Never Back Down",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14014.jpg",
+            "https://marvelcdb.com/bundles/cards/14014.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "14015",
+      "faces": [
+        {
+          "name": "Side Step",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14015.jpg",
+            "https://marvelcdb.com/bundles/cards/14015.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "26019"
+      ]
+    },
+    {
+      "code": "14017",
+      "faces": [
+        {
+          "name": "Nerves of Steel",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14017.jpg",
+            "https://marvelcdb.com/bundles/cards/14017.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "14018",
+      "faces": [
+        {
+          "name": "Order and Chaos",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14018.jpg",
+            "https://marvelcdb.com/bundles/cards/14018.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "15018"
+      ]
+    },
+    {
+      "code": "14022",
+      "faces": [
+        {
+          "name": "Adrenaline Rush",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14022.jpg",
+            "https://marvelcdb.com/bundles/cards/14022.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "14023",
+      "faces": [
+        {
+          "name": "Civic Duty",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14023.jpg",
+            "https://marvelcdb.com/bundles/cards/14023.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "14024",
+      "faces": [
+        {
+          "name": "Need for Speed",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14024.jpg",
+            "https://marvelcdb.com/bundles/cards/14024.png"
+          ]
+        }
+      ],
+      "set": "qsv",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "14025",
+      "faces": [
+        {
+          "name": "Extortion of Seismic Proportion",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14025.jpg",
+            "https://marvelcdb.com/bundles/cards/14025.png"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "qsv_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "14026",
+      "faces": [
+        {
+          "name": "Avalanche",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14026.jpg",
+            "https://marvelcdb.com/bundles/cards/14026.png"
+          ]
+        }
+      ],
+      "set": "qsv_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "14027",
+      "faces": [
+        {
+          "name": "Vibration Resistance",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14027.jpg",
+            "https://marvelcdb.com/bundles/cards/14027.png"
+          ]
+        }
+      ],
+      "set": "qsv_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "14028",
+      "faces": [
+        {
+          "name": "Earthquake",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14028.jpg",
+            "https://marvelcdb.com/bundles/cards/14028.png"
+          ]
+        }
+      ],
+      "set": "qsv_nemesis",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "14029",
+      "faces": [
+        {
+          "name": "Brute Force",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14029.jpg",
+            "https://marvelcdb.com/bundles/cards/14029.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "14030",
+      "faces": [
+        {
+          "name": "Sense of Justice",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14030.jpg",
+            "https://marvelcdb.com/bundles/cards/14030.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "14031",
+      "faces": [
+        {
+          "name": "United We Stand",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14031.jpg",
+            "https://marvelcdb.com/bundles/cards/14031.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "14032",
+      "faces": [
+        {
+          "name": "Beat 'Em Up",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14032.jpg",
+            "https://marvelcdb.com/bundles/cards/14032.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    }
+  ],
+  "sets": [
+    {
+      "code": "qsv",
+      "name": "Quicksilver",
+      "kind": "hero",
+      "cards": [
+        "14001",
+        "14002",
+        "14003",
+        "14004",
+        "14005",
+        "14006",
+        "14007",
+        "14008",
+        "14009",
+        "14010",
+        "14011",
+        "14024"
+      ]
+    },
+    {
+      "code": "qsv_nemesis",
+      "name": "Quicksilver Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "14025",
+        "14026",
+        "14027",
+        "14028"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "14001",
+      "set": "qsv",
+      "obligation": "14024",
+      "nemesis": "qsv_nemesis"
+    }
+  ]
+}

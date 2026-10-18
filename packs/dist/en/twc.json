@@ -1,0 +1,1129 @@
+{
+  "code": "twc",
+  "name": "The Wrecking Crew",
+  "position": 3,
+  "cards": [
+    {
+      "code": "07001",
+      "faces": [
+        {
+          "name": "Breakout",
+          "type": "main_scheme",
+          "stage": "1A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07001A.jpg"
+          ]
+        },
+        {
+          "name": "Breakout",
+          "type": "main_scheme",
+          "stage": "1B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07001B.jpg",
+            "https://marvelcdb.com/bundles/cards/07001b.png"
+          ],
+          "startingThreat": {
+            "value": 0,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "wrecking_crew",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "07001a",
+        "07001b"
+      ]
+    },
+    {
+      "code": "07002",
+      "faces": [
+        {
+          "name": "Wrecker",
+          "type": "villain",
+          "stage": "A",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07002.jpg",
+            "https://marvelcdb.com/bundles/cards/07002.png"
+          ]
+        }
+      ],
+      "set": "wrecker",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "07003",
+      "faces": [
+        {
+          "name": "Wrecker",
+          "type": "villain",
+          "stage": "B",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07003.jpg",
+            "https://marvelcdb.com/bundles/cards/07003.png"
+          ]
+        }
+      ],
+      "set": "wrecker",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "07004",
+      "faces": [
+        {
+          "name": "Day of Reckoning",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07004.jpg",
+            "https://marvelcdb.com/bundles/cards/07004.png"
+          ],
+          "startingThreat": {
+            "value": 6,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "wrecker",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "07005",
+      "faces": [
+        {
+          "name": "Held Hostage",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07005.jpg",
+            "https://marvelcdb.com/bundles/cards/07005.png"
+          ]
+        }
+      ],
+      "set": "wrecker",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "07006",
+      "faces": [
+        {
+          "name": "Magic Crowbar",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07006.jpg",
+            "https://marvelcdb.com/bundles/cards/07006.png"
+          ]
+        }
+      ],
+      "set": "wrecker",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "07007",
+      "faces": [
+        {
+          "name": "Wrecker's Command",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07007.jpg",
+            "https://marvelcdb.com/bundles/cards/07007.png"
+          ]
+        }
+      ],
+      "set": "wrecker",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "07008",
+      "faces": [
+        {
+          "name": "Corrupt Prison Guard",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07008.jpg",
+            "https://marvelcdb.com/bundles/cards/07008.png"
+          ]
+        }
+      ],
+      "set": "wrecker",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "07009",
+      "faces": [
+        {
+          "name": "Escaped Convict",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07009.jpg",
+            "https://marvelcdb.com/bundles/cards/07009.png"
+          ]
+        }
+      ],
+      "set": "wrecker",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "07010",
+      "faces": [
+        {
+          "name": "Buddy System",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07010.jpg",
+            "https://marvelcdb.com/bundles/cards/07010.png"
+          ]
+        }
+      ],
+      "set": "wrecker",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "07011",
+      "faces": [
+        {
+          "name": "Chaos In the Prison",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07011.jpg",
+            "https://marvelcdb.com/bundles/cards/07011.png"
+          ]
+        }
+      ],
+      "set": "wrecker",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "07012",
+      "faces": [
+        {
+          "name": "Crowbar Toss",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07012.jpg",
+            "https://marvelcdb.com/bundles/cards/07012.png"
+          ]
+        }
+      ],
+      "set": "wrecker",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "07013",
+      "faces": [
+        {
+          "name": "Get Wrecked!",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07013.jpg",
+            "https://marvelcdb.com/bundles/cards/07013.png"
+          ]
+        }
+      ],
+      "set": "wrecker",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "07014",
+      "faces": [
+        {
+          "name": "I've Been Waiting For This!",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07014.jpg",
+            "https://marvelcdb.com/bundles/cards/07014.png"
+          ]
+        }
+      ],
+      "set": "wrecker",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "07015",
+      "faces": [
+        {
+          "name": "Mystical Link",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07015.jpg",
+            "https://marvelcdb.com/bundles/cards/07015.png"
+          ]
+        }
+      ],
+      "set": "wrecker",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "07016",
+      "faces": [
+        {
+          "name": "You're Dead Meat!",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07016.jpg",
+            "https://marvelcdb.com/bundles/cards/07016.png"
+          ]
+        }
+      ],
+      "set": "wrecker",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "07017",
+      "faces": [
+        {
+          "name": "Thunderball",
+          "type": "villain",
+          "stage": "A",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07017.jpg",
+            "https://marvelcdb.com/bundles/cards/07017.png"
+          ]
+        }
+      ],
+      "set": "thunderball",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "07018",
+      "faces": [
+        {
+          "name": "Thunderball",
+          "type": "villain",
+          "stage": "B",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07018.jpg",
+            "https://marvelcdb.com/bundles/cards/07018.png"
+          ]
+        }
+      ],
+      "set": "thunderball",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "07019",
+      "faces": [
+        {
+          "name": "Thunderstruck",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07019.jpg",
+            "https://marvelcdb.com/bundles/cards/07019.png"
+          ],
+          "startingThreat": {
+            "value": 5,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "thunderball",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "07020",
+      "faces": [
+        {
+          "name": "Ball and Chain",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07020.jpg",
+            "https://marvelcdb.com/bundles/cards/07020.png"
+          ]
+        }
+      ],
+      "set": "thunderball",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "07021",
+      "faces": [
+        {
+          "name": "Held Hostage",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/07021.png"
+          ]
+        }
+      ],
+      "set": "thunderball",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "07022",
+      "faces": [
+        {
+          "name": "Radioactive Buildup",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07022.jpg",
+            "https://marvelcdb.com/bundles/cards/07022.png"
+          ]
+        }
+      ],
+      "set": "thunderball",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "07023",
+      "faces": [
+        {
+          "name": "Corrupt Prison Guard",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/07023.png"
+          ]
+        }
+      ],
+      "set": "thunderball",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "07024",
+      "faces": [
+        {
+          "name": "Escaped Convict",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/07024.png"
+          ]
+        }
+      ],
+      "set": "thunderball",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "07025",
+      "faces": [
+        {
+          "name": "Buddy System",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/07025.png"
+          ]
+        }
+      ],
+      "set": "thunderball",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "07026",
+      "faces": [
+        {
+          "name": "Chaos In the Prison",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/07026.png"
+          ]
+        }
+      ],
+      "set": "thunderball",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "07027",
+      "faces": [
+        {
+          "name": "Energy Projectiles",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07027.jpg",
+            "https://marvelcdb.com/bundles/cards/07027.png"
+          ]
+        }
+      ],
+      "set": "thunderball",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "07028",
+      "faces": [
+        {
+          "name": "Get Wrecked!",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/07028.png"
+          ]
+        }
+      ],
+      "set": "thunderball",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "07029",
+      "faces": [
+        {
+          "name": "I've Been Waiting For This!",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/07029.png"
+          ]
+        }
+      ],
+      "set": "thunderball",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "07030",
+      "faces": [
+        {
+          "name": "Lightning Blast",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07030.jpg",
+            "https://marvelcdb.com/bundles/cards/07030.png"
+          ]
+        }
+      ],
+      "set": "thunderball",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "07031",
+      "faces": [
+        {
+          "name": "Tactical Prowess",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07031.jpg",
+            "https://marvelcdb.com/bundles/cards/07031.png"
+          ]
+        }
+      ],
+      "set": "thunderball",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "07032",
+      "faces": [
+        {
+          "name": "Piledriver",
+          "type": "villain",
+          "stage": "A",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07032.jpg",
+            "https://marvelcdb.com/bundles/cards/07032.png"
+          ]
+        }
+      ],
+      "set": "piledriver",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "07033",
+      "faces": [
+        {
+          "name": "Piledriver",
+          "type": "villain",
+          "stage": "B",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07033.jpg",
+            "https://marvelcdb.com/bundles/cards/07033.png"
+          ]
+        }
+      ],
+      "set": "piledriver",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "07034",
+      "faces": [
+        {
+          "name": "Pile It On!",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07034.jpg",
+            "https://marvelcdb.com/bundles/cards/07034.png"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "piledriver",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "07035",
+      "faces": [
+        {
+          "name": "Distracting Taunts",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07035.jpg",
+            "https://marvelcdb.com/bundles/cards/07035.png"
+          ]
+        }
+      ],
+      "set": "piledriver",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "07036",
+      "faces": [
+        {
+          "name": "Held Hostage",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/07036.png"
+          ]
+        }
+      ],
+      "set": "piledriver",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "07037",
+      "faces": [
+        {
+          "name": "Corrupt Prison Guard",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/07037.png"
+          ]
+        }
+      ],
+      "set": "piledriver",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "07038",
+      "faces": [
+        {
+          "name": "Escaped Convict",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/07038.png"
+          ]
+        }
+      ],
+      "set": "piledriver",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "07039",
+      "faces": [
+        {
+          "name": "Buddy System",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/07039.png"
+          ]
+        }
+      ],
+      "set": "piledriver",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "07040",
+      "faces": [
+        {
+          "name": "Get Wrecked!",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/07040.png"
+          ]
+        }
+      ],
+      "set": "piledriver",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "07041",
+      "faces": [
+        {
+          "name": "I've Been Waiting For This!",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/07041.png"
+          ]
+        }
+      ],
+      "set": "piledriver",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "07042",
+      "faces": [
+        {
+          "name": "Oversized Hands",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07042.jpg",
+            "https://marvelcdb.com/bundles/cards/07042.png"
+          ]
+        }
+      ],
+      "set": "piledriver",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "07043",
+      "faces": [
+        {
+          "name": "Escape Plan",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07043.jpg",
+            "https://marvelcdb.com/bundles/cards/07043.png"
+          ]
+        }
+      ],
+      "set": "piledriver",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "07044",
+      "faces": [
+        {
+          "name": "Pummel",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07044.jpg",
+            "https://marvelcdb.com/bundles/cards/07044.png"
+          ]
+        }
+      ],
+      "set": "piledriver",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "07045",
+      "faces": [
+        {
+          "name": "Uncanny Resilience",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07045.jpg",
+            "https://marvelcdb.com/bundles/cards/07045.png"
+          ]
+        }
+      ],
+      "set": "piledriver",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "07046",
+      "faces": [
+        {
+          "name": "Bulldozer",
+          "type": "villain",
+          "stage": "A",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07046.jpg",
+            "https://marvelcdb.com/bundles/cards/07046.png"
+          ]
+        }
+      ],
+      "set": "bulldozer",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "07047",
+      "faces": [
+        {
+          "name": "Bulldozer",
+          "type": "villain",
+          "stage": "B",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07047.jpg",
+            "https://marvelcdb.com/bundles/cards/07047.png"
+          ]
+        }
+      ],
+      "set": "bulldozer",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "07048",
+      "faces": [
+        {
+          "name": "Clear the Road",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07048.jpg",
+            "https://marvelcdb.com/bundles/cards/07048.png"
+          ],
+          "startingThreat": {
+            "value": 4,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "bulldozer",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "07049",
+      "faces": [
+        {
+          "name": "Bulldozer's Helmet",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07049.jpg",
+            "https://marvelcdb.com/bundles/cards/07049.png"
+          ]
+        }
+      ],
+      "set": "bulldozer",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "07050",
+      "faces": [
+        {
+          "name": "Held Hostage",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/07050.png"
+          ]
+        }
+      ],
+      "set": "bulldozer",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "07051",
+      "faces": [
+        {
+          "name": "Ramming Speed",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07051.jpg",
+            "https://marvelcdb.com/bundles/cards/07051.png"
+          ]
+        }
+      ],
+      "set": "bulldozer",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "07052",
+      "faces": [
+        {
+          "name": "Corrupt Prison Guard",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/07052.png"
+          ]
+        }
+      ],
+      "set": "bulldozer",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "07053",
+      "faces": [
+        {
+          "name": "Escaped Convict",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/07053.png"
+          ]
+        }
+      ],
+      "set": "bulldozer",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "07054",
+      "faces": [
+        {
+          "name": "Buddy System",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/07054.png"
+          ]
+        }
+      ],
+      "set": "bulldozer",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "07055",
+      "faces": [
+        {
+          "name": "Bull Rush",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07055.jpg",
+            "https://marvelcdb.com/bundles/cards/07055.png"
+          ]
+        }
+      ],
+      "set": "bulldozer",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "07056",
+      "faces": [
+        {
+          "name": "Chaos In the Prison",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/07056.png"
+          ]
+        }
+      ],
+      "set": "bulldozer",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "07057",
+      "faces": [
+        {
+          "name": "Get Wrecked!",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/07057.png"
+          ]
+        }
+      ],
+      "set": "bulldozer",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "07058",
+      "faces": [
+        {
+          "name": "Headbutt",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07058.jpg",
+            "https://marvelcdb.com/bundles/cards/07058.png"
+          ]
+        }
+      ],
+      "set": "bulldozer",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "07059",
+      "faces": [
+        {
+          "name": "Leading the Charge",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07059.jpg",
+            "https://marvelcdb.com/bundles/cards/07059.png"
+          ]
+        }
+      ],
+      "set": "bulldozer",
+      "back": "encounter",
+      "quantity": 2
+    }
+  ],
+  "sets": [
+    {
+      "code": "bulldozer",
+      "name": "Bulldozer",
+      "kind": "villain",
+      "cards": [
+        "07046",
+        "07047",
+        "07048",
+        "07049",
+        "07050",
+        "07051",
+        "07052",
+        "07053",
+        "07054",
+        "07055",
+        "07056",
+        "07057",
+        "07058",
+        "07059"
+      ]
+    },
+    {
+      "code": "piledriver",
+      "name": "Piledriver",
+      "kind": "villain",
+      "cards": [
+        "07032",
+        "07033",
+        "07034",
+        "07035",
+        "07036",
+        "07037",
+        "07038",
+        "07039",
+        "07040",
+        "07041",
+        "07042",
+        "07043",
+        "07044",
+        "07045"
+      ]
+    },
+    {
+      "code": "thunderball",
+      "name": "Thunderball",
+      "kind": "villain",
+      "cards": [
+        "07017",
+        "07018",
+        "07019",
+        "07020",
+        "07021",
+        "07022",
+        "07023",
+        "07024",
+        "07025",
+        "07026",
+        "07027",
+        "07028",
+        "07029",
+        "07030",
+        "07031"
+      ]
+    },
+    {
+      "code": "wrecker",
+      "name": "Wrecker",
+      "kind": "villain",
+      "cards": [
+        "07002",
+        "07003",
+        "07004",
+        "07005",
+        "07006",
+        "07007",
+        "07008",
+        "07009",
+        "07010",
+        "07011",
+        "07012",
+        "07013",
+        "07014",
+        "07015",
+        "07016"
+      ]
+    },
+    {
+      "code": "wrecking_crew",
+      "name": "Wrecking Crew",
+      "kind": "villain",
+      "cards": [
+        "07001"
+      ]
+    }
+  ]
+}

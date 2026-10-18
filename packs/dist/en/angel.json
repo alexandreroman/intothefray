@@ -1,0 +1,589 @@
+{
+  "code": "angel",
+  "name": "Angel",
+  "position": 42,
+  "cards": [
+    {
+      "code": "42001",
+      "faces": [
+        {
+          "name": "Angel",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42001A.jpg",
+            "https://marvelcdb.com/bundles/cards/42001a.png"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "Warren Worthington III",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42001B.jpg",
+            "https://marvelcdb.com/bundles/cards/42001b.png"
+          ],
+          "handSize": 6
+        },
+        {
+          "name": "Archangel",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42001C.jpg",
+            "https://marvelcdb.com/bundles/cards/42001c.png"
+          ],
+          "handSize": 5
+        }
+      ],
+      "set": "angel",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "42001a",
+        "42001b",
+        "42001c"
+      ]
+    },
+    {
+      "code": "42002",
+      "faces": [
+        {
+          "name": "Psylocke",
+          "subname": "Betsy Braddock",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42002.jpg",
+            "https://marvelcdb.com/bundles/cards/42002.png"
+          ]
+        }
+      ],
+      "set": "angel",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "42003",
+      "faces": [
+        {
+          "name": "Adaptive Plumage",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42003.jpg",
+            "https://marvelcdb.com/bundles/cards/42003.png"
+          ]
+        }
+      ],
+      "set": "angel",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "42004",
+      "faces": [
+        {
+          "name": "Aerial Agility",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42004.jpg",
+            "https://marvelcdb.com/bundles/cards/42004.png"
+          ]
+        }
+      ],
+      "set": "angel",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "42005",
+      "faces": [
+        {
+          "name": "Metamorphosis",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42005.jpg",
+            "https://marvelcdb.com/bundles/cards/42005.png"
+          ]
+        }
+      ],
+      "set": "angel",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "42006",
+      "faces": [
+        {
+          "name": "Natural Flight",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42006.jpg",
+            "https://marvelcdb.com/bundles/cards/42006.png"
+          ]
+        }
+      ],
+      "set": "angel",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "42007",
+      "faces": [
+        {
+          "name": "Razor Dive",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42007.jpg",
+            "https://marvelcdb.com/bundles/cards/42007.png"
+          ]
+        }
+      ],
+      "set": "angel",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "42008",
+      "faces": [
+        {
+          "name": "Avian Anatomy",
+          "type": "resource",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42008.jpg",
+            "https://marvelcdb.com/bundles/cards/42008.png"
+          ]
+        }
+      ],
+      "set": "angel",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "42009",
+      "faces": [
+        {
+          "name": "Worthington Industries",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42009.jpg",
+            "https://marvelcdb.com/bundles/cards/42009.png"
+          ]
+        }
+      ],
+      "set": "angel",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "42010",
+      "faces": [
+        {
+          "name": "Techno-Organic Wings",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42010.jpg",
+            "https://marvelcdb.com/bundles/cards/42010.png"
+          ]
+        }
+      ],
+      "set": "angel",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "42011",
+      "faces": [
+        {
+          "name": "Elixir",
+          "subname": "Josh Foley",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42011.jpg",
+            "https://marvelcdb.com/bundles/cards/42011.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "42012",
+      "faces": [
+        {
+          "name": "Siryn",
+          "subname": "Theresa Cassidy",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42012.jpg",
+            "https://marvelcdb.com/bundles/cards/42012.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "42013",
+      "faces": [
+        {
+          "name": "Warpath",
+          "subname": "James Proudstar",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42013.jpg",
+            "https://marvelcdb.com/bundles/cards/42013.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "42014",
+      "faces": [
+        {
+          "name": "Aerial Intervention",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42014.jpg",
+            "https://marvelcdb.com/bundles/cards/42014.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "42016",
+      "faces": [
+        {
+          "name": "Taunt",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42016.jpg",
+            "https://marvelcdb.com/bundles/cards/42016.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "56048"
+      ]
+    },
+    {
+      "code": "42017",
+      "faces": [
+        {
+          "name": "Render Medical Aid",
+          "type": "player_side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42017.jpg",
+            "https://marvelcdb.com/bundles/cards/42017.png"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": true
+          }
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "42018",
+      "faces": [
+        {
+          "name": "Angel's Aerie",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42018.jpg",
+            "https://marvelcdb.com/bundles/cards/42018.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "42019",
+      "faces": [
+        {
+          "name": "Containment Strategy",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42019.jpg",
+            "https://marvelcdb.com/bundles/cards/42019.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "42020",
+      "faces": [
+        {
+          "name": "Cannonball",
+          "subname": "Sam Guthrie",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42020.jpg",
+            "https://marvelcdb.com/bundles/cards/42020.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "42022",
+      "faces": [
+        {
+          "name": "The Power of Flight",
+          "type": "resource",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42022.jpg",
+            "https://marvelcdb.com/bundles/cards/42022.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "53028"
+      ]
+    },
+    {
+      "code": "42023",
+      "faces": [
+        {
+          "name": "Soaring Acrobatics",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42023.jpg",
+            "https://marvelcdb.com/bundles/cards/42023.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "42024",
+      "faces": [
+        {
+          "name": "Apocalyptic Influence",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42024.jpg",
+            "https://marvelcdb.com/bundles/cards/42024.png"
+          ]
+        }
+      ],
+      "set": "angel",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "42025",
+      "faces": [
+        {
+          "name": "Harpoon",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42025.jpg",
+            "https://marvelcdb.com/bundles/cards/42025.png"
+          ]
+        }
+      ],
+      "set": "angel_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "42026",
+      "faces": [
+        {
+          "name": "Hook, Line, and Sinker",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42026.jpg",
+            "https://marvelcdb.com/bundles/cards/42026.png"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "angel_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "42027",
+      "faces": [
+        {
+          "name": "Harpoon's Harpoon",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42027.jpg",
+            "https://marvelcdb.com/bundles/cards/42027.png"
+          ]
+        }
+      ],
+      "set": "angel_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "42028",
+      "faces": [
+        {
+          "name": "Spear Shot",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42028.jpg",
+            "https://marvelcdb.com/bundles/cards/42028.png"
+          ]
+        }
+      ],
+      "set": "angel_nemesis",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "42029",
+      "faces": [
+        {
+          "name": "Bombs Away",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42029.jpg",
+            "https://marvelcdb.com/bundles/cards/42029.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "58017"
+      ]
+    },
+    {
+      "code": "42030",
+      "faces": [
+        {
+          "name": "Eyes in the Sky",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42030.jpg",
+            "https://marvelcdb.com/bundles/cards/42030.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "42031",
+      "faces": [
+        {
+          "name": "Flying Formation",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42031.jpg",
+            "https://marvelcdb.com/bundles/cards/42031.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "42032",
+      "faces": [
+        {
+          "name": "X-Force Recruit",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42032.jpg",
+            "https://marvelcdb.com/bundles/cards/42032.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    }
+  ],
+  "sets": [
+    {
+      "code": "angel",
+      "name": "Angel",
+      "kind": "hero",
+      "cards": [
+        "42001",
+        "42002",
+        "42003",
+        "42004",
+        "42005",
+        "42006",
+        "42007",
+        "42008",
+        "42009",
+        "42010",
+        "42024"
+      ]
+    },
+    {
+      "code": "angel_nemesis",
+      "name": "Angel Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "42025",
+        "42026",
+        "42027",
+        "42028"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "42001",
+      "set": "angel",
+      "obligation": "42024",
+      "nemesis": "angel_nemesis"
+    }
+  ]
+}

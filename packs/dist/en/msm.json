@@ -1,0 +1,540 @@
+{
+  "code": "msm",
+  "name": "Ms. Marvel",
+  "position": 5,
+  "cards": [
+    {
+      "code": "05001",
+      "faces": [
+        {
+          "name": "Ms. Marvel",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05001A.jpg",
+            "https://marvelcdb.com/bundles/cards/05001a.png"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "Kamala Khan",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05001B.jpg",
+            "https://marvelcdb.com/bundles/cards/05001b.png"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "ms_marvel",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "05001a",
+        "05001b"
+      ]
+    },
+    {
+      "code": "05002",
+      "faces": [
+        {
+          "name": "Red Dagger",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05002.jpg",
+            "https://marvelcdb.com/bundles/cards/05002.png"
+          ]
+        }
+      ],
+      "set": "ms_marvel",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "05003",
+      "faces": [
+        {
+          "name": "Big Hands",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05003.jpg",
+            "https://marvelcdb.com/bundles/cards/05003.png"
+          ]
+        }
+      ],
+      "set": "ms_marvel",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "05004",
+      "faces": [
+        {
+          "name": "Sneak By",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05004.jpg",
+            "https://marvelcdb.com/bundles/cards/05004.png"
+          ]
+        }
+      ],
+      "set": "ms_marvel",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "05005",
+      "faces": [
+        {
+          "name": "Wiggle Room",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05005.jpg",
+            "https://marvelcdb.com/bundles/cards/05005.png"
+          ]
+        }
+      ],
+      "set": "ms_marvel",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "05006",
+      "faces": [
+        {
+          "name": "Aamir Khan",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05006.jpg",
+            "https://marvelcdb.com/bundles/cards/05006.png"
+          ]
+        }
+      ],
+      "set": "ms_marvel",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "05007",
+      "faces": [
+        {
+          "name": "Bruno Carrelli",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05007.jpg",
+            "https://marvelcdb.com/bundles/cards/05007.png"
+          ]
+        }
+      ],
+      "set": "ms_marvel",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "05008",
+      "faces": [
+        {
+          "name": "Nakia Bahadir",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05008.jpg",
+            "https://marvelcdb.com/bundles/cards/05008.png"
+          ]
+        }
+      ],
+      "set": "ms_marvel",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "05009",
+      "faces": [
+        {
+          "name": "Biokinetic Polymer Suit",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05009.jpg",
+            "https://marvelcdb.com/bundles/cards/05009.png"
+          ]
+        }
+      ],
+      "set": "ms_marvel",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "05010",
+      "faces": [
+        {
+          "name": "Embiggen!",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05010.jpg",
+            "https://marvelcdb.com/bundles/cards/05010.png"
+          ]
+        }
+      ],
+      "set": "ms_marvel",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "05011",
+      "faces": [
+        {
+          "name": "Shrink",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05011.jpg",
+            "https://marvelcdb.com/bundles/cards/05011.png"
+          ]
+        }
+      ],
+      "set": "ms_marvel",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "05012",
+      "faces": [
+        {
+          "name": "Nova",
+          "subname": "Sam Alexander",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05012.jpg",
+            "https://marvelcdb.com/bundles/cards/05012.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "05014",
+      "faces": [
+        {
+          "name": "Preemptive Strike",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05014.jpg",
+            "https://marvelcdb.com/bundles/cards/05014.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "38015"
+      ]
+    },
+    {
+      "code": "05015",
+      "faces": [
+        {
+          "name": "Tackle",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05015.jpg",
+            "https://marvelcdb.com/bundles/cards/05015.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "56049"
+      ]
+    },
+    {
+      "code": "05017",
+      "faces": [
+        {
+          "name": "Energy Barrier",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05017.jpg",
+            "https://marvelcdb.com/bundles/cards/05017.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "31018"
+      ]
+    },
+    {
+      "code": "05018",
+      "faces": [
+        {
+          "name": "Lockjaw",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05018.jpg",
+            "https://marvelcdb.com/bundles/cards/05018.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "05023",
+      "faces": [
+        {
+          "name": "Endurance",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05023.jpg",
+            "https://marvelcdb.com/bundles/cards/05023.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "36026",
+        "43027"
+      ]
+    },
+    {
+      "code": "05024",
+      "faces": [
+        {
+          "name": "Enhanced Reflexes",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05024.jpg",
+            "https://marvelcdb.com/bundles/cards/05024.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "18032"
+      ]
+    },
+    {
+      "code": "05025",
+      "faces": [
+        {
+          "name": "Home by Dawn",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05025.jpg",
+            "https://marvelcdb.com/bundles/cards/05025.png"
+          ]
+        }
+      ],
+      "set": "ms_marvel",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "05026",
+      "faces": [
+        {
+          "name": "Generation Why?",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05026.jpg",
+            "https://marvelcdb.com/bundles/cards/05026.png"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "ms_marvel_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "05027",
+      "faces": [
+        {
+          "name": "Thomas Edison",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05027.jpg",
+            "https://marvelcdb.com/bundles/cards/05027.png"
+          ]
+        }
+      ],
+      "set": "ms_marvel_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "05028",
+      "faces": [
+        {
+          "name": "Edison's Giant Robot",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05028.jpg",
+            "https://marvelcdb.com/bundles/cards/05028.png"
+          ]
+        }
+      ],
+      "set": "ms_marvel_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "05029",
+      "faces": [
+        {
+          "name": "Harvest",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05029.jpg",
+            "https://marvelcdb.com/bundles/cards/05029.png"
+          ]
+        }
+      ],
+      "set": "ms_marvel_nemesis",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "05030",
+      "faces": [
+        {
+          "name": "Melee",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05030.jpg",
+            "https://marvelcdb.com/bundles/cards/05030.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "05031",
+      "faces": [
+        {
+          "name": "Concussive Blow",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05031.jpg",
+            "https://marvelcdb.com/bundles/cards/05031.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "41014"
+      ]
+    },
+    {
+      "code": "05032",
+      "faces": [
+        {
+          "name": "Morale Boost",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05032.jpg",
+            "https://marvelcdb.com/bundles/cards/05032.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "29019"
+      ]
+    },
+    {
+      "code": "05033",
+      "faces": [
+        {
+          "name": "Down Time",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05033.jpg",
+            "https://marvelcdb.com/bundles/cards/05033.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "34024"
+      ]
+    }
+  ],
+  "sets": [
+    {
+      "code": "ms_marvel",
+      "name": "Ms. Marvel",
+      "kind": "hero",
+      "cards": [
+        "05001",
+        "05002",
+        "05003",
+        "05004",
+        "05005",
+        "05006",
+        "05007",
+        "05008",
+        "05009",
+        "05010",
+        "05011",
+        "05025"
+      ]
+    },
+    {
+      "code": "ms_marvel_nemesis",
+      "name": "Ms. Marvel Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "05026",
+        "05027",
+        "05028",
+        "05029"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "05001",
+      "set": "ms_marvel",
+      "obligation": "05025",
+      "nemesis": "ms_marvel_nemesis"
+    }
+  ]
+}

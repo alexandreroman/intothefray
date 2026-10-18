@@ -1,0 +1,706 @@
+{
+  "code": "spdr",
+  "name": "SP//dr",
+  "position": 31,
+  "cards": [
+    {
+      "code": "31001",
+      "faces": [
+        {
+          "name": "SP//dr Suit",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31001A.jpg",
+            "https://marvelcdb.com/bundles/cards/31001a.png"
+          ],
+          "handSize": 3
+        },
+        {
+          "name": "SP//dr Suit",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31001B.jpg",
+            "https://marvelcdb.com/bundles/cards/31001b.png"
+          ]
+        }
+      ],
+      "set": "spdr",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "31001a",
+        "31001b"
+      ]
+    },
+    {
+      "code": "31002",
+      "faces": [
+        {
+          "name": "Peni Parker",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31002A.jpg",
+            "https://marvelcdb.com/bundles/cards/31002a.png"
+          ],
+          "handSize": 4
+        },
+        {
+          "name": "SP//dr",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31002B.jpg",
+            "https://marvelcdb.com/bundles/cards/31002b.png"
+          ]
+        }
+      ],
+      "set": "spdr",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "31002a",
+        "31002b"
+      ]
+    },
+    {
+      "code": "31003",
+      "faces": [
+        {
+          "name": "VEN#m",
+          "subname": "Addy Brock",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31003.jpg",
+            "https://marvelcdb.com/bundles/cards/31003.png"
+          ]
+        }
+      ],
+      "set": "spdr",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "31004",
+      "faces": [
+        {
+          "name": "All Systems Go!",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31004.jpg",
+            "https://marvelcdb.com/bundles/cards/31004.png"
+          ]
+        }
+      ],
+      "set": "spdr",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "31005",
+      "faces": [
+        {
+          "name": "Rapid Deployment",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31005.jpg",
+            "https://marvelcdb.com/bundles/cards/31005.png"
+          ]
+        }
+      ],
+      "set": "spdr",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "31006",
+      "faces": [
+        {
+          "name": "Web-Trap",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31006.jpg",
+            "https://marvelcdb.com/bundles/cards/31006.png"
+          ]
+        }
+      ],
+      "set": "spdr",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "31007",
+      "faces": [
+        {
+          "name": "Aunt May \u0026 Uncle Ben",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31007.jpg",
+            "https://marvelcdb.com/bundles/cards/31007.png"
+          ]
+        }
+      ],
+      "set": "spdr",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "31008",
+      "faces": [
+        {
+          "name": "Ejection Protocol",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31008.jpg",
+            "https://marvelcdb.com/bundles/cards/31008.png"
+          ]
+        }
+      ],
+      "set": "spdr",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "31009",
+      "faces": [
+        {
+          "name": "SP//dr Command",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31009.jpg",
+            "https://marvelcdb.com/bundles/cards/31009.png"
+          ]
+        }
+      ],
+      "set": "spdr",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "31010",
+      "faces": [
+        {
+          "name": "Host Spider",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31010.jpg",
+            "https://marvelcdb.com/bundles/cards/31010.png"
+          ]
+        }
+      ],
+      "set": "spdr",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "31011",
+      "faces": [
+        {
+          "name": "Psychic Link",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31011.jpg",
+            "https://marvelcdb.com/bundles/cards/31011.png"
+          ]
+        }
+      ],
+      "set": "spdr",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "31012",
+      "faces": [
+        {
+          "name": "Speed-Metal Alloy",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31012.jpg",
+            "https://marvelcdb.com/bundles/cards/31012.png"
+          ]
+        }
+      ],
+      "set": "spdr",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "31013",
+      "faces": [
+        {
+          "name": "Web-Fluid Compressor",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31013.jpg",
+            "https://marvelcdb.com/bundles/cards/31013.png"
+          ]
+        }
+      ],
+      "set": "spdr",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "31014",
+      "faces": [
+        {
+          "name": "Daredevil",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31014.jpg",
+            "https://marvelcdb.com/bundles/cards/31014.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "31015",
+      "faces": [
+        {
+          "name": "Spider-Man Noir",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31015.jpg",
+            "https://marvelcdb.com/bundles/cards/31015.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "31016",
+      "faces": [
+        {
+          "name": "Repurpose",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31016.jpg",
+            "https://marvelcdb.com/bundles/cards/31016.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "31017",
+      "faces": [
+        {
+          "name": "Thwip Thwip!",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31017.jpg",
+            "https://marvelcdb.com/bundles/cards/31017.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "31019",
+      "faces": [
+        {
+          "name": "Forcefield Generator",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31019.jpg",
+            "https://marvelcdb.com/bundles/cards/31019.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "31020",
+      "faces": [
+        {
+          "name": "Spider-Tingle",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31020.jpg",
+            "https://marvelcdb.com/bundles/cards/31020.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "31021",
+      "faces": [
+        {
+          "name": "Spider-Ham",
+          "subname": "Peter Porker",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31021.jpg",
+            "https://marvelcdb.com/bundles/cards/31021.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "31022",
+      "faces": [
+        {
+          "name": "Spider-Man",
+          "subname": "Otto Octavius",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31022.jpg",
+            "https://marvelcdb.com/bundles/cards/31022.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "31023",
+      "faces": [
+        {
+          "name": "Limitless Stamina",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31023.jpg",
+            "https://marvelcdb.com/bundles/cards/31023.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "59027"
+      ]
+    },
+    {
+      "code": "31024",
+      "faces": [
+        {
+          "name": "Unshakable",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31024.jpg",
+            "https://marvelcdb.com/bundles/cards/31024.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "31025",
+      "faces": [
+        {
+          "name": "Inherited Burden",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31025.jpg",
+            "https://marvelcdb.com/bundles/cards/31025.png"
+          ]
+        }
+      ],
+      "set": "spdr",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "31026",
+      "faces": [
+        {
+          "name": "Giant Monster Attack",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31026.jpg",
+            "https://marvelcdb.com/bundles/cards/31026.png"
+          ],
+          "startingThreat": {
+            "value": 4,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "spdr_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "31027",
+      "faces": [
+        {
+          "name": "M.O.R.B.I.U.S.",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31027.jpg",
+            "https://marvelcdb.com/bundles/cards/31027.png"
+          ]
+        }
+      ],
+      "set": "spdr_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "31028",
+      "faces": [
+        {
+          "name": "Energy Drain",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31028.jpg",
+            "https://marvelcdb.com/bundles/cards/31028.png"
+          ]
+        }
+      ],
+      "set": "spdr_nemesis",
+      "back": "encounter",
+      "quantity": 3
+    },
+    {
+      "code": "31029",
+      "faces": [
+        {
+          "name": "Clarity of Purpose",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31029.jpg",
+            "https://marvelcdb.com/bundles/cards/31029.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "31030",
+      "faces": [
+        {
+          "name": "Grand Larceny",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31030.jpg",
+            "https://marvelcdb.com/bundles/cards/31030.png"
+          ],
+          "startingThreat": {
+            "value": 4,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "ironspider_sinister",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "31031",
+      "faces": [
+        {
+          "name": "Bombshell",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31031.jpg",
+            "https://marvelcdb.com/bundles/cards/31031.png"
+          ]
+        }
+      ],
+      "set": "ironspider_sinister",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "31032",
+      "faces": [
+        {
+          "name": "Electro",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31032.jpg",
+            "https://marvelcdb.com/bundles/cards/31032.png"
+          ]
+        }
+      ],
+      "set": "ironspider_sinister",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "31033",
+      "faces": [
+        {
+          "name": "Hobgoblin",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31033.jpg",
+            "https://marvelcdb.com/bundles/cards/31033.png"
+          ]
+        }
+      ],
+      "set": "ironspider_sinister",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "31034",
+      "faces": [
+        {
+          "name": "Iron Spider",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31034.jpg",
+            "https://marvelcdb.com/bundles/cards/31034.png"
+          ]
+        }
+      ],
+      "set": "ironspider_sinister",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "31035",
+      "faces": [
+        {
+          "name": "Sandman",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31035.jpg",
+            "https://marvelcdb.com/bundles/cards/31035.png"
+          ]
+        }
+      ],
+      "set": "ironspider_sinister",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "31036",
+      "faces": [
+        {
+          "name": "Spot",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31036.jpg",
+            "https://marvelcdb.com/bundles/cards/31036.png"
+          ]
+        }
+      ],
+      "set": "ironspider_sinister",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "31037",
+      "faces": [
+        {
+          "name": "Surge in Crime",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31037.jpg",
+            "https://marvelcdb.com/bundles/cards/31037.png"
+          ]
+        }
+      ],
+      "set": "ironspider_sinister",
+      "back": "encounter",
+      "quantity": 1
+    }
+  ],
+  "sets": [
+    {
+      "code": "ironspider_sinister",
+      "name": "Iron Spider's Sinister Six",
+      "kind": "modular",
+      "cards": [
+        "31030",
+        "31031",
+        "31032",
+        "31033",
+        "31034",
+        "31035",
+        "31036",
+        "31037"
+      ]
+    },
+    {
+      "code": "spdr",
+      "name": "SP//dr",
+      "kind": "hero",
+      "cards": [
+        "31001",
+        "31002",
+        "31003",
+        "31004",
+        "31005",
+        "31006",
+        "31007",
+        "31008",
+        "31009",
+        "31010",
+        "31011",
+        "31012",
+        "31013",
+        "31025"
+      ]
+    },
+    {
+      "code": "spdr_nemesis",
+      "name": "SP//dr Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "31026",
+        "31027",
+        "31028"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "31001",
+      "set": "spdr",
+      "obligation": "31025",
+      "nemesis": "spdr_nemesis"
+    }
+  ]
+}

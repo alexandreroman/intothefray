@@ -1,0 +1,1548 @@
+{
+  "code": "mojo",
+  "name": "Mojo Mania",
+  "position": 39,
+  "cards": [
+    {
+      "code": "39001",
+      "faces": [
+        {
+          "name": "MaGog",
+          "type": "villain",
+          "stage": "A",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39001A.jpg",
+            "https://marvelcdb.com/bundles/cards/39001a.png"
+          ]
+        },
+        {
+          "name": "MaGog",
+          "type": "villain",
+          "stage": "B",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39001B.jpg",
+            "https://marvelcdb.com/bundles/cards/39001b.png"
+          ]
+        }
+      ],
+      "set": "magog",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "39001a",
+        "39001b"
+      ]
+    },
+    {
+      "code": "39002",
+      "faces": [
+        {
+          "name": "Melee in the Mojo-seum",
+          "type": "main_scheme",
+          "stage": "1A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39002A.jpg",
+            "https://marvelcdb.com/bundles/cards/39002a.png"
+          ]
+        },
+        {
+          "name": "Melee in the Mojo-seum",
+          "type": "main_scheme",
+          "stage": "1B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39002B.jpg",
+            "https://marvelcdb.com/bundles/cards/39002b.png"
+          ],
+          "startingThreat": {
+            "value": 1,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "magog",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "39002a",
+        "39002b"
+      ]
+    },
+    {
+      "code": "39003",
+      "faces": [
+        {
+          "name": "The Champion",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39003A.jpg",
+            "https://marvelcdb.com/bundles/cards/39003a.png"
+          ]
+        },
+        {
+          "name": "The Champion",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39003B.jpg",
+            "https://marvelcdb.com/bundles/cards/39003b.png"
+          ]
+        }
+      ],
+      "set": "magog",
+      "back": "encounter",
+      "quantity": 1,
+      "aliases": [
+        "39003a",
+        "39003b"
+      ]
+    },
+    {
+      "code": "39004",
+      "faces": [
+        {
+          "name": "The Challengers",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39004A.jpg",
+            "https://marvelcdb.com/bundles/cards/39004a.png"
+          ]
+        },
+        {
+          "name": "The Challengers",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39004B.jpg",
+            "https://marvelcdb.com/bundles/cards/39004b.png"
+          ]
+        }
+      ],
+      "set": "magog",
+      "back": "encounter",
+      "quantity": 1,
+      "aliases": [
+        "39004a",
+        "39004b"
+      ]
+    },
+    {
+      "code": "39005",
+      "faces": [
+        {
+          "name": "Jolt of Adrenaline",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39005.jpg",
+            "https://marvelcdb.com/bundles/cards/39005.png"
+          ]
+        }
+      ],
+      "set": "magog",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39006",
+      "faces": [
+        {
+          "name": "Surge of Aggression",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39006.jpg",
+            "https://marvelcdb.com/bundles/cards/39006.png"
+          ]
+        }
+      ],
+      "set": "magog",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39007",
+      "faces": [
+        {
+          "name": "Surprise Contender",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39007.jpg",
+            "https://marvelcdb.com/bundles/cards/39007.png"
+          ]
+        }
+      ],
+      "set": "magog",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39008",
+      "faces": [
+        {
+          "name": "Pump Up the Crowd",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39008.jpg",
+            "https://marvelcdb.com/bundles/cards/39008.png"
+          ],
+          "startingThreat": {
+            "value": 4,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "magog",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39009",
+      "faces": [
+        {
+          "name": "Break a Leg",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39009.jpg",
+            "https://marvelcdb.com/bundles/cards/39009.png"
+          ]
+        }
+      ],
+      "set": "magog",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39010",
+      "faces": [
+        {
+          "name": "Defend the Title",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39010.jpg",
+            "https://marvelcdb.com/bundles/cards/39010.png"
+          ]
+        }
+      ],
+      "set": "magog",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "39011",
+      "faces": [
+        {
+          "name": "Stage Fright",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39011.jpg",
+            "https://marvelcdb.com/bundles/cards/39011.png"
+          ]
+        }
+      ],
+      "set": "magog",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39012",
+      "faces": [
+        {
+          "name": "Spiral",
+          "type": "villain",
+          "stage": "I",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39012A.jpg",
+            "https://marvelcdb.com/bundles/cards/39012a.png"
+          ]
+        },
+        {
+          "name": "Spiral",
+          "type": "villain",
+          "stage": "I",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39012B.jpg",
+            "https://marvelcdb.com/bundles/cards/39012b.png"
+          ]
+        }
+      ],
+      "set": "spiral",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "39012a",
+        "39012b"
+      ]
+    },
+    {
+      "code": "39013",
+      "faces": [
+        {
+          "name": "Spiral",
+          "type": "villain",
+          "stage": "II",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39013A.jpg",
+            "https://marvelcdb.com/bundles/cards/39013a.png"
+          ]
+        },
+        {
+          "name": "Spiral",
+          "type": "villain",
+          "stage": "II",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39013B.jpg",
+            "https://marvelcdb.com/bundles/cards/39013b.png"
+          ]
+        }
+      ],
+      "set": "spiral",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "39013a",
+        "39013b"
+      ]
+    },
+    {
+      "code": "39014",
+      "faces": [
+        {
+          "name": "Spiral",
+          "type": "villain",
+          "stage": "III",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39014A.jpg",
+            "https://marvelcdb.com/bundles/cards/39014a.png"
+          ]
+        },
+        {
+          "name": "Spiral",
+          "type": "villain",
+          "stage": "III",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39014B.jpg",
+            "https://marvelcdb.com/bundles/cards/39014b.png"
+          ]
+        }
+      ],
+      "set": "spiral",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "39014a",
+        "39014b"
+      ]
+    },
+    {
+      "code": "39015",
+      "faces": [
+        {
+          "name": "Across the Mojoverse",
+          "type": "main_scheme",
+          "stage": "1A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39015A.jpg",
+            "https://marvelcdb.com/bundles/cards/39015a.png"
+          ]
+        },
+        {
+          "name": "Across the Mojoverse",
+          "type": "main_scheme",
+          "stage": "1B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39015B.jpg",
+            "https://marvelcdb.com/bundles/cards/39015b.png"
+          ],
+          "startingThreat": {
+            "value": 1,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "spiral",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "39015a",
+        "39015b"
+      ]
+    },
+    {
+      "code": "39016",
+      "faces": [
+        {
+          "name": "The Search for Spiral",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39016.jpg",
+            "https://marvelcdb.com/bundles/cards/39016.png"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "spiral",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39017",
+      "faces": [
+        {
+          "name": "Cornered!",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39017.jpg",
+            "https://marvelcdb.com/bundles/cards/39017.png"
+          ]
+        }
+      ],
+      "set": "spiral",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39018",
+      "faces": [
+        {
+          "name": "Spiral's Swords",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39018.jpg",
+            "https://marvelcdb.com/bundles/cards/39018.png"
+          ]
+        }
+      ],
+      "set": "spiral",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "39019",
+      "faces": [
+        {
+          "name": "Erratic Teleportation",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39019.jpg",
+            "https://marvelcdb.com/bundles/cards/39019.png"
+          ]
+        }
+      ],
+      "set": "spiral",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "39020",
+      "faces": [
+        {
+          "name": "The Show Must Go On",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39020.jpg",
+            "https://marvelcdb.com/bundles/cards/39020.png"
+          ]
+        }
+      ],
+      "set": "spiral",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39021",
+      "faces": [
+        {
+          "name": "Well-Armed",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39021.jpg",
+            "https://marvelcdb.com/bundles/cards/39021.png"
+          ]
+        }
+      ],
+      "set": "spiral",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39022",
+      "faces": [
+        {
+          "name": "Mojo",
+          "type": "villain",
+          "stage": "I",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39022.jpg",
+            "https://marvelcdb.com/bundles/cards/39022.png"
+          ]
+        }
+      ],
+      "set": "mojo",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "39023",
+      "faces": [
+        {
+          "name": "Mojo",
+          "type": "villain",
+          "stage": "II",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39023.jpg",
+            "https://marvelcdb.com/bundles/cards/39023.png"
+          ]
+        }
+      ],
+      "set": "mojo",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "39024",
+      "faces": [
+        {
+          "name": "Mojo",
+          "type": "villain",
+          "stage": "III",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39024.jpg",
+            "https://marvelcdb.com/bundles/cards/39024.png"
+          ]
+        }
+      ],
+      "set": "mojo",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "39025",
+      "faces": [
+        {
+          "name": "MojoMania",
+          "type": "main_scheme",
+          "stage": "1A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39025A.jpg",
+            "https://marvelcdb.com/bundles/cards/39025a.png"
+          ]
+        },
+        {
+          "name": "MojoMania",
+          "type": "main_scheme",
+          "stage": "1B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39025B.jpg",
+            "https://marvelcdb.com/bundles/cards/39025b.png"
+          ],
+          "startingThreat": {
+            "value": 10,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "mojo",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "39025a",
+        "39025b"
+      ]
+    },
+    {
+      "code": "39026",
+      "faces": [
+        {
+          "name": "Wheel of Genres",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39026A.jpg",
+            "https://marvelcdb.com/bundles/cards/39026a.png"
+          ]
+        },
+        {
+          "name": "Wheel of Genres",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39026B.jpg",
+            "https://marvelcdb.com/bundles/cards/39026b.png"
+          ]
+        }
+      ],
+      "set": "mojo",
+      "back": "encounter",
+      "quantity": 1,
+      "aliases": [
+        "39026a",
+        "39026b"
+      ]
+    },
+    {
+      "code": "39027",
+      "faces": [
+        {
+          "name": "Major Domo",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39027.jpg",
+            "https://marvelcdb.com/bundles/cards/39027.png"
+          ]
+        }
+      ],
+      "set": "mojo",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39028",
+      "faces": [
+        {
+          "name": "Stinger Tail",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39028.jpg",
+            "https://marvelcdb.com/bundles/cards/39028.png"
+          ]
+        }
+      ],
+      "set": "mojo",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39029",
+      "faces": [
+        {
+          "name": "Supporting Actor",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39029.jpg",
+            "https://marvelcdb.com/bundles/cards/39029.png"
+          ]
+        }
+      ],
+      "set": "mojo",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "39030",
+      "faces": [
+        {
+          "name": "Paparazzi",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39030.jpg",
+            "https://marvelcdb.com/bundles/cards/39030.png"
+          ]
+        }
+      ],
+      "set": "mojo",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39031",
+      "faces": [
+        {
+          "name": "Undercover Mojo",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39031.jpg",
+            "https://marvelcdb.com/bundles/cards/39031.png"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "mojo",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39032",
+      "faces": [
+        {
+          "name": "Curtain Call",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39032.jpg",
+            "https://marvelcdb.com/bundles/cards/39032.png"
+          ]
+        }
+      ],
+      "set": "mojo",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "39033",
+      "faces": [
+        {
+          "name": "Director's Directions",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39033.jpg",
+            "https://marvelcdb.com/bundles/cards/39033.png"
+          ]
+        }
+      ],
+      "set": "mojo",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "39034",
+      "faces": [
+        {
+          "name": "Top Billing",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39034.jpg",
+            "https://marvelcdb.com/bundles/cards/39034.png"
+          ]
+        }
+      ],
+      "set": "mojo",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39035",
+      "faces": [
+        {
+          "name": "Dial M for Mojo",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39035.jpg",
+            "https://marvelcdb.com/bundles/cards/39035.png"
+          ]
+        }
+      ],
+      "set": "crime",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39036",
+      "faces": [
+        {
+          "name": "Build the Case",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39036.jpg",
+            "https://marvelcdb.com/bundles/cards/39036.png"
+          ]
+        }
+      ],
+      "set": "crime",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39037",
+      "faces": [
+        {
+          "name": "Crime Scene Investigation",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39037.jpg",
+            "https://marvelcdb.com/bundles/cards/39037.png"
+          ],
+          "startingThreat": {
+            "value": 5,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "crime",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39038",
+      "faces": [
+        {
+          "name": "Law \u0026 Order",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39038.jpg",
+            "https://marvelcdb.com/bundles/cards/39038.png"
+          ],
+          "startingThreat": {
+            "value": 5,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "crime",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39039",
+      "faces": [
+        {
+          "name": "Dragnet",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39039.jpg",
+            "https://marvelcdb.com/bundles/cards/39039.png"
+          ],
+          "startingThreat": {
+            "value": 5,
+            "perPlayer": false
+          }
+        }
+      ],
+      "set": "crime",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39040",
+      "faces": [
+        {
+          "name": "Elementary, My Dear Mojo",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39040.jpg",
+            "https://marvelcdb.com/bundles/cards/39040.png"
+          ]
+        }
+      ],
+      "set": "crime",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39041",
+      "faces": [
+        {
+          "name": "A Game of Mojo's",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39041.jpg",
+            "https://marvelcdb.com/bundles/cards/39041.png"
+          ]
+        }
+      ],
+      "set": "fantasy",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39042",
+      "faces": [
+        {
+          "name": "Dragon",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39042.jpg",
+            "https://marvelcdb.com/bundles/cards/39042.png"
+          ]
+        }
+      ],
+      "set": "fantasy",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39043",
+      "faces": [
+        {
+          "name": "Goblin",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39043.jpg",
+            "https://marvelcdb.com/bundles/cards/39043.png"
+          ]
+        }
+      ],
+      "set": "fantasy",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39044",
+      "faces": [
+        {
+          "name": "Troll",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39044.jpg",
+            "https://marvelcdb.com/bundles/cards/39044.png"
+          ]
+        }
+      ],
+      "set": "fantasy",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39045",
+      "faces": [
+        {
+          "name": "Fetch Quest",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39045.jpg",
+            "https://marvelcdb.com/bundles/cards/39045.png"
+          ],
+          "startingThreat": {
+            "value": 6,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "fantasy",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39046",
+      "faces": [
+        {
+          "name": "Mana Drain",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39046.jpg",
+            "https://marvelcdb.com/bundles/cards/39046.png"
+          ]
+        }
+      ],
+      "set": "fantasy",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39047",
+      "faces": [
+        {
+          "name": "The Mojo Files",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39047.jpg",
+            "https://marvelcdb.com/bundles/cards/39047.png"
+          ]
+        }
+      ],
+      "set": "horror",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39048",
+      "faces": [
+        {
+          "name": "Bandolier of Stakes",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39048.jpg",
+            "https://marvelcdb.com/bundles/cards/39048.png"
+          ]
+        }
+      ],
+      "set": "horror",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39049",
+      "faces": [
+        {
+          "name": "Cultist",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39049.jpg",
+            "https://marvelcdb.com/bundles/cards/39049.png"
+          ]
+        }
+      ],
+      "set": "horror",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39050",
+      "faces": [
+        {
+          "name": "The Kraken",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39050.jpg",
+            "https://marvelcdb.com/bundles/cards/39050.png"
+          ]
+        }
+      ],
+      "set": "horror",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39051",
+      "faces": [
+        {
+          "name": "Vampire",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39051.jpg",
+            "https://marvelcdb.com/bundles/cards/39051.png"
+          ]
+        }
+      ],
+      "set": "horror",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39052",
+      "faces": [
+        {
+          "name": "Werewolf Pack",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39052.jpg",
+            "https://marvelcdb.com/bundles/cards/39052.png"
+          ]
+        }
+      ],
+      "set": "horror",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39053",
+      "faces": [
+        {
+          "name": "Mojo Runner",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39053.jpg",
+            "https://marvelcdb.com/bundles/cards/39053.png"
+          ]
+        }
+      ],
+      "set": "sci-fi",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39054",
+      "faces": [
+        {
+          "name": "Avalanche 9.0",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39054.jpg",
+            "https://marvelcdb.com/bundles/cards/39054.png"
+          ]
+        }
+      ],
+      "set": "sci-fi",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39055",
+      "faces": [
+        {
+          "name": "Blob 3.14",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39055.jpg",
+            "https://marvelcdb.com/bundles/cards/39055.png"
+          ]
+        }
+      ],
+      "set": "sci-fi",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39056",
+      "faces": [
+        {
+          "name": "Magneto 2.6",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39056.jpg",
+            "https://marvelcdb.com/bundles/cards/39056.png"
+          ]
+        }
+      ],
+      "set": "sci-fi",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39057",
+      "faces": [
+        {
+          "name": "Pyro 4.0",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39057.jpg",
+            "https://marvelcdb.com/bundles/cards/39057.png"
+          ]
+        }
+      ],
+      "set": "sci-fi",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39058",
+      "faces": [
+        {
+          "name": "Toad 2.0",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39058.jpg",
+            "https://marvelcdb.com/bundles/cards/39058.png"
+          ]
+        }
+      ],
+      "set": "sci-fi",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39059",
+      "faces": [
+        {
+          "name": "ICE-Teroid M",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39059.jpg",
+            "https://marvelcdb.com/bundles/cards/39059.png"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "sci-fi",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39060",
+      "faces": [
+        {
+          "name": "Mojo in the Middle",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39060.jpg",
+            "https://marvelcdb.com/bundles/cards/39060.png"
+          ]
+        }
+      ],
+      "set": "sitcom",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39061",
+      "faces": [
+        {
+          "name": "Family Matters",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39061.jpg",
+            "https://marvelcdb.com/bundles/cards/39061.png"
+          ]
+        }
+      ],
+      "set": "sitcom",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39062",
+      "faces": [
+        {
+          "name": "Growing Pains",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39062.jpg",
+            "https://marvelcdb.com/bundles/cards/39062.png"
+          ]
+        }
+      ],
+      "set": "sitcom",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39063",
+      "faces": [
+        {
+          "name": "The Odd Couple",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39063.jpg",
+            "https://marvelcdb.com/bundles/cards/39063.png"
+          ]
+        }
+      ],
+      "set": "sitcom",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39064",
+      "faces": [
+        {
+          "name": "The One with the Breakup",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39064.jpg",
+            "https://marvelcdb.com/bundles/cards/39064.png"
+          ]
+        }
+      ],
+      "set": "sitcom",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39065",
+      "faces": [
+        {
+          "name": "Watch Me Play",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39065.jpg",
+            "https://marvelcdb.com/bundles/cards/39065.png"
+          ]
+        }
+      ],
+      "set": "sitcom",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39066",
+      "faces": [
+        {
+          "name": "Wild Wild Mojo",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39066.jpg",
+            "https://marvelcdb.com/bundles/cards/39066.png"
+          ]
+        }
+      ],
+      "set": "western",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39067",
+      "faces": [
+        {
+          "name": "Dead or Alive",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39067.jpg",
+            "https://marvelcdb.com/bundles/cards/39067.png"
+          ]
+        }
+      ],
+      "set": "western",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39068",
+      "faces": [
+        {
+          "name": "Card Shark",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39068.jpg",
+            "https://marvelcdb.com/bundles/cards/39068.png"
+          ]
+        }
+      ],
+      "set": "western",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39069",
+      "faces": [
+        {
+          "name": "Gunslinger",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39069.jpg",
+            "https://marvelcdb.com/bundles/cards/39069.png"
+          ]
+        }
+      ],
+      "set": "western",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "39070",
+      "faces": [
+        {
+          "name": "A Game of Cards",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39070.jpg",
+            "https://marvelcdb.com/bundles/cards/39070.png"
+          ]
+        }
+      ],
+      "set": "western",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "39071",
+      "faces": [
+        {
+          "name": "Longshot",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39071.jpg",
+            "https://marvelcdb.com/bundles/cards/39071.png"
+          ]
+        }
+      ],
+      "set": "longshot",
+      "back": "encounter",
+      "quantity": 1
+    }
+  ],
+  "sets": [
+    {
+      "code": "crime",
+      "name": "Crime",
+      "kind": "modular",
+      "cards": [
+        "39035",
+        "39036",
+        "39037",
+        "39038",
+        "39039",
+        "39040"
+      ]
+    },
+    {
+      "code": "fantasy",
+      "name": "Fantasy",
+      "kind": "modular",
+      "cards": [
+        "39041",
+        "39042",
+        "39043",
+        "39044",
+        "39045",
+        "39046"
+      ]
+    },
+    {
+      "code": "horror",
+      "name": "Horror",
+      "kind": "modular",
+      "cards": [
+        "39047",
+        "39048",
+        "39049",
+        "39050",
+        "39051",
+        "39052"
+      ]
+    },
+    {
+      "code": "longshot",
+      "name": "Longshot",
+      "kind": "modular",
+      "cards": [
+        "39071"
+      ]
+    },
+    {
+      "code": "magog",
+      "name": "Magog",
+      "kind": "villain",
+      "cards": [
+        "39001",
+        "39002",
+        "39003",
+        "39004",
+        "39005",
+        "39006",
+        "39007",
+        "39008",
+        "39009",
+        "39010",
+        "39011"
+      ]
+    },
+    {
+      "code": "mojo",
+      "name": "Mojo",
+      "kind": "villain",
+      "cards": [
+        "39022",
+        "39023",
+        "39024",
+        "39025",
+        "39026",
+        "39027",
+        "39028",
+        "39029",
+        "39030",
+        "39031",
+        "39032",
+        "39033",
+        "39034"
+      ]
+    },
+    {
+      "code": "sci-fi",
+      "name": "Sci-Fi",
+      "kind": "modular",
+      "cards": [
+        "39053",
+        "39054",
+        "39055",
+        "39056",
+        "39057",
+        "39058",
+        "39059"
+      ]
+    },
+    {
+      "code": "sitcom",
+      "name": "Sitcom",
+      "kind": "modular",
+      "cards": [
+        "39060",
+        "39061",
+        "39062",
+        "39063",
+        "39064",
+        "39065"
+      ]
+    },
+    {
+      "code": "spiral",
+      "name": "Spiral",
+      "kind": "villain",
+      "cards": [
+        "39012",
+        "39013",
+        "39014",
+        "39015",
+        "39016",
+        "39017",
+        "39018",
+        "39019",
+        "39020",
+        "39021"
+      ]
+    },
+    {
+      "code": "western",
+      "name": "Western",
+      "kind": "modular",
+      "cards": [
+        "39066",
+        "39067",
+        "39068",
+        "39069",
+        "39070"
+      ]
+    }
+  ]
+}

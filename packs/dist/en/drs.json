@@ -1,0 +1,642 @@
+{
+  "code": "drs",
+  "name": "Doctor Strange",
+  "position": 8,
+  "cards": [
+    {
+      "code": "09001",
+      "faces": [
+        {
+          "name": "Doctor Strange",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09001A.jpg",
+            "https://marvelcdb.com/bundles/cards/09001a.png"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "Stephen Strange",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09001B.jpg",
+            "https://marvelcdb.com/bundles/cards/09001b.png"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "doctor_strange",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "09001a",
+        "09001b"
+      ]
+    },
+    {
+      "code": "09002",
+      "faces": [
+        {
+          "name": "Wong",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09002.jpg",
+            "https://marvelcdb.com/bundles/cards/09002.png"
+          ]
+        }
+      ],
+      "set": "doctor_strange",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "09003",
+      "faces": [
+        {
+          "name": "Astral Projection",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09003.jpg",
+            "https://marvelcdb.com/bundles/cards/09003.png"
+          ]
+        }
+      ],
+      "set": "doctor_strange",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "09004",
+      "faces": [
+        {
+          "name": "Magic Blast",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09004.jpg",
+            "https://marvelcdb.com/bundles/cards/09004.png"
+          ]
+        }
+      ],
+      "set": "doctor_strange",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "09005",
+      "faces": [
+        {
+          "name": "Master of the Mystic Arts",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09005.jpg",
+            "https://marvelcdb.com/bundles/cards/09005.png"
+          ]
+        }
+      ],
+      "set": "doctor_strange",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "09006",
+      "faces": [
+        {
+          "name": "Mystical Studies",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09006.jpg",
+            "https://marvelcdb.com/bundles/cards/09006.png"
+          ]
+        }
+      ],
+      "set": "doctor_strange",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "09007",
+      "faces": [
+        {
+          "name": "Protective Ward",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09007.jpg",
+            "https://marvelcdb.com/bundles/cards/09007.png"
+          ]
+        }
+      ],
+      "set": "doctor_strange",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "09008",
+      "faces": [
+        {
+          "name": "Sanctum Sanctorum",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09008.jpg",
+            "https://marvelcdb.com/bundles/cards/09008.png"
+          ]
+        }
+      ],
+      "set": "doctor_strange",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "09009",
+      "faces": [
+        {
+          "name": "Cloak of Levitation",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09009.jpg",
+            "https://marvelcdb.com/bundles/cards/09009.png"
+          ]
+        }
+      ],
+      "set": "doctor_strange",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "09010",
+      "faces": [
+        {
+          "name": "Magical Enhancements",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09010.jpg",
+            "https://marvelcdb.com/bundles/cards/09010.png"
+          ]
+        }
+      ],
+      "set": "doctor_strange",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "09011",
+      "faces": [
+        {
+          "name": "The Eye of Agamotto",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09011.jpg",
+            "https://marvelcdb.com/bundles/cards/09011.png"
+          ]
+        }
+      ],
+      "set": "doctor_strange",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "09012",
+      "faces": [
+        {
+          "name": "Brother Voodoo",
+          "subname": "Jericho Drumm",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09012.jpg",
+            "https://marvelcdb.com/bundles/cards/09012.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "56042"
+      ]
+    },
+    {
+      "code": "09013",
+      "faces": [
+        {
+          "name": "Clea",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09013.jpg",
+            "https://marvelcdb.com/bundles/cards/09013.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "09014",
+      "faces": [
+        {
+          "name": "Iron Fist",
+          "subname": "Danny Rand",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09014.jpg",
+            "https://marvelcdb.com/bundles/cards/09014.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "09015",
+      "faces": [
+        {
+          "name": "Desperate Defense",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09015.jpg",
+            "https://marvelcdb.com/bundles/cards/09015.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "16013"
+      ]
+    },
+    {
+      "code": "09016",
+      "faces": [
+        {
+          "name": "Momentum Shift",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09016.jpg",
+            "https://marvelcdb.com/bundles/cards/09016.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "09019",
+      "faces": [
+        {
+          "name": "The Night Nurse",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09019.jpg",
+            "https://marvelcdb.com/bundles/cards/09019.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "56044"
+      ]
+    },
+    {
+      "code": "09020",
+      "faces": [
+        {
+          "name": "Unflappable",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09020.jpg",
+            "https://marvelcdb.com/bundles/cards/09020.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3,
+      "aliases": [
+        "38013"
+      ]
+    },
+    {
+      "code": "09021",
+      "faces": [
+        {
+          "name": "Warning",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09021.jpg",
+            "https://marvelcdb.com/bundles/cards/09021.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "09026",
+      "faces": [
+        {
+          "name": "The Sorcerer Supreme",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09026.jpg",
+            "https://marvelcdb.com/bundles/cards/09026.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "09027",
+      "faces": [
+        {
+          "name": "Physical Toll",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09027.jpg",
+            "https://marvelcdb.com/bundles/cards/09027.png"
+          ]
+        }
+      ],
+      "set": "doctor_strange",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "09028",
+      "faces": [
+        {
+          "name": "Baron Mordo",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09028.jpg",
+            "https://marvelcdb.com/bundles/cards/09028.png"
+          ]
+        }
+      ],
+      "set": "doctor_strange_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "09029",
+      "faces": [
+        {
+          "name": "Open the Dark Dimension",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09029.jpg",
+            "https://marvelcdb.com/bundles/cards/09029.png"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "doctor_strange_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "09030",
+      "faces": [
+        {
+          "name": "Counterspell",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09030.jpg",
+            "https://marvelcdb.com/bundles/cards/09030.png"
+          ]
+        }
+      ],
+      "set": "doctor_strange_nemesis",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "09031",
+      "faces": [
+        {
+          "name": "Thoughtcasting",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09031.jpg",
+            "https://marvelcdb.com/bundles/cards/09031.png"
+          ]
+        }
+      ],
+      "set": "doctor_strange_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "09032",
+      "faces": [
+        {
+          "name": "Crimson Bands of Cyttorak",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09032.jpg",
+            "https://marvelcdb.com/bundles/cards/09032.png"
+          ]
+        }
+      ],
+      "set": "doctor_strange_invocation_deck",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "09033",
+      "faces": [
+        {
+          "name": "Images of Ikonn",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09033.jpg",
+            "https://marvelcdb.com/bundles/cards/09033.png"
+          ]
+        }
+      ],
+      "set": "doctor_strange_invocation_deck",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "09034",
+      "faces": [
+        {
+          "name": "Seven Rings of Raggadorr",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09034.jpg",
+            "https://marvelcdb.com/bundles/cards/09034.png"
+          ]
+        }
+      ],
+      "set": "doctor_strange_invocation_deck",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "09035",
+      "faces": [
+        {
+          "name": "Vapors of Valtorr",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09035.jpg",
+            "https://marvelcdb.com/bundles/cards/09035.png"
+          ]
+        }
+      ],
+      "set": "doctor_strange_invocation_deck",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "09036",
+      "faces": [
+        {
+          "name": "Winds of Watoomb",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09036.jpg",
+            "https://marvelcdb.com/bundles/cards/09036.png"
+          ]
+        }
+      ],
+      "set": "doctor_strange_invocation_deck",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "09037",
+      "faces": [
+        {
+          "name": "Skilled Strike",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09037.jpg",
+            "https://marvelcdb.com/bundles/cards/09037.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "09038",
+      "faces": [
+        {
+          "name": "Foiled!",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09038.jpg",
+            "https://marvelcdb.com/bundles/cards/09038.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "09039",
+      "faces": [
+        {
+          "name": "Iron Man",
+          "subname": "Tony Stark",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09039.jpg",
+            "https://marvelcdb.com/bundles/cards/09039.png"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    }
+  ],
+  "sets": [
+    {
+      "code": "doctor_strange",
+      "name": "Doctor Strange",
+      "kind": "hero",
+      "cards": [
+        "09001",
+        "09002",
+        "09003",
+        "09004",
+        "09005",
+        "09006",
+        "09007",
+        "09008",
+        "09009",
+        "09010",
+        "09011",
+        "09027"
+      ]
+    },
+    {
+      "code": "doctor_strange_invocation_deck",
+      "name": "Invocation",
+      "kind": "hero_special",
+      "cards": [
+        "09032",
+        "09033",
+        "09034",
+        "09035",
+        "09036"
+      ]
+    },
+    {
+      "code": "doctor_strange_nemesis",
+      "name": "Doctor Strange Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "09028",
+        "09029",
+        "09030",
+        "09031"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "09001",
+      "set": "doctor_strange",
+      "obligation": "09027",
+      "nemesis": "doctor_strange_nemesis"
+    }
+  ]
+}

@@ -1,0 +1,554 @@
+{
+  "code": "luke_cage",
+  "name": "Luke Cage",
+  "position": 62,
+  "cards": [
+    {
+      "code": "62001",
+      "faces": [
+        {
+          "name": "Luke Cage",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62001A.jpg",
+            "https://marvelcdb.com/bundles/cards/62001a.png"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "Luke Cage",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62001B.jpg",
+            "https://marvelcdb.com/bundles/cards/62001b.png"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "luke_cage",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "62001a",
+        "62001b"
+      ]
+    },
+    {
+      "code": "62002",
+      "faces": [
+        {
+          "name": "Jessica Jones",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62002.jpg"
+          ]
+        }
+      ],
+      "set": "luke_cage",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "62003",
+      "faces": [
+        {
+          "name": "Harlem's Hero",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62003.jpg"
+          ]
+        }
+      ],
+      "set": "luke_cage",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "62004",
+      "faces": [
+        {
+          "name": "Knuckle Sandwich",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62004.jpg"
+          ]
+        }
+      ],
+      "set": "luke_cage",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "62005",
+      "faces": [
+        {
+          "name": "\"Stand with Me!\"",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62005.jpg"
+          ]
+        }
+      ],
+      "set": "luke_cage",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "62006",
+      "faces": [
+        {
+          "name": "\"Sweet Christmas!\"",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62006.jpg"
+          ]
+        }
+      ],
+      "set": "luke_cage",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "62007",
+      "faces": [
+        {
+          "name": "Fogwell's Gym",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62007.jpg"
+          ]
+        }
+      ],
+      "set": "luke_cage",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "62008",
+      "faces": [
+        {
+          "name": "Burstein Process",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62008.jpg"
+          ]
+        }
+      ],
+      "set": "luke_cage",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "62009",
+      "faces": [
+        {
+          "name": "Cruisin' for a Bruisin'",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62009.jpg"
+          ]
+        }
+      ],
+      "set": "luke_cage",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "62010",
+      "faces": [
+        {
+          "name": "Metal Bracer",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62010.jpg"
+          ]
+        }
+      ],
+      "set": "luke_cage",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "62011",
+      "faces": [
+        {
+          "name": "Power Man",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62011.jpg"
+          ]
+        }
+      ],
+      "set": "luke_cage",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "62012",
+      "faces": [
+        {
+          "name": "Iron Fist",
+          "subname": "Danny Rand",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62012.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "62013",
+      "faces": [
+        {
+          "name": "Misty Knight",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62013.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "62014",
+      "faces": [
+        {
+          "name": "Valkyrie",
+          "subname": "Brunnhilde",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62014.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "62015",
+      "faces": [
+        {
+          "name": "Take a Stand",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62015.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "62018",
+      "faces": [
+        {
+          "name": "Defensive Formation",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62018.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "62019",
+      "faces": [
+        {
+          "name": "Righteous Purpose",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62019.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "62020",
+      "faces": [
+        {
+          "name": "Hulk",
+          "subname": "Bruce Banner",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62020.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "62021",
+      "faces": [
+        {
+          "name": "She-Hulk",
+          "subname": "Jennifer Walters",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62021.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "62022",
+      "faces": [
+        {
+          "name": "Dynamic Duo",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62022.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "62023",
+      "faces": [
+        {
+          "name": "Power Man and Iron Fist",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62023.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "62028",
+      "faces": [
+        {
+          "name": "Internal Injury",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62028.jpg"
+          ]
+        }
+      ],
+      "set": "luke_cage",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "62029",
+      "faces": [
+        {
+          "name": "Cottonmouth",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62029.jpg"
+          ]
+        }
+      ],
+      "set": "luke_cage_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "62030",
+      "faces": [
+        {
+          "name": "Venomous Whispers",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62030.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "luke_cage_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "62031",
+      "faces": [
+        {
+          "name": "Augmented Jaws",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62031.jpg"
+          ]
+        }
+      ],
+      "set": "luke_cage_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "62032",
+      "faces": [
+        {
+          "name": "Asp",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62032.jpg"
+          ]
+        }
+      ],
+      "set": "luke_cage_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "62033",
+      "faces": [
+        {
+          "name": "Sidewinder",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62033.jpg"
+          ]
+        }
+      ],
+      "set": "luke_cage_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "62034",
+      "faces": [
+        {
+          "name": "Size Advantage",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62034.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "62035",
+      "faces": [
+        {
+          "name": "Observe",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62035.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "62036",
+      "faces": [
+        {
+          "name": "Toughen Up",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62036.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "62037",
+      "faces": [
+        {
+          "name": "Black Belt",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62037.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    }
+  ],
+  "sets": [
+    {
+      "code": "luke_cage",
+      "name": "Luke Cage",
+      "kind": "hero",
+      "cards": [
+        "62001",
+        "62002",
+        "62003",
+        "62004",
+        "62005",
+        "62006",
+        "62007",
+        "62008",
+        "62009",
+        "62010",
+        "62011",
+        "62028"
+      ]
+    },
+    {
+      "code": "luke_cage_nemesis",
+      "name": "Luke Cage Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "62029",
+        "62030",
+        "62031",
+        "62032",
+        "62033"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "62001",
+      "set": "luke_cage",
+      "obligation": "62028",
+      "nemesis": "luke_cage_nemesis"
+    }
+  ]
+}

@@ -1,0 +1,616 @@
+{
+  "code": "winter",
+  "name": "Winter Soldier",
+  "position": 54,
+  "cards": [
+    {
+      "code": "54001",
+      "faces": [
+        {
+          "name": "Winter Soldier",
+          "type": "hero",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/54001A.jpg",
+            "https://marvelcdb.com/bundles/cards/54001a.png"
+          ],
+          "handSize": 5
+        },
+        {
+          "name": "Bucky Barnes",
+          "type": "alter_ego",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/54001B.jpg",
+            "https://marvelcdb.com/bundles/cards/54001b.png"
+          ],
+          "handSize": 6
+        }
+      ],
+      "set": "winter_soldier",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "54001a",
+        "54001b"
+      ]
+    },
+    {
+      "code": "54002",
+      "faces": [
+        {
+          "name": "Cybernetic Arm",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/54002.jpg",
+            "https://marvelcdb.com/bundles/cards/54002.jpg"
+          ]
+        }
+      ],
+      "set": "winter_soldier",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "54003",
+      "faces": [
+        {
+          "name": "Black Widow",
+          "subname": "Natasha Romanoff",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/54003.jpg",
+            "https://marvelcdb.com/bundles/cards/54003.jpg"
+          ]
+        }
+      ],
+      "set": "winter_soldier",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "54004",
+      "faces": [
+        {
+          "name": "Arm Block",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/54004.jpg",
+            "https://marvelcdb.com/bundles/cards/54004.jpg"
+          ]
+        }
+      ],
+      "set": "winter_soldier",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "54005",
+      "faces": [
+        {
+          "name": "Metal Punch",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/54005.jpg",
+            "https://marvelcdb.com/bundles/cards/54005.jpg"
+          ]
+        }
+      ],
+      "set": "winter_soldier",
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "54006",
+      "faces": [
+        {
+          "name": "Electrical Discharge",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/54006.jpg",
+            "https://marvelcdb.com/bundles/cards/54006.jpg"
+          ]
+        }
+      ],
+      "set": "winter_soldier",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "54007",
+      "faces": [
+        {
+          "name": "Safe House #30",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/54007.jpg",
+            "https://marvelcdb.com/bundles/cards/54007.jpg"
+          ]
+        }
+      ],
+      "set": "winter_soldier",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "54008",
+      "faces": [
+        {
+          "name": "Silent Infiltration",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/54008.jpg",
+            "https://marvelcdb.com/bundles/cards/54008.jpg"
+          ]
+        }
+      ],
+      "set": "winter_soldier",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "54009",
+      "faces": [
+        {
+          "name": "Winter Armor",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/54009.jpg",
+            "https://marvelcdb.com/bundles/cards/54009.jpg"
+          ]
+        }
+      ],
+      "set": "winter_soldier",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "54010",
+      "faces": [
+        {
+          "name": "Winter Mask",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/54010.jpg",
+            "https://marvelcdb.com/bundles/cards/54010.jpg"
+          ]
+        }
+      ],
+      "set": "winter_soldier",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "54011",
+      "faces": [
+        {
+          "name": "Winter Rifle",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/54011.jpg",
+            "https://marvelcdb.com/bundles/cards/54011.jpg"
+          ]
+        }
+      ],
+      "set": "winter_soldier",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "54012",
+      "faces": [
+        {
+          "name": "Captain America",
+          "subname": "Steve Rogers",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/54012.jpg",
+            "https://marvelcdb.com/bundles/cards/54012.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "54013",
+      "faces": [
+        {
+          "name": "Deathlok",
+          "subname": "Henry Hayes",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/54013.jpg",
+            "https://marvelcdb.com/bundles/cards/54013.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "54014",
+      "faces": [
+        {
+          "name": "Firepower",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/54014.jpg",
+            "https://marvelcdb.com/bundles/cards/54014.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "54016",
+      "faces": [
+        {
+          "name": "Spoiling for a Fight",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/54016.jpg",
+            "https://marvelcdb.com/bundles/cards/54016.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "54017",
+      "faces": [
+        {
+          "name": "Aggressive Stance",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/54017.jpg",
+            "https://marvelcdb.com/bundles/cards/54017.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "54018",
+      "faces": [
+        {
+          "name": "Bambino",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/54018.jpg",
+            "https://marvelcdb.com/bundles/cards/54018.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "54019",
+      "faces": [
+        {
+          "name": "Man on the Wall",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/54019.jpg",
+            "https://marvelcdb.com/bundles/cards/54019.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "54020",
+      "faces": [
+        {
+          "name": "S.H.I.E.L.D. Sidearm",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/54020.jpg",
+            "https://marvelcdb.com/bundles/cards/54020.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "54022",
+      "faces": [
+        {
+          "name": "Super-Soldiers",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/54022.jpg",
+            "https://marvelcdb.com/bundles/cards/54022.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "54023",
+      "faces": [
+        {
+          "name": "Winter, Widow, Soldier, Spy",
+          "type": "event",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/54023.jpg",
+            "https://marvelcdb.com/bundles/cards/54023.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "54027",
+      "faces": [
+        {
+          "name": "Red Room Programming",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/54027.jpg",
+            "https://marvelcdb.com/bundles/cards/54027.jpg"
+          ]
+        }
+      ],
+      "set": "winter_soldier",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "54028",
+      "faces": [
+        {
+          "name": "Crossbones",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/54028.jpg",
+            "https://marvelcdb.com/bundles/cards/54028.jpg"
+          ]
+        }
+      ],
+      "set": "winter_soldier_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "54029",
+      "faces": [
+        {
+          "name": "Hydra Hit Squad",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/54029.jpg",
+            "https://marvelcdb.com/bundles/cards/54029.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "winter_soldier_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "54030",
+      "faces": [
+        {
+          "name": "High-Tech Armament",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/54030.jpg",
+            "https://marvelcdb.com/bundles/cards/54030.jpg"
+          ]
+        }
+      ],
+      "set": "winter_soldier_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "54031",
+      "faces": [
+        {
+          "name": "Hydra Mercenary",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://marvelcdb.com/bundles/cards/54031.jpg"
+          ]
+        }
+      ],
+      "set": "winter_soldier_nemesis",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "54032",
+      "faces": [
+        {
+          "name": "White Widow",
+          "subname": "Yelena Belova",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/54032.jpg",
+            "https://marvelcdb.com/bundles/cards/54032.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "54033",
+      "faces": [
+        {
+          "name": "S.H.I.E.L.D. Deputy",
+          "type": "upgrade",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/54033.jpg",
+            "https://marvelcdb.com/bundles/cards/54033.jpg"
+          ]
+        }
+      ],
+      "back": "player",
+      "quantity": 3
+    },
+    {
+      "code": "54034",
+      "faces": [
+        {
+          "name": "Blizzard",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/54034.jpg",
+            "https://marvelcdb.com/bundles/cards/54034.jpg"
+          ]
+        }
+      ],
+      "set": "whiteout",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "54035",
+      "faces": [
+        {
+          "name": "Encased in Ice",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/54035.jpg",
+            "https://marvelcdb.com/bundles/cards/54035.jpg"
+          ]
+        }
+      ],
+      "set": "whiteout",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "54036",
+      "faces": [
+        {
+          "name": "Slippery Conditions",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/54036.jpg",
+            "https://marvelcdb.com/bundles/cards/54036.jpg"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": true
+          }
+        }
+      ],
+      "set": "whiteout",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "54037",
+      "faces": [
+        {
+          "name": "Whiteout",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/54037.jpg",
+            "https://marvelcdb.com/bundles/cards/54037.jpg"
+          ]
+        }
+      ],
+      "set": "whiteout",
+      "back": "encounter",
+      "quantity": 2
+    }
+  ],
+  "sets": [
+    {
+      "code": "whiteout",
+      "name": "Whiteout",
+      "kind": "modular",
+      "cards": [
+        "54034",
+        "54035",
+        "54036",
+        "54037"
+      ]
+    },
+    {
+      "code": "winter_soldier",
+      "name": "Winter Soldier",
+      "kind": "hero",
+      "cards": [
+        "54001",
+        "54002",
+        "54003",
+        "54004",
+        "54005",
+        "54006",
+        "54007",
+        "54008",
+        "54009",
+        "54010",
+        "54011",
+        "54027"
+      ]
+    },
+    {
+      "code": "winter_soldier_nemesis",
+      "name": "Winter Soldier Nemesis",
+      "kind": "nemesis",
+      "cards": [
+        "54028",
+        "54029",
+        "54030",
+        "54031"
+      ]
+    }
+  ],
+  "heroes": [
+    {
+      "identity": "54001",
+      "set": "winter_soldier",
+      "obligation": "54027",
+      "nemesis": "winter_soldier_nemesis"
+    }
+  ]
+}

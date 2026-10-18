@@ -1,0 +1,49 @@
+{
+  "id": "rhino",
+  "villainSet": "rhino",
+  "piles": [
+    {
+      "key": "villain",
+      "label": "Villain",
+      "cards": [
+        "01094",
+        "01095",
+        "01096"
+      ]
+    },
+    {
+      "key": "scheme",
+      "label": "Main scheme",
+      "cards": [
+        "01097"
+      ]
+    }
+  ],
+  "start": {
+    "standard": {
+      "top": {
+        "villain": {
+          "card": "01094",
+          "face": 0
+        },
+        "scheme": {
+          "card": "01097",
+          "face": 1
+        }
+      }
+    },
+    "expert": {
+      "top": {
+        "villain": {
+          "card": "01095",
+          "face": 0
+        },
+        "scheme": {
+          "card": "01097",
+          "face": 1
+        }
+      }
+    }
+  },
+  "setAside": []
+}
