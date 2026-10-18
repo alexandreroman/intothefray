@@ -28,6 +28,13 @@ make build  # bin/intothefray
 ## Modules
 
 - `cmd/intothefray/` — server entry point (HTTP, `/healthz`)
+- `cmd/packgen/` — card pack generator, run with `make packs`
+- `internal/pack/` — card pack schema (types) and catalog
+- `internal/packgen/` — generator internals (fetch, marvelcdb, cerebro,
+  build, images, curated, report, write)
+- `packs/` — `curated/` hand-written scenarios and card overrides,
+  `dist/` generated JSON (committed, never edited by hand), and the
+  `embed` package that loads it
 - `compose.yaml` — local infrastructure (Redis, in memory)
 
 ## Agents

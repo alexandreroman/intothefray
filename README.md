@@ -57,8 +57,14 @@ make dev        # start Redis, then the server with hot reload
 make test       # run the test suite (race detector on)
 make check      # run the tests, then golangci-lint
 make build      # build bin/intothefray
+make packs      # regenerate the card packs in packs/dist
 make infra-down # stop Redis
 ```
+
+`make packs` downloads the card data from marvelcdb and Cerebro
+(cached in `packs/.cache`), merges the hand-written files of
+`packs/curated/`, and writes the result to `packs/dist/`. Commit the
+regenerated files with the change that caused them.
 
 ## Configuration
 
@@ -84,9 +90,13 @@ graph TD
     B -->|card images| I[marvelcdb / Cerebro images]
 ```
 
-| Path               | Description                             |
-| ------------------ | --------------------------------------- |
-| `cmd/intothefray/` | Server entry point (HTTP, health check) |
+| Path                | Description                                    |
+| ------------------- | ---------------------------------------------- |
+| `cmd/intothefray/`  | Server entry point (HTTP, health check)        |
+| `cmd/packgen/`      | Card pack generator (`make packs`)             |
+| `internal/pack/`    | Card pack schema and catalog                   |
+| `internal/packgen/` | Generator internals (fetch, build, images...)  |
+| `packs/`            | Curated files, generated and committed `dist/` |
 
 ## License
 
