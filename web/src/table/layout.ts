@@ -92,20 +92,22 @@ export interface Footprint {
 const EXHAUST_RADIANS = (15 * Math.PI) / 180;
 
 /**
- * The right and bottom edges an item shows, as the prototype's visualBox: an
- * exhausted card is turned, and its bounding box grows around the same centre
- * (w·cos + h·sin wide, w·sin + h·cos tall).
+ * The left, right and bottom edges an item shows, as the prototype's
+ * visualBox: an exhausted card is turned, and its bounding box grows around
+ * the same centre (w·cos + h·sin wide, w·sin + h·cos tall).
  */
-export function visualBox(item: Footprint): { right: number; bottom: number } {
+export function visualBox(item: Footprint): { left: number; right: number; bottom: number } {
   if (!item.exhausted) {
-    return { right: item.x + item.w, bottom: item.y + item.h };
+    return { left: item.x, right: item.x + item.w, bottom: item.y + item.h };
   }
   const cos = Math.cos(EXHAUST_RADIANS);
   const sin = Math.sin(EXHAUST_RADIANS);
   const turnedWidth = item.w * cos + item.h * sin;
   const turnedHeight = item.w * sin + item.h * cos;
+  const middle = item.x + item.w / 2;
   return {
-    right: item.x + item.w / 2 + turnedWidth / 2,
+    left: middle - turnedWidth / 2,
+    right: middle + turnedWidth / 2,
     bottom: item.y + item.h / 2 + turnedHeight / 2,
   };
 }
@@ -144,7 +146,7 @@ export function hiddenAside(
   const byX = [...items].sort((a, b) => a.x - b.x);
   return {
     left: byX.filter((item) => visualBox(item).right <= left + EDGE_SLACK),
-    right: byX.filter((item) => item.x >= right - EDGE_SLACK),
+    right: byX.filter((item) => visualBox(item).left >= right - EDGE_SLACK),
   };
 }
 

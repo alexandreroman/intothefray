@@ -154,9 +154,11 @@ describe('an exhausted card', () => {
 
   it('shows a bounding box grown around its centre', () => {
     const box = visualBox({ id: 'a', x: 400, y: 300, w: 100, h: 140, exhausted: true });
+    expect(box.left).toBeCloseTo(450 - turnedWidth / 2);
     expect(box.right).toBeCloseTo(450 + turnedWidth / 2);
     expect(box.bottom).toBeCloseTo(370 + turnedHeight / 2);
     expect(visualBox({ id: 'b', x: 400, y: 300, w: 100, h: 140 })).toEqual({
+      left: 400,
       right: 500,
       bottom: 440,
     });
@@ -174,6 +176,13 @@ describe('an exhausted card', () => {
     const items = footprints([card({ area: 'p0', exhausted: true })], [], 'p0', alwaysStd);
     expect(hiddenAside(items, 100, 600).left).toEqual([]);
     expect(hiddenAside(items, 120, 600).left).toHaveLength(1);
+  });
+
+  it('is not scrolled out on the right while its turned corner shows', () => {
+    // Its unturned box starts at 500, its turned one about 16 before.
+    const items = footprints([card({ area: 'p0', x: 500, exhausted: true })], [], 'p0', alwaysStd);
+    expect(hiddenAside(items, 0, 500).right).toEqual([]);
+    expect(hiddenAside(items, 0, 490).right).toHaveLength(1);
   });
 });
 
