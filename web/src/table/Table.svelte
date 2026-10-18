@@ -968,14 +968,17 @@
         'table';
     }
 
-    /* The drawer slides in from the right, over the table. */
+    /*
+      The drawer slides in from the right, over the table and what is drawn on it: the other
+      players' presence (2500), the veil and the open hand (2600). Drags (3000) still show over it.
+    */
     .side {
       position: fixed;
       right: 0;
       top: 0;
       bottom: 0;
       width: min(320px, 88vw);
-      z-index: 50;
+      z-index: 2700;
       transform: translateX(100%);
       transition: transform 0.2s;
       box-shadow: -8px 0 24px #000a;
