@@ -3,8 +3,8 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"io"
 	"log/slog"
 	"net"
 	"net/http"
@@ -12,16 +12,34 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/redis/go-redis/v9"
+	"golang.org/x/sync/errgroup"
+
+	"github.com/alexandreroman/intothefray/internal/config"
+	"github.com/alexandreroman/intothefray/internal/decks"
+	"github.com/alexandreroman/intothefray/internal/server"
+	"github.com/alexandreroman/intothefray/internal/store"
+	"github.com/alexandreroman/intothefray/packs"
 )
 
 const (
-	defaultPort       = "8080"
-	readHeaderTimeout = 10 * time.Second
-	shutdownTimeout   = 10 * time.Second
+	readHeaderTimeout  = 10 * time.Second
+	shutdownTimeout    = 10 * time.Second
+	redisPingTimeout   = 5 * time.Second
+	healthcheckTimeout = 3 * time.Second
 )
 
 func main() {
 	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, nil)))
+
+	if len(os.Args) > 1 && os.Args[1] == "healthcheck" {
+		if err := healthcheck(os.Getenv("PORT")); err != nil {
+			slog.Error("healthcheck failed", "error", err)
+			os.Exit(1)
+		}
+		return
+	}
 
 	if err := run(); err != nil {
 		slog.Error("server failed", "error", err)
@@ -29,65 +47,119 @@ func main() {
 	}
 }
 
-// run starts the HTTP server and blocks until it fails or receives
+// run wires the application and blocks until it fails or receives
 // SIGINT/SIGTERM, in which case it shuts down gracefully.
 func run() error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	addr := net.JoinHostPort("0.0.0.0", port())
-	server := &http.Server{
+	cfg, err := config.Load(os.Getenv)
+	if err != nil {
+		return fmt.Errorf("load config: %w", err)
+	}
+
+	rdb, err := connectRedis(ctx, cfg.RedisURL)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = rdb.Close() }()
+
+	catalog, err := packs.Catalog()
+	if err != nil {
+		return fmt.Errorf("load card packs: %w", err)
+	}
+
+	app := server.New(server.Deps{
+		Config:  cfg,
+		Store:   store.New(rdb, cfg.GameTTL),
+		Catalog: catalog,
+		Decks:   &decks.Importer{BaseURL: cfg.MarvelcdbURL},
+		Now:     time.Now,
+		Logger:  slog.Default(),
+	})
+
+	addr := net.JoinHostPort("0.0.0.0", cfg.Port)
+	httpServer := &http.Server{
 		Addr:    addr,
-		Handler: newMux(),
+		Handler: app.Handler(),
 		// Bounds how long a client may take to send headers (Slowloris protection).
 		ReadHeaderTimeout: readHeaderTimeout,
 	}
 
-	serveErr := make(chan error, 1)
-	go func() {
+	group, groupCtx := errgroup.WithContext(ctx)
+	group.Go(func() error {
 		slog.Info("server listening", "addr", addr)
-		serveErr <- server.ListenAndServe()
-	}()
+		// ListenAndServe only returns ErrServerClosed after a shutdown.
+		if err := httpServer.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
+			return fmt.Errorf("listen on %s: %w", addr, err)
+		}
+		return nil
+	})
+	group.Go(func() error {
+		return app.Run(groupCtx)
+	})
+	group.Go(func() error {
+		<-groupCtx.Done()
+		// Restore default signal handling so that a second signal kills the process immediately.
+		stop()
+		slog.Info("shutting down", "timeout", shutdownTimeout.String())
 
-	select {
-	case err := <-serveErr:
-		// ListenAndServe only returns early on a real failure, such as a port already in use.
-		return fmt.Errorf("listen on %s: %w", addr, err)
-	case <-ctx.Done():
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+		defer cancel()
+		if err := httpServer.Shutdown(shutdownCtx); err != nil {
+			return fmt.Errorf("shut down server: %w", err)
+		}
+		return nil
+	})
+
+	if err := group.Wait(); err != nil {
+		return err
 	}
-
-	// Restore default signal handling so that a second signal kills the process immediately.
-	stop()
-	slog.Info("shutting down", "timeout", shutdownTimeout.String())
-
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
-	defer cancel()
-
-	if err := server.Shutdown(shutdownCtx); err != nil {
-		return fmt.Errorf("shut down server: %w", err)
-	}
-
 	slog.Info("server stopped")
 	return nil
 }
 
-// port returns the listen port from the PORT environment variable, or the default one.
-func port() string {
-	if p := os.Getenv("PORT"); p != "" {
-		return p
+// connectRedis opens the Redis client and fails fast when the server is
+// unreachable.
+func connectRedis(ctx context.Context, url string) (*redis.Client, error) {
+	options, err := redis.ParseURL(url)
+	if err != nil {
+		return nil, fmt.Errorf("parse REDIS_URL: %w", err)
 	}
-	return defaultPort
+	rdb := redis.NewClient(options)
+
+	pingCtx, cancel := context.WithTimeout(ctx, redisPingTimeout)
+	defer cancel()
+	if err := rdb.Ping(pingCtx).Err(); err != nil {
+		_ = rdb.Close()
+		return nil, fmt.Errorf("ping redis: %w", err)
+	}
+	return rdb, nil
 }
 
-// newMux builds the HTTP routes served by the application.
-func newMux() *http.ServeMux {
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /healthz", handleHealthz)
-	return mux
-}
+// healthcheck probes the local server. It backs the container healthcheck,
+// as the image has no curl. An empty port selects the default one.
+func healthcheck(port string) error {
+	if port == "" {
+		port = config.DefaultPort
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), healthcheckTimeout)
+	defer cancel()
 
-func handleHealthz(w http.ResponseWriter, _ *http.Request) {
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	// A failed write means the client is gone: there is nobody left to report it to.
-	_, _ = io.WriteString(w, "ok")
+	url := "http://" + net.JoinHostPort("127.0.0.1", port) + "/healthz"
+	// The target is always the loopback address; only the port comes from the environment.
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, http.NoBody) //nolint:gosec // loopback target
+	if err != nil {
+		return fmt.Errorf("build request: %w", err)
+	}
+	resp, err := http.DefaultClient.Do(req) //nolint:gosec // loopback target, see above
+	if err != nil {
+		return fmt.Errorf("get %s: %w", url, err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("get %s: status %d", url, resp.StatusCode)
+	}
+	return nil
 }

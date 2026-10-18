@@ -7,6 +7,9 @@ import (
 	"time"
 )
 
+// DefaultPort is the listen port when PORT is unset.
+const DefaultPort = "8080"
+
 // Config holds the server settings, read once at startup.
 type Config struct {
 	// Port is the listen port, on all interfaces.
@@ -40,7 +43,7 @@ func Load(getenv func(string) string) (Config, error) {
 	}
 
 	return Config{
-		Port:           withDefault("PORT", "8080"),
+		Port:           withDefault("PORT", DefaultPort),
 		RedisURL:       withDefault("REDIS_URL", "redis://localhost:6379/0"),
 		AllowedOrigins: splitList(withDefault("ALLOWED_ORIGINS", "http://localhost:5173")),
 		GameTTL:        ttl,
