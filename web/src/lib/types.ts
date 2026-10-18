@@ -267,7 +267,11 @@ export type ActionKind =
   | 'handOrder'
   | 'firstPlayer'
   | 'arrowAdd'
-  | 'arrowClear';
+  | 'arrowClear'
+  | 'look' // open a private view of the top `n` cards of `pile`
+  | 'search' // open a private view of the whole `pile`
+  | 'closeView' // close the view; `where: 'shuffle'` also shuffles the pile
+  | 'undo';
 
 /**
  * An action as a client sends it. Which fields matter depends on `kind`.
@@ -333,6 +337,7 @@ export interface UnsupportedCard {
 }
 
 export interface SessionError {
+  id?: number; // id of the action this error answers, when it answers one
   code: string;
   message: string;
 }
