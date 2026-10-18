@@ -1,0 +1,294 @@
+// Wire types. They mirror the Go JSON: internal/pack/types.go,
+// internal/game/{game,state,view,action}.go. Fields the Go side marks
+// omitempty are optional here.
+
+// ---- Card packs (internal/pack) ----
+
+export type Size = 'std' | 'land' | 'dstd' | 'dland';
+export type Back = 'player' | 'encounter' | 'villain';
+export type Difficulty = 'standard' | 'expert';
+
+export interface Threat {
+  value: number;
+  perPlayer: boolean;
+}
+
+export interface PackFace {
+  name: string;
+  subname?: string;
+  type: string;
+  stage?: string;
+  size: Size;
+  images: string[];
+  handSize?: number;
+  startingThreat?: Threat;
+}
+
+export interface PackCard {
+  code: string;
+  faces: PackFace[];
+  set?: string;
+  back: Back;
+  quantity: number;
+  aliases?: string[];
+}
+
+export interface PackSet {
+  code: string;
+  name: string;
+  kind: string;
+  cards: string[];
+}
+
+export interface PackHero {
+  identity: string;
+  set: string;
+  obligation?: string;
+  nemesis?: string;
+}
+
+export interface FaceRef {
+  card: string;
+  face: number;
+}
+
+export interface PackPile {
+  key: string;
+  label: string;
+  cards: string[];
+}
+
+export interface PackStart {
+  top: Record<string, FaceRef>;
+  inPlay?: FaceRef[];
+}
+
+export interface PackScenario {
+  id: string;
+  name: string;
+  pack: string;
+  villainSet: string;
+  piles: PackPile[];
+  start: Partial<Record<Difficulty, PackStart>>;
+  setAside?: string[];
+  recommended?: string[];
+}
+
+export interface PackFile {
+  code: string;
+  name: string;
+  position: number;
+  cards: PackCard[];
+  sets: PackSet[];
+  heroes?: PackHero[];
+  scenarios?: PackScenario[];
+}
+
+export interface PackRef {
+  code: string;
+  name: string;
+  file: string;
+  position: number;
+}
+
+export interface ScenarioRef {
+  id: string;
+  name: string;
+  pack: string;
+  image: string;
+  supported: boolean;
+  recommended: string[];
+}
+
+export interface SetRef {
+  code: string;
+  name: string;
+  pack: string;
+  kind: string;
+}
+
+export interface Index {
+  version: number;
+  lang: string;
+  packs: PackRef[];
+  scenarios: ScenarioRef[];
+  sets: SetRef[];
+}
+
+// ---- Game view (internal/game) ----
+
+export type Phase = 'lobby' | 'playing' | 'ended';
+export type Role = 'player' | 'spectator';
+export type Zone = 'table' | 'hand' | 'pile' | 'stage';
+export type PileKind = 'deck' | 'discard' | 'encounter' | 'encounterDiscard' | 'victory' | 'aside';
+
+/** "villain", or "p0".."p3" for the player seated at that index. */
+export type Area = 'villain' | `p${number}`;
+
+export interface CardView {
+  id: string;
+  code?: string; // absent for a face-down table card
+  face: number;
+  faceDown?: boolean;
+  back: Back;
+  owner: number; // seat, -1 for no owner
+  zone: Zone;
+  area?: Area;
+  x: number;
+  y: number;
+  z: number;
+  parent?: string;
+  onPile?: string;
+  exhausted?: boolean;
+  tokens?: Record<string, number>;
+  status?: Record<string, number>;
+  stage?: string;
+}
+
+export interface PileView {
+  id: string;
+  kind: PileKind;
+  owner: number;
+  area: Area;
+  x: number;
+  y: number;
+  count: number;
+  cards?: string[]; // bottom to top, public piles only
+}
+
+export interface PlayerView {
+  name: string;
+  color: number;
+  host: boolean;
+  area?: Area;
+  hero?: string;
+  heroName?: string;
+  deckName?: string;
+  ready: boolean;
+  handCount: number;
+}
+
+export interface LogView {
+  who: string;
+  color: number; // -1 for system lines
+  text: string;
+  at: string; // RFC 3339
+  undone?: boolean;
+  cards?: string[];
+}
+
+export interface YouView {
+  role?: Role; // absent for an unknown token
+  name?: string;
+  color: number;
+  host: boolean;
+  area?: Area;
+}
+
+export interface Stage {
+  key: string;
+  label: string;
+  current: string;
+  cards: string[];
+}
+
+export interface Arrow {
+  from: string;
+  to: string;
+  seat: number;
+}
+
+export interface Point {
+  area: Area;
+  x: number;
+  y: number;
+}
+
+export interface PrivateView {
+  pile: string;
+  mode: 'top' | 'search';
+  cards: string[]; // top first
+}
+
+export interface TableView {
+  cards: CardView[];
+  piles: PileView[];
+  hand?: string[];
+  stages: Stage[];
+  firstPlayer: Point;
+  arrows?: Arrow[];
+  private?: PrivateView;
+}
+
+export interface LobbyConfig {
+  scenario: string;
+  difficulty: Difficulty;
+  standard: string;
+  expert: string;
+  modulars: string[];
+}
+
+export interface View {
+  id: string;
+  phase: Phase;
+  you: YouView;
+  players: PlayerView[];
+  spectators: number;
+  config: LobbyConfig;
+  table?: TableView;
+  log: LogView[];
+  canUndo?: boolean;
+  undoText?: string;
+}
+
+// ---- Actions ----
+
+export type ActionKind =
+  | 'move'
+  | 'attach'
+  | 'toHand'
+  | 'toDeck'
+  | 'discard'
+  | 'toPile'
+  | 'play'
+  | 'exhaust'
+  | 'flip'
+  | 'token'
+  | 'status'
+  | 'chooseStage'
+  | 'draw'
+  | 'reveal'
+  | 'deal'
+  | 'discardTop'
+  | 'shuffle'
+  | 'shuffleBack'
+  | 'shuffleIn'
+  | 'reorderTop'
+  | 'handOrder'
+  | 'firstPlayer'
+  | 'arrowAdd'
+  | 'arrowClear';
+
+/**
+ * An action as a client sends it. Which fields matter depends on `kind`.
+ *
+ * Left out on purpose, because the server fills them while resolving the
+ * action: `renames` (shuffles), `seat` (acting seat), `exhausted` and
+ * `faceDown` (outcome of an exhaust or a flip).
+ */
+export interface Action {
+  kind: ActionKind;
+  card?: string;
+  target?: string; // card id (attach, arrow) or pile id
+  pile?: string;
+  area?: Area;
+  x?: number;
+  y?: number;
+  n?: number;
+  name?: string; // token or status name
+  delta?: number;
+  face?: number; // chosen stage face
+  where?: 'top' | 'bottom' | 'shuffle';
+  stage?: string;
+  cards?: string[]; // new order, for reorderTop and handOrder
+}
