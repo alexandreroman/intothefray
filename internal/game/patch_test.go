@@ -29,8 +29,11 @@ func TestDiffTables(t *testing.T) {
 
 	p := diffTables(from, to)
 
-	if got := slices.Sorted(maps.Keys(p.cards)); !slices.Equal(got, []string{"c1", "c9"}) {
-		t.Errorf("changed cards = %v, want [c1 c9]", got)
+	if got := slices.Sorted(maps.Keys(p.added)); !slices.Equal(got, []string{"c9"}) {
+		t.Errorf("added cards = %v, want [c9]", got)
+	}
+	if got := slices.Sorted(maps.Keys(p.changed)); !slices.Equal(got, []string{"c1"}) {
+		t.Errorf("changed cards = %v, want [c1]", got)
 	}
 	if !slices.Equal(p.removed, []string{"c8"}) {
 		t.Errorf("removed = %v, want [c8]", p.removed)
@@ -54,7 +57,7 @@ func TestDiffOfEqualTablesIsEmpty(t *testing.T) {
 
 	p := diffTables(from, to)
 
-	empty := len(p.cards) == 0 && len(p.removed) == 0 && len(p.piles) == 0 && len(p.hands) == 0 &&
+	empty := len(p.added) == 0 && len(p.changed) == 0 && len(p.removed) == 0 && len(p.piles) == 0 && len(p.hands) == 0 &&
 		!p.stagesChanged && !p.arrowsChanged && !p.firstPlayerChanged
 	if !empty {
 		t.Errorf("patch = %+v, want empty (views are not patched)", p)
@@ -98,6 +101,32 @@ func TestPatchApplyTo(t *testing.T) {
 	}
 	if got := other.Piles["deck:p0"].Cards; !slices.Equal(got, []string{"c6", "c5", "c4"}) {
 		t.Errorf("deck = %v, want its own order: the patch does not touch the deck", got)
+	}
+}
+
+// TestPatchChangesCardFieldsOnly patches a card that the target table changed
+// on its own: only the fields that differ between the two diffed tables are
+// set, each counter key apart.
+func TestPatchChangesCardFieldsOnly(t *testing.T) {
+	from := newTestTable() // c1: exhausted, face 1, 2 dmg, stunned
+	to := from.Clone()
+	to.Cards["c1"].Exhausted = false
+	to.Cards["c1"].Tokens["dmg"] = 3
+	delete(to.Cards["c1"].Status, "stunned")
+	other := from.Clone()
+	own := other.Cards["c1"]
+	own.X, own.Face = 700, 0
+	own.Tokens["thr"] = 4
+	own.Status["tough"] = 1
+
+	diffTables(from, to).applyTo(other)
+
+	c1 := other.Cards["c1"]
+	if c1.Exhausted || c1.Tokens["dmg"] != 3 || c1.Status["stunned"] != 0 {
+		t.Errorf("c1 = %+v, want ready, 3 dmg and not stunned", c1)
+	}
+	if c1.X != 700 || c1.Face != 0 || c1.Tokens["thr"] != 4 || c1.Status["tough"] != 1 {
+		t.Errorf("c1 = %+v, want its own x 700, face 0, 4 thr and tough kept", c1)
 	}
 }
 

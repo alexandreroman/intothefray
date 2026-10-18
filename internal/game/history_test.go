@@ -644,6 +644,24 @@ func TestUndoIsCarriedIntoOthersSnapshots(t *testing.T) {
 	checkSnapshots(t, f.g)
 }
 
+// TestUndoKeepsOthersChangesToTheSameCard has Bob and Host change the same
+// card: Host's undo must not hide Bob's change from Bob's own undo.
+func TestUndoKeepsOthersChangesToTheSameCard(t *testing.T) {
+	f := newDoFixture(t)
+	rhino := f.villain()
+
+	f.mustDo(t, "b", Action{Kind: ActToken, Card: rhino, Name: "dmg", Delta: 1}, at(1))
+	f.mustDo(t, "h", Action{Kind: ActExhaust, Card: rhino}, at(2))
+	f.mustDo(t, "h", Action{Kind: ActUndo}, at(3))
+	f.mustDo(t, "b", Action{Kind: ActUndo}, at(4))
+
+	c := f.g.Table.Cards[rhino]
+	if c.Tokens["dmg"] != 0 || c.Exhausted {
+		t.Errorf("Rhino has %d damage, exhausted %t; want no damage and ready", c.Tokens["dmg"], c.Exhausted)
+	}
+	checkIntegrity(t, f.g.Table)
+}
+
 // TestUndoCarriesReshuffledIDs undoes an action older than a shuffle, which
 // re-shuffles the pile with fresh ids: the other players' snapshots must get
 // them too.

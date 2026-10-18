@@ -11,10 +11,11 @@ import (
 // player token. Open views are not part of it. Undo uses it to carry what it
 // changed into the other players' snapshots.
 type tablePatch struct {
-	cards              map[string]*Card    // cards added or changed, as they are now
-	removed            []string            // cards that no longer exist
-	piles              map[string][]string // card list of each changed pile
-	hands              map[Area][]string   // card list of each changed hand
+	added              map[string]*Card      // new cards, as they are now
+	changed            map[string]cardChange // cards present on both tables that differ
+	removed            []string              // cards that no longer exist
+	piles              map[string][]string   // card list of each changed pile
+	hands              map[Area][]string     // card list of each changed hand
 	stagesChanged      bool
 	stages             []*Stage
 	arrowsChanged      bool
@@ -27,13 +28,18 @@ type tablePatch struct {
 // with to.
 func diffTables(from, to *Table) tablePatch {
 	p := tablePatch{
-		cards: map[string]*Card{},
-		piles: map[string][]string{},
-		hands: map[Area][]string{},
+		added:   map[string]*Card{},
+		changed: map[string]cardChange{},
+		piles:   map[string][]string{},
+		hands:   map[Area][]string{},
 	}
 	for id, c := range to.Cards {
-		if old, ok := from.Cards[id]; !ok || !reflect.DeepEqual(old, c) {
-			p.cards[id] = c.clone()
+		old, ok := from.Cards[id]
+		switch {
+		case !ok:
+			p.added[id] = c.clone()
+		case !reflect.DeepEqual(old, c):
+			p.changed[id] = cardChange{from: old.clone(), to: c.clone()}
 		}
 	}
 	for _, id := range slices.Sorted(maps.Keys(from.Cards)) {
@@ -67,14 +73,22 @@ func diffTables(from, to *Table) tablePatch {
 }
 
 // applyTo sets the parts of t that the patch holds to their patched value,
-// and leaves every other part alone. t shares nothing with the patch
+// and leaves every other part alone; a changed card gets only its changed
+// fields (see cardChange). t shares nothing with the patch
 // afterwards, so one patch can be applied to several tables.
 func (p tablePatch) applyTo(t *Table) {
 	for _, id := range p.removed {
 		delete(t.Cards, id)
 	}
-	for id, c := range p.cards {
+	for id, c := range p.added {
 		t.Cards[id] = c.clone()
+	}
+	for id, change := range p.changed {
+		// A table that lost the card under this id (a shuffle that could not
+		// be replayed onto it) keeps its own copy under its own id.
+		if c, ok := t.Cards[id]; ok {
+			change.applyTo(c)
+		}
 	}
 	for id, cards := range p.piles {
 		if pile, ok := t.Piles[id]; ok {
@@ -108,6 +122,79 @@ func handAreas(a, b *Table) map[Area]bool {
 		areas[area] = true
 	}
 	return areas
+}
+
+// cardChange is how one card differs between the two tables of a patch.
+// Applying it sets only the fields that differ, so that a table which changed
+// other fields of the same card on its own keeps them.
+type cardChange struct {
+	from, to *Card
+}
+
+func (ch cardChange) applyTo(c *Card) {
+	from, to := ch.from, ch.to
+	if from.Zone != to.Zone {
+		c.Zone = to.Zone
+	}
+	if from.Pile != to.Pile {
+		c.Pile = to.Pile
+	}
+	if from.Area != to.Area {
+		c.Area = to.Area
+	}
+	if from.X != to.X {
+		c.X = to.X
+	}
+	if from.Y != to.Y {
+		c.Y = to.Y
+	}
+	if from.Z != to.Z {
+		c.Z = to.Z
+	}
+	if from.Parent != to.Parent {
+		c.Parent = to.Parent
+	}
+	if from.OnPile != to.OnPile {
+		c.OnPile = to.OnPile
+	}
+	if from.Face != to.Face {
+		c.Face = to.Face
+	}
+	if from.FaceDown != to.FaceDown {
+		c.FaceDown = to.FaceDown
+	}
+	if from.Exhausted != to.Exhausted {
+		c.Exhausted = to.Exhausted
+	}
+	c.Tokens = patchCounters(c.Tokens, from.Tokens, to.Tokens)
+	c.Status = patchCounters(c.Status, from.Status, to.Status)
+}
+
+// patchCounters sets in counters each key whose value differs between from
+// and to; a key at 0 is deleted, as applyCounter does.
+func patchCounters(counters, from, to map[string]int) map[string]int {
+	for _, key := range counterKeys(from, to) {
+		value := to[key]
+		if from[key] == value {
+			continue
+		}
+		if value == 0 {
+			delete(counters, key)
+			continue
+		}
+		if counters == nil {
+			counters = map[string]int{}
+		}
+		counters[key] = value
+	}
+	return counters
+}
+
+// counterKeys returns the keys found in a or b, sorted.
+func counterKeys(a, b map[string]int) []string {
+	keys := slices.Concat(slices.Collect(maps.Keys(a)), slices.Collect(maps.Keys(b)))
+	slices.Sort(keys)
+	return slices.Compact(keys)
 }
 
 // repairPlaces makes every card of t sit in exactly one place, the one its
