@@ -33,16 +33,25 @@ func (c *Client) JSON(ctx context.Context, url string, v any) error {
 	if err != nil {
 		return err
 	}
-	if body == nil {
-		body, err = c.download(ctx, url)
-		if err != nil {
-			return err
-		}
-		if err := writeFileAtomic(path, body); err != nil {
-			return fmt.Errorf("cache %s: %w", url, err)
-		}
+	if body != nil {
+		return decode(url, body, v)
 	}
 
+	body, err = c.download(ctx, url)
+	if err != nil {
+		return err
+	}
+	// Cache only a body that decodes, so an error page is never replayed.
+	if err := decode(url, body, v); err != nil {
+		return err
+	}
+	if err := writeFileAtomic(path, body); err != nil {
+		return fmt.Errorf("cache %s: %w", url, err)
+	}
+	return nil
+}
+
+func decode(url string, body []byte, v any) error {
 	if err := json.Unmarshal(body, v); err != nil {
 		return fmt.Errorf("decode %s: %w", url, err)
 	}

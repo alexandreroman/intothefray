@@ -71,3 +71,28 @@ func TestJSONHTTPError(t *testing.T) {
 		t.Errorf("cache dir has %d entries, want none", len(entries))
 	}
 }
+
+func TestJSONDoesNotCacheInvalidBody(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte("<html>maintenance</html>"))
+	}))
+	t.Cleanup(server.Close)
+
+	cacheDir := t.TempDir()
+	client := &Client{HTTP: server.Client(), CacheDir: cacheDir}
+	url := server.URL + "/cards"
+
+	var v any
+	err := client.JSON(context.Background(), url, &v)
+	if err == nil || !strings.Contains(err.Error(), url) {
+		t.Fatalf("error = %v, want one naming the URL", err)
+	}
+
+	entries, readErr := os.ReadDir(cacheDir)
+	if readErr != nil {
+		t.Fatal(readErr)
+	}
+	if len(entries) != 0 {
+		t.Errorf("cache dir has %d entries, want none", len(entries))
+	}
+}
