@@ -31,19 +31,22 @@ game's rules.
 - Docker (or Podman) with Compose, to run Redis locally
 - [Air](https://github.com/air-verse/air) for hot reload
 - [golangci-lint](https://golangci-lint.run/) v2 for static checks
+- Node.js 24 and [pnpm](https://pnpm.io/) for the frontend
 
 ## Getting Started
 
-Clone the repository and start the server with hot reload. Redis
-starts in a container first.
+Clone the repository, install the frontend dependencies, and start
+the stack with hot reload. Redis starts in a container first.
 
 ```bash
 git clone https://github.com/alexandreroman/intothefray.git
 cd intothefray
+make web-install
 make dev
 ```
 
-Check that the server answers:
+Open the frontend at <http://localhost:5173>. Check that the server
+answers:
 
 ```bash
 curl http://localhost:8080/healthz
@@ -64,6 +67,9 @@ make app-up     # build the image, start the app and Redis in containers
 make app-logs   # follow the logs of the containerised stack
 make app-down   # stop and remove the containerised stack
 ```
+
+`make check` also runs the frontend checks: run `make web-install`
+once on a fresh clone first.
 
 `make dev` and `make app-up` both bind port 8080: stop one before
 starting the other.
@@ -89,6 +95,18 @@ to start otherwise.
 
 `make` loads `.env` when it exists, and `.env.local` for the
 development targets.
+
+## Deployment
+
+The frontend is published to GitHub Pages by the `Pages` workflow
+on every push to `main`. In the repository settings:
+
+- set the Pages source to GitHub Actions;
+- set the `API_URL` variable to the public URL of the backend.
+
+The backend must accept the Pages origin: add it to
+`ALLOWED_ORIGINS`, written `scheme://host` with no path, for example
+`https://alexandreroman.github.io`.
 
 ## Architecture
 
