@@ -7,12 +7,17 @@ import type { Point, Rect } from './drag';
 
 /** The surface of a zone, where its cards lie, measured on the screen. */
 export function surfaceRect(root: ParentNode | undefined, area: Area): DOMRect | undefined {
-  return root?.querySelector(`.zsec[data-area="${area}"] .surface`)?.getBoundingClientRect();
+  return root?.querySelector(`${zoneSelector(area)} .surface`)?.getBoundingClientRect();
 }
 
 /** The horizontal scroller of a zone: what shows of its surface. */
 export function scrollerRect(root: ParentNode | undefined, area: Area): DOMRect | undefined {
-  return root?.querySelector(`.zsec[data-area="${area}"] .zscroll`)?.getBoundingClientRect();
+  return root?.querySelector(`${zoneSelector(area)} .zscroll`)?.getBoundingClientRect();
+}
+
+// An area can come from another client's presence message: escaped, it cannot break the selector.
+function zoneSelector(area: Area): string {
+  return `.zsec[data-area="${CSS.escape(area)}"]`;
 }
 
 /** A point of the screen, in table units of the surface. */

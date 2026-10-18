@@ -493,6 +493,59 @@ describe("other players' presence", () => {
     expect(document.querySelector('.presence .card')).toBeNull();
   });
 
+  it('keeps the preview ring and the drag ghost after the cursor goes, for 60 s at most', async () => {
+    const { receive } = await renderTable();
+    receive({
+      color: 1,
+      name: 'Sam',
+      cursor: { area: 'p1', x: 100, y: 50 },
+      preview: 'v',
+      drag: { cards: ['sam'], area: 'p0', x: 500, y: 20 },
+    });
+    await nextFrame();
+
+    // Only the cursor goes after 10 s: the ring and the ghost stay until Sam clears them.
+    await vi.advanceTimersByTimeAsync(15_000);
+    expect(cursors()).toEqual([]);
+    expect(rings()).toHaveLength(1);
+    expect(document.querySelector('.presence .card[data-id="sam"]')).not.toBeNull();
+
+    // A lost connection clears nothing: they go after 60 s without a message.
+    await vi.advanceTimersByTimeAsync(44_000);
+    expect(rings()).toHaveLength(1);
+    await vi.advanceTimersByTimeAsync(1_100);
+    expect(rings()).toEqual([]);
+    expect(document.querySelector('.presence .card')).toBeNull();
+  });
+
+  it('draws a hostile message without throwing, skipping what the view does not know', async () => {
+    const { receive } = await renderTable();
+
+    receive({
+      color: 1,
+      name: 'Sam',
+      cursor: { area: 'p9"] .x', x: 10, y: 10 },
+      preview: 'v"], .card[data-id="',
+      ping: { area: 'nowhere"]', x: 1, y: 1 },
+      drag: { cards: ['a"]', 'a"]', 'v'], area: 'p0', x: 0, y: 0 },
+    });
+    await nextFrame();
+
+    expect(cursors()).toEqual([]);
+    expect(rings()).toEqual([]);
+    expect(pings()).toEqual([]);
+    // Each card once, the unknown one face down.
+    const ids = [...document.querySelectorAll<HTMLElement>('.presence .card')].map(
+      (c) => c.dataset.id,
+    );
+    expect(ids).toEqual(['a"]', 'v']);
+
+    // A drag in an area the view does not know is not drawn.
+    receive({ color: 1, name: 'Sam', drag: { cards: ['v'], area: 'p7"]', x: 0, y: 0 } });
+    await nextFrame();
+    expect(document.querySelector('.presence .card')).toBeNull();
+  });
+
   it('draws a card it cannot see face down', async () => {
     const { receive } = await renderTable();
 

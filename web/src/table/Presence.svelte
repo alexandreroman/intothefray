@@ -24,6 +24,7 @@
   import { contains } from './drag';
   import { pileBack } from './face';
   import { interaction } from './interaction.svelte';
+  import { zoneOrder } from './layout';
   import { scrollerRect, surfaceRect, toScreen, toTable } from './screen';
 
   let {
@@ -48,8 +49,13 @@
     layout: unknown;
   } = $props();
 
-  /** A player silent for this long shows nothing: they left their screen, or lost their connection. */
-  const STALE_MS = 10_000;
+  /** A cursor silent for this long is hidden: its player left their screen. */
+  const CURSOR_STALE_MS = 10_000;
+  /**
+   * A preview or a drag stays until its player clears it (ruling P5c-R8),
+   * or for this long without a message: their connection is lost.
+   */
+  const LOST_MS = 60_000;
   /** How long a ping's rings expand. */
   const PING_MS = 1200;
   // The prototype's room at a zone's edges for a cursor scrolled out of view.
@@ -180,8 +186,24 @@
     schedule();
   });
 
+  // Relayed messages come from other clients: only the areas and cards the view knows are drawn.
+  function isKnownArea(area: string): area is Area {
+    return zoneOrder(view).some((known) => known === area);
+  }
+
+  function isKnownElement(id: string): boolean {
+    const table = view.table;
+    return (
+      (table?.cards ?? []).some((card) => card.id === id && card.zone === 'table') ||
+      (table?.piles ?? []).some((pile) => pile.id === id)
+    );
+  }
+
   /** Where a spot of the table shows, held within its zone's scroller as in the prototype. */
   function place(spot: PresencePoint, origin: DOMRect): Placed | null {
+    if (!isKnownArea(spot.area)) {
+      return null;
+    }
     const surface = surfaceRect(root, spot.area);
     const scroller = scrollerRect(root, spot.area);
     if (!surface || !scroller) {
@@ -202,7 +224,11 @@
 
   /** The card or pile a player previews, on the layer. */
   function ringOf(id: string, origin: DOMRect): Omit<Drawn['rings'][number], 'color'> | null {
-    const rect = root?.querySelector(`.surface .card[data-id="${id}"]`)?.getBoundingClientRect();
+    if (!isKnownElement(id)) {
+      return null;
+    }
+    const selector = `.surface .card[data-id="${CSS.escape(id)}"]`;
+    const rect = root?.querySelector(selector)?.getBoundingClientRect();
     if (!rect || rect.width === 0) {
       return null;
     }
@@ -233,9 +259,12 @@
     };
   }
 
-  /** The cards a player drags, where their corner is, the cards tucked under the first keeping their offsets. */
+  /**
+   * The cards a player drags, each once, where their corner is, the cards
+   * tucked under the first keeping their offsets.
+   */
   function ghostsOf(drag: PresenceDrag, origin: DOMRect): TableCard[] {
-    const surface = surfaceRect(root, drag.area);
+    const surface = isKnownArea(drag.area) ? surfaceRect(root, drag.area) : undefined;
     if (!surface) {
       return [];
     }
@@ -244,7 +273,8 @@
     const y = (corner.y - origin.top) / zoom;
     const cards = new Map((view.table?.cards ?? []).map((card) => [card.id, card]));
     const first = cards.get(drag.cards[0] ?? '');
-    return drag.cards.map((id) => {
+    const ids = drag.cards.filter((id, i) => drag.cards.indexOf(id) === i);
+    return ids.map((id) => {
       const card = cards.get(id);
       if (!card) {
         return hiddenCard(id, x, y);
@@ -263,16 +293,20 @@
     const origin = layer.getBoundingClientRect();
     const now = Date.now();
     const next: Drawn = { cursors: [], rings: [], ghosts: [], pings: [] };
-    // When something drawn now must go: a player falling silent, or a ping done.
+    // When something drawn now must go: a cursor falling silent, a lost player, or a ping done.
     let nextChange = Infinity;
     for (const state of presence.values()) {
-      if (now - state.at >= STALE_MS) {
+      const silence = now - state.at;
+      if (silence >= LOST_MS) {
         continue;
       }
-      nextChange = Math.min(nextChange, state.at + STALE_MS);
-      const cursor = state.cursor ? place(state.cursor, origin) : null;
-      if (cursor) {
-        next.cursors.push({ ...cursor, color: state.color, name: state.name });
+      nextChange = Math.min(nextChange, state.at + LOST_MS);
+      if (silence < CURSOR_STALE_MS) {
+        nextChange = Math.min(nextChange, state.at + CURSOR_STALE_MS);
+        const cursor = state.cursor ? place(state.cursor, origin) : null;
+        if (cursor) {
+          next.cursors.push({ ...cursor, color: state.color, name: state.name });
+        }
       }
       const ring = state.preview ? ringOf(state.preview, origin) : null;
       if (ring) {
