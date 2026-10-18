@@ -6,7 +6,6 @@
 <script lang="ts">
   import { tick } from 'svelte';
   import { MediaQuery } from 'svelte/reactivity';
-  import { modal } from '../components/modal.svelte';
   import Tooltip from '../components/Tooltip.svelte';
   import TopBar from '../components/TopBar.svelte';
   import { knownCard, loadAllCards } from '../lib/catalog';
@@ -26,6 +25,7 @@
   import { isHidden, pileBack } from './face';
   import Hand from './Hand.svelte';
   import { interaction } from './interaction.svelte';
+  import { handleKey } from './keys';
   import { zoneMinHeight, zoneOrder } from './layout';
   import TokenPill from './TokenPill.svelte';
   import SidePanel, { type Preview } from './SidePanel.svelte';
@@ -202,12 +202,6 @@
     }
   }
 
-  // A new view: the elements under a pointer at rest are not hovered by the viewer.
-  $effect.pre(() => {
-    void view;
-    interaction.redrawn();
-  });
-
   // An element that left the table takes its bar (and its arrow mode) with it.
   $effect(() => {
     const hovered = interaction.hovered;
@@ -362,12 +356,21 @@
     }
   }
 
-  // Task 4 brings the other keys; Escape is needed now to leave the arrow mode.
   function onKeydown(event: KeyboardEvent): void {
-    if (event.key !== 'Escape' || event.defaultPrevented || modal.open) {
-      return;
-    }
-    interaction.escape();
+    handleKey(event, {
+      view,
+      items: barItems,
+      zoom,
+      setZoom: zoomWithButtons,
+      run: runItem,
+      act: (action) => session.act(action),
+      showKeys: showKeySheet,
+      sizeOf,
+    });
+  }
+
+  function showKeySheet(): void {
+    // The keyboard shortcuts sheet comes with plan 5c.
   }
 
   // Restored as the page is built, before any style applies, so the slide
@@ -394,6 +397,16 @@
 
   let zoom = $state(storedZoom());
   let wrap = $state<HTMLElement>();
+
+  // A new view, a zoom or a resized zone moves the elements under a pointer at
+  // rest: the ones it lands on are not hovered by the viewer.
+  $effect.pre(() => {
+    void view;
+    void zoom;
+    // The zone heights: chosen with the separators, or grown with the cards.
+    void zones;
+    interaction.redrawn();
+  });
 
   /**
    * Zooms around a point of the screen, keeping the table point under it in
@@ -512,7 +525,7 @@
     <p class="notice" role="alert">Card data could not be loaded: cards show as placeholders.</p>
   {/if}
 
-  <ZoomControl {zoom} onzoom={zoomWithButtons} />
+  <ZoomControl {zoom} onzoom={zoomWithButtons} onkeys={showKeySheet} />
 
   {#if handCards}
     <Hand cards={handCards} {faceOf} narrow={narrow.current} />

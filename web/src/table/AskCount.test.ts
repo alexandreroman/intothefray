@@ -70,6 +70,18 @@ describe('AskCount', () => {
     expect(value.value).toBe('4');
   });
 
+  it('Enter on a button presses that button instead of confirming', async () => {
+    const { dialog, onconfirm } = renderAsk();
+
+    for (const name of ['Cancel', 'One less', 'One more']) {
+      const button = within(dialog).getByRole('button', { name });
+      button.focus();
+      // The browser turns Enter on a button into a click of it: the dialog must leave it alone.
+      expect(await fireEvent.keyDown(button, { key: 'Enter' })).toBe(true);
+    }
+    expect(onconfirm).not.toHaveBeenCalled();
+  });
+
   it('Escape, Cancel or a click outside cancels', async () => {
     const { dialog, oncancel, onconfirm } = renderAsk();
 

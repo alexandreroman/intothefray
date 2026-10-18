@@ -50,7 +50,8 @@
   }
 
   function onKeydown(event: KeyboardEvent): void {
-    if (event.key === 'Enter') {
+    // Enter on a button presses that button (Cancel, − or +), as the browser has it.
+    if (event.key === 'Enter' && !(event.target instanceof HTMLButtonElement)) {
       event.preventDefault();
       confirm();
     } else if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {

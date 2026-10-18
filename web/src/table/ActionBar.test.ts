@@ -325,6 +325,32 @@ describe('ActionBar', () => {
     expect(interaction.hovered).toEqual({ kind: 'card', id: 'two' });
   });
 
+  it('ignores the pointerenter a zoom fires under a resting pointer', async () => {
+    await renderTable();
+    await fireEvent.pointerMove(window, { clientX: 40, clientY: 60 });
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Zoom in' }));
+    await fireEvent.pointerEnter(placed('mine'), { clientX: 40, clientY: 60 });
+    expect(interaction.hovered).toBeNull();
+
+    await fireEvent.pointerEnter(placed('mine'), { clientX: 41, clientY: 60 });
+    expect(interaction.hovered).toEqual({ kind: 'card', id: 'mine' });
+  });
+
+  it('ignores the pointerenter a separator drag fires under a resting pointer', async () => {
+    await renderTable();
+    const handle = screen.getByTitle("Drag to resize the villain's zone");
+
+    await fireEvent.pointerDown(handle, { clientX: 40, clientY: 100 });
+    await fireEvent.pointerMove(window, { clientX: 40, clientY: 160 });
+    await fireEvent.pointerUp(window, { clientX: 40, clientY: 160 });
+    await fireEvent.pointerEnter(placed('mine'), { clientX: 40, clientY: 160 });
+    expect(interaction.hovered).toBeNull();
+
+    await fireEvent.pointerEnter(placed('mine'), { clientX: 40, clientY: 161 });
+    expect(interaction.hovered).toEqual({ kind: 'card', id: 'mine' });
+  });
+
   it('shows Flip on a card with two faces once the catalog is loaded', async () => {
     let loaded: () => void = () => {};
     vi.mocked(loadAllCards).mockReturnValue(new Promise<void>((resolve) => (loaded = resolve)));

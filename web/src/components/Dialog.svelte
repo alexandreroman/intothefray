@@ -60,7 +60,11 @@
       event.preventDefault();
       return;
     }
-    if (event.shiftKey && document.activeElement === first) {
+    // The box itself has the focus after a click on its text: Tab would leave from there.
+    if (!all.some((element) => element === document.activeElement)) {
+      event.preventDefault();
+      (event.shiftKey ? last : first).focus();
+    } else if (event.shiftKey && document.activeElement === first) {
       event.preventDefault();
       last.focus();
     } else if (!event.shiftKey && document.activeElement === last) {

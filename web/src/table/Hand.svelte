@@ -59,6 +59,13 @@
     open = event.clientX >= left && event.clientX <= right && event.clientY >= top;
   }
 
+  /** A tap on the hand itself, between or around its cards, lets go of a touch selection. */
+  function onHandPointerDown(event: PointerEvent): void {
+    if (event.target === event.currentTarget) {
+      interaction.release();
+    }
+  }
+
   // The window has no pointerleave of its own: the root element gets it.
   $effect(() => {
     const root = document.documentElement;
@@ -72,14 +79,20 @@
 
 <div class="veil" class:open></div>
 
+<!--
+  While a tap has selected something, the hand catches the taps on its empty parts; otherwise they
+  go through to the table under it.
+-->
 <ul
   class="hand"
   class:open
+  class:catching={interaction.locked}
   aria-label="Your hand"
   style:--card-w="{cardSize.w}px"
   style:--card-h="{cardSize.h}px"
   bind:this={list}
   bind:clientWidth={width}
+  onpointerdown={onHandPointerDown}
 >
   {#each cards as card, i (card.id)}
     {@const slot = slots[i]}
@@ -153,6 +166,10 @@
     transform: translateY(100px) scale(0.82);
     transform-origin: 50% 100%;
     transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .hand.catching {
+    pointer-events: auto;
   }
 
   /* In use, the hand is above everything, other players' cursors included. */
