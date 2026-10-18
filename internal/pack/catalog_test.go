@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"testing"
+	"testing/fstest"
 )
 
 func loadTestCatalog(t *testing.T) *Catalog {
@@ -28,6 +29,7 @@ func TestCatalogResolvesAliases(t *testing.T) {
 		{"second face alias", "01001b", "01001", 1},
 		{"reprint alias", "52022", "27049", 0},
 		{"uppercase face alias", "01097A", "01097", 0},
+		{"reprint face alias", "52097b", "01097", 1},
 	}
 
 	for _, tt := range tests {
@@ -79,5 +81,57 @@ func TestCatalogSetAndIndex(t *testing.T) {
 	}
 	if got := catalog.Index().Lang; got != "en" {
 		t.Errorf("Index().Lang = %q, want en", got)
+	}
+}
+
+func TestLoadErrors(t *testing.T) {
+	const index = `{"version":1,"lang":"en","packs":[` +
+		`{"code":"a","file":"a.json"},{"code":"b","file":"b.json"}]}`
+	const cardA = `{"code":"a","cards":[{"code":"00001","faces":[{}]}]}`
+
+	tests := []struct {
+		name  string
+		packA string
+		packB string
+	}{
+		{"duplicate card across packs", cardA, cardA},
+		{
+			"duplicate alias",
+			cardA,
+			`{"code":"b","cards":[{"code":"00002","faces":[{}],"aliases":["00001"]}]}`,
+		},
+		{
+			"alias face out of range",
+			`{"code":"a","cards":[{"code":"00001","faces":[{}],"aliases":["00001b"]}]}`,
+			`{"code":"b"}`,
+		},
+		{
+			"duplicate set",
+			`{"code":"a","sets":[{"code":"rhino"}]}`,
+			`{"code":"b","sets":[{"code":"RHINO"}]}`,
+		},
+		{
+			"duplicate hero",
+			`{"code":"a","heroes":[{"identity":"00001"}]}`,
+			`{"code":"b","heroes":[{"identity":"00001"}]}`,
+		},
+		{
+			"duplicate scenario",
+			`{"code":"a","scenarios":[{"id":"rhino"}]}`,
+			`{"code":"b","scenarios":[{"id":"rhino"}]}`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fsys := fstest.MapFS{
+				"en/index.json": {Data: []byte(index)},
+				"en/a.json":     {Data: []byte(tt.packA)},
+				"en/b.json":     {Data: []byte(tt.packB)},
+			}
+			if _, err := Load(fsys, "en"); err == nil {
+				t.Error("Load() error = nil, want an error")
+			}
+		})
 	}
 }

@@ -19,7 +19,8 @@ type aliasTarget struct {
 }
 
 // Catalog is the in-memory view of every pack of one language.
-// All lookups match codes case-insensitively.
+// Card, set and hero lookups match codes case-insensitively; scenario IDs
+// are matched exactly.
 type Catalog struct {
 	index     Index
 	cards     map[string]Card // by lower-cased canonical code
@@ -75,12 +76,23 @@ func (c *Catalog) add(file PackFile) error {
 		}
 	}
 	for _, set := range file.Sets {
-		c.sets[strings.ToLower(set.Code)] = set
+		key := strings.ToLower(set.Code)
+		if _, taken := c.sets[key]; taken {
+			return fmt.Errorf("duplicate set %q", set.Code)
+		}
+		c.sets[key] = set
 	}
 	for _, hero := range file.Heroes {
-		c.heroes[strings.ToLower(hero.Identity)] = hero
+		key := strings.ToLower(hero.Identity)
+		if _, taken := c.heroes[key]; taken {
+			return fmt.Errorf("duplicate hero %q", hero.Identity)
+		}
+		c.heroes[key] = hero
 	}
 	for _, scenario := range file.Scenarios {
+		if _, taken := c.scenarios[scenario.ID]; taken {
+			return fmt.Errorf("duplicate scenario %q", scenario.ID)
+		}
 		c.scenarios[scenario.ID] = scenario
 	}
 	return nil
@@ -88,6 +100,9 @@ func (c *Catalog) add(file PackFile) error {
 
 func (c *Catalog) addCard(card Card) error {
 	code := strings.ToLower(card.Code)
+	if _, taken := c.cards[code]; taken {
+		return fmt.Errorf("duplicate card %q", card.Code)
+	}
 	c.cards[code] = card
 
 	if err := c.addAlias(code, aliasTarget{code: code, face: 0}); err != nil {
@@ -95,7 +110,7 @@ func (c *Catalog) addCard(card Card) error {
 	}
 	for _, alias := range card.Aliases {
 		alias = strings.ToLower(alias)
-		face, err := aliasFace(code, alias, len(card.Faces))
+		face, err := aliasFace(alias, len(card.Faces))
 		if err != nil {
 			return err
 		}
@@ -107,26 +122,38 @@ func (c *Catalog) addCard(card Card) error {
 }
 
 func (c *Catalog) addAlias(alias string, target aliasTarget) error {
-	if existing, taken := c.aliases[alias]; taken && existing.code != target.code {
+	if existing, taken := c.aliases[alias]; taken {
 		return fmt.Errorf("code %q is used by cards %s and %s", alias, existing.code, target.code)
 	}
 	c.aliases[alias] = target
 	return nil
 }
 
-// aliasFace returns the face named by an alias of the form <code><letter>
-// (a is face 0, b is face 1...). Any other alias, such as a reprint code,
-// names face 0.
-func aliasFace(code, alias string, faceCount int) (int, error) {
-	suffix, isFaceAlias := strings.CutPrefix(alias, code)
-	if !isFaceAlias || len(suffix) != 1 || suffix[0] < 'a' || suffix[0] > 'z' {
+// aliasFace returns the face named by an alias made of five digits and a
+// letter (a is face 0, b is face 1...), whatever the digits: a reprint keeps
+// the face letters of the original card. Any other alias names face 0.
+func aliasFace(alias string, faceCount int) (int, error) {
+	if !isFaceCode(alias) {
 		return 0, nil
 	}
-	face := int(suffix[0] - 'a')
+	face := int(alias[len(alias)-1] - 'a')
 	if face >= faceCount {
-		return 0, fmt.Errorf("alias %q names face %d, but card %s has %d faces", alias, face, code, faceCount)
+		return 0, fmt.Errorf("alias %q names face %d, but the card has %d faces", alias, face, faceCount)
 	}
 	return face, nil
+}
+
+// isFaceCode reports whether code matches ^[0-9]{5}[a-z]$.
+func isFaceCode(code string) bool {
+	if len(code) != 6 {
+		return false
+	}
+	for _, digit := range code[:5] {
+		if digit < '0' || digit > '9' {
+			return false
+		}
+	}
+	return code[5] >= 'a' && code[5] <= 'z'
 }
 
 // Index returns the language index the catalog was loaded from.
