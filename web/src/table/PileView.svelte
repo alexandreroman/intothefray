@@ -5,10 +5,11 @@
   with a badge on their top edge.
 -->
 <script lang="ts">
-  import type { Back, CardView as TableCard, PileKind, PileView } from '../lib/types';
+  import type { CardView as TableCard, PileKind, PileView } from '../lib/types';
   import CardBack from './CardBack.svelte';
   import CardFace from './CardFace.svelte';
-  import { isHidden, shownFace } from './face.svelte';
+  import { isHidden, pileBack, shownFace } from './face.svelte';
+  import { hover } from './hover.svelte';
   import { cardBox } from './layout';
 
   let {
@@ -27,27 +28,28 @@
 
   const SLOT = cardBox('std', {});
 
-  function backOf(kind: PileKind): Back {
-    return kind === 'encounter' || kind === 'encounterDiscard' ? 'encounter' : 'player';
-  }
-
   const empty = $derived(pile.count === 0);
   const shownTop = $derived(empty ? undefined : top);
   const face = shownFace(() => shownTop);
   const badge = $derived(BADGES[pile.kind]);
   // A landscape top card is turned a quarter to fit the portrait slot.
   const rotated = $derived(cardBox(face.current?.size ?? 'std', { onPile: true }).rotated);
+  const highlighted = $derived(shownTop !== undefined && hover.highlighted.has(shownTop.id));
 </script>
 
+<!-- The hover only feeds the side preview: no role to announce. -->
 <div
   class="card pile"
+  role="presentation"
   class:empty
   class:inert={empty}
   class:out={badge !== undefined}
+  class:highlighted
   style:left="{pile.x}px"
   style:top="{pile.y}px"
   style:width="{SLOT.w}px"
   style:height="{SLOT.h}px"
+  onpointerenter={() => (hover.hovered = { kind: 'pile', id: pile.id })}
 >
   {#if empty}
     <div class="slot"></div>
@@ -56,7 +58,7 @@
       <CardFace images={face.current?.images ?? []} name={face.current?.name ?? ''} {rotated} />
     </div>
   {:else}
-    {@const back = shownTop?.back ?? backOf(pile.kind)}
+    {@const back = shownTop?.back ?? pileBack(pile.kind)}
     <div class="art">
       <CardBack {back} label={back.toUpperCase()} />
     </div>
@@ -127,6 +129,19 @@
 
   .card.empty {
     filter: none;
+  }
+
+  /* The white ring of a highlighted card, drawn around the cut card (the cut would clip it on the image). */
+  .card.highlighted::before {
+    content: '';
+    position: absolute;
+    inset: 1%;
+    border-radius: 7px;
+    pointer-events: none;
+    z-index: 1;
+    box-shadow:
+      0 0 0 2px #ffffffb0,
+      0 0 22px 6px #ffffff38;
   }
 
   .card.inert {

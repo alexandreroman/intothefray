@@ -107,6 +107,9 @@
       return;
     }
     event.preventDefault();
+    // Captured, the pointer keeps the handle's row-resize cursor wherever it goes.
+    // The moves still bubble up to the window listeners below.
+    (event.currentTarget as HTMLElement).setPointerCapture?.(event.pointerId);
     resizing = { startY: event.clientY, startHeight: above.height };
   }
 

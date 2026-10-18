@@ -7,6 +7,7 @@
   import CardBack from './CardBack.svelte';
   import CardFace from './CardFace.svelte';
   import { isHidden, shownFace } from './face.svelte';
+  import { hover } from './hover.svelte';
   import { cardBox } from './layout';
 
   let {
@@ -35,15 +36,21 @@
   const statuses = $derived(STATUSES.filter(([k]) => (card.status?.[k] ?? 0) > 0));
 </script>
 
-<!-- z-index comes from the server and can be negative: the surface must isolate its stacking. -->
+<!--
+  z-index comes from the server and can be negative: the surface must isolate its stacking.
+  The hover only feeds the side preview: no role to announce.
+-->
 <div
   class="card"
+  role="presentation"
   class:exhausted={card.exhausted}
+  class:highlighted={hover.highlighted.has(card.id)}
   style:left="{card.x}px"
   style:top="{card.y}px"
   style:width="{box.w}px"
   style:height="{box.h}px"
   style:z-index={card.z}
+  onpointerenter={() => (hover.hovered = { kind: 'card', id: card.id })}
 >
   {#if hidden}
     <CardBack back={card.back} />
@@ -88,6 +95,19 @@
 
   .card.exhausted {
     transform: rotate(var(--exhaust-angle));
+  }
+
+  /* The white ring of a highlighted card, drawn around the cut card (the cut would clip it on the image). */
+  .card.highlighted::before {
+    content: '';
+    position: absolute;
+    inset: 1%;
+    border-radius: 7px;
+    pointer-events: none;
+    z-index: 1;
+    box-shadow:
+      0 0 0 2px #ffffffb0,
+      0 0 22px 6px #ffffff38;
   }
 
   .tokens {

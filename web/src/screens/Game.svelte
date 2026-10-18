@@ -54,7 +54,7 @@
     {#if session.view.phase === 'lobby'}
       <Lobby {session} view={session.view} />
     {:else if session.view.phase === 'playing'}
-      <Table view={session.view} />
+      <Table {session} view={session.view} />
     {:else}
       <Ended />
     {/if}

@@ -1,19 +1,24 @@
 <!--
   The table page: the top bar, the table column (a vertical stack of zones,
-  each scrolling horizontally on its own) and the side column.
+  each scrolling horizontally on its own) and the side column (preview and
+  history).
 -->
 <script lang="ts">
   import { tick } from 'svelte';
   import TopBar from '../components/TopBar.svelte';
   import { knownCard, loadAllCards } from '../lib/catalog';
+  import { getPref, setPref } from '../lib/prefs';
+  import type { GameSession } from '../lib/session.svelte';
   import type { Area, CardView as TableCard, PackFace, PileView, Size, View } from '../lib/types';
-  import { isHidden } from './face.svelte';
+  import { isHidden, pileBack } from './face.svelte';
+  import { hover, type Hovered } from './hover.svelte';
   import { zoneMinHeight, zoneOrder, zoneWidth } from './layout';
+  import SidePanel, { type Preview } from './SidePanel.svelte';
   import Zone, { type Heading, type ResizeAbove } from './Zone.svelte';
   import ZoomControl from './ZoomControl.svelte';
   import { clampZoom, saveZoom, storedZoom, ZOOM_MAX, ZOOM_MIN } from './zoom';
 
-  let { view }: { view: View } = $props();
+  let { session, view }: { session: Pick<GameSession, 'act' | 'lobby'>; view: View } = $props();
 
   // P5a-R2: the catalog is loaded once, then card sizes are looked up synchronously.
   let catalog = $state<'loading' | 'ready' | 'failed'>('loading');
@@ -93,6 +98,16 @@
 
   type ZoneData = (typeof zones)[number];
 
+  // A resizable zone only grows on its own: once its cards made it taller, it
+  // stays that tall when they move back up, until it is resized by hand.
+  $effect.pre(() => {
+    for (const zone of zones) {
+      if (resizable(zone.area) && zone.height > (chosenHeights[zone.area] ?? 0)) {
+        chosenHeights[zone.area] = zone.height;
+      }
+    }
+  });
+
   function resizeAbove(above: ZoneData | undefined): ResizeAbove | undefined {
     if (!above || !resizable(above.area)) {
       return undefined;
@@ -106,6 +121,54 @@
   }
 
   const firstPlayer = $derived(view.table?.firstPlayer);
+
+  function previewOf(hovered: Hovered | null): Preview | null {
+    if (hovered?.kind === 'pile') {
+      const pile = piles.find((p) => p.id === hovered.id);
+      if (!pile || pile.count === 0) {
+        return null;
+      }
+      const top = topOf(pile);
+      return top ? previewOfCard(top) : { kind: 'back', back: pileBack(pile.kind) };
+    }
+    const card = hovered ? cardsById.get(hovered.id) : undefined;
+    return card ? previewOfCard(card) : null;
+  }
+
+  function previewOfCard(card: TableCard): Preview {
+    if (isHidden(card)) {
+      return { kind: 'back', back: card.back };
+    }
+    const face = faceOf(card);
+    return {
+      kind: 'face',
+      images: face?.images ?? [],
+      name: face?.name ?? '',
+      landscape: face?.size === 'land' || face?.size === 'dland',
+    };
+  }
+
+  // From ids, so the preview follows a flip or a pile's new top card.
+  const preview = $derived(previewOf(hover.hovered));
+
+  // An empty spot of the table clears the preview; the side panel keeps it, to read it there.
+  function onTableOver(event: PointerEvent): void {
+    if (!(event.target as Element).closest('.card')) {
+      hover.hovered = null;
+    }
+  }
+
+  // The hover state is shared: a previous game's must not show in the next one.
+  $effect(() => () => hover.reset());
+
+  // Restored as the page is built, before any style applies, so the slide
+  // does not play at load; it plays on every toggle after that.
+  let sideHidden = $state(getPref('itf-side-hidden') === '1');
+
+  function toggleSide(): void {
+    sideHidden = !sideHidden;
+    setPref('itf-side-hidden', sideHidden ? '1' : '');
+  }
 
   let zoom = $state(storedZoom());
   let wrap = $state<HTMLElement>();
@@ -175,12 +238,17 @@
   });
 </script>
 
-<div class="app">
+<div class="app" class:side-hidden={sideHidden}>
   <div class="top">
-    <TopBar title="INTO THE FRAY" spectators={view.spectators} />
+    <TopBar
+      title="INTO THE FRAY"
+      spectators={view.spectators}
+      side={{ hidden: sideHidden, ontoggle: toggleSide }}
+      onend={view.you.host ? () => session.lobby('end') : undefined}
+    />
   </div>
 
-  <div class="tablewrap" bind:this={wrap}>
+  <div class="tablewrap" role="presentation" bind:this={wrap} onpointerover={onTableOver}>
     <div class="table" style:--z={zoom}>
       {#each zones as zone, i (zone.area)}
         <Zone
@@ -207,8 +275,15 @@
 
   <ZoomControl {zoom} onzoom={zoomWithButtons} />
 
-  <!-- The preview and the history come in the side column (plan 5a, Task 4). -->
-  <aside class="side"></aside>
+  <aside class="side" aria-label="Preview and history">
+    <SidePanel
+      {preview}
+      log={view.log}
+      canUndo={view.canUndo}
+      undoText={view.undoText}
+      onundo={() => session.act({ kind: 'undo' })}
+    />
+  </aside>
 </div>
 
 <style>
@@ -246,6 +321,8 @@
 
   .side {
     grid-area: side;
+    display: flex;
+    flex-direction: column;
     background: var(--panel);
     border-left: 1px solid var(--line);
     min-height: 0;
@@ -262,6 +339,36 @@
     border: 1px solid var(--accent);
     border-radius: 999px;
     font-size: 13px;
+  }
+
+  /* The column slides shut: the panel keeps its width and is pushed out on the right. */
+  @media (min-width: 901px) {
+    .app {
+      transition: grid-template-columns 0.28s ease;
+    }
+
+    .app.side-hidden {
+      grid-template-columns: minmax(0, 1fr) 0px;
+    }
+
+    .side {
+      overflow: hidden;
+      transition:
+        border-color 0.28s,
+        visibility 0s;
+    }
+
+    .side > :global(*) {
+      min-width: 299px;
+    }
+
+    .app.side-hidden .side {
+      border-left-color: transparent;
+      visibility: hidden;
+      transition:
+        border-color 0.28s,
+        visibility 0s 0.28s;
+    }
   }
 
   @media (max-width: 900px) {

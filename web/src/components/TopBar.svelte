@@ -1,8 +1,29 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import ConfirmDialog from './ConfirmDialog.svelte';
 
-  let { title, spectators, children }: { title: string; spectators: number; children?: Snippet } =
-    $props();
+  let {
+    title,
+    spectators,
+    side,
+    onend,
+    children,
+  }: {
+    title: string;
+    spectators: number;
+    /** The side panel toggle, on the table only. */
+    side?: { hidden: boolean; ontoggle: () => void };
+    /** Ends the game for everyone, once confirmed. Given to the host only. */
+    onend?: () => void;
+    children?: Snippet;
+  } = $props();
+
+  let confirmingEnd = $state(false);
+
+  function endGame(): void {
+    confirmingEnd = false;
+    onend?.();
+  }
 
   let fullscreen = $state(Boolean(document.fullscreenElement));
 
@@ -45,9 +66,52 @@
       {spectators === 1 ? 'spectator' : 'spectators'}
     </span>
     <button onclick={toggleFullscreen}>⛶ {fullscreen ? 'Exit fullscreen' : 'Fullscreen'}</button>
+    {#if side}
+      <button
+        class="side-toggle"
+        aria-label="Preview and history"
+        aria-pressed={!side.hidden}
+        title={side.hidden ? 'Show the preview and history' : 'Hide the preview and history'}
+        onclick={side.ontoggle}
+      >
+        <!-- A window with its right pane, filled while the panel shows. -->
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <rect x="3" y="4" width="18" height="16" rx="2" />
+          <path
+            class="pane"
+            class:filled={!side.hidden}
+            d="M15 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4z"
+            fill="currentColor"
+            stroke="none"
+          />
+          <path d="M15 4v16" />
+        </svg>
+      </button>
+    {/if}
+    {#if onend}
+      <button onclick={() => (confirmingEnd = true)}>End game</button>
+    {/if}
     {@render children?.()}
   </div>
 </header>
+
+{#if confirmingEnd}
+  <ConfirmDialog
+    question="End this game for everyone?"
+    confirmLabel="End game"
+    danger
+    onconfirm={endGame}
+    oncancel={() => (confirmingEnd = false)}
+  />
+{/if}
 
 <style>
   header {
@@ -90,5 +154,28 @@
 
   .actions :global(button) {
     height: 33px;
+  }
+
+  .side-toggle {
+    width: 33px;
+    padding: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .side-toggle svg {
+    width: 19px;
+    height: 19px;
+    display: block;
+  }
+
+  .pane {
+    fill-opacity: 0;
+    transition: fill-opacity 0.25s;
+  }
+
+  .pane.filled {
+    fill-opacity: 0.35;
   }
 </style>

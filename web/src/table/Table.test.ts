@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
 import Table from './Table.svelte';
 import { cardByCode, knownCard, loadAllCards, type CardInfo } from '../lib/catalog';
-import type { CardView as TableCard, PackFace, PileView, View } from '../lib/types';
+import type { Area, CardView as TableCard, PackFace, PileView, View } from '../lib/types';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -36,6 +36,10 @@ function card(id: string, extra: Partial<TableCard>): TableCard {
 
 function pile(id: string, extra: Partial<PileView>): PileView {
   return { id, kind: 'deck', owner: -1, area: 'villain', x: 0, y: 0, count: 3, ...extra };
+}
+
+function fakeSession() {
+  return { act: vi.fn(() => 1), lobby: vi.fn(() => true) };
 }
 
 /** Rhino with two players; the viewer is Sam, seated second (area p1). */
@@ -116,7 +120,7 @@ afterEach(() => {
 
 describe('Table', () => {
   it('renders a zone per area in order', async () => {
-    render(Table, { view: makeView() });
+    render(Table, { session: fakeSession(), view: makeView() });
 
     const zones = await screen.findAllByRole('region');
     expect(zones.map((z) => z.getAttribute('data-area'))).toEqual(['villain', 'p1', 'p0']);
@@ -133,13 +137,13 @@ describe('Table', () => {
   });
 
   it('loads the catalog once for every zone', async () => {
-    render(Table, { view: makeView() });
+    render(Table, { session: fakeSession(), view: makeView() });
     await screen.findByRole('region', { name: /Rhino/ });
     expect(loadAllCards).toHaveBeenCalledOnce();
   });
 
   it('zone header text', async () => {
-    render(Table, { view: makeView() });
+    render(Table, { session: fakeSession(), view: makeView() });
 
     const villain = await screen.findByRole('region', { name: 'Villain — Rhino (stage I)' });
     expect(within(villain).getByText('(stage I)').classList).toContain('aside');
@@ -161,7 +165,7 @@ describe('Table', () => {
       ],
       piles: [],
     });
-    render(Table, { view });
+    render(Table, { session: fakeSession(), view });
 
     await waitFor(() => {
       expect(surfaceOf(/^Villain/).style.height).toBe('520px');
@@ -176,7 +180,7 @@ describe('Table', () => {
       cards: [card('g', { code: '01010', area: 'villain', x: 0, y: 300 })],
       piles: [],
     });
-    render(Table, { view });
+    render(Table, { session: fakeSession(), view });
 
     // 300 + 140 + 20, and the card itself gets the std box.
     expect(surfaceOf(/^Villain/).style.height).toBe('460px');
@@ -187,7 +191,7 @@ describe('Table', () => {
 
   it('shows a non-blocking error when the catalog fails to load', async () => {
     vi.mocked(loadAllCards).mockRejectedValue(new Error('offline'));
-    render(Table, { view: makeView() });
+    render(Table, { session: fakeSession(), view: makeView() });
 
     expect((await screen.findByRole('alert')).textContent).toContain(
       'Card data could not be loaded',
@@ -196,7 +200,7 @@ describe('Table', () => {
   });
 
   it('dragging a separator resizes the zone above, snapped and never below its minimum', async () => {
-    render(Table, { view: makeView() });
+    render(Table, { session: fakeSession(), view: makeView() });
     const handle = await screen.findByTitle("Drag to resize the villain's zone");
 
     await fireEvent.pointerDown(handle, { clientY: 100 });
@@ -216,7 +220,7 @@ describe('Table', () => {
   });
 
   it('zoom buttons clamp to 50–200 and persist', async () => {
-    render(Table, { view: makeView() });
+    render(Table, { session: fakeSession(), view: makeView() });
     expect(zoomLabel().textContent).toBe('100%');
 
     const zoomIn = screen.getByRole('button', { name: 'Zoom in' });
@@ -243,7 +247,7 @@ describe('Table', () => {
 
   it('restores the stored zoom and applies it as --z', () => {
     localStorage.setItem('itf-zoom', '1.5');
-    const { container } = render(Table, { view: makeView() });
+    const { container } = render(Table, { session: fakeSession(), view: makeView() });
 
     expect(zoomLabel().textContent).toBe('150%');
     expect(container.querySelector<HTMLElement>('.table')?.style.getPropertyValue('--z')).toBe(
@@ -252,7 +256,7 @@ describe('Table', () => {
   });
 
   it('Ctrl + wheel zooms, a plain wheel does not', async () => {
-    const { container } = render(Table, { view: makeView() });
+    const { container } = render(Table, { session: fakeSession(), view: makeView() });
     const wrap = container.querySelector('.tablewrap');
     if (!wrap) {
       throw new Error('no table wrap');
@@ -269,14 +273,14 @@ describe('Table', () => {
   });
 
   it('shows the keyboard shortcuts button as ?', () => {
-    render(Table, { view: makeView() });
+    render(Table, { session: fakeSession(), view: makeView() });
     expect(screen.getByRole('button', { name: 'Keyboard shortcuts' }).textContent?.trim()).toBe(
       '?',
     );
   });
 
   it('places the first player token in its zone', async () => {
-    render(Table, { view: makeView() });
+    render(Table, { session: fakeSession(), view: makeView() });
 
     const token = await screen.findByRole('img', { name: 'First player' });
     expect(token.getAttribute('src')).toBe(FIRST_PLAYER_TOKEN);
@@ -288,7 +292,7 @@ describe('Table', () => {
 
   it('draws the first player token with the minimal theme', () => {
     localStorage.setItem('itf-theme', 'minimal');
-    render(Table, { view: makeView() });
+    render(Table, { session: fakeSession(), view: makeView() });
 
     const token = screen.getByRole('img', { name: 'First player' });
     expect(token.tagName.toLowerCase()).toBe('svg');
@@ -299,11 +303,179 @@ describe('Table', () => {
       cards: [card('t', { code: '01001', zone: 'pile', x: 0, y: 0 })],
       piles: [pile('x0', { kind: 'discard', owner: 0, area: 'p0', count: 1, cards: ['t'] })],
     });
-    render(Table, { view });
+    render(Table, { session: fakeSession(), view });
 
     const top = await within(screen.getByRole('region', { name: /^Alex/ })).findByRole('img', {
       name: 'Spider-Man',
     });
     expect(top.getAttribute('src')).toBe('01001.png');
+  });
+
+  it('hovering a card previews it; hovering an empty spot clears it', async () => {
+    const { container } = render(Table, { session: fakeSession(), view: makeView() });
+    const preview = screen.getByLabelText('Card preview');
+    const villain = await screen.findByRole('region', { name: /Rhino/ });
+    const rhino = await within(villain).findByRole('img', { name: 'Rhino' });
+
+    await fireEvent.pointerEnter(rhino.closest('.card') as HTMLElement);
+    expect(within(preview).getByRole('img', { name: 'Rhino' }).getAttribute('src')).toBe(
+      '01094.png',
+    );
+
+    // The main scheme is landscape.
+    const scheme = within(villain).getByRole('img', { name: 'The Break-In!' });
+    await fireEvent.pointerEnter(scheme.closest('.card') as HTMLElement);
+    expect(within(preview).getByRole('img', { name: 'The Break-In!' }).classList).toContain('land');
+
+    await fireEvent.pointerOver(surfaceOf(/Rhino/));
+    expect(preview.textContent).toContain('Hover a card');
+    expect(container.querySelector('.preview .art')).toBeNull();
+  });
+
+  it('previews the back of a face-down card or a deck', async () => {
+    localStorage.setItem('itf-theme', 'minimal');
+    const view = makeView({
+      cards: [card('f', { code: '01001', faceDown: true, back: 'player', area: 'villain' })],
+      piles: [
+        pile('enc', { kind: 'encounter', area: 'villain', x: 500 }),
+        pile('x1', { kind: 'discard', owner: 1, area: 'p1', x: 720, count: 0 }),
+      ],
+    });
+    const { container } = render(Table, { session: fakeSession(), view });
+    const preview = screen.getByLabelText('Card preview');
+    const surface = surfaceOf(/^Villain/);
+
+    await fireEvent.pointerEnter(surface.querySelector('.card:not(.pile)') as HTMLElement);
+    expect(within(preview).getByRole('img', { name: 'Player card back' })).toBeTruthy();
+
+    await fireEvent.pointerEnter(surface.querySelector('.pile') as HTMLElement);
+    expect(within(preview).getByRole('img', { name: 'Encounter card back' })).toBeTruthy();
+
+    // An empty pile shows nothing.
+    await fireEvent.pointerEnter(container.querySelector('.pile.empty') as HTMLElement);
+    expect(preview.textContent).toContain('Hover a card');
+  });
+
+  it('hovering a history line rings its cards on the table', async () => {
+    const view = makeView();
+    view.log = [
+      { who: 'Sam', color: 1, text: 'exhausted Rhino', at: new Date().toISOString(), cards: ['v'] },
+    ];
+    render(Table, { session: fakeSession(), view });
+    const villain = await screen.findByRole('region', { name: /Rhino/ });
+    const rhino = await within(villain).findByRole('img', { name: 'Rhino' });
+    const placed = rhino.closest('.card') as HTMLElement;
+    expect(placed.classList).not.toContain('highlighted');
+
+    const entry = within(screen.getByRole('list', { name: 'History' })).getByRole('listitem');
+    await fireEvent.pointerEnter(entry);
+    expect(placed.classList).toContain('highlighted');
+
+    await fireEvent.pointerLeave(entry);
+    expect(placed.classList).not.toContain('highlighted');
+  });
+
+  it('undo sends the undo action', async () => {
+    const session = fakeSession();
+    const view = { ...makeView(), canUndo: true, undoText: 'exhausted Rhino' };
+    render(Table, { session, view });
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
+    expect(session.act).toHaveBeenCalledWith({ kind: 'undo' });
+  });
+
+  it('side toggle persists and toggles class', async () => {
+    const { container } = render(Table, { session: fakeSession(), view: makeView() });
+    const app = container.querySelector('.app') as HTMLElement;
+    const toggle = screen.getByRole('button', { name: 'Preview and history' });
+    expect(app.classList).not.toContain('side-hidden');
+    expect(toggle.title).toBe('Hide the preview and history');
+    expect(toggle.querySelector('.pane')?.classList).toContain('filled');
+
+    await fireEvent.click(toggle);
+    expect(app.classList).toContain('side-hidden');
+    expect(localStorage.getItem('itf-side-hidden')).toBe('1');
+    expect(toggle.title).toBe('Show the preview and history');
+    expect(toggle.querySelector('.pane')?.classList).not.toContain('filled');
+
+    await fireEvent.click(toggle);
+    expect(app.classList).not.toContain('side-hidden');
+    expect(localStorage.getItem('itf-side-hidden')).toBe('');
+  });
+
+  it('restores a hidden side panel', () => {
+    localStorage.setItem('itf-side-hidden', '1');
+    const { container } = render(Table, { session: fakeSession(), view: makeView() });
+    expect(container.querySelector('.app')?.classList).toContain('side-hidden');
+  });
+
+  it('end game asks for confirmation (host only)', async () => {
+    const guest = render(Table, { session: fakeSession(), view: makeView() });
+    expect(screen.queryByRole('button', { name: 'End game' })).toBeNull();
+    guest.unmount();
+
+    const session = fakeSession();
+    const view = makeView();
+    view.you = { ...view.you, host: true };
+    render(Table, { session, view });
+
+    await fireEvent.click(screen.getByRole('button', { name: 'End game' }));
+    let dialog = screen.getByRole('alertdialog', { name: 'End this game for everyone?' });
+    await fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByRole('alertdialog')).toBeNull();
+
+    // Escape cancels too.
+    await fireEvent.click(screen.getByRole('button', { name: 'End game' }));
+    await fireEvent.keyDown(window, { key: 'Escape' });
+    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(session.lobby).not.toHaveBeenCalled();
+
+    await fireEvent.click(screen.getByRole('button', { name: 'End game' }));
+    dialog = screen.getByRole('alertdialog', { name: 'End this game for everyone?' });
+    await fireEvent.click(within(dialog).getByRole('button', { name: 'End game' }));
+    expect(session.lobby).toHaveBeenCalledExactlyOnceWith('end');
+    expect(screen.queryByRole('alertdialog')).toBeNull();
+  });
+
+  it('the villain and own zones only grow on their own; other zones fit both ways', async () => {
+    const low = (id: string, area: Area) => card(id, { code: '01001', area, x: 200, y: 300 });
+    const high = (id: string, area: Area) => card(id, { code: '01001', area, x: 200, y: 0 });
+    const viewWith = (cards: TableCard[]) => makeView({ cards, piles: [] });
+
+    const { rerender } = render(Table, {
+      session: fakeSession(),
+      view: viewWith([low('v', 'villain'), low('b', 'p1'), low('a', 'p0')]),
+    });
+    // 300 + 140 + 20 in every zone.
+    await waitFor(() => {
+      expect(surfaceOf(/^Villain/).style.height).toBe('460px');
+    });
+    expect(surfaceOf(/^Sam/).style.height).toBe('460px');
+    expect(surfaceOf(/^Alex/).style.height).toBe('460px');
+
+    await rerender({
+      session: fakeSession(),
+      view: viewWith([high('v', 'villain'), high('b', 'p1'), high('a', 'p0')]),
+    });
+    expect(surfaceOf(/^Villain/).style.height).toBe('460px');
+    expect(surfaceOf(/^Sam/).style.height).toBe('460px');
+    expect(surfaceOf(/^Alex/).style.height).toBe('200px');
+
+    // A grown zone can still be shrunk by hand, down to its cards.
+    const handle = screen.getByTitle("Drag to resize the villain's zone");
+    await fireEvent.pointerDown(handle, { clientY: 400 });
+    await fireEvent.pointerMove(window, { clientY: 0 });
+    await fireEvent.pointerUp(window);
+    expect(surfaceOf(/^Villain/).style.height).toBe('200px');
+  });
+
+  it('a separator drag captures the pointer, keeping the resize cursor', async () => {
+    render(Table, { session: fakeSession(), view: makeView() });
+    const handle = await screen.findByTitle("Drag to resize the villain's zone");
+    const capture = vi.fn();
+    handle.setPointerCapture = capture;
+
+    await fireEvent.pointerDown(handle, { clientY: 100, pointerId: 7 });
+    expect(capture).toHaveBeenCalledWith(7);
   });
 });
