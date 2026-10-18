@@ -16,6 +16,7 @@
   import ActionBar from './ActionBar.svelte';
   import {
     actionsFor,
+    counterName,
     type ActionItem,
     type CountQuestion,
     type LocalAction,
@@ -26,6 +27,7 @@
   import Hand from './Hand.svelte';
   import { interaction } from './interaction.svelte';
   import { zoneMinHeight, zoneOrder } from './layout';
+  import TokenPill from './TokenPill.svelte';
   import SidePanel, { type Preview } from './SidePanel.svelte';
   import Zone, { type Heading, type ResizeAbove } from './Zone.svelte';
   import ZoomControl from './ZoomControl.svelte';
@@ -251,6 +253,47 @@
     }
     const selector = hovered.kind === 'pile' ? '.pile' : '.card:not(.pile)';
     return wrap.querySelector<HTMLElement>(`.surface ${selector}[data-id="${hovered.id}"]`);
+  }
+
+  // ---- The token pill ----
+
+  // Found again by names at every view, so the pill follows its token through
+  // redraws; it goes with the token (zero) or the card (off the table).
+  const counterShown = $derived.by(() => {
+    const target = interaction.counter;
+    if (!target || view.you.role !== 'player') {
+      return null;
+    }
+    const card = cardsById.get(target.card);
+    if (card?.zone !== 'table') {
+      return null;
+    }
+    const counts = target.kind === 'token' ? card.tokens : card.status;
+    const value = counts?.[target.name] ?? 0;
+    return value > 0 ? { target, value } : null;
+  });
+
+  // A pill that went away must not come back when the token does.
+  $effect(() => {
+    if (interaction.counter && !counterShown) {
+      interaction.hideCounter();
+    }
+  });
+
+  function counterAnchor(): HTMLElement | null {
+    const target = interaction.counter;
+    if (!target || !wrap) {
+      return null;
+    }
+    const selector = `[data-counter="${target.kind}:${target.name}"]`;
+    return wrap.querySelector<HTMLElement>(`.surface .card[data-id="${target.card}"] ${selector}`);
+  }
+
+  function stepCounter(delta: number): void {
+    const target = interaction.counter;
+    if (target) {
+      session.act({ kind: target.kind, card: target.card, name: target.name, delta });
+    }
   }
 
   /** The "How many cards?" question being asked, if any. */
@@ -483,6 +526,17 @@
       bounds={wrap}
       {zoom}
       onrun={runItem}
+    />
+  {/if}
+
+  {#if counterShown}
+    <TokenPill
+      anchor={counterAnchor}
+      label={counterName(counterShown.target.kind, counterShown.target.name)}
+      value={counterShown.value}
+      {zoom}
+      version={view}
+      onstep={stepCounter}
     />
   {/if}
 

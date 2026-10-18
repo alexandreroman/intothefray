@@ -38,6 +38,8 @@ export interface ActionItem {
   pressed?: boolean;
   /** Items of different groups are drawn with a separator between them. */
   group: number;
+  /** Drawn as a dashed "+" button, without the dropdown caret. */
+  add?: boolean;
   /** Dropdown items; a separator is an item with the id 'sep'. */
   menu?: ActionItem[];
   run?: () => Action | { ask: CountQuestion } | { local: LocalAction };
@@ -65,6 +67,12 @@ const STATUSES = [
   { name: 'confused', label: 'Confused', key: 'C' },
   { name: 'tough', label: 'Tough', key: 'G' },
 ];
+
+/** The lower-case name of a token or status, as the pill says it: "damage", "stunned". */
+export function counterName(kind: 'token' | 'status', name: string): string {
+  const counters = kind === 'token' ? TOKENS : STATUSES;
+  return (counters.find((counter) => counter.name === name)?.label ?? name).toLowerCase();
+}
 
 /** What every builder needs to know: the table and the viewer's seat. */
 interface Context {
@@ -207,7 +215,7 @@ function counterMenu(
       run: () => ({ kind, card: card.id, name: counter.name, delta: 1 }),
     };
   });
-  return { id: kind, label, tip, group: GROUP_MARK, menu };
+  return { id: kind, label, tip, group: GROUP_MARK, add: true, menu };
 }
 
 /** Discard and Move to ▾, disabled while the card holds what a stage shows. */

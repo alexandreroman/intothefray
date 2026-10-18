@@ -3,6 +3,13 @@ import type { TableElement } from './actions';
 /** How long the bar and the preview stay after the pointer leaves their element. */
 export const LINGER_MS = 250;
 
+/** A token or status of a table card, found again by its names after every redraw. */
+export interface CounterTarget {
+  card: string;
+  kind: 'token' | 'status';
+  name: string;
+}
+
 /** What hovering an element does to the side preview. */
 export type PreviewChange = 'show' | 'keep' | 'clear';
 
@@ -28,11 +35,17 @@ class TableInteraction {
   /** The pointer is on the bar or its dropdown. */
   onBar = $state(false);
 
+  /** The token or status the viewer points at: its − / + pill shows above it. */
+  counter = $state.raw<CounterTarget | null>(null);
+  /** The pointer is on the pill. */
+  onPill = $state(false);
+
   #pointer = { x: NaN, y: NaN };
   // Where the pointer was when the table was last redrawn.
   #drawnAt = { x: NaN, y: NaN };
   #pointerType = 'mouse';
   #hideTimer: ReturnType<typeof setTimeout> | undefined;
+  #counterTimer: ReturnType<typeof setTimeout> | undefined;
 
   /** Follows the pointer, to tell real hovers from the ones a redraw fires. */
   pointerMoved(event: PointerEvent): void {
@@ -109,6 +122,48 @@ class TableInteraction {
     this.leave();
   }
 
+  /** The pointer entered a token or a status. */
+  enterCounter(target: CounterTarget, event: PointerEvent): void {
+    if (!this.#isReal(event)) {
+      return;
+    }
+    this.#cancelCounterHide();
+    this.counter = target;
+  }
+
+  /** The pointer left a token, a status or the pill: the pill goes after the linger, unless it is on it. */
+  leaveCounter(): void {
+    this.#cancelCounterHide();
+    this.#counterTimer = setTimeout(() => {
+      if (!this.onPill) {
+        this.counter = null;
+      }
+    }, LINGER_MS);
+  }
+
+  enterPill(): void {
+    this.#cancelCounterHide();
+    this.onPill = true;
+  }
+
+  leavePill(): void {
+    this.onPill = false;
+    this.leaveCounter();
+  }
+
+  /** Drops the pill at once. */
+  hideCounter(): void {
+    this.#cancelCounterHide();
+    this.counter = null;
+  }
+
+  isCounter(target: CounterTarget): boolean {
+    const current = this.counter;
+    return (
+      current?.card === target.card && current.kind === target.kind && current.name === target.name
+    );
+  }
+
   /** A tap on an element. Only touch selects: with a mouse, hovering is enough. */
   select(element: TableElement, preview: PreviewChange = 'show'): void {
     if (this.#pointerType !== 'touch') {
@@ -129,6 +184,7 @@ class TableInteraction {
   /** Lets go of the selection, the bar and the preview. */
   release(): void {
     this.#cancelHide();
+    this.hideCounter();
     this.hovered = null;
     this.previewed = null;
     this.locked = false;
@@ -161,6 +217,7 @@ class TableInteraction {
     this.highlighted = new Set();
     this.arrowFrom = null;
     this.onBar = false;
+    this.onPill = false;
     this.#pointer = { x: NaN, y: NaN };
     this.#drawnAt = { x: NaN, y: NaN };
     this.#pointerType = 'mouse';
@@ -172,6 +229,11 @@ class TableInteraction {
     } else if (preview === 'clear') {
       this.previewed = null;
     }
+  }
+
+  #cancelCounterHide(): void {
+    clearTimeout(this.#counterTimer);
+    this.#counterTimer = undefined;
   }
 
   #cancelHide(): void {

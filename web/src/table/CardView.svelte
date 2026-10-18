@@ -69,7 +69,15 @@
   {#if tokens.length > 0}
     <div class="tokens">
       {#each tokens as k (k)}
-        <span class="tok {k}">{card.tokens?.[k]}</span>
+        {@const target = { card: card.id, kind: 'token', name: k } as const}
+        <span
+          class="tok {k}"
+          class:hot={interaction.isCounter(target)}
+          data-counter="token:{k}"
+          role="presentation"
+          onpointerenter={(event) => interaction.enterCounter(target, event)}
+          onpointerleave={() => interaction.leaveCounter()}>{card.tokens?.[k]}</span
+        >
       {/each}
     </div>
   {/if}
@@ -78,7 +86,15 @@
     <div class="statuses">
       {#each statuses as [k, label] (k)}
         {@const n = card.status?.[k] ?? 0}
-        <span class="st {k}">{label}{n > 1 ? ` ×${n}` : ''}</span>
+        {@const target = { card: card.id, kind: 'status', name: k } as const}
+        <span
+          class="st {k}"
+          class:hot={interaction.isCounter(target)}
+          data-counter="status:{k}"
+          role="presentation"
+          onpointerenter={(event) => interaction.enterCounter(target, event)}
+          onpointerleave={() => interaction.leaveCounter()}>{label}{n > 1 ? ` ×${n}` : ''}</span
+        >
       {/each}
     </div>
   {/if}
@@ -145,6 +161,23 @@
       inset 0 1px 1px #ffffff80,
       inset 0 -2px 3px #0000004d,
       0 2px 4px #000000a0;
+  }
+
+  /* Pointed at: the pill is up. */
+  .tok:hover,
+  .tok.hot {
+    box-shadow:
+      inset 0 1px 1px #ffffff80,
+      inset 0 -2px 3px #0000004d,
+      0 0 0 2px #fff,
+      0 2px 6px #000000a0;
+  }
+
+  .st:hover,
+  .st.hot {
+    box-shadow:
+      0 0 0 2px #fff,
+      0 2px 4px #0009;
   }
 
   .tok::before {

@@ -211,13 +211,14 @@
         <button
           type="button"
           class="dd"
+          class:add={item.add}
           data-menu={item.id}
           data-tip={item.tip ?? item.label}
           aria-haspopup="menu"
           aria-expanded={interaction.menu === item.id}
           disabled={item.disabled}
           onclick={() => toggleMenu(item.id)}
-          >{item.label}<span class="caret" aria-hidden="true">▾</span></button
+          >{item.label}{#if !item.add}<span class="caret" aria-hidden="true">▾</span>{/if}</button
         >
       {:else if item.icon}
         <button
@@ -339,6 +340,17 @@
   button.ico.on {
     background: #2f3d63;
     border-color: var(--sel);
+  }
+
+  /* "+ Token" and "+ Status" add something: dashed, and quiet until used. */
+  button.add {
+    border-style: dashed;
+    color: var(--muted);
+  }
+
+  button.add:hover:not(:disabled),
+  button.add[aria-expanded='true'] {
+    color: var(--text);
   }
 
   .caret {

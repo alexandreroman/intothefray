@@ -486,3 +486,152 @@ describe('pile preview', () => {
     expect(preview.textContent).toContain('Hover a card');
   });
 });
+
+describe('tokens and statuses', () => {
+  const others = [
+    card('v', { code: '01094', owner: -1, back: 'villain', area: 'villain' }),
+    card('theirs', { owner: 1, area: 'p1' }),
+  ];
+
+  function viewWithCounters(tokens = { dmg: 2 }, status: Record<string, number> = { stunned: 1 }) {
+    return makeView({ cards: [card('mine', { tokens, status }), ...others] });
+  }
+
+  function counter(id: string, name: string): HTMLElement {
+    const element = placed(id).querySelector<HTMLElement>(`[data-counter="${name}"]`);
+    if (!element) {
+      throw new Error(`no ${name} on ${id}`);
+    }
+    return element;
+  }
+
+  function pill(): HTMLElement | null {
+    return screen.queryByRole('group', { name: /^Change / });
+  }
+
+  it('token menu adds one', async () => {
+    const { session } = await renderTable(viewWithCounters());
+    await fireEvent.pointerEnter(placed('mine'));
+
+    const add = within(bar()!).getByRole('button', { name: '+ Token' });
+    // A dashed "+" button: no caret.
+    expect(add.classList.contains('add')).toBe(true);
+    expect(add.querySelector('.caret')).toBeNull();
+
+    await fireEvent.click(add);
+    await fireEvent.click(screen.getByRole('menuitem', { name: /^Damage/ }));
+    expect(session.act).toHaveBeenCalledWith({
+      kind: 'token',
+      card: 'mine',
+      name: 'dmg',
+      delta: 1,
+    });
+  });
+
+  it('status menu adds one', async () => {
+    const { session } = await renderTable(viewWithCounters());
+    await fireEvent.pointerEnter(placed('mine'));
+
+    await fireEvent.click(within(bar()!).getByRole('button', { name: '+ Status' }));
+    await fireEvent.click(screen.getByRole('menuitem', { name: /^Tough/ }));
+    expect(session.act).toHaveBeenCalledWith({
+      kind: 'status',
+      card: 'mine',
+      name: 'tough',
+      delta: 1,
+    });
+  });
+
+  it('pill minus sends delta -1', async () => {
+    const { session } = await renderTable(viewWithCounters());
+    await fireEvent.pointerEnter(placed('mine'));
+    expect(pill()).toBeNull();
+
+    await fireEvent.pointerEnter(counter('mine', 'token:dmg'));
+    const shown = pill()!;
+    expect(shown.textContent).toContain('2');
+    await fireEvent.click(within(shown).getByRole('button', { name: 'Remove 1' }));
+    expect(session.act).toHaveBeenCalledWith({
+      kind: 'token',
+      card: 'mine',
+      name: 'dmg',
+      delta: -1,
+    });
+
+    await fireEvent.click(within(shown).getByRole('button', { name: 'Add 1' }));
+    expect(session.act).toHaveBeenLastCalledWith({
+      kind: 'token',
+      card: 'mine',
+      name: 'dmg',
+      delta: 1,
+    });
+  });
+
+  it('a status pill sends status actions', async () => {
+    const { session } = await renderTable(viewWithCounters());
+    await fireEvent.pointerEnter(placed('mine'));
+    await fireEvent.pointerEnter(counter('mine', 'status:stunned'));
+
+    await fireEvent.click(within(pill()!).getByRole('button', { name: 'Add 1' }));
+    expect(session.act).toHaveBeenCalledWith({
+      kind: 'status',
+      card: 'mine',
+      name: 'stunned',
+      delta: 1,
+    });
+  });
+
+  it('the pill follows its token through redraws and hides at zero', async () => {
+    const { rerender } = await renderTable(viewWithCounters());
+    await fireEvent.pointerEnter(placed('mine'));
+    await fireEvent.pointerEnter(counter('mine', 'token:dmg'));
+
+    await rerender({ view: viewWithCounters({ dmg: 5 }) });
+    expect(pill()!.textContent).toContain('5');
+
+    await rerender({ view: viewWithCounters({ dmg: 0 }) });
+    expect(pill()).toBeNull();
+  });
+
+  it('the pill hides when its card leaves the table', async () => {
+    const { rerender } = await renderTable(viewWithCounters());
+    await fireEvent.pointerEnter(placed('mine'));
+    await fireEvent.pointerEnter(counter('mine', 'token:dmg'));
+
+    await rerender({ view: makeView({ cards: others }) });
+    expect(pill()).toBeNull();
+  });
+
+  it('a spectator gets no pill', async () => {
+    const view = viewWithCounters();
+    view.you = { role: 'spectator', name: 'Eve', color: 0, host: false };
+    await renderTable(view);
+
+    await fireEvent.pointerEnter(counter('mine', 'token:dmg'));
+    expect(pill()).toBeNull();
+  });
+
+  it('lingers 250 ms after the pointer leaves, and stays while the pointer is on it', async () => {
+    await renderTable(viewWithCounters());
+    vi.useFakeTimers();
+    await fireEvent.pointerEnter(placed('mine'));
+    const token = counter('mine', 'token:dmg');
+
+    await fireEvent.pointerEnter(token);
+    await fireEvent.pointerLeave(token);
+    await vi.advanceTimersByTimeAsync(200);
+    expect(pill()).not.toBeNull();
+    await vi.advanceTimersByTimeAsync(60);
+    expect(pill()).toBeNull();
+
+    await fireEvent.pointerEnter(token);
+    await fireEvent.pointerLeave(token);
+    await fireEvent.pointerEnter(pill()!);
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(pill()).not.toBeNull();
+
+    await fireEvent.pointerLeave(pill()!);
+    await vi.advanceTimersByTimeAsync(260);
+    expect(pill()).toBeNull();
+  });
+});
