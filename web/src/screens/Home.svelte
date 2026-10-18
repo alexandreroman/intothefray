@@ -58,7 +58,7 @@
 </div>
 
 {#if askingName}
-  <NamePrompt onsubmit={onNameChosen} />
+  <NamePrompt onsubmit={onNameChosen} oncancel={() => (askingName = false)} />
 {/if}
 
 <style>

@@ -29,6 +29,16 @@ describe('Home', () => {
     expect(getToken('g1')).toBe('tok');
   });
 
+  it('lets the player dismiss the name dialog', async () => {
+    render(Home);
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Start a game' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(getPref('itf-name')).toBeNull();
+  });
+
   it('asks for a name first when none is stored, and stores it', async () => {
     createGameMock.mockResolvedValue({ id: 'g2', token: 'tok2' });
     render(Home);

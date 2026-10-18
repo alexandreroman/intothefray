@@ -1,5 +1,10 @@
 <script lang="ts">
-  let { onsubmit, initial = '' }: { onsubmit: (name: string) => void; initial?: string } = $props();
+  // Without `oncancel` the dialog is mandatory.
+  let {
+    onsubmit,
+    oncancel,
+    initial = '',
+  }: { onsubmit: (name: string) => void; oncancel?: () => void; initial?: string } = $props();
 
   // `initial` only seeds the field; later changes of the prop are ignored on purpose.
   // svelte-ignore state_referenced_locally
@@ -12,9 +17,15 @@
       onsubmit(name);
     }
   }
+
+  function onKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Escape' && oncancel) {
+      oncancel();
+    }
+  }
 </script>
 
-<div class="backdrop">
+<div class="backdrop" role="presentation" onkeydown={onKeydown}>
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="name-prompt-title">
     <form onsubmit={submit}>
       <b id="name-prompt-title">Choose a name</b>
@@ -27,7 +38,12 @@
         aria-label="Name"
         autofocus
       />
-      <button type="submit" class="primary" disabled={name === ''}>OK</button>
+      <div class="buttons">
+        {#if oncancel}
+          <button type="button" onclick={oncancel}>Cancel</button>
+        {/if}
+        <button type="submit" class="primary" disabled={name === ''}>OK</button>
+      </div>
     </form>
   </div>
 </div>
@@ -65,8 +81,18 @@
     font-size: 16px;
   }
 
+  .buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  button {
+    padding: 8px 20px;
+    white-space: nowrap;
+  }
+
   .primary {
-    align-self: flex-end;
     padding: 8px 20px;
     background: #23406a;
     border-color: var(--sel);
