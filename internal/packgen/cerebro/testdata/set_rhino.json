@@ -1,0 +1,16 @@
+{
+  "Deleted": false,
+  "Id": "ea7258fb-8521-4bb5-afda-cd207ed9782f",
+  "Official": true,
+  "AuthorId": null,
+  "Name": "Rhino",
+  "Type": "Villain Set",
+  "CanSimulate": true,
+  "Deviation": false,
+  "Modulars": 1,
+  "PackId": "25ab9c3e-d172-4501-87b6-40e3768cb267",
+  "Requires": null,
+  "Recommends": [
+    "cefd4238-88b7-47d4-aff8-b955b86c7247"
+  ]
+}
