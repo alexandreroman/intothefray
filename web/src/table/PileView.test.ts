@@ -1,12 +1,6 @@
 import { render, screen } from '@testing-library/svelte';
 import PileView from './PileView.svelte';
-import { cardByCode, type CardInfo } from '../lib/catalog';
 import type { CardView as TableCard, PackFace, PileView as Pile } from '../lib/types';
-
-vi.mock('../lib/catalog', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../lib/catalog')>()),
-  cardByCode: vi.fn(),
-}));
 
 const ENCOUNTER_BACK =
   'https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/EncounterBack.jpg';
@@ -39,19 +33,8 @@ function topCard(extra: Partial<TableCard> = {}): TableCard {
   };
 }
 
-function info(face: Partial<PackFace>): CardInfo {
-  const full: PackFace = {
-    name: 'Hydra Mercenary',
-    type: 'minion',
-    size: 'std',
-    images: ['hydra.png'],
-    ...face,
-  };
-  return {
-    card: { code: '01101', faces: [full], back: 'encounter', quantity: 1 },
-    face: 0,
-    pack: 'core',
-  };
+function face(extra: Partial<PackFace> = {}): PackFace {
+  return { name: 'Hydra Mercenary', type: 'minion', size: 'std', images: ['hydra.png'], ...extra };
 }
 
 function pileElement(container: HTMLElement): HTMLElement {
@@ -64,11 +47,6 @@ function pileElement(container: HTMLElement): HTMLElement {
 
 beforeEach(() => {
   localStorage.clear();
-  vi.mocked(cardByCode).mockResolvedValue(info({}));
-});
-
-afterEach(() => {
-  vi.mocked(cardByCode).mockReset();
 });
 
 describe('PileView', () => {
@@ -94,7 +72,6 @@ describe('PileView', () => {
     expect(el.style.top).toBe('20px');
     expect(el.style.width).toBe('100px');
     expect(el.style.height).toBe('140px');
-    expect(cardByCode).not.toHaveBeenCalled();
   });
 
   it('a player deck shows the player back', () => {
@@ -102,32 +79,42 @@ describe('PileView', () => {
     expect(screen.getByRole('img', { name: 'Player card back' })).toBeTruthy();
   });
 
-  it('a pile listing its cards shows the top one', async () => {
+  it('a pile listing its cards shows the face of the top one', () => {
     const shown = pile({ kind: 'encounterDiscard', count: 2, cards: ['c8', 'c9'] });
-    render(PileView, { pile: shown, top: topCard() });
+    render(PileView, { pile: shown, top: topCard(), face: face() });
 
-    const img = await screen.findByRole('img', { name: 'Hydra Mercenary' });
+    const img = screen.getByRole('img', { name: 'Hydra Mercenary' });
     expect(img.getAttribute('src')).toBe('hydra.png');
-    expect(cardByCode).toHaveBeenCalledWith('01101');
   });
 
-  it('a landscape top card shows in a portrait slot', async () => {
-    vi.mocked(cardByCode).mockResolvedValue(info({ size: 'land', name: 'Bomb Scare' }));
-    const shown = pile({ kind: 'encounterDiscard', count: 1, cards: ['c9'] });
-    const { container } = render(PileView, { pile: shown, top: topCard() });
+  it('a face-down top card shows its back, whatever face it is given', () => {
+    const shown = pile({ kind: 'deck', count: 2, cards: ['c8', 'c9'] });
+    render(PileView, { pile: shown, top: topCard({ faceDown: true }), face: face() });
 
-    await screen.findByRole('img', { name: 'Bomb Scare' });
+    expect(screen.getByRole('img', { name: 'Encounter card back' })).toBeTruthy();
+    expect(screen.queryByRole('img', { name: 'Hydra Mercenary' })).toBeNull();
+  });
+
+  it('a landscape top card shows in a portrait slot', () => {
+    const shown = pile({ kind: 'encounterDiscard', count: 1, cards: ['c9'] });
+    const { container } = render(PileView, {
+      pile: shown,
+      top: topCard(),
+      face: face({ size: 'land', name: 'Bomb Scare' }),
+    });
+
+    expect(screen.getByRole('img', { name: 'Bomb Scare' })).toBeTruthy();
     const el = pileElement(container);
     expect(el.style.width).toBe('100px');
     expect(el.style.height).toBe('140px');
     expect(el.querySelector('.land-in-portrait img')).toBeTruthy();
   });
 
-  it('the victory display is out of play, with a trophy badge', async () => {
+  it('the victory display is out of play, with a trophy badge', () => {
     const victory = pile({ id: 'vic', kind: 'victory', count: 1, cards: ['c9'] });
-    const { container } = render(PileView, { pile: victory, top: topCard() });
+    const { container } = render(PileView, { pile: victory, top: topCard(), face: face() });
 
-    await screen.findByRole('img', { name: 'Hydra Mercenary' });
+    expect(screen.getByRole('img', { name: 'Hydra Mercenary' })).toBeTruthy();
     expect(pileElement(container).classList.contains('out')).toBe(true);
     expect(screen.getByRole('img', { name: 'Victory display' })).toBeTruthy();
   });

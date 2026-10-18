@@ -24,7 +24,7 @@
 </script>
 
 <script lang="ts">
-  import type { CardView as TableCard, PileView as Pile, Size } from '../lib/types';
+  import type { PackFace, CardView as TableCard, PileView as Pile } from '../lib/types';
   import CardView from './CardView.svelte';
   import { GRID } from './layout';
   import PileView from './PileView.svelte';
@@ -36,7 +36,7 @@
     cards,
     piles,
     topOf,
-    sizeOf,
+    faceOf,
     height,
     width,
     zoom,
@@ -51,7 +51,8 @@
     piles: Pile[];
     /** The top card of a pile that lists its cards. */
     topOf: (pile: Pile) => TableCard | undefined;
-    sizeOf: (card: TableCard) => Size;
+    /** The catalog face a card shows, null while unknown or hidden. */
+    faceOf: (card: TableCard | undefined) => PackFace | null;
     /** Surface size, in table units. */
     height: number;
     width: number;
@@ -164,10 +165,11 @@
       <!-- Card z-indexes come from the server and can be negative: the surface isolates them. -->
       <div class="surface" style:width="{surfaceWidth}px" style:height="{height}px">
         {#each piles as pile (pile.id)}
-          <PileView {pile} top={topOf(pile)} />
+          {@const top = topOf(pile)}
+          <PileView {pile} {top} face={faceOf(top)} />
         {/each}
         {#each cards as card (card.id)}
-          <CardView {card} size={sizeOf(card)} />
+          <CardView {card} face={faceOf(card)} />
         {/each}
         {#if firstPlayer}
           <div

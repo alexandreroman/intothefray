@@ -11,7 +11,7 @@
   import { getPref, setPref } from '../lib/prefs';
   import type { GameSession } from '../lib/session.svelte';
   import type { Area, CardView as TableCard, PackFace, PileView, Size, View } from '../lib/types';
-  import { isHidden, pileBack } from './face.svelte';
+  import { isHidden, pileBack } from './face';
   import Hand from './Hand.svelte';
   import { hover, type Hovered } from './hover.svelte';
   import { zoneMinHeight, zoneOrder, zoneWidth } from './layout';
@@ -282,7 +282,7 @@
           cards={zone.cards}
           piles={zone.piles}
           {topOf}
-          {sizeOf}
+          {faceOf}
           height={zone.height}
           width={zone.width}
           {zoom}

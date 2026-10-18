@@ -3,20 +3,20 @@
   table units, with its tokens and statuses.
 -->
 <script lang="ts">
-  import type { CardView as TableCard, Size } from '../lib/types';
+  import type { PackFace, CardView as TableCard } from '../lib/types';
   import CardBack from './CardBack.svelte';
   import CardFace from './CardFace.svelte';
-  import { isHidden, shownFace } from './face.svelte';
+  import { isHidden } from './face';
   import { hover } from './hover.svelte';
   import { cardBox } from './layout';
 
   let {
     card,
-    size,
+    face,
   }: {
     card: TableCard;
-    /** Face size, when the parent already knows it; otherwise the catalog's, then std. */
-    size?: Size;
+    /** The catalog face the card shows, null while unknown: it is then a std placeholder. */
+    face: PackFace | null;
   } = $props();
 
   const TOKENS = ['dmg', 'thr', 'gen'] as const;
@@ -26,11 +26,8 @@
     ['tough', 'Tough'],
   ] as const;
 
-  const face = shownFace(() => card);
   const hidden = $derived(isHidden(card));
-  const box = $derived(
-    cardBox(size ?? face.current?.size ?? 'std', { faceDown: hidden, onPile: !!card.onPile }),
-  );
+  const box = $derived(cardBox(face?.size ?? 'std', { faceDown: hidden, onPile: !!card.onPile }));
   const landscape = $derived(!box.rotated && box.w > box.h);
   const tokens = $derived(TOKENS.filter((k) => (card.tokens?.[k] ?? 0) > 0));
   const statuses = $derived(STATUSES.filter(([k]) => (card.status?.[k] ?? 0) > 0));
@@ -56,8 +53,8 @@
     <CardBack back={card.back} />
   {:else}
     <CardFace
-      images={face.current?.images ?? []}
-      name={face.current?.name ?? ''}
+      images={face?.images ?? []}
+      name={face?.name ?? ''}
       {landscape}
       rotated={box.rotated}
     />

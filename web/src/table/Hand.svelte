@@ -7,7 +7,7 @@
   import type { CardView as TableCard, PackFace } from '../lib/types';
   import CardBack from './CardBack.svelte';
   import CardFace from './CardFace.svelte';
-  import { isHidden } from './face.svelte';
+  import { isHidden } from './face';
   import { hover } from './hover.svelte';
   import { cardBox, fanPositions, HAND_CARD, HAND_CARD_NARROW } from './layout';
 

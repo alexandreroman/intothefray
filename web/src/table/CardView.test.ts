@@ -1,12 +1,6 @@
 import { render, screen } from '@testing-library/svelte';
 import CardView from './CardView.svelte';
-import { cardByCode, type CardInfo } from '../lib/catalog';
 import type { CardView as TableCard, PackFace } from '../lib/types';
-
-vi.mock('../lib/catalog', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../lib/catalog')>()),
-  cardByCode: vi.fn(),
-}));
 
 const HERO_BACK = 'https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/HeroBack.jpg';
 
@@ -26,19 +20,8 @@ function tableCard(extra: Partial<TableCard> = {}): TableCard {
   };
 }
 
-function info(face: Partial<PackFace>): CardInfo {
-  const full: PackFace = {
-    name: 'Spider-Man',
-    type: 'hero',
-    size: 'std',
-    images: ['spidey.png'],
-    ...face,
-  };
-  return {
-    card: { code: '01001a', faces: [full], back: 'player', quantity: 1 },
-    face: 0,
-    pack: 'core',
-  };
+function face(extra: Partial<PackFace> = {}): PackFace {
+  return { name: 'Spider-Man', type: 'hero', size: 'std', images: ['spidey.png'], ...extra };
 }
 
 function cardElement(container: HTMLElement): HTMLElement {
@@ -51,45 +34,37 @@ function cardElement(container: HTMLElement): HTMLElement {
 
 beforeEach(() => {
   localStorage.clear();
-  vi.mocked(cardByCode).mockResolvedValue(info({}));
-});
-
-afterEach(() => {
-  vi.mocked(cardByCode).mockReset();
 });
 
 describe('CardView', () => {
-  it('face-down card shows the back and does not look up a code', async () => {
-    render(CardView, { card: tableCard({ faceDown: true }) });
+  it('a face-down card shows its back, whatever face it is given', async () => {
+    render(CardView, { card: tableCard({ faceDown: true }), face: face() });
 
     const back = await screen.findByRole('img', { name: 'Player card back' });
     expect(back.getAttribute('src')).toBe(HERO_BACK);
-    expect(cardByCode).not.toHaveBeenCalled();
+    expect(screen.queryByRole('img', { name: 'Spider-Man' })).toBeNull();
   });
 
-  it('a hidden card without a code shows its back without a lookup', async () => {
-    render(CardView, { card: tableCard({ code: undefined, back: 'encounter' }) });
+  it('a hidden card without a code shows its back', async () => {
+    render(CardView, { card: tableCard({ code: undefined, back: 'encounter' }), face: null });
 
     expect(await screen.findByRole('img', { name: 'Encounter card back' })).toBeTruthy();
-    expect(cardByCode).not.toHaveBeenCalled();
   });
 
   it('draws the back when the theme has no images', () => {
     localStorage.setItem('itf-theme', 'minimal');
-    render(CardView, { card: tableCard({ faceDown: true }) });
+    render(CardView, { card: tableCard({ faceDown: true }), face: null });
 
     const back = screen.getByRole('img', { name: 'Player card back' });
     expect(back.tagName).toBe('DIV');
     expect(back.classList.contains('player')).toBe(true);
   });
 
-  it('places the card with the size of its catalog face', async () => {
-    vi.mocked(cardByCode).mockResolvedValue(
-      info({ size: 'land', images: ['scheme.png'], name: 'Bomb Scare' }),
-    );
-    const { container } = render(CardView, { card: tableCard() });
+  it('places the card with the size of the face it is given', () => {
+    const scheme = face({ size: 'land', images: ['scheme.png'], name: 'Bomb Scare' });
+    const { container } = render(CardView, { card: tableCard(), face: scheme });
 
-    const img = await screen.findByRole('img', { name: 'Bomb Scare' });
+    const img = screen.getByRole('img', { name: 'Bomb Scare' });
     expect(img.getAttribute('src')).toBe('scheme.png');
     expect(img.classList.contains('land')).toBe(true);
     const el = cardElement(container);
@@ -98,38 +73,33 @@ describe('CardView', () => {
     expect(el.style.zIndex).toBe('7');
     expect(el.style.width).toBe('140px');
     expect(el.style.height).toBe('100px');
-    expect(cardByCode).toHaveBeenCalledWith('01001a');
   });
 
-  it('a new view of the same card keeps its face without a new lookup', async () => {
-    const { rerender } = render(CardView, { card: tableCard() });
-    await screen.findByRole('img', { name: 'Spider-Man' });
-
-    await rerender({ card: tableCard({ x: 300, exhausted: true }) });
-
-    expect(screen.getByRole('img', { name: 'Spider-Man' })).toBeTruthy();
-    expect(cardByCode).toHaveBeenCalledOnce();
-  });
-
-  it('uses the size given by the parent', () => {
-    const { container } = render(CardView, { card: tableCard(), size: 'dstd' });
+  it('an unknown face is a std placeholder', () => {
+    const { container } = render(CardView, { card: tableCard(), face: null });
     const el = cardElement(container);
-    expect(el.style.width).toBe('140px');
-    expect(el.style.height).toBe('200px');
+    expect(el.style.width).toBe('100px');
+    expect(el.style.height).toBe('140px');
+    expect(screen.queryByRole('img')).toBeNull();
   });
 
   it('a face-down card is always portrait', () => {
-    const { container } = render(CardView, { card: tableCard({ faceDown: true }), size: 'dland' });
+    const { container } = render(CardView, {
+      card: tableCard({ faceDown: true }),
+      face: face({ size: 'dland' }),
+    });
     const el = cardElement(container);
     expect(el.style.width).toBe('100px');
     expect(el.style.height).toBe('140px');
   });
 
-  it('a landscape card on a pile keeps a portrait slot and turns its image', async () => {
-    vi.mocked(cardByCode).mockResolvedValue(info({ size: 'land', name: 'Bomb Scare' }));
-    const { container } = render(CardView, { card: tableCard({ onPile: 'enc' }), size: 'land' });
+  it('a landscape card on a pile keeps a portrait slot and turns its image', () => {
+    const { container } = render(CardView, {
+      card: tableCard({ onPile: 'enc' }),
+      face: face({ size: 'land', name: 'Bomb Scare' }),
+    });
 
-    await screen.findByRole('img', { name: 'Bomb Scare' });
+    expect(screen.getByRole('img', { name: 'Bomb Scare' })).toBeTruthy();
     const el = cardElement(container);
     expect(el.style.width).toBe('100px');
     expect(el.style.height).toBe('140px');
@@ -137,7 +107,7 @@ describe('CardView', () => {
   });
 
   it('tilts an exhausted card', () => {
-    const { container } = render(CardView, { card: tableCard({ exhausted: true }) });
+    const { container } = render(CardView, { card: tableCard({ exhausted: true }), face: face() });
     expect(cardElement(container).classList.contains('exhausted')).toBe(true);
   });
 
@@ -146,7 +116,7 @@ describe('CardView', () => {
       tokens: { dmg: 2, thr: 0, gen: 3 },
       status: { stunned: 1, confused: 0, tough: 2 },
     });
-    const { container } = render(CardView, { card });
+    const { container } = render(CardView, { card, face: face() });
 
     expect(container.querySelector('.tok.dmg')?.textContent).toBe('2');
     expect(container.querySelector('.tok.thr')).toBeNull();
@@ -157,7 +127,10 @@ describe('CardView', () => {
   });
 
   it('shows no token or status row when there is none', () => {
-    const { container } = render(CardView, { card: tableCard({ tokens: { dmg: 0 } }) });
+    const { container } = render(CardView, {
+      card: tableCard({ tokens: { dmg: 0 } }),
+      face: face(),
+    });
     expect(container.querySelector('.tokens')).toBeNull();
     expect(container.querySelector('.statuses')).toBeNull();
   });

@@ -5,20 +5,23 @@
   with a badge on their top edge.
 -->
 <script lang="ts">
-  import type { CardView as TableCard, PileKind, PileView } from '../lib/types';
+  import type { PackFace, CardView as TableCard, PileKind, PileView } from '../lib/types';
   import CardBack from './CardBack.svelte';
   import CardFace from './CardFace.svelte';
-  import { isHidden, pileBack, shownFace } from './face.svelte';
+  import { isHidden, pileBack } from './face';
   import { hover } from './hover.svelte';
   import { cardBox } from './layout';
 
   let {
     pile,
     top,
+    face = null,
   }: {
     pile: PileView;
     /** The top card, for a pile that lists its cards. */
     top?: TableCard;
+    /** The catalog face of the top card, null while unknown. */
+    face?: PackFace | null;
   } = $props();
 
   const BADGES: Partial<Record<PileKind, string>> = {
@@ -30,10 +33,9 @@
 
   const empty = $derived(pile.count === 0);
   const shownTop = $derived(empty ? undefined : top);
-  const face = shownFace(() => shownTop);
   const badge = $derived(BADGES[pile.kind]);
   // A landscape top card is turned a quarter to fit the portrait slot.
-  const rotated = $derived(cardBox(face.current?.size ?? 'std', { onPile: true }).rotated);
+  const rotated = $derived(cardBox(face?.size ?? 'std', { onPile: true }).rotated);
   const highlighted = $derived(shownTop !== undefined && hover.highlighted.has(shownTop.id));
 </script>
 
@@ -55,7 +57,7 @@
     <div class="slot"></div>
   {:else if shownTop && !isHidden(shownTop)}
     <div class="art">
-      <CardFace images={face.current?.images ?? []} name={face.current?.name ?? ''} {rotated} />
+      <CardFace images={face?.images ?? []} name={face?.name ?? ''} {rotated} />
     </div>
   {:else}
     {@const back = shownTop?.back ?? pileBack(pile.kind)}

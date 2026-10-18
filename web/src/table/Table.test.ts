@@ -199,6 +199,24 @@ describe('Table', () => {
     expect(screen.getAllByRole('region')).toHaveLength(3);
   });
 
+  it('after a failed load, every card is a std placeholder, as its zone is sized', async () => {
+    vi.mocked(loadAllCards).mockRejectedValue(new Error('offline'));
+    const view = makeView({
+      cards: [card('g', { code: '01010', area: 'villain', x: 0, y: 300 })],
+      piles: [],
+    });
+    render(Table, { session: fakeSession(), view });
+    await screen.findByRole('alert');
+
+    const surface = surfaceOf(/^Villain/);
+    // 300 + 140 + 20: the zone counts the card as std, and the card is drawn std.
+    expect(surface.style.height).toBe('460px');
+    await Promise.resolve();
+    expect(surface.querySelector<HTMLElement>('.card')?.style.height).toBe('140px');
+    expect(within(surface).queryByRole('img', { name: 'Giant form' })).toBeNull();
+    expect(cardByCode).not.toHaveBeenCalled();
+  });
+
   it('dragging a separator resizes the zone above, snapped and never below its minimum', async () => {
     render(Table, { session: fakeSession(), view: makeView() });
     const handle = await screen.findByTitle("Drag to resize the villain's zone");
