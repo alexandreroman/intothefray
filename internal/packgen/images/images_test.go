@@ -2,12 +2,15 @@ package images
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
 	"slices"
+	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/alexandreroman/intothefray/internal/pack"
 )
@@ -58,24 +61,72 @@ func TestCheckDoesNotCacheNetworkErrors(t *testing.T) {
 	url := srv.URL + "/a.jpg"
 	srv.Close() // connections are now refused
 
-	checker := &Checker{CachePath: filepath.Join(t.TempDir(), "images.json")}
+	checker := &Checker{CachePath: filepath.Join(t.TempDir(), "images.json"), baseBackoff: time.Millisecond}
 	got, err := checker.Check(context.Background(), []string{url})
-	if err != nil {
-		t.Fatalf("Check: %v", err)
+	if !errors.Is(err, ErrInconclusive) {
+		t.Fatalf("err = %v, want ErrInconclusive", err)
 	}
 	if got[url] {
 		t.Fatalf("unreachable URL reported alive")
 	}
 
-	live := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}))
-	defer live.Close()
-	// Same cache file, different URL set: the failed URL must not be cached.
 	cached, err := checker.loadCache()
 	if err != nil {
 		t.Fatalf("loadCache: %v", err)
 	}
 	if _, found := cached[url]; found {
 		t.Errorf("network error was cached")
+	}
+}
+
+func TestCheckRetriesTransientAnswers(t *testing.T) {
+	var mu sync.Mutex
+	hits := map[string]int{}
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mu.Lock()
+		hits[r.URL.Path]++
+		n := hits[r.URL.Path]
+		mu.Unlock()
+		switch r.URL.Path {
+		case "/flaky.jpg":
+			if n == 1 {
+				w.WriteHeader(http.StatusServiceUnavailable)
+			}
+		case "/throttled.jpg":
+			w.Header().Set("Retry-After", "0")
+			w.WriteHeader(http.StatusTooManyRequests)
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer srv.Close()
+
+	flaky, throttled, gone := srv.URL+"/flaky.jpg", srv.URL+"/throttled.jpg", srv.URL+"/gone.jpg"
+	checker := &Checker{CachePath: filepath.Join(t.TempDir(), "images.json"), baseBackoff: time.Millisecond}
+
+	got, err := checker.Check(context.Background(), []string{flaky, throttled, gone})
+	if !errors.Is(err, ErrInconclusive) || !strings.Contains(err.Error(), throttled) {
+		t.Fatalf("err = %v, want ErrInconclusive naming %s", err, throttled)
+	}
+	if !got[flaky] || got[throttled] || got[gone] {
+		t.Errorf("result = %v", got)
+	}
+	if hits["/flaky.jpg"] != 2 || hits["/throttled.jpg"] != 3 || hits["/gone.jpg"] != 1 {
+		t.Errorf("hits = %v, want flaky 2, throttled 3, gone 1", hits)
+	}
+
+	cached, err := checker.loadCache()
+	if err != nil {
+		t.Fatalf("loadCache: %v", err)
+	}
+	if !cached[flaky] || cached[gone] {
+		t.Errorf("cache = %v, want flaky alive and gone dead", cached)
+	}
+	if _, found := cached[throttled]; found {
+		t.Errorf("inconclusive URL was cached")
+	}
+	if _, found := cached[gone]; !found {
+		t.Errorf("404 was not cached")
 	}
 }
 

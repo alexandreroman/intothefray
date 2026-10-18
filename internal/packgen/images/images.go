@@ -10,6 +10,9 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"slices"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -23,6 +26,9 @@ const (
 	defaultConcurrency = 16
 	defaultTimeout     = 15 * time.Second
 	reasonNoImage      = "no image"
+	maxAttempts        = 3
+	defaultBackoff     = 500 * time.Millisecond
+	maxBackoff         = 10 * time.Second
 )
 
 // Checker verifies image URLs with HEAD requests.
@@ -33,11 +39,29 @@ type Checker struct {
 	CachePath string
 	// Concurrency bounds parallel requests; 16 when zero.
 	Concurrency int
+
+	baseBackoff time.Duration // delay unit between attempts; tests shrink it
 }
 
-// Check returns, for each URL, whether it answers with a 2xx status. Results
-// found in the cache are reused without any request. Definitive answers (any
-// HTTP status) are cached; a network error counts as dead for this run only.
+// ErrInconclusive reports URLs that never gave a definitive answer.
+var ErrInconclusive = errors.New("inconclusive image checks")
+
+type verdict int
+
+const (
+	verdictAlive verdict = iota
+	verdictDead
+	verdictInconclusive
+)
+
+// Check returns, for each URL, whether it is alive. Only definitive answers
+// count: 2xx is alive, 404 and 410 are dead, and only those are cached and
+// reused without any request. Any other answer (429, 5xx, other 4xx) or a
+// network error is retried, up to 3 attempts in total, and is never cached.
+//
+// When some URLs stay inconclusive, Check still returns the map (those URLs
+// are false) together with an error wrapping ErrInconclusive, so the caller
+// can fail the run instead of treating unknown as dead.
 func (c *Checker) Check(ctx context.Context, urls []string) (map[string]bool, error) {
 	cache, err := c.loadCache()
 	if err != nil {
@@ -55,17 +79,21 @@ func (c *Checker) Check(ctx context.Context, urls []string) (map[string]bool, er
 		}
 	}
 
-	var mu sync.Mutex // guards result and cache
+	var mu sync.Mutex // guards result, cache and inconclusive
+	var inconclusive []string
 	group, groupCtx := errgroup.WithContext(ctx)
 	group.SetLimit(c.concurrency())
 	for _, url := range pending {
 		group.Go(func() error {
-			alive, definitive := c.probe(groupCtx, url)
+			v := c.probeWithRetries(groupCtx, url)
 			mu.Lock()
 			defer mu.Unlock()
-			result[url] = alive
-			if definitive {
-				cache[url] = alive
+			switch v {
+			case verdictAlive, verdictDead:
+				result[url] = v == verdictAlive
+				cache[url] = v == verdictAlive
+			case verdictInconclusive:
+				inconclusive = append(inconclusive, url)
 			}
 			return nil
 		})
@@ -79,22 +107,82 @@ func (c *Checker) Check(ctx context.Context, urls []string) (map[string]bool, er
 	if err := ctx.Err(); err != nil {
 		return nil, fmt.Errorf("check images: %w", err)
 	}
+	if len(inconclusive) > 0 {
+		return result, inconclusiveError(inconclusive)
+	}
 	return result, nil
 }
 
-// probe sends a HEAD request. definitive is false when no HTTP answer was
-// received, in which case the outcome must not be remembered.
-func (c *Checker) probe(ctx context.Context, url string) (alive, definitive bool) {
+func inconclusiveError(urls []string) error {
+	const maxExamples = 3
+	slices.Sort(urls) // goroutines finish in random order
+	examples := urls[:min(len(urls), maxExamples)]
+	return fmt.Errorf("%w: %d URL(s) without a definitive answer, e.g. %s",
+		ErrInconclusive, len(urls), strings.Join(examples, ", "))
+}
+
+// probeWithRetries retries inconclusive answers with a growing backoff.
+func (c *Checker) probeWithRetries(ctx context.Context, url string) verdict {
+	for attempt := 1; ; attempt++ {
+		v, retryAfter := c.probe(ctx, url)
+		if v != verdictInconclusive || attempt == maxAttempts {
+			return v
+		}
+		if !sleep(ctx, c.backoff(attempt, retryAfter)) {
+			return verdictInconclusive
+		}
+	}
+}
+
+// backoff honours the server's Retry-After when given, capped at maxBackoff.
+func (c *Checker) backoff(attempt int, retryAfter time.Duration) time.Duration {
+	delay := retryAfter
+	if delay <= 0 {
+		base := c.baseBackoff
+		if base <= 0 {
+			base = defaultBackoff
+		}
+		delay = base * time.Duration(attempt)
+	}
+	return min(delay, maxBackoff)
+}
+
+// sleep waits for d and reports false when ctx ended first.
+func sleep(ctx context.Context, d time.Duration) bool {
+	timer := time.NewTimer(d)
+	defer timer.Stop()
+	select {
+	case <-timer.C:
+		return true
+	case <-ctx.Done():
+		return false
+	}
+}
+
+// probe sends one HEAD request. retryAfter is the delay requested by the
+// server, zero when absent.
+func (c *Checker) probe(ctx context.Context, url string) (v verdict, retryAfter time.Duration) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodHead, url, nil)
 	if err != nil {
-		return false, false
+		return verdictInconclusive, 0
 	}
 	resp, err := c.httpClient().Do(req)
 	if err != nil {
-		return false, false
+		return verdictInconclusive, 0
 	}
 	_ = resp.Body.Close()
-	return resp.StatusCode >= 200 && resp.StatusCode < 300, true
+
+	switch {
+	case resp.StatusCode >= 200 && resp.StatusCode < 300:
+		return verdictAlive, 0
+	case resp.StatusCode == http.StatusNotFound || resp.StatusCode == http.StatusGone:
+		return verdictDead, 0
+	}
+	seconds, err := strconv.Atoi(resp.Header.Get("Retry-After"))
+	if err != nil || seconds < 0 {
+		return verdictInconclusive, 0
+	}
+	return verdictInconclusive, time.Duration(seconds) * time.Second
 }
 
 func (c *Checker) httpClient() *http.Client {
