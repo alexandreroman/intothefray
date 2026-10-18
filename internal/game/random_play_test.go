@@ -84,8 +84,10 @@ func randomAction(r *rand.Rand, t *Table, seat int) Action {
 	switch r.IntN(30) {
 	case 0, 1:
 		return Action{Kind: ActDraw, N: 1 + r.IntN(3)}
-	case 2, 3:
+	case 2:
 		return Action{Kind: ActPlay, Card: pick(hand), Area: area, X: x, Y: y}
+	case 3:
+		return Action{Kind: ActPlay, Card: pick(hand), Target: pick(onTable)}
 	case 4:
 		return Action{Kind: ActDiscard, Card: pick(slices.Concat(onTable, hand))}
 	case 5:

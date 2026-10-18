@@ -295,6 +295,56 @@ func TestPlayFromPile(t *testing.T) {
 	}
 }
 
+func TestPlayUnderACard(t *testing.T) {
+	table := newTestTable()
+
+	// Area and position are the target's: what the client sends for them does not count.
+	mustApply(t, table, Action{Kind: ActPlay, Card: "c3", Target: "c7", Area: "p0", X: 10, Y: 10})
+
+	c3, c7 := table.Cards["c3"], table.Cards["c7"]
+	if c3.Zone != ZoneTable || c3.Parent != "c7" || c3.Area != AreaVillain || c3.X != 600 || c3.Y != 40 {
+		t.Errorf("c3 = %+v, want tucked under c7 at villain (600,40)", c3)
+	}
+	if c3.Z >= c7.Z {
+		t.Errorf("c3.Z = %d, want below c7.Z = %d", c3.Z, c7.Z)
+	}
+	if got := table.Hands["p0"]; len(got) != 0 {
+		t.Errorf("hand = %v, want empty", got)
+	}
+}
+
+func TestPlayUnderACardFromAPile(t *testing.T) {
+	table := newTestTable()
+	table.Cards["c6"].FaceDown = true
+
+	mustApply(t, table, Action{Kind: ActPlay, Card: "c6", Target: "c1"})
+
+	c6 := table.Cards["c6"]
+	if c6.Zone != ZoneTable || c6.Pile != "" || c6.FaceDown || c6.Parent != "c1" || c6.Area != "p0" ||
+		c6.X != 100 || c6.Y != 220 {
+		t.Errorf("c6 = %+v, want face up under c1 at p0 (100,220)", c6)
+	}
+	if got := table.Piles["deck:p0"].Cards; !slices.Equal(got, []string{"c4", "c5"}) {
+		t.Errorf("deck = %v, want [c4 c5]", got)
+	}
+}
+
+func TestPlayUnderRefusesATargetOffTheTable(t *testing.T) {
+	for _, target := range []string{"c4", "c3", "nope"} {
+		table := newTestTable()
+		before := table.Clone()
+
+		err := apply(table, Action{Kind: ActPlay, Card: "c5", Target: target})
+
+		if !errors.Is(err, ErrInvalid) {
+			t.Errorf("target %s: err = %v, want ErrInvalid", target, err)
+		}
+		if !reflect.DeepEqual(before, table) {
+			t.Errorf("target %s: table changed by a rejected action", target)
+		}
+	}
+}
+
 func TestPlayRefusesCardsOutsideHandAndPiles(t *testing.T) {
 	table := newStageTable()
 

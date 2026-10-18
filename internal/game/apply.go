@@ -293,7 +293,7 @@ func applyAttach(t *Table, a Action) error {
 		return invalid("card %q is tucked under %q", target.ID, c.ID)
 	}
 
-	x, y, z := target.X, target.Y+attachOffsetY, target.Z-1
+	x, y, z := tuckedPlace(target)
 	dx, dy, dz := x-c.X, y-c.Y, z-c.Z
 	for _, child := range children {
 		child.Area = target.Area
@@ -305,6 +305,12 @@ func applyAttach(t *Table, a Action) error {
 	c.OnPile = ""
 	c.Area, c.X, c.Y, c.Z = target.Area, x, y, z
 	return nil
+}
+
+// tuckedPlace returns where a card tucked under target lies: just below it,
+// one Z lower, so that its bottom edge shows.
+func tuckedPlace(target *Card) (x, y, z int) {
+	return target.X, target.Y + attachOffsetY, target.Z - 1
 }
 
 func applyToHand(t *Table, a Action) error {
@@ -437,7 +443,9 @@ func isPlainTargetPile(id string) bool {
 	return id == PileVictory || id == PileScenarioAside || strings.HasPrefix(id, "aside:")
 }
 
-// applyPlay puts a card from a hand or a pile face up on the table.
+// applyPlay puts a card from a hand or a pile face up on the table: at a
+// point of an area, or, with a target, tucked under that table card as
+// attach does. Area and position are then the target's.
 func applyPlay(t *Table, a Action) error {
 	c, err := t.card(a.Card)
 	if err != nil {
@@ -446,7 +454,13 @@ func applyPlay(t *Table, a Action) error {
 	if c.Zone != ZoneHand && c.Zone != ZonePile {
 		return invalid("card %q is neither in a hand nor in a pile", c.ID)
 	}
-	if !validArea(a.Area) {
+	var target *Card
+	if a.Target != "" {
+		// The played card is not on the table yet: it cannot be its own target.
+		if target, err = t.tableCard(a.Target); err != nil {
+			return err
+		}
+	} else if !validArea(a.Area) {
 		return invalid("unknown area %q", a.Area)
 	}
 	if err := t.checkLeave(c); err != nil {
@@ -456,6 +470,12 @@ func applyPlay(t *Table, a Action) error {
 	t.leave(c)
 	c.Zone = ZoneTable
 	c.Pile = ""
+	if target != nil {
+		c.Parent = target.ID
+		c.Area = target.Area
+		c.X, c.Y, c.Z = tuckedPlace(target)
+		return nil
+	}
 	c.Area, c.X, c.Y = a.Area, snap(a.X), snap(a.Y)
 	c.Z = t.nextZ()
 	return nil

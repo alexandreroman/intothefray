@@ -3,6 +3,7 @@ package game
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"slices"
 	"strings"
 	"testing"
@@ -926,6 +927,81 @@ func TestPlayFromPileThroughDo(t *testing.T) {
 			}
 			checkIntegrity(t, f.g.Table)
 		})
+	}
+}
+
+func TestPlayUnderACardIsOneUndoableStep(t *testing.T) {
+	f := newDoFixture(t)
+	hero := f.identity(t)
+	f.mustDo(t, "h", Action{Kind: ActDraw, N: 1}, at(1))
+	card := f.g.Table.Hands["p0"][0]
+	lines := len(f.g.Log)
+
+	f.mustDo(t, "h", Action{Kind: ActPlay, Card: card, Target: hero}, at(5))
+
+	c := f.g.Table.Cards[card]
+	if c.Zone != ZoneTable || c.Parent != hero {
+		t.Fatalf("played card = %+v, want tucked under %s", c, hero)
+	}
+	if got := len(f.g.Log); got != lines+1 {
+		t.Fatalf("play wrote %d lines, want 1", got-lines)
+	}
+	// The hero is named by the face it shows.
+	def, _, err := f.cat.Card(f.g.Table.Cards[hero].Code)
+	if err != nil {
+		t.Fatal(err)
+	}
+	heroName := def.Faces[f.g.Table.Cards[hero].Face].Name
+	want := fmt.Sprintf("played %s under %s", f.nameOf(t, card), heroName)
+	if got := f.lastLog().Text; got != want {
+		t.Errorf("line = %q, want %q", got, want)
+	}
+	if got := f.lastLog().Cards; !slices.Equal(got, []string{card, hero}) {
+		t.Errorf("line cards = %v, want [%s %s]", got, card, hero)
+	}
+	checkIntegrity(t, f.g.Table)
+
+	f.mustDo(t, "h", Action{Kind: ActUndo}, at(6))
+
+	c = f.g.Table.Cards[card]
+	if c.Zone != ZoneHand || c.Parent != "" || !slices.Contains(f.g.Table.Hands["p0"], card) {
+		t.Errorf("after undo = %+v, want back in the hand, tucked under nothing", c)
+	}
+	checkIntegrity(t, f.g.Table)
+}
+
+func TestPlayUnderACardReplays(t *testing.T) {
+	f := newDoFixture(t)
+	hero := f.identity(t)
+	f.mustDo(t, "h", Action{Kind: ActDraw, N: 2}, at(1))
+	hand := slices.Clone(f.g.Table.Hands["p0"])
+	f.mustDo(t, "h", Action{Kind: ActPlay, Card: hand[0], Target: hero}, at(2))
+	f.mustDo(t, "h", Action{Kind: ActPlay, Card: hand[1], Target: hand[0]}, at(3))
+	setup, err := f.g.ReplaySetup()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	replayed, err := Replay(f.cat, setup, f.g.History.Events)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if got, want := mustJSON(t, replayed.Table), mustJSON(t, f.g.Table); got != want {
+		t.Errorf("replayed table differs:\n got %s\nwant %s", got, want)
+	}
+}
+
+func TestPlayUnderAnotherPlayersHandCardIsForbidden(t *testing.T) {
+	f := newDoFixture(t)
+	f.mustDo(t, "h", Action{Kind: ActDraw, N: 1}, at(1))
+	f.mustDo(t, "b", Action{Kind: ActDraw, N: 1}, at(2))
+	theirs := f.g.Table.Hands["p0"][0]
+
+	err := f.do("b", Action{Kind: ActPlay, Card: f.g.Table.Hands["p1"][0], Target: theirs}, at(3))
+
+	if !errors.Is(err, ErrForbidden) {
+		t.Errorf("play = %v, want ErrForbidden", err)
 	}
 }
 

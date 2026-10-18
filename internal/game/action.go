@@ -45,7 +45,7 @@ const (
 type Action struct {
 	Kind   Kind     `json:"kind"`
 	Card   string   `json:"card,omitempty"`
-	Target string   `json:"target,omitempty"` // card id (attach, arrow) or pile id
+	Target string   `json:"target,omitempty"` // card id (attach, arrow, play under it) or pile id
 	Pile   string   `json:"pile,omitempty"`
 	Area   Area     `json:"area,omitempty"`
 	X      int      `json:"x,omitempty"`
@@ -97,13 +97,14 @@ func resolve(g *Game, seat int, a Action, rng *rand.Rand) (Action, error) {
 	t := g.Table
 
 	switch a.Kind {
-	case ActMove, ActToken, ActStatus, ActChooseStage, ActDiscard, ActPlay:
+	case ActMove, ActToken, ActStatus, ActChooseStage, ActDiscard:
 		return a, checkCards(t, seat, a.Card)
 	case ActExhaust:
 		return resolveExhaust(t, seat, a)
 	case ActFlip:
 		return resolveFlip(t, seat, a)
-	case ActAttach, ActArrowAdd:
+	case ActAttach, ActArrowAdd, ActPlay:
+		// A play may tuck the card under a target card.
 		return a, checkCards(t, seat, a.Card, a.Target)
 	case ActToHand:
 		return resolveToHand(t, seat, a)

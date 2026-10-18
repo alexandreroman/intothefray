@@ -148,6 +148,10 @@ func (n narrator) describe(a Action) (logLine, bool) {
 		text := fmt.Sprintf("moved %s to %s", n.name(a.Card), n.game.pileName(n.seat, a.Target))
 		return logLine{text: text, cards: n.visibleCards(a.Card)}, true
 	case ActPlay:
+		if a.Target != "" {
+			text := fmt.Sprintf("played %s under %s", n.name(a.Card), n.name(a.Target))
+			return logLine{text: text, cards: n.visibleCards(a.Card, a.Target)}, true
+		}
 		return logLine{text: "played " + n.name(a.Card), cards: n.visibleCards(a.Card)}, true
 	case ActExhaust:
 		verb := "readied "
