@@ -629,8 +629,10 @@
 
   /*
     Rings drawn around the cut card, for cards and piles alike (the cut would clip them on the
-    image): the white ring of the cards of the hovered history line, and the drop outlines.
+    image): the ring of a tap selection, the white ring of the cards of the hovered history line,
+    and the drop outlines.
   */
+  .table :global(.card.locked)::before,
   .table :global(.card.highlighted)::before,
   .table :global(.card.drop-target)::before,
   .table :global(.card.drop-pile)::before {
@@ -640,6 +642,10 @@
     border-radius: 7px;
     pointer-events: none;
     z-index: 1;
+  }
+
+  .table :global(.card.locked)::before {
+    box-shadow: 0 0 0 3px var(--sel);
   }
 
   .table :global(.card.highlighted)::before {

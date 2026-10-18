@@ -24,7 +24,7 @@ export interface CountQuestion {
 }
 
 /** Something the client does by itself, without sending an action. */
-export type LocalAction = 'arrow' | 'stageBox' | 'lookBox' | 'searchBox' | 'browseBox';
+export type LocalAction = 'arrow' | 'stageBox' | 'browseBox';
 
 export interface ActionItem {
   /** Stable id: 'exhaust', 'flip', 'stage', 'arrow', 'token', 'status', 'discard', 'moveTo', 'draw1', … */

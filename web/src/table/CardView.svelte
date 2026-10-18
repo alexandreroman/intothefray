@@ -141,17 +141,6 @@
     transition: scale 0.12s;
   }
 
-  /* Selected by a tap: a ring around the cut card. */
-  .card.locked::before {
-    content: '';
-    position: absolute;
-    inset: 1%;
-    border-radius: 7px;
-    pointer-events: none;
-    z-index: 1;
-    box-shadow: 0 0 0 3px var(--sel);
-  }
-
   .tokens {
     position: absolute;
     left: 4px;
