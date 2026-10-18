@@ -1,3 +1,5 @@
+import { clearPrefMemory } from './lib/prefs';
+
 // jsdom has no ResizeObserver, which Svelte's size bindings (bind:clientWidth)
 // rely on. Nothing is laid out in jsdom anyway, so the stand-in observes nothing.
 class NoResizeObserver {
@@ -18,3 +20,9 @@ window.matchMedia ??= (query: string): MediaQueryList =>
     addListener: () => {},
     removeListener: () => {},
   });
+
+// lib/prefs keeps every value in memory too, for the page lifetime: without
+// this, a value set by one test would still be read by the next.
+beforeEach(() => {
+  clearPrefMemory();
+});

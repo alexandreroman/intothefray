@@ -27,6 +27,11 @@ export function setPref(key: string, value: string): void {
   }
 }
 
+/** Forgets the in-memory copies, so that each test starts with no preference. Test-only. */
+export function clearPrefMemory(): void {
+  memory.clear();
+}
+
 function readTokens(): Record<string, string> {
   try {
     const parsed: unknown = JSON.parse(getPref(TOKENS_KEY) ?? '{}');

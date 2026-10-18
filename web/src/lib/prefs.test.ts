@@ -1,4 +1,4 @@
-import { getPref, getToken, setPref, setToken } from './prefs';
+import { clearPrefMemory, getPref, getToken, setPref, setToken } from './prefs';
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -44,5 +44,14 @@ describe('prefs', () => {
     expect(getToken('g1')).toBeNull();
     setToken('g1', 'one');
     expect(getToken('g1')).toBe('one');
+  });
+
+  it('forgets the in-memory copies once cleared', () => {
+    setPref('itf-name', 'Alex');
+    localStorage.clear();
+    expect(getPref('itf-name')).toBe('Alex');
+
+    clearPrefMemory();
+    expect(getPref('itf-name')).toBeNull();
   });
 });
