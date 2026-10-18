@@ -50,6 +50,12 @@ dev: infra-up ## Start infra, then run the app locally with hot reload
 		air & \
 		wait
 
+##@ Data
+
+.PHONY: packs
+packs: ## Regenerate card packs from marvelcdb and Cerebro
+	go run ./cmd/packgen -out packs/dist -cache packs/.cache -curated packs/curated
+
 ##@ Quality
 
 .PHONY: test

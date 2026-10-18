@@ -4,3 +4,4 @@ tmp/
 bin/
 .env.local
 /intothefray
+packs/.cache/
