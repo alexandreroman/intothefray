@@ -292,3 +292,47 @@ export interface Action {
   stage?: string;
   cards?: string[]; // new order, for reorderTop and handOrder
 }
+
+// ---- Live session (internal/server/protocol.go) ----
+
+/** A spot of the table: where a cursor is, or what a ping points at. */
+export interface PresencePoint {
+  area: Area;
+  x: number;
+  y: number;
+}
+
+/** A drag in progress: the cards dragged and where they are. */
+export interface PresenceDrag {
+  cards: string[];
+  area: Area;
+  x: number;
+  y: number;
+}
+
+/** The fields a presence message relays; each is absent when it did not change. */
+export interface PresenceFields {
+  cursor?: PresencePoint;
+  preview?: string; // id of the card being previewed
+  drag?: PresenceDrag | null; // null once the drag ended
+  ping?: PresencePoint;
+}
+
+/** What is known of another viewer: the last value of each relayed field. */
+export interface PresenceState extends PresenceFields {
+  color: number;
+  name: string;
+}
+
+/** A card of an imported deck that the game cannot use. */
+export interface UnsupportedCard {
+  code: string;
+  name: string;
+  pack: string;
+  qty: number;
+}
+
+export interface SessionError {
+  code: string;
+  message: string;
+}

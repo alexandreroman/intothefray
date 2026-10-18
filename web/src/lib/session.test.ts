@@ -1,0 +1,334 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { wsUrl } from './api';
+import { getToken, setToken } from './prefs';
+import { GameSession } from './session.svelte';
+import type { PlayerView, View } from './types';
+
+class FakeWebSocket {
+  static instances: FakeWebSocket[] = [];
+
+  readyState = 0;
+  sent: Record<string, unknown>[] = [];
+  onopen: (() => void) | null = null;
+  onmessage: ((event: { data: string }) => void) | null = null;
+  onclose: ((event: { code: number }) => void) | null = null;
+
+  constructor(readonly url: string) {
+    FakeWebSocket.instances.push(this);
+  }
+
+  send(data: string): void {
+    this.sent.push(JSON.parse(data) as Record<string, unknown>);
+  }
+
+  close(): void {
+    this.readyState = 3;
+  }
+
+  // Test helpers: what the network does.
+  open(): void {
+    this.readyState = 1;
+    this.onopen?.();
+  }
+
+  receive(message: object): void {
+    this.onmessage?.({ data: JSON.stringify(message) });
+  }
+
+  drop(code = 1006): void {
+    this.readyState = 3;
+    this.onclose?.({ code });
+  }
+}
+
+const player = (overrides: Partial<PlayerView> = {}): PlayerView => ({
+  name: 'Alex',
+  color: 0,
+  host: true,
+  ready: false,
+  handCount: 0,
+  ...overrides,
+});
+
+const view = (players: PlayerView[] = [player()]): View => ({
+  id: 'g1',
+  phase: 'lobby',
+  you: { role: 'player', color: 0, host: true },
+  players,
+  spectators: 0,
+  config: { scenario: '', difficulty: 'standard', standard: '', expert: '', modulars: [] },
+  log: [],
+});
+
+function newSession(gameId = 'g1'): GameSession {
+  const session = new GameSession(gameId, 'Alex', {
+    WebSocket: FakeWebSocket as unknown as typeof WebSocket,
+  });
+  session.connect();
+  return session;
+}
+
+const lastSocket = (): FakeWebSocket => FakeWebSocket.instances.at(-1)!;
+
+describe('GameSession', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    FakeWebSocket.instances = [];
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('connects to the game socket', () => {
+    newSession('abc');
+    expect(lastSocket().url).toBe(wsUrl('abc'));
+    expect(wsUrl('abc')).toBe('ws://localhost:8080/ws/games/abc');
+  });
+
+  it('sends hello with the stored token', () => {
+    setToken('hello-game', 'tok-1');
+    newSession('hello-game');
+    lastSocket().open();
+
+    expect(lastSocket().sent).toEqual([{ type: 'hello', token: 'tok-1', name: 'Alex' }]);
+  });
+
+  it('sends hello without a token for a new viewer', () => {
+    newSession('fresh-game');
+    lastSocket().open();
+
+    expect(lastSocket().sent).toEqual([{ type: 'hello', name: 'Alex' }]);
+  });
+
+  it('stores the token from welcome', () => {
+    const session = newSession('welcome-game');
+    lastSocket().open();
+    lastSocket().receive({ type: 'welcome', token: 'tok-2', role: 'player' });
+
+    expect(getToken('welcome-game')).toBe('tok-2');
+    expect(session.role).toBe('player');
+    expect(session.status).toBe('open');
+  });
+
+  it('reconnects with the stored token', () => {
+    newSession('reconnect-game');
+    lastSocket().open();
+    lastSocket().receive({ type: 'welcome', token: 'tok-3', role: 'player' });
+
+    lastSocket().drop();
+    expect(FakeWebSocket.instances).toHaveLength(1);
+    vi.advanceTimersByTime(499);
+    expect(FakeWebSocket.instances).toHaveLength(1);
+    vi.advanceTimersByTime(1);
+    expect(FakeWebSocket.instances).toHaveLength(2);
+
+    lastSocket().open();
+    expect(lastSocket().sent).toEqual([{ type: 'hello', token: 'tok-3', name: 'Alex' }]);
+  });
+
+  it('backs off 0.5, 1, 2, 4 then every 8 seconds, and resets after a view', () => {
+    const session = newSession();
+    const expectedDelays = [500, 1000, 2000, 4000, 8000, 8000];
+
+    for (const [index, delay] of expectedDelays.entries()) {
+      lastSocket().drop();
+      expect(session.status).toBe('reconnecting');
+      vi.advanceTimersByTime(delay - 1);
+      expect(FakeWebSocket.instances).toHaveLength(index + 1);
+      vi.advanceTimersByTime(1);
+      expect(FakeWebSocket.instances).toHaveLength(index + 2);
+    }
+
+    lastSocket().open();
+    lastSocket().receive({ type: 'view', version: 1, view: view() });
+    lastSocket().drop();
+    vi.advanceTimersByTime(500);
+    expect(FakeWebSocket.instances).toHaveLength(expectedDelays.length + 2);
+  });
+
+  it('stops reconnecting after close()', () => {
+    const session = newSession();
+    lastSocket().open();
+    session.close();
+    lastSocket().drop(1000);
+    vi.advanceTimersByTime(60_000);
+
+    expect(session.status).toBe('closed');
+    expect(FakeWebSocket.instances).toHaveLength(1);
+  });
+
+  it('closes for good on close code 4404', () => {
+    const session = newSession();
+    lastSocket().drop(4404);
+    vi.advanceTimersByTime(60_000);
+
+    expect(session.status).toBe('closed');
+    expect(session.lastError?.code).toBe('notFound');
+    expect(FakeWebSocket.instances).toHaveLength(1);
+  });
+
+  it('closes for good on notFound before any view', () => {
+    const session = newSession();
+    lastSocket().open();
+    lastSocket().receive({ type: 'error', code: 'notFound', message: 'No such game.' });
+    lastSocket().drop(4404);
+    vi.advanceTimersByTime(60_000);
+
+    expect(session.status).toBe('closed');
+    expect(session.lastError).toEqual({ code: 'notFound', message: 'No such game.' });
+    expect(FakeWebSocket.instances).toHaveLength(1);
+  });
+
+  it('keeps the session on notFound once a view arrived', () => {
+    const session = newSession();
+    lastSocket().open();
+    lastSocket().receive({ type: 'view', version: 1, view: view() });
+    lastSocket().receive({ type: 'error', id: 3, code: 'notFound', message: 'No such card.' });
+
+    expect(session.status).toBe('open');
+    expect(session.lastError?.code).toBe('notFound');
+  });
+
+  it('replaces the view and clears the error on the next view', () => {
+    const session = newSession();
+    lastSocket().open();
+    lastSocket().receive({ type: 'error', code: 'forbidden', message: 'Nope.' });
+    expect(session.lastError?.code).toBe('forbidden');
+
+    lastSocket().receive({ type: 'view', version: 1, view: view() });
+    expect(session.view?.id).toBe('g1');
+    expect(session.lastError).toBeNull();
+  });
+
+  it('act returns increasing ids and sends the action', () => {
+    const session = newSession();
+    lastSocket().open();
+
+    const first = session.act({ kind: 'draw', n: 1 });
+    const second = session.act({ kind: 'shuffle' });
+
+    expect(second).toBeGreaterThan(first);
+    expect(lastSocket().sent.slice(1)).toEqual([
+      { type: 'action', id: first, action: { kind: 'draw', n: 1 } },
+      { type: 'action', id: second, action: { kind: 'shuffle' } },
+    ]);
+  });
+
+  it('sends lobby operations with their payload', () => {
+    const session = newSession();
+    lastSocket().open();
+    session.lobby('setDeck', { url: 'https://marvelcdb.com/decklist/view/1' });
+    session.lobby('start');
+
+    expect(lastSocket().sent.slice(1)).toEqual([
+      { type: 'lobby', op: 'setDeck', url: 'https://marvelcdb.com/decklist/view/1' },
+      { type: 'lobby', op: 'start' },
+    ]);
+  });
+
+  describe('deckError', () => {
+    const unsupported = [{ code: '01001', name: 'Spider-Man', pack: 'core', qty: 1 }];
+
+    it('is exposed', () => {
+      const session = newSession();
+      lastSocket().open();
+      lastSocket().receive({ type: 'deckError', unsupported });
+
+      expect(session.deckError).toEqual(unsupported);
+    });
+
+    it('stays while the player deck is unchanged', () => {
+      const session = newSession();
+      lastSocket().open();
+      lastSocket().receive({ type: 'view', version: 1, view: view() });
+      lastSocket().receive({ type: 'deckError', unsupported });
+      lastSocket().receive({ type: 'view', version: 2, view: view([player({ ready: true })]) });
+
+      expect(session.deckError).toEqual(unsupported);
+    });
+
+    it('is cleared when the player deck changes', () => {
+      const session = newSession();
+      lastSocket().open();
+      lastSocket().receive({ type: 'view', version: 1, view: view() });
+      lastSocket().receive({ type: 'deckError', unsupported });
+      lastSocket().receive({
+        type: 'view',
+        version: 2,
+        view: view([player({ deckName: 'Justice', hero: 'spider-man' })]),
+      });
+
+      expect(session.deckError).toBeNull();
+    });
+
+    it('ignores the deck changes of other players', () => {
+      const session = newSession();
+      lastSocket().open();
+      lastSocket().receive({ type: 'view', version: 1, view: view([player(), player({ color: 1 })]) });
+      lastSocket().receive({ type: 'deckError', unsupported });
+      lastSocket().receive({
+        type: 'view',
+        version: 2,
+        view: view([player(), player({ color: 1, deckName: 'Other' })]),
+      });
+
+      expect(session.deckError).toEqual(unsupported);
+    });
+  });
+
+  describe('presence', () => {
+    it('keeps the latest state of each viewer by colour', () => {
+      const session = newSession();
+      lastSocket().open();
+      lastSocket().receive({
+        type: 'presence',
+        color: 1,
+        name: 'Bo',
+        cursor: { area: 'villain', x: 1, y: 2 },
+      });
+      lastSocket().receive({ type: 'presence', color: 1, name: 'Bo', preview: 'c1' });
+
+      expect(session.presence.get(1)).toEqual({
+        color: 1,
+        name: 'Bo',
+        cursor: { area: 'villain', x: 1, y: 2 },
+        preview: 'c1',
+      });
+    });
+
+    it('is emptied when the connection drops', () => {
+      const session = newSession();
+      lastSocket().open();
+      lastSocket().receive({ type: 'presence', color: 1, name: 'Bo' });
+      lastSocket().drop();
+
+      expect(session.presence.size).toBe(0);
+    });
+
+    it('is throttled to 20 messages a second, keeping the latest on the trailing edge', () => {
+      const session = newSession();
+      lastSocket().open();
+      const presenceSent = () => lastSocket().sent.filter((m) => m.type === 'presence');
+
+      session.sendPresence({ cursor: { area: 'p0', x: 1, y: 1 } });
+      session.sendPresence({ cursor: { area: 'p0', x: 2, y: 2 } });
+      session.sendPresence({ cursor: { area: 'p0', x: 3, y: 3 } });
+      session.sendPresence({ ping: { area: 'p0', x: 9, y: 9 } });
+      expect(presenceSent()).toHaveLength(1);
+
+      vi.advanceTimersByTime(50);
+      expect(presenceSent()).toHaveLength(2);
+      expect(presenceSent()[1]).toEqual({
+        type: 'presence',
+        cursor: { area: 'p0', x: 3, y: 3 },
+        ping: { area: 'p0', x: 9, y: 9 },
+      });
+
+      // Nothing pending: the window closes and the next message goes out at once.
+      vi.advanceTimersByTime(50);
+      session.sendPresence({ preview: 'c1' });
+      expect(presenceSent()).toHaveLength(3);
+    });
+  });
+});
