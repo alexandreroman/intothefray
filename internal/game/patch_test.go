@@ -123,3 +123,43 @@ func TestPatchSharesNothing(t *testing.T) {
 		t.Errorf("second c9 x = %d, want 0: the patch shares a card with its source", got)
 	}
 }
+
+func TestRepairPlaces(t *testing.T) {
+	table := newTestTable()
+	// c4 is listed twice, c5 is listed in a hand while its record says
+	// deck:p0, c3 (in hand) is missing from its hand, c9 does not exist, and
+	// c7 is on the table but listed in a pile.
+	table.Piles["deck:p0"].Cards = []string{"c4", "c6", "c4", "c9"}
+	table.Hands["p0"] = []string{"c5"}
+	table.Piles[PileEncounterDiscard].Cards = []string{"c7"}
+	table.Cards["c1"].Parent = "c8"
+	table.Arrows = []Arrow{{From: "c1", To: "c7"}, {From: "c1", To: "c9"}}
+	table.Views = map[Area]*PrivateView{"p0": {Pile: "deck:p0", Mode: viewModeSearch, Cards: []string{"c9", "c6"}}}
+
+	repairPlaces(table)
+
+	checkIntegrity(t, table)
+	if got := table.Piles["deck:p0"].Cards; !slices.Equal(got, []string{"c4", "c6", "c5"}) {
+		t.Errorf("deck = %v, want [c4 c6 c5]: duplicates and strays out, c5 on top", got)
+	}
+	if got := table.Hands["p0"]; !slices.Equal(got, []string{"c3"}) {
+		t.Errorf("hand = %v, want [c3]", got)
+	}
+	if got := table.Piles[PileEncounterDiscard].Cards; len(got) != 0 {
+		t.Errorf("encounter discard = %v, want empty", got)
+	}
+	if !reflect.DeepEqual(table.Arrows, []Arrow{{From: "c1", To: "c7"}}) {
+		t.Errorf("arrows = %v, want only c1 → c7", table.Arrows)
+	}
+}
+
+func TestRepairPlacesKeepsAWholeTable(t *testing.T) {
+	table := newStageTable()
+	before := table.Clone()
+
+	repairPlaces(table)
+
+	if !reflect.DeepEqual(before, table) {
+		t.Error("repairing a whole table changed it")
+	}
+}

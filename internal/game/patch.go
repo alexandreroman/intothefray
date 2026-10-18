@@ -109,3 +109,75 @@ func handAreas(a, b *Table) map[Area]bool {
 	}
 	return areas
 }
+
+// repairPlaces makes every card of t sit in exactly one place, the one its
+// own Zone, Pile and Area name, after a patch set some lists of t to values
+// taken from another table. List entries that contradict their card are
+// dropped; a card missing from the list it belongs to goes on top of that
+// pile, or at the end of that hand. Parents, arrows and views that point at
+// cards no longer there are dropped as well.
+func repairPlaces(t *Table) {
+	for id, pile := range t.Piles {
+		pile.Cards = keepListed(pile.Cards, func(c *Card) bool {
+			return c.Zone == ZonePile && c.Pile == id
+		}, t)
+	}
+	for area, hand := range t.Hands {
+		t.Hands[area] = keepListed(hand, func(c *Card) bool {
+			return c.Zone == ZoneHand && c.Area == area
+		}, t)
+	}
+
+	for _, id := range slices.Sorted(maps.Keys(t.Cards)) {
+		c := t.Cards[id]
+		switch c.Zone {
+		case ZonePile:
+			if pile, ok := t.Piles[c.Pile]; ok && !slices.Contains(pile.Cards, id) {
+				pile.Cards = append(pile.Cards, id)
+			}
+		case ZoneHand:
+			if !slices.Contains(t.Hands[c.Area], id) {
+				if t.Hands == nil {
+					t.Hands = map[Area][]string{}
+				}
+				t.Hands[c.Area] = append(t.Hands[c.Area], id)
+			}
+		}
+	}
+
+	onTable := func(id string) bool {
+		c, ok := t.Cards[id]
+		return ok && c.Zone == ZoneTable
+	}
+	for _, c := range t.Cards {
+		if c.Parent != "" && (c.Zone != ZoneTable || !onTable(c.Parent)) {
+			c.Parent = ""
+		}
+	}
+	t.Arrows = slices.DeleteFunc(t.Arrows, func(ar Arrow) bool {
+		return !onTable(ar.From) || !onTable(ar.To)
+	})
+	for _, view := range t.Views {
+		view.Cards = slices.DeleteFunc(view.Cards, func(id string) bool {
+			_, ok := t.Cards[id]
+			return !ok
+		})
+	}
+}
+
+// keepListed returns the ids of list whose card exists and belongs there
+// according to belongs, each once, in list order. A list with nothing to drop
+// is returned as it is.
+func keepListed(list []string, belongs func(*Card) bool, t *Table) []string {
+	var kept []string
+	for _, id := range list {
+		c, ok := t.Cards[id]
+		if ok && belongs(c) && !slices.Contains(kept, id) {
+			kept = append(kept, id)
+		}
+	}
+	if len(kept) == len(list) {
+		return list
+	}
+	return kept
+}

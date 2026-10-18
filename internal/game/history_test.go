@@ -552,17 +552,72 @@ func TestFailedShuffleReplayIsReshuffled(t *testing.T) {
 func TestUndoKeepsOwnUntrackedActions(t *testing.T) {
 	f := newDoFixture(t)
 	rhino := f.villain()
-	identity := f.identity(t)
 	f.mustDo(t, "h", Action{Kind: ActExhaust, Card: rhino}, at(1))
-	f.mustDo(t, "h", Action{Kind: ActMove, Card: identity, Area: "p0", X: 500, Y: 300}, at(2))
+	f.mustDo(t, "h", Action{Kind: ActMove, Card: rhino, Area: AreaVillain, X: 500, Y: 300}, at(2))
 
 	f.mustDo(t, "h", Action{Kind: ActUndo}, at(3))
 
-	if f.g.Table.Cards[rhino].Exhausted {
+	c := f.g.Table.Cards[rhino]
+	if c.Exhausted {
 		t.Error("the exhaust was not undone")
 	}
-	if c := f.g.Table.Cards[identity]; c.X != 500 || c.Y != 300 {
-		t.Errorf("identity at (%d,%d) after undo, want the moved position (500,300)", c.X, c.Y)
+	if c.X != 500 || c.Y != 300 {
+		t.Errorf("Rhino at (%d,%d) after undo, want the moved position (500,300)", c.X, c.Y)
+	}
+}
+
+// TestUndoOfDealPutsTheRevealedCardBack undoes a deal of a revealed card:
+// the deal moved it, so it goes back where it was, even though it lies on the
+// table both before and after.
+func TestUndoOfDealPutsTheRevealedCardBack(t *testing.T) {
+	f := newDoFixture(t)
+	f.mustDo(t, "h", Action{Kind: ActReveal}, at(1))
+	revealed := *f.g.Table.revealed()[0]
+	f.mustDo(t, "b", Action{Kind: ActDeal, Area: "p1", X: 400, Y: 200}, at(2))
+
+	f.mustDo(t, "b", Action{Kind: ActUndo}, at(3))
+
+	c := f.g.Table.Cards[revealed.ID]
+	if c.Area != revealed.Area || c.X != revealed.X || c.Y != revealed.Y || c.OnPile != PileEncounter || c.FaceDown {
+		t.Errorf("card = %+v, want it revealed again on the encounter deck at (%d,%d)", c, revealed.X, revealed.Y)
+	}
+	checkIntegrity(t, f.g.Table)
+}
+
+// TestUndoOnSharedPileLosesNoCard is the repro of a card lost by patching a
+// snapshot whose pile differs from the live one: Bob discards the encounter
+// top, Host reveals the next card, then both undo.
+func TestUndoOnSharedPileLosesNoCard(t *testing.T) {
+	f := newDoFixture(t)
+	order := slices.Clone(f.g.Table.Piles[PileEncounter].Cards)
+
+	f.mustDo(t, "b", Action{Kind: ActDiscardTop, Pile: PileEncounter, N: 1}, at(1))
+	f.mustDo(t, "h", Action{Kind: ActReveal}, at(2))
+	f.mustDo(t, "h", Action{Kind: ActUndo}, at(3))
+	checkSnapshots(t, f.g)
+	f.mustDo(t, "b", Action{Kind: ActUndo}, at(4))
+
+	checkIntegrity(t, f.g.Table)
+	if got := f.g.Table.Piles[PileEncounter].Cards; !slices.Equal(got, order) {
+		t.Errorf("encounter deck = %v, want it back as it started: %v", got, order)
+	}
+	if got := f.g.Table.Piles[PileEncounterDiscard].Cards; len(got) != 0 {
+		t.Errorf("encounter discard = %v, want empty", got)
+	}
+	if got := f.g.Table.revealed(); len(got) != 0 {
+		t.Errorf("revealed = %v, want none", got)
+	}
+}
+
+// checkSnapshots runs checkIntegrity on every undo snapshot of g.
+func checkSnapshots(t *testing.T, g *Game) {
+	t.Helper()
+	for token, stack := range g.Undo {
+		for i, entry := range stack {
+			t.Run(fmt.Sprintf("snapshot %s/%d", token, i), func(t *testing.T) {
+				checkIntegrity(t, entry.Before)
+			})
+		}
 	}
 }
 
@@ -586,6 +641,7 @@ func TestUndoIsCarriedIntoOthersSnapshots(t *testing.T) {
 		t.Errorf("deck:p1 = %v, want the drawn cards back on top: %v", got, deck)
 	}
 	checkIntegrity(t, f.g.Table)
+	checkSnapshots(t, f.g)
 }
 
 // TestUndoCarriesReshuffledIDs undoes an action older than a shuffle, which
@@ -603,7 +659,7 @@ func TestUndoCarriesReshuffledIDs(t *testing.T) {
 	if got := snapshot.Piles[PileEncounter].Cards; !slices.Equal(got, reshuffled) {
 		t.Errorf("Bob's snapshot encounter deck = %v, want the re-shuffled %v", got, reshuffled)
 	}
-	checkIntegrity(t, snapshot)
+	checkSnapshots(t, f.g)
 }
 
 func TestUndoKeepsLiveArrangement(t *testing.T) {
@@ -634,6 +690,7 @@ func TestUndoKeepsLiveArrangement(t *testing.T) {
 		t.Errorf("p1 hand = %v, want Bob's order %v", got, order)
 	}
 	checkIntegrity(t, f.g.Table)
+	checkSnapshots(t, f.g)
 }
 
 func TestUndoKeepsReorderedPile(t *testing.T) {
@@ -690,7 +747,7 @@ func TestUntrackedActionsAreNotReplayed(t *testing.T) {
 	}
 }
 
-func TestUndoEntryRecordsTouchedCards(t *testing.T) {
+func TestUndoEntryRecordsMovedCards(t *testing.T) {
 	f := newDoFixture(t)
 	stage := f.g.Table.stage(pileKeyVillain)
 	rhino, identity := stage.Current, f.identity(t)
@@ -703,6 +760,11 @@ func TestUndoEntryRecordsTouchedCards(t *testing.T) {
 		if !slices.Contains(got, id) {
 			t.Errorf("entry cards %v miss %s", got, id)
 		}
+	}
+
+	f.mustDo(t, "h", Action{Kind: ActExhaust, Card: identity}, at(3))
+	if got := f.g.Undo["h"][1].Cards; len(got) != 0 {
+		t.Errorf("exhaust entry cards = %v, want none: an exhaust moves no card", got)
 	}
 }
 
@@ -913,5 +975,62 @@ func TestPlayFromPileThroughDo(t *testing.T) {
 			}
 			checkIntegrity(t, f.g.Table)
 		})
+	}
+}
+
+// fourPlayerGame returns a started game of four Spider-Man players: "h"
+// (Host), "b", "c" and "d".
+func fourPlayerGame(t *testing.T) *doFixture {
+	t.Helper()
+	cat := newCatalog(t)
+	g := lobbyOfFour(t)
+	if err := g.Configure("h", rhinoConfig(), cat); err != nil {
+		t.Fatal(err)
+	}
+	for _, p := range g.Players {
+		if err := g.SetDeck(p.Token, spiderManDeck(t, cat), cat); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := g.Start("h", cat, newTestRNG(), testNow); err != nil {
+		t.Fatal(err)
+	}
+	return &doFixture{g: g, cat: cat, rng: newTestRNG()}
+}
+
+// Largest JSON forms of a game (see TestGameSizeWithFullUndoStacks). The undo
+// stacks are stored apart from the rest of the game, which is written on
+// every action.
+const (
+	maxGameJSON       = 1 << 20  // with full undo stacks
+	maxGameJSONNoUndo = 64 << 10 // without them
+)
+
+func TestGameSizeWithFullUndoStacks(t *testing.T) {
+	f := fourPlayerGame(t)
+	for i := range maxUndoDepth + 2 {
+		for _, p := range f.g.Players {
+			f.mustDo(t, p.Token, Action{Kind: ActExhaust, Card: f.villain()}, at(i))
+			f.mustDo(t, p.Token, Action{Kind: ActMove, Card: f.villain(), Area: AreaVillain, X: 10 * i, Y: 0}, at(i))
+		}
+	}
+	for _, p := range f.g.Players {
+		if got := len(f.g.Undo[p.Token]); got != maxUndoDepth {
+			t.Fatalf("%s has %d undo entries, want a full stack of %d", p.Name, got, maxUndoDepth)
+		}
+	}
+
+	size := len(mustJSON(t, f.g))
+	t.Logf("4 players, full undo stacks: %d bytes (%d KiB)", size, size>>10)
+	if size > maxGameJSON {
+		t.Errorf("game JSON is %d bytes, want at most %d", size, maxGameJSON)
+	}
+	checkSnapshots(t, f.g)
+
+	f.g.Undo = nil
+	size = len(mustJSON(t, f.g))
+	t.Logf("4 players, without undo stacks: %d bytes (%d KiB)", size, size>>10)
+	if size > maxGameJSONNoUndo {
+		t.Errorf("game JSON without undo is %d bytes, want at most %d", size, maxGameJSONNoUndo)
 	}
 }

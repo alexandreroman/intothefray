@@ -129,12 +129,16 @@ func TestIntegrityAfterActions(t *testing.T) {
 	f.mustDo(t, "h", Action{Kind: ActCloseView, Where: whereShuffle}, at(14))
 	checkIntegrity(t, f.g.Table)
 
+	checkSnapshots(t, f.g)
+
 	for range 3 {
 		f.mustDo(t, "h", Action{Kind: ActUndo}, at(20))
 		checkIntegrity(t, f.g.Table)
+		checkSnapshots(t, f.g)
 	}
 	f.mustDo(t, "b", Action{Kind: ActUndo}, at(21))
 	checkIntegrity(t, f.g.Table)
+	checkSnapshots(t, f.g)
 }
 
 func TestGameJSONRoundTrip(t *testing.T) {

@@ -123,9 +123,22 @@ func (g *Game) noteReordered(pile string) {
 	}
 }
 
-// touchedCards returns the cards a touches, with everything tucked under them
-// before or after a, sorted. before and after are the tables around a.
-func touchedCards(before, after *Table, a Action) []string {
+// inPlaceKinds change cards without moving any: undoing them keeps the live
+// position of every card, their own included.
+var inPlaceKinds = map[Kind]bool{
+	ActExhaust: true,
+	ActFlip:    true,
+	ActToken:   true,
+	ActStatus:  true,
+}
+
+// movedCards returns the cards a moves, with everything tucked under them
+// before or after a, sorted: undoing a puts them back in place. before and
+// after are the tables around a. Kinds that move no card give none.
+func movedCards(before, after *Table, a Action) []string {
+	if inPlaceKinds[a.Kind] {
+		return nil
+	}
 	ids := slices.Concat([]string{a.Card, a.Target}, a.Cards)
 	if a.Kind == ActChooseStage {
 		if stage := before.stage(a.Stage); stage != nil {
@@ -133,19 +146,19 @@ func touchedCards(before, after *Table, a Action) []string {
 		}
 	}
 
-	touched := map[string]bool{}
+	moved := map[string]bool{}
 	for _, id := range ids {
 		if _, ok := before.Cards[id]; !ok {
 			continue // empty, or a pile id
 		}
-		touched[id] = true
+		moved[id] = true
 		for _, table := range []*Table{before, after} {
 			for _, child := range table.descendants(id) {
-				touched[child.ID] = true
+				moved[child.ID] = true
 			}
 		}
 	}
-	return slices.Sorted(maps.Keys(touched))
+	return slices.Sorted(maps.Keys(moved))
 }
 
 // changedNothing reports whether a left its card as it was: a counter already
@@ -204,7 +217,7 @@ func (g *Game) replay(a Action, shuffled []string, skip string) {
 // record writes the history line of an undoable action, or merges it into the
 // actor's previous line.
 func (g *Game) record(p *Player, a Action, e event, before *Table, now time.Time) {
-	cards := touchedCards(before, g.Table, a)
+	cards := movedCards(before, g.Table, a)
 	if entry := g.mergeable(p.Token, e.merge, now); entry != nil {
 		entry.Cards = mergeIDs(entry.Cards, cards)
 		g.merge(p.Token, entry, a, e, now)
@@ -319,6 +332,7 @@ func (g *Game) undo(p *Player, rng *rand.Rand, now time.Time) error {
 		}
 		for i := range others {
 			patch.applyTo(others[i].Before)
+			repairPlaces(others[i].Before)
 		}
 	}
 	g.Table = restored

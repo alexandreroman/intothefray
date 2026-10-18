@@ -13,7 +13,7 @@ import (
 // keepLiveArrangement copies onto restored, the table an undo is about to
 // install, the arrangement of the live table: card positions, hand orders,
 // the first player token, arrows and the order of reordered piles. The cards
-// of entry, those the undone action touched, keep their restored state.
+// of entry, those the undone action moved, keep their restored place.
 func keepLiveArrangement(restored, live *Table, entry *UndoEntry) {
 	keepCardPositions(restored, live, entry.Cards)
 	for area, hand := range restored.Hands {
