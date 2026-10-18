@@ -83,6 +83,9 @@ func resolve(g *Game, seat int, a Action, rng *rand.Rand) (Action, error) {
 	if err := checkLimits(a); err != nil {
 		return Action{}, err
 	}
+	if a.Area != "" && !g.seatedArea(a.Area) {
+		return Action{}, invalid("unknown area %q", a.Area)
+	}
 
 	// The client never chooses who acts.
 	a.Seat = seat
@@ -123,6 +126,20 @@ func resolve(g *Game, seat int, a Action, rng *rand.Rand) (Action, error) {
 	default:
 		return Action{}, invalid("unknown action kind %q", a.Kind)
 	}
+}
+
+// seatedArea reports whether area is the villain side or the side of a
+// seated player.
+func (g *Game) seatedArea(area Area) bool {
+	if area == AreaVillain {
+		return true
+	}
+	for seat := range g.Players {
+		if area == PlayerArea(seat) {
+			return true
+		}
+	}
+	return false
 }
 
 func forbidden(format string, args ...any) error {

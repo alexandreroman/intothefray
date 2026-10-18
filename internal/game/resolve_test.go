@@ -159,6 +159,36 @@ func TestResolveRejectsInvalidInput(t *testing.T) {
 	}
 }
 
+// TestResolveRejectsAreasOfEmptySeats checks that a two-player table only
+// knows the villain area and the areas p0 and p1.
+func TestResolveRejectsAreasOfEmptySeats(t *testing.T) {
+	f := newResolveFixture(t)
+	actions := map[string]func(area Area) Action{
+		"move":        func(area Area) Action { return Action{Kind: ActMove, Card: f.ownTable, Area: area} },
+		"play":        func(area Area) Action { return Action{Kind: ActPlay, Card: f.hand, Area: area} },
+		"deal":        func(area Area) Action { return Action{Kind: ActDeal, Area: area} },
+		"firstPlayer": func(area Area) Action { return Action{Kind: ActFirstPlayer, Area: area} },
+		"handOrder":   func(area Area) Action { return Action{Kind: ActHandOrder, Area: area} },
+	}
+	for name, action := range actions {
+		t.Run(name, func(t *testing.T) {
+			for _, area := range []Area{"p2", "p3", "p4", "nowhere"} {
+				if _, err := resolve(f.g, 0, action(area), newTestRNG()); !errors.Is(err, ErrInvalid) {
+					t.Errorf("area %s: resolve() error = %v, want ErrInvalid", area, err)
+				}
+			}
+			if name == "handOrder" {
+				return
+			}
+			for _, area := range []Area{AreaVillain, "p0", "p1"} {
+				if _, err := resolve(f.g, 0, action(area), newTestRNG()); err != nil {
+					t.Errorf("area %s: resolve() error = %v, want nil", area, err)
+				}
+			}
+		})
+	}
+}
+
 // TestResolveRecordsTopCards checks that the cards taken from a pile top are
 // fixed at resolve time, so that replaying the action onto another table
 // acts on the same cards or fails.
