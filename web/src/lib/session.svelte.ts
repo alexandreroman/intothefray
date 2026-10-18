@@ -57,7 +57,7 @@ export class GameSession {
   readonly #gameId: string;
   readonly #name: string;
   readonly #WebSocketImpl: typeof WebSocket;
-  readonly #setTimeout: typeof setTimeout;
+  readonly #setTimeout: (handler: () => void, ms: number) => void;
 
   #socket: WebSocket | null = null;
   #failedAttempts = 0;
@@ -72,7 +72,12 @@ export class GameSession {
     this.#gameId = gameId;
     this.#name = name;
     this.#WebSocketImpl = deps.WebSocket ?? WebSocket;
-    this.#setTimeout = deps.setTimeout ?? setTimeout;
+    // Called as a plain function: the browser's setTimeout throws "Illegal
+    // invocation" when it is called as a method of another object.
+    const timer = deps.setTimeout ?? setTimeout;
+    this.#setTimeout = (handler, ms) => {
+      timer(handler, ms);
+    };
   }
 
   connect(): void {
@@ -159,7 +164,7 @@ export class GameSession {
         this.#handleView(message.view);
         break;
       case 'error':
-        this.#handleError({ code: message.code, message: message.message });
+        this.#handleError({ code: message.code, message: message.message }, message.id);
         break;
       case 'deckError':
         this.deckError = message.unsupported;
@@ -180,11 +185,24 @@ export class GameSession {
     this.view = next;
   }
 
-  #handleError(error: SessionError): void {
+  /**
+   * Before the first view, an error means the hello failed. A game-level
+   * notFound (no action id) ends the session; any other error is a failed
+   * attempt, retried with the usual backoff. Afterwards, errors only report.
+   */
+  #handleError(error: SessionError, actionId: number | undefined): void {
     this.lastError = error;
-    if (error.code === 'notFound' && this.view === null) {
-      this.#stop(error);
+    if (this.view !== null) {
+      return;
     }
+    if (error.code === 'notFound' && actionId === undefined) {
+      this.#stop(error);
+      return;
+    }
+    const socket = this.#socket;
+    this.#socket = null; // Its close event is now ignored.
+    socket?.close();
+    this.#scheduleReconnect();
   }
 
   #handlePresence(message: Extract<ServerMessage, { type: 'presence' }>): void {
@@ -197,11 +215,15 @@ export class GameSession {
   }
 
   #handleClose(code: number): void {
-    this.presence.clear();
     if (code === CLOSE_GAME_NOT_FOUND) {
       this.#stop(this.lastError ?? { code: 'notFound', message: 'This game does not exist.' });
       return;
     }
+    this.#scheduleReconnect();
+  }
+
+  #scheduleReconnect(): void {
+    this.presence.clear();
     this.status = 'reconnecting';
     const delay = BACKOFF_MS[Math.min(this.#failedAttempts, BACKOFF_MS.length - 1)] ?? 0;
     this.#failedAttempts += 1;
@@ -217,6 +239,7 @@ export class GameSession {
     const socket = this.#socket;
     this.#socket = null; // Its close event is now ignored.
     this.status = 'closed';
+    this.presence.clear();
     if (error) {
       this.lastError = error;
     }

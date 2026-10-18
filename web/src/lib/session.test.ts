@@ -60,9 +60,18 @@ const view = (players: PlayerView[] = [player()]): View => ({
   log: [],
 });
 
+// Like the browser's: calling it with another receiver than the global object throws.
+function strictSetTimeout(this: unknown, handler: () => void, ms?: number): ReturnType<typeof setTimeout> {
+  if (this !== undefined && this !== globalThis) {
+    throw new TypeError('Illegal invocation');
+  }
+  return setTimeout(handler, ms);
+}
+
 function newSession(gameId = 'g1'): GameSession {
   const session = new GameSession(gameId, 'Alex', {
     WebSocket: FakeWebSocket as unknown as typeof WebSocket,
+    setTimeout: strictSetTimeout as typeof setTimeout,
   });
   session.connect();
   return session;
@@ -151,9 +160,11 @@ describe('GameSession', () => {
     const session = newSession();
     lastSocket().open();
     session.close();
+    const socket = lastSocket();
     lastSocket().drop(1000);
     vi.advanceTimersByTime(60_000);
 
+    expect(socket.readyState).toBe(3);
     expect(session.status).toBe('closed');
     expect(FakeWebSocket.instances).toHaveLength(1);
   });
@@ -168,17 +179,40 @@ describe('GameSession', () => {
     expect(FakeWebSocket.instances).toHaveLength(1);
   });
 
-  it('closes for good on notFound before any view', () => {
+  it('closes for good on a game-level notFound before any view', () => {
     const session = newSession();
     lastSocket().open();
     lastSocket().receive({ type: 'error', code: 'notFound', message: 'No such game.' });
-    lastSocket().drop(4404);
+    // Whatever the close code, no retry follows.
+    lastSocket().drop(1006);
     vi.advanceTimersByTime(60_000);
 
     expect(session.status).toBe('closed');
     expect(session.lastError).toEqual({ code: 'notFound', message: 'No such game.' });
     expect(FakeWebSocket.instances).toHaveLength(1);
   });
+
+  it.each(['forbidden', 'phase', 'internal', 'notFound'])(
+    'retries after a %s error answering hello, before any view',
+    (code) => {
+      const session = newSession();
+      const first = lastSocket();
+      first.open();
+      // An error tied to an action id is not about the game itself.
+      first.receive({ type: 'error', id: 1, code, message: 'Failed.' });
+
+      expect(first.readyState).toBe(3);
+      expect(session.lastError).toEqual({ code, message: 'Failed.' });
+      expect(session.status).toBe('reconnecting');
+
+      // The close that follows must not schedule a second retry.
+      first.drop();
+      vi.advanceTimersByTime(500);
+      expect(FakeWebSocket.instances).toHaveLength(2);
+      vi.advanceTimersByTime(60_000);
+      expect(FakeWebSocket.instances).toHaveLength(2);
+    },
+  );
 
   it('keeps the session on notFound once a view arrived', () => {
     const session = newSession();
