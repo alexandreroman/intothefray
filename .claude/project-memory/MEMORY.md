@@ -26,3 +26,4 @@
 - [Tech stack choices](references/project_tech_stack.md) — Go + Redis backend, Svelte SPA on GitHub Pages, why
 - [Product constraints](references/project_constraints.md) — anti-cheat, no images, 24 h expiry, pack scope, v1 limits
 - [Card data sources](references/reference_card_sources.md) — marvelcdb and Cerebro APIs and image URLs
+- [Automated setup scope](references/project_setup_scope.md) — setup places cards; players draw their own opening hand
