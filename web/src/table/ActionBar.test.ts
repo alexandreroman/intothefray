@@ -431,6 +431,22 @@ describe('ActionBar', () => {
     expect(interaction.arrowFrom).toBeNull();
   });
 
+  it('arrow mode: on touch, the tap that picks the target does not select it', async () => {
+    const { session } = await renderTable();
+    await fireEvent.pointerEnter(placed('mine'));
+    await fireEvent.click(within(bar()!).getByRole('button', { name: 'Arrow' }));
+
+    await fireEvent.pointerDown(placed('v'), { pointerType: 'touch' });
+    await fireEvent.click(placed('v'));
+    expect(session.act).toHaveBeenCalledWith({ kind: 'arrowAdd', card: 'mine', target: 'v' });
+    expect(interaction.locked).toBe(false);
+
+    // The next tap selects as usual.
+    await fireEvent.pointerDown(placed('v'), { pointerType: 'touch' });
+    await fireEvent.click(placed('v'));
+    expect(interaction.isLocked({ kind: 'card', id: 'v' })).toBe(true);
+  });
+
   it('arrow mode: Escape or a click on an empty spot cancels', async () => {
     const { session } = await renderTable();
     await fireEvent.pointerEnter(placed('mine'));

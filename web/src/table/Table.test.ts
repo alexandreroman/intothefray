@@ -246,6 +246,17 @@ describe('Table', () => {
     expect(screen.getAllByTitle(/^Drag to resize/)).toHaveLength(2);
   });
 
+  it('a separator drag counts the pointer move in table units at any zoom', async () => {
+    localStorage.setItem('itf-zoom', '2');
+    render(Table, { session: fakeSession(), view: makeView() });
+    const handle = await screen.findByTitle("Drag to resize the villain's zone");
+
+    await fireEvent.pointerDown(handle, { clientY: 100 });
+    await fireEvent.pointerMove(window, { clientY: 157 });
+    // 57 px at 200 % are 28.5 units: 228.5, snapped to 230.
+    expect(surfaceOf(/^Villain/).style.height).toBe('230px');
+  });
+
   it('zoom buttons clamp to 50–200 and persist', async () => {
     render(Table, { session: fakeSession(), view: makeView() });
     expect(zoomLabel().textContent).toBe('100%');

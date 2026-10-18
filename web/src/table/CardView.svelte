@@ -13,10 +13,13 @@
   let {
     card,
     face,
+    ghost = false,
   }: {
     card: TableCard;
     /** The catalog face the card shows, null while unknown: it is then a std placeholder. */
     face: PackFace | null;
+    /** The copy drawn under the pointer while the card is dragged (DragLayer). */
+    ghost?: boolean;
   } = $props();
 
   const TOKENS = ['dmg', 'thr', 'gen'] as const;
@@ -33,6 +36,12 @@
   const statuses = $derived(STATUSES.filter(([k]) => (card.status?.[k] ?? 0) > 0));
   const element = $derived({ kind: 'card', id: card.id } as const);
   const locked = $derived(interaction.isLocked(element));
+  // While dragged, the card on the table makes way for its ghost.
+  const lifted = $derived(!ghost && interaction.isLifted(card.id));
+  // A drop would tuck the dragged card under this one, or go onto the pile this card is revealed on.
+  const dropOn = $derived(ghost ? null : interaction.dropOn);
+  const tuckTarget = $derived(dropOn?.kind === 'card' && dropOn.id === card.id);
+  const pileTarget = $derived(dropOn?.kind === 'pile' && dropOn.id === card.onPile);
 </script>
 
 <!--
@@ -46,6 +55,10 @@
   class:exhausted={card.exhausted}
   class:highlighted={interaction.highlighted.has(card.id)}
   class:locked
+  class:lifted
+  class:ghost
+  class:drop-target={tuckTarget}
+  class:drop-pile={pileTarget}
   style:left="{card.x}px"
   style:top="{card.y}px"
   style:width="{box.w}px"
@@ -53,6 +66,7 @@
   style:z-index={card.z}
   onpointerenter={(event) => interaction.enter(element, event)}
   onpointerleave={() => interaction.leave()}
+  onpointerdown={(event) => interaction.press(element, event)}
   onclick={() => interaction.select(element)}
 >
   {#if hidden}
@@ -114,6 +128,38 @@
 
   .card.exhausted {
     transform: rotate(var(--exhaust-angle));
+  }
+
+  .card.lifted {
+    visibility: hidden;
+  }
+
+  /* Held up under the pointer. */
+  .card.ghost {
+    cursor: grabbing;
+    scale: 1.04;
+    transition: scale 0.12s;
+  }
+
+  /* Where a drop would go: under this card (orange), or onto the pile it covers (blue). */
+  .card.drop-target::before,
+  .card.drop-pile::before {
+    content: '';
+    position: absolute;
+    inset: 1%;
+    border-radius: 7px;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .card.drop-target::before {
+    outline: 3px dashed var(--warn);
+    outline-offset: 2px;
+  }
+
+  .card.drop-pile::before {
+    outline: 3px dashed var(--sel);
+    outline-offset: 3px;
   }
 
   /* Selected by a tap: a ring around the cut card. */

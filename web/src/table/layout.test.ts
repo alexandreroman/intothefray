@@ -6,6 +6,7 @@ import {
   footprints,
   hiddenAside,
   placeOutPiles,
+  visualBox,
   zoneMinHeight,
   zoneOrder,
   zoneWidth,
@@ -142,6 +143,36 @@ describe('zone size', () => {
       pile({ id: 'other', kind: 'aside', area: 'p0', x: 1200 }),
     ];
     expect(zoneWidth(cards, piles, 'villain', alwaysStd)).toBe(500 + 140 + 240);
+  });
+});
+
+describe('an exhausted card', () => {
+  // A std card turned 15 degrees: its bounding box is 100·cos + 140·sin wide and
+  // 100·sin + 140·cos tall, around the same centre.
+  const turnedWidth = 100 * Math.cos(Math.PI / 12) + 140 * Math.sin(Math.PI / 12);
+  const turnedHeight = 100 * Math.sin(Math.PI / 12) + 140 * Math.cos(Math.PI / 12);
+
+  it('shows a bounding box grown around its centre', () => {
+    const box = visualBox({ id: 'a', x: 400, y: 300, w: 100, h: 140, exhausted: true });
+    expect(box.right).toBeCloseTo(450 + turnedWidth / 2);
+    expect(box.bottom).toBeCloseTo(370 + turnedHeight / 2);
+    expect(visualBox({ id: 'b', x: 400, y: 300, w: 100, h: 140 })).toEqual({
+      right: 500,
+      bottom: 440,
+    });
+  });
+
+  it('makes its zone taller and wider', () => {
+    const cards = [card({ area: 'villain', x: 400, y: 300, exhausted: true })];
+    expect(zoneMinHeight(cards, [], 'villain', alwaysStd)).toBeCloseTo(370 + turnedHeight / 2 + 20);
+    expect(zoneWidth(cards, [], 'villain', alwaysStd)).toBeCloseTo(450 + turnedWidth / 2 + 140);
+  });
+
+  it('is not scrolled out on the left while its turned corner shows', () => {
+    // Its unturned box ends at 100, its turned one about 16 further.
+    const items = footprints([card({ area: 'p0', exhausted: true })], [], 'p0', alwaysStd);
+    expect(hiddenAside(items, 100, 600).left).toEqual([]);
+    expect(hiddenAside(items, 120, 600).left).toHaveLength(1);
   });
 });
 

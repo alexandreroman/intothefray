@@ -84,6 +84,30 @@ export interface Footprint {
   y: number;
   w: number;
   h: number;
+  /** An exhausted card is drawn turned: see visualBox. */
+  exhausted?: boolean;
+}
+
+/** Keep in step with --exhaust-angle (tokens.css). */
+const EXHAUST_RADIANS = (15 * Math.PI) / 180;
+
+/**
+ * The right and bottom edges an item shows, as the prototype's visualBox: an
+ * exhausted card is turned, and its bounding box grows around the same centre
+ * (w·cos + h·sin wide, w·sin + h·cos tall).
+ */
+export function visualBox(item: Footprint): { right: number; bottom: number } {
+  if (!item.exhausted) {
+    return { right: item.x + item.w, bottom: item.y + item.h };
+  }
+  const cos = Math.cos(EXHAUST_RADIANS);
+  const sin = Math.sin(EXHAUST_RADIANS);
+  const turnedWidth = item.w * cos + item.h * sin;
+  const turnedHeight = item.w * sin + item.h * cos;
+  return {
+    right: item.x + item.w / 2 + turnedWidth / 2,
+    bottom: item.y + item.h / 2 + turnedHeight / 2,
+  };
 }
 
 /** The table cards of one area, then its piles, with the room each takes. */
@@ -97,7 +121,7 @@ export function footprints(
     .filter((c) => c.zone === 'table' && c.area === area)
     .map((c) => {
       const { w, h } = cardBox(sizeOf(c), { faceDown: c.faceDown, onPile: !!c.onPile });
-      return { id: c.id, x: c.x, y: c.y, w, h };
+      return { id: c.id, x: c.x, y: c.y, w, h, exhausted: c.exhausted };
     });
   const stacked = piles
     .filter((p) => p.area === area)
@@ -119,7 +143,7 @@ export function hiddenAside(
 ): { left: Footprint[]; right: Footprint[] } {
   const byX = [...items].sort((a, b) => a.x - b.x);
   return {
-    left: byX.filter((item) => item.x + item.w <= left + EDGE_SLACK),
+    left: byX.filter((item) => visualBox(item).right <= left + EDGE_SLACK),
     right: byX.filter((item) => item.x >= right - EDGE_SLACK),
   };
 }
@@ -146,9 +170,10 @@ function extentOf(
     area,
     sizeOf,
   );
+  const boxes = inPlay.map(visualBox);
   return {
-    right: Math.max(0, ...inPlay.map((item) => item.x + item.w)),
-    bottom: Math.max(0, ...inPlay.map((item) => item.y + item.h)),
+    right: Math.max(0, ...boxes.map((box) => box.right)),
+    bottom: Math.max(0, ...boxes.map((box) => box.bottom)),
   };
 }
 

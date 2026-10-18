@@ -10,6 +10,29 @@ export interface CounterTarget {
   name: string;
 }
 
+/**
+ * A card, a pile or a hand card pressed: it becomes a drag once the pointer
+ * moves (drag.ts). Ids only, so the drag outlives new views.
+ */
+export interface Held {
+  element: TableElement;
+  pointerId: number;
+  /** Where it was pressed, on the screen. */
+  start: { x: number; y: number };
+  /** Past the threshold: it is being dragged. */
+  moved: boolean;
+  /** The card it moves, as the drag started; null for the encounter deck's hidden top card. */
+  card: string | null;
+  /** The table and hand cards that move with it, hidden while their ghost follows the pointer. */
+  lifted: readonly string[];
+}
+
+/** The card or pile a drop would go onto, outlined during a drag. */
+export interface DropOn {
+  kind: 'card' | 'pile';
+  id: string;
+}
+
 /** What hovering an element does to the side preview. */
 export type PreviewChange = 'show' | 'keep' | 'clear';
 
@@ -40,10 +63,19 @@ class TableInteraction {
   /** The pointer is on the pill. */
   onPill = $state(false);
 
+  /** The element pressed or dragged, if any. */
+  held = $state.raw<Held | null>(null);
+  /** What the dragged element would be dropped on, outlined. */
+  dropOn = $state.raw<DropOn | null>(null);
+  /** Where the dragged hand card would slot back in, while it is over the hand. */
+  handGap = $state<number | null>(null);
+
   #pointer = { x: NaN, y: NaN };
   // Where the pointer was when the table was last redrawn.
   #drawnAt = { x: NaN, y: NaN };
   #pointerType = 'mouse';
+  // The click that ends a drag, or that picks an arrow's target, is not a tap on what lies there.
+  #swallowClick = false;
   #hideTimer: ReturnType<typeof setTimeout> | undefined;
   #counterTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -55,6 +87,72 @@ class TableInteraction {
   /** Remembers the kind of the last pointer pressed: only a touch tap selects. */
   pointerPressed(event: PointerEvent): void {
     this.#pointerType = event.pointerType || 'mouse';
+    this.#swallowClick = false;
+  }
+
+  /** The click that follows the current press selects nothing. */
+  swallowNextClick(): void {
+    this.#swallowClick = true;
+  }
+
+  /** To call on every click, in the capture phase: stops the one to swallow. */
+  clicked(event: MouseEvent): void {
+    if (this.#swallowClick) {
+      this.#swallowClick = false;
+      event.stopPropagation();
+      event.preventDefault();
+    }
+  }
+
+  /** The element being dragged, once the pointer has moved: a press alone is not a drag. */
+  get dragging(): Held | null {
+    return this.held?.moved ? this.held : null;
+  }
+
+  /** A press on a card, a pile or a hand card, with the main button or a finger. */
+  press(element: TableElement, event: PointerEvent): void {
+    // A second finger does not take over a drag.
+    if (event.button !== 0 || this.dragging !== null) {
+      return;
+    }
+    // No text selection or native image drag: the press may become our drag.
+    event.preventDefault();
+    this.held = {
+      element,
+      pointerId: event.pointerId,
+      start: { x: event.clientX, y: event.clientY },
+      moved: false,
+      card: null,
+      lifted: [],
+    };
+  }
+
+  /** The press turned into a drag: the bar's dropdown and the token pill go. */
+  lift(card: string | null, lifted: readonly string[]): void {
+    if (this.held === null) {
+      return;
+    }
+    this.held = { ...this.held, moved: true, card, lifted };
+    this.menu = null;
+    this.hideCounter();
+  }
+
+  /** Whether the card is dragged, its ghost drawn in the drag layer instead. */
+  isLifted(id: string): boolean {
+    return this.dragging?.lifted.includes(id) ?? false;
+  }
+
+  /** Whether the top card of that pile (or the encounter deck's) is dragged. */
+  isLiftedFrom(pile: string): boolean {
+    const element = this.dragging?.element;
+    return element?.kind === 'pile' && element.id === pile;
+  }
+
+  /** The press or the drag is over: dropped, or cancelled. */
+  letGo(): void {
+    this.held = null;
+    this.dropOn = null;
+    this.handGap = null;
   }
 
   /** To call when the table is redrawn. */
@@ -73,7 +171,8 @@ class TableInteraction {
 
   /** The pointer entered a card, a pile or a hand card. */
   enter(element: TableElement, event: PointerEvent, preview: PreviewChange = 'show'): void {
-    if (!this.#isReal(event)) {
+    // The pointer passes over what lies under a drag: that is not hovering it.
+    if (!this.#isReal(event) || this.dragging) {
       return;
     }
     this.#cancelHide();
@@ -89,7 +188,7 @@ class TableInteraction {
 
   /** The pointer entered something without actions: the previous element is dropped at once. */
   enterNothing(event: PointerEvent): void {
-    if (!this.#isReal(event)) {
+    if (!this.#isReal(event) || this.dragging) {
       return;
     }
     this.#cancelHide();
@@ -216,6 +315,8 @@ class TableInteraction {
   /** Forgets everything: a previous game's state must not show in the next one. */
   reset(): void {
     this.release();
+    this.letGo();
+    this.#swallowClick = false;
     this.highlighted = new Set();
     this.arrowFrom = null;
     this.onBar = false;

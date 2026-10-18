@@ -26,11 +26,37 @@
 
   const cardSize = $derived(narrow ? HAND_CARD_NARROW : HAND_CARD);
 
+  // A card dragged out of the hand leaves the fan. Brought back over it, the
+  // other cards make room where it would slot in.
+  const shown = $derived.by((): (TableCard | 'gap')[] => {
+    const drag = interaction.dragging;
+    if (drag?.element.kind !== 'hand') {
+      return cards;
+    }
+    const dragged = drag.element.id;
+    const others: (TableCard | 'gap')[] = cards.filter((card) => card.id !== dragged);
+    const gap = interaction.handGap;
+    if (gap !== null) {
+      others.splice(Math.min(gap, others.length), 0, 'gap');
+    }
+    return others;
+  });
+
   // The whole hand's width, padding included: fanPositions keeps that padding free.
   let width = $state(0);
-  const slots = $derived(fanPositions(cards.length, width, cardSize.w));
+  const slots = $derived(fanPositions(shown.length, width, cardSize.w));
 
   let open = $state(false);
+
+  // While something is dragged, the drag decides: the hand rises only under a
+  // hand card brought back over it. It is left as it was when the card is
+  // dropped, so a reordered hand stays up, until the pointer moves again.
+  $effect.pre(() => {
+    const drag = interaction.dragging;
+    if (drag) {
+      open = drag.element.kind === 'hand' && interaction.handGap !== null;
+    }
+  });
   let list = $state<HTMLElement>();
 
   // The band the pointer opens the hand in: the cards' area stretched down to
@@ -45,6 +71,9 @@
    * and :hover would flip on and off.
    */
   function followPointer(event: PointerEvent): void {
+    if (interaction.dragging) {
+      return;
+    }
     const boxes = [...(list?.querySelectorAll('.hcard') ?? [])].map((card) =>
       card.getBoundingClientRect(),
     );
@@ -62,7 +91,12 @@
   // The window has no pointerleave of its own: the root element gets it.
   $effect(() => {
     const root = document.documentElement;
-    const close = () => (open = false);
+    // A drag keeps the hand as the drag has it, even off the window.
+    const close = () => {
+      if (!interaction.dragging) {
+        open = false;
+      }
+    };
     root.addEventListener('pointerleave', close);
     return () => root.removeEventListener('pointerleave', close);
   });
@@ -81,36 +115,43 @@
   bind:this={list}
   bind:clientWidth={width}
 >
-  {#each cards as card, i (card.id)}
+  {#each shown as card, i (card === 'gap' ? card : card.id)}
     {@const slot = slots[i]}
-    {@const face = faceOf(card)}
-    <!--
+    {#if card === 'gap'}
+      <li class="hcard gap" aria-hidden="true" style:--x="{slot?.x ?? 0}px">
+        <div class="fan" style:--rot="{slot?.angle ?? 0}deg" style:--ty="{slot?.y ?? 0}px"></div>
+      </li>
+    {:else}
+      {@const face = faceOf(card)}
+      <!--
       Only a touch tap selects (there is no hover on touch): keyboard users act on hand cards with
       their keys instead.
     -->
-    <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
-    <li
-      class="hcard"
-      data-id={card.id}
-      class:locked={interaction.isLocked({ kind: 'hand', id: card.id })}
-      style:--x="{slot?.x ?? 0}px"
-      onpointerenter={(event) => interaction.enter({ kind: 'hand', id: card.id }, event)}
-      onpointerleave={() => interaction.leave()}
-      onclick={() => interaction.select({ kind: 'hand', id: card.id })}
-    >
-      <div class="fan" style:--rot="{slot?.angle ?? 0}deg" style:--ty="{slot?.y ?? 0}px">
-        {#if isHidden(card)}
-          <CardBack back={card.back} />
-        {:else}
-          <!-- A landscape card is turned a quarter to fit the portrait slot. -->
-          <CardFace
-            images={face?.images ?? []}
-            name={face?.name ?? ''}
-            rotated={cardBox(face?.size ?? 'std', { onPile: true }).rotated}
-          />
-        {/if}
-      </div>
-    </li>
+      <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
+      <li
+        class="hcard"
+        data-id={card.id}
+        class:locked={interaction.isLocked({ kind: 'hand', id: card.id })}
+        style:--x="{slot?.x ?? 0}px"
+        onpointerenter={(event) => interaction.enter({ kind: 'hand', id: card.id }, event)}
+        onpointerleave={() => interaction.leave()}
+        onpointerdown={(event) => interaction.press({ kind: 'hand', id: card.id }, event)}
+        onclick={() => interaction.select({ kind: 'hand', id: card.id })}
+      >
+        <div class="fan" style:--rot="{slot?.angle ?? 0}deg" style:--ty="{slot?.y ?? 0}px">
+          {#if isHidden(card)}
+            <CardBack back={card.back} />
+          {:else}
+            <!-- A landscape card is turned a quarter to fit the portrait slot. -->
+            <CardFace
+              images={face?.images ?? []}
+              name={face?.name ?? ''}
+              rotated={cardBox(face?.size ?? 'std', { onPile: true }).rotated}
+            />
+          {/if}
+        </div>
+      </li>
+    {/if}
   {/each}
 </ul>
 
@@ -172,6 +213,22 @@
     pointer-events: auto;
     cursor: grab;
     touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    /* The other cards slide aside when a dragged card comes back over the hand. */
+    transition: left 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  /* Where a dragged card would slot back in. */
+  .hcard.gap {
+    pointer-events: none;
+  }
+
+  .hcard.gap .fan {
+    border: 2px dashed #4fd1ff88;
+    border-radius: 9px;
+    background: #4fd1ff14;
+    filter: none;
   }
 
   /* A card selected by a tap stays up like a hovered one. */
@@ -209,7 +266,8 @@
     transition: opacity 0.22s;
   }
 
-  .hand.open .fan::after {
+  .hand.open .fan::after,
+  .hcard.gap .fan::after {
     opacity: 0;
   }
 </style>

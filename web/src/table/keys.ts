@@ -6,7 +6,7 @@ import { modal } from '../components/modal.svelte';
 import type { Action, Area, CardView, PileView, Size, View } from '../lib/types';
 import type { ActionItem } from './actions';
 import { interaction } from './interaction.svelte';
-import { footprints, isOutOfPlay, type Footprint } from './layout';
+import { footprints, isOutOfPlay, visualBox } from './layout';
 import { ZOOM_STEP } from './zoom';
 
 // The prototype's free slot (ruling P5b-R5): from x 280, past the deck and
@@ -17,9 +17,6 @@ const SLOT_STEP = 140;
 const SLOT_CARD_WIDTH = 100;
 const SLOT_MARGIN = 20;
 const TOP_ROW_HEIGHT = 140;
-
-/** Keep in step with --exhaust-angle (tokens.css). */
-const EXHAUST_RADIANS = (15 * Math.PI) / 180;
 
 /** What the keys need from the table. */
 export interface KeyTable {
@@ -214,27 +211,16 @@ export function freeSlot(
   area: Area,
   sizeOf: (card: CardView) => Size,
 ): { x: number; y: number } {
-  const exhausted = new Set(cards.filter((c) => c.exhausted).map((c) => c.id));
   const inPlay = piles.filter((p) => !isOutOfPlay(p));
   const items = footprints(cards, inPlay, area, sizeOf).filter((item) => item.y < TOP_ROW_HEIGHT);
   // Ends: every item is passed after a finite number of steps.
   for (let x = SLOT_FIRST_X; ; x += SLOT_STEP) {
     const blocked = items.some(
       (item) =>
-        item.x < x + SLOT_CARD_WIDTH + SLOT_MARGIN &&
-        rightEdge(item, exhausted.has(item.id)) > x - SLOT_MARGIN,
+        item.x < x + SLOT_CARD_WIDTH + SLOT_MARGIN && visualBox(item).right > x - SLOT_MARGIN,
     );
     if (!blocked) {
       return { x, y: 0 };
     }
   }
-}
-
-/** The right edge an item shows: an exhausted card is turned, its bounding box wider around its centre. */
-function rightEdge(item: Footprint, exhausted: boolean): number {
-  if (!exhausted) {
-    return item.x + item.w;
-  }
-  const turnedWidth = item.w * Math.cos(EXHAUST_RADIANS) + item.h * Math.sin(EXHAUST_RADIANS);
-  return item.x + item.w / 2 + turnedWidth / 2;
 }

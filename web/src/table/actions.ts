@@ -113,7 +113,7 @@ export function actionsFor(
 }
 
 /** The seat of a player area ("p1" is seat 1), or null for the villain side. */
-function seatOf(area: Area): number | null {
+export function seatOf(area: Area): number | null {
   if (!area.startsWith('p')) {
     return null;
   }
@@ -250,7 +250,7 @@ function leaveItems(card: CardView, context: Context): ActionItem[] {
 }
 
 /** The stage whose shown card is this card or one tucked under it, if any. */
-function stageHeldBy(card: CardView, table: TableView): Stage | undefined {
+export function stageHeldBy(card: CardView, table: TableView): Stage | undefined {
   return table.stages.find((stage) => isInStackOf(stage.current, card.id, table));
 }
 

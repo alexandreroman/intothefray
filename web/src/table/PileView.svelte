@@ -34,7 +34,13 @@
 
   const SLOT = cardBox('std', {});
 
-  const empty = $derived(pile.count === 0);
+  // While its top card is dragged, the pile shows what lies under it.
+  const lifted = $derived(interaction.isLiftedFrom(pile.id));
+  const count = $derived(lifted ? pile.count - 1 : pile.count);
+  const empty = $derived(count === 0);
+  const targeted = $derived(
+    interaction.dropOn?.kind === 'pile' && interaction.dropOn.id === pile.id,
+  );
   const shownTop = $derived(empty ? undefined : top);
   const badge = $derived(BADGES[pile.kind]);
   // A landscape top card is turned a quarter to fit the portrait slot.
@@ -76,12 +82,14 @@
   class:out={badge !== undefined}
   class:highlighted
   class:locked
+  class:drop-pile={targeted}
   style:left="{pile.x}px"
   style:top="{pile.y}px"
   style:width="{SLOT.w}px"
   style:height="{SLOT.h}px"
   onpointerenter={onEnter}
   onpointerleave={() => interaction.leave()}
+  onpointerdown={(event) => interaction.press(element, event)}
   onclick={onTap}
 >
   {#if empty}
@@ -98,7 +106,7 @@
   {/if}
 
   {#if !empty}
-    <span class="count">{pile.count}</span>
+    <span class="count">{count}</span>
   {/if}
 
   {#if badge}
@@ -162,6 +170,18 @@
 
   .card.empty {
     filter: none;
+  }
+
+  /* A drop would go onto this pile. */
+  .card.drop-pile::before {
+    content: '';
+    position: absolute;
+    inset: 1%;
+    border-radius: 7px;
+    pointer-events: none;
+    z-index: 1;
+    outline: 3px dashed var(--sel);
+    outline-offset: 3px;
   }
 
   .card.inert {

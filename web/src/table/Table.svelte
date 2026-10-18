@@ -22,6 +22,7 @@
     type TableElement,
   } from './actions';
   import AskCount from './AskCount.svelte';
+  import DragLayer from './DragLayer.svelte';
   import { isHidden, pileBack } from './face';
   import Hand from './Hand.svelte';
   import { interaction } from './interaction.svelte';
@@ -69,7 +70,8 @@
   );
 
   function topOf(pile: PileView): TableCard | undefined {
-    const topId = pile.cards?.at(-1);
+    // While its top card is dragged, a pile shows the card under it.
+    const topId = pile.cards?.at(interaction.isLiftedFrom(pile.id) ? -2 : -1);
     return topId === undefined ? undefined : cardsById.get(topId);
   }
 
@@ -231,7 +233,7 @@
   // Never for a hand card: its cards are dragged, or played with their keys.
   const barShown = $derived.by(() => {
     const hovered = interaction.hovered;
-    if (!hovered || hovered.kind === 'hand') {
+    if (!hovered || hovered.kind === 'hand' || interaction.dragging) {
       return false;
     }
     if (interaction.arrowFrom !== null) {
@@ -255,7 +257,7 @@
   // redraws; it goes with the token (zero) or the card (off the table).
   const counterShown = $derived.by(() => {
     const target = interaction.counter;
-    if (!target || view.you.role !== 'player') {
+    if (!target || view.you.role !== 'player' || interaction.dragging) {
       return null;
     }
     const card = cardsById.get(target.card);
@@ -349,6 +351,8 @@
         session.act({ kind: 'arrowAdd', card: from, target: to });
       }
       interaction.endArrow();
+      // On touch, the tap goes on to the card as a click, which would select it.
+      interaction.swallowNextClick();
       return;
     }
     if (isEmptySpot(target)) {
@@ -397,6 +401,7 @@
 
   let zoom = $state(storedZoom());
   let wrap = $state<HTMLElement>();
+  let app = $state<HTMLElement>();
 
   // A new view, a zoom or a resized zone moves the elements under a pointer at
   // rest: the ones it lands on are not hovered by the viewer.
@@ -476,6 +481,7 @@
 <svelte:window
   onpointermove={(event) => interaction.pointerMoved(event)}
   onpointerdowncapture={(event) => interaction.pointerPressed(event)}
+  onclickcapture={(event) => interaction.clicked(event)}
   onkeydown={onKeydown}
 />
 
@@ -484,7 +490,9 @@
   class="app"
   class:side-hidden={sideHidden}
   class:arrowing={interaction.arrowFrom !== null}
+  class:dragging={interaction.dragging !== null}
   style:--z={zoom}
+  bind:this={app}
 >
   <div class="top">
     <TopBar
@@ -530,6 +538,8 @@
   {#if handCards}
     <Hand cards={handCards} {faceOf} narrow={narrow.current} />
   {/if}
+
+  <DragLayer {view} {zoom} root={app} {faceOf} {sizeOf} act={(action) => session.act(action)} />
 
   {#if barShown && wrap}
     <ActionBar
@@ -630,6 +640,11 @@
     box-shadow:
       0 0 0 2px #ffffffb0,
       0 0 22px 6px #ffffff38;
+  }
+
+  /* The 10-unit grid shows more clearly while something is dragged. */
+  .app.dragging {
+    --dot: #34405f;
   }
 
   /* Picking the card an arrow points at. */

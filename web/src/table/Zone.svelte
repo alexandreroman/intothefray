@@ -28,14 +28,8 @@
 <script lang="ts">
   import type { Area, PackFace, CardView as TableCard, PileView as Pile, Size } from '../lib/types';
   import CardView from './CardView.svelte';
-  import {
-    footprints,
-    GRID,
-    hiddenAside,
-    placeOutPiles,
-    zoneWidth,
-    type Footprint,
-  } from './layout';
+  import { snap } from './drag';
+  import { footprints, hiddenAside, placeOutPiles, zoneWidth, type Footprint } from './layout';
   import { interaction } from './interaction.svelte';
   import PileView from './PileView.svelte';
   import { firstPlayerUrl } from './theme';
@@ -139,8 +133,6 @@
   let tokenBroken = $state(false);
 
   let resizing = $state<{ startY: number; startHeight: number } | null>(null);
-
-  const snap = (value: number) => Math.round(value / GRID) * GRID;
 
   function startResize(event: PointerEvent): void {
     if (!above) {
