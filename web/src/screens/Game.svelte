@@ -3,6 +3,7 @@
   import { getPref, setPref } from '../lib/prefs';
   import { GameSession } from '../lib/session.svelte';
   import Ended from './Ended.svelte';
+  import Lobby from './Lobby.svelte';
   import TablePlaceholder from './TablePlaceholder.svelte';
 
   // The parent keys this component on the game id: one instance per game.
@@ -48,8 +49,7 @@
   {/if}
   {#if session?.view}
     {#if session.view.phase === 'lobby'}
-      <!-- Placeholder until the lobby screen exists. -->
-      <main>Lobby</main>
+      <Lobby {session} view={session.view} />
     {:else if session.view.phase === 'playing'}
       <TablePlaceholder view={session.view} />
     {:else}
