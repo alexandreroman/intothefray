@@ -37,10 +37,14 @@ var (
 	ErrExists = errors.New("game already exists")
 )
 
-// Event is a message published on a game's channel.
+// Event is a message published on a game's channel, or a resync notice.
 type Event struct {
 	GameID  string
 	Payload []byte
+	// Resync reports that the subscription was restored after a lost
+	// connection: the events published meanwhile are lost, so the reader
+	// must reload the games it follows. GameID and Payload are then empty.
+	Resync bool
 }
 
 // record is the JSON value stored under a game key.
@@ -178,7 +182,8 @@ func (s *Store) Publish(ctx context.Context, id string, payload []byte) error {
 // the subscription and closes the channel; the channel also closes when ctx
 // ends, releasing the Redis connection. Events are handed to the reader one
 // at a time, so a reader that stops reading stalls the subscription until it
-// is closed.
+// is closed. The subscription survives a lost connection: once it is back,
+// the reader gets an Event with Resync set.
 func (s *Store) Subscribe(ctx context.Context) (<-chan Event, func() error, error) {
 	sub := s.rdb.PSubscribe(ctx, eventsPattern)
 	// Wait for the subscription to be active so that an event published
@@ -197,21 +202,26 @@ func (s *Store) Subscribe(ctx context.Context) (<-chan Event, func() error, erro
 		defer close(events)
 		defer close(done)
 		defer func() { _ = release() }()
-		messages := sub.Channel()
+		// The subscription messages show when go-redis subscribes again after
+		// a lost connection; the first one was read above.
+		messages := sub.ChannelWithSubscriptions()
 		for {
-			var msg *redis.Message
+			var message any
 			select {
 			case m, ok := <-messages:
 				if !ok {
 					return
 				}
-				msg = m
+				message = m
 			case <-quit:
 				return
 			case <-ctx.Done():
 				return
 			}
-			ev := Event{GameID: gameIDFromChannel(msg.Channel), Payload: []byte(msg.Payload)}
+			ev, relevant := eventOf(message)
+			if !relevant {
+				continue
+			}
 			select {
 			case events <- ev:
 			case <-quit:
@@ -230,6 +240,23 @@ func (s *Store) Subscribe(ctx context.Context) (<-chan Event, func() error, erro
 		return err
 	}
 	return events, closeSub, nil
+}
+
+// eventOf turns a message of the subscription into an Event. It reports
+// false for the messages the reader has no use for.
+func eventOf(message any) (Event, bool) {
+	switch m := message.(type) {
+	case *redis.Message:
+		return Event{GameID: gameIDFromChannel(m.Channel), Payload: []byte(m.Payload)}, true
+	case *redis.Subscription:
+		// Only a new subscription matters, not the end of one.
+		if m.Kind != "psubscribe" {
+			return Event{}, false
+		}
+		return Event{Resync: true}, true
+	default:
+		return Event{}, false
+	}
 }
 
 // sleepWithJitter desynchronises writers that just collided; without it they

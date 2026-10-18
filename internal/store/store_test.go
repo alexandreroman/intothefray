@@ -327,3 +327,34 @@ func TestSubscribeFailsWhenRedisIsDown(t *testing.T) {
 		t.Error("Subscribe succeeded without Redis, want an error")
 	}
 }
+
+func TestResubscribeSendsResync(t *testing.T) {
+	s, mr := newTestStore(t)
+	events, _ := subscribe(t.Context(), t, s)
+
+	mr.Close()
+	if err := mr.Restart(); err != nil {
+		t.Fatalf("restart Redis: %v", err)
+	}
+
+	select {
+	case ev := <-events:
+		if !ev.Resync || ev.GameID != "" || ev.Payload != nil {
+			t.Errorf("event = %+v, want a resync notice", ev)
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("no resync notice after the connection came back")
+	}
+
+	if err := s.Publish(t.Context(), "abc", []byte("hello")); err != nil {
+		t.Fatalf("Publish: %v", err)
+	}
+	select {
+	case ev := <-events:
+		if ev.Resync || ev.GameID != "abc" || string(ev.Payload) != "hello" {
+			t.Errorf("event = %+v, want the published one", ev)
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("no event received after the resync")
+	}
+}

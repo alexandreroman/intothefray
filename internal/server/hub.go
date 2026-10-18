@@ -226,6 +226,10 @@ func (s *Server) touchLoop(ctx context.Context) {
 // handleEvent relays one event published on a game's channel, by any
 // instance, this one included.
 func (s *Server) handleEvent(ctx context.Context, ev store.Event) {
+	if ev.Resync {
+		s.resyncLocalGames(ctx)
+		return
+	}
 	var head struct {
 		Kind string `json:"kind"`
 	}
@@ -266,6 +270,23 @@ func (s *Server) relayUpdate(ctx context.Context, ev store.Event) {
 		return
 	}
 	s.hub.broadcast(g, version)
+}
+
+// resyncLocalGames sends the stored version of every game with local
+// viewers, once the subscription is back after a lost connection: the
+// updates published in the meantime never reached this instance.
+func (s *Server) resyncLocalGames(ctx context.Context) {
+	for _, id := range s.hub.gameIDs() {
+		loadCtx, cancel := context.WithTimeout(ctx, storeCallTimeout)
+		g, version, err := s.deps.Store.Load(loadCtx, id)
+		cancel()
+		if err != nil {
+			s.deps.Logger.Warn("load game to resync", "game_id", id, "error", err)
+			continue
+		}
+		// Connections skip the version when they already have it.
+		s.hub.broadcast(g, version)
+	}
 }
 
 // relayPresence sends a viewer's presence to the other local viewers of the

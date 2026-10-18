@@ -469,6 +469,32 @@ func TestTouchKeepsConnectedGamesAlive(t *testing.T) {
 	}
 }
 
+func TestReconnectResyncsViewers(t *testing.T) {
+	mr := miniredis.RunT(t)
+	ts := startInstance(t, mr, nil)
+	created := createGame(t, ts, "Alex")
+	alex := connect(t, ts, created.ID)
+	alex.hello(created.Token, "Alex")
+
+	// Bob joins behind the instance's back: no event tells it, as if the
+	// event had been published while its subscription was down.
+	rdb := redis.NewClient(&redis.Options{Addr: mr.Addr()})
+	t.Cleanup(func() { _ = rdb.Close() })
+	_, _, err := store.New(rdb, time.Hour).Update(t.Context(), created.ID, func(g *game.Game) error {
+		_, err := g.Join("bob-token", "Bob")
+		return err
+	})
+	if err != nil {
+		t.Fatalf("join Bob: %v", err)
+	}
+	mr.Close()
+	if err := mr.Restart(); err != nil {
+		t.Fatalf("restart Redis: %v", err)
+	}
+
+	alex.awaitView(func(v game.View) bool { return len(v.Players) == 2 })
+}
+
 // expireBlocker is a Redis hook that holds every EXPIRE command, the one a
 // touch round sends, until release is closed.
 type expireBlocker struct {
