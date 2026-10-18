@@ -82,7 +82,11 @@
     }
   }
 
-  /** Runs the current item of that id: a button left over from an older bar sends nothing. */
+  /**
+   * Runs the current item of that id: a button left over from an older bar sends nothing. A
+   * disabled item is aria-disabled rather than disabled, so that its tooltip still shows: its
+   * clicks arrive here, and are ignored.
+   */
   function runItem(id: string, menuId?: string): void {
     const parent = menuId === undefined ? undefined : list.find((item) => item.id === menuId);
     const choices = parent ? (parent.menu ?? []) : list;
@@ -100,8 +104,11 @@
   let menuPosition = $state<{ left: number; bottom: number } | null>(null);
   const openMenu = $derived(list.find((item) => item.id === interaction.menu && item.menu));
 
-  function toggleMenu(id: string): void {
-    interaction.menu = interaction.menu === id ? null : id;
+  function toggleMenu(item: ActionItem): void {
+    if (item.disabled) {
+      return;
+    }
+    interaction.menu = interaction.menu === item.id ? null : item.id;
   }
 
   // Opened above its button, kept inside the window.
@@ -216,8 +223,8 @@
           data-tip={item.tip ?? item.label}
           aria-haspopup="menu"
           aria-expanded={interaction.menu === item.id}
-          disabled={item.disabled}
-          onclick={() => toggleMenu(item.id)}
+          aria-disabled={item.disabled}
+          onclick={() => toggleMenu(item)}
           >{item.label}{#if !item.add}<span class="caret" aria-hidden="true">▾</span>{/if}</button
         >
       {:else if item.icon}
@@ -228,7 +235,7 @@
           aria-label={item.tip ?? item.label}
           data-tip={item.tip ?? item.label}
           data-kbd={item.key}
-          disabled={item.disabled}
+          aria-disabled={item.disabled}
           onclick={() => runItem(item.id)}
         >
           <Icons name={item.icon} />
@@ -238,7 +245,7 @@
           type="button"
           data-tip={item.tip ?? item.label}
           data-kbd={item.key}
-          disabled={item.disabled}
+          aria-disabled={item.disabled}
           onclick={() => runItem(item.id)}>{item.label}</button
         >
       {/if}
@@ -348,7 +355,7 @@
     color: var(--muted);
   }
 
-  button.add:hover:not(:disabled),
+  button.add:hover:not(:disabled, [aria-disabled='true']),
   button.add[aria-expanded='true'] {
     color: var(--text);
   }

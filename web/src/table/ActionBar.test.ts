@@ -254,6 +254,52 @@ describe('ActionBar', () => {
     expect(bar()).toBeNull();
   });
 
+  it('a disabled button shows its tooltip and sends nothing', async () => {
+    const view = makeView();
+    // A card revealed on the encounter deck: Reveal waits until it is moved.
+    view.table!.cards.push(
+      card('rev', { owner: -1, back: 'encounter', area: 'villain', x: 500, onPile: 'enc' }),
+    );
+    const { session } = await renderTable(view);
+    vi.useFakeTimers();
+    await fireEvent.pointerEnter(placed('enc'));
+    const reveal = within(bar()!).getByRole('button', { name: 'Reveal' });
+    // Not the disabled attribute: some browsers fire no pointer events on a disabled button.
+    expect(reveal.getAttribute('aria-disabled')).toBe('true');
+    expect(reveal.hasAttribute('disabled')).toBe(false);
+
+    await fireEvent.pointerOver(reveal);
+    await vi.advanceTimersByTimeAsync(350);
+    const tip = screen.getByRole('tooltip');
+    expect(tip.textContent).toContain(
+      'Spider-Man is already revealed on this deck — move it first',
+    );
+    expect(tip.querySelector('kbd')?.textContent).toBe('R');
+
+    await fireEvent.click(reveal);
+    expect(session.act).not.toHaveBeenCalled();
+  });
+
+  it('a disabled dropdown shows its tooltip and does not open', async () => {
+    const { session } = await renderTable();
+    // The card the villain stage shows stays on the table.
+    await fireEvent.pointerEnter(placed('v'));
+    const tip = 'The villain card stays on the table — choose another card to show';
+    const moveTo = within(bar()!).getByRole('button', { name: /^Move to/ });
+    expect(moveTo.getAttribute('aria-disabled')).toBe('true');
+    expect(moveTo.hasAttribute('disabled')).toBe(false);
+    expect(moveTo.dataset.tip).toBe(tip);
+
+    await fireEvent.click(moveTo);
+    expect(screen.queryByRole('menu')).toBeNull();
+    expect(interaction.menu).toBeNull();
+
+    const discard = within(bar()!).getByRole('button', { name: tip });
+    expect(discard.getAttribute('aria-disabled')).toBe('true');
+    await fireEvent.click(discard);
+    expect(session.act).not.toHaveBeenCalled();
+  });
+
   it('bar aligns to the right edge near the right bound', async () => {
     const rect = (left: number, top: number, width: number, height: number): DOMRect =>
       ({

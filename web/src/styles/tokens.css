@@ -60,11 +60,13 @@ button {
   white-space: nowrap;
 }
 
-button:hover:not(:disabled) {
+button:hover:not(:disabled, [aria-disabled='true']) {
   border-color: var(--muted);
 }
 
-button:disabled {
+/* aria-disabled keeps the button's tooltip: some browsers fire no pointer events on a disabled one. */
+button:disabled,
+button[aria-disabled='true'] {
   opacity: 0.45;
   cursor: default;
 }
