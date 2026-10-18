@@ -283,7 +283,7 @@ export type ActionKind =
 export interface Action {
   kind: ActionKind;
   card?: string;
-  target?: string; // card id (attach, arrow) or pile id
+  target?: string; // card id (attach, arrow, play under it) or pile id
   pile?: string;
   area?: Area;
   x?: number;

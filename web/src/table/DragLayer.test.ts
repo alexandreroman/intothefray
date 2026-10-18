@@ -60,8 +60,15 @@ const PILES = [
   pile('disc:p0', { kind: 'discard', owner: 0, area: 'p0', x: 720, count: 0, cards: [] }),
 ];
 
-/** Alex (p0) alone with Rhino. */
-function makeView(extra: { cards?: TableCard[]; spectator?: boolean } = {}): View {
+/** Alex (p0) alone with Rhino; `discarded` lists his discard pile, bottom to top. */
+function makeView(
+  extra: { cards?: TableCard[]; spectator?: boolean; discarded?: string[] } = {},
+): View {
+  const discarded = extra.discarded ?? [];
+  const piles = PILES.map((p) =>
+    p.id === 'disc:p0' ? { ...p, count: discarded.length, cards: discarded } : p,
+  );
+  const inPile = discarded.map((id) => card(id, { zone: 'pile', area: undefined }));
   return {
     id: 'g1',
     phase: 'playing',
@@ -82,8 +89,8 @@ function makeView(extra: { cards?: TableCard[]; spectator?: boolean } = {}): Vie
     spectators: 0,
     config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
     table: {
-      cards: extra.cards ?? CARDS,
-      piles: PILES,
+      cards: [...(extra.cards ?? CARDS), ...inPile],
+      piles,
       hand: ['h1', 'h2', 'h3'],
       stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
       firstPlayer: { area: 'p0', x: 860, y: 40 },
@@ -137,7 +144,10 @@ function layOut(view: () => View): void {
     }
     const id = (this as HTMLElement).dataset.id;
     if (this.closest('.surface') && id && zoneTop !== undefined) {
-      const placed = view().table?.cards.find((c) => c.id === id) ?? PILES.find((p) => p.id === id);
+      const table = view().table;
+      const placed =
+        table?.cards.find((c) => c.id === id && c.zone === 'table') ??
+        table?.piles.find((p) => p.id === id);
       if (placed) {
         return domRect(SURFACE.left + placed.x, zoneTop + SURFACE.top + placed.y, 100, 140);
       }
@@ -386,6 +396,39 @@ describe('dragging a table card', () => {
 });
 
 describe('dragging from a pile', () => {
+  it('plays the top card of a discard pile under the card it is dropped on', async () => {
+    const { session } = await renderTable(makeView({ discarded: ['d1'] }));
+    // The discard pile lies at 740, 340 on the screen.
+    await press(placed('disc:p0'), 790, 410);
+    await moveTo(470, 420);
+    expect(screen.getByText('Under Spider-Man')).toBeTruthy();
+
+    await release(470, 420);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({
+      kind: 'play',
+      card: 'd1',
+      target: 'other',
+    });
+  });
+
+  it('deals the encounter card where it lands, even over a card', async () => {
+    const { session } = await renderTable();
+    await press(placed('enc'), 50, 100);
+    await moveTo(470, 420);
+    // It is not tucked: no outline, no label.
+    expect(placed('other').classList).not.toContain('drop-target');
+    expect(screen.queryByText(/^Under/)).toBeNull();
+
+    await release(470, 420);
+    // Held by its middle: its corner at 420, 350 on the screen, 400, 10 on Alex's table.
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({
+      kind: 'deal',
+      area: 'p0',
+      x: 400,
+      y: 10,
+    });
+  });
+
   it('deals the top card of the encounter deck face down where it lands', async () => {
     const { session } = await renderTable();
     await press(placed('enc'), 50, 100);
@@ -415,9 +458,31 @@ describe('dragging a hand card', () => {
     expect(document.querySelector('.hand .hcard[data-id="h2"]')).toBeNull();
 
     await release(300, 450);
-    expect(session.act).toHaveBeenCalledExactlyOnceWith(
-      expect.objectContaining({ kind: 'play', card: 'h2', area: 'p0' }),
-    );
+    // Held 60 px in from its left edge and 80 down, out of 132 by 185: at table size its corner
+    // lands at 254.5, 389.5 on the screen, 234.5, 49.5 on Alex's table.
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({
+      kind: 'play',
+      card: 'h2',
+      area: 'p0',
+      x: 230,
+      y: 50,
+    });
+  });
+
+  it('plays it under the card it is dropped on', async () => {
+    const { session } = await renderTable();
+    await press(handCard('h2'), 500, 780);
+    // Over "other", at 420, 340 on the screen.
+    await moveTo(470, 420);
+    expect(placed('other').classList).toContain('drop-target');
+    expect(screen.getByText('Under Spider-Man')).toBeTruthy();
+
+    await release(470, 420);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({
+      kind: 'play',
+      card: 'h2',
+      target: 'other',
+    });
   });
 
   it('reorders the hand, the other cards making room, and the hand stays open', async () => {

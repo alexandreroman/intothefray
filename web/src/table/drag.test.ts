@@ -250,6 +250,21 @@ describe('dropAction', () => {
     });
   });
 
+  it('plays a hand card or the top card of a pile under the card it is dropped on', () => {
+    const onCard: DropRect = {
+      kind: 'card',
+      card: 'hero',
+      area: 'p0',
+      z: 3,
+      rect: rect(0, 0, 1, 1),
+    };
+    const at = { area: 'p0' as const, x: 300, y: 300 };
+    const hand: DragSource = { kind: 'hand', card: 'h2', hand: ['h1', 'h2'], area: 'p0' };
+    expect(dropAction(hand, onCard, at)).toEqual({ kind: 'play', card: 'h2', target: 'hero' });
+    const fromPile: DragSource = { kind: 'pile', pile: 'encd', card: 'top' };
+    expect(dropAction(fromPile, onCard, at)).toEqual({ kind: 'play', card: 'top', target: 'hero' });
+  });
+
   it('reorders the hand, the dragged card slotting in among the others', () => {
     const hand: DragSource = { kind: 'hand', card: 'h1', hand: ['h1', 'h2', 'h3'], area: 'p0' };
     const slot = (index: number): DropRect => ({ kind: 'hand', index, rect: rect(0, 0, 1, 1) });

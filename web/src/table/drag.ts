@@ -144,14 +144,29 @@ export function dropAction(
     case 'pile':
       return onPile(drag, target.pile, target.drop);
     case 'card':
-      if (drag.kind === 'card') {
-        return { kind: 'attach', card: drag.card, target: target.card };
-      }
-      // Anything else lands on the table where it is dropped, over that card.
-      return place(drag, at);
+      return onCard(drag, target.card, at);
     case 'zone':
       return place(drag, at);
   }
+}
+
+function onCard(drag: DragSource, card: string, at: TablePoint): Action | null {
+  switch (drag.kind) {
+    case 'card':
+      return { kind: 'attach', card: drag.card, target: card };
+    case 'hand':
+    case 'pile':
+      // Played and tucked in one action: one undo step.
+      return { kind: 'play', card: drag.card, target: card };
+    case 'encounter':
+      // Dealt face down where it lands (spec 5.5), over that card.
+      return place(drag, at);
+  }
+}
+
+/** Whether the action tucks a card under another: attach, or a play with a target. */
+export function tucks(action: Action): boolean {
+  return action.kind === 'attach' || (action.kind === 'play' && action.target !== undefined);
 }
 
 function reorder(drag: Extract<DragSource, { kind: 'hand' }>, index: number): Action | null {
