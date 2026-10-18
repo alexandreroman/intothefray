@@ -176,13 +176,29 @@ func TestToDeckTopBottom(t *testing.T) {
 	}
 }
 
+// shuffleTo completes a shuffle action the way resolve does: every card of
+// order (old ids, in the wanted order) is renamed "n"+id, and Cards lists the
+// new ids.
+func shuffleTo(a Action, order ...string) Action {
+	a.Renames = map[string]string{}
+	a.Cards = nil
+	for _, id := range order {
+		a.Renames[id] = "n" + id
+		a.Cards = append(a.Cards, "n"+id)
+	}
+	return a
+}
+
 func TestToDeckShuffle(t *testing.T) {
 	table := newTestTable()
 
-	mustApply(t, table, Action{Kind: ActToDeck, Card: "c3", Where: "shuffle", Cards: []string{"c6", "c3", "c4", "c5"}})
+	mustApply(t, table, shuffleTo(Action{Kind: ActToDeck, Card: "c3", Where: "shuffle"}, "c6", "c3", "c4", "c5"))
 
-	if got := table.Piles["deck:p0"].Cards; !slices.Equal(got, []string{"c6", "c3", "c4", "c5"}) {
+	if got := table.Piles["deck:p0"].Cards; !slices.Equal(got, []string{"nc6", "nc3", "nc4", "nc5"}) {
 		t.Errorf("deck = %v", got)
+	}
+	if _, ok := table.Cards["c3"]; ok || table.Cards["nc3"] == nil || table.Cards["nc3"].ID != "nc3" || table.Cards["nc3"].Pile != "deck:p0" {
+		t.Error("c3 was not renamed to nc3 in the deck")
 	}
 }
 
@@ -196,7 +212,7 @@ func TestToDeckShuffleRejectsBadOrder(t *testing.T) {
 			table := newTestTable()
 			before := table.Clone()
 
-			err := apply(table, Action{Kind: ActToDeck, Card: "c3", Where: "shuffle", Cards: order})
+			err := apply(table, shuffleTo(Action{Kind: ActToDeck, Card: "c3", Where: "shuffle"}, order...))
 
 			if !errors.Is(err, ErrInvalid) || !reflect.DeepEqual(before, table) {
 				t.Errorf("err = %v, table unchanged = %t", err, reflect.DeepEqual(before, table))
@@ -600,14 +616,14 @@ func TestDiscardTopRejectsBadInput(t *testing.T) {
 func TestShuffleMustBePermutation(t *testing.T) {
 	table := newTestTable()
 
-	err := apply(table, Action{Kind: ActShuffle, Pile: "deck:p0", Cards: []string{"c1", "c2", "c3"}})
+	err := apply(table, shuffleTo(Action{Kind: ActShuffle, Pile: "deck:p0"}, "c1", "c2", "c3"))
 	if !errors.Is(err, ErrInvalid) {
 		t.Errorf("err = %v, want ErrInvalid", err)
 	}
 
-	mustApply(t, table, Action{Kind: ActShuffle, Pile: "deck:p0", Cards: []string{"c6", "c4", "c5"}})
-	if got := table.Piles["deck:p0"].Cards; !slices.Equal(got, []string{"c6", "c4", "c5"}) {
-		t.Errorf("deck = %v, want [c6 c4 c5]", got)
+	mustApply(t, table, shuffleTo(Action{Kind: ActShuffle, Pile: "deck:p0"}, "c6", "c4", "c5"))
+	if got := table.Piles["deck:p0"].Cards; !slices.Equal(got, []string{"nc6", "nc4", "nc5"}) {
+		t.Errorf("deck = %v, want [nc6 nc4 nc5]", got)
 	}
 }
 
@@ -615,31 +631,31 @@ func TestShuffleBackAndIn(t *testing.T) {
 	table := newTestTable()
 	mustApply(t, table, Action{Kind: ActDiscard, Card: "c3"})
 
-	bad := Action{Kind: ActShuffleBack, Pile: "disc:p0", Cards: []string{"c4", "c5", "c6"}}
+	bad := shuffleTo(Action{Kind: ActShuffleBack, Pile: "disc:p0"}, "c4", "c5", "c6")
 	if err := apply(table, bad); !errors.Is(err, ErrInvalid) {
 		t.Errorf("incomplete order: err = %v, want ErrInvalid", err)
 	}
 
-	mustApply(t, table, Action{Kind: ActShuffleBack, Pile: "disc:p0", Cards: []string{"c5", "c3", "c6", "c4"}})
-	if got := table.Piles["deck:p0"].Cards; !slices.Equal(got, []string{"c5", "c3", "c6", "c4"}) {
-		t.Errorf("deck = %v, want [c5 c3 c6 c4]", got)
+	mustApply(t, table, shuffleTo(Action{Kind: ActShuffleBack, Pile: "disc:p0"}, "c5", "c3", "c6", "c4"))
+	if got := table.Piles["deck:p0"].Cards; !slices.Equal(got, []string{"nc5", "nc3", "nc6", "nc4"}) {
+		t.Errorf("deck = %v, want [nc5 nc3 nc6 nc4]", got)
 	}
 	if len(table.Piles["disc:p0"].Cards) != 0 {
 		t.Errorf("discard = %v, want empty", table.Piles["disc:p0"].Cards)
 	}
-	if c := table.Cards["c3"]; c.Zone != ZonePile || c.Pile != "deck:p0" {
-		t.Errorf("c3 = %+v, want in deck:p0", c)
+	if c := table.Cards["nc3"]; c.Zone != ZonePile || c.Pile != "deck:p0" {
+		t.Errorf("nc3 = %+v, want in deck:p0", c)
 	}
 
 	// c7 is an encounter card, c4 a player card: only c7 goes back to enc.
 	mustApply(t, table, Action{Kind: ActToPile, Card: "c7", Target: PileScenarioAside})
-	mustApply(t, table, Action{Kind: ActToPile, Card: "c4", Target: PileScenarioAside})
-	mustApply(t, table, Action{Kind: ActShuffleIn, Pile: PileScenarioAside, Cards: []string{"c7", "c8"}})
-	if got := table.Piles[PileEncounter].Cards; !slices.Equal(got, []string{"c7", "c8"}) {
-		t.Errorf("enc = %v, want [c7 c8]", got)
+	mustApply(t, table, Action{Kind: ActToPile, Card: "nc4", Target: PileScenarioAside})
+	mustApply(t, table, shuffleTo(Action{Kind: ActShuffleIn, Pile: PileScenarioAside}, "c7", "c8"))
+	if got := table.Piles[PileEncounter].Cards; !slices.Equal(got, []string{"nc7", "nc8"}) {
+		t.Errorf("enc = %v, want [nc7 nc8]", got)
 	}
-	if got := table.Piles[PileScenarioAside].Cards; !slices.Equal(got, []string{"c4"}) {
-		t.Errorf("saside = %v, want [c4]", got)
+	if got := table.Piles[PileScenarioAside].Cards; !slices.Equal(got, []string{"nc4"}) {
+		t.Errorf("saside = %v, want [nc4]", got)
 	}
 }
 

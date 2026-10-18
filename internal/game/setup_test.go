@@ -346,9 +346,6 @@ func TestSetupVillainPiles(t *testing.T) {
 func TestSetupIDsAreUnique(t *testing.T) {
 	table := startedGame(t, rhinoConfig()).Table
 
-	if len(table.Cards) != table.NextID {
-		t.Errorf("cards = %d, NextID = %d, want equal", len(table.Cards), table.NextID)
-	}
 	for id, c := range table.Cards {
 		if c.ID != id || !strings.HasPrefix(id, "c") {
 			t.Fatalf("card key %q has id %q", id, c.ID)
@@ -384,7 +381,7 @@ func TestSetupStartingThreatKlaw(t *testing.T) {
 
 func TestStartingThreatScalesWithPlayers(t *testing.T) {
 	cat := newCatalog(t)
-	b := &tableBuilder{cat: cat, table: newEmptyTable(3)}
+	b := &tableBuilder{cat: cat, rng: newTestRNG(), table: newEmptyTable(3)}
 
 	// 01108 prints a starting threat of 2 per player.
 	c, def, err := b.newEncounterCard("01108")

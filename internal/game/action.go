@@ -57,7 +57,10 @@ type Action struct {
 	Where  string   `json:"where,omitempty"` // "top" | "bottom" | "shuffle"
 	Stage  string   `json:"stage,omitempty"`
 	Cards  []string `json:"cards,omitempty"` // resolved: ids taken from a pile top (top first), new orders
-	Seat   int      `json:"seat,omitempty"`  // acting seat, filled server-side (arrows)
+	// Renames is filled by shuffles: the old id → new id of every card of the
+	// shuffled pile. Cards then holds the new order, in new ids.
+	Renames map[string]string `json:"renames,omitempty"`
+	Seat    int               `json:"seat,omitempty"` // acting seat, filled server-side (arrows)
 }
 
 // Limits applied to client-provided numbers.
@@ -250,7 +253,7 @@ func resolveToDeck(t *Table, seat int, a Action, rng *rand.Rand) (Action, error)
 	switch a.Where {
 	case whereTop, whereBottom:
 	case whereShuffle:
-		a.Cards = shuffled(append(without(deck.Cards, c.ID), c.ID), rng)
+		a.Renames, a.Cards = reidentify(t, append(without(deck.Cards, c.ID), c.ID), rng)
 	default:
 		return a, invalid("unknown position %q", a.Where)
 	}
@@ -328,7 +331,7 @@ func resolveShuffle(t *Table, seat int, a Action, rng *rand.Rand) (Action, error
 	if pile.Kind != KindDeck && pile.Kind != KindEncounter {
 		return a, invalid("pile %q cannot be shuffled", pile.ID)
 	}
-	a.Cards = shuffled(pile.Cards, rng)
+	a.Renames, a.Cards = reidentify(t, pile.Cards, rng)
 	return a, nil
 }
 
@@ -345,7 +348,7 @@ func resolveShuffleBack(t *Table, seat int, a Action, rng *rand.Rand) (Action, e
 	if err != nil {
 		return a, err
 	}
-	a.Cards = shuffled(slices.Concat(deck.Cards, source.Cards), rng)
+	a.Renames, a.Cards = reidentify(t, slices.Concat(deck.Cards, source.Cards), rng)
 	return a, nil
 }
 
@@ -367,13 +370,6 @@ func resolveShuffleIn(t *Table, seat int, a Action, rng *rand.Rand) (Action, err
 			merged = append(merged, id)
 		}
 	}
-	a.Cards = shuffled(merged, rng)
+	a.Renames, a.Cards = reidentify(t, merged, rng)
 	return a, nil
-}
-
-// shuffled returns a randomly ordered copy of ids.
-func shuffled(ids []string, rng *rand.Rand) []string {
-	order := slices.Clone(ids)
-	rng.Shuffle(len(order), func(i, j int) { order[i], order[j] = order[j], order[i] })
-	return order
 }

@@ -419,8 +419,8 @@ func TestCloseViewWithShuffleIsLoggedNotUndoable(t *testing.T) {
 		t.Error("the view is still open")
 	}
 	shuffledOrder := f.g.Table.Piles["deck:p0"].Cards
-	if slices.Equal(shuffledOrder, order) || !samePermutation(shuffledOrder, order) {
-		t.Errorf("deck order %v is not a new order of %v", shuffledOrder, order)
+	if len(shuffledOrder) != len(order) || slices.ContainsFunc(shuffledOrder, func(id string) bool { return slices.Contains(order, id) }) {
+		t.Errorf("deck %v keeps ids of %v", shuffledOrder, order)
 	}
 	if got, want := f.lastLog().Text, "shuffled their deck"; got != want {
 		t.Errorf("shuffle line = %q, want %q", got, want)
@@ -521,8 +521,8 @@ func TestOlderUndoReshufflesPilesShuffledSince(t *testing.T) {
 		t.Error("the exhaust was not undone")
 	}
 	got := f.g.Table.Piles["deck:p0"].Cards
-	if slices.Equal(got, seen) || !samePermutation(got, seen) {
-		t.Errorf("deck order after undo = %v, want a new order of %v", got, seen)
+	if len(got) != len(seen) || slices.ContainsFunc(got, func(id string) bool { return slices.Contains(seen, id) }) {
+		t.Errorf("deck after undo = %v, want new ids for %v", got, seen)
 	}
 }
 
@@ -542,8 +542,8 @@ func TestFailedShuffleReplayIsReshuffled(t *testing.T) {
 	f.mustDo(t, "h", Action{Kind: ActUndo}, at(43))
 
 	got := f.g.Table.Piles[PileEncounter].Cards
-	if slices.Equal(got, unshuffled) {
-		t.Errorf("undo restored the encounter order from before Bob's shuffle: %v", got)
+	if slices.ContainsFunc(got, func(id string) bool { return slices.Contains(unshuffled, id) }) {
+		t.Errorf("undo restored ids from before Bob's shuffle: %v", got)
 	}
 }
 

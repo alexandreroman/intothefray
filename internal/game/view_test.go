@@ -3,6 +3,8 @@ package game
 import (
 	"encoding/json"
 	"fmt"
+	"math/rand/v2"
+	"regexp"
 	"slices"
 	"strings"
 	"testing"
@@ -73,12 +75,16 @@ func newViewFixture(t *testing.T) *viewFixture {
 	}
 
 	f := &viewFixture{
-		doFixture: &doFixture{g: g, cat: cat, rng: newTestRNG()},
+		doFixture: &doFixture{g: g, cat: cat, rng: rand.New(rand.NewPCG(7, 8))}, //nolint:gosec // deterministic, and unlike setup so that ids never repeat
 		hostCode:  extra[0],
 		bobCode:   extra[1],
 	}
 	f.hostCard = cardWithCode(t, g.Table, f.hostCode).ID
 	f.bobCard = cardWithCode(t, g.Table, f.bobCode).ID
+	// Keep the host's unique card at the bottom of its deck so that drawing a
+	// few cards never takes it.
+	deck := g.Table.Piles["deck:p0"]
+	deck.Cards = append([]string{f.hostCard}, without(deck.Cards, f.hostCard)...)
 	return f
 }
 
@@ -163,11 +169,17 @@ func TestViewNeverLeaksHiddenCodes(t *testing.T) {
 			}
 		})
 	}
-	// The host's own hand card is visible to the host only when drawn; the
-	// unique codes above are in the deck (host) or the hand (bob), so check
-	// the positive side for bob's hand.
+	// Positive side: each player reads their own hand.
 	if !hasCode(viewJSON(t, f.g, bobToken), f.bobCode) {
 		t.Error("bob does not see the card in his own hand")
+	}
+	host := f.g.ViewFor(hostToken)
+	if len(host.Table.Hand) != 1 {
+		t.Fatalf("host hand = %v, want 1 card", host.Table.Hand)
+	}
+	handCode := table.Cards[host.Table.Hand[0]].Code
+	if !hasCode(mustJSON(t, host), handCode) {
+		t.Error("host does not see the code of the card in its own hand")
 	}
 }
 
@@ -397,6 +409,74 @@ func TestViewDoesNotAliasTheGame(t *testing.T) {
 	for _, c := range f.g.Table.Cards {
 		if c.Tokens["dmg"] == 9 {
 			t.Error("the view shares token maps with the game")
+		}
+	}
+}
+
+func TestIDsAreOpaque(t *testing.T) {
+	table := newViewFixture(t).g.Table
+
+	pattern := regexp.MustCompile(`^c[a-z2-9]{8}$`)
+	for id := range table.Cards {
+		if !pattern.MatchString(id) {
+			t.Fatalf("card id %q does not look like c + 8 random characters", id)
+		}
+	}
+
+	// Setup creates the encounter cards in catalog order, so ids that gave
+	// the order away would sort the codes monotonically.
+	ids := slices.Clone(table.Piles[PileEncounter].Cards)
+	slices.Sort(ids)
+	codes := make([]string, 0, len(ids))
+	for _, id := range ids {
+		codes = append(codes, table.Cards[id].Code)
+	}
+	if slices.IsSorted(codes) {
+		t.Error("sorting the encounter ids sorts their codes: ids follow setup order")
+	}
+}
+
+func TestShuffleRenamesCards(t *testing.T) {
+	f := newViewFixture(t)
+	f.mustDo(t, hostToken, Action{Kind: ActDraw, N: 1}, at(1))
+	old := f.g.Table.Hands["p0"][0]
+	code := f.g.Table.Cards[old].Code
+	f.mustDo(t, hostToken, Action{Kind: ActDiscard, Card: old}, at(2))
+	wantCodes := codesOf(f.g.Table, append(slices.Clone(f.g.Table.Piles["deck:p0"].Cards), old))
+
+	f.mustDo(t, hostToken, Action{Kind: ActShuffleBack, Pile: "disc:p0"}, at(3))
+
+	if _, ok := f.g.Table.Cards[old]; ok {
+		t.Errorf("old id %s still exists", old)
+	}
+	deck := f.g.Table.Piles["deck:p0"]
+	if got := codesOf(f.g.Table, deck.Cards); !slices.Equal(got, wantCodes) {
+		t.Errorf("deck codes changed: %v, want %v", got, wantCodes)
+	}
+	if !slices.ContainsFunc(deck.Cards, func(id string) bool { return f.g.Table.Cards[id].Code == code }) {
+		t.Error("the discarded card is not back in the deck")
+	}
+	for _, token := range []string{hostToken, bobToken, specToken} {
+		if strings.Contains(viewJSON(t, f.g, token), old) {
+			t.Errorf("a view still contains the old id %s", old)
+		}
+	}
+}
+
+func TestUndoKeepsIDsOfLaterShuffles(t *testing.T) {
+	f := newViewFixture(t)
+	f.mustDo(t, hostToken, Action{Kind: ActExhaust, Card: f.villain()}, at(1))
+	oldDeck := slices.Clone(f.g.Table.Piles["deck:p1"].Cards)
+	f.mustDo(t, bobToken, Action{Kind: ActShuffle, Pile: "deck:p1"}, at(2))
+
+	f.mustDo(t, hostToken, Action{Kind: ActUndo}, at(3))
+
+	if got := len(f.g.Table.Piles["deck:p1"].Cards); got != len(oldDeck) {
+		t.Errorf("bob's deck has %d cards after the undo, want %d", got, len(oldDeck))
+	}
+	for _, id := range oldDeck {
+		if _, ok := f.g.Table.Cards[id]; ok {
+			t.Fatalf("old id %s reappeared: %+v", id, f.g.Table.Cards[id])
 		}
 	}
 }

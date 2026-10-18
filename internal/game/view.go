@@ -191,6 +191,8 @@ func (g *Game) logViews(table *TableView) []LogView {
 // view.
 func (t *Table) viewFor(seat int) *TableView {
 	tv := &TableView{
+		Cards:       []CardView{},
+		Piles:       []PileView{},
 		FirstPlayer: t.FirstPlayer,
 		Arrows:      slices.Clone(t.Arrows),
 		Stages:      make([]*Stage, 0, len(t.Stages)),

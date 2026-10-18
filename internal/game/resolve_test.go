@@ -294,8 +294,12 @@ func TestResolveShuffleIsPermutation(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			if !samePermutation(first.Cards, tt.want) {
-				t.Errorf("Cards = %v, not a permutation of %v", first.Cards, tt.want)
+			renamed := slices.Collect(maps.Keys(first.Renames))
+			if !samePermutation(renamed, tt.want) {
+				t.Errorf("Renames cover %v, want %v", renamed, tt.want)
+			}
+			if !samePermutation(slices.Collect(maps.Values(first.Renames)), first.Cards) {
+				t.Errorf("Cards = %v, not the new ids %v", first.Cards, first.Renames)
 			}
 			if !slices.Equal(first.Cards, second.Cards) {
 				t.Errorf("same seed gave %v then %v", first.Cards, second.Cards)

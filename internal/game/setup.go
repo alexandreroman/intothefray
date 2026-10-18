@@ -135,9 +135,8 @@ func (b *tableBuilder) newCard(code string, owner int, home string) (*Card, pack
 	if err != nil {
 		return nil, pack.Card{}, fmt.Errorf("%w: %w", ErrInvalid, err)
 	}
-	b.table.NextID++
 	c := &Card{
-		ID:    fmt.Sprintf("c%d", b.table.NextID),
+		ID:    newCardID(b.table, b.rng),
 		Code:  def.Code,
 		Faces: len(def.Faces),
 		Back:  def.Back,

@@ -1,0 +1,112 @@
+package game
+
+import (
+	"math/rand/v2"
+	"slices"
+)
+
+// Card ids are opaque on purpose: an id that followed setup order, or that
+// survived a shuffle, would let a player recognise a face-down card.
+const (
+	idAlphabet = "abcdefghjkmnpqrstuvwxyz23456789"
+	idLength   = 8
+)
+
+// newCardID returns an unused card id, drawn from rng.
+func newCardID(t *Table, rng *rand.Rand) string {
+	for {
+		id := randomCardID(rng)
+		if _, taken := t.Cards[id]; !taken {
+			return id
+		}
+	}
+}
+
+func randomCardID(rng *rand.Rand) string {
+	id := make([]byte, 0, idLength+1)
+	id = append(id, 'c')
+	for range idLength {
+		id = append(id, idAlphabet[rng.IntN(len(idAlphabet))])
+	}
+	return string(id)
+}
+
+// reidentify prepares a shuffle of the cards ids: it picks a fresh id for
+// each of them and returns the old → new ids with the new ids in a random
+// order. It does not change t.
+func reidentify(t *Table, ids []string, rng *rand.Rand) (renames map[string]string, order []string) {
+	renames = make(map[string]string, len(ids))
+	fresh := make(map[string]bool, len(ids))
+	order = make([]string, 0, len(ids))
+	for _, old := range ids {
+		id := newCardID(t, rng)
+		for fresh[id] {
+			id = newCardID(t, rng)
+		}
+		fresh[id] = true
+		renames[old] = id
+		order = append(order, id)
+	}
+	rng.Shuffle(len(order), func(i, j int) { order[i], order[j] = order[j], order[i] })
+	return renames, order
+}
+
+// checkRenames checks the renames of a shuffle: they must cover exactly the
+// cards of expected, give each an unused and distinct id, and a.Cards must be
+// an ordering of those new ids.
+func checkRenames(t *Table, a Action, expected []string) error {
+	if len(a.Renames) != len(expected) {
+		return invalid("renames cover %d cards, want %d", len(a.Renames), len(expected))
+	}
+	newIDs := make([]string, 0, len(expected))
+	for _, old := range expected {
+		id, ok := a.Renames[old]
+		if !ok {
+			return invalid("card %q is not renamed", old)
+		}
+		if _, taken := t.Cards[id]; taken {
+			return invalid("new id %q is already used", id)
+		}
+		newIDs = append(newIDs, id)
+	}
+	if !samePermutation(newIDs, a.Cards) {
+		return invalid("shuffle order is not a permutation of the renamed cards")
+	}
+	return nil
+}
+
+// renameCards gives cards new ids and rewrites every reference to them. The
+// renames were checked beforehand (see checkRenames). Open views drop the
+// renamed cards: their ids are gone.
+func renameCards(t *Table, renames map[string]string) {
+	for old, id := range renames {
+		c := t.Cards[old]
+		delete(t.Cards, old)
+		c.ID = id
+		t.Cards[id] = c
+	}
+	rename := func(id string) string {
+		if renamed, ok := renames[id]; ok {
+			return renamed
+		}
+		return id
+	}
+	for _, c := range t.Cards {
+		c.Parent = rename(c.Parent)
+	}
+	for _, pile := range t.Piles {
+		for i, id := range pile.Cards {
+			pile.Cards[i] = rename(id)
+		}
+	}
+	for i := range t.Arrows {
+		t.Arrows[i].From = rename(t.Arrows[i].From)
+		t.Arrows[i].To = rename(t.Arrows[i].To)
+	}
+	for _, view := range t.Views {
+		view.Cards = slices.DeleteFunc(view.Cards, func(id string) bool {
+			_, renamed := renames[id]
+			return renamed
+		})
+	}
+}

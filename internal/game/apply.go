@@ -336,8 +336,8 @@ func applyToDeck(t *Table, a Action) error {
 	case whereShuffle:
 		// The caller resolved the shuffle: Cards is the whole new pile.
 		expected := append(without(deck.Cards, c.ID), c.ID)
-		if !samePermutation(expected, a.Cards) {
-			return invalid("shuffle order of pile %q is not a permutation of its cards", deck.ID)
+		if err := checkRenames(t, a, expected); err != nil {
+			return err
 		}
 		newOrder = slices.Clone(a.Cards)
 	default:
@@ -351,10 +351,14 @@ func applyToDeck(t *Table, a Action) error {
 	case whereBottom:
 		deck.Cards = slices.Insert(deck.Cards, 0, c.ID)
 	case whereShuffle:
-		deck.Cards = newOrder
+		deck.Cards = append(deck.Cards, c.ID)
 	}
 	c.Zone = ZonePile
 	c.Pile = deck.ID
+	if a.Where == whereShuffle {
+		renameCards(t, a.Renames)
+		deck.Cards = newOrder
+	}
 	return nil
 }
 
@@ -762,9 +766,10 @@ func applyShuffle(t *Table, a Action) error {
 	if err != nil {
 		return err
 	}
-	if !samePermutation(pile.Cards, a.Cards) {
-		return invalid("shuffle order of pile %q is not a permutation of its cards", pile.ID)
+	if err := checkRenames(t, a, pile.Cards); err != nil {
+		return err
 	}
+	renameCards(t, a.Renames)
 	pile.Cards = slices.Clone(a.Cards)
 	return nil
 }
@@ -774,21 +779,21 @@ func applyShuffleBack(t *Table, a Action) error {
 	if !ok {
 		return invalid("pile %q is not a discard pile", a.Pile)
 	}
-	return mergeAndOrder(t, a.Pile, deckID, a.Cards, func(*Card) bool { return true })
+	return mergeAndOrder(t, a, deckID, func(*Card) bool { return true })
 }
 
 func applyShuffleIn(t *Table, a Action) error {
 	if !isPlainTargetPile(a.Pile) || a.Pile == PileVictory {
 		return invalid("pile %q is not a set-aside pile", a.Pile)
 	}
-	return mergeAndOrder(t, a.Pile, PileEncounter, a.Cards, func(c *Card) bool { return c.Home == PileEncounter })
+	return mergeAndOrder(t, a, PileEncounter, func(c *Card) bool { return c.Home == PileEncounter })
 }
 
 // mergeAndOrder moves the cards of the source pile accepted by wanted into
-// the destination pile, then sets the destination order to order, which
-// must be a permutation of the merged cards.
-func mergeAndOrder(t *Table, sourceID, destID string, order []string, wanted func(*Card) bool) error {
-	source, err := t.pile(sourceID)
+// the destination pile, then gives every card of the destination a new id and
+// sets the destination order to a.Cards (see checkRenames).
+func mergeAndOrder(t *Table, a Action, destID string, wanted func(*Card) bool) error {
+	source, err := t.pile(a.Pile)
 	if err != nil {
 		return err
 	}
@@ -802,14 +807,15 @@ func mergeAndOrder(t *Table, sourceID, destID string, order []string, wanted fun
 			moving = append(moving, id)
 		}
 	}
-	if !samePermutation(append(slices.Clone(dest.Cards), moving...), order) {
-		return invalid("order of pile %q is not a permutation of its merged cards", dest.ID)
+	if err := checkRenames(t, a, append(slices.Clone(dest.Cards), moving...)); err != nil {
+		return err
 	}
 
 	for _, id := range moving {
 		t.putOnPile(dest, t.Cards[id])
 	}
-	dest.Cards = slices.Clone(order)
+	renameCards(t, a.Renames)
+	dest.Cards = slices.Clone(a.Cards)
 	return nil
 }
 

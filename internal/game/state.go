@@ -126,7 +126,6 @@ type Table struct {
 	FirstPlayer Point                 `json:"firstPlayer"`
 	Arrows      []Arrow               `json:"arrows,omitempty"`
 	Views       map[Area]*PrivateView `json:"views,omitempty"` // open Look/Search per player
-	NextID      int                   `json:"nextId"`
 	NextZ       int                   `json:"nextZ"`
 }
 

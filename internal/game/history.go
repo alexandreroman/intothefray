@@ -250,7 +250,10 @@ func (g *Game) undo(p *Player, rng *rand.Rand, now time.Time) error {
 	// player may have seen before the shuffle.
 	for _, id := range entry.Shuffled {
 		if pile, ok := restored.Piles[id]; ok {
-			pile.Cards = shuffled(pile.Cards, rng)
+			// New ids too: the old ones are known to whoever saw the pile.
+			renames, order := reidentify(restored, pile.Cards, rng)
+			renameCards(restored, renames)
+			pile.Cards = order
 		}
 	}
 	g.Table = restored

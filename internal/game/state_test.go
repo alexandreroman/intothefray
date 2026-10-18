@@ -40,8 +40,7 @@ func sampleTable() *Table {
 		Views: map[Area]*PrivateView{
 			PlayerArea(0): {Pile: "deck:p0", Mode: "top", Cards: []string{"c3"}},
 		},
-		NextID: 5,
-		NextZ:  4,
+		NextZ: 4,
 	}
 }
 
@@ -72,7 +71,7 @@ func TestTableJSONKeys(t *testing.T) {
 		t.Fatalf("unmarshal: %v", err)
 	}
 
-	for _, key := range []string{"nextId", "nextZ", "firstPlayer", "stages", "arrows", "views"} {
+	for _, key := range []string{"nextZ", "firstPlayer", "stages", "arrows", "views"} {
 		if _, ok := generic[key]; !ok {
 			t.Errorf("missing top-level key %q", key)
 		}
@@ -103,7 +102,7 @@ func TestCloneIsDeep(t *testing.T) {
 	clone.Arrows[0].To = "zzz"
 	clone.Views[PlayerArea(0)].Cards[0] = "zzz"
 	clone.Views[PlayerArea(0)].Mode = "search"
-	clone.NextID = 100
+	clone.NextZ = 100
 
 	if want := sampleTable(); !reflect.DeepEqual(want, original) {
 		t.Errorf("original changed after mutating the clone:\nwant %+v\ngot  %+v", want, original)
