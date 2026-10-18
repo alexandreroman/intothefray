@@ -50,6 +50,30 @@ func apply(t *Table, a Action) error {
 		return applyCounter(t, a, statusNames, func(c *Card) *map[string]int { return &c.Status })
 	case ActChooseStage:
 		return applyChooseStage(t, a)
+	case ActDraw:
+		return applyDraw(t, a)
+	case ActReveal:
+		return applyReveal(t)
+	case ActDeal:
+		return applyDeal(t, a)
+	case ActDiscardTop:
+		return applyDiscardTop(t, a)
+	case ActShuffle:
+		return applyShuffle(t, a)
+	case ActShuffleBack:
+		return applyShuffleBack(t, a)
+	case ActShuffleIn:
+		return applyShuffleIn(t, a)
+	case ActReorderTop:
+		return applyReorderTop(t, a)
+	case ActHandOrder:
+		return applyHandOrder(t, a)
+	case ActFirstPlayer:
+		return applyFirstPlayer(t, a)
+	case ActArrowAdd:
+		return applyArrowAdd(t, a)
+	case ActArrowClear:
+		return applyArrowClear(t, a)
 	default:
 		return fmt.Errorf("%w: unknown action kind %q", ErrInvalid, a.Kind)
 	}
@@ -172,9 +196,11 @@ func (t *Table) leave(c *Card) {
 	switch c.Zone {
 	case ZoneTable:
 		for _, child := range t.descendants(c.ID) {
+			t.removeArrows(child.ID)
 			resetCard(child)
 			t.pushOnPile(t.Piles[discardPileID(child)], child)
 		}
+		t.removeArrows(c.ID)
 	case ZoneHand:
 		area := handOf(t, c.ID)
 		t.Hands[area] = slices.DeleteFunc(t.Hands[area], func(id string) bool { return id == c.ID })
@@ -510,6 +536,7 @@ func applyChooseStage(t *Table, a Action) error {
 	chosen.Exhausted = false
 
 	// Tokens and statuses stay on the previous card, so going back restores them.
+	t.removeArrows(previous.ID)
 	previous.Zone = ZoneStage
 	previous.Area, previous.X, previous.Y, previous.Z = "", 0, 0, 0
 	previous.Parent = ""
@@ -526,5 +553,302 @@ func (t *Table) stage(key string) *Stage {
 			return s
 		}
 	}
+	return nil
+}
+
+// removeArrows deletes every arrow that starts or ends at card id. It runs
+// whenever a card leaves the table, so no arrow points at a missing card.
+func (t *Table) removeArrows(id string) {
+	t.Arrows = slices.DeleteFunc(t.Arrows, func(ar Arrow) bool {
+		return ar.From == id || ar.To == id
+	})
+}
+
+// topCards returns the n top cards of pile, top first.
+func topCards(pile *Pile, n int) []string {
+	top := slices.Clone(pile.Cards[len(pile.Cards)-n:])
+	slices.Reverse(top)
+	return top
+}
+
+// pile returns the pile with the given id, or an ErrInvalid error.
+func (t *Table) pile(id string) (*Pile, error) {
+	pile, ok := t.Piles[id]
+	if !ok {
+		return nil, invalid("unknown pile %q", id)
+	}
+	return pile, nil
+}
+
+// putOnPile moves c, wherever it is, on top of pile. checkLeave must have
+// succeeded first.
+func (t *Table) putOnPile(pile *Pile, c *Card) {
+	t.leave(c)
+	t.pushOnPile(pile, c)
+}
+
+// placeOnTable puts c, which has just left a pile, on the table.
+func (t *Table) placeOnTable(c *Card, area Area, x, y int) {
+	c.Zone = ZoneTable
+	c.Pile = ""
+	c.Area, c.X, c.Y = area, x, y
+	c.Z = t.nextZ()
+}
+
+func applyDraw(t *Table, a Action) error {
+	if !validArea(a.Area) || a.Area == AreaVillain {
+		return invalid("area %q has no hand", a.Area)
+	}
+	deck, err := t.pile("deck:" + string(a.Area))
+	if err != nil {
+		return err
+	}
+	if len(a.Cards) == 0 || len(a.Cards) > len(deck.Cards) {
+		return invalid("cannot draw %d cards from pile %q", len(a.Cards), deck.ID)
+	}
+	if !slices.Equal(a.Cards, topCards(deck, len(a.Cards))) {
+		return invalid("drawn cards are not the top of pile %q", deck.ID)
+	}
+
+	if t.Hands == nil {
+		t.Hands = map[Area][]string{}
+	}
+	for _, id := range a.Cards {
+		c := t.Cards[id]
+		t.leave(c)
+		t.Hands[a.Area] = append(t.Hands[a.Area], id)
+		c.Zone = ZoneHand
+		c.Pile = ""
+		c.Area = a.Area
+	}
+	return nil
+}
+
+func applyReveal(t *Table) error {
+	enc, err := t.pile(PileEncounter)
+	if err != nil {
+		return err
+	}
+	if len(enc.Cards) == 0 {
+		return invalid("encounter deck is empty")
+	}
+	if len(t.revealed()) > 0 {
+		return invalid("an encounter card is already revealed")
+	}
+
+	c := t.Cards[enc.Cards[len(enc.Cards)-1]]
+	t.leave(c)
+	t.placeOnTable(c, AreaVillain, enc.X, enc.Y)
+	c.OnPile = PileEncounter
+	return nil
+}
+
+// revealed returns the table cards lying revealed on top of the encounter
+// deck, from the lowest Z to the highest.
+func (t *Table) revealed() []*Card {
+	var found []*Card
+	for _, c := range t.Cards {
+		if c.Zone == ZoneTable && c.OnPile == PileEncounter {
+			found = append(found, c)
+		}
+	}
+	slices.SortFunc(found, func(a, b *Card) int {
+		return cmp.Or(cmp.Compare(a.Z, b.Z), cmp.Compare(a.ID, b.ID))
+	})
+	return found
+}
+
+// applyDeal deals the top encounter card face down. A revealed card covers
+// the deck top, so it is first put back face down on top of the encounter
+// deck: dealing while a card is revealed deals that revealed card.
+func applyDeal(t *Table, a Action) error {
+	if !validArea(a.Area) {
+		return invalid("unknown area %q", a.Area)
+	}
+	enc, err := t.pile(PileEncounter)
+	if err != nil {
+		return err
+	}
+	covering := t.revealed()
+	if len(enc.Cards)+len(covering) == 0 {
+		return invalid("encounter deck is empty")
+	}
+	for _, c := range covering {
+		if err := t.checkLeave(c); err != nil {
+			return err
+		}
+	}
+
+	for _, c := range covering {
+		t.putOnPile(enc, c)
+	}
+	c := t.Cards[enc.Cards[len(enc.Cards)-1]]
+	t.leave(c)
+	t.placeOnTable(c, a.Area, snap(a.X), snap(a.Y))
+	c.FaceDown = true
+	return nil
+}
+
+// discardPileOf returns the id of the discard pile of a deck pile.
+func discardPileOf(deckID string) (string, bool) {
+	if deckID == PileEncounter {
+		return PileEncounterDiscard, true
+	}
+	if owner, ok := strings.CutPrefix(deckID, "deck:"); ok {
+		return "disc:" + owner, true
+	}
+	return "", false
+}
+
+func applyDiscardTop(t *Table, a Action) error {
+	discardID, ok := discardPileOf(a.Pile)
+	if !ok {
+		return invalid("pile %q is not a deck", a.Pile)
+	}
+	deck, err := t.pile(a.Pile)
+	if err != nil {
+		return err
+	}
+	discard, err := t.pile(discardID)
+	if err != nil {
+		return err
+	}
+	if a.N < 1 || a.N > len(deck.Cards) {
+		return invalid("cannot discard %d cards from pile %q", a.N, deck.ID)
+	}
+
+	for _, id := range topCards(deck, a.N) {
+		t.putOnPile(discard, t.Cards[id])
+	}
+	return nil
+}
+
+func applyShuffle(t *Table, a Action) error {
+	pile, err := t.pile(a.Pile)
+	if err != nil {
+		return err
+	}
+	if !samePermutation(pile.Cards, a.Cards) {
+		return invalid("shuffle order of pile %q is not a permutation of its cards", pile.ID)
+	}
+	pile.Cards = slices.Clone(a.Cards)
+	return nil
+}
+
+func applyShuffleBack(t *Table, a Action) error {
+	var deckID string
+	switch owner, isPlayerDiscard := strings.CutPrefix(a.Pile, "disc:"); {
+	case a.Pile == PileEncounterDiscard:
+		deckID = PileEncounter
+	case isPlayerDiscard:
+		deckID = "deck:" + owner
+	default:
+		return invalid("pile %q is not a discard pile", a.Pile)
+	}
+	return mergeAndOrder(t, a.Pile, deckID, a.Cards, func(*Card) bool { return true })
+}
+
+func applyShuffleIn(t *Table, a Action) error {
+	if !isPlainTargetPile(a.Pile) || a.Pile == PileVictory {
+		return invalid("pile %q is not a set-aside pile", a.Pile)
+	}
+	return mergeAndOrder(t, a.Pile, PileEncounter, a.Cards, func(c *Card) bool { return c.Home == PileEncounter })
+}
+
+// mergeAndOrder moves the cards of the source pile accepted by wanted into
+// the destination pile, then sets the destination order to order, which
+// must be a permutation of the merged cards.
+func mergeAndOrder(t *Table, sourceID, destID string, order []string, wanted func(*Card) bool) error {
+	source, err := t.pile(sourceID)
+	if err != nil {
+		return err
+	}
+	dest, err := t.pile(destID)
+	if err != nil {
+		return err
+	}
+	var moving []string
+	for _, id := range source.Cards {
+		if wanted(t.Cards[id]) {
+			moving = append(moving, id)
+		}
+	}
+	if !samePermutation(append(slices.Clone(dest.Cards), moving...), order) {
+		return invalid("order of pile %q is not a permutation of its merged cards", dest.ID)
+	}
+
+	for _, id := range moving {
+		t.putOnPile(dest, t.Cards[id])
+	}
+	dest.Cards = slices.Clone(order)
+	return nil
+}
+
+func applyReorderTop(t *Table, a Action) error {
+	pile, err := t.pile(a.Pile)
+	if err != nil {
+		return err
+	}
+	if len(a.Cards) == 0 || len(a.Cards) > len(pile.Cards) {
+		return invalid("cannot reorder %d cards of pile %q", len(a.Cards), pile.ID)
+	}
+	if !samePermutation(topCards(pile, len(a.Cards)), a.Cards) {
+		return invalid("reordered cards are not the top of pile %q", pile.ID)
+	}
+
+	// Cards is top first, the pile is stored bottom to top.
+	reordered := slices.Clone(a.Cards)
+	slices.Reverse(reordered)
+	copy(pile.Cards[len(pile.Cards)-len(reordered):], reordered)
+	return nil
+}
+
+func applyHandOrder(t *Table, a Action) error {
+	if !validArea(a.Area) {
+		return invalid("unknown area %q", a.Area)
+	}
+	if !samePermutation(t.Hands[a.Area], a.Cards) {
+		return invalid("hand order of %q is not a permutation of the hand", a.Area)
+	}
+	t.Hands[a.Area] = slices.Clone(a.Cards)
+	return nil
+}
+
+func applyFirstPlayer(t *Table, a Action) error {
+	if !validArea(a.Area) {
+		return invalid("unknown area %q", a.Area)
+	}
+	t.FirstPlayer = Point{Area: a.Area, X: snap(a.X), Y: snap(a.Y)}
+	return nil
+}
+
+func validSeat(seat int) bool {
+	return seat >= 0 && seat < maxSeats
+}
+
+func applyArrowAdd(t *Table, a Action) error {
+	if !validSeat(a.Seat) {
+		return invalid("unknown seat %d", a.Seat)
+	}
+	from, err := t.tableCard(a.Card)
+	if err != nil {
+		return err
+	}
+	to, err := t.tableCard(a.Target)
+	if err != nil {
+		return err
+	}
+	if from == to {
+		return invalid("arrow cannot start and end at card %q", from.ID)
+	}
+	t.Arrows = append(t.Arrows, Arrow{From: from.ID, To: to.ID, Seat: a.Seat})
+	return nil
+}
+
+func applyArrowClear(t *Table, a Action) error {
+	if !validSeat(a.Seat) {
+		return invalid("unknown seat %d", a.Seat)
+	}
+	t.Arrows = slices.DeleteFunc(t.Arrows, func(ar Arrow) bool { return ar.Seat == a.Seat })
 	return nil
 }

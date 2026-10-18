@@ -446,3 +446,250 @@ func TestChooseStageRejectsBadInput(t *testing.T) {
 		}
 	}
 }
+
+func TestDrawMovesTopCards(t *testing.T) {
+	table := newTestTable()
+
+	mustApply(t, table, Action{Kind: ActDraw, Area: "p0", Cards: []string{"c6", "c5"}})
+
+	if got := table.Piles["deck:p0"].Cards; !slices.Equal(got, []string{"c4"}) {
+		t.Errorf("deck = %v, want [c4]", got)
+	}
+	if got := table.Hands["p0"]; !slices.Equal(got, []string{"c3", "c6", "c5"}) {
+		t.Errorf("hand = %v, want [c3 c6 c5]", got)
+	}
+	if c := table.Cards["c6"]; c.Zone != ZoneHand || c.Pile != "" || c.FaceDown {
+		t.Errorf("c6 = %+v, want a face-up hand card", c)
+	}
+}
+
+func TestDrawRejectsWrongCards(t *testing.T) {
+	for name, cards := range map[string][]string{
+		"not the top": {"c5"},
+		"wrong order": {"c5", "c6"},
+		"too many":    {"c6", "c5", "c4", "c3"},
+		"none":        nil,
+	} {
+		t.Run(name, func(t *testing.T) {
+			table := newTestTable()
+			err := apply(table, Action{Kind: ActDraw, Area: "p0", Cards: cards})
+			if !errors.Is(err, ErrInvalid) {
+				t.Errorf("err = %v, want ErrInvalid", err)
+			}
+		})
+	}
+}
+
+func TestRevealPutsTopCardOnPilePosition(t *testing.T) {
+	table := newTestTable()
+	table.Piles[PileEncounter].Area = AreaVillain
+	table.Piles[PileEncounter].X, table.Piles[PileEncounter].Y = 0, 0
+	table.Cards["c8"].FaceDown = true
+
+	mustApply(t, table, Action{Kind: ActReveal})
+
+	c := table.Cards["c8"]
+	if c.Zone != ZoneTable || c.Area != AreaVillain || c.OnPile != PileEncounter || c.FaceDown || c.Z != 10 {
+		t.Errorf("c8 = %+v, want a face-up revealed table card with Z 10", c)
+	}
+	if len(table.Piles[PileEncounter].Cards) != 0 {
+		t.Errorf("enc = %v, want empty", table.Piles[PileEncounter].Cards)
+	}
+}
+
+func TestRevealRefusedWhenOneRevealed(t *testing.T) {
+	table := newTestTable()
+	table.Cards["c7"].OnPile = PileEncounter
+
+	if err := apply(table, Action{Kind: ActReveal}); !errors.Is(err, ErrInvalid) {
+		t.Errorf("err = %v, want ErrInvalid", err)
+	}
+}
+
+func TestRevealRefusedWhenEncounterDeckEmpty(t *testing.T) {
+	table := newTestTable()
+	table.Piles[PileEncounter].Cards = nil
+
+	if err := apply(table, Action{Kind: ActReveal}); !errors.Is(err, ErrInvalid) {
+		t.Errorf("err = %v, want ErrInvalid", err)
+	}
+}
+
+func TestDealFaceDown(t *testing.T) {
+	table := newTestTable()
+
+	mustApply(t, table, Action{Kind: ActDeal, Area: "p1", X: 104, Y: 96})
+
+	c := table.Cards["c8"]
+	if c.Zone != ZoneTable || !c.FaceDown || c.Area != "p1" || c.X != 100 || c.Y != 100 || c.OnPile != "" {
+		t.Errorf("c8 = %+v, want a face-down card at p1 (100,100)", c)
+	}
+}
+
+func TestDealWhileRevealedDealsTheRevealedCard(t *testing.T) {
+	table := newTestTable()
+	table.Cards["c7"].OnPile = PileEncounter
+
+	mustApply(t, table, Action{Kind: ActDeal, Area: "p1", X: 0, Y: 0})
+
+	if c := table.Cards["c7"]; !c.FaceDown || c.OnPile != "" || c.Area != "p1" {
+		t.Errorf("c7 = %+v, want dealt face down", c)
+	}
+	if got := table.Piles[PileEncounter].Cards; !slices.Equal(got, []string{"c8"}) {
+		t.Errorf("enc = %v, want [c8]", got)
+	}
+}
+
+func TestDiscardTop(t *testing.T) {
+	table := newTestTable()
+
+	mustApply(t, table, Action{Kind: ActDiscardTop, Pile: "deck:p0", N: 2})
+
+	if got := table.Piles["deck:p0"].Cards; !slices.Equal(got, []string{"c4"}) {
+		t.Errorf("deck = %v, want [c4]", got)
+	}
+	if got := table.Piles["disc:p0"].Cards; !slices.Equal(got, []string{"c6", "c5"}) {
+		t.Errorf("discard = %v, want [c6 c5]", got)
+	}
+
+	mustApply(t, table, Action{Kind: ActDiscardTop, Pile: PileEncounter, N: 1})
+	if got := table.Piles[PileEncounterDiscard].Cards; !slices.Equal(got, []string{"c8"}) {
+		t.Errorf("encd = %v, want [c8]", got)
+	}
+}
+
+func TestDiscardTopRejectsBadInput(t *testing.T) {
+	for name, a := range map[string]Action{
+		"zero":       {Kind: ActDiscardTop, Pile: "deck:p0", N: 0},
+		"too many":   {Kind: ActDiscardTop, Pile: "deck:p0", N: 4},
+		"not a deck": {Kind: ActDiscardTop, Pile: "disc:p0", N: 1},
+	} {
+		t.Run(name, func(t *testing.T) {
+			if err := apply(newTestTable(), a); !errors.Is(err, ErrInvalid) {
+				t.Errorf("err = %v, want ErrInvalid", err)
+			}
+		})
+	}
+}
+
+func TestShuffleMustBePermutation(t *testing.T) {
+	table := newTestTable()
+
+	err := apply(table, Action{Kind: ActShuffle, Pile: "deck:p0", Cards: []string{"c1", "c2", "c3"}})
+	if !errors.Is(err, ErrInvalid) {
+		t.Errorf("err = %v, want ErrInvalid", err)
+	}
+
+	mustApply(t, table, Action{Kind: ActShuffle, Pile: "deck:p0", Cards: []string{"c6", "c4", "c5"}})
+	if got := table.Piles["deck:p0"].Cards; !slices.Equal(got, []string{"c6", "c4", "c5"}) {
+		t.Errorf("deck = %v, want [c6 c4 c5]", got)
+	}
+}
+
+func TestShuffleBackAndIn(t *testing.T) {
+	table := newTestTable()
+	mustApply(t, table, Action{Kind: ActDiscard, Card: "c3"})
+
+	bad := Action{Kind: ActShuffleBack, Pile: "disc:p0", Cards: []string{"c4", "c5", "c6"}}
+	if err := apply(table, bad); !errors.Is(err, ErrInvalid) {
+		t.Errorf("incomplete order: err = %v, want ErrInvalid", err)
+	}
+
+	mustApply(t, table, Action{Kind: ActShuffleBack, Pile: "disc:p0", Cards: []string{"c5", "c3", "c6", "c4"}})
+	if got := table.Piles["deck:p0"].Cards; !slices.Equal(got, []string{"c5", "c3", "c6", "c4"}) {
+		t.Errorf("deck = %v, want [c5 c3 c6 c4]", got)
+	}
+	if len(table.Piles["disc:p0"].Cards) != 0 {
+		t.Errorf("discard = %v, want empty", table.Piles["disc:p0"].Cards)
+	}
+	if c := table.Cards["c3"]; c.Zone != ZonePile || c.Pile != "deck:p0" {
+		t.Errorf("c3 = %+v, want in deck:p0", c)
+	}
+
+	// c7 is an encounter card, c4 a player card: only c7 goes back to enc.
+	mustApply(t, table, Action{Kind: ActToPile, Card: "c7", Target: PileScenarioAside})
+	mustApply(t, table, Action{Kind: ActToPile, Card: "c4", Target: PileScenarioAside})
+	mustApply(t, table, Action{Kind: ActShuffleIn, Pile: PileScenarioAside, Cards: []string{"c7", "c8"}})
+	if got := table.Piles[PileEncounter].Cards; !slices.Equal(got, []string{"c7", "c8"}) {
+		t.Errorf("enc = %v, want [c7 c8]", got)
+	}
+	if got := table.Piles[PileScenarioAside].Cards; !slices.Equal(got, []string{"c4"}) {
+		t.Errorf("saside = %v, want [c4]", got)
+	}
+}
+
+func TestReorderTop(t *testing.T) {
+	table := newTestTable()
+
+	mustApply(t, table, Action{Kind: ActReorderTop, Pile: "deck:p0", Cards: []string{"c5", "c6"}})
+
+	if got := table.Piles["deck:p0"].Cards; !slices.Equal(got, []string{"c4", "c6", "c5"}) {
+		t.Errorf("deck = %v, want [c4 c6 c5]", got)
+	}
+	err := apply(table, Action{Kind: ActReorderTop, Pile: "deck:p0", Cards: []string{"c4", "c5"}})
+	if !errors.Is(err, ErrInvalid) {
+		t.Errorf("other set: err = %v, want ErrInvalid", err)
+	}
+}
+
+func TestHandOrder(t *testing.T) {
+	table := newTestTable()
+	table.Hands["p0"] = []string{"c3", "c4"}
+
+	mustApply(t, table, Action{Kind: ActHandOrder, Area: "p0", Cards: []string{"c4", "c3"}})
+	if got := table.Hands["p0"]; !slices.Equal(got, []string{"c4", "c3"}) {
+		t.Errorf("hand = %v, want [c4 c3]", got)
+	}
+	err := apply(table, Action{Kind: ActHandOrder, Area: "p0", Cards: []string{"c4"}})
+	if !errors.Is(err, ErrInvalid) {
+		t.Errorf("err = %v, want ErrInvalid", err)
+	}
+}
+
+func TestFirstPlayer(t *testing.T) {
+	table := newTestTable()
+
+	mustApply(t, table, Action{Kind: ActFirstPlayer, Area: "p1", X: 423, Y: 7})
+
+	if want := (Point{Area: "p1", X: 420, Y: 10}); table.FirstPlayer != want {
+		t.Errorf("FirstPlayer = %+v, want %+v", table.FirstPlayer, want)
+	}
+}
+
+func TestArrowsPerSeat(t *testing.T) {
+	table := newTestTable()
+	mustApply(t, table, Action{Kind: ActArrowAdd, Card: "c1", Target: "c7", Seat: 0})
+	mustApply(t, table, Action{Kind: ActArrowAdd, Card: "c7", Target: "c1", Seat: 1})
+
+	mustApply(t, table, Action{Kind: ActArrowClear, Seat: 1})
+
+	want := []Arrow{{From: "c1", To: "c7", Seat: 0}}
+	if !reflect.DeepEqual(table.Arrows, want) {
+		t.Errorf("arrows = %v, want %v", table.Arrows, want)
+	}
+}
+
+func TestArrowAddRequiresTableCards(t *testing.T) {
+	table := newTestTable()
+
+	err := apply(table, Action{Kind: ActArrowAdd, Card: "c1", Target: "c3", Seat: 0})
+	if !errors.Is(err, ErrInvalid) {
+		t.Errorf("err = %v, want ErrInvalid", err)
+	}
+}
+
+func TestLeavingTableRemovesArrows(t *testing.T) {
+	table := newTestTable()
+	table.Cards["c9"] = &Card{ID: "c9", Owner: 0, Home: "deck:p0", Zone: ZoneTable, Area: "p0", Z: 1}
+	mustApply(t, table, Action{Kind: ActArrowAdd, Card: "c1", Target: "c7", Seat: 0})
+	mustApply(t, table, Action{Kind: ActArrowAdd, Card: "c7", Target: "c2", Seat: 1})
+	mustApply(t, table, Action{Kind: ActArrowAdd, Card: "c7", Target: "c9", Seat: 1})
+
+	// c2 is tucked under c1 and leaves the table with it.
+	mustApply(t, table, Action{Kind: ActDiscard, Card: "c1"})
+
+	want := []Arrow{{From: "c7", To: "c9", Seat: 1}}
+	if !reflect.DeepEqual(table.Arrows, want) {
+		t.Errorf("arrows = %v, want %v", table.Arrows, want)
+	}
+}

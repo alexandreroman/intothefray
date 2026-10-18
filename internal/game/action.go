@@ -19,6 +19,19 @@ const (
 	ActToken       Kind = "token"
 	ActStatus      Kind = "status"
 	ActChooseStage Kind = "chooseStage"
+
+	ActDraw        Kind = "draw"
+	ActReveal      Kind = "reveal"
+	ActDeal        Kind = "deal"
+	ActDiscardTop  Kind = "discardTop"
+	ActShuffle     Kind = "shuffle"
+	ActShuffleBack Kind = "shuffleBack"
+	ActShuffleIn   Kind = "shuffleIn"
+	ActReorderTop  Kind = "reorderTop"
+	ActHandOrder   Kind = "handOrder"
+	ActFirstPlayer Kind = "firstPlayer"
+	ActArrowAdd    Kind = "arrowAdd"
+	ActArrowClear  Kind = "arrowClear"
 )
 
 // Action is one resolved player action. Which fields matter depends on Kind;
@@ -38,4 +51,5 @@ type Action struct {
 	Where  string   `json:"where,omitempty"` // "top" | "bottom" | "shuffle"
 	Stage  string   `json:"stage,omitempty"`
 	Cards  []string `json:"cards,omitempty"` // resolved: drawn/dealt ids, new orders
+	Seat   int      `json:"seat,omitempty"`  // acting seat, filled server-side (arrows)
 }
