@@ -3,10 +3,20 @@
   becomes a drag after 4 px: the dragged cards are drawn here, over the whole
   page at the table's zoom, outside the zone surfaces, so that new views
   redrawing the table leave them alone. The drop targets are measured on the
-  screen and drag.ts decides what the drop sends.
+  screen and drag.ts decides what the drop sends. Once dropped, the cards
+  stay drawn where they landed until the server answers.
 -->
 <script lang="ts">
-  import type { Action, Area, CardView as TableCard, PackFace, Size, View } from '../lib/types';
+  import { untrack } from 'svelte';
+  import type {
+    Action,
+    Area,
+    CardView as TableCard,
+    PackFace,
+    SessionError,
+    Size,
+    View,
+  } from '../lib/types';
   import CardBack from './CardBack.svelte';
   import CardFace from './CardFace.svelte';
   import CardView from './CardView.svelte';
@@ -41,6 +51,7 @@
     faceOf,
     sizeOf,
     act,
+    lastError,
   }: {
     view: View;
     zoom: number;
@@ -48,7 +59,10 @@
     root: HTMLElement | undefined;
     faceOf: (card: TableCard | undefined) => PackFace | null;
     sizeOf: (card: TableCard) => Size;
-    act: (action: Action) => void;
+    /** Sends a drop's action: its id, or null when it could not be sent. */
+    act: (action: Action) => number | null;
+    /** The session's last error, which names the action it refuses. */
+    lastError: SessionError | null;
   } = $props();
 
   // The encounter deck's top card is not known: its ghost is a face-down card.
@@ -82,6 +96,12 @@
 
   const cards = $derived(view.table?.cards ?? []);
   const cardsById = $derived(new Map(cards.map((card) => [card.id, card])));
+  /**
+   * The ghosts of the last drop, set down where it landed, the action they
+   * wait for, and the view they were dropped on.
+   */
+  let landed = $state.raw<{ action: number; ghosts: TableCard[]; view: View } | null>(null);
+
   const held = $derived(interaction.dragging);
   // Read from the current view at every redraw: the drag follows its card by id.
   const source = $derived(held ? sourceOf(held.element, view, held.card ?? undefined) : null);
@@ -103,6 +123,25 @@
   $effect(() => {
     if (held && !isStillThere(held, source)) {
       end();
+    }
+  });
+
+  // The next view shows where the last drop went (or that it went nowhere):
+  // its cards are drawn from the view again.
+  $effect.pre(() => {
+    const current = view;
+    untrack(() => {
+      if (landed && landed.view !== current) {
+        landed = null;
+        interaction.endLanding();
+      }
+    });
+  });
+
+  $effect(() => {
+    const refused = lastError?.id;
+    if (refused !== undefined) {
+      untrack(() => interaction.refused(refused));
     }
   });
 
@@ -191,6 +230,15 @@
   function cornerOf(from: DragSource, at: Point): Point {
     const box = boxOf(from);
     return { x: at.x - grab.x * box.w * zoom, y: at.y - grab.y * box.h * zoom };
+  }
+
+  /** Where a drop at the point leaves the dragged card's corner: on its grid spot when the action places it. */
+  function landingCorner(from: DragSource, action: Action, at: Point): Point {
+    const surface = action.area ? surfaceRect(action.area) : undefined;
+    if (!surface || action.x === undefined || action.y === undefined) {
+      return cornerOf(from, at);
+    }
+    return { x: surface.left + action.x * zoom, y: surface.top + action.y * zoom };
   }
 
   function surfaceRect(area: Area): DOMRect | undefined {
@@ -323,13 +371,37 @@
     }
     const from = sourceOf(pressed.element, view, pressed.card ?? undefined);
     const at = { x: event.clientX, y: event.clientY };
-    const found = isStillThere(pressed, from) ? locate(from, at) : null;
+    const action = isStillThere(pressed, from) ? locate(from, at)?.action : null;
     end();
     // The click this release fires is the end of the drag, not a tap on what lies there.
     interaction.swallowNextClick();
-    if (found?.action) {
-      act(found.action);
+    if (!from || !action) {
+      return;
     }
+    const sent = act(action);
+    if (sent !== null) {
+      land(sent, pressed, from, action, at);
+    }
+  }
+
+  /**
+   * Keeps what was dropped in place until the server answers: a reordered
+   * hand in its new order, any other drop as ghosts where it landed.
+   */
+  function land(sent: number, pressed: Held, from: DragSource, action: Action, at: Point): void {
+    const reorder = action.kind === 'handOrder';
+    landed = {
+      action: sent,
+      ghosts: reorder ? [] : ghostsAt(from, landingCorner(from, action, at)),
+      view,
+    };
+    interaction.land({
+      action: sent,
+      element: pressed.element,
+      card: pressed.card,
+      lifted: reorder ? [] : pressed.lifted,
+      handOrder: reorder ? (action.cards ?? null) : null,
+    });
   }
 
   function onCancel(event: PointerEvent): void {
@@ -345,22 +417,21 @@
     hint = null;
   }
 
-  /** The cards drawn under the pointer at table size, in table units of the zoomed layer. */
-  const ghosts = $derived.by((): TableCard[] => {
-    if (!pointer || !source) {
-      return [];
-    }
-    const corner = cornerOf(source, pointer);
+  /**
+   * The cards drawn at table size for the dragged card's corner at that point
+   * of the screen, in table units of the zoomed layer.
+   */
+  function ghostsAt(from: DragSource, corner: Point): TableCard[] {
     const x = corner.x / zoom;
     const y = corner.y / zoom;
-    if (source.kind === 'encounter') {
+    if (from.kind === 'encounter') {
       return [{ ...ENCOUNTER_TOP, x, y }];
     }
-    const card = cardsById.get(source.card);
+    const card = cardsById.get(from.card);
     if (!card) {
       return [];
     }
-    if (source.kind !== 'card') {
+    if (from.kind !== 'card') {
       return [{ ...card, zone: 'table', x, y, onPile: undefined, parent: undefined }];
     }
     // The cards tucked under it keep their offsets.
@@ -368,7 +439,15 @@
       const k = cardsById.get(id);
       return k ? [{ ...k, x: x + k.x - card.x, y: y + k.y - card.y }] : [];
     });
-  });
+  }
+
+  /** The cards drawn under the pointer. */
+  const ghosts = $derived(pointer && source ? ghostsAt(source, cornerOf(source, pointer)) : []);
+
+  /** The ghosts of the last drop, while it waits for the server. */
+  const landedGhosts = $derived(
+    landed && interaction.landing?.action === landed.action ? landed.ghosts : [],
+  );
 
   /** The dragged hand card at hand size, while it is over the hand. */
   const handGhost = $derived.by(() => {
@@ -416,6 +495,9 @@
       <CardView card={ghost} face={faceOf(ghost)} ghost />
     {/each}
   {/if}
+  {#each landedGhosts as ghost (ghost.id)}
+    <CardView card={ghost} face={faceOf(ghost)} ghost landed />
+  {/each}
 </div>
 
 {#if hint}

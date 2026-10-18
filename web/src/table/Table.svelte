@@ -34,7 +34,8 @@
   import ZoomControl from './ZoomControl.svelte';
   import { clampZoom, saveZoom, storedZoom, ZOOM_MAX, ZOOM_MIN } from './zoom';
 
-  let { session, view }: { session: Pick<GameSession, 'act' | 'lobby'>; view: View } = $props();
+  let { session, view }: { session: Pick<GameSession, 'act' | 'lobby' | 'lastError'>; view: View } =
+    $props();
 
   // P5a-R2: the catalog is loaded once, then card sizes are looked up synchronously.
   let catalog = $state<'loading' | 'ready' | 'failed'>('loading');
@@ -70,9 +71,9 @@
   );
 
   function topOf(pile: PileView): TableCard | undefined {
-    // While a card is dragged from a pile, the pile shows its top card without it.
-    const taken = interaction.isLiftedFrom(pile.id) ? interaction.dragging?.card : undefined;
-    const topId = (pile.cards ?? []).filter((id) => id !== taken).at(-1);
+    // While a card taken from a pile is dragged or waits for the server, the pile shows its top card without it.
+    const taken = interaction.takenFrom(pile.id);
+    const topId = (pile.cards ?? []).filter((id) => !taken.includes(id)).at(-1);
     return topId === undefined ? undefined : cardsById.get(topId);
   }
 
@@ -560,7 +561,15 @@
     <Hand cards={handCards} {faceOf} narrow={narrow.current} />
   {/if}
 
-  <DragLayer {view} {zoom} root={app} {faceOf} {sizeOf} act={(action) => session.act(action)} />
+  <DragLayer
+    {view}
+    {zoom}
+    root={app}
+    {faceOf}
+    {sizeOf}
+    act={(action) => session.act(action)}
+    lastError={session.lastError}
+  />
 
   {#if barShown && wrap}
     <ActionBar

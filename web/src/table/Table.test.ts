@@ -40,7 +40,7 @@ function pile(id: string, extra: Partial<PileView>): PileView {
 }
 
 function fakeSession() {
-  return { act: vi.fn(() => 1), lobby: vi.fn(() => true) };
+  return { act: vi.fn(() => 1), lobby: vi.fn(() => true), lastError: null };
 }
 
 /** Rhino with two players; the viewer is Sam, seated second (area p1). */

@@ -2,7 +2,15 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import Table from './Table.svelte';
 import { interaction } from './interaction.svelte';
 import { cardByCode, knownCard, loadAllCards, type CardInfo } from '../lib/catalog';
-import type { Area, CardView as TableCard, PackFace, PileView, View } from '../lib/types';
+import type {
+  Action,
+  Area,
+  CardView as TableCard,
+  PackFace,
+  PileView,
+  SessionError,
+  View,
+} from '../lib/types';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -104,8 +112,13 @@ function makeView(
   };
 }
 
+/** A session whose actions all go out, the first one as action 1; nothing answers them. */
 function fakeSession() {
-  return { act: vi.fn(() => 1), lobby: vi.fn(() => true) };
+  return {
+    act: vi.fn((_action: Action): number | null => 1),
+    lobby: vi.fn(() => true),
+    lastError: null as SessionError | null,
+  };
 }
 
 function domRect(left: number, top: number, width: number, height: number): DOMRect {
@@ -206,6 +219,11 @@ async function renderTable(view: View = makeView()) {
       current = next;
       await result.rerender({ session, view: next });
     },
+    /** The server refuses the action of that id. */
+    async refuse(id: number) {
+      session.lastError = { id, code: 'invalid', message: 'refused' };
+      await result.rerender({ session: { ...session }, view: current });
+    },
   };
 }
 
@@ -258,8 +276,6 @@ describe('dragging a table card', () => {
       x: 200,
       y: 50,
     });
-    expect(ghosts()).toEqual([]);
-    expect(placed('mine').classList).not.toContain('lifted');
   });
 
   it('counts the move in table units at another zoom', async () => {
@@ -644,5 +660,152 @@ describe('dragging a hand card', () => {
     expect(screen.getByText('Discard')).toBeTruthy();
     await release(770, 400);
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'discard', card: 'h3' });
+  });
+});
+
+describe('a drop waiting for the server', () => {
+  /** Drags "mine" so that its corner lands at 204, 52 on Alex's table, and lets go. */
+  async function dropMine() {
+    await press(placed('mine'), 50, 400);
+    await moveTo(254, 452);
+    await release(254, 452);
+  }
+
+  /** The table once the server took the move of "mine" to 200, 50. */
+  function moved(): View {
+    return makeView({
+      cards: CARDS.map((c) => (c.id === 'mine' ? { ...c, x: 200, y: 50 } : c)),
+    });
+  }
+
+  function handOrder(): string[] {
+    return [...document.querySelectorAll<HTMLElement>('.hand .hcard')].map(
+      (slot) => slot.dataset.id ?? 'gap',
+    );
+  }
+
+  it('keeps a moved card on its grid spot until the next view', async () => {
+    const { rerender } = await renderTable();
+    await dropMine();
+    // Where the move puts it: 200, 50 on Alex's table, 220, 390 on the screen.
+    const [ghost] = ghosts();
+    expect(ghosts().map((g) => g.dataset.id)).toEqual(['mine']);
+    expect(ghost?.style.left).toBe('220px');
+    expect(ghost?.style.top).toBe('390px');
+    // Set down: no longer held up under the pointer.
+    expect(ghost?.classList).toContain('landed');
+    expect(placed('mine').classList).toContain('lifted');
+
+    await rerender(moved());
+    expect(ghosts()).toEqual([]);
+    expect(placed('mine').classList).not.toContain('lifted');
+    expect(placed('mine').style.left).toBe('200px');
+  });
+
+  it('puts the card back at once when the action could not be sent', async () => {
+    const { session } = await renderTable();
+    session.act.mockReturnValue(null);
+    await dropMine();
+    expect(session.act).toHaveBeenCalledOnce();
+    expect(ghosts()).toEqual([]);
+    expect(placed('mine').classList).not.toContain('lifted');
+  });
+
+  it('puts the card back when the server refuses that action', async () => {
+    const { refuse } = await renderTable();
+    await dropMine();
+    // The refusal of another action changes nothing.
+    await refuse(7);
+    expect(ghosts().map((g) => g.dataset.id)).toEqual(['mine']);
+
+    await refuse(1);
+    expect(ghosts()).toEqual([]);
+    expect(placed('mine').classList).not.toContain('lifted');
+  });
+
+  it('puts the card back after 2 s without an answer', async () => {
+    await renderTable();
+    vi.useFakeTimers();
+    await dropMine();
+    await vi.advanceTimersByTimeAsync(1999);
+    expect(ghosts().map((g) => g.dataset.id)).toEqual(['mine']);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(ghosts()).toEqual([]);
+    expect(placed('mine').classList).not.toContain('lifted');
+  });
+
+  it('keeps a played hand card out of the hand, where it was played', async () => {
+    const { rerender } = await renderTable();
+    await press(handCard('h2'), 500, 780);
+    await moveTo(300, 450);
+    await release(300, 450);
+    // Played at 230, 50 on Alex's table: 250, 390 on the screen.
+    const [ghost] = ghosts();
+    expect(ghosts().map((g) => g.dataset.id)).toEqual(['h2']);
+    expect(ghost?.style.left).toBe('250px');
+    expect(ghost?.style.top).toBe('390px');
+    expect(handOrder()).toEqual(['h1', 'h3']);
+
+    const played = makeView({
+      cards: CARDS.map((c) =>
+        c.id === 'h2' ? { ...c, zone: 'table', area: 'p0', x: 230, y: 50 } : c,
+      ),
+    });
+    played.table!.hand = ['h1', 'h3'];
+    await rerender(played);
+    expect(ghosts()).toEqual([]);
+    expect(placed('h2').style.left).toBe('230px');
+  });
+
+  it('keeps the new order of a reordered hand', async () => {
+    const { rerender } = await renderTable();
+    await press(handCard('h1'), 350, 780);
+    await moveTo(700, 760);
+    await release(700, 760);
+    expect(handOrder()).toEqual(['h2', 'h3', 'h1']);
+    expect(ghosts()).toEqual([]);
+
+    const reordered = makeView();
+    reordered.table!.hand = ['h2', 'h3', 'h1'];
+    await rerender(reordered);
+    expect(handOrder()).toEqual(['h2', 'h3', 'h1']);
+  });
+
+  it('puts a reordered hand back in its order when the server refuses it', async () => {
+    const { refuse } = await renderTable();
+    await press(handCard('h1'), 350, 780);
+    await moveTo(700, 760);
+    await release(700, 760);
+    await refuse(1);
+    expect(handOrder()).toEqual(['h1', 'h2', 'h3']);
+  });
+
+  it('keeps the card taken from a pile out of it', async () => {
+    const { rerender } = await renderTable(makeView({ discarded: ['d1'] }));
+    await press(placed('disc:p0'), 790, 410);
+    await moveTo(300, 450);
+    await release(300, 450);
+    expect(ghosts().map((g) => g.dataset.id)).toEqual(['d1']);
+    expect(placed('disc:p0').classList).toContain('empty');
+
+    const view = makeView();
+    view.table!.cards.push(card('d1', { x: 230, y: 40 }));
+    await rerender(view);
+    expect(ghosts()).toEqual([]);
+    expect(placed('d1').style.left).toBe('230px');
+  });
+
+  it('deals the encounter card face down where it lands, the deck one card lower', async () => {
+    await renderTable();
+    await press(placed('enc'), 50, 100);
+    await moveTo(300, 450);
+    await release(300, 450);
+    // Dealt at 230, 40 on Alex's table: 250, 380 on the screen.
+    expect(ghosts()).toHaveLength(1);
+    const [ghost] = ghosts();
+    expect(ghost?.querySelector('[alt="Encounter card back"]')).not.toBeNull();
+    expect(ghost?.style.left).toBe('250px');
+    expect(ghost?.style.top).toBe('380px');
+    expect(placed('enc').querySelector('.count')?.textContent).toBe('19');
   });
 });

@@ -14,12 +14,15 @@
     card,
     face,
     ghost = false,
+    landed = false,
   }: {
     card: TableCard;
     /** The catalog face the card shows, null while unknown: it is then a std placeholder. */
     face: PackFace | null;
     /** The copy drawn under the pointer while the card is dragged (DragLayer). */
     ghost?: boolean;
+    /** A ghost set down where the card was dropped, until the server answers. */
+    landed?: boolean;
   } = $props();
 
   const TOKENS = ['dmg', 'thr', 'gen'] as const;
@@ -57,6 +60,7 @@
   class:locked
   class:lifted
   class:ghost
+  class:landed
   class:drop-target={tuckTarget}
   class:drop-pile={pileTarget}
   style:left="{card.x}px"
@@ -139,6 +143,10 @@
     cursor: grabbing;
     scale: 1.04;
     transition: scale 0.12s;
+  }
+
+  .card.landed {
+    scale: 1;
   }
 
   .tokens {

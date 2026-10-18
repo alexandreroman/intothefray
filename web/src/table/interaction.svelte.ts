@@ -3,6 +3,9 @@ import type { TableElement } from './actions';
 /** How long the bar and the preview stay after the pointer leaves their element. */
 export const LINGER_MS = 250;
 
+/** How long a drop waits for the server's answer before its cards go back. */
+export const LANDING_MS = 2000;
+
 /** A token or status of a table card, found again by its names after every redraw. */
 export interface CounterTarget {
   card: string;
@@ -25,6 +28,23 @@ export interface Held {
   card: string | null;
   /** The table and hand cards that move with it, hidden while their ghost follows the pointer. */
   lifted: readonly string[];
+}
+
+/**
+ * A drop sent to the server: its cards stay where they were dropped until the
+ * next view shows where they went, or the server refuses the action, or no
+ * answer comes in time.
+ */
+export interface Landing {
+  /** The id the session gave the action, which the server echoes in an error. */
+  action: number;
+  /** What was dragged, as in Held. */
+  element: TableElement;
+  card: string | null;
+  /** The table and hand cards still hidden in their old places. */
+  lifted: readonly string[];
+  /** The order a reordered hand is drawn in meanwhile. */
+  handOrder: readonly string[] | null;
 }
 
 /** What a drop would go onto, outlined during a drag: a card, a pile, or the viewer's hand. */
@@ -70,6 +90,8 @@ class TableInteraction {
   dropOn = $state.raw<DropOn | null>(null);
   /** Where the dragged hand card would slot back in, while it is over the hand. */
   handGap = $state<number | null>(null);
+  /** The last drop, while it waits for the server. */
+  landing = $state.raw<Landing | null>(null);
 
   #pointer = { x: NaN, y: NaN };
   // Where the pointer was when the table was last redrawn.
@@ -79,6 +101,7 @@ class TableInteraction {
   #swallowClick = false;
   #hideTimer: ReturnType<typeof setTimeout> | undefined;
   #counterTimer: ReturnType<typeof setTimeout> | undefined;
+  #landingTimer: ReturnType<typeof setTimeout> | undefined;
 
   /** Follows the pointer, to tell real hovers from the ones a redraw fires. */
   pointerMoved(event: PointerEvent): void {
@@ -138,15 +161,53 @@ class TableInteraction {
     this.hideCounter();
   }
 
-  /** Whether the card is dragged, its ghost drawn in the drag layer instead. */
-  isLifted(id: string): boolean {
-    return this.dragging?.lifted.includes(id) ?? false;
+  /** The drag under way and the drop waiting for the server, if any. */
+  #moving(): (Held | Landing)[] {
+    const moving: (Held | Landing)[] = [];
+    if (this.dragging) {
+      moving.push(this.dragging);
+    }
+    if (this.landing) {
+      moving.push(this.landing);
+    }
+    return moving;
   }
 
-  /** Whether the top card of that pile (or the encounter deck's) is dragged. */
-  isLiftedFrom(pile: string): boolean {
-    const element = this.dragging?.element;
-    return element?.kind === 'pile' && element.id === pile;
+  /** Whether the card is dragged or just dropped, its ghost drawn in the drag layer instead. */
+  isLifted(id: string): boolean {
+    return this.#moving().some((moving) => moving.lifted.includes(id));
+  }
+
+  /**
+   * The cards that the drag, or the drop waiting for the server, took from
+   * that pile: the pile is drawn without them. Null stands for the encounter
+   * deck's hidden top card.
+   */
+  takenFrom(pile: string): (string | null)[] {
+    return this.#moving()
+      .filter((moving) => moving.element.kind === 'pile' && moving.element.id === pile)
+      .map((moving) => moving.card);
+  }
+
+  /** A drop was sent to the server: its cards stay where they landed meanwhile. */
+  land(landing: Landing): void {
+    this.endLanding();
+    this.landing = landing;
+    this.#landingTimer = setTimeout(() => this.endLanding(), LANDING_MS);
+  }
+
+  /** The drop is over: a new view shows it, or it was refused, or no answer came in time. */
+  endLanding(): void {
+    clearTimeout(this.#landingTimer);
+    this.#landingTimer = undefined;
+    this.landing = null;
+  }
+
+  /** The server refused the action of that id. */
+  refused(action: number): void {
+    if (this.landing?.action === action) {
+      this.endLanding();
+    }
   }
 
   /** The press or the drag is over: dropped, or cancelled. */
@@ -317,6 +378,7 @@ class TableInteraction {
   reset(): void {
     this.release();
     this.letGo();
+    this.endLanding();
     this.#swallowClick = false;
     this.highlighted = new Set();
     this.arrowFrom = null;

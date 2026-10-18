@@ -77,7 +77,7 @@ function makeView(): View {
 }
 
 function fakeSession() {
-  return { act: vi.fn(() => 1), lobby: vi.fn(() => true) };
+  return { act: vi.fn(() => 1), lobby: vi.fn(() => true), lastError: null };
 }
 
 function sidePanel(): HTMLElement {

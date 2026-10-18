@@ -26,17 +26,21 @@
 
   const cardSize = $derived(narrow ? HAND_CARD_NARROW : HAND_CARD);
 
-  // A card dragged out of the hand leaves the fan. Brought back over it, the
-  // other cards make room where it would slot in.
+  /** The cards in the given order, then any the order does not know (drawn meanwhile). */
+  function inOrder(order: readonly string[]): TableCard[] {
+    const ordered = order.flatMap((id) => cards.filter((card) => card.id === id));
+    return [...ordered, ...cards.filter((card) => !order.includes(card.id))];
+  }
+
+  // A card dragged out of the hand leaves the fan, and stays out until the
+  // server answers its drop. Brought back over the fan, the other cards make
+  // room where it would slot in; a reorder shows its new order meanwhile.
   const shown = $derived.by((): (TableCard | 'gap')[] => {
-    const drag = interaction.dragging;
-    if (drag?.element.kind !== 'hand') {
-      return cards;
-    }
-    const dragged = drag.element.id;
-    const others: (TableCard | 'gap')[] = cards.filter((card) => card.id !== dragged);
+    const order = interaction.landing?.handOrder;
+    const ordered = order ? inOrder(order) : cards;
+    const others: (TableCard | 'gap')[] = ordered.filter((card) => !interaction.isLifted(card.id));
     const gap = interaction.handGap;
-    if (gap !== null) {
+    if (interaction.dragging?.element.kind === 'hand' && gap !== null) {
       others.splice(Math.min(gap, others.length), 0, 'gap');
     }
     return others;

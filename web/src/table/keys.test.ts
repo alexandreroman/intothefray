@@ -96,7 +96,7 @@ function makeView(extra: Partial<View> & { cards?: TableCard[] } = {}): View {
 }
 
 function fakeSession() {
-  return { act: vi.fn(() => 1), lobby: vi.fn(() => true) };
+  return { act: vi.fn(() => 1), lobby: vi.fn(() => true), lastError: null };
 }
 
 function placed(id: string): HTMLElement {

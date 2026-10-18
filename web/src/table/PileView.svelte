@@ -34,9 +34,8 @@
 
   const SLOT = cardBox('std', {});
 
-  // While its top card is dragged, the pile shows what lies under it.
-  const lifted = $derived(interaction.isLiftedFrom(pile.id));
-  const count = $derived(lifted ? pile.count - 1 : pile.count);
+  // While a card taken from it is dragged or waits for the server, the pile counts it out.
+  const count = $derived(pile.count - interaction.takenFrom(pile.id).length);
   const empty = $derived(count === 0);
   const targeted = $derived(
     interaction.dropOn?.kind === 'pile' && interaction.dropOn.id === pile.id,
