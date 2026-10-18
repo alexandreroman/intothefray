@@ -122,6 +122,45 @@ func TestHostCannotLeave(t *testing.T) {
 	if len(g.Players) != 3 || g.Spectators[0].Token != "c" {
 		t.Errorf("player c should be a spectator")
 	}
+
+	g.Phase = PhasePlaying
+	if err := g.Leave("b"); !errors.Is(err, ErrPhase) {
+		t.Errorf("Leave after start = %v, want ErrPhase", err)
+	}
+}
+
+func TestTakeSeat(t *testing.T) {
+	g := lobbyOfFour(t)
+	if err := g.RemovePlayer("h", "b"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := g.Join("e", "Fifth", testNow); err != nil { // takes colour 1
+		t.Fatal(err)
+	}
+
+	if err := g.TakeSeat("b"); !errors.Is(err, ErrInvalid) {
+		t.Errorf("full table err = %v, want ErrInvalid", err)
+	}
+	if err := g.RemovePlayer("h", "c"); err != nil {
+		t.Fatal(err)
+	}
+	if err := g.TakeSeat("b"); err != nil {
+		t.Fatal(err)
+	}
+	last := g.Players[len(g.Players)-1]
+	if last.Token != "b" || last.Name != "Player b" || last.Color != 2 {
+		t.Errorf("seated = %+v, want b, Player b, colour 2", last)
+	}
+	if err := g.TakeSeat("b"); err != nil {
+		t.Errorf("already a player err = %v, want nil", err)
+	}
+	if err := g.TakeSeat("zz"); !errors.Is(err, ErrNotFound) {
+		t.Errorf("unknown err = %v, want ErrNotFound", err)
+	}
+	g.Phase = PhasePlaying
+	if err := g.TakeSeat("c"); !errors.Is(err, ErrPhase) {
+		t.Errorf("after start err = %v, want ErrPhase", err)
+	}
 }
 
 func TestConfigureValidates(t *testing.T) {
@@ -163,6 +202,19 @@ func TestConfigureValidates(t *testing.T) {
 	g.Phase = PhasePlaying
 	if err := g.Configure("h", valid, cat); !errors.Is(err, ErrPhase) {
 		t.Errorf("after start err = %v, want ErrPhase", err)
+	}
+}
+
+func TestConfigureNormalizesModulars(t *testing.T) {
+	cat := newCatalog(t)
+	g := NewGame("g1", "h", "Host", testNow)
+
+	cfg := LobbyConfig{Scenario: "rhino", Difficulty: pack.Standard, Standard: "standard"}
+	if err := g.Configure("h", cfg, cat); err != nil {
+		t.Fatal(err)
+	}
+	if g.Config.Modulars == nil {
+		t.Error("Modulars is nil, want an empty slice")
 	}
 }
 

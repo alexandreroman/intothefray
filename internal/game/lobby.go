@@ -55,7 +55,8 @@ func (g *Game) Join(token, name string, now time.Time) (Role, error) {
 	return RoleSpectator, nil
 }
 
-// Leave turns a player into a spectator. The host cannot leave.
+// Leave turns a player into a spectator during the lobby. The host cannot
+// leave. After the start seats are fixed, since table areas follow them.
 func (g *Game) Leave(token string) error {
 	player := g.player(token)
 	if player == nil {
@@ -67,7 +68,31 @@ func (g *Game) Leave(token string) error {
 	if player.Host {
 		return fmt.Errorf("%w: the host cannot leave", ErrForbidden)
 	}
+	if err := g.requireLobby(); err != nil {
+		return err
+	}
 	g.demote(player)
+	return nil
+}
+
+// TakeSeat moves a spectator to a free seat during the lobby, with the
+// lowest free colour.
+func (g *Game) TakeSeat(token string) error {
+	if g.player(token) != nil {
+		return nil
+	}
+	spectator := g.spectator(token)
+	if spectator == nil {
+		return fmt.Errorf("%w: unknown participant", ErrNotFound)
+	}
+	if err := g.requireLobby(); err != nil {
+		return err
+	}
+	if len(g.Players) >= maxPlayers {
+		return fmt.Errorf("%w: all seats are taken", ErrInvalid)
+	}
+	g.Spectators = slices.DeleteFunc(g.Spectators, func(s *Spectator) bool { return s == spectator })
+	g.Players = append(g.Players, &Player{Token: token, Name: spectator.Name, Color: g.freeColor()})
 	return nil
 }
 
@@ -103,7 +128,8 @@ func (g *Game) Configure(hostToken string, cfg LobbyConfig, cat *pack.Catalog) e
 	if err := validateConfig(cfg, cat); err != nil {
 		return err
 	}
-	cfg.Modulars = slices.Clone(cfg.Modulars)
+	// Never nil, so the JSON form is [] rather than null.
+	cfg.Modulars = append([]string{}, cfg.Modulars...)
 	g.Config = cfg
 	return nil
 }
