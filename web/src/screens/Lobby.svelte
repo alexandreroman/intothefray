@@ -42,18 +42,9 @@
       : `Everyone is ready — waiting for ${hostName} to set up the table.`;
   });
 
-  function loadDeck(url: string): void {
-    session.deckError = null; // The result of the previous attempt no longer applies.
-    session.lobby('setDeck', { url });
-  }
-
   // A failed deck import shows under the deck field; anything else in the start bar.
-  const deckLoadError = $derived(
-    session.lastError?.code === 'deck' ? session.lastError.message : null,
-  );
-  const otherError = $derived(
-    session.lastError && session.lastError.code !== 'deck' ? session.lastError.message : null,
-  );
+  const deckLoadError = $derived(session.deckLoadError?.message ?? null);
+  const otherError = $derived(session.lastError?.message ?? null);
 </script>
 
 <div class="screen">
@@ -87,7 +78,12 @@
         ontakeseat={() => session.lobby('takeSeat')}
       />
       {#if me}
-        <DeckLoader {me} deckError={session.deckError} error={deckLoadError} onload={loadDeck} />
+        <DeckLoader
+          {me}
+          deckError={session.deckError}
+          error={deckLoadError}
+          onload={(url) => session.lobby('setDeck', { url })}
+        />
       {/if}
     </div>
   </main>

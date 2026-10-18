@@ -61,7 +61,11 @@ const view = (players: PlayerView[] = [player()]): View => ({
 });
 
 // Like the browser's: calling it with another receiver than the global object throws.
-function strictSetTimeout(this: unknown, handler: () => void, ms?: number): ReturnType<typeof setTimeout> {
+function strictSetTimeout(
+  this: unknown,
+  handler: () => void,
+  ms?: number,
+): ReturnType<typeof setTimeout> {
   if (this !== undefined && this !== globalThis) {
     throw new TypeError('Illegal invocation');
   }
@@ -299,7 +303,11 @@ describe('GameSession', () => {
     it('ignores the deck changes of other players', () => {
       const session = newSession();
       lastSocket().open();
-      lastSocket().receive({ type: 'view', version: 1, view: view([player(), player({ color: 1 })]) });
+      lastSocket().receive({
+        type: 'view',
+        version: 1,
+        view: view([player(), player({ color: 1 })]),
+      });
       lastSocket().receive({ type: 'deckError', unsupported });
       lastSocket().receive({
         type: 'view',
@@ -308,6 +316,140 @@ describe('GameSession', () => {
       });
 
       expect(session.deckError).toEqual(unsupported);
+    });
+  });
+
+  describe('deckLoadError', () => {
+    const unsupported = [{ code: '01001', name: 'Spider-Man', pack: 'core', qty: 1 }];
+    const importFailed = {
+      type: 'error',
+      code: 'deck',
+      message: 'This is not a marvelcdb deck link.',
+    };
+
+    function sessionWithView(): GameSession {
+      const session = newSession();
+      lastSocket().open();
+      lastSocket().receive({
+        type: 'view',
+        version: 1,
+        view: view([player(), player({ color: 1 })]),
+      });
+      return session;
+    }
+
+    it('takes the error answering setDeck, not lastError', () => {
+      const session = sessionWithView();
+      session.lobby('setDeck', { url: 'x' });
+      lastSocket().receive(importFailed);
+
+      expect(session.deckLoadError).toEqual({
+        code: 'deck',
+        message: 'This is not a marvelcdb deck link.',
+      });
+      expect(session.lastError).toBeNull();
+    });
+
+    it('survives views that do not change the player deck', () => {
+      const session = sessionWithView();
+      session.lobby('setDeck', { url: 'x' });
+      lastSocket().receive(importFailed);
+      lastSocket().receive({
+        type: 'view',
+        version: 2,
+        view: view([player(), player({ color: 1, deckName: 'Other' })]),
+      });
+
+      expect(session.deckLoadError?.code).toBe('deck');
+    });
+
+    it('is cleared, with deckError, when the next setDeck is sent', () => {
+      const session = sessionWithView();
+      session.lobby('setDeck', { url: 'x' });
+      lastSocket().receive(importFailed);
+      session.lobby('setDeck', { url: 'y' });
+      lastSocket().receive({ type: 'deckError', unsupported });
+      session.lobby('setDeck', { url: 'z' });
+
+      expect(session.deckLoadError).toBeNull();
+      expect(session.deckError).toBeNull();
+    });
+
+    it('is cleared when the player deck changes', () => {
+      const session = sessionWithView();
+      session.lobby('setDeck', { url: 'x' });
+      lastSocket().receive(importFailed);
+      lastSocket().receive({
+        type: 'view',
+        version: 2,
+        view: view([
+          player({ deckName: 'Justice', hero: '01001a', ready: true }),
+          player({ color: 1 }),
+        ]),
+      });
+
+      expect(session.deckLoadError).toBeNull();
+    });
+
+    it('takes only the first error after setDeck', () => {
+      const session = sessionWithView();
+      session.lobby('setDeck', { url: 'x' });
+      lastSocket().receive(importFailed);
+      lastSocket().receive({
+        type: 'error',
+        code: 'forbidden',
+        message: 'You are not allowed to do that.',
+      });
+
+      expect(session.deckLoadError?.code).toBe('deck');
+      expect(session.lastError?.code).toBe('forbidden');
+    });
+
+    it('is not set by an error once a deckError answered the load', () => {
+      const session = sessionWithView();
+      session.lobby('setDeck', { url: 'x' });
+      lastSocket().receive({ type: 'deckError', unsupported });
+      lastSocket().receive({
+        type: 'error',
+        code: 'invalid',
+        message: 'This request is not valid.',
+      });
+
+      expect(session.deckLoadError).toBeNull();
+      expect(session.lastError?.code).toBe('invalid');
+    });
+
+    it('is not set by an error when no deck load is pending', () => {
+      const session = sessionWithView();
+      lastSocket().receive({
+        type: 'error',
+        code: 'invalid',
+        message: 'This request is not valid.',
+      });
+
+      expect(session.deckLoadError).toBeNull();
+      expect(session.lastError?.code).toBe('invalid');
+    });
+
+    it('forgets a pending load when the connection drops', () => {
+      const session = sessionWithView();
+      session.lobby('setDeck', { url: 'x' });
+      lastSocket().drop();
+      vi.advanceTimersByTime(500);
+      lastSocket().open();
+      lastSocket().receive({
+        type: 'view',
+        version: 2,
+        view: view([player(), player({ color: 1 })]),
+      });
+      lastSocket().receive({
+        type: 'error',
+        code: 'invalid',
+        message: 'This request is not valid.',
+      });
+
+      expect(session.deckLoadError).toBeNull();
+      expect(session.lastError?.code).toBe('invalid');
     });
   });
 

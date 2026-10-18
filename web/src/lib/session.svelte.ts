@@ -13,14 +13,7 @@ import { wsUrl } from './api';
 
 export type Status = 'connecting' | 'open' | 'reconnecting' | 'closed';
 
-type LobbyOp =
-  | 'configure'
-  | 'setDeck'
-  | 'removePlayer'
-  | 'leave'
-  | 'takeSeat'
-  | 'start'
-  | 'end';
+type LobbyOp = 'configure' | 'setDeck' | 'removePlayer' | 'leave' | 'takeSeat' | 'start' | 'end';
 
 type ServerMessage =
   | { type: 'welcome'; token: string; role: Role }
@@ -52,6 +45,8 @@ export class GameSession {
   status = $state<Status>('connecting');
   lastError = $state<SessionError | null>(null);
   deckError = $state<UnsupportedCard[] | null>(null);
+  /** The error that answered the last deck load, kept until the next load or a new deck. */
+  deckLoadError = $state<SessionError | null>(null);
   readonly presence: Map<number, PresenceState> = new SvelteMap();
 
   readonly #gameId: string;
@@ -62,6 +57,9 @@ export class GameSession {
   #socket: WebSocket | null = null;
   #failedAttempts = 0;
   #nextActionId = 0;
+  // Lobby errors carry no request id: the first error after a setDeck is
+  // taken as its answer.
+  #deckLoadPending = false;
 
   // Presence throttling: a message goes out at once if none went out in the
   // last interval, otherwise the latest one waits for the trailing edge.
@@ -105,6 +103,11 @@ export class GameSession {
   }
 
   lobby(op: LobbyOp, payload: object = {}): void {
+    if (op === 'setDeck') {
+      this.deckError = null;
+      this.deckLoadError = null;
+      this.#deckLoadPending = true;
+    }
     this.#send({ type: 'lobby', op, ...payload });
   }
 
@@ -167,6 +170,7 @@ export class GameSession {
         this.#handleError({ code: message.code, message: message.message }, message.id);
         break;
       case 'deckError':
+        this.#deckLoadPending = false;
         this.deckError = message.unsupported;
         break;
       case 'presence':
@@ -179,8 +183,10 @@ export class GameSession {
     // The connection is healthy once the server has accepted the hello.
     this.#failedAttempts = 0;
     this.lastError = null;
-    if (this.deckError && deckSignature(this.view) !== deckSignature(next)) {
+    if (deckSignature(this.view) !== deckSignature(next)) {
       this.deckError = null;
+      this.deckLoadError = null;
+      this.#deckLoadPending = false;
     }
     this.view = next;
   }
@@ -188,9 +194,16 @@ export class GameSession {
   /**
    * Before the first view, an error means the hello failed. A game-level
    * notFound (no action id) ends the session; any other error is a failed
-   * attempt, retried with the usual backoff. Afterwards, errors only report.
+   * attempt, retried with the usual backoff. Afterwards, the first error
+   * without an action id that follows a setDeck answers that deck load;
+   * other errors only report.
    */
   #handleError(error: SessionError, actionId: number | undefined): void {
+    if (this.#deckLoadPending && this.view !== null && actionId === undefined) {
+      this.#deckLoadPending = false;
+      this.deckLoadError = error;
+      return;
+    }
     this.lastError = error;
     if (this.view !== null) {
       return;
@@ -224,6 +237,7 @@ export class GameSession {
 
   #scheduleReconnect(): void {
     this.presence.clear();
+    this.#deckLoadPending = false; // Its answer, if any, went with the old socket.
     this.status = 'reconnecting';
     const delay = BACKOFF_MS[Math.min(this.#failedAttempts, BACKOFF_MS.length - 1)] ?? 0;
     this.#failedAttempts += 1;
@@ -240,6 +254,7 @@ export class GameSession {
     this.#socket = null; // Its close event is now ignored.
     this.status = 'closed';
     this.presence.clear();
+    this.#deckLoadPending = false;
     if (error) {
       this.lastError = error;
     }

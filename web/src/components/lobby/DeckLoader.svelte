@@ -61,7 +61,9 @@
           <ul>
             {#each deckError as card (card.code)}
               <li>
-                <span class="q">{card.qty}×</span>{card.name}<span class="pk">{card.pack}</span>
+                <!-- The server names only the first cards; the others have just a code. -->
+                <span class="q">{card.qty}×</span>{card.name || card.code}
+                {#if card.pack}<span class="pk">{card.pack}</span>{/if}
               </li>
             {/each}
           </ul>

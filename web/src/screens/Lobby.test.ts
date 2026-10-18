@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import Lobby from './Lobby.svelte';
 import { cardByCode, loadIndex } from '../lib/catalog';
-import type { GameSession } from '../lib/session.svelte';
+import { GameSession } from '../lib/session.svelte';
 import type { CardInfo } from '../lib/catalog';
 import type { Index, LobbyConfig, PlayerView, UnsupportedCard, View, YouView } from '../lib/types';
 
@@ -79,8 +79,60 @@ const asSam: YouView = { role: 'player', name: 'Sam', color: 1, host: false };
 interface FakeSession {
   view: View;
   deckError: UnsupportedCard[] | null;
+  deckLoadError: null;
   lastError: null;
   lobby: ReturnType<typeof vi.fn>;
+}
+
+/** Just enough of a WebSocket to feed a real GameSession from a test. */
+class FakeSocket {
+  static last: FakeSocket;
+  readyState = 1;
+  onopen: (() => void) | null = null;
+  onmessage: ((event: { data: string }) => void) | null = null;
+  onclose: ((event: { code: number }) => void) | null = null;
+
+  constructor() {
+    FakeSocket.last = this;
+  }
+
+  send(): void {}
+
+  close(): void {}
+
+  receive(message: object): void {
+    this.onmessage?.({ data: JSON.stringify(message) });
+  }
+}
+
+function lobbyView(players: PlayerView[]): View {
+  return {
+    id: 'g1',
+    phase: 'lobby',
+    you: asHost,
+    players,
+    spectators: 0,
+    config: noScenario,
+    log: [],
+  };
+}
+
+/** Renders the lobby on a live session, the way Game does, and returns a way to push views. */
+function renderLive() {
+  const session = new GameSession('g1', 'Alex', {
+    WebSocket: FakeSocket as unknown as typeof WebSocket,
+  });
+  session.connect();
+  FakeSocket.last.onopen?.();
+  FakeSocket.last.receive({ type: 'view', version: 1, view: lobbyView([alex, sam]) });
+  const { rerender } = render(Lobby, { session, view: session.view! });
+  return {
+    session,
+    async receive(message: object): Promise<void> {
+      FakeSocket.last.receive(message);
+      await rerender({ session, view: session.view! });
+    },
+  };
 }
 
 function renderLobby(fields: {
@@ -101,6 +153,7 @@ function renderLobby(fields: {
   const session: FakeSession = {
     view,
     deckError: fields.deckError ?? null,
+    deckLoadError: null,
     lastError: null,
     lobby: vi.fn(),
   };
@@ -243,10 +296,8 @@ describe('Lobby', () => {
     expect(screen.getByText('Spider-Man — Friendly neighbourhood')).toBeTruthy();
   });
 
-  it('loads a deck from its link, dropping the previous deck error', async () => {
-    const session = renderLobby({
-      deckError: [{ code: '31001a', name: 'Hand Cannon', pack: 'Spider-Woman', qty: 1 }],
-    });
+  it('loads a deck from its link', async () => {
+    const session = renderLobby({});
 
     await fireEvent.input(screen.getByPlaceholderText('https://marvelcdb.com/decklist/view/…'), {
       target: { value: ' https://marvelcdb.com/decklist/view/1 ' },
@@ -256,6 +307,70 @@ describe('Lobby', () => {
     expect(session.lobby).toHaveBeenCalledWith('setDeck', {
       url: 'https://marvelcdb.com/decklist/view/1',
     });
-    expect(session.deckError).toBeNull();
+  });
+
+  it('shows a failed deck load under the field, even after an unrelated view', async () => {
+    const live = renderLive();
+    live.session.lobby('setDeck', { url: 'https://example.com/nope' });
+    await live.receive({
+      type: 'error',
+      code: 'deck',
+      message: 'This is not a marvelcdb deck link.',
+    });
+    await live.receive({
+      type: 'view',
+      version: 2,
+      view: lobbyView([alex, { ...sam, ready: true }]),
+    });
+
+    const deckBox = screen.getByText('Your deck').closest('section');
+    if (!deckBox) throw new Error('no deck box');
+    expect(within(deckBox).getByRole('alert').textContent).toBe(
+      'This is not a marvelcdb deck link.',
+    );
+    expect(screen.getAllByRole('alert')).toHaveLength(1);
+  });
+
+  it('shows any other error in the start bar', async () => {
+    const live = renderLive();
+    await live.receive({
+      type: 'error',
+      code: 'forbidden',
+      message: 'You are not allowed to do that.',
+    });
+
+    const alert = screen.getByRole('alert');
+    expect(alert.textContent).toBe('You are not allowed to do that.');
+    expect(alert.closest('.startbar')).not.toBeNull();
+  });
+
+  it('lists an unsupported card by its code when its name is unknown', () => {
+    renderLobby({ deckError: [{ code: '99001a', name: '', pack: '', qty: 1 }] });
+
+    const line = within(screen.getByRole('alert')).getByRole('listitem');
+    expect(line.textContent?.trim()).toBe('1×99001a');
+    expect(line.querySelector('.pk')).toBeNull();
+    expect(screen.getByRole('alert').textContent).toContain("1 card isn't supported.");
+  });
+
+  it('keeps the modular menu open on a click inside it that misses an entry', async () => {
+    renderLobby({
+      config: {
+        scenario: 'rhino',
+        difficulty: 'standard',
+        standard: 'standard',
+        expert: '',
+        modulars: [],
+      },
+    });
+
+    await fireEvent.click(await screen.findByRole('button', { name: '+ Modular set' }));
+    const menu = document.querySelector('.menu');
+    if (!menu) throw new Error('menu did not open');
+    await fireEvent.click(menu);
+    expect(document.querySelector('.menu')).not.toBeNull();
+
+    await fireEvent.click(document.body);
+    expect(document.querySelector('.menu')).toBeNull();
   });
 });

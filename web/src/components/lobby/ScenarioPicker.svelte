@@ -99,6 +99,13 @@
     configure({ modulars: config.modulars.filter((m) => m !== code) });
   }
 
+  function closeMenuOnOutsideClick(event: MouseEvent): void {
+    if (event.target instanceof Element && event.target.closest('.menu')) {
+      return;
+    }
+    menuOpen = false;
+  }
+
   function toggleMenu(event: MouseEvent): void {
     event.stopPropagation(); // The window click handler would close it again.
     menuOpen = !menuOpen;
@@ -106,7 +113,7 @@
 </script>
 
 <svelte:window
-  onclick={() => (menuOpen = false)}
+  onclick={closeMenuOnOutsideClick}
   onkeydown={(event) => {
     if (event.key === 'Escape') {
       menuOpen = false;
@@ -320,7 +327,8 @@
     border: 2px solid transparent;
   }
 
-  /* A guest's tile is disabled only because it is read-only. */
+  /* Disabled tiles (a guest's read-only ones, unsupported ones) skip the global
+     disabled fade: unsupported tiles get their own dimming below. */
   .vil:disabled {
     opacity: 1;
   }
@@ -342,7 +350,8 @@
     font-weight: 700;
     background: linear-gradient(transparent, #000d);
     text-align: left;
-    white-space: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .vil.on {
@@ -354,9 +363,13 @@
     border-color: #ffffff80;
   }
 
-  .vil.unsupported img {
+  .vil.unsupported {
     filter: grayscale(1);
-    opacity: 0.35;
+    opacity: 0.6;
+  }
+
+  .vil.unsupported img {
+    opacity: 0.6;
   }
 
   .vil.unsupported .nm {
@@ -365,15 +378,16 @@
 
   .soon {
     position: absolute;
-    top: 6px;
-    left: 6px;
-    right: 6px;
+    top: 4px;
+    left: 4px;
+    right: 4px;
     padding: 2px 4px;
     border-radius: 4px;
     background: #0c111bd9;
     color: var(--muted);
     font-size: 10px;
-    white-space: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .none {
