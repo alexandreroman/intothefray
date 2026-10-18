@@ -1,0 +1,87 @@
+:root {
+  --bg: #0f1420;
+  --panel: #171e2e;
+  --panel-2: #1f2840;
+  --line: #2c3654;
+  --text: #e6e9f2;
+  --muted: #8d97b3;
+  --faint: #626b86;
+  --accent: #e23b3b;
+  --sel: #4fd1ff;
+  --dot: #161d2b;
+  --table-bg: #0c111b;
+  --ok: #57c78a;
+  --warn: #f2b51d;
+
+  /* One colour per seat, indexed by the player colour 0..3. */
+  --p1: #6fa8ff;
+  --p2: #ff9f5a;
+  --p3: #7fd67a;
+  --p4: #c792ff;
+}
+
+[data-theme='felt'] {
+  --table-bg: #0f2a1d;
+  --dot: #1d3a2b;
+  --line: #2c4a3a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font:
+    14px/1.4 system-ui,
+    -apple-system,
+    sans-serif;
+}
+
+/* A label never wraps. */
+button {
+  font: inherit;
+  color: inherit;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+button:hover:not(:disabled) {
+  border-color: var(--muted);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+input[type='text'],
+select {
+  width: 100%;
+  background: #0c111b;
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font: inherit;
+}
+
+input[type='text']:focus {
+  outline: 2px solid var(--sel);
+  border-color: transparent;
+}
+
+/* The empty table: dotted felt, shared by the screens outside a game. */
+.table-bg {
+  background:
+    radial-gradient(var(--dot) 1px, transparent 1.5px) 0 0 / 10px 10px,
+    var(--table-bg);
+}
