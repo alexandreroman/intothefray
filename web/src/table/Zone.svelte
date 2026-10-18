@@ -1,7 +1,9 @@
 <!--
   One zone of the table: its header, the separator handle that resizes the
   zone above (when that zone can be resized), and a horizontal scroller around
-  the surface where its cards and piles lie, in table units.
+  the surface where its cards and piles lie, in table units. The zone is at
+  least as wide as its scroller, and its out-of-play piles follow its right
+  edge.
 -->
 <script lang="ts" module>
   export interface Heading {
@@ -24,9 +26,9 @@
 </script>
 
 <script lang="ts">
-  import type { PackFace, CardView as TableCard, PileView as Pile } from '../lib/types';
+  import type { Area, PackFace, CardView as TableCard, PileView as Pile, Size } from '../lib/types';
   import CardView from './CardView.svelte';
-  import { GRID } from './layout';
+  import { GRID, placeOutPiles, zoneWidth } from './layout';
   import PileView from './PileView.svelte';
   import { firstPlayerUrl } from './theme';
 
@@ -37,14 +39,14 @@
     piles,
     topOf,
     faceOf,
+    sizeOf,
     height,
-    width,
     zoom,
     first = false,
     firstPlayer,
     above,
   }: {
-    area: string;
+    area: Area;
     heading: Heading;
     /** The cards lying on this zone's table. */
     cards: TableCard[];
@@ -53,9 +55,9 @@
     topOf: (pile: Pile) => TableCard | undefined;
     /** The catalog face a card shows, null while unknown or hidden. */
     faceOf: (card: TableCard | undefined) => PackFace | null;
-    /** Surface size, in table units. */
+    sizeOf: (card: TableCard) => Size;
+    /** Surface height, in table units. */
     height: number;
-    width: number;
     zoom: number;
     /** The first zone has no separator line above it. */
     first?: boolean;
@@ -76,8 +78,10 @@
 
   let scroller = $state<HTMLElement>();
   let scrollerWidth = $state(0);
-  // The dotted surface fills at least the visible width of the zone.
-  const surfaceWidth = $derived(Math.max(width, (scrollerWidth - 2 * SCROLL_PADDING) / zoom));
+  // What the scroller shows of the surface, in table units.
+  const visibleWidth = $derived((scrollerWidth - 2 * SCROLL_PADDING) / zoom);
+  const surfaceWidth = $derived(zoneWidth(cards, piles, area, sizeOf, visibleWidth));
+  const placedPiles = $derived(placeOutPiles(piles, area, surfaceWidth));
 
   let fadeLeft = $state(false);
   let fadeRight = $state(false);
@@ -164,7 +168,7 @@
     >
       <!-- Card z-indexes come from the server and can be negative: the surface isolates them. -->
       <div class="surface" style:width="{surfaceWidth}px" style:height="{height}px">
-        {#each piles as pile (pile.id)}
+        {#each placedPiles as pile (pile.id)}
           {@const top = topOf(pile)}
           <PileView {pile} {top} face={faceOf(top)} />
         {/each}

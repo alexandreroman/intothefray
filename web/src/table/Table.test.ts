@@ -101,6 +101,12 @@ function surfaceOf(name: RegExp): HTMLElement {
   return surface;
 }
 
+/** Where an out-of-play pile of a zone lies, found by its badge. */
+function outPileLeft(zone: RegExp, badge: string): string | undefined {
+  const region = screen.getByRole('region', { name: zone });
+  return within(region).getByRole('img', { name: badge }).closest<HTMLElement>('.pile')?.style.left;
+}
+
 function zoomLabel(): HTMLElement {
   return screen.getByRole('button', { name: 'Back to 100%' });
 }
@@ -295,6 +301,50 @@ describe('Table', () => {
     expect(screen.getByRole('button', { name: 'Keyboard shortcuts' }).textContent?.trim()).toBe(
       '?',
     );
+  });
+
+  it('places the out-of-play piles at the right of their zone', async () => {
+    const view = makeView();
+    view.table?.piles.push(
+      pile('vic', { kind: 'victory', area: 'villain', x: 1080, count: 0 }),
+      pile('aside', { kind: 'aside', area: 'villain', x: 1200, count: 0 }),
+      pile('aside1', { kind: 'aside', owner: 1, area: 'p1', x: 1200, count: 0 }),
+    );
+    // Each zone scroller shows 1200 table units at 100 %, past its 24 px padding on each side.
+    // The zoom is pinned: prefs keep earlier tests' zoom in memory.
+    localStorage.setItem('itf-zoom', '1');
+    const width = vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(1248);
+    try {
+      render(Table, { session: fakeSession(), view });
+      await screen.findByRole('region', { name: /Rhino/ });
+
+      // The villain's zone is the visible width: 1200 − 10 − 100, then 120 to the left.
+      expect(surfaceOf(/^Villain/).style.width).toBe('1200px');
+      expect(outPileLeft(/^Villain/, 'Set-aside cards')).toBe('1090px');
+      expect(outPileLeft(/^Villain/, 'Victory display')).toBe('970px');
+      expect(outPileLeft(/^Sam/, 'Set-aside cards')).toBe('1090px');
+      // Piles in play keep their place.
+      expect(surfaceOf(/^Villain/).querySelector<HTMLElement>('.pile:not(.out)')?.style.left).toBe(
+        '500px',
+      );
+    } finally {
+      width.mockRestore();
+    }
+  });
+
+  it('widens a zone past its cards in play to fit its out-of-play piles', async () => {
+    const view = makeView();
+    view.table?.piles.push(
+      pile('vic', { kind: 'victory', area: 'villain', x: 1080, count: 0 }),
+      pile('aside', { kind: 'aside', area: 'villain', x: 1200, count: 0 }),
+    );
+    render(Table, { session: fakeSession(), view });
+    await screen.findByRole('region', { name: /Rhino/ });
+
+    // The encounter deck ends at 600: 600 + 140 + 2 × 120.
+    expect(surfaceOf(/^Villain/).style.width).toBe('980px');
+    expect(outPileLeft(/^Villain/, 'Victory display')).toBe('750px');
+    expect(outPileLeft(/^Villain/, 'Set-aside cards')).toBe('870px');
   });
 
   it('places the first player token in its zone', async () => {

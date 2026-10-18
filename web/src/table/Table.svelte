@@ -14,7 +14,7 @@
   import { isHidden, pileBack } from './face';
   import Hand from './Hand.svelte';
   import { hover, type Hovered } from './hover.svelte';
-  import { zoneMinHeight, zoneOrder, zoneWidth } from './layout';
+  import { zoneMinHeight, zoneOrder } from './layout';
   import SidePanel, { type Preview } from './SidePanel.svelte';
   import Zone, { type Heading, type ResizeAbove } from './Zone.svelte';
   import ZoomControl from './ZoomControl.svelte';
@@ -103,7 +103,6 @@
         piles: pilesInArea,
         min,
         height: Math.max(min, chosenHeights[area] ?? 0),
-        width: zoneWidth(cards, piles, area, sizeOf),
       };
     }),
   );
@@ -283,8 +282,8 @@
           piles={zone.piles}
           {topOf}
           {faceOf}
+          {sizeOf}
           height={zone.height}
-          width={zone.width}
           {zoom}
           first={i === 0}
           firstPlayer={firstPlayer?.area === zone.area ? firstPlayer : undefined}

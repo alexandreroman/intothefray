@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import type { Area, CardView, PileView, PlayerView, View } from '../lib/types';
-import { cardBox, fanPositions, zoneMinHeight, zoneOrder, zoneWidth, type Size } from './layout';
+import {
+  cardBox,
+  fanPositions,
+  placeOutPiles,
+  zoneMinHeight,
+  zoneOrder,
+  zoneWidth,
+  type Size,
+} from './layout';
 
 function card(overrides: Partial<CardView> = {}): CardView {
   return {
@@ -97,19 +105,76 @@ describe('zone size', () => {
     expect(zoneMinHeight(cards, [], 'villain', alwaysStd)).toBe(200);
   });
 
-  it('follows its rightmost card', () => {
+  it('leaves out-of-play piles out, as they sit on the top row', () => {
+    const piles = [pile({ kind: 'aside', area: 'p0', y: 400 })];
+    expect(zoneMinHeight([], piles, 'p0', alwaysStd)).toBe(200);
+  });
+
+  it('is 140 wider than its rightmost card', () => {
     const cards = [card({ area: 'villain', x: 50 }), card({ area: 'villain', x: 400 })];
-    expect(zoneWidth(cards, [], 'villain', alwaysStd)).toBe(540);
+    expect(zoneWidth(cards, [], 'villain', alwaysStd)).toBe(640);
   });
 
   it('uses the size of each card', () => {
     const cards = [card({ area: 'villain', x: 100 })];
-    expect(zoneWidth(cards, [], 'villain', () => 'dland')).toBe(340);
+    expect(zoneWidth(cards, [], 'villain', () => 'dland')).toBe(440);
   });
 
   it('measures a face-down card as 100x140', () => {
     const cards = [card({ area: 'villain', x: 100, faceDown: true })];
-    expect(zoneWidth(cards, [], 'villain', () => 'dland')).toBe(240);
+    expect(zoneWidth(cards, [], 'villain', () => 'dland')).toBe(340);
+  });
+
+  it('fills the visible width', () => {
+    const cards = [card({ area: 'villain', x: 400 })];
+    expect(zoneWidth(cards, [], 'villain', alwaysStd, 1200)).toBe(1200);
+    expect(zoneWidth(cards, [], 'villain', alwaysStd, 300)).toBe(640);
+  });
+
+  it('adds 120 per out-of-play pile, wherever the server put it', () => {
+    const cards = [card({ area: 'villain', x: 400 })];
+    const piles = [
+      pile({ id: 'enc', kind: 'encounter', area: 'villain', x: 200 }),
+      pile({ id: 'vic', kind: 'victory', area: 'villain', x: 1080 }),
+      pile({ id: 'aside', kind: 'aside', area: 'villain', x: 1200 }),
+      pile({ id: 'other', kind: 'aside', area: 'p0', x: 1200 }),
+    ];
+    expect(zoneWidth(cards, piles, 'villain', alwaysStd)).toBe(500 + 140 + 240);
+  });
+});
+
+describe('placeOutPiles', () => {
+  const villainPiles = [
+    pile({ id: 'aside', kind: 'aside', area: 'villain', x: 1200, y: 30 }),
+    pile({ id: 'enc', kind: 'encounter', area: 'villain', x: 200, y: 20 }),
+    pile({ id: 'vic', kind: 'victory', area: 'villain', x: 1080 }),
+    pile({ id: 'mine', kind: 'aside', area: 'p0', x: 1200 }),
+  ];
+
+  it('lines the victory display then the set-aside cards up against the right edge', () => {
+    const placed = placeOutPiles(villainPiles, 'villain', 880);
+    const at = (id: string) => placed.find((p) => p.id === id);
+
+    // 10 from the edge, 120 apart, on the top row.
+    expect(at('vic')).toMatchObject({ x: 650, y: 0 });
+    expect(at('aside')).toMatchObject({ x: 770, y: 0 });
+  });
+
+  it('keeps the other piles of the zone where they are, and leaves other zones out', () => {
+    const placed = placeOutPiles(villainPiles, 'villain', 880);
+    expect(placed.map((p) => p.id)).toEqual(['aside', 'enc', 'vic']);
+    expect(placed.find((p) => p.id === 'enc')).toMatchObject({ x: 200, y: 20 });
+  });
+
+  it("places a player's set-aside cards at the right of their zone", () => {
+    expect(placeOutPiles(villainPiles, 'p0', 1500)).toEqual([
+      { ...villainPiles[3], x: 1390, y: 0 },
+    ]);
+  });
+
+  it('does not change the piles it is given', () => {
+    placeOutPiles(villainPiles, 'villain', 880);
+    expect(villainPiles[0]).toMatchObject({ x: 1200, y: 30 });
   });
 });
 
