@@ -223,14 +223,18 @@ describe('fanPositions', () => {
     return fan[1]!.x - fan[0]!.x;
   }
 
-  // Width of the box around the rotated outer cards, centre to centre plus their overhang.
+  // Width of the box around the fanned cards. Each card turns around a point below its bottom
+  // edge (transform-origin 50% 110% in Hand.svelte), so its top corners swing out the most.
   function boundingWidth(fan: { x: number; angle: number }[]): number {
-    const bounds = fan.map((p) => {
-      const a = (Math.abs(p.angle) * Math.PI) / 180;
-      const half = (cardWidth * Math.cos(a) + cardHeight * Math.sin(a)) / 2;
-      return { left: p.x - half, right: p.x + half };
+    const xs = fan.flatMap((p) => {
+      const a = (p.angle * Math.PI) / 180;
+      // The corners, from the pivot, with y growing downward.
+      const corners = [-cardWidth / 2, cardWidth / 2].flatMap((x) =>
+        [-1.1 * cardHeight, -0.1 * cardHeight].map((y) => ({ x, y })),
+      );
+      return corners.map((c) => p.x + c.x * Math.cos(a) - c.y * Math.sin(a));
     });
-    return Math.max(...bounds.map((b) => b.right)) - Math.min(...bounds.map((b) => b.left));
+    return Math.max(...xs) - Math.min(...xs);
   }
 
   it('overlaps the cards by 28 when there is room', () => {
@@ -253,8 +257,8 @@ describe('fanPositions', () => {
     [15, 1200],
     [12, 700],
     [30, 900],
-  ])('keeps %i cards inside %i', (n, width) => {
-    expect(boundingWidth(fanPositions(n, width))).toBeLessThanOrEqual(width);
+  ])('keeps %i cards inside %i, but for the accepted 8.4 on each side', (n, width) => {
+    expect(boundingWidth(fanPositions(n, width))).toBeLessThanOrEqual(width + 2 * 8.4);
   });
 
   it('piles the cards up rather than reversing them when there is no room', () => {

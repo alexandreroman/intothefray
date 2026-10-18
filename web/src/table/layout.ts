@@ -36,6 +36,10 @@ const FAN_MAX_STEP_DEG = 5;
 const FAN_MAX_TOTAL_DEG = 44;
 const FAN_OVERLAP = 28;
 // Kept free beside the row, and the share of a card the tilted outer cards take beyond it.
+// The prototype's values (ruling P5a-R5). The cards turn around a point below their bottom edge
+// (Hand.svelte's transform-origin 50% 110%), so at the full 22° the top corners of 132 × 185
+// outer cards reach about 8 px past this room on each side, into the hand's padding. Reserving
+// the real overhang instead would overlap 10 cards more than the prototype does at 1200 px.
 const FAN_SIDE_ROOM = 80;
 const FAN_TILT_ROOM = 0.35;
 
