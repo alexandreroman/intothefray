@@ -1,6 +1,7 @@
 package game
 
 import (
+	"cmp"
 	"encoding/json"
 	"fmt"
 	"math/rand/v2"
@@ -52,7 +53,7 @@ func newViewFixture(t *testing.T) *viewFixture {
 	t.Helper()
 	cat := newCatalog(t)
 	g := NewGame("g1", hostToken, "Host", testNow)
-	if _, err := g.Join(bobToken, "Bob", testNow); err != nil {
+	if _, err := g.Join(bobToken, "Bob"); err != nil {
 		t.Fatal(err)
 	}
 	if err := g.Configure(hostToken, rhinoConfig(), cat); err != nil {
@@ -70,7 +71,7 @@ func newViewFixture(t *testing.T) *viewFixture {
 	if err := g.Start(hostToken, cat, newTestRNG(), testNow); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := g.Join(specToken, "Sam", testNow); err != nil {
+	if _, err := g.Join(specToken, "Sam"); err != nil {
 		t.Fatal(err)
 	}
 
@@ -393,7 +394,7 @@ func TestViewIsDeterministic(t *testing.T) {
 		}
 	}
 	cards := f.g.ViewFor(hostToken).Table.Cards
-	if !slices.IsSortedFunc(cards, func(a, b CardView) int { return compareIDs(a.ID, b.ID) }) {
+	if !slices.IsSortedFunc(cards, func(a, b CardView) int { return cmp.Compare(a.ID, b.ID) }) {
 		t.Error("cards are not sorted by id")
 	}
 }

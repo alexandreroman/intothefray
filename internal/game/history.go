@@ -57,11 +57,7 @@ func (g *Game) Do(token string, a Action, cat *pack.Catalog, rng *rand.Rand, now
 	default:
 		err = g.perform(player, seat, a, cat, rng, now)
 	}
-	if err != nil {
-		return err
-	}
-	g.UpdatedAt = now
-	return nil
+	return err
 }
 
 // perform resolves and applies a table action, replays it onto the undo

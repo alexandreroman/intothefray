@@ -105,7 +105,6 @@ type Game struct {
 	ID         string                 `json:"id"`
 	Phase      Phase                  `json:"phase"`
 	CreatedAt  time.Time              `json:"createdAt"`
-	UpdatedAt  time.Time              `json:"updatedAt"`
 	Players    []*Player              `json:"players"` // arrival order
 	Spectators []*Spectator           `json:"spectators"`
 	Config     LobbyConfig            `json:"config"`

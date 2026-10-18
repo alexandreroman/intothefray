@@ -12,6 +12,7 @@ import (
 const (
 	maxPlayers   = 4
 	maxNameRunes = 24
+	maxCopies    = 20 // copies of one card in a deck
 
 	standardVersionI = "standard"
 )
@@ -22,7 +23,6 @@ func NewGame(id, hostToken, hostName string, now time.Time) *Game {
 		ID:        id,
 		Phase:     PhaseLobby,
 		CreatedAt: now,
-		UpdatedAt: now,
 		Players:   []*Player{{Token: hostToken, Name: cleanName(hostName), Color: 0, Host: true}},
 		Undo:      map[string][]UndoEntry{},
 	}
@@ -30,7 +30,7 @@ func NewGame(id, hostToken, hostName string, now time.Time) *Game {
 
 // Join seats a newcomer as a player while the lobby has room, otherwise as a
 // spectator. A known token gets its current role back.
-func (g *Game) Join(token, name string, now time.Time) (Role, error) {
+func (g *Game) Join(token, name string) (Role, error) {
 	if token == "" {
 		return "", fmt.Errorf("%w: empty token", ErrInvalid)
 	}
@@ -46,7 +46,6 @@ func (g *Game) Join(token, name string, now time.Time) (Role, error) {
 		return "", fmt.Errorf("%w: empty name", ErrInvalid)
 	}
 
-	g.UpdatedAt = now
 	if g.Phase == PhaseLobby && len(g.Players) < maxPlayers {
 		g.Players = append(g.Players, &Player{Token: token, Name: name, Color: g.freeColor()})
 		return RolePlayer, nil
@@ -150,8 +149,8 @@ func (g *Game) SetDeck(token string, deck DeckChoice, cat *pack.Catalog) error {
 		unknown = append(unknown, deck.Hero)
 	}
 	for _, entry := range deck.Cards {
-		if entry.Qty <= 0 {
-			return fmt.Errorf("%w: card %s has quantity %d", ErrInvalid, entry.Code, entry.Qty)
+		if entry.Qty < 1 || entry.Qty > maxCopies {
+			return fmt.Errorf("%w: card %s has quantity %d, want 1 to %d", ErrInvalid, entry.Code, entry.Qty, maxCopies)
 		}
 		if !knownCard(cat, entry.Code) {
 			unknown = append(unknown, entry.Code)
@@ -180,7 +179,7 @@ func (g *Game) End(hostToken string) error {
 
 // DefaultConfig is the usual setup of a scenario: its recommended modular
 // sets, standard version I and no expert set.
-func (g *Game) DefaultConfig(cat *pack.Catalog, scenario string) LobbyConfig {
+func DefaultConfig(cat *pack.Catalog, scenario string) LobbyConfig {
 	cfg := LobbyConfig{
 		Scenario:   scenario,
 		Difficulty: pack.Standard,

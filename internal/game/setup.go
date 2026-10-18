@@ -61,7 +61,7 @@ func (g *Game) Start(hostToken string, cat *pack.Catalog, rng *rand.Rand, now ti
 			return fmt.Errorf("%s: %w", p.Name, err)
 		}
 	}
-	b.shuffleEncounterDeck()
+	b.shuffle(PileEncounter)
 
 	host := g.player(hostToken)
 	modulars, err := setNames(cat, g.Config.Modulars)
@@ -72,7 +72,6 @@ func (g *Game) Start(hostToken string, cat *pack.Catalog, rng *rand.Rand, now ti
 
 	g.Table = b.table
 	g.Phase = PhasePlaying
-	g.UpdatedAt = now
 	g.Log = append(g.Log, LogEntry{
 		Who:   host.Name,
 		Color: host.Color,
@@ -396,10 +395,6 @@ func alterEgoFace(def pack.Card) int {
 		}
 	}
 	return 0
-}
-
-func (b *tableBuilder) shuffleEncounterDeck() {
-	b.shuffle(PileEncounter)
 }
 
 func (b *tableBuilder) shuffle(pileID string) {

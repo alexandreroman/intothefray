@@ -94,6 +94,7 @@ graph TD
 | ------------------- | ---------------------------------------------- |
 | `cmd/intothefray/`  | Server entry point (HTTP, health check)        |
 | `cmd/packgen/`      | Card pack generator (`make packs`)             |
+| `internal/game/`    | Game engine: lobby, setup, actions, undo, view |
 | `internal/pack/`    | Card pack schema and catalog                   |
 | `internal/packgen/` | Generator internals (fetch, build, images...)  |
 | `packs/`            | Curated files, generated and committed `dist/` |

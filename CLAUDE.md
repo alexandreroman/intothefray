@@ -29,6 +29,7 @@ make build  # bin/intothefray
 
 - `cmd/intothefray/` — server entry point (HTTP, `/healthz`)
 - `cmd/packgen/` — card pack generator, run with `make packs`
+- `internal/game/` — pure game engine (lobby, setup, actions, undo, views)
 - `internal/pack/` — card pack schema (types) and catalog
 - `internal/packgen/` — generator internals (fetch, marvelcdb, cerebro,
   build, images, curated, report, write)

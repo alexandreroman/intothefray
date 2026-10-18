@@ -106,9 +106,20 @@ type narrator struct {
 	after  *Table
 }
 
+// arrangingKinds only arrange the table: they write no history line and
+// cannot be undone. Every other table action has a case in describe.
+var arrangingKinds = map[Kind]bool{
+	ActMove:        true,
+	ActAttach:      true,
+	ActHandOrder:   true,
+	ActReorderTop:  true,
+	ActFirstPlayer: true,
+	ActArrowAdd:    true,
+	ActArrowClear:  true,
+}
+
 // describe writes the history line of a, which has just been applied. It
-// returns false for the actions that only arrange the table: they write no
-// line and cannot be undone.
+// returns false for the arranging kinds (see arrangingKinds).
 func (n narrator) describe(a Action) (event, bool) {
 	switch a.Kind {
 	case ActToHand:
@@ -161,7 +172,6 @@ func (n narrator) describe(a Action) (event, bool) {
 		return event{text: fmt.Sprintf("shuffled %s into %s",
 			n.game.pileName(n.seat, a.Pile), n.game.pileName(n.seat, PileEncounter))}, true
 	default:
-		// move, attach, handOrder, reorderTop, firstPlayer, arrowAdd, arrowClear.
 		return event{}, false
 	}
 }

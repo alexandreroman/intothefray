@@ -199,7 +199,7 @@ func TestMoveIsUntracked(t *testing.T) {
 
 func TestSpectatorCannotAct(t *testing.T) {
 	f := newDoFixture(t)
-	if role, err := f.g.Join("s", "Sam", testNow); err != nil || role != RoleSpectator {
+	if role, err := f.g.Join("s", "Sam"); err != nil || role != RoleSpectator {
 		t.Fatalf("Join = %v, %v; want a spectator", role, err)
 	}
 

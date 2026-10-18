@@ -2,6 +2,7 @@ package game
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -26,7 +27,7 @@ func lobbyOfFour(t *testing.T) *Game {
 	t.Helper()
 	g := NewGame("g1", "h", "Host", testNow)
 	for _, token := range []string{"b", "c", "d"} {
-		if _, err := g.Join(token, "Player "+token, testNow); err != nil {
+		if _, err := g.Join(token, "Player "+token); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -45,12 +46,12 @@ func TestJoinSeatsThenSpectators(t *testing.T) {
 		t.Error("only the first player must be host")
 	}
 
-	role, err := g.Join("e", "Fifth", testNow)
+	role, err := g.Join("e", "Fifth")
 	if err != nil || role != RoleSpectator {
 		t.Fatalf("5th joiner = %v, %v; want spectator", role, err)
 	}
 
-	role, err = g.Join("b", "Whoever", testNow)
+	role, err = g.Join("b", "Whoever")
 	if err != nil || role != RolePlayer {
 		t.Fatalf("rejoin = %v, %v; want player", role, err)
 	}
@@ -62,10 +63,10 @@ func TestJoinSeatsThenSpectators(t *testing.T) {
 func TestJoinNormalizesName(t *testing.T) {
 	g := NewGame("g1", "h", "Host", testNow)
 
-	if _, err := g.Join("b", "   ", testNow); !errors.Is(err, ErrInvalid) {
+	if _, err := g.Join("b", "   "); !errors.Is(err, ErrInvalid) {
 		t.Errorf("blank name err = %v, want ErrInvalid", err)
 	}
-	if _, err := g.Join("b", "  "+strings.Repeat("é", 30)+"  ", testNow); err != nil {
+	if _, err := g.Join("b", "  "+strings.Repeat("é", 30)+"  "); err != nil {
 		t.Fatal(err)
 	}
 	if got := g.Players[1].Name; got != strings.Repeat("é", 24) {
@@ -83,7 +84,7 @@ func TestRemoveFreesColour(t *testing.T) {
 		t.Fatalf("players=%d spectators=%v", len(g.Players), g.Spectators)
 	}
 
-	if _, err := g.Join("e", "Newcomer", testNow); err != nil {
+	if _, err := g.Join("e", "Newcomer"); err != nil {
 		t.Fatal(err)
 	}
 	last := g.Players[len(g.Players)-1]
@@ -134,7 +135,7 @@ func TestTakeSeat(t *testing.T) {
 	if err := g.RemovePlayer("h", "b"); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := g.Join("e", "Fifth", testNow); err != nil { // takes colour 1
+	if _, err := g.Join("e", "Fifth"); err != nil { // takes colour 1
 		t.Fatal(err)
 	}
 
@@ -150,6 +151,9 @@ func TestTakeSeat(t *testing.T) {
 	last := g.Players[len(g.Players)-1]
 	if last.Token != "b" || last.Name != "Player b" || last.Color != 2 {
 		t.Errorf("seated = %+v, want b, Player b, colour 2", last)
+	}
+	if g.spectator("b") != nil {
+		t.Error("the seated spectator is still listed among the spectators")
 	}
 	if err := g.TakeSeat("b"); err != nil {
 		t.Errorf("already a player err = %v, want nil", err)
@@ -222,7 +226,7 @@ func TestDefaultConfigIsAccepted(t *testing.T) {
 	cat := newCatalog(t)
 	g := NewGame("g1", "h", "Host", testNow)
 
-	cfg := g.DefaultConfig(cat, "rhino")
+	cfg := DefaultConfig(cat, "rhino")
 	if cfg.Standard != "standard" || cfg.Expert != "" || cfg.Difficulty != pack.Standard {
 		t.Errorf("cfg = %+v", cfg)
 	}
@@ -251,6 +255,35 @@ func TestSetDeckRejectsUnknownCodes(t *testing.T) {
 	}
 }
 
+func TestSetDeckRejectsQuantities(t *testing.T) {
+	cat := newCatalog(t)
+	set, _ := cat.Set("standard")
+	code := set.Cards[0]
+
+	tests := []struct {
+		qty     int
+		wantErr bool
+	}{
+		{-1, true},
+		{0, true},
+		{1, false},
+		{maxCopies, false},
+		{maxCopies + 1, true},
+	}
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("qty %d", tt.qty), func(t *testing.T) {
+			g := lobbyOfFour(t)
+			err := g.SetDeck("b", DeckChoice{Name: "Deck", Cards: []DeckEntry{{Code: code, Qty: tt.qty}}}, cat)
+			if tt.wantErr && !errors.Is(err, ErrInvalid) {
+				t.Errorf("SetDeck = %v, want ErrInvalid", err)
+			}
+			if !tt.wantErr && err != nil {
+				t.Errorf("SetDeck = %v, want nil", err)
+			}
+		})
+	}
+}
+
 func TestSetDeckStoresDeck(t *testing.T) {
 	cat := newCatalog(t)
 	g := lobbyOfFour(t)
@@ -269,7 +302,7 @@ func TestJoinAfterStartIsSpectator(t *testing.T) {
 	g := NewGame("g1", "h", "Host", testNow)
 	g.Phase = PhasePlaying
 
-	role, err := g.Join("x", "Late", testNow)
+	role, err := g.Join("x", "Late")
 	if err != nil || role != RoleSpectator {
 		t.Errorf("late joiner = %v, %v; want spectator", role, err)
 	}

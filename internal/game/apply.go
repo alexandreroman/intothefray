@@ -113,16 +113,13 @@ func validArea(a Area) bool {
 	if a == AreaVillain {
 		return true
 	}
-	for seat := range maxSeats {
+	for seat := range maxPlayers {
 		if a == PlayerArea(seat) {
 			return true
 		}
 	}
 	return false
 }
-
-// maxSeats is the number of seats at a table.
-const maxSeats = 4
 
 // discardPileID returns the id of the pile where c is discarded.
 func discardPileID(c *Card) string {
@@ -526,9 +523,9 @@ func applyChooseStage(t *Table, a Action) error {
 	}
 
 	// The chosen card takes the place of the previous one, children included.
-	for _, child := range t.descendants(previous.ID) {
-		if child.Parent == previous.ID {
-			child.Parent = chosen.ID
+	for _, c := range t.Cards {
+		if c.Parent == previous.ID {
+			c.Parent = chosen.ID
 		}
 	}
 	chosen.Zone = ZoneTable
@@ -861,7 +858,7 @@ func applyFirstPlayer(t *Table, a Action) error {
 }
 
 func validSeat(seat int) bool {
-	return seat >= 0 && seat < maxSeats
+	return seat >= 0 && seat < maxPlayers
 }
 
 func applyArrowAdd(t *Table, a Action) error {

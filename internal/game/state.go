@@ -35,7 +35,7 @@ const (
 
 // Card is one physical card on the table.
 type Card struct {
-	ID        string         `json:"id"`   // "c1", "c2"…, never derived from the code
+	ID        string         `json:"id"`   // opaque and random (see newCardID)
 	Code      string         `json:"code"` // canonical pack code
 	Face      int            `json:"face"`
 	Faces     int            `json:"faces"` // number of faces, filled at setup

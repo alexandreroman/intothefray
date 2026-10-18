@@ -239,7 +239,7 @@ func (t *Table) viewFor(seat int) *TableView {
 			tv.Cards = append(tv.Cards, c.viewOf(stageKeys[id]))
 		}
 	}
-	slices.SortFunc(tv.Cards, func(a, b CardView) int { return compareIDs(a.ID, b.ID) })
+	slices.SortFunc(tv.Cards, func(a, b CardView) int { return cmp.Compare(a.ID, b.ID) })
 	slices.SortFunc(tv.Piles, func(a, b PileView) int { return cmp.Compare(a.ID, b.ID) })
 	return tv
 }
@@ -290,9 +290,4 @@ func (c *Card) viewOf(stageKey string) CardView {
 		cv.Code = ""
 	}
 	return cv
-}
-
-// compareIDs orders card ids by their number: "c9" comes before "c10".
-func compareIDs(a, b string) int {
-	return cmp.Or(cmp.Compare(len(a), len(b)), cmp.Compare(a, b))
 }

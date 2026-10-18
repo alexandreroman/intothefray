@@ -87,7 +87,7 @@ func startedGame(t *testing.T, cfg LobbyConfig) *Game {
 	t.Helper()
 	cat := newCatalog(t)
 	g := NewGame("g1", "h", "Host", testNow)
-	if _, err := g.Join("b", "Bob", testNow); err != nil {
+	if _, err := g.Join("b", "Bob"); err != nil {
 		t.Fatal(err)
 	}
 	if err := g.Configure("h", cfg, cat); err != nil {
@@ -408,7 +408,7 @@ func TestZeroStartingThreatIsNotStored(t *testing.T) {
 func TestStartRequiresDecks(t *testing.T) {
 	cat := newCatalog(t)
 	g := NewGame("g1", "h", "Host", testNow)
-	if _, err := g.Join("b", "Bob", testNow); err != nil {
+	if _, err := g.Join("b", "Bob"); err != nil {
 		t.Fatal(err)
 	}
 	if err := g.Configure("h", rhinoConfig(), cat); err != nil {
