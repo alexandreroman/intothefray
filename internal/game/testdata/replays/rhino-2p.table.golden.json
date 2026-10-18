@@ -1179,11 +1179,12 @@
       "back": "player",
       "owner": 1,
       "home": "deck:p1",
-      "zone": "hand",
+      "zone": "table",
       "area": "p1",
-      "x": 580,
-      "y": 320,
-      "z": 6
+      "x": 500,
+      "y": 110,
+      "z": 15,
+      "parent": "cjg69eskk"
     },
     "czadtnhhk": {
       "id": "czadtnhhk",
@@ -1372,7 +1373,6 @@
   "hands": {
     "p0": [],
     "p1": [
-      "cz3w3cktw",
       "cc94x36d7",
       "cmsjkbbee",
       "cvwtd89p5",

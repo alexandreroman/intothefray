@@ -1777,6 +1777,19 @@
       "tracked": true,
       "log": 72,
       "at": "2026-10-18T12:12:42Z"
+    },
+    {
+      "seq": 108,
+      "seat": 1,
+      "action": {
+        "kind": "play",
+        "card": "cz3w3cktw",
+        "target": "cjg69eskk",
+        "seat": 1
+      },
+      "tracked": true,
+      "log": 73,
+      "at": "2026-10-18T12:13:05Z"
     }
   ]
 }

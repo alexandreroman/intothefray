@@ -343,7 +343,9 @@ type recordedGame struct {
 // TestReplayRecordedGame replays a stored two-player Rhino game and compares
 // the table it ends with to the golden one, byte for byte. Run with -record
 // to record the game again from random play (its golden file is then the live
-// table), and with -update to rewrite the golden file from the replay.
+// table), and with -update to rewrite the golden file from the replay. The
+// recording predates plays under a card: its last event, one such play, was
+// appended to it from a replay of the earlier events.
 func TestReplayRecordedGame(t *testing.T) {
 	recording := filepath.Join("testdata", "replays", "rhino-2p.json")
 	golden := filepath.Join("testdata", "replays", "rhino-2p.table.golden.json")
