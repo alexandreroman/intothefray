@@ -239,6 +239,19 @@ func TestPrivateViewDropsCardsThatLeftThePile(t *testing.T) {
 	}
 }
 
+func TestPrivateViewFollowsReorderTop(t *testing.T) {
+	f := newViewFixture(t)
+	f.mustDo(t, hostToken, Action{Kind: ActLook, Pile: "deck:p0", N: 3}, at(1))
+	top3 := topCards(f.g.Table.Piles["deck:p0"], 3)
+	reordered := []string{top3[2], top3[0], top3[1]}
+	f.mustDo(t, hostToken, Action{Kind: ActReorderTop, Pile: "deck:p0", Cards: reordered}, at(2))
+
+	got := f.g.ViewFor(hostToken).Table.Private.Cards
+	if !slices.Equal(got, reordered) {
+		t.Errorf("private cards = %v, want %v", got, reordered)
+	}
+}
+
 func TestPublicPilesListed(t *testing.T) {
 	f := newViewFixture(t)
 	f.mustDo(t, hostToken, Action{Kind: ActDraw, N: 1}, at(1))

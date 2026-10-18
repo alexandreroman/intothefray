@@ -104,7 +104,11 @@ function makeView(extra: { cards?: CardView[]; piles?: PileView[] } = {}): View 
 
 const ALEX: { area: Area; role: Role } = { area: 'p0', role: 'player' };
 
-function itemsFor(el: TableElement, view = makeView(), you = ALEX): ActionItem[] {
+function itemsFor(
+  el: TableElement,
+  view = makeView(),
+  you: { area?: Area; role: Role } = ALEX,
+): ActionItem[] {
   const result = actionsFor(el, view, you);
   if (!Array.isArray(result)) {
     throw new Error(`expected items, got the text "${result.text}"`);
@@ -527,13 +531,22 @@ describe('actionsFor', () => {
     expect(actionsFor({ kind: 'pile', id: 'disc:p0' }, view, ALEX)).toEqual([]);
   });
 
-  it('spectator gets nothing', () => {
+  it('spectator only browses public piles and sees the stage choice', () => {
     const view = makeView();
     view.you = { role: 'spectator', name: 'Kim', color: -1, host: false };
-    const spectator: { area: Area; role: Role } = { area: 'villain', role: 'spectator' };
+    const spectator: { role: Role } = { role: 'spectator' };
 
     expect(actionsFor({ kind: 'card', id: 'mine' }, view, spectator)).toEqual([]);
     expect(actionsFor({ kind: 'pile', id: 'deck:p0' }, view, spectator)).toEqual([]);
+    expect(actionsFor({ kind: 'pile', id: 'enc' }, view, spectator)).toEqual([]);
+    for (const id of ['disc:p0', 'encd', 'vic', 'aside:p1']) {
+      const items = itemsFor({ kind: 'pile', id }, view, spectator);
+      expect(items.map((it) => it.id)).toEqual(['browse']);
+      expect(items[0]?.run?.()).toEqual({ local: 'browseBox' });
+    }
+    const stage = itemsFor({ kind: 'card', id: 'v' }, view, spectator);
+    expect(stage.map((it) => it.id)).toEqual(['stage']);
+    expect(stage[0]?.run?.()).toEqual({ local: 'stageBox' });
   });
 
   it('hand card gets no bar', () => {

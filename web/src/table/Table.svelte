@@ -4,14 +4,22 @@
   history).
 -->
 <script lang="ts">
-  import { tick } from 'svelte';
+  import { tick, untrack } from 'svelte';
   import { MediaQuery } from 'svelte/reactivity';
   import Tooltip from '../components/Tooltip.svelte';
   import TopBar from '../components/TopBar.svelte';
   import { knownCard, loadAllCards } from '../lib/catalog';
   import { getPref, setPref } from '../lib/prefs';
   import type { GameSession } from '../lib/session.svelte';
-  import type { Area, CardView as TableCard, PackFace, PileView, Size, View } from '../lib/types';
+  import type {
+    Action,
+    Area,
+    CardView as TableCard,
+    PackFace,
+    PileView,
+    Size,
+    View,
+  } from '../lib/types';
   import ActionBar from './ActionBar.svelte';
   import {
     actionsFor,
@@ -22,6 +30,8 @@
     type TableElement,
   } from './actions';
   import AskCount from './AskCount.svelte';
+  import type { LocalBox, ShownBox } from './boxes';
+  import CardBox from './CardBox.svelte';
   import DragLayer from './DragLayer.svelte';
   import { isHidden, pileBack } from './face';
   import Hand from './Hand.svelte';
@@ -49,6 +59,14 @@
       return null;
     }
     return knownCard(card.code)?.card.faces[card.face] ?? null;
+  }
+
+  /** Every face of a card, as the stage choice lists them; none while the catalog loads. */
+  function facesOf(card: TableCard): PackFace[] {
+    if (catalog !== 'ready' || !card.code) {
+      return [];
+    }
+    return knownCard(card.code)?.card.faces ?? [];
   }
 
   function sizeOf(card: TableCard): Size {
@@ -224,7 +242,7 @@
     void catalog;
     const hovered = interaction.hovered;
     const role = view.you.role;
-    if (!hovered || role === undefined || !ownArea) {
+    if (!hovered || role === undefined) {
       return [];
     }
     return actionsFor(hovered, view, { area: ownArea, role });
@@ -328,25 +346,105 @@
     } else if ('local' in result) {
       runLocal(result.local, element);
     } else {
-      session.act(result);
+      send(result);
     }
   }
 
   function runLocal(local: LocalAction, element: TableElement): void {
-    if (local === 'arrow') {
-      interaction.startArrow(element.id);
-      return;
+    switch (local) {
+      case 'arrow':
+        interaction.startArrow(element.id);
+        return;
+      case 'browseBox':
+        localBox = { kind: 'browse', pile: element.id };
+        return;
+      case 'stageBox': {
+        const stage = view.table?.stages.find((s) => s.current === element.id);
+        if (stage) {
+          localBox = { kind: 'stage', stage: stage.key };
+        }
+        return;
+      }
     }
-    // The boxes (stage choice, browsing a pile) come with plan 5c.
-    console.info(`"${local}" is not available yet`);
   }
 
   function answer(n: number): void {
     const question = asking;
     asking = null;
     if (question) {
-      session.act(question.make(n));
+      send(question.make(n));
     }
+  }
+
+  function send(action: Action): void {
+    // A new Look or Search opens its box as soon as its view arrives.
+    if (action.kind === 'look' || action.kind === 'search') {
+      closingView = false;
+    }
+    session.act(action);
+  }
+
+  // ---- The card boxes ----
+
+  // Browse and the stage choice are the client's own; Look at top and Search
+  // are the server's private view (ruling P5c-R1), closed with closeView.
+  let localBox = $state<LocalBox | null>(null);
+  // The private view was closed here: its box is gone before the server's answer.
+  let closingView = $state(false);
+
+  $effect(() => {
+    if (!view.table?.private) {
+      closingView = false;
+    }
+  });
+
+  // From the current view, so that the box follows what other players do.
+  const shownBox = $derived.by((): ShownBox | null => {
+    const table = view.table;
+    const opened = table?.private;
+    if (opened && !closingView) {
+      const pile = piles.find((p) => p.id === opened.pile);
+      return pile ? { kind: 'pile', pile, mode: opened.mode, cards: opened.cards } : null;
+    }
+    if (localBox?.kind === 'browse') {
+      const id = localBox.pile;
+      const pile = piles.find((p) => p.id === id);
+      // Public piles list their cards bottom to top.
+      return pile
+        ? { kind: 'pile', pile, mode: 'browse', cards: [...(pile.cards ?? [])].reverse() }
+        : null;
+    }
+    if (localBox?.kind === 'stage') {
+      const key = localBox.stage;
+      const stage = table?.stages.find((s) => s.key === key);
+      return stage ? { kind: 'stage', stage } : null;
+    }
+    return null;
+  });
+
+  /** Tells one box from another, so that a new box starts afresh. */
+  const boxKey = $derived.by(() => {
+    if (shownBox?.kind === 'pile') {
+      return `${shownBox.mode}:${shownBox.pile.id}`;
+    }
+    return shownBox ? `stage:${shownBox.stage.key}` : '';
+  });
+
+  // A box takes over from the table: its bar, preview and selection go.
+  const boxOpen = $derived(shownBox !== null);
+  $effect(() => {
+    if (boxOpen) {
+      untrack(() => interaction.release());
+    }
+  });
+
+  function closeBox(shuffle: boolean): void {
+    if (shownBox?.kind === 'pile' && shownBox.mode !== 'browse') {
+      closingView = true;
+      session.act(shuffle ? { kind: 'closeView', where: 'shuffle' } : { kind: 'closeView' });
+      return;
+    }
+    localBox = null;
   }
 
   /** An empty spot: the table itself, a zone's surface or scroller, or its header. */
@@ -389,7 +487,7 @@
       zoom,
       setZoom: zoomWithButtons,
       run: runItem,
-      act: (action) => session.act(action),
+      act: send,
       showKeys: showKeySheet,
       sizeOf,
     });
@@ -591,6 +689,20 @@
       version={view}
       onstep={stepCounter}
     />
+  {/if}
+
+  {#if shownBox}
+    {#key boxKey}
+      <CardBox
+        box={shownBox}
+        {view}
+        {facesOf}
+        {sizeOf}
+        readOnly={view.you.role !== 'player'}
+        act={(action) => session.act(action)}
+        onclose={closeBox}
+      />
+    {/key}
   {/if}
 
   {#if asking}

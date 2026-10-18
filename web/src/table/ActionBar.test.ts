@@ -600,16 +600,15 @@ describe('ActionBar', () => {
     expect(session.act).not.toHaveBeenCalled();
   });
 
-  it('the stage choice is left to a later box: nothing is sent', async () => {
-    const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+  it('the stage choice opens its box: nothing is sent yet', async () => {
     const { session } = await renderTable();
     await fireEvent.pointerEnter(placed('v'));
 
     await fireEvent.click(
       within(bar()!).getByRole('button', { name: 'Choose the villain card to show' }),
     );
+    expect(screen.getByRole('dialog', { name: 'Villain — choose the card to show' })).toBeTruthy();
     expect(session.act).not.toHaveBeenCalled();
-    expect(info).toHaveBeenCalledOnce();
   });
 
   it('a tap selects on touch: the bar stays until a tap on an empty spot', async () => {

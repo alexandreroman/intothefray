@@ -1,0 +1,786 @@
+<!--
+  The card box (spec 5.7): Search, Look at top, Browse and the stage choice
+  share one fixed-size box, two rows of 5:7 tiles with the rest scrolling, a
+  name filter and a footer (the prototype's renderDeckView and
+  renderStageView). Hovering a pile tile shows its floating bar; in Look at
+  top, tiles are reordered by dragging, with a live preview. The box follows
+  the view: cards that leave the pile leave the box.
+-->
+<script lang="ts">
+  import { tick, untrack } from 'svelte';
+  import Dialog from '../components/Dialog.svelte';
+  import type { Action, CardView, PackFace, Size, View } from '../lib/types';
+  import {
+    isDeck,
+    pileLabel,
+    stageFaceName,
+    tileActions,
+    type ShownBox,
+    type TileAction,
+  } from './boxes';
+  import CardFace from './CardFace.svelte';
+  import { LANDING_MS } from './interaction.svelte';
+  import { seatOf } from './actions';
+  import TileBar from './TileBar.svelte';
+
+  let {
+    box,
+    view,
+    facesOf,
+    sizeOf,
+    readOnly,
+    act,
+    onclose,
+  }: {
+    box: ShownBox;
+    view: View;
+    /** Every face of a card, from the catalog; none while it loads. */
+    facesOf: (card: CardView) => PackFace[];
+    sizeOf: (card: CardView) => Size;
+    /** A spectator's box: it shows the cards and offers nothing. */
+    readOnly: boolean;
+    act: (action: Action) => void;
+    /** Closes the box; `shuffle` asks to shuffle the searched deck. */
+    onclose: (shuffle: boolean) => void;
+  } = $props();
+
+  // The prototype's values: the tile bar lingers this long after the pointer
+  // leaves, a press becomes a drag past this distance, and the grid scrolls
+  // by this step when a dragged tile nears its edge.
+  const BAR_LINGER_MS = 220;
+  const DRAG_THRESHOLD = 5;
+  const EDGE_SCROLL = 40;
+  const SCROLL_STEP = 12;
+  // Tiles are at least this wide; a card is 1.4 times as high as wide.
+  const MIN_TILE = 132;
+  const CARD_RATIO = 1.4;
+  const SLIDE_MS = 180;
+
+  interface Tile {
+    /** The card id for a pile, "<card id>:<face>" for the stage choice. */
+    key: string;
+    card: CardView;
+    face: number;
+    name: string;
+    images: string[];
+    landscape: boolean;
+    /** "#3" (place in the pile) or "On the table". */
+    badge?: string;
+    /** The stage face on the table. */
+    shown: boolean;
+  }
+
+  const cardsById = $derived(new Map((view.table?.cards ?? []).map((card) => [card.id, card])));
+
+  // Cards put at the bottom of their deck from this box leave it, though they stay in the pile.
+  let sentDown = $state<string[]>([]);
+
+  const pileCards = $derived(
+    box.kind === 'pile' ? box.cards.filter((id) => !sentDown.includes(id)) : [],
+  );
+
+  function tilesOf(shown: ShownBox): Tile[] {
+    if (shown.kind === 'stage') {
+      const stage = shown.stage;
+      return stage.cards.flatMap((id) => {
+        const card = cardsById.get(id);
+        if (!card) {
+          return [];
+        }
+        return facesOf(card).map((face, index) => {
+          const onTable = id === stage.current && card.face === index;
+          return {
+            key: `${id}:${index}`,
+            card,
+            face: index,
+            name: stageFaceName(face, index),
+            images: face.images,
+            landscape: isLandscape(face),
+            badge: onTable ? 'On the table' : undefined,
+            shown: onTable,
+          };
+        });
+      });
+    }
+    return pileCards.flatMap((id, index) => {
+      const card = cardsById.get(id);
+      if (!card) {
+        return [];
+      }
+      const face = facesOf(card)[card.face];
+      return [
+        {
+          key: id,
+          card,
+          face: card.face,
+          name: face?.name ?? '',
+          images: face?.images ?? [],
+          landscape: face ? isLandscape(face) : false,
+          badge: `#${index + 1}`,
+          shown: false,
+        },
+      ];
+    });
+  }
+
+  function isLandscape(face: PackFace): boolean {
+    return face.size === 'land' || face.size === 'dland';
+  }
+
+  const tiles = $derived(tilesOf(box));
+
+  let query = $state('');
+  const matching = $derived.by(() => {
+    const wanted = query.trim().toLowerCase();
+    return wanted === '' ? tiles : tiles.filter((t) => t.name.toLowerCase().includes(wanted));
+  });
+
+  // ---- The title ----
+
+  // "Top N" keeps the number looked at, as cards leave.
+  const lookedAt = untrack(() => (box.kind === 'pile' ? box.cards.length : 0));
+
+  const title = $derived.by((): { main: string; aside?: string } => {
+    if (box.kind === 'stage') {
+      return { main: box.stage.label, aside: '— choose the card to show' };
+    }
+    const label = pileLabel(box.pile, view);
+    switch (box.mode) {
+      case 'top':
+        return { main: `Top ${lookedAt} of ${label}` };
+      case 'search': {
+        const n = pileCards.length;
+        return { main: `Search ${label}`, aside: `(${n} ${n === 1 ? 'card' : 'cards'})` };
+      }
+      case 'browse':
+        return { main: label };
+    }
+  });
+
+  const fullTitle = $derived(title.aside ? `${title.main} ${title.aside}` : title.main);
+
+  // ---- Tile actions ----
+
+  const seat = $derived(view.you.area ? seatOf(view.you.area) : null);
+
+  function actionsOf(tile: Tile): TileAction[] {
+    if (readOnly || box.kind !== 'pile' || seat === null) {
+      return [];
+    }
+    return tileActions(tile.card, box.pile, { view, seat, sizeOf });
+  }
+
+  function runAction(action: TileAction, tile: Tile): void {
+    hovered = null;
+    if (action.id === 'bottom') {
+      sentDown = [...sentDown, tile.card.id];
+    }
+    act(action.run());
+  }
+
+  function choose(tile: Tile): void {
+    if (readOnly || tile.shown || box.kind !== 'stage') {
+      return;
+    }
+    act({ kind: 'chooseStage', stage: box.stage.key, card: tile.card.id, face: tile.face });
+    onclose(false);
+  }
+
+  // ---- Hover and the tile bar ----
+
+  let hovered = $state<string | null>(null);
+  let onBar = false;
+  let hideTimer: ReturnType<typeof setTimeout> | undefined;
+
+  function enterTile(tile: Tile, event: PointerEvent): void {
+    if (!isRealHover(event) || drag?.lifted || (box.kind === 'stage' && tile.shown)) {
+      return;
+    }
+    clearTimeout(hideTimer);
+    hovered = tile.key;
+  }
+
+  function hideSoon(): void {
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(() => {
+      if (!onBar) {
+        hovered = null;
+      }
+    }, BAR_LINGER_MS);
+  }
+
+  // The bar of the hovered tile, while it is still in the box and has actions.
+  const barTile = $derived.by(() => {
+    if (drag?.lifted) {
+      return null;
+    }
+    const tile = matching.find((t) => t.key === hovered);
+    return tile && actionsOf(tile).length > 0 ? tile : null;
+  });
+
+  let grid = $state<HTMLElement>();
+
+  function imageOf(key: string): HTMLElement | null {
+    return grid?.querySelector<HTMLElement>(`.tile[data-id="${key}"] .img`) ?? null;
+  }
+
+  // ---- The fixed size ----
+
+  /**
+   * Two rows of 5:7 tiles, from the grid's width only (never from what it
+   * shows), so that every box opens at the same size; the rest scrolls.
+   */
+  let gridHeight = $state<number | null>(null);
+
+  function sizeGrid(element: HTMLElement): void {
+    const style = getComputedStyle(element);
+    const gap = parseFloat(style.columnGap) || 14;
+    const padX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+    const padY = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+    const inner = element.clientWidth - padX;
+    // Not laid out (tests): the stylesheet's height stays.
+    if (inner <= 0) {
+      return;
+    }
+    const columns = Math.max(1, Math.floor((inner + gap) / (MIN_TILE + gap)));
+    const columnWidth = (inner - gap * (columns - 1)) / columns;
+    gridHeight = Math.min(
+      2 * columnWidth * CARD_RATIO + gap + padY,
+      window.innerHeight * 0.88 - 160,
+    );
+  }
+
+  // ---- Reordering the top cards ----
+
+  const movable = $derived(
+    !readOnly && box.kind === 'pile' && box.mode === 'top' && isDeck(box.pile),
+  );
+
+  interface TileDrag {
+    key: string;
+    start: { x: number; y: number };
+    lifted: boolean;
+    /** The tiles' keys in their new order, the dragged one in its slot. */
+    order: string[];
+    /** The key of the tile the dragged one goes before, null for the end. */
+    before: string | null;
+    ghost: { x: number; y: number; width: number; height: number; dx: number; dy: number };
+    tile: Tile;
+  }
+
+  let drag = $state<TileDrag | null>(null);
+
+  // The order sent to the server, shown until its new view arrives (for the cards it was sent from).
+  let pending = $state.raw<{ order: string[]; from: readonly string[] } | null>(null);
+  let pendingTimer: ReturnType<typeof setTimeout> | undefined;
+
+  const shownTiles = $derived.by((): Tile[] => {
+    if (drag?.lifted) {
+      const byKey = new Map(matching.map((t) => [t.key, t]));
+      return drag.order.flatMap((key) => byKey.get(key) ?? []);
+    }
+    if (pending && box.kind === 'pile' && pending.from === box.cards) {
+      const order = pending.order;
+      return [...matching].sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key));
+    }
+    return matching;
+  });
+
+  // When other players' actions move the tiles, the browser reports the tile
+  // that lands under a pointer at rest as entered, at the very spot the
+  // pointer rests: that is not the viewer hovering it (spec 5.8), and its bar
+  // would offer to act on a card they did not point at.
+  let pointer = { x: NaN, y: NaN };
+  let drawnAt = { x: NaN, y: NaN };
+
+  $effect.pre(() => {
+    void shownTiles;
+    drawnAt = { ...pointer };
+  });
+
+  function isRealHover(event: PointerEvent): boolean {
+    return !(event.clientX === drawnAt.x && event.clientY === drawnAt.y);
+  }
+
+  function press(tile: Tile, event: PointerEvent): void {
+    if (!movable || event.button !== 0) {
+      return;
+    }
+    event.preventDefault();
+    drag = {
+      key: tile.key,
+      start: { x: event.clientX, y: event.clientY },
+      lifted: false,
+      order: shownTiles.map((t) => t.key),
+      before: null,
+      ghost: { x: 0, y: 0, width: 0, height: 0, dx: 0, dy: 0 },
+      tile,
+    };
+  }
+
+  async function onPointerMove(event: PointerEvent): Promise<void> {
+    pointer = { x: event.clientX, y: event.clientY };
+    if (!drag) {
+      return;
+    }
+    if (!drag.lifted) {
+      const distance = Math.hypot(event.clientX - drag.start.x, event.clientY - drag.start.y);
+      if (distance < DRAG_THRESHOLD) {
+        return;
+      }
+      const r = imageOf(drag.key)?.getBoundingClientRect();
+      if (!r) {
+        return;
+      }
+      drag.lifted = true;
+      drag.before = drag.order[drag.order.indexOf(drag.key) + 1] ?? null;
+      drag.ghost = {
+        x: r.left,
+        y: r.top,
+        width: r.width,
+        height: r.height,
+        dx: drag.start.x - r.left,
+        dy: drag.start.y - r.top,
+      };
+      hovered = null;
+    }
+    drag.ghost.x = event.clientX - drag.ghost.dx;
+    drag.ghost.y = event.clientY - drag.ghost.dy;
+
+    const before = slotBefore(drag.key, event.clientX, event.clientY);
+    if (before !== undefined && before !== drag.before) {
+      drag.before = before;
+      await moveSlot(drag, before);
+    }
+    scrollNearEdges(event.clientY);
+  }
+
+  /**
+   * The tile the dragged one would go before (null: after the last), from the
+   * nearest tile on the pointer's row, or the nearest of all when no row is
+   * under it; undefined when there is no other tile.
+   */
+  function slotBefore(key: string, x: number, y: number): string | null | undefined {
+    const others = drag?.order.filter((k) => k !== key) ?? [];
+    const placed = others.flatMap((k) => {
+      const r = imageOf(k)?.getBoundingClientRect();
+      return r ? [{ key: k, r }] : [];
+    });
+    const row = placed.filter((o) => y >= o.r.top - 10 && y <= o.r.bottom + 60);
+    const pool = row.length > 0 ? row : placed;
+    let best: { key: string; r: DOMRect; d: number } | null = null;
+    for (const o of pool) {
+      const centreX = o.r.left + o.r.width / 2;
+      const centreY = o.r.top + o.r.height / 2;
+      const d = Math.abs(x - centreX) + (row.length > 0 ? 0 : Math.abs(y - centreY));
+      if (best === null || d < best.d) {
+        best = { ...o, d };
+      }
+    }
+    if (best === null) {
+      return undefined;
+    }
+    const after = x > best.r.left + best.r.width / 2;
+    if (!after) {
+      return best.key;
+    }
+    return others[others.indexOf(best.key) + 1] ?? null;
+  }
+
+  /** Puts the dragged tile's slot before that tile, the others sliding aside (FLIP). */
+  async function moveSlot(current: TileDrag, before: string | null): Promise<void> {
+    const elements = [...(grid?.querySelectorAll<HTMLElement>('.tile') ?? [])];
+    const first = new Map(elements.map((element) => [element, element.getBoundingClientRect()]));
+
+    const order = current.order.filter((k) => k !== current.key);
+    const at = before === null ? order.length : order.indexOf(before);
+    order.splice(at, 0, current.key);
+    current.order = order;
+    await tick();
+
+    for (const element of elements) {
+      const a = first.get(element);
+      if (!a || element.dataset.id === current.key || !element.isConnected) {
+        continue;
+      }
+      const b = element.getBoundingClientRect();
+      if (a.left !== b.left || a.top !== b.top) {
+        // jsdom has no Web Animations.
+        element.animate?.(
+          [
+            { transform: `translate(${a.left - b.left}px, ${a.top - b.top}px)` },
+            { transform: 'none' },
+          ],
+          { duration: SLIDE_MS, easing: 'ease-out' },
+        );
+      }
+    }
+  }
+
+  function scrollNearEdges(y: number): void {
+    if (!grid) {
+      return;
+    }
+    const r = grid.getBoundingClientRect();
+    if (y > r.bottom - EDGE_SCROLL) {
+      grid.scrollTop += SCROLL_STEP;
+    } else if (y < r.top + EDGE_SCROLL) {
+      grid.scrollTop -= SCROLL_STEP;
+    }
+  }
+
+  function onPointerUp(): void {
+    const done = drag;
+    drag = null;
+    if (!done?.lifted || box.kind !== 'pile') {
+      return;
+    }
+    // What the box shows is the new order of those cards; the others keep their
+    // places. A card that left the pile during the drag is no longer in it.
+    const all = pileCards;
+    const shown = done.order.filter((id) => all.includes(id));
+    const before = all.filter((id) => shown.includes(id));
+    if (before.join() === shown.join()) {
+      return;
+    }
+    let next = 0;
+    const order = all.map((id) => (shown.includes(id) ? (shown[next++] ?? id) : id));
+    pending = { order, from: box.cards };
+    clearTimeout(pendingTimer);
+    pendingTimer = setTimeout(() => (pending = null), LANDING_MS);
+    act({ kind: 'reorderTop', pile: box.pile.id, cards: order });
+  }
+
+  // ---- Footer ----
+
+  const shuffleChoice = $derived(
+    !readOnly && box.kind === 'pile' && box.mode === 'search' && isDeck(box.pile),
+  );
+
+  $effect(() => () => {
+    clearTimeout(hideTimer);
+    clearTimeout(pendingTimer);
+  });
+</script>
+
+<svelte:window
+  onpointermove={onPointerMove}
+  onpointerup={onPointerUp}
+  onpointercancel={() => (drag = null)}
+/>
+
+<Dialog title={fullTitle} wide oncancel={() => onclose(false)}>
+  {#snippet heading(id: string)}
+    <div class="mhead">
+      <b {id}
+        >{title.main}
+        {#if title.aside}<span class="aside">{title.aside}</span>{/if}</b
+      >
+      <input
+        class="filter"
+        type="text"
+        placeholder="Filter by name…"
+        aria-label="Filter by name"
+        bind:value={query}
+      />
+    </div>
+  {/snippet}
+
+  <ul
+    class="mgrid"
+    aria-label="Cards"
+    bind:this={grid}
+    style:height={gridHeight === null ? undefined : `${gridHeight}px`}
+    {@attach sizeGrid}
+    onscroll={() => (hovered = null)}
+  >
+    {#each shownTiles as tile (tile.key)}
+      <li
+        class="tile"
+        class:pick={box.kind === 'stage'}
+        class:shown={tile.shown}
+        class:hovered={hovered === tile.key}
+        class:lifting={drag?.lifted && drag.key === tile.key}
+        data-id={tile.key}
+        data-tip={box.kind === 'stage' ? tile.name : undefined}
+        aria-label={tile.name}
+        onpointerenter={(event) => enterTile(tile, event)}
+        onpointerleave={hideSoon}
+      >
+        {#if box.kind === 'stage'}
+          <button
+            type="button"
+            class="img"
+            aria-label={tile.name}
+            disabled={readOnly || tile.shown}
+            onclick={() => choose(tile)}
+          >
+            {@render art(tile)}
+          </button>
+        {:else}
+          <div
+            class="img"
+            class:movable
+            role="presentation"
+            onpointerdown={(event) => press(tile, event)}
+          >
+            {@render art(tile)}
+          </div>
+        {/if}
+      </li>
+    {:else}
+      <li class="mempty" role="status">
+        {#if tiles.length > 0}
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="10.5" cy="10.5" r="6.5" />
+            <path d="M20 20l-4.6-4.6" />
+            <path d="M8 8.5l5 4M13 8.5l-5 4" />
+          </svg>
+          No card matches.
+        {:else}
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="5" y="4" width="14" height="17" rx="2" stroke-dasharray="3 2.4" />
+          </svg>
+          Nothing left here.
+        {/if}
+      </li>
+    {/each}
+  </ul>
+
+  <div class="mfoot">
+    {#if shuffleChoice}
+      <button type="button" onclick={() => onclose(false)}>Close without shuffling</button>
+      <button type="button" class="primary" onclick={() => onclose(true)}>Shuffle & close</button>
+    {:else}
+      <button type="button" class="primary" onclick={() => onclose(false)}>Close</button>
+    {/if}
+  </div>
+
+  {#if barTile}
+    {@const anchor = imageOf(barTile.key)}
+    {#if anchor}
+      {#key barTile.key}
+        <TileBar
+          {anchor}
+          actions={actionsOf(barTile)}
+          onrun={(action) => runAction(action, barTile)}
+          onenter={() => {
+            onBar = true;
+            clearTimeout(hideTimer);
+          }}
+          onleave={() => {
+            onBar = false;
+            hideSoon();
+          }}
+        />
+      {/key}
+    {/if}
+  {/if}
+
+  {#if drag?.lifted}
+    <div
+      class="tile-ghost"
+      style:left="{drag.ghost.x}px"
+      style:top="{drag.ghost.y}px"
+      style:width="{drag.ghost.width}px"
+      style:height="{drag.ghost.height}px"
+    >
+      {@render art(drag.tile, false)}
+    </div>
+  {/if}
+</Dialog>
+
+{#snippet art(tile: Tile, withBadge = true)}
+  <span class="face" class:land={tile.landscape}>
+    <CardFace images={tile.images} name={tile.name} landscape={tile.landscape} />
+  </span>
+  {#if withBadge && tile.badge}
+    <span class="pos">{tile.badge}</span>
+  {/if}
+{/snippet}
+
+<style>
+  .mhead {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .mhead b {
+    font-size: 16px;
+  }
+
+  .mhead .aside {
+    color: var(--faint);
+    font-weight: 600;
+  }
+
+  /* More specific than the app's input[type='text'], which spans the whole width. */
+  .mhead .filter {
+    margin-left: auto;
+    width: 220px;
+    padding: 6px 10px;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--text);
+    font: inherit;
+  }
+
+  .mgrid {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+    align-content: start;
+    gap: 14px;
+    margin: 0;
+    padding: 14px 16px;
+    overflow-y: auto;
+    list-style: none;
+  }
+
+  /* An empty box shows its message in the middle. */
+  .mgrid:has(> .mempty) {
+    align-content: center;
+  }
+
+  .tile {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .img {
+    position: relative;
+    display: grid;
+    place-items: center;
+    aspect-ratio: 5 / 7;
+    padding: 0;
+    overflow: hidden;
+    background: #121827;
+    border: none;
+    border-radius: 8px;
+    color: inherit;
+    font: inherit;
+  }
+
+  .img.movable {
+    cursor: grab;
+    touch-action: none;
+  }
+
+  .tile.pick:not(.shown) .img {
+    cursor: pointer;
+  }
+
+  .tile.pick .img:disabled {
+    cursor: default;
+    opacity: 1;
+  }
+
+  /* The card itself, contained in the 5:7 tile: a landscape card lies across it. */
+  .face {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 5 / 7;
+  }
+
+  .face.land {
+    aspect-ratio: 7 / 5;
+  }
+
+  /* The rings: the stage face on the table, and the hovered tile, as on the table. */
+  .img::before {
+    content: '';
+    position: absolute;
+    inset: 1.2%;
+    border-radius: 7px;
+    pointer-events: none;
+    z-index: 2;
+    transition: box-shadow 0.12s;
+  }
+
+  .tile.pick.shown .img::before {
+    box-shadow: 0 0 0 2px var(--sel);
+  }
+
+  .tile.hovered .img::before {
+    box-shadow:
+      0 0 0 2px #ffffffb0,
+      0 0 22px 6px #ffffff38;
+  }
+
+  .tile.lifting .img {
+    outline: 2px dashed #4fd1ff88;
+    outline-offset: -2px;
+    background: #4fd1ff14;
+  }
+
+  .tile.lifting .img > :global(*) {
+    visibility: hidden;
+  }
+
+  .pos {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    z-index: 3;
+    padding: 0 7px;
+    background: #000c;
+    border-radius: 999px;
+    font-size: 11px;
+  }
+
+  .mempty {
+    grid-column: 1 / -1;
+    align-self: center;
+    justify-self: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    color: var(--muted);
+    font-size: 14px;
+    text-align: center;
+  }
+
+  .mempty svg {
+    width: 40px;
+    height: 40px;
+    color: #4a5576;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .mfoot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--line);
+  }
+
+  .mfoot .primary {
+    border-color: var(--sel);
+  }
+
+  /* The dragged card, the tile's size, its card contained as in the tile. */
+  .tile-ghost {
+    position: fixed;
+    z-index: 6;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+    transform: rotate(-3deg) scale(1.04);
+    filter: drop-shadow(6px 8px 12px #000c);
+  }
+</style>

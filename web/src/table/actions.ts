@@ -85,17 +85,23 @@ interface Context {
 
 /**
  * Returns the actions the viewer may take on el, or the text to show instead
- * when the element belongs to someone else. Spectators, hand cards (their
- * keys are handled by keys.ts), empty piles and elements no longer on the
- * table get nothing.
+ * when the element belongs to someone else. Hand cards (their keys are
+ * handled by keys.ts), empty piles and elements no longer on the table get
+ * nothing. Spectators only look: see spectatorActions.
  */
 export function actionsFor(
   el: TableElement,
   view: View,
-  you: { area: Area; role: Role },
+  you: { area?: Area; role: Role },
 ): ActionItem[] | { text: string } {
-  const seat = seatOf(you.area);
-  if (you.role !== 'player' || seat === null || !view.table) {
+  if (!view.table) {
+    return [];
+  }
+  if (you.role === 'spectator') {
+    return spectatorActions(el, view.table);
+  }
+  const seat = you.area ? seatOf(you.area) : null;
+  if (seat === null) {
     return [];
   }
   const context: Context = { view, table: view.table, seat };
@@ -108,6 +114,27 @@ export function actionsFor(
     case 'pile': {
       const pile = context.table.piles.find((p) => p.id === el.id);
       return pile && pile.count > 0 ? pileActions(pile, context) : [];
+    }
+    case 'hand':
+      return [];
+  }
+}
+
+/**
+ * A spectator's read-only bar (ruling P5c-R2): Browse… on the piles whose
+ * cards everyone sees, and the stage choice, which opens read-only.
+ */
+function spectatorActions(el: TableElement, table: TableView): ActionItem[] {
+  switch (el.kind) {
+    case 'card': {
+      const card = table.cards.find((c) => c.id === el.id);
+      const shownBy = table.stages.find((stage) => stage.current === el.id);
+      return card?.zone === 'table' && shownBy ? [stageItem(shownBy)] : [];
+    }
+    case 'pile': {
+      const pile = table.piles.find((p) => p.id === el.id);
+      // The server lists the cards of the public piles only.
+      return pile && pile.count > 0 && pile.cards !== undefined ? [browseItem()] : [];
     }
     case 'hand':
       return [];
@@ -487,7 +514,7 @@ function countLimit(pile: PileView): number {
   return Math.min(pile.count, MAX_COUNT);
 }
 
-/** Search… opens a private view: the server sends the cards (5c shows the box). */
+/** Search… opens a private view: the server sends the cards, which the box shows. */
 function searchItem(pile: PileView): ActionItem {
   return {
     id: 'search',
@@ -509,7 +536,7 @@ function shuffleBackItem(pile: PileView): ActionItem {
   };
 }
 
-/** Browse… needs no server: victory and set-aside piles are face up, their cards listed. */
+/** Browse… needs no server: public piles are face up, their cards listed. */
 function browseItem(): ActionItem {
   return {
     id: 'browse',
