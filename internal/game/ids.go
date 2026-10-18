@@ -102,6 +102,14 @@ func renameCards(t *Table, renames map[string]string) {
 			pile.Cards[i] = rename(id)
 		}
 	}
+	// Stage cards never sit in a shuffled pile; rewriting them anyway keeps
+	// the stages right should that ever change.
+	for _, stage := range t.Stages {
+		stage.Current = rename(stage.Current)
+		for i, id := range stage.Cards {
+			stage.Cards[i] = rename(id)
+		}
+	}
 	for i := range t.Arrows {
 		t.Arrows[i].From = rename(t.Arrows[i].From)
 		t.Arrows[i].To = rename(t.Arrows[i].To)

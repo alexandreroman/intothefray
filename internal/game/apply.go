@@ -157,7 +157,13 @@ func (t *Table) descendants(id string) []*Card {
 func (t *Table) checkLeave(c *Card) error {
 	switch c.Zone {
 	case ZoneTable:
+		if err := t.checkNotStageCurrent(c); err != nil {
+			return err
+		}
 		for _, child := range t.descendants(c.ID) {
+			if err := t.checkNotStageCurrent(child); err != nil {
+				return err
+			}
 			if _, ok := t.Piles[discardPileID(child)]; !ok {
 				return invalid("no discard pile for card %q", child.ID)
 			}
@@ -173,6 +179,17 @@ func (t *Table) checkLeave(c *Card) error {
 		}
 	default:
 		return invalid("card %q cannot move from zone %q", c.ID, c.Zone)
+	}
+	return nil
+}
+
+// checkNotStageCurrent refuses to take away the card a stage shows: the stage
+// would be left with nothing on the table.
+func (t *Table) checkNotStageCurrent(c *Card) error {
+	for _, stage := range t.Stages {
+		if stage.Current == c.ID {
+			return invalid("the %s card stays on the table; choose another card to show", strings.ToLower(stage.Label))
+		}
 	}
 	return nil
 }

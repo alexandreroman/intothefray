@@ -778,3 +778,58 @@ func TestShuffleRejectsDuplicateNewIDs(t *testing.T) {
 		t.Errorf("err = %v, table unchanged = %t", err, reflect.DeepEqual(before, table))
 	}
 }
+
+func TestStageCurrentCardStaysOnTheTable(t *testing.T) {
+	tests := []struct {
+		name string
+		// prepare changes the stage table before the refused action.
+		prepare func(t *testing.T, table *Table)
+		a       Action
+	}{
+		{"discard", nil, Action{Kind: ActDiscard, Card: "c20"}},
+		{"to victory", nil, Action{Kind: ActToPile, Card: "c20", Target: PileVictory}},
+		{"to deck top", nil, Action{Kind: ActToDeck, Card: "c20", Where: whereTop}},
+		{"to hand", nil, Action{Kind: ActToHand, Card: "c20"}},
+		{"shuffled into deck", nil, shuffleTo(Action{Kind: ActToDeck, Card: "c20", Where: whereShuffle}, "c8", "c20")},
+		{
+			"discard the card it is attached to",
+			func(t *testing.T, table *Table) {
+				mustApply(t, table, Action{Kind: ActAttach, Card: "c20", Target: "c7"})
+			},
+			Action{Kind: ActDiscard, Card: "c7"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			table := newStageTable()
+			table.Cards["c20"].Home = PileEncounter
+			if tt.prepare != nil {
+				tt.prepare(t, table)
+			}
+			before := table.Clone()
+
+			err := apply(table, tt.a)
+
+			if !errors.Is(err, ErrInvalid) {
+				t.Errorf("err = %v, want ErrInvalid", err)
+			}
+			if !reflect.DeepEqual(before, table) {
+				t.Error("the refused action changed the table")
+			}
+		})
+	}
+}
+
+func TestRenameCardsRewritesStages(t *testing.T) {
+	table := newStageTable()
+
+	renameCards(table, map[string]string{"c20": "n20", "c22": "n22"})
+
+	stage := table.stage("villain")
+	if stage.Current != "n20" || !slices.Equal(stage.Cards, []string{"n20", "n22"}) {
+		t.Errorf("stage = %+v, want current n20 and cards [n20 n22]", stage)
+	}
+	if got := table.Cards["c21"].Parent; got != "n20" {
+		t.Errorf("c21 parent = %q, want n20", got)
+	}
+}
