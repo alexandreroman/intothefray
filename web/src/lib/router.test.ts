@@ -23,6 +23,11 @@ describe('router', () => {
     expect(route.current).toEqual({ name: 'home' });
   });
 
+  it('falls back to home on a malformed escape', () => {
+    navigate('#/g/%E0%A4%A');
+    expect(route.current).toEqual({ name: 'home' });
+  });
+
   it('go sets the location hash', () => {
     go('#/options');
     expect(window.location.hash).toBe('#/options');

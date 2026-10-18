@@ -1,21 +1,29 @@
 // Every storage access can throw (private windows, blocked site data), and
-// the app must work without storage.
+// the app must work without storage. Values are also kept in memory, so
+// they last for the page lifetime (a reconnection still finds its token).
 
 const TOKENS_KEY = 'itf-tokens';
 
+const memory = new Map<string, string>();
+
 export function getPref(key: string): string | null {
   try {
-    return localStorage.getItem(key);
+    const stored = localStorage.getItem(key);
+    if (stored !== null) {
+      return stored;
+    }
   } catch {
-    return null;
+    // Fall through to the in-memory copy.
   }
+  return memory.get(key) ?? null;
 }
 
 export function setPref(key: string, value: string): void {
+  memory.set(key, value);
   try {
     localStorage.setItem(key, value);
   } catch {
-    // Storage is unavailable: the preference lasts for this page only.
+    // Storage is unavailable: the value lasts for this page only.
   }
 }
 

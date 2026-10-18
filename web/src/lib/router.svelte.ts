@@ -8,7 +8,11 @@ function parse(hash: string): Route {
   }
   const game = GAME_HASH.exec(hash);
   if (game?.[1]) {
-    return { name: 'game', id: decodeURIComponent(game[1]) };
+    try {
+      return { name: 'game', id: decodeURIComponent(game[1]) };
+    } catch {
+      // Malformed percent-escape in the hash: treat it as unknown.
+    }
   }
   return { name: 'home' };
 }

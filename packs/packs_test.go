@@ -2,8 +2,10 @@ package packs_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/fs"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/alexandreroman/intothefray/internal/pack"
@@ -227,4 +229,50 @@ func TestEmbeddedDataInvariants(t *testing.T) {
 			}
 		}
 	})
+}
+
+// TestDistHasNoNull guards the frontend, which types every list as a plain
+// array: a nil Go slice would reach it as null.
+func TestDistHasNoNull(t *testing.T) {
+	err := fs.WalkDir(packs.FS, "dist", func(name string, entry fs.DirEntry, err error) error {
+		if err != nil || entry.IsDir() || !strings.HasSuffix(name, ".json") {
+			return err
+		}
+		data, err := fs.ReadFile(packs.FS, name)
+		if err != nil {
+			return err
+		}
+		var doc any
+		if err := json.Unmarshal(data, &doc); err != nil {
+			return fmt.Errorf("decode %s: %w", name, err)
+		}
+		if path, found := findNull(doc, "$"); found {
+			t.Errorf("%s: null at %s", name, path)
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+// findNull returns the path of the first JSON null in doc.
+func findNull(doc any, path string) (string, bool) {
+	switch v := doc.(type) {
+	case nil:
+		return path, true
+	case []any:
+		for i, item := range v {
+			if p, found := findNull(item, fmt.Sprintf("%s[%d]", path, i)); found {
+				return p, true
+			}
+		}
+	case map[string]any:
+		for key, item := range v {
+			if p, found := findNull(item, path+"."+key); found {
+				return p, true
+			}
+		}
+	}
+	return "", false
 }

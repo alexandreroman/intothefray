@@ -12,7 +12,7 @@ describe('prefs', () => {
     expect(getPref('itf-theme')).toBeNull();
   });
 
-  it('survives a throwing storage', () => {
+  it('survives a throwing storage and keeps values in memory', () => {
     const broken = {
       getItem: () => {
         throw new Error('denied');
@@ -23,10 +23,12 @@ describe('prefs', () => {
     };
     vi.stubGlobal('localStorage', broken);
 
-    expect(getPref('itf-name')).toBeNull();
-    expect(() => setPref('itf-name', 'Alex')).not.toThrow();
-    expect(getToken('g1')).toBeNull();
-    expect(() => setToken('g1', 't')).not.toThrow();
+    expect(getPref('itf-memory')).toBeNull();
+    expect(getToken('mem-game')).toBeNull();
+    expect(() => setPref('itf-memory', 'Alex')).not.toThrow();
+    expect(() => setToken('mem-game', 'tok')).not.toThrow();
+    expect(getPref('itf-memory')).toBe('Alex');
+    expect(getToken('mem-game')).toBe('tok');
   });
 
   it('stores tokens per game', () => {

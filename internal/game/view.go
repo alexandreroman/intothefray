@@ -118,7 +118,9 @@ func (g *Game) ViewFor(token string) View {
 		Spectators: len(g.Spectators),
 		Config:     g.Config,
 	}
-	v.Config.Modulars = slices.Clone(g.Config.Modulars)
+	// Clients expect lists, never null: start from empty, non-nil slices.
+	v.Config.Modulars = append([]string{}, g.Config.Modulars...)
+	v.Players = make([]PlayerView, 0, len(g.Players))
 	for i, p := range g.Players {
 		v.Players = append(v.Players, g.playerView(p, i))
 	}
@@ -199,7 +201,9 @@ func (t *Table) viewFor(seat int) *TableView {
 	}
 	stageKeys := map[string]string{}
 	for _, stage := range t.Stages {
-		tv.Stages = append(tv.Stages, stage.clone())
+		copied := stage.clone()
+		copied.Cards = append([]string{}, stage.Cards...) // never null on the wire
+		tv.Stages = append(tv.Stages, copied)
 		stageKeys[stage.Current] = stage.Key
 		for _, id := range stage.Cards {
 			stageKeys[id] = stage.Key
