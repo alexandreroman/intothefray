@@ -372,6 +372,40 @@ describe('dragging a table card', () => {
     });
   });
 
+  it('goes back to the hand when dropped over it', async () => {
+    const { session } = await renderTable();
+    await press(placed('mine'), 50, 400);
+    // Over the hand, between its cards and the bottom of the window.
+    await moveTo(450, 740);
+    const hand = document.querySelector('.hand');
+    expect(hand?.classList).toContain('drop');
+    expect(hand?.classList).toContain('open');
+    expect(screen.getByText('Hand')).toBeTruthy();
+    // No gap opens: the card is not slotted in among the others.
+    expect(document.querySelector('.hand .hcard.gap')).toBeNull();
+
+    await release(450, 740);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'toHand', card: 'mine' });
+  });
+
+  it("is not taken by the hand when it is another player's card or an encounter card", async () => {
+    const theirs = card('theirs', { owner: 1, x: 200 });
+    const { session } = await renderTable(makeView({ cards: [...CARDS, theirs] }));
+    await press(placed('theirs'), 250, 400);
+    await moveTo(450, 740);
+    expect(document.querySelector('.hand')?.classList).not.toContain('drop');
+    expect(screen.queryByText('Hand')).toBeNull();
+    await release(450, 740);
+
+    // The villain's card lies at 320, 40 on the screen.
+    await press(placed('v'), 350, 100);
+    await moveTo(450, 740);
+    expect(screen.queryByText('Hand')).toBeNull();
+    await release(450, 740);
+    // Dropped outside every zone: nothing moves.
+    expect(session.act).not.toHaveBeenCalled();
+  });
+
   it('sends nothing when it is put back where it was', async () => {
     const { session } = await renderTable();
     await press(placed('mine'), 50, 400);

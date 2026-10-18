@@ -27,9 +27,10 @@ export interface Held {
   lifted: readonly string[];
 }
 
-/** The card or pile a drop would go onto, outlined during a drag. */
+/** What a drop would go onto, outlined during a drag: a card, a pile, or the viewer's hand. */
 export interface DropOn {
-  kind: 'card' | 'pile';
+  kind: 'card' | 'pile' | 'hand';
+  /** The card, the pile, or the area whose hand it is. */
   id: string;
 }
 

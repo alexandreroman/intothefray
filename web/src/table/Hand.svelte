@@ -48,13 +48,17 @@
 
   let open = $state(false);
 
+  // A table card of the viewer's own, dragged over the hand to go back to it.
+  const dropTarget = $derived(interaction.dropOn?.kind === 'hand');
+
   // While something is dragged, the drag decides: the hand rises only under a
-  // hand card brought back over it. It is left as it was when the card is
-  // dropped, so a reordered hand stays up, until the pointer moves again.
+  // hand card brought back over it, or a table card going back to it. It is
+  // left as it was when the card is dropped, so a reordered hand stays up,
+  // until the pointer moves again.
   $effect.pre(() => {
     const drag = interaction.dragging;
     if (drag) {
-      open = drag.element.kind === 'hand' && interaction.handGap !== null;
+      open = (drag.element.kind === 'hand' && interaction.handGap !== null) || dropTarget;
     }
   });
   let list = $state<HTMLElement>();
@@ -109,6 +113,7 @@
 <ul
   class="hand"
   class:open
+  class:drop={dropTarget}
   aria-label="Your hand"
   style:--card-w="{cardSize.w}px"
   style:--card-h="{cardSize.h}px"
@@ -200,6 +205,11 @@
   .hand.open {
     transform: none;
     z-index: 2600;
+  }
+
+  /* A table card would go back to it. */
+  .hand.drop {
+    background: linear-gradient(to top, #1a2a50f0 0%, #1a2a50a0 60%, transparent 100%);
   }
 
   /* Placed around the middle of the hand, below its top padding: --x is the card's middle. */

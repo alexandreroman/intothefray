@@ -42,7 +42,10 @@ export type PileDrop = 'top' | 'discard' | 'pile';
 
 /** Where a drop can land, with its box on the screen. */
 export type DropRect =
+  /** A slot among the hand cards, for a hand card. */
   | { kind: 'hand'; index: number; rect: Rect }
+  /** The hand as a whole, for a table card going back to it. */
+  | { kind: 'toHand'; rect: Rect }
   | { kind: 'zone'; area: Area; rect: Rect }
   | { kind: 'pile'; pile: string; area: Area; drop: PileDrop; label: string; rect: Rect }
   | { kind: 'card'; card: string; area: Area; z: number; rect: Rect };
@@ -100,7 +103,9 @@ function distance(rect: Rect, point: Point): number {
  * card under the point, or else the zone itself. Null outside every zone.
  */
 export function dropTarget(point: Point, targets: DropRect[]): DropRect | null {
-  const hand = targets.find((t) => t.kind === 'hand' && contains(t.rect, point));
+  const hand = targets.find(
+    (t) => (t.kind === 'hand' || t.kind === 'toHand') && contains(t.rect, point),
+  );
   if (hand) {
     return hand;
   }
@@ -148,6 +153,8 @@ export function dropAction(
   switch (target.kind) {
     case 'hand':
       return drag.kind === 'hand' ? reorder(drag, target.index) : null;
+    case 'toHand':
+      return drag.kind === 'card' ? { kind: 'toHand', card: drag.card } : null;
     case 'pile':
       return onPile(drag, target.pile, target.drop);
     case 'card':
@@ -275,6 +282,19 @@ export function sourceOf(element: TableElement, view: View, taken?: string): Dra
       return open && inPile ? { kind: 'pile', pile: pile.id, card } : null;
     }
   }
+}
+
+/**
+ * Whether the hand takes the dragged card back: only a table card of the
+ * viewer's own, as Move to ▾ Hand has it (ruling P5b-R10). The prototype
+ * returns it to the hand from anywhere over the fan.
+ */
+export function goesToHand(drag: DragSource, view: View): boolean {
+  const seat = view.you.area ? seatOf(view.you.area) : null;
+  if (drag.kind !== 'card' || view.you.role !== 'player' || seat === null) {
+    return false;
+  }
+  return view.table?.cards.find((c) => c.id === drag.card)?.owner === seat;
 }
 
 /** A pile a drag can go onto, and what the drop does there. */

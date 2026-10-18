@@ -3,6 +3,7 @@ import type { CardView, PileView, View } from '../lib/types';
 import {
   dropAction,
   dropTarget,
+  goesToHand,
   handBand,
   insertIndex,
   pileTargets,
@@ -120,6 +121,8 @@ describe('dropTarget', () => {
   it('puts the hand before everything else', () => {
     const hand: DropRect = { kind: 'hand', index: 2, rect: rect(0, 500, 1000, 300) };
     expect(dropTarget({ x: 150, y: 520 }, [ZONE, low, hand])).toBe(hand);
+    const toHand: DropRect = { kind: 'toHand', rect: rect(0, 500, 1000, 300) };
+    expect(dropTarget({ x: 150, y: 520 }, [ZONE, low, toHand])).toBe(toHand);
   });
 });
 
@@ -278,8 +281,16 @@ describe('dropAction', () => {
       area: 'p0',
       cards: ['h2', 'h1', 'h3'],
     });
-    // A table card is not taken into the hand by a drop.
+    // A table card is not slotted in among the hand cards.
     expect(dropAction(TABLE_CARD, slot(0), { area: 'p0', x: 0, y: 0 })).toBeNull();
+  });
+
+  it('takes a table card back to the hand', () => {
+    const toHand: DropRect = { kind: 'toHand', rect: rect(0, 0, 1, 1) };
+    expect(dropAction(TABLE_CARD, toHand, { area: 'p0', x: 0, y: 0 })).toEqual({
+      kind: 'toHand',
+      card: 'c',
+    });
   });
 
   it('drop at origin sends nothing', () => {
@@ -449,6 +460,40 @@ describe('pileTargets', () => {
   it('offers the encounter deck its discard pile only', () => {
     const targets = pileTargets({ kind: 'encounter', pile: 'enc' }, view);
     expect(targets.map((t) => t.pile)).toEqual(['encd']);
+  });
+});
+
+describe('goesToHand', () => {
+  const view = makeView({
+    cards: [
+      card('mine'),
+      card('theirs', { owner: 1 }),
+      card('enc', { owner: -1, back: 'encounter' }),
+      card('h1', { zone: 'hand', area: undefined }),
+    ],
+    piles: [pile('disc:p0', { kind: 'discard', owner: 0, area: 'p0', cards: ['d1'], count: 1 })],
+  });
+
+  it("takes the viewer's own table cards only, as Move to ▾ Hand", () => {
+    const tableCard = (id: string): DragSource => ({
+      kind: 'card',
+      card: id,
+      area: 'p0',
+      x: 0,
+      y: 0,
+    });
+    expect(goesToHand(tableCard('mine'), view)).toBe(true);
+    expect(goesToHand(tableCard('theirs'), view)).toBe(false);
+    expect(goesToHand(tableCard('enc'), view)).toBe(false);
+  });
+
+  it('takes nothing from the hand or a pile, nor from a spectator', () => {
+    const fromHand: DragSource = { kind: 'hand', card: 'h1', hand: ['h1'], area: 'p0' };
+    expect(goesToHand(fromHand, view)).toBe(false);
+    expect(goesToHand({ kind: 'pile', pile: 'disc:p0', card: 'd1' }, view)).toBe(false);
+    expect(goesToHand({ kind: 'encounter', pile: 'encd' }, view)).toBe(false);
+    const spectating = makeView({ cards: [card('mine')], spectator: true });
+    expect(goesToHand(TABLE_CARD, spectating)).toBe(false);
   });
 });
 

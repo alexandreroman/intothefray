@@ -15,6 +15,7 @@
     DRAG_THRESHOLD,
     dropAction,
     dropTarget,
+    goesToHand,
     handBand,
     insertIndex,
     intersect,
@@ -77,6 +78,7 @@
   // The prototype's arrows in front of the labels.
   const PILE_GLYPHS: Record<PileDrop, string> = { top: '↑', discard: '✕', pile: '→' };
   const TUCK_GLYPH = '↓';
+  const HAND_GLYPH = '↓';
 
   const cards = $derived(view.table?.cards ?? []);
   const cardsById = $derived(new Map(cards.map((card) => [card.id, card])));
@@ -216,6 +218,11 @@
         index: insertIndex(middles, at.x),
         rect: handBand(others, table, window.innerHeight),
       });
+    } else if (goesToHand(from, view)) {
+      const hand = [...root.querySelectorAll<HTMLElement>('.hand .hcard')].map((element) =>
+        element.getBoundingClientRect(),
+      );
+      targets.push({ kind: 'toHand', rect: handBand(hand, table, window.innerHeight) });
     }
     const zones: ZoneRect[] = [...root.querySelectorAll<HTMLElement>('.zsec[data-area]')].map(
       (section) => ({
@@ -277,7 +284,10 @@
     interaction.handGap = found?.target.kind === 'hand' ? found.target.index : null;
     // Only what a drop would change is outlined: not the pile a card came from.
     const target = found?.action ? found.target : null;
-    if (target?.kind === 'pile') {
+    if (target?.kind === 'toHand' && view.you.area) {
+      const label = { glyph: HAND_GLYPH, text: 'Hand', tuck: false };
+      showHint({ kind: 'hand', id: view.you.area }, label, target.rect);
+    } else if (target?.kind === 'pile') {
       const label = { glyph: PILE_GLYPHS[target.drop], text: target.label, tuck: false };
       showHint({ kind: 'pile', id: target.pile }, label, target.rect);
     } else if (target?.kind === 'card' && found?.action && tucks(found.action)) {
