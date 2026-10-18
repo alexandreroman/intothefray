@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import Hand from './Hand.svelte';
-import { hover } from './hover.svelte';
+import { interaction } from './interaction.svelte';
 import { fanPositions, HAND_CARD } from './layout';
 import type { CardView as TableCard, PackFace } from '../lib/types';
 
@@ -31,7 +31,7 @@ function handCards(): HTMLElement[] {
 
 afterEach(() => {
   vi.restoreAllMocks();
-  hover.reset();
+  interaction.reset();
 });
 
 describe('Hand', () => {
@@ -126,7 +126,7 @@ describe('Hand', () => {
     render(Hand, { cards: CARDS, faceOf });
 
     await fireEvent.pointerEnter(handCards()[1] as HTMLElement);
-    expect(hover.hovered).toEqual({ kind: 'card', id: 'h2' });
+    expect(interaction.hovered).toEqual({ kind: 'hand', id: 'h2' });
   });
 
   it('turns a landscape card a quarter to fit its slot', () => {

@@ -6,14 +6,25 @@
 <script lang="ts">
   import { tick } from 'svelte';
   import { MediaQuery } from 'svelte/reactivity';
+  import { modal } from '../components/modal.svelte';
+  import Tooltip from '../components/Tooltip.svelte';
   import TopBar from '../components/TopBar.svelte';
   import { knownCard, loadAllCards } from '../lib/catalog';
   import { getPref, setPref } from '../lib/prefs';
   import type { GameSession } from '../lib/session.svelte';
   import type { Area, CardView as TableCard, PackFace, PileView, Size, View } from '../lib/types';
+  import ActionBar from './ActionBar.svelte';
+  import {
+    actionsFor,
+    type ActionItem,
+    type CountQuestion,
+    type LocalAction,
+    type TableElement,
+  } from './actions';
+  import AskCount from './AskCount.svelte';
   import { isHidden, pileBack } from './face';
   import Hand from './Hand.svelte';
-  import { hover, type Hovered } from './hover.svelte';
+  import { interaction } from './interaction.svelte';
   import { zoneMinHeight, zoneOrder } from './layout';
   import SidePanel, { type Preview } from './SidePanel.svelte';
   import Zone, { type Heading, type ResizeAbove } from './Zone.svelte';
@@ -138,16 +149,16 @@
 
   const firstPlayer = $derived(view.table?.firstPlayer);
 
-  function previewOf(hovered: Hovered | null): Preview | null {
-    if (hovered?.kind === 'pile') {
-      const pile = piles.find((p) => p.id === hovered.id);
+  function previewOf(previewed: TableElement | null): Preview | null {
+    if (previewed?.kind === 'pile') {
+      const pile = piles.find((p) => p.id === previewed.id);
       if (!pile || pile.count === 0) {
         return null;
       }
       const top = topOf(pile);
       return top ? previewOfCard(top) : { kind: 'back', back: pileBack(pile.kind) };
     }
-    const card = hovered ? cardsById.get(hovered.id) : undefined;
+    const card = previewed ? cardsById.get(previewed.id) : undefined;
     return card ? previewOfCard(card) : null;
   }
 
@@ -165,17 +176,156 @@
   }
 
   // From ids, so the preview follows a flip or a pile's new top card.
-  const preview = $derived(previewOf(hover.hovered));
+  const preview = $derived(previewOf(interaction.previewed));
 
-  // An empty spot of the table clears the preview; the side panel keeps it, to read it there.
-  function onTableOver(event: PointerEvent): void {
-    if (!(event.target as Element).closest('.card')) {
-      hover.hovered = null;
+  // The interaction state is shared: a previous game's must not show in the next one.
+  $effect(() => () => interaction.reset());
+
+  // ---- The action bar ----
+
+  /** Another player's pile: hovering it clears the preview rather than keeping it. */
+  function isForeign(pile: PileView): boolean {
+    return pile.owner >= 0 && `p${pile.owner}` !== ownArea;
+  }
+
+  /** Whether the element is still where it was hovered: on the table, or in the hand. */
+  function isPresent(element: TableElement): boolean {
+    switch (element.kind) {
+      case 'card':
+        return cardsById.get(element.id)?.zone === 'table';
+      case 'hand':
+        return (view.table?.hand ?? []).includes(element.id);
+      case 'pile':
+        return piles.some((pile) => pile.id === element.id);
     }
   }
 
-  // The hover state is shared: a previous game's must not show in the next one.
-  $effect(() => () => hover.reset());
+  // A new view: the elements under a pointer at rest are not hovered by the viewer.
+  $effect.pre(() => {
+    void view;
+    interaction.redrawn();
+  });
+
+  // An element that left the table takes its bar (and its arrow mode) with it.
+  $effect(() => {
+    const hovered = interaction.hovered;
+    if (hovered && !isPresent(hovered)) {
+      interaction.release();
+    }
+    const from = interaction.arrowFrom;
+    if (from !== null && !isPresent({ kind: 'card', id: from })) {
+      interaction.endArrow();
+    }
+  });
+
+  const barItems = $derived.by((): ActionItem[] | { text: string } => {
+    // actionsFor reads the catalog's plain Map (are there several faces to
+    // flip?): reading the catalog state here recomputes the bar once it loads.
+    void catalog;
+    const hovered = interaction.hovered;
+    const role = view.you.role;
+    if (!hovered || role === undefined || !ownArea) {
+      return [];
+    }
+    return actionsFor(hovered, view, { area: ownArea, role });
+  });
+
+  const ARROW_HINT = 'Click the card to point at — Esc or a click on an empty spot to cancel.';
+
+  // Never for a hand card: its cards are dragged, or played with their keys.
+  const barShown = $derived.by(() => {
+    const hovered = interaction.hovered;
+    if (!hovered || hovered.kind === 'hand') {
+      return false;
+    }
+    if (interaction.arrowFrom !== null) {
+      return true;
+    }
+    return !Array.isArray(barItems) || barItems.length > 0;
+  });
+
+  function anchorOf(): HTMLElement | null {
+    const hovered = interaction.hovered;
+    if (!hovered || !wrap) {
+      return null;
+    }
+    const selector = hovered.kind === 'pile' ? '.pile' : '.card:not(.pile)';
+    return wrap.querySelector<HTMLElement>(`.surface ${selector}[data-id="${hovered.id}"]`);
+  }
+
+  /** The "How many cards?" question being asked, if any. */
+  let asking = $state<CountQuestion | null>(null);
+
+  function runItem(item: ActionItem): void {
+    const element = interaction.hovered;
+    if (!item.run || item.disabled || !element) {
+      return;
+    }
+    const result = item.run();
+    if ('ask' in result) {
+      asking = result.ask;
+    } else if ('local' in result) {
+      runLocal(result.local, element);
+    } else {
+      session.act(result);
+    }
+  }
+
+  function runLocal(local: LocalAction, element: TableElement): void {
+    if (local === 'arrow') {
+      interaction.startArrow(element.id);
+      return;
+    }
+    // The boxes (stage choice, browsing a pile) come with plan 5c.
+    console.info(`"${local}" is not available yet`);
+  }
+
+  function answer(n: number): void {
+    const question = asking;
+    asking = null;
+    if (question) {
+      session.act(question.make(n));
+    }
+  }
+
+  /** An empty spot: the table itself, a zone's surface or scroller, or its header. */
+  function isEmptySpot(target: HTMLElement): boolean {
+    return (
+      target === wrap ||
+      target.classList.contains('table') ||
+      target.classList.contains('surface') ||
+      target.classList.contains('zscroll') ||
+      target.closest('.zh') !== null
+    );
+  }
+
+  // In the capture phase: in arrow mode, the click picks the target, and must not reach the card.
+  function onTablePointerDown(event: PointerEvent): void {
+    const target = event.target as HTMLElement;
+    const from = interaction.arrowFrom;
+    if (from !== null) {
+      event.preventDefault();
+      event.stopPropagation();
+      const to = target.closest<HTMLElement>('.surface .card:not(.pile)')?.dataset.id;
+      // The server draws arrows between two table cards only.
+      if (to && to !== from) {
+        session.act({ kind: 'arrowAdd', card: from, target: to });
+      }
+      interaction.endArrow();
+      return;
+    }
+    if (isEmptySpot(target)) {
+      interaction.release();
+    }
+  }
+
+  // Task 4 brings the other keys; Escape is needed now to leave the arrow mode.
+  function onKeydown(event: KeyboardEvent): void {
+    if (event.key !== 'Escape' || event.defaultPrevented || modal.open) {
+      return;
+    }
+    interaction.escape();
+  }
 
   // Restored as the page is built, before any style applies, so the slide
   // does not play at load; it plays on every toggle after that.
@@ -267,8 +417,19 @@
   });
 </script>
 
+<svelte:window
+  onpointermove={(event) => interaction.pointerMoved(event)}
+  onpointerdowncapture={(event) => interaction.pointerPressed(event)}
+  onkeydown={onKeydown}
+/>
+
 <!-- The zoom is set on the whole page, so a layer outside the table (a drag ghost) can follow it. -->
-<div class="app" class:side-hidden={sideHidden} style:--z={zoom}>
+<div
+  class="app"
+  class:side-hidden={sideHidden}
+  class:arrowing={interaction.arrowFrom !== null}
+  style:--z={zoom}
+>
   <div class="top">
     <TopBar
       spectators={view.spectators}
@@ -277,7 +438,12 @@
     />
   </div>
 
-  <div class="tablewrap" role="presentation" bind:this={wrap} onpointerover={onTableOver}>
+  <div
+    class="tablewrap"
+    role="presentation"
+    bind:this={wrap}
+    onpointerdowncapture={onTablePointerDown}
+  >
     <div class="table">
       {#each zones as zone, i (zone.area)}
         <Zone
@@ -288,6 +454,7 @@
           {topOf}
           {faceOf}
           {sizeOf}
+          foreign={isForeign}
           height={zone.height}
           {zoom}
           first={i === 0}
@@ -307,6 +474,30 @@
   {#if handCards}
     <Hand cards={handCards} {faceOf} narrow={narrow.current} />
   {/if}
+
+  {#if barShown && wrap}
+    <ActionBar
+      anchor={anchorOf}
+      items={barItems}
+      hint={interaction.arrowFrom !== null ? ARROW_HINT : undefined}
+      bounds={wrap}
+      {zoom}
+      onrun={runItem}
+    />
+  {/if}
+
+  {#if asking}
+    <AskCount
+      title={asking.title}
+      question={asking.question}
+      max={asking.max}
+      ok={asking.ok}
+      onconfirm={answer}
+      oncancel={() => (asking = null)}
+    />
+  {/if}
+
+  <Tooltip />
 
   <aside
     class="side"
@@ -372,6 +563,11 @@
     box-shadow:
       0 0 0 2px #ffffffb0,
       0 0 22px 6px #ffffff38;
+  }
+
+  /* Picking the card an arrow points at. */
+  .app.arrowing :global(.surface .card) {
+    cursor: crosshair;
   }
 
   .side {

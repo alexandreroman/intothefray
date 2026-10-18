@@ -15,7 +15,7 @@
   import type { LogView } from '../lib/types';
   import CardBack from './CardBack.svelte';
   import CardFace from './CardFace.svelte';
-  import { hover } from './hover.svelte';
+  import { interaction } from './interaction.svelte';
 
   let {
     preview,
@@ -93,14 +93,14 @@
 
   function enterLine(event: PointerEvent, key: number, cards: string[] | undefined): void {
     hoveredLine = key;
-    hover.highlighted = new Set(cards ?? []);
+    interaction.highlighted = new Set(cards ?? []);
     const text = (event.currentTarget as HTMLElement).querySelector('.txt');
     expanded = text && text.scrollWidth > text.clientWidth + 1 ? key : null;
   }
 
   function leaveLine(): void {
     hoveredLine = null;
-    hover.highlighted = new Set();
+    interaction.highlighted = new Set();
     expanded = null;
   }
 

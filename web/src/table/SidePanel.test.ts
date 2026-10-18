@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import SidePanel from './SidePanel.svelte';
-import { hover } from './hover.svelte';
+import { interaction } from './interaction.svelte';
 import type { LogView } from '../lib/types';
 
 /** An RFC 3339 time that reads hh:mm in the local time zone. */
@@ -23,7 +23,7 @@ function historyLines(): HTMLElement[] {
 }
 
 afterEach(() => {
-  hover.highlighted = new Set();
+  interaction.highlighted = new Set();
 });
 
 describe('SidePanel', () => {
@@ -121,10 +121,10 @@ describe('SidePanel', () => {
 
     const [entry] = historyLines() as [HTMLElement];
     await fireEvent.pointerEnter(entry);
-    expect([...hover.highlighted]).toEqual(['c1', 'c2']);
+    expect([...interaction.highlighted]).toEqual(['c1', 'c2']);
 
     await fireEvent.pointerLeave(entry);
-    expect(hover.highlighted.size).toBe(0);
+    expect(interaction.highlighted.size).toBe(0);
   });
 
   it('a hovered line that leaves the list stops highlighting', async () => {
@@ -136,8 +136,8 @@ describe('SidePanel', () => {
 
     // The newest line is gone with no pointerleave (a new history, say).
     await fireEvent.pointerEnter(historyLines()[0] as HTMLElement);
-    expect([...hover.highlighted]).toEqual(['c1']);
+    expect([...interaction.highlighted]).toEqual(['c1']);
     await rerender({ preview: null, log: log.slice(0, 1), onundo: () => {} });
-    expect(hover.highlighted.size).toBe(0);
+    expect(interaction.highlighted.size).toBe(0);
   });
 });

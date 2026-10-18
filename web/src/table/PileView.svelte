@@ -9,19 +9,22 @@
   import CardBack from './CardBack.svelte';
   import CardFace from './CardFace.svelte';
   import { isHidden, pileBack } from './face';
-  import { hover } from './hover.svelte';
+  import { interaction, type PreviewChange } from './interaction.svelte';
   import { cardBox } from './layout';
 
   let {
     pile,
     top,
     face = null,
+    foreign = false,
   }: {
     pile: PileView;
     /** The top card, for a pile that lists its cards. */
     top?: TableCard;
     /** The catalog face of the top card, null while unknown. */
     face?: PackFace | null;
+    /** Another player's pile. */
+    foreign?: boolean;
   } = $props();
 
   const BADGES: Partial<Record<PileKind, string>> = {
@@ -36,10 +39,34 @@
   const badge = $derived(BADGES[pile.kind]);
   // A landscape top card is turned a quarter to fit the portrait slot.
   const rotated = $derived(cardBox(face?.size ?? 'std', { onPile: true }).rotated);
-  const highlighted = $derived(shownTop !== undefined && hover.highlighted.has(shownTop.id));
+  const highlighted = $derived(shownTop !== undefined && interaction.highlighted.has(shownTop.id));
+  const element = $derived({ kind: 'pile', id: pile.id } as const);
+  const locked = $derived(interaction.isLocked(element));
+
+  /**
+   * The preview shows the top card of a pile that lists its cards. A deck
+   * shows nothing new, so the preview keeps the card seen before, unless the
+   * deck is another player's.
+   */
+  const previewChange = $derived<PreviewChange>(shownTop ? 'show' : foreign ? 'clear' : 'keep');
+
+  // An empty pile is like an empty spot.
+  function onEnter(event: PointerEvent): void {
+    if (empty) {
+      interaction.enterNothing(event);
+    } else {
+      interaction.enter(element, event, previewChange);
+    }
+  }
+
+  function onTap(): void {
+    if (!empty) {
+      interaction.select(element, previewChange);
+    }
+  }
 </script>
 
-<!-- The hover only feeds the side preview: no role to announce. -->
+<!-- The pointer feeds the side preview and the action bar: no role to announce. -->
 <div
   class="card pile"
   role="presentation"
@@ -48,11 +75,14 @@
   class:inert={empty}
   class:out={badge !== undefined}
   class:highlighted
+  class:locked
   style:left="{pile.x}px"
   style:top="{pile.y}px"
   style:width="{SLOT.w}px"
   style:height="{SLOT.h}px"
-  onpointerenter={() => (hover.hovered = { kind: 'pile', id: pile.id })}
+  onpointerenter={onEnter}
+  onpointerleave={() => interaction.leave()}
+  onclick={onTap}
 >
   {#if empty}
     <div class="slot"></div>

@@ -36,6 +36,7 @@
     zoneWidth,
     type Footprint,
   } from './layout';
+  import { interaction } from './interaction.svelte';
   import PileView from './PileView.svelte';
   import { firstPlayerUrl } from './theme';
 
@@ -47,6 +48,7 @@
     topOf,
     faceOf,
     sizeOf,
+    foreign,
     height,
     zoom,
     first = false,
@@ -63,6 +65,8 @@
     /** The catalog face a card shows, null while unknown or hidden. */
     faceOf: (card: TableCard | undefined) => PackFace | null;
     sizeOf: (card: TableCard) => Size;
+    /** Whether a pile is another player's. */
+    foreign: (pile: Pile) => boolean;
     /** Surface height, in table units. */
     height: number;
     zoom: number;
@@ -223,14 +227,17 @@
       <div class="surface" style:width="{surfaceWidth}px" style:height="{height}px">
         {#each placedPiles as pile (pile.id)}
           {@const top = topOf(pile)}
-          <PileView {pile} {top} face={faceOf(top)} />
+          <PileView {pile} {top} face={faceOf(top)} foreign={foreign(pile)} />
         {/each}
         {#each cards as card (card.id)}
           <CardView {card} face={faceOf(card)} />
         {/each}
         {#if firstPlayer}
+          <!-- The token has no actions: hovering it drops the previous element at once. -->
           <div
             class="fptoken"
+            role="presentation"
+            onpointerenter={(event) => interaction.enterNothing(event)}
             style:left="{firstPlayer.x}px"
             style:top="{firstPlayer.y}px"
             style:width="{FIRST_PLAYER_BOX.w}px"

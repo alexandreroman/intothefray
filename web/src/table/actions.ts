@@ -4,10 +4,14 @@
 // still checks everything.
 
 import { knownCard } from '../lib/catalog';
+import type { IconName } from './Icons.svelte';
 import type { Action, Area, CardView, PileView, Role, Stage, TableView, View } from '../lib/types';
 
-/** What the bar is for: a table card, a pile or a card of the viewer's hand. */
-export type Element =
+/**
+ * What the bar is for: a table card, a pile or a card of the viewer's hand.
+ * Not named Element: that would shadow the DOM's.
+ */
+export type TableElement =
   { kind: 'card'; id: string } | { kind: 'pile'; id: string } | { kind: 'hand'; id: string };
 
 /** A "How many cards?" question, answered by the app's count dialog. */
@@ -26,10 +30,12 @@ export interface ActionItem {
   /** Stable id: 'exhaust', 'flip', 'stage', 'arrow', 'token', 'status', 'discard', 'moveTo', 'draw1', … */
   id: string;
   label: string;
-  icon?: string;
+  icon?: IconName;
   key?: string;
   disabled?: boolean;
   tip?: string;
+  /** Drawn pressed: Ready on an exhausted card. */
+  pressed?: boolean;
   /** Items of different groups are drawn with a separator between them. */
   group: number;
   /** Dropdown items; a separator is an item with the id 'sep'. */
@@ -74,7 +80,7 @@ interface Context {
  * table get nothing.
  */
 export function actionsFor(
-  el: Element,
+  el: TableElement,
   view: View,
   you: { area: Area; role: Role },
 ): ActionItem[] | { text: string } {
@@ -141,6 +147,7 @@ function exhaustItem(card: CardView): ActionItem {
     icon: 'exhaust',
     key: 'E',
     tip: label,
+    pressed: card.exhausted,
     group: GROUP_EXHAUST,
     // The server decides the outcome (resolveExhaust): the client sends only the card.
     run: () => ({ kind: 'exhaust', card: card.id }),

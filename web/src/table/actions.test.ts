@@ -1,4 +1,4 @@
-import { actionsFor, type ActionItem, type Element } from './actions';
+import { actionsFor, type ActionItem, type TableElement } from './actions';
 import { knownCard, type CardInfo } from '../lib/catalog';
 import type { Action, Area, CardView, PackFace, PileView, Role, View } from '../lib/types';
 
@@ -104,7 +104,7 @@ function makeView(extra: { cards?: CardView[]; piles?: PileView[] } = {}): View 
 
 const ALEX: { area: Area; role: Role } = { area: 'p0', role: 'player' };
 
-function itemsFor(el: Element, view = makeView(), you = ALEX): ActionItem[] {
+function itemsFor(el: TableElement, view = makeView(), you = ALEX): ActionItem[] {
   const result = actionsFor(el, view, you);
   if (!Array.isArray(result)) {
     throw new Error(`expected items, got the text "${result.text}"`);
@@ -250,7 +250,12 @@ describe('actionsFor', () => {
     });
     const items = itemsFor({ kind: 'card', id: 'mine' }, view);
 
-    expect(item(items, 'exhaust')).toMatchObject({ label: 'Ready', tip: 'Ready', key: 'E' });
+    expect(item(items, 'exhaust')).toMatchObject({
+      label: 'Ready',
+      tip: 'Ready',
+      key: 'E',
+      pressed: true,
+    });
     expect(menuOf(items, 'token').map((it) => it.label)).toEqual([
       'Damage (2)',
       'Threat',

@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
 import Table from './Table.svelte';
+import { interaction, LINGER_MS } from './interaction.svelte';
 import { cardByCode, knownCard, loadAllCards, type CardInfo } from '../lib/catalog';
 import type { Area, CardView as TableCard, PackFace, PileView, View } from '../lib/types';
 
@@ -119,6 +120,8 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  vi.useRealTimers();
+  interaction.reset();
   vi.mocked(loadAllCards).mockReset();
   vi.mocked(knownCard).mockReset();
   vi.mocked(cardByCode).mockReset();
@@ -421,7 +424,7 @@ describe('Table', () => {
     expect(top.getAttribute('src')).toBe('01001.png');
   });
 
-  it('hovering a card previews it; hovering an empty spot clears it', async () => {
+  it('hovering a card previews it; leaving it clears the preview after a linger', async () => {
     const { container } = render(Table, { session: fakeSession(), view: makeView() });
     const preview = screen.getByLabelText('Card preview');
     const villain = await screen.findByRole('region', { name: /Rhino/ });
@@ -437,12 +440,16 @@ describe('Table', () => {
     await fireEvent.pointerEnter(scheme.closest('.card') as HTMLElement);
     expect(within(preview).getByRole('img', { name: 'The Break-In!' }).classList).toContain('land');
 
-    await fireEvent.pointerOver(surfaceOf(/Rhino/));
+    vi.useFakeTimers();
+    await fireEvent.pointerLeave(scheme.closest('.card') as HTMLElement);
+    await vi.advanceTimersByTimeAsync(LINGER_MS - 1);
+    expect(within(preview).getByRole('img', { name: 'The Break-In!' })).toBeTruthy();
+    await vi.advanceTimersByTimeAsync(1);
     expect(preview.textContent).toContain('Hover a card');
     expect(container.querySelector('.preview .art')).toBeNull();
   });
 
-  it('previews the back of a face-down card or a deck', async () => {
+  it('previews the back of a face-down card; a deck keeps it, an empty pile clears it', async () => {
     localStorage.setItem('itf-theme', 'minimal');
     const view = makeView({
       cards: [card('f', { code: '01001', faceDown: true, back: 'player', area: 'villain' })],
@@ -458,8 +465,9 @@ describe('Table', () => {
     await fireEvent.pointerEnter(surface.querySelector('.card:not(.pile)') as HTMLElement);
     expect(within(preview).getByRole('img', { name: 'Player card back' })).toBeTruthy();
 
+    // A deck shows nothing new: the preview keeps the card seen before.
     await fireEvent.pointerEnter(surface.querySelector('.pile') as HTMLElement);
-    expect(within(preview).getByRole('img', { name: 'Encounter card back' })).toBeTruthy();
+    expect(within(preview).getByRole('img', { name: 'Player card back' })).toBeTruthy();
 
     // An empty pile shows nothing.
     await fireEvent.pointerEnter(container.querySelector('.pile.empty') as HTMLElement);

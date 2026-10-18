@@ -7,7 +7,7 @@
   import CardBack from './CardBack.svelte';
   import CardFace from './CardFace.svelte';
   import { isHidden } from './face';
-  import { hover } from './hover.svelte';
+  import { interaction } from './interaction.svelte';
   import { cardBox } from './layout';
 
   let {
@@ -31,24 +31,29 @@
   const landscape = $derived(!box.rotated && box.w > box.h);
   const tokens = $derived(TOKENS.filter((k) => (card.tokens?.[k] ?? 0) > 0));
   const statuses = $derived(STATUSES.filter(([k]) => (card.status?.[k] ?? 0) > 0));
+  const element = $derived({ kind: 'card', id: card.id } as const);
+  const locked = $derived(interaction.isLocked(element));
 </script>
 
 <!--
   z-index comes from the server and can be negative: the surface must isolate its stacking.
-  The hover only feeds the side preview: no role to announce.
+  The pointer feeds the side preview and the action bar: no role to announce.
 -->
 <div
   class="card"
   role="presentation"
   data-id={card.id}
   class:exhausted={card.exhausted}
-  class:highlighted={hover.highlighted.has(card.id)}
+  class:highlighted={interaction.highlighted.has(card.id)}
+  class:locked
   style:left="{card.x}px"
   style:top="{card.y}px"
   style:width="{box.w}px"
   style:height="{box.h}px"
   style:z-index={card.z}
-  onpointerenter={() => (hover.hovered = { kind: 'card', id: card.id })}
+  onpointerenter={(event) => interaction.enter(element, event)}
+  onpointerleave={() => interaction.leave()}
+  onclick={() => interaction.select(element)}
 >
   {#if hidden}
     <CardBack back={card.back} />
@@ -93,6 +98,17 @@
 
   .card.exhausted {
     transform: rotate(var(--exhaust-angle));
+  }
+
+  /* Selected by a tap: a ring around the cut card. */
+  .card.locked::before {
+    content: '';
+    position: absolute;
+    inset: 1%;
+    border-radius: 7px;
+    pointer-events: none;
+    z-index: 1;
+    box-shadow: 0 0 0 3px var(--sel);
   }
 
   .tokens {

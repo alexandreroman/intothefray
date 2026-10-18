@@ -8,7 +8,7 @@
   import CardBack from './CardBack.svelte';
   import CardFace from './CardFace.svelte';
   import { isHidden } from './face';
-  import { hover } from './hover.svelte';
+  import { interaction } from './interaction.svelte';
   import { cardBox, fanPositions, HAND_CARD, HAND_CARD_NARROW } from './layout';
 
   let {
@@ -84,11 +84,19 @@
   {#each cards as card, i (card.id)}
     {@const slot = slots[i]}
     {@const face = faceOf(card)}
+    <!--
+      Only a touch tap selects (there is no hover on touch): keyboard users act on hand cards with
+      their keys instead.
+    -->
+    <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
     <li
       class="hcard"
       data-id={card.id}
+      class:locked={interaction.isLocked({ kind: 'hand', id: card.id })}
       style:--x="{slot?.x ?? 0}px"
-      onpointerenter={() => (hover.hovered = { kind: 'card', id: card.id })}
+      onpointerenter={(event) => interaction.enter({ kind: 'hand', id: card.id }, event)}
+      onpointerleave={() => interaction.leave()}
+      onclick={() => interaction.select({ kind: 'hand', id: card.id })}
     >
       <div class="fan" style:--rot="{slot?.angle ?? 0}deg" style:--ty="{slot?.y ?? 0}px">
         {#if isHidden(card)}
@@ -166,7 +174,9 @@
     touch-action: none;
   }
 
-  .hcard:hover {
+  /* A card selected by a tap stays up like a hovered one. */
+  .hcard:hover,
+  .hcard.locked {
     z-index: 60;
   }
 
@@ -181,7 +191,8 @@
   }
 
   /* The hovered card pops up larger, keeping its tilt on the arc. */
-  .hcard:hover .fan {
+  .hcard:hover .fan,
+  .hcard.locked .fan {
     transform: translateY(calc(var(--ty) - 22px)) rotate(var(--rot)) scale(1.2);
   }
 
