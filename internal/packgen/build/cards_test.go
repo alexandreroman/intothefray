@@ -272,3 +272,63 @@ func TestUnattachableReprintsAreReported(t *testing.T) {
 		t.Errorf("aliases = %v, want none", aliases)
 	}
 }
+
+func TestUnlinkedLetteredGroupIsDistinctCards(t *testing.T) {
+	entries := []marvelcdb.Card{
+		{Code: "01043a", Name: "Wakanda Forever!", TypeCode: "event", PackCode: "core", Quantity: 1, ImageSrc: "/a.png"},
+		{Code: "01043d", Name: "Wakanda Forever!", TypeCode: "event", PackCode: "core", Quantity: 2, ImageSrc: "/d.png"},
+	}
+
+	cards, unsupported := BuildCards(entries, nil, nil)
+
+	if len(unsupported) != 0 {
+		t.Fatalf("unsupported = %+v", unsupported)
+	}
+	if len(cards["core"]) != 2 {
+		t.Fatalf("core cards = %+v, want two cards", cards["core"])
+	}
+	for code, quantity := range map[string]int{"01043a": 1, "01043d": 2} {
+		card := findCard(t, cards, "core", code)
+		if len(card.Faces) != 1 || card.Quantity != quantity || len(card.Aliases) != 0 {
+			t.Errorf("card %s = %+v, want 1 face, quantity %d, no alias", code, card, quantity)
+		}
+	}
+}
+
+func TestUnlinkedExtraFormJoinsLinkedCard(t *testing.T) {
+	entries := marvelcdbCards(t, "12001a", "12001b", "12001c")
+	for i := range entries {
+		entries[i].LinkedTo = ""
+	}
+	entries[0].LinkedTo = "12001b"
+
+	cards, _ := BuildCards(entries, nil, nil)
+
+	card := findCard(t, cards, "ant", "12001")
+	if len(card.Faces) != 3 || len(cards["ant"]) != 1 {
+		t.Errorf("cards = %+v, want one card with 3 faces", cards["ant"])
+	}
+}
+
+func TestReprintOfDistinctLetteredCard(t *testing.T) {
+	entries := []marvelcdb.Card{
+		{Code: "01043a", Name: "W", PackCode: "core", ImageSrc: "/a.png"},
+		{Code: "01043b", Name: "W", PackCode: "core", ImageSrc: "/b.png"},
+	}
+	reprints := []marvelcdb.Card{
+		{Code: "99001", Name: "W", PackCode: "other", DuplicateOf: "01043b"},
+		{Code: "99002b", Name: "W", PackCode: "other", DuplicateOf: "01043b"},
+	}
+
+	cards, unsupported := BuildCards(append(entries, reprints...), nil, nil)
+
+	if aliases := findCard(t, cards, "core", "01043b").Aliases; !reflect.DeepEqual(aliases, []string{"99001"}) {
+		t.Errorf("aliases = %v, want [99001]", aliases)
+	}
+	want := []report.Unsupported{
+		{Code: "99002b", Name: "W", Pack: "other", Reason: "reprint face missing from original"},
+	}
+	if !reflect.DeepEqual(unsupported, want) {
+		t.Errorf("unsupported = %+v, want %+v", unsupported, want)
+	}
+}

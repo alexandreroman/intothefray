@@ -685,7 +685,7 @@
       "quantity": 1
     },
     {
-      "code": "60040",
+      "code": "60040a",
       "faces": [
         {
           "name": "Photographic Reflexes",
@@ -694,7 +694,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60040A.jpg"
           ]
-        },
+        }
+      ],
+      "set": "echo",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "60040b",
+      "faces": [
         {
           "name": "Photographic Reflexes",
           "type": "event",
@@ -702,7 +710,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60040B.jpg"
           ]
-        },
+        }
+      ],
+      "set": "echo",
+      "back": "player",
+      "quantity": 2
+    },
+    {
+      "code": "60040c",
+      "faces": [
         {
           "name": "Photographic Reflexes",
           "type": "event",
@@ -714,12 +730,7 @@
       ],
       "set": "echo",
       "back": "player",
-      "quantity": 2,
-      "aliases": [
-        "60040a",
-        "60040b",
-        "60040c"
-      ]
+      "quantity": 2
     },
     {
       "code": "60041",
@@ -1094,7 +1105,6 @@
       "cards": [
         "60037",
         "60039",
-        "60040",
         "60041",
         "60042",
         "60043",

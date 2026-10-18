@@ -499,7 +499,7 @@
       "quantity": 1
     },
     {
-      "code": "61033",
+      "code": "61033a",
       "faces": [
         {
           "name": "Suggestion ([energy])",
@@ -508,7 +508,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61033A.jpg"
           ]
-        },
+        }
+      ],
+      "set": "jessica_jones_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "61033b",
+      "faces": [
         {
           "name": "Suggestion ([mental])",
           "type": "obligation",
@@ -516,7 +524,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61033B.jpg"
           ]
-        },
+        }
+      ],
+      "set": "jessica_jones_nemesis",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "61033c",
+      "faces": [
         {
           "name": "Suggestion ([physical])",
           "type": "obligation",
@@ -528,12 +544,7 @@
       ],
       "set": "jessica_jones_nemesis",
       "back": "encounter",
-      "quantity": 1,
-      "aliases": [
-        "61033a",
-        "61033b",
-        "61033c"
-      ]
+      "quantity": 1
     },
     {
       "code": "61034",
@@ -675,8 +686,7 @@
       "kind": "nemesis",
       "cards": [
         "61031",
-        "61032",
-        "61033"
+        "61032"
       ]
     }
   ],

@@ -3375,7 +3375,7 @@
       ]
     },
     {
-      "code": "50184",
+      "code": "50184a",
       "faces": [
         {
           "name": "A.I.M. Interference ([energy])",
@@ -3384,7 +3384,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50184A.jpg"
           ]
-        },
+        }
+      ],
+      "set": "s.h.i.e.l.d._executive_board",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "50184b",
+      "faces": [
         {
           "name": "A.I.M. Interference ([mental])",
           "type": "treachery",
@@ -3392,7 +3400,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50184B.jpg"
           ]
-        },
+        }
+      ],
+      "set": "s.h.i.e.l.d._executive_board",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "50184c",
+      "faces": [
         {
           "name": "A.I.M. Interference ([physical])",
           "type": "treachery",
@@ -3404,12 +3420,7 @@
       ],
       "set": "s.h.i.e.l.d._executive_board",
       "back": "encounter",
-      "quantity": 1,
-      "aliases": [
-        "50184a",
-        "50184b",
-        "50184c"
-      ]
+      "quantity": 1
     },
     {
       "code": "50185",
@@ -3829,8 +3840,7 @@
       "cards": [
         "50181",
         "50182",
-        "50183",
-        "50184"
+        "50183"
       ]
     },
     {

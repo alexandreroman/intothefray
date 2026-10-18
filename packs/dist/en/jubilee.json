@@ -126,7 +126,7 @@
       "quantity": 1
     },
     {
-      "code": "47007",
+      "code": "47007a",
       "faces": [
         {
           "name": "Firecracker",
@@ -135,7 +135,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47007A.jpg"
           ]
-        },
+        }
+      ],
+      "set": "jubilee",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "47007b",
+      "faces": [
         {
           "name": "Firecracker",
           "type": "event",
@@ -143,7 +151,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47007B.jpg"
           ]
-        },
+        }
+      ],
+      "set": "jubilee",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "47007c",
+      "faces": [
         {
           "name": "Firecracker",
           "type": "event",
@@ -155,15 +171,10 @@
       ],
       "set": "jubilee",
       "back": "player",
-      "quantity": 1,
-      "aliases": [
-        "47007a",
-        "47007b",
-        "47007c"
-      ]
+      "quantity": 1
     },
     {
-      "code": "47008",
+      "code": "47008a",
       "faces": [
         {
           "name": "Flash of Light",
@@ -172,7 +183,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47008A.jpg"
           ]
-        },
+        }
+      ],
+      "set": "jubilee",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "47008b",
+      "faces": [
         {
           "name": "Flash of Light",
           "type": "event",
@@ -180,7 +199,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47008B.jpg"
           ]
-        },
+        }
+      ],
+      "set": "jubilee",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "47008c",
+      "faces": [
         {
           "name": "Flash of Light",
           "type": "event",
@@ -192,12 +219,7 @@
       ],
       "set": "jubilee",
       "back": "player",
-      "quantity": 1,
-      "aliases": [
-        "47008a",
-        "47008b",
-        "47008c"
-      ]
+      "quantity": 1
     },
     {
       "code": "47009",
@@ -217,7 +239,7 @@
       "quantity": 1
     },
     {
-      "code": "47010",
+      "code": "47010a",
       "faces": [
         {
           "name": "Plasmoid Energy",
@@ -226,7 +248,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47010A.jpg"
           ]
-        },
+        }
+      ],
+      "set": "jubilee",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "47010b",
+      "faces": [
         {
           "name": "Plasmoid Energy",
           "type": "resource",
@@ -234,7 +264,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47010B.jpg"
           ]
-        },
+        }
+      ],
+      "set": "jubilee",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "47010c",
+      "faces": [
         {
           "name": "Plasmoid Energy",
           "type": "resource",
@@ -246,12 +284,7 @@
       ],
       "set": "jubilee",
       "back": "player",
-      "quantity": 1,
-      "aliases": [
-        "47010a",
-        "47010b",
-        "47010c"
-      ]
+      "quantity": 1
     },
     {
       "code": "47011",
@@ -663,10 +696,7 @@
         "47004",
         "47005",
         "47006",
-        "47007",
-        "47008",
         "47009",
-        "47010",
         "47023"
       ]
     },

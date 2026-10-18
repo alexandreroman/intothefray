@@ -20,8 +20,9 @@ const (
 	baseCodeLength  = 5 // digits of a code, without its face letter
 )
 
-// BuildCards groups the marvelcdb entries into cards, one per base code, and
-// returns them by pack code, sorted by code. Cards that cannot be displayed
+// BuildCards groups the marvelcdb entries into cards and returns them by pack
+// code, sorted by code. A card is one base code with its faces, except for
+// lettered codes that are distinct cards (see splitGroup). Cards that cannot be displayed
 // are returned as unsupported instead.
 //
 //nolint:revive // BuildCards is the name fixed by the plan.
@@ -35,17 +36,17 @@ func BuildCards(
 		cerebroIDs[strings.ToUpper(card.ID)] = card.ID
 	}
 
-	entriesByBase, reprints := groupEntries(mc)
-	reprintsByBase, unresolved := resolveReprints(reprints, entriesByBase)
+	entriesByCard, reprints := groupEntries(mc)
+	reprintsByCard, unresolved := resolveReprints(reprints, entriesByCard)
 	unsupported = append(unsupported, unresolved...)
 
 	cards = make(map[string][]pack.Card)
-	for base, entries := range entriesByBase {
+	for code, entries := range entriesByCard {
 		first := entries[0]
 		faces, ok := buildFaces(entries, cerebroIDs, overrides)
 		if !ok {
 			unsupported = append(unsupported, report.Unsupported{
-				Code:   base,
+				Code:   code,
 				Name:   first.Name,
 				Pack:   first.PackCode,
 				Reason: "no image",
@@ -53,12 +54,12 @@ func BuildCards(
 			continue
 		}
 		cards[first.PackCode] = append(cards[first.PackCode], pack.Card{
-			Code:     base,
+			Code:     code,
 			Faces:    faces,
 			Set:      first.SetCode,
 			Back:     backOf(first),
 			Quantity: max(first.Quantity, 1),
-			Aliases:  aliasesOf(base, entries, reprintsByBase[base]),
+			Aliases:  aliasesOf(code, entries, reprintsByCard[code]),
 		})
 	}
 
@@ -69,32 +70,68 @@ func BuildCards(
 	return cards, unsupported
 }
 
-// groupEntries splits the records into the entries of each base code, ordered
-// by face letter, and the reprints, which are not cards.
+// groupEntries splits the records into the entries of each card, keyed by the
+// card code and ordered by face letter, and the reprints, which are not cards.
 func groupEntries(mc []marvelcdb.Card) (entries map[string][]marvelcdb.Card, reprints []marvelcdb.Card) {
-	entries = make(map[string][]marvelcdb.Card)
+	byBase := make(map[string][]marvelcdb.Card)
 	for _, card := range mc {
 		if card.DuplicateOf != "" {
 			reprints = append(reprints, card)
 			continue
 		}
 		base := baseCode(card.Code)
-		entries[base] = append(entries[base], card)
+		byBase[base] = append(byBase[base], card)
 	}
 
-	for base, group := range entries {
-		// Suffixed entries are the faces; a bare entry is only a summary of them.
-		if len(group) > 1 {
-			group = slices.DeleteFunc(group, func(card marvelcdb.Card) bool { return card.Code == base })
+	entries = make(map[string][]marvelcdb.Card)
+	for base, group := range byBase {
+		for code, cardEntries := range splitGroup(base, group) {
+			entries[code] = cardEntries
 		}
-		slices.SortFunc(group, func(a, b marvelcdb.Card) int { return cmp.Compare(a.Code, b.Code) })
-		entries[base] = group
 	}
 	return entries, reprints
 }
 
-// resolveReprints attaches each reprint code to the base card at the end of
-// its duplicate_of_code chain. Reprints that cannot be attached are reported.
+// splitGroup turns the entries sharing a base code into cards. marvelcdb uses
+// letter suffixes for the faces of one card, and also for distinct cards that
+// share a number.
+//   - A group with a linked chain (an entry links to another entry of the
+//     group) is one card; unlinked entries are extra forms of that card.
+//   - A group without any link and with several lettered entries is made of
+//     distinct single-face cards, each keyed by its full lettered code.
+//
+// A bare entry is only a summary of the lettered ones, so it is dropped when
+// the group has several entries.
+func splitGroup(base string, group []marvelcdb.Card) map[string][]marvelcdb.Card {
+	if len(group) > 1 {
+		group = slices.DeleteFunc(group, func(card marvelcdb.Card) bool { return card.Code == base })
+	}
+	slices.SortFunc(group, func(a, b marvelcdb.Card) int { return cmp.Compare(a.Code, b.Code) })
+
+	if len(group) < 2 || hasLinkedChain(group) {
+		return map[string][]marvelcdb.Card{base: group}
+	}
+	cards := make(map[string][]marvelcdb.Card, len(group))
+	for _, entry := range group {
+		cards[entry.Code] = []marvelcdb.Card{entry}
+	}
+	return cards
+}
+
+func hasLinkedChain(group []marvelcdb.Card) bool {
+	for _, entry := range group {
+		if entry.LinkedTo == "" {
+			continue
+		}
+		if slices.ContainsFunc(group, func(other marvelcdb.Card) bool { return other.Code == entry.LinkedTo }) {
+			return true
+		}
+	}
+	return false
+}
+
+// resolveReprints attaches each reprint code to the card at the end of its
+// duplicate_of_code chain. Reprints that cannot be attached are reported.
 func resolveReprints(
 	reprints []marvelcdb.Card,
 	entries map[string][]marvelcdb.Card,
@@ -116,8 +153,8 @@ func resolveReprints(
 	return aliases, unsupported
 }
 
-// rootOf follows the reprint chain and returns the base code of the original
-// card, or the reason why the reprint cannot be attached to one.
+// rootOf follows the reprint chain and returns the code of the original card,
+// or the reason why the reprint cannot be attached to one.
 func rootOf(
 	reprint marvelcdb.Card,
 	originalOf map[string]string,
@@ -133,12 +170,19 @@ func rootOf(
 		current = originalOf[current]
 	}
 
-	root = baseCode(current)
+	// The original is either a distinct lettered card or a face of a base card.
+	root = current
 	faces, found := entries[root]
+	if !found {
+		root = baseCode(current)
+		faces, found = entries[root]
+	}
 	if !found {
 		return "", "original not found"
 	}
-	// The catalog maps an alias with a face letter to the face of that letter.
+	// The catalog maps an alias with a face letter to the face of that letter,
+	// so a letter beyond the faces of the card (always the case for the b, c...
+	// reprints of a single-face distinct card) cannot be loaded.
 	if len(reprint.Code) > baseCodeLength && int(reprint.Code[baseCodeLength]-'a') >= len(faces) {
 		return "", "reprint face missing from original"
 	}
@@ -228,7 +272,7 @@ func backOf(entry marvelcdb.Card) pack.Back {
 
 // aliasesOf lists the codes that resolve to the card: its face codes and its
 // reprint codes. The canonical code is excluded, the catalog rejects it.
-func aliasesOf(base string, entries []marvelcdb.Card, reprints []string) []string {
+func aliasesOf(code string, entries []marvelcdb.Card, reprints []string) []string {
 	var aliases []string
 	for _, entry := range entries {
 		aliases = append(aliases, entry.Code)
@@ -237,5 +281,5 @@ func aliasesOf(base string, entries []marvelcdb.Card, reprints []string) []strin
 
 	slices.Sort(aliases)
 	aliases = slices.Compact(aliases)
-	return slices.DeleteFunc(aliases, func(alias string) bool { return alias == base })
+	return slices.DeleteFunc(aliases, func(alias string) bool { return alias == code })
 }

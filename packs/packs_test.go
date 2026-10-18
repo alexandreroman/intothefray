@@ -64,6 +64,26 @@ func TestEmbeddedCoreSet(t *testing.T) {
 		}
 	})
 
+	t.Run("lettered codes that are distinct cards", func(t *testing.T) {
+		tests := []struct {
+			code         string
+			wantQuantity int
+		}{
+			{"01043a", 1},
+			{"01043d", 2},
+		}
+		for _, tt := range tests {
+			card, face, err := catalog.Card(tt.code)
+			if err != nil {
+				t.Fatalf("Card(%s) error = %v", tt.code, err)
+			}
+			if card.Code != tt.code || face != 0 || len(card.Faces) != 1 || card.Quantity != tt.wantQuantity {
+				t.Errorf("Card(%s) = code %s, face %d, %d faces, quantity %d; want a single-face card of quantity %d",
+					tt.code, card.Code, face, len(card.Faces), card.Quantity, tt.wantQuantity)
+			}
+		}
+	})
+
 	t.Run("hero obligation", func(t *testing.T) {
 		hero, ok := catalog.HeroByIdentity("01001a")
 		if !ok {

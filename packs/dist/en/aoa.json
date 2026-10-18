@@ -1812,7 +1812,7 @@
       ]
     },
     {
-      "code": "45104",
+      "code": "45104a",
       "faces": [
         {
           "name": "Heart of the Empire",
@@ -1825,7 +1825,15 @@
             "value": 2,
             "perPlayer": false
           }
-        },
+        }
+      ],
+      "set": "apocalypse",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "45104b",
+      "faces": [
         {
           "name": "The Towering Citadel",
           "type": "side_scheme",
@@ -1841,11 +1849,7 @@
       ],
       "set": "apocalypse",
       "back": "encounter",
-      "quantity": 1,
-      "aliases": [
-        "45104a",
-        "45104b"
-      ]
+      "quantity": 1
     },
     {
       "code": "45105",
@@ -3627,7 +3631,6 @@
         "45101",
         "45102",
         "45103",
-        "45104",
         "45105",
         "45106",
         "45107",

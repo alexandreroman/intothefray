@@ -797,7 +797,7 @@
       "quantity": 1
     },
     {
-      "code": "01043",
+      "code": "01043a",
       "faces": [
         {
           "name": "Wakanda Forever!",
@@ -807,7 +807,15 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/01043A.jpg",
             "https://marvelcdb.com/bundles/cards/01043a.png"
           ]
-        },
+        }
+      ],
+      "set": "black_panther",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "01043b",
+      "faces": [
         {
           "name": "Wakanda Forever!",
           "type": "event",
@@ -816,7 +824,15 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/01043B.jpg",
             "https://marvelcdb.com/bundles/cards/01043b.png"
           ]
-        },
+        }
+      ],
+      "set": "black_panther",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "01043c",
+      "faces": [
         {
           "name": "Wakanda Forever!",
           "type": "event",
@@ -825,7 +841,15 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/01043C.jpg",
             "https://marvelcdb.com/bundles/cards/01043c.png"
           ]
-        },
+        }
+      ],
+      "set": "black_panther",
+      "back": "player",
+      "quantity": 1
+    },
+    {
+      "code": "01043d",
+      "faces": [
         {
           "name": "Wakanda Forever!",
           "type": "event",
@@ -838,13 +862,7 @@
       ],
       "set": "black_panther",
       "back": "player",
-      "quantity": 1,
-      "aliases": [
-        "01043a",
-        "01043b",
-        "01043c",
-        "01043d"
-      ]
+      "quantity": 2
     },
     {
       "code": "01044",
@@ -2942,7 +2960,7 @@
       "quantity": 3
     },
     {
-      "code": "01144",
+      "code": "01144a",
       "faces": [
         {
           "name": "Android Efficiency",
@@ -2952,7 +2970,15 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/01144A.jpg",
             "https://marvelcdb.com/bundles/cards/01144a.png"
           ]
-        },
+        }
+      ],
+      "set": "ultron",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "01144b",
+      "faces": [
         {
           "name": "Android Efficiency",
           "type": "treachery",
@@ -2961,7 +2987,15 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/01144B.jpg",
             "https://marvelcdb.com/bundles/cards/01144b.png"
           ]
-        },
+        }
+      ],
+      "set": "ultron",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "01144c",
+      "faces": [
         {
           "name": "Android Efficiency",
           "type": "treachery",
@@ -2974,12 +3008,7 @@
       ],
       "set": "ultron",
       "back": "encounter",
-      "quantity": 1,
-      "aliases": [
-        "01144a",
-        "01144b",
-        "01144c"
-      ]
+      "quantity": 1
     },
     {
       "code": "01145",
@@ -3868,7 +3897,6 @@
         "01040",
         "01041",
         "01042",
-        "01043",
         "01044",
         "01045",
         "01046",
@@ -4129,7 +4157,6 @@
         "01141",
         "01142",
         "01143",
-        "01144",
         "01145",
         "01146",
         "01147",

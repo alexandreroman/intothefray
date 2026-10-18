@@ -135,3 +135,22 @@ func TestLoadErrors(t *testing.T) {
 		})
 	}
 }
+
+func TestCatalogLetteredCanonicalCode(t *testing.T) {
+	fsys := fstest.MapFS{
+		"en/index.json": {Data: []byte(`{"version":1,"lang":"en","packs":[{"code":"a","file":"a.json"}]}`)},
+		"en/a.json":     {Data: []byte(`{"code":"a","cards":[{"code":"01043d","faces":[{}]}]}`)},
+	}
+
+	catalog, err := Load(fsys, "en")
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+	card, face, err := catalog.Card("01043d")
+	if err != nil {
+		t.Fatalf("Card() error = %v", err)
+	}
+	if card.Code != "01043d" || face != 0 {
+		t.Errorf("Card() = (%s, %d), want (01043d, 0)", card.Code, face)
+	}
+}
