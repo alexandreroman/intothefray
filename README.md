@@ -70,13 +70,13 @@ regenerated files with the change that caused them.
 
 ## Configuration
 
-| Variable          | Description                                       | Default                    |
+| Variable          | Description                                    | Default                    |
 | ----------------- | ---------------------------------------------- | -------------------------- |
-| `PORT`            | HTTP server listen port                           | `8080`                     |
-| `REDIS_URL`       | Redis connection                                  | `redis://localhost:6379/0` |
-| `ALLOWED_ORIGINS` | Frontend origins allowed by CORS and WebSocket    | `http://localhost:5173`    |
-| `GAME_TTL`        | Expiry of a game nobody touches                   | `24h`                      |
-| `MARVELCDB_URL`   | Deck source                                       | `https://marvelcdb.com`    |
+| `PORT`            | HTTP server listen port                        | `8080`                     |
+| `REDIS_URL`       | Redis connection                               | `redis://localhost:6379/0` |
+| `ALLOWED_ORIGINS` | Frontend origins allowed by CORS and WebSocket | `http://localhost:5173`    |
+| `GAME_TTL`        | Expiry of a game nobody touches                | `24h`                      |
+| `MARVELCDB_URL`   | Deck source                                    | `https://marvelcdb.com`    |
 
 `make` loads `.env` when it exists, and `.env.local` for the
 development targets.
