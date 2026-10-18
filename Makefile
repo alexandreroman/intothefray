@@ -39,6 +39,20 @@ infra-down: ## Stop local infrastructure services
 infra-logs: ## Follow logs from infrastructure services
 	$(COMPOSE) logs -f $(INFRA_SERVICES)
 
+##@ Stack
+
+.PHONY: app-up
+app-up: ## Build and start the full stack (app + Redis)
+	$(COMPOSE) up -d --build --wait
+
+.PHONY: app-down
+app-down: ## Stop and remove the full stack
+	$(COMPOSE) down
+
+.PHONY: app-logs
+app-logs: ## Follow logs from the full stack
+	$(COMPOSE) logs -f
+
 ##@ Develop
 
 .PHONY: dev

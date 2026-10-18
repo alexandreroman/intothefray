@@ -59,6 +59,8 @@ make check      # run the tests, then golangci-lint
 make build      # build bin/intothefray
 make packs      # regenerate the card packs in packs/dist
 make infra-down # stop Redis
+make app-up     # build the image, start the app and Redis in containers
+make app-down   # stop and remove the containerised stack
 ```
 
 `make packs` downloads the card data from marvelcdb and Cerebro
@@ -68,9 +70,13 @@ regenerated files with the change that caused them.
 
 ## Configuration
 
-| Variable | Description             | Default |
-| -------- | ----------------------- | ------- |
-| `PORT`   | HTTP server listen port | `8080`  |
+| Variable          | Description                                       | Default                    |
+| ----------------- | ---------------------------------------------- | -------------------------- |
+| `PORT`            | HTTP server listen port                           | `8080`                     |
+| `REDIS_URL`       | Redis connection                                  | `redis://localhost:6379/0` |
+| `ALLOWED_ORIGINS` | Frontend origins allowed by CORS and WebSocket    | `http://localhost:5173`    |
+| `GAME_TTL`        | Expiry of a game nobody touches                   | `24h`                      |
+| `MARVELCDB_URL`   | Deck source                                       | `https://marvelcdb.com`    |
 
 `make` loads `.env` when it exists, and `.env.local` for the
 development targets.
