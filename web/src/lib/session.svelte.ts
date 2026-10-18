@@ -83,11 +83,18 @@ export class GameSession {
     this.#socket = socket;
     this.status = this.#failedAttempts === 0 ? 'connecting' : 'reconnecting';
 
+    // Events of a replaced socket must not touch the session.
     socket.onopen = () => {
+      if (this.#socket !== socket) {
+        return;
+      }
       this.status = 'open';
       this.#send({ type: 'hello', token: getToken(this.#gameId) ?? undefined, name: this.#name });
     };
     socket.onmessage = (event: MessageEvent) => {
+      if (this.#socket !== socket) {
+        return;
+      }
       this.#handleMessage(String(event.data));
     };
     // A browser always fires close after error, so close alone drives the retry.
@@ -102,20 +109,32 @@ export class GameSession {
     this.#stop(null);
   }
 
-  lobby(op: LobbyOp, payload: object = {}): void {
+  /** Whether the socket is open, so that messages can go out. */
+  get connected(): boolean {
+    return this.status === 'open';
+  }
+
+  /** Returns false when the message was not sent because the socket is not open. */
+  lobby(op: LobbyOp, payload: object = {}): boolean {
     if (op === 'setDeck') {
       this.deckError = null;
       this.deckLoadError = null;
       this.#deckLoadPending = true;
     }
-    this.#send({ type: 'lobby', op, ...payload });
+    return this.#send({ type: 'lobby', op, ...payload });
   }
 
-  /** Sends an action and returns its id, which the server echoes in errors. */
-  act(action: Action): number {
-    this.#nextActionId += 1;
-    this.#send({ type: 'action', id: this.#nextActionId, action });
-    return this.#nextActionId;
+  /**
+   * Sends an action and returns its id, which the server echoes in errors,
+   * or null when the action was not sent because the socket is not open.
+   */
+  act(action: Action): number | null {
+    const id = this.#nextActionId + 1;
+    if (!this.#send({ type: 'action', id, action })) {
+      return null;
+    }
+    this.#nextActionId = id;
+    return id;
   }
 
   /**
@@ -144,10 +163,12 @@ export class GameSession {
     }, PRESENCE_INTERVAL_MS);
   }
 
-  #send(message: object): void {
-    if (this.#socket?.readyState === SOCKET_OPEN) {
-      this.#socket.send(JSON.stringify(message));
+  #send(message: object): boolean {
+    if (this.#socket?.readyState !== SOCKET_OPEN) {
+      return false;
     }
+    this.#socket.send(JSON.stringify(message));
+    return true;
   }
 
   #handleMessage(data: string): void {
@@ -167,7 +188,11 @@ export class GameSession {
         this.#handleView(message.view);
         break;
       case 'error':
-        this.#handleError({ code: message.code, message: message.message }, message.id);
+        this.#handleError(
+          message.id === undefined
+            ? { code: message.code, message: message.message }
+            : { id: message.id, code: message.code, message: message.message },
+        );
         break;
       case 'deckError':
         this.#deckLoadPending = false;
@@ -189,6 +214,12 @@ export class GameSession {
       this.#deckLoadPending = false;
     }
     this.view = next;
+    // A colour no longer seated has left: its cursor must not linger.
+    for (const color of [...this.presence.keys()]) {
+      if (!next.players.some((player) => player.color === color)) {
+        this.presence.delete(color);
+      }
+    }
   }
 
   /**
@@ -198,7 +229,8 @@ export class GameSession {
    * without an action id that follows a setDeck answers that deck load;
    * other errors only report.
    */
-  #handleError(error: SessionError, actionId: number | undefined): void {
+  #handleError(error: SessionError): void {
+    const actionId = error.id;
     if (this.#deckLoadPending && this.view !== null && actionId === undefined) {
       this.#deckLoadPending = false;
       this.deckLoadError = error;
@@ -221,6 +253,9 @@ export class GameSession {
   #handlePresence(message: Extract<ServerMessage, { type: 'presence' }>): void {
     // Absent fields did not change: merge into what is known of the viewer.
     const { color, name, cursor, preview, drag, ping } = message;
+    if (color < 0) {
+      return; // A spectator: the table shows the players' cursors only.
+    }
     const changes = Object.fromEntries(
       Object.entries({ cursor, preview, drag, ping }).filter(([, value]) => value !== undefined),
     );

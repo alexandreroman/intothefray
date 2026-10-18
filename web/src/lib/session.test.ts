@@ -206,7 +206,7 @@ describe('GameSession', () => {
       first.receive({ type: 'error', id: 1, code, message: 'Failed.' });
 
       expect(first.readyState).toBe(3);
-      expect(session.lastError).toEqual({ code, message: 'Failed.' });
+      expect(session.lastError).toEqual({ id: 1, code, message: 'Failed.' });
       expect(session.status).toBe('reconnecting');
 
       // The close that follows must not schedule a second retry.
@@ -234,6 +234,9 @@ describe('GameSession', () => {
     lastSocket().receive({ type: 'error', code: 'forbidden', message: 'Nope.' });
     expect(session.lastError?.code).toBe('forbidden');
 
+    // The failed hello abandons that socket: the retry brings the view.
+    vi.advanceTimersByTime(500);
+    lastSocket().open();
     lastSocket().receive({ type: 'view', version: 1, view: view() });
     expect(session.view?.id).toBe('g1');
     expect(session.lastError).toBeNull();
@@ -246,11 +249,61 @@ describe('GameSession', () => {
     const first = session.act({ kind: 'draw', n: 1 });
     const second = session.act({ kind: 'shuffle' });
 
-    expect(second).toBeGreaterThan(first);
+    expect([first, second]).toEqual([1, 2]);
     expect(lastSocket().sent.slice(1)).toEqual([
-      { type: 'action', id: first, action: { kind: 'draw', n: 1 } },
-      { type: 'action', id: second, action: { kind: 'shuffle' } },
+      { type: 'action', id: 1, action: { kind: 'draw', n: 1 } },
+      { type: 'action', id: 2, action: { kind: 'shuffle' } },
     ]);
+  });
+
+  it('act reports null and sends nothing while the socket is not open', () => {
+    const session = newSession();
+
+    expect(session.connected).toBe(false);
+    expect(session.act({ kind: 'draw', n: 1 })).toBeNull();
+
+    lastSocket().open();
+    expect(session.connected).toBe(true);
+    expect(session.act({ kind: 'draw', n: 1 })).toBe(1);
+    lastSocket().drop();
+    expect(session.connected).toBe(false);
+  });
+
+  it('lobby reports whether the message was sent', () => {
+    const session = newSession();
+    expect(session.lobby('start')).toBe(false);
+
+    lastSocket().open();
+    expect(session.lobby('start')).toBe(true);
+  });
+
+  it('keeps the action id of an error', () => {
+    const session = newSession();
+    lastSocket().open();
+    lastSocket().receive({ type: 'view', version: 1, view: view() });
+    const id = session.act({ kind: 'draw', n: 1 });
+    expect(id).toBe(1);
+    lastSocket().receive({ type: 'error', id, code: 'invalid', message: 'nope' });
+
+    expect(session.lastError).toEqual({ id: 1, code: 'invalid', message: 'nope' });
+  });
+
+  it('ignores the events of a replaced socket', () => {
+    const session = newSession();
+    const stale = lastSocket();
+    stale.open();
+    stale.receive({ type: 'view', version: 1, view: view() });
+    stale.drop();
+    vi.advanceTimersByTime(500);
+    const fresh = lastSocket();
+    expect(fresh).not.toBe(stale);
+
+    stale.receive({ type: 'view', version: 2, view: view([player({ name: 'Old' })]) });
+    stale.onopen?.();
+
+    expect(session.view?.players[0]?.name).toBe('Alex');
+    expect(session.status).toBe('reconnecting');
+    expect(stale.sent.filter((m) => m.type === 'hello')).toHaveLength(1);
   });
 
   it('sends lobby operations with their payload', () => {
@@ -471,6 +524,30 @@ describe('GameSession', () => {
         cursor: { area: 'villain', x: 1, y: 2 },
         preview: 'c1',
       });
+    });
+
+    it('ignores spectators, whose colour is negative', () => {
+      const session = newSession();
+      lastSocket().open();
+      lastSocket().receive({ type: 'presence', color: -1, name: 'Watcher' });
+
+      expect(session.presence.size).toBe(0);
+    });
+
+    it('drops a player that a view no longer lists', () => {
+      const session = newSession();
+      lastSocket().open();
+      lastSocket().receive({
+        type: 'view',
+        version: 1,
+        view: view([player(), player({ color: 1 })]),
+      });
+      lastSocket().receive({ type: 'presence', color: 1, name: 'Bo' });
+      lastSocket().receive({ type: 'presence', color: 2, name: 'Cy' });
+
+      lastSocket().receive({ type: 'view', version: 2, view: view([player()]) });
+
+      expect(session.presence.size).toBe(0);
     });
 
     it('is emptied when the connection drops', () => {
