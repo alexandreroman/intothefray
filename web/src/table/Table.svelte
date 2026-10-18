@@ -232,24 +232,32 @@
   const ARROW_HINT = 'Click the card to point at — Esc or a click on an empty spot to cancel.';
 
   // Never for a hand card: its cards are dragged, or played with their keys.
+  // In arrow mode, the hint stays until the arrow is drawn or cancelled,
+  // whatever the pointer hovers meanwhile.
   const barShown = $derived.by(() => {
-    const hovered = interaction.hovered;
-    if (!hovered || hovered.kind === 'hand' || interaction.dragging) {
+    if (interaction.dragging) {
       return false;
     }
     if (interaction.arrowFrom !== null) {
       return true;
     }
+    const hovered = interaction.hovered;
+    if (!hovered || hovered.kind === 'hand') {
+      return false;
+    }
     return !Array.isArray(barItems) || barItems.length > 0;
   });
 
+  /** What the bar sits on: the card an arrow starts from, or else the hovered element. */
   function anchorOf(): HTMLElement | null {
-    const hovered = interaction.hovered;
-    if (!hovered || !wrap) {
+    const from = interaction.arrowFrom;
+    const element: TableElement | null =
+      from !== null ? { kind: 'card', id: from } : interaction.hovered;
+    if (!element || !wrap) {
       return null;
     }
-    const selector = hovered.kind === 'pile' ? '.pile' : '.card:not(.pile)';
-    return wrap.querySelector<HTMLElement>(`.surface ${selector}[data-id="${hovered.id}"]`);
+    const selector = element.kind === 'pile' ? '.pile' : '.card:not(.pile)';
+    return wrap.querySelector<HTMLElement>(`.surface ${selector}[data-id="${element.id}"]`);
   }
 
   // ---- The token pill ----

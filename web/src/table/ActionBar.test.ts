@@ -521,6 +521,55 @@ describe('ActionBar', () => {
     expect(interaction.arrowFrom).toBeNull();
   });
 
+  it('arrow mode: the hint stays on the source card wherever the pointer goes', async () => {
+    const rect = (left: number, top: number, width: number, height: number): DOMRect =>
+      ({
+        left,
+        top,
+        width,
+        height,
+        right: left + width,
+        bottom: top + height,
+        x: left,
+        y: top,
+        toJSON: () => ({}),
+      }) as DOMRect;
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      if (this.classList.contains('tablewrap')) {
+        return rect(0, 50, 1000, 700);
+      }
+      if (this.classList.contains('actionbar')) {
+        return rect(0, 0, 300, 40);
+      }
+      if (this.dataset.id === 'mine') {
+        return rect(400, 400, 100, 140);
+      }
+      if (this.dataset.id === 'two') {
+        return rect(700, 400, 100, 140);
+      }
+      return rect(0, 0, 0, 0);
+    });
+    await renderTable();
+    vi.useFakeTimers();
+    await fireEvent.pointerEnter(placed('mine'));
+    await fireEvent.click(within(bar()!).getByRole('button', { name: 'Arrow' }));
+    // Centred above "mine".
+    expect(bar()?.style.left).toBe('300px');
+
+    // The pointer goes over "two", then off every card: the linger lets go of the hovered card.
+    await fireEvent.pointerLeave(placed('mine'));
+    await fireEvent.pointerEnter(placed('two'));
+    expect(bar()?.style.left).toBe('300px');
+    await fireEvent.pointerLeave(placed('two'));
+    await vi.advanceTimersByTimeAsync(250);
+    expect(interaction.hovered).toBeNull();
+    expect(interaction.arrowFrom).toBe('mine');
+    expect(bar()?.textContent).toContain('Click the card to point at');
+    expect(bar()?.style.left).toBe('300px');
+  });
+
   it('arrow mode: on touch, the tap that picks the target does not select it', async () => {
     const { session } = await renderTable();
     await fireEvent.pointerEnter(placed('mine'));
