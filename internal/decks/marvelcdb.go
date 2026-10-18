@@ -35,7 +35,9 @@ const (
 // ErrLink is returned when the link is not a marvelcdb deck link.
 var ErrLink = errors.New("not a marvelcdb deck link")
 
-// ErrNotFound covers every way marvelcdb tells us a deck is unavailable.
+// ErrNotFound covers every way marvelcdb tells us a deck does not exist or
+// is not public. Other failures of marvelcdb are transient and wrap no
+// sentinel error.
 var ErrNotFound = errors.New("deck not found or not public")
 
 // ErrInvalidDeck is returned when the deck has an impossible shape.
@@ -75,23 +77,42 @@ type deckPayload struct {
 	Slots    map[string]int `json:"slots"`
 }
 
+// deckRef identifies a marvelcdb deck.
+type deckRef struct {
+	kind string // "decklist" (published) or "deck" (private, shared by link)
+	id   string
+}
+
+// apiPath is the path of the deck in the marvelcdb public API.
+func (ref deckRef) apiPath() string {
+	return "/api/public/" + ref.kind + "/" + ref.id
+}
+
+// pagePath is the canonical path of the deck page on marvelcdb.
+func (ref deckRef) pagePath() string {
+	return "/" + ref.kind + "/view/" + ref.id
+}
+
 // Import turns a marvelcdb deck link into a deck choice. Cards that the
 // catalog does not know make it fail with an *UnsupportedError.
 func (im *Importer) Import(ctx context.Context, link string, cat *pack.Catalog) (game.DeckChoice, error) {
-	path, err := apiPath(link)
+	ref, err := parseLink(link)
 	if err != nil {
 		return game.DeckChoice{}, err
 	}
 	ctx, cancel := context.WithTimeout(ctx, importTimeout)
 	defer cancel()
 
-	deck, err := im.fetchDeck(ctx, path)
+	deck, err := im.fetchDeck(ctx, ref.apiPath())
 	if err != nil {
 		return game.DeckChoice{}, err
 	}
 
 	choice := game.DeckChoice{
-		URL:      link,
+		// The link as given may carry a slug or a query of any length: the
+		// game keeps the short canonical one, as it counts against the size
+		// budget of the stored game.
+		URL:      im.baseURL() + ref.pagePath(),
 		Name:     deck.Name,
 		Hero:     deck.HeroCode,
 		HeroName: deck.HeroName,
@@ -107,35 +128,35 @@ func (im *Importer) Import(ctx context.Context, link string, cat *pack.Catalog) 
 	return choice, nil
 }
 
-// apiPath maps a deck page link to the matching public API path.
-func apiPath(link string) (string, error) {
+// parseLink reads the deck that a marvelcdb deck page link points to.
+func parseLink(link string) (deckRef, error) {
 	u, err := url.Parse(link)
 	if err != nil {
-		return "", fmt.Errorf("%w: %w", ErrLink, err)
+		return deckRef{}, fmt.Errorf("%w: %w", ErrLink, err)
 	}
 	if u.Scheme != "https" && u.Scheme != "http" {
-		return "", ErrLink
+		return deckRef{}, ErrLink
 	}
 	host := strings.ToLower(u.Host)
 	if host != "marvelcdb.com" && host != "www.marvelcdb.com" {
-		return "", ErrLink
+		return deckRef{}, ErrLink
 	}
 
 	// Accepted shapes: /{kind}/{id}, /{kind}/view/{id} and /{kind}/view/{id}/{slug}.
 	segments := strings.Split(strings.Trim(u.Path, "/"), "/")
 	if len(segments) < 2 || (segments[0] != "decklist" && segments[0] != "deck") {
-		return "", ErrLink
+		return deckRef{}, ErrLink
 	}
 	kind, rest := segments[0], segments[1:]
 	if rest[0] == "view" {
 		rest = rest[1:]
 	} else if len(rest) > 1 {
-		return "", ErrLink
+		return deckRef{}, ErrLink
 	}
 	if len(rest) == 0 || !isNumeric(rest[0]) {
-		return "", ErrLink
+		return deckRef{}, ErrLink
 	}
-	return "/api/public/" + kind + "/" + rest[0], nil
+	return deckRef{kind: kind, id: rest[0]}, nil
 }
 
 func isNumeric(s string) bool {
@@ -144,14 +165,18 @@ func isNumeric(s string) bool {
 }
 
 // fetchDeck reads a deck. marvelcdb answers 200 with an empty body for a
-// missing decklist, so an incomplete payload is treated like a 404.
+// missing decklist, so an incomplete payload is treated like a 404. Any other
+// status means marvelcdb failed (or throttles us), not that the deck is gone.
 func (im *Importer) fetchDeck(ctx context.Context, path string) (deckPayload, error) {
 	body, status, err := im.get(ctx, path)
 	if err != nil {
 		return deckPayload{}, fmt.Errorf("fetch deck: %w", err)
 	}
-	if status != http.StatusOK || len(body) == 0 {
+	if status == http.StatusNotFound || (status == http.StatusOK && len(body) == 0) {
 		return deckPayload{}, ErrNotFound
+	}
+	if status != http.StatusOK {
+		return deckPayload{}, fmt.Errorf("fetch deck: marvelcdb answered status %d", status)
 	}
 
 	var deck deckPayload
@@ -226,7 +251,7 @@ func (im *Importer) describeCard(ctx context.Context, code string) Unsupported {
 
 // get performs a GET on the marvelcdb API and returns the body and status.
 func (im *Importer) get(ctx context.Context, path string) ([]byte, int, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, strings.TrimSuffix(im.BaseURL, "/")+path, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, im.baseURL()+path, nil)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -243,6 +268,11 @@ func (im *Importer) get(ctx context.Context, path string) ([]byte, int, error) {
 		return nil, 0, err
 	}
 	return body, resp.StatusCode, nil
+}
+
+// baseURL is BaseURL without a trailing slash, ready to take a path.
+func (im *Importer) baseURL() string {
+	return strings.TrimSuffix(im.BaseURL, "/")
 }
 
 func (im *Importer) client() *http.Client {

@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strconv"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -45,15 +46,15 @@ func TestParseLinks(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.link, func(t *testing.T) {
 			t.Parallel()
-			got, err := apiPath(tt.link)
+			ref, err := parseLink(tt.link)
 			if tt.wantErr {
 				if !errors.Is(err, ErrLink) {
 					t.Fatalf("err = %v, want ErrLink", err)
 				}
 				return
 			}
-			if err != nil || got != tt.wantPath {
-				t.Fatalf("apiPath = %q, %v; want %q", got, err, tt.wantPath)
+			if err != nil || ref.apiPath() != tt.wantPath {
+				t.Fatalf("parseLink = %+v, %v; want API path %q", ref, err, tt.wantPath)
 			}
 		})
 	}
@@ -106,7 +107,7 @@ func TestImportDeckOK(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got.URL != deckLink || got.Hero != "01040a" || got.HeroName != "Black Panther" ||
+	if got.URL != im.BaseURL+"/decklist/view/1" || got.Hero != "01040a" || got.HeroName != "Black Panther" ||
 		got.Name != "Black Panther - Protection - Starter Deck" {
 		t.Errorf("unexpected header: %+v", got)
 	}
@@ -203,8 +204,63 @@ func TestImportDeckNotFound(t *testing.T) {
 			t.Parallel()
 			im := newImporter(t, tt.handler)
 			_, err := im.Import(context.Background(), deckLink, loadCatalog(t))
-			if err == nil || !strings.Contains(err.Error(), "not public") {
-				t.Fatalf("err = %v, want a 'not public' error", err)
+			if !errors.Is(err, ErrNotFound) {
+				t.Fatalf("err = %v, want ErrNotFound", err)
+			}
+		})
+	}
+}
+
+// TestImportDeckUnavailable checks that a marvelcdb failure is not taken
+// for a missing deck: the player is asked to try again instead.
+func TestImportDeckUnavailable(t *testing.T) {
+	for _, status := range []int{http.StatusInternalServerError, http.StatusServiceUnavailable, http.StatusTooManyRequests} {
+		t.Run(strconv.Itoa(status), func(t *testing.T) {
+			t.Parallel()
+			im := newImporter(t, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+				http.Error(w, "unavailable", status)
+			}))
+			_, err := im.Import(context.Background(), deckLink, loadCatalog(t))
+			if err == nil {
+				t.Fatal("Import succeeded, want an error")
+			}
+			for _, known := range []error{ErrNotFound, ErrLink, ErrInvalidDeck} {
+				if errors.Is(err, known) {
+					t.Errorf("err = %v, want a transient error, not %v", err, known)
+				}
+			}
+		})
+	}
+}
+
+// TestImportStoresCanonicalURL checks that the deck keeps a short link to its
+// page, whatever the shape of the link it was imported from.
+func TestImportStoresCanonicalURL(t *testing.T) {
+	deck := readFixture(t, "decklist-1.json")
+	im := newImporter(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/api/public/decklist/1" && r.URL.Path != "/api/public/deck/1" {
+			http.NotFound(w, r)
+			return
+		}
+		serveJSON(w, deck)
+	}))
+
+	tests := []struct {
+		link string
+		want string
+	}{
+		{"https://marvelcdb.com/decklist/view/1/" + strings.Repeat("black-panther-", 100), "/decklist/view/1"},
+		{"http://www.MarvelCDB.com/decklist/1?utm_source=x#cards", "/decklist/view/1"},
+		{"https://marvelcdb.com/deck/view/1", "/deck/view/1"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.want, func(t *testing.T) {
+			got, err := im.Import(context.Background(), tt.link, loadCatalog(t))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if want := im.BaseURL + tt.want; got.URL != want {
+				t.Errorf("URL = %q, want %q", got.URL, want)
 			}
 		})
 	}
