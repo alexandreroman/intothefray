@@ -265,7 +265,11 @@ func TestLogTexts(t *testing.T) {
 		{"turn the main scheme", func(t *testing.T, f *doFixture) string {
 			stage := f.g.Table.stage(pileKeyScheme)
 			f.mustDo(t, "h", Action{Kind: ActChooseStage, Stage: stage.Key, Card: stage.Current, Face: 0}, at(1))
-			return "turned the main scheme to The Break-In! (stage 1A)"
+			return "turned the main scheme to The Break-In! (1A)"
+		}},
+		{"flip the main scheme", func(t *testing.T, f *doFixture) string {
+			f.mustDo(t, "h", Action{Kind: ActFlip, Card: f.g.Table.stage(pileKeyScheme).Current}, at(1))
+			return "flipped The Break-In! (1B) to The Break-In! (1A)"
 		}},
 		{"discard from hand", func(t *testing.T, f *doFixture) string {
 			f.mustDo(t, "h", Action{Kind: ActDraw, N: 1}, at(1))
@@ -331,6 +335,23 @@ func TestLogNeverShowsHiddenCards(t *testing.T) {
 	if got := f.lastLog().Cards; !slices.Equal(got, []string{hand[1]}) {
 		t.Errorf("play line cards = %v, want %v", got, []string{hand[1]})
 	}
+
+	dealt := topCards(f.g.Table.Piles[PileEncounter], 1)[0]
+	f.mustDo(t, "h", Action{Kind: ActDeal, Area: "p0", X: 600, Y: 200}, at(4))
+	f.mustDo(t, "h", Action{Kind: ActToken, Card: dealt, Name: "dmg", Delta: 1}, at(5))
+	if got := f.lastLog(); len(got.Cards) != 0 || got.Text != "added 1 damage to a card" {
+		t.Errorf("token on a face-down card: line %q with cards %v", got.Text, got.Cards)
+	}
+	f.mustDo(t, "h", Action{Kind: ActExhaust, Card: dealt}, at(6))
+	if got := f.lastLog(); len(got.Cards) != 0 || got.Text != "exhausted a card" {
+		t.Errorf("exhaust of a face-down card: line %q with cards %v", got.Text, got.Cards)
+	}
+
+	fromDeck := topCards(f.g.Table.Piles["deck:p0"], 1)[0]
+	f.mustDo(t, "h", Action{Kind: ActToHand, Card: fromDeck}, at(7))
+	if got := f.lastLog(); len(got.Cards) != 0 || got.Text != "took a card from their deck into hand" {
+		t.Errorf("toHand from the deck: line %q with cards %v", got.Text, got.Cards)
+	}
 }
 
 func TestLookAndSearchOpenViews(t *testing.T) {
@@ -387,7 +408,7 @@ func TestCloseView(t *testing.T) {
 	}
 }
 
-func TestCloseViewWithShuffleIsTracked(t *testing.T) {
+func TestCloseViewWithShuffleIsLoggedNotUndoable(t *testing.T) {
 	f := newDoFixture(t)
 	order := slices.Clone(f.g.Table.Piles["deck:p0"].Cards)
 	f.mustDo(t, "h", Action{Kind: ActSearch, Pile: "deck:p0"}, at(1))
@@ -405,9 +426,8 @@ func TestCloseViewWithShuffleIsTracked(t *testing.T) {
 		t.Errorf("shuffle line = %q, want %q", got, want)
 	}
 
-	f.mustDo(t, "h", Action{Kind: ActUndo}, at(3))
-	if got := f.g.Table.Piles["deck:p0"].Cards; !slices.Equal(got, order) {
-		t.Errorf("deck order after undo = %v, want %v", got, order)
+	if err := f.do("h", Action{Kind: ActUndo}, at(3)); !errors.Is(err, ErrInvalid) {
+		t.Errorf("undo of a shuffle = %v, want ErrInvalid (nothing to undo)", err)
 	}
 }
 
@@ -435,7 +455,7 @@ func TestDoLeavesGameUnchangedOnError(t *testing.T) {
 		{"draw too many", "h", Action{Kind: ActDraw, N: 99}},
 		{"unknown card", "h", Action{Kind: ActExhaust, Card: "c9999"}},
 		{"another player's deck", "b", Action{Kind: ActShuffle, Pile: "deck:p0"}},
-		{"look at another player's discard", "h", Action{Kind: ActLook, Pile: "disc:p1", N: 1}},
+		{"look at another player's deck", "h", Action{Kind: ActLook, Pile: "deck:p1", N: 1}},
 		{"undo with an empty stack", "b", Action{Kind: ActUndo}},
 		{"close a view that is not open", "h", Action{Kind: ActCloseView, Where: whereShuffle}},
 		{"unknown kind", "h", Action{Kind: "teleport"}},
@@ -460,4 +480,139 @@ func mustJSON(t *testing.T, v any) string {
 		t.Fatal(err)
 	}
 	return string(data)
+}
+
+// TestReplayChecksTheTopCards replays a reveal onto a snapshot whose
+// encounter deck has another card on top. The snapshot rejects the replay, so
+// after the undo no card is revealed: neither the card that was on top of the
+// snapshot nor anything else. The card Bob revealed is back in the encounter
+// deck, under the card Host put back.
+func TestReplayChecksTheTopCards(t *testing.T) {
+	f := newDoFixture(t)
+	discarded := topCards(f.g.Table.Piles[PileEncounter], 1)[0]
+	f.mustDo(t, "h", Action{Kind: ActDiscardTop, Pile: PileEncounter, N: 1}, at(1))
+	revealed := topCards(f.g.Table.Piles[PileEncounter], 1)[0]
+	f.mustDo(t, "b", Action{Kind: ActReveal}, at(2))
+
+	f.mustDo(t, "h", Action{Kind: ActUndo}, at(3))
+
+	if got := f.g.Table.revealed(); len(got) != 0 {
+		t.Errorf("revealed after undo = %v, want none", got)
+	}
+	enc := f.g.Table.Piles[PileEncounter]
+	if got := topCards(enc, 1)[0]; got != discarded {
+		t.Errorf("encounter top after undo = %s, want the card put back (%s)", got, discarded)
+	}
+	if !slices.Contains(enc.Cards, revealed) {
+		t.Errorf("the card Bob revealed (%s) is lost", revealed)
+	}
+}
+
+func TestOlderUndoReshufflesPilesShuffledSince(t *testing.T) {
+	f := newDoFixture(t)
+	f.mustDo(t, "h", Action{Kind: ActExhaust, Card: f.villain()}, at(1))
+	f.mustDo(t, "h", Action{Kind: ActSearch, Pile: "deck:p0"}, at(2))
+	seen := slices.Clone(f.g.Table.Piles["deck:p0"].Cards)
+	f.mustDo(t, "h", Action{Kind: ActCloseView, Where: whereShuffle}, at(3))
+
+	f.mustDo(t, "h", Action{Kind: ActUndo}, at(4))
+
+	if f.g.Table.Cards[f.villain()].Exhausted {
+		t.Error("the exhaust was not undone")
+	}
+	got := f.g.Table.Piles["deck:p0"].Cards
+	if slices.Equal(got, seen) || !samePermutation(got, seen) {
+		t.Errorf("deck order after undo = %v, want a new order of %v", got, seen)
+	}
+}
+
+// TestFailedShuffleReplayIsReshuffled makes a shuffle replay fail on Host's
+// snapshot (its encounter deck lacks a card) and checks that undoing does not
+// bring back the order from before the shuffle.
+func TestFailedShuffleReplayIsReshuffled(t *testing.T) {
+	f := newDoFixture(t)
+	f.mustDo(t, "h", Action{Kind: ActReveal}, at(1))
+	card := f.g.Table.revealed()[0].ID
+	f.mustDo(t, "h", Action{Kind: ActToDeck, Card: card, Where: whereTop}, at(20))
+	f.mustDo(t, "h", Action{Kind: ActDiscardTop, Pile: PileEncounter, N: 1}, at(40))
+	f.mustDo(t, "b", Action{Kind: ActDeal, Area: "p1", X: 400, Y: 200}, at(41))
+	snapshot := f.g.Undo["h"][len(f.g.Undo["h"])-1].Before
+	unshuffled := slices.Clone(snapshot.Piles[PileEncounter].Cards)
+	f.mustDo(t, "b", Action{Kind: ActShuffle, Pile: PileEncounter}, at(42))
+	f.mustDo(t, "h", Action{Kind: ActUndo}, at(43))
+
+	got := f.g.Table.Piles[PileEncounter].Cards
+	if slices.Equal(got, unshuffled) {
+		t.Errorf("undo restored the encounter order from before Bob's shuffle: %v", got)
+	}
+}
+
+func TestUndoKeepsOwnUntrackedActions(t *testing.T) {
+	f := newDoFixture(t)
+	rhino := f.villain()
+	f.mustDo(t, "h", Action{Kind: ActExhaust, Card: rhino}, at(1))
+	f.mustDo(t, "h", Action{Kind: ActMove, Card: rhino, Area: AreaVillain, X: 500, Y: 300}, at(2))
+
+	f.mustDo(t, "h", Action{Kind: ActUndo}, at(3))
+
+	c := f.g.Table.Cards[rhino]
+	if c.Exhausted {
+		t.Error("the exhaust was not undone")
+	}
+	if c.X != 500 || c.Y != 300 {
+		t.Errorf("Rhino at (%d,%d) after undo, want the moved position (500,300)", c.X, c.Y)
+	}
+}
+
+func TestNoOpActionsAreNotTracked(t *testing.T) {
+	tests := []struct {
+		name string
+		a    func(f *doFixture) Action
+	}{
+		{"remove a missing token", func(f *doFixture) Action {
+			return Action{Kind: ActToken, Card: f.villain(), Name: "dmg", Delta: -1}
+		}},
+		{"remove a missing status", func(f *doFixture) Action {
+			return Action{Kind: ActStatus, Card: f.villain(), Name: "tough", Delta: -2}
+		}},
+		{"flip a single-faced card", func(f *doFixture) Action {
+			return Action{Kind: ActFlip, Card: f.villain()}
+		}},
+		{"choose the stage already shown", func(f *doFixture) Action {
+			stage := f.g.Table.stage(pileKeyScheme)
+			return Action{Kind: ActChooseStage, Stage: stage.Key, Card: stage.Current, Face: 1}
+		}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			f := newDoFixture(t)
+			lines := len(f.g.Log)
+			f.mustDo(t, "h", tt.a(f), at(1))
+			if got := len(f.g.Log); got != lines {
+				t.Errorf("a no-op wrote lines %q", f.logTexts()[lines:])
+			}
+			if got := len(f.g.Undo["h"]); got != 0 {
+				t.Errorf("a no-op pushed %d undo entries", got)
+			}
+		})
+	}
+}
+
+func TestSearchPublicPiles(t *testing.T) {
+	f := newDoFixture(t)
+	f.mustDo(t, "h", Action{Kind: ActDiscardTop, Pile: "deck:p0", N: 1}, at(1))
+
+	for _, pile := range []string{"disc:p0", "aside:p0"} {
+		if err := f.do("b", Action{Kind: ActSearch, Pile: pile}, at(2)); err != nil {
+			t.Errorf("Bob searching %s = %v, want allowed", pile, err)
+		}
+	}
+	if got, want := f.lastLog().Text, "is searching Host's set-aside cards"; got != want {
+		t.Errorf("search line = %q, want %q", got, want)
+	}
+	for _, a := range []Action{{Kind: ActSearch, Pile: "deck:p0"}, {Kind: ActLook, Pile: "deck:p0", N: 1}} {
+		if err := f.do("b", a, at(3)); !errors.Is(err, ErrForbidden) {
+			t.Errorf("Bob doing %s on deck:p0 = %v, want ErrForbidden", a.Kind, err)
+		}
+	}
 }

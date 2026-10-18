@@ -53,7 +53,7 @@ func apply(t *Table, a Action) error {
 	case ActDraw:
 		return applyDraw(t, a)
 	case ActReveal:
-		return applyReveal(t)
+		return applyReveal(t, a)
 	case ActDeal:
 		return applyDeal(t, a)
 	case ActDiscardTop:
@@ -624,7 +624,7 @@ func applyDraw(t *Table, a Action) error {
 	return nil
 }
 
-func applyReveal(t *Table) error {
+func applyReveal(t *Table, a Action) error {
 	enc, err := t.pile(PileEncounter)
 	if err != nil {
 		return err
@@ -634,6 +634,9 @@ func applyReveal(t *Table) error {
 	}
 	if len(t.revealed()) > 0 {
 		return invalid("an encounter card is already revealed")
+	}
+	if !slices.Equal(a.Cards, topCards(enc, 1)) {
+		return invalid("revealed card is not the top of pile %q", enc.ID)
 	}
 
 	c := t.Cards[enc.Cards[len(enc.Cards)-1]]
@@ -658,9 +661,22 @@ func (t *Table) revealed() []*Card {
 	return found
 }
 
-// applyDeal deals the top encounter card face down. A revealed card covers
-// the deck top, so it is first put back face down on top of the encounter
-// deck: dealing while a card is revealed deals that revealed card.
+// dealtCard returns the id of the card a deal gives, or "" when there is
+// none. A revealed card covers the deck top, so dealing while a card is
+// revealed deals that revealed card.
+func (t *Table) dealtCard() string {
+	if covering := t.revealed(); len(covering) > 0 {
+		return covering[len(covering)-1].ID
+	}
+	enc, ok := t.Piles[PileEncounter]
+	if !ok || len(enc.Cards) == 0 {
+		return ""
+	}
+	return enc.Cards[len(enc.Cards)-1]
+}
+
+// applyDeal deals the top encounter card face down. Revealed cards are first
+// put back face down on top of the encounter deck (see dealtCard).
 func applyDeal(t *Table, a Action) error {
 	if !validArea(a.Area) {
 		return invalid("unknown area %q", a.Area)
@@ -669,10 +685,14 @@ func applyDeal(t *Table, a Action) error {
 	if err != nil {
 		return err
 	}
-	covering := t.revealed()
-	if len(enc.Cards)+len(covering) == 0 {
+	dealt := t.dealtCard()
+	if dealt == "" {
 		return invalid("encounter deck is empty")
 	}
+	if !slices.Equal(a.Cards, []string{dealt}) {
+		return invalid("dealt card is not the top of pile %q", enc.ID)
+	}
+	covering := t.revealed()
 	for _, c := range covering {
 		if err := t.checkLeave(c); err != nil {
 			return err
@@ -687,6 +707,17 @@ func applyDeal(t *Table, a Action) error {
 	t.placeOnTable(c, a.Area, snap(a.X), snap(a.Y))
 	c.FaceDown = true
 	return nil
+}
+
+// deckOfDiscard returns the id of the deck a discard pile shuffles back into.
+func deckOfDiscard(discardID string) (string, bool) {
+	if discardID == PileEncounterDiscard {
+		return PileEncounter, true
+	}
+	if owner, ok := strings.CutPrefix(discardID, "disc:"); ok {
+		return "deck:" + owner, true
+	}
+	return "", false
 }
 
 // discardPileOf returns the id of the discard pile of a deck pile.
@@ -713,11 +744,14 @@ func applyDiscardTop(t *Table, a Action) error {
 	if err != nil {
 		return err
 	}
-	if a.N < 1 || a.N > len(deck.Cards) {
-		return invalid("cannot discard %d cards from pile %q", a.N, deck.ID)
+	if len(a.Cards) == 0 || len(a.Cards) > len(deck.Cards) {
+		return invalid("cannot discard %d cards from pile %q", len(a.Cards), deck.ID)
+	}
+	if !slices.Equal(a.Cards, topCards(deck, len(a.Cards))) {
+		return invalid("discarded cards are not the top of pile %q", deck.ID)
 	}
 
-	for _, id := range topCards(deck, a.N) {
+	for _, id := range a.Cards {
 		t.putOnPile(discard, t.Cards[id])
 	}
 	return nil
@@ -736,13 +770,8 @@ func applyShuffle(t *Table, a Action) error {
 }
 
 func applyShuffleBack(t *Table, a Action) error {
-	var deckID string
-	switch owner, isPlayerDiscard := strings.CutPrefix(a.Pile, "disc:"); {
-	case a.Pile == PileEncounterDiscard:
-		deckID = PileEncounter
-	case isPlayerDiscard:
-		deckID = "deck:" + owner
-	default:
+	deckID, ok := deckOfDiscard(a.Pile)
+	if !ok {
 		return invalid("pile %q is not a discard pile", a.Pile)
 	}
 	return mergeAndOrder(t, a.Pile, deckID, a.Cards, func(*Card) bool { return true })

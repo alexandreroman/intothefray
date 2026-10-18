@@ -143,6 +143,7 @@ func TestResolveRejectsInvalidInput(t *testing.T) {
 		{"delta too small", Action{Kind: ActStatus, Card: f.ownTable, Name: "tough", Delta: -100}},
 		{"discard zero", Action{Kind: ActDiscardTop, Pile: "deck:p0", N: 0}},
 		{"discard 100", Action{Kind: ActDiscardTop, Pile: "deck:p0", N: 100}},
+		{"discard more than the deck", Action{Kind: ActDiscardTop, Pile: "deck:p0", N: f.deckCount}},
 		{"draw zero", Action{Kind: ActDraw}},
 		{"draw more than the deck", Action{Kind: ActDraw, N: f.deckCount}},
 		{"shuffle discard pile", Action{Kind: ActShuffle, Pile: "disc:p0"}},
@@ -155,6 +156,50 @@ func TestResolveRejectsInvalidInput(t *testing.T) {
 				t.Errorf("resolve() error = %v, want ErrInvalid", err)
 			}
 		})
+	}
+}
+
+// TestResolveRecordsTopCards checks that the cards taken from a pile top are
+// fixed at resolve time, so that replaying the action onto another table
+// acts on the same cards or fails.
+func TestResolveRecordsTopCards(t *testing.T) {
+	f := newResolveFixture(t)
+	enc := f.g.Table.Piles[PileEncounter]
+	deck := f.g.Table.Piles["deck:p0"]
+
+	tests := []struct {
+		name string
+		a    Action
+		want []string
+	}{
+		{"reveal", Action{Kind: ActReveal}, topCards(enc, 1)},
+		{"deal", Action{Kind: ActDeal, Area: "p1"}, topCards(enc, 1)},
+		{"discard top", Action{Kind: ActDiscardTop, Pile: "deck:p0", N: 2}, topCards(deck, 2)},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := resolve(f.g, 0, tt.a, newTestRNG())
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !slices.Equal(got.Cards, tt.want) {
+				t.Errorf("Cards = %v, want %v", got.Cards, tt.want)
+			}
+		})
+	}
+}
+
+func TestResolveDealRecordsTheRevealedCard(t *testing.T) {
+	f := newResolveFixture(t)
+	revealed := topCards(f.g.Table.Piles[PileEncounter], 1)
+	mustApply(t, f.g.Table, Action{Kind: ActReveal, Cards: revealed})
+
+	got, err := resolve(f.g, 0, Action{Kind: ActDeal, Area: "p1"}, newTestRNG())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !slices.Equal(got.Cards, revealed) {
+		t.Errorf("Cards = %v, want the revealed card %v", got.Cards, revealed)
 	}
 }
 

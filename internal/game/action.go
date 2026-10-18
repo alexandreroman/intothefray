@@ -56,7 +56,7 @@ type Action struct {
 	Face   int      `json:"face,omitempty"`
 	Where  string   `json:"where,omitempty"` // "top" | "bottom" | "shuffle"
 	Stage  string   `json:"stage,omitempty"`
-	Cards  []string `json:"cards,omitempty"` // resolved: drawn/dealt ids, new orders
+	Cards  []string `json:"cards,omitempty"` // resolved: ids taken from a pile top (top first), new orders
 	Seat   int      `json:"seat,omitempty"`  // acting seat, filled server-side (arrows)
 }
 
@@ -96,13 +96,19 @@ func resolve(g *Game, seat int, a Action, rng *rand.Rand) (Action, error) {
 		return resolveToDeck(t, seat, a, rng)
 	case ActToPile:
 		return resolveToPile(t, seat, a)
-	case ActReveal, ActDeal, ActFirstPlayer, ActArrowClear:
+	case ActReveal:
+		return resolveReveal(t, a)
+	case ActDeal:
+		return resolveDeal(t, a)
+	case ActFirstPlayer, ActArrowClear:
 		return a, nil
 	case ActDraw:
 		return resolveDraw(t, seat, a)
 	case ActHandOrder:
 		return resolveHandOrder(seat, a)
-	case ActDiscardTop, ActReorderTop:
+	case ActDiscardTop:
+		return resolveDiscardTop(t, seat, a)
+	case ActReorderTop:
 		_, err := ownPile(t, seat, a.Pile)
 		return a, err
 	case ActShuffle:
@@ -267,6 +273,43 @@ func resolveDraw(t *Table, seat int, a Action) (Action, error) {
 	return a, nil
 }
 
+// resolveReveal records the card to reveal, so that a replay onto a table
+// with another card on top fails instead of revealing that card.
+func resolveReveal(t *Table, a Action) (Action, error) {
+	enc, err := t.pile(PileEncounter)
+	if err != nil {
+		return a, err
+	}
+	if len(enc.Cards) == 0 {
+		return a, invalid("encounter deck is empty")
+	}
+	a.Cards = topCards(enc, 1)
+	return a, nil
+}
+
+// resolveDeal records the card to deal, for the same reason as resolveReveal.
+func resolveDeal(t *Table, a Action) (Action, error) {
+	id := t.dealtCard()
+	if id == "" {
+		return a, invalid("encounter deck is empty")
+	}
+	a.Cards = []string{id}
+	return a, nil
+}
+
+// resolveDiscardTop records the cards to discard, top first.
+func resolveDiscardTop(t *Table, seat int, a Action) (Action, error) {
+	pile, err := ownPile(t, seat, a.Pile)
+	if err != nil {
+		return a, err
+	}
+	if a.N > len(pile.Cards) {
+		return a, invalid("cannot discard %d cards from pile %q", a.N, pile.ID)
+	}
+	a.Cards = topCards(pile, a.N)
+	return a, nil
+}
+
 func resolveHandOrder(seat int, a Action) (Action, error) {
 	if !validArea(a.Area) || a.Area == AreaVillain {
 		return a, invalid("area %q has no hand", a.Area)
@@ -294,13 +337,8 @@ func resolveShuffleBack(t *Table, seat int, a Action, rng *rand.Rand) (Action, e
 	if err != nil {
 		return a, err
 	}
-	var deckID string
-	switch source.Kind {
-	case KindEncounterDiscard:
-		deckID = PileEncounter
-	case KindDiscard:
-		deckID = "deck:" + string(PlayerArea(source.Owner))
-	default:
+	deckID, ok := deckOfDiscard(source.ID)
+	if !ok {
 		return a, invalid("pile %q is not a discard pile", source.ID)
 	}
 	deck, err := t.pile(deckID)

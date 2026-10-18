@@ -97,6 +97,7 @@ type UndoEntry struct {
 	Before   *Table    `json:"before"`
 	Merge    string    `json:"merge"`
 	At       time.Time `json:"at"`
+	Shuffled []string  `json:"shuffled,omitempty"` // piles shuffled since Before, re-shuffled on undo
 }
 
 // Game is the whole state of one game.

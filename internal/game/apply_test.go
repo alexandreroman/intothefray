@@ -486,7 +486,7 @@ func TestRevealPutsTopCardOnPilePosition(t *testing.T) {
 	table.Piles[PileEncounter].X, table.Piles[PileEncounter].Y = 0, 0
 	table.Cards["c8"].FaceDown = true
 
-	mustApply(t, table, Action{Kind: ActReveal})
+	mustApply(t, table, Action{Kind: ActReveal, Cards: []string{"c8"}})
 
 	c := table.Cards["c8"]
 	if c.Zone != ZoneTable || c.Area != AreaVillain || c.OnPile != PileEncounter || c.FaceDown || c.Z != 10 {
@@ -501,7 +501,7 @@ func TestRevealRefusedWhenOneRevealed(t *testing.T) {
 	table := newTestTable()
 	table.Cards["c7"].OnPile = PileEncounter
 
-	if err := apply(table, Action{Kind: ActReveal}); !errors.Is(err, ErrInvalid) {
+	if err := apply(table, Action{Kind: ActReveal, Cards: []string{"c8"}}); !errors.Is(err, ErrInvalid) {
 		t.Errorf("err = %v, want ErrInvalid", err)
 	}
 }
@@ -515,10 +515,29 @@ func TestRevealRefusedWhenEncounterDeckEmpty(t *testing.T) {
 	}
 }
 
+func TestRevealAndDealRejectAnotherCard(t *testing.T) {
+	for name, a := range map[string]Action{
+		"reveal": {Kind: ActReveal, Cards: []string{"c4"}},
+		"deal":   {Kind: ActDeal, Area: "p1", Cards: []string{"c4"}},
+		"none":   {Kind: ActDeal, Area: "p1"},
+	} {
+		t.Run(name, func(t *testing.T) {
+			table := newTestTable()
+			before := table.Clone()
+			if err := apply(table, a); !errors.Is(err, ErrInvalid) {
+				t.Errorf("err = %v, want ErrInvalid", err)
+			}
+			if !reflect.DeepEqual(table, before) {
+				t.Error("the table changed")
+			}
+		})
+	}
+}
+
 func TestDealFaceDown(t *testing.T) {
 	table := newTestTable()
 
-	mustApply(t, table, Action{Kind: ActDeal, Area: "p1", X: 104, Y: 96})
+	mustApply(t, table, Action{Kind: ActDeal, Area: "p1", X: 104, Y: 96, Cards: []string{"c8"}})
 
 	c := table.Cards["c8"]
 	if c.Zone != ZoneTable || !c.FaceDown || c.Area != "p1" || c.X != 100 || c.Y != 100 || c.OnPile != "" {
@@ -530,7 +549,7 @@ func TestDealWhileRevealedDealsTheRevealedCard(t *testing.T) {
 	table := newTestTable()
 	table.Cards["c7"].OnPile = PileEncounter
 
-	mustApply(t, table, Action{Kind: ActDeal, Area: "p1", X: 0, Y: 0})
+	mustApply(t, table, Action{Kind: ActDeal, Area: "p1", X: 0, Y: 0, Cards: []string{"c7"}})
 
 	if c := table.Cards["c7"]; !c.FaceDown || c.OnPile != "" || c.Area != "p1" {
 		t.Errorf("c7 = %+v, want dealt face down", c)
@@ -543,7 +562,7 @@ func TestDealWhileRevealedDealsTheRevealedCard(t *testing.T) {
 func TestDiscardTop(t *testing.T) {
 	table := newTestTable()
 
-	mustApply(t, table, Action{Kind: ActDiscardTop, Pile: "deck:p0", N: 2})
+	mustApply(t, table, Action{Kind: ActDiscardTop, Pile: "deck:p0", N: 2, Cards: []string{"c6", "c5"}})
 
 	if got := table.Piles["deck:p0"].Cards; !slices.Equal(got, []string{"c4"}) {
 		t.Errorf("deck = %v, want [c4]", got)
@@ -552,7 +571,7 @@ func TestDiscardTop(t *testing.T) {
 		t.Errorf("discard = %v, want [c6 c5]", got)
 	}
 
-	mustApply(t, table, Action{Kind: ActDiscardTop, Pile: PileEncounter, N: 1})
+	mustApply(t, table, Action{Kind: ActDiscardTop, Pile: PileEncounter, N: 1, Cards: []string{"c8"}})
 	if got := table.Piles[PileEncounterDiscard].Cards; !slices.Equal(got, []string{"c8"}) {
 		t.Errorf("encd = %v, want [c8]", got)
 	}
@@ -560,9 +579,10 @@ func TestDiscardTop(t *testing.T) {
 
 func TestDiscardTopRejectsBadInput(t *testing.T) {
 	for name, a := range map[string]Action{
-		"zero":       {Kind: ActDiscardTop, Pile: "deck:p0", N: 0},
-		"too many":   {Kind: ActDiscardTop, Pile: "deck:p0", N: 4},
-		"not a deck": {Kind: ActDiscardTop, Pile: "disc:p0", N: 1},
+		"zero":        {Kind: ActDiscardTop, Pile: "deck:p0", N: 0},
+		"too many":    {Kind: ActDiscardTop, Pile: "deck:p0", N: 4, Cards: []string{"c6", "c5", "c4", "c8"}},
+		"not the top": {Kind: ActDiscardTop, Pile: "deck:p0", N: 1, Cards: []string{"c4"}},
+		"not a deck":  {Kind: ActDiscardTop, Pile: "disc:p0", N: 1, Cards: []string{"c6"}},
 	} {
 		t.Run(name, func(t *testing.T) {
 			table := newTestTable()
