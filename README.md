@@ -1,0 +1,94 @@
+# intothefray
+
+Into The Fray is an online card table for Marvel Champions: The
+Card Game. Open a link, load your deck, and play in the browser,
+solo or with up to three friends. It is a pure sandbox: cards move
+the way they would on a real table, and the app never applies the
+game's rules.
+
+> **Work in progress.** The repository holds the project skeleton
+> (a Go server with a health check, local Redis, developer tooling).
+> The features below are the target, not what runs today.
+
+## Features
+
+- **Play in the browser** — no install, desktop or touch screen
+- **Invite by link** — friends join as players until the game
+  starts, then as spectators
+- **No account** — a free pseudonym, stored in your browser only
+- **Bring your deck** — load a deck from a marvelcdb.com URL
+- **Discoverable actions** — every action one or two clicks away,
+  and you always see what the other players just did
+- **Fair play** — each player receives only what they may see
+  (no peeking at hands, deck order or face-down cards)
+- **The whole card range** — expansions are added as data files,
+  card images load from their public sources
+
+## Prerequisites
+
+- Go 1.27 or later
+- Docker (or Podman) with Compose, to run Redis locally
+- [Air](https://github.com/air-verse/air) for hot reload
+- [golangci-lint](https://golangci-lint.run/) v2 for static checks
+
+## Getting Started
+
+Clone the repository and start the server with hot reload. Redis
+starts in a container first.
+
+```bash
+git clone https://github.com/alexandreroman/intothefray.git
+cd intothefray
+make dev
+```
+
+Check that the server answers:
+
+```bash
+curl http://localhost:8080/healthz
+```
+
+## Usage
+
+Run `make` to list every available target. The most common ones:
+
+```bash
+make dev        # start Redis, then the server with hot reload
+make test       # run the test suite (race detector on)
+make check      # run the tests, then golangci-lint
+make build      # build bin/intothefray
+make infra-down # stop Redis
+```
+
+## Configuration
+
+| Variable | Description             | Default |
+| -------- | ----------------------- | ------- |
+| `PORT`   | HTTP server listen port | `8080`  |
+
+`make` loads `.env` when it exists, and `.env.local` for the
+development targets.
+
+## Architecture
+
+The target design: a static frontend served on its own (GitHub
+Pages), talking to stateless Go instances that share game state
+through Redis.
+
+```mermaid
+graph TD
+    B[Browser: Svelte SPA] -->|static files| P[GitHub Pages]
+    B -->|WebSocket + REST| S[Go server instances]
+    S --> R[(Redis: game state, pub/sub)]
+    S -->|decks| M[marvelcdb.com API]
+    B -->|card images| I[marvelcdb / Cerebro images]
+```
+
+| Path               | Description                             |
+| ------------------ | --------------------------------------- |
+| `cmd/intothefray/` | Server entry point (HTTP, health check) |
+
+## License
+
+This project is licensed under the Apache-2.0 License — see
+[LICENSE](LICENSE) for details.

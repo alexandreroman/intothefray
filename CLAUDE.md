@@ -1,0 +1,87 @@
+# intothefray
+
+Into The Fray: an online card table for Marvel Champions, played
+in the browser, solo or multiplayer, as a pure sandbox (no rules
+automation).
+
+See [README.md](README.md) for full documentation.
+
+## Tech stack
+
+- Backend: Go (standard library `net/http`, WebSocket),
+  stateless, scaled horizontally
+- Shared state: Redis (in memory, game state + pub/sub)
+- Frontend: TypeScript, Svelte 5 + Vite, static SPA served
+  separately (GitHub Pages)
+- Card data: per-pack JSON files generated from marvelcdb and
+  Cerebro, plus hand-curated scenario files
+
+## Build & run
+
+```bash
+make dev    # Redis in a container, then the server under Air
+make test   # go test -race -shuffle=on ./...
+make check  # tests, then golangci-lint
+make build  # bin/intothefray
+```
+
+## Modules
+
+- `cmd/intothefray/` — server entry point (HTTP, `/healthz`)
+- `compose.yaml` — local infrastructure (Redis, in memory)
+
+## Agents
+
+Use the following agents (from the
+[skillbox](https://github.com/alexandreroman/skillbox)
+plugin) for all code tasks:
+
+- **code-writer** — for ANY task that writes,
+  modifies, or refactors code. This includes
+  one-line fixes, import changes, visibility
+  tweaks, and adding assertions. Never edit
+  source files directly — always delegate to
+  this agent.
+- **code-reviewer** — for read-only code review
+  before merging or when investigating issues.
+
+## Memory
+
+At the start of every conversation, read
+`.claude/project-memory/MEMORY.md` to load
+project context from previous conversations.
+
+Use the **project-memory** skill (from the
+[skillbox](https://github.com/alexandreroman/skillbox)
+plugin) proactively — without being asked — whenever
+the conversation reveals project decisions, deadlines,
+team context, external references, workflow preferences,
+or corrective feedback worth persisting across
+conversations.
+
+**Important:** Always use the **project-memory**
+skill to persist information. Never use the built-in
+auto-memory system (`~/.claude/projects/.../memory/`)
+for project decisions or context — it is local and
+not shared with the team.
+
+## Conventions
+
+- Line length limits for readability:
+  - Text / Markdown: 80 columns max
+  - Code: 120 columns max
+- Follow standard Markdown conventions: blank line
+  before and after headings, blank line before and
+  after lists, fenced code blocks with a language tag
+- Always use the latest LTS or stable version of
+  languages, frameworks, and libraries. Check the
+  official documentation or use available tools
+  (e.g. context7) to verify current versions before
+  choosing a dependency.
+- All project text is in English: code, comments,
+  docs, UI, commit messages.
+- Never commit `docs/` (design specs, plans,
+  prototypes): it is gitignored and stays local.
+- The design lives in `docs/superpowers/specs/`, the
+  implementation plans in `docs/superpowers/plans/`;
+  read them before changing behaviour.

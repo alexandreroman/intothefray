@@ -1,2 +1,6 @@
 .superpowers/
 docs/
+tmp/
+bin/
+.env.local
+/intothefray
