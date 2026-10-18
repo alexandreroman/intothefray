@@ -1,0 +1,211 @@
+<!--
+  A pile in its portrait slot: its top card when the pile shows its cards,
+  otherwise its back, with a count pill. An empty pile is a dashed slot.
+  Out-of-play piles (victory display, set aside) sit in a sunken tray, greyed,
+  with a badge on their top edge.
+-->
+<script lang="ts">
+  import type { Back, CardView as TableCard, PileKind, PileView } from '../lib/types';
+  import CardBack from './CardBack.svelte';
+  import CardFace from './CardFace.svelte';
+  import { isHidden, shownFace } from './face.svelte';
+  import { cardBox } from './layout';
+
+  let {
+    pile,
+    top,
+  }: {
+    pile: PileView;
+    /** The top card, for a pile that lists its cards. */
+    top?: TableCard;
+  } = $props();
+
+  const BADGES: Partial<Record<PileKind, string>> = {
+    victory: 'Victory display',
+    aside: 'Set-aside cards',
+  };
+
+  const SLOT = cardBox('std', {});
+
+  function backOf(kind: PileKind): Back {
+    return kind === 'encounter' || kind === 'encounterDiscard' ? 'encounter' : 'player';
+  }
+
+  const empty = $derived(pile.count === 0);
+  const shownTop = $derived(empty ? undefined : top);
+  const face = shownFace(() => shownTop);
+  const badge = $derived(BADGES[pile.kind]);
+  // A landscape top card is turned a quarter to fit the portrait slot.
+  const rotated = $derived(cardBox(face.current?.size ?? 'std', { onPile: true }).rotated);
+</script>
+
+<div
+  class="card pile"
+  class:empty
+  class:inert={empty}
+  class:out={badge !== undefined}
+  style:left="{pile.x}px"
+  style:top="{pile.y}px"
+  style:width="{SLOT.w}px"
+  style:height="{SLOT.h}px"
+>
+  {#if empty}
+    <div class="slot"></div>
+  {:else if shownTop && !isHidden(shownTop)}
+    <div class="art">
+      <CardFace images={face.current?.images ?? []} name={face.current?.name ?? ''} {rotated} />
+    </div>
+  {:else}
+    {@const back = shownTop?.back ?? backOf(pile.kind)}
+    <div class="art">
+      <CardBack {back} label={back.toUpperCase()} />
+    </div>
+  {/if}
+
+  {#if !empty}
+    <span class="count">{pile.count}</span>
+  {/if}
+
+  {#if badge}
+    <span class="badge" role="img" aria-label={badge} title={badge}>
+      {#if pile.kind === 'victory'}
+        <!-- A trophy. -->
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M8 4h8v5a4 4 0 0 1-8 0V4z" />
+          <path d="M8 6H5a2 2 0 0 0 2 4h1" />
+          <path d="M16 6h3a2 2 0 0 1-2 4h-1" />
+          <path d="M12 13v4" />
+          <path d="M8 20h8" />
+          <path d="M10 17h4" />
+        </svg>
+      {:else}
+        <!-- An hourglass: the cards wait to come into play later. -->
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M6 3h12" />
+          <path d="M6 21h12" />
+          <path d="M7 3c0 5 5 6 5 9s-5 4-5 9" />
+          <path d="M17 3c0 5-5 6-5 9s5 4 5 9" />
+          <path d="M9.5 18.5h5" stroke-width="2.4" />
+        </svg>
+      {/if}
+    </span>
+  {/if}
+</div>
+
+<style>
+  .card {
+    position: absolute;
+    border-radius: 6px;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    /* The same 45° shadow as a card on the table. */
+    filter: drop-shadow(2px 2px 2px #000000c8) drop-shadow(6px 6px 9px #000000a6)
+      drop-shadow(12px 12px 16px #00000059);
+  }
+
+  .card.empty {
+    filter: none;
+  }
+
+  .card.inert {
+    cursor: default;
+  }
+
+  .art {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  .slot {
+    width: 100%;
+    height: 100%;
+    border-radius: 6px;
+    border: 2px dashed var(--line);
+  }
+
+  .count {
+    position: absolute;
+    bottom: -9px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #000c;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-size: 11px;
+    padding: 0 7px;
+    white-space: nowrap;
+  }
+
+  /* Out of play: a sunken tray with a dashed rim, and its cards washed out to greys. */
+  .card.out {
+    filter: none;
+  }
+
+  .card.out::after {
+    content: '';
+    position: absolute;
+    inset: -8px;
+    border-radius: 12px;
+    border: 1.5px dashed #3a4566;
+    background: #0a0e17b0;
+    box-shadow: inset 0 2px 8px #000c;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  .card.out .art {
+    filter: grayscale(0.85) brightness(0.72);
+    opacity: 0.9;
+  }
+
+  /* The tray already draws the dashed rim. */
+  .card.out .slot {
+    border-color: transparent;
+  }
+
+  .card.out .count {
+    background: #0b0f18;
+    color: var(--muted);
+  }
+
+  /* The badge sits on the top edge, centred, in greys. */
+  .badge {
+    position: absolute;
+    top: -13px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 5;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: #0b0f18;
+    border: 1px solid #3a4870;
+    box-shadow: 0 2px 6px #000a;
+  }
+
+  .badge svg {
+    width: 15px;
+    height: 15px;
+    color: #b3b9c6;
+  }
+</style>

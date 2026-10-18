@@ -18,12 +18,18 @@
   --p2: #ff9f5a;
   --p3: #7fd67a;
   --p4: #c792ff;
+
+  /* An exhausted card is tilted, not turned all the way. */
+  --exhaust-angle: 15deg;
+  /* Uniform card corners: a hair off each edge, then rounded like a printed card. */
+  --card-cut: inset(0 round 5% / 3.6%);
+  --card-cut-land: inset(0 round 3.6% / 5%);
 }
 
 [data-theme='felt'] {
   --table-bg: #0f2a1d;
   --dot: #1d3a2b;
-  --line: #2c4a3a;
+  --line: #2d5a42;
 }
 
 * {
