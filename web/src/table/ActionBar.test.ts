@@ -611,6 +611,29 @@ describe('tokens and statuses', () => {
     expect(pill()).toBeNull();
   });
 
+  it('the bar and the preview stay while the pointer is on the pill', async () => {
+    await renderTable(viewWithCounters());
+    vi.useFakeTimers();
+    const preview = screen.getByLabelText('Card preview');
+    await fireEvent.pointerEnter(placed('mine'));
+    const token = counter('mine', 'token:dmg');
+    await fireEvent.pointerEnter(token);
+
+    // Moving from the token onto the pill leaves the token and the card.
+    await fireEvent.pointerLeave(token);
+    await fireEvent.pointerLeave(placed('mine'));
+    await fireEvent.pointerEnter(pill()!);
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(bar()).not.toBeNull();
+    expect(within(preview).getByRole('img', { name: 'Spider-Man' })).toBeTruthy();
+
+    await fireEvent.pointerLeave(pill()!);
+    await vi.advanceTimersByTimeAsync(300);
+    expect(bar()).toBeNull();
+    expect(preview.textContent).toContain('Hover a card');
+    expect(pill()).toBeNull();
+  });
+
   it('lingers 250 ms after the pointer leaves, and stays while the pointer is on it', async () => {
     await renderTable(viewWithCounters());
     vi.useFakeTimers();

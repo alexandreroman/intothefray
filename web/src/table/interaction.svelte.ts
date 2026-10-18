@@ -104,7 +104,7 @@ class TableInteraction {
   leave(): void {
     this.#cancelHide();
     this.#hideTimer = setTimeout(() => {
-      if (this.locked || this.menu !== null || this.onBar) {
+      if (this.locked || this.menu !== null || this.onBar || this.onPill) {
         return;
       }
       this.hovered = null;
@@ -149,6 +149,8 @@ class TableInteraction {
   leavePill(): void {
     this.onPill = false;
     this.leaveCounter();
+    // The card the pill belongs to lingers out with it.
+    this.leave();
   }
 
   /** Drops the pill at once. */
