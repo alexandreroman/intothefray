@@ -99,6 +99,9 @@
 
   // The server relays no more cards in one drag.
   const MAX_DRAG_CARDS = 50;
+  // What the other players are told of a card hidden from them (ruling P5c-R9): its real id
+  // would let them follow it once it is played.
+  const HIDDEN_CARD = 'hidden-0';
 
   // The prototype's arrows in front of the labels.
   const PILE_GLYPHS: Record<PileDrop, string> = { top: '↑', discard: '✕', pile: '→' };
@@ -469,11 +472,32 @@
   }
 
   /**
+   * The ids of the dragged cards, as the other players may know them: a
+   * table card or a card of a public pile by its id, a hand card (or a card
+   * of a pile they cannot see) by a stand-in, and the encounter deck's
+   * unknown top card by its pile.
+   */
+  function cardsShown(from: Exclude<DragSource, { kind: 'firstPlayer' }>): readonly string[] {
+    switch (from.kind) {
+      case 'card':
+        return interaction.dragging?.lifted ?? [from.card];
+      case 'pile': {
+        // The view lists a pile's cards only when everybody may see them.
+        const listed = view.table?.piles.find((pile) => pile.id === from.pile)?.cards;
+        return listed ? [from.card] : [HIDDEN_CARD];
+      }
+      case 'encounter':
+        return [from.pile];
+      case 'hand':
+        return [HIDDEN_CARD];
+    }
+  }
+
+  /**
    * What the other players see of the drag: the cards it carries and their
    * corner, in table units of the zone under the pointer. Not the first player
    * token, which carries no card, nor a hand card over the hand, which is the
-   * viewer's own business. The encounter deck's top card is unknown: its pile
-   * stands for it.
+   * viewer's own business.
    */
   function presenceOf(from: DragSource, at: Point): PresenceDrag | null {
     const table = root?.querySelector('.tablewrap')?.getBoundingClientRect();
@@ -485,14 +509,7 @@
     if (!under || !surface) {
       return null;
     }
-    let cards: readonly string[];
-    if (from.kind === 'encounter') {
-      cards = [from.pile];
-    } else if (from.kind === 'card') {
-      cards = interaction.dragging?.lifted ?? [from.card];
-    } else {
-      cards = [from.card];
-    }
+    const cards = cardsShown(from);
     const corner = toTable(cornerOf(from, at), surface, zoom);
     return {
       cards: cards.slice(0, MAX_DRAG_CARDS),

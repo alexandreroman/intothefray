@@ -687,6 +687,88 @@ describe('dragging a hand card', () => {
   });
 });
 
+describe('telling the other players about the drag', () => {
+  type Fields = { drag?: unknown };
+
+  /** The drags sent with the session's presence, in order. */
+  function dragsSent(session: { sendPresence: ReturnType<typeof vi.fn> }): unknown[] {
+    return session.sendPresence.mock.calls
+      .map(([fields]) => fields as Fields)
+      .filter((fields) => 'drag' in fields)
+      .map((fields) => fields.drag);
+  }
+
+  it('tells where it is over a zone, and null once when it leaves them all', async () => {
+    const { session } = await renderTable();
+    await press(placed('mine'), 50, 400);
+    await moveTo(254, 452);
+    // Its corner at 224, 392 on the screen: 204, 52 on Alex's table, not snapped.
+    expect(dragsSent(session)).toEqual([{ cards: ['mine'], area: 'p0', x: 204, y: 52 }]);
+
+    // Below Alex's zone, above the hand: in no zone.
+    await moveTo(500, 650);
+    await moveTo(510, 660);
+    await release(510, 660);
+    expect(dragsSent(session)).toEqual([{ cards: ['mine'], area: 'p0', x: 204, y: 52 }, null]);
+  });
+
+  it('ends with null when it is dropped', async () => {
+    const { session } = await renderTable();
+    await press(placed('mine'), 50, 400);
+    await moveTo(254, 452);
+    await release(254, 452);
+    expect(dragsSent(session).at(-1)).toBeNull();
+  });
+
+  it('tells nothing of a hand card over the hand, and hides its id over the table', async () => {
+    const { session } = await renderTable();
+    await press(handCard('h1'), 350, 780);
+    await moveTo(700, 760);
+    expect(dragsSent(session)).toEqual([]);
+
+    await moveTo(300, 450);
+    expect(dragsSent(session)).toEqual([
+      expect.objectContaining({ cards: ['hidden-0'], area: 'p0' }),
+    ]);
+    expect(JSON.stringify(dragsSent(session))).not.toContain('h1');
+  });
+
+  it('keeps the real id of a card from a public pile', async () => {
+    const { session } = await renderTable(makeView({ discarded: ['d1'] }));
+    await press(placed('disc:p0'), 770, 400);
+    await moveTo(300, 450);
+    expect(dragsSent(session)).toEqual([expect.objectContaining({ cards: ['d1'], area: 'p0' })]);
+  });
+
+  it("carries the encounter deck's pile id for its unknown top card", async () => {
+    const { session } = await renderTable();
+    await press(placed('enc'), 50, 100);
+    await moveTo(300, 150);
+    expect(dragsSent(session)).toEqual([
+      expect.objectContaining({ cards: ['enc'], area: 'villain' }),
+    ]);
+  });
+
+  it('carries 50 cards at most', async () => {
+    const tucked = Array.from({ length: 59 }, (_, i) => card(`t${i}`, { parent: 'mine', z: 0 }));
+    const { session } = await renderTable(makeView({ cards: [...CARDS, ...tucked] }));
+    await press(placed('mine'), 50, 400);
+    await moveTo(254, 452);
+
+    const [drag] = dragsSent(session) as { cards: string[] }[];
+    expect(drag?.cards).toHaveLength(50);
+    expect(drag?.cards[0]).toBe('mine');
+  });
+
+  it('sends nothing for a spectator', async () => {
+    const { session } = await renderTable(makeView({ spectator: true }));
+    await press(placed('mine'), 50, 400);
+    await moveTo(254, 452);
+    await release(254, 452);
+    expect(dragsSent(session)).toEqual([]);
+  });
+});
+
 describe('a drop waiting for the server', () => {
   /** Drags "mine" so that its corner lands at 204, 52 on Alex's table, and lets go. */
   async function dropMine() {
