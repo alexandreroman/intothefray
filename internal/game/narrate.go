@@ -176,7 +176,7 @@ func (n narrator) toHandEvent(a Action) event {
 
 func (n narrator) toDeckEvent(a Action) event {
 	card := n.name(a.Card)
-	deck := n.game.pileName(n.seat, n.after.Cards[a.Card].Home)
+	deck := n.game.pileName(n.seat, n.before.Cards[a.Card].Home)
 	var text string
 	switch a.Where {
 	case whereBottom:

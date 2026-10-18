@@ -5,6 +5,7 @@ import (
 	"errors"
 	"math/rand/v2"
 	"slices"
+	"strings"
 	"testing"
 	"time"
 
@@ -614,5 +615,81 @@ func TestSearchPublicPiles(t *testing.T) {
 		if err := f.do("b", a, at(3)); !errors.Is(err, ErrForbidden) {
 			t.Errorf("Bob doing %s on deck:p0 = %v, want ErrForbidden", a.Kind, err)
 		}
+	}
+}
+
+// TestShuffleActionsThroughDo runs every shuffle-producing action end to end:
+// each must be logged as a shuffle and leave no old id behind.
+func TestShuffleActionsThroughDo(t *testing.T) {
+	tests := []struct {
+		name  string
+		setup func(t *testing.T, f *doFixture) (pile string, old []string)
+		act   Action
+	}{
+		{
+			"shuffle",
+			func(_ *testing.T, _ *doFixture) (string, []string) { return "deck:p0", nil },
+			Action{Kind: ActShuffle, Pile: "deck:p0"},
+		},
+		{
+			"shuffleBack",
+			func(t *testing.T, f *doFixture) (string, []string) {
+				f.mustDo(t, "h", Action{Kind: ActDraw, N: 1}, at(1))
+				f.mustDo(t, "h", Action{Kind: ActDiscard, Card: f.g.Table.Hands["p0"][0]}, at(2))
+				return "deck:p0", slices.Clone(f.g.Table.Piles["disc:p0"].Cards)
+			},
+			Action{Kind: ActShuffleBack, Pile: "disc:p0"},
+		},
+		{
+			"shuffleIn",
+			func(t *testing.T, f *doFixture) (string, []string) {
+				f.mustDo(t, "h", Action{Kind: ActReveal}, at(1))
+				id := f.g.Table.revealed()[0].ID
+				f.mustDo(t, "h", Action{Kind: ActToPile, Card: id, Target: PileScenarioAside}, at(2))
+				return PileEncounter, []string{id}
+			},
+			Action{Kind: ActShuffleIn, Pile: PileScenarioAside},
+		},
+		{
+			"toDeck shuffle",
+			func(t *testing.T, f *doFixture) (string, []string) {
+				f.mustDo(t, "h", Action{Kind: ActDraw, N: 1}, at(1))
+				id := f.g.Table.Hands["p0"][0]
+				return "deck:p0", []string{id}
+			},
+			Action{Kind: ActToDeck, Where: whereShuffle},
+		},
+		{
+			"closeView shuffle",
+			func(t *testing.T, f *doFixture) (string, []string) {
+				f.mustDo(t, "h", Action{Kind: ActSearch, Pile: "deck:p0"}, at(1))
+				return "deck:p0", nil
+			},
+			Action{Kind: ActCloseView, Where: whereShuffle},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			f := newDoFixture(t)
+			pile, extra := tt.setup(t, f)
+			if tt.act.Kind == ActToDeck {
+				tt.act.Card = extra[0]
+			}
+			old := append(slices.Clone(f.g.Table.Piles[pile].Cards), extra...)
+
+			f.mustDo(t, "h", tt.act, at(10))
+
+			if got := f.lastLog().Text; !strings.HasPrefix(got, "shuffled ") {
+				t.Errorf("log line = %q, want a shuffle", got)
+			}
+			for _, id := range old {
+				if _, ok := f.g.Table.Cards[id]; ok {
+					t.Errorf("old id %s still exists", id)
+				}
+			}
+			if got, want := len(f.g.Table.Piles[pile].Cards), len(old); got < want-len(extra) || got > want {
+				t.Errorf("pile %s has %d cards, from %d", pile, got, want)
+			}
+		})
 	}
 }

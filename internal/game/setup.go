@@ -136,7 +136,7 @@ func (b *tableBuilder) newCard(code string, owner int, home string) (*Card, pack
 		return nil, pack.Card{}, fmt.Errorf("%w: %w", ErrInvalid, err)
 	}
 	c := &Card{
-		ID:    newCardID(b.table, b.rng),
+		ID:    newCardID(b.table, b.rng, nil),
 		Code:  def.Code,
 		Faces: len(def.Faces),
 		Back:  def.Back,

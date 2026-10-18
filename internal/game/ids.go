@@ -12,11 +12,12 @@ const (
 	idLength   = 8
 )
 
-// newCardID returns an unused card id, drawn from rng.
-func newCardID(t *Table, rng *rand.Rand) string {
+// newCardID returns a card id drawn from rng that is neither used in t nor in
+// batch, the ids already chosen for the same action.
+func newCardID(t *Table, rng *rand.Rand, batch map[string]bool) string {
 	for {
 		id := randomCardID(rng)
-		if _, taken := t.Cards[id]; !taken {
+		if _, taken := t.Cards[id]; !taken && !batch[id] {
 			return id
 		}
 	}
@@ -39,10 +40,7 @@ func reidentify(t *Table, ids []string, rng *rand.Rand) (renames map[string]stri
 	fresh := make(map[string]bool, len(ids))
 	order = make([]string, 0, len(ids))
 	for _, old := range ids {
-		id := newCardID(t, rng)
-		for fresh[id] {
-			id = newCardID(t, rng)
-		}
+		id := newCardID(t, rng, fresh)
 		fresh[id] = true
 		renames[old] = id
 		order = append(order, id)
@@ -59,6 +57,7 @@ func checkRenames(t *Table, a Action, expected []string) error {
 		return invalid("renames cover %d cards, want %d", len(a.Renames), len(expected))
 	}
 	newIDs := make([]string, 0, len(expected))
+	seen := make(map[string]bool, len(expected))
 	for _, old := range expected {
 		id, ok := a.Renames[old]
 		if !ok {
@@ -67,6 +66,10 @@ func checkRenames(t *Table, a Action, expected []string) error {
 		if _, taken := t.Cards[id]; taken {
 			return invalid("new id %q is already used", id)
 		}
+		if seen[id] {
+			return invalid("new id %q is given twice", id)
+		}
+		seen[id] = true
 		newIDs = append(newIDs, id)
 	}
 	if !samePermutation(newIDs, a.Cards) {

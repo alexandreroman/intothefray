@@ -467,12 +467,17 @@ func TestUndoKeepsIDsOfLaterShuffles(t *testing.T) {
 	f := newViewFixture(t)
 	f.mustDo(t, hostToken, Action{Kind: ActExhaust, Card: f.villain()}, at(1))
 	oldDeck := slices.Clone(f.g.Table.Piles["deck:p1"].Cards)
+	oldCodes := codesOf(f.g.Table, oldDeck)
 	f.mustDo(t, bobToken, Action{Kind: ActShuffle, Pile: "deck:p1"}, at(2))
 
 	f.mustDo(t, hostToken, Action{Kind: ActUndo}, at(3))
 
-	if got := len(f.g.Table.Piles["deck:p1"].Cards); got != len(oldDeck) {
-		t.Errorf("bob's deck has %d cards after the undo, want %d", got, len(oldDeck))
+	deck := f.g.Table.Piles["deck:p1"].Cards
+	if len(deck) != len(oldDeck) {
+		t.Errorf("bob's deck has %d cards after the undo, want %d", len(deck), len(oldDeck))
+	}
+	if !slices.Equal(codesOf(f.g.Table, deck), oldCodes) {
+		t.Error("bob's deck holds other codes after the undo")
 	}
 	for _, id := range oldDeck {
 		if _, ok := f.g.Table.Cards[id]; ok {

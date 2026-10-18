@@ -765,3 +765,16 @@ func TestChooseStageRemovesArrowsOfPreviousCard(t *testing.T) {
 		t.Errorf("arrows = %v, want %v", table.Arrows, want)
 	}
 }
+
+func TestShuffleRejectsDuplicateNewIDs(t *testing.T) {
+	table := newTestTable()
+	before := table.Clone()
+
+	a := Action{Kind: ActShuffle, Pile: "deck:p0", Cards: []string{"x", "x", "y"}}
+	a.Renames = map[string]string{"c4": "x", "c5": "x", "c6": "y"}
+	err := apply(table, a)
+
+	if !errors.Is(err, ErrInvalid) || !reflect.DeepEqual(before, table) {
+		t.Errorf("err = %v, table unchanged = %t", err, reflect.DeepEqual(before, table))
+	}
+}
