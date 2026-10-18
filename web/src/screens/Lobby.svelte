@@ -48,7 +48,7 @@
 </script>
 
 <div class="screen">
-  <TopBar title="INTO THE FRAY" spectators={view.spectators} />
+  <TopBar spectators={view.spectators} />
 
   <main class="lobby">
     {#if index}

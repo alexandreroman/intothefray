@@ -270,7 +270,6 @@
 <div class="app" class:side-hidden={sideHidden}>
   <div class="top">
     <TopBar
-      title="INTO THE FRAY"
       spectators={view.spectators}
       side={{ hidden: !sideShown, ontoggle: toggleSide }}
       onend={view.you.host ? () => session.lobby('end') : undefined}

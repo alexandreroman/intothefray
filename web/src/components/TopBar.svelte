@@ -3,13 +3,11 @@
   import ConfirmDialog from './ConfirmDialog.svelte';
 
   let {
-    title,
     spectators,
     side,
     onend,
     children,
   }: {
-    title: string;
     spectators: number;
     /** The side panel toggle, on the table only. */
     side?: { hidden: boolean; ontoggle: () => void };
@@ -60,7 +58,7 @@
 <svelte:document onfullscreenchange={syncFullscreen} />
 
 <header>
-  <b class="title">{title}</b>
+  <div class="logo">INTO <span>THE</span> FRAY</div>
   <div class="actions">
     <span class="pill">
       <svg
@@ -139,9 +137,13 @@
     border-bottom: 1px solid var(--line);
   }
 
-  .title {
+  .logo {
     font-weight: 800;
     letter-spacing: 0.5px;
+  }
+
+  .logo span {
+    color: var(--accent);
   }
 
   .actions {

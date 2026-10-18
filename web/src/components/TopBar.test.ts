@@ -8,21 +8,28 @@ afterEach(() => {
 });
 
 describe('TopBar', () => {
+  it('shows the logo, THE in the accent colour', () => {
+    const { container } = render(TopBar, { spectators: 0 });
+    const logo = container.querySelector('.logo');
+    expect(logo?.textContent).toBe('INTO THE FRAY');
+    expect(logo?.querySelector('span')?.textContent).toBe('THE');
+  });
+
   it('pluralises the spectator count', () => {
-    render(TopBar, { title: 'T', spectators: 1 });
+    render(TopBar, { spectators: 1 });
     expect(screen.getByText('1 spectator')).toBeTruthy();
   });
 
   it('renders extra buttons from the children snippet', () => {
     const children = createRawSnippet(() => ({ render: () => '<button>End game</button>' }));
-    render(TopBar, { title: 'T', spectators: 0, children });
+    render(TopBar, { spectators: 0, children });
     expect(screen.getByRole('button', { name: 'End game' })).toBeTruthy();
   });
 
   it('requests fullscreen on the document', async () => {
     const request = vi.fn().mockResolvedValue(undefined);
     document.documentElement.requestFullscreen = request;
-    render(TopBar, { title: 'T', spectators: 0 });
+    render(TopBar, { spectators: 0 });
     await fireEvent.click(screen.getByRole('button', { name: /Fullscreen/ }));
     expect(request).toHaveBeenCalledOnce();
   });
@@ -36,7 +43,7 @@ describe('TopBar', () => {
     const catchRejection = vi.fn();
     document.exitFullscreen = vi.fn(() => ({ catch: catchRejection }) as unknown as Promise<void>);
     try {
-      render(TopBar, { title: 'T', spectators: 0 });
+      render(TopBar, { spectators: 0 });
       await fireEvent.click(screen.getByRole('button', { name: /fullscreen/i }));
       expect(catchRejection).toHaveBeenCalledOnce();
     } finally {
@@ -45,7 +52,7 @@ describe('TopBar', () => {
   });
 
   it('falls back to a class without the Fullscreen API', async () => {
-    render(TopBar, { title: 'T', spectators: 0 });
+    render(TopBar, { spectators: 0 });
 
     await fireEvent.click(screen.getByRole('button', { name: '⛶ Fullscreen' }));
     expect(document.body.classList).toContain('fs-fallback');
@@ -57,7 +64,7 @@ describe('TopBar', () => {
 
   it('falls back to a class when fullscreen is refused', async () => {
     document.documentElement.requestFullscreen = vi.fn().mockRejectedValue(new Error('denied'));
-    render(TopBar, { title: 'T', spectators: 0 });
+    render(TopBar, { spectators: 0 });
 
     await fireEvent.click(screen.getByRole('button', { name: '⛶ Fullscreen' }));
     await waitFor(() => {
@@ -69,7 +76,7 @@ describe('TopBar', () => {
   it('keeps the fallback from one top bar to the next', () => {
     // The lobby and the table each have their own top bar.
     document.body.classList.add('fs-fallback');
-    render(TopBar, { title: 'T', spectators: 0 });
+    render(TopBar, { spectators: 0 });
     expect(screen.getByRole('button', { name: '⛶ Exit fullscreen' })).toBeTruthy();
   });
 });

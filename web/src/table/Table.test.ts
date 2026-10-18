@@ -296,11 +296,13 @@ describe('Table', () => {
     expect(zoomLabel().textContent).toBe('50%');
   });
 
-  it('shows the keyboard shortcuts button as ?', () => {
+  it('shows the keyboard shortcuts button as a keyboard, with ? as its key', () => {
     render(Table, { session: fakeSession(), view: makeView() });
-    expect(screen.getByRole('button', { name: 'Keyboard shortcuts' }).textContent?.trim()).toBe(
-      '?',
-    );
+    const keys = screen.getByRole('button', { name: 'Keyboard shortcuts' });
+    expect(keys.textContent?.trim()).toBe('');
+    expect(keys.querySelector('svg rect')).toBeTruthy();
+    expect(keys.title).toBe('Keyboard shortcuts (?)');
+    expect(keys.getAttribute('aria-keyshortcuts')).toBe('?');
   });
 
   it('places the out-of-play piles at the right of their zone', async () => {

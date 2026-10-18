@@ -24,8 +24,28 @@
   </button>
   <button title="Zoom in" aria-label="Zoom in" onclick={() => onzoom(zoom + ZOOM_STEP)}>+</button>
   <span class="sep"></span>
-  <button class="keys" title="Keyboard shortcuts" aria-label="Keyboard shortcuts" onclick={onkeys}>
-    ?
+  <button
+    class="keys"
+    title="Keyboard shortcuts (?)"
+    aria-label="Keyboard shortcuts"
+    aria-keyshortcuts="?"
+    onclick={onkeys}
+  >
+    <!-- A keyboard: two rows of keys and a space bar. -->
+    <svg
+      viewBox="0 0 24 24"
+      width="18"
+      height="18"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.8"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <rect x="2.5" y="6" width="19" height="12" rx="2" />
+      <path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M6 14h.01M18 14h.01M9 14h6" />
+    </svg>
   </button>
 </div>
 
@@ -54,7 +74,7 @@
     font-weight: 700;
   }
 
-  button:hover:not(:disabled) {
+  button:hover {
     background: #2a3555;
   }
 
