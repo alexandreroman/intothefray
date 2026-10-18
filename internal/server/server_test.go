@@ -356,14 +356,29 @@ func TestCreateGameSlowBody(t *testing.T) {
 
 func TestUnknownGameWS(t *testing.T) {
 	ts, _ := newTestServer(t)
+	client := connect(t, ts, "nosuchgame")
 
-	_, status, err := dial(t, wsURL(ts, "nosuchgame"), "")
+	msg := client.expect("error")
+	if msg.Code != "notFound" || msg.Message != errorTexts[codeNotFound] {
+		t.Errorf("error = %q %q, want notFound with its fixed text", msg.Code, msg.Message)
+	}
+
+	_, _, err := client.ws.Read(t.Context())
+	if got := websocket.CloseStatus(err); got != 4404 {
+		t.Errorf("close status = %d (%v), want 4404", got, err)
+	}
+}
+
+func TestUnknownGameWSChecksOrigin(t *testing.T) {
+	ts, _ := newTestServer(t)
+
+	_, status, err := dial(t, wsURL(ts, "nosuchgame"), "https://evil.example")
 
 	if err == nil {
 		t.Fatal("dial succeeded, want an error")
 	}
-	if status != http.StatusNotFound {
-		t.Errorf("status = %d, want %d", status, http.StatusNotFound)
+	if status != http.StatusForbidden {
+		t.Errorf("status = %d, want %d", status, http.StatusForbidden)
 	}
 }
 

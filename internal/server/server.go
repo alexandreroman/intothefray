@@ -36,6 +36,9 @@ const (
 	// createBodyTimeout bounds how long a client may take to send the
 	// create-game request body.
 	createBodyTimeout = 10 * time.Second
+	// unknownGameTimeout bounds how long the error for an unknown game may
+	// take to be written.
+	unknownGameTimeout = 5 * time.Second
 )
 
 // Deps are the collaborators of a Server.
@@ -200,15 +203,18 @@ func (s *Server) createGame(ctx context.Context, hostToken, hostName string) (st
 	return "", fmt.Errorf("no free game id after %d attempts", maxCreateAttempts)
 }
 
+// statusGameNotFound is the close code sent for an unknown game. A browser
+// cannot read the status of a refused upgrade (it only sees close code 1006),
+// so the refusal is reported over the accepted WebSocket instead.
+const statusGameNotFound = websocket.StatusCode(4404)
+
 // handleGameSocket checks that the game exists, upgrades the connection and
 // hands it to serveConn.
 func (s *Server) handleGameSocket(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
-	if _, _, err := s.deps.Store.Load(r.Context(), id); err != nil {
-		if errors.Is(err, store.ErrNotFound) {
-			writeError(w, http.StatusNotFound, "game not found")
-			return
-		}
+	_, _, err := s.deps.Store.Load(r.Context(), id)
+	notFound := errors.Is(err, store.ErrNotFound)
+	if err != nil && !notFound {
 		s.deps.Logger.Error("load game", "game_id", id, "error", err)
 		writeError(w, http.StatusInternalServerError, "internal error")
 		return
@@ -220,7 +226,29 @@ func (s *Server) handleGameSocket(w http.ResponseWriter, r *http.Request) {
 		s.deps.Logger.Warn("websocket upgrade refused", "game_id", id, "error", err)
 		return
 	}
+	if notFound {
+		s.rejectUnknownGame(r.Context(), conn)
+		return
+	}
 	s.serveConn(r.Context(), conn, id)
+}
+
+// rejectUnknownGame tells the viewer that its game does not exist, then
+// closes the connection with statusGameNotFound.
+func (s *Server) rejectUnknownGame(ctx context.Context, conn *websocket.Conn) {
+	defer func() { _ = conn.CloseNow() }()
+
+	msg, err := json.Marshal(errorMessage{Type: typeError, Code: codeNotFound, Message: errorTexts[codeNotFound]})
+	if err != nil {
+		return
+	}
+	writeCtx, cancel := context.WithTimeout(ctx, unknownGameTimeout)
+	defer cancel()
+	if err := conn.Write(writeCtx, websocket.MessageText, msg); err != nil {
+		return
+	}
+	// A failed close means the client is gone: there is nobody left to report it to.
+	_ = conn.Close(statusGameNotFound, "game not found")
 }
 
 func newGameID() (string, error) {
