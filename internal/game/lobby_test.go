@@ -25,7 +25,7 @@ func newCatalog(t *testing.T) *pack.Catalog {
 // lobbyOfFour returns a game whose host is "h" and joiners are "b", "c", "d".
 func lobbyOfFour(t *testing.T) *Game {
 	t.Helper()
-	g := NewGame("g1", "h", "Host", testNow)
+	g := mustNewGame(t, "g1", "h", "Host", testNow)
 	for _, token := range []string{"b", "c", "d"} {
 		if _, err := g.Join(token, "Player "+token); err != nil {
 			t.Fatal(err)
@@ -61,7 +61,7 @@ func TestJoinSeatsThenSpectators(t *testing.T) {
 }
 
 func TestJoinNormalizesName(t *testing.T) {
-	g := NewGame("g1", "h", "Host", testNow)
+	g := mustNewGame(t, "g1", "h", "Host", testNow)
 
 	if _, err := g.Join("b", "   "); !errors.Is(err, ErrInvalid) {
 		t.Errorf("blank name err = %v, want ErrInvalid", err)
@@ -211,7 +211,7 @@ func TestConfigureValidates(t *testing.T) {
 
 func TestConfigureNormalizesModulars(t *testing.T) {
 	cat := newCatalog(t)
-	g := NewGame("g1", "h", "Host", testNow)
+	g := mustNewGame(t, "g1", "h", "Host", testNow)
 
 	cfg := LobbyConfig{Scenario: "rhino", Difficulty: pack.Standard, Standard: "standard"}
 	if err := g.Configure("h", cfg, cat); err != nil {
@@ -224,7 +224,7 @@ func TestConfigureNormalizesModulars(t *testing.T) {
 
 func TestDefaultConfigIsAccepted(t *testing.T) {
 	cat := newCatalog(t)
-	g := NewGame("g1", "h", "Host", testNow)
+	g := mustNewGame(t, "g1", "h", "Host", testNow)
 
 	cfg := DefaultConfig(cat, "rhino")
 	if cfg.Standard != "standard" || cfg.Expert != "" || cfg.Difficulty != pack.Standard {
@@ -299,7 +299,7 @@ func TestSetDeckStoresDeck(t *testing.T) {
 }
 
 func TestJoinAfterStartIsSpectator(t *testing.T) {
-	g := NewGame("g1", "h", "Host", testNow)
+	g := mustNewGame(t, "g1", "h", "Host", testNow)
 	g.Phase = PhasePlaying
 
 	role, err := g.Join("x", "Late")
@@ -319,5 +319,23 @@ func TestEnd(t *testing.T) {
 	}
 	if err := g.End("h"); !errors.Is(err, ErrPhase) {
 		t.Errorf("second End err = %v, want ErrPhase", err)
+	}
+}
+
+func mustNewGame(t *testing.T, id, hostToken, hostName string, now time.Time) *Game {
+	t.Helper()
+
+	g, err := NewGame(id, hostToken, hostName, now)
+	if err != nil {
+		t.Fatalf("NewGame: %v", err)
+	}
+	return g
+}
+
+func TestNewGameEmptyName(t *testing.T) {
+	for _, name := range []string{"", "   ", "\t\n"} {
+		if _, err := NewGame("g1", "h", name, testNow); !errors.Is(err, ErrInvalid) {
+			t.Errorf("NewGame(%q) error = %v, want ErrInvalid", name, err)
+		}
 	}
 }

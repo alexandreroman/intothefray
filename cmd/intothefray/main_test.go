@@ -53,16 +53,16 @@ func TestHealthcheckNothingListening(t *testing.T) {
 
 func TestConnectRedis(t *testing.T) {
 	mr := miniredis.RunT(t)
-	url := "redis://" + mr.Addr() + "/0"
+	redisURL := "redis://" + mr.Addr() + "/0"
 
-	rdb, err := connectRedis(t.Context(), url)
+	rdb, err := connectRedis(t.Context(), redisURL)
 	if err != nil {
 		t.Fatalf("connectRedis: %v", err)
 	}
 	_ = rdb.Close()
 
 	mr.Close()
-	if _, err := connectRedis(t.Context(), url); err == nil {
+	if _, err := connectRedis(t.Context(), redisURL); err == nil {
 		t.Error("connectRedis on a stopped server = nil, want an error")
 	}
 }

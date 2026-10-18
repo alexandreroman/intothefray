@@ -51,7 +51,7 @@ type viewFixture struct {
 func newViewFixture(t *testing.T) *viewFixture {
 	t.Helper()
 	cat := newCatalog(t)
-	g := NewGame("g1", hostToken, "Host", testNow)
+	g := mustNewGame(t, "g1", hostToken, "Host", testNow)
 	if _, err := g.Join(bobToken, "Bob"); err != nil {
 		t.Fatal(err)
 	}
@@ -342,7 +342,7 @@ func TestViewIdentity(t *testing.T) {
 }
 
 func TestLobbyView(t *testing.T) {
-	g := NewGame("g1", hostToken, "Host", testNow)
+	g := mustNewGame(t, "g1", hostToken, "Host", testNow)
 	v := g.ViewFor(hostToken)
 	if v.Table != nil || v.Phase != PhaseLobby {
 		t.Errorf("lobby view = phase %s, table %v", v.Phase, v.Table)

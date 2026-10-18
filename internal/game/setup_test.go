@@ -89,7 +89,7 @@ func expectedDeckCodes(t *testing.T, cat *pack.Catalog, deck DeckChoice) []strin
 func startedGame(t *testing.T, cfg LobbyConfig) *Game {
 	t.Helper()
 	cat := newCatalog(t)
-	g := NewGame("g1", "h", "Host", testNow)
+	g := mustNewGame(t, "g1", "h", "Host", testNow)
 	if _, err := g.Join("b", "Bob"); err != nil {
 		t.Fatal(err)
 	}
@@ -410,7 +410,7 @@ func TestZeroStartingThreatIsNotStored(t *testing.T) {
 
 func TestStartRequiresDecks(t *testing.T) {
 	cat := newCatalog(t)
-	g := NewGame("g1", "h", "Host", testNow)
+	g := mustNewGame(t, "g1", "h", "Host", testNow)
 	if _, err := g.Join("b", "Bob"); err != nil {
 		t.Fatal(err)
 	}
@@ -434,7 +434,7 @@ func TestStartGuards(t *testing.T) {
 	cat := newCatalog(t)
 
 	t.Run("not configured", func(t *testing.T) {
-		g := NewGame("g1", "h", "Host", testNow)
+		g := mustNewGame(t, "g1", "h", "Host", testNow)
 		if err := g.SetDeck("h", spiderManDeck(t, cat), cat); err != nil {
 			t.Fatal(err)
 		}

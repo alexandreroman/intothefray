@@ -120,7 +120,9 @@ func TestCreateGameEmptyName(t *testing.T) {
 	}{
 		{"empty name", `{"name": ""}`},
 		{"missing name", `{}`},
+		{"blank name", `{"name": "   "}`},
 		{"invalid json", `not json`},
+		{"body over 1 KiB", `{"name": "` + strings.Repeat("a", 2<<10) + `"}`},
 	}
 
 	ts, _ := newTestServer(t)

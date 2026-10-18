@@ -58,9 +58,12 @@ type Server struct {
 func New(d Deps) *Server {
 	s := &Server{deps: d, newID: newGameID}
 	for _, origin := range d.Config.AllowedOrigins {
-		if u, err := url.Parse(origin); err == nil && u.Host != "" {
-			s.originPatterns = append(s.originPatterns, u.Host)
+		u, err := url.Parse(origin)
+		if err != nil || u.Host == "" {
+			d.Logger.Warn("ignoring unparsable allowed origin", "origin", origin)
+			continue
 		}
+		s.originPatterns = append(s.originPatterns, u.Host)
 	}
 	return s
 }
@@ -75,7 +78,8 @@ func (s *Server) Handler() http.Handler {
 	return s.withCORS(mux)
 }
 
-// Run serves background work until ctx ends.
+// Run blocks until ctx ends. It will own the background work of the server
+// (event subscription) once there is some.
 func (s *Server) Run(ctx context.Context) error {
 	<-ctx.Done()
 	return nil
@@ -132,6 +136,10 @@ func (s *Server) handleCreateGame(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id, err := s.createGame(r.Context(), token, req.Name)
+	if errors.Is(err, game.ErrInvalid) {
+		writeError(w, http.StatusBadRequest, "a name is required")
+		return
+	}
 	if err != nil {
 		s.deps.Logger.Error("create game", "error", err)
 		writeError(w, http.StatusInternalServerError, "internal error")
@@ -149,7 +157,10 @@ func (s *Server) createGame(ctx context.Context, hostToken, hostName string) (st
 		if err != nil {
 			return "", err
 		}
-		g := game.NewGame(id, hostToken, hostName, s.deps.Now())
+		g, err := game.NewGame(id, hostToken, hostName, s.deps.Now())
+		if err != nil {
+			return "", err
+		}
 		err = s.deps.Store.Create(ctx, g)
 		if errors.Is(err, store.ErrExists) {
 			continue

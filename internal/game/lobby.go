@@ -17,14 +17,19 @@ const (
 	standardVersionI = "standard"
 )
 
-// NewGame creates a game in the lobby, with the host seated first.
-func NewGame(id, hostToken, hostName string, now time.Time) *Game {
+// NewGame creates a game in the lobby, with the host seated first. It returns
+// ErrInvalid when the host name is empty once cleaned.
+func NewGame(id, hostToken, hostName string, now time.Time) (*Game, error) {
+	name := cleanName(hostName)
+	if name == "" {
+		return nil, invalid("host name is empty")
+	}
 	return &Game{
 		ID:        id,
 		Phase:     PhaseLobby,
 		CreatedAt: now,
-		Players:   []*Player{{Token: hostToken, Name: cleanName(hostName), Color: 0, Host: true}},
-	}
+		Players:   []*Player{{Token: hostToken, Name: name, Color: 0, Host: true}},
+	}, nil
 }
 
 // Join seats a newcomer as a player while the lobby has room, otherwise as a

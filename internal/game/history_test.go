@@ -220,7 +220,7 @@ func TestSpectatorCannotAct(t *testing.T) {
 }
 
 func TestDoRequiresPlaying(t *testing.T) {
-	g := NewGame("g1", "h", "Host", testNow)
+	g := mustNewGame(t, "g1", "h", "Host", testNow)
 
 	err := g.Do("h", Action{Kind: ActDraw, N: 1}, newCatalog(t), testNow)
 	if !errors.Is(err, ErrPhase) {
