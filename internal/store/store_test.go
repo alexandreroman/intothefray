@@ -1,6 +1,7 @@
 package store
 
 import (
+	"context"
 	"errors"
 	"sync"
 	"testing"
@@ -55,8 +56,8 @@ func TestCreateExistingGameFails(t *testing.T) {
 	if err := s.Create(ctx, newGame("abc")); err != nil {
 		t.Fatalf("Create: %v", err)
 	}
-	if err := s.Create(ctx, newGame("abc")); err == nil {
-		t.Error("second Create succeeded, want an error")
+	if err := s.Create(ctx, newGame("abc")); !errors.Is(err, ErrExists) {
+		t.Errorf("second Create: err = %v, want ErrExists", err)
 	}
 }
 
@@ -236,7 +237,7 @@ func TestTouchEndedGameKeepsShortTTL(t *testing.T) {
 
 func TestPublishSubscribe(t *testing.T) {
 	s, _ := newTestStore(t)
-	events, closeSub := s.Subscribe(t.Context())
+	events, closeSub := subscribe(t.Context(), t, s)
 
 	if err := s.Publish(t.Context(), "abc", []byte("hello")); err != nil {
 		t.Fatalf("Publish: %v", err)
@@ -261,5 +262,68 @@ func TestPublishSubscribe(t *testing.T) {
 		}
 	case <-time.After(5 * time.Second):
 		t.Fatal("channel not closed")
+	}
+}
+
+func subscribe(ctx context.Context, t *testing.T, s *Store) (<-chan Event, func() error) {
+	t.Helper()
+	events, closeSub, err := s.Subscribe(ctx)
+	if err != nil {
+		t.Fatalf("Subscribe: %v", err)
+	}
+	return events, closeSub
+}
+
+// returnsWithin fails the test when fn does not return in time.
+func returnsWithin(t *testing.T, what string, fn func()) {
+	t.Helper()
+	returned := make(chan struct{})
+	go func() {
+		fn()
+		close(returned)
+	}()
+	select {
+	case <-returned:
+	case <-time.After(5 * time.Second):
+		t.Fatalf("%s did not return", what)
+	}
+}
+
+func TestCloseWithUnreadEvent(t *testing.T) {
+	s, _ := newTestStore(t)
+	_, closeSub := subscribe(t.Context(), t, s)
+	if err := s.Publish(t.Context(), "abc", []byte("unread")); err != nil {
+		t.Fatalf("Publish: %v", err)
+	}
+	time.Sleep(50 * time.Millisecond) // let the forwarder block on the send
+
+	returnsWithin(t, "close", func() { _ = closeSub() })
+}
+
+func TestContextCancelClosesChannel(t *testing.T) {
+	s, _ := newTestStore(t)
+	ctx, cancel := context.WithCancel(t.Context())
+	events, closeSub := subscribe(ctx, t, s)
+
+	cancel()
+	select {
+	case _, ok := <-events:
+		if ok {
+			t.Fatal("event after cancel, want a closed channel")
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("channel not closed after cancel")
+	}
+	returnsWithin(t, "close after cancel", func() { _ = closeSub() })
+}
+
+func TestSubscribeFailsWhenRedisIsDown(t *testing.T) {
+	s, mr := newTestStore(t)
+	mr.Close()
+
+	ctx, cancel := context.WithTimeout(t.Context(), 5*time.Second)
+	defer cancel()
+	if _, _, err := s.Subscribe(ctx); err == nil {
+		t.Error("Subscribe succeeded without Redis, want an error")
 	}
 }

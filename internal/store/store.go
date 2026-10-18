@@ -30,8 +30,12 @@ const (
 	gamePrefix    = "game:"
 )
 
-// ErrNotFound reports an unknown (or expired) game.
-var ErrNotFound = errors.New("game not found")
+var (
+	// ErrNotFound reports an unknown (or expired) game.
+	ErrNotFound = errors.New("game not found")
+	// ErrExists reports a Create on an id that is already taken.
+	ErrExists = errors.New("game already exists")
+)
 
 // Event is a message published on a game's channel.
 type Event struct {
@@ -68,7 +72,7 @@ func (s *Store) Create(ctx context.Context, g *game.Game) error {
 		return fmt.Errorf("create game %s: %w", g.ID, err)
 	}
 	if !created {
-		return fmt.Errorf("create game %s: already exists", g.ID)
+		return fmt.Errorf("create game %s: %w", g.ID, ErrExists)
 	}
 	return nil
 }
@@ -129,6 +133,9 @@ func (s *Store) Update(
 	for n := range maxUpdateAttempts {
 		err := s.rdb.Watch(ctx, attempt, key)
 		if errors.Is(err, redis.TxFailedErr) {
+			if n == maxUpdateAttempts-1 {
+				break
+			}
 			if err := sleepWithJitter(ctx, n); err != nil {
 				return nil, 0, err
 			}
@@ -169,39 +176,60 @@ func (s *Store) Publish(ctx context.Context, id string, payload []byte) error {
 
 // Subscribe receives the events of every game. The returned function stops
 // the subscription and closes the channel; the channel also closes when ctx
-// ends. A slow reader makes the subscription drop events, never block Redis.
-func (s *Store) Subscribe(ctx context.Context) (<-chan Event, func() error) {
+// ends, releasing the Redis connection. Events are handed to the reader one
+// at a time, so a reader that stops reading stalls the subscription until it
+// is closed.
+func (s *Store) Subscribe(ctx context.Context) (<-chan Event, func() error, error) {
 	sub := s.rdb.PSubscribe(ctx, eventsPattern)
 	// Wait for the subscription to be active so that an event published
-	// right after Subscribe returns is not lost. On failure the client
-	// reconnects by itself, so the error is not worth failing for.
-	_, _ = sub.Receive(ctx)
+	// right after Subscribe returns is not lost.
+	if _, err := sub.Receive(ctx); err != nil {
+		_ = sub.Close()
+		return nil, nil, fmt.Errorf("subscribe to game events: %w", err)
+	}
 
 	events := make(chan Event)
+	quit := make(chan struct{})
 	done := make(chan struct{})
+	release := sync.OnceValue(sub.Close)
+
 	go func() {
 		defer close(events)
 		defer close(done)
-		for msg := range sub.Channel() {
+		defer func() { _ = release() }()
+		messages := sub.Channel()
+		for {
+			var msg *redis.Message
+			select {
+			case m, ok := <-messages:
+				if !ok {
+					return
+				}
+				msg = m
+			case <-quit:
+				return
+			case <-ctx.Done():
+				return
+			}
 			ev := Event{GameID: gameIDFromChannel(msg.Channel), Payload: []byte(msg.Payload)}
 			select {
 			case events <- ev:
+			case <-quit:
+				return
 			case <-ctx.Done():
 				return
 			}
 		}
 	}()
 
-	var once sync.Once
-	var closeErr error
+	var quitOnce sync.Once
 	closeSub := func() error {
-		once.Do(func() {
-			closeErr = sub.Close()
-			<-done
-		})
-		return closeErr
+		quitOnce.Do(func() { close(quit) })
+		err := release()
+		<-done
+		return err
 	}
-	return events, closeSub
+	return events, closeSub, nil
 }
 
 // sleepWithJitter desynchronises writers that just collided; without it they
