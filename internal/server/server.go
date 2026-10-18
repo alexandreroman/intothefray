@@ -12,8 +12,8 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
-	"net/url"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/coder/websocket"
@@ -51,8 +51,9 @@ type Server struct {
 	hub  *hub
 	// newID generates game ids; tests replace it to force collisions.
 	newID func() (string, error)
-	// originPatterns are the host[:port] of the allowed origins, as expected
-	// by websocket.AcceptOptions.
+	// originPatterns are the allowed origins as websocket.AcceptOptions
+	// patterns: they hold the scheme, so the WebSocket check matches the
+	// whole origin, like CORS does.
 	originPatterns []string
 	// touchInterval is how often Run resets the expiry of the games with
 	// local viewers; tests shorten it.
@@ -63,15 +64,15 @@ type Server struct {
 func New(d Deps) *Server {
 	s := &Server{deps: d, hub: newHub(), newID: newGameID, touchInterval: touchInterval}
 	for _, origin := range d.Config.AllowedOrigins {
-		u, err := url.Parse(origin)
-		if err != nil || u.Host == "" {
-			d.Logger.Warn("ignoring unparsable allowed origin", "origin", origin)
-			continue
-		}
-		s.originPatterns = append(s.originPatterns, u.Host)
+		s.originPatterns = append(s.originPatterns, patternEscaper.Replace(origin))
 	}
 	return s
 }
+
+// patternEscaper escapes the path.Match metacharacters that a valid origin
+// may hold (the brackets of an IPv6 host), so that websocket.Accept matches
+// the origin literally.
+var patternEscaper = strings.NewReplacer(`\`, `\\`, "*", `\*`, "?", `\?`, "[", `\[`, "]", `\]`)
 
 // Handler returns the routes: GET /healthz, POST /api/games and
 // GET /ws/games/{id}.

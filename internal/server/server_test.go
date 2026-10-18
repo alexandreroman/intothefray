@@ -55,6 +55,12 @@ func newServer(t *testing.T) (*Server, *miniredis.Miniredis) {
 // servers may share to act as instances of one deployment.
 func newServerOn(t *testing.T, mr *miniredis.Miniredis) *Server {
 	t.Helper()
+	return newServerWithConfig(t, mr, config.Config{AllowedOrigins: []string{allowedOrigin}, GameTTL: time.Hour})
+}
+
+// newServerWithConfig builds a Server like newServerOn, with cfg.
+func newServerWithConfig(t *testing.T, mr *miniredis.Miniredis, cfg config.Config) *Server {
+	t.Helper()
 
 	cat, err := testCatalog()
 	if err != nil {
@@ -64,11 +70,8 @@ func newServerOn(t *testing.T, mr *miniredis.Miniredis) *Server {
 	t.Cleanup(func() { _ = rdb.Close() })
 
 	return New(Deps{
-		Config: config.Config{
-			AllowedOrigins: []string{allowedOrigin},
-			GameTTL:        time.Hour,
-		},
-		Store:   store.New(rdb, time.Hour),
+		Config:  cfg,
+		Store:   store.New(rdb, cfg.GameTTL),
 		Catalog: cat,
 		Decks:   &decks.Importer{BaseURL: "http://127.0.0.1:0"},
 		Now:     time.Now,
@@ -272,6 +275,53 @@ func TestOriginChecks(t *testing.T) {
 		}
 		_ = conn.CloseNow()
 	})
+}
+
+// TestCORSAndWebSocketAgree checks that an origin from the environment is
+// allowed, or refused, alike by the HTTP API and the WebSocket endpoint.
+func TestCORSAndWebSocketAgree(t *testing.T) {
+	cfg, err := config.Load(func(key string) string {
+		if key == "ALLOWED_ORIGINS" {
+			return "https://front.example/,http://[::1]:5173"
+		}
+		return ""
+	})
+	if err != nil {
+		t.Fatalf("config.Load: %v", err)
+	}
+	ts := httptest.NewServer(newServerWithConfig(t, miniredis.RunT(t), cfg).Handler())
+	t.Cleanup(ts.Close)
+
+	tests := []struct {
+		origin  string
+		allowed bool
+	}{
+		{"https://front.example", true},
+		{"http://front.example", false},
+		{"https://other.example", false},
+		{"http://[::1]:5173", true},
+		{"http://[::2]:5173", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.origin, func(t *testing.T) {
+			resp := postGame(t, ts, tt.origin, `{"name": "Alex"}`)
+			if got := resp.status == http.StatusCreated; got != tt.allowed {
+				t.Errorf("POST /api/games: status = %d, want allowed = %v", resp.status, tt.allowed)
+			}
+			if got := resp.header.Get("Access-Control-Allow-Origin") == tt.origin; got != tt.allowed {
+				t.Errorf("Access-Control-Allow-Origin = %q, want allowed = %v",
+					resp.header.Get("Access-Control-Allow-Origin"), tt.allowed)
+			}
+
+			conn, status, err := dial(t, wsURL(ts, createGameID(t, ts)), tt.origin)
+			if got := err == nil; got != tt.allowed {
+				t.Errorf("websocket dial: status = %d, err = %v, want allowed = %v", status, err, tt.allowed)
+			}
+			if conn != nil {
+				_ = conn.CloseNow()
+			}
+		})
+	}
 }
 
 func TestUnknownGameWS(t *testing.T) {

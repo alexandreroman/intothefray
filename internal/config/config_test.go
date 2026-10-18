@@ -73,3 +73,62 @@ func TestLoadBadTTL(t *testing.T) {
 		})
 	}
 }
+
+func TestLoadAllowedOrigins(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		value string
+		want  []string
+	}{
+		{"origin", "https://front.example", []string{"https://front.example"}},
+		{"trailing slash", "https://front.example/", []string{"https://front.example"}},
+		{"port", "http://localhost:5173", []string{"http://localhost:5173"}},
+		{"upper case", "HTTPS://Front.Example", []string{"https://front.example"}},
+		{"list", " https://a.example , ,http://b.example:8000/,", []string{"https://a.example", "http://b.example:8000"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got, err := Load(envFrom(map[string]string{"ALLOWED_ORIGINS": tt.value}))
+			if err != nil {
+				t.Fatalf("Load() error = %v", err)
+			}
+			if !reflect.DeepEqual(got.AllowedOrigins, tt.want) {
+				t.Errorf("AllowedOrigins = %q, want %q", got.AllowedOrigins, tt.want)
+			}
+		})
+	}
+}
+
+func TestLoadBadAllowedOrigins(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		value string
+	}{
+		{"path", "https://alexandreroman.github.io/intothefray"},
+		{"separators only", " , ,"},
+		{"no scheme", "front.example"},
+		{"other scheme", "ftp://front.example"},
+		{"no host", "https://"},
+		{"query", "https://front.example?x=1"},
+		{"fragment", "https://front.example#top"},
+		{"user", "https://alex@front.example"},
+		{"one bad entry", "https://front.example,https://other.example/app"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			_, err := Load(envFrom(map[string]string{"ALLOWED_ORIGINS": tt.value}))
+			if err == nil {
+				t.Fatal("Load() error = nil, want error")
+			}
+			if !strings.Contains(err.Error(), "ALLOWED_ORIGINS") {
+				t.Errorf("error %q does not name ALLOWED_ORIGINS", err)
+			}
+		})
+	}
+}
