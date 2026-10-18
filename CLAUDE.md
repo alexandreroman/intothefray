@@ -27,17 +27,23 @@ make build  # bin/intothefray
 
 ## Modules
 
-- `cmd/intothefray/` — server entry point (HTTP, `/healthz`)
+- `cmd/intothefray/` — server entry point (HTTP, `/healthz`), and the
+  `healthcheck` subcommand that backs the container healthcheck
 - `cmd/packgen/` — card pack generator, run with `make packs`
+- `internal/config/` — configuration from environment variables
+- `internal/decks/` — deck import from marvelcdb
 - `internal/game/` — pure game engine (lobby, setup, actions, undo, views)
-- `internal/server/` — HTTP API, game creation, WebSocket endpoint
+- `internal/server/` — HTTP API, game creation, WebSocket endpoint,
+  cross-instance fan-out (hub)
+- `internal/store/` — Redis game store and game event pub/sub
 - `internal/pack/` — card pack schema (types) and catalog
 - `internal/packgen/` — generator internals (fetch, marvelcdb, cerebro,
   build, images, curated, report, write)
 - `packs/` — `curated/` hand-written scenarios and card overrides,
   `dist/` generated JSON (committed, never edited by hand), and the
   `embed` package that loads it
-- `compose.yaml` — local infrastructure (Redis, in memory)
+- `Dockerfile` — container image of the server
+- `compose.yaml` — local stack: Redis (in memory) and the app service
 
 ## Agents
 

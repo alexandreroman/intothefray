@@ -6,9 +6,10 @@ solo or with up to three friends. It is a pure sandbox: cards move
 the way they would on a real table, and the app never applies the
 game's rules.
 
-> **Work in progress.** The repository holds the project skeleton
-> (a Go server with a health check, local Redis, developer tooling).
-> The features below are the target, not what runs today.
+> **Work in progress.** The backend runs: the game API, the
+> WebSocket endpoint and the Redis store. The browser frontend comes
+> next, so the features below are the target, not what you can play
+> today.
 
 ## Features
 
@@ -60,8 +61,12 @@ make build      # build bin/intothefray
 make packs      # regenerate the card packs in packs/dist
 make infra-down # stop Redis
 make app-up     # build the image, start the app and Redis in containers
+make app-logs   # follow the logs of the containerised stack
 make app-down   # stop and remove the containerised stack
 ```
+
+`make dev` and `make app-up` both bind port 8080: stop one before
+starting the other.
 
 `make packs` downloads the card data from marvelcdb and Cerebro
 (cached in `packs/.cache`), merges the hand-written files of
@@ -77,6 +82,10 @@ regenerated files with the change that caused them.
 | `ALLOWED_ORIGINS` | Frontend origins allowed by CORS and WebSocket | `http://localhost:5173`    |
 | `GAME_TTL`        | Expiry of a game nobody touches                | `24h`                      |
 | `MARVELCDB_URL`   | Deck source                                    | `https://marvelcdb.com`    |
+
+`ALLOWED_ORIGINS` is a comma-separated list of origins, each written
+`scheme://host[:port]` (http or https, no path): the server refuses
+to start otherwise.
 
 `make` loads `.env` when it exists, and `.env.local` for the
 development targets.
@@ -100,7 +109,11 @@ graph TD
 | ------------------- | ---------------------------------------------- |
 | `cmd/intothefray/`  | Server entry point (HTTP, health check)        |
 | `cmd/packgen/`      | Card pack generator (`make packs`)             |
+| `internal/config/`  | Configuration from environment variables       |
+| `internal/decks/`   | Deck import from marvelcdb                     |
 | `internal/game/`    | Game engine: lobby, setup, actions, undo, view |
+| `internal/server/`  | HTTP API, WebSocket endpoint, instance fan-out |
+| `internal/store/`   | Redis game store and event pub/sub             |
 | `internal/pack/`    | Card pack schema and catalog                   |
 | `internal/packgen/` | Generator internals (fetch, build, images...)  |
 | `packs/`            | Curated files, generated and committed `dist/` |
