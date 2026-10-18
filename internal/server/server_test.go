@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"regexp"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -16,7 +17,9 @@ import (
 	"github.com/redis/go-redis/v9"
 
 	"github.com/alexandreroman/intothefray/internal/config"
+	"github.com/alexandreroman/intothefray/internal/decks"
 	"github.com/alexandreroman/intothefray/internal/store"
+	"github.com/alexandreroman/intothefray/packs"
 )
 
 const allowedOrigin = "http://localhost:5173"
@@ -30,6 +33,24 @@ func newTestServer(t *testing.T) (*httptest.Server, *miniredis.Miniredis) {
 func newTestServerWith(t *testing.T, configure func(*Server)) (*httptest.Server, *miniredis.Miniredis) {
 	t.Helper()
 
+	srv, mr := newServer(t)
+	if configure != nil {
+		configure(srv)
+	}
+	ts := httptest.NewServer(srv.Handler())
+	t.Cleanup(ts.Close)
+	return ts, mr
+}
+
+// newServer builds a Server backed by a fresh miniredis and the real card
+// catalog. Its deck importer points nowhere: tests that load decks replace it.
+func newServer(t *testing.T) (*Server, *miniredis.Miniredis) {
+	t.Helper()
+
+	cat, err := testCatalog()
+	if err != nil {
+		t.Fatal(err)
+	}
 	mr := miniredis.RunT(t)
 	rdb := redis.NewClient(&redis.Options{Addr: mr.Addr()})
 	t.Cleanup(func() { _ = rdb.Close() })
@@ -39,17 +60,17 @@ func newTestServerWith(t *testing.T, configure func(*Server)) (*httptest.Server,
 			AllowedOrigins: []string{allowedOrigin},
 			GameTTL:        time.Hour,
 		},
-		Store:  store.New(rdb, time.Hour),
-		Now:    time.Now,
-		Logger: slog.New(slog.NewTextHandler(io.Discard, nil)),
+		Store:   store.New(rdb, time.Hour),
+		Catalog: cat,
+		Decks:   &decks.Importer{BaseURL: "http://127.0.0.1:0"},
+		Now:     time.Now,
+		Logger:  slog.New(slog.NewTextHandler(io.Discard, nil)),
 	})
-	if configure != nil {
-		configure(srv)
-	}
-	ts := httptest.NewServer(srv.Handler())
-	t.Cleanup(ts.Close)
-	return ts, mr
+	return srv, mr
 }
+
+// testCatalog loads the embedded packs once for the whole test binary.
+var testCatalog = sync.OnceValues(packs.Catalog)
 
 // reply is a fully read HTTP response.
 type reply struct {
@@ -275,13 +296,23 @@ func TestHealthz(t *testing.T) {
 
 func createGameID(t *testing.T, ts *httptest.Server) string {
 	t.Helper()
+	return createGame(t, ts, "Alex").ID
+}
 
-	resp := postGame(t, ts, "", `{"name": "Alex"}`)
+// createGame creates a game hosted by hostName and returns its id and the
+// host token.
+func createGame(t *testing.T, ts *httptest.Server, hostName string) createGameResponse {
+	t.Helper()
+
+	resp := postGame(t, ts, "", `{"name": "`+hostName+`"}`)
+	if resp.status != http.StatusCreated {
+		t.Fatalf("create game: status = %d", resp.status)
+	}
 	var body createGameResponse
 	if err := json.Unmarshal(resp.body, &body); err != nil {
 		t.Fatal(err)
 	}
-	return body.ID
+	return body
 }
 
 func wsURL(ts *httptest.Server, id string) string {

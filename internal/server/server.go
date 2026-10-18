@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base64"
+	"encoding/binary"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -47,6 +48,7 @@ type Deps struct {
 // Server serves the HTTP API and the game WebSocket endpoint.
 type Server struct {
 	deps Deps
+	hub  *hub
 	// newID generates game ids; tests replace it to force collisions.
 	newID func() (string, error)
 	// originPatterns are the host[:port] of the allowed origins, as expected
@@ -56,7 +58,7 @@ type Server struct {
 
 // New builds a Server from its dependencies.
 func New(d Deps) *Server {
-	s := &Server{deps: d, newID: newGameID}
+	s := &Server{deps: d, hub: newHub(), newID: newGameID}
 	for _, origin := range d.Config.AllowedOrigins {
 		u, err := url.Parse(origin)
 		if err != nil || u.Host == "" {
@@ -196,11 +198,6 @@ func (s *Server) handleGameSocket(w http.ResponseWriter, r *http.Request) {
 	s.serveConn(r.Context(), conn, id)
 }
 
-// serveConn runs a viewer's connection until it ends.
-func (s *Server) serveConn(_ context.Context, conn *websocket.Conn, _ string) {
-	_ = conn.Close(websocket.StatusNormalClosure, "not implemented yet")
-}
-
 func newGameID() (string, error) {
 	id := make([]byte, gameIDLength)
 	if _, err := rand.Read(id); err != nil {
@@ -220,6 +217,15 @@ func newToken() (string, error) {
 		return "", fmt.Errorf("generate token: %w", err)
 	}
 	return base64.RawURLEncoding.EncodeToString(raw), nil
+}
+
+// newSeed draws the seed of a game, from which all its randomness derives.
+func newSeed() (uint64, error) {
+	var raw [8]byte
+	if _, err := rand.Read(raw[:]); err != nil {
+		return 0, fmt.Errorf("generate seed: %w", err)
+	}
+	return binary.LittleEndian.Uint64(raw[:]), nil
 }
 
 func writeJSON(w http.ResponseWriter, status int, body any) {
