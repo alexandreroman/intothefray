@@ -39,7 +39,7 @@ const FAN_OVERLAP = 28;
 // The prototype's values (ruling P5a-R5). The cards turn around a point below their bottom edge
 // (Hand.svelte's transform-origin 50% 110%), so at the full 22° the top corners of 132 × 185
 // outer cards reach about 8 px past this room on each side, into the hand's padding. Reserving
-// the real overhang instead would overlap 10 cards more than the prototype does at 1200 px.
+// that overhang instead would pack a 10-card hand tighter than the prototype does at 1200 px.
 const FAN_SIDE_ROOM = 80;
 const FAN_TILT_ROOM = 0.35;
 
@@ -73,7 +73,7 @@ export function zoneOrder(view: View): Area[] {
 }
 
 /** A victory display or set-aside pile: placed by the client, not counted as content. */
-export function isOutOfPlay(pile: PileView): boolean {
+function isOutOfPlay(pile: PileView): boolean {
   return OUT_OF_PLAY_ORDER.includes(pile.kind);
 }
 
