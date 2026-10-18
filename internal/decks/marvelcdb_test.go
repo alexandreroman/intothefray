@@ -4,12 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
+	"sync/atomic"
 	"testing"
 
 	"github.com/alexandreroman/intothefray/internal/game"
@@ -29,6 +31,7 @@ func TestParseLinks(t *testing.T) {
 		{"https://www.marvelcdb.com/deck/view/345", "/api/public/deck/345", false},
 		{"https://marvelcdb.com/deck/345", "/api/public/deck/345", false},
 		{"https://marvelcdb.com/decklist/view/1?x=y#top", "/api/public/decklist/1", false},
+		{"https://MarvelCDB.com/decklist/view/1", "/api/public/decklist/1", false},
 		{"https://example.com/decklist/view/1", "", true},
 		{"https://marvelcdb.com.evil.test/decklist/view/1", "", true},
 		{"ftp://marvelcdb.com/decklist/view/1", "", true},
@@ -106,9 +109,6 @@ func TestImportDeckOK(t *testing.T) {
 	if got.URL != deckLink || got.Hero != "01040a" || got.HeroName != "Black Panther" ||
 		got.Name != "Black Panther - Protection - Starter Deck" {
 		t.Errorf("unexpected header: %+v", got)
-	}
-	if !reflect.DeepEqual(got.Cards[len(got.Cards)-1], game.DeckEntry{Code: "01093", Qty: 1}) {
-		t.Errorf("cards are not sorted by code, last = %+v", got.Cards[len(got.Cards)-1])
 	}
 	for i := 1; i < len(got.Cards); i++ {
 		if got.Cards[i-1].Code >= got.Cards[i].Code {
@@ -215,5 +215,68 @@ func TestImportBadLink(t *testing.T) {
 	_, err := im.Import(context.Background(), "https://example.com/x", loadCatalog(t))
 	if !errors.Is(err, ErrLink) {
 		t.Fatalf("err = %v, want ErrLink", err)
+	}
+}
+
+func TestImportUnsupportedLookupsAreBounded(t *testing.T) {
+	slots := make(map[string]int)
+	for i := range 30 {
+		slots[fmt.Sprintf("zz%03d", i)] = 1
+	}
+	body, err := json.Marshal(map[string]any{"name": "D", "hero_code": "01040a", "hero_name": "BP", "slots": slots})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var lookups atomic.Int32
+	im := newImporter(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasPrefix(r.URL.Path, "/api/public/card/") {
+			lookups.Add(1)
+			serveJSON(w, []byte(`{"name":"N","pack_name":"P"}`))
+			return
+		}
+		serveJSON(w, body)
+	}))
+
+	_, err = im.Import(context.Background(), deckLink, loadCatalog(t))
+	var unsupported *UnsupportedError
+	if !errors.As(err, &unsupported) {
+		t.Fatalf("err = %v, want *UnsupportedError", err)
+	}
+	if len(unsupported.Cards) != 30 {
+		t.Errorf("listed %d cards, want 30", len(unsupported.Cards))
+	}
+	if got := lookups.Load(); got != 20 {
+		t.Errorf("card lookups = %d, want 20", got)
+	}
+}
+
+func TestImportInvalidDeck(t *testing.T) {
+	manySlots := make(map[string]int)
+	for i := range 201 {
+		manySlots[fmt.Sprintf("01%03d", i)] = 1
+	}
+	tests := []struct {
+		name  string
+		slots map[string]int
+	}{
+		{"negative qty", map[string]int{"01041": -1}},
+		{"zero qty", map[string]int{"01041": 0}},
+		{"qty 21", map[string]int{"01041": 21}},
+		{"201 slots", manySlots},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			body, err := json.Marshal(map[string]any{"name": "D", "hero_code": "01040a", "slots": tt.slots})
+			if err != nil {
+				t.Fatal(err)
+			}
+			im := newImporter(t, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { serveJSON(w, body) }))
+			_, err = im.Import(context.Background(), deckLink, loadCatalog(t))
+			if !errors.Is(err, ErrInvalidDeck) {
+				t.Fatalf("err = %v, want ErrInvalidDeck", err)
+			}
+		})
 	}
 }

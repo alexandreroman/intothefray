@@ -20,6 +20,14 @@ import (
 
 const (
 	requestTimeout = 10 * time.Second
+	// importTimeout bounds a whole import, including the card lookups.
+	importTimeout = 20 * time.Second
+	// maxCardLookups caps the requests made to name unsupported cards.
+	maxCardLookups = 20
+	// maxQty is the engine's limit of copies of one card.
+	maxQty = 20
+	// maxSlots is far above any real deck and bounds the work per import.
+	maxSlots = 200
 	// maxBodyBytes bounds what we read from marvelcdb; real decks are a few KiB.
 	maxBodyBytes = 1 << 20
 )
@@ -27,8 +35,14 @@ const (
 // ErrLink is returned when the link is not a marvelcdb deck link.
 var ErrLink = errors.New("not a marvelcdb deck link")
 
-// errNotFound covers every way marvelcdb tells us a deck is unavailable.
-var errNotFound = errors.New("deck not found or not public")
+// ErrNotFound covers every way marvelcdb tells us a deck is unavailable.
+var ErrNotFound = errors.New("deck not found or not public")
+
+// ErrInvalidDeck is returned when the deck has an impossible shape.
+var ErrInvalidDeck = errors.New("invalid deck")
+
+// defaultClient is used when Importer.HTTP is nil.
+var defaultClient = &http.Client{Timeout: requestTimeout}
 
 // Unsupported is a deck card missing from the card catalog.
 type Unsupported struct {
@@ -68,6 +82,9 @@ func (im *Importer) Import(ctx context.Context, link string, cat *pack.Catalog) 
 	if err != nil {
 		return game.DeckChoice{}, err
 	}
+	ctx, cancel := context.WithTimeout(ctx, importTimeout)
+	defer cancel()
+
 	deck, err := im.fetchDeck(ctx, path)
 	if err != nil {
 		return game.DeckChoice{}, err
@@ -99,7 +116,8 @@ func apiPath(link string) (string, error) {
 	if u.Scheme != "https" && u.Scheme != "http" {
 		return "", ErrLink
 	}
-	if u.Host != "marvelcdb.com" && u.Host != "www.marvelcdb.com" {
+	host := strings.ToLower(u.Host)
+	if host != "marvelcdb.com" && host != "www.marvelcdb.com" {
 		return "", ErrLink
 	}
 
@@ -133,7 +151,7 @@ func (im *Importer) fetchDeck(ctx context.Context, path string) (deckPayload, er
 		return deckPayload{}, fmt.Errorf("fetch deck: %w", err)
 	}
 	if status != http.StatusOK || len(body) == 0 {
-		return deckPayload{}, errNotFound
+		return deckPayload{}, ErrNotFound
 	}
 
 	var deck deckPayload
@@ -141,13 +159,28 @@ func (im *Importer) fetchDeck(ctx context.Context, path string) (deckPayload, er
 		return deckPayload{}, fmt.Errorf("decode deck: %w", err)
 	}
 	if deck.HeroCode == "" || deck.Slots == nil {
-		return deckPayload{}, errNotFound
+		return deckPayload{}, ErrNotFound
+	}
+	if err := validateSlots(deck.Slots); err != nil {
+		return deckPayload{}, err
 	}
 	return deck, nil
 }
 
+func validateSlots(slots map[string]int) error {
+	if len(slots) > maxSlots {
+		return fmt.Errorf("%w: %d slots", ErrInvalidDeck, len(slots))
+	}
+	for code, qty := range slots {
+		if qty < 1 || qty > maxQty {
+			return fmt.Errorf("%w: card %s has quantity %d", ErrInvalidDeck, code, qty)
+		}
+	}
+	return nil
+}
+
 // checkSupported returns an *UnsupportedError when the hero or any card is
-// unknown to the catalog.
+// unknown to the catalog. Only the first maxCardLookups are named.
 func (im *Importer) checkSupported(ctx context.Context, choice game.DeckChoice, cat *pack.Catalog) error {
 	entries := append([]game.DeckEntry{{Code: choice.Hero, Qty: 1}}, choice.Cards...)
 
@@ -156,7 +189,10 @@ func (im *Importer) checkSupported(ctx context.Context, choice game.DeckChoice, 
 		if _, _, err := cat.Card(entry.Code); err == nil {
 			continue
 		}
-		card := im.describeCard(ctx, entry.Code)
+		card := Unsupported{Code: entry.Code}
+		if len(missing) < maxCardLookups {
+			card = im.describeCard(ctx, entry.Code)
+		}
 		card.Qty = entry.Qty
 		missing = append(missing, card)
 	}
@@ -213,5 +249,5 @@ func (im *Importer) client() *http.Client {
 	if im.HTTP != nil {
 		return im.HTTP
 	}
-	return &http.Client{Timeout: requestTimeout}
+	return defaultClient
 }
