@@ -1,11 +1,8 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
 
-  let {
-    title,
-    spectators,
-    children,
-  }: { title: string; spectators: number; children?: Snippet } = $props();
+  let { title, spectators, children }: { title: string; spectators: number; children?: Snippet } =
+    $props();
 
   let fullscreen = $state(Boolean(document.fullscreenElement));
 

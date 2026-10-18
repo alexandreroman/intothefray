@@ -14,8 +14,18 @@ const playingView = {
   table: { cards: [{}, {}, {}] },
 } as unknown as View;
 
-function mockSession(fields: object): { connect: ReturnType<typeof vi.fn>; close: ReturnType<typeof vi.fn> } {
-  const session = { status: 'open', view: null, lastError: null, connect: vi.fn(), close: vi.fn(), ...fields };
+function mockSession(fields: object): {
+  connect: ReturnType<typeof vi.fn>;
+  close: ReturnType<typeof vi.fn>;
+} {
+  const session = {
+    status: 'open',
+    view: null,
+    lastError: null,
+    connect: vi.fn(),
+    close: vi.fn(),
+    ...fields,
+  };
   sessionMock.mockImplementation(function () {
     return session as unknown as GameSession;
   });
