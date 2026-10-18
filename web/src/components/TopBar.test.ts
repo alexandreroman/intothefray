@@ -21,4 +21,21 @@ describe('TopBar', () => {
     await fireEvent.click(screen.getByRole('button', { name: /Fullscreen/ }));
     expect(request).toHaveBeenCalledOnce();
   });
+
+  it('handles a refused exit from fullscreen', async () => {
+    Object.defineProperty(document, 'fullscreenElement', {
+      value: document.body,
+      configurable: true,
+    });
+    // A bare promise would not prove a handler is attached, so spy on catch.
+    const catchRejection = vi.fn();
+    document.exitFullscreen = vi.fn(() => ({ catch: catchRejection }) as unknown as Promise<void>);
+    try {
+      render(TopBar, { title: 'T', spectators: 0 });
+      await fireEvent.click(screen.getByRole('button', { name: /fullscreen/i }));
+      expect(catchRejection).toHaveBeenCalledOnce();
+    } finally {
+      Reflect.deleteProperty(document, 'fullscreenElement');
+    }
+  });
 });

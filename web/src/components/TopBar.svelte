@@ -14,7 +14,7 @@
     // Not every browser (or embedded view) offers the Fullscreen API, and a
     // request can be denied: the button then does nothing.
     if (document.fullscreenElement) {
-      void document.exitFullscreen?.();
+      void document.exitFullscreen?.().catch(() => {});
     } else {
       void document.documentElement.requestFullscreen?.().catch(() => {});
     }
