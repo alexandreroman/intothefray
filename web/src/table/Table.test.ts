@@ -2,7 +2,14 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/sve
 import Table from './Table.svelte';
 import { interaction, LINGER_MS } from './interaction.svelte';
 import { cardByCode, knownCard, loadAllCards, type CardInfo } from '../lib/catalog';
-import type { Area, CardView as TableCard, PackFace, PileView, View } from '../lib/types';
+import type {
+  Area,
+  CardView as TableCard,
+  PackFace,
+  PileView,
+  PresenceState,
+  View,
+} from '../lib/types';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -40,7 +47,13 @@ function pile(id: string, extra: Partial<PileView>): PileView {
 }
 
 function fakeSession() {
-  return { act: vi.fn(() => 1), lobby: vi.fn(() => true), lastError: null };
+  return {
+    act: vi.fn(() => 1),
+    lobby: vi.fn(() => true),
+    lastError: null,
+    presence: new Map<number, PresenceState>(),
+    sendPresence: vi.fn(),
+  };
 }
 
 /** Rhino with two players; the viewer is Sam, seated second (area p1). */

@@ -1,0 +1,486 @@
+<!--
+  The other players at the table (spec 5.8): their cursors, the card each one
+  previews, their pings and their drags, drawn over the table. It also tells
+  them about the viewer's own cursor, preview and pings; DragLayer tells them
+  about the viewer's drags. Spectators send nothing, as no player draws them
+  (ruling P5c-R2: the server refuses their pings and drags).
+
+  Spots travel as table units of a zone (screen.ts). Messages can come in
+  floods: the session keeps only the latest state of each player, and the
+  layer draws them all in one pass per animation frame.
+-->
+<script lang="ts">
+  import type {
+    Area,
+    CardView as TableCard,
+    PackFace,
+    PresenceDrag,
+    PresenceFields,
+    PresencePoint,
+    PresenceState,
+    View,
+  } from '../lib/types';
+  import CardView from './CardView.svelte';
+  import { contains } from './drag';
+  import { pileBack } from './face';
+  import { interaction } from './interaction.svelte';
+  import { scrollerRect, surfaceRect, toScreen, toTable } from './screen';
+
+  let {
+    view,
+    presence,
+    send,
+    root,
+    zoom,
+    faceOf,
+    layout,
+  }: {
+    view: View;
+    /** The latest state of each other player, by colour. */
+    presence: ReadonlyMap<number, PresenceState>;
+    /** Sends the viewer's own presence; the session throttles it. */
+    send: (fields: PresenceFields) => void;
+    /** The page: the zones and their cards are measured there. */
+    root: HTMLElement | undefined;
+    zoom: number;
+    faceOf: (card: TableCard | undefined) => PackFace | null;
+    /** What moves the cards on the screen without a new view (the zone heights): redrawn on change. */
+    layout: unknown;
+  } = $props();
+
+  /** A player silent for this long shows nothing: they left their screen, or lost their connection. */
+  const STALE_MS = 10_000;
+  /** How long a ping's rings expand. */
+  const PING_MS = 1200;
+  // The prototype's room at a zone's edges for a cursor scrolled out of view.
+  const EDGE_IN = 8;
+  const RIGHT_EDGE_ROOM = 70;
+  const LEFT_EDGE_ROOM = 4;
+
+  /** Where something lies on the layer, in screen pixels. */
+  interface Placed {
+    x: number;
+    y: number;
+    /** An arrow towards a cursor held at the zone's edge, when its spot is scrolled out of view. */
+    side: '' | ' ←' | ' →';
+  }
+
+  interface Ping {
+    key: number;
+    color: number;
+    spot: PresencePoint;
+    /** When its rings are done, in ms since the epoch. */
+    until: number;
+  }
+
+  interface Drawn {
+    cursors: (Placed & { color: number; name: string })[];
+    rings: { color: number; left: number; top: number; width: number; height: number }[];
+    /** The cards of each drag, in table units of the zoomed ghost layer. */
+    ghosts: { color: number; cards: TableCard[] }[];
+    pings: (Placed & { key: number; color: number })[];
+  }
+
+  let layer = $state<HTMLElement>();
+  let drawn = $state.raw<Drawn>({ cursors: [], rings: [], ghosts: [], pings: [] });
+  // Read by the drawing pass only, which runs outside any effect: plain values, not state.
+  let pings: Ping[] = [];
+  let nextPing = 0;
+  /** The time of the last ping drawn, by colour. */
+  const pingsSeen: Record<number, number> = {};
+  /** Wakes the drawing pass when the next player falls silent or the next ping is done. */
+  let wakeTimer: ReturnType<typeof setTimeout> | undefined;
+  let frame = 0;
+
+  const isPlayer = $derived(view.you.role === 'player');
+
+  function colourOf(color: number): string {
+    return `var(--p${color + 1})`;
+  }
+
+  // ---- The viewer's own presence ----
+
+  /**
+   * The spot of the table under a point of the screen: in the zone that
+   * starts last above it, so that a spot between two zones belongs to the one
+   * above. Null outside the table.
+   */
+  function spotAt(at: { x: number; y: number }): PresencePoint | null {
+    const table = root?.querySelector('.tablewrap')?.getBoundingClientRect();
+    if (!root || !table || !contains(table, at)) {
+      return null;
+    }
+    const sections = [...root.querySelectorAll<HTMLElement>('.zsec[data-area]')];
+    const above = sections.filter((section) => section.getBoundingClientRect().top <= at.y);
+    const area = (above.at(-1) ?? sections[0])?.dataset.area as Area | undefined;
+    const surface = area ? surfaceRect(root, area) : undefined;
+    if (!area || !surface) {
+      return null;
+    }
+    // The server takes whole table units only.
+    const point = toTable(at, surface, zoom);
+    return { area, x: Math.round(point.x), y: Math.round(point.y) };
+  }
+
+  function onPointerMove(event: PointerEvent): void {
+    if (!isPlayer) {
+      return;
+    }
+    const cursor = spotAt({ x: event.clientX, y: event.clientY });
+    if (cursor) {
+      send({ cursor });
+    }
+  }
+
+  /**
+   * Alt + click: pings the spot under the press, for the other players and
+   * the viewer alike. Returns whether it pinged; spectators cannot.
+   */
+  export function ping(event: PointerEvent): boolean {
+    const spot = isPlayer ? spotAt({ x: event.clientX, y: event.clientY }) : null;
+    if (!spot) {
+      return false;
+    }
+    send({ ping: spot });
+    showPing(view.you.color, spot);
+    return true;
+  }
+
+  // The preview others see: a table card or a pile, never a hand card, which is private.
+  let previewSent = '';
+  $effect(() => {
+    const previewed = interaction.previewed;
+    const preview = previewed && previewed.kind !== 'hand' ? previewed.id : '';
+    if (isPlayer && preview !== previewSent) {
+      previewSent = preview;
+      send({ preview });
+    }
+  });
+
+  // ---- Other players' presence ----
+
+  function showPing(color: number, spot: PresencePoint, at = Date.now()): void {
+    pings.push({ key: nextPing++, color, spot, until: at + PING_MS });
+    schedule();
+  }
+
+  // Every message: a new ping starts its rings, and the layer is drawn again at the next frame.
+  $effect(() => {
+    const now = Date.now();
+    for (const state of presence.values()) {
+      const { color, ping: spot, pingAt } = state;
+      if (spot && pingAt !== undefined && pingsSeen[color] !== pingAt) {
+        pingsSeen[color] = pingAt;
+        // One that went by before the table showed is not drawn.
+        if (now - pingAt < PING_MS) {
+          showPing(color, spot, pingAt);
+        }
+      }
+    }
+    schedule();
+  });
+
+  /** Where a spot of the table shows, held within its zone's scroller as in the prototype. */
+  function place(spot: PresencePoint, origin: DOMRect): Placed | null {
+    const surface = surfaceRect(root, spot.area);
+    const scroller = scrollerRect(root, spot.area);
+    if (!surface || !scroller) {
+      return null;
+    }
+    const at = toScreen(spot, surface, zoom);
+    let x = at.x;
+    let side: Placed['side'] = '';
+    if (x > scroller.right - EDGE_IN) {
+      x = scroller.right - RIGHT_EDGE_ROOM;
+      side = ' →';
+    } else if (x < scroller.left) {
+      x = scroller.left + LEFT_EDGE_ROOM;
+      side = ' ←';
+    }
+    return { x: x - origin.left, y: at.y - origin.top, side };
+  }
+
+  /** The card or pile a player previews, on the layer. */
+  function ringOf(id: string, origin: DOMRect): Omit<Drawn['rings'][number], 'color'> | null {
+    const rect = root?.querySelector(`.surface .card[data-id="${id}"]`)?.getBoundingClientRect();
+    if (!rect || rect.width === 0) {
+      return null;
+    }
+    return {
+      left: rect.left - origin.left,
+      top: rect.top - origin.top,
+      width: rect.width,
+      height: rect.height,
+    };
+  }
+
+  /**
+   * A card of the viewer cannot see (from a hand), or the encounter deck's
+   * unknown top card, whose pile id the drag carries: face down.
+   */
+  function hiddenCard(id: string, x: number, y: number): TableCard {
+    const pile = view.table?.piles.find((p) => p.id === id);
+    return {
+      id,
+      face: 0,
+      faceDown: true,
+      back: pile ? pileBack(pile.kind) : 'player',
+      owner: -1,
+      zone: 'table',
+      x,
+      y,
+      z: 0,
+    };
+  }
+
+  /** The cards a player drags, where their corner is, the cards tucked under the first keeping their offsets. */
+  function ghostsOf(drag: PresenceDrag, origin: DOMRect): TableCard[] {
+    const surface = surfaceRect(root, drag.area);
+    if (!surface) {
+      return [];
+    }
+    const corner = toScreen(drag, surface, zoom);
+    const x = (corner.x - origin.left) / zoom;
+    const y = (corner.y - origin.top) / zoom;
+    const cards = new Map((view.table?.cards ?? []).map((card) => [card.id, card]));
+    const first = cards.get(drag.cards[0] ?? '');
+    return drag.cards.map((id) => {
+      const card = cards.get(id);
+      if (!card) {
+        return hiddenCard(id, x, y);
+      }
+      if (card.zone === 'table' && first?.zone === 'table') {
+        return { ...card, x: x + card.x - first.x, y: y + card.y - first.y };
+      }
+      return { ...card, zone: 'table', x, y, onPile: undefined, parent: undefined };
+    });
+  }
+
+  function measure(): void {
+    if (!layer) {
+      return;
+    }
+    const origin = layer.getBoundingClientRect();
+    const now = Date.now();
+    const next: Drawn = { cursors: [], rings: [], ghosts: [], pings: [] };
+    // When something drawn now must go: a player falling silent, or a ping done.
+    let nextChange = Infinity;
+    for (const state of presence.values()) {
+      if (now - state.at >= STALE_MS) {
+        continue;
+      }
+      nextChange = Math.min(nextChange, state.at + STALE_MS);
+      const cursor = state.cursor ? place(state.cursor, origin) : null;
+      if (cursor) {
+        next.cursors.push({ ...cursor, color: state.color, name: state.name });
+      }
+      const ring = state.preview ? ringOf(state.preview, origin) : null;
+      if (ring) {
+        next.rings.push({ ...ring, color: state.color });
+      }
+      if (state.drag) {
+        next.ghosts.push({ color: state.color, cards: ghostsOf(state.drag, origin) });
+      }
+    }
+    pings = pings.filter((p) => p.until > now);
+    for (const { key, color, spot, until } of pings) {
+      nextChange = Math.min(nextChange, until);
+      const at = place(spot, origin);
+      // A ping scrolled out of view is not drawn, as in the prototype.
+      if (at && at.side === '') {
+        next.pings.push({ ...at, key, color });
+      }
+    }
+    drawn = next;
+
+    clearTimeout(wakeTimer);
+    if (nextChange !== Infinity) {
+      wakeTimer = setTimeout(schedule, nextChange - now);
+    }
+  }
+
+  /** Draws again at the next frame, once for all the messages, scrolls and moves of that frame. */
+  function schedule(): void {
+    if (frame === 0) {
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        measure();
+      });
+    }
+  }
+
+  // A new view, a zoom or resized zones move the cards under the spots.
+  $effect(() => {
+    void view;
+    void zoom;
+    void layout;
+    schedule();
+  });
+
+  // Scrolling a zone or the table, in the capture phase: scroll events do not bubble.
+  $effect(() => {
+    const page = root;
+    if (!page) {
+      return;
+    }
+    page.addEventListener('scroll', schedule, true);
+    return () => page.removeEventListener('scroll', schedule, true);
+  });
+
+  // The table resized: the side panel slid, or the window changed.
+  $effect(() => {
+    if (!layer) {
+      return;
+    }
+    const observer = new ResizeObserver(schedule);
+    observer.observe(layer);
+    return () => observer.disconnect();
+  });
+
+  $effect(() => () => {
+    cancelAnimationFrame(frame);
+    clearTimeout(wakeTimer);
+  });
+</script>
+
+<svelte:window onpointermove={onPointerMove} onresize={schedule} />
+
+<div class="presence" bind:this={layer} aria-hidden="true">
+  {#each drawn.rings as ring (ring.color)}
+    <div
+      class="rring"
+      style:--c={colourOf(ring.color)}
+      style:left="{ring.left}px"
+      style:top="{ring.top}px"
+      style:width="{ring.width}px"
+      style:height="{ring.height}px"
+    ></div>
+  {/each}
+  <div class="ghosts">
+    {#each drawn.ghosts as ghost (ghost.color)}
+      {#each ghost.cards as card (card.id)}
+        <CardView {card} face={faceOf(card)} ghost />
+      {/each}
+    {/each}
+  </div>
+  {#each drawn.pings as pinged (pinged.key)}
+    {#each ['a', 'b'] as ring (ring)}
+      <div
+        class="ping {ring}"
+        style:--c={colourOf(pinged.color)}
+        style:left="{pinged.x}px"
+        style:top="{pinged.y}px"
+      ></div>
+    {/each}
+  {/each}
+  {#each drawn.cursors as cursor (cursor.color)}
+    <!-- A macOS-like pointer: filled with the player's colour, a dark outline for contrast on any card. -->
+    <div
+      class="rcursor"
+      class:off={cursor.side !== ''}
+      style:transform="translate({cursor.x}px, {cursor.y}px)"
+    >
+      <svg width="22" height="28" viewBox="0 0 22 28"
+        ><path
+          d="M3 2.5 L3 21.5 L7.6 17.2 L10.7 24.4 L14.2 22.9 L11.2 15.9 L17.6 15.9 Z"
+          style:fill={colourOf(cursor.color)}
+          stroke="#111"
+          stroke-width="1.2"
+          stroke-linejoin="round"
+          stroke-linecap="round"
+        /></svg
+      ><span style:background={colourOf(cursor.color)}>{cursor.name}{cursor.side}</span>
+    </div>
+  {/each}
+</div>
+
+<style>
+  /* Over the table, the arrows and the resting hand; under the veil and the open hand, as in the prototype. */
+  .presence {
+    grid-area: table;
+    position: relative;
+    z-index: 2500;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  /* The ring of the card another player previews: the hover ring, in their colour. */
+  .rring {
+    position: absolute;
+    border-radius: 7px;
+    box-shadow:
+      0 0 0 2px var(--c),
+      0 0 22px 6px color-mix(in srgb, var(--c) 22%, transparent);
+  }
+
+  /*
+    At the table's zoom: the ghosts are placed in table units. Their z-indexes come from the
+    server: isolated, they stay under the cursors.
+  */
+  .ghosts {
+    position: absolute;
+    left: 0;
+    top: 0;
+    isolation: isolate;
+    zoom: var(--z, 1);
+  }
+
+  .rcursor {
+    position: absolute;
+    left: 0;
+    top: 0;
+    /* Messages come 20 times a second at most: the cursor glides between them. */
+    transition: transform 0.08s linear;
+  }
+
+  .rcursor svg {
+    display: block;
+    filter: drop-shadow(0 1px 1.5px #0009) drop-shadow(0 2px 5px #0005);
+  }
+
+  .rcursor span {
+    position: absolute;
+    left: 16px;
+    top: 22px;
+    border: 1px solid #111;
+    color: #1a1208;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+
+  /* Held at the zone's edge: its spot is scrolled out of view. */
+  .rcursor.off svg {
+    opacity: 0.35;
+  }
+
+  /* Two rings, the second a little later, both within the 1.2 s of a ping. */
+  .ping {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    margin: -9px 0 0 -9px;
+    border-radius: 50%;
+    border: 3px solid var(--c);
+    animation: ping 0.95s ease-out forwards;
+  }
+
+  .ping.b {
+    animation-delay: 0.25s;
+    opacity: 0;
+  }
+
+  @keyframes ping {
+    0% {
+      transform: scale(0.3);
+      opacity: 1;
+    }
+
+    100% {
+      transform: scale(4.5);
+      opacity: 0;
+    }
+  }
+</style>

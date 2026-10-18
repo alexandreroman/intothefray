@@ -3,7 +3,14 @@ import Table from './Table.svelte';
 import { pileLabel, tileActions, type TileAction } from './boxes';
 import { interaction } from './interaction.svelte';
 import { cardByCode, knownCard, loadAllCards, type CardInfo } from '../lib/catalog';
-import type { CardView as TableCard, PackFace, PileView, PrivateView, View } from '../lib/types';
+import type {
+  CardView as TableCard,
+  PackFace,
+  PileView,
+  PresenceState,
+  PrivateView,
+  View,
+} from '../lib/types';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -115,7 +122,13 @@ function asSpectator(view: View): View {
 }
 
 function fakeSession() {
-  return { act: vi.fn(() => 1), lobby: vi.fn(() => true), lastError: null };
+  return {
+    act: vi.fn(() => 1),
+    lobby: vi.fn(() => true),
+    lastError: null,
+    presence: new Map<number, PresenceState>(),
+    sendPresence: vi.fn(),
+  };
 }
 
 async function renderTable(view = makeView()) {

@@ -317,7 +317,7 @@ export interface PresenceDrag {
 /** The fields a presence message relays; each is absent when it did not change. */
 export interface PresenceFields {
   cursor?: PresencePoint;
-  preview?: string; // id of the card being previewed
+  preview?: string; // id of the card or pile being previewed, '' once cleared
   drag?: PresenceDrag | null; // null once the drag ended
   ping?: PresencePoint;
 }
@@ -326,6 +326,10 @@ export interface PresenceFields {
 export interface PresenceState extends PresenceFields {
   color: number;
   name: string;
+  /** When their last message came, in ms since the epoch. */
+  at: number;
+  /** When their last ping came: a ping is an event, not a state. */
+  pingAt?: number;
 }
 
 /** A card of an imported deck that the game cannot use. */

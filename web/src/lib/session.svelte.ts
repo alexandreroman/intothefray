@@ -259,7 +259,13 @@ export class GameSession {
     const changes = Object.fromEntries(
       Object.entries({ cursor, preview, drag, ping }).filter(([, value]) => value !== undefined),
     );
-    this.presence.set(color, { ...this.presence.get(color), color, name, ...changes });
+    // Stamped, so that the table can hide a silent viewer and tell a new ping from an old one.
+    const at = Date.now();
+    const state: PresenceState = { ...this.presence.get(color), color, name, ...changes, at };
+    if (ping !== undefined) {
+      state.pingAt = at;
+    }
+    this.presence.set(color, state);
   }
 
   #handleClose(code: number): void {

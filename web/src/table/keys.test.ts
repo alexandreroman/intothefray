@@ -4,7 +4,14 @@ import { interaction } from './interaction.svelte';
 import { freeSlot } from './keys';
 import { openModal } from '../components/modal.svelte';
 import { cardByCode, knownCard, loadAllCards, type CardInfo } from '../lib/catalog';
-import type { CardView as TableCard, PackFace, PileView, Size, View } from '../lib/types';
+import type {
+  CardView as TableCard,
+  PackFace,
+  PileView,
+  PresenceState,
+  Size,
+  View,
+} from '../lib/types';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -96,7 +103,13 @@ function makeView(extra: Partial<View> & { cards?: TableCard[] } = {}): View {
 }
 
 function fakeSession() {
-  return { act: vi.fn(() => 1), lobby: vi.fn(() => true), lastError: null };
+  return {
+    act: vi.fn(() => 1),
+    lobby: vi.fn(() => true),
+    lastError: null,
+    presence: new Map<number, PresenceState>(),
+    sendPresence: vi.fn(),
+  };
 }
 
 function placed(id: string): HTMLElement {

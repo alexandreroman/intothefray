@@ -2,7 +2,7 @@ import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import Table from './Table.svelte';
 import { fanPositions, HAND_CARD_NARROW } from './layout';
 import { knownCard, loadAllCards } from '../lib/catalog';
-import type { CardView as TableCard, View } from '../lib/types';
+import type { CardView as TableCard, PresenceState, View } from '../lib/types';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -77,7 +77,13 @@ function makeView(): View {
 }
 
 function fakeSession() {
-  return { act: vi.fn(() => 1), lobby: vi.fn(() => true), lastError: null };
+  return {
+    act: vi.fn(() => 1),
+    lobby: vi.fn(() => true),
+    lastError: null,
+    presence: new Map<number, PresenceState>(),
+    sendPresence: vi.fn(),
+  };
 }
 
 function sidePanel(): HTMLElement {

@@ -7,6 +7,7 @@ import type {
   Area,
   CardView as TableCard,
   PackFace,
+  PresenceState,
   PileView,
   SessionError,
   View,
@@ -130,6 +131,8 @@ function fakeSession() {
     act: vi.fn((_action: Action): number | null => 1),
     lobby: vi.fn(() => true),
     lastError: null as SessionError | null,
+    presence: new Map<number, PresenceState>(),
+    sendPresence: vi.fn(),
   };
 }
 

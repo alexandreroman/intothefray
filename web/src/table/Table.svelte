@@ -40,14 +40,20 @@
   import { interaction } from './interaction.svelte';
   import { handleKey } from './keys';
   import { zoneMinHeight, zoneOrder } from './layout';
+  import Presence from './Presence.svelte';
   import TokenPill from './TokenPill.svelte';
   import SidePanel, { type Preview } from './SidePanel.svelte';
   import Zone, { type Heading, type ResizeAbove } from './Zone.svelte';
   import ZoomControl from './ZoomControl.svelte';
   import { clampZoom, saveZoom, storedZoom, ZOOM_MAX, ZOOM_MIN } from './zoom';
 
-  let { session, view }: { session: Pick<GameSession, 'act' | 'lobby' | 'lastError'>; view: View } =
-    $props();
+  let {
+    session,
+    view,
+  }: {
+    session: Pick<GameSession, 'act' | 'lobby' | 'lastError' | 'presence' | 'sendPresence'>;
+    view: View;
+  } = $props();
 
   // P5a-R2: the catalog is loaded once, then card sizes are looked up synchronously.
   let catalog = $state<'loading' | 'ready' | 'failed'>('loading');
@@ -513,6 +519,12 @@
       endArrowAt(tableCardOf(target));
       return;
     }
+    // Alt + click pings the spot (spec 5.8); spectators cannot ping.
+    if (event.altKey && event.button === 0 && presenceLayer?.ping(event)) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
     const pressed = tableCardOf(target);
     if (event.shiftKey && event.button === 0 && pressed && view.you.role === 'player') {
       // Neither a drag of the card nor a text selection.
@@ -585,6 +597,7 @@
   let zoom = $state(storedZoom());
   let wrap = $state<HTMLElement>();
   let app = $state<HTMLElement>();
+  let presenceLayer = $state<ReturnType<typeof Presence>>();
 
   // A new view, a zoom or a resized zone moves the elements under a pointer at
   // rest: the ones it lands on are not hovered by the viewer.
@@ -716,6 +729,17 @@
     </div>
   </div>
 
+  <Presence
+    bind:this={presenceLayer}
+    {view}
+    presence={session.presence}
+    send={(fields) => session.sendPresence(fields)}
+    root={app}
+    {zoom}
+    {faceOf}
+    layout={zones}
+  />
+
   {#if catalog === 'failed'}
     <p class="notice" role="alert">Card data could not be loaded: cards show as placeholders.</p>
   {/if}
@@ -733,6 +757,7 @@
     {faceOf}
     {sizeOf}
     act={(action) => session.act(action)}
+    ondrag={(drag) => session.sendPresence({ drag })}
     lastError={session.lastError}
   />
 

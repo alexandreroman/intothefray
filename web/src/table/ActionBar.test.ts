@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/sve
 import Table from './Table.svelte';
 import { interaction } from './interaction.svelte';
 import { cardByCode, knownCard, loadAllCards, type CardInfo } from '../lib/catalog';
-import type { CardView as TableCard, PackFace, PileView, View } from '../lib/types';
+import type { CardView as TableCard, PackFace, PileView, PresenceState, View } from '../lib/types';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -106,7 +106,13 @@ function makeView(extra: { cards?: TableCard[]; piles?: PileView[] } = {}): View
 }
 
 function fakeSession() {
-  return { act: vi.fn(() => 1), lobby: vi.fn(() => true), lastError: null };
+  return {
+    act: vi.fn(() => 1),
+    lobby: vi.fn(() => true),
+    lastError: null,
+    presence: new Map<number, PresenceState>(),
+    sendPresence: vi.fn(),
+  };
 }
 
 function placed(id: string): HTMLElement {

@@ -507,7 +507,8 @@ describe('GameSession', () => {
   });
 
   describe('presence', () => {
-    it('keeps the latest state of each viewer by colour', () => {
+    it('keeps the latest state of each viewer by colour, stamped with its time', () => {
+      vi.setSystemTime(1_000);
       const session = newSession();
       lastSocket().open();
       lastSocket().receive({
@@ -516,6 +517,7 @@ describe('GameSession', () => {
         name: 'Bo',
         cursor: { area: 'villain', x: 1, y: 2 },
       });
+      vi.setSystemTime(1_500);
       lastSocket().receive({ type: 'presence', color: 1, name: 'Bo', preview: 'c1' });
 
       expect(session.presence.get(1)).toEqual({
@@ -523,6 +525,27 @@ describe('GameSession', () => {
         name: 'Bo',
         cursor: { area: 'villain', x: 1, y: 2 },
         preview: 'c1',
+        at: 1_500,
+      });
+    });
+
+    it('stamps a ping with the time it came, which later messages keep', () => {
+      vi.setSystemTime(1_000);
+      const session = newSession();
+      lastSocket().open();
+      lastSocket().receive({
+        type: 'presence',
+        color: 1,
+        name: 'Bo',
+        ping: { area: 'p1', x: 5, y: 6 },
+      });
+      vi.setSystemTime(1_200);
+      lastSocket().receive({ type: 'presence', color: 1, name: 'Bo', preview: 'c1' });
+
+      expect(session.presence.get(1)).toMatchObject({
+        ping: { area: 'p1', x: 5, y: 6 },
+        pingAt: 1_000,
+        at: 1_200,
       });
     });
 

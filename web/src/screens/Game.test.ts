@@ -31,6 +31,7 @@ function mockSession(fields: object): {
     status: 'open',
     view: null,
     lastError: null,
+    presence: new Map(),
     connect: vi.fn(),
     close: vi.fn(),
     ...fields,
