@@ -327,16 +327,73 @@ describe('keys on the table', () => {
   });
 });
 
+describe('held keys', () => {
+  it('a held key repeats only the counters and the zoom', async () => {
+    const view = makeView({ canUndo: true });
+    const { session } = await renderTable(view);
+    await fireEvent.pointerEnter(placed('mine'));
+
+    await press('e', { repeat: true });
+    await press('z', { repeat: true });
+    expect(session.act).not.toHaveBeenCalled();
+
+    await press('d', { repeat: true });
+    expect(session.act).toHaveBeenLastCalledWith({
+      kind: 'token',
+      card: 'mine',
+      name: 'dmg',
+      delta: 1,
+    });
+    await press('D', { shiftKey: true, repeat: true });
+    expect(session.act).toHaveBeenLastCalledWith({
+      kind: 'token',
+      card: 'mine',
+      name: 'dmg',
+      delta: -1,
+    });
+    expect(session.act).toHaveBeenCalledTimes(2);
+
+    await press('+', { repeat: true });
+    await press('+', { repeat: true });
+    expect(zoomLabel()).toBe('120%');
+  });
+
+  it('a held key plays or discards a hand card once', async () => {
+    const { session } = await renderTable();
+    await fireEvent.pointerEnter(inHand('h'));
+
+    await press('p', { repeat: true });
+    await press('x', { repeat: true });
+    expect(session.act).not.toHaveBeenCalled();
+  });
+});
+
+describe('Escape', () => {
+  it('acts even while a field has the focus', async () => {
+    await renderTable();
+    await fireEvent.pointerEnter(placed('mine'));
+    await press('a');
+    expect(interaction.arrowFrom).toBe('mine');
+
+    const field = document.body.appendChild(document.createElement('input'));
+    field.focus();
+    await fireEvent.keyDown(field, { key: 'Escape' });
+    expect(interaction.arrowFrom).toBeNull();
+    await fireEvent.keyDown(field, { key: 'Escape' });
+    expect(interaction.hovered).toBeNull();
+  });
+});
+
 describe('keys on a hand card', () => {
   it('P plays to a free slot', async () => {
     const cards = [
       card('v', { code: '01094', owner: -1, back: 'villain', area: 'villain' }),
-      // 280–380, then a double-size card at 390–530.
+      // 280–380 takes the slot at 280; a double-size card at 390–530 the one at 420.
       card('a', { x: 280 }),
       card('b', { code: '01010', x: 390 }),
       // Below the top row, or in another area: not in the way.
-      card('low', { x: 530, y: 140 }),
-      card('there', { area: 'villain', x: 530 }),
+      card('low', { x: 560, y: 140 }),
+      card('there', { area: 'villain', x: 560 }),
       card('h', { zone: 'hand', area: undefined }),
     ];
     const { session } = await renderTable(makeView({ cards }));
@@ -347,7 +404,7 @@ describe('keys on a hand card', () => {
       kind: 'play',
       card: 'h',
       area: 'p0',
-      x: 530,
+      x: 560,
       y: 0,
     });
   });
@@ -372,26 +429,47 @@ describe('keys on a hand card', () => {
 
 describe('freeSlot', () => {
   const sizeOf = (c: TableCard): Size => (c.code === '01010' ? 'dstd' : 'std');
+  const deck = pile('deck:p0', { owner: 0, area: 'p0', x: 0 });
+  const discard = pile('disc:p0', { kind: 'discard', owner: 0, area: 'p0', x: 120 });
 
-  it('starts at 280 when the top row is free there', () => {
-    const played = card('h', { zone: 'hand' });
-    expect(freeSlot(played, [card('a', { x: 0 }), card('b', { x: 180 })], 'p0', sizeOf)).toEqual({
-      x: 280,
+  it('starts at 280, past the deck and the discard pile', () => {
+    expect(freeSlot([], [deck, discard], 'p0', sizeOf)).toEqual({ x: 280, y: 0 });
+  });
+
+  it('steps by 140, keeping 20 free on each side of a 100-wide card', () => {
+    // 280 needs 260–400 free: a card from 390 is in the way, and its right edge (490) blocks 420.
+    expect(freeSlot([card('a', { x: 390 })], [], 'p0', sizeOf)).toEqual({ x: 560, y: 0 });
+    // A card from 400 leaves 280 free; one ending at 400 leaves 420 free.
+    expect(freeSlot([card('a', { x: 400 })], [], 'p0', sizeOf)).toEqual({ x: 280, y: 0 });
+    expect(freeSlot([card('a', { x: 300 })], [], 'p0', sizeOf)).toEqual({ x: 420, y: 0 });
+  });
+
+  it('counts the visible width of a card: double size, face down, tilted when exhausted', () => {
+    // Double size, 140 wide: 300–440 blocks 420.
+    expect(freeSlot([card('a', { code: '01010', x: 300 })], [], 'p0', sizeOf)).toEqual({
+      x: 560,
       y: 0,
     });
+    // Face down, it is 100 wide again.
+    const faceDown = card('a', { code: '01010', faceDown: true, x: 300 });
+    expect(freeSlot([faceDown], [], 'p0', sizeOf)).toEqual({ x: 420, y: 0 });
+    // Exhausted, it turns 15°: its bounding box reaches past 400.
+    const exhausted = card('a', { x: 300, exhausted: true });
+    expect(freeSlot([exhausted], [], 'p0', sizeOf)).toEqual({ x: 560, y: 0 });
   });
 
-  it('steps by 10 past every card in the way, by the box of the card played', () => {
-    // A double-size card (140 × 200) fits neither before a std card at 380, nor before one lying
-    // from 600 to 700 lower down, but within its 200 height.
-    const played = card('h', { code: '01010', zone: 'hand' });
-    const cards = [card('a', { x: 380, y: 0 }), card('b', { x: 600, y: 190 })];
-    expect(freeSlot(played, cards, 'p0', sizeOf)).toEqual({ x: 700, y: 0 });
+  it('a pile in play is in the way; a victory or set-aside pile is not', () => {
+    const inPlay = pile('deck:p0', { owner: 0, area: 'p0', x: 300 });
+    expect(freeSlot([], [inPlay], 'p0', sizeOf)).toEqual({ x: 420, y: 0 });
+    // Out-of-play piles are drawn at the right end of the zone, wherever the server put them.
+    const aside = pile('aside:p0', { kind: 'aside', owner: 0, area: 'p0', x: 280 });
+    const victory = pile('vic', { kind: 'victory', area: 'p0', x: 280 });
+    expect(freeSlot([], [aside, victory], 'p0', sizeOf)).toEqual({ x: 280, y: 0 });
   });
 
-  it('counts a face-down card as 100 × 140', () => {
-    const played = card('h', { zone: 'hand' });
-    const cards = [card('a', { code: '01010', faceDown: true, x: 200 })];
-    expect(freeSlot(played, cards, 'p0', sizeOf)).toEqual({ x: 300, y: 0 });
+  it('only the top row of the area counts', () => {
+    const cards = [card('low', { x: 280, y: 140 }), card('there', { area: 'p1', x: 280 })];
+    const piles = [pile('deck:p1', { owner: 1, area: 'p1', x: 280 })];
+    expect(freeSlot(cards, piles, 'p0', sizeOf)).toEqual({ x: 280, y: 0 });
   });
 });

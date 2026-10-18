@@ -149,20 +149,4 @@ describe('Hand', () => {
       localStorage.clear();
     }
   });
-
-  it('a tap on an empty part of the hand releases a touch selection', async () => {
-    render(Hand, { cards: CARDS, faceOf });
-    const [first] = handCards() as [HTMLElement];
-    interaction.pointerPressed(new PointerEvent('pointerdown', { pointerType: 'touch' }));
-    await fireEvent.click(first);
-    expect(interaction.isLocked({ kind: 'hand', id: 'h1' })).toBe(true);
-
-    // A tap on a card is not on an empty part.
-    await fireEvent.pointerDown(first);
-    expect(interaction.locked).toBe(true);
-
-    await fireEvent.pointerDown(handList());
-    expect(interaction.locked).toBe(false);
-    expect(interaction.hovered).toBeNull();
-  });
 });

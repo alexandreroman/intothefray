@@ -477,6 +477,20 @@ describe('ActionBar', () => {
     expect(placed('mine').classList).not.toContain('locked');
   });
 
+  it("a tap through the hand's empty part reaches the table and releases a selection", async () => {
+    await renderTable();
+    const hcard = document.querySelector<HTMLElement>('.hand [data-id="h"]')!;
+    await fireEvent.pointerDown(hcard, { pointerType: 'touch' });
+    await fireEvent.click(hcard);
+    expect(interaction.isLocked({ kind: 'hand', id: 'h' })).toBe(true);
+
+    // The hand lets taps through (pointer-events: none): around its cards, they land on the zone.
+    const scroller = placed('mine').closest<HTMLElement>('.zscroll')!;
+    await fireEvent.pointerDown(scroller, { pointerType: 'touch' });
+    expect(interaction.locked).toBe(false);
+    expect(interaction.hovered).toBeNull();
+  });
+
   it('a click with a mouse selects nothing', async () => {
     await renderTable();
     vi.useFakeTimers();

@@ -73,7 +73,7 @@ export function zoneOrder(view: View): Area[] {
 }
 
 /** A victory display or set-aside pile: placed by the client, not counted as content. */
-function isOutOfPlay(pile: PileView): boolean {
+export function isOutOfPlay(pile: PileView): boolean {
   return OUT_OF_PLAY_ORDER.includes(pile.kind);
 }
 

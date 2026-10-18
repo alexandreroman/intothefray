@@ -3,14 +3,23 @@
 // offers; the hand cards, which have no bar, get their own keys here.
 
 import { modal } from '../components/modal.svelte';
-import type { Action, Area, CardView, Size, View } from '../lib/types';
+import type { Action, Area, CardView, PileView, Size, View } from '../lib/types';
 import type { ActionItem } from './actions';
 import { interaction } from './interaction.svelte';
-import { cardBox, footprints, GRID } from './layout';
+import { footprints, isOutOfPlay, type Footprint } from './layout';
 import { ZOOM_STEP } from './zoom';
 
-/** P plays a card no further left than this: past the deck, the discard pile and the identity. */
-const PLAY_FROM_X = 280;
+// The prototype's free slot (ruling P5b-R5): from x 280, past the deck and
+// the discard pile, in 140 steps, a 100-wide card with 20 free on each side,
+// on the top row (140 high).
+const SLOT_FIRST_X = 280;
+const SLOT_STEP = 140;
+const SLOT_CARD_WIDTH = 100;
+const SLOT_MARGIN = 20;
+const TOP_ROW_HEIGHT = 140;
+
+/** Keep in step with --exhaust-angle (tokens.css). */
+const EXHAUST_RADIANS = (15 * Math.PI) / 180;
 
 /** What the keys need from the table. */
 export interface KeyTable {
@@ -28,22 +37,28 @@ export interface KeyTable {
 }
 
 /**
- * Handles a key pressed anywhere on the page. Nothing acts while the viewer
- * types in a field or a dialog is open: the key is theirs.
+ * Handles a key pressed anywhere on the page. Nothing acts while a dialog is
+ * open, and only Escape while the viewer types in a field: the keys are theirs.
  */
 export function handleKey(event: KeyboardEvent, table: KeyTable): void {
-  if (event.defaultPrevented || modal.open || isTyping(event.target)) {
+  if (event.defaultPrevented || modal.open) {
     return;
   }
+  // Escape lets go of the table even from a field, as in the prototype.
   if (event.key === 'Escape') {
-    interaction.escape();
+    if (!event.repeat) {
+      interaction.escape();
+    }
+    return;
+  }
+  if (isTyping(event.target)) {
     return;
   }
   // ⌘ or Ctrl + a key is the browser's shortcut, not ours.
   if (event.metaKey || event.ctrlKey) {
     return;
   }
-  if (tableKey(event.key, table) || playerKey(event, table)) {
+  if (tableKey(event, table) || playerKey(event, table)) {
     event.preventDefault();
   }
 }
@@ -55,9 +70,9 @@ function isTyping(target: EventTarget | null): boolean {
   );
 }
 
-/** The keys everyone has, spectators too: the zoom and the shortcuts sheet. */
-function tableKey(key: string, table: KeyTable): boolean {
-  switch (key) {
+/** The keys everyone has, spectators too: the zoom (it repeats while held) and the shortcuts sheet. */
+function tableKey(event: KeyboardEvent, table: KeyTable): boolean {
+  switch (event.key) {
     case '+':
     case '=':
       table.setZoom(table.zoom + ZOOM_STEP);
@@ -70,14 +85,20 @@ function tableKey(key: string, table: KeyTable): boolean {
       table.setZoom(1);
       return true;
     case '?':
-      table.showKeys();
+      if (!event.repeat) {
+        table.showKeys();
+      }
       return true;
     default:
       return false;
   }
 }
 
-/** The keys that act on the game, for players only. Returns whether the key did something. */
+/**
+ * The keys that act on the game, for players only. A held key repeats only
+ * the counters: played or discarded cards, undos and the rest happen once.
+ * Returns whether the key did something.
+ */
 function playerKey(event: KeyboardEvent, table: KeyTable): boolean {
   // Alt + a letter types another character on macOS, and opens the browser's menus elsewhere.
   if (table.view.you.role !== 'player' || event.altKey) {
@@ -86,7 +107,7 @@ function playerKey(event: KeyboardEvent, table: KeyTable): boolean {
   // Case-insensitive: Caps Lock does not change what a key does, only Shift does.
   const key = event.key.toLowerCase();
   if (key === 'z' && !event.shiftKey) {
-    if (!table.view.canUndo) {
+    if (event.repeat || !table.view.canUndo) {
       return false;
     }
     table.act({ kind: 'undo' });
@@ -98,7 +119,7 @@ function playerKey(event: KeyboardEvent, table: KeyTable): boolean {
     return false;
   }
   if (hovered.kind === 'hand') {
-    return !event.shiftKey && handKey(key, hovered.id, table);
+    return !event.shiftKey && !event.repeat && handKey(key, hovered.id, table);
   }
   if (!Array.isArray(table.items)) {
     return false;
@@ -107,8 +128,13 @@ function playerKey(event: KeyboardEvent, table: KeyTable): boolean {
   if (!item) {
     return false;
   }
+  const adds = counterAction(item);
   if (event.shiftKey) {
-    return removeOne(item, table);
+    // Shift goes with the token and status keys only.
+    return adds !== null && removeOne(adds, table);
+  }
+  if (event.repeat && adds === null) {
+    return false;
   }
   table.run(item);
   return true;
@@ -131,16 +157,21 @@ function findItem(items: ActionItem[], key: string): ActionItem | undefined {
   return undefined;
 }
 
+/** The action of a token or status item, which adds one; null for any other item. */
+function counterAction(item: ActionItem): Action | null {
+  const result = item.run?.();
+  if (!result || !('kind' in result)) {
+    return null;
+  }
+  return result.kind === 'token' || result.kind === 'status' ? result : null;
+}
+
 /**
  * Shift + a token or status key takes one off: the item's own action, the
  * other way. Nothing is sent when the card has none, rather than a change
- * that changes nothing. Shift with any other key does nothing.
+ * that changes nothing.
  */
-function removeOne(item: ActionItem, table: KeyTable): boolean {
-  const adds = item.run?.();
-  if (!adds || !('kind' in adds) || (adds.kind !== 'token' && adds.kind !== 'status')) {
-    return false;
-  }
+function removeOne(adds: Action, table: KeyTable): boolean {
   const card = table.view.table?.cards.find((c) => c.id === adds.card);
   const counts = adds.kind === 'token' ? card?.tokens : card?.status;
   if ((counts?.[adds.name ?? ''] ?? 0) > 0) {
@@ -154,12 +185,11 @@ function handKey(key: string, id: string, table: KeyTable): boolean {
   switch (key) {
     case 'p': {
       const area = table.view.you.area;
-      const cards = table.view.table?.cards ?? [];
-      const card = cards.find((c) => c.id === id);
-      if (!area || !card) {
+      if (!area || !table.view.table) {
         return false;
       }
-      const { x, y } = freeSlot(card, cards, area, table.sizeOf);
+      const { cards, piles } = table.view.table;
+      const { x, y } = freeSlot(cards, piles, area, table.sizeOf);
       table.act({ kind: 'play', card: id, area, x, y });
       return true;
     }
@@ -172,24 +202,39 @@ function handKey(key: string, id: string, table: KeyTable): boolean {
 }
 
 /**
- * The first spot of the top row of an area, from x 280 on and on the 10-unit
- * grid, where the card would overlap none of the area's table cards.
+ * The prototype's free slot for a card played from the hand: the first spot
+ * of the top row of an area, from x 280 in steps of 140, where a 100-wide
+ * card keeps 20 free on each side. The area's table cards and in-play piles
+ * are in the way; its victory and set-aside piles are not, being drawn at
+ * the right end of the zone (placeOutPiles).
  */
 export function freeSlot(
-  card: CardView,
   cards: CardView[],
+  piles: PileView[],
   area: Area,
   sizeOf: (card: CardView) => Size,
 ): { x: number; y: number } {
-  const { w, h } = cardBox(sizeOf(card), { faceDown: card.faceDown });
-  const taken = footprints(cards, [], area, sizeOf);
-  // Ends: every card is passed after a finite number of steps.
-  for (let x = PLAY_FROM_X; ; x += GRID) {
-    const overlaps = taken.some(
-      (box) => box.x < x + w && x < box.x + box.w && box.y < h && 0 < box.y + box.h,
+  const exhausted = new Set(cards.filter((c) => c.exhausted).map((c) => c.id));
+  const inPlay = piles.filter((p) => !isOutOfPlay(p));
+  const items = footprints(cards, inPlay, area, sizeOf).filter((item) => item.y < TOP_ROW_HEIGHT);
+  // Ends: every item is passed after a finite number of steps.
+  for (let x = SLOT_FIRST_X; ; x += SLOT_STEP) {
+    const blocked = items.some(
+      (item) =>
+        item.x < x + SLOT_CARD_WIDTH + SLOT_MARGIN &&
+        rightEdge(item, exhausted.has(item.id)) > x - SLOT_MARGIN,
     );
-    if (!overlaps) {
+    if (!blocked) {
       return { x, y: 0 };
     }
   }
+}
+
+/** The right edge an item shows: an exhausted card is turned, its bounding box wider around its centre. */
+function rightEdge(item: Footprint, exhausted: boolean): number {
+  if (!exhausted) {
+    return item.x + item.w;
+  }
+  const turnedWidth = item.w * Math.cos(EXHAUST_RADIANS) + item.h * Math.sin(EXHAUST_RADIANS);
+  return item.x + item.w / 2 + turnedWidth / 2;
 }
