@@ -221,7 +221,9 @@ pack index (`packs/<lang>/index.json`), which the lobby reads to
 pick a scenario. Once the table is set up, the client downloads the
 game's card pool from `GET /api/games/{id}/cards`: the definitions
 of the cards in that game only, cached by the browser (`ETag`,
-immutable).
+immutable). The table then asks the browser to download the images
+of those cards at low priority, so no card shows empty the first
+time it appears (not when the browser asks to save data).
 
 | Path                | Description                                    |
 | ------------------- | ---------------------------------------------- |

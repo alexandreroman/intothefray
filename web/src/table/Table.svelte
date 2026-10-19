@@ -11,7 +11,7 @@
   import { MediaQuery } from 'svelte/reactivity';
   import Tooltip from '../components/Tooltip.svelte';
   import TopBar from '../components/TopBar.svelte';
-  import { knownCard, loadGameCards, loadIndex } from '../lib/catalog';
+  import { gameCards, knownCard, loadGameCards, loadIndex } from '../lib/catalog';
   import { getPref, setPref } from '../lib/prefs';
   import type { GameSession } from '../lib/session.svelte';
   import type {
@@ -94,6 +94,33 @@
     () => (catalog = 'ready'),
     () => (catalog = 'failed'),
   );
+
+  // Once the pool is loaded, every card image of the game is fetched ahead, so that the browser
+  // has it cached before the card first shows. At low priority: the images on screen come first.
+  // Leaving the table cancels what is still loading; nothing is fetched when the browser asks to
+  // save data (navigator.connection is missing from TypeScript's DOM types).
+  $effect(() => {
+    const { connection } = navigator as { connection?: { saveData?: boolean } };
+    if (catalog !== 'ready' || connection?.saveData) {
+      return;
+    }
+    const preloads: HTMLImageElement[] = [];
+    for (const face of gameCards().flatMap((card) => card.faces)) {
+      const url = face.images[0];
+      if (url === undefined) {
+        continue;
+      }
+      const img = new Image();
+      img.fetchPriority = 'low';
+      img.src = url;
+      preloads.push(img);
+    }
+    return () => {
+      for (const img of preloads) {
+        img.src = '';
+      }
+    };
+  });
 
   function faceOf(card: TableCard | undefined): PackFace | null {
     if (catalog !== 'ready' || !card?.code || isHidden(card)) {
