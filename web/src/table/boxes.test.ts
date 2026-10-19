@@ -94,3 +94,53 @@ describe('a player with two decks', () => {
     expect(pileLabel(pileOf('deck:p2'), view)).toBe("Sam's deck");
   });
 });
+
+describe('a discard pile box', () => {
+  const DISCARDS: PileView[] = [
+    pile('disc:p1', { kind: 'discard', owner: 1 }),
+    pile('disc:p2', { kind: 'discard', owner: 2 }),
+    pile('encd', { kind: 'encounterDiscard' }),
+  ];
+
+  /** The two-deck table with its discard piles, and the encounter deck unless left out. */
+  function viewWithDiscards(withEncounterDeck = true): View {
+    const view = makeView();
+    const encounter = withEncounterDeck ? [pile('enc', { kind: 'encounter' })] : [];
+    view.table!.piles = [...PILES, ...DISCARDS, ...encounter];
+    return view;
+  }
+
+  function discardOf(id: string): PileView {
+    const found = DISCARDS.find((p) => p.id === id);
+    if (!found) {
+      throw new Error(`no pile ${id}`);
+    }
+    return found;
+  }
+
+  it('shuffles an own card into its own deck from the second seat', () => {
+    const view = viewWithDiscards();
+    const tiles = tileActions(card('d', 1), discardOf('disc:p1'), contextOf(view));
+    expect(tiles.map((tile) => tile.id)).toEqual(['draw', 'play', 'shuffle']);
+    expect(tiles[2]?.run()).toEqual({ kind: 'toDeck', card: 'd', where: 'shuffle' });
+  });
+
+  it("does not shuffle another player's card", () => {
+    const view = viewWithDiscards();
+    const tiles = tileActions(card('s', 2), discardOf('disc:p2'), contextOf(view));
+    expect(tiles.map((tile) => tile.id)).toEqual(['play']);
+  });
+
+  it('shuffles an encounter card into the encounter deck', () => {
+    const view = viewWithDiscards();
+    const tiles = tileActions(card('e', -1), discardOf('encd'), contextOf(view));
+    expect(tiles.map((tile) => tile.id)).toEqual(['play', 'shuffle']);
+    expect(tiles[1]?.run()).toEqual({ kind: 'toDeck', card: 'e', where: 'shuffle' });
+  });
+
+  it('does not shuffle without a home deck', () => {
+    const view = viewWithDiscards(false);
+    const tiles = tileActions(card('e', -1), discardOf('encd'), contextOf(view));
+    expect(tiles.map((tile) => tile.id)).toEqual(['play']);
+  });
+});

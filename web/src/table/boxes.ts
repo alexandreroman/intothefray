@@ -129,14 +129,15 @@ export function isDeck(pile: PileView): boolean {
  * The actions of a card in a pile box, in bar order (the prototype's
  * renderDeckView): Draw from an own deck or discard pile, Play to the first
  * free slot of the credited deck's row (creditedSeat), Discard, Put at the
- * bottom of the deck, and Shuffle into its deck for the out-of-play piles.
- * Another player's deck or set-aside cards cannot be touched.
+ * bottom of the deck, and Shuffle into its deck for the out-of-play and
+ * discard piles. Another player's deck or set-aside cards cannot be touched.
  */
 export function tileActions(card: CardView, pile: PileView, context: TileContext): TileAction[] {
   const seats = ownSeats(context.view);
   const own = seats.includes(pile.owner);
   const shared = pile.owner === -1;
   const outOfPlay = pile.kind === 'victory' || pile.kind === 'aside';
+  const discardPile = pile.kind === 'discard' || pile.kind === 'encounterDiscard';
   if ((pile.kind === 'deck' || pile.kind === 'aside') && !own && !shared) {
     return [];
   }
@@ -148,7 +149,7 @@ export function tileActions(card: CardView, pile: PileView, context: TileContext
   actions.push({ id: 'play', label: 'Play', run: () => playAction(card, pile, context) });
 
   // A card in a discard pile is discarded already.
-  if (pile.kind !== 'discard' && pile.kind !== 'encounterDiscard') {
+  if (!discardPile) {
     actions.push({
       id: 'discard',
       label: 'Discard',
@@ -158,7 +159,8 @@ export function tileActions(card: CardView, pile: PileView, context: TileContext
   }
 
   // A deck's card goes under its own deck; an out-of-play card under its home
-  // deck, which only its owner (or anyone, for the encounter deck) may touch.
+  // deck, and an out-of-play or discarded card can be shuffled into it. Only
+  // its owner (or anyone, for the encounter deck) may touch that home deck.
   const canGoHome = card.owner === -1 || seats.includes(card.owner);
   const hasHome = context.view.table?.piles.some((p) => p.id === homeDeckOf(card)) ?? false;
   if (isDeck(pile) || (outOfPlay && canGoHome && hasHome)) {
@@ -169,7 +171,7 @@ export function tileActions(card: CardView, pile: PileView, context: TileContext
       run: () => ({ kind: 'toDeck', card: card.id, where: 'bottom' }),
     });
   }
-  if (outOfPlay && canGoHome && hasHome) {
+  if ((outOfPlay || discardPile) && canGoHome && hasHome) {
     actions.push({
       id: 'shuffle',
       label: 'Shuffle into its deck',
