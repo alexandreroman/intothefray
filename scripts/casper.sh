@@ -59,8 +59,8 @@ ENV
 info() {
 	has_casper || return 0
 	mode=$1
-	web_port=${WEB_PORT:-5173}
-	server_port=${PORT:-8080}
+	web_port=${WEB_PORT:-8080}
+	server_port=${PORT:-9000}
 	redis_port=${REDIS_PORT:-6379}
 
 	# BSD mktemp only substitutes trailing Xs, so add the extension after.

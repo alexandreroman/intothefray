@@ -18,7 +18,7 @@ RUN --mount=type=cache,id=gomod,target=/go/pkg/mod \
 FROM gcr.io/distroless/static-debian12:nonroot
 COPY --from=build /out/intothefray /intothefray
 USER nonroot:nonroot
-EXPOSE 8080
+EXPOSE 9000
 # Distroless has no shell or curl: the binary probes itself
 HEALTHCHECK CMD ["/intothefray", "healthcheck"]
 ENTRYPOINT ["/intothefray"]

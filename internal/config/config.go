@@ -10,7 +10,7 @@ import (
 )
 
 // DefaultPort is the listen port when PORT is unset.
-const DefaultPort = "8080"
+const DefaultPort = "9000"
 
 // Config holds the server settings, read once at startup.
 type Config struct {
@@ -46,7 +46,7 @@ func Load(getenv func(string) string) (Config, error) {
 		return Config{}, fmt.Errorf("invalid GAME_TTL: %s must be positive", ttl)
 	}
 
-	origins, err := parseOrigins(withDefault("ALLOWED_ORIGINS", "http://localhost:5173"))
+	origins, err := parseOrigins(withDefault("ALLOWED_ORIGINS", "http://localhost:8080"))
 	if err != nil {
 		return Config{}, fmt.Errorf("invalid ALLOWED_ORIGINS: %w", err)
 	}

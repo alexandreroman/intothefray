@@ -15,10 +15,10 @@ services:
     build: .
     restart: on-failure
     ports:
-      - "${PORT:-8080}:8080"
+      - "${PORT:-9000}:9000"
     environment:
       REDIS_URL: redis://redis:6379/0
-      ALLOWED_ORIGINS: http://localhost:${WEB_PORT:-5173}
+      ALLOWED_ORIGINS: http://localhost:${WEB_PORT:-8080}
     depends_on:
       redis:
         condition: service_healthy
@@ -34,10 +34,10 @@ services:
       dockerfile: web/Dockerfile
       args:
         # The browser reaches the server on its host port
-        VITE_API_URL: http://localhost:${PORT:-8080}
+        VITE_API_URL: http://localhost:${PORT:-9000}
     restart: on-failure
     ports:
-      - "${WEB_PORT:-5173}:8080"
+      - "${WEB_PORT:-8080}:8080"
     depends_on:
       app:
         condition: service_healthy

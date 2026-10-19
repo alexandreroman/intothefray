@@ -20,9 +20,9 @@ func TestLoadDefaults(t *testing.T) {
 	}
 
 	want := Config{
-		Port:           "8080",
+		Port:           "9000",
 		RedisURL:       "redis://localhost:6379/0",
-		AllowedOrigins: []string{"http://localhost:5173"},
+		AllowedOrigins: []string{"http://localhost:8080"},
 		GameTTL:        24 * time.Hour,
 		MarvelcdbURL:   "https://marvelcdb.com",
 	}
@@ -84,7 +84,7 @@ func TestLoadAllowedOrigins(t *testing.T) {
 	}{
 		{"origin", "https://front.example", []string{"https://front.example"}},
 		{"trailing slash", "https://front.example/", []string{"https://front.example"}},
-		{"port", "http://localhost:5173", []string{"http://localhost:5173"}},
+		{"port", "http://localhost:8080", []string{"http://localhost:8080"}},
 		{"upper case", "HTTPS://Front.Example", []string{"https://front.example"}},
 		{"list", " https://a.example , ,http://b.example:8000/,", []string{"https://a.example", "http://b.example:8000"}},
 	}

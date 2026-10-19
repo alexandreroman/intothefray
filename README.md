@@ -50,11 +50,11 @@ make web-install
 make dev
 ```
 
-Open the frontend at <http://localhost:5173>. Check that the server
+Open the frontend at <http://localhost:8080>. Check that the server
 answers:
 
 ```bash
-curl http://localhost:8080/healthz
+curl http://localhost:9000/healthz
 ```
 
 ## Usage
@@ -82,9 +82,9 @@ make app-down   # stop and remove the containerised stack
 container engine: Docker, or Podman with its Docker-compatible
 `docker` command (or pass `COMPOSE="podman compose"` to `make`).
 
-`make app-up` serves the web app at <http://localhost:5173>.
+`make app-up` serves the web app at <http://localhost:8080>.
 
-`make dev` and `make app-up` both bind ports 8080 and 5173: stop one
+`make dev` and `make app-up` both bind ports 9000 and 8080: stop one
 before starting the other.
 
 ### Casper workspaces
@@ -128,9 +128,9 @@ regenerated files with the change that caused them.
 
 | Variable          | Description      | Default                    |
 | ----------------- | ---------------- | -------------------------- |
-| `PORT`            | HTTP listen port | `8080`                     |
+| `PORT`            | HTTP listen port | `9000`                     |
 | `REDIS_URL`       | Redis connection | `redis://localhost:6379/0` |
-| `ALLOWED_ORIGINS` | Allowed origins  | `http://localhost:5173`    |
+| `ALLOWED_ORIGINS` | Allowed origins  | `http://localhost:8080`    |
 | `GAME_TTL`        | Idle game expiry | `24h`                      |
 | `MARVELCDB_URL`   | Deck source      | `https://marvelcdb.com`    |
 
@@ -141,7 +141,7 @@ to start otherwise.
 `make` loads `.env` when it exists, and `.env.local` for the
 development targets.
 
-The web port is read from `WEB_PORT` (default `5173`) and the Redis
+The web port is read from `WEB_PORT` (default `8080`) and the Redis
 host port of the compose stack from `REDIS_PORT` (default `6379`).
 
 ## Deployment

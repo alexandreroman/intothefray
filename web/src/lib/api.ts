@@ -1,4 +1,4 @@
-const DEFAULT_API_URL = 'http://localhost:8080';
+const DEFAULT_API_URL = 'http://localhost:9000';
 
 function apiUrl(): string {
   const configured = import.meta.env.VITE_API_URL as string | undefined;

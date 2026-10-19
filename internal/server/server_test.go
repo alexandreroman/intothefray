@@ -24,7 +24,7 @@ import (
 	"github.com/alexandreroman/intothefray/packs"
 )
 
-const allowedOrigin = "http://localhost:5173"
+const allowedOrigin = "http://localhost:8080"
 
 func newTestServer(t *testing.T) (*httptest.Server, *miniredis.Miniredis) {
 	t.Helper()
@@ -284,7 +284,7 @@ func TestOriginChecks(t *testing.T) {
 func TestCORSAndWebSocketAgree(t *testing.T) {
 	cfg, err := config.Load(func(key string) string {
 		if key == "ALLOWED_ORIGINS" {
-			return "https://front.example/,http://[::1]:5173"
+			return "https://front.example/,http://[::1]:8080"
 		}
 		return ""
 	})
@@ -301,8 +301,8 @@ func TestCORSAndWebSocketAgree(t *testing.T) {
 		{"https://front.example", true},
 		{"http://front.example", false},
 		{"https://other.example", false},
-		{"http://[::1]:5173", true},
-		{"http://[::2]:5173", false},
+		{"http://[::1]:8080", true},
+		{"http://[::2]:8080", false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.origin, func(t *testing.T) {
