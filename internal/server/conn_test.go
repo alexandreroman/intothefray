@@ -577,3 +577,126 @@ func drain(t *testing.T, ws *websocket.Conn) (int, error) {
 		}
 	}
 }
+
+// startSolo loads the Black Panther deck into the host's first slot,
+// configures Rhino and starts the game, then returns the view after the start.
+func startSolo(t *testing.T, host *testClient) received {
+	t.Helper()
+
+	cat, err := testCatalog()
+	if err != nil {
+		t.Fatal(err)
+	}
+	host.lobby("setDeck", map[string]any{"url": deckLink})
+	host.expect("view")
+	host.lobby("configure", map[string]any{"config": game.DefaultConfig(cat, "rhino")})
+	host.expect("view")
+	host.lobby("start", nil)
+	return host.expect("view")
+}
+
+func TestLobbyAddDeck(t *testing.T) {
+	ts, _ := newTestServer(t)
+	created := createGame(t, ts, "Alex")
+	host := connect(t, ts, created.ID)
+	host.hello(created.Token, "Alex")
+
+	host.lobby("addDeck", nil)
+
+	view := host.expect("view")
+	if len(view.View.Players) != 1 || len(view.View.Players[0].Decks) != 2 {
+		t.Errorf("view = %s, want one player with 2 deck slots", view.raw)
+	}
+}
+
+func TestLobbyRemoveDeck(t *testing.T) {
+	ts, _ := newTestServerWith(t, func(s *Server) { s.deps.Decks = stubMarvelcdb(t, blackPantherDeck) })
+	created := createGame(t, ts, "Alex")
+	host := connect(t, ts, created.ID)
+	host.hello(created.Token, "Alex")
+	host.lobby("addDeck", nil)
+	host.expect("view")
+	host.lobby("setDeck", map[string]any{"url": deckLink, "deck": 1})
+	host.expect("view")
+
+	// Removing the empty first slot leaves the loaded one, moved down.
+	host.lobby("removeDeck", map[string]any{"deck": 0})
+
+	view := host.expect("view")
+	slots := view.View.Players[0].Decks
+	if len(slots) != 1 || !slots[0].Ready || slots[0].HeroName != "Black Panther" {
+		t.Errorf("deck slots = %+v, want the Black Panther deck alone", slots)
+	}
+	host.lobby("removeDeck", map[string]any{"deck": 0})
+	if reply := host.expect("error"); reply.Code != "invalid" {
+		t.Errorf("removing the last slot: error = %s, want code invalid", reply.raw)
+	}
+}
+
+func TestSetDeckSlot(t *testing.T) {
+	ts, _ := newTestServerWith(t, func(s *Server) { s.deps.Decks = stubMarvelcdb(t, blackPantherDeck) })
+	created := createGame(t, ts, "Alex")
+	host := connect(t, ts, created.ID)
+	host.hello(created.Token, "Alex")
+	host.lobby("addDeck", nil)
+	host.expect("view")
+
+	host.lobby("setDeck", map[string]any{"url": deckLink, "deck": 1})
+
+	view := host.expect("view")
+	slots := view.View.Players[0].Decks
+	if len(slots) != 2 {
+		t.Fatalf("view = %s, want 2 deck slots", view.raw)
+	}
+	if slots[0].Ready {
+		t.Errorf("slot 0 = %+v, want it empty", slots[0])
+	}
+	if !slots[1].Ready || slots[1].HeroName != "Black Panther" {
+		t.Errorf("slot 1 = %+v, want the Black Panther deck", slots[1])
+	}
+}
+
+func TestActionSeatAbsent(t *testing.T) {
+	ts, _ := newTestServerWith(t, func(s *Server) { s.deps.Decks = stubMarvelcdb(t, blackPantherDeck) })
+	created := createGame(t, ts, "Alex")
+	host := connect(t, ts, created.ID)
+	host.hello(created.Token, "Alex")
+	started := startSolo(t, host)
+
+	host.send(map[string]any{"type": "action", "id": 1, "action": map[string]any{"kind": "draw", "n": 1}})
+
+	drawn := host.expect("view")
+	if got, want := len(ownHand(drawn.View)), len(ownHand(started.View))+1; got != want {
+		t.Errorf("first seat's hand has %d cards after the draw, want %d", got, want)
+	}
+}
+
+func TestActionSeatForeign(t *testing.T) {
+	ts, _ := newTestServerWith(t, func(s *Server) { s.deps.Decks = stubMarvelcdb(t, blackPantherDeck) })
+	cat, err := testCatalog()
+	if err != nil {
+		t.Fatal(err)
+	}
+	created := createGame(t, ts, "Alex")
+	host := connect(t, ts, created.ID)
+	host.hello(created.Token, "Alex")
+	guest := connect(t, ts, created.ID)
+	guest.hello("", "Bob")
+	host.expect("view")
+	// Every change below reaches the host as a view, in order.
+	host.lobby("setDeck", map[string]any{"url": deckLink})
+	host.expect("view")
+	guest.lobby("setDeck", map[string]any{"url": deckLink})
+	host.expect("view")
+	host.lobby("configure", map[string]any{"config": game.DefaultConfig(cat, "rhino")})
+	host.expect("view")
+	host.lobby("start", nil)
+	host.expect("view")
+
+	// Seat 1 is Bob's deck.
+	host.send(map[string]any{"type": "action", "id": 4, "seat": 1, "action": map[string]any{"kind": "draw", "n": 1}})
+
+	if reply := host.expect("error"); reply.Code != "forbidden" || reply.ID != 4 {
+		t.Errorf("error = %s, want code forbidden with id 4", reply.raw)
+	}
+}

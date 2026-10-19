@@ -39,6 +39,8 @@ const (
 // Operations of the lobby message.
 const (
 	opConfigure    = "configure"
+	opAddDeck      = "addDeck"
+	opRemoveDeck   = "removeDeck"
 	opSetDeck      = "setDeck"
 	opRemovePlayer = "removePlayer"
 	opLeave        = "leave"
@@ -82,11 +84,13 @@ type clientMessage struct {
 	Op     string            `json:"op"`
 	Config *game.LobbyConfig `json:"config"` // configure
 	URL    string            `json:"url"`    // setDeck
+	Deck   int               `json:"deck"`   // setDeck, removeDeck: the caller's deck slot, 0 when absent
 	Color  int               `json:"color"`  // removePlayer
 
 	// action
 	ID     int64        `json:"id"` // client sequence number, echoed in errors
 	Action *game.Action `json:"action"`
+	Seat   *int         `json:"seat"` // the credited seat; the player's first seat when absent
 
 	// presence. Cursor and Drag are kept raw to tell a hidden cursor or an
 	// ended drag (null) from an absent one.
