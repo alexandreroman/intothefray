@@ -31,8 +31,7 @@
   <section>
     <div class="panel">
       <div class="head">
-        <button class="back" aria-label="Back" onclick={() => go('#/')}><Icon name="back" /></button
-        >
+        <button class="back" aria-label="Back" onclick={() => go('/')}><Icon name="back" /></button>
         <b>Options</b>
       </div>
       <div class="field">

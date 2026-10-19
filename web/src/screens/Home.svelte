@@ -15,7 +15,7 @@
     try {
       const game = await createGame(name);
       setToken(game.id, game.token);
-      go(`#/g/${encodeURIComponent(game.id)}`);
+      go(`/g/${encodeURIComponent(game.id)}`);
     } catch (e) {
       error = `Could not start a game: ${e instanceof Error ? e.message : 'unknown error'}`;
     } finally {
@@ -49,7 +49,7 @@
       <button class="primary" disabled={starting} onclick={onStart}>
         <Icon name="cards" />Start a game
       </button>
-      <button onclick={() => go('#/options')}><Icon name="sliders" />Options</button>
+      <button onclick={() => go('/options')}><Icon name="sliders" />Options</button>
     </nav>
     {#if error}
       <p class="error" role="alert">{error}</p>

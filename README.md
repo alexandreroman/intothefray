@@ -96,6 +96,12 @@ container. The web app is available at <http://localhost:8080>.
 Caddy also answers `/healthz` on that port, for the container
 healthcheck.
 
+The web app routes on real paths: `/` (home), `/options` and
+`/g/<id>` (a game). Caddy serves `index.html` for any path that is
+not a file, so a game link opens directly. The API, the health probe
+and everything under `/assets/` and `/packs/` are left out: a missing
+asset or pack answers 404.
+
 `make dev` and `make app-up` both bind ports 9000 and 8080: stop one
 before starting the other.
 
@@ -181,6 +187,13 @@ on every push to `main`. In the repository settings:
 The backend must accept the Pages origin: add it to
 `ALLOWED_ORIGINS`, written `scheme://host` with no path, for example
 `https://alexandreroman.github.io`.
+
+The workflow builds the app under the site's base path, as reported
+by `actions/configure-pages`: `/<repo>/` for a project site, `/` at
+the domain root (custom domain or user/organisation site). Pages has
+no rewrite rules, so the workflow copies `index.html` to `404.html`:
+a deep link such as `/<repo>/g/<id>` gets the app, which then reads
+the path.
 
 ## Architecture
 

@@ -110,7 +110,7 @@ describe('Game', () => {
     render(Game, { id: 'x' });
 
     expect(screen.getByText("This game doesn't exist or has expired.")).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Back to home' }).getAttribute('href')).toBe('#/');
+    expect(screen.getByRole('link', { name: 'Back to home' }).getAttribute('href')).toBe('/');
   });
 
   it('shows the table while playing', () => {

@@ -49,7 +49,8 @@ make web-build    # production build into web/dist/
   components, table: the table with its rendering, interactions,
   boxes, presence and animations)
 - `web/Caddyfile` — Caddy config of the web app (dev and containers):
-  serves `web/dist`, proxies `/api/*` and `/ws/*`, answers `/healthz`
+  serves `web/dist` with a history fallback to `index.html`, proxies
+  `/api/*` and `/ws/*`, answers `/healthz`
 - `mise.toml` — pinned node and pnpm versions (local and CI)
 - `scripts/` — optional Casper workspace support (`casper.sh`:
   per-worktree ports, info panel)

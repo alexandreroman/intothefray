@@ -38,7 +38,8 @@ async function loadCatalog() {
 
 beforeEach(() => {
   fetchMock = vi.fn((url: string) => {
-    const body = url === 'packs/en/index.json' ? index : url === 'packs/en/core.json' ? pack : null;
+    const body =
+      url === '/packs/en/index.json' ? index : url === '/packs/en/core.json' ? pack : null;
     return Promise.resolve(body ? Response.json(body) : new Response('missing', { status: 404 }));
   });
   vi.stubGlobal('fetch', fetchMock);

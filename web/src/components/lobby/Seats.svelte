@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
+  import { href } from '../../lib/router.svelte';
   import type { PlayerView, View } from '../../lib/types';
   import HeroThumb from './HeroThumb.svelte';
 
@@ -19,9 +20,7 @@
   const COPIED_MS = 1500;
 
   // Built from the game id, so no token or other state leaks into the link.
-  const inviteUrl = $derived(
-    `${location.origin}${location.pathname}#/g/${encodeURIComponent(view.id)}`,
-  );
+  const inviteUrl = $derived(`${location.origin}${href(`/g/${encodeURIComponent(view.id)}`)}`);
   const isSpectator = $derived(view.you.role === 'spectator');
   // A newcomer takes the lowest colour no player uses.
   const freeColors = $derived(
