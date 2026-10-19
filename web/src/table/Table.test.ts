@@ -472,12 +472,12 @@ describe('Table', () => {
       // The facing corner on the same edge.
       const panel = preview().closest('.peek');
       expect(panel?.classList).toContain('bottom-left');
-      expect(panel?.classList).not.toContain('moved');
 
-      // Another card clear of the bottom right corner: the panel goes back home, fading in.
+      // Another card clear of the bottom right corner: the panel goes back home, drawn afresh
+      // there, so that it fades in.
       await fireEvent.pointerEnter(surface().querySelector('.card[data-id="a"]') as HTMLElement);
       expect(preview().closest('.peek')?.classList).toContain('bottom-right');
-      expect(preview().closest('.peek')?.classList).toContain('moved');
+      expect(preview().closest('.peek')).not.toBe(panel);
     } finally {
       vi.restoreAllMocks();
     }
@@ -587,6 +587,31 @@ describe('Table', () => {
 
     await fireEvent.pointerEnter(container.querySelector('.pile.empty') as HTMLElement);
     expect(noPreview()).toBe(true);
+  });
+
+  it('fades the preview out as it goes; another card swaps in without a fade', async () => {
+    render(Table, { session: fakeSession(), view: makeView() });
+    await catalogLoaded();
+    await fireEvent.pointerEnter(surface().querySelector('.card[data-id="a"]') as HTMLElement);
+    const panel = preview().closest('.peek');
+    expect(panel?.classList).not.toContain('leaving');
+
+    await fireEvent.pointerEnter(surface().querySelector('.card[data-id="b"]') as HTMLElement);
+    expect(preview().closest('.peek')).toBe(panel);
+
+    vi.useFakeTimers();
+    try {
+      interaction.release();
+      await tick();
+      // Still drawn while it fades out, though no longer a preview for assistive technologies.
+      expect(noPreview()).toBe(true);
+      expect(document.querySelector('.peek')?.classList).toContain('leaving');
+      expect(document.querySelector('.peek .frame')?.getAttribute('aria-hidden')).toBe('true');
+      await vi.advanceTimersByTimeAsync(110);
+      expect(document.querySelector('.peek')).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('hovering a history line rings its cards on the table', async () => {

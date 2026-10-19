@@ -7,6 +7,7 @@
 <script lang="ts">
   import { tick, untrack } from 'svelte';
   import { modal } from '../components/modal.svelte';
+  import { prefersReducedMotion } from 'svelte/motion';
   import { MediaQuery } from 'svelte/reactivity';
   import Tooltip from '../components/Tooltip.svelte';
   import TopBar from '../components/TopBar.svelte';
@@ -288,6 +289,34 @@
   // From ids, so the preview follows a flip or a pile's new top card.
   const preview = $derived(previewOf(interaction.previewed));
 
+  // The preview fades in as it shows and out as it goes; another card swaps in at once. While
+  // it fades out, the last one stays drawn, out of the accessibility tree.
+  const PREVIEW_FADE_MS = 110;
+  let fading = $state<Preview | null>(null);
+  let lastPreview: Preview | null = null;
+  let fadeTimer: ReturnType<typeof setTimeout> | undefined;
+
+  $effect.pre(() => {
+    const current = preview;
+    untrack(() => {
+      clearTimeout(fadeTimer);
+      if (current) {
+        fading = null;
+        lastPreview = current;
+        return;
+      }
+      if (lastPreview && !prefersReducedMotion.current) {
+        fading = lastPreview;
+        fadeTimer = setTimeout(() => (fading = null), PREVIEW_FADE_MS);
+      }
+      lastPreview = null;
+    });
+  });
+
+  $effect(() => () => clearTimeout(fadeTimer));
+
+  const drawnPreview = $derived(preview ?? fading);
+
   // ---- The Focus panel's corner ----
 
   // Bottom right, unless that covers the pointer or the hovered element (focus.ts).
@@ -296,8 +325,6 @@
   let cornerHeight = $state(0);
   // The controls' box at the bottom right: the keyboard shortcuts sheet lines up on its right edge.
   let cornerBox = $state<HTMLElement>();
-  // It changed corner while shown: it fades in at the new one.
-  let focusMoved = $state(false);
   // The panel's size, kept from the last time it showed; a portrait card's until then.
   let focusWidth = $state(320);
   let focusHeight = $state(450);
@@ -309,8 +336,6 @@
   let focusHovered: DOMRect | null = null;
   // The frame placing the panel after pointer moves: at most one per frame.
   let focusFrame = 0;
-  // Whether the panel is drawn already: only a drawn panel fades into its new corner.
-  let focusDrawn = false;
 
   /** The hovered card or pile, on the screen. A hovered hand card has no preview to place. */
   function hoveredRect(): DOMRect | null {
@@ -349,10 +374,7 @@
       // The player selector at the bottom left.
       taken: focused ? ['bottom-left'] : [],
     });
-    if (next !== focusCorner) {
-      focusCorner = next;
-      focusMoved = focusDrawn;
-    }
+    focusCorner = next;
   }
 
   function followPointerForFocus(event: PointerEvent): void {
@@ -391,15 +413,6 @@
   });
 
   $effect(() => () => cancelAnimationFrame(focusFrame));
-
-  // Nothing previewed, it goes home: shown afresh, it appears there, without a fade.
-  $effect(() => {
-    focusDrawn = preview !== null;
-    if (!preview) {
-      focusMoved = false;
-      focusCorner = HOME;
-    }
-  });
 
   // The interaction state is shared: a previous game's must not show in the next one.
   $effect(() => () => interaction.reset());
@@ -1183,18 +1196,18 @@
     </aside>
   {/if}
 
-  {#if preview}
+  {#if drawnPreview}
     <!-- Created again in its new corner: it fades in there. -->
     {#key focusCorner}
       <div
         class="peek {focusCorner}"
-        class:land={preview.landscape}
-        class:moved={focusMoved}
+        class:land={drawnPreview.landscape}
+        class:leaving={!preview}
         style:margin={focusMargin(focusCorner)}
         bind:offsetWidth={focusWidth}
         bind:offsetHeight={focusHeight}
       >
-        <CardPreview {preview} snug />
+        <CardPreview preview={drawnPreview} snug hidden={!preview} />
       </div>
     {/key}
   {/if}
@@ -1466,8 +1479,13 @@
     align-self: end;
   }
 
-  .peek.moved {
-    animation: focus-in 0.14s ease-out;
+  /* It fades in as it shows, or at its new corner, and out as it goes (PREVIEW_FADE_MS). */
+  .peek {
+    animation: focus-in 0.11s ease-out;
+  }
+
+  .peek.leaving {
+    animation: focus-out 0.11s ease-in forwards;
   }
 
   @keyframes focus-in {
@@ -1476,8 +1494,15 @@
     }
   }
 
+  @keyframes focus-out {
+    to {
+      opacity: 0;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    .peek.moved {
+    .peek,
+    .peek.leaving {
       animation: none;
     }
   }

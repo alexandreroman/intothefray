@@ -18,14 +18,24 @@
   let {
     preview,
     snug = false,
+    hidden = false,
   }: {
     preview: Preview | null;
     /** The frame takes the card's own shape, landscape included, rather than a portrait slot. */
     snug?: boolean;
+    /** Drawn as it fades out: no longer content, out of the accessibility tree. */
+    hidden?: boolean;
   } = $props();
 </script>
 
-<div class="frame" class:empty={!preview} class:snug aria-label="Card preview" role="figure">
+<div
+  class="frame"
+  class:empty={!preview}
+  class:snug
+  aria-label={hidden ? undefined : 'Card preview'}
+  role={hidden ? undefined : 'figure'}
+  aria-hidden={hidden || undefined}
+>
   {#if !preview}
     <div class="hint">Hover a card<br />to see it here</div>
   {:else}
