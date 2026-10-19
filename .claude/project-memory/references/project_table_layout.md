@@ -1,24 +1,35 @@
 ---
 name: "Table layout"
-description: "Zones start with a fixed left rail; side panel always open; narrow screens get overlay preview"
+description: "One play surface laid out in rows; owner frames; out-of-play piles reached from pile bars"
 type: project
 ---
 
 # Table layout
 
-- Each zone starts with a fixed left rail: deck, discard, then the
-  out-of-play tray (victory display, set-aside). The server setup sets
-  these positions; the villain, identity and played cards follow to the
-  right, where the zone grows.
+- The table is one play surface for everyone: one scroller (both axes),
+  one zoom. Table cards, piles and the first player token have x, y only;
+  hands and private views are keyed by seat ("pN").
+- Setup lays the surface out in rows: the villain row first, then one row
+  per seated player. Each row starts at the left with deck and discard,
+  then the villain or identity and schemes; played cards go to the right.
+- Each owner's deck and discard sit in a frame in the seat colour labelled
+  with the player's name ("Villain" in yellow for the encounter piles);
+  the frame's tooltip gives that player's hand count.
+- Out-of-play piles (victory display, set-aside) are not drawn on the
+  table: the action bar of a deck or discard pile opens its owner's
+  out-of-play piles.
+- A portrait table card is 140×196 table units, chosen for readability;
+  the hand and the preview have their own sizes. Tokens sit inside the
+  card: damage and counters on its lower part, threat on its right side.
 - The preview and history panel is always shown on a wide screen and has
   no toggle. On a narrow screen the preview is an overlay, the history is
-  hidden and a floating button offers Undo.
-- The Undo button reads "Undo last action".
+  hidden and a floating button offers Undo ("Undo last action").
 - The card action bar groups Exhaust and Flip, puts tokens and statuses in
   one menu behind a token icon, and shows Move to as an icon.
 
-**Why:** players add cards as they play, so anything fixed on the right
-gets overrun; decided with the user on 2026-10-19.
+**Why:** decided with the user on 2026-10-19: players add cards as they
+play, so fixed things sit on the left and play grows right; zones and
+their splits added complexity without value.
 
-**How to apply:** new piles or fixed table elements go in the left rail
-(server setup positions), never at a zone's right end.
+**How to apply:** new fixed table elements go at the start of their
+owner's row (server setup positions); never reintroduce per-player zones.
