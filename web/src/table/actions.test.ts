@@ -625,6 +625,27 @@ describe('actionsFor', () => {
     expect(stage[0]?.run?.()).toEqual({ local: 'stageBox' });
   });
 
+  it('spectator sees the cards of the villain and the main scheme, read-only', () => {
+    const view = makeView();
+    view.you = { role: 'spectator', name: 'Kim', color: -1, host: false };
+    const spectator: { role: Role } = { role: 'spectator' };
+
+    const villain = itemsFor({ kind: 'card', id: 'v' }, view, spectator);
+    expect(villain).toHaveLength(1);
+    expect(villain[0]).toMatchObject({
+      id: 'stage',
+      label: 'See the villain cards',
+      tip: 'See the villain cards',
+      icon: 'stage-pick',
+    });
+    expect(villain[0]?.key).toBeUndefined();
+    expect(villain[0]?.run?.()).toEqual({ local: 'stageBox' });
+
+    const scheme = itemsFor({ kind: 'card', id: 's' }, view, spectator);
+    expect(scheme.map((it) => it.label)).toEqual(['See the main scheme cards']);
+    expect(scheme[0]?.run?.()).toEqual({ local: 'stageBox' });
+  });
+
   it('hand card gets no bar', () => {
     expect(actionsFor({ kind: 'hand', id: 'h' }, makeView(), ALEX)).toEqual([]);
   });

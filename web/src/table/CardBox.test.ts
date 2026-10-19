@@ -689,12 +689,42 @@ describe('CardBox', () => {
     await fireEvent.pointerEnter(tile('q1'));
     expect(tileBar()).toBeNull();
     await fireEvent.click(within(box()).getByRole('button', { name: 'Close' }));
+    expect(session.act).not.toHaveBeenCalled();
+  });
 
-    // The stage choice is shown, but choosing does nothing.
+  it('spectator sees every villain card, read-only', async () => {
+    const { session } = await renderTable(asSpectator(makeView()));
     await fireEvent.pointerEnter(placed('v'));
-    await fireEvent.click(screen.getByRole('button', { name: 'Choose the villain card to show' }));
+    await fireEvent.click(
+      within(tableBar()!).getByRole('button', { name: 'See the villain cards' }),
+    );
+
+    expect(screen.getByRole('dialog', { name: 'Villain: cards' })).toBeTruthy();
+    expect(tileNames()).toEqual(['Rhino (stage I)', 'Rhino (stage II)']);
+    expect(tile('v:0').classList.contains('shown')).toBe(true);
+    expect(tile('v:0').textContent).toContain('On the table');
+    expect(tile('v2:0').textContent).not.toContain('On the table');
+
+    // Hovering a tile neither rings it nor shows a bar; clicking it chooses nothing.
+    await fireEvent.pointerEnter(tile('v2:0'), { clientX: 50, clientY: 50 });
+    expect(tile('v2:0').classList.contains('hovered')).toBe(false);
+    expect(tileBar()).toBeNull();
     await pick('v2:0');
-    expect(screen.getByRole('dialog')).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'Villain: cards' })).toBeTruthy();
+    expect(session.act).not.toHaveBeenCalled();
+  });
+
+  it('spectator sees every main scheme card, read-only', async () => {
+    const { session } = await renderTable(asSpectator(makeView()));
+    await fireEvent.pointerEnter(placed('s'));
+    await fireEvent.click(
+      within(tableBar()!).getByRole('button', { name: 'See the main scheme cards' }),
+    );
+
+    expect(screen.getByRole('dialog', { name: 'Main scheme: cards' })).toBeTruthy();
+    expect(tileNames()).toEqual(['The Break-In! (1A)', 'The Break-In! (1B)']);
+    expect(tile('s:0').textContent).toContain('On the table');
+    await pick('s:1');
     expect(session.act).not.toHaveBeenCalled();
   });
 });

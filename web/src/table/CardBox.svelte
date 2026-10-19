@@ -153,7 +153,7 @@
 
   const title = $derived.by((): { main: string; aside?: string } => {
     if (box.kind === 'stage') {
-      return { main: `${box.stage.label}:`, aside: 'choose the card to show' };
+      return { main: `${box.stage.label}:`, aside: readOnly ? 'cards' : 'choose the card to show' };
     }
     const label = boxPileLabel(box.pile);
     switch (box.mode) {
@@ -217,7 +217,11 @@
   let hideTimer: ReturnType<typeof setTimeout> | undefined;
 
   function enterTile(tile: Tile, event: PointerEvent): void {
-    if (!isRealHover(event) || drag?.lifted || (box.kind === 'stage' && tile.shown)) {
+    if (!isRealHover(event) || drag?.lifted) {
+      return;
+    }
+    // The ring would offer a choice: none for the face on the table, nor for a spectator.
+    if (box.kind === 'stage' && (tile.shown || readOnly)) {
       return;
     }
     clearTimeout(hideTimer);
