@@ -14,9 +14,8 @@ type: project
   the embedded catalog; nothing extra goes to Redis. The response has a
   strong `ETag` and `Cache-Control: max-age=86400, immutable` (a game's
   cards are fixed once its table is set up).
-- The backend never compresses responses: compression belongs to the
-  infrastructure (Caddy `encode` locally, Cloudflare or equivalent in
-  production).
+- The response is uncompressed; the proxy or CDN compresses it (see
+  [[project_no_backend_compression]]).
 - The SPA publishes only `packs/<lang>/index.json`, for the lobby's
   scenario picker. Lobby hero thumbnails come from `PlayerView.heroImage`,
   which `Game.SetDeck` fills from the catalog.
