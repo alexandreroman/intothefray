@@ -1190,7 +1190,7 @@
       "kind": "aside",
       "owner": 0,
       "x": 0,
-      "y": 360,
+      "y": 500,
       "cards": [
         "c9vqye7uf",
         "c7sqzvnsj",
@@ -1204,7 +1204,7 @@
       "kind": "aside",
       "owner": 1,
       "x": 0,
-      "y": 690,
+      "y": 830,
       "cards": [
         "cx3a7hfr7",
         "cszysvnkv",
@@ -1218,7 +1218,7 @@
       "kind": "deck",
       "owner": 0,
       "x": 0,
-      "y": 360,
+      "y": 500,
       "cards": [
         "c4jga2epk",
         "cwpdk4822",
@@ -1245,7 +1245,7 @@
       "kind": "deck",
       "owner": 1,
       "x": 0,
-      "y": 690,
+      "y": 830,
       "cards": [
         "cfexperac",
         "cykx5z7ju",
@@ -1262,7 +1262,7 @@
       "kind": "discard",
       "owner": 0,
       "x": 160,
-      "y": 360,
+      "y": 500,
       "cards": []
     },
     "disc:p1": {
@@ -1270,7 +1270,7 @@
       "kind": "discard",
       "owner": 1,
       "x": 160,
-      "y": 690,
+      "y": 830,
       "cards": [
         "cnppnrucq",
         "crjsaksm9"
@@ -1376,7 +1376,7 @@
   ],
   "firstPlayer": {
     "x": 520,
-    "y": 360
+    "y": 500
   },
   "arrows": [
     {

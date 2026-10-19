@@ -217,4 +217,73 @@ describe('SidePanel', () => {
       Element.prototype.animate = original;
     }
   });
+
+  it('shows card names in bold, the rest of the line plain', () => {
+    const replaced = line({
+      text: 'replaced the villain Rhino (stage I) with Rhino (stage II)',
+      parts: [
+        { text: 'replaced the villain ' },
+        { text: 'Rhino', card: true },
+        { text: ' (stage I) with ' },
+        { text: 'Rhino', card: true },
+        { text: ' (stage II)' },
+      ],
+    });
+    render(SidePanel, { log: [replaced], onundo: () => {} });
+
+    const text = (historyLines()[0] as HTMLElement).querySelector('.txt') as HTMLElement;
+    expect(text.textContent).toBe(
+      'Alex replaced the villain Rhino (stage I) with Rhino (stage II)',
+    );
+    const bold = [...text.querySelectorAll('b')];
+    expect(bold.map((b) => b.textContent)).toEqual(['Rhino', 'Rhino']);
+    expect(bold.every((b) => b.classList.contains('card'))).toBe(true);
+    // The brackets stay dimmed and plain.
+    expect(within(text).getByText('(stage I)').classList).toContain('aside');
+    expect(within(text).getByText('(stage I)').tagName).not.toBe('B');
+  });
+
+  it('never makes player text bold or markup', () => {
+    const log = [
+      line({ who: '**Bob**', text: "shuffled <b>x</b>'s deck" }),
+      line({
+        who: '<b>x</b>',
+        text: "moved Rhino to **Bob**'s set-aside cards",
+        parts: [
+          { text: 'moved ' },
+          { text: 'Rhino', card: true },
+          { text: " to **Bob**'s set-aside cards" },
+        ],
+      }),
+    ];
+    render(SidePanel, { log, onundo: () => {} });
+
+    const [moved, shuffled] = historyLines().map((l) => l.querySelector('.txt') as HTMLElement) as [
+      HTMLElement,
+      HTMLElement,
+    ];
+    expect(shuffled.querySelector('b')).toBeNull();
+    expect(shuffled.textContent).toBe("**Bob** shuffled <b>x</b>'s deck");
+    expect([...moved.querySelectorAll('b')].map((b) => b.textContent)).toEqual(['Rhino']);
+    expect(moved.textContent).toBe("<b>x</b> moved Rhino to **Bob**'s set-aside cards");
+  });
+
+  it('keeps card names bold in the full text of a truncated line', async () => {
+    const log = [
+      line({
+        text: 'exhausted Spider-Man',
+        parts: [{ text: 'exhausted ' }, { text: 'Spider-Man', card: true }],
+      }),
+    ];
+    render(SidePanel, { log, onundo: () => {} });
+    const entry = historyLines()[0] as HTMLElement;
+    const text = entry.querySelector('.txt') as HTMLElement;
+    Object.defineProperty(text, 'scrollWidth', { value: 400 });
+    Object.defineProperty(text, 'clientWidth', { value: 200 });
+
+    await fireEvent.pointerEnter(entry);
+
+    const whole = entry.querySelector('.full .whole') as HTMLElement;
+    expect([...whole.querySelectorAll('b.card')].map((b) => b.textContent)).toEqual(['Spider-Man']);
+  });
 });

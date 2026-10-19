@@ -1,8 +1,18 @@
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
+import { tick } from 'svelte';
 import Lobby from './Lobby.svelte';
+import { cutShort } from '../lib/overflowTip.testing';
 import { loadIndex } from '../lib/catalog';
 import { GameSession } from '../lib/session.svelte';
-import type { Index, LobbyConfig, PlayerView, UnsupportedCard, View, YouView } from '../lib/types';
+import type {
+  DeckView,
+  Index,
+  LobbyConfig,
+  PlayerView,
+  UnsupportedCard,
+  View,
+  YouView,
+} from '../lib/types';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -34,6 +44,14 @@ const index: Index = {
       recommended: ['masters_of_evil'],
     },
     {
+      id: 'wrecking_crew',
+      name: 'Wrecking Crew',
+      pack: 'core',
+      image: 'wrecking_crew.jpg',
+      supported: true,
+      recommended: [],
+    },
+    {
       id: 'marauders',
       name: 'Marauders',
       pack: 'next_evol',
@@ -58,18 +76,25 @@ const noScenario: LobbyConfig = {
   modulars: [],
 };
 
-const alex: PlayerView = { name: 'Alex', color: 0, host: true, ready: false, handCount: 0 };
-const sam: PlayerView = { name: 'Sam', color: 1, host: false, ready: false, handCount: 0 };
-const jo: PlayerView = {
-  name: 'Jo',
-  color: 2,
-  host: false,
+const noDeck: DeckView = { ready: false, handCount: 0 };
+const spiderMan: DeckView = {
   ready: true,
   hero: '01001a',
   heroName: 'Spider-Man',
   deckName: 'Friendly neighbourhood',
   handCount: 0,
 };
+const captainMarvel: DeckView = {
+  ready: true,
+  hero: '01010a',
+  heroName: 'Captain Marvel',
+  deckName: 'Higher, further, faster',
+  handCount: 0,
+};
+
+const alex: PlayerView = { name: 'Alex', color: 0, host: true, ready: false, decks: [noDeck] };
+const sam: PlayerView = { name: 'Sam', color: 1, host: false, ready: false, decks: [noDeck] };
+const jo: PlayerView = { name: 'Jo', color: 2, host: false, ready: true, decks: [spiderMan] };
 
 const asHost: YouView = { role: 'player', name: 'Alex', color: 0, host: true };
 const asSam: YouView = { role: 'player', name: 'Sam', color: 1, host: false };
@@ -133,6 +158,13 @@ function renderLive() {
   };
 }
 
+/** The seat of a player in the players area. */
+function seatRow(playerName: string): HTMLElement {
+  const row = screen.getByText(playerName).closest('.seat');
+  if (!(row instanceof HTMLElement)) throw new Error(`no row for ${playerName}`);
+  return row;
+}
+
 function renderLobby(fields: {
   you?: YouView;
   players?: PlayerView[];
@@ -168,6 +200,25 @@ afterEach(() => {
 });
 
 describe('Lobby', () => {
+  it('lets the host close the lobby, once confirmed', async () => {
+    const session = renderLobby({});
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Close the lobby' }));
+    expect(session.lobby).not.toHaveBeenCalled();
+
+    const dialog = screen.getByRole('alertdialog', {
+      name: 'Close the lobby? This ends the game for everyone.',
+    });
+    await fireEvent.click(within(dialog).getByRole('button', { name: 'Close the lobby' }));
+    expect(session.lobby).toHaveBeenCalledExactlyOnceWith('end');
+  });
+
+  it('offers a guest no way to close the lobby', () => {
+    renderLobby({ you: asSam });
+
+    expect(screen.queryByRole('button', { name: 'Close the lobby' })).toBeNull();
+  });
+
   it('titles the screen and tells the host what to do', () => {
     renderLobby({});
 
@@ -216,6 +267,61 @@ describe('Lobby', () => {
     expect(screen.getByRole('button', { name: /Klaw/ }).getAttribute('aria-pressed')).toBe('false');
     expect(screen.getByText('Modular sets')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Remove Bomb Scare' })).toBeTruthy();
+  });
+
+  it('shows the full scenario name in a tooltip when it is cut short, and no native title', async () => {
+    renderLobby({});
+
+    const klaw = await screen.findByRole('button', { name: /Klaw/ });
+    // The pack's name shows in the header above, and support on the tile itself.
+    expect(klaw.hasAttribute('title')).toBe(false);
+    const name = klaw.querySelector<HTMLElement>('.nm')!;
+    cutShort(name);
+    await fireEvent.pointerOver(name);
+    expect(name.dataset.tip).toBe('Klaw');
+  });
+
+  it('shows the first pack and two rows of villains, the rest scrolling', async () => {
+    // jsdom lays nothing out: the observer is triggered and the sizes are set by hand.
+    const observed: { callback: ResizeObserverCallback; targets: Element[] }[] = [];
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        private readonly entry: { callback: ResizeObserverCallback; targets: Element[] };
+        constructor(callback: ResizeObserverCallback) {
+          this.entry = { callback, targets: [] };
+          observed.push(this.entry);
+        }
+        observe(target: Element): void {
+          this.entry.targets.push(target);
+        }
+        unobserve(): void {}
+        disconnect(): void {
+          this.entry.targets = [];
+        }
+      },
+    );
+    try {
+      renderLobby({});
+      await screen.findByRole('button', { name: /Klaw/ });
+      const list = document.querySelector<HTMLElement>('.villains')!;
+      expect(list.style.getPropertyValue('--visible-height')).toBe('');
+
+      const sized = (height: number) => () => new DOMRect(0, 0, 200, height);
+      list.querySelector<HTMLElement>('.pkname')!.getBoundingClientRect = sized(41);
+      list.querySelector<HTMLElement>('.vil')!.getBoundingClientRect = sized(112.5);
+      list.querySelector<HTMLElement>('.vgrid')!.style.rowGap = '12px';
+      for (const { callback, targets } of observed) {
+        if (targets.includes(list)) {
+          callback([], {} as ResizeObserver);
+        }
+      }
+      await tick();
+
+      expect(list.style.getPropertyValue('--visible-height')).toBe(`${41 + 2 * 112.5 + 12}px`);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   it('names no deck provider in its copy', async () => {
@@ -296,7 +402,45 @@ describe('Lobby', () => {
 
     const start = screen.getByRole('button', { name: 'Set up the table' });
     expect((start as HTMLButtonElement).disabled).toBe(true);
-    expect(screen.getByText('Waiting for a deck from you and Sam.')).toBeTruthy();
+    expect(screen.getByText("Waiting for your deck and Sam's deck.")).toBeTruthy();
+  });
+
+  it('start disabled until a modular set is chosen for a scenario that recommends one', async () => {
+    const rhino: LobbyConfig = { ...noScenario, scenario: 'rhino', standard: 'standard' };
+    renderLobby({ players: [{ ...alex, decks: [spiderMan] }], config: rhino });
+
+    expect(await screen.findByText('Choose at least one modular set.')).toBeTruthy();
+    const start = screen.getByRole('button', { name: 'Set up the table' });
+    expect((start as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it('start enabled once a modular set is chosen', async () => {
+    const rhino: LobbyConfig = {
+      ...noScenario,
+      scenario: 'rhino',
+      standard: 'standard',
+      modulars: ['bomb_scare'],
+    };
+    renderLobby({ players: [{ ...alex, decks: [spiderMan] }], config: rhino });
+
+    await screen.findByRole('button', { name: /Rhino/ });
+    expect(screen.getByText('Everyone is ready.')).toBeTruthy();
+    const start = screen.getByRole('button', { name: 'Set up the table' });
+    expect((start as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  it('start enabled without a modular set for a scenario that recommends none', async () => {
+    const wreckingCrew: LobbyConfig = {
+      ...noScenario,
+      scenario: 'wrecking_crew',
+      standard: 'standard',
+    };
+    renderLobby({ players: [{ ...alex, decks: [spiderMan] }], config: wreckingCrew });
+
+    await screen.findByRole('button', { name: /Wrecking Crew/ });
+    expect(screen.getByText('Everyone is ready.')).toBeTruthy();
+    const start = screen.getByRole('button', { name: 'Set up the table' });
+    expect((start as HTMLButtonElement).disabled).toBe(false);
   });
 
   it('guest sees no remove buttons except leave on own row', async () => {
@@ -321,7 +465,7 @@ describe('Lobby', () => {
 
     const seats = screen.getAllByRole('button', { name: 'Take this seat' });
     expect(seats).toHaveLength(2);
-    expect(screen.queryByText('Your deck')).toBeNull();
+    expect(screen.queryByText('Your decks')).toBeNull();
     const firstSeat = seats[0];
     if (!firstSeat) throw new Error('no free seat');
     await fireEvent.click(firstSeat);
@@ -329,11 +473,23 @@ describe('Lobby', () => {
   });
 
   it("shows the hero image of a player's identity, from the view", async () => {
-    renderLobby({ players: [alex, { ...jo, heroImage: 'hero.jpg' }] });
+    renderLobby({ players: [alex, { ...jo, decks: [{ ...spiderMan, heroImage: 'hero.jpg' }] }] });
 
     const image = await screen.findByRole('img', { name: 'Spider-Man' });
     expect(image.getAttribute('src')).toBe('hero.jpg');
-    expect(screen.getByText('Spider-Man — Friendly neighbourhood')).toBeTruthy();
+    expect(within(seatRow('Jo')).getByText('Spider-Man').tagName).toBe('B');
+    expect(within(seatRow('Jo')).getByText('Friendly neighbourhood')).toBeTruthy();
+  });
+
+  it("shows a seat's full hero and deck names in a tooltip when they are cut short", async () => {
+    renderLobby({ players: [alex, { ...jo, decks: [spiderMan] }] });
+
+    for (const name of ['Spider-Man', 'Friendly neighbourhood']) {
+      const line = within(seatRow('Jo')).getByText(name);
+      cutShort(line);
+      await fireEvent.pointerOver(line);
+      expect(line.dataset.tip).toBe(name);
+    }
   });
 
   it('shows a placeholder for a player without a hero image', () => {
@@ -341,13 +497,17 @@ describe('Lobby', () => {
     expect(screen.queryByRole('img', { name: 'Spider-Man' })).toBeNull();
   });
 
-  it('shows the hero image of the loaded deck, large', () => {
+  it('shows the hero image of the loaded deck at the size of its seat', () => {
     const asJo: YouView = { role: 'player', name: 'Jo', color: 2, host: false };
-    renderLobby({ you: asJo, players: [alex, { ...jo, heroImage: 'hero.jpg' }] });
+    renderLobby({
+      you: asJo,
+      players: [alex, { ...jo, decks: [{ ...spiderMan, heroImage: 'hero.jpg' }] }],
+    });
 
     const images = screen.getAllByRole('img', { name: 'Spider-Man' });
     expect(images.map((image) => image.getAttribute('src'))).toEqual(['hero.jpg', 'hero.jpg']);
-    expect(images.filter((image) => image.classList.contains('large'))).toHaveLength(1);
+    // Both boxes share one portrait size, so the names beside it line up the same way.
+    expect(images.every((image) => image.closest('.hero') !== null)).toBe(true);
   });
 
   it('loads a deck from its link', async () => {
@@ -360,6 +520,7 @@ describe('Lobby', () => {
 
     expect(session.lobby).toHaveBeenCalledWith('setDeck', {
       url: 'https://marvelcdb.com/decklist/view/1',
+      deck: 0,
     });
   });
 
@@ -374,10 +535,10 @@ describe('Lobby', () => {
     await live.receive({
       type: 'view',
       version: 2,
-      view: lobbyView([alex, { ...sam, ready: true }]),
+      view: lobbyView([alex, { ...sam, ready: true, decks: [captainMarvel] }]),
     });
 
-    const deckBox = screen.getByText('Your deck').closest('section');
+    const deckBox = screen.getByText('Your decks').closest('section');
     if (!deckBox) throw new Error('no deck box');
     expect(within(deckBox).getByRole('alert').textContent).toBe(
       'This is not a marvelcdb deck link.',
@@ -426,5 +587,220 @@ describe('Lobby', () => {
 
     await fireEvent.click(document.body);
     expect(document.querySelector('.menu')).toBeNull();
+  });
+  it('row lists each slot', () => {
+    renderLobby({ players: [{ ...alex, decks: [spiderMan, noDeck] }, sam] });
+
+    const row = seatRow('Alex');
+    expect(within(row).getByText('Spider-Man')).toBeTruthy();
+    expect(within(row).getByText('Friendly neighbourhood')).toBeTruthy();
+    expect(within(row).getByText('No deck yet')).toBeTruthy();
+    expect(within(row).getByText('you · host')).toBeTruthy();
+  });
+
+  it('ready per slot', () => {
+    renderLobby({ players: [{ ...alex, decks: [spiderMan, noDeck] }, sam] });
+
+    const row = screen.getByText('Alex').closest('.seat');
+    if (!(row instanceof HTMLElement)) throw new Error('no row for Alex');
+    expect(within(row).getAllByText('Ready')).toHaveLength(1);
+    expect(within(row).getAllByText('Waiting')).toHaveLength(1);
+  });
+
+  it('add a deck sends addDeck', async () => {
+    const session = renderLobby({});
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Add a deck' }));
+
+    expect(session.lobby).toHaveBeenCalledWith('addDeck');
+  });
+
+  it('focuses the deck link of the slot the viewer just added', async () => {
+    const live = renderLive();
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Add a deck' }));
+    await live.receive({
+      type: 'view',
+      version: 2,
+      view: lobbyView([{ ...alex, decks: [noDeck, noDeck] }, sam]),
+    });
+    await tick();
+
+    expect(document.activeElement).toBe(screen.getByRole('textbox', { name: 'Deck 2 link' }));
+  });
+
+  it('moves no focus when the slots change without an Add a deck', async () => {
+    const live = renderLive();
+
+    await live.receive({
+      type: 'view',
+      version: 2,
+      view: lobbyView([{ ...alex, decks: [noDeck, noDeck] }, sam]),
+    });
+    await tick();
+
+    expect(document.activeElement).toBe(document.body);
+  });
+
+  it('moves no focus once the Add a deck failed', async () => {
+    const live = renderLive();
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Add a deck' }));
+    await live.receive({ type: 'error', code: 'lobby', message: 'No deck slot is left.' });
+    await live.receive({
+      type: 'view',
+      version: 2,
+      view: lobbyView([{ ...alex, decks: [noDeck, noDeck] }, sam]),
+    });
+    await tick();
+
+    expect(document.activeElement).toBe(document.body);
+  });
+
+  it('load on slot 1 sends setDeck deck 1', async () => {
+    const session = renderLobby({ players: [{ ...alex, decks: [spiderMan, noDeck] }, sam] });
+
+    await fireEvent.input(screen.getByRole('textbox', { name: 'Deck 2 link' }), {
+      target: { value: 'https://example.com/deck/2' },
+    });
+    await fireEvent.click(screen.getByRole('button', { name: 'Load' }));
+
+    expect(session.lobby).toHaveBeenCalledWith('setDeck', {
+      url: 'https://example.com/deck/2',
+      deck: 1,
+    });
+  });
+
+  it('addDeck hidden at 4 slots', () => {
+    renderLobby({ players: [{ ...alex, decks: [spiderMan, noDeck] }, sam, jo] });
+
+    expect(screen.queryByRole('button', { name: 'Add a deck' })).toBeNull();
+    expect(screen.queryByText(/Free seat/)).toBeNull();
+  });
+
+  it('shows one free seat per slot left', () => {
+    renderLobby({ players: [{ ...alex, decks: [spiderMan, noDeck] }, sam] });
+
+    expect(screen.getAllByText(/Free seat/)).toHaveLength(1);
+  });
+
+  it('remove shown only with 2+ slots', () => {
+    renderLobby({});
+    expect(screen.queryByRole('button', { name: /^Remove deck/ })).toBeNull();
+  });
+
+  it('removes one of several decks by its slot', async () => {
+    const session = renderLobby({ players: [{ ...alex, decks: [spiderMan, noDeck] }, sam] });
+
+    expect(screen.getAllByRole('button', { name: /^Remove deck/ })).toHaveLength(2);
+    await fireEvent.click(screen.getByRole('button', { name: 'Remove deck 2' }));
+
+    expect(session.lobby).toHaveBeenCalledWith('removeDeck', { deck: 1 });
+  });
+
+  it('start names missing deck', () => {
+    renderLobby({
+      you: asSam,
+      players: [
+        { ...alex, decks: [spiderMan, noDeck] },
+        { ...sam, ready: true, decks: [captainMarvel] },
+      ],
+    });
+
+    expect(screen.getByText("Waiting for Alex's deck.")).toBeTruthy();
+  });
+
+  it('counts the missing decks of one player', () => {
+    renderLobby({
+      you: asSam,
+      players: [
+        { ...alex, decks: [noDeck, noDeck] },
+        { ...sam, ready: true, decks: [captainMarvel] },
+      ],
+    });
+
+    expect(screen.getByText("Waiting for Alex's 2 decks.")).toBeTruthy();
+  });
+
+  it('renders hero names as text', () => {
+    const hostile = '<img src="x" onerror="alert(1)">';
+    renderLobby({
+      players: [
+        alex,
+        { ...jo, decks: [{ ...spiderMan, heroName: hostile, deckName: '<b>bold</b>' }] },
+      ],
+    });
+
+    expect(screen.getByText(hostile)).toBeTruthy();
+    expect(screen.getByText('<b>bold</b>')).toBeTruthy();
+    expect(document.querySelector('img[src="x"]')).toBeNull();
+    expect([...document.querySelectorAll('b')].some((b) => b.textContent === 'bold')).toBe(false);
+  });
+
+  it('shows a failed deck load under the slot that was loaded', async () => {
+    const live = renderLive();
+    await live.receive({
+      type: 'view',
+      version: 2,
+      view: lobbyView([{ ...alex, decks: [spiderMan, noDeck] }, sam]),
+    });
+    await fireEvent.input(screen.getByRole('textbox', { name: 'Deck 2 link' }), {
+      target: { value: 'https://example.com/nope' },
+    });
+    await fireEvent.click(screen.getByRole('button', { name: 'Load' }));
+    await live.receive({ type: 'error', code: 'deck', message: 'This deck link is not valid.' });
+
+    const alert = screen.getByRole('alert');
+    expect(alert.textContent).toBe('This deck link is not valid.');
+    expect(alert.closest('.slot')?.querySelector('input')?.id).toBe(
+      screen.getByRole('textbox', { name: 'Deck 2 link' }).id,
+    );
+  });
+
+  it('keeps no typed link in a slot once an earlier slot is removed', async () => {
+    const live = renderLive();
+    await live.receive({
+      type: 'view',
+      version: 2,
+      view: lobbyView([{ ...alex, decks: [noDeck, noDeck, noDeck] }, sam]),
+    });
+    await fireEvent.input(screen.getByRole('textbox', { name: 'Deck 1 link' }), {
+      target: { value: 'https://example.com/deck/1' },
+    });
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Remove deck 1' }));
+    await live.receive({
+      type: 'view',
+      version: 3,
+      view: lobbyView([{ ...alex, decks: [noDeck, noDeck] }, sam]),
+    });
+
+    // Deck 1 is the former deck 2 now: the link typed for the removed deck is gone.
+    expect(screen.getByRole<HTMLInputElement>('textbox', { name: 'Deck 1 link' }).value).toBe('');
+  });
+
+  it('shows no failed deck load under another slot once a slot is removed', async () => {
+    const live = renderLive();
+    await live.receive({
+      type: 'view',
+      version: 2,
+      view: lobbyView([{ ...alex, decks: [noDeck, noDeck, noDeck] }, sam]),
+    });
+    await fireEvent.input(screen.getByRole('textbox', { name: 'Deck 2 link' }), {
+      target: { value: 'https://example.com/nope' },
+    });
+    await fireEvent.click(screen.getAllByRole('button', { name: 'Load' })[1]!);
+    await live.receive({ type: 'error', code: 'deck', message: 'This deck link is not valid.' });
+    expect(screen.getByRole('alert')).toBeTruthy();
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Remove deck 1' }));
+    await live.receive({
+      type: 'view',
+      version: 3,
+      view: lobbyView([{ ...alex, decks: [noDeck, noDeck] }, sam]),
+    });
+
+    // Slot 1 now holds the former deck 3, which never failed to load.
+    expect(screen.queryByRole('alert')).toBeNull();
   });
 });

@@ -1,5 +1,5 @@
-<script lang="ts">
-  type Name =
+<script lang="ts" module>
+  export type IconName =
     | 'cards'
     | 'sliders'
     | 'back'
@@ -7,10 +7,13 @@
     | 'fullscreen'
     | 'exit-fullscreen'
     | 'cross'
+    | 'pencil'
     | 'rows-all'
     | 'rows-focus';
+</script>
 
-  let { name }: { name: Name } = $props();
+<script lang="ts">
+  let { name }: { name: IconName } = $props();
 
   // Stroke icons on a 24x24 grid, drawn with currentColor.
 </script>
@@ -42,6 +45,9 @@
     <path d="M4 9h5V4M15 4v5h5M20 15h-5v5M9 20v-5H4" />
   {:else if name === 'cross'}
     <path d="M6 6l12 12M18 6L6 18" />
+  {:else if name === 'pencil'}
+    <!-- A pencil, writing towards the bottom left. -->
+    <path d="M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4" />
   {:else if name === 'rows-all'}
     <!-- Every row of the table. -->
     <rect x="4" y="4" width="16" height="4" rx="1" />

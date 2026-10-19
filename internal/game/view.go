@@ -44,15 +44,21 @@ type PileView struct {
 
 // PlayerView is what everybody may know about a player.
 type PlayerView struct {
-	Name      string `json:"name"`
-	Color     int    `json:"color"`
-	Host      bool   `json:"host"`
-	Area      Area   `json:"area,omitempty"`
+	Name  string     `json:"name"`
+	Color int        `json:"color"`
+	Host  bool       `json:"host"`
+	Ready bool       `json:"ready"` // every deck slot holds a deck
+	Decks []DeckView `json:"decks"` // slot order
+}
+
+// DeckView is what everybody may know about one deck slot of a player.
+type DeckView struct {
+	Area      Area   `json:"area,omitempty"` // the slot's seat, once started
 	Hero      string `json:"hero,omitempty"`
 	HeroName  string `json:"heroName,omitempty"`
 	HeroImage string `json:"heroImage,omitempty"`
 	DeckName  string `json:"deckName,omitempty"`
-	Ready     bool   `json:"ready"` // has a deck
+	Ready     bool   `json:"ready"` // holds a deck
 	HandCount int    `json:"handCount"`
 }
 
@@ -64,6 +70,7 @@ type LogView struct {
 	At     time.Time `json:"at"`
 	Undone bool      `json:"undone,omitempty"`
 	Cards  []string  `json:"cards,omitempty"`
+	Parts  []LogPart `json:"parts,omitempty"` // see LogEntry.Parts
 }
 
 // YouView tells the viewer who they are.
@@ -72,18 +79,18 @@ type YouView struct {
 	Name  string `json:"name,omitempty"`
 	Color int    `json:"color"`
 	Host  bool   `json:"host"`
-	Area  Area   `json:"area,omitempty"`
+	Areas []Area `json:"areas,omitempty"` // the viewer's own seats in order, once started
 }
 
 // TableView is the table as one viewer sees it.
 type TableView struct {
-	Cards       []CardView   `json:"cards"`
-	Piles       []PileView   `json:"piles"`
-	Hand        []string     `json:"hand,omitempty"`
-	Stages      []*Stage     `json:"stages"`
-	FirstPlayer Point        `json:"firstPlayer"`
-	Arrows      []Arrow      `json:"arrows,omitempty"`
-	Private     *PrivateView `json:"private,omitempty"`
+	Cards       []CardView        `json:"cards"`
+	Piles       []PileView        `json:"piles"`
+	Hands       map[Area][]string `json:"hands,omitempty"` // the viewer's own seats only
+	Stages      []*Stage          `json:"stages"`
+	FirstPlayer Point             `json:"firstPlayer"`
+	Arrows      []Arrow           `json:"arrows,omitempty"`
+	Private     *PrivateView      `json:"private,omitempty"`
 }
 
 // View is the game as one viewer may see it. It is the only game data sent to
@@ -108,29 +115,34 @@ type View struct {
 // gets the view of a spectator, with an empty role.
 func (g *Game) ViewFor(token string) View {
 	player := g.player(token)
-	seat := -1
+	// The viewer's own seats, and the home seat that holds the private view;
+	// none and -1 for someone who does not play.
+	var seats []int
+	home := -1
 	if player != nil {
-		seat = slices.Index(g.Players, player)
+		index := slices.Index(g.Players, player)
+		seats = g.seatsOf(index)
+		home = g.homeSeat(index)
 	}
 
 	v := View{
 		ID:     g.ID,
 		Phase:  g.Phase,
-		You:    g.youView(token, player, seat),
+		You:    g.youView(token, player, seats),
 		Config: g.Config,
 	}
 	// Clients expect lists, never null: start from empty, non-nil slices.
 	v.Config.Modulars = append([]string{}, g.Config.Modulars...)
 	v.Players = make([]PlayerView, 0, len(g.Players))
 	for i, p := range g.Players {
-		v.Players = append(v.Players, g.playerView(p, i))
+		v.Players = append(v.Players, g.playerView(p, g.seatsOf(i)))
 	}
 	if g.Table != nil {
-		v.Table = g.Table.viewFor(seat)
+		v.Table = g.Table.viewFor(seats, home)
 	}
 	v.Log = g.logViews(v.Table)
 	if player != nil && g.History != nil {
-		v.CanUndo = g.History.lastUndoable(seat) != nil
+		v.CanUndo = g.History.lastUndoable(seats...) != nil
 	}
 	return v
 }
@@ -147,11 +159,13 @@ func (g *Game) OnlineSpectators(online map[string]bool) int {
 	return count
 }
 
-func (g *Game) youView(token string, player *Player, seat int) YouView {
+func (g *Game) youView(token string, player *Player, seats []int) YouView {
 	if player != nil {
 		you := YouView{Role: RolePlayer, Name: player.Name, Color: player.Color, Host: player.Host}
 		if g.Table != nil {
-			you.Area = PlayerArea(seat)
+			for _, seat := range seats {
+				you.Areas = append(you.Areas, PlayerArea(seat))
+			}
 		}
 		return you
 	}
@@ -161,17 +175,28 @@ func (g *Game) youView(token string, player *Player, seat int) YouView {
 	return YouView{}
 }
 
-func (g *Game) playerView(p *Player, seat int) PlayerView {
-	pv := PlayerView{Name: p.Name, Color: p.Color, Host: p.Host, Ready: p.Deck != nil}
-	if p.Deck != nil {
-		pv.Hero = p.Deck.Hero
-		pv.HeroName = p.Deck.HeroName
-		pv.HeroImage = p.Deck.HeroImage
-		pv.DeckName = p.Deck.Name
+// playerView describes p, whose deck slots sit at seats once started.
+func (g *Game) playerView(p *Player, seats []int) PlayerView {
+	pv := PlayerView{
+		Name:  p.Name,
+		Color: p.Color,
+		Host:  p.Host,
+		Ready: p.ready(),
+		Decks: make([]DeckView, 0, len(p.Decks)),
 	}
-	if g.Table != nil {
-		pv.Area = PlayerArea(seat)
-		pv.HandCount = len(g.Table.Hands[pv.Area])
+	for slot, deck := range p.Decks {
+		dv := DeckView{Ready: deck != nil}
+		if deck != nil {
+			dv.Hero = deck.Hero
+			dv.HeroName = deck.HeroName
+			dv.HeroImage = deck.HeroImage
+			dv.DeckName = deck.Name
+		}
+		if g.Table != nil {
+			dv.Area = PlayerArea(seats[slot])
+			dv.HandCount = len(g.Table.Hands[dv.Area])
+		}
+		pv.Decks = append(pv.Decks, dv)
 	}
 	return pv
 }
@@ -187,7 +212,7 @@ func (g *Game) logViews(table *TableView) []LogView {
 	}
 	views := make([]LogView, 0, len(g.Log))
 	for _, e := range g.Log {
-		lv := LogView{Who: e.Who, Color: e.Color, Text: e.Text, At: e.At, Undone: e.Undone}
+		lv := LogView{Who: e.Who, Color: e.Color, Text: e.Text, Parts: e.Parts, At: e.At, Undone: e.Undone}
 		for _, id := range e.Cards {
 			if listed[id] {
 				lv.Cards = append(lv.Cards, id)
@@ -198,11 +223,11 @@ func (g *Game) logViews(table *TableView) []LogView {
 	return views
 }
 
-// viewFor builds the table as seen from seat, which is -1 for someone who
-// does not play. Three kinds of cards are listed: those lying on the table or
-// in a stage zone, those of public piles, and the viewer's own hand and open
-// view.
-func (t *Table) viewFor(seat int) *TableView {
+// viewFor builds the table as seen by the player at seats, whose private view
+// lives in the area of home; seats is empty and home -1 for someone who does
+// not play. Three kinds of cards are listed: those lying on the table or in a
+// stage zone, those of public piles, and the viewer's own hands and open view.
+func (t *Table) viewFor(seats []int, home int) *TableView {
 	tv := &TableView{
 		Cards:       []CardView{},
 		Piles:       []PileView{},
@@ -235,13 +260,19 @@ func (t *Table) viewFor(seat int) *TableView {
 		}
 		tv.Piles = append(tv.Piles, pile.viewOf())
 	}
-	if seat >= 0 {
+	for _, seat := range seats {
 		area := PlayerArea(seat)
-		tv.Hand = slices.Clone(t.Hands[area])
-		for _, id := range tv.Hand {
+		hand := slices.Clone(t.Hands[area])
+		if tv.Hands == nil {
+			tv.Hands = map[Area][]string{}
+		}
+		tv.Hands[area] = hand
+		for _, id := range hand {
 			listed[id] = true
 		}
-		if private := t.privateView(area); private != nil {
+	}
+	if home >= 0 {
+		if private := t.privateView(PlayerArea(home)); private != nil {
 			tv.Private = private
 			for _, id := range private.Cards {
 				listed[id] = true

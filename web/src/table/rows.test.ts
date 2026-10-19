@@ -9,6 +9,7 @@ import {
   rowOfSeat,
   saveViewMode,
   storedViewMode,
+  VILLAIN_ROW_HEIGHT,
 } from './rows';
 
 function deck(owner: number, y: number): PileView {
@@ -16,12 +17,13 @@ function deck(owner: number, y: number): PileView {
 }
 
 describe('rows', () => {
-  it('cuts the table in rows of 330', () => {
-    expect([rowOf(-10), rowOf(0), rowOf(329), rowOf(330), rowOf(1000)]).toEqual([0, 0, 0, 1, 3]);
+  it("cuts the table in the villain's row of 470, then rows of 330", () => {
+    const heights = [-10, 0, 469, 470, 799, 800, 1300];
+    expect(heights.map(rowOf)).toEqual([0, 0, 0, 1, 1, 2, 3]);
   });
 
   it("finds a seat's row from its deck, or from the seat without one", () => {
-    const piles = [deck(0, 360), deck(1, 690), deck(2, 1020)];
+    const piles = [deck(0, 500), deck(1, 830), deck(2, 1160)];
     expect(rowOfSeat(piles, 1)).toBe(2);
     expect(rowOfSeat([], 1)).toBe(2);
     expect(lastRow(piles)).toBe(3);
@@ -34,20 +36,20 @@ describe('rows', () => {
   });
 
   it("draws the villain's row where it is and the player's row right under it", () => {
-    // Three players: the second one's row is row 2, from 660 to 990.
+    // Three players: the second one's row is row 2, from 800 to 1130.
     const rows = focusRows(2, 3);
     expect(rows.toDisplay(30)).toBe(30);
-    expect(rows.toDisplay(690)).toBe(360);
-    expect(rows.toDisplay(989)).toBe(659);
+    expect(rows.toDisplay(830)).toBe(500);
+    expect(rows.toDisplay(1129)).toBe(799);
     // The other players' rows are hidden.
-    expect(rows.toDisplay(360)).toBeNull();
-    expect(rows.toDisplay(1020)).toBeNull();
+    expect(rows.toDisplay(500)).toBeNull();
+    expect(rows.toDisplay(1160)).toBeNull();
     expect(rows.toDisplay(5000)).toBeNull();
   });
 
   it('lets the last row run on downward', () => {
     const rows = focusRows(3, 3);
-    expect(rows.toDisplay(1020)).toBe(360);
+    expect(rows.toDisplay(1160)).toBe(500);
     expect(rows.toDisplay(5000)).toBe(4340);
   });
 
@@ -60,7 +62,7 @@ describe('rows', () => {
       const rows = focusRows(shown, last);
       for (const y of DRAWN) {
         const row = rowOf(rows.toTable(y));
-        if (y < ROW_HEIGHT) {
+        if (y < VILLAIN_ROW_HEIGHT) {
           expect(row).toBe(0);
         } else if (shown === last) {
           // The last row runs on downward, past its band.
@@ -77,14 +79,14 @@ describe('rows', () => {
     for (let shown = 1; shown <= last; shown++) {
       const rows = focusRows(shown, last);
       // Every height of the shown rows is drawn somewhere and maps back to itself.
-      for (let y = -20; y < ROW_HEIGHT * (last + 2); y++) {
+      for (let y = -20; y < VILLAIN_ROW_HEIGHT + ROW_HEIGHT * (last + 1); y++) {
         const drawn = rows.toDisplay(y);
         if (drawn !== null) {
           expect(rows.toTable(drawn)).toBe(y);
         }
       }
       // Every height drawn in the shown rows maps back to itself.
-      const bottom = shown === last ? Infinity : 2 * ROW_HEIGHT;
+      const bottom = shown === last ? Infinity : VILLAIN_ROW_HEIGHT + ROW_HEIGHT;
       for (const y of DRAWN.filter((d) => d < bottom)) {
         expect(rows.toDisplay(rows.toTable(y))).toBe(y);
       }
@@ -93,9 +95,9 @@ describe('rows', () => {
 
   it('keeps anything drawn below a row that is not the last one in that row', () => {
     const rows = focusRows(2, 3);
-    expect(rows.toTable(659)).toBe(989);
-    expect(rows.toTable(660)).toBe(989);
-    expect(rows.toTable(2000)).toBe(989);
+    expect(rows.toTable(799)).toBe(1129);
+    expect(rows.toTable(800)).toBe(1129);
+    expect(rows.toTable(2000)).toBe(1129);
     // The last row runs on.
     expect(focusRows(3, 3).toTable(2000)).toBe(2660);
   });

@@ -57,8 +57,16 @@ function makeView(): View {
   return {
     id: 'g1',
     phase: 'playing',
-    you: { role: 'player', name: 'Alex', color: 0, host: true, area: 'p0' },
-    players: [{ name: 'Alex', color: 0, host: true, area: 'p0', ready: true, handCount: 0 }],
+    you: { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0'] },
+    players: [
+      {
+        name: 'Alex',
+        color: 0,
+        host: true,
+        ready: true,
+        decks: [{ area: 'p0', ready: true, handCount: 0 }],
+      },
+    ],
     spectators: 0,
     config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
     table: {
@@ -191,7 +199,7 @@ describe.each(KINDS)('while $name is open', ({ open, close, closing }) => {
   /** What the session was sent: only what closing the dialog sends, if anything. */
   function sentOnClose(session: ReturnType<typeof fakeSession>): void {
     if (closing) {
-      expect(session.act).toHaveBeenCalledExactlyOnceWith(closing);
+      expect(session.act).toHaveBeenCalledExactlyOnceWith(closing, 0);
     } else {
       expect(session.act).not.toHaveBeenCalled();
     }
@@ -247,6 +255,6 @@ describe.each(KINDS)('while $name is open', ({ open, close, closing }) => {
     await hover(placed('mine'));
     expect(bar()).not.toBeNull();
     await press('e');
-    expect(session.act).toHaveBeenLastCalledWith({ kind: 'exhaust', card: 'mine' });
+    expect(session.act).toHaveBeenLastCalledWith({ kind: 'exhaust', card: 'mine' }, 0);
   });
 });

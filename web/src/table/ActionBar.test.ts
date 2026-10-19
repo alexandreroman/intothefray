@@ -69,25 +69,21 @@ function makeView(extra: { cards?: TableCard[]; piles?: PileView[] } = {}): View
   return {
     id: 'g1',
     phase: 'playing',
-    you: { role: 'player', name: 'Alex', color: 0, host: true, area: 'p0' },
+    you: { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0'] },
     players: [
       {
         name: 'Alex',
         color: 0,
         host: true,
-        area: 'p0',
-        heroName: 'Spider-Man',
         ready: true,
-        handCount: 1,
+        decks: [{ area: 'p0', heroName: 'Spider-Man', ready: true, handCount: 1 }],
       },
       {
         name: 'Sam',
         color: 1,
         host: false,
-        area: 'p1',
-        heroName: 'Ant-Man',
         ready: true,
-        handCount: 0,
+        decks: [{ area: 'p1', heroName: 'Ant-Man', ready: true, handCount: 0 }],
       },
     ],
     spectators: 0,
@@ -95,7 +91,7 @@ function makeView(extra: { cards?: TableCard[]; piles?: PileView[] } = {}): View
     table: {
       cards,
       piles,
-      hand: ['h'],
+      hands: { p0: ['h'] },
       stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
       firstPlayer: { x: 860, y: 40 },
     },
@@ -120,6 +116,21 @@ function placed(id: string): HTMLElement {
     throw new Error(`no ${id} on the table`);
   }
   return element;
+}
+
+/** A rectangle on the screen, as getBoundingClientRect returns it. */
+function screenRect(left: number, top: number, width: number, height: number): DOMRect {
+  return {
+    left,
+    top,
+    width,
+    height,
+    right: left + width,
+    bottom: top + height,
+    x: left,
+    y: top,
+    toJSON: () => ({}),
+  } as DOMRect;
 }
 
 function bar(): HTMLElement | null {
@@ -262,7 +273,7 @@ describe('ActionBar', () => {
     await fireEvent.pointerEnter(placed('mine'));
 
     await fireEvent.click(within(bar()!).getByRole('button', { name: 'Exhaust' }));
-    expect(session.act).toHaveBeenCalledWith({ kind: 'exhaust', card: 'mine' });
+    expect(session.act).toHaveBeenCalledWith({ kind: 'exhaust', card: 'mine' }, 0);
   });
 
   it('look at top asks count then sends look', async () => {
@@ -286,7 +297,7 @@ describe('ActionBar', () => {
 
     await fireEvent.click(within(dialog).getByRole('button', { name: 'One more' }));
     await fireEvent.click(within(dialog).getByRole('button', { name: 'Look' }));
-    expect(session.act).toHaveBeenCalledWith({ kind: 'look', pile: 'deck:p0', n: 6 });
+    expect(session.act).toHaveBeenCalledWith({ kind: 'look', pile: 'deck:p0', n: 6 }, 0);
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
@@ -309,7 +320,7 @@ describe('ActionBar', () => {
     await fireEvent.click(within(dialog).getByRole('button', { name: 'One more' }));
     expect(value.getAttribute('aria-valuenow')).toBe('3');
     await fireEvent.click(within(dialog).getByRole('button', { name: 'Look' }));
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'look', pile: 'enc', n: 3 });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'look', pile: 'enc', n: 3 }, 0);
   });
 
   it('the count question closes when its pile empties or goes', async () => {
@@ -360,9 +371,7 @@ describe('ActionBar', () => {
     await fireEvent.pointerOver(reveal);
     await vi.advanceTimersByTimeAsync(350);
     const tip = screen.getByRole('tooltip');
-    expect(tip.textContent).toContain(
-      'Spider-Man is already revealed on this deck — move it first',
-    );
+    expect(tip.textContent).toContain('Spider-Man is already revealed on this deck: move it first');
     expect(tip.querySelector('kbd')?.textContent).toBe('R');
 
     await fireEvent.click(reveal);
@@ -373,7 +382,7 @@ describe('ActionBar', () => {
     const { session } = await renderTable();
     // The card the villain stage shows stays on the table.
     await fireEvent.pointerEnter(placed('v'));
-    const tip = 'The villain card stays on the table — choose another card to show';
+    const tip = 'The villain card stays on the table: choose another card to show';
     // Its name stays Move to: the tooltip says why it is disabled.
     const moveTo = within(bar()!).getByRole('button', { name: 'Move to' });
     expect(moveTo.getAttribute('aria-disabled')).toBe('true');
@@ -448,6 +457,87 @@ describe('ActionBar', () => {
     expect(noPreview()).toBe(true);
   });
 
+  describe('on the way from the card to its bar', () => {
+    // The card 400..540 × 400..596, its 300 × 40 bar centred 8 px above it: 320..620 × 352..392.
+    beforeEach(() => {
+      vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+        this: HTMLElement,
+      ) {
+        if (this.classList.contains('tablewrap')) {
+          return screenRect(0, 50, 1000, 700);
+        }
+        if (this.classList.contains('actionbar')) {
+          return screenRect(0, 0, 300, 40);
+        }
+        if (this.dataset.id === 'mine') {
+          return screenRect(400, 400, 140, 196);
+        }
+        return screenRect(0, 0, 0, 0);
+      });
+    });
+
+    it('the bar waits for a pointer crossing the gap slowly', async () => {
+      await renderTable();
+      await fireEvent.pointerEnter(placed('mine'));
+      await waitFor(() => expect(bar()?.style.top).toBe('352px'));
+      vi.useFakeTimers();
+
+      // Out of the card's top edge, then up through the gap, a pixel at a time.
+      await fireEvent.pointerLeave(placed('mine'));
+      for (let y = 399; y >= 392; y--) {
+        await fireEvent.pointerMove(window, { clientX: 470, clientY: y });
+        await vi.advanceTimersByTimeAsync(2 * LINGER_MS);
+        expect(bar()).not.toBeNull();
+      }
+      await fireEvent.pointerEnter(bar()!);
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(bar()).not.toBeNull();
+      expect(interaction.hovered).toEqual({ kind: 'card', id: 'mine' });
+    });
+
+    it('the bar of a tilted card waits over the corner its turn leaves bare', async () => {
+      await renderTable();
+      await fireEvent.pointerEnter(placed('mine'));
+      await waitFor(() => expect(bar()?.style.top).toBe('352px'));
+      vi.useFakeTimers();
+
+      // Exhausted, the card leaves the top right of its box bare: the pointer goes up from there.
+      await fireEvent.pointerLeave(placed('mine'));
+      await fireEvent.pointerMove(window, { clientX: 530, clientY: 430 });
+      await vi.advanceTimersByTimeAsync(5 * LINGER_MS);
+      expect(bar()).not.toBeNull();
+    });
+
+    it('the bar lingers as usual once the pointer goes elsewhere', async () => {
+      await renderTable();
+      await fireEvent.pointerEnter(placed('mine'));
+      await waitFor(() => expect(bar()?.style.top).toBe('352px'));
+      vi.useFakeTimers();
+
+      await fireEvent.pointerLeave(placed('mine'));
+      await fireEvent.pointerMove(window, { clientX: 470, clientY: 396 });
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(bar()).not.toBeNull();
+
+      // Sideways, off the way to the bar.
+      await fireEvent.pointerMove(window, { clientX: 300, clientY: 396 });
+      await vi.advanceTimersByTimeAsync(LINGER_MS);
+      expect(bar()).toBeNull();
+    });
+
+    it('the bar lingers as usual after the pointer leaves the card downwards', async () => {
+      await renderTable();
+      await fireEvent.pointerEnter(placed('mine'));
+      await waitFor(() => expect(bar()?.style.top).toBe('352px'));
+      vi.useFakeTimers();
+
+      await fireEvent.pointerLeave(placed('mine'));
+      await fireEvent.pointerMove(window, { clientX: 470, clientY: 600 });
+      await vi.advanceTimersByTimeAsync(LINGER_MS);
+      expect(bar()).toBeNull();
+    });
+  });
+
   it('ignores the pointerenter a redraw fires under a resting pointer', async () => {
     const { rerender } = await renderTable();
     await fireEvent.pointerMove(window, { clientX: 40, clientY: 60 });
@@ -518,7 +608,7 @@ describe('ActionBar', () => {
     await fireEvent.click(within(bar()!).getByRole('button', { name: 'Move to' }));
 
     await fireEvent.click(screen.getByRole('menuitem', { name: 'Bottom of deck' }));
-    expect(session.act).toHaveBeenCalledWith({ kind: 'toDeck', card: 'mine', where: 'bottom' });
+    expect(session.act).toHaveBeenCalledWith({ kind: 'toDeck', card: 'mine', where: 'bottom' }, 0);
   });
 
   it('a dropdown removed from under the pointer does not keep the bar', async () => {
@@ -542,7 +632,7 @@ describe('ActionBar', () => {
     await renderTable();
     await fireEvent.pointerEnter(placed('deck:p1'));
 
-    expect(bar()?.textContent).toBe('Belongs to Sam — only they can use it.');
+    expect(bar()?.textContent).toBe('Belongs to Sam: only they can use it.');
   });
 
   it('arrow mode: a click on another card sends the arrow', async () => {
@@ -552,7 +642,7 @@ describe('ActionBar', () => {
     expect(bar()?.textContent).toContain('Click the card to point at');
 
     await fireEvent.pointerDown(placed('v'));
-    expect(session.act).toHaveBeenCalledWith({ kind: 'arrowAdd', card: 'mine', target: 'v' });
+    expect(session.act).toHaveBeenCalledWith({ kind: 'arrowAdd', card: 'mine', target: 'v' }, 0);
     expect(interaction.arrowFrom).toBeNull();
   });
 
@@ -612,7 +702,7 @@ describe('ActionBar', () => {
 
     await fireEvent.pointerDown(placed('v'), { pointerType: 'touch' });
     await fireEvent.click(placed('v'));
-    expect(session.act).toHaveBeenCalledWith({ kind: 'arrowAdd', card: 'mine', target: 'v' });
+    expect(session.act).toHaveBeenCalledWith({ kind: 'arrowAdd', card: 'mine', target: 'v' }, 0);
     expect(interaction.locked).toBe(false);
 
     // The next tap selects as usual.
@@ -642,7 +732,7 @@ describe('ActionBar', () => {
     await fireEvent.click(
       within(bar()!).getByRole('button', { name: 'Choose the villain card to show' }),
     );
-    expect(screen.getByRole('dialog', { name: 'Villain — choose the card to show' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'Villain: choose the card to show' })).toBeTruthy();
     expect(session.act).not.toHaveBeenCalled();
   });
 
@@ -791,12 +881,15 @@ describe('tokens and statuses', () => {
 
     await fireEvent.click(addButton());
     await fireEvent.click(screen.getByRole('menuitem', { name: /^Damage/ }));
-    expect(session.act).toHaveBeenCalledWith({
-      kind: 'token',
-      card: 'mine',
-      name: 'dmg',
-      delta: 1,
-    });
+    expect(session.act).toHaveBeenCalledWith(
+      {
+        kind: 'token',
+        card: 'mine',
+        name: 'dmg',
+        delta: 1,
+      },
+      0,
+    );
   });
 
   it('a status choice adds one', async () => {
@@ -805,12 +898,15 @@ describe('tokens and statuses', () => {
 
     await fireEvent.click(addButton());
     await fireEvent.click(screen.getByRole('menuitem', { name: /^Tough/ }));
-    expect(session.act).toHaveBeenCalledWith({
-      kind: 'status',
-      card: 'mine',
-      name: 'tough',
-      delta: 1,
-    });
+    expect(session.act).toHaveBeenCalledWith(
+      {
+        kind: 'status',
+        card: 'mine',
+        name: 'tough',
+        delta: 1,
+      },
+      0,
+    );
   });
 
   it('pill minus sends delta -1', async () => {
@@ -822,20 +918,26 @@ describe('tokens and statuses', () => {
     const shown = pill()!;
     expect(shown.textContent).toContain('2');
     await fireEvent.click(within(shown).getByRole('button', { name: 'Remove 1' }));
-    expect(session.act).toHaveBeenCalledWith({
-      kind: 'token',
-      card: 'mine',
-      name: 'dmg',
-      delta: -1,
-    });
+    expect(session.act).toHaveBeenCalledWith(
+      {
+        kind: 'token',
+        card: 'mine',
+        name: 'dmg',
+        delta: -1,
+      },
+      0,
+    );
 
     await fireEvent.click(within(shown).getByRole('button', { name: 'Add 1' }));
-    expect(session.act).toHaveBeenLastCalledWith({
-      kind: 'token',
-      card: 'mine',
-      name: 'dmg',
-      delta: 1,
-    });
+    expect(session.act).toHaveBeenLastCalledWith(
+      {
+        kind: 'token',
+        card: 'mine',
+        name: 'dmg',
+        delta: 1,
+      },
+      0,
+    );
   });
 
   it('a status pill sends status actions', async () => {
@@ -844,12 +946,15 @@ describe('tokens and statuses', () => {
     await fireEvent.pointerEnter(counter('mine', 'status:stunned'));
 
     await fireEvent.click(within(pill()!).getByRole('button', { name: 'Add 1' }));
-    expect(session.act).toHaveBeenCalledWith({
-      kind: 'status',
-      card: 'mine',
-      name: 'stunned',
-      delta: 1,
-    });
+    expect(session.act).toHaveBeenCalledWith(
+      {
+        kind: 'status',
+        card: 'mine',
+        name: 'stunned',
+        delta: 1,
+      },
+      0,
+    );
   });
 
   it('the pill follows its token through redraws and hides at zero', async () => {

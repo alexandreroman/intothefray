@@ -120,7 +120,7 @@ func TestPermissions(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := resolve(f.g, tt.seat, tt.a, newTestRNG())
+			_, err := resolve(f.g, f.g.actorOf(tt.seat), tt.a, newTestRNG())
 			if tt.want == nil && err != nil || tt.want != nil && !errors.Is(err, tt.want) {
 				t.Errorf("resolve() error = %v, want %v", err, tt.want)
 			}
@@ -157,7 +157,7 @@ func TestResolveRejectsInvalidInput(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if _, err := resolve(f.g, 0, tt.a, newTestRNG()); !errors.Is(err, ErrInvalid) {
+			if _, err := resolve(f.g, f.g.actorOf(0), tt.a, newTestRNG()); !errors.Is(err, ErrInvalid) {
 				t.Errorf("resolve() error = %v, want ErrInvalid", err)
 			}
 		})
@@ -175,7 +175,7 @@ func TestResolveRejectsAreasOfEmptySeats(t *testing.T) {
 	for name, action := range actions {
 		t.Run(name, func(t *testing.T) {
 			for _, area := range []Area{"p2", "p3", "p4", "villain", "nowhere"} {
-				if _, err := resolve(f.g, 0, action(area), newTestRNG()); !errors.Is(err, ErrInvalid) {
+				if _, err := resolve(f.g, f.g.actorOf(0), action(area), newTestRNG()); !errors.Is(err, ErrInvalid) {
 					t.Errorf("area %s: resolve() error = %v, want ErrInvalid", area, err)
 				}
 			}
@@ -183,7 +183,7 @@ func TestResolveRejectsAreasOfEmptySeats(t *testing.T) {
 				return
 			}
 			for _, area := range []Area{"p0", "p1"} {
-				if _, err := resolve(f.g, 0, action(area), newTestRNG()); err != nil {
+				if _, err := resolve(f.g, f.g.actorOf(0), action(area), newTestRNG()); err != nil {
 					t.Errorf("area %s: resolve() error = %v, want nil", area, err)
 				}
 			}
@@ -210,7 +210,7 @@ func TestResolveRecordsTopCards(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := resolve(f.g, 0, tt.a, newTestRNG())
+			got, err := resolve(f.g, f.g.actorOf(0), tt.a, newTestRNG())
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -226,7 +226,7 @@ func TestResolveDealRecordsTheRevealedCard(t *testing.T) {
 	revealed := topCards(f.g.Table.Piles[PileEncounter], 1)
 	mustApply(t, f.g.Table, Action{Kind: ActReveal, Cards: revealed})
 
-	got, err := resolve(f.g, 0, Action{Kind: ActDeal, Area: "p1"}, newTestRNG())
+	got, err := resolve(f.g, f.g.actorOf(0), Action{Kind: ActDeal, Area: "p1"}, newTestRNG())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -240,7 +240,7 @@ func TestResolvePlayFromDeckTakesItsTopCard(t *testing.T) {
 	top := topCards(f.g.Table.Piles["deck:p0"], 1)[0]
 
 	// The client cannot pick a card of its deck: the top card is played, whatever it names.
-	got, err := resolve(f.g, 0, Action{Kind: ActPlay, Pile: "deck:p0", Card: f.hand, X: 400, Y: 200}, newTestRNG())
+	got, err := resolve(f.g, f.g.actorOf(0), Action{Kind: ActPlay, Pile: "deck:p0", Card: f.hand, X: 400, Y: 200}, newTestRNG())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -263,7 +263,7 @@ func TestResolvePlayFromAnEmptyDeckFails(t *testing.T) {
 	f := newResolveFixture(t)
 	f.g.Table.Piles["deck:p0"].Cards = nil
 
-	_, err := resolve(f.g, 0, Action{Kind: ActPlay, Pile: "deck:p0", X: 400, Y: 200}, newTestRNG())
+	_, err := resolve(f.g, f.g.actorOf(0), Action{Kind: ActPlay, Pile: "deck:p0", X: 400, Y: 200}, newTestRNG())
 	if !errors.Is(err, ErrInvalid) {
 		t.Errorf("resolve() error = %v, want ErrInvalid", err)
 	}
@@ -271,7 +271,7 @@ func TestResolvePlayFromAnEmptyDeckFails(t *testing.T) {
 
 func TestResolveRejectsUnknownSeat(t *testing.T) {
 	f := newResolveFixture(t)
-	if _, err := resolve(f.g, 2, Action{Kind: ActReveal}, newTestRNG()); !errors.Is(err, ErrForbidden) {
+	if _, err := resolve(f.g, f.g.actorOf(2), Action{Kind: ActReveal}, newTestRNG()); !errors.Is(err, ErrForbidden) {
 		t.Errorf("resolve() error = %v, want ErrForbidden", err)
 	}
 }
@@ -279,7 +279,7 @@ func TestResolveRejectsUnknownSeat(t *testing.T) {
 func TestResolveOverwritesSeat(t *testing.T) {
 	f := newResolveFixture(t)
 
-	got, err := resolve(f.g, 1, Action{Kind: ActArrowClear, Seat: 0}, newTestRNG())
+	got, err := resolve(f.g, f.g.actorOf(1), Action{Kind: ActArrowClear, Seat: 0}, newTestRNG())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -294,7 +294,7 @@ func TestResolveDrawTakesTop(t *testing.T) {
 	want := []string{deck[len(deck)-1], deck[len(deck)-2], deck[len(deck)-3]}
 
 	// The client-provided area and cards are ignored.
-	got, err := resolve(f.g, 0, Action{Kind: ActDraw, N: 3, Area: "p1", Cards: []string{"x"}}, newTestRNG())
+	got, err := resolve(f.g, f.g.actorOf(0), Action{Kind: ActDraw, N: 3, Area: "p1", Cards: []string{"x"}}, newTestRNG())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -308,7 +308,7 @@ func TestDrawUsesActingSeatDeck(t *testing.T) {
 	f := newResolveFixture(t)
 	deck := f.g.Table.Piles["deck:p1"].Cards
 
-	got, err := resolve(f.g, 1, Action{Kind: ActDraw, N: 1, Area: "p0"}, newTestRNG())
+	got, err := resolve(f.g, f.g.actorOf(1), Action{Kind: ActDraw, N: 1, Area: "p0"}, newTestRNG())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -351,11 +351,11 @@ func TestResolveShuffleIsPermutation(t *testing.T) {
 			tt.a.Cards = []string{"bogus"}
 			before := table.Clone()
 
-			first, err := resolve(f.g, tt.seat, tt.a, newTestRNG())
+			first, err := resolve(f.g, f.g.actorOf(tt.seat), tt.a, newTestRNG())
 			if err != nil {
 				t.Fatal(err)
 			}
-			second, err := resolve(f.g, tt.seat, tt.a, newTestRNG())
+			second, err := resolve(f.g, f.g.actorOf(tt.seat), tt.a, newTestRNG())
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -383,7 +383,7 @@ func TestResolveShuffleDependsOnSeed(t *testing.T) {
 	a := Action{Kind: ActShuffle, Pile: PileEncounter}
 	orders := map[string]bool{}
 	for seed := range uint64(5) {
-		got, err := resolve(f.g, 0, a, rand.New(rand.NewPCG(seed, 0))) //nolint:gosec // deterministic test
+		got, err := resolve(f.g, f.g.actorOf(0), a, rand.New(rand.NewPCG(seed, 0))) //nolint:gosec // deterministic test
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -401,19 +401,19 @@ func TestResolveRecordsTheResultingState(t *testing.T) {
 	f := newResolveFixture(t)
 	c := f.g.Table.Cards[f.ownTable]
 
-	exhaust, err := resolve(f.g, 0, Action{Kind: ActExhaust, Card: f.ownTable}, newTestRNG())
+	exhaust, err := resolve(f.g, f.g.actorOf(0), Action{Kind: ActExhaust, Card: f.ownTable}, newTestRNG())
 	if err != nil || exhaust.Exhausted == nil || *exhaust.Exhausted != !c.Exhausted {
 		t.Errorf("exhaust = %+v, %v; want Exhausted %t", exhaust, err, !c.Exhausted)
 	}
 
 	c.Faces, c.Face = 2, 1
-	flip, err := resolve(f.g, 0, Action{Kind: ActFlip, Card: f.ownTable, Face: 1}, newTestRNG())
+	flip, err := resolve(f.g, f.g.actorOf(0), Action{Kind: ActFlip, Card: f.ownTable, Face: 1}, newTestRNG())
 	if err != nil || flip.Face != 0 || flip.FaceDown == nil || *flip.FaceDown {
 		t.Errorf("flip of face 1 of 2 = %+v, %v; want face 0, face up", flip, err)
 	}
 
 	c.FaceDown = true
-	flip, err = resolve(f.g, 0, Action{Kind: ActFlip, Card: f.ownTable}, newTestRNG())
+	flip, err = resolve(f.g, f.g.actorOf(0), Action{Kind: ActFlip, Card: f.ownTable}, newTestRNG())
 	if err != nil || flip.Face != 1 || flip.FaceDown == nil || *flip.FaceDown {
 		t.Errorf("flip of a face-down card = %+v, %v; want face 1, face up", flip, err)
 	}

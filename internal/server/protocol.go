@@ -39,6 +39,8 @@ const (
 // Operations of the lobby message.
 const (
 	opConfigure    = "configure"
+	opAddDeck      = "addDeck"
+	opRemoveDeck   = "removeDeck"
 	opSetDeck      = "setDeck"
 	opRemovePlayer = "removePlayer"
 	opLeave        = "leave"
@@ -58,8 +60,9 @@ const (
 )
 
 // errorTexts is the message sent with each error code but deck, whose text
-// depends on the failure (see Server.importErrorText). It is fixed so that no
-// error detail, which can reveal where a hidden card is, reaches a viewer.
+// depends on the failure (see Server.importErrorText and heroTakenText). It
+// is fixed so that no error detail, which can reveal where a hidden card is,
+// reaches a viewer.
 var errorTexts = map[string]string{
 	codeInvalid:   "This request is not valid.",
 	codeForbidden: "You are not allowed to do that.",
@@ -82,11 +85,13 @@ type clientMessage struct {
 	Op     string            `json:"op"`
 	Config *game.LobbyConfig `json:"config"` // configure
 	URL    string            `json:"url"`    // setDeck
+	Deck   int               `json:"deck"`   // setDeck, removeDeck: the caller's deck slot, 0 when absent
 	Color  int               `json:"color"`  // removePlayer
 
 	// action
 	ID     int64        `json:"id"` // client sequence number, echoed in errors
 	Action *game.Action `json:"action"`
+	Seat   *int         `json:"seat"` // the credited seat; the player's first seat when absent
 
 	// presence. Cursor and Drag are kept raw to tell a hidden cursor or an
 	// ended drag (null) from an absent one.
@@ -155,10 +160,11 @@ type presencePoint struct {
 	Y int `json:"y"`
 }
 
-// presenceDrag is a drag in progress: the cards dragged and where they are,
-// in table units.
+// presenceDrag is a drag in progress: the cards dragged, or the first player
+// token, which carries no card, and where their corner is, in table units.
 type presenceDrag struct {
 	Cards []string `json:"cards"`
+	Token bool     `json:"token,omitempty"`
 	X     int      `json:"x"`
 	Y     int      `json:"y"`
 }

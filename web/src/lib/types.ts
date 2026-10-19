@@ -112,10 +112,8 @@ export interface PileView {
   cards?: string[]; // bottom to top, public piles only
 }
 
-export interface PlayerView {
-  name: string;
-  color: number;
-  host: boolean;
+/** One deck slot of a player: a seat at the table once the game starts. */
+export interface DeckView {
   area?: Area;
   hero?: string;
   heroName?: string;
@@ -125,6 +123,20 @@ export interface PlayerView {
   handCount: number;
 }
 
+export interface PlayerView {
+  name: string;
+  color: number;
+  host: boolean;
+  ready: boolean; // every deck slot holds a deck
+  decks: DeckView[];
+}
+
+/** A piece of a history line: plain text, or the printed name of a card. */
+export interface LogPart {
+  text: string;
+  card?: boolean;
+}
+
 export interface LogView {
   who: string;
   color: number; // -1 for system lines
@@ -132,6 +144,8 @@ export interface LogView {
   at: string; // RFC 3339
   undone?: boolean;
   cards?: string[];
+  /** The text in parts, card names flagged; absent when the line names no card. */
+  parts?: LogPart[];
 }
 
 export interface YouView {
@@ -139,7 +153,7 @@ export interface YouView {
   name?: string;
   color: number;
   host: boolean;
-  area?: Area;
+  areas?: Area[]; // the viewer's own seats, in order
 }
 
 export interface Stage {
@@ -170,7 +184,7 @@ export interface PrivateView {
 export interface TableView {
   cards: CardView[];
   piles: PileView[];
-  hand?: string[];
+  hands?: Partial<Record<Area, string[]>>; // the hands of the viewer's own seats only
   stages: Stage[];
   firstPlayer: Point;
   arrows?: Arrow[];
@@ -264,9 +278,15 @@ export interface PresencePoint {
   y: number;
 }
 
-/** A drag in progress: the cards dragged and where their corner is, in table units. */
+/**
+ * A drag in progress: the cards dragged, or the first player token, and where
+ * their corner is, in table units.
+ */
 export interface PresenceDrag {
+  /** Empty for the token, which carries no card. */
   cards: string[];
+  /** The first player token is dragged. */
+  token?: boolean;
   x: number;
   y: number;
 }

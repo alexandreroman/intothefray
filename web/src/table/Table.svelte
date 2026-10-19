@@ -13,10 +13,12 @@
   import TopBar from '../components/TopBar.svelte';
   import { gameCards, knownCard, loadGameCards, loadIndex } from '../lib/catalog';
   import { getPref, setPref } from '../lib/prefs';
+  import { selectionIndicator } from '../lib/selectionIndicator';
   import type { GameSession } from '../lib/session.svelte';
   import type {
     Action,
     CardView as TableCard,
+    DeckView,
     Index,
     LobbyConfig,
     PackFace,
@@ -30,7 +32,6 @@
     actionsFor,
     counterName,
     isLocked,
-    seatOf,
     type ActionItem,
     type CountQuestion,
     type LocalAction,
@@ -60,6 +61,15 @@
   } from './rows';
   import { motion } from './motion.svelte';
   import Presence from './Presence.svelte';
+  import {
+    creditedSeat,
+    creditedSeatAmong,
+    ownSeats,
+    seatColor,
+    seatFullLabel,
+    seatOf,
+    seatPlayer,
+  } from './seats';
   import TokenPill from './TokenPill.svelte';
   import CardPreview, { type Preview } from './CardPreview.svelte';
   import {
@@ -166,21 +176,32 @@
   const cards = $derived(view.table?.cards ?? []);
   const piles = $derived(view.table?.piles ?? []);
   const cardsById = $derived(new Map(cards.map((card) => [card.id, card])));
-  const ownArea = $derived(view.you.role === 'player' ? view.you.area : undefined);
+
+  // ---- The viewer's decks ----
+
+  // The viewer's own seats, one per deck (spec 5); none for a spectator.
+  const own = $derived(ownSeats(view));
+  // The deck picked in the player selector, with Q or by dragging a card to its hand, kept while it is
+  // still one of the viewer's.
+  let pickedDeck = $state<number | null>(null);
+  /** The selected deck: its hand shows, and an action on a shared card is credited to it. */
+  const selected = $derived(
+    pickedDeck !== null && own.includes(pickedDeck) ? pickedDeck : (own[0] ?? null),
+  );
+
+  /** The deck sitting at the seat, if anyone sits there. */
+  function deckAt(seat: number): DeckView | undefined {
+    return seatPlayer(view, seat)?.decks.find((deck) => deck.area === `p${seat}`);
+  }
+
+  /** Shows the hand of the viewer's next deck, round their decks (Q). */
+  function selectNextDeck(): void {
+    stepOwnDeck(1);
+  }
 
   // Ready all has something to ready: an exhausted card on the table, whoever owns it, not locked.
   const canReadyAll = $derived(
     cards.some((card) => card.zone === 'table' && card.exhausted === true && !isLocked(card)),
-  );
-
-  // Spectators have no hand.
-  const handCards = $derived(
-    ownArea
-      ? (view.table?.hand ?? []).flatMap((id) => {
-          const card = cardsById.get(id);
-          return card ? [card] : [];
-        })
-      : undefined,
   );
 
   function topOf(pile: PileView): TableCard | undefined {
@@ -200,29 +221,59 @@
   // The player whose row "Villain + player" shows, once picked.
   let pickedSeat = $state<number | null>(null);
 
+  /**
+   * Picks a seat, in the player selector or otherwise: "Villain + player" shows its row, and when it is
+   * one of the viewer's decks, that deck is selected. Another player's seat shows no hand and leaves the
+   * selected deck, which shared-card actions stay credited to.
+   */
+  function selectSeat(seat: number): void {
+    if (own.includes(seat)) {
+      pickedDeck = seat;
+    }
+    pickedSeat = seat;
+  }
+
   function changeViewMode(mode: ViewMode): void {
     viewMode = mode;
     saveViewMode(mode);
   }
 
-  /** The players at the table, with their seat, in seat order. */
-  const seatedPlayers = $derived(
-    view.players.flatMap((player) =>
-      player.area ? [{ seat: seatOf(player.area), name: player.name, color: player.color }] : [],
-    ),
+  /** The decks at the table, one per seat, in seat order, each named with its hero and coloured as its seat. */
+  const seatedDecks = $derived(
+    view.players
+      .flatMap((player) => player.decks.flatMap((deck) => (deck.area ? [seatOf(deck.area)] : [])))
+      .sort((a, b) => a - b)
+      .map((seat) => ({
+        seat,
+        name: seatFullLabel(view, seat),
+        color: seatColor(view, seat) ?? 0,
+      })),
   );
-  const seats = $derived(seatedPlayers.map((player) => player.seat));
-  // The viewer's own row first; a spectator starts with the first seat.
+  const seats = $derived(seatedDecks.map((deck) => deck.seat));
+  // The viewer's selected deck's row first; a spectator starts with the first seat.
   const shownSeat = $derived.by(() => {
     if (pickedSeat !== null && seats.includes(pickedSeat)) {
       return pickedSeat;
     }
-    const own = ownArea ? seatOf(ownArea) : null;
-    return own !== null && seats.includes(own) ? own : (seats[0] ?? null);
+    return selected !== null && seats.includes(selected) ? selected : (seats[0] ?? null);
   });
 
   // With one player, "All" already shows the villain and that player: there is no choice to make.
   const focused = $derived(viewMode === 'focus' && seats.length > 1 && shownSeat !== null);
+
+  // The selected deck's hand, unless "Villain + player" shows another player's row: then no hand shows,
+  // as for a spectator, while shared-card actions stay credited to the selected deck.
+  const handSeat = $derived(
+    focused && shownSeat !== null && !own.includes(shownSeat) ? null : selected,
+  );
+  const handCards = $derived(
+    handSeat !== null
+      ? (view.table?.hands?.[`p${handSeat}`] ?? []).flatMap((id) => {
+          const card = cardsById.get(id);
+          return card ? [card] : [];
+        })
+      : undefined,
+  );
 
   const rowMap = $derived(
     focused && shownSeat !== null
@@ -230,10 +281,35 @@
       : ALL_ROWS,
   );
 
-  /** Shows the row of the player seated `step` seats after the shown one, round the table. */
+  // The player selector at the bottom left lists every seat, in "Villain + player" only: "All" already
+  // shows every hero.
+  const pickerShown = $derived(focused);
+  // Shift + ← / → steps through the selector's heroes; in "All", through the viewer's own decks.
+  const canStepHero = $derived(focused || own.length > 1);
+
+  /** Picks the previous or next hero (Shift + ← / →): in the player selector, else among own decks. */
+  function stepHero(step: -1 | 1): void {
+    if (focused && shownSeat !== null) {
+      stepSeat(shownSeat, step);
+    } else {
+      stepOwnDeck(step);
+    }
+  }
+
+  /** Picks the seat `step` swatches after the current one in the player selector, round it. */
   function stepSeat(current: number, step: number): void {
-    const index = seats.indexOf(current);
-    pickedSeat = seats[(index + step + seats.length) % seats.length] ?? current;
+    const choices = seatedDecks.map((deck) => deck.seat);
+    const index = choices.indexOf(current);
+    selectSeat(choices[(index + step + choices.length) % choices.length] ?? current);
+  }
+
+  /** Selects the viewer's deck `step` decks after the selected one, round their decks. */
+  function stepOwnDeck(step: number): void {
+    if (selected === null) {
+      return;
+    }
+    const index = own.indexOf(selected);
+    selectSeat(own[(index + step + own.length) % own.length] ?? selected);
   }
 
   // The arrow keys in the player swatches, as in any radio group.
@@ -274,14 +350,16 @@
   const owners = $derived(
     ownerFrames(tablePiles).map((frame): OwnerBox => {
       if (frame.owner === -1) {
-        return { frame, name: 'Villain', color: 'var(--spark)' };
+        return { frame, name: 'Villain', color: 'var(--villain)' };
       }
-      const player = view.players[frame.owner];
-      if (!player) {
+      const color = seatColor(view, frame.owner);
+      const deck = deckAt(frame.owner);
+      if (color === null || !deck) {
         return { frame, name: `Player ${frame.owner + 1}`, color: 'var(--muted)' };
       }
-      const inHand = `${player.handCount} ${player.handCount === 1 ? 'card' : 'cards'} in hand`;
-      return { frame, name: player.name, color: `var(--p${player.color + 1})`, tip: inHand };
+      const inHand = `${deck.handCount} ${deck.handCount === 1 ? 'card' : 'cards'} in hand`;
+      const name = seatFullLabel(view, frame.owner);
+      return { frame, name, color: `var(--p${color + 1})`, tip: inHand };
     }),
   );
 
@@ -409,7 +487,7 @@
       hovered: focusHovered,
       controls: cornerHeight,
       // The player selector at the bottom left.
-      taken: focused ? ['bottom-left'] : [],
+      taken: pickerShown ? ['bottom-left'] : [],
     });
     focusCorner = next;
   }
@@ -433,7 +511,7 @@
       visibleHeight,
       focusWidth,
       focusHeight,
-      focused,
+      pickerShown,
       cornerHeight,
     ];
     untrack(measureFocus);
@@ -474,8 +552,7 @@
         void tick().then(rehoverUnderPointer);
         return;
       }
-      const ownDrop = interaction.landing?.card ?? undefined;
-      const anims = diffViews(prev, next, ownDrop, session.viewGap);
+      const anims = diffViews(prev, next, interaction.landing ?? undefined, session.viewGap);
       void motion
         .animate(app, anims, { before: prev.table, after: next.table }, zoom)
         .then(async () => {
@@ -517,8 +594,18 @@
     interaction.rehover({ kind: hit.classList.contains('hcard') ? 'hand' : 'card', id });
   }
 
-  function act(action: Action): number | null {
-    return session.act(action);
+  /**
+   * Sends an action, credited (spec 5) to the deck owning the card or pile it
+   * touches when that deck is the viewer's, else to the selected deck.
+   */
+  function act(action: Action, target: TableElement | null = null): number | null {
+    const seat = target ? creditedSeat(target, view, selected) : (selected ?? undefined);
+    return session.act(action, seat);
+  }
+
+  /** The card a key's action is about, if any: the hovered card, or the hand card played. */
+  function targetOfKey(action: Action): TableElement | null {
+    return action.card ? { kind: 'card', id: action.card } : null;
   }
 
   $effect(() => () => motion.stop());
@@ -531,7 +618,7 @@
     if (role === undefined) {
       return false;
     }
-    const items = actionsFor({ kind: 'pile', id: pile.id }, view, { area: ownArea, role });
+    const items = actionsFor({ kind: 'pile', id: pile.id }, view, { areas: view.you.areas, role });
     return Array.isArray(items) && items.length > 0;
   }
 
@@ -541,7 +628,7 @@
       case 'card':
         return cardsById.get(element.id)?.zone === 'table';
       case 'hand':
-        return (view.table?.hand ?? []).includes(element.id);
+        return own.some((seat) => view.table?.hands?.[`p${seat}`]?.includes(element.id));
       case 'pile':
         return piles.some((pile) => pile.id === element.id);
     }
@@ -568,7 +655,7 @@
     if (!hovered || role === undefined) {
       return [];
     }
-    return actionsFor(hovered, view, { area: ownArea, role });
+    return actionsFor(hovered, view, { areas: view.you.areas, role });
   });
 
   const ARROW_HINT = 'Click the card to point at — Esc or a click on an empty spot to cancel.';
@@ -639,7 +726,10 @@
   function stepCounter(delta: number): void {
     const target = interaction.counter;
     if (target) {
-      act({ kind: target.kind, card: target.card, name: target.name, delta });
+      act(
+        { kind: target.kind, card: target.card, name: target.name, delta },
+        { kind: 'card', id: target.card },
+      );
     }
   }
 
@@ -669,7 +759,7 @@
     } else if ('local' in result) {
       runLocal(result, element);
     } else {
-      send(result);
+      send(result, element);
     }
   }
 
@@ -692,16 +782,16 @@
     const question = asking;
     asking = null;
     if (question) {
-      send(question.make(n));
+      send(question.make(n), { kind: 'pile', id: question.pile });
     }
   }
 
-  function send(action: Action): void {
+  function send(action: Action, target: TableElement | null): void {
     // A new Look or Search opens its box as soon as its view arrives.
     if (action.kind === 'look' || action.kind === 'search') {
       closingView = false;
     }
-    act(action);
+    act(action, target);
   }
 
   // ---- The card boxes ----
@@ -742,6 +832,27 @@
     return null;
   });
 
+  // What the box's actions touch: its pile, or nothing for the stage choice.
+  const boxTarget = $derived<TableElement | null>(
+    shownBox?.kind === 'pile' ? { kind: 'pile', id: shownBox.pile.id } : null,
+  );
+
+  /**
+   * Sends a box action, credited to the card it touches before the box's pile:
+   * an own card of a shared pile (victory display, encounter discard) goes to
+   * the card's seat, not the selected deck.
+   */
+  function actInBox(action: Action): number | null {
+    const touched: TableElement[] = [];
+    if (action.card) {
+      touched.push({ kind: 'card', id: action.card });
+    }
+    if (boxTarget) {
+      touched.push(boxTarget);
+    }
+    return session.act(action, creditedSeatAmong(touched, view, selected));
+  }
+
   /** Tells one box from another, so that a new box starts afresh. */
   const boxKey = $derived.by(() => {
     if (shownBox?.kind === 'pile') {
@@ -765,7 +876,10 @@
   function closeBox(shuffle: boolean): void {
     if (shownBox?.kind === 'pile' && shownBox.mode !== 'browse') {
       // Act returns null when nothing was sent: the box then stays, as the server never closes it.
-      const sent = act(shuffle ? { kind: 'closeView', where: 'shuffle' } : { kind: 'closeView' });
+      const close: Action = shuffle
+        ? { kind: 'closeView', where: 'shuffle' }
+        : { kind: 'closeView' };
+      const sent = act(close, boxTarget);
       closingView = sent !== null;
       return;
     }
@@ -777,11 +891,10 @@
     return element?.closest<HTMLElement>('.surface .card:not(.pile)')?.dataset.id;
   }
 
-  /** A click on an empty spot clears the viewer's own arrows, when there are any. */
+  /** A click on an empty spot clears the viewer's own arrows, from any of their decks, when there are any. */
   function clearOwnArrows(): void {
-    const seat = ownArea ? seatOf(ownArea) : null;
     const arrows = view.table?.arrows ?? [];
-    if (seat !== null && arrows.some((arrow) => arrow.seat === seat)) {
+    if (arrows.some((arrow) => own.includes(arrow.seat))) {
       act({ kind: 'arrowClear' });
     }
   }
@@ -811,7 +924,7 @@
   function endArrowAt(to: string | undefined): void {
     const from = interaction.arrowFrom;
     if (from !== null && to && to !== from) {
-      act({ kind: 'arrowAdd', card: from, target: to });
+      act({ kind: 'arrowAdd', card: from, target: to }, { kind: 'card', id: from });
     }
     interaction.endArrow();
     // On touch, the tap goes on to the card as a click, which would select it;
@@ -877,8 +990,11 @@
       zoom,
       setZoom: zoomWithButtons,
       run: runItem,
-      act: send,
+      act: (action) => send(action, targetOfKey(action)),
       showKeys: showKeySheet,
+      selectNextDeck,
+      canStepHero,
+      stepHero,
       canReadyAll,
       sizeOf,
     });
@@ -989,12 +1105,13 @@
 </script>
 
 <!--
-  Which player's row "Villain + player" shows: one swatch in each seated player's colour, named
-  for screen readers and in its tooltip only, as the name already shows above the player's deck.
+  The player selector of "Villain + player": which player's row shows, and, on an own seat, which of
+  the viewer's decks is selected (its hand shows). One swatch in each seat's colour, named for screen
+  readers and in its tooltip only, as the name already shows above the player's deck.
 -->
 {#snippet seatPicker(current: number)}
   <div class="seatpick">
-    {#if seats.length > 2}
+    {#if seatedDecks.length > 2}
       <button
         class="btn-ghost step"
         aria-label="Previous player"
@@ -1008,8 +1125,16 @@
       aria-label="Player shown"
       tabindex="-1"
       onkeydown={(event) => onSeatKey(event, current)}
+      use:selectionIndicator
     >
-      {#each seatedPlayers as { seat, name, color } (seat)}
+      <!-- The ring around the player shown, in their colour: it slides, and its colour fades. -->
+      <span
+        class="ring"
+        data-indicator
+        aria-hidden="true"
+        style:--seat="var(--p{(seatColor(view, current) ?? 0) + 1})"
+      ></span>
+      {#each seatedDecks as { seat, name, color } (seat)}
         <button
           class="seat"
           style:--seat="var(--p{color + 1})"
@@ -1018,11 +1143,11 @@
           data-tip={name}
           aria-checked={seat === current}
           tabindex={seat === current ? 0 : -1}
-          onclick={() => (pickedSeat = seat)}
+          onclick={() => selectSeat(seat)}
         ></button>
       {/each}
     </div>
-    {#if seats.length > 2}
+    {#if seatedDecks.length > 2}
       <button
         class="btn-ghost step"
         aria-label="Next player"
@@ -1061,7 +1186,7 @@
       onend={view.you.host ? () => session.lobby('end') : undefined}
       viewMode={seats.length > 1 ? viewMode : undefined}
       onviewmode={changeViewMode}
-      readyAll={ownArea
+      readyAll={own.length > 0
         ? { disabled: !canReadyAll, run: () => act({ kind: 'readyAll' }) }
         : undefined}
     />
@@ -1161,12 +1286,18 @@
     />
   </div>
 
-  {#if focused && shownSeat !== null}
+  {#if pickerShown && shownSeat !== null}
     {@render seatPicker(shownSeat)}
   {/if}
 
   {#if keySheetShown}
-    <KeysSheet anchor={keysButton} alignTo={cornerBox} onclose={hideKeySheet} />
+    <KeysSheet
+      anchor={keysButton}
+      alignTo={cornerBox}
+      severalDecks={own.length > 1}
+      severalHeroes={canStepHero}
+      onclose={hideKeySheet}
+    />
   {/if}
 
   {#if handCards}
@@ -1182,7 +1313,9 @@
     {faceOf}
     {sizeOf}
     {rowMap}
-    {act}
+    {selected}
+    act={(action, element) => act(action, element.kind === 'firstPlayer' ? null : element)}
+    onhand={selectSeat}
     ondrag={(drag) => session.sendPresence({ drag })}
     lastError={session.lastError}
   />
@@ -1217,7 +1350,8 @@
         {facesOf}
         {sizeOf}
         readOnly={view.you.role !== 'player'}
-        {act}
+        {selected}
+        act={actInBox}
         onclose={closeBox}
       />
     {/key}
@@ -1282,6 +1416,12 @@
   .app {
     /* The play area's gutter, which the top bar's left edge shares. */
     --content-gutter: 24px;
+    /*
+      The height of a button in the bars floating at the bottom of the table (the zoom control, the
+      narrow screen's Undo, the player selector): with the same padding and the same room under them
+      (--edge-bottom), the bars share their top and bottom edges.
+    */
+    --bar-button: 32px;
     display: grid;
     height: 100vh;
     height: 100dvh;
@@ -1426,7 +1566,6 @@
     font-size: 13px;
   }
 
-  /* As the zoom control, at the other corner: under the veil and the raised hand. */
   /* At the bottom left, as the zoom control at the bottom right: under the veil and the hand. */
   .seatpick {
     grid-area: table;
@@ -1445,7 +1584,7 @@
   }
 
   .seatpick .step {
-    height: 28px;
+    height: var(--bar-button);
     padding: 0 8px;
     border: none;
     border-radius: 8px;
@@ -1454,6 +1593,8 @@
 
   /* A round swatch of the seat colour; the player shown is ringed. */
   .seatpick .seats {
+    position: relative;
+    height: var(--bar-button);
     display: flex;
     align-items: center;
     gap: 4px;
@@ -1476,6 +1617,10 @@
 
   .seatpick .seat[aria-checked='true'] {
     opacity: 1;
+  }
+
+  .seatpick .ring {
+    border-radius: 50%;
     box-shadow:
       0 0 0 2px #141a28,
       0 0 0 4px var(--seat);
@@ -1502,8 +1647,8 @@
   }
 
   .undo button {
-    width: 32px;
-    height: 32px;
+    width: var(--bar-button);
+    height: var(--bar-button);
     padding: 0;
     display: flex;
     align-items: center;

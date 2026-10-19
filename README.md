@@ -1,26 +1,34 @@
 # intothefray
 
 Into The Fray is an online card table for Marvel Champions: The
-Card Game. Open a link, load your deck, and play in the browser,
-solo or with up to three friends. It is a pure sandbox: cards move
-the way they would on a real table, and the app never applies the
-game's rules.
+Card Game. Open a link, load your decks, and play in the browser,
+solo or with friends, up to four decks at the table. It is a pure
+sandbox: cards move the way they would on a real table, and the app
+never applies the game's rules.
 
 ## Features
 
 Everything below works today, except where noted.
 
 - **Play in the browser** — no install, desktop or touch screen
-- **Invite by link** — friends join as players until the game
-  starts, then as spectators
+- **Invite by link** — friends join as players while the game has
+  not started and fewer than four decks are seated, otherwise as
+  spectators
 - **No account** — a free pseudonym, stored in your browser only
-- **Bring your deck** — load a deck from a marvelcdb.com URL
+- **Bring your decks** — load a deck from a marvelcdb.com URL. In
+  the lobby, **Add a deck** lets a player control 1 to 4 decks, with
+  four decks in all at the table and any split between players; each
+  deck has its own deck link and its own Ready
+- **Several hands** — at the table each deck has its own row. With
+  several decks, the player selector at the bottom left or the `Q`
+  key picks the hand shown. An action is credited to the deck of the
+  card or pile you touch, else to the selected deck
 - **Automated setup** — pick a scenario, a difficulty and the
   modular sets: villain, main scheme and decks are laid out for you
 - **Discoverable actions** — every action one or two clicks away,
   and you always see what the other players just did: history,
   live cursors, pings, arrows and animated moves
-- **Undo** — take back your own last actions
+- **Undo** — take back your own last actions, across all your decks
 - **Keyboard shortcuts** — press `?` at the table for the full sheet
 - **Themes** — official, minimal or green felt, per viewer
 - **Fair play** — each player receives only what they may see

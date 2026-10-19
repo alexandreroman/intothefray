@@ -26,11 +26,16 @@
   --ok: #57c78a;
   --warn: #f2b51d;
 
-  /* One colour per seat, indexed by the player colour 0..3. */
-  --p1: #6fa8ff;
-  --p2: #ff9f5a;
-  --p3: #7fd67a;
-  --p4: #c792ff;
+  /* One colour per seat, indexed by the player colour 0..3: the four aspects of the game
+     (Leadership, Aggression, Protection, Justice), tuned for the ink grounds. The red leans
+     cooler than the Fray red and the yellow more lemon than the spark, so neither reads as them. */
+  --p1: #4f9dff;
+  --p2: #f0505f;
+  --p3: #46c06a;
+  --p4: #e8d53a;
+  /* The villain's frame and name on the table: purple, as in the game. Bluer than Leadership
+     would blur with it; this one passes 4.5:1 on the ink and the felt, as the red does. */
+  --villain: #a66bff;
 
   /* One family, three widths: see .display, and the headings and captions. */
   --font: 'Archivo', system-ui, sans-serif;
@@ -124,6 +129,41 @@ button:hover:not(:disabled, [aria-disabled='true']) {
 
 @media (prefers-reduced-motion: reduce) {
   button {
+    transition: none;
+  }
+}
+
+/*
+  A switch (lib/selectionIndicator.ts): each control draws its own indicator, the action places it
+  over the selected option and turns on its slide once placed. The options' labels and swatches
+  cross-fade as it slides; the hover keeps its own, quicker fade.
+*/
+[data-indicator] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+[data-indicator][data-slides] {
+  transition:
+    transform 0.2s ease-out,
+    width 0.2s ease-out,
+    height 0.2s ease-out,
+    box-shadow 0.2s ease-out;
+}
+
+[data-indicator] ~ button {
+  transition:
+    color 0.2s ease-out,
+    opacity 0.2s ease-out,
+    background-color 0.12s,
+    border-color 0.12s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-indicator][data-slides],
+  [data-indicator] ~ button {
     transition: none;
   }
 }

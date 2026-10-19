@@ -54,22 +54,38 @@ const handCard = (id: string) => `.hand .hcard[data-id="${CSS.escape(id)}"]`;
 /** A card another player drags, or has just let go of (Presence.svelte). */
 const remoteGhost = (id: string) => `.presence .card.ghost[data-id="${CSS.escape(id)}"]`;
 const tablePile = (id: string) => `.surface .pile[data-id="${CSS.escape(id)}"]`;
+const tableToken = '.surface .fptoken';
+/** The first player token another player drags, or has just let go of (Presence.svelte). */
+const remoteToken = '.presence .fptoken.ghost';
 
-/** What an animation plays on, "card:<id>" or "pile:<id>": a new view stops only what it touches. */
-type Subject = `card:${string}` | `pile:${string}`;
+/**
+ * What an animation plays on, "card:<id>", "pile:<id>" or the first player
+ * token: a new view stops only what it touches.
+ */
+type Subject = `card:${string}` | `pile:${string}` | 'firstPlayer';
 
 const cardSubject = (id: string): Subject => `card:${id}`;
 const pileSubject = (id: string): Subject => `pile:${id}`;
 
 function subjectOf(anim: Anim): Subject {
-  return anim.kind === 'shuffle' ? pileSubject(anim.pile) : cardSubject(anim.id);
+  switch (anim.kind) {
+    case 'shuffle':
+      return pileSubject(anim.pile);
+    case 'firstPlayer':
+      return 'firstPlayer';
+    default:
+      return cardSubject(anim.id);
+  }
 }
 
-/** The subjects of a table: its cards drawn on the table or in the hand, and its piles. */
+/** The subjects of a table: its cards drawn on the table or in the hand, its piles and the token. */
 function subjectsOf(table: TableView | undefined): Set<Subject> {
   // A lookup for one call: nothing reacts to it.
   // eslint-disable-next-line svelte/prefer-svelte-reactivity
   const subjects = new Set<Subject>();
+  if (table) {
+    subjects.add('firstPlayer');
+  }
   for (const card of table?.cards ?? []) {
     if (card.zone === 'table' || card.zone === 'hand') {
       subjects.add(cardSubject(card.id));
@@ -173,6 +189,13 @@ class TableMotion {
         }
       }
     }
+    const tokenMoves = shown.some((anim) => anim.kind === 'firstPlayer');
+    // Another player's drop goes from where their ghost lies, as for a card.
+    const tokenElement = tokenMoves
+      ? (root?.querySelector<HTMLElement>(remoteToken) ??
+        root?.querySelector<HTMLElement>(tableToken))
+      : null;
+    const tokenBefore = tokenElement ? measure(tokenElement, zoom) : undefined;
     this.#stopFor(shown, tables.after);
     const generation = ++this.#generation;
     if (!root || shown.length === 0) {
@@ -213,6 +236,9 @@ class TableMotion {
       switch (anim.kind) {
         case 'move':
           this.#move(root, anim.id, before.get(anim.id), zoom);
+          break;
+        case 'firstPlayer':
+          this.#moveToken(root, tokenBefore, zoom);
           break;
         case 'turnIn':
           this.#turnIn(root, anim.id);
@@ -334,9 +360,28 @@ class TableMotion {
 
   #move(root: HTMLElement, id: string, from: Measured | undefined, zoom: number): void {
     const element = root.querySelector<HTMLElement>(`${tableCard(id)}, ${handCard(id)}`);
-    if (!element || !from) {
-      return;
+    if (element && from) {
+      // Moving cards are followed frame by frame, for the arrows drawn between them.
+      this.#slide(element, from, zoom, cardSubject(id), true);
     }
+  }
+
+  /** Slides the first player token from where it lay; no arrow follows it. */
+  #moveToken(root: HTMLElement, from: Measured | undefined, zoom: number): void {
+    const element = root.querySelector<HTMLElement>(tableToken);
+    if (element && from) {
+      this.#slide(element, from, zoom, 'firstPlayer', false);
+    }
+  }
+
+  /** Slides an element from where it showed to its new place (FLIP). */
+  #slide(
+    element: HTMLElement,
+    from: Measured,
+    zoom: number,
+    subject: Subject,
+    moves: boolean,
+  ): void {
     const to = measure(element, zoom);
     // Translations are in the element's own units: table units on a zoomed surface.
     const scale = scaleOf(element, zoom);
@@ -346,7 +391,7 @@ class TableMotion {
     if (Math.abs(dx) + Math.abs(dy) <= 1 && Math.abs(size - 1) <= 0.02) {
       return;
     }
-    // The translate and scale properties leave the card's own transform (its tilt) alone.
+    // The translate and scale properties leave the element's own transform (a card's tilt) alone.
     this.#run(
       element,
       [
@@ -354,8 +399,8 @@ class TableMotion {
         { translate: '0px 0px', scale: '1' },
       ],
       { duration: MOVE_MS, easing: MOVE_EASING },
-      cardSubject(id),
-      true,
+      subject,
+      moves,
     );
   }
 

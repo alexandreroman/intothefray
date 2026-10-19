@@ -5,9 +5,10 @@
 
 import { modal } from '../components/modal.svelte';
 import type { Action, CardView, PileView, Size, View } from '../lib/types';
-import { seatOf, type ActionItem } from './actions';
+import type { ActionItem } from './actions';
 import { interaction } from './interaction.svelte';
 import { footprints, visualBox } from './layout';
+import { ownSeats } from './seats';
 import { ZOOM_STEP } from './zoom';
 
 // The free slot of a player's row (ruling P5b-R5): from x 760, where the
@@ -18,6 +19,12 @@ const SLOT_FIRST_X = 760;
 const SLOT_STEP = 220;
 const SLOT_CARD = { w: 140, h: 196 };
 const SLOT_MARGIN = 40;
+
+// Shift + these arrows step through the heroes of the player selector, or in "All" the viewer's decks.
+const HERO_STEPS: Record<string, -1 | 1> = {
+  ArrowLeft: -1,
+  ArrowRight: 1,
+};
 
 /** What the keys need from the table. */
 export interface KeyTable {
@@ -33,6 +40,12 @@ export interface KeyTable {
   canReadyAll: boolean;
   /** Shows the keyboard shortcuts sheet (a dialog: it has the keys while it is open). */
   showKeys: () => void;
+  /** Selects the viewer's next own deck, whose hand then shows (Q, with two decks or more). */
+  selectNextDeck: () => void;
+  /** Whether there are two heroes or more to step through: the player selector's, or in "All" own decks. */
+  canStepHero: boolean;
+  /** Picks the previous (-1) or next (1) hero: in the player selector, else among the viewer's decks. */
+  stepHero: (step: -1 | 1) => void;
   sizeOf: (card: CardView) => Size;
 }
 
@@ -77,8 +90,19 @@ function isTyping(target: EventTarget | null): boolean {
   );
 }
 
-/** The keys everyone has, spectators too: the zoom (it repeats while held) and the shortcuts sheet. */
+/**
+ * The keys everyone has, spectators too: the zoom (it repeats while held), the shortcuts sheet and
+ * Shift + ← / → through the heroes, which only changes what the viewer sees.
+ */
 function tableKey(event: KeyboardEvent, table: KeyTable): boolean {
+  const heroStep = HERO_STEPS[event.key];
+  if (heroStep !== undefined && event.shiftKey) {
+    if (event.repeat || !table.canStepHero) {
+      return false;
+    }
+    table.stepHero(heroStep);
+    return true;
+  }
   switch (event.key) {
     case '+':
     case '=':
@@ -118,6 +142,15 @@ function playerKey(event: KeyboardEvent, table: KeyTable): boolean {
       return false;
     }
     table.act({ kind: 'undo' });
+    return true;
+  }
+
+  // Q selects the next deck of a player with several, wherever the pointer is.
+  if (key === 'q' && !event.shiftKey) {
+    if (event.repeat || ownSeats(table.view).length < 2) {
+      return false;
+    }
+    table.selectNextDeck();
     return true;
   }
 
@@ -206,12 +239,12 @@ function removeOne(adds: Action, table: KeyTable): boolean {
   return true;
 }
 
-/** P plays a card of the hand to the first free slot of the viewer's row, Backspace discards it. */
+/** P plays a card of the hand to the first free slot of its deck's row, Backspace discards it. */
 function handKey(key: string, id: string, table: KeyTable): boolean {
   switch (key) {
     case 'p': {
-      const seat = table.view.you.area ? seatOf(table.view.you.area) : null;
-      if (seat === null || !table.view.table) {
+      const seat = handSeatOf(id, table.view);
+      if (seat === undefined || !table.view.table) {
         return false;
       }
       const { cards, piles } = table.view.table;
@@ -225,6 +258,11 @@ function handKey(key: string, id: string, table: KeyTable): boolean {
     default:
       return false;
   }
+}
+
+/** The own seat whose hand holds the card, if any. */
+function handSeatOf(id: string, view: View): number | undefined {
+  return ownSeats(view).find((seat) => view.table?.hands?.[`p${seat}`]?.includes(id));
 }
 
 /**

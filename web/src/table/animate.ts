@@ -1,11 +1,22 @@
 // What changed on the table between two views, as the animations to play
 // (spec 5.2, 5.5, 5.6): cards that moved, changed, turned in or flew to a
-// pile, and piles that were shuffled. Pure: the table plays the list
-// (motion.svelte.ts).
+// pile, piles that were shuffled, and the first player token moved. Pure:
+// the table plays the list (motion.svelte.ts).
 
-import type { CardView, LogView, PileView, TableView, View, Zone } from '../lib/types';
+import type {
+  CardView,
+  LogView,
+  PileView,
+  PlayerView,
+  Point,
+  TableView,
+  View,
+  Zone,
+} from '../lib/types';
 import { stackOf } from './drag';
 import { isHidden } from './face';
+import type { Landing } from './interaction.svelte';
+import { seatHero, seatPlayer } from './seats';
 
 /** Where a card lies in a view: its zone, and its spot when it is on the table. */
 export interface Box {
@@ -21,7 +32,12 @@ export type Anim =
   /** Turned over on the table: flipped, another face shown, or a hidden card come face up. */
   | { kind: 'flip'; id: string }
   | { kind: 'shuffle'; pile: string }
-  | { kind: 'fly'; id: string; toPile: string };
+  | { kind: 'fly'; id: string; toPile: string }
+  /** The first player token moved to another spot of the table. */
+  | { kind: 'firstPlayer'; from: Point; to: Point };
+
+/** The viewer's own drop waiting for the view that shows it (interaction.landing). */
+export type OwnDrop = Pick<Landing, 'element' | 'card'>;
 
 /**
  * Views further apart than this are not animated: after a reconnection, the
@@ -32,19 +48,20 @@ export const MAX_APART_MS = 2000;
 const SHUFFLED = 'shuffled ';
 
 /**
- * The animations that take the table from prev to next. ownDrop is the card
- * the viewer has just dropped: it already lies where it went, with its stack.
- * apart is how long the viewer went without a live view between the two, in
- * ms (GameSession.viewGap).
+ * The animations that take the table from prev to next. ownDrop is what the
+ * viewer has just dropped: it already lies where it went, a card with its
+ * stack. apart is how long the viewer went without a live view between the
+ * two, in ms (GameSession.viewGap).
  */
-export function diffViews(prev: View, next: View, ownDrop?: string, apart = 0): Anim[] {
+export function diffViews(prev: View, next: View, ownDrop?: OwnDrop, apart = 0): Anim[] {
   const before = prev.table;
   const after = next.table;
   if (!before || !after || apart > MAX_APART_MS) {
     return [];
   }
 
-  const dropped = new Set(ownDrop === undefined ? [] : stackOf(ownDrop, after.cards));
+  const droppedCard = ownDrop?.card;
+  const dropped = new Set(droppedCard ? stackOf(droppedCard, after.cards) : []);
   const previous = new Map(before.cards.map((card) => [card.id, card]));
   const lines = changedLines(prev.log, next.log);
   // The glow takes the colour of whoever wrote the latest line; system lines have none.
@@ -83,6 +100,11 @@ export function diffViews(prev: View, next: View, ownDrop?: string, apart = 0): 
   }
   for (const pile of shuffledPiles(lines, next, after.piles)) {
     anims.push({ kind: 'shuffle', pile });
+  }
+  const tokenMoved =
+    before.firstPlayer.x !== after.firstPlayer.x || before.firstPlayer.y !== after.firstPlayer.y;
+  if (tokenMoved && ownDrop?.element.kind !== 'firstPlayer') {
+    anims.push({ kind: 'firstPlayer', from: before.firstPlayer, to: after.firstPlayer });
   }
   return anims;
 }
@@ -199,10 +221,10 @@ function shuffledPiles(lines: LogView[], view: View, piles: PileView[]): string[
     if (line.undone || !line.text.startsWith(SHUFFLED)) {
       continue;
     }
-    const seat = view.players.findIndex((player) => player.color === line.color);
+    const writer = view.players.find((player) => player.color === line.color);
     let best: { pile: string; name: string } | null = null;
     for (const pile of piles) {
-      const name = narratedName(pile, seat, view);
+      const name = narratedName(pile, writer, view);
       if (line.text.endsWith(` ${name}`) && (!best || name.length > best.name.length)) {
         best = { pile: pile.id, name };
       }
@@ -227,15 +249,25 @@ const PILE_NOUNS: Partial<Record<PileView['kind'], string>> = {
   aside: 'set-aside cards',
 };
 
-/** A pile's name in the history, written by the player at seat (Game.pileName in narrate.go). */
-function narratedName(pile: PileView, seat: number, view: View): string {
+/**
+ * A pile's name in the history, written by the writer (Game.pileName in
+ * narrate.go): the piles of any of the writer's seats are "their" piles, and
+ * the pile of a player holding several decks adds the deck's hero ("their
+ * Spider-Man deck", "Alex's Spider-Man deck").
+ */
+function narratedName(pile: PileView, writer: PlayerView | undefined, view: View): string {
   const shared = SHARED_PILE_NAMES[pile.id];
   if (shared) {
     return shared;
   }
-  const noun = PILE_NOUNS[pile.kind] ?? 'pile';
-  if (pile.owner === seat) {
+  let noun = PILE_NOUNS[pile.kind] ?? 'pile';
+  const hero = seatHero(view, pile.owner);
+  if (hero) {
+    noun = `${hero} ${noun}`;
+  }
+  const owner = seatPlayer(view, pile.owner);
+  if (writer !== undefined && owner === writer) {
     return `their ${noun}`;
   }
-  return `${view.players[pile.owner]?.name ?? 'another player'}'s ${noun}`;
+  return `${owner?.name ?? 'another player'}'s ${noun}`;
 }

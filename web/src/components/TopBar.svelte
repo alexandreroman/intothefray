@@ -4,12 +4,17 @@
   import Icon from './Icon.svelte';
   import Icons from '../table/Icons.svelte';
   import Logo from './Logo.svelte';
+  import { href } from '../lib/router.svelte';
+  import Segmented from './Segmented.svelte';
+  import { overflowTip } from '../lib/overflowTip';
 
   let {
     spectators = 0,
     crumbs = [],
     onback,
     onend,
+    endLabel = 'End game',
+    endQuestion = 'End this game for everyone?',
     viewMode,
     onviewmode,
     readyAll,
@@ -21,6 +26,9 @@
     onback?: () => void;
     /** Ends the game for everyone, once confirmed. Given to the host only. */
     onend?: () => void;
+    /** The end button's name, tooltip and confirmation, and the question it asks. */
+    endLabel?: string;
+    endQuestion?: string;
     /** What the table shows, on the table only: every row, or the villain's and one player's. */
     viewMode?: 'all' | 'focus';
     onviewmode?: (mode: 'all' | 'focus') => void;
@@ -29,31 +37,9 @@
   } = $props();
 
   const VIEW_MODES = [
-    { mode: 'all', label: 'All', icon: 'rows-all' },
-    { mode: 'focus', label: 'Villain + player', icon: 'rows-focus' },
+    { value: 'all', label: 'All', icon: 'rows-all' },
+    { value: 'focus', label: 'Villain + player', icon: 'rows-focus' },
   ] as const;
-
-  // The highlight behind the chosen view, placed over its button. It slides to the other one
-  // when the view changes, but not into its first place.
-  let views = $state<HTMLElement>();
-  let viewsWidth = $state(0);
-  let thumb = $state<{ left: number; width: number } | null>(null);
-  let thumbSlides = $state(false);
-
-  $effect(() => {
-    // Placed again when the view changes, or the labels come and go with the width.
-    void [viewMode, viewsWidth];
-    const chosen = views?.querySelector<HTMLElement>('button[aria-pressed="true"]');
-    if (!chosen) {
-      return;
-    }
-    thumb = { left: chosen.offsetLeft, width: chosen.offsetWidth };
-    if (!thumbSlides) {
-      // From the next frame on: the first place is taken without sliding.
-      const frame = requestAnimationFrame(() => (thumbSlides = true));
-      return () => cancelAnimationFrame(frame);
-    }
-  });
 
   const spectatorLabel = $derived(`${spectators} ${spectators === 1 ? 'spectator' : 'spectators'}`);
   const [crumbHead, ...crumbRest] = $derived(crumbs);
@@ -119,52 +105,25 @@
         <Icon name="back" />
       </button>
     {/if}
-    <Logo />
+    <!-- Plain left clicks navigate in place: the router handles every link to an app route. -->
+    <a class="home" href={href('/')} aria-label="Into The Fray: home"><Logo /></a>
     {#if crumbHead !== undefined}
       <span class="divider" aria-hidden="true"></span>
-      <span class="crumbs">
+      <span class="crumbs" use:overflowTip>
         <b>{crumbHead}</b>{#each crumbRest as crumb, i (i)}<span class="rest">{` / ${crumb}`}</span
           >{/each}
       </span>
     {/if}
     <div class="actions">
-      {#if viewMode && onviewmode}
-        <div
-          class="views"
-          role="group"
-          aria-label="Table view"
-          bind:this={views}
-          bind:clientWidth={viewsWidth}
-        >
-          {#if thumb}
-            <span
-              class="thumb"
-              class:slides={thumbSlides}
-              style:left="{thumb.left}px"
-              style:width="{thumb.width}px"
-              aria-hidden="true"
-            ></span>
-          {/if}
-          {#each VIEW_MODES as choice (choice.mode)}
-            <button
-              class="btn-ghost"
-              type="button"
-              aria-label={choice.label}
-              title={choice.label}
-              aria-pressed={viewMode === choice.mode}
-              onclick={() => onviewmode(choice.mode)}
-            >
-              <Icon name={choice.icon} />
-              <span>{choice.label}</span>
-            </button>
-          {/each}
-        </div>
-      {/if}
+      <!-- The spectator count leads the actions on every screen. -->
       {#if spectators > 0}
         <span class="pill" role="img" aria-label={spectatorLabel} title={spectatorLabel}>
           <Icon name="eye" />
           {spectators}
         </span>
+      {/if}
+      {#if viewMode && onviewmode}
+        <Segmented options={VIEW_MODES} value={viewMode} onchange={onviewmode} label="Table view" />
       {/if}
       {#if readyAll}
         <!-- aria-disabled rather than disabled, so that the tooltip still shows. -->
@@ -199,8 +158,8 @@
       {#if onend}
         <button
           class="icon-button"
-          aria-label="End game"
-          title="End game"
+          aria-label={endLabel}
+          title={endLabel}
           onclick={() => (confirmingEnd = true)}
         >
           <Icon name="cross" />
@@ -212,8 +171,8 @@
 
 {#if confirmingEnd}
   <ConfirmDialog
-    question="End this game for everyone?"
-    confirmLabel="End game"
+    question={endQuestion}
+    confirmLabel={endLabel}
     danger
     onconfirm={endGame}
     oncancel={() => (confirmingEnd = false)}
@@ -243,6 +202,20 @@
     padding-inline: var(--content-gutter, 24px) var(--bar-gutter-end, var(--content-gutter, 24px));
   }
 
+  /* As the logo alone: no underline, no box of its own but the focus ring. */
+  .home {
+    flex: none;
+    display: inline-flex;
+    color: inherit;
+    text-decoration: none;
+    border-radius: 6px;
+  }
+
+  .home:focus-visible {
+    outline: 2px solid var(--sel);
+    outline-offset: 4px;
+  }
+
   .divider {
     flex: none;
     width: 1px;
@@ -265,65 +238,16 @@
     font-weight: 500;
   }
 
+  /* The view switch is as tall as the buttons of the row, on their surface. */
   .actions {
     display: flex;
     align-items: center;
     gap: 8px;
     margin-left: auto;
-  }
-
-  /* A segmented control: the chosen view is lit. */
-  .views {
-    position: relative;
-    display: flex;
-    height: 38px;
-    padding: 3px;
-    gap: 2px;
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 999px;
-  }
-
-  .views button {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 0 12px;
-    border: none;
-    border-radius: 999px;
-    color: var(--muted);
-    font-size: 13px;
-  }
-
-  .views button[aria-pressed='true'] {
-    color: var(--text);
-  }
-
-  /* Behind the labels, the height of the buttons. */
-  .thumb {
-    position: absolute;
-    top: 3px;
-    bottom: 3px;
-    border-radius: 999px;
-    background: var(--panel-2);
-  }
-
-  .thumb.slides {
-    transition:
-      left 0.2s ease-out,
-      width 0.2s ease-out;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .thumb.slides {
-      transition: none;
-    }
-  }
-
-  .views :global(svg) {
-    width: 16px;
-    height: 16px;
+    --segmented-height: 38px;
+    --segmented-bg: var(--panel);
+    --segmented-pad: 12px;
+    --segmented-weight: 600;
   }
 
   /* Buttons in the row share one height: the pill matches them. */
@@ -379,9 +303,9 @@
       gap: 12px;
     }
 
-    /* The icons say it: the labels go. */
-    .views span {
-      display: none;
+    /* The icons say it: the view labels go. */
+    .actions {
+      --segmented-label-display: none;
     }
 
     .divider,

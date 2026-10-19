@@ -1,15 +1,17 @@
 <script lang="ts">
+  import CardArt from '../CardArt.svelte';
+
   /** `image` is the hero face image of the player's identity, from the lobby view. */
-  let { image, name, large = false }: { image?: string; name?: string; large?: boolean } = $props();
+  let { image, name }: { image?: string; name?: string } = $props();
 
   // Without an image, the hero's initial stands in for it; without a hero, a question mark.
   const initial = $derived(name ? name.charAt(0).toUpperCase() : '?');
 </script>
 
 {#if image}
-  <img class="hero" class:large src={image} alt={name ?? ''} />
+  <span class="hero"><CardArt src={image} alt={name ?? ''} aspect={1} /></span>
 {:else}
-  <span class="hero" class:large aria-hidden="true">{initial}</span>
+  <span class="hero" aria-hidden="true">{initial}</span>
 {/if}
 
 <style>
@@ -27,14 +29,6 @@
     font-weight: 900;
     font-style: italic;
     font-size: 22px;
-    /* A hero card is portrait: the square keeps its art, under the title bar. */
-    object-fit: cover;
-    object-position: 50% 30%;
-  }
-
-  .large {
-    width: 64px;
-    height: 64px;
-    font-size: 30px;
+    overflow: hidden;
   }
 </style>

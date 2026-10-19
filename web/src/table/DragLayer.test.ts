@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
 import Table from './Table.svelte';
 import { interaction } from './interaction.svelte';
 import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
@@ -97,19 +97,25 @@ function makeView(
     phase: 'playing',
     you: extra.spectator
       ? { role: 'spectator', color: -1, host: false }
-      : { role: 'player', name: 'Alex', color: 0, host: true, area: 'p0' },
+      : { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0'] },
     players: [
       {
         name: 'Alex',
         color: 0,
         host: true,
-        area: 'p0',
-        heroName: 'Spider-Man',
         ready: true,
-        handCount: 3,
+        decks: [{ area: 'p0', heroName: 'Spider-Man', ready: true, handCount: 3 }],
       },
       ...(extra.withSam
-        ? [{ name: 'Sam', color: 1, host: false, area: 'p1' as const, ready: true, handCount: 0 }]
+        ? [
+            {
+              name: 'Sam',
+              color: 1,
+              host: false,
+              ready: true,
+              decks: [{ area: 'p1' as const, ready: true, handCount: 0 }],
+            },
+          ]
         : []),
     ],
     spectators: 0,
@@ -117,7 +123,7 @@ function makeView(
     table: {
       cards: [...(extra.cards ?? CARDS), ...inPile],
       piles,
-      hand: ['h1', 'h2', 'h3'],
+      hands: { p0: ['h1', 'h2', 'h3'] },
       stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
       firstPlayer: { x: 860, y: extra.firstPlayerY ?? 340 },
     },
@@ -282,12 +288,15 @@ describe('dragging a table card', () => {
 
     await release(254, 452);
     // Its corner at 224, 392 on the screen: 204, 352 on the table.
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({
-      kind: 'move',
-      card: 'mine',
-      x: 200,
-      y: 350,
-    });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      {
+        kind: 'move',
+        card: 'mine',
+        x: 200,
+        y: 350,
+      },
+      0,
+    );
   });
 
   it('carries every card of the stack, each at its offset, until the server answers', async () => {
@@ -318,12 +327,15 @@ describe('dragging a table card', () => {
     }
 
     await release(254, 452);
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({
-      kind: 'move',
-      card: 'mine',
-      x: 200,
-      y: 350,
-    });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      {
+        kind: 'move',
+        card: 'mine',
+        x: 200,
+        y: 350,
+      },
+      0,
+    );
     // Waiting for the server: the whole stack stays where it landed, on the grid.
     expect(corners()).toEqual([
       ['mine', 220, 390],
@@ -346,12 +358,15 @@ describe('dragging a table card', () => {
 
     await release(480, 560);
     // Its corner at 420, 440 on the screen: 400, 400 px into the surface, 200, 200 units.
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({
-      kind: 'move',
-      card: 'mine',
-      x: 200,
-      y: 200,
-    });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      {
+        kind: 'move',
+        card: 'mine',
+        x: 200,
+        y: 200,
+      },
+      0,
+    );
   });
 
   it('drag survives a new view', async () => {
@@ -365,12 +380,15 @@ describe('dragging a table card', () => {
 
     await moveTo(254, 452);
     await release(254, 452);
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({
-      kind: 'move',
-      card: 'mine',
-      x: 200,
-      y: 350,
-    });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      {
+        kind: 'move',
+        card: 'mine',
+        x: 200,
+        y: 350,
+      },
+      0,
+    );
   });
 
   it('is cancelled when the card leaves the table meanwhile, and sends nothing', async () => {
@@ -404,14 +422,17 @@ describe('dragging a table card', () => {
 
     await release(470, 420);
     // Where it is dropped, behind the card.
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({
-      kind: 'attach',
-      card: 'mine',
-      target: 'other',
-      x: expect.any(Number),
-      y: expect.any(Number),
-      placed: true,
-    });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      {
+        kind: 'attach',
+        card: 'mine',
+        target: 'other',
+        x: expect.any(Number),
+        y: expect.any(Number),
+        placed: true,
+      },
+      0,
+    );
   });
 
   it('shows the label of the pile it would go to, and sends that', async () => {
@@ -428,11 +449,14 @@ describe('dragging a table card', () => {
     expect(screen.getByText('Top of deck')).toBeTruthy();
 
     await release(660, 400);
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({
-      kind: 'toDeck',
-      card: 'mine',
-      where: 'top',
-    });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      {
+        kind: 'toDeck',
+        card: 'mine',
+        where: 'top',
+      },
+      0,
+    );
   });
 
   it('goes back to the hand when dropped over it', async () => {
@@ -448,7 +472,91 @@ describe('dragging a table card', () => {
     expect(document.querySelector('.hand .hcard.gap')).toBeNull();
 
     await release(450, 740);
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'toHand', card: 'mine' });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'toHand', card: 'mine' }, 0);
+  });
+
+  it('selection follows drag to own hand', async () => {
+    // Alex plays a second deck, Ant-Man (p1): its card goes to its own hand, which then shows.
+    const view = makeView({
+      cards: [
+        ...CARDS,
+        card('second', { owner: 1, x: 200, y: 300 }),
+        card('h4', { owner: 1, zone: 'hand' }),
+      ],
+    });
+    view.you = { ...view.you, areas: ['p0', 'p1'] };
+    view.players[0]!.decks = [
+      { area: 'p0', heroName: 'Spider-Man', ready: true, handCount: 3 },
+      { area: 'p1', heroName: 'Ant-Man', ready: true, handCount: 1 },
+    ];
+    view.table = { ...view.table!, hands: { p0: ['h1', 'h2', 'h3'], p1: ['h4'] } };
+    const { session } = await renderTable(view);
+    const handIds = () =>
+      [...document.querySelectorAll<HTMLElement>('.hand .hcard[data-id]')].map(
+        (slot) => slot.dataset.id,
+      );
+    expect(handIds()).toEqual(['h1', 'h2', 'h3']);
+
+    await press(placed('second'), 250, 400);
+    await moveTo(450, 740);
+    expect(document.querySelector('.hand')?.classList).toContain('drop');
+    expect(screen.getByText("Ant-Man's hand")).toBeTruthy();
+
+    await release(450, 740);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'toHand', card: 'second' }, 1);
+    expect(handIds()).not.toContain('h1');
+    expect(handIds()).toContain('h4');
+  });
+
+  it("goes to its owner's hand, which then shows, while another player's row shows", async () => {
+    // Alex plays Spider-Man (p0) and Ant-Man (p1), Sam She-Hulk (p2); an Ant-Man card lies in the villain's
+    // row, which "Villain + player" shows above Sam's.
+    localStorage.setItem('itf-view', 'focus');
+    const view = makeView({ cards: [...CARDS, card('second', { owner: 1, x: 200, y: 0 })] });
+    view.you = { ...view.you, areas: ['p0', 'p1'] };
+    view.players = [
+      {
+        ...view.players[0]!,
+        decks: [
+          { area: 'p0', heroName: 'Spider-Man', ready: true, handCount: 3 },
+          { area: 'p1', heroName: 'Ant-Man', ready: true, handCount: 0 },
+        ],
+      },
+      {
+        name: 'Sam',
+        color: 1,
+        host: false,
+        ready: true,
+        decks: [{ area: 'p2', heroName: 'She-Hulk', ready: true, handCount: 0 }],
+      },
+    ];
+    view.table = {
+      ...view.table!,
+      piles: [
+        ...view.table!.piles,
+        pile('deck:p1', { owner: 1, y: 600 }),
+        pile('deck:p2', { owner: 2, y: 900 }),
+      ],
+      hands: { p0: ['h1', 'h2', 'h3'], p1: [] },
+    };
+    const { session } = await renderTable(view);
+    const picker = screen.getByRole('radiogroup', { name: 'Player shown' });
+    await fireEvent.click(within(picker).getByRole('radio', { name: 'Sam · She-Hulk' }));
+    expect(document.querySelector('.hand')).toBeNull();
+
+    // No hand shows: the drop lands in the room an empty hand has, at the bottom middle of the table.
+    await press(placed('second'), 250, 100);
+    await moveTo(500, 850);
+    expect(screen.getByText("Ant-Man's hand")).toBeTruthy();
+
+    await release(500, 850);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'toHand', card: 'second' }, 1);
+    expect(
+      within(picker)
+        .getAllByRole('radio', { checked: true })
+        .map((swatch) => swatch.getAttribute('aria-label')),
+    ).toEqual(['Alex · Ant-Man']);
+    expect(document.querySelector('.hand')).not.toBeNull();
   });
 
   it("is not taken by the hand when it is another player's card or an encounter card", async () => {
@@ -566,14 +674,17 @@ describe('dragging from a pile', () => {
 
     await release(470, 420);
     // Where it is dropped, behind the card.
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({
-      kind: 'play',
-      card: 'd1',
-      target: 'other',
-      x: expect.any(Number),
-      y: expect.any(Number),
-      placed: true,
-    });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      {
+        kind: 'play',
+        card: 'd1',
+        target: 'other',
+        x: expect.any(Number),
+        y: expect.any(Number),
+        placed: true,
+      },
+      0,
+    );
   });
 
   it('keeps the card it took when another card is put on the pile meanwhile', async () => {
@@ -591,12 +702,15 @@ describe('dragging from a pile', () => {
 
     await release(300, 450);
     // Held by its middle: its corner at 230, 352 on the screen, 210, 312 on the table.
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({
-      kind: 'play',
-      card: 'd1',
-      x: 210,
-      y: 310,
-    });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      {
+        kind: 'play',
+        card: 'd1',
+        x: 210,
+        y: 310,
+      },
+      0,
+    );
   });
 
   it('is cancelled when the card it took leaves the pile meanwhile', async () => {
@@ -621,12 +735,15 @@ describe('dragging from a pile', () => {
     await release(470, 420);
     // Held by its middle: its corner at 400, 322 on the screen, 380, 282 on the table, in Alex's
     // row, which starts 30 above his deck (at 300).
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({
-      kind: 'deal',
-      area: 'p0',
-      x: 380,
-      y: 280,
-    });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      {
+        kind: 'deal',
+        area: 'p0',
+        x: 380,
+        y: 280,
+      },
+      0,
+    );
   });
 
   it('deals to the player whose row it lands in, or to the viewer in the villain row', async () => {
@@ -635,12 +752,12 @@ describe('dragging from a pile', () => {
     await press(placed('enc'), 70, 100);
     await moveTo(300, 700);
     await release(300, 700);
-    expect(session.act).toHaveBeenLastCalledWith({ kind: 'deal', area: 'p1', x: 210, y: 560 });
+    expect(session.act).toHaveBeenLastCalledWith({ kind: 'deal', area: 'p1', x: 210, y: 560 }, 0);
 
     await press(placed('enc'), 70, 100);
     await moveTo(600, 200);
     await release(600, 200);
-    expect(session.act).toHaveBeenLastCalledWith({ kind: 'deal', area: 'p0', x: 510, y: 60 });
+    expect(session.act).toHaveBeenLastCalledWith({ kind: 'deal', area: 'p0', x: 510, y: 60 }, 0);
   });
 
   it('deals the top card of the encounter deck face down where it lands', async () => {
@@ -653,12 +770,15 @@ describe('dragging from a pile', () => {
 
     await release(300, 450);
     // Its corner at 230, 352 on the screen: 210, 312 on the table.
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({
-      kind: 'deal',
-      area: 'p0',
-      x: 210,
-      y: 310,
-    });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      {
+        kind: 'deal',
+        area: 'p0',
+        x: 210,
+        y: 310,
+      },
+      0,
+    );
   });
 });
 
@@ -670,7 +790,7 @@ describe("dragging the top card of the viewer's deck", () => {
     const hand = document.querySelector('.hand')!;
     expect(hand.classList).toContain('open');
     await release(450, 740);
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'draw', n: 1 });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'draw', n: 1 }, 0);
     // Dropped on the hand, the pointer still over it: the hand stays up.
     expect(hand.classList).toContain('open');
 
@@ -678,7 +798,7 @@ describe("dragging the top card of the viewer's deck", () => {
     next.table = {
       ...next.table!,
       cards: [...next.table!.cards, card('h4', { zone: 'hand' })],
-      hand: ['h1', 'h2', 'h3', 'h4'],
+      hands: { p0: ['h1', 'h2', 'h3', 'h4'] },
     };
     await rerender(next);
     // The drawn card flies in from the deck: it is drawn there until it lands.
@@ -702,12 +822,15 @@ describe("dragging the top card of the viewer's deck", () => {
 
     await release(300, 450);
     // Held by its middle: its corner at 230, 352 on the screen, 210, 312 on the table.
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({
-      kind: 'play',
-      pile: 'deck:p0',
-      x: 210,
-      y: 310,
-    });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      {
+        kind: 'play',
+        pile: 'deck:p0',
+        x: 210,
+        y: 310,
+      },
+      0,
+    );
   });
 
   it('draws it when dropped on the hand, and discards it on the discard pile', async () => {
@@ -716,13 +839,13 @@ describe("dragging the top card of the viewer's deck", () => {
     await moveTo(450, 740);
     expect(screen.getByText('Hand')).toBeTruthy();
     await release(450, 740);
-    expect(session.act).toHaveBeenLastCalledWith({ kind: 'draw', n: 1 });
+    expect(session.act).toHaveBeenLastCalledWith({ kind: 'draw', n: 1 }, 0);
 
     await press(placed('deck:p0'), 690, 410);
     await moveTo(850, 400);
     expect(screen.getByText('Discard')).toBeTruthy();
     await release(850, 400);
-    expect(session.act).toHaveBeenLastCalledWith({ kind: 'discardTop', pile: 'deck:p0', n: 1 });
+    expect(session.act).toHaveBeenLastCalledWith({ kind: 'discardTop', pile: 'deck:p0', n: 1 }, 0);
   });
 
   it("cannot be dragged from another player's deck", async () => {
@@ -748,12 +871,15 @@ describe('dragging a hand card', () => {
     await release(300, 450);
     // Held 60 px in from its left edge and 80 down, out of 132 by 185: at table size (140 by 196)
     // its corner lands at 236.4, 365.2 on the screen, 216.4, 325.2 on the table.
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({
-      kind: 'play',
-      card: 'h2',
-      x: 220,
-      y: 330,
-    });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      {
+        kind: 'play',
+        card: 'h2',
+        x: 220,
+        y: 330,
+      },
+      0,
+    );
   });
 
   it('plays it under the card it is dropped on', async () => {
@@ -766,14 +892,17 @@ describe('dragging a hand card', () => {
 
     await release(470, 420);
     // Where it is dropped, behind the card.
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({
-      kind: 'play',
-      card: 'h2',
-      target: 'other',
-      x: expect.any(Number),
-      y: expect.any(Number),
-      placed: true,
-    });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      {
+        kind: 'play',
+        card: 'h2',
+        target: 'other',
+        x: expect.any(Number),
+        y: expect.any(Number),
+        placed: true,
+      },
+      0,
+    );
   });
 
   it('reorders the hand, the other cards making room, and the hand stays open', async () => {
@@ -788,11 +917,14 @@ describe('dragging a hand card', () => {
     expect(document.querySelector('.hand')?.classList).toContain('open');
 
     await release(700, 760);
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({
-      kind: 'handOrder',
-      area: 'p0',
-      cards: ['h2', 'h3', 'h1'],
-    });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      {
+        kind: 'handOrder',
+        area: 'p0',
+        cards: ['h2', 'h3', 'h1'],
+      },
+      0,
+    );
     expect(document.querySelector('.hand')?.classList).toContain('open');
   });
 
@@ -802,7 +934,7 @@ describe('dragging a hand card', () => {
     await moveTo(800, 400);
     expect(screen.getByText('Discard')).toBeTruthy();
     await release(800, 400);
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'discard', card: 'h3' });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'discard', card: 'h3' }, 0);
   });
 });
 
@@ -970,7 +1102,7 @@ describe('a drop waiting for the server', () => {
     const played = makeView({
       cards: CARDS.map((c) => (c.id === 'h2' ? { ...c, zone: 'table', x: 220, y: 330 } : c)),
     });
-    played.table!.hand = ['h1', 'h3'];
+    played.table!.hands = { p0: ['h1', 'h3'] };
     await rerender(played);
     expect(ghosts()).toEqual([]);
     expect(placed('h2').style.left).toBe('220px');
@@ -985,7 +1117,7 @@ describe('a drop waiting for the server', () => {
     expect(ghosts()).toEqual([]);
 
     const reordered = makeView();
-    reordered.table!.hand = ['h2', 'h3', 'h1'];
+    reordered.table!.hands = { p0: ['h2', 'h3', 'h1'] };
     await rerender(reordered);
     expect(handOrder()).toEqual(['h2', 'h3', 'h1']);
   });
@@ -1048,7 +1180,7 @@ describe('dragging the first player token', () => {
 
     await release(204, 703);
     // Its corner at 184, 683 on the screen: 164, 643 on the table.
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'firstPlayer', x: 160, y: 640 });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'firstPlayer', x: 160, y: 640 }, 0);
     // It waits where it was dropped until the next view.
     expect(token()).toBeNull();
     expect(tokenGhost()).not.toBeNull();
@@ -1056,6 +1188,20 @@ describe('dragging the first player token', () => {
     await rerender(makeView({ withSam: true, firstPlayerY: 640 }));
     expect(tokenGhost()).toBeNull();
     expect(token()?.style.top).toBe('640px');
+  });
+
+  it('tells the other players where it is, and null once dropped', async () => {
+    const { session } = await renderTable(makeView({ withSam: true }));
+    await press(token()!, 900, 400);
+    await moveTo(204, 703);
+    await release(204, 703);
+
+    const drags = session.sendPresence.mock.calls
+      .map(([fields]) => fields as { drag?: unknown })
+      .filter((fields) => 'drag' in fields)
+      .map((fields) => fields.drag);
+    // Its corner at 184, 683 on the screen: 164, 643 on the table, not snapped.
+    expect(drags).toEqual([{ cards: [], token: true, x: 164, y: 643 }, null]);
   });
 
   it('sends nothing when put back where it was', async () => {
@@ -1122,7 +1268,7 @@ describe('the card under a still pointer after the viewer acts', () => {
     await press(placed('enc'), 70, 100);
     await moveTo(300, 450);
     await release(300, 450);
-    expect(session.act).toHaveBeenLastCalledWith({ kind: 'deal', area: 'p0', x: 210, y: 310 });
+    expect(session.act).toHaveBeenLastCalledWith({ kind: 'deal', area: 'p0', x: 210, y: 310 }, 0);
 
     // The server deals it face down where it was dropped, under the pointer, which has not moved.
     const dealt = (extra: Partial<TableCard>) =>
@@ -1131,14 +1277,14 @@ describe('the card under a still pointer after the viewer acts', () => {
     await waitFor(() => expect(interaction.hovered).toEqual({ kind: 'card', id: 'dealt' }));
 
     await fireEvent.keyDown(window, { key: 'f' });
-    expect(session.act).toHaveBeenLastCalledWith({ kind: 'flip', card: 'dealt' });
+    expect(session.act).toHaveBeenLastCalledWith({ kind: 'flip', card: 'dealt' }, 0);
 
     // Turned face up: it is still the one the keys act on, and turns to its other face.
     await rerender(makeView({ cards: [...CARDS, dealt({ code: '01097' })] }));
     await waitFor(() => expect(interaction.hovered).toEqual({ kind: 'card', id: 'dealt' }));
     await fireEvent.keyDown(window, { key: 'f' });
     expect(session.act).toHaveBeenCalledTimes(3);
-    expect(session.act).toHaveBeenLastCalledWith({ kind: 'flip', card: 'dealt' });
+    expect(session.act).toHaveBeenLastCalledWith({ kind: 'flip', card: 'dealt' }, 0);
   });
 
   it("hovers what another player's action puts under the pointer, and drops what it takes away", async () => {

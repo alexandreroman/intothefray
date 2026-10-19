@@ -287,6 +287,26 @@ func TestPresenceRelayed(t *testing.T) {
 	}
 }
 
+func TestFirstPlayerTokenDragRelayed(t *testing.T) {
+	mr := miniredis.RunT(t)
+	first := startInstance(t, mr, nil)
+	second := startInstance(t, mr, nil)
+	created := createGame(t, first, "Alex")
+	alex := connect(t, first, created.ID)
+	alex.hello(created.Token, "Alex")
+	bob := connect(t, second, created.ID)
+	bob.hello("", "Bob")
+	alex.awaitView(func(v game.View) bool { return len(v.Players) == 2 })
+
+	// The token carries no card: the drag tells only where its corner is.
+	alex.send(map[string]any{"type": "presence", "drag": map[string]any{"token": true, "x": 160, "y": 640}})
+
+	got := bob.expect("presence")
+	if want := `"drag":{"cards":[],"token":true,"x":160,"y":640}`; !strings.Contains(string(got.raw), want) {
+		t.Errorf("presence = %s, want it to contain %s", got.raw, want)
+	}
+}
+
 func TestHiddenCursorRelayed(t *testing.T) {
 	mr := miniredis.RunT(t)
 	ts := startInstance(t, mr, nil)
@@ -348,6 +368,8 @@ func TestPresenceValidation(t *testing.T) {
 	drag := func(cards []string) map[string]any {
 		return map[string]any{"cards": cards, "x": 1, "y": 2}
 	}
+	tokenDrag := map[string]any{"token": true, "x": 1, "y": 2}
+	tokenDragWithCards := map[string]any{"token": true, "cards": []string{"c1"}, "x": 1, "y": 2}
 
 	tests := []struct {
 		name  string
@@ -360,6 +382,7 @@ func TestPresenceValidation(t *testing.T) {
 		{"cleared preview", map[string]any{"preview": ""}, true},
 		{"drag", map[string]any{"drag": drag([]string{"c1", "c2"})}, true},
 		{"ended drag", map[string]any{"drag": nil}, true},
+		{"first player token drag", map[string]any{"drag": tokenDrag}, true},
 		{"ping", map[string]any{"ping": point}, true},
 		{"nothing", map[string]any{}, false},
 		{"cursor with a text x", map[string]any{"cursor": map[string]any{"x": "1", "y": 2}}, false},
@@ -370,6 +393,7 @@ func TestPresenceValidation(t *testing.T) {
 		{"drag with a long card id", map[string]any{"drag": drag([]string{long})}, false},
 		{"drag with an empty card id", map[string]any{"drag": drag([]string{""})}, false},
 		{"drag as text", map[string]any{"drag": "c1"}, false},
+		{"first player token drag with cards", map[string]any{"drag": tokenDragWithCards}, false},
 		{"ping with a text y", map[string]any{"ping": map[string]any{"x": 1, "y": "2"}}, false},
 	}
 
@@ -755,18 +779,28 @@ func cardOf(v game.View, id string) game.CardView {
 	return v.Table.Cards[i]
 }
 
+// handCounts returns the hand size of each player's first deck.
 func handCounts(v game.View) []int {
 	counts := make([]int, len(v.Players))
 	for i, p := range v.Players {
-		counts[i] = p.HandCount
+		counts[i] = p.Decks[0].HandCount
 	}
 	return counts
+}
+
+// ownHand returns the hand of the viewer's first seat, or nil for someone who
+// does not play.
+func ownHand(v game.View) []string {
+	if len(v.You.Areas) == 0 {
+		return nil
+	}
+	return v.Table.Hands[v.You.Areas[0]]
 }
 
 // handCodes returns the codes of the viewer's hand.
 func handCodes(v game.View) []string {
 	var codes []string
-	for _, id := range v.Table.Hand {
+	for _, id := range ownHand(v) {
 		codes = append(codes, cardOf(v, id).Code)
 	}
 	return codes
@@ -777,7 +811,7 @@ func handCodes(v game.View) []string {
 func hiddenHandCodes(v game.View) []string {
 	shown := map[string]bool{}
 	for _, c := range v.Table.Cards {
-		if !slices.Contains(v.Table.Hand, c.ID) {
+		if !slices.Contains(ownHand(v), c.ID) {
 			shown[c.Code] = true
 		}
 	}

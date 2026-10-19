@@ -24,7 +24,7 @@
   import CardFace from './CardFace.svelte';
   import { LANDING_MS } from './interaction.svelte';
   import { isOutOfPlay } from './layout';
-  import { seatOf } from './actions';
+  import { ownSeats, seatPlayer } from './seats';
   import TileBar from './TileBar.svelte';
 
   let {
@@ -33,6 +33,7 @@
     facesOf,
     sizeOf,
     readOnly,
+    selected,
     act,
     onclose,
   }: {
@@ -43,6 +44,8 @@
     sizeOf: (card: CardView) => Size;
     /** A spectator's box: it shows the cards and offers nothing. */
     readOnly: boolean;
+    /** The viewer's selected deck: a card of a pile that is not theirs is played to its row. */
+    selected: number | null;
     act: (action: Action) => number | null;
     /** Closes the box; `shuffle` asks to shuffle the searched deck. */
     onclose: (shuffle: boolean) => void;
@@ -150,9 +153,9 @@
 
   const title = $derived.by((): { main: string; aside?: string } => {
     if (box.kind === 'stage') {
-      return { main: box.stage.label, aside: '— choose the card to show' };
+      return { main: `${box.stage.label}:`, aside: 'choose the card to show' };
     }
-    const label = pileLabel(box.pile, view);
+    const label = boxPileLabel(box.pile);
     switch (box.mode) {
       case 'top':
         return { main: `Top ${lookedAt} of ${label}` };
@@ -165,17 +168,30 @@
     }
   });
 
+  /**
+   * The pile's name in the title. With several decks of their own, the viewer
+   * reads which one: "Your Spider-Man deck" rather than "Your deck".
+   */
+  function boxPileLabel(pile: PileView): string {
+    const label = pileLabel(pile, view);
+    const seats = ownSeats(view);
+    if (seats.length < 2 || !seats.includes(pile.owner)) {
+      return label;
+    }
+    const area = `p${pile.owner}`;
+    const hero = seatPlayer(view, pile.owner)?.decks.find((deck) => deck.area === area)?.heroName;
+    return hero ? label.replace(/^Your /, `Your ${hero} `) : label;
+  }
+
   const fullTitle = $derived(title.aside ? `${title.main} ${title.aside}` : title.main);
 
   // ---- Tile actions ----
 
-  const seat = $derived(view.you.area ? seatOf(view.you.area) : null);
-
   function actionsOf(tile: Tile): TileAction[] {
-    if (readOnly || box.kind !== 'pile' || seat === null) {
+    if (readOnly || box.kind !== 'pile' || selected === null) {
       return [];
     }
-    return tileActions(tile.card, box.pile, { view, seat, sizeOf });
+    return tileActions(tile.card, box.pile, { view, selected, sizeOf });
   }
 
   function runAction(action: TileAction, tile: Tile): void {
@@ -467,9 +483,7 @@
 
   // A set-aside pile is reached from its box only: it is not drawn on the table.
   const shuffleInPile = $derived(
-    !readOnly && box.kind === 'pile' && seat !== null && canShuffleIn(box.pile, seat)
-      ? box.pile
-      : null,
+    !readOnly && box.kind === 'pile' && canShuffleIn(box.pile, ownSeats(view)) ? box.pile : null,
   );
 
   function shuffleIn(pile: PileView): void {

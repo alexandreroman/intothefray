@@ -20,27 +20,52 @@
       .catch(() => (indexError = true));
   });
 
+  const MAX_DECKS = 4;
+
   const hostName = $derived(view.players.find((p) => p.host)?.name ?? 'the host');
   const me = $derived(
     view.you.role === 'player' ? view.players.find((p) => p.color === view.you.color) : undefined,
   );
+  const deckCount = $derived(view.players.reduce((sum, p) => sum + p.decks.length, 0));
+  // "your deck", "Sam's deck", "Jo's 2 decks": one phrase per player still missing a deck.
   const missingDecks = $derived(
-    view.players.filter((p) => !p.ready).map((p) => (p.color === me?.color ? 'you' : p.name)),
+    view.players.flatMap((p) => {
+      const missing = p.decks.filter((deck) => !deck.ready).length;
+      if (missing === 0) {
+        return [];
+      }
+      const owner = p.color === me?.color ? 'your' : `${p.name}'s`;
+      return [missing === 1 ? `${owner} deck` : `${owner} ${missing} decks`];
+    }),
   );
-  const canStart = $derived(missingDecks.length === 0 && view.config.scenario !== '');
+  // A scenario that recommends no modular set, like Wrecking Crew, may start without one. While the
+  // index is unknown, the scenario is taken to need one.
+  const chosenScenario = $derived(index?.scenarios.find((s) => s.id === view.config.scenario));
+  const needsModular = $derived(
+    chosenScenario === undefined || chosenScenario.recommended.length > 0,
+  );
+  const missingModular = $derived(needsModular && view.config.modulars.length === 0);
+  const canStart = $derived(
+    missingDecks.length === 0 && view.config.scenario !== '' && !missingModular,
+  );
 
   const reason = $derived.by(() => {
     if (missingDecks.length > 0) {
-      return `Waiting for a deck from ${missingDecks.join(' and ')}.`;
+      return `Waiting for ${new Intl.ListFormat('en').format(missingDecks)}.`;
     }
     if (view.config.scenario === '') {
       return view.you.host
         ? 'Choose a scenario first.'
         : `Waiting for ${hostName} to choose a scenario.`;
     }
+    if (missingModular) {
+      return view.you.host
+        ? 'Choose at least one modular set.'
+        : `Waiting for ${hostName} to choose at least one modular set.`;
+    }
     return view.you.host
       ? 'Everyone is ready.'
-      : `Everyone is ready — waiting for ${hostName} to set up the table.`;
+      : `Everyone is ready: waiting for ${hostName} to set up the table.`;
   });
 
   const intro = $derived.by(() => {
@@ -53,13 +78,52 @@
     return `${hostName} is the host: they choose the scenario, and everyone sees it. Bring your own deck.`;
   });
 
-  // A failed deck import shows under the deck field; anything else in the start bar.
+  // A failed deck import shows under the field of the slot it was loading; anything else in the start bar.
   const deckLoadError = $derived(session.deckLoadError?.message ?? null);
   const otherError = $derived(session.lastError?.message ?? null);
+  // The slot whose load is under way or failed. A removal shifts the slots, so it starts over.
+  let loadingSlot = $state(0);
+
+  function loadDeck(slot: number, url: string): void {
+    loadingSlot = slot;
+    session.lobby('setDeck', { url, deck: slot });
+  }
+
+  // The own slot count when the viewer asked for one more deck. The view that shows that many plus
+  // one has the new slot last, and its deck link takes the focus as it mounts. The slots remount
+  // only when their count changes, so the value can stay once the slot is there.
+  let addingFrom = $state<number | null>(null);
+  const focusSlot = $derived(
+    addingFrom !== null && me?.decks.length === addingFrom + 1 ? addingFrom : null,
+  );
+
+  // A failed Add a deck brings no new slot.
+  $effect(() => {
+    if (session.lastError !== null) {
+      addingFrom = null;
+    }
+  });
+
+  function addDeck(): void {
+    if (me && session.lobby('addDeck')) {
+      addingFrom = me.decks.length;
+    }
+  }
+
+  function removeDeck(slot: number): void {
+    addingFrom = null;
+    loadingSlot = 0;
+    session.lobby('removeDeck', { deck: slot });
+  }
 </script>
 
 <div class="screen">
-  <TopBar spectators={view.spectators} />
+  <TopBar
+    spectators={view.spectators}
+    onend={view.you.host ? () => session.lobby('end') : undefined}
+    endLabel="Close the lobby"
+    endQuestion="Close the lobby? This ends the game for everyone."
+  />
 
   <main class="lobby">
     <header class="intro">
@@ -100,12 +164,33 @@
           ontakeseat={() => session.lobby('takeSeat')}
         />
         {#if me}
-          <DeckLoader
-            {me}
-            deckError={session.deckError}
-            error={deckLoadError}
-            onload={(url) => session.lobby('setDeck', { url })}
-          />
+          {@const several = me.decks.length > 1}
+          <section class="card-box decks" style:--pc="var(--p{me.color + 1})">
+            <div class="bhead"><h2>Your decks</h2></div>
+            <!-- The slots have no identity but their index: a new slot count remounts them, so that
+                 a link typed for a removed deck does not stay in the slot that takes its place. -->
+            {#key me.decks.length}
+              {#each me.decks as deck, slot (slot)}
+                <DeckLoader
+                  {deck}
+                  slot={several ? slot + 1 : null}
+                  deckError={slot === loadingSlot ? session.deckError : null}
+                  error={slot === loadingSlot ? deckLoadError : null}
+                  onload={(url) => loadDeck(slot, url)}
+                  onremove={several ? () => removeDeck(slot) : undefined}
+                  autofocus={slot === focusSlot}
+                />
+              {/each}
+            {/key}
+            {#if deckCount < MAX_DECKS}
+              <div class="sect">
+                <button class="btn add" onclick={addDeck}>
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+                  Add a deck
+                </button>
+              </div>
+            {/if}
+          </section>
         {/if}
       </div>
     </div>
@@ -254,6 +339,19 @@
     border-top: 1px solid var(--panel-2);
   }
 
+  /*
+    Deck slots sit closer together than plain sections. The first slot keeps the section's top
+    padding under the heading, a last slot its bottom padding at the foot of the box, and the
+    Add a deck section its own top padding, so the button stands a little apart from the slots.
+  */
+  .decks :global(.slot + .slot) {
+    padding-top: 9px;
+  }
+
+  .decks :global(.slot:not(:last-child)) {
+    padding-bottom: 9px;
+  }
+
   .lobby :global(.lbl) {
     display: block;
     margin-bottom: 10px;
@@ -331,6 +429,15 @@
 
   .why.error {
     color: #ffb3c0;
+  }
+
+  .add svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
   }
 
   .go {

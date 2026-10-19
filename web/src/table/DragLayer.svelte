@@ -10,6 +10,7 @@
   import { untrack } from 'svelte';
   import type {
     Action,
+    Area,
     CardView as TableCard,
     PackFace,
     PresenceDrag,
@@ -27,7 +28,7 @@
     DRAG_THRESHOLD,
     dropAction,
     dropTarget,
-    goesToHand,
+    handAreaOf,
     handBand,
     insertIndex,
     pileTargets,
@@ -42,10 +43,11 @@
     type TableRect,
   } from './drag';
   import { isHidden } from './face';
-  import { interaction, type DropOn, type Held } from './interaction.svelte';
+  import { interaction, type DropOn, type Held, type Pressable } from './interaction.svelte';
   import { cardBox, FIRST_PLAYER_BOX, HAND_CARD, type Box } from './layout';
   import { ALL_ROWS, type RowMap } from './rows';
   import { surfaceRect, toScreen, toTable } from './screen';
+  import { ownSeats, seatOf, seatPlayer } from './seats';
 
   let {
     view,
@@ -54,7 +56,9 @@
     faceOf,
     sizeOf,
     rowMap = ALL_ROWS,
+    selected,
     act,
+    onhand,
     ondrag,
     lastError,
   }: {
@@ -66,8 +70,12 @@
     sizeOf: (card: TableCard) => Size;
     /** Where the view mode draws the heights of the table (rows.ts). */
     rowMap?: RowMap;
-    /** Sends a drop's action: its id, or null when it could not be sent. */
-    act: (action: Action) => number | null;
+    /** The viewer's selected deck (spec 5): an encounter card dealt above every row goes to it. */
+    selected: number | null;
+    /** Sends a drop's action, about what was pressed: its id, or null when it could not be sent. */
+    act: (action: Action, element: Pressable) => number | null;
+    /** A card went to the hand of one of the viewer's decks: that seat's hand is the one to show. */
+    onhand: (seat: number) => void;
     /** Tells the other players where the drag is, and null once it is over (spec 5.8). */
     ondrag: (drag: PresenceDrag | null) => void;
     /** The session's last error, which names the action it refuses. */
@@ -323,7 +331,7 @@
         index: insertIndex(middles, at.x),
         rect: handBand(others, table, window.innerHeight),
       });
-    } else if (goesToHand(from, view)) {
+    } else if (handAreaOf(from, view)) {
       const hand = [...root.querySelectorAll<HTMLElement>('.hand .hcard')].map((element) =>
         element.getBoundingClientRect(),
       );
@@ -359,8 +367,7 @@
   /** What a drop at the pointer lands on, and the action it sends, null when nothing. */
   function locate(from: DragSource, at: Point): { target: DropRect; action: Action | null } | null {
     const target = dropTarget(at, targetsFor(from, at));
-    const own = view.you.area;
-    if (!target || !own) {
+    if (!target || selected === null) {
       return null;
     }
     const surface = surfaceRect(root);
@@ -368,7 +375,7 @@
     const spot = surface ? toTable(cornerOf(from, at), surface, zoom) : { x: 0, y: 0 };
     // An encounter card goes to the player whose row the pointer is in.
     const pointed = surface ? onTable(at, surface) : { x: 0, y: 0 };
-    const dealTo = dealRecipient(view.table?.piles ?? [], pointed.y, own);
+    const dealTo = dealRecipient(view.table?.piles ?? [], pointed.y, `p${selected}`);
     return { target, action: dropAction(from, target, spot, dealTo, rowMap) };
   }
 
@@ -381,9 +388,10 @@
     interaction.handGap = found?.target.kind === 'hand' ? found.target.index : null;
     // Only what a drop would change is outlined: not the pile a card came from.
     const target = found?.action ? found.target : null;
-    if (target?.kind === 'toHand' && view.you.area) {
-      const label = { glyph: HAND_GLYPH, text: 'Hand', tuck: false };
-      showHint({ kind: 'hand', id: view.you.area }, label, target.rect);
+    const handArea = source ? handAreaOf(source, view) : null;
+    if (target?.kind === 'toHand' && handArea) {
+      const label = { glyph: HAND_GLYPH, text: handName(handArea), tuck: false };
+      showHint({ kind: 'hand', id: handArea }, label, target.rect);
     } else if (target?.kind === 'pile') {
       const label = { glyph: PILE_GLYPHS[target.drop], text: target.label, tuck: false };
       showHint({ kind: 'pile', id: target.pile }, label, target.rect);
@@ -395,6 +403,13 @@
       interaction.dropOn = null;
       hint = null;
     }
+  }
+
+  /** "Hand", or with several decks the hero's: "Spider-Man's hand". */
+  function handName(area: Area): string {
+    const seat = seatOf(area);
+    const hero = seatPlayer(view, seat)?.decks.find((deck) => deck.area === area)?.heroName;
+    return ownSeats(view).length > 1 && hero ? `${hero}'s hand` : 'Hand';
   }
 
   function showHint(
@@ -420,16 +435,23 @@
     }
     const from = sourceOf(pressed.element, view, pressed.card ?? undefined);
     const at = { x: event.clientX, y: event.clientY };
-    const action = isStillThere(pressed, from) ? locate(from, at)?.action : null;
+    const found = isStillThere(pressed, from) ? locate(from, at) : null;
     end();
     // The click this release fires is the end of the drag, not a tap on what lies there.
     interaction.swallowNextClick();
-    if (!from || !action) {
+    const action = found?.action;
+    if (!from || !found || !action) {
       return;
     }
-    const sent = act(action);
-    if (sent !== null) {
-      land(sent, pressed, from, action, at);
+    const sent = act(action, pressed.element);
+    if (sent === null) {
+      return;
+    }
+    land(sent, pressed, from, action, at);
+    // The card went to the hand of one of the viewer's decks: that hand shows (spec 5).
+    const handArea = found.target.kind === 'toHand' ? handAreaOf(from, view) : null;
+    if (handArea) {
+      onhand(seatOf(handArea));
     }
   }
 
@@ -506,27 +528,27 @@
   }
 
   /**
-   * What the other players see of the drag: the cards it carries and their
-   * corner, in table units, while it is over the table. Not the first player
-   * token, which carries no card, nor a hand card over the hand, which is the
-   * viewer's own business.
+   * What the other players see of the drag: the cards it carries, or the
+   * first player token, and their corner, in table units, while it is over
+   * the table. Not a hand card over the hand, which is the viewer's own
+   * business.
    */
   function presenceOf(from: DragSource, at: Point): PresenceDrag | null {
     const table = root?.querySelector('.tablewrap')?.getBoundingClientRect();
-    if (!root || !table || from.kind === 'firstPlayer' || overHand) {
+    if (!root || !table || overHand) {
       return null;
     }
     const surface = surfaceRect(root);
     if (!contains(table, at) || !surface) {
       return null;
     }
-    const cards = cardsShown(from);
     const corner = onTable(cornerOf(from, at), surface);
-    return {
-      cards: cards.slice(0, MAX_DRAG_CARDS),
-      x: Math.round(corner.x),
-      y: Math.round(corner.y),
-    };
+    const x = Math.round(corner.x);
+    const y = Math.round(corner.y);
+    if (from.kind === 'firstPlayer') {
+      return { cards: [], token: true, x, y };
+    }
+    return { cards: cardsShown(from).slice(0, MAX_DRAG_CARDS), x, y };
   }
 
   /**

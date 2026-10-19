@@ -58,17 +58,29 @@ function makeView(extra: { spectator?: boolean; arrows?: Arrow[] } = {}): View {
     phase: 'playing',
     you: extra.spectator
       ? { role: 'spectator', color: -1, host: false }
-      : { role: 'player', name: 'Alex', color: 0, host: true, area: 'p0' },
+      : { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0'] },
     players: [
-      { name: 'Alex', color: 0, host: true, area: 'p0', ready: true, handCount: 1 },
-      { name: 'Sam', color: 1, host: false, area: 'p1', ready: true, handCount: 0 },
+      {
+        name: 'Alex',
+        color: 0,
+        host: true,
+        ready: true,
+        decks: [{ area: 'p0', ready: true, handCount: 1 }],
+      },
+      {
+        name: 'Sam',
+        color: 1,
+        host: false,
+        ready: true,
+        decks: [{ area: 'p1', ready: true, handCount: 0 }],
+      },
     ],
     spectators: 0,
     config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
     table: {
       cards: CARDS,
       piles: [],
-      hand: extra.spectator ? undefined : ['h'],
+      hands: extra.spectator ? undefined : { p0: ['h'] },
       stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
       firstPlayer: { x: 860, y: 40 },
       arrows: extra.arrows,

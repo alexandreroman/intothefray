@@ -13,7 +13,7 @@
     frame: OwnerFrame;
     /** The player's name, or "Villain". */
     name: string;
-    /** CSS colour of the frame and the name: the player's seat colour, or the spark. */
+    /** CSS colour of the frame and the name: the player's seat colour, or the villain's. */
     color: string;
     /** The tooltip: how many cards the player holds. */
     tip?: string;
@@ -24,6 +24,7 @@
   import type { PackFace, CardView as TableCard, PileView as Pile } from '../lib/types';
   import CardView from './CardView.svelte';
   import FirstPlayerToken from './FirstPlayerToken.svelte';
+  import { overflowTip } from '../lib/overflowTip';
   import { interaction } from './interaction.svelte';
   import PileView from './PileView.svelte';
 
@@ -62,7 +63,7 @@
     canDrag?: (element: TableElement) => boolean;
   } = $props();
 
-  const TOKEN_TIP = 'First player — drag it to the next player';
+  const TOKEN_TIP = 'First player: drag it to the next player';
 </script>
 
 <!-- Card z-indexes come from the server and can be negative: the surface isolates them. -->
@@ -78,7 +79,7 @@
       style:width="{owner.frame.w}px"
       style:height="{owner.frame.h}px"
     >
-      <span class="owner">{owner.name}</span>
+      <span class="owner" use:overflowTip>{owner.name}</span>
       {#if owner.tip}
         <!-- The tooltip is for the pointer: screen readers read the hand count here. -->
         <span class="sr-only">: {owner.tip}</span>
@@ -103,6 +104,7 @@
     <FirstPlayerToken
       x={firstPlayer.x}
       y={firstPlayer.y}
+      lifted={interaction.tokenLiftedByOthers}
       tip={tokenMovable ? TOKEN_TIP : undefined}
       onpointerenter={(event) => interaction.enterNothing(event)}
       onpointerdown={tokenMovable

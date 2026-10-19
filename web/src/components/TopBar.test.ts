@@ -1,5 +1,8 @@
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
+import { tick } from 'svelte';
 import TopBar from './TopBar.svelte';
+import { route } from '../lib/router.svelte';
+import { cutShort } from '../lib/overflowTip.testing';
 
 // jsdom has no Fullscreen API: each test installs the one it needs, as own
 // properties that shadow nothing and are simply deleted afterwards.
@@ -57,6 +60,15 @@ describe('TopBar', () => {
       ' / Bomb Scare',
       ' / Masters of Evil',
     ]);
+  });
+
+  it('shows the full crumbs in a tooltip when they are cut short', async () => {
+    const { container } = render(TopBar, { crumbs: ['Rhino', 'Bomb Scare'] });
+    const crumbs = container.querySelector<HTMLElement>('.crumbs')!;
+
+    cutShort(crumbs);
+    await fireEvent.pointerOver(crumbs);
+    expect(crumbs.dataset.tip).toBe('Rhino / Bomb Scare');
   });
 
   it('offers Ready all on the table, off while there is nothing to ready', async () => {
@@ -151,7 +163,7 @@ describe('TopBar', () => {
     expect(cross?.getAttribute('d')).toBe('M6 6l12 12M18 6L6 18');
   });
 
-  it('puts the spectators before Ready all, then Fullscreen and End game', () => {
+  it('puts the spectators first, then the view switch, Ready all, Fullscreen and End game', () => {
     document.documentElement.requestFullscreen = vi.fn();
     const { container } = render(TopBar, {
       spectators: 2,
@@ -164,12 +176,19 @@ describe('TopBar', () => {
       (element) => element.getAttribute('aria-label') ?? '',
     );
     expect(names).toEqual([
-      'Table view',
       '2 spectators',
+      'Table view',
       'Ready all cards',
       'Fullscreen',
       'End game',
     ]);
+  });
+
+  it('puts the spectators first outside the table too', () => {
+    document.documentElement.requestFullscreen = vi.fn();
+    const { container } = render(TopBar, { spectators: 1, onend: () => {} });
+    const badge = screen.getByRole('img', { name: '1 spectator' });
+    expect(container.querySelector('.actions')?.firstElementChild).toBe(badge);
   });
 
   it('offers no Fullscreen button without the Fullscreen API', () => {
@@ -275,13 +294,32 @@ describe('TopBar view modes', () => {
 
   it('slides its highlight to the chosen view, but not into its first place', async () => {
     const { rerender } = render(TopBar, { viewMode: 'all', onviewmode: () => {} });
-    const thumb = () => document.querySelector<HTMLElement>('.views .thumb');
-    expect(thumb()).not.toBeNull();
-    expect(thumb()?.getAttribute('aria-hidden')).toBe('true');
-    expect(thumb()?.classList).not.toContain('slides');
+    const group = screen.getByRole('group', { name: 'Table view' });
+    const highlight = () => group.querySelector<HTMLElement>('[data-indicator]');
+    expect(highlight()).not.toBeNull();
+    expect(highlight()?.getAttribute('aria-hidden')).toBe('true');
+    expect(highlight()?.dataset.slides).toBeUndefined();
 
-    await new Promise((resolve) => requestAnimationFrame(resolve));
     await rerender({ viewMode: 'focus', onviewmode: () => {} });
-    expect(thumb()?.classList).toContain('slides');
+    await tick();
+    expect(highlight()?.dataset.slides).toBe('');
+  });
+});
+
+describe('TopBar logo', () => {
+  it('links home, at the base path', () => {
+    render(TopBar, {});
+
+    const link = screen.getByRole('link', { name: 'Into The Fray: home' });
+    expect(link.getAttribute('href')).toBe(import.meta.env.BASE_URL);
+  });
+
+  it('goes home in place on a click', async () => {
+    window.history.pushState(null, '', '/options');
+    render(TopBar, {});
+
+    await fireEvent.click(screen.getByRole('link', { name: 'Into The Fray: home' }));
+    expect(window.location.pathname).toBe('/');
+    expect(route.current).toEqual({ name: 'home' });
   });
 });

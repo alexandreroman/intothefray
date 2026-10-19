@@ -62,6 +62,14 @@ export interface DropOn {
 /** What hovering an element does to the side preview. */
 export type PreviewChange = 'show' | 'clear';
 
+/** A rectangle on the screen, in CSS pixels. */
+export interface ScreenBox {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+}
+
 /**
  * What the viewer points at on the table, shared by the table, the hand, the
  * action bar and the side panel. Ids rather than faces, so the preview and
@@ -80,6 +88,8 @@ class TableInteraction {
    * follow those players' pointers (Presence.svelte).
    */
   liftedByOthers = $state.raw<ReadonlySet<string>>(new Set());
+  /** Another player drags the first player token: it is hidden in place meanwhile (Presence.svelte). */
+  tokenLiftedByOthers = $state(false);
   /**
    * The cards and piles other players preview, with the colour of the player
    * who does: each draws that player's ring itself, so that the ring follows
@@ -96,6 +106,13 @@ class TableInteraction {
   menu = $state<string | null>(null);
   /** The pointer is on the bar or its dropdown. */
   onBar = $state(false);
+  /**
+   * The way from the hovered element to its bar, set by the bar as it is
+   * placed: the gap between them, and the part of the element's box next to
+   * the bar, which a tilted (exhausted) card leaves partly bare. The linger
+   * does not run out while the pointer is there.
+   */
+  barWay: ScreenBox | null = null;
 
   /** The token or status the viewer points at: its − / + pill shows above it. */
   counter = $state.raw<CounterTarget | null>(null);
@@ -353,16 +370,30 @@ class TableInteraction {
     this.previewed = null;
   }
 
-  /** The pointer left an element or the bar: they go after the linger, unless still in use. */
+  /**
+   * The pointer left an element or the bar: they go after the linger, unless
+   * still in use. A pointer on its way to the bar gets as long as it takes,
+   * however slowly it moves.
+   */
   leave(): void {
     this.#cancelHide();
     this.#hideTimer = setTimeout(() => {
       if (this.locked || this.menu !== null || this.onBar || this.onPill) {
         return;
       }
+      if (this.#onBarWay()) {
+        this.leave();
+        return;
+      }
       this.hovered = null;
       this.previewed = null;
     }, LINGER_MS);
+  }
+
+  #onBarWay(): boolean {
+    const way = this.barWay;
+    const { x, y } = this.#pointer;
+    return way !== null && x >= way.left && x < way.right && y >= way.top && y < way.bottom;
   }
 
   enterBar(): void {
@@ -483,9 +514,11 @@ class TableInteraction {
     this.#swallowClick = false;
     this.highlighted = new Set();
     this.liftedByOthers = new Set();
+    this.tokenLiftedByOthers = false;
     this.previewedByOthers = new Map();
     this.endArrow();
     this.onBar = false;
+    this.barWay = null;
     this.onPill = false;
     this.#pointer = { x: NaN, y: NaN };
     this.#drawnAt = { x: NaN, y: NaN };

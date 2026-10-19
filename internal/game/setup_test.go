@@ -19,7 +19,26 @@ func newTestRNG() *rand.Rand {
 	return rand.New(rand.NewPCG(1, 2)) //nolint:gosec // deterministic test fixture
 }
 
-const spiderManIdentity = "01001a"
+const (
+	spiderManIdentity = "01001a"
+	// milesMoralesIdentity is the other Spider-Man: the same hero name with
+	// another alter ego, so another hero.
+	milesMoralesIdentity = "27030a"
+)
+
+// seatDeck stores the deck in the player's slot as SetDeck does, without the
+// lobby checks. Table fixtures give several seats the same Spider-Man deck,
+// which SetDeck refuses since a hero sits at the table only once.
+func seatDeck(t *testing.T, g *Game, token string, slot int, deck DeckChoice, cat *pack.Catalog) {
+	t.Helper()
+	player := g.player(token)
+	if player == nil || !player.hasSlot(slot) {
+		t.Fatalf("%s has no deck slot %d", token, slot)
+	}
+	deck.Cards = slices.Clone(deck.Cards)
+	deck.HeroImage = heroImage(cat, deck.Hero)
+	player.Decks[slot] = &deck
+}
 
 // spiderManDeck builds a deck from the catalog's spider_man set, without the
 // identity and the obligation, plus ten basic cards. The identity is listed
@@ -97,9 +116,7 @@ func startedGame(t *testing.T, cfg LobbyConfig) *Game {
 		t.Fatal(err)
 	}
 	for _, token := range []string{"h", "b"} {
-		if err := g.SetDeck(token, spiderManDeck(t, cat), cat); err != nil {
-			t.Fatal(err)
-		}
+		seatDeck(t, g, token, 0, spiderManDeck(t, cat), cat)
 	}
 	if err := g.Start("h", cat, testSeed, testNow); err != nil {
 		t.Fatal(err)
@@ -328,6 +345,48 @@ func TestSetupStandardAndExpertSets(t *testing.T) {
 	}
 }
 
+func TestStartWithoutStandard(t *testing.T) {
+	cat := newCatalog(t)
+	cfg := rhinoConfig()
+	cfg.Standard = ""
+	table := startedGame(t, cfg).Table
+
+	want := setCodes(t, cat, []string{"01094", "01095", "01096", "01097"}, "rhino", "bomb_scare")
+	want = append(want, "01165", "01165")
+	slices.Sort(want)
+	if got := codesOf(table, table.Piles[PileEncounter].Cards); !slices.Equal(got, want) {
+		t.Errorf("encounter deck = %v, want %v", got, want)
+	}
+
+	for _, c := range table.Cards {
+		card, _, err := cat.Card(c.Code)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if set, ok := cat.Set(card.Set); ok && set.Kind == "standard" {
+			t.Errorf("standard card %s is on the table (zone %q)", c.Code, c.Zone)
+		}
+	}
+}
+
+func TestStartExpertWithoutExpertSet(t *testing.T) {
+	cat := newCatalog(t)
+	cfg := rhinoConfig()
+	cfg.Difficulty = pack.Expert
+	cfg.Expert = ""
+	table := startedGame(t, cfg).Table
+
+	for _, c := range table.Cards {
+		card, _, err := cat.Card(c.Code)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if set, ok := cat.Set(card.Set); ok && set.Kind == "expert" {
+			t.Errorf("expert card %s is on the table (zone %q)", c.Code, c.Zone)
+		}
+	}
+}
+
 func TestSetupSetInPlayFollowsScenarioInPlay(t *testing.T) {
 	cfg := rhinoConfig()
 	cfg.Scenario = "klaw"
@@ -367,7 +426,7 @@ func TestSetupPlayers(t *testing.T) {
 
 	for seat := range 2 {
 		area := PlayerArea(seat)
-		rowY := 330*(seat+1) + 30
+		rowY := 500 + 330*seat
 		if hand := table.Hands[area]; hand == nil || len(hand) != 0 {
 			t.Errorf("%s hand = %v, want empty and non-nil", area, hand)
 		}
@@ -414,7 +473,7 @@ func TestSetupPlayers(t *testing.T) {
 		t.Fatalf("identity cards = %d, want 2", len(identities))
 	}
 	for _, identity := range identities {
-		rowY := 330*(identity.Owner+1) + 30
+		rowY := 500 + 330*identity.Owner
 		if identity.Face != 1 || identity.Zone != ZoneTable || identity.X != 360 || identity.Y != rowY ||
 			identity.Home != "deck:"+string(PlayerArea(identity.Owner)) {
 			t.Errorf("identity = %+v, want alter ego on the table at (360, %d)", identity, rowY)
@@ -422,7 +481,7 @@ func TestSetupPlayers(t *testing.T) {
 	}
 
 	// The first player token lies in the row of the first player, seat 0.
-	if table.FirstPlayer != (Point{X: 520, Y: 360}) {
+	if table.FirstPlayer != (Point{X: 520, Y: 500}) {
 		t.Errorf("first player = %+v", table.FirstPlayer)
 	}
 }
@@ -518,7 +577,7 @@ func TestStartRequiresDecks(t *testing.T) {
 	if err := g.Configure("h", rhinoConfig(), cat); err != nil {
 		t.Fatal(err)
 	}
-	if err := g.SetDeck("h", spiderManDeck(t, cat), cat); err != nil {
+	if err := g.SetDeck("h", 0, spiderManDeck(t, cat), cat); err != nil {
 		t.Fatal(err)
 	}
 
@@ -531,12 +590,105 @@ func TestStartRequiresDecks(t *testing.T) {
 	}
 }
 
+// twoDeckGame returns a started game where Alex ("a", host) plays two
+// Spider-Man decks, seats 0 and 1, and Sam ("s") one, seat 2.
+func twoDeckGame(t *testing.T) *Game {
+	t.Helper()
+	cat := newCatalog(t)
+	g := twoSlotLobby(t)
+	if err := g.Configure("a", rhinoConfig(), cat); err != nil {
+		t.Fatal(err)
+	}
+	for _, slot := range []struct {
+		token string
+		deck  int
+	}{{"a", 0}, {"a", 1}, {"s", 0}} {
+		seatDeck(t, g, slot.token, slot.deck, spiderManDeck(t, cat), cat)
+	}
+	if err := g.Start("a", cat, testSeed, testNow); err != nil {
+		t.Fatal(err)
+	}
+	return g
+}
+
+func TestStartNeedsEverySlot(t *testing.T) {
+	cat := newCatalog(t)
+	g := twoSlotLobby(t)
+	if err := g.Configure("a", rhinoConfig(), cat); err != nil {
+		t.Fatal(err)
+	}
+	if err := g.SetDeck("a", 0, spiderManDeck(t, cat), cat); err != nil {
+		t.Fatal(err)
+	}
+	if err := g.SetDeck("s", 0, DeckChoice{Name: "Miles", Hero: milesMoralesIdentity}, cat); err != nil {
+		t.Fatal(err)
+	}
+
+	err := g.Start("a", cat, testSeed, testNow)
+	if !errors.Is(err, ErrInvalid) || !strings.Contains(err.Error(), "Alex") {
+		t.Errorf("Start with an empty slot = %v, want ErrInvalid naming Alex", err)
+	}
+	if g.Phase != PhaseLobby || g.Table != nil {
+		t.Error("a failed Start must leave the game in the lobby")
+	}
+}
+
+func TestStartRowsPerSeat(t *testing.T) {
+	g := twoDeckGame(t)
+	table := g.Table
+
+	for seat := range 3 {
+		area := PlayerArea(seat)
+		if hand, ok := table.Hands[area]; !ok || len(hand) != 0 {
+			t.Errorf("%s hand = %v (exists %v), want empty", area, hand, ok)
+		}
+		for _, prefix := range []string{"deck:", "disc:", "aside:"} {
+			pile := table.Piles[prefix+string(area)]
+			if pile == nil || pile.Owner != seat || pile.Y != rowY(playerRow(seat)) {
+				t.Errorf("pile %s%s = %+v, want owner %d in row %d", prefix, area, pile, seat, playerRow(seat))
+			}
+		}
+	}
+	if _, ok := table.Hands["p3"]; ok {
+		t.Error("the table has a fourth seat")
+	}
+
+	identities := map[int]*Card{}
+	for _, c := range table.Cards {
+		if c.Code == "01001" {
+			identities[c.Owner] = c
+		}
+	}
+	for seat := range 3 {
+		identity := identities[seat]
+		if identity == nil || identity.Zone != ZoneTable || identity.Y != rowY(playerRow(seat)) {
+			t.Errorf("identity of seat %d = %+v, want on row %d", seat, identity, playerRow(seat))
+		}
+	}
+	if table.FirstPlayer != (Point{X: firstPlayerX, Y: rowY(playerRow(0))}) {
+		t.Errorf("first player = %+v, want in the row of seat 0", table.FirstPlayer)
+	}
+
+	// Starting threat per player counts the seats, one per hero.
+	b := &tableBuilder{cat: newCatalog(t), rng: newTestRNG(), table: table}
+	c, def, err := b.newEncounterCard("01108") // 2 per player
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := b.placeFace(c, def, 0, 0, 0); err != nil {
+		t.Fatal(err)
+	}
+	if c.Tokens["thr"] != 6 {
+		t.Errorf("threat = %d, want 6", c.Tokens["thr"])
+	}
+}
+
 func TestStartGuards(t *testing.T) {
 	cat := newCatalog(t)
 
 	t.Run("not configured", func(t *testing.T) {
 		g := mustNewGame(t, "g1", "h", "Host", testNow)
-		if err := g.SetDeck("h", spiderManDeck(t, cat), cat); err != nil {
+		if err := g.SetDeck("h", 0, spiderManDeck(t, cat), cat); err != nil {
 			t.Fatal(err)
 		}
 		if err := g.Start("h", cat, testSeed, testNow); !errors.Is(err, ErrInvalid) {
@@ -569,5 +721,93 @@ func TestStartLogsTheGame(t *testing.T) {
 	}
 	if entry.Who != "Host" || entry.Color != 0 || !entry.At.Equal(testNow) {
 		t.Errorf("entry = %+v", entry)
+	}
+}
+
+// gameOfPlayers returns a started game of n Spider-Man players, one deck each.
+func gameOfPlayers(t *testing.T, n int) *Game {
+	t.Helper()
+	cat := newCatalog(t)
+	g := mustNewGame(t, "g1", "p0", "Player 0", testNow)
+	for i := 1; i < n; i++ {
+		if _, err := g.Join(fmt.Sprintf("p%d", i), fmt.Sprintf("Player %d", i)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := g.Configure("p0", rhinoConfig(), cat); err != nil {
+		t.Fatal(err)
+	}
+	for i := range n {
+		seatDeck(t, g, fmt.Sprintf("p%d", i), 0, spiderManDeck(t, cat), cat)
+	}
+	if err := g.Start("p0", cat, testSeed, testNow); err != nil {
+		t.Fatal(err)
+	}
+	return g
+}
+
+// faceHeight returns the height a face up card takes on the table, in table units.
+func faceHeight(t *testing.T, cat *pack.Catalog, c *Card) int {
+	t.Helper()
+	def, _, err := cat.Card(c.Code)
+	if err != nil {
+		t.Fatal(err)
+	}
+	switch size := def.Faces[c.Face].Size; size {
+	case pack.SizeStd, pack.SizeDoubleLand:
+		return 196
+	case pack.SizeLand:
+		return 140
+	case pack.SizeDoubleStd:
+		return 280
+	default:
+		t.Fatalf("card %s has an unknown size %q", c.Code, size)
+		return 0
+	}
+}
+
+func TestSetupLeavesRoomUnderTheVillainRow(t *testing.T) {
+	const pileHeight = 196
+	// About 1.2 portrait card heights (196 each), the first player's row on the 10-unit grid.
+	const wantGap = 244
+
+	cat := newCatalog(t)
+	for _, players := range []int{1, 2} {
+		t.Run(fmt.Sprintf("%d players", players), func(t *testing.T) {
+			table := gameOfPlayers(t, players).Table
+
+			villainBottom := 0
+			for _, pile := range table.Piles {
+				if pile.Owner == NoOwner {
+					villainBottom = max(villainBottom, pile.Y+pileHeight)
+				}
+			}
+			for _, c := range table.Cards {
+				if c.Zone == ZoneTable && c.Owner == NoOwner {
+					villainBottom = max(villainBottom, c.Y+faceHeight(t, cat, c))
+				}
+			}
+
+			// The owner label of the first player's row lies in the room above its piles.
+			deck := table.Piles["deck:"+string(PlayerArea(0))]
+			firstRowTop := deck.Y - rowContentY
+			if gap := firstRowTop - villainBottom; gap != wantGap {
+				t.Errorf("room under the villain row = %d, want %d", gap, wantGap)
+			}
+			if deck.Y%10 != 0 || table.FirstPlayer.Y%10 != 0 {
+				t.Errorf("first player row at y %d (token %d), want on the 10-unit grid", deck.Y, table.FirstPlayer.Y)
+			}
+			if table.FirstPlayer.Y != deck.Y {
+				t.Errorf("first player token at y %d, want in the first player row at %d", table.FirstPlayer.Y, deck.Y)
+			}
+
+			for seat := 1; seat < players; seat++ {
+				previous := table.Piles["deck:"+string(PlayerArea(seat-1))]
+				current := table.Piles["deck:"+string(PlayerArea(seat))]
+				if pitch := current.Y - previous.Y; pitch != rowHeight {
+					t.Errorf("seat %d row %d below seat %d, want %d", seat, pitch, seat-1, rowHeight)
+				}
+			}
+		})
 	}
 }

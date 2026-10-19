@@ -2,6 +2,7 @@
   import { randomName, savePlayerName } from '../lib/names';
   import { getPref, setPref } from '../lib/prefs';
   import { go } from '../lib/router.svelte';
+  import { selectionIndicator } from '../lib/selectionIndicator';
   import { applyTheme, storedTheme, type Theme } from '../lib/theme';
   import TopBar from '../components/TopBar.svelte';
 
@@ -86,17 +87,14 @@
     <div class="row">
       <div class="about">
         <span class="label">Theme</span>
-        <p>Card backs, first player token and table colours — only on your screen.</p>
+        <p>Card backs, first player token and table colours: only on your screen.</p>
       </div>
-      <div class="control themes">
+      <div class="control themes" use:selectionIndicator>
+        <!-- The ring around the chosen theme, over its card's edge: it slides to the next one. -->
+        <span class="ring-sel" data-indicator aria-hidden="true"></span>
         {#each themes as t (t.key)}
           {@const selected = t.key === theme}
-          <button
-            class="theme"
-            class:on={selected}
-            aria-pressed={selected}
-            onclick={() => chooseTheme(t.key)}
-          >
+          <button class="theme" aria-pressed={selected} onclick={() => chooseTheme(t.key)}>
             <span class="surface" style:--sw-bg={t.bg} style:--sw-dot={t.dot}>
               <span
                 class="card"
@@ -306,6 +304,7 @@
   }
 
   .themes {
+    position: relative;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 14px;
@@ -324,9 +323,11 @@
     overflow: hidden;
   }
 
-  /* A ring outside the border, so that the selected card keeps its size. */
-  .theme.on {
-    border-color: var(--sel);
+  /* On the card's border and outside it, so that the selected card keeps its size. */
+  .ring-sel {
+    z-index: 1;
+    border: 1px solid var(--sel);
+    border-radius: 14px;
     box-shadow:
       0 0 0 1px var(--sel),
       0 0 0 5px color-mix(in srgb, var(--sel) 16%, transparent);

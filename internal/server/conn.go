@@ -434,8 +434,12 @@ func (s *Server) lobby(ctx context.Context, c *conn, msg clientMessage) error {
 		return s.update(ctx, c.gameID, func(g *game.Game) error {
 			return g.Configure(c.token, *msg.Config, cat)
 		})
+	case opAddDeck:
+		return s.update(ctx, c.gameID, func(g *game.Game) error { return g.AddDeck(c.token) })
+	case opRemoveDeck:
+		return s.update(ctx, c.gameID, func(g *game.Game) error { return g.RemoveDeck(c.token, msg.Deck) })
 	case opSetDeck:
-		return s.setDeck(ctx, c, msg.URL)
+		return s.setDeck(ctx, c, msg.URL, msg.Deck)
 	case opRemovePlayer:
 		return s.update(ctx, c.gameID, func(g *game.Game) error {
 			player := playerWithColor(g, msg.Color)
@@ -463,10 +467,11 @@ func (s *Server) lobby(ctx context.Context, c *conn, msg clientMessage) error {
 	}
 }
 
-// setDeck imports the deck before touching the game: the import calls
-// marvelcdb, which has no place in a store transaction that may run several
-// times. A failed import is answered here and leaves the game as it is.
-func (s *Server) setDeck(ctx context.Context, c *conn, link string) error {
+// setDeck imports the deck into the viewer's deck slot, importing before
+// touching the game: the import calls marvelcdb, which has no place in a
+// store transaction that may run several times. A failed import, or a hero
+// already at the table, is answered here and leaves the game as it is.
+func (s *Server) setDeck(ctx context.Context, c *conn, link string, slot int) error {
 	deck, err := s.deps.Decks.Import(ctx, link, s.deps.Catalog)
 	var unsupported *decks.UnsupportedError
 	if errors.As(err, &unsupported) {
@@ -477,9 +482,21 @@ func (s *Server) setDeck(ctx context.Context, c *conn, link string) error {
 		c.send(errorMessage{Type: typeError, Code: codeDeck, Message: s.importErrorText(c, err)})
 		return nil
 	}
-	return s.update(ctx, c.gameID, func(g *game.Game) error {
-		return g.SetDeck(c.token, deck, s.deps.Catalog)
+	err = s.update(ctx, c.gameID, func(g *game.Game) error {
+		return g.SetDeck(c.token, slot, deck, s.deps.Catalog)
 	})
+	var taken *game.HeroTakenError
+	if errors.As(err, &taken) {
+		c.send(errorMessage{Type: typeError, Code: codeDeck, Message: heroTakenText(taken)})
+		return nil
+	}
+	return err
+}
+
+// heroTakenText is the message of a deck refused because its hero is already
+// at the table.
+func heroTakenText(err *game.HeroTakenError) string {
+	return fmt.Sprintf("%s is already at the table.", err.Hero)
 }
 
 // importErrorText is the fixed message of a failed deck import. Failures that
@@ -502,8 +519,13 @@ func (s *Server) act(ctx context.Context, c *conn, msg clientMessage) error {
 	if msg.Action == nil {
 		return fmt.Errorf("%w: action without an action", errInvalidMessage)
 	}
+	// A negative seat stands for the player's first seat.
+	seat := -1
+	if msg.Seat != nil {
+		seat = *msg.Seat
+	}
 	return s.update(ctx, c.gameID, func(g *game.Game) error {
-		return g.Do(c.token, *msg.Action, s.deps.Catalog, s.deps.Now())
+		return g.Do(c.token, seat, *msg.Action, s.deps.Catalog, s.deps.Now())
 	})
 }
 

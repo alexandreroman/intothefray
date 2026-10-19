@@ -55,13 +55,15 @@ type DeckChoice struct {
 	Cards     []DeckEntry `json:"cards"`
 }
 
-// Player is a seated participant.
+// Player is a seated participant. A player brings 1 to maxSeats decks, one
+// per slot; each slot takes a seat at the table (see seatsOf). A nil slot is a
+// deck not loaded yet.
 type Player struct {
-	Token string      `json:"token"`
-	Name  string      `json:"name"`
-	Color int         `json:"color"`
-	Host  bool        `json:"host"`
-	Deck  *DeckChoice `json:"deck,omitempty"`
+	Token string        `json:"token"`
+	Name  string        `json:"name"`
+	Color int           `json:"color"`
+	Host  bool          `json:"host"`
+	Decks []*DeckChoice `json:"decks"`
 }
 
 // Spectator watches the game without acting.
@@ -74,8 +76,8 @@ type Spectator struct {
 type LobbyConfig struct {
 	Scenario   string          `json:"scenario"`
 	Difficulty pack.Difficulty `json:"difficulty"`
-	Standard   string          `json:"standard"`
-	Expert     string          `json:"expert"`
+	Standard   string          `json:"standard"` // empty: no Standard set
+	Expert     string          `json:"expert"`   // empty: no Expert set
 	Modulars   []string        `json:"modulars"`
 }
 
@@ -90,6 +92,26 @@ type LogEntry struct {
 	At     time.Time `json:"at"`
 	Undone bool      `json:"undone,omitempty"`
 	Cards  []string  `json:"cards,omitempty"`
+	// Parts spell Text, with the card names flagged, when the line names a
+	// card; they are nil otherwise.
+	Parts []LogPart `json:"parts,omitempty"`
+}
+
+// LogPart is a piece of a history line: plain text, or the printed name of a
+// card. Only the narrator flags card names, so text a player typed, such as
+// their name, never passes for one.
+type LogPart struct {
+	Text string `json:"text"`
+	Card bool   `json:"card,omitempty"`
+}
+
+// phrase returns the line in parts, a single plain part when it names no
+// card.
+func (e LogEntry) phrase() phrase {
+	if e.Parts != nil {
+		return e.Parts
+	}
+	return words(e.Text)
 }
 
 // Game is the whole state of one game.

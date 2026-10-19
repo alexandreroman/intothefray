@@ -1,4 +1,7 @@
 <script lang="ts">
+  import { overflowTip } from '../../lib/overflowTip';
+  import CardArt from '../CardArt.svelte';
+  import Segmented from '../Segmented.svelte';
   import type { Difficulty, Index, LobbyConfig, ScenarioRef, View } from '../../lib/types';
 
   let {
@@ -10,7 +13,10 @@
   // Version I of each set, the default (spec 4.3).
   const DEFAULT_STANDARD = 'standard';
   const DEFAULT_EXPERT = 'expert';
-  const LEVELS: Difficulty[] = ['standard', 'expert'];
+  const LEVELS: { value: Difficulty; label: string }[] = [
+    { value: 'standard', label: 'Standard' },
+    { value: 'expert', label: 'Expert' },
+  ];
 
   let filter = $state('');
   let menuOpen = $state(false);
@@ -20,14 +26,23 @@
   const config = $derived(view.config);
   const chosen = $derived(index.scenarios.find((s) => s.id === config.scenario));
   const difficulty = $derived<Difficulty>(config.difficulty === 'expert' ? 'expert' : 'standard');
-  const standardSet = $derived(config.standard || DEFAULT_STANDARD);
-  const expertSet = $derived(config.expert || DEFAULT_EXPERT);
+  // An empty set means none, as some scenarios allow. The defaults only fill in a config that
+  // has no scenario yet, or no expert set because the difficulty is Standard.
+  const standardSet = $derived(config.scenario === '' ? DEFAULT_STANDARD : config.standard);
+  const expertSet = $derived(
+    config.scenario === '' || difficulty !== 'expert' ? DEFAULT_EXPERT : config.expert,
+  );
 
   const packNames = $derived(new Map(index.packs.map((p) => [p.code, p.name])));
   const setNames = $derived(new Map(index.sets.map((s) => [s.code, s.name])));
   const standardSets = $derived(index.sets.filter((s) => s.kind === 'standard'));
   const expertSets = $derived(index.sets.filter((s) => s.kind === 'expert'));
+  // "None" is always a choice, so even a single set gets a dropdown.
+  const showStandardSet = $derived(isHost && standardSets.length > 0);
+  const showExpertSet = $derived(isHost && difficulty === 'expert' && expertSets.length > 0);
   const recommended = $derived(chosen?.recommended ?? []);
+  // Guests see the chosen level only, read only.
+  const levels = $derived(isHost ? LEVELS : LEVELS.filter((level) => level.value === difficulty));
 
   // Recommended sets come first: the full list is long.
   const addableModulars = $derived(
@@ -66,6 +81,41 @@
       }))
       .filter((group) => group.scenarios.length > 0),
   );
+
+  // The host's list shows the first pack's name and two rows of villains; the rest scrolls.
+  let villains = $state<HTMLElement>();
+  let visibleHeight = $state<number | null>(null);
+
+  /** The height of the first pack's name and two rows of tiles, null while nothing is laid out. */
+  function twoRowsHeight(list: HTMLElement): number | null {
+    const header = list.querySelector('.pkname');
+    const grid = list.querySelector('.vgrid');
+    const tile = list.querySelector('.vil');
+    if (!header || !grid || !tile) {
+      return null;
+    }
+    const tileHeight = tile.getBoundingClientRect().height;
+    if (tileHeight === 0) {
+      return null;
+    }
+    const rowGap = parseFloat(getComputedStyle(grid).rowGap) || 0;
+    return header.getBoundingClientRect().height + 2 * tileHeight + rowGap;
+  }
+
+  // A tile's height follows its width: measured again whenever the list is resized.
+  $effect(() => {
+    const list = villains;
+    if (!list || !isHost) {
+      return;
+    }
+    // Read so that a new filter, with another first pack, observes the list anew.
+    void groups;
+    const observer = new ResizeObserver(() => {
+      visibleHeight = twoRowsHeight(list);
+    });
+    observer.observe(list);
+    return () => observer.disconnect();
+  });
 
   function configure(changes: Partial<LobbyConfig>): void {
     onconfigure({
@@ -124,9 +174,9 @@
 <section class="card-box" class:guest={!isHost}>
   <div class="bhead">
     <h2>Scenario</h2>
-    <span class="aside"
-      >{isHost ? 'you choose — everyone sees it' : `chosen by ${hostName} (host)`}</span
-    >
+    {#if !isHost}
+      <span class="aside">chosen by {hostName} (host)</span>
+    {/if}
   </div>
 
   <div class="sect">
@@ -140,7 +190,11 @@
         bind:value={filter}
       />
     {/if}
-    <div class="villains">
+    <div
+      class="villains"
+      bind:this={villains}
+      style:--visible-height={visibleHeight === null ? undefined : `${visibleHeight}px`}
+    >
       {#each groups as group (group.pack.code)}
         <div class="pack">
           <div class="pkname">{group.pack.name}</div>
@@ -153,11 +207,10 @@
                 class:unsupported={!scenario.supported}
                 aria-pressed={selected}
                 disabled={!isHost || !scenario.supported}
-                title="{scenario.name} — {group.pack.name}"
                 onclick={() => chooseScenario(scenario)}
               >
                 {#if scenario.image}
-                  <img src={scenario.image} alt="" loading="lazy" />
+                  <CardArt src={scenario.image} aspect={4 / 3} loading="lazy" />
                 {/if}
                 {#if selected}
                   <span class="check">
@@ -169,7 +222,7 @@
                 {#if !scenario.supported}
                   <span class="soon">Not supported yet</span>
                 {/if}
-                <span class="nm">{scenario.name}</span>
+                <span class="nm" use:overflowTip>{scenario.name}</span>
               </button>
             {/each}
           </div>
@@ -186,46 +239,44 @@
     <div class="sect settings">
       <div class="difficulty">
         <div class="lbl">Difficulty</div>
-        <div class="seg">
-          {#each LEVELS as level (level)}
-            {#if isHost || level === difficulty}
-              <button
-                class="btn-ghost"
-                class:on={level === difficulty}
-                aria-pressed={level === difficulty}
-                disabled={!isHost}
-                onclick={() => chooseDifficulty(level)}
-              >
-                {level === 'standard' ? 'Standard' : 'Expert'}
-              </button>
+        <Segmented
+          options={levels}
+          value={difficulty}
+          onchange={chooseDifficulty}
+          label="Difficulty"
+          disabled={!isHost}
+        />
+        {#if showStandardSet || showExpertSet}
+          <div class="sets">
+            {#if showStandardSet}
+              <label class="set">
+                <span>Standard set</span>
+                <select
+                  value={standardSet}
+                  onchange={(e) => configure({ standard: e.currentTarget.value })}
+                >
+                  <option value="">None</option>
+                  {#each standardSets as set (set.code)}
+                    <option value={set.code}>{set.name}</option>
+                  {/each}
+                </select>
+              </label>
             {/if}
-          {/each}
-        </div>
-        {#if isHost && standardSets.length > 1}
-          <label class="set">
-            Standard set
-            <select
-              value={standardSet}
-              onchange={(e) => configure({ standard: e.currentTarget.value })}
-            >
-              {#each standardSets as set (set.code)}
-                <option value={set.code}>{set.name}</option>
-              {/each}
-            </select>
-          </label>
-        {/if}
-        {#if isHost && difficulty === 'expert' && expertSets.length > 1}
-          <label class="set">
-            Expert set
-            <select
-              value={expertSet}
-              onchange={(e) => configure({ expert: e.currentTarget.value })}
-            >
-              {#each expertSets as set (set.code)}
-                <option value={set.code}>{set.name}</option>
-              {/each}
-            </select>
-          </label>
+            {#if showExpertSet}
+              <label class="set">
+                <span>Expert set</span>
+                <select
+                  value={expertSet}
+                  onchange={(e) => configure({ expert: e.currentTarget.value })}
+                >
+                  <option value="">None</option>
+                  {#each expertSets as set (set.code)}
+                    <option value={set.code}>{set.name}</option>
+                  {/each}
+                </select>
+              </label>
+            {/if}
+          </div>
         {/if}
       </div>
 
@@ -276,8 +327,6 @@
           <p class="hint">
             The scenario's recommended sets (★) are added for you; change them freely.
           </p>
-        {:else if recommended.length > 0}
-          <p class="hint">Recommended: {recommended.map(setName).join(', ')}</p>
         {/if}
       </div>
     </div>
@@ -289,9 +338,9 @@
     margin-bottom: 4px;
   }
 
-  /* The whole range scrolls inside the box. */
+  /* The whole range scrolls inside the box, from a fixed height until measured. */
   .villains {
-    max-height: 520px;
+    max-height: var(--visible-height, 520px);
     overflow-y: auto;
     margin-right: -10px;
     padding-right: 10px;
@@ -333,6 +382,7 @@
     gap: 12px;
   }
 
+  /* The aspect given to its CardArt too. */
   .vil {
     position: relative;
     aspect-ratio: 4 / 3;
@@ -350,13 +400,12 @@
     opacity: 1;
   }
 
-  /* A villain card is portrait: the tile keeps its art, under the title bar. */
-  .vil img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: 50% 25%;
-    display: block;
+  /* A tile the host can pick zooms in on its art; read-only and unsupported tiles stay still. */
+  @media (prefers-reduced-motion: no-preference) {
+    .vil:enabled:hover,
+    .vil:enabled:focus-visible {
+      --art-zoom: 1.07;
+    }
   }
 
   .vil .nm {
@@ -382,7 +431,7 @@
     opacity: 0.45;
   }
 
-  .vil.unsupported img {
+  .vil.unsupported :global(img) {
     filter: grayscale(1);
   }
 
@@ -436,60 +485,35 @@
     gap: 24px 40px;
   }
 
+  /* No gap here: the label keeps the lobby's own spacing below it, as in .modulars, so the
+     switch lines up with the first row of chips. */
   .difficulty {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 10px;
   }
 
-  .difficulty .lbl {
-    margin-bottom: 0;
+  /* One grid for both set rows so their selects share a left edge whatever the label widths;
+     each label flattens into the grid but still wraps its select for accessibility. */
+  .sets {
+    margin-top: 10px;
+    display: grid;
+    grid-template-columns: auto auto;
+    justify-content: start;
+    align-items: center;
+    gap: 10px 8px;
+    color: var(--muted);
+    font-size: 12px;
   }
 
   .set {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--muted);
-    font-size: 12px;
+    display: contents;
   }
 
   .set select {
     width: auto;
     padding: 4px 8px;
     font-size: 13px;
-  }
-
-  .seg {
-    display: inline-flex;
-    gap: 4px;
-    padding: 4px;
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    background: var(--table-bg);
-  }
-
-  .seg button {
-    height: 36px;
-    padding: 0 18px;
-    border: 0;
-    border-radius: 8px;
-    color: var(--muted);
-    font-weight: 700;
-  }
-
-  .seg button.on {
-    background: var(--panel-2);
-    color: var(--text);
-  }
-
-  .seg button.on:hover:not(:disabled) {
-    background: var(--hover);
-  }
-
-  .seg button:disabled {
-    opacity: 1;
   }
 
   .modulars {

@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { wsUrl } from './api';
 import { getToken, setToken } from './prefs';
 import { GameSession } from './session.svelte';
-import type { PlayerView, View } from './types';
+import type { DeckView, PlayerView, View } from './types';
 
 class FakeWebSocket {
   static instances: FakeWebSocket[] = [];
@@ -41,12 +41,18 @@ class FakeWebSocket {
   }
 }
 
+const deck = (overrides: Partial<DeckView> = {}): DeckView => ({
+  ready: false,
+  handCount: 0,
+  ...overrides,
+});
+
 const player = (overrides: Partial<PlayerView> = {}): PlayerView => ({
   name: 'Alex',
   color: 0,
   host: true,
   ready: false,
-  handCount: 0,
+  decks: [deck()],
   ...overrides,
 });
 
@@ -279,6 +285,29 @@ describe('GameSession', () => {
     ]);
   });
 
+  it('act sends seat', () => {
+    const session = newSession();
+    lastSocket().open();
+
+    session.act({ kind: 'exhaust', card: 'c1' }, 1);
+
+    expect(lastSocket().sent.at(-1)).toEqual({
+      type: 'action',
+      id: 1,
+      action: { kind: 'exhaust', card: 'c1' },
+      seat: 1,
+    });
+  });
+
+  it('act omits seat when undefined', () => {
+    const session = newSession();
+    lastSocket().open();
+
+    session.act({ kind: 'exhaust', card: 'c1' });
+
+    expect(lastSocket().sent.at(-1)).not.toHaveProperty('seat');
+  });
+
   it('act reports null and sends nothing while the socket is not open', () => {
     const session = newSession();
 
@@ -341,6 +370,25 @@ describe('GameSession', () => {
     ]);
   });
 
+  it('lobby sends addDeck', () => {
+    const session = newSession();
+    lastSocket().open();
+
+    expect(session.lobby('addDeck')).toBe(true);
+
+    expect(lastSocket().sent.at(-1)).toEqual({ type: 'lobby', op: 'addDeck' });
+  });
+
+  it('lobby setDeck sends deck', () => {
+    const session = newSession();
+    lastSocket().open();
+    const url = 'https://marvelcdb.com/decklist/view/1';
+
+    session.lobby('setDeck', { url, deck: 1 });
+
+    expect(lastSocket().sent.at(-1)).toEqual({ type: 'lobby', op: 'setDeck', url, deck: 1 });
+  });
+
   describe('deckError', () => {
     const unsupported = [{ code: '01001', name: 'Spider-Man', pack: 'core', qty: 1 }];
 
@@ -370,7 +418,7 @@ describe('GameSession', () => {
       lastSocket().receive({
         type: 'view',
         version: 2,
-        view: view([player({ deckName: 'Justice', hero: 'spider-man' })]),
+        view: view([player({ decks: [deck({ deckName: 'Justice', hero: 'spider-man' })] })]),
       });
 
       expect(session.deckError).toBeNull();
@@ -388,7 +436,7 @@ describe('GameSession', () => {
       lastSocket().receive({
         type: 'view',
         version: 2,
-        view: view([player(), player({ color: 1, deckName: 'Other' })]),
+        view: view([player(), player({ color: 1, decks: [deck({ deckName: 'Other' })] })]),
       });
 
       expect(session.deckError).toEqual(unsupported);
@@ -433,7 +481,7 @@ describe('GameSession', () => {
       lastSocket().receive({
         type: 'view',
         version: 2,
-        view: view([player(), player({ color: 1, deckName: 'Other' })]),
+        view: view([player(), player({ color: 1, decks: [deck({ deckName: 'Other' })] })]),
       });
 
       expect(session.deckLoadError?.code).toBe('deck');
@@ -459,7 +507,10 @@ describe('GameSession', () => {
         type: 'view',
         version: 2,
         view: view([
-          player({ deckName: 'Justice', hero: '01001a', ready: true }),
+          player({
+            ready: true,
+            decks: [deck({ deckName: 'Justice', hero: '01001a', ready: true })],
+          }),
           player({ color: 1 }),
         ]),
       });

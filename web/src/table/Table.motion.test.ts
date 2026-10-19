@@ -9,6 +9,7 @@ import type {
   CardView as TableCard,
   LogView,
   PileView,
+  Point,
   PresenceState,
   Stage,
   View,
@@ -59,15 +60,27 @@ function line(text: string, extra: Partial<LogView> = {}): LogView {
 /** Alex (colour 0, seat 0) and the viewer Sam (colour 1, seat 1). */
 function makeView(
   cards: TableCard[],
-  extra: { piles?: PileView[]; log?: LogView[]; stages?: Stage[] } = {},
+  extra: { piles?: PileView[]; log?: LogView[]; stages?: Stage[]; firstPlayer?: Point } = {},
 ): View {
   return {
     id: 'g1',
     phase: 'playing',
-    you: { role: 'player', name: 'Sam', color: 1, host: false, area: 'p1' },
+    you: { role: 'player', name: 'Sam', color: 1, host: false, areas: ['p1'] },
     players: [
-      { name: 'Alex', color: 0, host: true, area: 'p0', ready: true, handCount: 5 },
-      { name: 'Sam', color: 1, host: false, area: 'p1', ready: true, handCount: 5 },
+      {
+        name: 'Alex',
+        color: 0,
+        host: true,
+        ready: true,
+        decks: [{ area: 'p0', ready: true, handCount: 5 }],
+      },
+      {
+        name: 'Sam',
+        color: 1,
+        host: false,
+        ready: true,
+        decks: [{ area: 'p1', ready: true, handCount: 5 }],
+      },
     ],
     spectators: 0,
     config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
@@ -75,7 +88,7 @@ function makeView(
       cards,
       piles: extra.piles ?? PILES,
       stages: extra.stages ?? [],
-      firstPlayer: { x: 860, y: 40 },
+      firstPlayer: extra.firstPlayer ?? { x: 860, y: 40 },
     },
     log: extra.log ?? [START],
   };
@@ -167,7 +180,7 @@ beforeEach(() => {
   };
   Element.prototype.animate = animate as unknown as typeof Element.prototype.animate;
   HTMLElement.prototype.getBoundingClientRect = fakeRect;
-  document.documentElement.style.setProperty('--p1', '#6fa8ff');
+  document.documentElement.style.setProperty('--p1', '#4f9dff');
 });
 
 afterEach(() => {
@@ -243,6 +256,86 @@ describe('Table animations', () => {
     expect(keyframes[0]).toMatchObject({ translate: '-50px 0px' });
     expect(ghost()).toBeNull();
     expect(placedA().classList).not.toContain('lifted');
+  });
+
+  it("another player's move of the first player token slides it from where it was", async () => {
+    const session = fakeSession();
+    const { rerender } = render(Table, { session, view: makeView([]) });
+    await settle();
+
+    await rerender({ session, view: makeView([], { firstPlayer: { x: 160, y: 240 } }) });
+    await waitFor(() => expect(animationsOf('.surface .fptoken')).toHaveLength(1));
+    const [[keyframes, options]] = animationsOf('.surface .fptoken') as [
+      [Keyframe[], KeyframeAnimationOptions],
+    ];
+    expect(keyframes[0]).toMatchObject({ translate: '700px -200px' });
+    expect(keyframes[1]).toMatchObject({ translate: '0px 0px' });
+    expect(options.duration).toBe(250);
+  });
+
+  it("the viewer's own drop of the first player token does not move again", async () => {
+    const session = fakeSession();
+    const { rerender } = render(Table, { session, view: makeView([]) });
+    await settle();
+    interaction.land({
+      action: 1,
+      element: { kind: 'firstPlayer' },
+      card: null,
+      lifted: [],
+      handOrder: null,
+    });
+
+    await rerender({ session, view: makeView([], { firstPlayer: { x: 160, y: 240 } }) });
+    await settle();
+    expect(animationsOf('.surface .fptoken')).toEqual([]);
+  });
+
+  it("another player's drag of the first player token shows it under their pointer", async () => {
+    const session = { ...fakeSession(), presence: new SvelteMap<number, PresenceState>() };
+    const { rerender } = render(Table, { session, view: makeView([]) });
+    await settle();
+    const ghost = () => document.querySelector<HTMLElement>('.presence .fptoken.ghost');
+    const placedToken = () => document.querySelector<HTMLElement>('.surface .fptoken')!;
+    const dragTo = (x: number) => ({ cards: [], token: true, x, y: 40 });
+
+    session.presence.set(0, { color: 0, name: 'Alex', at: Date.now(), drag: dragTo(400) });
+    await waitFor(() => expect(ghost()?.style.left).toBe('400px'));
+    expect(placedToken().classList).toContain('lifted');
+    session.presence.set(0, { color: 0, name: 'Alex', at: Date.now(), drag: dragTo(150) });
+    await waitFor(() => expect(ghost()?.style.left).toBe('150px'));
+
+    // Let go: the ghost stays where it was dropped until the view moves the token.
+    session.presence.set(0, { color: 0, name: 'Alex', at: Date.now(), drag: null });
+    await settle();
+    expect(ghost()).not.toBeNull();
+
+    // It slides the last few pixels onto the grid, never again from its old place.
+    await rerender({ session, view: makeView([], { firstPlayer: { x: 160, y: 40 } }) });
+    await waitFor(() => expect(animationsOf('.surface .fptoken')).toHaveLength(1));
+    const [[keyframes]] = animationsOf('.surface .fptoken') as [
+      [Keyframe[], KeyframeAnimationOptions],
+    ];
+    expect(keyframes[0]).toMatchObject({ translate: '-10px 0px' });
+    expect(ghost()).toBeNull();
+    expect(placedToken().classList).not.toContain('lifted');
+  });
+
+  it('a lost player takes their drag of the first player token along', async () => {
+    const session = { ...fakeSession(), presence: new SvelteMap<number, PresenceState>() };
+    render(Table, { session, view: makeView([]) });
+    await settle();
+    const ghost = () => document.querySelector<HTMLElement>('.presence .fptoken.ghost');
+
+    session.presence.set(0, {
+      color: 0,
+      name: 'Alex',
+      at: Date.now(),
+      drag: { cards: [], token: true, x: 400, y: 40 },
+    });
+    await waitFor(() => expect(ghost()).not.toBeNull());
+    session.presence.delete(0);
+    await waitFor(() => expect(ghost()).toBeNull());
+    expect(document.querySelector('.surface .fptoken')?.classList).not.toContain('lifted');
   });
 
   it('counts frames while a card moves, for the arrows to follow it', async () => {
@@ -323,7 +416,7 @@ describe('Table animations', () => {
     const [[keyframes, options]] = animationsOf('.surface .card[data-id="a"]') as [
       [Keyframe[], KeyframeAnimationOptions],
     ];
-    expect(String(keyframes[0]?.boxShadow)).toContain('#6fa8ff');
+    expect(String(keyframes[0]?.boxShadow)).toContain('#4f9dff');
     expect(options).toMatchObject({ duration: 1100, pseudoElement: '::after' });
   });
 

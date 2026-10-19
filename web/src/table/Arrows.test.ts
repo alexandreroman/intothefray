@@ -77,17 +77,29 @@ function makeView(
     phase: 'playing',
     you: extra.spectator
       ? { role: 'spectator', color: -1, host: false }
-      : { role: 'player', name: 'Alex', color: 2, host: true, area: 'p0' },
+      : { role: 'player', name: 'Alex', color: 2, host: true, areas: ['p0'] },
     players: [
-      { name: 'Alex', color: 2, host: true, area: 'p0', ready: true, handCount: 1 },
-      { name: 'Sam', color: 0, host: false, area: 'p1', ready: true, handCount: 0 },
+      {
+        name: 'Alex',
+        color: 2,
+        host: true,
+        ready: true,
+        decks: [{ area: 'p0', ready: true, handCount: 1 }],
+      },
+      {
+        name: 'Sam',
+        color: 0,
+        host: false,
+        ready: true,
+        decks: [{ area: 'p1', ready: true, handCount: 0 }],
+      },
     ],
     spectators: 0,
     config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
     table: {
       cards: extra.cards ?? CARDS,
       piles: [],
-      hand: extra.spectator ? undefined : ['h'],
+      hands: extra.spectator ? undefined : { p0: ['h'] },
       stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
       firstPlayer: { x: 860, y: 40 },
       arrows: extra.arrows,
@@ -264,6 +276,24 @@ describe('arrows', () => {
     expect(y).toBeGreaterThan(100);
   });
 
+  it("arrow colour of seat 1 is Alex's", async () => {
+    // Alex plays two decks, seats 0 and 1; Sam sits at seat 2.
+    const view = makeView({ arrows: [{ from: 'sam', to: 'v', seat: 1 }] });
+    view.players = [
+      {
+        ...view.players[0]!,
+        decks: [
+          { area: 'p0', ready: true, handCount: 1 },
+          { area: 'p1', ready: true, handCount: 0 },
+        ],
+      },
+      { ...view.players[1]!, decks: [{ area: 'p2', ready: true, handCount: 0 }] },
+    ];
+    await renderTable(view);
+
+    expect(shafts().map((path) => path.style.stroke)).toEqual(['var(--p3)']);
+  });
+
   it('skips arrows whose cards are gone', async () => {
     const arrows = [
       { from: 'mine', to: 'gone', seat: 0 },
@@ -380,7 +410,7 @@ describe('Shift + drag', () => {
 
     pointAt('v');
     await fireEvent.pointerUp(window, { clientX: 350, clientY: 100 });
-    expect(session.act).toHaveBeenCalledWith({ kind: 'arrowAdd', card: 'mine', target: 'v' });
+    expect(session.act).toHaveBeenCalledWith({ kind: 'arrowAdd', card: 'mine', target: 'v' }, 0);
     expect(interaction.arrowFrom).toBeNull();
   });
 
@@ -420,7 +450,7 @@ describe('a click on an empty spot', () => {
     expect(interaction.locked).toBe(true);
 
     await fireEvent.pointerDown(surface(), { pointerType: 'touch' });
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'arrowClear' });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'arrowClear' }, 0);
     expect(interaction.locked).toBe(false);
   });
 
@@ -449,7 +479,7 @@ describe('a click on an empty spot', () => {
 
     // Inside the scrollbars, the scroller is an empty spot like any other.
     await fireEvent.pointerDown(scroller(), { clientX: 500, clientY: 870 });
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'arrowClear' });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'arrowClear' }, 0);
   });
 
   it("clears them from the frame around an owner's piles", async () => {
@@ -458,7 +488,7 @@ describe('a click on an empty spot', () => {
     const { session } = await renderTable(view);
 
     await fireEvent.pointerDown(document.querySelector<HTMLElement>('.ownerbox .owner')!);
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'arrowClear' });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'arrowClear' }, 0);
   });
 
   it("sends nothing without arrows of one's own", async () => {

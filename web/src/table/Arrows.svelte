@@ -9,6 +9,7 @@
 <script lang="ts">
   import type { View } from '../lib/types';
   import { interaction } from './interaction.svelte';
+  import { seatColor } from './seats';
 
   let {
     view,
@@ -58,11 +59,6 @@
 
   function markerOf(color: number | null): string {
     return `url(#ah-${color ?? 'none'})`;
-  }
-
-  /** The colour of the player seated there: seats and colours are not the same. */
-  function seatColor(seat: number): number | null {
-    return view.players.find((player) => player.area === `p${seat}`)?.color ?? null;
   }
 
   /** The card drawn for that id: its ghost while it is dragged, or else the card on the table. */
@@ -156,7 +152,7 @@
       }
       const start = endOf(from, layer);
       const d = curve(start, endOf(to, layer), true);
-      drawn.push({ d, start, color: seatColor(arrow.seat), rubber: false });
+      drawn.push({ d, start, color: seatColor(view, arrow.seat), rubber: false });
     }
     const rubber = rubberBand(layer);
     if (rubber) {

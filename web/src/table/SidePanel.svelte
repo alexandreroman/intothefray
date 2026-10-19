@@ -56,19 +56,27 @@
     text: string;
     /** Bracketed details, dimmed. */
     aside: boolean;
+    /** A card name, in bold. Only the server flags one: no text a player typed can. */
+    card: boolean;
   }
 
-  /** Splits a line's text around its bracketed details. */
-  function partsOf(text: string): Part[] {
+  /** Splits a piece of a line around its bracketed details. */
+  function splitAsides(text: string, card: boolean): Part[] {
     const parts: Part[] = [];
     let start = 0;
     for (const match of text.matchAll(/\([^()]*\)/g)) {
-      parts.push({ text: text.slice(start, match.index), aside: false });
-      parts.push({ text: match[0], aside: true });
+      parts.push({ text: text.slice(start, match.index), aside: false, card });
+      parts.push({ text: match[0], aside: true, card });
       start = match.index + match[0].length;
     }
-    parts.push({ text: text.slice(start), aside: false });
+    parts.push({ text: text.slice(start), aside: false, card });
     return parts.filter((part) => part.text !== '');
+  }
+
+  /** Splits a line into its card names and its bracketed details. */
+  function partsOf(entry: LogView): Part[] {
+    const pieces = entry.parts ?? [{ text: entry.text }];
+    return pieces.flatMap((piece) => splitAsides(piece.text, piece.card === true));
   }
 
   /** The player colour; system lines (colour -1) keep the text colour. */
@@ -112,7 +120,7 @@
       .map((entry, index) => ({
         key: index,
         entry,
-        parts: partsOf(entry.text),
+        parts: partsOf(entry),
         time: timeOf(entry.at),
         isNew: index >= seen,
       }))
@@ -148,8 +156,8 @@
 {#snippet lineText(entry: LogView, parts: Part[])}
   <!-- The line break between the name and the text renders as one space. -->
   <span class="w" style:color={nameColor(entry)}>{entry.who}</span>
-  {#each parts as part, i (i)}{#if part.aside}<span class="aside">{part.text}</span
-      >{:else}{part.text}{/if}{/each}
+  {#each parts as part, i (i)}{#if part.card}<b class="card" class:aside={part.aside}>{part.text}</b
+      >{:else if part.aside}<span class="aside">{part.text}</span>{:else}{part.text}{/if}{/each}
 {/snippet}
 
 {#snippet undoIcon()}
@@ -391,6 +399,10 @@
   }
 
   .w {
+    font-weight: 700;
+  }
+
+  .card {
     font-weight: 700;
   }
 
