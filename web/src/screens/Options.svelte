@@ -86,7 +86,7 @@
     <div class="row">
       <div class="about">
         <span class="label">Theme</span>
-        <p>Card backs, first player token and table colours — only on your screen.</p>
+        <p>Card backs, first player token and table colours: only on your screen.</p>
       </div>
       <div class="control themes">
         {#each themes as t (t.key)}

@@ -356,9 +356,7 @@ describe('ActionBar', () => {
     await fireEvent.pointerOver(reveal);
     await vi.advanceTimersByTimeAsync(350);
     const tip = screen.getByRole('tooltip');
-    expect(tip.textContent).toContain(
-      'Spider-Man is already revealed on this deck — move it first',
-    );
+    expect(tip.textContent).toContain('Spider-Man is already revealed on this deck: move it first');
     expect(tip.querySelector('kbd')?.textContent).toBe('R');
 
     await fireEvent.click(reveal);
@@ -369,7 +367,7 @@ describe('ActionBar', () => {
     const { session } = await renderTable();
     // The card the villain stage shows stays on the table.
     await fireEvent.pointerEnter(placed('v'));
-    const tip = 'The villain card stays on the table — choose another card to show';
+    const tip = 'The villain card stays on the table: choose another card to show';
     // Its name stays Move to: the tooltip says why it is disabled.
     const moveTo = within(bar()!).getByRole('button', { name: 'Move to' });
     expect(moveTo.getAttribute('aria-disabled')).toBe('true');
@@ -538,7 +536,7 @@ describe('ActionBar', () => {
     await renderTable();
     await fireEvent.pointerEnter(placed('deck:p1'));
 
-    expect(bar()?.textContent).toBe('Belongs to Sam — only they can use it.');
+    expect(bar()?.textContent).toBe('Belongs to Sam: only they can use it.');
   });
 
   it('arrow mode: a click on another card sends the arrow', async () => {
@@ -638,7 +636,7 @@ describe('ActionBar', () => {
     await fireEvent.click(
       within(bar()!).getByRole('button', { name: 'Choose the villain card to show' }),
     );
-    expect(screen.getByRole('dialog', { name: 'Villain — choose the card to show' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'Villain: choose the card to show' })).toBeTruthy();
     expect(session.act).not.toHaveBeenCalled();
   });
 

@@ -153,7 +153,7 @@
 
   const title = $derived.by((): { main: string; aside?: string } => {
     if (box.kind === 'stage') {
-      return { main: box.stage.label, aside: '— choose the card to show' };
+      return { main: `${box.stage.label}:`, aside: 'choose the card to show' };
     }
     const label = boxPileLabel(box.pile);
     switch (box.mode) {

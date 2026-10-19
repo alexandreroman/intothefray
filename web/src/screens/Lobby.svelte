@@ -51,7 +51,7 @@
     }
     return view.you.host
       ? 'Everyone is ready.'
-      : `Everyone is ready — waiting for ${hostName} to set up the table.`;
+      : `Everyone is ready: waiting for ${hostName} to set up the table.`;
   });
 
   const intro = $derived.by(() => {

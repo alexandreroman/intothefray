@@ -63,7 +63,7 @@
     canDrag?: (element: TableElement) => boolean;
   } = $props();
 
-  const TOKEN_TIP = 'First player — drag it to the next player';
+  const TOKEN_TIP = 'First player: drag it to the next player';
 </script>
 
 <!-- Card z-indexes come from the server and can be negative: the surface isolates them. -->

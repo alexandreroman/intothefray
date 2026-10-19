@@ -161,7 +161,7 @@
   <div class="bhead">
     <h2>Scenario</h2>
     <span class="aside"
-      >{isHost ? 'you choose — everyone sees it' : `chosen by ${hostName} (host)`}</span
+      >{isHost ? 'you choose: everyone sees it' : `chosen by ${hostName} (host)`}</span
     >
   </div>
 
@@ -475,18 +475,16 @@
     gap: 24px 40px;
   }
 
+  /* No gap here: the label keeps the lobby's own spacing below it, as in .modulars, so the
+     switch lines up with the first row of chips. */
   .difficulty {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 10px;
-  }
-
-  .difficulty .lbl {
-    margin-bottom: 0;
   }
 
   .set {
+    margin-top: 10px;
     display: flex;
     align-items: center;
     gap: 8px;

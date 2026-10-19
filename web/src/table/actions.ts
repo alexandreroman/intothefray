@@ -304,7 +304,7 @@ function leaveItems(card: CardView, context: Context): ActionItem[] {
   const held = stageHeldBy(card, context.table);
   if (held) {
     // Mirrors checkNotStageCurrent: the server refuses to take that card away.
-    const tip = `The ${held.label.toLowerCase()} card stays on the table — choose another card to show`;
+    const tip = `The ${held.label.toLowerCase()} card stays on the table: choose another card to show`;
     return [
       { ...discard, disabled: true, tip },
       { ...moveTo, disabled: true, tip },
@@ -424,7 +424,7 @@ function pileActions(pile: PileView, context: Context): ActionItem[] | { text: s
           return outOfPlay;
         }
         const name = seatPlayer(context.view, pile.owner)?.name ?? 'another player';
-        return { text: `Belongs to ${name} — only they can use it.` };
+        return { text: `Belongs to ${name}: only they can use it.` };
       }
       return [
         drawOneItem(),
@@ -535,7 +535,7 @@ function revealItem(pile: PileView, table: TableView): ActionItem {
   return {
     ...reveal,
     disabled: true,
-    tip: `${cardName(shown)} is already revealed on this deck — move it first`,
+    tip: `${cardName(shown)} is already revealed on this deck: move it first`,
   };
 }
 

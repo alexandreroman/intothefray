@@ -438,7 +438,7 @@ describe('CardBox', () => {
     await fireEvent.pointerEnter(placed('v'));
     await fireEvent.click(screen.getByRole('button', { name: 'Choose the villain card to show' }));
 
-    expect(screen.getByRole('dialog', { name: 'Villain — choose the card to show' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'Villain: choose the card to show' })).toBeTruthy();
     // Opening a box lets go of the table: its bar goes.
     expect(tableBar()).toBeNull();
     expect(interaction.hovered).toBeNull();

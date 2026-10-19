@@ -151,7 +151,7 @@
         </button>
       {:else}
         <div class="free" style:--pc={colorVar(color)}>
-          <i></i>Free seat — share the invite link
+          <i></i>Free seat: share the invite link
         </div>
       {/if}
     {/each}

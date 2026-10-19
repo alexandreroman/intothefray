@@ -329,7 +329,7 @@ describe('actionsFor', () => {
 
   it('a stage top card cannot leave the table', () => {
     const items = itemsFor({ kind: 'card', id: 'v' });
-    const tip = 'The villain card stays on the table — choose another card to show';
+    const tip = 'The villain card stays on the table: choose another card to show';
 
     expect(item(items, 'discard')).toMatchObject({ disabled: true, tip });
     expect(item(items, 'moveTo')).toMatchObject({ disabled: true, tip });
@@ -488,7 +488,7 @@ describe('actionsFor', () => {
     const reveal = item(itemsFor({ kind: 'pile', id: 'enc' }, view), 'reveal');
 
     expect(reveal.disabled).toBe(true);
-    expect(reveal.tip).toBe('Hard to Keep Down is already revealed on this deck — move it first');
+    expect(reveal.tip).toBe('Hard to Keep Down is already revealed on this deck: move it first');
   });
 
   it('discard pile items', () => {
@@ -529,7 +529,7 @@ describe('actionsFor', () => {
   it("other player's deck shows the belongs text without set-aside cards", () => {
     const view = makeView({ piles: [pile('deck:p1', { owner: 1, count: 30 })] });
     expect(actionsFor({ kind: 'pile', id: 'deck:p1' }, view, ALEX)).toEqual({
-      text: 'Belongs to Sam — only they can use it.',
+      text: 'Belongs to Sam: only they can use it.',
     });
   });
 
@@ -695,7 +695,7 @@ describe('a player with two decks', () => {
   it("other player's deck belongs", () => {
     const view = twoDeckView([pile('deck:p2', { owner: 2, count: 30 })]);
     expect(actionsFor({ kind: 'pile', id: 'deck:p2' }, view, TWO_DECKS)).toEqual({
-      text: 'Belongs to Sam — only they can use it.',
+      text: 'Belongs to Sam: only they can use it.',
     });
     const move = menuOf(itemsFor({ kind: 'card', id: 'sams' }, view, TWO_DECKS), 'moveTo');
     expect(move.map((it) => it.id)).toEqual([]);
