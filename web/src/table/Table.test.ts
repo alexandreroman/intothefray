@@ -328,8 +328,13 @@ describe('Table', () => {
     const keys = screen.getByRole('button', { name: 'Keyboard shortcuts' });
     expect(keys.textContent?.trim()).toBe('');
     expect(keys.querySelector('svg rect')).toBeTruthy();
-    expect(keys.title).toBe('Keyboard shortcuts (?)');
+    // The app's tooltip names it with its key, as every zoom button's does.
+    expect(keys.dataset).toMatchObject({ tip: 'Keyboard shortcuts', kbd: '?' });
     expect(keys.getAttribute('aria-keyshortcuts')).toBe('?');
+    const kbds = ['Zoom out', 'Back to 100%', 'Zoom in'].map(
+      (name) => screen.getByRole('button', { name }).dataset.kbd,
+    );
+    expect(kbds).toEqual(['−', '0', '+']);
   });
 
   it('places the out-of-play piles at the right of their zone', async () => {

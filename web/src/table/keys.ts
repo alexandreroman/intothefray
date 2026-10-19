@@ -28,8 +28,10 @@ export interface KeyTable {
   /** Runs a bar item, as a click on it would. */
   run: (item: ActionItem) => void;
   act: (action: Action) => void;
-  /** Shows the keyboard shortcuts sheet. */
-  showKeys: () => void;
+  /** Shows the keyboard shortcuts sheet, or hides it when it is shown. */
+  toggleKeys: () => void;
+  /** Hides the keyboard shortcuts sheet; returns whether it was shown. */
+  hideKeys: () => boolean;
   sizeOf: (card: CardView) => Size;
 }
 
@@ -41,9 +43,9 @@ export function handleKey(event: KeyboardEvent, table: KeyTable): void {
   if (event.defaultPrevented || modal.open) {
     return;
   }
-  // Escape lets go of the table even from a field, as in the prototype.
+  // Escape closes the sheet, or else lets go of the table, even from a field, as in the prototype.
   if (event.key === 'Escape') {
-    if (!event.repeat) {
+    if (!event.repeat && !table.hideKeys()) {
       interaction.escape();
     }
     return;
@@ -83,7 +85,7 @@ function tableKey(event: KeyboardEvent, table: KeyTable): boolean {
       return true;
     case '?':
       if (!event.repeat) {
-        table.showKeys();
+        table.toggleKeys();
       }
       return true;
     default:

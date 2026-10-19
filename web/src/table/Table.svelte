@@ -41,6 +41,7 @@
   import Hand from './Hand.svelte';
   import { interaction } from './interaction.svelte';
   import { handleKey } from './keys';
+  import KeysSheet from './KeysSheet.svelte';
   import { zoneMinHeight, zoneOrder } from './layout';
   import { motion } from './motion.svelte';
   import Presence from './Presence.svelte';
@@ -602,13 +603,25 @@
       setZoom: zoomWithButtons,
       run: runItem,
       act: send,
-      showKeys: showKeySheet,
+      toggleKeys: toggleKeySheet,
+      hideKeys: hideKeySheet,
       sizeOf,
     });
   }
 
-  function showKeySheet(): void {
-    // The keyboard shortcuts sheet comes with plan 5c.
+  // ---- The keyboard shortcuts sheet ----
+
+  let keySheetShown = $state(false);
+  let keysButton = $state<HTMLButtonElement>();
+
+  function toggleKeySheet(): void {
+    keySheetShown = !keySheetShown;
+  }
+
+  function hideKeySheet(): boolean {
+    const wasShown = keySheetShown;
+    keySheetShown = false;
+    return wasShown;
   }
 
   // Restored as the page is built, before any style applies, so the slide
@@ -784,7 +797,17 @@
     <p class="notice" role="alert">Card data could not be loaded: cards show as placeholders.</p>
   {/if}
 
-  <ZoomControl {zoom} onzoom={zoomWithButtons} onkeys={showKeySheet} />
+  <ZoomControl
+    {zoom}
+    onzoom={zoomWithButtons}
+    onkeys={toggleKeySheet}
+    keysShown={keySheetShown}
+    bind:keysButton
+  />
+
+  {#if keySheetShown}
+    <KeysSheet anchor={keysButton} onclose={hideKeySheet} />
+  {/if}
 
   {#if handCards}
     <Hand cards={handCards} {faceOf} narrow={narrow.current} />

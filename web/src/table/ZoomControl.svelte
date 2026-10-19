@@ -9,26 +9,51 @@
     zoom,
     onzoom,
     onkeys,
+    keysShown = false,
+    keysButton = $bindable(),
   }: {
     zoom: number;
     onzoom: (zoom: number) => void;
-    /** Opens the keyboard shortcuts sheet (plan 5c). */
+    /** Shows or hides the keyboard shortcuts sheet. */
     onkeys?: () => void;
+    /** Whether the keyboard shortcuts sheet is shown. */
+    keysShown?: boolean;
+    /** The keyboard button, which the sheet opens from. */
+    keysButton?: HTMLButtonElement;
   } = $props();
 </script>
 
 <div class="zoomctl">
-  <button title="Zoom out" aria-label="Zoom out" onclick={() => onzoom(zoom - ZOOM_STEP)}>−</button>
-  <button class="pct" title="Back to 100%" aria-label="Back to 100%" onclick={() => onzoom(1)}>
+  <button
+    data-tip="Zoom out"
+    data-kbd="−"
+    aria-label="Zoom out"
+    onclick={() => onzoom(zoom - ZOOM_STEP)}>−</button
+  >
+  <button
+    class="pct"
+    data-tip="Back to 100%"
+    data-kbd="0"
+    aria-label="Back to 100%"
+    onclick={() => onzoom(1)}
+  >
     {Math.round(zoom * 100)}%
   </button>
-  <button title="Zoom in" aria-label="Zoom in" onclick={() => onzoom(zoom + ZOOM_STEP)}>+</button>
+  <button
+    data-tip="Zoom in"
+    data-kbd="+"
+    aria-label="Zoom in"
+    onclick={() => onzoom(zoom + ZOOM_STEP)}>+</button
+  >
   <span class="sep"></span>
   <button
     class="keys"
-    title="Keyboard shortcuts (?)"
+    data-tip="Keyboard shortcuts"
+    data-kbd="?"
     aria-label="Keyboard shortcuts"
     aria-keyshortcuts="?"
+    aria-expanded={keysShown}
+    bind:this={keysButton}
     onclick={onkeys}
   >
     <!-- A keyboard: two rows of keys and a space bar. -->
