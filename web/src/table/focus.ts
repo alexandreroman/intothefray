@@ -10,8 +10,11 @@ export type Corner = 'top-right' | 'top-left' | 'bottom-left' | 'bottom-right';
 /** The panel's own corner, where it goes whenever it can. */
 export const HOME: Corner = 'bottom-right';
 
-/** The corners in the order they are tried, home first. */
-export const CORNERS: readonly Corner[] = [HOME, 'top-right', 'top-left', 'bottom-left'];
+/**
+ * The corners in the order they are tried: home first, then the facing corner
+ * on the same edge, then the top left and the top right.
+ */
+export const CORNERS: readonly Corner[] = [HOME, 'bottom-left', 'top-left', 'top-right'];
 
 /**
  * The room between the play area's right and bottom edges and what floats in
@@ -61,7 +64,7 @@ function overlaps(a: Rect, b: Rect): boolean {
 }
 
 export interface CornerChoice {
-  /** The corner the panel is in now: it stays there while it is clear, so that it never flickers. */
+  /** The corner the panel is in now: it stays there when no corner is clear. */
   current: Corner;
   /** The play area, on the screen. */
   area: Rect;
@@ -77,13 +80,13 @@ export interface CornerChoice {
 }
 
 /**
- * The corner the panel goes to. Clear is neither taken by a control nor over
- * the pointer or the hovered element. Bottom right is its home: it goes back
- * there whenever that is clear, and nothing hovered clears every corner.
- * Otherwise it keeps the corner it fell back to while that one is clear, so
- * that it does not flicker between two, or else takes the first clear one.
- * With no clear corner, it stays where it is, unless a control took that
- * corner meanwhile: then it goes home.
+ * The corner the panel goes to: the first clear one in the order of CORNERS.
+ * Clear is neither taken by a control nor over the pointer or the hovered
+ * element. Bottom right is its home: it goes back there whenever that is
+ * clear, and nothing hovered clears every corner. Blocked there, it goes to
+ * the bottom left, then the top left, then the top right. With no clear
+ * corner, it stays where it is, unless a control took that corner meanwhile:
+ * then it goes home.
  */
 export function chooseCorner(choice: CornerChoice): Corner {
   const clear = (corner: Corner) => {
@@ -95,12 +98,6 @@ export function chooseCorner(choice: CornerChoice): Corner {
     const overPointer = choice.pointer !== null && contains(rect, choice.pointer);
     return !overHovered && !overPointer;
   };
-  if (clear(HOME)) {
-    return HOME;
-  }
-  if (clear(choice.current)) {
-    return choice.current;
-  }
   const next = CORNERS.find(clear);
   if (next) {
     return next;

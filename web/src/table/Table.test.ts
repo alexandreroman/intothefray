@@ -469,8 +469,9 @@ describe('Table', () => {
       await catalogLoaded();
 
       await fireEvent.pointerEnter(surface().querySelector('.card[data-id="v"]') as HTMLElement);
+      // The facing corner on the same edge.
       const panel = preview().closest('.peek');
-      expect(panel?.classList).toContain('top-right');
+      expect(panel?.classList).toContain('bottom-left');
       expect(panel?.classList).not.toContain('moved');
 
       // Another card clear of the bottom right corner: the panel goes back home, fading in.
@@ -511,7 +512,7 @@ describe('Table', () => {
       for (const x of [900, 910, 920]) {
         await fireEvent.pointerMove(window, { clientX: x, clientY: 600 });
       }
-      await waitFor(() => expect(preview().closest('.peek')?.classList).toContain('top-right'));
+      await waitFor(() => expect(preview().closest('.peek')?.classList).toContain('bottom-left'));
       expect(cardMeasures).toBe(0);
     } finally {
       vi.restoreAllMocks();

@@ -63,19 +63,24 @@ describe('chooseCorner', () => {
     expect(chooseCorner(choice({ pointer: { x: 100, y: 100 } }))).toBe(HOME);
   });
 
-  it('moves away from the hovered card or the pointer, top right first', () => {
+  it('moves to the facing corner on the same edge, bottom left, when home is covered', () => {
     const card = { left: 800, top: 500, right: 940, bottom: 696 };
-    expect(chooseCorner(choice({ hovered: card }))).toBe('top-right');
-    expect(chooseCorner(choice({ pointer: { x: 900, y: 600 } }))).toBe('top-right');
+    expect(chooseCorner(choice({ hovered: card }))).toBe('bottom-left');
+    expect(chooseCorner(choice({ pointer: { x: 900, y: 600 } }))).toBe('bottom-left');
   });
 
-  it('then top left, then bottom left, skipping the corners other controls take', () => {
-    // A long card down the right side, then one across the top as well.
+  it('then top left, then top right, skipping the corners other controls take', () => {
+    // A long card across the bottom, then the pointer in the top left corner as well.
+    const bottom = { left: 0, top: 600, right: 1000, bottom: 750 };
+    expect(chooseCorner(choice({ hovered: bottom }))).toBe('top-left');
+    expect(chooseCorner(choice({ hovered: bottom, pointer: { x: 100, y: 100 } }))).toBe(
+      'top-right',
+    );
+    // A long card down the right side, the player selector at the bottom left.
     const right = { left: 700, top: 0, right: 1000, bottom: 800 };
-    expect(chooseCorner(choice({ hovered: right }))).toBe('top-left');
+    expect(chooseCorner(choice({ hovered: right, taken: ['bottom-left'] }))).toBe('top-left');
+    // No clear corner: it stays where it is.
     const top = { left: 0, top: 50, right: 1000, bottom: 200 };
-    expect(chooseCorner(choice({ hovered: top, pointer: { x: 900, y: 600 } }))).toBe('bottom-left');
-    // The player selector at the bottom left: no clear corner, it stays where it is.
     expect(
       chooseCorner(
         choice({
@@ -93,16 +98,12 @@ describe('chooseCorner', () => {
     expect(chooseCorner(choice({ current: 'bottom-left' }))).toBe(HOME);
   });
 
-  it('keeps the corner it fell back to while home is still covered', () => {
-    // A long card across the bottom: it fell back to top left, and the pointer moves to the left.
+  it('always takes the first clear corner in that order, wherever it is', () => {
+    // A long card across the bottom: from the top right, it goes to the top left.
     const card = { left: 0, top: 600, right: 1000, bottom: 750 };
     expect(
-      chooseCorner(choice({ current: 'top-left', hovered: card, pointer: { x: 50, y: 700 } })),
+      chooseCorner(choice({ current: 'top-right', hovered: card, pointer: { x: 500, y: 650 } })),
     ).toBe('top-left');
-    // Under the pointer, it leaves for the next clear one.
-    expect(
-      chooseCorner(choice({ current: 'top-left', hovered: card, pointer: { x: 100, y: 100 } })),
-    ).toBe('top-right');
   });
 
   it('stays where it is when no corner is clear', () => {
