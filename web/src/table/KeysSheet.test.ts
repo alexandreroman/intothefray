@@ -74,6 +74,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  vi.restoreAllMocks();
   vi.unstubAllGlobals();
   interaction.reset();
   document.body.replaceChildren();
