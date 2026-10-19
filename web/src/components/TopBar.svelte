@@ -230,7 +230,8 @@
 
   /*
    * The bar follows the screen's content column: its first and last items line up with the
-   * column's edges. Each screen sets the column's width and gutter on its root element.
+   * column's edges. Each screen sets the column's width and gutter on its root element, and
+   * may give the end its own gutter.
    */
   .bar {
     display: flex;
@@ -239,7 +240,7 @@
     height: 100%;
     max-width: var(--content-max, none);
     margin: 0 auto;
-    padding: 0 var(--content-gutter, 24px);
+    padding-inline: var(--content-gutter, 24px) var(--bar-gutter-end, var(--content-gutter, 24px));
   }
 
   .divider {

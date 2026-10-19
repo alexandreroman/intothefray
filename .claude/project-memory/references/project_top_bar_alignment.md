@@ -11,9 +11,9 @@ type: project
   right edge, at every width.
 - Each screen owns its column's width and gutter and shares them with the
   top bar, so the values live once per screen.
-- On the table, the bar has the same gutter on both sides of the window:
-  it spans over the history panel and does not move when the panel
-  collapses.
+- On the table, the bar's left edge is the play area's padding and its
+  icons sit 8px from the window's right edge, over the history panel: they
+  do not move when the panel collapses.
 
 **Why:** a bar whose edges match the content reads as part of the page.
 
