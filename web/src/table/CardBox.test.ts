@@ -742,8 +742,9 @@ describe('tileActions', () => {
       pile('disc:p0', { kind: 'discard', owner: 0, count: 1, cards: ['c1'] }),
       pile('disc:p1', { kind: 'discard', owner: 1, count: 1, cards: ['c1'] }),
     );
-    expect(actionsOf('c1', 'disc:p0', view).map((a) => a.id)).toEqual(['draw', 'play']);
-    expect(actionsOf('c1', 'disc:p1', view).map((a) => a.id)).toEqual(['play']);
+    expect(actionsOf('c1', 'disc:p0', view).map((a) => a.id)).toEqual(['draw', 'play', 'shuffle']);
+    // The viewer's own card still shuffles into the viewer's deck.
+    expect(actionsOf('c1', 'disc:p1', view).map((a) => a.id)).toEqual(['play', 'shuffle']);
   });
 
   it("another player's set-aside cards cannot be touched", () => {
