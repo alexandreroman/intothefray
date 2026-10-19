@@ -2,7 +2,6 @@ package server
 
 import (
 	"bytes"
-	"compress/gzip"
 	"encoding/json"
 	"io"
 	"maps"
@@ -79,7 +78,8 @@ func newCardsGame(t *testing.T, id string) *game.Game {
 }
 
 // getCards fetches the card pool of a game with the given request headers.
-// The client never decompresses: the test sees the body as sent.
+// The client never asks for compression on its own nor decompresses: the
+// test sees the request headers and the body exactly as sent.
 func getCards(t *testing.T, ts *httptest.Server, id string, header map[string]string) reply {
 	t.Helper()
 
@@ -123,9 +123,6 @@ func TestGameCards(t *testing.T) {
 		if got := resp.header.Get(name); got != want {
 			t.Errorf("%s = %q, want %q", name, got, want)
 		}
-	}
-	if vary := resp.header.Values("Vary"); !slices.Contains(vary, "Accept-Encoding") {
-		t.Errorf("Vary = %q, want Accept-Encoding", vary)
 	}
 
 	var body map[string]json.RawMessage
@@ -232,67 +229,18 @@ func TestGameCardsNotModified(t *testing.T) {
 	}
 }
 
-func TestGameCardsCompression(t *testing.T) {
+func TestGameCardsUncompressed(t *testing.T) {
 	ts, started, _ := newCardsServer(t)
 
-	plain := getCards(t, ts, started.ID, map[string]string{"Accept-Encoding": "identity"})
-	if got := plain.header.Get("Content-Encoding"); got != "" {
-		t.Fatalf("plain Content-Encoding = %q, want none", got)
-	}
-	if !json.Valid(plain.body) {
-		t.Fatalf("plain body is not JSON: %.100s", plain.body)
-	}
+	resp := getCards(t, ts, started.ID, map[string]string{"Accept-Encoding": "gzip"})
 
-	compressed := getCards(t, ts, started.ID, map[string]string{"Accept-Encoding": "gzip"})
-	if got := compressed.header.Get("Content-Encoding"); got != "gzip" {
-		t.Fatalf("Content-Encoding = %q, want gzip", got)
+	if resp.status != http.StatusOK {
+		t.Fatalf("status = %d, want %d: %s", resp.status, http.StatusOK, resp.body)
 	}
-	if got, want := compressed.header.Get("Content-Length"), strconv.Itoa(len(compressed.body)); got != want {
-		t.Errorf("Content-Length = %s, want %s", got, want)
+	if got := resp.header.Get("Content-Encoding"); got != "" {
+		t.Errorf("Content-Encoding = %q, want none: compression is the reverse proxy's job", got)
 	}
-	zr, err := gzip.NewReader(bytes.NewReader(compressed.body))
-	if err != nil {
-		t.Fatal(err)
-	}
-	unzipped, err := io.ReadAll(zr)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !bytes.Equal(unzipped, plain.body) {
-		t.Error("the gzip body does not decompress to the plain body")
-	}
-	if len(compressed.body) >= len(plain.body) {
-		t.Errorf("gzip body is %d bytes, plain is %d", len(compressed.body), len(plain.body))
-	}
-	if compressed.header.Get("ETag") != plain.header.Get("ETag") {
-		t.Error("the ETag depends on the encoding")
-	}
-}
-
-func TestAcceptsGzip(t *testing.T) {
-	tests := []struct {
-		acceptEncoding string
-		want           bool
-	}{
-		{"", false},
-		{"identity", false},
-		{"gzip", true},
-		{"GZIP", true},
-		{"x-gzip", true},
-		{"br, gzip;q=0.5", true},
-		{"gzip;q=0", false},
-		{"gzip; q=0.0", false},
-		{"gzip;q=nonsense", false},
-		{"*", true},
-		{"*;q=0", false},
-		{"*, gzip;q=0", false},
-		{"gzip;q=0.1, *;q=0", true},
-	}
-	for _, tt := range tests {
-		t.Run(tt.acceptEncoding, func(t *testing.T) {
-			if got := acceptsGzip(tt.acceptEncoding); got != tt.want {
-				t.Errorf("acceptsGzip(%q) = %v, want %v", tt.acceptEncoding, got, tt.want)
-			}
-		})
+	if !json.Valid(resp.body) {
+		t.Errorf("body is not plain JSON: %.100q", resp.body)
 	}
 }
