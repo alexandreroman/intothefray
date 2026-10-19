@@ -95,6 +95,11 @@ export function randomName(random: () => number = Math.random): string {
   return `${pick(ADJECTIVES, random)} ${pick(NOUNS, random)}`;
 }
 
+/** Stores the player name, trimmed, for the next games. */
+export function savePlayerName(name: string): void {
+  setPref(NAME_KEY, name.trim());
+}
+
 /**
  * Returns the stored player name. Without one, a random name is generated and stored,
  * so that the player keeps it next time and can change it in the options.
@@ -105,6 +110,6 @@ export function playerName(): string {
     return stored;
   }
   const generated = randomName();
-  setPref(NAME_KEY, generated);
+  savePlayerName(generated);
   return generated;
 }
