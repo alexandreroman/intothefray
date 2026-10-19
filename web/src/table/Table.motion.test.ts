@@ -336,6 +336,24 @@ describe('Table animations', () => {
     expect(pile?.classList).toContain('empty');
     expect(animationsOf('.fly')).toHaveLength(1);
   });
+  it('an animation waiting for the redraw does not play after a stop', async () => {
+    const view = makeView([card('a', { area: 'p0', x: 0 })]);
+    const { container } = render(Table, { session: fakeSession(), view });
+    await settle();
+
+    // As an unmount or a long gap stops everything while a view is being drawn.
+    const playing = motion.animate(
+      container,
+      [{ kind: 'glow', id: 'a', color: 0 }],
+      { before: view.table, after: view.table },
+      1,
+    );
+    motion.stop();
+    await playing;
+    await settle();
+    expect(animate).not.toHaveBeenCalled();
+  });
+
   it('nothing animates across a reconnection gap over 2 s', async () => {
     const session = fakeSession(2500);
     const { rerender } = render(Table, {

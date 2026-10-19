@@ -243,8 +243,12 @@ class TableMotion {
     return () => animation?.cancel();
   }
 
-  /** Stops every animation: the table shows as it is. */
+  /**
+   * Stops every animation: the table shows as it is. A view still being
+   * drawn (animate() waiting for its redraw) plays nothing either.
+   */
   stop(): void {
+    this.#generation++;
     this.#stopWhere(
       () => true,
       () => true,
