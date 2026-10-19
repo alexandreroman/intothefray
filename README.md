@@ -92,13 +92,13 @@ regenerated files with the change that caused them.
 
 ## Configuration
 
-| Variable          | Description                                    | Default                    |
-| ----------------- | ---------------------------------------------- | -------------------------- |
-| `PORT`            | HTTP server listen port                        | `8080`                     |
-| `REDIS_URL`       | Redis connection                               | `redis://localhost:6379/0` |
-| `ALLOWED_ORIGINS` | Frontend origins allowed by CORS and WebSocket | `http://localhost:5173`    |
-| `GAME_TTL`        | Expiry of a game nobody touches                | `24h`                      |
-| `MARVELCDB_URL`   | Deck source                                    | `https://marvelcdb.com`    |
+| Variable          | Description      | Default                    |
+| ----------------- | ---------------- | -------------------------- |
+| `PORT`            | HTTP listen port | `8080`                     |
+| `REDIS_URL`       | Redis connection | `redis://localhost:6379/0` |
+| `ALLOWED_ORIGINS` | Allowed origins  | `http://localhost:5173`    |
+| `GAME_TTL`        | Idle game expiry | `24h`                      |
+| `MARVELCDB_URL`   | Deck source      | `https://marvelcdb.com`    |
 
 `ALLOWED_ORIGINS` is a comma-separated list of origins, each written
 `scheme://host[:port]` (http or https, no path): the server refuses

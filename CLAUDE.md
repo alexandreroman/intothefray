@@ -46,7 +46,8 @@ make web-build    # production build into web/dist/
   `dist/` generated JSON (committed, never edited by hand), and the
   `embed` package that loads it
 - `web/` — Svelte 5 + Vite SPA (standalone pnpm project; screens, lib,
-  components)
+  components, table: the table with its rendering, interactions,
+  boxes, presence and animations)
 - `.github/workflows/` — `pages.yml` publishes `web/` to GitHub Pages
 - `Dockerfile` — container image of the server
 - `compose.yaml` — local stack: Redis (in memory) and the app service
