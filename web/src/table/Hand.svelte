@@ -181,8 +181,14 @@
   {#each shown as card, i (card === 'gap' ? card : card.id)}
     {@const slot = slots[i]}
     {#if card === 'gap'}
-      <li class="hcard gap" aria-hidden="true" style:--x="{slot?.x ?? 0}px">
-        <div class="fan" style:--rot="{slot?.angle ?? 0}deg" style:--ty="{slot?.y ?? 0}px"></div>
+      <li
+        class="hcard gap"
+        aria-hidden="true"
+        style:--x="{slot?.x ?? 0}px"
+        style:--rot="{slot?.angle ?? 0}deg"
+        style:--ty="{slot?.y ?? 0}px"
+      >
+        <div class="fan"></div>
       </li>
     {:else}
       {@const face = faceOf(card)}
@@ -196,12 +202,16 @@
         data-id={card.id}
         class:locked={interaction.isLocked({ kind: 'hand', id: card.id })}
         style:--x="{slot?.x ?? 0}px"
+        style:--rot="{slot?.angle ?? 0}deg"
+        style:--ty="{slot?.y ?? 0}px"
         onpointerenter={(event) => interaction.enter({ kind: 'hand', id: card.id }, event)}
         onpointerleave={() => interaction.leave()}
         onpointerdown={(event) => interaction.press({ kind: 'hand', id: card.id }, event)}
         onclick={() => interaction.select({ kind: 'hand', id: card.id })}
       >
-        <div class="fan" style:--rot="{slot?.angle ?? 0}deg" style:--ty="{slot?.y ?? 0}px">
+        <!-- What the pointer hovers: the card at rest, which the pop does not move. -->
+        <div class="hit"></div>
+        <div class="fan">
           {#if isHidden(card)}
             <CardBack back={card.back} />
           {:else}
@@ -279,7 +289,8 @@
     width: var(--card-w);
     height: var(--card-h);
     transform: translateX(-50%);
-    pointer-events: auto;
+    /* Only its hit area takes the pointer (see .hit). */
+    pointer-events: none;
     cursor: grab;
     touch-action: none;
     user-select: none;
@@ -306,10 +317,24 @@
     z-index: 60;
   }
 
+  /*
+    The card's place at rest on the fan, which takes the pointer. The hovered card pops (.fan
+    below) without moving it: were the hit area the popped card, a pointer near its lower edge
+    would lose it as it pops, get it back as it falls, and so on.
+  */
+  .hit {
+    position: absolute;
+    inset: 0;
+    transform-origin: 50% 110%;
+    transform: translateY(var(--ty)) rotate(var(--rot));
+    pointer-events: auto;
+  }
+
   .fan {
     position: relative;
     width: 100%;
     height: 100%;
+    pointer-events: none;
     transform-origin: 50% 110%;
     transform: translateY(var(--ty)) rotate(var(--rot));
     transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
