@@ -1051,7 +1051,12 @@
         tokenMovable={view.you.role === 'player'}
       />
       <!-- The arrows follow the cards while they move. -->
-      <Arrows {view} root={app} layout={[zoom, surface, rowMap, motion.frame]} />
+      <Arrows
+        {view}
+        root={app}
+        layout={[zoom, surface, rowMap, motion.frame]}
+        raised={interaction.dragging !== null || interaction.landing !== null || motion.moving}
+      />
     </div>
   </div>
 
@@ -1242,14 +1247,16 @@
     grid-area: top;
   }
 
+  /*
+    No stacking context of its own: the arrows inside it stack with the page's layers
+    (Arrows.svelte), while the surface isolates the cards' own z-indexes.
+  */
   .tablewrap {
     grid-area: table;
     overflow: auto;
     scrollbar-width: thin;
     scrollbar-color: #2c3654 transparent;
     position: relative;
-    z-index: 0;
-    isolation: isolate;
     background: var(--table-bg);
     min-width: 0;
   }

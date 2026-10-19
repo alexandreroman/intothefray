@@ -123,6 +123,13 @@ class TableMotion {
    */
   frame = $state(0);
 
+  /** Whether cards move on the screen: animated to a new place, or flying to and from piles. */
+  get moving(): boolean {
+    return this.#cardsMoving || this.flights.length > 0;
+  }
+
+  #cardsMoving = $state(false);
+
   // Each running animation, with what it plays on.
   #running = new Map<Animation, Subject>();
   // The animations that move cards on the screen, which the frame counter follows.
@@ -303,6 +310,7 @@ class TableMotion {
         this.#moving.delete(animation);
       }
     }
+    this.#cardsMoving = this.#moving.size > 0;
     for (const [copy, subject] of this.#copies) {
       if (stops(subject)) {
         copy.remove();
@@ -544,11 +552,13 @@ class TableMotion {
     }
     if (moves) {
       this.#moving.add(animation);
+      this.#cardsMoving = true;
       this.#countFrames();
     }
     const done = () => {
       this.#running.delete(animation);
       this.#moving.delete(animation);
+      this.#cardsMoving = this.#moving.size > 0;
     };
     animation.finished.then(done, done);
     return animation;

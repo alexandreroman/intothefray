@@ -14,12 +14,15 @@
     view,
     root,
     layout,
+    raised = false,
   }: {
     view: View;
     /** The page: the cards are found on its surface, and in its drag layer while dragged. */
     root: HTMLElement | undefined;
     /** What moves the cards on the screen without a new view (the zoom, the surface size): redrawn on change. */
     layout: unknown;
+    /** Cards move (dragged, landing, animated or flying): the arrows go over their layers. */
+    raised?: boolean;
   } = $props();
 
   /** An end of an arrow, in the layer's coordinates, with the half size of its card. */
@@ -216,7 +219,7 @@
 
 <svelte:window onpointermove={onPointerMove} onresize={schedule} />
 
-<svg class="arrows" bind:this={svg} aria-hidden="true">
+<svg class="arrows" class:raised bind:this={svg} aria-hidden="true">
   <defs>
     {#each [...COLORS, null] as color (color)}
       <marker
@@ -258,7 +261,13 @@
 </svg>
 
 <style>
-  /* Over the cards. */
+  /*
+    Over the cards, and under everything else at rest: the resting hand (20), the preview (30),
+    the other players' presence (2500), the veil and the raised hand (2600). While cards move, over
+    the flights (2900) and the drag layer (3000) too, still under the action bar (3500), the token
+    pill, the menus, the dialogs and the tooltips. The table does not isolate its stacking for
+    that: the arrows, though clipped and scrolled by it, stack with the page's layers.
+  */
   .arrows {
     position: absolute;
     inset: 0;
@@ -266,7 +275,11 @@
     height: 100%;
     overflow: visible;
     pointer-events: none;
-    z-index: 900;
+    z-index: 1;
+  }
+
+  .arrows.raised {
+    z-index: 3050;
   }
 
   .under {

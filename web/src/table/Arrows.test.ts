@@ -1,5 +1,13 @@
 import { fireEvent, render, waitFor } from '@testing-library/svelte';
 import Table from './Table.svelte';
+import tableSource from './Table.svelte?raw';
+import arrowsSource from './Arrows.svelte?raw';
+import dragSource from './DragLayer.svelte?raw';
+import flightsSource from './Flights.svelte?raw';
+import barSource from './ActionBar.svelte?raw';
+import pillSource from './TokenPill.svelte?raw';
+import handSource from './Hand.svelte?raw';
+import dialogSource from '../components/Dialog.svelte?raw';
 import { interaction } from './interaction.svelte';
 import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
 import type {
@@ -293,6 +301,47 @@ describe('arrows', () => {
     // Let go outside the table: nothing is sent, no view comes, the card is back in its place.
     await fireEvent.pointerUp(window, { clientX: 500, clientY: 950 });
     await waitFor(() => expect(startOf(shafts()[0]!)).toEqual([70, 400]));
+  });
+
+  it('rises over the moving cards while a card is dragged, and goes back under the rest after', async () => {
+    await renderTable(makeView({ arrows: [{ from: 'mine', to: 'v', seat: 0 }] }));
+    const layer = document.querySelector('.arrows')!;
+    expect(layer.classList).not.toContain('raised');
+
+    await fireEvent.pointerDown(placed('mine'), { clientX: 50, clientY: 400 });
+    await fireEvent.pointerMove(window, { clientX: 300, clientY: 450, buttons: 1 });
+    expect(layer.classList).toContain('raised');
+
+    await fireEvent.pointerUp(window, { clientX: 500, clientY: 950 });
+    expect(layer.classList).not.toContain('raised');
+  });
+
+  it('stacks over the cards in motion, under the page controls', () => {
+    /** The z-index a rule of that source sets. */
+    function zOf(source: string, selector: string): number {
+      const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const rule = new RegExp(`\\n\\s*${escaped} \\{([^}]*)\\}`).exec(source)?.[1] ?? '';
+      const z = /z-index: (-?\d+);/.exec(rule)?.[1];
+      if (z === undefined) {
+        throw new Error(`no z-index for ${selector}`);
+      }
+      return Number(z);
+    }
+    const atRest = zOf(arrowsSource, '.arrows');
+    const raised = zOf(arrowsSource, '.arrows.raised');
+
+    // At rest: under the resting hand and the preview.
+    expect(atRest).toBeLessThan(zOf(handSource, '.hand'));
+    expect(atRest).toBeLessThan(zOf(tableSource, '.peek'));
+    // Raised: over the flights and the drag ghosts, under the controls and the dialogs.
+    expect(raised).toBeGreaterThan(zOf(flightsSource, '.fly'));
+    expect(raised).toBeGreaterThan(zOf(dragSource, '.draglayer'));
+    expect(raised).toBeLessThan(zOf(barSource, '.actionbar'));
+    expect(raised).toBeLessThan(zOf(pillSource, '.tokpill'));
+    expect(raised).toBeLessThan(zOf(dialogSource, '.backdrop'));
+    // The scroller does not trap the arrows in a stacking context of its own.
+    const scroller = /\n {2}\.tablewrap \{([^}]*)\}/.exec(tableSource)?.[1] ?? '';
+    expect(scroller).not.toMatch(/z-index|isolation/);
   });
 
   it('shows a rubber band from the source card in arrow mode', async () => {
