@@ -477,20 +477,25 @@ describe('dragging a table card', () => {
 
   it('selection follows drag to own hand', async () => {
     // Alex plays a second deck, Ant-Man (p1): its card goes to its own hand, which then shows.
-    const view = makeView({ cards: [...CARDS, card('second', { owner: 1, x: 200, y: 300 })] });
+    const view = makeView({
+      cards: [
+        ...CARDS,
+        card('second', { owner: 1, x: 200, y: 300 }),
+        card('h4', { owner: 1, zone: 'hand' }),
+      ],
+    });
     view.you = { ...view.you, areas: ['p0', 'p1'] };
     view.players[0]!.decks = [
       { area: 'p0', heroName: 'Spider-Man', ready: true, handCount: 3 },
-      { area: 'p1', heroName: 'Ant-Man', ready: true, handCount: 0 },
+      { area: 'p1', heroName: 'Ant-Man', ready: true, handCount: 1 },
     ];
-    view.table = { ...view.table!, hands: { p0: ['h1', 'h2', 'h3'], p1: [] } };
+    view.table = { ...view.table!, hands: { p0: ['h1', 'h2', 'h3'], p1: ['h4'] } };
     const { session } = await renderTable(view);
-    const picker = screen.getByRole('radiogroup', { name: 'Hand shown' });
-    const checked = () =>
-      within(picker)
-        .getAllByRole('radio', { checked: true })
-        .map((swatch) => swatch.getAttribute('aria-label'));
-    expect(checked()).toEqual(['Alex · Spider-Man']);
+    const handIds = () =>
+      [...document.querySelectorAll<HTMLElement>('.hand .hcard[data-id]')].map(
+        (slot) => slot.dataset.id,
+      );
+    expect(handIds()).toEqual(['h1', 'h2', 'h3']);
 
     await press(placed('second'), 250, 400);
     await moveTo(450, 740);
@@ -499,7 +504,8 @@ describe('dragging a table card', () => {
 
     await release(450, 740);
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'toHand', card: 'second' }, 1);
-    expect(checked()).toEqual(['Alex · Ant-Man']);
+    expect(handIds()).not.toContain('h1');
+    expect(handIds()).toContain('h4');
   });
 
   it("goes to its owner's hand, which then shows, while another player's row shows", async () => {

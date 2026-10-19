@@ -23,10 +23,11 @@ type: project
   selected deck: its hand shows and shared-card actions are credited to
   it. In "Villain + player" it lists every seat and shows the picked
   seat's row; another player's swatch shows their row and no hand, and
-  shared-card actions stay credited to the last own deck. In "All" it
-  lists only the viewer's own decks, for a player with 2 or more. The Q
-  key and a card dragged to an own hand select that deck in the selector;
-  Shift + ← / → steps through the selector's swatches, round them.
+  shared-card actions stay credited to the last own deck. "All" shows no
+  selector, as every hero is on the table. The Q key and a card dragged to
+  an own hand select that deck; Shift + ← / → steps through the selector's
+  swatches, round them, and in "All" through the viewer's own decks (with
+  2 or more; otherwise the keys do nothing there).
   Selector swatches always name the hero ("Sam · Captain Marvel"); history
   lines, owner frames and box titles add the hero ("Alex · Spider-Man")
   only when the player has several decks.

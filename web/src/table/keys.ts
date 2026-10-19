@@ -20,7 +20,7 @@ const SLOT_STEP = 220;
 const SLOT_CARD = { w: 140, h: 196 };
 const SLOT_MARGIN = 40;
 
-// Shift + these arrows step through the heroes of the player selector.
+// Shift + these arrows step through the heroes of the player selector, or in "All" the viewer's decks.
 const HERO_STEPS: Record<string, -1 | 1> = {
   ArrowLeft: -1,
   ArrowRight: 1,
@@ -42,9 +42,9 @@ export interface KeyTable {
   showKeys: () => void;
   /** Selects the viewer's next own deck, whose hand then shows (Q, with two decks or more). */
   selectNextDeck: () => void;
-  /** Whether the player selector has two heroes or more to step through. */
+  /** Whether there are two heroes or more to step through: the player selector's, or in "All" own decks. */
   canStepHero: boolean;
-  /** Picks the previous (-1) or next (1) hero in the player selector, as its ← and → buttons do. */
+  /** Picks the previous (-1) or next (1) hero: in the player selector, else among the viewer's decks. */
   stepHero: (step: -1 | 1) => void;
   sizeOf: (card: CardView) => Size;
 }
@@ -92,7 +92,7 @@ function isTyping(target: EventTarget | null): boolean {
 
 /**
  * The keys everyone has, spectators too: the zoom (it repeats while held), the shortcuts sheet and
- * Shift + ← / → in the player selector, which only changes what the viewer sees.
+ * Shift + ← / → through the heroes, which only changes what the viewer sees.
  */
 function tableKey(event: KeyboardEvent, table: KeyTable): boolean {
   const heroStep = HERO_STEPS[event.key];

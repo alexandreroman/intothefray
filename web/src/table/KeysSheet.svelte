@@ -21,7 +21,7 @@
     alignTo?: HTMLElement;
     /** Whether the viewer plays several decks: only they switch decks with Q. */
     severalDecks?: boolean;
-    /** Whether the player selector has two heroes or more to step through with Shift + ← / →. */
+    /** Whether Shift + ← / → has two heroes or more to step through (selector, or own decks in "All"). */
     severalHeroes?: boolean;
     onclose: () => void;
   } = $props();
@@ -29,7 +29,7 @@
   /**
    * A row: what it does, its keys (each in a kbd), the mouse part that goes
    * with them, and whether it is only for a player with several decks, or
-   * only while the player selector has several heroes.
+   * only while Shift + ← / → has several heroes to step through.
    */
   interface Row {
     what: string;

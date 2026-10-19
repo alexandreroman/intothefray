@@ -197,11 +197,7 @@
 
   /** Shows the hand of the viewer's next deck, round their decks (Q). */
   function selectNextDeck(): void {
-    if (selected === null) {
-      return;
-    }
-    const next = (own.indexOf(selected) + 1) % own.length;
-    selectSeat(own[next] ?? selected);
+    stepOwnDeck(1);
   }
 
   // Ready all has something to ready: an exhausted card on the table, whoever owns it, not locked.
@@ -286,31 +282,35 @@
       : ALL_ROWS,
   );
 
-  // The player selector at the bottom left: every seat in "Villain + player"; in "All", only the viewer's
-  // own decks, when they play several, to pick the hand shown.
-  const pickerDecks = $derived.by(() => {
-    if (focused) {
-      return seatedDecks;
-    }
-    return own.length > 1 ? seatedDecks.filter((deck) => own.includes(deck.seat)) : [];
-  });
-  const pickerSeat = $derived(focused ? shownSeat : selected);
-  const pickerShown = $derived(pickerDecks.length > 0 && pickerSeat !== null);
-  // Shift + ← / → steps through the selector's heroes, when it has two or more.
-  const canStepHero = $derived(pickerShown && pickerDecks.length > 1);
+  // The player selector at the bottom left lists every seat, in "Villain + player" only: "All" already
+  // shows every hero.
+  const pickerShown = $derived(focused);
+  // Shift + ← / → steps through the selector's heroes; in "All", through the viewer's own decks.
+  const canStepHero = $derived(focused || own.length > 1);
 
-  /** Picks the previous or next hero in the player selector (Shift + ← / →). */
+  /** Picks the previous or next hero (Shift + ← / →): in the player selector, else among own decks. */
   function stepHero(step: -1 | 1): void {
-    if (pickerSeat !== null) {
-      stepSeat(pickerSeat, step);
+    if (focused && shownSeat !== null) {
+      stepSeat(shownSeat, step);
+    } else {
+      stepOwnDeck(step);
     }
   }
 
   /** Picks the seat `step` swatches after the current one in the player selector, round it. */
   function stepSeat(current: number, step: number): void {
-    const choices = pickerDecks.map((deck) => deck.seat);
+    const choices = seatedDecks.map((deck) => deck.seat);
     const index = choices.indexOf(current);
     selectSeat(choices[(index + step + choices.length) % choices.length] ?? current);
+  }
+
+  /** Selects the viewer's deck `step` decks after the selected one, round their decks. */
+  function stepOwnDeck(step: number): void {
+    if (selected === null) {
+      return;
+    }
+    const index = own.indexOf(selected);
+    selectSeat(own[(index + step + own.length) % own.length] ?? selected);
   }
 
   // The arrow keys in the player swatches, as in any radio group.
@@ -1107,24 +1107,24 @@
 </script>
 
 <!--
-  The player selector: which player's row "Villain + player" shows, and which of the viewer's decks
-  is selected (its hand shows). One swatch in each seat's colour, named for screen readers and in its
-  tooltip only, as the name already shows above the player's deck.
+  The player selector of "Villain + player": which player's row shows, and, on an own seat, which of
+  the viewer's decks is selected (its hand shows). One swatch in each seat's colour, named for screen
+  readers and in its tooltip only, as the name already shows above the player's deck.
 -->
 {#snippet seatPicker(current: number)}
   <div class="seatpick">
-    {#if pickerDecks.length > 2}
+    {#if seatedDecks.length > 2}
       <button
         class="btn-ghost step"
-        aria-label={focused ? 'Previous player' : 'Previous deck'}
-        data-tip={focused ? 'Previous player' : 'Previous deck'}
+        aria-label="Previous player"
+        data-tip="Previous player"
         onclick={() => stepSeat(current, -1)}>←</button
       >
     {/if}
     <div
       class="seats"
       role="radiogroup"
-      aria-label={focused ? 'Player shown' : 'Hand shown'}
+      aria-label="Player shown"
       tabindex="-1"
       onkeydown={(event) => onSeatKey(event, current)}
       use:selectionIndicator
@@ -1136,7 +1136,7 @@
         aria-hidden="true"
         style:--seat="var(--p{(seatColor(view, current) ?? 0) + 1})"
       ></span>
-      {#each pickerDecks as { seat, name, color } (seat)}
+      {#each seatedDecks as { seat, name, color } (seat)}
         <button
           class="seat"
           style:--seat="var(--p{color + 1})"
@@ -1149,11 +1149,11 @@
         ></button>
       {/each}
     </div>
-    {#if pickerDecks.length > 2}
+    {#if seatedDecks.length > 2}
       <button
         class="btn-ghost step"
-        aria-label={focused ? 'Next player' : 'Next deck'}
-        data-tip={focused ? 'Next player' : 'Next deck'}
+        aria-label="Next player"
+        data-tip="Next player"
         onclick={() => stepSeat(current, 1)}>→</button
       >
     {/if}
@@ -1288,8 +1288,8 @@
     />
   </div>
 
-  {#if pickerShown && pickerSeat !== null}
-    {@render seatPicker(pickerSeat)}
+  {#if pickerShown && shownSeat !== null}
+    {@render seatPicker(shownSeat)}
   {/if}
 
   {#if keySheetShown}
