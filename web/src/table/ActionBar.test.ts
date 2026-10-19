@@ -280,8 +280,8 @@ describe('ActionBar', () => {
     expect(screen.queryByRole('menu')).toBeNull();
     const dialog = screen.getByRole('dialog', { name: 'Look at the top cards' });
     expect(dialog.textContent).toContain('How many cards from the top of your deck?');
-    const value = within(dialog).getByRole('textbox');
-    expect((value as HTMLInputElement).value).toBe('5');
+    const value = within(dialog).getByRole('spinbutton', { name: 'Number of cards' });
+    expect(value.getAttribute('aria-valuenow')).toBe('5');
     expect(session.act).not.toHaveBeenCalled();
 
     await fireEvent.click(within(dialog).getByRole('button', { name: 'One more' }));
@@ -296,8 +296,8 @@ describe('ActionBar', () => {
     await fireEvent.click(within(bar()!).getByRole('button', { name: 'Look' }));
     await fireEvent.click(screen.getByRole('menuitem', { name: /Look at top…/ }));
     const dialog = screen.getByRole('dialog', { name: 'Look at the top cards' });
-    const value = within(dialog).getByRole('textbox') as HTMLInputElement;
-    expect(value.value).toBe('5');
+    const value = within(dialog).getByRole('spinbutton', { name: 'Number of cards' });
+    expect(value.getAttribute('aria-valuenow')).toBe('5');
 
     // Sam deals encounter cards meanwhile: three are left.
     const shrunk = (count: number) =>
@@ -305,9 +305,9 @@ describe('ActionBar', () => {
         piles: makeView().table!.piles.map((p) => (p.id === 'enc' ? { ...p, count } : p)),
       });
     await rerender({ view: shrunk(3) });
-    expect(value.value).toBe('3');
+    expect(value.getAttribute('aria-valuenow')).toBe('3');
     await fireEvent.click(within(dialog).getByRole('button', { name: 'One more' }));
-    expect(value.value).toBe('3');
+    expect(value.getAttribute('aria-valuenow')).toBe('3');
     await fireEvent.click(within(dialog).getByRole('button', { name: 'Look' }));
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'look', pile: 'enc', n: 3 });
   });
