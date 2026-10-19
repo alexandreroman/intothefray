@@ -3,6 +3,7 @@ import {
   creditedSeatAmong,
   ownSeats,
   seatColor,
+  seatFullLabel,
   seatHero,
   seatLabel,
   seatOf,
@@ -143,5 +144,23 @@ describe('seatLabel', () => {
 
   it('is empty for an unknown seat', () => {
     expect(seatLabel(makeView(), 3)).toBe('');
+  });
+});
+
+describe('seatFullLabel', () => {
+  it("adds the deck's hero to the name of every player, one deck or several", () => {
+    const view = makeView();
+    expect(seatFullLabel(view, 1)).toBe('Alex · Spider-Man');
+    expect(seatFullLabel(view, 2)).toBe('Sam · She-Hulk');
+  });
+
+  it('is the name alone for a deck without a hero yet', () => {
+    const view = makeView();
+    view.players[1]!.decks = [{ area: 'p2', ready: false, handCount: 0 }];
+    expect(seatFullLabel(view, 2)).toBe('Sam');
+  });
+
+  it('is empty for an unknown seat', () => {
+    expect(seatFullLabel(makeView(), 3)).toBe('');
   });
 });

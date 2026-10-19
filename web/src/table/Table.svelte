@@ -66,6 +66,7 @@
     creditedSeatAmong,
     ownSeats,
     seatColor,
+    seatFullLabel,
     seatLabel,
     seatOf,
     seatPlayer,
@@ -242,12 +243,16 @@
     saveViewMode(mode);
   }
 
-  /** The decks at the table, one per seat, in seat order, each read and coloured as its seat. */
+  /** The decks at the table, one per seat, in seat order, each named with its hero and coloured as its seat. */
   const seatedDecks = $derived(
     view.players
       .flatMap((player) => player.decks.flatMap((deck) => (deck.area ? [seatOf(deck.area)] : [])))
       .sort((a, b) => a - b)
-      .map((seat) => ({ seat, name: seatLabel(view, seat), color: seatColor(view, seat) ?? 0 })),
+      .map((seat) => ({
+        seat,
+        name: seatFullLabel(view, seat),
+        color: seatColor(view, seat) ?? 0,
+      })),
   );
   const seats = $derived(seatedDecks.map((deck) => deck.seat));
   // The viewer's selected deck's row first; a spectator starts with the first seat.

@@ -963,13 +963,13 @@ describe('Table view modes', () => {
         swatch.tabIndex,
       ]),
     ).toEqual([
-      ['Alex', 'Alex', '', 'false', -1],
-      ['Sam', 'Sam', '', 'true', 0],
+      ['Alex · Spider-Man', 'Alex · Spider-Man', '', 'false', -1],
+      ['Sam · Ant-Man', 'Sam · Ant-Man', '', 'true', 0],
     ]);
     // Two players: no previous and next buttons.
     expect(screen.queryByRole('button', { name: 'Next player' })).toBeNull();
 
-    await fireEvent.click(within(picker).getByRole('radio', { name: 'Alex' }));
+    await fireEvent.click(within(picker).getByRole('radio', { name: 'Alex · Spider-Man' }));
     expect(shownIds()).toEqual(['enc', 'd0', 'v', 's', 'a']);
     expect(surface().querySelector<HTMLElement>('[data-id="a"]')?.style.top).toBe('500px');
   });
@@ -993,11 +993,11 @@ describe('Table view modes', () => {
       within(picker)
         .getAllByRole('radio', { checked: true })
         .map((swatch) => swatch.getAttribute('aria-label'));
-    expect(checked()).toEqual(['Sam']);
+    expect(checked()).toEqual(['Sam · Ant-Man']);
     await fireEvent.click(screen.getByRole('button', { name: 'Next player' }));
     expect(checked()).toEqual(['Kim']);
     await fireEvent.click(screen.getByRole('button', { name: 'Next player' }));
-    expect(checked()).toEqual(['Alex']);
+    expect(checked()).toEqual(['Alex · Spider-Man']);
     await fireEvent.click(screen.getByRole('button', { name: 'Previous player' }));
     expect(checked()).toEqual(['Kim']);
   });
@@ -1017,7 +1017,7 @@ describe('Table view modes', () => {
     await catalogLoaded();
 
     const picker = screen.getByRole('radiogroup', { name: 'Player shown' });
-    const sam = within(picker).getByRole('radio', { name: 'Sam' });
+    const sam = within(picker).getByRole('radio', { name: 'Sam · Ant-Man' });
     sam.focus();
     await fireEvent.keyDown(sam, { key: 'ArrowRight' });
     const kim = within(picker).getByRole('radio', { name: 'Kim' });
@@ -1025,7 +1025,9 @@ describe('Table view modes', () => {
     expect(kim.getAttribute('aria-checked')).toBe('true');
     // Round the table, both ways.
     await fireEvent.keyDown(kim, { key: 'ArrowDown' });
-    await waitFor(() => expect(document.activeElement?.getAttribute('aria-label')).toBe('Alex'));
+    await waitFor(() =>
+      expect(document.activeElement?.getAttribute('aria-label')).toBe('Alex · Spider-Man'),
+    );
     await fireEvent.keyDown(document.activeElement!, { key: 'ArrowLeft' });
     await waitFor(() => expect(document.activeElement).toBe(kim));
     await fireEvent.keyDown(kim, { key: 'ArrowUp' });
@@ -1203,8 +1205,10 @@ describe('several decks', () => {
     expect(handNames()).toEqual(['Rhino']);
     expect(shownIds()).toContain('b');
 
-    await fireEvent.click(within(picker('Player shown')).getByRole('radio', { name: 'Sam' }));
-    expect(checkedDeck('Player shown')).toEqual(['Sam']);
+    await fireEvent.click(
+      within(picker('Player shown')).getByRole('radio', { name: 'Sam · She-Hulk' }),
+    );
+    expect(checkedDeck('Player shown')).toEqual(['Sam · She-Hulk']);
     expect(shownIds()).toContain('c');
     expect(shownIds()).not.toContain('b');
     expect(screen.queryByRole('list', { name: 'Your hand' })).toBeNull();
@@ -1214,7 +1218,9 @@ describe('several decks', () => {
     localStorage.setItem('itf-view', 'focus');
     render(Table, { session: fakeSession(), view: makeTwoDeckView() });
     await within(hand()).findByRole('img', { name: 'Spider-Man' });
-    await fireEvent.click(within(picker('Player shown')).getByRole('radio', { name: 'Sam' }));
+    await fireEvent.click(
+      within(picker('Player shown')).getByRole('radio', { name: 'Sam · She-Hulk' }),
+    );
     expect(screen.queryByRole('list', { name: 'Your hand' })).toBeNull();
 
     await fireEvent.click(
@@ -1247,7 +1253,9 @@ describe('several decks', () => {
     localStorage.setItem('itf-view', 'focus');
     render(Table, { session: fakeSession(), view: makeTwoDeckView() });
     await within(hand()).findByRole('img', { name: 'Spider-Man' });
-    await fireEvent.click(within(picker('Player shown')).getByRole('radio', { name: 'Sam' }));
+    await fireEvent.click(
+      within(picker('Player shown')).getByRole('radio', { name: 'Sam · She-Hulk' }),
+    );
     expect(screen.queryByRole('list', { name: 'Your hand' })).toBeNull();
 
     await fireEvent.keyDown(window, { key: 'q' });
@@ -1289,7 +1297,9 @@ describe('several decks', () => {
     await fireEvent.click(
       within(picker('Player shown')).getByRole('radio', { name: 'Alex · Ant-Man' }),
     );
-    await fireEvent.click(within(picker('Player shown')).getByRole('radio', { name: 'Sam' }));
+    await fireEvent.click(
+      within(picker('Player shown')).getByRole('radio', { name: 'Sam · She-Hulk' }),
+    );
 
     await fireEvent.pointerEnter(surface().querySelector<HTMLElement>('.card[data-id="s"]')!);
     const bar = screen.getByRole('toolbar', { name: 'Actions' });

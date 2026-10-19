@@ -107,6 +107,20 @@ export function seatLabel(view: View, seat: number): string {
 }
 
 /**
+ * How the seat reads in the player selector: the player's name plus the
+ * deck's hero whatever the number of decks ("Sam · Captain Marvel"), the
+ * name alone while the deck has no hero. Empty for a seat nobody sits at.
+ */
+export function seatFullLabel(view: View, seat: number): string {
+  const found = seatAt(view, seat);
+  if (!found) {
+    return '';
+  }
+  const hero = found.deck.heroName;
+  return hero ? `${found.player.name} · ${hero}` : found.player.name;
+}
+
+/**
  * The hero of the deck at the seat when its player holds several decks, ""
  * otherwise: the player's name alone tells the deck of a one-deck player
  * (Game.deckHero in narrate.go).

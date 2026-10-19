@@ -535,7 +535,7 @@ describe('dragging a table card', () => {
     };
     const { session } = await renderTable(view);
     const picker = screen.getByRole('radiogroup', { name: 'Player shown' });
-    await fireEvent.click(within(picker).getByRole('radio', { name: 'Sam' }));
+    await fireEvent.click(within(picker).getByRole('radio', { name: 'Sam · She-Hulk' }));
     expect(document.querySelector('.hand')).toBeNull();
 
     // No hand shows: the drop lands in the room an empty hand has, at the bottom middle of the table.
