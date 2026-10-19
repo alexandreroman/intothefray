@@ -33,7 +33,7 @@ Everything below works today, except where noted.
 ## Prerequisites
 
 - Go 1.27 or later
-- Docker (or Podman) with Compose, to run Redis locally
+- Docker (or Podman) with Compose, to run Redis and Caddy locally
 - [Air](https://github.com/air-verse/air) for hot reload
 - [golangci-lint](https://golangci-lint.run/) v2 for static checks
 - Node.js 24 and [pnpm](https://pnpm.io/) for the frontend, or
@@ -77,7 +77,7 @@ make web-check  # type-check, lint and test the web app
 make web-build  # build the web app into web/dist
 make build      # build bin/intothefray
 make packs      # regenerate the card packs in packs/dist
-make infra-down # stop Redis
+make infra-down # stop Redis and Caddy
 make app-up     # build the web app, then start Caddy, server and Redis
 make app-logs   # follow the logs of the containerised stack
 make app-down   # stop and remove the containerised stack

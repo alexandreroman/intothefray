@@ -19,7 +19,7 @@ See [README.md](README.md) for full documentation.
 ## Build & run
 
 ```bash
-make dev          # Redis and Caddy in containers, then the server under Air and the web build (vite build --watch)
+make dev          # Redis + Caddy in containers, Air, web build
 make test         # go test -race -shuffle=on ./...
 make check        # tests, web-check, then golangci-lint
 make build        # bin/intothefray
