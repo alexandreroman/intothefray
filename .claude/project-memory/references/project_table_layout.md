@@ -12,9 +12,9 @@ type: project
 - Setup lays the surface out in rows: the villain row first, then one row
   per seated player. Each row starts at the left with deck and discard,
   then the villain or identity and schemes; played cards go to the right.
-- The villain's row is taller (520 units, player rows 330): 1.5 portrait
-  card heights (294 units) lie empty between its cards and the first
-  player's row, so the two read apart.
+- The villain's row is taller (470 units, player rows 330): about 1.2
+  portrait card heights (244 units, rows on the 10-unit grid) lie empty
+  between its cards and the first player's row, so the two read apart.
 - Each owner's deck and discard sit in a frame in the seat colour labelled
   with the player's name ("Villain" in purple, as in the game, for the
   encounter piles); the frame's tooltip gives that player's hand count.

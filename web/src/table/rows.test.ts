@@ -17,13 +17,13 @@ function deck(owner: number, y: number): PileView {
 }
 
 describe('rows', () => {
-  it("cuts the table in the villain's row of 520, then rows of 330", () => {
-    const heights = [-10, 0, 519, 520, 849, 850, 1300];
+  it("cuts the table in the villain's row of 470, then rows of 330", () => {
+    const heights = [-10, 0, 469, 470, 799, 800, 1300];
     expect(heights.map(rowOf)).toEqual([0, 0, 0, 1, 1, 2, 3]);
   });
 
   it("finds a seat's row from its deck, or from the seat without one", () => {
-    const piles = [deck(0, 550), deck(1, 880), deck(2, 1210)];
+    const piles = [deck(0, 500), deck(1, 830), deck(2, 1160)];
     expect(rowOfSeat(piles, 1)).toBe(2);
     expect(rowOfSeat([], 1)).toBe(2);
     expect(lastRow(piles)).toBe(3);
@@ -36,20 +36,20 @@ describe('rows', () => {
   });
 
   it("draws the villain's row where it is and the player's row right under it", () => {
-    // Three players: the second one's row is row 2, from 850 to 1180.
+    // Three players: the second one's row is row 2, from 800 to 1130.
     const rows = focusRows(2, 3);
     expect(rows.toDisplay(30)).toBe(30);
-    expect(rows.toDisplay(880)).toBe(550);
-    expect(rows.toDisplay(1179)).toBe(849);
+    expect(rows.toDisplay(830)).toBe(500);
+    expect(rows.toDisplay(1129)).toBe(799);
     // The other players' rows are hidden.
-    expect(rows.toDisplay(550)).toBeNull();
-    expect(rows.toDisplay(1210)).toBeNull();
+    expect(rows.toDisplay(500)).toBeNull();
+    expect(rows.toDisplay(1160)).toBeNull();
     expect(rows.toDisplay(5000)).toBeNull();
   });
 
   it('lets the last row run on downward', () => {
     const rows = focusRows(3, 3);
-    expect(rows.toDisplay(1210)).toBe(550);
+    expect(rows.toDisplay(1160)).toBe(500);
     expect(rows.toDisplay(5000)).toBe(4340);
   });
 
@@ -95,9 +95,9 @@ describe('rows', () => {
 
   it('keeps anything drawn below a row that is not the last one in that row', () => {
     const rows = focusRows(2, 3);
-    expect(rows.toTable(849)).toBe(1179);
-    expect(rows.toTable(850)).toBe(1179);
-    expect(rows.toTable(2000)).toBe(1179);
+    expect(rows.toTable(799)).toBe(1129);
+    expect(rows.toTable(800)).toBe(1129);
+    expect(rows.toTable(2000)).toBe(1129);
     // The last row runs on.
     expect(focusRows(3, 3).toTable(2000)).toBe(2660);
   });

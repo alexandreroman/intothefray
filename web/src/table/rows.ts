@@ -8,12 +8,12 @@ import { getPref, setPref } from '../lib/prefs';
 import type { PileView } from '../lib/types';
 
 /**
- * The height of the villain's row, in table units: it covers [0, 520), leaving
+ * The height of the villain's row, in table units: it covers [0, 470), leaving
  * room between its cards and the first player's row.
  */
-export const VILLAIN_ROW_HEIGHT = 520;
+export const VILLAIN_ROW_HEIGHT = 470;
 
-/** The height of a player's row, in table units: row r ≥ 1 covers [520 + 330·(r−1), 520 + 330·r). */
+/** The height of a player's row, in table units: row r ≥ 1 covers [470 + 330·(r−1), 470 + 330·r). */
 export const ROW_HEIGHT = 330;
 
 export type ViewMode = 'all' | 'focus';

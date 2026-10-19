@@ -21,11 +21,12 @@ import (
 // a position for the model, on the deck, but the client never draws them.
 //
 // The villain's row is taller so that it reads apart from the players' rows:
-// one and a half portrait card heights (294 units) lie empty between its
-// cards and the owner label of the first player's row. The client's focus
-// view uses the same bands (web/src/table/rows.ts).
+// about 1.2 portrait card heights (244 units, keeping the rows on the 10-unit
+// grid) lie empty between its cards and the owner label of the first
+// player's row. The client's focus view uses the same bands
+// (web/src/table/rows.ts).
 const (
-	villainRowHeight = 520
+	villainRowHeight = 470
 	rowHeight        = 330
 	rowContentY      = 30
 
