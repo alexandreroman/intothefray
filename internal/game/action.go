@@ -67,6 +67,10 @@ type Action struct {
 	// shuffled pile. Cards then holds the new order, in new ids.
 	Renames map[string]string `json:"renames,omitempty"`
 	Seat    int               `json:"seat,omitempty"` // acting seat, filled server-side (arrows)
+	// Seats is filled by an arrow clear of a player holding several decks:
+	// every seat of that player, whose arrows it clears. Without it, an arrow
+	// clear clears the arrows of Seat.
+	Seats []int `json:"seats,omitempty"`
 	// Exhausted and FaceDown are the state an exhaust or a flip leads to,
 	// filled by resolve: replaying them on a rebuilt table sets that state
 	// instead of toggling whatever the card shows there.
@@ -160,7 +164,15 @@ func resolve(g *Game, who actor, a Action, rng *rand.Rand) (Action, error) {
 		return resolveReveal(t, a)
 	case ActDeal:
 		return resolveDeal(t, a)
-	case ActFirstPlayer, ActArrowClear:
+	case ActFirstPlayer:
+		return a, nil
+	case ActArrowClear:
+		// A player's arrows are credited to any of their seats. Seat alone
+		// tells the seat of a one-deck player, whose events then stay as
+		// they were recorded before Seats existed.
+		if len(who.seats) > 1 {
+			a.Seats = slices.Clone(who.seats)
+		}
 		return a, nil
 	case ActDraw:
 		return resolveDraw(t, who, a)

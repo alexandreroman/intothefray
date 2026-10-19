@@ -153,13 +153,16 @@ func (h *History) lastUndoable(seats ...int) []int {
 // latest snapshot that covers none of them, and returns the rebuilt table,
 // events and snapshots. Snapshots after the starting point are recomputed. h
 // and events are left untouched: the caller installs the result, so that a
-// rebuild is atomic. rng re-resolves the shuffles that no longer fit.
-func (h *History) rebuild(events []Event, from int, rng *rand.Rand) (*Table, []Event, []Snapshot) {
+// rebuild is atomic. rng re-resolves the shuffles that no longer fit, each one
+// on behalf of the actor actorOf returns for the event's seat.
+func (h *History) rebuild(
+	events []Event, from int, actorOf func(seat int) actor, rng *rand.Rand,
+) (*Table, []Event, []Snapshot) {
 	events = slices.Clone(events)
 	snapshots := slices.Clone(h.Snapshots)
 	start, table := h.restorePoint(from)
 	for i := start; i < len(events); i++ {
-		replayEvent(table, &events[i], rng)
+		replayEvent(table, &events[i], actorOf, rng)
 		refreshSnapshot(snapshots, i+1, table)
 	}
 	return table, events, snapshots
@@ -188,10 +191,11 @@ func refreshSnapshot(snapshots []Snapshot, n int, table *Table) {
 }
 
 // replayEvent re-applies e to t during a rebuild. A shuffle whose recorded
-// outcome no longer fits t (its pile changed) is resolved again with rng, and
-// e keeps the new outcome so that later rebuilds stay stable. Any other event
-// that fails is marked Dropped.
-func replayEvent(t *Table, e *Event, rng *rand.Rand) {
+// outcome no longer fits t (its pile changed) is resolved again with rng, on
+// behalf of the actor actorOf returns for e's seat, and e keeps the new outcome
+// so that later rebuilds stay stable. Any other event that fails is marked
+// Dropped.
+func replayEvent(t *Table, e *Event, actorOf func(seat int) actor, rng *rand.Rand) {
 	if !e.live() || notReplayedKinds[e.Action.Kind] {
 		return
 	}
@@ -199,25 +203,13 @@ func replayEvent(t *Table, e *Event, rng *rand.Rand) {
 		return
 	}
 	if producesShuffle(e.Action) {
-		// The event passed its checks when it was recorded: the rebuild only
-		// draws a new order, so its actor may use every pile.
-		trusted := actor{seat: e.Seat, seats: everySeat()}
-		fresh, err := resolveShuffleKind(t, trusted, e.Action, rng)
+		fresh, err := resolveShuffleKind(t, actorOf(e.Seat), e.Action, rng)
 		if err == nil && apply(t, fresh) == nil {
 			e.Action = fresh
 			return
 		}
 	}
 	e.Dropped = true
-}
-
-// everySeat returns every seat a table may hold.
-func everySeat() []int {
-	seats := make([]int, maxSeats)
-	for seat := range seats {
-		seats[seat] = seat
-	}
-	return seats
 }
 
 // producesShuffle reports whether a gives a pile a new random order.

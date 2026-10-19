@@ -150,7 +150,7 @@ func (g *Game) recordArranging(seat int, a Action, rng *rand.Rand, now time.Time
 	events[last] = e
 	// The live table holds both moves; rebuilding it with the last one only
 	// keeps it equal to its events, Z order included.
-	g.install(h.rebuild(events, last, rng))
+	g.install(h.rebuild(events, last, g.actorOf, rng))
 }
 
 // replacesMove reports whether next replaces prev: both are moves of the same
@@ -213,7 +213,7 @@ func (g *Game) cancelFlipBurst(burst []int, card string, rng *rand.Rand) bool {
 		events[i].Undone = true
 		events[i].Log = -1
 	}
-	table, events, snapshots := g.History.rebuild(events, burst[0], rng)
+	table, events, snapshots := g.History.rebuild(events, burst[0], g.actorOf, rng)
 	if !sameSide(table, g.Table, card) {
 		return false
 	}
@@ -276,7 +276,7 @@ func (g *Game) undo(who actor, rng *rand.Rand, now time.Time) error {
 		events[i].Undone = true
 	}
 	// Installing strikes the burst's line, and those of the events dropped.
-	g.install(h.rebuild(events, burst[0], rng))
+	g.install(h.rebuild(events, burst[0], g.actorOf, rng))
 
 	original := g.Log[h.Events[burst[0]].Log]
 	g.appendLog(who.seat, "undid “"+original.Text+"”", nil, now)

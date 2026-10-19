@@ -970,10 +970,18 @@ func applyArrowAdd(t *Table, a Action) error {
 	return nil
 }
 
+// applyArrowClear clears the arrows of every seat a.Seats lists, or of
+// a.Seat alone when a.Seats is empty.
 func applyArrowClear(t *Table, a Action) error {
-	if !validSeat(a.Seat) {
-		return invalid("unknown seat %d", a.Seat)
+	seats := a.Seats
+	if len(seats) == 0 {
+		seats = []int{a.Seat}
 	}
-	t.Arrows = slices.DeleteFunc(t.Arrows, func(ar Arrow) bool { return ar.Seat == a.Seat })
+	for _, seat := range seats {
+		if !validSeat(seat) {
+			return invalid("unknown seat %d", seat)
+		}
+	}
+	t.Arrows = slices.DeleteFunc(t.Arrows, func(ar Arrow) bool { return slices.Contains(seats, ar.Seat) })
 	return nil
 }

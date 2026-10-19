@@ -205,10 +205,7 @@ func (n narrator) describe(a Action) (logLine, bool) {
 	case ActChooseStage:
 		return n.stageEvent(a), true
 	case ActDraw:
-		if len(a.Cards) == 1 {
-			return logLine{text: "drew 1 card"}, true
-		}
-		return logLine{text: fmt.Sprintf("drew %d cards", len(a.Cards))}, true
+		return logLine{text: n.drawText(a)}, true
 	case ActReveal:
 		id := a.Cards[0]
 		return logLine{text: "revealed " + n.name(id), cards: n.visibleCards(id)}, true
@@ -252,6 +249,21 @@ func (n narrator) toDeckEvent(a Action) logLine {
 		text = fmt.Sprintf("put %s on top of %s", card, deck)
 	}
 	return logLine{text: text}
+}
+
+// drawText narrates a draw. A player holding several decks also learns which
+// deck the cards came from: "drew 2 cards from their Spider-Man deck".
+func (n narrator) drawText(a Action) string {
+	text := fmt.Sprintf("drew %d cards", len(a.Cards))
+	if len(a.Cards) == 1 {
+		text = "drew 1 card"
+	}
+	// resolveDraw sends the cards to the hand of the deck's owner.
+	deck := n.before.Piles["deck:"+string(a.Area)]
+	if deck == nil || n.game.deckHero(deck.Owner) == "" {
+		return text
+	}
+	return text + " from " + n.game.pileName(n.who, deck.ID)
 }
 
 func (n narrator) flipEvent(a Action) logLine {

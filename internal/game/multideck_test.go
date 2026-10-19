@@ -191,6 +191,21 @@ func TestUndoAcrossOwnSeats(t *testing.T) {
 	}
 }
 
+func TestArrowClearAllOwnSeats(t *testing.T) {
+	f := multiDeckFixture(t)
+	first, second, sams := identityOf(t, f.g, 0), identityOf(t, f.g, 1), identityOf(t, f.g, 2)
+	f.mustDoAs(t, "a", 0, Action{Kind: ActArrowAdd, Card: first, Target: sams}, at(1))
+	f.mustDoAs(t, "a", 1, Action{Kind: ActArrowAdd, Card: second, Target: sams}, at(2))
+	f.mustDoAs(t, "s", -1, Action{Kind: ActArrowAdd, Card: sams, Target: first}, at(3))
+
+	f.mustDoAs(t, "a", -1, Action{Kind: ActArrowClear}, at(4))
+
+	want := []Arrow{{From: sams, To: first, Seat: 2}}
+	if got := f.g.Table.Arrows; !slices.Equal(got, want) {
+		t.Errorf("arrows = %v, want Sam's arrow only %v", got, want)
+	}
+}
+
 func TestNarrateHeroNames(t *testing.T) {
 	f := multiDeckFixture(t)
 	g := f.g
@@ -205,7 +220,20 @@ func TestNarrateHeroNames(t *testing.T) {
 	if got, want := lastLine(), "shuffled their Spider-Man deck"; got != want {
 		t.Errorf("line = %q, want %q", got, want)
 	}
-	f.mustDoAs(t, "s", -1, Action{Kind: ActDeal, Area: "p1"}, at(3))
+	f.mustDoAs(t, "a", 0, Action{Kind: ActDraw, N: 2}, at(3))
+	if got, want := lastLine(), "drew 2 cards from their Spider-Man deck"; got != want {
+		t.Errorf("line = %q, want %q", got, want)
+	}
+	f.mustDoAs(t, "a", 0, Action{Kind: ActDraw, N: 1, Pile: "deck:p1"}, at(4))
+	if got, want := lastLine(), "drew 1 card from their Spider-Man deck"; got != want {
+		t.Errorf("line = %q, want %q", got, want)
+	}
+	// Sam holds one deck: his draws read as they always did.
+	f.mustDoAs(t, "s", -1, Action{Kind: ActDraw, N: 1}, at(5))
+	if got, want := lastLine(), "drew 1 card"; got != want {
+		t.Errorf("line = %q, want %q", got, want)
+	}
+	f.mustDoAs(t, "s", -1, Action{Kind: ActDeal, Area: "p1"}, at(6))
 	if got, want := lastLine(), "dealt an encounter card face down to Alex (Spider-Man)"; got != want {
 		t.Errorf("line = %q, want %q", got, want)
 	}

@@ -91,11 +91,16 @@ func TestRefreshSnapshot(t *testing.T) {
 	}
 }
 
+// soloActor is the actor of a player who holds seat alone.
+func soloActor(seat int) actor {
+	return actor{seat: seat, seats: []int{seat}}
+}
+
 func TestReplayEvent(t *testing.T) {
 	t.Run("applies a live event", func(t *testing.T) {
 		table := newTestTable()
 		e := Event{Action: Action{Kind: ActExhaust, Card: "c1", Exhausted: new(false)}}
-		replayEvent(table, &e, newTestRNG())
+		replayEvent(table, &e, soloActor, newTestRNG())
 		if table.Cards["c1"].Exhausted || e.Dropped {
 			t.Errorf("c1 exhausted = %t, dropped = %t; want the exhaust applied", table.Cards["c1"].Exhausted, e.Dropped)
 		}
@@ -109,7 +114,7 @@ func TestReplayEvent(t *testing.T) {
 			{Action: Action{Kind: ActUndo}},
 			{Action: Action{Kind: ActSearch, Pile: "deck:p0"}},
 		} {
-			replayEvent(table, &e, newTestRNG())
+			replayEvent(table, &e, soloActor, newTestRNG())
 		}
 		if !reflect.DeepEqual(table, before) {
 			t.Error("the table changed")
@@ -118,7 +123,7 @@ func TestReplayEvent(t *testing.T) {
 	t.Run("drops what fails", func(t *testing.T) {
 		table := newTestTable()
 		e := Event{Action: Action{Kind: ActExhaust, Card: "c4", Exhausted: new(true)}} // c4 lies in the deck
-		replayEvent(table, &e, newTestRNG())
+		replayEvent(table, &e, soloActor, newTestRNG())
 		if !e.Dropped {
 			t.Error("the event is not dropped")
 		}
@@ -130,7 +135,7 @@ func TestReplayEvent(t *testing.T) {
 		stale := Action{Kind: ActShuffle, Pile: "deck:p0", Cards: []string{"x5", "x4"}, Renames: renames}
 		e := Event{Seat: 0, Action: stale}
 
-		replayEvent(table, &e, newTestRNG())
+		replayEvent(table, &e, soloActor, newTestRNG())
 
 		if e.Dropped || len(e.Action.Renames) != 3 {
 			t.Fatalf("event = %+v, want a fresh shuffle of the three deck cards", e)
@@ -139,6 +144,24 @@ func TestReplayEvent(t *testing.T) {
 			t.Errorf("deck = %v, want the fresh order %v", got, e.Action.Cards)
 		}
 		checkIntegrity(t, table)
+	})
+	t.Run("resolves a shuffle again on behalf of the event's player", func(t *testing.T) {
+		renames := map[string]string{"c4": "x4", "c5": "x5"}
+		stale := Action{Kind: ActShuffle, Pile: "deck:p0", Cards: []string{"x5", "x4"}, Renames: renames}
+		// The player at seat 1 also holds seat 0, and so deck:p0.
+		twoSeats := func(seat int) actor { return actor{seat: seat, seats: []int{0, 1}} }
+
+		owned := Event{Seat: 1, Action: stale}
+		replayEvent(newTestTable(), &owned, twoSeats, newTestRNG())
+		if owned.Dropped {
+			t.Error("the shuffle of a deck of the player's other seat is dropped")
+		}
+
+		foreign := Event{Seat: 1, Action: stale}
+		replayEvent(newTestTable(), &foreign, soloActor, newTestRNG())
+		if !foreign.Dropped {
+			t.Errorf("event = %+v, want the shuffle of another player's deck dropped", foreign)
+		}
 	})
 }
 
@@ -188,7 +211,7 @@ func TestRebuildLeavesTheHistoryAlone(t *testing.T) {
 	events := slices.Clone(h.Events)
 	events[12].Undone = true
 
-	table, rebuilt, snapshots := h.rebuild(events, 12, newTestRNG())
+	table, rebuilt, snapshots := h.rebuild(events, 12, soloActor, newTestRNG())
 
 	if mustJSON(t, h) != before {
 		t.Error("rebuild changed the history")
