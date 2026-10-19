@@ -222,6 +222,34 @@ func TestEmbeddedDataInvariants(t *testing.T) {
 		}
 	})
 
+	t.Run("set in-play cards resolve", func(t *testing.T) {
+		for _, file := range files {
+			for _, set := range file.Sets {
+				for _, refs := range set.InPlay {
+					for _, ref := range refs {
+						requireFace(t, "set "+set.Code, ref)
+						if !slices.Contains(set.Cards, ref.Card) {
+							t.Errorf("set %s starts card %s in play, which it does not list", set.Code, ref.Card)
+						}
+					}
+				}
+			}
+		}
+	})
+
+	t.Run("unlisted sets stay out of the index", func(t *testing.T) {
+		for _, file := range files {
+			for _, set := range file.Sets {
+				listed := slices.ContainsFunc(catalog.Index().Sets, func(ref pack.SetRef) bool {
+					return ref.Code == set.Code
+				})
+				if set.Unlisted && listed {
+					t.Errorf("unlisted set %s is in the index", set.Code)
+				}
+			}
+		}
+	})
+
 	t.Run("ultron set lists its lettered cards", func(t *testing.T) {
 		for _, code := range []string{"01144a", "01144b", "01144c"} {
 			if !slices.Contains(setCards["ultron"], code) {

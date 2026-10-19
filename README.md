@@ -147,7 +147,10 @@ still sets `VITE_API_URL` or `ALLOWED_ORIGINS`, re-run
 `make packs` downloads the card data from marvelcdb and Cerebro
 (cached in `packs/.cache`), merges the hand-written files of
 `packs/curated/`, and writes the result to `packs/dist/`. Commit the
-regenerated files with the change that caused them.
+regenerated files with the change that caused them. The curated files are
+the scenarios (`scenarios/`), card overrides (`cards.json`) and set data
+(`sets.json`: the cards a set starts in play at each difficulty, and the
+sets the lobby leaves out).
 
 ## Configuration
 

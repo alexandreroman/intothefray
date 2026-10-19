@@ -1401,7 +1401,21 @@
         "24052",
         "24053",
         "24054"
-      ]
+      ],
+      "inPlay": {
+        "expert": [
+          {
+            "card": "24049",
+            "face": 1
+          }
+        ],
+        "standard": [
+          {
+            "card": "24049",
+            "face": 0
+          }
+        ]
+      }
     },
     {
       "code": "state_of_emergency",

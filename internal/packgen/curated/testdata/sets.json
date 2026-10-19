@@ -1,0 +1,9 @@
+{
+  "standard_ii": {
+    "inPlay": {
+      "standard": [{"card": "24049", "face": 0}],
+      "expert": [{"card": "24049", "face": 1}]
+    }
+  },
+  "standard_pvp": {"unlisted": true}
+}

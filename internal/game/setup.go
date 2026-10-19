@@ -242,17 +242,53 @@ func (b *tableBuilder) setupScenario(cfg LobbyConfig) (pack.Scenario, error) {
 	if cfg.Expert != "" {
 		encounterSets = append(encounterSets, cfg.Expert)
 	}
-	for i, setCode := range encounterSets {
-		// Only the villain set loses cards: the others never overlap the setup.
-		skip := map[string]bool(nil)
-		if i == 0 {
-			skip = apart
+
+	// Cards each set leaves out of the encounter deck, by set code. The
+	// scenario setup only takes cards from the villain set.
+	skips := map[string]map[string]bool{scenario.VillainSet: apart}
+	inPlayCount := len(start.InPlay)
+	for _, setCode := range encounterSets[1:] {
+		placed, slots, err := b.putSetInPlay(setCode, cfg.Difficulty, inPlayCount)
+		if err != nil {
+			return pack.Scenario{}, err
 		}
-		if err := b.addSetToPile(setCode, PileEncounter, skip); err != nil {
+		skips[setCode] = placed
+		inPlayCount += slots
+	}
+
+	for _, setCode := range encounterSets {
+		if err := b.addSetToPile(setCode, PileEncounter, skips[setCode]); err != nil {
 			return pack.Scenario{}, err
 		}
 	}
 	return scenario, nil
+}
+
+// putSetInPlay puts the cards a set starts in play at this difficulty (the
+// "Setup." keyword) on the villain side, in the in-play row from firstSlot
+// on. It returns the canonical codes it placed, which stay out of the
+// encounter deck, and the number of slots it used.
+func (b *tableBuilder) putSetInPlay(
+	setCode string,
+	difficulty pack.Difficulty,
+	firstSlot int,
+) (map[string]bool, int, error) {
+	set, ok := b.cat.Set(setCode)
+	if !ok {
+		return nil, 0, fmt.Errorf("%w: unknown set %q", ErrInvalid, setCode)
+	}
+
+	placed := map[string]bool{}
+	refs := set.InPlay[difficulty]
+	for i, ref := range refs {
+		slot := firstSlot + i
+		c, err := b.putInPlay(ref, inPlayStartX+inPlayStepX*slot, inPlayY)
+		if err != nil {
+			return nil, 0, err
+		}
+		placed[c.Code] = true
+	}
+	return placed, len(refs), nil
 }
 
 // setupStage creates the cards of one stage pile. The card named by top goes

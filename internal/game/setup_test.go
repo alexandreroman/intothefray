@@ -262,6 +262,103 @@ func TestSetupExpertAddsExpertSet(t *testing.T) {
 	}
 }
 
+// inPlayCard is a card expected in play on the villain side at setup.
+type inPlayCard struct {
+	code string
+	face int
+	x    int
+}
+
+func TestSetupStandardAndExpertSets(t *testing.T) {
+	const (
+		formidableFoe    = "24049"
+		pursuedByThePast = "45075"
+		drawingNear      = "45080"
+	)
+	tests := []struct {
+		name       string
+		difficulty pack.Difficulty
+		standard   string
+		expert     string
+		inPlay     []inPlayCard
+	}{
+		{"standard", pack.Standard, "standard", "", nil},
+		{"standard ii", pack.Standard, "standard_ii", "", []inPlayCard{{formidableFoe, 0, 600}}},
+		{"standard iii", pack.Standard, "standard_iii", "", []inPlayCard{{pursuedByThePast, 0, 600}}},
+		{"expert with standard", pack.Expert, "standard", "expert", nil},
+		{"expert ii with standard", pack.Expert, "standard", "expert_ii", nil},
+		{"expert ii with standard ii", pack.Expert, "standard_ii", "expert_ii", []inPlayCard{{formidableFoe, 1, 600}}},
+		{"expert with standard ii", pack.Expert, "standard_ii", "expert", []inPlayCard{{formidableFoe, 1, 600}}},
+		{"expert with standard iii", pack.Expert, "standard_iii", "expert", []inPlayCard{{pursuedByThePast, 0, 600}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cat := newCatalog(t)
+			cfg := rhinoConfig()
+			cfg.Difficulty, cfg.Standard, cfg.Expert = tt.difficulty, tt.standard, tt.expert
+			table := startedGame(t, cfg).Table
+
+			skip := []string{"01094", "01095", "01096", "01097"}
+			for _, want := range tt.inPlay {
+				c := cardWithCode(t, table, want.code)
+				if c.Zone != ZoneTable || c.Area != AreaVillain || c.Face != want.face || c.X != want.x || c.Y != 20 {
+					t.Errorf("%s = %+v, want in the villain area at (%d, 20), face %d", want.code, c, want.x, want.face)
+				}
+				if c.Owner != NoOwner || c.Home != PileEncounter {
+					t.Errorf("%s owner/home = %d %q, want the encounter deck's", want.code, c.Owner, c.Home)
+				}
+				skip = append(skip, want.code)
+			}
+
+			sets := []string{"rhino", "bomb_scare", tt.standard}
+			if tt.expert != "" {
+				sets = append(sets, tt.expert)
+			}
+			want := setCodes(t, cat, skip, sets...)
+			want = append(want, "01165", "01165")
+			slices.Sort(want)
+			got := codesOf(table, table.Piles[PileEncounter].Cards)
+			if !slices.Equal(got, want) {
+				t.Errorf("encounter deck = %v, want %v", got, want)
+			}
+			if tt.standard == "standard_iii" && !slices.Contains(got, drawingNear) {
+				t.Errorf("Drawing Near (%s) is missing from the encounter deck", drawingNear)
+			}
+		})
+	}
+}
+
+func TestSetupSetInPlayFollowsScenarioInPlay(t *testing.T) {
+	cfg := rhinoConfig()
+	cfg.Scenario = "klaw"
+	cfg.Modulars = []string{"the_doomsday_chair"}
+	cfg.Difficulty, cfg.Standard, cfg.Expert = pack.Expert, "standard_ii", "expert"
+	table := startedGame(t, cfg).Table
+
+	// Klaw's Defense Network takes the first in-play slot, Formidable Foe the next.
+	if c := cardWithCode(t, table, "01125"); c.Zone != ZoneTable || c.X != 600 || c.Y != 20 {
+		t.Errorf("Defense Network = %+v, want on the table at (600, 20)", c)
+	}
+	foe := cardWithCode(t, table, "24049")
+	if foe.Zone != ZoneTable || foe.Area != AreaVillain || foe.Face != 1 || foe.X != 760 || foe.Y != 20 {
+		t.Errorf("Formidable Foe = %+v, want in the villain area at (760, 20), face 1", foe)
+	}
+}
+
+func TestSetupWithSetInPlayIsDeterministic(t *testing.T) {
+	cfg := rhinoConfig()
+	cfg.Standard = "standard_iii"
+	first := startedGame(t, cfg).Table
+	second := startedGame(t, cfg).Table
+
+	if !slices.Equal(first.Piles[PileEncounter].Cards, second.Piles[PileEncounter].Cards) {
+		t.Error("the same seed gives two different encounter decks")
+	}
+	if a, b := cardWithCode(t, first, "45075").ID, cardWithCode(t, second, "45075").ID; a != b {
+		t.Errorf("Pursued by the Past ids = %s and %s, want the same", a, b)
+	}
+}
+
 func TestSetupPlayers(t *testing.T) {
 	cat := newCatalog(t)
 	g := startedGame(t, rhinoConfig())

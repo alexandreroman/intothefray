@@ -1923,12 +1923,6 @@
       "kind": "modular"
     },
     {
-      "code": "standard_pvp",
-      "name": "Standard PVP",
-      "pack": "cw",
-      "kind": "standard"
-    },
-    {
       "code": "the_initiative",
       "name": "The Initiative",
       "pack": "cw",
