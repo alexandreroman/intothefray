@@ -2,6 +2,7 @@
   import ConfirmDialog from './ConfirmDialog.svelte';
   import { on } from 'svelte/events';
   import Icon from './Icon.svelte';
+  import Icons from '../table/Icons.svelte';
   import Logo from './Logo.svelte';
 
   let {
@@ -173,7 +174,8 @@
           }
         }}
       >
-        <Icon name="ready-all" />
+        <!-- The action bar's family: Exhaust, the other way round. -->
+        <Icons name="ready-all" />
       </button>
     {/if}
     {#if spectators > 0}

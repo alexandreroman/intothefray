@@ -5,6 +5,7 @@
 <script lang="ts" module>
   export type IconName =
     | 'exhaust'
+    | 'ready-all'
     | 'flip'
     | 'discard'
     | 'stage-pick'
@@ -33,6 +34,14 @@
     <!-- A card standing (faint, dashed) and the same card lying on its side. -->
     <rect x="3" y="2.5" width="9" height="13" rx="1.5" stroke-dasharray="2 2.2" opacity=".55" />
     <rect x="7" y="11" width="14" height="9.5" rx="1.5" fill="currentColor" fill-opacity=".18" />
+  {:else if name === 'ready-all'}
+    <!--
+      Exhaust the other way round: the card lying on its side (faint, dashed) stands up again;
+      a second card standing behind it says "all".
+    -->
+    <rect x="3" y="12" width="14" height="9.5" rx="1.5" stroke-dasharray="2 2.2" opacity=".55" />
+    <rect x="12" y="1.5" width="9" height="13" rx="1.5" opacity=".55" />
+    <rect x="8.5" y="4" width="9" height="13" rx="1.5" fill="currentColor" fill-opacity=".18" />
   {:else if name === 'flip'}
     <!-- A card with its vertical axis, and a curved arrow above: it turns over. -->
     <rect x="6.5" y="8.5" width="11" height="14" rx="1.6" />

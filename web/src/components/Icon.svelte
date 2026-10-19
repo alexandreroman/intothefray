@@ -8,8 +8,7 @@
     | 'exit-fullscreen'
     | 'cross'
     | 'rows-all'
-    | 'rows-focus'
-    | 'ready-all';
+    | 'rows-focus';
 
   let { name }: { name: Name } = $props();
 
@@ -48,11 +47,6 @@
     <rect x="4" y="4" width="16" height="4" rx="1" />
     <rect x="4" y="10" width="16" height="4" rx="1" />
     <rect x="4" y="16" width="16" height="4" rx="1" />
-  {:else if name === 'ready-all'}
-    <!-- A tilted card turning upright. -->
-    <rect x="3" y="7" width="8" height="12" rx="1.5" transform="rotate(-25 7 13)" opacity=".45" />
-    <rect x="11" y="6" width="9" height="13" rx="1.5" />
-    <path d="M4.5 5.5a6 6 0 0 1 6-2.5M10.5 3l-.3 2.4M10.5 3 8.2 2.3" />
   {:else if name === 'rows-focus'}
     <!-- The villain's row, and one player's row under it. -->
     <rect x="4" y="5" width="16" height="5" rx="1" fill="currentColor" fill-opacity=".25" />
