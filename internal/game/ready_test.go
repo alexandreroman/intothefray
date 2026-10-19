@@ -2,6 +2,7 @@ package game
 
 import (
 	"errors"
+	"strings"
 	"testing"
 )
 
@@ -56,6 +57,24 @@ func TestReadyAllReadiesTheActorsCardsInOneLine(t *testing.T) {
 	checkReplay(t, f.doFixture)
 }
 
+func TestReadyAllSkipsLockedCards(t *testing.T) {
+	f := newReadyFixture(t)
+	f.mustDo(t, "h", Action{Kind: ActStatus, Card: f.played, Name: statusLocked, Delta: 1}, at(6))
+
+	f.mustDo(t, "h", Action{Kind: ActReadyAll}, at(7))
+
+	if f.g.Table.Cards[f.identity].Exhausted {
+		t.Error("the identity is still exhausted")
+	}
+	if !f.g.Table.Cards[f.played].Exhausted {
+		t.Error("Ready all readied a locked card")
+	}
+	if got, want := f.lastLog().Text, "readied all their cards (1)"; got != want {
+		t.Errorf("last line = %q, want %q", got, want)
+	}
+	checkReplay(t, f.doFixture)
+}
+
 func TestReadyAllRefusedWithNothingToReady(t *testing.T) {
 	f := newReadyFixture(t)
 	f.mustDo(t, "h", Action{Kind: ActReadyAll}, at(6))
@@ -64,6 +83,30 @@ func TestReadyAllRefusedWithNothingToReady(t *testing.T) {
 	err := f.do("h", Action{Kind: ActReadyAll}, at(7))
 	if !errors.Is(err, ErrInvalid) {
 		t.Errorf("second Ready all = %v, want ErrInvalid", err)
+	}
+}
+
+func TestLockedCardIsExhaustedButNeverReadied(t *testing.T) {
+	f := newDoFixture(t)
+	id := f.identity(t)
+	f.mustDo(t, "h", Action{Kind: ActStatus, Card: id, Name: statusLocked, Delta: 1}, at(1))
+	if got, want := f.lastLog().Text, "added 1 locked status to "; !strings.HasPrefix(got, want) {
+		t.Errorf("last line = %q, want it to start with %q", got, want)
+	}
+
+	f.mustDo(t, "h", Action{Kind: ActExhaust, Card: id}, at(2))
+	if err := f.do("h", Action{Kind: ActExhaust, Card: id}, at(3)); !errors.Is(err, ErrInvalid) {
+		t.Errorf("readying a locked card = %v, want ErrInvalid", err)
+	}
+	if !f.g.Table.Cards[id].Exhausted {
+		t.Error("a locked card was readied")
+	}
+
+	// Unlocked, it readies again.
+	f.mustDo(t, "h", Action{Kind: ActStatus, Card: id, Name: statusLocked, Delta: -1}, at(4))
+	f.mustDo(t, "h", Action{Kind: ActExhaust, Card: id}, at(5))
+	if f.g.Table.Cards[id].Exhausted {
+		t.Error("an unlocked card did not ready")
 	}
 }
 

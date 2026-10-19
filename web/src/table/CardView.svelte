@@ -35,6 +35,7 @@
     ['stunned', 'Stunned'],
     ['confused', 'Confused'],
     ['tough', 'Tough'],
+    ['locked', 'Locked'],
   ] as const;
 
   const hidden = $derived(isHidden(card));
@@ -142,7 +143,12 @@
           data-counter="status:{k}"
           role="presentation"
           onpointerenter={(event) => interaction.enterCounter(target, event)}
-          onpointerleave={() => interaction.leaveCounter()}>{label}{n > 1 ? ` ×${n}` : ''}</span
+          onpointerleave={() => interaction.leaveCounter()}
+          >{#if k === 'locked'}<svg class="lock" viewBox="0 0 10 10" aria-hidden="true"
+              ><rect x="1.5" y="4.5" width="7" height="5" rx="1" /><path
+                d="M3 4.5V3a2 2 0 0 1 4 0v1.5"
+              /></svg
+            >{/if}{label}{n > 1 ? ` ×${n}` : ''}</span
         >
       {/each}
     </div>
@@ -364,5 +370,20 @@
 
   .st.tough {
     background: linear-gradient(#f0a53a, #a8600f);
+  }
+
+  .st.locked {
+    background: linear-gradient(#7d8aa8, #46506b);
+  }
+
+  /* The small lock before the Locked label. */
+  .st .lock {
+    width: 8px;
+    height: 8px;
+    margin-right: 3px;
+    vertical-align: -1px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.4;
   }
 </style>

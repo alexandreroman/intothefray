@@ -470,10 +470,14 @@ func applyPlay(t *Table, a Action) error {
 	return nil
 }
 
+// statusLocked keeps a card from readying: it is exhausted as usual, but
+// neither an exhaust nor a Ready all readies it.
+const statusLocked = "locked"
+
 // Counter names a card can carry.
 var (
 	tokenNames  = []string{"dmg", "thr", "gen"}
-	statusNames = []string{"stunned", "confused", "tough"}
+	statusNames = []string{"stunned", "confused", "tough", statusLocked}
 )
 
 // applyExhaust sets the exhausted state resolve recorded (see

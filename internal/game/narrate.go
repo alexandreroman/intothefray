@@ -103,6 +103,7 @@ var counterNouns = map[string]counterNoun{
 	"stunned":  {"stunned status", "stunned statuses"},
 	"confused": {"confused status", "confused statuses"},
 	"tough":    {"tough status", "tough statuses"},
+	"locked":   {"locked status", "locked statuses"},
 }
 
 // hiddenCard is how the history names a card nobody could see.

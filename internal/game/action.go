@@ -242,24 +242,27 @@ func checkCard(t *Table, seat int, c *Card) error {
 }
 
 // resolveExhaust records whether the card ends exhausted (see
-// Action.Exhausted).
+// Action.Exhausted). A locked card is exhausted, but never readied.
 func resolveExhaust(t *Table, seat int, a Action) (Action, error) {
 	c, err := usableTableCard(t, seat, a.Card)
 	if err != nil {
 		return a, err
+	}
+	if c.Exhausted && locked(c) {
+		return a, invalid("card %q is locked: it does not ready", c.ID)
 	}
 	a.Exhausted = new(!c.Exhausted)
 	return a, nil
 }
 
 // resolveReadyAll records the cards to ready: every exhausted table card of
-// the acting player's, in id order. A rebuild readies
+// the acting player's, but the locked ones, in id order. A rebuild readies
 // those cards, whatever lies on the table then.
 func resolveReadyAll(t *Table, seat int, a Action) (Action, error) {
 	a.Cards = nil
 	for _, id := range slices.Sorted(maps.Keys(t.Cards)) {
 		c := t.Cards[id]
-		if c.Zone == ZoneTable && c.Owner == seat && c.Exhausted {
+		if c.Zone == ZoneTable && c.Owner == seat && c.Exhausted && !locked(c) {
 			a.Cards = append(a.Cards, id)
 		}
 	}
@@ -267,6 +270,12 @@ func resolveReadyAll(t *Table, seat int, a Action) (Action, error) {
 		return a, invalid("no card of seat %d to ready", seat)
 	}
 	return a, nil
+}
+
+// locked reports whether c carries the locked status, which keeps it from
+// readying.
+func locked(c *Card) bool {
+	return c.Status[statusLocked] > 0
 }
 
 // resolveFlip records the side the card ends on: a face-down card turns face

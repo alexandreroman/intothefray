@@ -777,8 +777,9 @@ describe('tokens and statuses', () => {
       ['Stunned (1)', 'S'],
       ['Confused', 'C'],
       ['Tough', 'G'],
+      ['Locked', 'L'],
     ]);
-    expect(within(menu).getAllByRole('menuitem')).toHaveLength(6);
+    expect(within(menu).getAllByRole('menuitem')).toHaveLength(7);
   });
 
   it('a token choice adds one', async () => {

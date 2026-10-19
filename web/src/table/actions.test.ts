@@ -187,6 +187,7 @@ describe('actionsFor', () => {
       ['Status', 'stunned', 'Stunned', 'S'],
       ['Status', 'confused', 'Confused', 'C'],
       ['Status', 'tough', 'Tough', 'G'],
+      ['Status', 'locked', 'Locked', 'L'],
     ]);
     expect(actionOf(item(counters, 'thr'))).toEqual({
       kind: 'token',
@@ -267,7 +268,24 @@ describe('actionsFor', () => {
       'Stunned (1)',
       'Confused',
       'Tough',
+      'Locked',
     ]);
+  });
+
+  it('an exhausted locked card cannot be readied; a ready one can still be exhausted', () => {
+    const lockedCard = (exhausted: boolean) =>
+      makeView({ cards: [card('mine', { exhausted, status: { locked: 1 } })] });
+
+    expect(item(itemsFor({ kind: 'card', id: 'mine' }, lockedCard(true)), 'exhaust')).toMatchObject(
+      {
+        label: 'Ready',
+        tip: 'Locked: this card does not ready',
+        disabled: true,
+      },
+    );
+    expect(
+      item(itemsFor({ kind: 'card', id: 'mine' }, lockedCard(false)), 'exhaust'),
+    ).toMatchObject({ label: 'Exhaust', tip: 'Exhaust', disabled: false });
   });
 
   it('a card with several faces shows flip', () => {

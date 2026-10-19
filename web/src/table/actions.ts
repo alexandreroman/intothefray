@@ -82,7 +82,13 @@ const STATUSES = [
   { name: 'stunned', label: 'Stunned', key: 'S' },
   { name: 'confused', label: 'Confused', key: 'C' },
   { name: 'tough', label: 'Tough', key: 'G' },
+  { name: 'locked', label: 'Locked', key: 'L' },
 ];
+
+/** Whether a card carries the Locked status: exhausted, it does not ready (the server refuses). */
+export function isLocked(card: CardView): boolean {
+  return (card.status?.locked ?? 0) > 0;
+}
 
 /** The lower-case name of a token or status, as the pill says it: "damage", "stunned". */
 export function counterName(kind: 'token' | 'status', name: string): string {
@@ -199,12 +205,14 @@ function cardActions(card: CardView, context: Context): ActionItem[] {
 
 function exhaustItem(card: CardView): ActionItem {
   const label = card.exhausted ? 'Ready' : 'Exhaust';
+  const stuck = card.exhausted === true && isLocked(card);
   return {
     id: 'exhaust',
     label,
     icon: 'exhaust',
     key: 'E',
-    tip: label,
+    tip: stuck ? 'Locked: this card does not ready' : label,
+    disabled: stuck,
     pressed: card.exhausted,
     group: GROUP_TURN,
     // The server decides the outcome (resolveExhaust): the client sends only the card.

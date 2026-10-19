@@ -141,6 +141,15 @@ describe('CardView', () => {
     expect(container.querySelector('.st.tough')?.textContent).toBe('Tough ×2');
   });
 
+  it('shows the Locked status with a small lock', () => {
+    const card = tableCard({ status: { locked: 1 } });
+    const { container } = render(CardView, { card, face: face() });
+
+    const tab = container.querySelector('.st.locked');
+    expect(tab?.textContent).toBe('Locked');
+    expect(tab?.querySelector('svg.lock')).not.toBeNull();
+  });
+
   /** The counter names of the tokens in each group of the card. */
   function tokenGroups(container: HTMLElement): Record<string, string[]> {
     const groups: Record<string, string[]> = {};

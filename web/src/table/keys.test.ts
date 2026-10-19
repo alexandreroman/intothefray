@@ -183,9 +183,10 @@ describe('keys on the table', () => {
     expect(session.act).toHaveBeenCalledOnce();
   });
 
-  it('Shift + Space does nothing without an exhausted card of your own, nor in a field', async () => {
+  it('Shift + Space does nothing without a card of yours to ready, nor in a field', async () => {
+    // Alex's card is exhausted, but locked: it does not ready.
     const villainOnly = [
-      card('mine', { x: 280 }),
+      card('mine', { x: 280, exhausted: true, status: { locked: 1 } }),
       card('v', { code: '01094', owner: -1, back: 'villain', exhausted: true }),
     ];
     const { session } = await renderTable(makeView({ cards: villainOnly }));
