@@ -601,7 +601,7 @@ describe('actionsFor', () => {
     ]);
   });
 
-  it('spectator only browses public piles, opens out-of-play piles and sees the stage choice', () => {
+  it('spectator only browses public piles and opens out-of-play piles', () => {
     const view = makeView();
     view.you = { role: 'spectator', name: 'Kim', color: -1, host: false };
     const spectator: { role: Role } = { role: 'spectator' };
@@ -620,30 +620,15 @@ describe('actionsFor', () => {
       // Spectators have no game keys (P5b-R6): the tooltip shows none.
       expect(items[0]?.key).toBeUndefined();
     }
-    const stage = itemsFor({ kind: 'card', id: 'v' }, view, spectator);
-    expect(stage.map((it) => it.id)).toEqual(['stage']);
-    expect(stage[0]?.run?.()).toEqual({ local: 'stageBox' });
   });
 
-  it('spectator sees the cards of the villain and the main scheme, read-only', () => {
+  it('spectator gets no stage action on the villain and the main scheme', () => {
     const view = makeView();
     view.you = { role: 'spectator', name: 'Kim', color: -1, host: false };
     const spectator: { role: Role } = { role: 'spectator' };
 
-    const villain = itemsFor({ kind: 'card', id: 'v' }, view, spectator);
-    expect(villain).toHaveLength(1);
-    expect(villain[0]).toMatchObject({
-      id: 'stage',
-      label: 'See the villain cards',
-      tip: 'See the villain cards',
-      icon: 'stage-pick',
-    });
-    expect(villain[0]?.key).toBeUndefined();
-    expect(villain[0]?.run?.()).toEqual({ local: 'stageBox' });
-
-    const scheme = itemsFor({ kind: 'card', id: 's' }, view, spectator);
-    expect(scheme.map((it) => it.label)).toEqual(['See the main scheme cards']);
-    expect(scheme[0]?.run?.()).toEqual({ local: 'stageBox' });
+    expect(actionsFor({ kind: 'card', id: 'v' }, view, spectator)).toEqual([]);
+    expect(actionsFor({ kind: 'card', id: 's' }, view, spectator)).toEqual([]);
   });
 
   it('hand card gets no bar', () => {

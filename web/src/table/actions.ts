@@ -148,15 +148,12 @@ export function actionsFor(
 
 /**
  * A spectator's read-only bar (ruling P5c-R2): Browse… on the piles whose
- * cards everyone sees, and See the cards of a stage, whose box is read-only.
+ * cards everyone sees. Cards in play, the villain and main scheme included, get none.
  */
 function spectatorActions(el: TableElement, table: TableView): ActionItem[] {
   switch (el.kind) {
-    case 'card': {
-      const card = table.cards.find((c) => c.id === el.id);
-      const shownBy = table.stages.find((stage) => stage.current === el.id);
-      return card?.zone === 'table' && shownBy ? [stageReadItem(shownBy)] : [];
-    }
+    case 'card':
+      return [];
     case 'pile': {
       const pile = table.piles.find((p) => p.id === el.id);
       if (!pile) {
@@ -218,15 +215,7 @@ function exhaustItem(card: CardView): ActionItem {
 
 /** The card a stage shows has no Flip: its card choice lists every face instead. */
 function stageItem(stage: Stage): ActionItem {
-  return stageBoxItem(`Choose the ${stage.label.toLowerCase()} card to show`);
-}
-
-/** A spectator's way into the same box, which only shows the stage's cards. */
-function stageReadItem(stage: Stage): ActionItem {
-  return stageBoxItem(`See the ${stage.label.toLowerCase()} cards`);
-}
-
-function stageBoxItem(label: string): ActionItem {
+  const label = `Choose the ${stage.label.toLowerCase()} card to show`;
   return {
     id: 'stage',
     label,
