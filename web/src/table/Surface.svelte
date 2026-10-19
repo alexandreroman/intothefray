@@ -24,6 +24,7 @@
   import type { PackFace, CardView as TableCard, PileView as Pile } from '../lib/types';
   import CardView from './CardView.svelte';
   import FirstPlayerToken from './FirstPlayerToken.svelte';
+  import { overflowTip } from '../lib/overflowTip';
   import { interaction } from './interaction.svelte';
   import PileView from './PileView.svelte';
 
@@ -78,7 +79,7 @@
       style:width="{owner.frame.w}px"
       style:height="{owner.frame.h}px"
     >
-      <span class="owner">{owner.name}</span>
+      <span class="owner" use:overflowTip>{owner.name}</span>
       {#if owner.tip}
         <!-- The tooltip is for the pointer: screen readers read the hand count here. -->
         <span class="sr-only">: {owner.tip}</span>

@@ -3,6 +3,7 @@ import { tick } from 'svelte';
 import Table from './Table.svelte';
 import { interaction, LINGER_MS } from './interaction.svelte';
 import { knownCard, loadGameCards, loadIndex, type CardInfo } from '../lib/catalog';
+import { cutShort } from '../lib/overflowTip.testing';
 import { clearPrefMemory } from '../lib/prefs';
 import type {
   CardView as TableCard,
@@ -224,6 +225,16 @@ describe('Table', () => {
     render(Table, { session: fakeSession(), view: makeView() });
     await catalogLoaded();
     expect(loadGameCards).toHaveBeenCalledExactlyOnceWith('g1');
+  });
+
+  it("shows an owner's full name in a tooltip when it is cut short", async () => {
+    render(Table, { session: fakeSession(), view: makeView() });
+    await catalogLoaded();
+
+    const name = ownerBoxes()[1]!.querySelector<HTMLElement>('.owner')!;
+    cutShort(name);
+    await fireEvent.pointerOver(name);
+    expect(name.dataset.tip).toBe('Alex');
   });
 
   it("frames each owner's deck and discard pile, named after them, their hand count as tip", async () => {

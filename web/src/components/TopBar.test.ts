@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import TopBar from './TopBar.svelte';
+import { cutShort } from '../lib/overflowTip.testing';
 
 // jsdom has no Fullscreen API: each test installs the one it needs, as own
 // properties that shadow nothing and are simply deleted afterwards.
@@ -57,6 +58,15 @@ describe('TopBar', () => {
       ' / Bomb Scare',
       ' / Masters of Evil',
     ]);
+  });
+
+  it('shows the full crumbs in a tooltip when they are cut short', async () => {
+    const { container } = render(TopBar, { crumbs: ['Rhino', 'Bomb Scare'] });
+    const crumbs = container.querySelector<HTMLElement>('.crumbs')!;
+
+    cutShort(crumbs);
+    await fireEvent.pointerOver(crumbs);
+    expect(crumbs.dataset.tip).toBe('Rhino / Bomb Scare');
   });
 
   it('offers Ready all on the table, off while there is nothing to ready', async () => {

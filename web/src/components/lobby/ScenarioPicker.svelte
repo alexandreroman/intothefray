@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { overflowTip } from '../../lib/overflowTip';
   import type { Difficulty, Index, LobbyConfig, ScenarioRef, View } from '../../lib/types';
 
   let {
@@ -66,6 +67,41 @@
       }))
       .filter((group) => group.scenarios.length > 0),
   );
+
+  // The host's list shows the first pack's name and two rows of villains; the rest scrolls.
+  let villains = $state<HTMLElement>();
+  let visibleHeight = $state<number | null>(null);
+
+  /** The height of the first pack's name and two rows of tiles, null while nothing is laid out. */
+  function twoRowsHeight(list: HTMLElement): number | null {
+    const header = list.querySelector('.pkname');
+    const grid = list.querySelector('.vgrid');
+    const tile = list.querySelector('.vil');
+    if (!header || !grid || !tile) {
+      return null;
+    }
+    const tileHeight = tile.getBoundingClientRect().height;
+    if (tileHeight === 0) {
+      return null;
+    }
+    const rowGap = parseFloat(getComputedStyle(grid).rowGap) || 0;
+    return header.getBoundingClientRect().height + 2 * tileHeight + rowGap;
+  }
+
+  // A tile's height follows its width: measured again whenever the list is resized.
+  $effect(() => {
+    const list = villains;
+    if (!list || !isHost) {
+      return;
+    }
+    // Read so that a new filter, with another first pack, observes the list anew.
+    void groups;
+    const observer = new ResizeObserver(() => {
+      visibleHeight = twoRowsHeight(list);
+    });
+    observer.observe(list);
+    return () => observer.disconnect();
+  });
 
   function configure(changes: Partial<LobbyConfig>): void {
     onconfigure({
@@ -140,7 +176,11 @@
         bind:value={filter}
       />
     {/if}
-    <div class="villains">
+    <div
+      class="villains"
+      bind:this={villains}
+      style:--visible-height={visibleHeight === null ? undefined : `${visibleHeight}px`}
+    >
       {#each groups as group (group.pack.code)}
         <div class="pack">
           <div class="pkname">{group.pack.name}</div>
@@ -153,7 +193,6 @@
                 class:unsupported={!scenario.supported}
                 aria-pressed={selected}
                 disabled={!isHost || !scenario.supported}
-                title="{scenario.name} — {group.pack.name}"
                 onclick={() => chooseScenario(scenario)}
               >
                 {#if scenario.image}
@@ -169,7 +208,7 @@
                 {#if !scenario.supported}
                   <span class="soon">Not supported yet</span>
                 {/if}
-                <span class="nm">{scenario.name}</span>
+                <span class="nm" use:overflowTip>{scenario.name}</span>
               </button>
             {/each}
           </div>
@@ -289,9 +328,9 @@
     margin-bottom: 4px;
   }
 
-  /* The whole range scrolls inside the box. */
+  /* The whole range scrolls inside the box, from a fixed height until measured. */
   .villains {
-    max-height: 520px;
+    max-height: var(--visible-height, 520px);
     overflow-y: auto;
     margin-right: -10px;
     padding-right: 10px;
@@ -461,22 +500,27 @@
     font-size: 13px;
   }
 
+  /* A pill as tall as an encounter set's chip: 1px border, 3px padding, 26px buttons = 34px. */
   .seg {
     display: inline-flex;
-    gap: 4px;
-    padding: 4px;
+    gap: 2px;
+    height: 34px;
+    padding: 3px;
     border: 1px solid var(--line);
-    border-radius: 12px;
+    border-radius: 999px;
     background: var(--table-bg);
   }
 
   .seg button {
-    height: 36px;
-    padding: 0 18px;
+    height: 26px;
+    padding: 0 14px;
     border: 0;
-    border-radius: 8px;
+    border-radius: 999px;
     color: var(--muted);
+    font-size: 13px;
     font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
   }
 
   .seg button.on {

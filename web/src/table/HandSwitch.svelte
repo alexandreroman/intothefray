@@ -57,10 +57,12 @@
     border: 1px solid var(--line);
     border-radius: 12px;
     box-shadow: 0 6px 16px #0008;
+    max-width: 100%;
     pointer-events: auto;
   }
 
   .deck {
+    min-width: 0;
     display: flex;
     align-items: center;
     gap: 6px;
@@ -79,7 +81,20 @@
     box-shadow: inset 0 -2px 0 var(--seat);
   }
 
+  /*
+    The hero stays on one line, cut short with an ellipsis. No overflowTip here: the swatch's own
+    tooltip already names the hero in full.
+  */
+  .hero {
+    min-width: 0;
+    max-width: 12em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   .count {
+    flex: none;
     min-width: 18px;
     padding: 0 5px;
     border-radius: 999px;

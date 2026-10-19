@@ -1,5 +1,7 @@
 <script lang="ts">
   import type { DeckView, UnsupportedCard } from '../../lib/types';
+  import Icon from '../Icon.svelte';
+  import DeckNames from './DeckNames.svelte';
   import HeroThumb from './HeroThumb.svelte';
 
   /**
@@ -31,6 +33,7 @@
 
   const label = $derived(slot === null ? 'Deck link' : `Deck ${slot} link`);
   const removeLabel = $derived(slot === null ? 'Remove this deck' : `Remove deck ${slot}`);
+  const changeLabel = $derived(slot === null ? 'Change deck' : `Change deck ${slot}`);
   const signature = $derived(JSON.stringify([deck.hero, deck.deckName]));
   const showForm = $derived(!deck.ready || changingFrom === signature);
   const unsupportedCount = $derived(deckError?.reduce((sum, card) => sum + card.qty, 0) ?? 0);
@@ -84,13 +87,19 @@
   {:else}
     <div class="loaded">
       <HeroThumb image={deck.heroImage} name={deck.heroName} large />
-      <div class="info">
-        <b>{deck.heroName}</b>
-        <!-- The view carries no card count for a deck, so none is shown. -->
-        <span>{deck.deckName}</span>
+      <!-- The view carries no card count for a deck, so none is shown. -->
+      <DeckNames heroName={deck.heroName ?? ''} deckName={deck.deckName ?? ''} />
+      <div class="tools">
+        <button
+          class="btn-ghost tool change"
+          data-tip={changeLabel}
+          aria-label={changeLabel}
+          onclick={() => (changingFrom = signature)}
+        >
+          <Icon name="pencil" />
+        </button>
+        {@render remove()}
       </div>
-      <button class="btn" onclick={() => (changingFrom = signature)}>Change</button>
-      {@render remove()}
     </div>
   {/if}
 </div>
@@ -98,7 +107,7 @@
 {#snippet remove()}
   {#if onremove}
     <button
-      class="btn-ghost remove"
+      class="btn-ghost tool remove"
       data-tip={removeLabel}
       aria-label={removeLabel}
       onclick={onremove}
@@ -128,35 +137,29 @@
 
   .loaded {
     display: flex;
-    gap: 14px;
+    gap: 8px;
     align-items: center;
   }
 
-  .info {
-    flex: 1;
-    min-width: 0;
+  /* The names stand wider apart from the hero image than from the buttons. */
+  .loaded > :global(.names) {
+    margin-left: 6px;
   }
 
-  .info b {
-    display: block;
-    font-size: 17px;
-  }
-
-  .info span {
-    display: block;
-    margin-top: 2px;
-    color: var(--muted);
-    font-size: 13px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .remove {
+  /*
+    The slot's icon buttons, change and remove, side by side. Their glyphs line up with the
+    section's edge: the buttons reach into its padding by their own inset.
+  */
+  .tools {
     flex: none;
-    width: 32px;
-    height: 32px;
-    margin-top: -8px;
+    display: flex;
+    margin-right: -7px;
+  }
+
+  .tool {
+    flex: none;
+    width: 28px;
+    height: 28px;
     padding: 0;
     color: var(--faint);
     display: inline-flex;
@@ -164,8 +167,14 @@
     justify-content: center;
   }
 
-  .loaded .remove {
-    margin-top: 0;
+  /* Alone beside the label, the remove button stays on the label's line. */
+  .lblrow .tool {
+    margin: -6px -7px 0 0;
+  }
+
+  /* Icon draws at 1.25em: a 15px pencil, beside the 14px cross. */
+  .change {
+    font-size: 12px;
   }
 
   .remove svg {

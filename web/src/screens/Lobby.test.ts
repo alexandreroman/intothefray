@@ -1,5 +1,7 @@
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
+import { tick } from 'svelte';
 import Lobby from './Lobby.svelte';
+import { cutShort } from '../lib/overflowTip.testing';
 import { loadIndex } from '../lib/catalog';
 import { GameSession } from '../lib/session.svelte';
 import type {
@@ -148,6 +150,13 @@ function renderLive() {
   };
 }
 
+/** The seat of a player in the players area. */
+function seatRow(playerName: string): HTMLElement {
+  const row = screen.getByText(playerName).closest('.seat');
+  if (!(row instanceof HTMLElement)) throw new Error(`no row for ${playerName}`);
+  return row;
+}
+
 function renderLobby(fields: {
   you?: YouView;
   players?: PlayerView[];
@@ -231,6 +240,61 @@ describe('Lobby', () => {
     expect(screen.getByRole('button', { name: /Klaw/ }).getAttribute('aria-pressed')).toBe('false');
     expect(screen.getByText('Modular sets')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Remove Bomb Scare' })).toBeTruthy();
+  });
+
+  it('shows the full scenario name in a tooltip when it is cut short, and no native title', async () => {
+    renderLobby({});
+
+    const klaw = await screen.findByRole('button', { name: /Klaw/ });
+    // The pack's name shows in the header above, and support on the tile itself.
+    expect(klaw.hasAttribute('title')).toBe(false);
+    const name = klaw.querySelector<HTMLElement>('.nm')!;
+    cutShort(name);
+    await fireEvent.pointerOver(name);
+    expect(name.dataset.tip).toBe('Klaw');
+  });
+
+  it('shows the first pack and two rows of villains, the rest scrolling', async () => {
+    // jsdom lays nothing out: the observer is triggered and the sizes are set by hand.
+    const observed: { callback: ResizeObserverCallback; targets: Element[] }[] = [];
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        private readonly entry: { callback: ResizeObserverCallback; targets: Element[] };
+        constructor(callback: ResizeObserverCallback) {
+          this.entry = { callback, targets: [] };
+          observed.push(this.entry);
+        }
+        observe(target: Element): void {
+          this.entry.targets.push(target);
+        }
+        unobserve(): void {}
+        disconnect(): void {
+          this.entry.targets = [];
+        }
+      },
+    );
+    try {
+      renderLobby({});
+      await screen.findByRole('button', { name: /Klaw/ });
+      const list = document.querySelector<HTMLElement>('.villains')!;
+      expect(list.style.getPropertyValue('--visible-height')).toBe('');
+
+      const sized = (height: number) => () => new DOMRect(0, 0, 200, height);
+      list.querySelector<HTMLElement>('.pkname')!.getBoundingClientRect = sized(41);
+      list.querySelector<HTMLElement>('.vil')!.getBoundingClientRect = sized(112.5);
+      list.querySelector<HTMLElement>('.vgrid')!.style.rowGap = '12px';
+      for (const { callback, targets } of observed) {
+        if (targets.includes(list)) {
+          callback([], {} as ResizeObserver);
+        }
+      }
+      await tick();
+
+      expect(list.style.getPropertyValue('--visible-height')).toBe(`${41 + 2 * 112.5 + 12}px`);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   it('names no deck provider in its copy', async () => {
@@ -348,7 +412,19 @@ describe('Lobby', () => {
 
     const image = await screen.findByRole('img', { name: 'Spider-Man' });
     expect(image.getAttribute('src')).toBe('hero.jpg');
-    expect(screen.getByText('Spider-Man — Friendly neighbourhood')).toBeTruthy();
+    expect(within(seatRow('Jo')).getByText('Spider-Man').tagName).toBe('B');
+    expect(within(seatRow('Jo')).getByText('Friendly neighbourhood')).toBeTruthy();
+  });
+
+  it("shows a seat's full hero and deck names in a tooltip when they are cut short", async () => {
+    renderLobby({ players: [alex, { ...jo, decks: [spiderMan] }] });
+
+    for (const name of ['Spider-Man', 'Friendly neighbourhood']) {
+      const line = within(seatRow('Jo')).getByText(name);
+      cutShort(line);
+      await fireEvent.pointerOver(line);
+      expect(line.dataset.tip).toBe(name);
+    }
   });
 
   it('shows a placeholder for a player without a hero image', () => {
@@ -449,9 +525,9 @@ describe('Lobby', () => {
   it('row lists each slot', () => {
     renderLobby({ players: [{ ...alex, decks: [spiderMan, noDeck] }, sam] });
 
-    const row = screen.getByText('Alex').closest('.seat');
-    if (!(row instanceof HTMLElement)) throw new Error('no row for Alex');
-    expect(within(row).getByText('Spider-Man — Friendly neighbourhood')).toBeTruthy();
+    const row = seatRow('Alex');
+    expect(within(row).getByText('Spider-Man')).toBeTruthy();
+    expect(within(row).getByText('Friendly neighbourhood')).toBeTruthy();
     expect(within(row).getByText('No deck yet')).toBeTruthy();
     expect(within(row).getByText('you · host')).toBeTruthy();
   });
@@ -547,9 +623,10 @@ describe('Lobby', () => {
       ],
     });
 
-    expect(screen.getByText(`${hostile} — <b>bold</b>`)).toBeTruthy();
+    expect(screen.getByText(hostile)).toBeTruthy();
+    expect(screen.getByText('<b>bold</b>')).toBeTruthy();
     expect(document.querySelector('img[src="x"]')).toBeNull();
-    expect(document.querySelector('.deck b')).toBeNull();
+    expect([...document.querySelectorAll('b')].some((b) => b.textContent === 'bold')).toBe(false);
   });
 
   it('shows a failed deck load under the slot that was loaded', async () => {

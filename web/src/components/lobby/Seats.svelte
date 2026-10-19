@@ -2,6 +2,7 @@
   import { onDestroy } from 'svelte';
   import { href } from '../../lib/router.svelte';
   import type { PlayerView, View } from '../../lib/types';
+  import DeckNames from './DeckNames.svelte';
   import HeroThumb from './HeroThumb.svelte';
 
   let {
@@ -131,9 +132,11 @@
         {#each player.decks as deck, slot (slot)}
           <div class="slot">
             <HeroThumb image={deck.heroImage} name={deck.heroName} />
-            <div class="deck">
-              {deck.ready ? `${deck.heroName ?? '?'} — ${deck.deckName ?? ''}` : 'No deck yet'}
-            </div>
+            {#if deck.ready}
+              <DeckNames heroName={deck.heroName ?? '?'} deckName={deck.deckName ?? ''} />
+            {:else}
+              <div class="nodeck">No deck yet</div>
+            {/if}
             <span class="st" class:ok={deck.ready}>
               <i></i>{deck.ready ? 'Ready' : 'Waiting'}
             </span>
@@ -240,14 +243,11 @@
     font-size: 15px;
   }
 
-  .deck {
+  .nodeck {
     flex: 1;
     min-width: 0;
     color: var(--muted);
     font-size: 13px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 
   .st {

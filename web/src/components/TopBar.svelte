@@ -4,6 +4,7 @@
   import Icon from './Icon.svelte';
   import Icons from '../table/Icons.svelte';
   import Logo from './Logo.svelte';
+  import { overflowTip } from '../lib/overflowTip';
 
   let {
     spectators = 0,
@@ -122,7 +123,7 @@
     <Logo />
     {#if crumbHead !== undefined}
       <span class="divider" aria-hidden="true"></span>
-      <span class="crumbs">
+      <span class="crumbs" use:overflowTip>
         <b>{crumbHead}</b>{#each crumbRest as crumb, i (i)}<span class="rest">{` / ${crumb}`}</span
           >{/each}
       </span>
