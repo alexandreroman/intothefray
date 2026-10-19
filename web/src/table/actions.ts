@@ -6,6 +6,7 @@
 import { knownCard } from '../lib/catalog';
 import type { IconName } from './Icons.svelte';
 import { isOutOfPlay } from './layout';
+import { seatOf, seatPlayer } from './seats';
 import type { Action, Area, CardView, PileView, Role, Stage, TableView, View } from '../lib/types';
 
 /**
@@ -96,11 +97,11 @@ export function counterName(kind: 'token' | 'status', name: string): string {
   return (counters.find((counter) => counter.name === name)?.label ?? name).toLowerCase();
 }
 
-/** What every builder needs to know: the table and the viewer's seat. */
+/** What every builder needs to know: the table and the viewer's own seats. */
 interface Context {
   view: View;
   table: TableView;
-  seat: number;
+  seats: number[];
 }
 
 /**
@@ -113,7 +114,7 @@ interface Context {
 export function actionsFor(
   el: TableElement,
   view: View,
-  you: { area?: Area; role: Role },
+  you: { areas?: readonly Area[]; role: Role },
 ): ActionItem[] | { text: string } {
   if (!view.table) {
     return [];
@@ -121,11 +122,11 @@ export function actionsFor(
   if (you.role === 'spectator') {
     return spectatorActions(el, view.table);
   }
-  const seat = you.area ? seatOf(you.area) : null;
-  if (seat === null) {
+  const seats = (you.areas ?? []).map(seatOf);
+  if (seats.length === 0) {
     return [];
   }
-  const context: Context = { view, table: view.table, seat };
+  const context: Context = { view, table: view.table, seats };
 
   switch (el.kind) {
     case 'card': {
@@ -181,11 +182,6 @@ function spectatorActions(el: TableElement, table: TableView): ActionItem[] {
     case 'hand':
       return [];
   }
-}
-
-/** The seat index of a seat area: "p1" is seat 1. */
-export function seatOf(area: Area): number {
-  return Number(area.slice(1));
 }
 
 // ---- Cards in play ----
@@ -336,10 +332,11 @@ function isInStackOf(id: string, root: string, table: TableView): boolean {
 }
 
 function moveMenu(card: CardView, context: Context): ActionItem[] {
-  const own = card.owner === context.seat;
+  const own = context.seats.includes(card.owner);
   const menu: ActionItem[] = [];
 
-  // Encounter cards go to no hand; other players' cards only to theirs.
+  // Encounter cards go to no hand; the viewer's cards to the hand of their own deck (the server picks
+  // it), other players' cards only to theirs.
   if (own) {
     menu.push({
       id: 'hand',
@@ -373,7 +370,7 @@ function moveMenu(card: CardView, context: Context): ActionItem[] {
       run: () => toPile(card, 'vic'),
     });
   }
-  const aside = asidePileOf(card, context.seat);
+  const aside = asidePileOf(card, context.seats);
   if (hasPile(context.table, aside)) {
     outOfPlay.push({ id: 'aside', label: 'Set aside', group: 0, run: () => toPile(card, aside) });
   }
@@ -396,9 +393,9 @@ export function discardPileOf(card: CardView): string {
   return card.owner === -1 ? 'encd' : `disc:p${card.owner}`;
 }
 
-/** The set-aside pile for a card: the viewer's own for their cards, the scenario's for any other. */
-export function asidePileOf(card: CardView, seat: number): string {
-  return card.owner === seat ? `aside:p${seat}` : 'saside';
+/** The set-aside pile for a card: its deck's own for the viewer's cards, the scenario's for any other. */
+export function asidePileOf(card: CardView, seats: readonly number[]): string {
+  return seats.includes(card.owner) ? `aside:p${card.owner}` : 'saside';
 }
 
 function toDeck(card: CardView, where: 'top' | 'bottom' | 'shuffle'): Action {
@@ -417,7 +414,7 @@ function hasPile(table: TableView, id: string): boolean {
 
 function pileActions(pile: PileView, context: Context): ActionItem[] | { text: string } {
   // Shared piles have no owner (-1).
-  const own = pile.owner === -1 || pile.owner === context.seat;
+  const own = pile.owner === -1 || context.seats.includes(pile.owner);
   const outOfPlay = outOfPlayItems(pile, context.table);
   switch (pile.kind) {
     case 'deck':
@@ -426,7 +423,7 @@ function pileActions(pile: PileView, context: Context): ActionItem[] | { text: s
         if (outOfPlay.length > 0) {
           return outOfPlay;
         }
-        const name = context.view.players[pile.owner]?.name ?? 'another player';
+        const name = seatPlayer(context.view, pile.owner)?.name ?? 'another player';
         return { text: `Belongs to ${name} — only they can use it.` };
       }
       return [
@@ -511,7 +508,7 @@ function outOfPlayItem(
 }
 
 function drawOneItem(): ActionItem {
-  // The server draws from the acting player's own deck: no pile is sent.
+  // The server draws from the deck of the credited seat, the deck's owner (creditedSeat): no pile is sent.
   return {
     id: 'draw1',
     label: 'Draw 1',

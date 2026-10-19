@@ -3,10 +3,11 @@
 // the pointer, measures the screen and calls them.
 
 import type { Action, Area, CardView, PileView, View } from '../lib/types';
-import { discardPileOf, homeDeckOf, seatOf, stageHeldBy } from './actions';
+import { discardPileOf, homeDeckOf, stageHeldBy } from './actions';
 import type { Pressable } from './interaction.svelte';
 import { GRID, TABLE_LIMIT } from './layout';
 import { ALL_ROWS, type RowMap } from './rows';
+import { ownSeats } from './seats';
 
 /** A press turns into a drag once the pointer has moved this far, in screen pixels. */
 export const DRAG_THRESHOLD = 4;
@@ -60,7 +61,7 @@ export type DragSource =
   | { kind: 'pile'; pile: string; card: string }
   /** The unknown top card of the encounter deck, dealt face down. */
   | { kind: 'encounter'; pile: string }
-  /** The unknown top card of the viewer's own deck: drawn, discarded, or played face up. */
+  /** The unknown top card of one of the viewer's own decks: drawn, discarded, or played face up. */
   | { kind: 'deck'; pile: string }
   /** The first player token (spec 5.8), from where it lies. */
   | { kind: 'firstPlayer'; x: number; y: number };
@@ -167,7 +168,7 @@ export function dropAction(
   }
 }
 
-/** A table card goes back to the hand; the top card of the viewer's deck is drawn. */
+/** A table card goes back to its owner's hand; the top card of the viewer's deck is drawn. */
 function toHand(drag: DragSource): Action | null {
   switch (drag.kind) {
     case 'card':
@@ -307,8 +308,8 @@ export function dealRecipient(piles: readonly PileView[], y: number, viewer: Are
  */
 export function sourceOf(element: Pressable, view: View, taken?: string): DragSource | null {
   const table = view.table;
-  const area = view.you.area;
-  if (view.you.role !== 'player' || !area || !table) {
+  const seats = ownSeats(view);
+  if (seats.length === 0 || !table) {
     return null;
   }
   switch (element.kind) {
@@ -323,8 +324,14 @@ export function sourceOf(element: Pressable, view: View, taken?: string): DragSo
       return card.onPile ? { ...source, onPile: card.onPile } : source;
     }
     case 'hand': {
-      const hand = table.hand ?? [];
-      return hand.includes(element.id) ? { kind: 'hand', card: element.id, hand, area } : null;
+      for (const seat of seats) {
+        const area: Area = `p${seat}`;
+        const hand = table.hands?.[area] ?? [];
+        if (hand.includes(element.id)) {
+          return { kind: 'hand', card: element.id, hand, area };
+        }
+      }
+      return null;
     }
     case 'pile': {
       const pile = table.piles.find((p) => p.id === element.id);
@@ -336,7 +343,7 @@ export function sourceOf(element: Pressable, view: View, taken?: string): DragSo
       }
       // A deck is private to its owner, as checkPile has it.
       if (pile.kind === 'deck') {
-        return `p${pile.owner}` === area ? { kind: 'deck', pile: pile.id } : null;
+        return seats.includes(pile.owner) ? { kind: 'deck', pile: pile.id } : null;
       }
       // Out-of-play piles are not drawn on the table: only a discard pile is dragged from.
       const open = pile.kind === 'discard' || pile.kind === 'encounterDiscard';
@@ -348,23 +355,23 @@ export function sourceOf(element: Pressable, view: View, taken?: string): DragSo
 }
 
 /**
- * Whether the hand takes the dragged card: a table card of the viewer's own,
- * as Move to ▾ Hand has it (ruling P5b-R10), or the top card of their deck,
- * which is drawn. The prototype takes it from anywhere over the fan.
+ * The hand that takes the dragged card, or null when no hand does: a table
+ * card of one of the viewer's own decks goes to that deck's hand, as Move to
+ * ▾ Hand has it (ruling P5b-R10), and the top card of one of their decks is
+ * drawn into that deck's hand. The prototype takes it from anywhere over the fan.
  */
-export function goesToHand(drag: DragSource, view: View): boolean {
-  const seat = view.you.area ? seatOf(view.you.area) : null;
-  if (view.you.role !== 'player' || seat === null) {
-    return false;
-  }
-  // Only the viewer's own deck can be dragged (sourceOf): its top card is drawn.
+export function handAreaOf(drag: DragSource, view: View): Area | null {
+  const table = view.table;
+  let owner: number | undefined;
   if (drag.kind === 'deck') {
-    return true;
+    owner = table?.piles.find((p) => p.id === drag.pile)?.owner;
+  } else if (drag.kind === 'card') {
+    owner = table?.cards.find((c) => c.id === drag.card)?.owner;
   }
-  if (drag.kind !== 'card') {
-    return false;
+  if (owner === undefined || !ownSeats(view).includes(owner)) {
+    return null;
   }
-  return view.table?.cards.find((c) => c.id === drag.card)?.owner === seat;
+  return `p${owner}`;
 }
 
 /** A pile a drag can go onto, and what the drop does there. */
@@ -376,15 +383,14 @@ export interface PileTarget {
 
 /**
  * The piles a dragged card can go to, as its Move to ▾ menu has them: its
- * owner's deck (the viewer's own cards and encounter cards only), its discard
- * pile, the victory display, and a set-aside pile (the viewer's own for their
- * cards, the scenario's for any other). The encounter deck can only have its
- * top card discarded.
+ * owner's deck (the viewer's own cards and encounter cards only) and its
+ * discard pile. The top card of one of the viewer's decks goes to that deck's
+ * discard pile, the encounter deck's to the encounter discard pile.
  */
 export function pileTargets(drag: DragSource, view: View): PileTarget[] {
   const table = view.table;
-  const seat = view.you.area ? seatOf(view.you.area) : null;
-  if (!table || seat === null) {
+  const seats = ownSeats(view);
+  if (!table || seats.length === 0) {
     return [];
   }
   if (drag.kind === 'firstPlayer') {
@@ -396,7 +402,8 @@ export function pileTargets(drag: DragSource, view: View): PileTarget[] {
     return [encounterDiscard].filter(exists);
   }
   if (drag.kind === 'deck') {
-    const discard: PileTarget = { pile: `disc:p${seat}`, drop: 'discard', label: 'Discard' };
+    const owner = table.piles.find((p) => p.id === drag.pile)?.owner;
+    const discard: PileTarget = { pile: `disc:p${owner}`, drop: 'discard', label: 'Discard' };
     return [discard].filter(exists);
   }
 
@@ -407,7 +414,7 @@ export function pileTargets(drag: DragSource, view: View): PileTarget[] {
   }
   const targets: PileTarget[] = [];
   // A deck is private to its owner: the viewer's own cards and encounter cards only.
-  if (card.owner === seat || card.owner === -1) {
+  if (seats.includes(card.owner) || card.owner === -1) {
     targets.push({ pile: homeDeckOf(card), drop: 'top', label: 'Top of deck' });
   }
   // The out-of-play piles are not drawn: Move to ▾ sends a card there.

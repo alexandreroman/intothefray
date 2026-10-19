@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import Table from './Table.svelte';
 import { interaction } from './interaction.svelte';
-import { freeSlot } from './keys';
+import { freeSlot, handleKey, type KeyTable } from './keys';
 import { openModal } from '../components/modal.svelte';
 import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
 import type {
@@ -71,16 +71,14 @@ function makeView(extra: Partial<View> & { cards?: TableCard[] } = {}): View {
   return {
     id: 'g1',
     phase: 'playing',
-    you: { role: 'player', name: 'Alex', color: 0, host: true, area: 'p0' },
+    you: { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0'] },
     players: [
       {
         name: 'Alex',
         color: 0,
         host: true,
-        area: 'p0',
-        heroName: 'Spider-Man',
         ready: true,
-        handCount: 1,
+        decks: [{ area: 'p0', heroName: 'Spider-Man', ready: true, handCount: 1 }],
       },
     ],
     spectators: 0,
@@ -91,7 +89,7 @@ function makeView(extra: Partial<View> & { cards?: TableCard[] } = {}): View {
         pile('deck:p0', { owner: 0, x: 0 }),
         pile('enc', { kind: 'encounter', x: 500, count: 20 }),
       ],
-      hand: ['h'],
+      hands: { p0: ['h'] },
       stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
       firstPlayer: { x: 860, y: 40 },
     },
@@ -610,5 +608,70 @@ describe('freeSlot', () => {
       x: 1200,
       y: 360,
     });
+  });
+});
+
+describe('a player with two decks', () => {
+  /** Alex plays p0 (deck at y 0) and p1 (deck at y 330); h4 is in the hand of p1. */
+  function twoDeckView(): View {
+    return makeView({
+      you: { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0', 'p1'] },
+      table: {
+        cards: [card('h', { zone: 'hand' }), card('h4', { zone: 'hand', owner: 1 })],
+        piles: [pile('deck:p0', { owner: 0 }), pile('deck:p1', { owner: 1, y: 330 })],
+        hands: { p0: ['h'], p1: ['h4'] },
+        stages: [],
+        firstPlayer: { x: 860, y: 40 },
+      },
+    });
+  }
+
+  function keyTable(view: View): KeyTable {
+    return {
+      view,
+      items: [],
+      zoom: 1,
+      setZoom: vi.fn(),
+      run: vi.fn(),
+      act: vi.fn(),
+      canReadyAll: false,
+      showKeys: vi.fn(),
+      selectNextDeck: vi.fn(),
+      sizeOf: () => 'std',
+    };
+  }
+
+  function keyDown(key: string, extra: KeyboardEventInit = {}): KeyboardEvent {
+    return new KeyboardEvent('keydown', { key, cancelable: true, ...extra });
+  }
+
+  it('Q selects next own deck', () => {
+    const table = keyTable(twoDeckView());
+    const event = keyDown('q');
+    handleKey(event, table);
+    expect(table.selectNextDeck).toHaveBeenCalledOnce();
+    expect(event.defaultPrevented).toBe(true);
+
+    handleKey(keyDown('Q', { repeat: true }), table);
+    expect(table.selectNextDeck).toHaveBeenCalledOnce();
+  });
+
+  it('Q does nothing with one deck, nor for a spectator', () => {
+    const single = keyTable(makeView());
+    handleKey(keyDown('q'), single);
+    expect(single.selectNextDeck).not.toHaveBeenCalled();
+
+    const spectating = twoDeckView();
+    spectating.you = { role: 'spectator', color: -1, host: false };
+    const watcher = keyTable(spectating);
+    handleKey(keyDown('q'), watcher);
+    expect(watcher.selectNextDeck).not.toHaveBeenCalled();
+  });
+
+  it("P plays a card of the second deck's hand to that deck's row", () => {
+    const table = keyTable(twoDeckView());
+    interaction.hovered = { kind: 'hand', id: 'h4' };
+    handleKey(keyDown('p'), table);
+    expect(table.act).toHaveBeenCalledWith({ kind: 'play', card: 'h4', x: 760, y: 330 });
   });
 });

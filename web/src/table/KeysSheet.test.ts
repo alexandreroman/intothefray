@@ -33,8 +33,16 @@ function makeView(): View {
   return {
     id: 'g1',
     phase: 'playing',
-    you: { role: 'player', name: 'Alex', color: 0, host: true, area: 'p0' },
-    players: [{ name: 'Alex', color: 0, host: true, area: 'p0', ready: true, handCount: 0 }],
+    you: { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0'] },
+    players: [
+      {
+        name: 'Alex',
+        color: 0,
+        host: true,
+        ready: true,
+        decks: [{ area: 'p0', ready: true, handCount: 0 }],
+      },
+    ],
     spectators: 0,
     config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
     table: {

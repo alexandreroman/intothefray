@@ -80,17 +80,29 @@ function makeView(extra: { cards?: CardView[]; piles?: PileView[] } = {}): View 
   return {
     id: 'g1',
     phase: 'playing',
-    you: { role: 'player', name: 'Alex', color: 0, host: true, area: 'p0' },
+    you: { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0'] },
     players: [
-      { name: 'Alex', color: 0, host: true, area: 'p0', ready: true, handCount: 1 },
-      { name: 'Sam', color: 1, host: false, area: 'p1', ready: true, handCount: 0 },
+      {
+        name: 'Alex',
+        color: 0,
+        host: true,
+        ready: true,
+        decks: [{ area: 'p0', ready: true, handCount: 1 }],
+      },
+      {
+        name: 'Sam',
+        color: 1,
+        host: false,
+        ready: true,
+        decks: [{ area: 'p1', ready: true, handCount: 0 }],
+      },
     ],
     spectators: 0,
     config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
     table: {
       cards,
       piles,
-      hand: ['h'],
+      hands: { p0: ['h'] },
       stages: [
         { key: 'villain', label: 'Villain', current: 'v', cards: ['v'] },
         { key: 'main', label: 'Main scheme', current: 's', cards: ['s'] },
@@ -101,12 +113,12 @@ function makeView(extra: { cards?: CardView[]; piles?: PileView[] } = {}): View 
   };
 }
 
-const ALEX: { area: Area; role: Role } = { area: 'p0', role: 'player' };
+const ALEX: { areas: Area[]; role: Role } = { areas: ['p0'], role: 'player' };
 
 function itemsFor(
   el: TableElement,
   view = makeView(),
-  you: { area?: Area; role: Role } = ALEX,
+  you: { areas?: readonly Area[]; role: Role } = ALEX,
 ): ActionItem[] {
   const result = actionsFor(el, view, you);
   if (!Array.isArray(result)) {
@@ -620,5 +632,72 @@ describe('actionsFor', () => {
   it('an element that is gone gets no bar', () => {
     expect(actionsFor({ kind: 'card', id: 'gone' }, makeView(), ALEX)).toEqual([]);
     expect(actionsFor({ kind: 'pile', id: 'gone' }, makeView(), ALEX)).toEqual([]);
+  });
+});
+
+describe('a player with two decks', () => {
+  const TWO_DECKS: { areas: Area[]; role: Role } = { areas: ['p0', 'p1'], role: 'player' };
+
+  /** Alex plays p0 and p1 (Spider-Man), Sam p2. */
+  function twoDeckView(piles?: PileView[]): View {
+    const view = makeView({
+      cards: [card('second', { owner: 1 }), card('sams', { owner: 2 })],
+      piles: piles ?? [
+        pile('deck:p1', { owner: 1, count: 30 }),
+        pile('aside:p1', { kind: 'aside', owner: 1, count: 1, cards: ['z'] }),
+        pile('deck:p2', { owner: 2, count: 30 }),
+      ],
+    });
+    view.you.areas = ['p0', 'p1'];
+    view.players = [
+      {
+        name: 'Alex',
+        color: 0,
+        host: true,
+        ready: true,
+        decks: [
+          { area: 'p0', heroName: 'Iron Man', ready: true, handCount: 0 },
+          { area: 'p1', heroName: 'Spider-Man', ready: true, handCount: 0 },
+        ],
+      },
+      {
+        name: 'Sam',
+        color: 1,
+        host: false,
+        ready: true,
+        decks: [{ area: 'p2', ready: true, handCount: 0 }],
+      },
+    ];
+    return view;
+  }
+
+  it('own deck actions for second seat', () => {
+    const view = twoDeckView();
+    const deck = itemsFor({ kind: 'pile', id: 'deck:p1' }, view, TWO_DECKS);
+    expect(groups(deck)).toEqual([['draw1', 'look', 'deck'], ['aside']]);
+
+    const move = menuOf(itemsFor({ kind: 'card', id: 'second' }, view, TWO_DECKS), 'moveTo');
+    expect(move.map((it) => it.id)).toEqual([
+      'hand',
+      'deckTop',
+      'deckBottom',
+      'deckShuffle',
+      'sep',
+      'aside',
+    ]);
+    expect(actionOf(item(move, 'aside'))).toEqual({
+      kind: 'toPile',
+      card: 'second',
+      target: 'aside:p1',
+    });
+  });
+
+  it("other player's deck belongs", () => {
+    const view = twoDeckView([pile('deck:p2', { owner: 2, count: 30 })]);
+    expect(actionsFor({ kind: 'pile', id: 'deck:p2' }, view, TWO_DECKS)).toEqual({
+      text: 'Belongs to Sam — only they can use it.',
+    });
+    const move = menuOf(itemsFor({ kind: 'card', id: 'sams' }, view, TWO_DECKS), 'moveTo');
+    expect(move.map((it) => it.id)).toEqual([]);
   });
 });

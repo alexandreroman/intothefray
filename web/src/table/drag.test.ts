@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import type { CardView, PileView, View } from '../lib/types';
+import type { CardView, PileView, TableView, View } from '../lib/types';
 import {
   dealRecipient,
   dropAction,
   dropTarget,
-  goesToHand,
+  handAreaOf,
   handBand,
   insertIndex,
   pileTargets,
@@ -42,21 +42,26 @@ function pile(id: string, extra: Partial<PileView> = {}): PileView {
 
 /** Alex (p0) is the viewer; Sam sits at p1. */
 function makeView(
-  extra: { cards?: CardView[]; piles?: PileView[]; spectator?: boolean } = {},
+  extra: {
+    cards?: CardView[];
+    piles?: PileView[];
+    hands?: TableView['hands'];
+    spectator?: boolean;
+  } = {},
 ): View {
   return {
     id: 'g1',
     phase: 'playing',
     you: extra.spectator
       ? { role: 'spectator', color: -1, host: false }
-      : { role: 'player', name: 'Alex', color: 0, host: true, area: 'p0' },
+      : { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0'] },
     players: [],
     spectators: 0,
     config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
     table: {
       cards: extra.cards ?? [],
       piles: extra.piles ?? [],
-      hand: ['h1', 'h2', 'h3'],
+      hands: extra.hands ?? { p0: ['h1', 'h2', 'h3'] },
       stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
       firstPlayer: { x: 0, y: 0 },
     },
@@ -511,7 +516,7 @@ describe('pileTargets', () => {
   });
 });
 
-describe('goesToHand', () => {
+describe('handAreaOf', () => {
   const view = makeView({
     cards: [
       card('mine'),
@@ -529,18 +534,18 @@ describe('goesToHand', () => {
       x: 0,
       y: 0,
     });
-    expect(goesToHand(tableCard('mine'), view)).toBe(true);
-    expect(goesToHand(tableCard('theirs'), view)).toBe(false);
-    expect(goesToHand(tableCard('enc'), view)).toBe(false);
+    expect(handAreaOf(tableCard('mine'), view)).toBe('p0');
+    expect(handAreaOf(tableCard('theirs'), view)).toBeNull();
+    expect(handAreaOf(tableCard('enc'), view)).toBeNull();
   });
 
   it('takes nothing from the hand or a pile, nor from a spectator', () => {
     const fromHand: DragSource = { kind: 'hand', card: 'h1', hand: ['h1'], area: 'p0' };
-    expect(goesToHand(fromHand, view)).toBe(false);
-    expect(goesToHand({ kind: 'pile', pile: 'disc:p0', card: 'd1' }, view)).toBe(false);
-    expect(goesToHand({ kind: 'encounter', pile: 'encd' }, view)).toBe(false);
+    expect(handAreaOf(fromHand, view)).toBeNull();
+    expect(handAreaOf({ kind: 'pile', pile: 'disc:p0', card: 'd1' }, view)).toBeNull();
+    expect(handAreaOf({ kind: 'encounter', pile: 'encd' }, view)).toBeNull();
     const spectating = makeView({ cards: [card('mine')], spectator: true });
-    expect(goesToHand(TABLE_CARD, spectating)).toBe(false);
+    expect(handAreaOf(TABLE_CARD, spectating)).toBeNull();
   });
 });
 
@@ -595,7 +600,7 @@ describe("the top card of the viewer's deck", () => {
   });
 
   it('is drawn when dropped on the hand', () => {
-    expect(goesToHand(deck, view)).toBe(true);
+    expect(handAreaOf(deck, view)).toBe('p0');
     const hand: DropRect = { kind: 'toHand', rect: rect(0, 0, 1, 1) };
     expect(dropAction(deck, hand, AT_ORIGIN, DEAL_TO)).toEqual({ kind: 'draw', n: 1 });
   });
@@ -670,6 +675,59 @@ describe('the first player token', () => {
     const table: DropRect = { kind: 'table', rect: rect(0, 0, 1, 1) };
     expect(dropAction(token, table, { x: 858, y: 42 }, DEAL_TO)).toBeNull();
     expect(pileTargets(token, makeView())).toEqual([]);
-    expect(goesToHand(token, makeView())).toBe(false);
+    expect(handAreaOf(token, makeView())).toBeNull();
+  });
+});
+
+describe('a player with two decks', () => {
+  /** Alex plays p0 and p1; Sam sits at p2. */
+  function twoDeckView(): View {
+    const view = makeView({
+      cards: [
+        card('second', { owner: 1 }),
+        card('sams', { owner: 2 }),
+        card('h4', { zone: 'hand', owner: 1 }),
+      ],
+      piles: [
+        pile('deck:p1', { owner: 1 }),
+        pile('disc:p1', { kind: 'discard', owner: 1, count: 0, cards: [] }),
+        pile('deck:p2', { owner: 2 }),
+        pile('disc:p2', { kind: 'discard', owner: 2, count: 0, cards: [] }),
+      ],
+      hands: { p0: ['h1', 'h2', 'h3'], p1: ['h4'] },
+    });
+    view.you.areas = ['p0', 'p1'];
+    return view;
+  }
+
+  it('drag to hand target for own second seat', () => {
+    const view = twoDeckView();
+    const tableCard = (id: string): DragSource => ({ kind: 'card', card: id, x: 0, y: 0 });
+    expect(handAreaOf(tableCard('second'), view)).toBe('p1');
+    expect(handAreaOf(tableCard('sams'), view)).toBeNull();
+    expect(handAreaOf({ kind: 'deck', pile: 'deck:p1' }, view)).toBe('p1');
+  });
+
+  it("drags from the second deck and its hand, never from another player's deck", () => {
+    const view = twoDeckView();
+    expect(sourceOf({ kind: 'pile', id: 'deck:p1' }, view)).toEqual({
+      kind: 'deck',
+      pile: 'deck:p1',
+    });
+    expect(sourceOf({ kind: 'pile', id: 'deck:p2' }, view)).toBeNull();
+    expect(sourceOf({ kind: 'hand', id: 'h4' }, view)).toEqual({
+      kind: 'hand',
+      card: 'h4',
+      hand: ['h4'],
+      area: 'p1',
+    });
+  });
+
+  it("offers the second deck's own piles", () => {
+    const view = twoDeckView();
+    const targets = (drag: DragSource) => pileTargets(drag, view).map((t) => t.pile);
+    expect(targets({ kind: 'card', card: 'second', x: 0, y: 0 })).toEqual(['deck:p1', 'disc:p1']);
+    expect(targets({ kind: 'card', card: 'sams', x: 0, y: 0 })).toEqual(['disc:p2']);
+    expect(targets({ kind: 'deck', pile: 'deck:p1' })).toEqual(['disc:p1']);
   });
 });

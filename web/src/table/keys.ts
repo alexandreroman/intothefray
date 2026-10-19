@@ -5,9 +5,10 @@
 
 import { modal } from '../components/modal.svelte';
 import type { Action, CardView, PileView, Size, View } from '../lib/types';
-import { seatOf, type ActionItem } from './actions';
+import type { ActionItem } from './actions';
 import { interaction } from './interaction.svelte';
 import { footprints, visualBox } from './layout';
+import { ownSeats } from './seats';
 import { ZOOM_STEP } from './zoom';
 
 // The free slot of a player's row (ruling P5b-R5): from x 760, where the
@@ -33,6 +34,8 @@ export interface KeyTable {
   canReadyAll: boolean;
   /** Shows the keyboard shortcuts sheet (a dialog: it has the keys while it is open). */
   showKeys: () => void;
+  /** Selects the viewer's next own deck, whose hand then shows (Q, with two decks or more). */
+  selectNextDeck: () => void;
   sizeOf: (card: CardView) => Size;
 }
 
@@ -121,6 +124,15 @@ function playerKey(event: KeyboardEvent, table: KeyTable): boolean {
     return true;
   }
 
+  // Q selects the next deck of a player with several, wherever the pointer is.
+  if (key === 'q' && !event.shiftKey) {
+    if (event.repeat || ownSeats(table.view).length < 2) {
+      return false;
+    }
+    table.selectNextDeck();
+    return true;
+  }
+
   // Shift + Space readies all the player's cards, wherever the pointer is. Handled even when
   // there is nothing to ready: Space never scrolls the page under the table.
   if (key === ' ' && event.shiftKey) {
@@ -206,12 +218,12 @@ function removeOne(adds: Action, table: KeyTable): boolean {
   return true;
 }
 
-/** P plays a card of the hand to the first free slot of the viewer's row, Backspace discards it. */
+/** P plays a card of the hand to the first free slot of its deck's row, Backspace discards it. */
 function handKey(key: string, id: string, table: KeyTable): boolean {
   switch (key) {
     case 'p': {
-      const seat = table.view.you.area ? seatOf(table.view.you.area) : null;
-      if (seat === null || !table.view.table) {
+      const seat = handSeatOf(id, table.view);
+      if (seat === undefined || !table.view.table) {
         return false;
       }
       const { cards, piles } = table.view.table;
@@ -225,6 +237,11 @@ function handKey(key: string, id: string, table: KeyTable): boolean {
     default:
       return false;
   }
+}
+
+/** The own seat whose hand holds the card, if any. */
+function handSeatOf(id: string, view: View): number | undefined {
+  return ownSeats(view).find((seat) => view.table?.hands?.[`p${seat}`]?.includes(id));
 }
 
 /**
