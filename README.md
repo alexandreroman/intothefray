@@ -85,6 +85,25 @@ container engine: Docker, or Podman with its Docker-compatible
 `make dev` and `make app-up` both bind port 8080: stop one before
 starting the other.
 
+### Casper workspaces
+
+The main checkout keeps the default ports (web 5173, server 8080,
+Redis 6379). In a [Casper](https://github.com/alexandreroman/casper-skills)
+worktree workspace, the setup hook of `.casper.json`
+(`scripts/casper.sh setup`) writes an untracked `.env.casper` from
+`CASPER_PORT`:
+
+| Service | Port              |
+| ------- | ----------------- |
+| Web     | `CASPER_PORT`     |
+| Server  | `CASPER_PORT + 1` |
+| Redis   | `CASPER_PORT + 2` |
+
+Several workspaces can then run `make dev` at the same time, each with
+its own compose project. `make dev` lists the workspace URLs in the
+Casper info panel and clears them when it stops. `.env.casper` wins
+over `.env.local`.
+
 `make packs` downloads the card data from marvelcdb and Cerebro
 (cached in `packs/.cache`), merges the hand-written files of
 `packs/curated/`, and writes the result to `packs/dist/`. Commit the
@@ -104,8 +123,11 @@ regenerated files with the change that caused them.
 `scheme://host[:port]` (http or https, no path): the server refuses
 to start otherwise.
 
-`make` loads `.env` when it exists, and `.env.local` for the
-development targets.
+`make` loads `.env` when it exists, and `.env.local` then
+`.env.casper` for the development targets (see
+[Casper workspaces](#casper-workspaces)). The web port is read from
+`WEB_PORT` (default `5173`) and the Redis host port of the compose
+stack from `REDIS_PORT` (default `6379`).
 
 ## Deployment
 

@@ -48,6 +48,9 @@ make web-build    # production build into web/dist/
 - `web/` — Svelte 5 + Vite SPA (standalone pnpm project; screens, lib,
   components, table: the table with its rendering, interactions,
   boxes, presence and animations)
+- `scripts/` — Casper workspace hooks (`casper.sh`: per-worktree ports,
+  info panel)
+- `.casper.json` — Casper workspace config (scripts and hooks)
 - `.github/workflows/` — `pages.yml` publishes `web/` to GitHub Pages
 - `Dockerfile` — container image of the server
 - `compose.yaml` — local stack: Redis (in memory) and the app service

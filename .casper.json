@@ -1,0 +1,12 @@
+{
+  "workspace": {
+    "scripts": {
+      "setup": "scripts/casper.sh setup",
+      "teardown": "scripts/casper.sh teardown",
+      "run": "make dev",
+      "test": "make test",
+      "check": "make check",
+      "build": "make build"
+    }
+  }
+}
