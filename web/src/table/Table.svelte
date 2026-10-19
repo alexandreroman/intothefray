@@ -553,8 +553,7 @@
         void tick().then(rehoverUnderPointer);
         return;
       }
-      const ownDrop = interaction.landing?.card ?? undefined;
-      const anims = diffViews(prev, next, ownDrop, session.viewGap);
+      const anims = diffViews(prev, next, interaction.landing ?? undefined, session.viewGap);
       void motion
         .animate(app, anims, { before: prev.table, after: next.table }, zoom)
         .then(async () => {

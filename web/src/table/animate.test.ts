@@ -1,5 +1,5 @@
-import type { CardView, LogView, PileView, View } from '../lib/types';
-import { diffViews, mergedLines } from './animate';
+import type { CardView, LogView, PileView, Point, View } from '../lib/types';
+import { diffViews, mergedLines, type OwnDrop } from './animate';
 
 function card(id: string, extra: Partial<CardView> = {}): CardView {
   return {
@@ -23,11 +23,22 @@ function line(text: string, extra: Partial<LogView> = {}): LogView {
   return { who: 'Sam', color: 1, text, at: '2026-10-19T14:05:00Z', ...extra };
 }
 
+/** The viewer's drop of a table card, waiting for the view that shows it. */
+function droppedCard(id: string): OwnDrop {
+  return { element: { kind: 'card', id }, card: id };
+}
+
 const OLD_LINE = line('started the game', { who: 'Alex', color: 0, at: '2026-10-19T14:00:00Z' });
 
 /** Alex (colour 0) in seat 0 and Sam (colour 1) in seat 1; the viewer is Alex. */
 function view(
-  extra: { cards?: CardView[]; piles?: PileView[]; log?: LogView[]; current?: string } = {},
+  extra: {
+    cards?: CardView[];
+    piles?: PileView[];
+    log?: LogView[];
+    current?: string;
+    firstPlayer?: Point;
+  } = {},
 ): View {
   const cards = extra.cards ?? [];
   return {
@@ -63,7 +74,7 @@ function view(
       stages: [
         { key: 'villain', label: 'Villain', current: extra.current ?? 'v1', cards: ['v1', 'v2'] },
       ],
-      firstPlayer: { x: 0, y: 0 },
+      firstPlayer: extra.firstPlayer ?? { x: 0, y: 0 },
     },
     log: extra.log ?? [OLD_LINE],
   };
@@ -198,7 +209,9 @@ describe('diffViews', () => {
 
     expect(diffViews(prev, played)).toEqual([{ kind: 'flip', id: 'fromDeck' }]);
     // The viewer's own play from the deck turns over too, as it lands.
-    expect(diffViews(prev, played, 'fromDeck')).toEqual([{ kind: 'flip', id: 'fromDeck' }]);
+    expect(
+      diffViews(prev, played, { element: { kind: 'pile', id: 'deck:p0' }, card: 'fromDeck' }),
+    ).toEqual([{ kind: 'flip', id: 'fromDeck' }]);
     expect(diffViews(view({ piles: [encounter(20)] }), revealed)).toEqual([
       { kind: 'flip', id: 'fromEncounter' },
     ]);
@@ -379,7 +392,7 @@ describe('diffViews', () => {
       cards: [card('a', { x: 300 }), card('u', { x: 300, y: 20, parent: 'a' })],
     });
 
-    expect(diffViews(prev, next, 'a')).toEqual([]);
+    expect(diffViews(prev, next, droppedCard('a'))).toEqual([]);
   });
 
   it('own drop onto a pile does not fly', () => {
@@ -390,7 +403,23 @@ describe('diffViews', () => {
       log: [OLD_LINE, line('discarded Spider-Man', { who: 'Alex', color: 0 })],
     });
 
-    expect(diffViews(prev, next, 'a')).toEqual([]);
+    expect(diffViews(prev, next, droppedCard('a'))).toEqual([]);
+  });
+
+  it("another player's move of the first player token yields its move", () => {
+    const prev = view({ firstPlayer: { x: 520, y: 500 } });
+    const next = view({ firstPlayer: { x: 160, y: 900 } });
+
+    expect(diffViews(prev, next)).toEqual([
+      { kind: 'firstPlayer', from: { x: 520, y: 500 }, to: { x: 160, y: 900 } },
+    ]);
+  });
+
+  it("the viewer's own drop of the first player token is not animated", () => {
+    const prev = view({ firstPlayer: { x: 520, y: 500 } });
+    const next = view({ firstPlayer: { x: 160, y: 900 } });
+
+    expect(diffViews(prev, next, { element: { kind: 'firstPlayer' }, card: null })).toEqual([]);
   });
 
   it('views more than 2 s apart yield nothing', () => {

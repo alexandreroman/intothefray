@@ -9,6 +9,7 @@ import type {
   CardView as TableCard,
   LogView,
   PileView,
+  Point,
   PresenceState,
   Stage,
   View,
@@ -59,7 +60,7 @@ function line(text: string, extra: Partial<LogView> = {}): LogView {
 /** Alex (colour 0, seat 0) and the viewer Sam (colour 1, seat 1). */
 function makeView(
   cards: TableCard[],
-  extra: { piles?: PileView[]; log?: LogView[]; stages?: Stage[] } = {},
+  extra: { piles?: PileView[]; log?: LogView[]; stages?: Stage[]; firstPlayer?: Point } = {},
 ): View {
   return {
     id: 'g1',
@@ -87,7 +88,7 @@ function makeView(
       cards,
       piles: extra.piles ?? PILES,
       stages: extra.stages ?? [],
-      firstPlayer: { x: 860, y: 40 },
+      firstPlayer: extra.firstPlayer ?? { x: 860, y: 40 },
     },
     log: extra.log ?? [START],
   };
@@ -255,6 +256,38 @@ describe('Table animations', () => {
     expect(keyframes[0]).toMatchObject({ translate: '-50px 0px' });
     expect(ghost()).toBeNull();
     expect(placedA().classList).not.toContain('lifted');
+  });
+
+  it("another player's move of the first player token slides it from where it was", async () => {
+    const session = fakeSession();
+    const { rerender } = render(Table, { session, view: makeView([]) });
+    await settle();
+
+    await rerender({ session, view: makeView([], { firstPlayer: { x: 160, y: 240 } }) });
+    await waitFor(() => expect(animationsOf('.surface .fptoken')).toHaveLength(1));
+    const [[keyframes, options]] = animationsOf('.surface .fptoken') as [
+      [Keyframe[], KeyframeAnimationOptions],
+    ];
+    expect(keyframes[0]).toMatchObject({ translate: '700px -200px' });
+    expect(keyframes[1]).toMatchObject({ translate: '0px 0px' });
+    expect(options.duration).toBe(250);
+  });
+
+  it("the viewer's own drop of the first player token does not move again", async () => {
+    const session = fakeSession();
+    const { rerender } = render(Table, { session, view: makeView([]) });
+    await settle();
+    interaction.land({
+      action: 1,
+      element: { kind: 'firstPlayer' },
+      card: null,
+      lifted: [],
+      handOrder: null,
+    });
+
+    await rerender({ session, view: makeView([], { firstPlayer: { x: 160, y: 240 } }) });
+    await settle();
+    expect(animationsOf('.surface .fptoken')).toEqual([]);
   });
 
   it('counts frames while a card moves, for the arrows to follow it', async () => {
