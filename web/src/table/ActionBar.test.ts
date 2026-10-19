@@ -118,6 +118,21 @@ function placed(id: string): HTMLElement {
   return element;
 }
 
+/** A rectangle on the screen, as getBoundingClientRect returns it. */
+function screenRect(left: number, top: number, width: number, height: number): DOMRect {
+  return {
+    left,
+    top,
+    width,
+    height,
+    right: left + width,
+    bottom: top + height,
+    x: left,
+    y: top,
+    toJSON: () => ({}),
+  } as DOMRect;
+}
+
 function bar(): HTMLElement | null {
   return screen.queryByRole('toolbar', { name: 'Actions' });
 }
@@ -440,6 +455,87 @@ describe('ActionBar', () => {
     await vi.advanceTimersByTimeAsync(1);
     expect(bar()).toBeNull();
     expect(noPreview()).toBe(true);
+  });
+
+  describe('on the way from the card to its bar', () => {
+    // The card 400..540 × 400..596, its 300 × 40 bar centred 8 px above it: 320..620 × 352..392.
+    beforeEach(() => {
+      vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+        this: HTMLElement,
+      ) {
+        if (this.classList.contains('tablewrap')) {
+          return screenRect(0, 50, 1000, 700);
+        }
+        if (this.classList.contains('actionbar')) {
+          return screenRect(0, 0, 300, 40);
+        }
+        if (this.dataset.id === 'mine') {
+          return screenRect(400, 400, 140, 196);
+        }
+        return screenRect(0, 0, 0, 0);
+      });
+    });
+
+    it('the bar waits for a pointer crossing the gap slowly', async () => {
+      await renderTable();
+      await fireEvent.pointerEnter(placed('mine'));
+      await waitFor(() => expect(bar()?.style.top).toBe('352px'));
+      vi.useFakeTimers();
+
+      // Out of the card's top edge, then up through the gap, a pixel at a time.
+      await fireEvent.pointerLeave(placed('mine'));
+      for (let y = 399; y >= 392; y--) {
+        await fireEvent.pointerMove(window, { clientX: 470, clientY: y });
+        await vi.advanceTimersByTimeAsync(2 * LINGER_MS);
+        expect(bar()).not.toBeNull();
+      }
+      await fireEvent.pointerEnter(bar()!);
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(bar()).not.toBeNull();
+      expect(interaction.hovered).toEqual({ kind: 'card', id: 'mine' });
+    });
+
+    it('the bar of a tilted card waits over the corner its turn leaves bare', async () => {
+      await renderTable();
+      await fireEvent.pointerEnter(placed('mine'));
+      await waitFor(() => expect(bar()?.style.top).toBe('352px'));
+      vi.useFakeTimers();
+
+      // Exhausted, the card leaves the top right of its box bare: the pointer goes up from there.
+      await fireEvent.pointerLeave(placed('mine'));
+      await fireEvent.pointerMove(window, { clientX: 530, clientY: 430 });
+      await vi.advanceTimersByTimeAsync(5 * LINGER_MS);
+      expect(bar()).not.toBeNull();
+    });
+
+    it('the bar lingers as usual once the pointer goes elsewhere', async () => {
+      await renderTable();
+      await fireEvent.pointerEnter(placed('mine'));
+      await waitFor(() => expect(bar()?.style.top).toBe('352px'));
+      vi.useFakeTimers();
+
+      await fireEvent.pointerLeave(placed('mine'));
+      await fireEvent.pointerMove(window, { clientX: 470, clientY: 396 });
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(bar()).not.toBeNull();
+
+      // Sideways, off the way to the bar.
+      await fireEvent.pointerMove(window, { clientX: 300, clientY: 396 });
+      await vi.advanceTimersByTimeAsync(LINGER_MS);
+      expect(bar()).toBeNull();
+    });
+
+    it('the bar lingers as usual after the pointer leaves the card downwards', async () => {
+      await renderTable();
+      await fireEvent.pointerEnter(placed('mine'));
+      await waitFor(() => expect(bar()?.style.top).toBe('352px'));
+      vi.useFakeTimers();
+
+      await fireEvent.pointerLeave(placed('mine'));
+      await fireEvent.pointerMove(window, { clientX: 470, clientY: 600 });
+      await vi.advanceTimersByTimeAsync(LINGER_MS);
+      expect(bar()).toBeNull();
+    });
   });
 
   it('ignores the pointerenter a redraw fires under a resting pointer', async () => {

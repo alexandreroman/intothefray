@@ -2,7 +2,8 @@
   The floating action bar of the hovered (or touch-selected) element:
   centred above it, or below it when there is no room above, and lined up on
   its left or right edge when centring would cross the visible table. It
-  stays while the pointer is on it, and is never moved under the pointer.
+  stays while the pointer is on it or on its way to it, however slowly, and
+  is never moved under the pointer.
   Its dropdowns open above it, or below it, always inside the visible table
   and the window (dropdown.ts).
 -->
@@ -48,6 +49,7 @@
     const element = anchor();
     if (!bar || !element) {
       position = null;
+      interaction.barWay = null;
       return;
     }
     const r = element.getBoundingClientRect();
@@ -55,7 +57,8 @@
     const own = bar.getBoundingClientRect();
 
     const above = r.top - own.height - GAP;
-    const y = above > w.top + 4 ? above : r.bottom + GAP;
+    const isAbove = above > w.top + 4;
+    const y = isAbove ? above : r.bottom + GAP;
 
     const left = w.left + EDGE;
     const right = w.right - EDGE;
@@ -67,6 +70,16 @@
       x = Math.min(right - own.width, r.right - own.width);
     }
     position = { x, y };
+
+    // From the bar to the middle of the element's box, as wide as both: a slow pointer spends longer than the
+    // linger crossing the gap, or the corner a tilted card leaves bare, on its way to the bar.
+    const middle = r.top + r.height / 2;
+    interaction.barWay = {
+      left: Math.max(w.left, Math.min(r.left, x)),
+      right: Math.min(w.right, Math.max(r.right, x + own.width)),
+      top: isAbove ? y + own.height : middle,
+      bottom: isAbove ? middle : y,
+    };
   }
 
   // Placed again whenever the items change (every redraw) or the table zooms,
@@ -202,6 +215,7 @@
   // scheduled: whatever replaced it is hovered already.
   onDestroy(() => {
     interaction.onBar = false;
+    interaction.barWay = null;
   });
 
   /** Whether a separator goes before the item at index i: a new group starts there. */
