@@ -66,6 +66,11 @@ type Set struct {
 	Name  string   `json:"name"`
 	Kind  string   `json:"kind"`
 	Cards []string `json:"cards"`
+	// InPlay lists, per difficulty, the cards of the set that start in play
+	// instead of in the encounter deck (the "Setup." keyword).
+	InPlay map[Difficulty][]FaceRef `json:"inPlay,omitempty"`
+	// Unlisted sets are left out of the lobby, e.g. the PvP standard set.
+	Unlisted bool `json:"unlisted,omitempty"`
 }
 
 // Hero links a hero identity card to its set, obligation and nemesis.

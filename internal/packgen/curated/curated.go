@@ -7,8 +7,10 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"maps"
 	"os"
 	"path/filepath"
+	"slices"
 
 	"github.com/alexandreroman/intothefray/internal/pack"
 )
@@ -31,13 +33,26 @@ type ScenarioDef struct {
 	SetAside []string                       `json:"setAside,omitempty"`
 }
 
+// SetDef completes a generated set with hand-written setup data.
+type SetDef struct {
+	// InPlay lists, per difficulty, the cards of the set that start in play
+	// instead of in the encounter deck (the "Setup." keyword).
+	InPlay map[pack.Difficulty][]pack.FaceRef `json:"inPlay,omitempty"`
+	// Unlisted keeps the set out of the lobby, e.g. the PvP standard set.
+	Unlisted bool `json:"unlisted,omitempty"`
+}
+
 // Curated is the content of a curated data directory.
 type Curated struct {
 	Scenarios []ScenarioDef
 	Cards     map[string]CardOverride
+	// Sets is keyed by set code. Whether each set and card exists is checked
+	// at build time, against the generated catalog.
+	Sets map[string]SetDef
 }
 
-// Load reads dir/scenarios/*.json and the optional dir/cards.json.
+// Load reads dir/scenarios/*.json and the optional dir/cards.json and
+// dir/sets.json.
 // Unknown fields are rejected so that typos in hand-written files surface.
 func Load(dir string) (Curated, error) {
 	var curated Curated
@@ -68,7 +83,29 @@ func Load(dir string) (Curated, error) {
 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return Curated{}, err
 	}
+
+	setsPath := filepath.Join(dir, "sets.json")
+	err = readStrict(setsPath, &curated.Sets)
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return Curated{}, err
+	}
+	if err := checkDifficulties(curated.Sets); err != nil {
+		return Curated{}, fmt.Errorf("%s: %w", setsPath, err)
+	}
 	return curated, nil
+}
+
+// checkDifficulties rejects the in-play cards listed under an unknown
+// difficulty, which setup would silently ignore.
+func checkDifficulties(defs map[string]SetDef) error {
+	for _, code := range slices.Sorted(maps.Keys(defs)) {
+		for _, difficulty := range slices.Sorted(maps.Keys(defs[code].InPlay)) {
+			if difficulty != pack.Standard && difficulty != pack.Expert {
+				return fmt.Errorf("set %q: unknown difficulty %q", code, difficulty)
+			}
+		}
+	}
+	return nil
 }
 
 func readStrict(path string, v any) error {

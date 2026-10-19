@@ -4,6 +4,7 @@ import (
 	"cmp"
 	"errors"
 	"fmt"
+	"maps"
 	"slices"
 
 	"github.com/alexandreroman/intothefray/internal/pack"
@@ -60,13 +61,17 @@ func Build(in Inputs) (Result, error) {
 	problems = append(problems, dropped...)
 
 	cardCodes := cardCodesOf(cards)
+	faceCounts := faceCountsOf(cards)
 	sets := pruneSets(BuildSets(in.MC, in.MCPacks), cardCodes)
+	if err := applySetDefs(sets, in.Curated.Sets, faceCounts); err != nil {
+		return Result{}, err
+	}
 	heroes, heroProblems := checkHeroes(BuildHeroes(in.MC), cardCodes)
 	problems = append(problems, heroProblems...)
 
 	scenarios, refs, scenarioProblems := BuildScenarios(in.Curated.Scenarios, cards, sets, in.CBSets)
 	problems = append(problems, scenarioProblems...)
-	scenarios, refs, faceProblems := dropInvalidFaceRefs(scenarios, refs, cards)
+	scenarios, refs, faceProblems := dropInvalidFaceRefs(scenarios, refs, faceCounts)
 	problems = append(problems, faceProblems...)
 
 	packs := assemblePacks(in.MCPacks, cards, sets, heroes, scenarios)
@@ -113,6 +118,17 @@ func cardCodesOf(cards map[string][]pack.Card) map[string]bool {
 	return codes
 }
 
+// faceCountsOf maps each card code to the number of faces of the card.
+func faceCountsOf(cards map[string][]pack.Card) map[string]int {
+	counts := make(map[string]int)
+	for _, packCards := range cards {
+		for _, card := range packCards {
+			counts[card.Code] = len(card.Faces)
+		}
+	}
+	return counts
+}
+
 // pruneSets removes the cards that were left out from the sets.
 func pruneSets(sets map[string][]pack.Set, cardCodes map[string]bool) map[string][]pack.Set {
 	for _, packSets := range sets {
@@ -123,6 +139,49 @@ func pruneSets(sets map[string][]pack.Set, cardCodes map[string]bool) map[string
 		}
 	}
 	return sets
+}
+
+// applySetDefs merges the curated set data into the generated sets. Unlike a
+// broken scenario, which is only reported as unsupported, a definition that
+// does not match the catalog fails the build: the set it completes would
+// otherwise be set up wrongly.
+func applySetDefs(sets map[string][]pack.Set, defs map[string]curated.SetDef, faceCounts map[string]int) error {
+	setsByCode := make(map[string]*pack.Set)
+	for _, packSets := range sets {
+		for i := range packSets {
+			setsByCode[packSets[i].Code] = &packSets[i]
+		}
+	}
+
+	for _, code := range slices.Sorted(maps.Keys(defs)) {
+		set, found := setsByCode[code]
+		if !found {
+			return fmt.Errorf("curated set %s is not in the catalog", code)
+		}
+		def := defs[code]
+		if err := checkInPlay(*set, def.InPlay, faceCounts); err != nil {
+			return fmt.Errorf("curated set %s: %w", code, err)
+		}
+		set.InPlay = def.InPlay
+		set.Unlisted = def.Unlisted
+	}
+	return nil
+}
+
+// checkInPlay makes sure every in-play card belongs to the set and has the
+// face it starts on.
+func checkInPlay(set pack.Set, inPlay map[pack.Difficulty][]pack.FaceRef, faceCounts map[string]int) error {
+	for _, difficulty := range slices.Sorted(maps.Keys(inPlay)) {
+		for _, ref := range inPlay[difficulty] {
+			if !slices.Contains(set.Cards, ref.Card) {
+				return fmt.Errorf("%s in-play card %s is not in the set", difficulty, ref.Card)
+			}
+			if ref.Face < 0 || ref.Face >= faceCounts[ref.Card] {
+				return fmt.Errorf("%s in-play card %s has no face %d", difficulty, ref.Card, ref.Face)
+			}
+		}
+	}
+	return nil
 }
 
 // checkHeroes drops the heroes whose identity card is missing and clears the
@@ -164,15 +223,8 @@ func checkHeroes(
 func dropInvalidFaceRefs(
 	scenarios map[string][]pack.Scenario,
 	refs []pack.ScenarioRef,
-	cards map[string][]pack.Card,
+	faceCounts map[string]int,
 ) (valid map[string][]pack.Scenario, updatedRefs []pack.ScenarioRef, problems []report.Unsupported) {
-	faceCounts := make(map[string]int)
-	for _, packCards := range cards {
-		for _, card := range packCards {
-			faceCounts[card.Code] = len(card.Faces)
-		}
-	}
-
 	valid = make(map[string][]pack.Scenario, len(scenarios))
 	for packCode, packScenarios := range scenarios {
 		for _, scenario := range packScenarios {
@@ -271,7 +323,7 @@ func buildIndex(packs []pack.PackFile, refs []pack.ScenarioRef, positions map[st
 			Position: packFile.Position,
 		})
 		for _, set := range packFile.Sets {
-			if isLobbyKind(set.Kind) {
+			if isLobbyKind(set.Kind) && !set.Unlisted {
 				index.Sets = append(index.Sets, pack.SetRef{
 					Code: set.Code, Name: set.Name, Pack: packFile.Code, Kind: set.Kind,
 				})
@@ -284,7 +336,8 @@ func buildIndex(packs []pack.PackFile, refs []pack.ScenarioRef, positions map[st
 	return index
 }
 
-// isLobbyKind tells whether the lobby can offer sets of this kind.
+// isLobbyKind tells whether the lobby can offer sets of this kind. Unlisted
+// sets stay out of the lobby whatever their kind.
 func isLobbyKind(kind string) bool {
 	return kind == modularKind || kind == "standard" || kind == "expert"
 }

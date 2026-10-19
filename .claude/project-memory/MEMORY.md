@@ -33,3 +33,4 @@
 - [Caddy as the local web server](references/project_caddy_entry_point.md) — Caddy serves web/dist from disk, single local entry point
 - [mise pins the frontend toolchain](references/project_mise_versions.md) — root mise.toml is the only node/pnpm version source
 - [Random player name](references/project_player_name.md) — no name prompt; random "Adjective Noun" name stored in itf-name
+- [Standard and Expert set setup](references/project_set_setup.md) — Setup-keyword set cards start in play via sets.json; Standard PvP unlisted

@@ -38,6 +38,8 @@ export interface PackSet {
   name: string;
   kind: string;
   cards: string[];
+  inPlay?: Partial<Record<Difficulty, FaceRef[]>>;
+  unlisted?: boolean;
 }
 
 export interface PackHero {

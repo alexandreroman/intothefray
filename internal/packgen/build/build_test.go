@@ -1,6 +1,7 @@
 package build
 
 import (
+	"reflect"
 	"slices"
 	"strings"
 	"testing"
@@ -200,5 +201,90 @@ func TestBuildKeepsValidScenario(t *testing.T) {
 func TestBuildFailsWithoutAnyPack(t *testing.T) {
 	if _, err := Build(Inputs{}); err == nil {
 		t.Error("expected an error for empty inputs")
+	}
+}
+
+// standardSetsInputs returns the core fixture plus a standard set whose
+// two-sided card 09003 starts in play, and a PvP standard set.
+func standardSetsInputs(t *testing.T, defs map[string]curated.SetDef) Inputs {
+	t.Helper()
+	standardCard := func(code, setCode, linkedTo string) marvelcdb.Card {
+		return marvelcdb.Card{
+			Code: code, Name: "Card " + code, TypeCode: "environment", PackCode: "core",
+			SetCode: setCode, SetName: setCode, SetType: "standard",
+			LinkedTo: linkedTo, ImageSrc: "/" + code + ".png", Quantity: 1,
+		}
+	}
+	mc := append(setsFixture(t),
+		standardCard("09003a", "standard_ii", "09003b"),
+		standardCard("09003b", "standard_ii", ""),
+		standardCard("09004", "standard_ii", ""),
+		standardCard("09005", "standard_pvp", ""),
+	)
+	return allAlive(Inputs{MC: mc, MCPacks: corePacks, Curated: curated.Curated{Sets: defs}})
+}
+
+func TestBuildMergesCuratedSets(t *testing.T) {
+	inPlay := map[pack.Difficulty][]pack.FaceRef{
+		pack.Standard: {{Card: "09003", Face: 0}},
+		pack.Expert:   {{Card: "09003", Face: 1}},
+	}
+	in := standardSetsInputs(t, map[string]curated.SetDef{
+		"standard_ii":  {InPlay: inPlay},
+		"standard_pvp": {Unlisted: true},
+	})
+
+	result, err := Build(in)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	sets := make(map[string]pack.Set)
+	for _, set := range result.Packs[0].Sets {
+		sets[set.Code] = set
+	}
+	if got := sets["standard_ii"]; !reflect.DeepEqual(got.InPlay, inPlay) || got.Unlisted {
+		t.Errorf("got standard_ii %+v, want in-play %v and listed", got, inPlay)
+	}
+	if got := sets["standard_pvp"]; !got.Unlisted || got.InPlay != nil {
+		t.Errorf("got standard_pvp %+v, want unlisted without in-play cards", got)
+	}
+	if got := sets["rhino"]; got.Unlisted || got.InPlay != nil {
+		t.Errorf("got rhino %+v, want it untouched", got)
+	}
+
+	var indexed []string
+	for _, ref := range result.Index.Sets {
+		indexed = append(indexed, ref.Code)
+	}
+	if !slices.Contains(indexed, "standard_ii") || slices.Contains(indexed, "standard_pvp") {
+		t.Errorf("got index sets %v, want standard_ii without standard_pvp", indexed)
+	}
+}
+
+func TestBuildRejectsInvalidCuratedSets(t *testing.T) {
+	inPlay := func(card string, face int) curated.SetDef {
+		return curated.SetDef{InPlay: map[pack.Difficulty][]pack.FaceRef{
+			pack.Standard: {{Card: card, Face: face}},
+		}}
+	}
+	tests := []struct {
+		name string
+		defs map[string]curated.SetDef
+		want string
+	}{
+		{"unknown set", map[string]curated.SetDef{"standard_iv": {Unlisted: true}}, "standard_iv is not in the catalog"},
+		{"card of another set", map[string]curated.SetDef{"standard_ii": inPlay("09005", 0)}, "09005 is not in the set"},
+		{"unknown card", map[string]curated.SetDef{"standard_ii": inPlay("09999", 0)}, "09999 is not in the set"},
+		{"face out of range", map[string]curated.SetDef{"standard_ii": inPlay("09003", 2)}, "09003 has no face 2"},
+		{"negative face", map[string]curated.SetDef{"standard_ii": inPlay("09004", -1)}, "09004 has no face -1"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := Build(standardSetsInputs(t, tt.defs))
+			if err == nil || !strings.Contains(err.Error(), tt.want) {
+				t.Fatalf("got error %v, want one containing %q", err, tt.want)
+			}
+		})
 	}
 }

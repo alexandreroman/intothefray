@@ -185,6 +185,8 @@ func TestConfigureValidates(t *testing.T) {
 		{"unknown scenario", "h", func(c *LobbyConfig) { c.Scenario = "nope" }, ErrInvalid},
 		{"expert without set", "h", func(c *LobbyConfig) { c.Difficulty = pack.Expert }, ErrInvalid},
 		{"expert set on standard", "h", func(c *LobbyConfig) { c.Expert = "expert" }, ErrInvalid},
+		{"other standard", "h", func(c *LobbyConfig) { c.Standard = "standard_iii" }, nil},
+		{"unlisted PvP standard", "h", func(c *LobbyConfig) { c.Standard = "standard_pvp" }, ErrInvalid},
 		{"modular as standard", "h", func(c *LobbyConfig) { c.Standard = "bomb_scare" }, ErrInvalid},
 		{"standard as modular", "h", func(c *LobbyConfig) { c.Modulars = []string{"standard"} }, ErrInvalid},
 		{"duplicate modular", "h", func(c *LobbyConfig) { c.Modulars = []string{"bomb_scare", "bomb_scare"} }, ErrInvalid},

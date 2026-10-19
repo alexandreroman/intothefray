@@ -228,10 +228,14 @@ func validateConfig(cfg LobbyConfig, cat *pack.Catalog) error {
 	return nil
 }
 
+// requireSetKind accepts only the sets of this kind the lobby offers.
 func requireSetKind(cat *pack.Catalog, code, kind string) error {
 	set, ok := cat.Set(code)
 	if !ok || set.Kind != kind {
 		return fmt.Errorf("%w: %q is not a %s set", ErrInvalid, code, kind)
+	}
+	if set.Unlisted {
+		return fmt.Errorf("%w: set %q is not offered by the lobby", ErrInvalid, code)
 	}
 	return nil
 }

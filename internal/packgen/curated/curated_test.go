@@ -3,6 +3,7 @@ package curated
 import (
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -31,9 +32,20 @@ func TestLoad(t *testing.T) {
 	if got := loaded.Cards["01097a"].Size; got != pack.SizeLand {
 		t.Errorf("got override size %q, want %q", got, pack.SizeLand)
 	}
+
+	wantSets := map[string]SetDef{
+		"standard_ii": {InPlay: map[pack.Difficulty][]pack.FaceRef{
+			pack.Standard: {{Card: "24049", Face: 0}},
+			pack.Expert:   {{Card: "24049", Face: 1}},
+		}},
+		"standard_pvp": {Unlisted: true},
+	}
+	if !reflect.DeepEqual(loaded.Sets, wantSets) {
+		t.Errorf("got sets %+v, want %+v", loaded.Sets, wantSets)
+	}
 }
 
-func TestLoadWithoutCardsFile(t *testing.T) {
+func TestLoadWithoutOptionalFiles(t *testing.T) {
 	dir := t.TempDir()
 	if err := os.Mkdir(filepath.Join(dir, "scenarios"), 0o750); err != nil {
 		t.Fatal(err)
@@ -43,7 +55,7 @@ func TestLoadWithoutCardsFile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(loaded.Scenarios) != 0 || len(loaded.Cards) != 0 {
+	if len(loaded.Scenarios) != 0 || len(loaded.Cards) != 0 || len(loaded.Sets) != 0 {
 		t.Errorf("got %+v, want nothing", loaded)
 	}
 }
@@ -94,6 +106,33 @@ func TestLoadRejectsDuplicateDefs(t *testing.T) {
 			if err == nil || !strings.Contains(err.Error(), tt.want) ||
 				!strings.Contains(err.Error(), "a.json") || !strings.Contains(err.Error(), "b.json") {
 				t.Fatalf("got error %v, want one naming a.json, b.json and %s", err, tt.want)
+			}
+		})
+	}
+}
+
+func TestLoadRejectsInvalidSets(t *testing.T) {
+	tests := []struct {
+		name    string
+		content string
+		want    string
+	}{
+		{"unknown difficulty", `{"standard_ii":{"inPlay":{"heroic":[{"card":"24049","face":0}]}}}`, `unknown difficulty "heroic"`},
+		{"unknown field", `{"standard_pvp":{"hidden":true}}`, `unknown field "hidden"`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			dir := t.TempDir()
+			if err := os.Mkdir(filepath.Join(dir, "scenarios"), 0o750); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.WriteFile(filepath.Join(dir, "sets.json"), []byte(tt.content), 0o600); err != nil {
+				t.Fatal(err)
+			}
+
+			_, err := Load(dir)
+			if err == nil || !strings.Contains(err.Error(), "sets.json") || !strings.Contains(err.Error(), tt.want) {
+				t.Fatalf("got error %v, want one naming sets.json and %s", err, tt.want)
 			}
 		})
 	}
