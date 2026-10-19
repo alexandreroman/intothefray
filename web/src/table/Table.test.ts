@@ -747,6 +747,27 @@ describe('Table', () => {
     expect(screen.queryByRole('button', { name: 'Ready all your cards' })).toBeNull();
   });
 
+  it('grabs what the viewer can drag, points at the piles that only have a bar', async () => {
+    const { unmount } = render(Table, { session: fakeSession(), view: makeView() });
+    const at = (id: string) => surface().querySelector<HTMLElement>(`.card[data-id="${id}"]`)!;
+    // Sam (p1): every table card, their own deck and the encounter deck.
+    for (const id of ['a', 'b', 'v', 'd1', 'enc']) {
+      expect(at(id).classList, id).toContain('grab');
+    }
+    // Alex's deck is private: it has a bar, nothing to drag.
+    expect(at('d0').classList).not.toContain('grab');
+    expect(at('d0').classList).not.toContain('inert');
+    // An empty discard pile without a bar is not even pointed at.
+    expect(at('x1').classList).toContain('inert');
+    unmount();
+
+    render(Table, {
+      session: fakeSession(),
+      view: { ...makeView(), you: { role: 'spectator', name: 'Kim', color: -1, host: false } },
+    });
+    expect(surface().querySelectorAll('.card.grab')).toHaveLength(0);
+  });
+
   it('end game asks for confirmation (host only)', async () => {
     const guest = render(Table, { session: fakeSession(), view: makeView() });
     expect(screen.queryByRole('button', { name: 'End game' })).toBeNull();

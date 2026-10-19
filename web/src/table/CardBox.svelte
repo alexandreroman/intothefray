@@ -508,6 +508,7 @@
     class="mgrid"
     aria-label="Cards"
     bind:this={grid}
+    class:dragging={drag?.lifted}
     style:height={gridHeight === null ? undefined : `${gridHeight}px`}
     {@attach sizeGrid}
     onscroll={() => (hovered = null)}
@@ -706,6 +707,12 @@
   .tile.pick .img:disabled {
     cursor: default;
     opacity: 1;
+  }
+
+  /* While a tile is moved, the pointer holds it, over any tile. After the rules above. */
+  .mgrid.dragging,
+  .mgrid.dragging :global(*) {
+    cursor: grabbing;
   }
 
   /* The card itself, contained in the 5:7 tile: a landscape card lies across it. */

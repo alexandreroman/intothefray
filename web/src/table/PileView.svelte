@@ -16,6 +16,7 @@
     top,
     face = null,
     barWhenEmpty = false,
+    draggable = false,
   }: {
     pile: PileView;
     /** The top card, for a pile that lists its cards. */
@@ -24,6 +25,8 @@
     face?: PackFace | null;
     /** Empty, it still has a bar: the buttons opening its owner's out-of-play piles. */
     barWhenEmpty?: boolean;
+    /** The viewer can drag from it (sourceOf): the pointer grabs it; else it only has a bar. */
+    draggable?: boolean;
   } = $props();
 
   const SLOT = cardBox('std', {});
@@ -71,6 +74,7 @@
   data-id={pile.id}
   class:empty
   class:inert
+  class:grab={draggable}
   class:highlighted
   class:locked
   class:hovered
@@ -108,6 +112,8 @@
     position: absolute;
     z-index: 0;
     border-radius: 6px;
+    /* Something to drag (.grab), or else a bar to open a box from; nothing on an inert pile. */
+    cursor: pointer;
     user-select: none;
     -webkit-user-select: none;
     touch-action: none;
@@ -118,6 +124,10 @@
 
   .card.empty {
     filter: none;
+  }
+
+  .card.grab {
+    cursor: grab;
   }
 
   .card.inert {

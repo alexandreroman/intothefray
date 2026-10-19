@@ -15,6 +15,7 @@
     face,
     ghost = false,
     landed = false,
+    draggable = false,
   }: {
     card: TableCard;
     /** The catalog face the card shows, null while unknown: it is then a std placeholder. */
@@ -23,6 +24,8 @@
     ghost?: boolean;
     /** A ghost set down where the card was dropped, until the server answers. */
     landed?: boolean;
+    /** The viewer can drag it: the pointer grabs it. */
+    draggable?: boolean;
   } = $props();
 
   type TokenKind = 'dmg' | 'thr' | 'gen';
@@ -89,6 +92,7 @@
   class:lifted
   class:ghost
   class:landed
+  class:grab={draggable && !ghost}
   class:drop-target={tuckTarget}
   class:drop-pile={pileTarget}
   style:left="{card.x}px"
@@ -182,6 +186,10 @@
 
   .card.lifted {
     visibility: hidden;
+  }
+
+  .card.grab {
+    cursor: grab;
   }
 
   /* Held up under the pointer. */

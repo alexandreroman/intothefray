@@ -5,6 +5,7 @@
   ways and zooms it as a whole.
 -->
 <script lang="ts" module>
+  import type { TableElement } from './actions';
   import type { OwnerFrame } from './layout';
 
   /** The frame around an owner's deck and discard pile, with the name above it. */
@@ -37,6 +38,7 @@
     height,
     firstPlayer,
     tokenMovable = false,
+    canDrag = () => false,
   }: {
     /** The cards lying on the table. */
     cards: TableCard[];
@@ -56,6 +58,8 @@
     firstPlayer?: { x: number; y: number };
     /** Whether the viewer can drag the token: any player can, spectators cannot. */
     tokenMovable?: boolean;
+    /** Whether the viewer can drag that card or pile: the pointer says so (grab). */
+    canDrag?: (element: TableElement) => boolean;
   } = $props();
 
   const TOKEN_TIP = 'First player — drag it to the next player';
@@ -83,10 +87,16 @@
   {/each}
   {#each piles as pile (pile.id)}
     {@const top = topOf(pile)}
-    <PileView {pile} {top} face={faceOf(top)} barWhenEmpty={barWhenEmpty(pile)} />
+    <PileView
+      {pile}
+      {top}
+      face={faceOf(top)}
+      barWhenEmpty={barWhenEmpty(pile)}
+      draggable={canDrag({ kind: 'pile', id: pile.id })}
+    />
   {/each}
   {#each cards as card (card.id)}
-    <CardView {card} face={faceOf(card)} />
+    <CardView {card} face={faceOf(card)} draggable={canDrag({ kind: 'card', id: card.id })} />
   {/each}
   {#if firstPlayer && !interaction.tokenMoving}
     <!-- The token has no bar: hovering it drops the previous element at once. -->

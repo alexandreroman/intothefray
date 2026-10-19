@@ -40,6 +40,7 @@
   import type { LocalBox, ShownBox } from './boxes';
   import CardBox from './CardBox.svelte';
   import DragLayer from './DragLayer.svelte';
+  import { sourceOf } from './drag';
   import Flights from './Flights.svelte';
   import { isHidden } from './face';
   import Hand from './Hand.svelte';
@@ -1051,6 +1052,7 @@
         height={surface.h}
         {firstPlayer}
         tokenMovable={view.you.role === 'player'}
+        canDrag={(element) => sourceOf(element, view) !== null}
       />
       <!-- The arrows follow the cards while they move. -->
       <Arrows
@@ -1317,6 +1319,15 @@
   /* The 10-unit grid shows more clearly while something is dragged. */
   .app.dragging {
     --dot: #34405f;
+  }
+
+  /*
+    Whatever lies under the pointer while something is dragged, the pointer holds it. Important:
+    the grab and pointer cursors of the cards and piles are set by their own components.
+  */
+  .app.dragging,
+  .app.dragging :global(*) {
+    cursor: grabbing !important;
   }
 
   /* Picking the card an arrow points at. */
