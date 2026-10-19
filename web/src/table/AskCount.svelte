@@ -125,7 +125,7 @@
   </div>
   <div class="buttons">
     <button type="button" onclick={oncancel}>Cancel</button>
-    <button type="button" class="btn-paper" onclick={confirm}>{ok}</button>
+    <button type="button" class="btn-primary compact" onclick={confirm}>{ok}</button>
   </div>
 </Dialog>
 
@@ -175,7 +175,7 @@
     margin-top: 20px;
   }
 
-  .buttons button {
+  .buttons button:not(.btn-primary) {
     height: 40px;
     padding: 0 20px;
   }

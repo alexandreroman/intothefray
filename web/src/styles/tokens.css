@@ -12,15 +12,12 @@
   --dot: #161c2b;
 
   /* Hover, the same for every button of a kind (see the button rules below): a lighter
-     surface for the standard button, a light wash for a ghost button or a menu item, a
-     darker paper for a paper button (already near white, it cannot get lighter). */
+     surface for the standard button, a light wash for a ghost button or a menu item. */
   --hover: #243049;
   --hover-wash: rgb(238 241 248 / 8%);
-  --paper-hover: #bfc7d8;
 
   /* Fray red is the main action, with ink text on it; the spark is for captions,
-     threat and the first player; the signal blue is for selection, focus and the paper
-     button's hover ring. */
+     threat and the first player; the signal blue is for selection and focus. */
   --accent: #ff4438;
   --accent-deep: #c9241b;
   --accent-hover: #ff6c61;
@@ -67,10 +64,12 @@ body {
 /*
   The buttons, one hover per kind:
   - standard (this rule): rounded, raised ink; a lighter surface and a brighter edge on hover;
+    every action but the main one, in a dialog too (Cancel, Close);
   - .btn-ghost: no surface of its own (icons, ×, toolbar and menu items); a light wash on hover;
-  - .btn-paper: a dialog's confirmation; a darker paper and a signal blue ring on hover;
-  - .btn-danger: one that cannot be taken back; .btn-primary: the one main action of a
-    screen; both a lighter red on hover.
+  - .btn-primary: the one main action of a screen, a dialog or a box (.compact in a dialog
+    or a box); a lighter red on hover;
+  - .btn-danger: a confirmation that cannot be taken back; rounded ink outlined in red, so
+    it never reads as the main action; filled red on hover.
   A disabled button has no hover. A pressed or "on" state set by a component keeps its look
   and gives its own hover.
   A label never wraps.
@@ -110,41 +109,21 @@ button:hover:not(:disabled, [aria-disabled='true']) {
   color: var(--text);
 }
 
-.btn-paper {
-  background: var(--text);
-  border-color: var(--text);
-  color: var(--bg);
-  font-weight: 800;
-  transition:
-    background-color 0.12s,
-    border-color 0.12s,
-    color 0.12s,
-    box-shadow 0.12s;
-}
-
-/* A darker paper alone barely shows against the near-white surface: the signal blue ring
-   makes the hover plain. It hugs the edge, while the focus outline sits 2px away. */
-.btn-paper:hover:not(:disabled, [aria-disabled='true']) {
-  background-color: var(--paper-hover);
-  border-color: var(--sel);
-  box-shadow: 0 0 0 2px var(--sel);
-}
-
 .btn-danger {
-  background: var(--accent);
+  background: var(--bg);
   border-color: var(--accent);
-  color: var(--bg);
+  color: var(--accent);
   font-weight: 800;
 }
 
 .btn-danger:hover:not(:disabled, [aria-disabled='true']) {
-  background-color: var(--accent-hover);
-  border-color: var(--accent-hover);
+  background-color: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  button,
-  .btn-paper {
+  button {
     transition: none;
   }
 }
@@ -197,6 +176,13 @@ select:focus {
 
 .btn-primary:hover:not(:disabled, [aria-disabled='true']) {
   background: var(--accent-hover);
+}
+
+/* The main action of a dialog or a box, sized as the buttons next to it. */
+.btn-primary.compact {
+  height: 40px;
+  padding: 0 24px;
+  font-size: 14px;
 }
 
 /* The clip-path cuts any outline and the slanted sides off: the focus draws signal blue

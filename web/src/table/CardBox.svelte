@@ -569,7 +569,9 @@
   <div class="mfoot">
     {#if shuffleChoice}
       <button type="button" onclick={() => onclose(false)}>Close without shuffling</button>
-      <button type="button" class="btn-paper" onclick={() => onclose(true)}>Shuffle & close</button>
+      <button type="button" class="btn-primary compact" onclick={() => onclose(true)}
+        >Shuffle & close</button
+      >
     {:else}
       {#if shuffleInPile}
         {@const pile = shuffleInPile}
@@ -577,7 +579,7 @@
           Shuffle into the encounter deck
         </button>
       {/if}
-      <button type="button" class="btn-paper" onclick={() => onclose(false)}>Close</button>
+      <button type="button" onclick={() => onclose(false)}>Close</button>
     {/if}
   </div>
 
@@ -803,6 +805,12 @@
     gap: 8px;
     padding: 12px 16px;
     border-top: 1px solid var(--line);
+  }
+
+  /* The secondary buttons stand as tall as the main one (.btn-primary.compact). */
+  .mfoot button:not(.btn-primary) {
+    height: 40px;
+    padding: 0 20px;
   }
 
   /* The dragged card, the tile's size, its card contained as in the tile. */

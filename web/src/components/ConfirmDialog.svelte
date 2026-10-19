@@ -26,7 +26,7 @@
     <!-- The safe choice has the focus. -->
     <!-- svelte-ignore a11y_autofocus -->
     <button type="button" onclick={oncancel} autofocus>Cancel</button>
-    <button type="button" class={danger ? 'btn-danger' : 'btn-paper'} onclick={onconfirm}
+    <button type="button" class={danger ? 'btn-danger' : 'btn-primary compact'} onclick={onconfirm}
       >{confirmLabel}</button
     >
   </div>

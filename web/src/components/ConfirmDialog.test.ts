@@ -1,10 +1,10 @@
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import ConfirmDialog from './ConfirmDialog.svelte';
 
-function renderDialog() {
+function renderDialog(danger = false) {
   const onconfirm = vi.fn();
   const oncancel = vi.fn();
-  render(ConfirmDialog, { question: 'Sure?', confirmLabel: 'Do it', onconfirm, oncancel });
+  render(ConfirmDialog, { question: 'Sure?', confirmLabel: 'Do it', danger, onconfirm, oncancel });
   return { onconfirm, oncancel };
 }
 
@@ -17,6 +17,18 @@ describe('ConfirmDialog', () => {
     await fireEvent.click(screen.getByRole('button', { name: 'Do it' }));
     expect(onconfirm).toHaveBeenCalledOnce();
     expect(oncancel).not.toHaveBeenCalled();
+  });
+
+  it('shows the confirmation as the main action', () => {
+    renderDialog();
+    expect(screen.getByRole('button', { name: 'Do it' }).className).toContain('btn-primary');
+  });
+
+  it('shows a confirmation that cannot be taken back as a danger one', () => {
+    renderDialog(true);
+    const confirm = screen.getByRole('button', { name: 'Do it' });
+    expect(confirm.className).toContain('btn-danger');
+    expect(confirm.className).not.toContain('btn-primary');
   });
 
   it('cancels with Escape or a click outside, not a click inside', async () => {
