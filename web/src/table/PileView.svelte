@@ -137,8 +137,13 @@
     border: 2px dashed var(--line);
   }
 
+  /*
+    Over everything the pile draws: its card, and the rings the table draws over it (hover,
+    selection, highlight, drop, z-index 1 in Table.svelte), all inside the pile's own stacking.
+  */
   .count {
     position: absolute;
+    z-index: 2;
     bottom: -9px;
     left: 50%;
     transform: translateX(-50%);

@@ -1,5 +1,7 @@
 import { render, screen } from '@testing-library/svelte';
 import PileView from './PileView.svelte';
+import pileSource from './PileView.svelte?raw';
+import tableSource from './Table.svelte?raw';
 import type { CardView as TableCard, PackFace, PileView as Pile } from '../lib/types';
 
 const ENCOUNTER_BACK =
@@ -72,6 +74,14 @@ describe('PileView', () => {
     expect(el.style.width).toBe('140px');
     expect(el.style.height).toBe('196px');
     expect(el.dataset.id).toBe('enc');
+  });
+
+  it('draws its count over its card and every ring the table draws on it', () => {
+    const zOf = (rule: string | undefined) => Number(/z-index: (\d+);/.exec(rule ?? '')?.[1]);
+    const count = zOf(/\n {2}\.count \{([^}]*)\}/.exec(pileSource)?.[1]);
+    const rings = zOf(/drop-pile\)::before \{([^}]*)\}/.exec(tableSource)?.[1]);
+    expect(rings).toBeGreaterThan(0);
+    expect(count).toBeGreaterThan(rings);
   });
 
   it('a player deck shows the player back', () => {
