@@ -211,7 +211,7 @@ stateless Go instances that share game state through Redis.
 graph TD
     B[Browser: Svelte SPA] -->|static files| P[GitHub Pages]
     B -->|WebSocket + REST| S[Go server instances]
-    S --> R[(Redis: game state, pub/sub)]
+    S --> R[(Redis: game state, connection leases, pub/sub)]
     S -->|decks| M[marvelcdb.com API]
     B -->|card images| I[marvelcdb / Cerebro images]
 ```
@@ -231,7 +231,7 @@ immutable).
 | `internal/decks/`   | Deck import from marvelcdb                     |
 | `internal/game/`    | Game engine: lobby, setup, actions, undo, view |
 | `internal/server/`  | HTTP API, WebSocket endpoint, instance fan-out |
-| `internal/store/`   | Redis game store and event pub/sub             |
+| `internal/store/`   | Redis game store, connection leases, pub/sub   |
 | `internal/pack/`    | Card pack schema and catalog                   |
 | `internal/packgen/` | Generator internals (fetch, build, images...)  |
 | `packs/`            | Curated files, generated and committed `dist/` |

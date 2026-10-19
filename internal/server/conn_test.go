@@ -3,6 +3,8 @@ package server
 import (
 	"context"
 	"encoding/json"
+	"io"
+	"log/slog"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -257,6 +259,53 @@ func TestRemovePlayerByColor(t *testing.T) {
 	}
 	if role := guest.expect("view").View.You.Role; role != game.RoleSpectator {
 		t.Errorf("guest role = %q, want spectator", role)
+	}
+}
+
+func TestSendViewResendsWhenOnlyTheCountChanges(t *testing.T) {
+	g, err := game.NewGame("abc", "host-token", "Alex", time.Now())
+	if err != nil {
+		t.Fatal(err)
+	}
+	c := newConn(nil, "abc", slog.New(slog.NewTextHandler(io.Discard, nil)))
+
+	// Each step builds on the views sent by the previous ones.
+	steps := []struct {
+		name       string
+		version    int64
+		spectators int
+		sent       bool
+		// wantSpectators is the count of the view sent.
+		wantSpectators int
+	}{
+		{"first view", 2, 1, true, 1},
+		{"same version and count", 2, 1, false, 0},
+		{"same version, new count", 2, 3, true, 3},
+		{"older version", 1, 5, false, 0},
+		{"same version, unknown count", 2, keepSpectators, false, 0},
+		{"new version, unknown count", 3, keepSpectators, true, 3},
+	}
+	for _, step := range steps {
+		c.sendView(g, step.version, step.spectators)
+
+		data := c.takeView()
+		if !step.sent {
+			if data != nil {
+				t.Errorf("%s: sent %s, want nothing", step.name, data)
+			}
+			continue
+		}
+		if data == nil {
+			t.Fatalf("%s: sent nothing, want a view", step.name)
+		}
+		var msg received
+		if err := json.Unmarshal(data, &msg); err != nil {
+			t.Fatalf("%s: decode %s: %v", step.name, data, err)
+		}
+		if msg.Version != step.version || msg.View.Spectators != step.wantSpectators {
+			t.Errorf("%s: sent version %d with %d spectators, want version %d with %d",
+				step.name, msg.Version, msg.View.Spectators, step.version, step.wantSpectators)
+		}
 	}
 }
 

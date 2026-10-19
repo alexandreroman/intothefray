@@ -107,7 +107,7 @@ describe('Game', () => {
     render(Game, { id: 'x' });
 
     expect(screen.getByRole('region', { name: /^Villain/ })).toBeTruthy();
-    expect(screen.getByText('2 spectators')).toBeTruthy();
+    expect(screen.getByRole('img', { name: '2 spectators' })).toBeTruthy();
   });
 
   it('shows the end screen once ended', () => {

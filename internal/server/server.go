@@ -65,6 +65,9 @@ type Server struct {
 	// touchInterval is how often Run resets the expiry of the games with
 	// local viewers; tests shorten it.
 	touchInterval time.Duration
+	// onlineInterval is how often Run renews the leases of the local
+	// connections, which last leaseRounds intervals; tests shorten it.
+	onlineInterval time.Duration
 	// createBodyTimeout is the read deadline of a create-game request body;
 	// tests shorten it.
 	createBodyTimeout time.Duration
@@ -77,6 +80,7 @@ func New(d Deps) *Server {
 		hub:               newHub(),
 		newID:             newGameID,
 		touchInterval:     touchInterval,
+		onlineInterval:    onlineInterval,
 		createBodyTimeout: createBodyTimeout,
 	}
 	for _, origin := range d.Config.AllowedOrigins {

@@ -418,6 +418,162 @@ func TestPresenceNeverDropsSlowViewer(t *testing.T) {
 	}
 }
 
+// awaitSpectators reads views until one counts want connected spectators,
+// and returns it.
+func (c *testClient) awaitSpectators(want int) received {
+	c.t.Helper()
+	return c.awaitView(func(v game.View) bool { return v.Spectators == want })
+}
+
+func TestSpectatorCountFollowsConnections(t *testing.T) {
+	mr := miniredis.RunT(t)
+	first := startInstance(t, mr, nil)
+	second := startInstance(t, mr, nil)
+	created := createGame(t, first, "Alex")
+	alex := connect(t, first, created.ID)
+	alex.hello(created.Token, "Alex")
+	bob := connect(t, second, created.ID)
+	bobWelcome, _ := bob.hello("", "Bob")
+
+	seated := alex.awaitView(func(v game.View) bool { return len(v.Players) == 2 })
+	if seated.View.Spectators != 0 {
+		t.Errorf("with Bob playing: spectators = %d, want 0 as players never count", seated.View.Spectators)
+	}
+
+	bob.lobby("leave", nil)
+	alex.awaitView(func(v game.View) bool { return len(v.Players) == 1 && v.Spectators == 1 })
+
+	bob.lobby("takeSeat", nil)
+	alex.awaitView(func(v game.View) bool { return len(v.Players) == 2 && v.Spectators == 0 })
+
+	bob.lobby("leave", nil)
+	watching := alex.awaitView(func(v game.View) bool { return len(v.Players) == 1 && v.Spectators == 1 })
+
+	// Closing the tab leaves the game as it is: only the count changes.
+	_ = bob.ws.Close(websocket.StatusNormalClosure, "")
+	gone := alex.awaitSpectators(0)
+	if gone.Version != watching.Version {
+		t.Errorf("version = %d after Bob left, want %d, the game being unchanged", gone.Version, watching.Version)
+	}
+
+	back := connect(t, second, created.ID)
+	back.hello(bobWelcome.Token, "Bob")
+	alex.awaitSpectators(1)
+}
+
+func TestLeasesKeepOnlyLiveConnections(t *testing.T) {
+	const (
+		interval = 20 * time.Millisecond // leases last leaseRounds intervals
+		// carolLease outlasts several leases of the live connections.
+		carolLease = 200 * time.Millisecond
+	)
+
+	mr := miniredis.RunT(t)
+	ts := startInstance(t, mr, func(s *Server) { s.onlineInterval = interval })
+	created := createGame(t, ts, "Alex")
+	alex := connect(t, ts, created.ID)
+	alex.hello(created.Token, "Alex")
+	bob := connect(t, ts, created.ID)
+	bobWelcome, _ := bob.hello("", "Bob")
+	alex.awaitView(func(v game.View) bool { return len(v.Players) == 2 })
+	bob.lobby("leave", nil)
+	alex.awaitView(func(v game.View) bool { return len(v.Players) == 1 && v.Spectators == 1 })
+
+	// Carol watches from an instance that stops without closing her
+	// connection: nothing renews her lease, nor tells that she left.
+	rdb := redis.NewClient(&redis.Options{Addr: mr.Addr()})
+	t.Cleanup(func() { _ = rdb.Close() })
+	vanished := store.New(rdb, time.Hour)
+	_, _, err := vanished.Update(t.Context(), created.ID, func(g *game.Game) error {
+		g.Spectators = append(g.Spectators, &game.Spectator{Token: "carol-token", Name: "Carol"})
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("add Carol: %v", err)
+	}
+	carol := []store.Connection{{Token: "carol-token", ID: "tab"}}
+	if _, err := vanished.KeepOnline(t.Context(), created.ID, carol, time.Now(), carolLease); err != nil {
+		t.Fatalf("connect Carol: %v", err)
+	}
+
+	alex.awaitSpectators(2)
+	alex.awaitSpectators(1)
+
+	// Bob, still connected, outlives many leases of his own: the rounds
+	// renew them.
+	time.Sleep(5 * leaseRounds * interval)
+	online, err := vanished.Online(t.Context(), created.ID, time.Now())
+	if err != nil {
+		t.Fatalf("Online: %v", err)
+	}
+	if !online[bobWelcome.Token] || online["carol-token"] {
+		t.Errorf("online = %v, want Bob's token and not Carol's", online)
+	}
+}
+
+// beforeRenewal is a Redis hook that runs before once, as the first lease
+// renewal (a pipeline holding a ZADD) is about to reach Redis.
+type beforeRenewal struct {
+	once   sync.Once
+	before func()
+}
+
+func (h *beforeRenewal) DialHook(next redis.DialHook) redis.DialHook { return next }
+
+func (h *beforeRenewal) ProcessHook(next redis.ProcessHook) redis.ProcessHook { return next }
+
+func (h *beforeRenewal) ProcessPipelineHook(next redis.ProcessPipelineHook) redis.ProcessPipelineHook {
+	return func(ctx context.Context, cmds []redis.Cmder) error {
+		if slices.ContainsFunc(cmds, func(cmd redis.Cmder) bool { return cmd.Name() == "zadd" }) {
+			h.once.Do(h.before)
+		}
+		return next(ctx, cmds)
+	}
+}
+
+func TestConnectionClosedDuringRenewalStopsCounting(t *testing.T) {
+	mr := miniredis.RunT(t)
+	srv := newServerOn(t, mr)
+	hook := &beforeRenewal{}
+	rdb := redis.NewClient(&redis.Options{Addr: mr.Addr()})
+	rdb.AddHook(hook)
+	t.Cleanup(func() { _ = rdb.Close() })
+	srv.deps.Store = store.New(rdb, time.Hour)
+
+	g, err := game.NewGame("abc", "host-token", "Alex", time.Now())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := srv.deps.Store.Create(t.Context(), g); err != nil {
+		t.Fatalf("Create: %v", err)
+	}
+	carol := newConn(nil, "abc", srv.deps.Logger)
+	carol.token, carol.onlineID = "carol-token", "tab"
+	srv.hub.register(carol)
+
+	// Carol closes after the round listed her connection and before it
+	// renews her lease: she leaves the hub and sets herself offline, as
+	// serveConn does, and the renewal then records her again.
+	closed := false
+	hook.before = func() {
+		srv.hub.remove(carol)
+		srv.setOffline(t.Context(), carol)
+		closed = true
+	}
+	srv.renewOnline(t.Context())
+
+	if !closed {
+		t.Fatal("the round renewed no lease")
+	}
+	online, err := srv.deps.Store.Online(t.Context(), "abc", time.Now())
+	if err != nil {
+		t.Fatalf("Online: %v", err)
+	}
+	if online["carol-token"] {
+		t.Error("Carol still counts after the round, want her closed connection forgotten")
+	}
+}
+
 func TestShutdownClosesConnections(t *testing.T) {
 	mr := miniredis.RunT(t)
 	srv := newServerOn(t, mr)

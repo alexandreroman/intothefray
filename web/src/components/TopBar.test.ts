@@ -1,11 +1,39 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
-import { createRawSnippet } from 'svelte';
+import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import TopBar from './TopBar.svelte';
 
+// jsdom has no Fullscreen API: each test installs the one it needs, as own
+// properties that shadow nothing and are simply deleted afterwards.
 afterEach(() => {
-  Reflect.deleteProperty(document.documentElement, 'requestFullscreen');
-  document.body.classList.remove('fs-fallback');
+  for (const name of ['requestFullscreen', 'webkitRequestFullscreen']) {
+    Reflect.deleteProperty(document.documentElement, name);
+  }
+  for (const name of [
+    'fullscreenElement',
+    'webkitFullscreenElement',
+    'exitFullscreen',
+    'webkitExitFullscreen',
+  ]) {
+    Reflect.deleteProperty(document, name);
+  }
 });
+
+/**
+ * A refused fullscreen request. A bare rejection would not prove a handler is
+ * attached, so its catch is spied on.
+ */
+function refused(): { promise: Promise<void>; caught: ReturnType<typeof vi.fn> } {
+  const promise = Promise.reject(new Error('denied'));
+  const caught = vi.spyOn(promise, 'catch');
+  return { promise, caught };
+}
+
+/** Sets what the document reports as its fullscreen element, under the standard or the WebKit name. */
+function setFullscreenElement(
+  name: 'fullscreenElement' | 'webkitFullscreenElement',
+  value: Element | null,
+): void {
+  Object.defineProperty(document, name, { value, configurable: true });
+}
 
 describe('TopBar', () => {
   it('shows the logo, THE in the accent colour', () => {
@@ -15,68 +43,140 @@ describe('TopBar', () => {
     expect(logo?.querySelector('span')?.textContent).toBe('THE');
   });
 
-  it('pluralises the spectator count', () => {
+  it('shows no spectator badge without spectators', () => {
+    const { container } = render(TopBar, { spectators: 0 });
+    expect(screen.queryByRole('img', { name: /spectator/ })).toBeNull();
+    expect(container.querySelector('.pill')).toBeNull();
+  });
+
+  it('shows the spectator count with an accessible name', () => {
     render(TopBar, { spectators: 1 });
-    expect(screen.getByText('1 spectator')).toBeTruthy();
+    const badge = screen.getByRole('img', { name: '1 spectator' });
+    expect(badge.textContent?.trim()).toBe('1');
+    expect(badge.getAttribute('title')).toBe('1 spectator');
+    // The narrow-screen media queries hide it through this class.
+    expect(badge.classList).toContain('pill');
   });
 
-  it('renders extra buttons from the children snippet', () => {
-    const children = createRawSnippet(() => ({ render: () => '<button>End game</button>' }));
-    render(TopBar, { spectators: 0, children });
-    expect(screen.getByRole('button', { name: 'End game' })).toBeTruthy();
+  it('pluralises the spectator count', () => {
+    render(TopBar, { spectators: 3 });
+    const badge = screen.getByRole('img', { name: '3 spectators' });
+    expect(badge.textContent?.trim()).toBe('3');
+    expect(badge.getAttribute('title')).toBe('3 spectators');
   });
 
-  it('requests fullscreen on the document', async () => {
-    const request = vi.fn().mockResolvedValue(undefined);
-    document.documentElement.requestFullscreen = request;
-    render(TopBar, { spectators: 0 });
-    await fireEvent.click(screen.getByRole('button', { name: /Fullscreen/ }));
-    expect(request).toHaveBeenCalledOnce();
-  });
-
-  it('handles a refused exit from fullscreen', async () => {
-    Object.defineProperty(document, 'fullscreenElement', {
-      value: document.body,
-      configurable: true,
-    });
-    // A bare promise would not prove a handler is attached, so spy on catch.
-    const catchRejection = vi.fn();
-    document.exitFullscreen = vi.fn(() => ({ catch: catchRejection }) as unknown as Promise<void>);
-    try {
-      render(TopBar, { spectators: 0 });
-      await fireEvent.click(screen.getByRole('button', { name: /fullscreen/i }));
-      expect(catchRejection).toHaveBeenCalledOnce();
-    } finally {
-      Reflect.deleteProperty(document, 'fullscreenElement');
+  it('labels its icon buttons', () => {
+    document.documentElement.requestFullscreen = vi.fn();
+    render(TopBar, { spectators: 0, onend: () => {} });
+    for (const name of ['Fullscreen', 'End game']) {
+      const button = screen.getByRole('button', { name });
+      expect(button.getAttribute('title')).toBe(name);
+      expect(button.textContent?.trim()).toBe('');
     }
   });
 
-  it('falls back to a class without the Fullscreen API', async () => {
+  it('shows End game to the host only', () => {
     render(TopBar, { spectators: 0 });
-
-    await fireEvent.click(screen.getByRole('button', { name: '⛶ Fullscreen' }));
-    expect(document.body.classList).toContain('fs-fallback');
-
-    await fireEvent.click(screen.getByRole('button', { name: '⛶ Exit fullscreen' }));
-    expect(document.body.classList).not.toContain('fs-fallback');
-    expect(screen.getByRole('button', { name: '⛶ Fullscreen' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'End game' })).toBeNull();
   });
 
-  it('falls back to a class when fullscreen is refused', async () => {
-    document.documentElement.requestFullscreen = vi.fn().mockRejectedValue(new Error('denied'));
-    render(TopBar, { spectators: 0 });
+  it('confirms before ending the game', async () => {
+    const onend = vi.fn();
+    render(TopBar, { spectators: 0, onend });
+    await fireEvent.click(screen.getByRole('button', { name: 'End game' }));
+    expect(onend).not.toHaveBeenCalled();
 
-    await fireEvent.click(screen.getByRole('button', { name: '⛶ Fullscreen' }));
-    await waitFor(() => {
-      expect(document.body.classList).toContain('fs-fallback');
+    const dialog = screen.getByRole('alertdialog', { name: 'End this game for everyone?' });
+    await fireEvent.click(within(dialog).getByRole('button', { name: 'End game' }));
+    expect(onend).toHaveBeenCalledOnce();
+  });
+
+  it('orders the actions, the side panel toggle last', () => {
+    document.documentElement.requestFullscreen = vi.fn();
+    render(TopBar, {
+      spectators: 0,
+      onend: () => {},
+      side: { hidden: false, ontoggle: () => {} },
     });
-    expect(screen.getByRole('button', { name: '⛶ Exit fullscreen' })).toBeTruthy();
+    const names = screen
+      .getAllByRole('button')
+      .map((button) => button.getAttribute('aria-label') ?? button.textContent);
+    expect(names).toEqual(['Fullscreen', 'End game', 'Preview and history']);
   });
 
-  it('keeps the fallback from one top bar to the next', () => {
-    // The lobby and the table each have their own top bar.
-    document.body.classList.add('fs-fallback');
+  it('offers no Fullscreen button without the Fullscreen API', () => {
     render(TopBar, { spectators: 0 });
-    expect(screen.getByRole('button', { name: '⛶ Exit fullscreen' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /fullscreen/i })).toBeNull();
+  });
+
+  it('enters and leaves fullscreen with the standard API', async () => {
+    const request = vi.fn().mockResolvedValue(undefined);
+    document.documentElement.requestFullscreen = request;
+    render(TopBar, { spectators: 0 });
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Fullscreen' }));
+    expect(request).toHaveBeenCalledOnce();
+
+    setFullscreenElement('fullscreenElement', document.documentElement);
+    await fireEvent(document, new Event('fullscreenchange'));
+    const exit = screen.getByRole('button', { name: 'Exit fullscreen' });
+    expect(exit.getAttribute('title')).toBe('Exit fullscreen');
+    // Narrow screens hide the Fullscreen button, except while it is active.
+    expect(exit.classList).toContain('fullscreen');
+    expect(exit.classList).toContain('active');
+
+    const exitFullscreen = vi.fn().mockResolvedValue(undefined);
+    document.exitFullscreen = exitFullscreen;
+    await fireEvent.click(exit);
+    expect(exitFullscreen).toHaveBeenCalledOnce();
+
+    setFullscreenElement('fullscreenElement', null);
+    await fireEvent(document, new Event('fullscreenchange'));
+    expect(screen.getByRole('button', { name: 'Fullscreen' }).classList).not.toContain('active');
+  });
+
+  it('enters and leaves fullscreen with the WebKit-prefixed API only', async () => {
+    // Older Safari returns nothing rather than a promise.
+    const request = vi.fn(() => undefined);
+    Object.assign(document.documentElement, { webkitRequestFullscreen: request });
+    render(TopBar, { spectators: 0 });
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Fullscreen' }));
+    expect(request).toHaveBeenCalledOnce();
+
+    setFullscreenElement('webkitFullscreenElement', document.documentElement);
+    await fireEvent(document, new Event('webkitfullscreenchange'));
+    const exit = screen.getByRole('button', { name: 'Exit fullscreen' });
+
+    const exitFullscreen = vi.fn(() => undefined);
+    Object.assign(document, { webkitExitFullscreen: exitFullscreen });
+    await fireEvent.click(exit);
+    expect(exitFullscreen).toHaveBeenCalledOnce();
+
+    setFullscreenElement('webkitFullscreenElement', null);
+    await fireEvent(document, new Event('webkitfullscreenchange'));
+    expect(screen.getByRole('button', { name: 'Fullscreen' })).toBeTruthy();
+  });
+
+  it('ignores a refused request', async () => {
+    const refusal = refused();
+    document.documentElement.requestFullscreen = vi.fn(() => refusal.promise);
+    render(TopBar, { spectators: 0 });
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Fullscreen' }));
+    expect(refusal.caught).toHaveBeenCalledOnce();
+    expect(screen.getByRole('button', { name: 'Fullscreen' })).toBeTruthy();
+  });
+
+  it('ignores a refused exit', async () => {
+    document.documentElement.requestFullscreen = vi.fn();
+    setFullscreenElement('fullscreenElement', document.documentElement);
+    const refusal = refused();
+    document.exitFullscreen = vi.fn(() => refusal.promise);
+    render(TopBar, { spectators: 0 });
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Exit fullscreen' }));
+    expect(refusal.caught).toHaveBeenCalledOnce();
+    expect(screen.getByRole('button', { name: 'Exit fullscreen' })).toBeTruthy();
   });
 });
