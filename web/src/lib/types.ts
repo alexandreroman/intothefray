@@ -270,9 +270,15 @@ export interface PresencePoint {
   y: number;
 }
 
-/** A drag in progress: the cards dragged and where their corner is, in table units. */
+/**
+ * A drag in progress: the cards dragged, or the first player token, and where
+ * their corner is, in table units.
+ */
 export interface PresenceDrag {
+  /** Empty for the token, which carries no card. */
   cards: string[];
+  /** The first player token is dragged. */
+  token?: boolean;
   x: number;
   y: number;
 }

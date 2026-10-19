@@ -1,7 +1,8 @@
 <!--
   The first player token (spec 5.8): the theme's image, or a drawn stand-in
   without one, placed in table units. It lies on the table, or in the drag
-  layer while it is dragged or waits for the server after a drop.
+  layer while it is dragged or waits for the server after a drop, or in the
+  presence layer while another player drags it.
 -->
 <script lang="ts">
   import { FIRST_PLAYER_BOX } from './layout';
@@ -11,14 +12,17 @@
     x,
     y,
     ghost = false,
+    lifted = false,
     tip,
     onpointerenter,
     onpointerdown,
   }: {
     x: number;
     y: number;
-    /** The copy that follows the pointer (DragLayer). */
+    /** The copy that follows a pointer (DragLayer, Presence). */
     ghost?: boolean;
+    /** Hidden in place while another player's ghost of it shows (Presence). */
+    lifted?: boolean;
     /** The tooltip, for players, who can move it. */
     tip?: string;
     onpointerenter?: (event: PointerEvent) => void;
@@ -32,6 +36,7 @@
 <div
   class="fptoken"
   class:ghost
+  class:lifted
   class:movable={tip !== undefined}
   role="presentation"
   data-tip={tip}
@@ -78,6 +83,10 @@
 
   .fptoken.movable:hover {
     transform: scale(1.06);
+  }
+
+  .fptoken.lifted {
+    visibility: hidden;
   }
 
   /* Picked up under the pointer. */

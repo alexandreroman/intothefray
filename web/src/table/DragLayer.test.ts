@@ -1190,6 +1190,20 @@ describe('dragging the first player token', () => {
     expect(token()?.style.top).toBe('640px');
   });
 
+  it('tells the other players where it is, and null once dropped', async () => {
+    const { session } = await renderTable(makeView({ withSam: true }));
+    await press(token()!, 900, 400);
+    await moveTo(204, 703);
+    await release(204, 703);
+
+    const drags = session.sendPresence.mock.calls
+      .map(([fields]) => fields as { drag?: unknown })
+      .filter((fields) => 'drag' in fields)
+      .map((fields) => fields.drag);
+    // Its corner at 184, 683 on the screen: 164, 643 on the table, not snapped.
+    expect(drags).toEqual([{ cards: [], token: true, x: 164, y: 643 }, null]);
+  });
+
   it('sends nothing when put back where it was', async () => {
     const { session } = await renderTable(makeView({ withSam: true }));
     await press(token()!, 900, 400);

@@ -1,13 +1,13 @@
 <!--
   The other players at the table (spec 5.8): their cursors, the card each one
   previews, their pings and their drags, drawn over the table (the table
-  cards they drag hidden in their places meanwhile). It also tells
-  them about the viewer's own cursor, preview and pings; DragLayer tells them
-  about the viewer's drags. While the viewer is away from the table (hand
-  raised, dialog open), their cursor is hidden from the others: nothing tells
-  where the pointer goes in the hand or in the dialog. Spectators send
-  nothing, as no player draws them (ruling P5c-R2: the server refuses their
-  pings and drags).
+  cards or the first player token they drag hidden in their places
+  meanwhile). It also tells them about the viewer's own cursor, preview and
+  pings; DragLayer tells them about the viewer's drags. While the viewer is
+  away from the table (hand raised, dialog open), their cursor is hidden from
+  the others: nothing tells where the pointer goes in the hand or in the
+  dialog. Spectators send nothing, as no player draws them (ruling P5c-R2:
+  the server refuses their pings and drags).
 
   Spots travel as table units of the surface (screen.ts). Messages can come in
   floods: the session keeps only the latest state of each player, and the
@@ -18,6 +18,7 @@
   import type {
     CardView as TableCard,
     PackFace,
+    Point,
     PresenceDrag,
     PresenceFields,
     PresencePoint,
@@ -26,6 +27,7 @@
   } from '../lib/types';
   import CardView from './CardView.svelte';
   import { contains } from './drag';
+  import FirstPlayerToken from './FirstPlayerToken.svelte';
   import { pileBack } from './face';
   import { interaction } from './interaction.svelte';
   import { ALL_ROWS, type RowMap } from './rows';
@@ -111,12 +113,14 @@
     onPile?: string;
   }
 
-  /** Another player's drag under way: its cards as they lay when it started. */
+  /** Another player's drag under way: its cards, or the first player token, as they lay when it started. */
   interface Dragging {
     drag: PresenceDrag;
     from: Map<string, Spot>;
     /** The table cards as it started: a card taken from a pile or a hand is new to it once dropped. */
     onTable: Set<string>;
+    /** Where the first player token lay as it started. */
+    token: Point | undefined;
   }
 
   /** Another player's drag let go: its ghost stays where it was until the view moves its cards. */
@@ -130,11 +134,13 @@
     cursors: (Placed & { color: number; name: string })[];
     /** The cards of each drag, in table units of the zoomed ghost layer. */
     ghosts: { color: number; cards: TableCard[] }[];
+    /** The corner of each drag of the first player token, in table units of the zoomed ghost layer. */
+    tokens: (Point & { color: number })[];
     pings: (Placed & { key: number; color: number })[];
   }
 
   let layer = $state<HTMLElement>();
-  let drawn = $state.raw<Drawn>({ cursors: [], ghosts: [], pings: [] });
+  let drawn = $state.raw<Drawn>({ cursors: [], ghosts: [], tokens: [], pings: [] });
   // Read by the drawing pass only, which runs outside any effect: plain values, not state.
   let pings: Ping[] = [];
   let nextPing = 0;
@@ -265,11 +271,15 @@
   }
 
   /**
-   * Whether the view lays some card of the drag elsewhere than it lay as the
-   * drag started, or, for a card taken from outside the table, lays a card
-   * on the table that was not there then.
+   * Whether the view lays some card of the drag, or the first player token,
+   * elsewhere than it lay as the drag started, or, for a card taken from
+   * outside the table, lays a card on the table that was not there then.
    */
   function hasMoved(dragging: Dragging): boolean {
+    if (dragging.drag.token) {
+      const now = view.table?.firstPlayer;
+      return now?.x !== dragging.token?.x || now?.y !== dragging.token?.y;
+    }
     if (takesFromOutside(dragging)) {
       const onTable = tableCardIds();
       for (const id of onTable) {
@@ -311,7 +321,12 @@
       if (drag) {
         if (!dragging) {
           landings.delete(color);
-          draggings.set(color, { drag, from: spotsOf(drag), onTable: tableCardIds() });
+          draggings.set(color, {
+            drag,
+            from: spotsOf(drag),
+            onTable: tableCardIds(),
+            token: view.table?.firstPlayer,
+          });
         } else {
           dragging.drag = drag;
         }
@@ -400,14 +415,11 @@
    * tucked under the first keeping their offsets.
    */
   function ghostsOf(drag: PresenceDrag, origin: DOMRect): TableCard[] {
-    const surface = surfaceRect(root);
-    const shownY = isSpot(drag) ? rowMap.toDisplay(drag.y) : null;
-    if (!surface || shownY === null) {
+    const corner = cornerOf(drag, origin);
+    if (!corner) {
       return [];
     }
-    const corner = toScreen({ x: drag.x, y: shownY }, surface, zoom);
-    const x = (corner.x - origin.left) / zoom;
-    const y = (corner.y - origin.top) / zoom;
+    const { x, y } = corner;
     const cards = new Map((view.table?.cards ?? []).map((card) => [card.id, card]));
     const first = cards.get(drag.cards[0] ?? '');
     const ids = drag.cards.filter((id, i) => drag.cards.indexOf(id) === i);
@@ -421,6 +433,32 @@
       }
       return { ...card, zone: 'table', x, y, onPile: undefined, parent: undefined };
     });
+  }
+
+  /**
+   * Where the corner of a drag shows, in table units of the zoomed ghost
+   * layer; null when its row is not shown.
+   */
+  function cornerOf(drag: PresenceDrag, origin: DOMRect): Point | null {
+    const surface = surfaceRect(root);
+    const shownY = isSpot(drag) ? rowMap.toDisplay(drag.y) : null;
+    if (!surface || shownY === null) {
+      return null;
+    }
+    const corner = toScreen({ x: drag.x, y: shownY }, surface, zoom);
+    return { x: (corner.x - origin.left) / zoom, y: (corner.y - origin.top) / zoom };
+  }
+
+  /** Draws a drag, under way or landing: the first player token, or the cards. */
+  function drawDrag(next: Drawn, color: number, drag: PresenceDrag, origin: DOMRect): void {
+    if (!drag.token) {
+      next.ghosts.push({ color, cards: ghostsOf(drag, origin) });
+      return;
+    }
+    const corner = cornerOf(drag, origin);
+    if (corner) {
+      next.tokens.push({ ...corner, color });
+    }
   }
 
   /**
@@ -443,7 +481,7 @@
     }
     const origin = layer.getBoundingClientRect();
     const now = Date.now();
-    const next: Drawn = { cursors: [], ghosts: [], pings: [] };
+    const next: Drawn = { cursors: [], ghosts: [], tokens: [], pings: [] };
     // The card or pile each player previews: the first player keeps a card that several preview.
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
     const previews = new Map<string, number>();
@@ -466,7 +504,7 @@
         previews.set(state.preview, state.color);
       }
       if (state.drag) {
-        next.ghosts.push({ color: state.color, cards: ghostsOf(state.drag, origin) });
+        drawDrag(next, state.color, state.drag, origin);
       }
     }
     for (const [color, landing] of landings) {
@@ -475,7 +513,7 @@
         continue;
       }
       nextChange = Math.min(nextChange, landing.until);
-      next.ghosts.push({ color, cards: ghostsOf(landing.drag, origin) });
+      drawDrag(next, color, landing.drag, origin);
     }
     pings = pings.filter((p) => p.until > now);
     for (const { key, color, spot, until } of pings) {
@@ -488,6 +526,7 @@
     }
     drawn = next;
     interaction.liftByOthers(tableCardsOf(next.ghosts));
+    interaction.tokenLiftedByOthers = next.tokens.length > 0;
     // Each card or pile draws its ring itself, which follows it as it moves (CardView, PileView).
     interaction.previewByOthers(previews);
 
@@ -563,6 +602,7 @@
     cancelAnimationFrame(frame);
     clearTimeout(wakeTimer);
     interaction.liftByOthers(new Set());
+    interaction.tokenLiftedByOthers = false;
     interaction.previewByOthers(new Map());
   });
 </script>
@@ -575,6 +615,9 @@
       {#each ghost.cards as card (card.id)}
         <CardView {card} face={faceOf(card)} ghost />
       {/each}
+    {/each}
+    {#each drawn.tokens as token (token.color)}
+      <FirstPlayerToken x={token.x} y={token.y} ghost />
     {/each}
   </div>
   {#each drawn.pings as pinged (pinged.key)}

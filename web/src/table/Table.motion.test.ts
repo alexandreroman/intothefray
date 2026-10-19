@@ -290,6 +290,54 @@ describe('Table animations', () => {
     expect(animationsOf('.surface .fptoken')).toEqual([]);
   });
 
+  it("another player's drag of the first player token shows it under their pointer", async () => {
+    const session = { ...fakeSession(), presence: new SvelteMap<number, PresenceState>() };
+    const { rerender } = render(Table, { session, view: makeView([]) });
+    await settle();
+    const ghost = () => document.querySelector<HTMLElement>('.presence .fptoken.ghost');
+    const placedToken = () => document.querySelector<HTMLElement>('.surface .fptoken')!;
+    const dragTo = (x: number) => ({ cards: [], token: true, x, y: 40 });
+
+    session.presence.set(0, { color: 0, name: 'Alex', at: Date.now(), drag: dragTo(400) });
+    await waitFor(() => expect(ghost()?.style.left).toBe('400px'));
+    expect(placedToken().classList).toContain('lifted');
+    session.presence.set(0, { color: 0, name: 'Alex', at: Date.now(), drag: dragTo(150) });
+    await waitFor(() => expect(ghost()?.style.left).toBe('150px'));
+
+    // Let go: the ghost stays where it was dropped until the view moves the token.
+    session.presence.set(0, { color: 0, name: 'Alex', at: Date.now(), drag: null });
+    await settle();
+    expect(ghost()).not.toBeNull();
+
+    // It slides the last few pixels onto the grid, never again from its old place.
+    await rerender({ session, view: makeView([], { firstPlayer: { x: 160, y: 40 } }) });
+    await waitFor(() => expect(animationsOf('.surface .fptoken')).toHaveLength(1));
+    const [[keyframes]] = animationsOf('.surface .fptoken') as [
+      [Keyframe[], KeyframeAnimationOptions],
+    ];
+    expect(keyframes[0]).toMatchObject({ translate: '-10px 0px' });
+    expect(ghost()).toBeNull();
+    expect(placedToken().classList).not.toContain('lifted');
+  });
+
+  it('a lost player takes their drag of the first player token along', async () => {
+    const session = { ...fakeSession(), presence: new SvelteMap<number, PresenceState>() };
+    render(Table, { session, view: makeView([]) });
+    await settle();
+    const ghost = () => document.querySelector<HTMLElement>('.presence .fptoken.ghost');
+
+    session.presence.set(0, {
+      color: 0,
+      name: 'Alex',
+      at: Date.now(),
+      drag: { cards: [], token: true, x: 400, y: 40 },
+    });
+    await waitFor(() => expect(ghost()).not.toBeNull());
+    session.presence.delete(0);
+    await waitFor(() => expect(ghost()).toBeNull());
+    expect(document.querySelector('.surface .fptoken')?.classList).not.toContain('lifted');
+  });
+
   it('counts frames while a card moves, for the arrows to follow it', async () => {
     const session = fakeSession();
     const { rerender } = render(Table, {

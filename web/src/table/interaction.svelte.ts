@@ -80,6 +80,8 @@ class TableInteraction {
    * follow those players' pointers (Presence.svelte).
    */
   liftedByOthers = $state.raw<ReadonlySet<string>>(new Set());
+  /** Another player drags the first player token: it is hidden in place meanwhile (Presence.svelte). */
+  tokenLiftedByOthers = $state(false);
   /**
    * The cards and piles other players preview, with the colour of the player
    * who does: each draws that player's ring itself, so that the ring follows
@@ -483,6 +485,7 @@ class TableInteraction {
     this.#swallowClick = false;
     this.highlighted = new Set();
     this.liftedByOthers = new Set();
+    this.tokenLiftedByOthers = false;
     this.previewedByOthers = new Map();
     this.endArrow();
     this.onBar = false;

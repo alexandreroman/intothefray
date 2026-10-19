@@ -104,6 +104,7 @@
     <FirstPlayerToken
       x={firstPlayer.x}
       y={firstPlayer.y}
+      lifted={interaction.tokenLiftedByOthers}
       tip={tokenMovable ? TOKEN_TIP : undefined}
       onpointerenter={(event) => interaction.enterNothing(event)}
       onpointerdown={tokenMovable

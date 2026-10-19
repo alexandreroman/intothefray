@@ -55,6 +55,8 @@ const handCard = (id: string) => `.hand .hcard[data-id="${CSS.escape(id)}"]`;
 const remoteGhost = (id: string) => `.presence .card.ghost[data-id="${CSS.escape(id)}"]`;
 const tablePile = (id: string) => `.surface .pile[data-id="${CSS.escape(id)}"]`;
 const tableToken = '.surface .fptoken';
+/** The first player token another player drags, or has just let go of (Presence.svelte). */
+const remoteToken = '.presence .fptoken.ghost';
 
 /**
  * What an animation plays on, "card:<id>", "pile:<id>" or the first player
@@ -188,7 +190,11 @@ class TableMotion {
       }
     }
     const tokenMoves = shown.some((anim) => anim.kind === 'firstPlayer');
-    const tokenElement = tokenMoves ? root?.querySelector<HTMLElement>(tableToken) : null;
+    // Another player's drop goes from where their ghost lies, as for a card.
+    const tokenElement = tokenMoves
+      ? (root?.querySelector<HTMLElement>(remoteToken) ??
+        root?.querySelector<HTMLElement>(tableToken))
+      : null;
     const tokenBefore = tokenElement ? measure(tokenElement, zoom) : undefined;
     this.#stopFor(shown, tables.after);
     const generation = ++this.#generation;

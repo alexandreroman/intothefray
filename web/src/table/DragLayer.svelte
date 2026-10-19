@@ -528,27 +528,27 @@
   }
 
   /**
-   * What the other players see of the drag: the cards it carries and their
-   * corner, in table units, while it is over the table. Not the first player
-   * token, which carries no card, nor a hand card over the hand, which is the
-   * viewer's own business.
+   * What the other players see of the drag: the cards it carries, or the
+   * first player token, and their corner, in table units, while it is over
+   * the table. Not a hand card over the hand, which is the viewer's own
+   * business.
    */
   function presenceOf(from: DragSource, at: Point): PresenceDrag | null {
     const table = root?.querySelector('.tablewrap')?.getBoundingClientRect();
-    if (!root || !table || from.kind === 'firstPlayer' || overHand) {
+    if (!root || !table || overHand) {
       return null;
     }
     const surface = surfaceRect(root);
     if (!contains(table, at) || !surface) {
       return null;
     }
-    const cards = cardsShown(from);
     const corner = onTable(cornerOf(from, at), surface);
-    return {
-      cards: cards.slice(0, MAX_DRAG_CARDS),
-      x: Math.round(corner.x),
-      y: Math.round(corner.y),
-    };
+    const x = Math.round(corner.x);
+    const y = Math.round(corner.y);
+    if (from.kind === 'firstPlayer') {
+      return { cards: [], token: true, x, y };
+    }
+    return { cards: cardsShown(from).slice(0, MAX_DRAG_CARDS), x, y };
   }
 
   /**

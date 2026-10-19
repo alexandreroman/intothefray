@@ -85,6 +85,10 @@ func presenceFieldsOf(msg clientMessage) (presenceFields, error) {
 		if drag != nil && !drag.valid() {
 			return presenceFields{}, fmt.Errorf("%w: drag out of bounds", errInvalidMessage)
 		}
+		if drag != nil && drag.Cards == nil {
+			// Relayed as a list, never null: a token drag may leave its cards out.
+			drag.Cards = []string{}
+		}
 		encoded, err := json.Marshal(drag) // null once the drag ends
 		if err != nil {
 			return presenceFields{}, err
@@ -102,7 +106,12 @@ func presenceFieldsOf(msg clientMessage) (presenceFields, error) {
 	return fields, nil
 }
 
+// valid reports whether d carries either the first player token alone, or
+// between 1 and maxDragCards cards.
 func (d *presenceDrag) valid() bool {
+	if d.Token {
+		return len(d.Cards) == 0
+	}
 	if len(d.Cards) == 0 || len(d.Cards) > maxDragCards {
 		return false
 	}
