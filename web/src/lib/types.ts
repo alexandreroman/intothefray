@@ -112,10 +112,8 @@ export interface PileView {
   cards?: string[]; // bottom to top, public piles only
 }
 
-export interface PlayerView {
-  name: string;
-  color: number;
-  host: boolean;
+/** One deck slot of a player: a seat at the table once the game starts. */
+export interface DeckView {
   area?: Area;
   hero?: string;
   heroName?: string;
@@ -123,6 +121,14 @@ export interface PlayerView {
   deckName?: string;
   ready: boolean;
   handCount: number;
+}
+
+export interface PlayerView {
+  name: string;
+  color: number;
+  host: boolean;
+  ready: boolean; // every deck slot holds a deck
+  decks: DeckView[];
 }
 
 export interface LogView {
@@ -139,7 +145,7 @@ export interface YouView {
   name?: string;
   color: number;
   host: boolean;
-  area?: Area;
+  areas?: Area[]; // the viewer's own seats, in order
 }
 
 export interface Stage {
@@ -170,7 +176,7 @@ export interface PrivateView {
 export interface TableView {
   cards: CardView[];
   piles: PileView[];
-  hand?: string[];
+  hands?: Partial<Record<Area, string[]>>; // the hands of the viewer's own seats only
   stages: Stage[];
   firstPlayer: Point;
   arrows?: Arrow[];

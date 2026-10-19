@@ -2,6 +2,7 @@ import { SvelteMap } from 'svelte/reactivity';
 import { getToken, setToken } from './prefs';
 import type {
   Action,
+  LobbyConfig,
   PresenceFields,
   PresenceState,
   Role,
@@ -13,7 +14,24 @@ import { wsUrl } from './api';
 
 export type Status = 'connecting' | 'open' | 'reconnecting' | 'closed';
 
-type LobbyOp = 'configure' | 'setDeck' | 'removePlayer' | 'leave' | 'takeSeat' | 'start' | 'end';
+export type LobbyOp =
+  | 'configure'
+  | 'setDeck'
+  | 'addDeck'
+  | 'removeDeck'
+  | 'removePlayer'
+  | 'leave'
+  | 'takeSeat'
+  | 'start'
+  | 'end';
+
+/** The fields a lobby operation carries; which ones matter depends on the operation. */
+export interface LobbyPayload {
+  url?: string; // setDeck: the marvelcdb deck link
+  deck?: number; // setDeck, removeDeck: the caller's deck slot, 0 when absent
+  config?: LobbyConfig; // configure
+  color?: number; // removePlayer: the colour of the player to remove
+}
 
 type ServerMessage =
   | { type: 'welcome'; token: string; role: Role }
@@ -125,7 +143,7 @@ export class GameSession {
   }
 
   /** Returns false when the message was not sent because the socket is not open. */
-  lobby(op: LobbyOp, payload: object = {}): boolean {
+  lobby(op: LobbyOp, payload: LobbyPayload = {}): boolean {
     if (op === 'setDeck') {
       this.deckError = null;
       this.deckLoadError = null;
@@ -137,10 +155,14 @@ export class GameSession {
   /**
    * Sends an action and returns its id, which the server echoes in errors,
    * or null when the action was not sent because the socket is not open.
+   * The action is credited to `seat`, one of the viewer's own seats; without
+   * it, the server credits the viewer's first seat.
    */
-  act(action: Action): number | null {
+  act(action: Action, seat?: number): number | null {
     const id = this.#nextActionId + 1;
-    if (!this.#send({ type: 'action', id, action })) {
+    const message =
+      seat === undefined ? { type: 'action', id, action } : { type: 'action', id, action, seat };
+    if (!this.#send(message)) {
       return null;
     }
     this.#nextActionId = id;
@@ -318,8 +340,9 @@ export class GameSession {
   }
 }
 
-/** Identifies the deck of the viewer's own player in a view. */
+/** Identifies the decks of the viewer's own player in a view. */
 function deckSignature(view: View | null): string {
   const me = view?.players.find((player) => player.color === view.you.color);
-  return JSON.stringify([me?.deckName, me?.hero, me?.heroName]);
+  const decks = me?.decks.map((deck) => [deck.deckName, deck.hero, deck.heroName]);
+  return JSON.stringify(decks);
 }
