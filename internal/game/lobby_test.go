@@ -473,6 +473,108 @@ func TestSetDeckFillsItsSlot(t *testing.T) {
 	}
 }
 
+func TestSetDeckRefusesTakenHero(t *testing.T) {
+	cat := newCatalog(t)
+	g := lobbyOfFour(t)
+	if err := g.SetDeck("b", 0, DeckChoice{Name: "Bob's", Hero: spiderManIdentity}, cat); err != nil {
+		t.Fatal(err)
+	}
+
+	// The alter ego alias names the same identity.
+	err := g.SetDeck("c", 0, DeckChoice{Name: "Mine", Hero: "01001b"}, cat)
+
+	var taken *HeroTakenError
+	if !errors.As(err, &taken) || !errors.Is(err, ErrInvalid) {
+		t.Fatalf("SetDeck = %v, want a HeroTakenError wrapping ErrInvalid", err)
+	}
+	if taken.Hero != "Spider-Man (Peter Parker)" {
+		t.Errorf("hero = %q, want Spider-Man (Peter Parker)", taken.Hero)
+	}
+	if g.Players[2].Decks[0] != nil {
+		t.Error("a refused deck must not be stored")
+	}
+}
+
+func TestSetDeckRefusesOwnOtherSlotHero(t *testing.T) {
+	cat := newCatalog(t)
+	g := mustNewGame(t, "g1", "h", "Host", testNow)
+	if err := g.AddDeck("h"); err != nil {
+		t.Fatal(err)
+	}
+	if err := g.SetDeck("h", 0, DeckChoice{Name: "First", Hero: spiderManIdentity}, cat); err != nil {
+		t.Fatal(err)
+	}
+
+	err := g.SetDeck("h", 1, DeckChoice{Name: "Second", Hero: spiderManIdentity}, cat)
+
+	var taken *HeroTakenError
+	if !errors.As(err, &taken) {
+		t.Fatalf("SetDeck = %v, want a HeroTakenError", err)
+	}
+	if taken.Hero != "Spider-Man (Peter Parker)" {
+		t.Errorf("hero = %q, want Spider-Man (Peter Parker)", taken.Hero)
+	}
+	if g.Players[0].Decks[1] != nil {
+		t.Error("a refused deck must not be stored")
+	}
+}
+
+func TestSetDeckSameSlotSameHero(t *testing.T) {
+	cat := newCatalog(t)
+	g := mustNewGame(t, "g1", "h", "Host", testNow)
+	if err := g.SetDeck("h", 0, DeckChoice{Name: "Old", Hero: spiderManIdentity}, cat); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := g.SetDeck("h", 0, DeckChoice{Name: "New", Hero: spiderManIdentity}, cat); err != nil {
+		t.Fatalf("reloading the slot with its hero = %v, want nil", err)
+	}
+	if got := g.Players[0].Decks[0].Name; got != "New" {
+		t.Errorf("deck = %q, want the new deck", got)
+	}
+}
+
+func TestSetDeckSameNameOtherSubname(t *testing.T) {
+	cat := newCatalog(t)
+	g := lobbyOfFour(t)
+	if err := g.SetDeck("b", 0, DeckChoice{Name: "Peter", Hero: spiderManIdentity}, cat); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := g.SetDeck("c", 0, DeckChoice{Name: "Miles", Hero: milesMoralesIdentity}, cat); err != nil {
+		t.Errorf("Spider-Man (Miles Morales) next to Spider-Man (Peter Parker) = %v, want nil", err)
+	}
+}
+
+func TestHeroTitleMatching(t *testing.T) {
+	tests := []struct {
+		name string
+		a, b heroTitle
+		want bool
+	}{
+		{"same", heroTitle{"Spider-Man", "Peter Parker"}, heroTitle{"Spider-Man", "Peter Parker"}, true},
+		{"case and spaces", heroTitle{"Spider-Man", "Peter Parker"}, heroTitle{" spider-man ", "PETER PARKER "}, true},
+		{"other subtitle", heroTitle{"Spider-Man", "Peter Parker"}, heroTitle{"Spider-Man", "Miles Morales"}, false},
+		{"other name", heroTitle{"Spider-Man", "Peter Parker"}, heroTitle{"Venom", "Peter Parker"}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.a.matches(tt.b); got != tt.want {
+				t.Errorf("matches = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestHeroTitleLabel(t *testing.T) {
+	if got := (heroTitle{"Spider-Man", "Peter Parker"}).label(); got != "Spider-Man (Peter Parker)" {
+		t.Errorf("label = %q", got)
+	}
+	if got := (heroTitle{name: "Spider-Man"}).label(); got != "Spider-Man" {
+		t.Errorf("label without subtitle = %q", got)
+	}
+}
+
 func TestHeroImageFallsBackToFirstFace(t *testing.T) {
 	cat := newCatalog(t)
 	set, _ := cat.Set("standard")

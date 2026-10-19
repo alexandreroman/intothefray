@@ -183,8 +183,24 @@ func (g *Game) RemoveDeck(token string, deck int) error {
 	return nil
 }
 
+// HeroTakenError reports a deck whose hero already sits in another deck slot
+// of the game. It wraps ErrInvalid.
+type HeroTakenError struct {
+	Hero string // the hero's label, e.g. "Spider-Man (Peter Parker)"
+}
+
+func (e *HeroTakenError) Error() string {
+	return fmt.Sprintf("%v: %s is already at the table", ErrInvalid, e.Hero)
+}
+
+func (e *HeroTakenError) Unwrap() error {
+	return ErrInvalid
+}
+
 // SetDeck stores a deck in the player's deck slot with the given index during
-// the lobby. Every card code must be known to the catalog.
+// the lobby. Every card code must be known to the catalog, and the hero must
+// not sit in any other deck slot of the game, whoever holds it: it returns a
+// HeroTakenError then. Reloading a slot with its own hero is allowed.
 func (g *Game) SetDeck(token string, deck int, choice DeckChoice, cat *pack.Catalog) error {
 	if err := g.requireLobby(); err != nil {
 		return err
@@ -211,6 +227,9 @@ func (g *Game) SetDeck(token string, deck int, choice DeckChoice, cat *pack.Cata
 	}
 	if len(unknown) > 0 {
 		return fmt.Errorf("%w: unknown card codes: %s", ErrInvalid, strings.Join(unknown, ", "))
+	}
+	if err := g.requireFreeHero(player, deck, choice.Hero, cat); err != nil {
+		return err
 	}
 
 	choice.Cards = slices.Clone(choice.Cards)
@@ -297,6 +316,78 @@ func requireSetKind(cat *pack.Catalog, code, kind string) error {
 	return nil
 }
 
+// requireFreeHero refuses a hero that already sits in another deck slot of
+// the game. The caller's slot being loaded is skipped, so that a deck can
+// replace itself.
+func (g *Game) requireFreeHero(caller *Player, slot int, identity string, cat *pack.Catalog) error {
+	wanted, ok := heroTitleOf(cat, identity)
+	if !ok {
+		return nil
+	}
+	for _, holder := range g.Players {
+		for i, held := range holder.Decks {
+			if held == nil || (holder == caller && i == slot) {
+				continue
+			}
+			title, ok := heroTitleOf(cat, held.Hero)
+			if ok && title.matches(wanted) {
+				return &HeroTakenError{Hero: wanted.label()}
+			}
+		}
+	}
+	return nil
+}
+
+// heroTitle tells heroes apart: the name of the hero face and its subtitle.
+type heroTitle struct {
+	name     string
+	subtitle string
+}
+
+// heroTitleOf returns the title of the identity card with the given code
+// (any alias). The subtitle is the hero face's subname, or else the alter
+// ego name: marvelcdb leaves the subname of identity cards empty, and the
+// alter ego is what tells Spider-Man (Peter Parker) from Spider-Man (Miles
+// Morales). ok is false for an empty or unknown code.
+func heroTitleOf(cat *pack.Catalog, identity string) (heroTitle, bool) {
+	if identity == "" {
+		return heroTitle{}, false
+	}
+	card, _, err := cat.Card(identity)
+	if err != nil || len(card.Faces) == 0 {
+		return heroTitle{}, false
+	}
+	face := heroFace(card)
+	title := heroTitle{name: face.Name, subtitle: face.Subname}
+	if title.subtitle == "" {
+		for _, f := range card.Faces {
+			if f.Type == faceTypeAlterEgo {
+				title.subtitle = f.Name
+				break
+			}
+		}
+	}
+	return title, true
+}
+
+// matches compares two titles, ignoring case and surrounding spaces.
+func (h heroTitle) matches(other heroTitle) bool {
+	return sameText(h.name, other.name) && sameText(h.subtitle, other.subtitle)
+}
+
+// label reads "Spider-Man (Peter Parker)", or the bare name without a
+// subtitle.
+func (h heroTitle) label() string {
+	if h.subtitle == "" {
+		return h.name
+	}
+	return fmt.Sprintf("%s (%s)", h.name, h.subtitle)
+}
+
+func sameText(a, b string) bool {
+	return strings.EqualFold(strings.TrimSpace(a), strings.TrimSpace(b))
+}
+
 func knownCard(cat *pack.Catalog, code string) bool {
 	_, _, err := cat.Card(code)
 	return err == nil
@@ -310,17 +401,22 @@ func heroImage(cat *pack.Catalog, identity string) string {
 	if err != nil || len(card.Faces) == 0 {
 		return ""
 	}
-	face := card.Faces[0]
-	for _, f := range card.Faces {
-		if f.Type == faceTypeHero {
-			face = f
-			break
-		}
-	}
+	face := heroFace(card)
 	if len(face.Images) == 0 {
 		return ""
 	}
 	return face.Images[0]
+}
+
+// heroFace returns the hero face of an identity card, or its first face when
+// no face is a hero face. The card must have a face.
+func heroFace(card pack.Card) pack.Face {
+	for _, f := range card.Faces {
+		if f.Type == faceTypeHero {
+			return f
+		}
+	}
+	return card.Faces[0]
 }
 
 // cleanName trims a display name and cuts it to maxNameRunes runes.

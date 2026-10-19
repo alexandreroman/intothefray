@@ -341,6 +341,40 @@ func TestDeckLinkError(t *testing.T) {
 	}
 }
 
+func TestSetDeckHeroTaken(t *testing.T) {
+	ts, _ := newTestServerWith(t, func(s *Server) { s.deps.Decks = stubDecklists(t) })
+	created := createGame(t, ts, "Alex")
+	host := connect(t, ts, created.ID)
+	host.hello(created.Token, "Alex")
+	guest := connect(t, ts, created.ID)
+	guest.hello("", "Sam")
+	host.expect("view")
+	// Every change below reaches the host as a view, in order.
+	guest.lobby("setDeck", map[string]any{"url": deckLink})
+	host.expect("view")
+
+	host.lobby("setDeck", map[string]any{"url": deckLink})
+
+	reply := host.expect("error")
+	want := "Black Panther (T'Challa) is already at the table. Pick another deck."
+	if reply.Code != "deck" || reply.Message != want {
+		t.Errorf("error = %s, want code deck with %q", reply.raw, want)
+	}
+
+	host.lobby("setDeck", map[string]any{"url": spiderManDeckLink})
+	host.expect("view")
+	host.lobby("addDeck", nil)
+	host.expect("view")
+
+	host.lobby("setDeck", map[string]any{"url": spiderManDeckLink, "deck": 1})
+
+	reply = host.expect("error")
+	want = "Spider-Man (Peter Parker) is already at the table. Pick another deck."
+	if reply.Code != "deck" || reply.Message != want {
+		t.Errorf("error = %s, want code deck with %q", reply.raw, want)
+	}
+}
+
 func TestStartThenAct(t *testing.T) {
 	ts, _ := newTestServerWith(t, func(s *Server) { s.deps.Decks = stubMarvelcdb(t, blackPantherDeck) })
 	cat, err := testCatalog()
@@ -672,7 +706,7 @@ func TestActionSeatAbsent(t *testing.T) {
 }
 
 func TestActionSeatForeign(t *testing.T) {
-	ts, _ := newTestServerWith(t, func(s *Server) { s.deps.Decks = stubMarvelcdb(t, blackPantherDeck) })
+	ts, _ := newTestServerWith(t, func(s *Server) { s.deps.Decks = stubDecklists(t) })
 	cat, err := testCatalog()
 	if err != nil {
 		t.Fatal(err)
@@ -686,7 +720,7 @@ func TestActionSeatForeign(t *testing.T) {
 	// Every change below reaches the host as a view, in order.
 	host.lobby("setDeck", map[string]any{"url": deckLink})
 	host.expect("view")
-	guest.lobby("setDeck", map[string]any{"url": deckLink})
+	guest.lobby("setDeck", map[string]any{"url": spiderManDeckLink})
 	host.expect("view")
 	host.lobby("configure", map[string]any{"config": game.DefaultConfig(cat, "rhino")})
 	host.expect("view")

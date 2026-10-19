@@ -60,8 +60,9 @@ const (
 )
 
 // errorTexts is the message sent with each error code but deck, whose text
-// depends on the failure (see Server.importErrorText). It is fixed so that no
-// error detail, which can reveal where a hidden card is, reaches a viewer.
+// depends on the failure (see Server.importErrorText and heroTakenText). It
+// is fixed so that no error detail, which can reveal where a hidden card is,
+// reaches a viewer.
 var errorTexts = map[string]string{
 	codeInvalid:   "This request is not valid.",
 	codeForbidden: "You are not allowed to do that.",

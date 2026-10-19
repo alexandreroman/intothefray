@@ -63,9 +63,7 @@ func newViewFixture(t *testing.T) *viewFixture {
 	for i, token := range []string{hostToken, bobToken} {
 		deck := base
 		deck.Cards = append(slices.Clone(base.Cards), DeckEntry{Code: extra[i], Qty: 1})
-		if err := g.SetDeck(token, 0, deck, cat); err != nil {
-			t.Fatal(err)
-		}
+		seatDeck(t, g, token, 0, deck, cat)
 	}
 	if err := g.Start(hostToken, cat, testSeed, testNow); err != nil {
 		t.Fatal(err)
@@ -426,7 +424,7 @@ func TestPlayerReadyNeedsEverySlot(t *testing.T) {
 	if p.Ready || len(p.Decks) != 2 || !p.Decks[0].Ready || p.Decks[1].Ready {
 		t.Errorf("Alex with one deck of two = %+v, want not ready, slot 0 ready only", p)
 	}
-	if err := g.SetDeck("a", 1, spiderManDeck(t, cat), cat); err != nil {
+	if err := g.SetDeck("a", 1, DeckChoice{Name: "Miles", Hero: milesMoralesIdentity}, cat); err != nil {
 		t.Fatal(err)
 	}
 	if p := g.ViewFor("s").Players[0]; !p.Ready {

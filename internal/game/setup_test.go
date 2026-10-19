@@ -19,7 +19,26 @@ func newTestRNG() *rand.Rand {
 	return rand.New(rand.NewPCG(1, 2)) //nolint:gosec // deterministic test fixture
 }
 
-const spiderManIdentity = "01001a"
+const (
+	spiderManIdentity = "01001a"
+	// milesMoralesIdentity is the other Spider-Man: the same hero name with
+	// another alter ego, so another hero.
+	milesMoralesIdentity = "27030a"
+)
+
+// seatDeck stores the deck in the player's slot as SetDeck does, without the
+// lobby checks. Table fixtures give several seats the same Spider-Man deck,
+// which SetDeck refuses since a hero sits at the table only once.
+func seatDeck(t *testing.T, g *Game, token string, slot int, deck DeckChoice, cat *pack.Catalog) {
+	t.Helper()
+	player := g.player(token)
+	if player == nil || !player.hasSlot(slot) {
+		t.Fatalf("%s has no deck slot %d", token, slot)
+	}
+	deck.Cards = slices.Clone(deck.Cards)
+	deck.HeroImage = heroImage(cat, deck.Hero)
+	player.Decks[slot] = &deck
+}
 
 // spiderManDeck builds a deck from the catalog's spider_man set, without the
 // identity and the obligation, plus ten basic cards. The identity is listed
@@ -97,9 +116,7 @@ func startedGame(t *testing.T, cfg LobbyConfig) *Game {
 		t.Fatal(err)
 	}
 	for _, token := range []string{"h", "b"} {
-		if err := g.SetDeck(token, 0, spiderManDeck(t, cat), cat); err != nil {
-			t.Fatal(err)
-		}
+		seatDeck(t, g, token, 0, spiderManDeck(t, cat), cat)
 	}
 	if err := g.Start("h", cat, testSeed, testNow); err != nil {
 		t.Fatal(err)
@@ -586,9 +603,7 @@ func twoDeckGame(t *testing.T) *Game {
 		token string
 		deck  int
 	}{{"a", 0}, {"a", 1}, {"s", 0}} {
-		if err := g.SetDeck(slot.token, slot.deck, spiderManDeck(t, cat), cat); err != nil {
-			t.Fatal(err)
-		}
+		seatDeck(t, g, slot.token, slot.deck, spiderManDeck(t, cat), cat)
 	}
 	if err := g.Start("a", cat, testSeed, testNow); err != nil {
 		t.Fatal(err)
@@ -602,10 +617,11 @@ func TestStartNeedsEverySlot(t *testing.T) {
 	if err := g.Configure("a", rhinoConfig(), cat); err != nil {
 		t.Fatal(err)
 	}
-	for _, token := range []string{"a", "s"} {
-		if err := g.SetDeck(token, 0, spiderManDeck(t, cat), cat); err != nil {
-			t.Fatal(err)
-		}
+	if err := g.SetDeck("a", 0, spiderManDeck(t, cat), cat); err != nil {
+		t.Fatal(err)
+	}
+	if err := g.SetDeck("s", 0, DeckChoice{Name: "Miles", Hero: milesMoralesIdentity}, cat); err != nil {
+		t.Fatal(err)
 	}
 
 	err := g.Start("a", cat, testSeed, testNow)
