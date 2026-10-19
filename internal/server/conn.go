@@ -496,7 +496,7 @@ func (s *Server) setDeck(ctx context.Context, c *conn, link string, slot int) er
 // heroTakenText is the message of a deck refused because its hero is already
 // at the table.
 func heroTakenText(err *game.HeroTakenError) string {
-	return fmt.Sprintf("%s is already at the table. Pick another deck.", err.Hero)
+	return fmt.Sprintf("%s is already at the table.", err.Hero)
 }
 
 // importErrorText is the fixed message of a failed deck import. Failures that

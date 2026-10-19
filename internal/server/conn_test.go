@@ -356,7 +356,7 @@ func TestSetDeckHeroTaken(t *testing.T) {
 	host.lobby("setDeck", map[string]any{"url": deckLink})
 
 	reply := host.expect("error")
-	want := "Black Panther (T'Challa) is already at the table. Pick another deck."
+	want := "Black Panther (T'Challa) is already at the table."
 	if reply.Code != "deck" || reply.Message != want {
 		t.Errorf("error = %s, want code deck with %q", reply.raw, want)
 	}
@@ -369,7 +369,7 @@ func TestSetDeckHeroTaken(t *testing.T) {
 	host.lobby("setDeck", map[string]any{"url": spiderManDeckLink, "deck": 1})
 
 	reply = host.expect("error")
-	want = "Spider-Man (Peter Parker) is already at the table. Pick another deck."
+	want = "Spider-Man (Peter Parker) is already at the table."
 	if reply.Code != "deck" || reply.Message != want {
 		t.Errorf("error = %s, want code deck with %q", reply.raw, want)
 	}
