@@ -95,15 +95,67 @@ func (g *Game) playerName(seat int) string {
 	return g.Players[player].Name
 }
 
-// logLine is the history line of one recorded action.
-type logLine struct {
-	text   string
-	cards  []string // touched cards everyone can see after the action
-	merged string   // text of a merged line, "" to keep text
+// phrase is a history line, or a piece of one, in parts. Only the narrator
+// flags a part as a card name, with cardName: any other text, such as a
+// player name, stays plain whatever it holds.
+type phrase []LogPart
+
+// words is plain text.
+func words(s string) phrase {
+	return phrase{{Text: s}}
 }
 
-func (l logLine) mergedText() string {
-	if l.merged != "" {
+// cardName is the printed name of a card.
+func cardName(s string) phrase {
+	return phrase{{Text: s, Card: true}}
+}
+
+// join puts pieces one after the other, merging the plain parts that follow
+// each other.
+func join(pieces ...phrase) phrase {
+	var joined phrase
+	for _, piece := range pieces {
+		for _, part := range piece {
+			last := len(joined) - 1
+			if last >= 0 && !joined[last].Card && !part.Card {
+				joined[last].Text += part.Text
+				continue
+			}
+			joined = append(joined, part)
+		}
+	}
+	return joined
+}
+
+// String returns the plain text of p.
+func (p phrase) String() string {
+	var b strings.Builder
+	for _, part := range p {
+		b.WriteString(part.Text)
+	}
+	return b.String()
+}
+
+// parts returns the parts of p when it names a card, nil otherwise: the text
+// alone tells a line that names none.
+func (p phrase) parts() []LogPart {
+	for _, part := range p {
+		if part.Card {
+			return p
+		}
+	}
+	return nil
+}
+
+// logLine is the history line of one recorded action.
+type logLine struct {
+	text   phrase
+	cards  []string // touched cards everyone can see after the action
+	merged phrase   // text of a merged line, nil to keep text
+}
+
+func (l logLine) mergedText() phrase {
+	if l.merged != nil {
 		return l.merged
 	}
 	return l.text
@@ -145,6 +197,11 @@ var counterNouns = map[string]counterNoun{
 // hiddenCard is how the history names a card nobody could see.
 const hiddenCard = "a card"
 
+// pile is the name of a pile as plain words: a player name may be part of it.
+func (n narrator) pile(id string) phrase {
+	return words(n.game.pileName(n.who, id))
+}
+
 // narrator writes history lines from the actor's point of view. A card is
 // named only when everyone could see it before or after the action.
 type narrator struct {
@@ -176,28 +233,29 @@ func (n narrator) describe(a Action) (logLine, bool) {
 	case ActToDeck:
 		return n.toDeckEvent(a), true
 	case ActDiscard:
-		text := "discarded " + n.name(a.Card)
+		text := join(words("discarded "), n.name(a.Card))
 		if n.before.Cards[a.Card].Zone == ZoneHand {
-			text += " from hand"
+			text = join(text, words(" from hand"))
 		}
 		return logLine{text: text, cards: n.visibleCards(a.Card)}, true
 	case ActToPile:
-		text := fmt.Sprintf("moved %s to %s", n.name(a.Card), n.game.pileName(n.who, a.Target))
+		text := join(words("moved "), n.name(a.Card), words(" to "), n.pile(a.Target))
 		return logLine{text: text, cards: n.visibleCards(a.Card)}, true
 	case ActPlay:
 		if a.Target != "" {
-			text := fmt.Sprintf("played %s under %s", n.name(a.Card), n.name(a.Target))
+			text := join(words("played "), n.name(a.Card), words(" under "), n.name(a.Target))
 			return logLine{text: text, cards: n.visibleCards(a.Card, a.Target)}, true
 		}
-		return logLine{text: "played " + n.name(a.Card), cards: n.visibleCards(a.Card)}, true
+		return logLine{text: join(words("played "), n.name(a.Card)), cards: n.visibleCards(a.Card)}, true
 	case ActExhaust:
 		verb := "readied "
 		if n.after.Cards[a.Card].Exhausted {
 			verb = "exhausted "
 		}
-		return logLine{text: verb + n.name(a.Card), cards: n.visibleCards(a.Card)}, true
+		return logLine{text: join(words(verb), n.name(a.Card)), cards: n.visibleCards(a.Card)}, true
 	case ActReadyAll:
-		return logLine{text: fmt.Sprintf("readied all cards (%d)", len(a.Cards)), cards: n.visibleCards(a.Cards...)}, true
+		text := words(fmt.Sprintf("readied all cards (%d)", len(a.Cards)))
+		return logLine{text: text, cards: n.visibleCards(a.Cards...)}, true
 	case ActFlip:
 		return n.flipEvent(a), true
 	case ActToken, ActStatus:
@@ -205,24 +263,22 @@ func (n narrator) describe(a Action) (logLine, bool) {
 	case ActChooseStage:
 		return n.stageEvent(a), true
 	case ActDraw:
-		return logLine{text: n.drawText(a)}, true
+		return logLine{text: words(n.drawText(a))}, true
 	case ActReveal:
 		id := a.Cards[0]
-		return logLine{text: "revealed " + n.name(id), cards: n.visibleCards(id)}, true
+		return logLine{text: join(words("revealed "), n.name(id)), cards: n.visibleCards(id)}, true
 	case ActDeal:
-		return logLine{text: "dealt an encounter card face down to " + n.areaName(a.Area)}, true
+		return logLine{text: words("dealt an encounter card face down to " + n.areaName(a.Area))}, true
 	case ActDiscardTop:
-		text := fmt.Sprintf("discarded %s of %s", topCount(len(a.Cards)), n.game.pileName(n.who, a.Pile))
+		text := join(words("discarded "+topCount(len(a.Cards))+" of "), n.pile(a.Pile))
 		return logLine{text: text, cards: n.visibleCards(a.Cards...)}, true
 	case ActShuffle:
-		return logLine{text: "shuffled " + n.game.pileName(n.who, a.Pile)}, true
+		return logLine{text: join(words("shuffled "), n.pile(a.Pile))}, true
 	case ActShuffleBack:
 		deck, _ := deckOfDiscard(a.Pile)
-		return logLine{text: fmt.Sprintf("shuffled %s into %s",
-			n.game.pileName(n.who, a.Pile), n.game.pileName(n.who, deck))}, true
+		return logLine{text: join(words("shuffled "), n.pile(a.Pile), words(" into "), n.pile(deck))}, true
 	case ActShuffleIn:
-		return logLine{text: fmt.Sprintf("shuffled %s into %s",
-			n.game.pileName(n.who, a.Pile), n.game.pileName(n.who, PileEncounter))}, true
+		return logLine{text: join(words("shuffled "), n.pile(a.Pile), words(" into "), n.pile(PileEncounter))}, true
 	default:
 		return logLine{}, false
 	}
@@ -231,22 +287,22 @@ func (n narrator) describe(a Action) (logLine, bool) {
 func (n narrator) toHandEvent(a Action) logLine {
 	c := n.before.Cards[a.Card]
 	if c.Zone == ZonePile && !visible(n.before, a.Card) {
-		return logLine{text: "took a card from " + n.game.pileName(n.who, c.Pile) + " into hand"}
+		return logLine{text: join(words("took a card from "), n.pile(c.Pile), words(" into hand"))}
 	}
-	return logLine{text: "took " + n.name(a.Card) + " into hand"}
+	return logLine{text: join(words("took "), n.name(a.Card), words(" into hand"))}
 }
 
 func (n narrator) toDeckEvent(a Action) logLine {
 	card := n.name(a.Card)
-	deck := n.game.pileName(n.who, n.before.Cards[a.Card].Home)
-	var text string
+	deck := n.pile(n.before.Cards[a.Card].Home)
+	var text phrase
 	switch a.Where {
 	case whereBottom:
-		text = fmt.Sprintf("put %s at the bottom of %s", card, deck)
+		text = join(words("put "), card, words(" at the bottom of "), deck)
 	case whereShuffle:
-		text = fmt.Sprintf("shuffled %s into %s", card, deck)
+		text = join(words("shuffled "), card, words(" into "), deck)
 	default:
-		text = fmt.Sprintf("put %s on top of %s", card, deck)
+		text = join(words("put "), card, words(" on top of "), deck)
 	}
 	return logLine{text: text}
 }
@@ -268,18 +324,18 @@ func (n narrator) drawText(a Action) string {
 
 func (n narrator) flipEvent(a Action) logLine {
 	old, cur := n.before.Cards[a.Card], n.after.Cards[a.Card]
-	var text string
+	var text phrase
 	if old.FaceDown {
-		text = "turned " + n.faceName(cur) + " face up"
+		text = join(words("turned "), n.faceName(cur), words(" face up"))
 	} else {
 		from, to := n.faceName(old), n.faceName(cur)
 		// Both faces of a main scheme share a name; their stages tell them apart.
-		if from == to {
+		if from.String() == to.String() {
 			from, to = n.stageName(old), n.stageName(cur)
 		}
-		text = "flipped " + from
-		if from != to {
-			text += " to " + to
+		text = join(words("flipped "), from)
+		if from.String() != to.String() {
+			text = join(text, words(" to "), to)
 		}
 	}
 	return logLine{text: text, cards: n.visibleCards(a.Card)}
@@ -289,14 +345,14 @@ func (n narrator) counterEvent(a Action) logLine {
 	before, after := counterValue(n.before, a), counterValue(n.after, a)
 	noun := counterNouns[a.Name]
 	card := n.name(a.Card)
-	set := fmt.Sprintf("set %s on %s to %d", noun.many, card, after)
+	set := join(words("set "+noun.many+" on "), card, words(fmt.Sprintf(" to %d", after)))
 
 	text := set
 	switch diff := after - before; {
 	case diff > 0:
-		text = fmt.Sprintf("added %d %s to %s", diff, noun.count(diff), card)
+		text = join(words(fmt.Sprintf("added %d %s to ", diff, noun.count(diff))), card)
 	case diff < 0:
-		text = fmt.Sprintf("removed %d %s from %s", -diff, noun.count(-diff), card)
+		text = join(words(fmt.Sprintf("removed %d %s from ", -diff, noun.count(-diff))), card)
 	}
 	return logLine{text: text, cards: n.visibleCards(a.Card), merged: set}
 }
@@ -316,12 +372,12 @@ func (n narrator) stageEvent(a Action) logLine {
 	previous, chosen := n.before.Cards[stage.Current], n.after.Cards[a.Card]
 	if previous.ID == chosen.ID {
 		return logLine{
-			text:  fmt.Sprintf("turned %s to %s", label, n.stageName(chosen)),
+			text:  join(words("turned "+label+" to "), n.stageName(chosen)),
 			cards: n.visibleCards(chosen.ID),
 		}
 	}
 	return logLine{
-		text:  fmt.Sprintf("replaced %s %s with %s", label, n.stageName(previous), n.stageName(chosen)),
+		text:  join(words("replaced "+label+" "), n.stageName(previous), words(" with "), n.stageName(chosen)),
 		cards: n.visibleCards(previous.ID, chosen.ID),
 	}
 }
@@ -338,14 +394,14 @@ func (n narrator) areaName(area Area) string {
 
 // name names card id if everyone could see it before or after the action,
 // preferring the side shown before.
-func (n narrator) name(id string) string {
+func (n narrator) name(id string) phrase {
 	switch {
 	case visible(n.before, id):
 		return n.faceName(n.before.Cards[id])
 	case visible(n.after, id):
 		return n.faceName(n.after.Cards[id])
 	default:
-		return hiddenCard
+		return words(hiddenCard)
 	}
 }
 
@@ -362,28 +418,29 @@ func (n narrator) visibleCards(ids ...string) []string {
 
 // faceName returns the printed name of the face c shows. Callers make sure c
 // is visible.
-func (n narrator) faceName(c *Card) string {
+func (n narrator) faceName(c *Card) phrase {
 	face, ok := n.face(c)
 	if !ok {
-		return hiddenCard
+		return words(hiddenCard)
 	}
-	return face.Name
+	return cardName(face.Name)
 }
 
 // stageName returns the name of the face c shows with its stage, if any:
 // "Rhino (stage II)" for a villain, "The Break-In! (1A)" for a main scheme.
-func (n narrator) stageName(c *Card) string {
+// Only the name is flagged as a card name.
+func (n narrator) stageName(c *Card) phrase {
 	face, ok := n.face(c)
 	if !ok {
-		return hiddenCard
+		return words(hiddenCard)
 	}
 	switch {
 	case face.Stage == "":
-		return face.Name
+		return cardName(face.Name)
 	case face.Type == faceTypeMainScheme:
-		return fmt.Sprintf("%s (%s)", face.Name, face.Stage)
+		return join(cardName(face.Name), words(" ("+face.Stage+")"))
 	default:
-		return fmt.Sprintf("%s (stage %s)", face.Name, face.Stage)
+		return join(cardName(face.Name), words(" (stage "+face.Stage+")"))
 	}
 }
 

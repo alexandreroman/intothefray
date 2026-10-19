@@ -70,6 +70,7 @@ type LogView struct {
 	At     time.Time `json:"at"`
 	Undone bool      `json:"undone,omitempty"`
 	Cards  []string  `json:"cards,omitempty"`
+	Parts  []LogPart `json:"parts,omitempty"` // see LogEntry.Parts
 }
 
 // YouView tells the viewer who they are.
@@ -211,7 +212,7 @@ func (g *Game) logViews(table *TableView) []LogView {
 	}
 	views := make([]LogView, 0, len(g.Log))
 	for _, e := range g.Log {
-		lv := LogView{Who: e.Who, Color: e.Color, Text: e.Text, At: e.At, Undone: e.Undone}
+		lv := LogView{Who: e.Who, Color: e.Color, Text: e.Text, Parts: e.Parts, At: e.At, Undone: e.Undone}
 		for _, id := range e.Cards {
 			if listed[id] {
 				lv.Cards = append(lv.Cards, id)

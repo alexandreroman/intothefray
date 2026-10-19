@@ -92,6 +92,26 @@ type LogEntry struct {
 	At     time.Time `json:"at"`
 	Undone bool      `json:"undone,omitempty"`
 	Cards  []string  `json:"cards,omitempty"`
+	// Parts spell Text, with the card names flagged, when the line names a
+	// card; they are nil otherwise.
+	Parts []LogPart `json:"parts,omitempty"`
+}
+
+// LogPart is a piece of a history line: plain text, or the printed name of a
+// card. Only the narrator flags card names, so text a player typed, such as
+// their name, never passes for one.
+type LogPart struct {
+	Text string `json:"text"`
+	Card bool   `json:"card,omitempty"`
+}
+
+// phrase returns the line in parts, a single plain part when it names no
+// card.
+func (e LogEntry) phrase() phrase {
+	if e.Parts != nil {
+		return e.Parts
+	}
+	return words(e.Text)
 }
 
 // Game is the whole state of one game.

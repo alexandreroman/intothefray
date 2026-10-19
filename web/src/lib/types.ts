@@ -131,6 +131,12 @@ export interface PlayerView {
   decks: DeckView[];
 }
 
+/** A piece of a history line: plain text, or the printed name of a card. */
+export interface LogPart {
+  text: string;
+  card?: boolean;
+}
+
 export interface LogView {
   who: string;
   color: number; // -1 for system lines
@@ -138,6 +144,8 @@ export interface LogView {
   at: string; // RFC 3339
   undone?: boolean;
   cards?: string[];
+  /** The text in parts, card names flagged; absent when the line names no card. */
+  parts?: LogPart[];
 }
 
 export interface YouView {

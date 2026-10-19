@@ -199,7 +199,9 @@ func (g *Game) merge(seat int, burst []int, a Action, line logLine, rng *rand.Ra
 		g.Log = g.Log[:lastLine]
 		return
 	}
-	g.Log[lastLine].Text = line.mergedText()
+	merged := line.mergedText()
+	g.Log[lastLine].Text = merged.String()
+	g.Log[lastLine].Parts = merged.parts()
 	g.Log[lastLine].Cards = line.cards
 	g.Log[lastLine].At = now
 }
@@ -256,9 +258,10 @@ func (g *Game) strikeDeadLines() {
 }
 
 // appendLog writes a history line by the player who holds seat.
-func (g *Game) appendLog(seat int, text string, cards []string, now time.Time) {
+func (g *Game) appendLog(seat int, text phrase, cards []string, now time.Time) {
 	p := g.Players[g.seatPlayer(seat)]
-	g.Log = append(g.Log, LogEntry{Who: p.Name, Color: p.Color, Text: text, At: now, Cards: cards})
+	entry := LogEntry{Who: p.Name, Color: p.Color, Text: text.String(), Parts: text.parts(), At: now, Cards: cards}
+	g.Log = append(g.Log, entry)
 }
 
 // undo takes back the player's last undoable burst, whichever of their seats
@@ -279,7 +282,7 @@ func (g *Game) undo(who actor, rng *rand.Rand, now time.Time) error {
 	g.install(h.rebuild(events, burst[0], g.actorOf, rng))
 
 	original := g.Log[h.Events[burst[0]].Log]
-	g.appendLog(who.seat, "undid “"+original.Text+"”", nil, now)
+	g.appendLog(who.seat, join(words("undid “"), original.phrase(), words("”")), nil, now)
 	h.record(Event{Seat: who.seat, Action: Action{Kind: ActUndo}, Log: len(g.Log) - 1, At: now}, g.Table)
 	return nil
 }
@@ -321,7 +324,7 @@ func (g *Game) openView(who actor, a Action, now time.Time) error {
 		g.Table.Views = map[Area]*PrivateView{}
 	}
 	g.Table.Views[who.homeArea()] = view
-	g.appendLog(who.seat, text, nil, now)
+	g.appendLog(who.seat, words(text), nil, now)
 	recorded := Action{Kind: a.Kind, Pile: a.Pile, N: a.N}
 	g.History.record(Event{Seat: who.seat, Action: recorded, Log: len(g.Log) - 1, At: now}, g.Table)
 	return nil
