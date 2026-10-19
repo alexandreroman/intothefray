@@ -719,6 +719,34 @@ describe('Table', () => {
     expect(container.querySelector('header .crumbs')).toBeNull();
   });
 
+  it("Ready all readies the player's cards; spectators have no such button", async () => {
+    const session = fakeSession();
+    const view = makeView();
+    const { unmount } = render(Table, { session, view });
+    // Nothing exhausted: the button is off.
+    const button = screen.getByRole('button', { name: 'Ready all your cards' });
+    expect(button.getAttribute('aria-disabled')).toBe('true');
+    unmount();
+
+    const tired = makeView({
+      // Sam's (p1) card; Alex's exhausted card is not Sam's to ready.
+      cards: [
+        card('a', { code: '01001', owner: 0, x: 360, y: 360, exhausted: true }),
+        card('b', { code: '01001', owner: 1, x: 360, y: 690, exhausted: true }),
+      ],
+    });
+    render(Table, { session, view: tired });
+    await fireEvent.click(screen.getByRole('button', { name: 'Ready all your cards' }));
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'readyAll' });
+    document.body.replaceChildren();
+
+    render(Table, {
+      session: fakeSession(),
+      view: { ...view, you: { role: 'spectator', name: 'Kim', color: -1, host: false } },
+    });
+    expect(screen.queryByRole('button', { name: 'Ready all your cards' })).toBeNull();
+  });
+
   it('end game asks for confirmation (host only)', async () => {
     const guest = render(Table, { session: fakeSession(), view: makeView() });
     expect(screen.queryByRole('button', { name: 'End game' })).toBeNull();

@@ -59,6 +59,25 @@ describe('TopBar', () => {
     ]);
   });
 
+  it('offers Ready all on the table, off while there is nothing to ready', async () => {
+    const { unmount } = render(TopBar);
+    expect(screen.queryByRole('button', { name: 'Ready all your cards' })).toBeNull();
+    unmount();
+
+    const run = vi.fn();
+    const { rerender } = render(TopBar, { readyAll: { disabled: true, run } });
+    const button = screen.getByRole('button', { name: 'Ready all your cards' });
+    expect(button.dataset).toMatchObject({ tip: 'Ready all your cards', kbd: '⇧ Space' });
+    expect(button.getAttribute('aria-disabled')).toBe('true');
+    await fireEvent.click(button);
+    expect(run).not.toHaveBeenCalled();
+
+    await rerender({ readyAll: { disabled: false, run } });
+    expect(button.getAttribute('aria-disabled')).toBe('false');
+    await fireEvent.click(button);
+    expect(run).toHaveBeenCalledOnce();
+  });
+
   it('shows a back arrow before the logo, only when it can go back', async () => {
     const { unmount } = render(TopBar);
     expect(screen.queryByRole('button', { name: 'Back' })).toBeNull();

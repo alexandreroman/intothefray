@@ -91,6 +91,9 @@ func randomAction(r *rand.Rand, t *Table, seat int) Action {
 	case 4:
 		return Action{Kind: ActDiscard, Card: pick(slices.Concat(onTable, hand))}
 	case 5:
+		if r.IntN(4) == 0 {
+			return Action{Kind: ActReadyAll}
+		}
 		return Action{Kind: ActExhaust, Card: pick(onTable)}
 	case 6:
 		return Action{Kind: ActFlip, Card: pick(onTable)}

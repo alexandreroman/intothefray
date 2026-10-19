@@ -42,6 +42,8 @@ func apply(t *Table, a Action) error {
 		return applyPlay(t, a)
 	case ActExhaust:
 		return applyExhaust(t, a)
+	case ActReadyAll:
+		return applyReadyAll(t, a)
 	case ActFlip:
 		return applyFlip(t, a)
 	case ActToken:
@@ -485,6 +487,25 @@ func applyExhaust(t *Table, a Action) error {
 		return invalid("exhaust of card %q has no resulting state", c.ID)
 	}
 	c.Exhausted = *a.Exhausted
+	return nil
+}
+
+// applyReadyAll readies the cards resolve recorded (see resolveReadyAll).
+func applyReadyAll(t *Table, a Action) error {
+	if len(a.Cards) == 0 {
+		return invalid("ready all has no card to ready")
+	}
+	cards := make([]*Card, 0, len(a.Cards))
+	for _, id := range a.Cards {
+		c, err := t.tableCard(id)
+		if err != nil {
+			return err
+		}
+		cards = append(cards, c)
+	}
+	for _, c := range cards {
+		c.Exhausted = false
+	}
 	return nil
 }
 

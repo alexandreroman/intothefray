@@ -29,6 +29,8 @@ export interface KeyTable {
   /** Runs a bar item, as a click on it would. */
   run: (item: ActionItem) => void;
   act: (action: Action) => void;
+  /** Whether the viewer has a card that Ready all would ready. */
+  canReadyAll: boolean;
   /** Shows the keyboard shortcuts sheet (a dialog: it has the keys while it is open). */
   showKeys: () => void;
   sizeOf: (card: CardView) => Size;
@@ -116,6 +118,15 @@ function playerKey(event: KeyboardEvent, table: KeyTable): boolean {
       return false;
     }
     table.act({ kind: 'undo' });
+    return true;
+  }
+
+  // Shift + Space readies all the player's cards, wherever the pointer is. Handled even when
+  // there is nothing to ready: Space never scrolls the page under the table.
+  if (key === ' ' && event.shiftKey) {
+    if (!event.repeat && table.canReadyAll) {
+      table.act({ kind: 'readyAll' });
+    }
     return true;
   }
 

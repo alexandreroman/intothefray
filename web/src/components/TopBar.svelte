@@ -11,6 +11,7 @@
     onend,
     viewMode,
     onviewmode,
+    readyAll,
   }: {
     spectators?: number;
     /** Where the viewer is, after the logo: the first part stands out, the rest is dimmed. */
@@ -22,6 +23,8 @@
     /** What the table shows, on the table only: every row, or the villain's and one player's. */
     viewMode?: 'all' | 'focus';
     onviewmode?: (mode: 'all' | 'focus') => void;
+    /** Readies every card of the player's that can be: on the table, for players only. */
+    readyAll?: { disabled: boolean; run: () => void };
   } = $props();
 
   const VIEW_MODES = [
@@ -154,6 +157,24 @@
           </button>
         {/each}
       </div>
+    {/if}
+    {#if readyAll}
+      <!-- aria-disabled rather than disabled, so that the tooltip still shows. -->
+      <button
+        class="icon-button"
+        aria-label="Ready all your cards"
+        data-tip="Ready all your cards"
+        data-kbd="⇧ Space"
+        aria-keyshortcuts="Shift+Space"
+        aria-disabled={readyAll.disabled}
+        onclick={() => {
+          if (!readyAll.disabled) {
+            readyAll.run();
+          }
+        }}
+      >
+        <Icon name="ready-all" />
+      </button>
     {/if}
     {#if spectators > 0}
       <span class="pill" role="img" aria-label={spectatorLabel} title={spectatorLabel}>

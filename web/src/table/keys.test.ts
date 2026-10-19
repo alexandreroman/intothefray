@@ -166,6 +166,39 @@ describe('keys on the table', () => {
     expect(session.act).toHaveBeenCalledWith({ kind: 'exhaust', card: 'mine' });
   });
 
+  it('Shift + Space readies all your cards, wherever the pointer is', async () => {
+    const exhausted = [
+      card('mine', { x: 280, exhausted: true }),
+      card('v', { code: '01094', owner: -1, back: 'villain', exhausted: true }),
+    ];
+    const { session } = await renderTable(makeView({ cards: exhausted }));
+
+    // Held down, it readies once; it never scrolls the page.
+    expect(await press(' ', { shiftKey: true, repeat: true })).toBe(false);
+    expect(session.act).not.toHaveBeenCalled();
+    expect(await press(' ', { shiftKey: true })).toBe(false);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'readyAll' });
+    // Shift + E is not it.
+    await press('E', { shiftKey: true });
+    expect(session.act).toHaveBeenCalledOnce();
+  });
+
+  it('Shift + Space does nothing without an exhausted card of your own, nor in a field', async () => {
+    const villainOnly = [
+      card('mine', { x: 280 }),
+      card('v', { code: '01094', owner: -1, back: 'villain', exhausted: true }),
+    ];
+    const { session } = await renderTable(makeView({ cards: villainOnly }));
+
+    await press(' ', { shiftKey: true });
+    expect(session.act).not.toHaveBeenCalled();
+
+    // In a field, a space is typed as ever.
+    const field = document.body.appendChild(document.createElement('input'));
+    expect(await fireEvent.keyDown(field, { key: ' ', shiftKey: true })).toBe(true);
+    field.remove();
+  });
+
   it('keys act on the hovered element only, whatever their case', async () => {
     const { session } = await renderTable();
     await press('e');
@@ -206,8 +239,13 @@ describe('keys on the table', () => {
     await press('S', { shiftKey: true });
     await press('T', { shiftKey: true });
     // Shift with a key that is not a token or a status does nothing.
-    await press('E', { shiftKey: true });
+    await press(' ', { shiftKey: true });
     expect(session.act).not.toHaveBeenCalled();
+
+    // In a field, a space is typed as ever.
+    const field = document.body.appendChild(document.createElement('input'));
+    expect(await fireEvent.keyDown(field, { key: ' ', shiftKey: true })).toBe(true);
+    field.remove();
   });
 
   it('the status keys reach the second section of the counter menu', async () => {

@@ -208,6 +208,7 @@ export type ActionKind =
   | 'toPile'
   | 'play'
   | 'exhaust'
+  | 'readyAll' // ready every exhausted table card of the acting player's
   | 'flip'
   | 'token'
   | 'status'

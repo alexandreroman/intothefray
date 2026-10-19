@@ -74,6 +74,7 @@
       'Table',
       [
         { what: 'Undo your last action', keys: ['Z'] },
+        { what: 'Ready all your cards', keys: ['⇧ Space'] },
         { what: 'Zoom in / out', keys: ['+', '−'] },
         { what: 'Zoom back to 100%', keys: ['0'] },
         { what: 'Zoom around the mouse', keys: [MOD], with: 'wheel' },

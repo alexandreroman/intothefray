@@ -159,6 +159,8 @@ func (n narrator) describe(a Action) (logLine, bool) {
 			verb = "exhausted "
 		}
 		return logLine{text: verb + n.name(a.Card), cards: n.visibleCards(a.Card)}, true
+	case ActReadyAll:
+		return logLine{text: fmt.Sprintf("readied all their cards (%d)", len(a.Cards)), cards: n.visibleCards(a.Cards...)}, true
 	case ActFlip:
 		return n.flipEvent(a), true
 	case ActToken, ActStatus:

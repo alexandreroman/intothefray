@@ -138,6 +138,14 @@
   const cardsById = $derived(new Map(cards.map((card) => [card.id, card])));
   const ownArea = $derived(view.you.role === 'player' ? view.you.area : undefined);
 
+  // Ready all has something to ready: an exhausted card of the player's on the table.
+  const canReadyAll = $derived.by(() => {
+    const seat = ownArea ? seatOf(ownArea) : null;
+    return (view.table?.cards ?? []).some(
+      (card) => card.zone === 'table' && card.owner === seat && card.exhausted === true,
+    );
+  });
+
   // Spectators have no hand.
   const handCards = $derived(
     ownArea
@@ -843,6 +851,7 @@
       run: runItem,
       act: send,
       showKeys: showKeySheet,
+      canReadyAll,
       sizeOf,
     });
   }
@@ -1013,6 +1022,9 @@
       onend={view.you.host ? () => session.lobby('end') : undefined}
       viewMode={seats.length > 1 ? viewMode : undefined}
       onviewmode={changeViewMode}
+      readyAll={ownArea
+        ? { disabled: !canReadyAll, run: () => act({ kind: 'readyAll' }) }
+        : undefined}
     />
   </div>
 

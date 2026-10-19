@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"maps"
 	"math/rand/v2"
 	"slices"
 )
@@ -21,6 +22,7 @@ const (
 	ActPlay    Kind = "play"
 
 	ActExhaust     Kind = "exhaust"
+	ActReadyAll    Kind = "readyAll"
 	ActFlip        Kind = "flip"
 	ActToken       Kind = "token"
 	ActStatus      Kind = "status"
@@ -101,6 +103,8 @@ func resolve(g *Game, seat int, a Action, rng *rand.Rand) (Action, error) {
 		return a, checkCards(t, seat, a.Card)
 	case ActExhaust:
 		return resolveExhaust(t, seat, a)
+	case ActReadyAll:
+		return resolveReadyAll(t, seat, a)
 	case ActFlip:
 		return resolveFlip(t, seat, a)
 	case ActAttach, ActArrowAdd:
@@ -245,6 +249,23 @@ func resolveExhaust(t *Table, seat int, a Action) (Action, error) {
 		return a, err
 	}
 	a.Exhausted = new(!c.Exhausted)
+	return a, nil
+}
+
+// resolveReadyAll records the cards to ready: every exhausted table card of
+// the acting player's, in id order. A rebuild readies
+// those cards, whatever lies on the table then.
+func resolveReadyAll(t *Table, seat int, a Action) (Action, error) {
+	a.Cards = nil
+	for _, id := range slices.Sorted(maps.Keys(t.Cards)) {
+		c := t.Cards[id]
+		if c.Zone == ZoneTable && c.Owner == seat && c.Exhausted {
+			a.Cards = append(a.Cards, id)
+		}
+	}
+	if len(a.Cards) == 0 {
+		return a, invalid("no card of seat %d to ready", seat)
+	}
 	return a, nil
 }
 
