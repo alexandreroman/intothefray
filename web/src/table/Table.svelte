@@ -42,7 +42,7 @@
   import type { LocalBox, ShownBox } from './boxes';
   import CardBox from './CardBox.svelte';
   import DragLayer from './DragLayer.svelte';
-  import { sourceOf } from './drag';
+  import { DRAG_THRESHOLD, intersect, sourceOf, type Point, type Rect } from './drag';
   import Flights from './Flights.svelte';
   import { isHidden } from './face';
   import Hand from './Hand.svelte';
@@ -70,6 +70,7 @@
     seatOf,
     seatPlayer,
   } from './seats';
+  import { cardsInBand, isFree } from './selection';
   import TokenPill from './TokenPill.svelte';
   import CardPreview, { type Preview } from './CardPreview.svelte';
   import {
@@ -406,8 +407,9 @@
     };
   }
 
-  // From ids, so the preview follows a flip or a pile's new top card.
-  const preview = $derived(previewOf(interaction.previewed));
+  // From ids, so the preview follows a flip or a pile's new top card. None while a band is drawn
+  // over the cards.
+  const preview = $derived(interaction.band ? null : previewOf(interaction.previewed));
 
   // The preview fades in as it shows and out as it goes; another card swaps in at once. While
   // it fades out, the last one stays drawn, out of the accessibility tree.
@@ -664,7 +666,7 @@
   // In arrow mode, the hint stays until the arrow is drawn or cancelled,
   // whatever the pointer hovers meanwhile.
   const barShown = $derived.by(() => {
-    if (interaction.dragging) {
+    if (interaction.dragging || interaction.band) {
       return false;
     }
     if (interaction.arrowFrom !== null) {
@@ -869,6 +871,7 @@
       untrack(() => {
         interaction.release();
         interaction.letGo();
+        forgetEmptyPress();
       });
     }
   });
@@ -936,8 +939,8 @@
    * In the capture phase, so that the card pressed does not see it. One press
    * does the first of: picking the target of the arrow mode (or cancelling
    * it), starting a Shift + drag arrow from a card, or, on an empty spot,
-   * releasing the selection and clearing the viewer's own arrows, as in the
-   * prototype.
+   * releasing the selection, then, once let go, either selecting the cards a
+   * rubber band touched or clearing the group and the viewer's own arrows.
    */
   function onTablePointerDown(event: PointerEvent): void {
     const target = event.target as HTMLElement;
@@ -965,9 +968,112 @@
       interaction.release();
       // Ruling P5c-R7: not with another button, nor while scrolling the table with its scrollbars.
       if (event.button === 0 && !onScrollbar(event, target)) {
-        clearOwnArrows();
+        emptyPress = {
+          pointerId: event.pointerId,
+          start: { x: event.clientX, y: event.clientY },
+          canBand: canBand(event),
+        };
       }
     }
+  }
+
+  // ---- The rubber band ----
+
+  /** The press on an empty spot under way, until it is let go: it may become a rubber band. */
+  let emptyPress: { pointerId: number; start: Point; canBand: boolean } | null = null;
+
+  /**
+   * Only a player draws a band, with a mouse or a pen and no modifier key:
+   * a finger drag scrolls the table, Alt pings and Shift draws arrows.
+   */
+  function canBand(event: PointerEvent): boolean {
+    return (
+      view.you.role === 'player' &&
+      event.pointerType !== 'touch' &&
+      !event.altKey &&
+      !event.shiftKey
+    );
+  }
+
+  /** The band between two points of the screen, cut to the table: what lies past it does not show. */
+  function bandBetween(from: Point, to: Point): Rect {
+    const band = {
+      left: Math.min(from.x, to.x),
+      top: Math.min(from.y, to.y),
+      right: Math.max(from.x, to.x),
+      bottom: Math.max(from.y, to.y),
+    };
+    const table = wrap?.getBoundingClientRect();
+    return table ? intersect(band, table) : band;
+  }
+
+  /** The free table cards drawn, measured on the screen: those a band can select. */
+  function freeCardBoxes(): ReadonlyMap<string, Rect> {
+    const boxes: [string, Rect][] = [];
+    for (const card of cards) {
+      if (!isFree(card)) {
+        continue;
+      }
+      const selector = `.surface .card:not(.pile, .ghost)[data-id="${CSS.escape(card.id)}"]`;
+      const rect = app?.querySelector(selector)?.getBoundingClientRect();
+      if (rect) {
+        boxes.push([card.id, rect]);
+      }
+    }
+    return new Map(boxes);
+  }
+
+  /** The band follows the pointer once it has moved past the drag threshold. */
+  function onPointerMove(event: PointerEvent): void {
+    interaction.pointerMoved(event);
+    const press = emptyPress;
+    if (!press?.canBand || event.pointerId !== press.pointerId) {
+      return;
+    }
+    // No button down any more: it was let go outside the window, and its pointerup was missed.
+    if (event.buttons === 0) {
+      forgetEmptyPress();
+      return;
+    }
+    const at = { x: event.clientX, y: event.clientY };
+    if (
+      interaction.band === null &&
+      Math.hypot(at.x - press.start.x, at.y - press.start.y) < DRAG_THRESHOLD
+    ) {
+      return;
+    }
+    if (interaction.band === null) {
+      // What the press started selecting in the page's text goes: the band takes the gesture.
+      window.getSelection()?.removeAllRanges();
+    }
+    interaction.band = bandBetween(press.start, at);
+  }
+
+  /**
+   * A press on an empty spot let go: a band selects the cards it touches,
+   * none when it touches nothing; a plain click clears the group and, ruling
+   * P5c-R7, the viewer's own arrows.
+   */
+  function endEmptyPress(event: PointerEvent): void {
+    const press = emptyPress;
+    if (!press || event.pointerId !== press.pointerId) {
+      return;
+    }
+    const band = interaction.band;
+    forgetEmptyPress();
+    if (band === null) {
+      interaction.clearGroup();
+      clearOwnArrows();
+      return;
+    }
+    interaction.setGroup(new Set(cardsInBand(band, freeCardBoxes())));
+    // The click that ends the band is no click on an empty spot: the arrows and a tap selection stay.
+    interaction.swallowNextClick();
+  }
+
+  function forgetEmptyPress(): void {
+    emptyPress = null;
+    interaction.band = null;
   }
 
   /** A Shift + drag arrow goes to the card the button is let go over. */
@@ -975,12 +1081,15 @@
     if (interaction.arrowDrag) {
       endArrowAt(tableCardOf(document.elementFromPoint(event.clientX, event.clientY)));
     }
+    endEmptyPress(event);
   }
 
+  /** A finger that scrolls the table, among others, cancels its press: it is no click. */
   function onPointerCancel(): void {
     if (interaction.arrowDrag) {
       interaction.endArrow();
     }
+    forgetEmptyPress();
   }
 
   function onKeydown(event: KeyboardEvent): void {
@@ -1045,6 +1154,12 @@
     void view;
     void zoom;
     interaction.redrawn();
+  });
+
+  // The selected cards that left the table, or went onto a pile, drop out of the group.
+  $effect.pre(() => {
+    const current = cards;
+    untrack(() => interaction.pruneGroup(current));
   });
 
   /**
@@ -1159,7 +1274,7 @@
 {/snippet}
 
 <svelte:window
-  onpointermove={(event) => interaction.pointerMoved(event)}
+  onpointermove={onPointerMove}
   onpointerdowncapture={(event) => interaction.pointerPressed(event)}
   onclickcapture={(event) => interaction.clicked(event)}
   onpointerup={onPointerUp}
@@ -1174,7 +1289,9 @@
   class:arrowing={interaction.arrowFrom !== null}
   class:dragging={interaction.dragging !== null}
   class:history-collapsed={historyCollapsed && !narrow.current}
+  class:banding={interaction.band !== null}
   style:--z={zoom}
+  style:--you="var(--p{view.you.color + 1})"
   style:--edge="{TABLE_EDGE}px"
   style:--edge-bottom="{TABLE_EDGE_BOTTOM}px"
   bind:this={app}
@@ -1237,6 +1354,18 @@
     {rowMap}
     layout={[surface, rowMap]}
   />
+
+  {#if interaction.band}
+    {@const band = interaction.band}
+    <div
+      class="band"
+      aria-hidden="true"
+      style:left="{band.left}px"
+      style:top="{band.top}px"
+      style:width="{band.right - band.left}px"
+      style:height="{band.bottom - band.top}px"
+    ></div>
+  {/if}
 
   {#if catalog === 'failed'}
     <p class="notice" role="alert">Card data could not be loaded: cards show as placeholders.</p>
@@ -1514,6 +1643,18 @@
       0 0 22px 6px color-mix(in srgb, var(--c) 22%, transparent);
   }
 
+  /* A card the rubber band selected: the tap selection's ring and halo, in the viewer's colour. */
+  .table :global(.card > .sring) {
+    position: absolute;
+    inset: 1%;
+    border-radius: 7px;
+    pointer-events: none;
+    z-index: 1;
+    box-shadow:
+      0 0 0 2px var(--you),
+      0 0 0 7px color-mix(in srgb, var(--you) 22%, transparent);
+  }
+
   /* Where a drop would go: under a card (the prototype's threat orange), or onto a pile. */
   .table :global(.card.drop-target)::before {
     outline: 3px dashed var(--warn);
@@ -1537,6 +1678,24 @@
   .app.dragging,
   .app.dragging :global(*) {
     cursor: grabbing !important;
+  }
+
+  /*
+    The rubber band, on the screen in the viewer's colour: over the cards and the arrows at rest,
+    under the controls and the hand. Nothing gets text-selected while it is drawn.
+  */
+  .band {
+    position: fixed;
+    z-index: 2;
+    border: 1px dashed var(--you);
+    border-radius: 2px;
+    background: color-mix(in srgb, var(--you) 12%, transparent);
+    pointer-events: none;
+  }
+
+  .app.banding {
+    user-select: none;
+    -webkit-user-select: none;
   }
 
   /* Picking the card an arrow points at. */

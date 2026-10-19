@@ -450,8 +450,11 @@ describe('a click on an empty spot', () => {
     expect(interaction.locked).toBe(true);
 
     await fireEvent.pointerDown(surface(), { pointerType: 'touch' });
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'arrowClear' }, 0);
     expect(interaction.locked).toBe(false);
+    // Ruling P5c-R7: once let go, as the press did not become a rubber band.
+    expect(session.act).not.toHaveBeenCalled();
+    await fireEvent.pointerUp(window, { pointerType: 'touch' });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'arrowClear' }, 0);
   });
 
   it('clears them with the main button only', async () => {
@@ -474,11 +477,14 @@ describe('a click on an empty spot', () => {
     Object.defineProperty(scroller(), 'clientWidth', { value: 984 });
 
     await fireEvent.pointerDown(scroller(), { clientX: 500, clientY: 890 });
+    await fireEvent.pointerUp(window, { clientX: 500, clientY: 890 });
     await fireEvent.pointerDown(scroller(), { clientX: 990, clientY: 500 });
+    await fireEvent.pointerUp(window, { clientX: 990, clientY: 500 });
     expect(session.act).not.toHaveBeenCalled();
 
     // Inside the scrollbars, the scroller is an empty spot like any other.
     await fireEvent.pointerDown(scroller(), { clientX: 500, clientY: 870 });
+    await fireEvent.pointerUp(window, { clientX: 500, clientY: 870 });
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'arrowClear' }, 0);
   });
 
@@ -488,6 +494,7 @@ describe('a click on an empty spot', () => {
     const { session } = await renderTable(view);
 
     await fireEvent.pointerDown(document.querySelector<HTMLElement>('.ownerbox .owner')!);
+    await fireEvent.pointerUp(window);
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'arrowClear' }, 0);
   });
 

@@ -63,6 +63,8 @@
   const pileTarget = $derived(dropOn?.kind === 'pile' && dropOn.id === card.onPile);
   // Another player previews the card: their ring is drawn inside it, so it follows every move.
   const previewer = $derived(ghost ? undefined : interaction.previewerOf(card.id));
+  // The rubber band selected it: it is ringed in the viewer's colour (Table.svelte).
+  const selected = $derived(!ghost && interaction.group.has(card.id));
 </script>
 
 {#snippet token(k: TokenKind)}
@@ -97,6 +99,7 @@
   class:grab={draggable && !ghost}
   class:drop-target={tuckTarget}
   class:drop-pile={pileTarget}
+  class:selected
   style:left="{card.x}px"
   style:top="{card.y}px"
   style:width="{box.w}px"
@@ -158,6 +161,10 @@
         >
       {/each}
     </div>
+  {/if}
+
+  {#if selected}
+    <div class="sring"></div>
   {/if}
 
   {#if previewer !== undefined}
