@@ -2,7 +2,7 @@ import { modal } from '../components/modal.svelte';
 import type { TableElement } from './actions';
 
 /** How long the bar and the preview stay after the pointer leaves their element. */
-export const LINGER_MS = 250;
+export const LINGER_MS = 100;
 
 /** How long a drop waits for the server's answer before its cards go back. */
 export const LANDING_MS = 2000;

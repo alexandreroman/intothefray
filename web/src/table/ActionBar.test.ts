@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
 import Table from './Table.svelte';
-import { interaction } from './interaction.svelte';
+import { interaction, LINGER_MS } from './interaction.svelte';
 import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
 import type { CardView as TableCard, PackFace, PileView, PresenceState, View } from '../lib/types';
 
@@ -427,20 +427,21 @@ describe('ActionBar', () => {
     expect(bar()?.style.top).toBe('352px');
   });
 
-  it('lingers 250 ms after the pointer leaves, and stays while the pointer is on it', async () => {
+  it('lingers 100 ms after the pointer leaves, and stays while the pointer is on it', async () => {
     await renderTable();
     vi.useFakeTimers();
     await fireEvent.pointerEnter(placed('mine'));
     await fireEvent.pointerLeave(placed('mine'));
 
-    await vi.advanceTimersByTimeAsync(200);
+    // Long enough to cross the 8 px gap between the card and its bar.
+    await vi.advanceTimersByTimeAsync(LINGER_MS - 10);
     expect(bar()).not.toBeNull();
     await fireEvent.pointerEnter(bar()!);
     await vi.advanceTimersByTimeAsync(1000);
     expect(bar()).not.toBeNull();
 
     await fireEvent.pointerLeave(bar()!);
-    await vi.advanceTimersByTimeAsync(249);
+    await vi.advanceTimersByTimeAsync(LINGER_MS - 1);
     expect(bar()).not.toBeNull();
     await vi.advanceTimersByTimeAsync(1);
     expect(bar()).toBeNull();
@@ -533,7 +534,7 @@ describe('ActionBar', () => {
     vi.useFakeTimers();
     await fireEvent.click(screen.getByRole('menuitem', { name: 'Bottom of deck' }));
     expect(interaction.onBar).toBe(false);
-    await vi.advanceTimersByTimeAsync(250);
+    await vi.advanceTimersByTimeAsync(LINGER_MS);
     expect(bar()).toBeNull();
   });
 
@@ -597,7 +598,7 @@ describe('ActionBar', () => {
     await fireEvent.pointerEnter(placed('two'));
     expect(bar()?.style.left).toBe('300px');
     await fireEvent.pointerLeave(placed('two'));
-    await vi.advanceTimersByTimeAsync(250);
+    await vi.advanceTimersByTimeAsync(LINGER_MS);
     expect(interaction.hovered).toBeNull();
     expect(interaction.arrowFrom).toBe('mine');
     expect(bar()?.textContent).toContain('Click the card to point at');
@@ -686,7 +687,7 @@ describe('ActionBar', () => {
     await fireEvent.pointerDown(placed('mine'), { pointerType: 'mouse' });
     await fireEvent.click(placed('mine'));
     await fireEvent.pointerLeave(placed('mine'));
-    await vi.advanceTimersByTimeAsync(250);
+    await vi.advanceTimersByTimeAsync(LINGER_MS);
     expect(bar()).toBeNull();
   });
 });
@@ -903,7 +904,7 @@ describe('tokens and statuses', () => {
     expect(pill()).toBeNull();
   });
 
-  it('lingers 250 ms after the pointer leaves, and stays while the pointer is on it', async () => {
+  it('lingers 100 ms after the pointer leaves, and stays while the pointer is on it', async () => {
     await renderTable(viewWithCounters());
     vi.useFakeTimers();
     await fireEvent.pointerEnter(placed('mine'));
@@ -911,9 +912,9 @@ describe('tokens and statuses', () => {
 
     await fireEvent.pointerEnter(token);
     await fireEvent.pointerLeave(token);
-    await vi.advanceTimersByTimeAsync(200);
+    await vi.advanceTimersByTimeAsync(LINGER_MS - 1);
     expect(pill()).not.toBeNull();
-    await vi.advanceTimersByTimeAsync(60);
+    await vi.advanceTimersByTimeAsync(1);
     expect(pill()).toBeNull();
 
     await fireEvent.pointerEnter(token);
@@ -923,7 +924,7 @@ describe('tokens and statuses', () => {
     expect(pill()).not.toBeNull();
 
     await fireEvent.pointerLeave(pill()!);
-    await vi.advanceTimersByTimeAsync(260);
+    await vi.advanceTimersByTimeAsync(LINGER_MS);
     expect(pill()).toBeNull();
   });
 });
