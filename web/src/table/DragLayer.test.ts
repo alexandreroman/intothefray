@@ -609,6 +609,34 @@ describe('dragging from a pile', () => {
 });
 
 describe("dragging the top card of the viewer's deck", () => {
+  it('lowers the hand once the pointer leaves it, the drawn card still flying in', async () => {
+    const { session, rerender } = await renderTable();
+    await press(placed('deck:p0'), 690, 410);
+    await moveTo(450, 740);
+    const hand = document.querySelector('.hand')!;
+    expect(hand.classList).toContain('open');
+    await release(450, 740);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'draw', n: 1 });
+    // Dropped on the hand, the pointer still over it: the hand stays up.
+    expect(hand.classList).toContain('open');
+
+    const next = makeView();
+    next.table = {
+      ...next.table!,
+      cards: [...next.table!.cards, card('h4', { zone: 'hand' })],
+      hand: ['h1', 'h2', 'h3', 'h4'],
+    };
+    await rerender(next);
+    // The drawn card flies in from the deck: it is drawn there until it lands.
+    const drawn = handCard('h4');
+    drawn.getBoundingClientRect = () => domRect(620, 340, 140, 196);
+    drawn.getAnimations = () => [{ playState: 'running' } as Animation];
+
+    // Above the resting cards, though over the flying one: the hand lowers.
+    await moveTo(650, 450, 0);
+    expect(hand.classList).not.toContain('open');
+  });
+
   it('plays it face up where it lands, showing only its back until then', async () => {
     const { session } = await renderTable();
     // The deck lies at 620, 340 on the screen.

@@ -4,6 +4,7 @@
   behind it dims.
 -->
 <script lang="ts">
+  import { tick } from 'svelte';
   import { modal } from '../components/modal.svelte';
   import type { CardView as TableCard, PackFace } from '../lib/types';
   import CardBack from './CardBack.svelte';
@@ -11,6 +12,7 @@
   import { isHidden } from './face';
   import { interaction } from './interaction.svelte';
   import { cardBox, fanPositions, HAND_CARD, HAND_CARD_NARROW } from './layout';
+  import { motion } from './motion.svelte';
 
   let {
     cards,
@@ -57,9 +59,8 @@
   const dropTarget = $derived(interaction.dropOn?.kind === 'hand');
 
   // While something is dragged, the drag decides: the hand rises only under a
-  // hand card brought back over it, or a table card going back to it. It is
-  // left as it was when the card is dropped, so a reordered hand stays up,
-  // until the pointer moves again.
+  // hand card brought back over it, or a table card going back to it. Once
+  // the card is dropped, the pointer decides again (see below).
   $effect.pre(() => {
     const drag = interaction.dragging;
     if (drag) {
@@ -74,33 +75,79 @@
   const RESTING_MARGIN = 6;
   const OPEN_MARGIN = 24;
 
+  // Where the pointer was last seen, drags included.
+  let pointer: { x: number; y: number } | null = null;
+
   /**
    * Decided from the pointer position rather than :hover: as the hand rises,
    * its cards move away from a pointer resting at the bottom of the screen,
    * and :hover would flip on and off.
    */
   function followPointer(event: PointerEvent): void {
-    if (interaction.dragging) {
-      return;
+    pointer = { x: event.clientX, y: event.clientY };
+    if (!interaction.dragging) {
+      followBand(pointer);
     }
+  }
+
+  /** Opens the hand while the pointer is in its band, and lowers it once it is out. */
+  function followBand(at: { x: number; y: number }): void {
     // A dialog freezes the table: the hand stays down under its backdrop.
     if (modal.open) {
       open = false;
       return;
     }
-    const boxes = [...(list?.querySelectorAll('.hcard') ?? [])].map((card) =>
-      card.getBoundingClientRect(),
-    );
-    if (boxes.length === 0) {
+    const cardsShown = [...(list?.querySelectorAll('.hcard') ?? [])];
+    if (cardsShown.length === 0) {
       open = false;
+      return;
+    }
+    // A card flying in (drawn, or brought back from the table) is drawn away from its slot
+    // meanwhile: the band is the resting cards'. Once it has landed, the band is measured again.
+    const boxes = cardsShown
+      .filter((card) => !isMoving(card))
+      .map((card) => card.getBoundingClientRect());
+    if (boxes.length === 0) {
       return;
     }
     const margin = open ? OPEN_MARGIN : RESTING_MARGIN;
     const left = Math.min(...boxes.map((box) => box.left)) - margin;
     const right = Math.max(...boxes.map((box) => box.right)) + margin;
     const top = Math.min(...boxes.map((box) => box.top)) - margin;
-    open = event.clientX >= left && event.clientX <= right && event.clientY >= top;
+    open = at.x >= left && at.x <= right && at.y >= top;
   }
+
+  function isMoving(card: Element): boolean {
+    // Some environments (tests) have no Web Animations: nothing moves there.
+    return card.getAnimations?.().some((animation) => animation.playState === 'running') ?? false;
+  }
+
+  // When a drag ends, and once the cards a view brought have landed, the band is measured again
+  // at the pointer, even if it does not move: dropped away from the hand, or with the pointer
+  // gone from it as the new cards flew in, the hand lowers.
+  let wasDragging = false;
+  $effect(() => {
+    const dragging = interaction.dragging !== null;
+    if (wasDragging && !dragging && pointer) {
+      followBand(pointer);
+    }
+    wasDragging = dragging;
+  });
+
+  $effect(() => {
+    void shown;
+    let stale = false;
+    void tick()
+      .then(() => motion.settled())
+      .then(() => {
+        if (!stale && pointer && !interaction.dragging) {
+          followBand(pointer);
+        }
+      });
+    return () => {
+      stale = true;
+    };
+  });
 
   // The window has no pointerleave of its own: the root element gets it.
   $effect(() => {
@@ -108,6 +155,7 @@
     // A drag keeps the hand as the drag has it, even off the window.
     const close = () => {
       if (!interaction.dragging) {
+        pointer = null;
         open = false;
       }
     };
