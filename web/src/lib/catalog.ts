@@ -17,6 +17,8 @@ let indexPromise: Promise<Index> | null = null;
 let pool: { gameId: string; promise: Promise<void> } | null = null;
 // Lower-cased code or alias to its card.
 const cards = new Map<string, CardInfo>();
+// The cards of the pool, each once.
+let poolCards: PackCard[] = [];
 
 async function fetchJSON<T>(url: string): Promise<T> {
   const response = await fetch(url);
@@ -42,8 +44,9 @@ function aliasFace(alias: string, faceCount: number): number {
   return alias.charCodeAt(alias.length - 1) - 'a'.charCodeAt(0);
 }
 
-function register(poolCards: PackCard[]): void {
-  for (const card of poolCards) {
+function register(loaded: PackCard[]): void {
+  poolCards = loaded;
+  for (const card of loaded) {
     cards.set(card.code.toLowerCase(), { card, face: 0 });
     for (const alias of card.aliases ?? []) {
       const key = alias.toLowerCase();
@@ -64,6 +67,7 @@ export function loadGameCards(gameId: string): Promise<void> {
     return pool.promise;
   }
   cards.clear();
+  poolCards = [];
   const url = `${apiUrl()}/api/games/${encodeURIComponent(gameId)}/cards`;
   const promise = fetchJSON<CardPool>(url).then(
     (body) => {
@@ -86,4 +90,9 @@ export function loadGameCards(gameId: string): Promise<void> {
 /** Resolves a canonical code or an alias, like pack.Catalog.Card, from the cards already loaded. */
 export function knownCard(code: string): CardInfo | null {
   return cards.get(code.toLowerCase()) ?? null;
+}
+
+/** The cards of the loaded pool, each once (aliases aside); none before the pool is loaded. */
+export function gameCards(): PackCard[] {
+  return poolCards;
 }

@@ -8,6 +8,7 @@ vi.mock('../lib/session.svelte', () => ({ GameSession: vi.fn() }));
 vi.mock('../lib/catalog', () => ({
   loadGameCards: vi.fn(() => Promise.resolve()),
   knownCard: vi.fn(() => null),
+  gameCards: vi.fn(() => []),
   loadIndex: vi.fn(() => new Promise(() => {})),
 }));
 

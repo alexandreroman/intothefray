@@ -35,6 +35,7 @@
 - [Random player name](references/project_player_name.md) — no name prompt; random "Adjective Noun" name stored in itf-name
 - [Standard and Expert set setup](references/project_set_setup.md) — Setup-keyword set cards start in play via sets.json; Standard PvP unlisted
 - [Per-game card pool](references/project_card_pool.md) — table loads GET /api/games/{id}/cards; SPA ships pack index only
+- [Card image preload](references/project_image_preload.md) — browser-native: low-priority Image per pool face, no custom queue
 - [No compression in the backend](references/project_no_backend_compression.md) — Go sends HTTP/WS uncompressed; Caddy/CDN compress
 - [Visual identity](references/project_visual_identity.md) — Ink & Signal: Archivo, ink palette, split-card logo, full wordmark in bars
 - [Table layout](references/project_table_layout.md) — one surface in rows, owner frames, out-of-play via pile bars

@@ -107,6 +107,22 @@ describe('catalog', () => {
     expect(info?.face).toBe(0);
   });
 
+  it('lists each card of the pool once, aliases aside', async () => {
+    const { gameCards, loadGameCards } = await loadCatalog();
+    expect(gameCards()).toEqual([]);
+
+    await loadGameCards('g1');
+
+    expect(gameCards().map((card) => card.code)).toEqual(['01001', '01043', '01043d']);
+  });
+
+  it('lists only the cards of the last game loaded', async () => {
+    const { gameCards, loadGameCards } = await loadCatalog();
+    await loadGameCards('g1');
+    await loadGameCards('g2');
+    expect(gameCards().map((card) => card.code)).toEqual(['01094']);
+  });
+
   it('lets a canonical code win over the alias of another card', async () => {
     const { knownCard, loadGameCards } = await loadCatalog();
     await loadGameCards('g1');
