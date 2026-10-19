@@ -36,12 +36,15 @@ Everything below works today, except where noted.
 - Docker (or Podman) with Compose, to run Redis locally
 - [Air](https://github.com/air-verse/air) for hot reload
 - [golangci-lint](https://golangci-lint.run/) v2 for static checks
-- Node.js 24 and [pnpm](https://pnpm.io/) for the frontend
+- Node.js 24 and [pnpm](https://pnpm.io/) for the frontend, or
+  [mise](https://mise.jdx.dev/) to install both at the pinned versions
+  (`mise install`, see `mise.toml`)
 
 ## Getting Started
 
 Clone the repository, install the frontend dependencies, and start
-the stack with hot reload. Redis starts in a container first.
+the stack with hot reload. Redis and Caddy (the web server) start in
+containers first.
 
 ```bash
 git clone https://github.com/alexandreroman/intothefray.git
@@ -50,19 +53,24 @@ make web-install
 make dev
 ```
 
-Open the frontend at <http://localhost:8080>. Check that the server
-answers:
+Open the app at <http://localhost:8080>: Caddy serves the frontend
+and proxies `/api/*` and `/ws/*` to the Go server, so this is the
+single entry point. Check that the server answers:
 
 ```bash
 curl http://localhost:9000/healthz
 ```
+
+The Go server reloads under Air when you save. The frontend is
+rebuilt on save (`vite build --watch`), without hot module
+replacement: reload the page to see your change.
 
 ## Usage
 
 Run `make` to list every available target. The most common ones:
 
 ```bash
-make dev        # start Redis, then the server and the web app with hot reload
+make dev        # start Redis and Caddy, then the server and the web build
 make test       # run the test suite (race detector on)
 make check      # run the tests, the web checks, then golangci-lint
 make web-check  # type-check, lint and test the web app
@@ -70,7 +78,7 @@ make web-build  # build the web app into web/dist
 make build      # build bin/intothefray
 make packs      # regenerate the card packs in packs/dist
 make infra-down # stop Redis
-make app-up     # build the images, start the web app, server and Redis
+make app-up     # build the web app, then start Caddy, server and Redis
 make app-logs   # follow the logs of the containerised stack
 make app-down   # stop and remove the containerised stack
 ```
@@ -78,11 +86,15 @@ make app-down   # stop and remove the containerised stack
 `make dev` and `make check` need the frontend dependencies: run
 `make web-install` once on a fresh clone first.
 
-`make dev` runs Redis in a container, so it needs a running
+`make dev` runs Redis and Caddy in containers, so it needs a running
 container engine: Docker, or Podman with its Docker-compatible
 `docker` command (or pass `COMPOSE="podman compose"` to `make`).
 
-`make app-up` serves the web app at <http://localhost:8080>.
+`make app-up` builds the frontend on the host (`make web-build`),
+then starts Caddy, which serves `web/dist` and proxies to the server
+container. The web app is available at <http://localhost:8080>.
+Caddy also answers `/healthz` on that port, for the container
+healthcheck.
 
 `make dev` and `make app-up` both bind ports 9000 and 8080: stop one
 before starting the other.
@@ -108,16 +120,20 @@ Two commands start the stack, both with the ports of `.env.casper` and
 both listing the workspace URLs in the Casper info panel:
 
 - **Run** (`casper run`, that is `scripts/casper.sh run`) starts the
-  whole stack in containers with `make app-up` (web app, server and
+  whole stack in containers with `make app-up` (Caddy, server and
   Redis) and follows its logs. Stopping the command runs
   `make app-down`.
 - **Dev** (`casper run dev`) starts `make dev` with hot reload (Redis,
-  Air and Vite). Stopping the command stops the stack.
+  Caddy, Air and the web build). Stopping the command stops the stack.
 
 Both stop their stack and clear the panel when the command ends. They
 bind the same server port, so run one at a time. Several workspaces can
 run at the same time, each with its own compose project. A `PORT` set in
 `.env` or `.env.local` overrides `.env.casper`.
+
+`.env.casper` no longer sets `VITE_API_URL` and `ALLOWED_ORIGINS`: in
+an existing Casper worktree, re-run `scripts/casper.sh setup` to
+regenerate it, since a stale file breaks both flows.
 
 `make packs` downloads the card data from marvelcdb and Cerebro
 (cached in `packs/.cache`), merges the hand-written files of
@@ -130,13 +146,19 @@ regenerated files with the change that caused them.
 | ----------------- | ---------------- | -------------------------- |
 | `PORT`            | HTTP listen port | `9000`                     |
 | `REDIS_URL`       | Redis connection | `redis://localhost:6379/0` |
-| `ALLOWED_ORIGINS` | Allowed origins  | `http://localhost:8080`    |
+| `ALLOWED_ORIGINS` | Allowed origins  | empty                      |
 | `GAME_TTL`        | Idle game expiry | `24h`                      |
 | `MARVELCDB_URL`   | Deck source      | `https://marvelcdb.com`    |
 
 `ALLOWED_ORIGINS` is a comma-separated list of origins, each written
 `scheme://host[:port]` (http or https, no path): the server refuses
-to start otherwise.
+to start otherwise. Same-origin requests always pass, so it is only
+needed when the frontend is served from another origin, such as
+GitHub Pages.
+
+The frontend calls the API with same-origin URLs. `VITE_API_URL` is
+only needed at build time for a cross-origin deployment (see
+Deployment).
 
 `make` loads `.env` when it exists, and `.env.local` for the
 development targets.
@@ -150,7 +172,8 @@ The frontend is published to GitHub Pages by the `Pages` workflow
 on every push to `main`. In the repository settings:
 
 - set the Pages source to GitHub Actions;
-- set the `API_URL` variable to the public URL of the backend.
+- set the `API_URL` variable to the public URL of the backend (the
+  workflow passes it to the build as `VITE_API_URL`).
 
 The backend must accept the Pages origin: add it to
 `ALLOWED_ORIGINS`, written `scheme://host` with no path, for example
@@ -182,7 +205,8 @@ graph TD
 | `internal/pack/`    | Card pack schema and catalog                   |
 | `internal/packgen/` | Generator internals (fetch, build, images...)  |
 | `packs/`            | Curated files, generated and committed `dist/` |
-| `web/`              | Svelte frontend (Vite, pnpm)                   |
+| `web/`              | Svelte frontend (Vite, pnpm, Caddyfile)        |
+| `mise.toml`         | Node.js and pnpm versions                      |
 | `.github/`          | GitHub Actions (Pages deployment)              |
 
 ## License
