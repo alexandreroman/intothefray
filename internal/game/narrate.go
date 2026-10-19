@@ -225,7 +225,8 @@ var arrangingKinds = map[Kind]bool{
 }
 
 // describe writes the history line of a, which has just been applied. It
-// returns false for the arranging kinds (see arrangingKinds).
+// returns false for the arranging kinds (see arrangingKinds), and for a group
+// of actions of such a kind.
 func (n narrator) describe(a Action) (logLine, bool) {
 	switch a.Kind {
 	case ActToHand:
@@ -279,6 +280,12 @@ func (n narrator) describe(a Action) (logLine, bool) {
 		return logLine{text: join(words("shuffled "), n.pile(a.Pile), words(" into "), n.pile(deck))}, true
 	case ActShuffleIn:
 		return logLine{text: join(words("shuffled "), n.pile(a.Pile), words(" into "), n.pile(PileEncounter))}, true
+	case ActGroup:
+		// A group of moves only arranges the table, as a single move does.
+		if arrangingKinds[a.Actions[0].Kind] {
+			return logLine{}, false
+		}
+		return n.groupEvent(a), true
 	default:
 		return logLine{}, false
 	}
@@ -305,6 +312,62 @@ func (n narrator) toDeckEvent(a Action) logLine {
 		text = join(words("put "), card, words(" on top of "), deck)
 	}
 	return logLine{text: text}
+}
+
+// groupEvent narrates a group that takes its cards off the table, the names
+// in brackets as details: "discarded 3 cards (Black Cat, a card, Web-Shooter)".
+// Every action of a group is of one kind (see resolveGroup).
+func (n narrator) groupEvent(a Action) logLine {
+	cards := make([]string, 0, len(a.Actions))
+	targets := make([]string, 0, len(a.Actions))
+	homes := make([]string, 0, len(a.Actions))
+	for _, sub := range a.Actions {
+		cards = append(cards, sub.Card)
+		targets = append(targets, sub.Target)
+		homes = append(homes, n.before.Cards[sub.Card].Home)
+	}
+	count := fmt.Sprintf("%d cards", len(cards))
+
+	var text phrase
+	first := a.Actions[0]
+	switch first.Kind {
+	case ActDiscard:
+		text = words("discarded " + count)
+	case ActToHand:
+		text = words("took " + count + " into hand")
+	case ActToPile:
+		text = join(words("moved "+count+" to "), n.sharedPile(targets, "several piles"))
+	default: // ActToDeck, on top or at the bottom: a group never shuffles.
+		where := " on top of "
+		if first.Where == whereBottom {
+			where = " at the bottom of "
+		}
+		text = join(words("put "+count+where), n.sharedPile(homes, "their decks"))
+	}
+	text = join(text, words(" ("), n.cardList(cards), words(")"))
+	return logLine{text: text, cards: n.visibleCards(cards...)}
+}
+
+// sharedPile names the pile all ids are, or several when they differ.
+func (n narrator) sharedPile(ids []string, several string) phrase {
+	for _, id := range ids[1:] {
+		if id != ids[0] {
+			return words(several)
+		}
+	}
+	return n.pile(ids[0])
+}
+
+// cardList names cards one after the other: "Black Cat, a card, Web-Shooter".
+func (n narrator) cardList(ids []string) phrase {
+	var list phrase
+	for i, id := range ids {
+		if i > 0 {
+			list = join(list, words(", "))
+		}
+		list = join(list, n.name(id))
+	}
+	return list
 }
 
 // drawText narrates a draw. A player holding several decks also learns which

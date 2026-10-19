@@ -154,11 +154,36 @@ func (g *Game) recordArranging(seat int, a Action, rng *rand.Rand, now time.Time
 }
 
 // replacesMove reports whether next replaces prev: both are moves of the same
-// card by the same player, and prev is still live.
+// card, or group moves of the same cards in any order, by the same player, and
+// prev is still live.
 func replacesMove(prev, next Event) bool {
-	return prev.Action.Kind == ActMove && next.Action.Kind == ActMove &&
-		prev.Seat == next.Seat && prev.Action.Card == next.Action.Card &&
-		!prev.Tracked && prev.live()
+	if prev.Seat != next.Seat || prev.Tracked || !prev.live() {
+		return false
+	}
+	p, n := prev.Action, next.Action
+	switch {
+	case p.Kind == ActMove && n.Kind == ActMove:
+		return p.Card == n.Card
+	case isGroupMove(p) && isGroupMove(n):
+		return slices.Equal(groupCards(p), groupCards(n))
+	default:
+		return false
+	}
+}
+
+// isGroupMove reports whether a moves several cards around the table.
+func isGroupMove(a Action) bool {
+	return a.Kind == ActGroup && a.Actions[0].Kind == ActMove
+}
+
+// groupCards returns the cards of a group, sorted.
+func groupCards(a Action) []string {
+	cards := make([]string, 0, len(a.Actions))
+	for _, sub := range a.Actions {
+		cards = append(cards, sub.Card)
+	}
+	slices.Sort(cards)
+	return cards
 }
 
 // mergeTarget returns the event indices of the burst that a extends, or nil.

@@ -1,0 +1,404 @@
+{
+  "setup": {
+    "players": [
+      {
+        "name": "Host",
+        "color": 0,
+        "decks": [
+          {
+            "url": "",
+            "name": "Spidey",
+            "hero": "01001a",
+            "heroName": "Spider-Man",
+            "heroImage": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/01001A.jpg",
+            "cards": [
+              {
+                "code": "01001a",
+                "qty": 1
+              },
+              {
+                "code": "01002",
+                "qty": 1
+              },
+              {
+                "code": "01003",
+                "qty": 1
+              },
+              {
+                "code": "01004",
+                "qty": 1
+              },
+              {
+                "code": "01005",
+                "qty": 1
+              },
+              {
+                "code": "01006",
+                "qty": 1
+              },
+              {
+                "code": "01007",
+                "qty": 1
+              },
+              {
+                "code": "01008",
+                "qty": 1
+              },
+              {
+                "code": "01009",
+                "qty": 1
+              },
+              {
+                "code": "01050",
+                "qty": 1
+              },
+              {
+                "code": "01051",
+                "qty": 1
+              },
+              {
+                "code": "01052",
+                "qty": 1
+              },
+              {
+                "code": "01053",
+                "qty": 1
+              },
+              {
+                "code": "01054",
+                "qty": 1
+              },
+              {
+                "code": "01055",
+                "qty": 1
+              },
+              {
+                "code": "01056",
+                "qty": 1
+              },
+              {
+                "code": "01057",
+                "qty": 1
+              },
+              {
+                "code": "01058",
+                "qty": 1
+              },
+              {
+                "code": "01059",
+                "qty": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Bob",
+        "color": 1,
+        "decks": [
+          {
+            "url": "",
+            "name": "Spidey",
+            "hero": "01001a",
+            "heroName": "Spider-Man",
+            "heroImage": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/01001A.jpg",
+            "cards": [
+              {
+                "code": "01001a",
+                "qty": 1
+              },
+              {
+                "code": "01002",
+                "qty": 1
+              },
+              {
+                "code": "01003",
+                "qty": 1
+              },
+              {
+                "code": "01004",
+                "qty": 1
+              },
+              {
+                "code": "01005",
+                "qty": 1
+              },
+              {
+                "code": "01006",
+                "qty": 1
+              },
+              {
+                "code": "01007",
+                "qty": 1
+              },
+              {
+                "code": "01008",
+                "qty": 1
+              },
+              {
+                "code": "01009",
+                "qty": 1
+              },
+              {
+                "code": "01050",
+                "qty": 1
+              },
+              {
+                "code": "01051",
+                "qty": 1
+              },
+              {
+                "code": "01052",
+                "qty": 1
+              },
+              {
+                "code": "01053",
+                "qty": 1
+              },
+              {
+                "code": "01054",
+                "qty": 1
+              },
+              {
+                "code": "01055",
+                "qty": 1
+              },
+              {
+                "code": "01056",
+                "qty": 1
+              },
+              {
+                "code": "01057",
+                "qty": 1
+              },
+              {
+                "code": "01058",
+                "qty": 1
+              },
+              {
+                "code": "01059",
+                "qty": 1
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "config": {
+      "scenario": "rhino",
+      "difficulty": "standard",
+      "standard": "standard",
+      "expert": "",
+      "modulars": [
+        "bomb_scare"
+      ]
+    },
+    "seed": 1,
+    "startedAt": "2026-10-18T12:00:00Z"
+  },
+  "events": [
+    {
+      "seq": 1,
+      "seat": 0,
+      "action": {
+        "kind": "draw",
+        "area": "p0",
+        "n": 3,
+        "cards": [
+          "cd7q8redz",
+          "cekpkknhp",
+          "cjth2th77"
+        ]
+      },
+      "tracked": true,
+      "log": 1,
+      "at": "2026-10-18T12:00:01Z"
+    },
+    {
+      "seq": 2,
+      "seat": 0,
+      "action": {
+        "kind": "play",
+        "card": "cd7q8redz",
+        "x": 400,
+        "y": 400
+      },
+      "tracked": true,
+      "log": 2,
+      "at": "2026-10-18T12:00:01Z"
+    },
+    {
+      "seq": 3,
+      "seat": 0,
+      "action": {
+        "kind": "play",
+        "card": "cekpkknhp",
+        "x": 600,
+        "y": 400
+      },
+      "tracked": true,
+      "log": 3,
+      "at": "2026-10-18T12:00:01Z"
+    },
+    {
+      "seq": 4,
+      "seat": 0,
+      "action": {
+        "kind": "play",
+        "card": "cjth2th77",
+        "x": 800,
+        "y": 400
+      },
+      "tracked": true,
+      "log": 4,
+      "at": "2026-10-18T12:00:01Z"
+    },
+    {
+      "seq": 5,
+      "seat": 1,
+      "action": {
+        "kind": "draw",
+        "area": "p1",
+        "n": 2,
+        "cards": [
+          "cab89hsja",
+          "c4p53zsux"
+        ],
+        "seat": 1
+      },
+      "tracked": true,
+      "log": 5,
+      "at": "2026-10-18T12:00:01Z"
+    },
+    {
+      "seq": 6,
+      "seat": 1,
+      "action": {
+        "kind": "play",
+        "card": "cab89hsja",
+        "x": 400,
+        "y": 400,
+        "seat": 1
+      },
+      "tracked": true,
+      "log": 6,
+      "at": "2026-10-18T12:00:01Z"
+    },
+    {
+      "seq": 7,
+      "seat": 1,
+      "action": {
+        "kind": "play",
+        "card": "c4p53zsux",
+        "x": 600,
+        "y": 400,
+        "seat": 1
+      },
+      "tracked": true,
+      "log": 7,
+      "at": "2026-10-18T12:00:01Z"
+    },
+    {
+      "seq": 9,
+      "seat": 0,
+      "action": {
+        "kind": "group",
+        "actions": [
+          {
+            "kind": "move",
+            "card": "cd7q8redz",
+            "x": 900,
+            "y": 700
+          },
+          {
+            "kind": "move",
+            "card": "cekpkknhp",
+            "x": 1100,
+            "y": 700
+          },
+          {
+            "kind": "move",
+            "card": "cjth2th77",
+            "x": 1300,
+            "y": 700
+          }
+        ]
+      },
+      "log": -1,
+      "at": "2026-10-18T12:00:11Z"
+    },
+    {
+      "seq": 10,
+      "seat": 1,
+      "action": {
+        "kind": "group",
+        "seat": 1,
+        "actions": [
+          {
+            "kind": "discard",
+            "card": "cab89hsja",
+            "seat": 1
+          },
+          {
+            "kind": "discard",
+            "card": "c4p53zsux",
+            "seat": 1
+          }
+        ]
+      },
+      "tracked": true,
+      "log": 8,
+      "at": "2026-10-18T12:00:12Z"
+    },
+    {
+      "seq": 11,
+      "seat": 0,
+      "action": {
+        "kind": "group",
+        "actions": [
+          {
+            "kind": "discard",
+            "card": "cd7q8redz"
+          },
+          {
+            "kind": "discard",
+            "card": "cekpkknhp"
+          }
+        ]
+      },
+      "tracked": true,
+      "log": 9,
+      "undone": true,
+      "at": "2026-10-18T12:00:13Z"
+    },
+    {
+      "seq": 12,
+      "seat": 0,
+      "action": {
+        "kind": "undo"
+      },
+      "log": 10,
+      "at": "2026-10-18T12:00:14Z"
+    },
+    {
+      "seq": 13,
+      "seat": 0,
+      "action": {
+        "kind": "group",
+        "actions": [
+          {
+            "kind": "toHand",
+            "card": "cekpkknhp"
+          },
+          {
+            "kind": "toHand",
+            "card": "cjth2th77"
+          }
+        ]
+      },
+      "tracked": true,
+      "log": 11,
+      "at": "2026-10-18T12:00:15Z"
+    }
+  ]
+}
