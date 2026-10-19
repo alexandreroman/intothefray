@@ -28,8 +28,8 @@ type: project
   an own hand select that deck; Shift + ← / → steps through the selector's
   swatches, round them, and in "All" through the viewer's own decks (with
   2 or more; otherwise the keys do nothing there).
-  Selector swatches always name the hero ("Sam · Captain Marvel"); history
-  lines, owner frames and box titles add the hero ("Alex · Spider-Man")
+  Selector swatches and owner frames always name the hero ("Sam · Captain
+  Marvel"); history lines and box titles add the hero ("Alex · Spider-Man")
   only when the player has several decks.
 
 **Why:** decided with the user on 2026-10-19: one person can play a
