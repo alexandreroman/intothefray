@@ -314,17 +314,14 @@
   // Whether the panel is drawn already: only a drawn panel fades into its new corner.
   let focusDrawn = false;
 
-  /** The hovered card, pile or hand card, on the screen. */
+  /** The hovered card or pile, on the screen. A hovered hand card has no preview to place. */
   function hoveredRect(): DOMRect | null {
     const hovered = interaction.hovered;
-    if (!hovered || !app) {
+    if (!hovered || hovered.kind === 'hand' || !app) {
       return null;
     }
     const id = CSS.escape(hovered.id);
-    const selector =
-      hovered.kind === 'hand'
-        ? `.hand .hcard[data-id="${id}"]`
-        : `.surface ${hovered.kind === 'pile' ? '.pile' : '.card:not(.pile)'}[data-id="${id}"]`;
+    const selector = `.surface ${hovered.kind === 'pile' ? '.pile' : '.card:not(.pile)'}[data-id="${id}"]`;
     return app.querySelector(selector)?.getBoundingClientRect() ?? null;
   }
 
@@ -1195,7 +1192,6 @@
         class="peek {focusCorner}"
         class:land={preview.kind === 'face' && preview.landscape}
         class:moved={focusMoved}
-        class:over-hand={interaction.previewed?.kind === 'hand'}
         style:margin={focusMargin(focusCorner)}
         bind:offsetWidth={focusWidth}
         bind:offsetHeight={focusHeight}
@@ -1480,14 +1476,6 @@
   .peek.bottom-left,
   .peek.bottom-right {
     align-self: end;
-  }
-
-  /*
-    A hand card's: above the raised hand (2600) and the dimmed table, under drags (3000), so that
-    it stays readable while the hand is in use.
-  */
-  .peek.over-hand {
-    z-index: 2700;
   }
 
   .peek.moved {

@@ -625,19 +625,18 @@ describe('Table', () => {
     expect(screen.queryByRole('list', { name: 'Your hand' })).toBeNull();
   });
 
-  it('hovering a hand card previews it', async () => {
+  it("hovering a hand card shows no preview, and clears a table card's", async () => {
     const view = makeView();
     view.table = { ...view.table!, hand: ['h'] };
     render(Table, { session: fakeSession(), view });
     const hand = screen.getByRole('list', { name: 'Your hand' });
     const inHand = await within(hand).findByRole('img', { name: 'Spider-Man' });
+    await fireEvent.pointerEnter(surface().querySelector('.card[data-id="a"]') as HTMLElement);
+    expect(noPreview()).toBe(false);
 
     await fireEvent.pointerEnter(inHand.closest('li') as HTMLElement);
-    expect(within(preview()).getByRole('img', { name: 'Spider-Man' }).getAttribute('src')).toBe(
-      '01001.png',
-    );
-    // Drawn above the raised hand, unlike a table card's.
-    expect(preview().closest('.peek')?.classList).toContain('over-hand');
+    expect(interaction.hovered).toEqual({ kind: 'hand', id: 'h' });
+    expect(noPreview()).toBe(true);
   });
 
   it('undo sends the undo action', async () => {

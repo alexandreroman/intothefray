@@ -49,7 +49,20 @@ function handCard(id: string): TableCard {
   return { id, face: 0, back: 'player', owner: 0, zone: 'hand', x: 0, y: 0, z: 0 };
 }
 
-/** Rhino with the viewer, Sam, alone at the table, holding three cards. */
+/** A face-down card of Sam's in play: hovered, it is previewed (a hand card is not). */
+const IN_PLAY: TableCard = {
+  id: 't1',
+  face: 0,
+  back: 'player',
+  owner: 0,
+  zone: 'table',
+  faceDown: true,
+  x: 300,
+  y: 0,
+  z: 1,
+};
+
+/** Rhino with the viewer, Sam, alone at the table, holding three cards, one card in play. */
 function makeView(): View {
   const hand = [handCard('h1'), handCard('h2'), handCard('h3')];
   return {
@@ -70,7 +83,7 @@ function makeView(): View {
     spectators: 0,
     config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
     table: {
-      cards: hand,
+      cards: [...hand, IN_PLAY],
       piles: [],
       stages: [],
       hand: hand.map((card) => card.id),
@@ -96,6 +109,10 @@ function sidePanel(): HTMLElement | null {
 }
 
 /** The preview over the table. */
+function cardInPlay(): HTMLElement {
+  return document.querySelector<HTMLElement>('.surface .card[data-id="t1"]')!;
+}
+
 function peek(container: HTMLElement): HTMLElement | null {
   return container.querySelector('.peek');
 }
@@ -122,8 +139,7 @@ describe('Table on a narrow screen', () => {
     // Nothing to preview: nothing over the table.
     expect(peek(container)).toBeNull();
 
-    const hand = screen.getByRole('list', { name: 'Your hand' });
-    await fireEvent.pointerEnter(within(hand).getAllByRole('listitem')[0] as HTMLElement);
+    await fireEvent.pointerEnter(cardInPlay());
     const preview = peek(container);
     expect(preview).not.toBeNull();
     expect(within(preview as HTMLElement).getByLabelText('Card preview')).toBeTruthy();
@@ -140,8 +156,7 @@ describe('Table on a narrow screen', () => {
     expect(within(sidePanel() as HTMLElement).queryByLabelText('Card preview')).toBeNull();
     expect(peek(container)).toBeNull();
 
-    const hand = screen.getByRole('list', { name: 'Your hand' });
-    await fireEvent.pointerEnter(within(hand).getAllByRole('listitem')[0] as HTMLElement);
+    await fireEvent.pointerEnter(cardInPlay());
     expect(within(peek(container) as HTMLElement).getByLabelText('Card preview')).toBeTruthy();
   });
 
@@ -228,8 +243,7 @@ describe('Table in the window', () => {
     const app = container.querySelector<HTMLElement>('.app')!;
     expect(app.style.getPropertyValue('--edge')).toBe(`${TABLE_EDGE}px`);
 
-    const hand = screen.getByRole('list', { name: 'Your hand' });
-    await fireEvent.pointerEnter(within(hand).getAllByRole('listitem')[0] as HTMLElement);
+    await fireEvent.pointerEnter(cardInPlay());
     // At home, bottom right: the same room on the right as the controls under it.
     const panel = peek(container)!;
     expect(panel.classList).toContain('bottom-right');

@@ -122,11 +122,12 @@ describe('Hand', () => {
     expect(handList().classList).not.toContain('open');
   });
 
-  it('hovering a card shows it in the preview', async () => {
+  it('hovering a card hovers it, with no preview', async () => {
     render(Hand, { cards: CARDS, faceOf });
 
     await fireEvent.pointerEnter(handCards()[1] as HTMLElement);
     expect(interaction.hovered).toEqual({ kind: 'hand', id: 'h2' });
+    expect(interaction.previewed).toBeNull();
   });
 
   it('turns a landscape card a quarter to fit its slot', () => {

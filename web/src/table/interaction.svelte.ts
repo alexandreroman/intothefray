@@ -450,11 +450,12 @@ class TableInteraction {
     this.#pointerType = 'mouse';
   }
 
+  /** A hand card is never previewed: the raised hand shows it large enough. */
   #changePreview(element: TableElement, preview: PreviewChange): void {
-    if (preview === 'show') {
-      this.previewed = element;
-    } else if (preview === 'clear') {
+    if (preview === 'clear' || element.kind === 'hand') {
       this.previewed = null;
+    } else if (preview === 'show') {
+      this.previewed = element;
     }
   }
 
