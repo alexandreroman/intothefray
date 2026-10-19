@@ -179,21 +179,21 @@ describe('KeysSheet', () => {
     expect(sheet()!.style.left).toBe(`${935 - 640}px`);
   });
 
-  it('the × button and a press outside close it; a press inside does not', async () => {
+  it('only the × button closes it: a press inside or outside does not', async () => {
     const anchor = document.body.appendChild(document.createElement('button'));
     const outside = document.body.appendChild(document.createElement('div'));
     const onclose = vi.fn();
     render(KeysSheet, { props: { anchor, onclose } });
 
+    // Not a modal: the page around it stays in use.
+    expect(sheet()!.getAttribute('aria-modal')).toBe('false');
     await fireEvent.pointerDown(sheet()!.querySelector('h4')!);
-    // The button toggles the sheet itself: a press on it is not outside.
     await fireEvent.pointerDown(anchor);
+    await fireEvent.pointerDown(outside);
     expect(onclose).not.toHaveBeenCalled();
 
-    await fireEvent.pointerDown(outside);
-    expect(onclose).toHaveBeenCalledTimes(1);
     await fireEvent.click(screen.getByRole('button', { name: 'Close' }));
-    expect(onclose).toHaveBeenCalledTimes(2);
+    expect(onclose).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -234,6 +234,47 @@ describe('the sheet on the table', () => {
     expect(sheet()).toBeNull();
     // The first Escape is the sheet's: the hovered card stays the bar's.
     expect(interaction.hovered).toEqual({ kind: 'card', id: 'mine' });
+  });
+
+  it('a dropdown takes Escape before the sheet', async () => {
+    await renderTable();
+    await press('?');
+    interaction.menu = 'moveTo';
+
+    await press('Escape');
+    expect(interaction.menu).toBeNull();
+    expect(sheet()).not.toBeNull();
+    await press('Escape');
+    expect(sheet()).toBeNull();
+  });
+
+  it('a press on the table leaves the sheet open', async () => {
+    await renderTable();
+    await press('?');
+
+    const card = document.querySelector<HTMLElement>('.surface [data-id="mine"]')!;
+    await fireEvent.pointerDown(card, { button: 0 });
+    await fireEvent.pointerUp(card, { button: 0 });
+    await fireEvent.pointerDown(document.querySelector<HTMLElement>('.surface')!, { button: 0 });
+    expect(sheet()).not.toBeNull();
+  });
+
+  it('with the sheet open, a table card can still be hovered and flipped with F', async () => {
+    // A card with two faces, so that it has a Flip.
+    vi.mocked(knownCard).mockImplementation((code) => {
+      const info = infoOf(code);
+      const face = info.card.faces[0]!;
+      return { ...info, card: { ...info.card, faces: [face, { ...face, name: 'Peter Parker' }] } };
+    });
+    const session = await renderTable();
+    await fireEvent.click(screen.getByRole('button', { name: 'Keyboard shortcuts' }));
+    expect(sheet()).not.toBeNull();
+
+    await fireEvent.pointerEnter(document.querySelector<HTMLElement>('.surface [data-id="mine"]')!);
+    expect(interaction.hovered).toEqual({ kind: 'card', id: 'mine' });
+    await press('f');
+    expect(session.act).toHaveBeenCalledWith({ kind: 'flip', card: 'mine' });
+    expect(sheet()).not.toBeNull();
   });
 
   it('the other keys still act while the sheet is shown', async () => {

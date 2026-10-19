@@ -418,6 +418,11 @@ class TableInteraction {
     this.arrowDrag = false;
   }
 
+  /** Whether a dropdown, an arrow or a drag is under way: Escape is theirs before the shortcuts sheet's. */
+  get wantsEscape(): boolean {
+    return this.menu !== null || this.arrowFrom !== null || this.dragging !== null;
+  }
+
   /** Escape closes the open dropdown, or cancels the arrow, or releases the selection. */
   escape(): void {
     if (this.menu !== null) {
