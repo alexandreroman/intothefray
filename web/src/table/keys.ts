@@ -44,10 +44,10 @@ export function handleKey(event: KeyboardEvent, table: KeyTable): void {
   if (event.defaultPrevented || modal.open) {
     return;
   }
-  // Escape works even from a field, as in the prototype.
+  // Escape closes the sheet, or else lets go of the table, even from a field, as in the prototype.
   if (event.key === 'Escape') {
-    if (!event.repeat) {
-      escape(table);
+    if (!event.repeat && !table.hideKeys()) {
+      interaction.escape();
     }
     return;
   }
@@ -60,19 +60,6 @@ export function handleKey(event: KeyboardEvent, table: KeyTable): void {
   }
   if (tableKey(event, table) || playerKey(event, table)) {
     event.preventDefault();
-  }
-}
-
-/**
- * A dropdown, an arrow or a drag under way takes Escape first; then the
- * shortcuts sheet closes; else the table lets go of its selection. (A box is
- * a dialog: it has Escape before any of them.)
- */
-function escape(table: KeyTable): void {
-  if (interaction.wantsEscape) {
-    interaction.escape();
-  } else if (!table.hideKeys()) {
-    interaction.escape();
   }
 }
 

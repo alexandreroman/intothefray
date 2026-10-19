@@ -1,9 +1,8 @@
 <!--
   The keyboard shortcuts sheet (spec 5.10), opening upward from the keyboard
-  button of the zoom control. It is not a modal: no backdrop, no focus trap,
-  and the table stays in use around it (hover, drags, the action bar, the
-  keys). It stays open until its × button, the keyboard button again, ? or
-  Escape closes it (keys.ts handles both keys).
+  button of the zoom control. It is not a modal: the table keys still work
+  while it shows, ? hides it again, and Escape or a press outside closes it
+  (keys.ts handles both keys).
 -->
 <script lang="ts">
   import { onMount } from 'svelte';
@@ -13,7 +12,7 @@
     alignTo = anchor,
     onclose,
   }: {
-    /** The button the sheet opens from. */
+    /** The button the sheet opens from: a press on it is not a press outside. */
     anchor: HTMLElement | undefined;
     /** The box whose right edge the sheet's lines up on (the controls around the button); the button by default. */
     alignTo?: HTMLElement;
@@ -111,9 +110,18 @@
   }
 
   onMount(place);
+
+  function onPointerDown(event: PointerEvent): void {
+    const target = event.target instanceof Node ? event.target : null;
+    if (sheet?.contains(target) || anchor?.contains(target)) {
+      return;
+    }
+    onclose();
+  }
 </script>
 
-<svelte:window onresize={place} />
+<!-- In the capture phase: a press that something else stops still closes the sheet. -->
+<svelte:window onpointerdowncapture={onPointerDown} onresize={place} />
 
 <div
   class="keys"
@@ -147,13 +155,10 @@
 </div>
 
 <style>
-  /*
-    Over the table and the open hand (2600); under what the play brings over it: card flights
-    (2900), drags (3000), the action bar (3500), its dropdowns and the dialogs.
-  */
+  /* Over the table, the hand and the action bar; under the dialogs (5600). */
   .keys {
     position: fixed;
-    z-index: 2800;
+    z-index: 5200;
     width: min(640px, calc(100vw - 32px));
     max-height: 80vh;
     overflow: auto;
