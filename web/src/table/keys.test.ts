@@ -109,6 +109,7 @@ function fakeSession() {
     lastError: null,
     presence: new Map<number, PresenceState>(),
     sendPresence: vi.fn(),
+    viewGap: 0,
   };
 }
 

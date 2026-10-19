@@ -5,16 +5,16 @@
 
 import { tick } from 'svelte';
 import { SvelteSet } from 'svelte/reactivity';
-import type { CardView } from '../lib/types';
+import type { CardView, TableView } from '../lib/types';
 import type { Anim } from './animate';
 
 /** A card moving to its new place (FLIP). */
-export const MOVE_MS = 250;
+const MOVE_MS = 250;
 const MOVE_EASING = 'cubic-bezier(.2, .8, .2, 1)';
 /** A stage card just chosen turns in like a card being put down. */
-export const TURN_IN_MS = 420;
+const TURN_IN_MS = 420;
 /** The soft flash on a card that just changed. */
-export const GLOW_MS = 1100;
+const GLOW_MS = 1100;
 /** Copies of the pile's back split left and right, then riffle back in, one after the other. */
 const RIFFLE_MS = 620;
 const RIFFLE_COPIES = 6;
@@ -22,12 +22,12 @@ const RIFFLE_STAGGER_MS = 40;
 const RIFFLE_EASING = 'cubic-bezier(.3, .7, .3, 1)';
 const PILE_BOUNCE_MS = 700;
 /** A copy of a discarded card flies to its pile; several leave one after the other. */
-export const FLY_MS = 420;
+const FLY_MS = 420;
 const FLY_STAGGER_MS = 70;
 const FLY_EASING = 'cubic-bezier(.3, .7, .2, 1)';
 
 /** A card or a pile on the screen: its middle, and its size without its tilt. */
-export interface Measured {
+interface Measured {
   cx: number;
   cy: number;
   w: number;
@@ -35,10 +35,12 @@ export interface Measured {
 }
 
 /** A copy of a card on its way to a pile, drawn by Flights.svelte. */
-export interface Flight {
+interface Flight {
   key: number;
   /** The card as it was before it left. */
   card: CardView;
+  /** The pile it flies to. */
+  pile: string;
   from: Measured;
   to: Measured;
   delay: number;
@@ -47,6 +49,32 @@ export interface Flight {
 const tableCard = (id: string) => `.surface .card:not(.pile)[data-id="${CSS.escape(id)}"]`;
 const handCard = (id: string) => `.hand .hcard[data-id="${CSS.escape(id)}"]`;
 const tablePile = (id: string) => `.surface .pile[data-id="${CSS.escape(id)}"]`;
+
+/** What an animation plays on, "card:<id>" or "pile:<id>": a new view stops only what it touches. */
+type Subject = `card:${string}` | `pile:${string}`;
+
+const cardSubject = (id: string): Subject => `card:${id}`;
+const pileSubject = (id: string): Subject => `pile:${id}`;
+
+function subjectOf(anim: Anim): Subject {
+  return anim.kind === 'shuffle' ? pileSubject(anim.pile) : cardSubject(anim.id);
+}
+
+/** The subjects of a table: its cards drawn on the table or in the hand, and its piles. */
+function subjectsOf(table: TableView | undefined): Set<Subject> {
+  // A lookup for one call: nothing reacts to it.
+  // eslint-disable-next-line svelte/prefer-svelte-reactivity
+  const subjects = new Set<Subject>();
+  for (const card of table?.cards ?? []) {
+    if (card.zone === 'table' || card.zone === 'hand') {
+      subjects.add(cardSubject(card.id));
+    }
+  }
+  for (const pile of table?.piles ?? []) {
+    subjects.add(pileSubject(pile.id));
+  }
+  return subjects;
+}
 
 /** How much an element is scaled on the screen: by the zoom on the table, by the hand's own transform. */
 function scaleOf(element: HTMLElement, zoom: number): number {
@@ -92,11 +120,12 @@ class TableMotion {
    */
   frame = $state(0);
 
-  #running = new Set<Animation>();
+  // Each running animation, with what it plays on.
+  #running = new Map<Animation, Subject>();
   // The animations that move cards on the screen, which the frame counter follows.
   #moving = new Set<Animation>();
-  // The riffle copies added to piles.
-  #copies = new Set<HTMLElement>();
+  // The riffle copies added to piles, with their pile.
+  #copies = new Map<HTMLElement, Subject>();
   #raf = 0;
   #nextKey = 0;
   // Counts the views animated: a view that came while the previous one was drawn takes over.
@@ -105,13 +134,14 @@ class TableMotion {
   /**
    * To call as a new view is about to be drawn: measures the cards that will
    * move where they are now, then plays the animations once the view is
-   * drawn. What still plays from the previous view stops first; a card
-   * caught mid-move starts again from where it shows.
+   * drawn. What still plays on the cards and piles the new view animates,
+   * or on those it no longer shows, stops first (a card caught mid-move
+   * starts again from where it shows); everything else plays on to its end.
    */
   async animate(
     root: HTMLElement | undefined,
     anims: Anim[],
-    cardsBefore: ReadonlyMap<string, CardView>,
+    tables: { before: TableView | undefined; after: TableView | undefined },
     zoom: number,
   ): Promise<void> {
     const reduced = prefersReducedMotion();
@@ -130,23 +160,29 @@ class TableMotion {
         }
       }
     }
-    this.stop();
+    this.#stopFor(shown, tables.after);
     const generation = ++this.#generation;
     if (!root || shown.length === 0) {
       return;
     }
     // The pile is drawn without the flying cards from the start: they land on it later.
-    for (const anim of shown) {
-      if (anim.kind === 'fly' && before.has(anim.id)) {
-        this.flying.add(anim.id);
-      }
+    const flying = shown.flatMap((anim) =>
+      anim.kind === 'fly' && before.has(anim.id) ? [anim.id] : [],
+    );
+    for (const id of flying) {
+      this.flying.add(id);
     }
 
     await tick();
+    // A newer view came meanwhile, and animates from what is drawn now.
     if (generation !== this.#generation) {
+      for (const id of flying) {
+        this.flying.delete(id);
+      }
       return;
     }
 
+    const cardsBefore = new Map((tables.before?.cards ?? []).map((card) => [card.id, card]));
     const flights: Flight[] = [];
     for (const anim of shown) {
       switch (anim.kind) {
@@ -180,7 +216,7 @@ class TableMotion {
         }
       }
     }
-    this.flights = flights;
+    this.flights = [...this.flights, ...flights];
   }
 
   /** Flies a copy drawn by Flights.svelte from its card's old place to its pile. */
@@ -195,6 +231,8 @@ class TableMotion {
         { transform: `translate(${dx}px, ${dy}px) scale(${scale})` },
       ],
       { duration: FLY_MS, delay: flight.delay, easing: FLY_EASING, fill: 'both' },
+      // Followed through motion.flights: dropping the flight removes its copy, which cancels this.
+      null,
     );
     const land = () => this.#land(flight);
     if (animation) {
@@ -207,17 +245,53 @@ class TableMotion {
 
   /** Stops every animation: the table shows as it is. */
   stop(): void {
-    for (const animation of this.#running) {
-      animation.cancel();
+    this.#stopWhere(
+      () => true,
+      () => true,
+    );
+  }
+
+  /**
+   * Stops what plays on the cards and piles these animations are about, and
+   * on those the new table no longer shows; a flight also stops when its
+   * card is no longer in its pile.
+   */
+  #stopFor(anims: Anim[], after: TableView | undefined): void {
+    const touched = new Set(anims.map(subjectOf));
+    const shown = subjectsOf(after);
+    const piled = new Map((after?.piles ?? []).map((pile) => [pile.id, pile.cards ?? []]));
+    this.#stopWhere(
+      (subject) => touched.has(subject) || !shown.has(subject),
+      (flight) =>
+        touched.has(cardSubject(flight.card.id)) ||
+        !piled.get(flight.pile)?.includes(flight.card.id),
+    );
+  }
+
+  #stopWhere(stops: (subject: Subject) => boolean, flightEnds: (flight: Flight) => boolean): void {
+    for (const [animation, subject] of this.#running) {
+      if (stops(subject)) {
+        animation.cancel();
+        this.#running.delete(animation);
+        this.#moving.delete(animation);
+      }
     }
-    this.#running.clear();
-    this.#moving.clear();
-    for (const copy of this.#copies) {
-      copy.remove();
+    for (const [copy, subject] of this.#copies) {
+      if (stops(subject)) {
+        copy.remove();
+        this.#copies.delete(copy);
+      }
     }
-    this.#copies.clear();
-    this.flights = [];
-    this.flying.clear();
+    const ending = this.flights.filter(flightEnds);
+    if (ending.length > 0) {
+      // Removing a copy cancels its animation (Flights.svelte).
+      this.flights = this.flights.filter((flight) => !ending.includes(flight));
+      for (const flight of ending) {
+        if (!this.flights.some((f) => f.card.id === flight.card.id)) {
+          this.flying.delete(flight.card.id);
+        }
+      }
+    }
   }
 
   #move(root: HTMLElement, id: string, from: Measured | undefined, zoom: number): void {
@@ -242,6 +316,7 @@ class TableMotion {
         { translate: '0px 0px', scale: '1' },
       ],
       { duration: MOVE_MS, easing: MOVE_EASING },
+      cardSubject(id),
       true,
     );
   }
@@ -258,6 +333,7 @@ class TableMotion {
       element,
       [{ transform: turned }, { transform: rest }],
       { duration: TURN_IN_MS, easing: MOVE_EASING },
+      cardSubject(id),
       true,
     );
   }
@@ -278,6 +354,7 @@ class TableMotion {
       ],
       // CardView draws an empty ::after around the card for it.
       { duration: GLOW_MS, easing: 'ease-out', pseudoElement: '::after' },
+      cardSubject(id),
     );
   }
 
@@ -299,7 +376,7 @@ class TableMotion {
       });
       copy.append(art.cloneNode(true));
       pile.append(copy);
-      this.#copies.add(copy);
+      this.#copies.set(copy, pileSubject(id));
       const side = i % 2 ? 1 : -1;
       const reach = 26 + Math.floor(i / 2) * 10;
       const animation = this.#run(
@@ -314,6 +391,7 @@ class TableMotion {
           { transform: 'translate(0, 0) rotate(0deg)' },
         ],
         { duration: RIFFLE_MS, delay: i * RIFFLE_STAGGER_MS, easing: RIFFLE_EASING },
+        pileSubject(id),
       );
       const remove = () => {
         copy.remove();
@@ -330,6 +408,7 @@ class TableMotion {
         { transform: 'scale(1)' },
       ],
       { duration: PILE_BOUNCE_MS, easing: 'ease-out' },
+      pileSubject(id),
     );
   }
 
@@ -351,6 +430,7 @@ class TableMotion {
     return {
       key: ++this.#nextKey,
       card,
+      pile: pileId,
       from,
       to: { cx: to.left + to.width / 2, cy: to.top + to.height / 2, w: to.width, h: to.height },
       delay: index * FLY_STAGGER_MS,
@@ -369,18 +449,24 @@ class TableMotion {
     }
   }
 
-  /** Starts an animation, where the browser has the Web Animations API (jsdom has not). */
+  /**
+   * Starts an animation, where the browser has the Web Animations API (jsdom
+   * has not). It is followed under its subject, unless that is null.
+   */
   #run(
     element: HTMLElement,
     keyframes: Keyframe[],
     options: KeyframeAnimationOptions,
+    subject: Subject | null,
     moves = false,
   ): Animation | null {
     if (typeof element.animate !== 'function') {
       return null;
     }
     const animation = element.animate(keyframes, options);
-    this.#running.add(animation);
+    if (subject !== null) {
+      this.#running.set(animation, subject);
+    }
     if (moves) {
       this.#moving.add(animation);
       this.#countFrames();

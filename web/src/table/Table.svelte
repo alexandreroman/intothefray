@@ -21,7 +21,7 @@
     View,
   } from '../lib/types';
   import ActionBar from './ActionBar.svelte';
-  import { diffViews } from './animate';
+  import { diffViews, MAX_APART_MS } from './animate';
   import {
     actionsFor,
     counterName,
@@ -54,8 +54,10 @@
     session,
     view,
   }: {
-    session: Pick<GameSession, 'act' | 'lobby' | 'lastError' | 'presence' | 'sendPresence'> &
-      Partial<Pick<GameSession, 'viewGap'>>;
+    session: Pick<
+      GameSession,
+      'act' | 'lobby' | 'lastError' | 'presence' | 'sendPresence' | 'viewGap'
+    >;
     view: View;
   } = $props();
 
@@ -237,10 +239,14 @@
       if (prev === next) {
         return;
       }
+      // Back after a long gap: the table shows as it is now, nothing plays.
+      if (session.viewGap > MAX_APART_MS) {
+        motion.stop();
+        return;
+      }
       const ownDrop = interaction.landing?.card ?? undefined;
-      const anims = diffViews(prev, next, ownDrop, session.viewGap ?? 0);
-      const cardsBefore = new Map((prev.table?.cards ?? []).map((card) => [card.id, card]));
-      void motion.animate(app, anims, cardsBefore, zoom);
+      const anims = diffViews(prev, next, ownDrop, session.viewGap);
+      void motion.animate(app, anims, { before: prev.table, after: next.table }, zoom);
     });
   });
 

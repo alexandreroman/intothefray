@@ -133,6 +133,7 @@ function fakeSession() {
     lastError: null as SessionError | null,
     presence: new Map<number, PresenceState>(),
     sendPresence: vi.fn(),
+    viewGap: 0,
   };
 }
 
