@@ -59,7 +59,7 @@
     display: grid;
     place-items: center;
     padding: 8px;
-    background: #0b0f18;
+    background: var(--bg);
     color: var(--muted);
     font-size: 12px;
     font-weight: 700;

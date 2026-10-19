@@ -24,12 +24,9 @@ const PILE_BOX = PORTRAIT_CARD;
 const ZONE_BOTTOM_MARGIN = 20;
 const ZONE_MIN_HEIGHT = PORTRAIT_CARD.h + 60;
 
-// Out-of-play piles, from left to right at the right end of their zone, past everything in play.
-const OUT_OF_PLAY_ORDER: readonly PileKind[] = ['victory', 'aside'];
-// Free room between the cards in play and the first out-of-play pile.
+const OUT_OF_PLAY_KINDS: readonly PileKind[] = ['victory', 'aside'];
+// Free room past the rightmost item of a zone.
 const ZONE_FREE_ROOM = 140;
-const OUT_PILE_STEP = 120;
-const OUT_PILE_EDGE_GAP = 10;
 
 const FAN_RADIUS = 900;
 const FAN_MAX_STEP_DEG = 5;
@@ -72,9 +69,12 @@ export function zoneOrder(view: View): Area[] {
   return areas;
 }
 
-/** A victory display or set-aside pile: placed by the client, not counted as content. */
+/**
+ * A victory display or set-aside pile. The server sets them in the rail at
+ * the left of their zone, after the deck and the discard pile.
+ */
 export function isOutOfPlay(pile: PileView): boolean {
-  return OUT_OF_PLAY_ORDER.includes(pile.kind);
+  return OUT_OF_PLAY_KINDS.includes(pile.kind);
 }
 
 /** Where a card or a pile lies in its zone, in table units. */
@@ -155,24 +155,14 @@ interface Extent {
   bottom: number;
 }
 
-/**
- * The right and bottom edges of what is in play on the table of one area.
- * Out-of-play piles are left out: they follow the zone's right edge and sit
- * on its top row, which the minimum height already covers.
- */
+/** The right and bottom edges of what lies on the table of one area, piles included. */
 function extentOf(
   cards: CardView[],
   piles: PileView[],
   area: Area,
   sizeOf: (c: CardView) => Size,
 ): Extent {
-  const inPlay = footprints(
-    cards,
-    piles.filter((p) => !isOutOfPlay(p)),
-    area,
-    sizeOf,
-  );
-  const boxes = inPlay.map(visualBox);
+  const boxes = footprints(cards, piles, area, sizeOf).map(visualBox);
   // Rounded up: a turned card's box ends between two units.
   return {
     right: Math.ceil(Math.max(0, ...boxes.map((box) => box.right))),
@@ -245,8 +235,7 @@ export function zoneHeights(zones: ZoneSizing[], available: number): number[] {
 
 /**
  * Width of a zone, as the prototype has it: at least the visible width (in
- * table units), and always room past the cards in play for 140 more, plus
- * 120 per out-of-play pile.
+ * table units), and always room for 140 more past its rightmost item.
  */
 export function zoneWidth(
   cards: CardView[],
@@ -255,30 +244,8 @@ export function zoneWidth(
   sizeOf: (c: CardView) => Size,
   visibleWidth: number = 0,
 ): number {
-  const outPiles = piles.filter((p) => p.area === area && isOutOfPlay(p)).length;
   const { right } = extentOf(cards, piles, area, sizeOf);
-  return Math.max(visibleWidth, right + ZONE_FREE_ROOM + OUT_PILE_STEP * outPiles);
-}
-
-/**
- * The piles of one area, with the out-of-play ones moved to the right end
- * of a zone `width` wide: the victory display, then the set-aside cards,
- * 120 apart, the last one 10 from the edge, on the top row. The server's
- * position for them is ignored: it cannot know the viewport.
- */
-export function placeOutPiles(piles: PileView[], area: Area, width: number): PileView[] {
-  const inArea = piles.filter((p) => p.area === area);
-  const out = inArea
-    .filter(isOutOfPlay)
-    .sort((a, b) => OUT_OF_PLAY_ORDER.indexOf(a.kind) - OUT_OF_PLAY_ORDER.indexOf(b.kind));
-  const lastX = width - OUT_PILE_EDGE_GAP - PILE_BOX.w;
-  return inArea.map((p) => {
-    const slot = out.indexOf(p);
-    if (slot < 0) {
-      return p;
-    }
-    return { ...p, x: lastX - (out.length - 1 - slot) * OUT_PILE_STEP, y: 0 };
-  });
+  return Math.max(visibleWidth, right + ZONE_FREE_ROOM);
 }
 
 export interface FanSlot {

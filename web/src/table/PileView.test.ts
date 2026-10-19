@@ -111,29 +111,58 @@ describe('PileView', () => {
     expect(el.querySelector('.land-in-portrait img')).toBeTruthy();
   });
 
-  it('the victory display is out of play, with a trophy badge', () => {
+  it('the victory display is out of play, in a titled tray, with a trophy label', () => {
     const victory = pile({ id: 'vic', kind: 'victory', count: 1, cards: ['c9'] });
     const { container } = render(PileView, { pile: victory, top: topCard(), face: face() });
 
+    const el = pileElement(container);
     expect(screen.getByRole('img', { name: 'Hydra Mercenary' })).toBeTruthy();
-    expect(pileElement(container).classList.contains('out')).toBe(true);
-    expect(screen.getByRole('img', { name: 'Victory display' })).toBeTruthy();
+    expect(el.classList.contains('out')).toBe(true);
+    expect(el.querySelector('.count')?.textContent).toBe('1');
+    expect(el.querySelector('.tray-title')?.textContent).toBe('Out of play');
+    expect(el.querySelector('.label')?.textContent?.trim()).toBe('Victory');
+    expect(el.querySelector('.label .trophy')).toBeTruthy();
   });
 
-  it('the set-aside cards are out of play, with an hourglass badge', () => {
+  it("a player's set-aside cards are out of play, in their own titled tray", () => {
     const { container } = render(PileView, {
-      pile: pile({ id: 'aside', kind: 'aside', count: 0 }),
+      pile: pile({ id: 'aside:p0', kind: 'aside', owner: 0, area: 'p0', count: 0 }),
     });
 
     const el = pileElement(container);
     expect(el.classList.contains('out')).toBe(true);
     expect(el.querySelector('.slot')).toBeTruthy();
-    expect(screen.getByRole('img', { name: 'Set-aside cards' })).toBeTruthy();
+    expect(el.querySelector('.label')?.textContent?.trim()).toBe('Set aside');
+    expect(el.querySelector('.label .trophy')).toBeNull();
+    const tray = el.querySelector('.tray');
+    expect(tray?.classList.contains('joins-previous')).toBe(false);
+    expect(tray?.querySelector('.tray-title')?.textContent).toBe('Out of play');
   });
 
-  it('a pile in play has no badge', () => {
-    render(PileView, { pile: pile({ count: 3 }) });
-    expect(screen.queryByRole('img', { name: 'Victory display' })).toBeNull();
-    expect(screen.queryByRole('img', { name: 'Set-aside cards' })).toBeNull();
+  it("the scenario's set-aside cards share the victory display's tray, untitled", () => {
+    const { container } = render(PileView, {
+      pile: pile({ id: 'saside', kind: 'aside', x: 360, y: 20, count: 2 }),
+    });
+
+    const tray = pileElement(container).querySelector('.tray');
+    expect(tray?.classList.contains('joins-previous')).toBe(true);
+    expect(tray?.querySelector('.tray-title')).toBeNull();
+    expect(screen.getByText('Set aside')).toBeTruthy();
+  });
+
+  it('the victory display opens the tray it shares', () => {
+    const { container } = render(PileView, { pile: pile({ id: 'vic', kind: 'victory' }) });
+    expect(pileElement(container).querySelector('.tray')?.classList.contains('joins-next')).toBe(
+      true,
+    );
+  });
+
+  it('a pile in play has no tray and no label', () => {
+    const { container } = render(PileView, { pile: pile({ count: 3 }) });
+
+    const el = pileElement(container);
+    expect(el.classList.contains('out')).toBe(false);
+    expect(el.querySelector('.tray')).toBeNull();
+    expect(el.querySelector('.label')).toBeNull();
   });
 });

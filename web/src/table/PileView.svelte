@@ -1,8 +1,8 @@
 <!--
   A pile in its portrait slot: its top card when the pile shows its cards,
   otherwise its back, with a count pill. An empty pile is a dashed slot.
-  Out-of-play piles (victory display, set aside) sit in a sunken tray, greyed,
-  with a badge on their top edge.
+  Out-of-play piles (victory display, set aside) sit in a sunken dashed tray
+  titled "Out of play", greyed, with a label under them.
 -->
 <script lang="ts">
   import type { PackFace, CardView as TableCard, PileKind, PileView } from '../lib/types';
@@ -10,7 +10,7 @@
   import CardFace from './CardFace.svelte';
   import { isHidden, pileBack } from './face';
   import { interaction, type PreviewChange } from './interaction.svelte';
-  import { cardBox } from './layout';
+  import { cardBox, isOutOfPlay } from './layout';
   import { motion } from './motion.svelte';
 
   let {
@@ -28,9 +28,9 @@
     foreign?: boolean;
   } = $props();
 
-  const BADGES: Partial<Record<PileKind, string>> = {
-    victory: 'Victory display',
-    aside: 'Set-aside cards',
+  const LABELS: Partial<Record<PileKind, string>> = {
+    victory: 'Victory',
+    aside: 'Set aside',
   };
 
   const SLOT = cardBox('std', {});
@@ -44,7 +44,12 @@
     interaction.dropOn?.kind === 'pile' && interaction.dropOn.id === pile.id,
   );
   const shownTop = $derived(empty ? undefined : top);
-  const badge = $derived(BADGES[pile.kind]);
+  const out = $derived(isOutOfPlay(pile));
+  const label = $derived(LABELS[pile.kind]);
+  // The server sets the villain's set-aside cards right after the victory display (setup.go): each
+  // pile draws its half of one tray, and only the first half bears the title.
+  const joinsNext = $derived(pile.kind === 'victory');
+  const joinsPrevious = $derived(pile.kind === 'aside' && pile.area === 'villain');
   // A landscape top card is turned a quarter to fit the portrait slot.
   const rotated = $derived(cardBox(face?.size ?? 'std', { onPile: true }).rotated);
   const highlighted = $derived(shownTop !== undefined && interaction.highlighted.has(shownTop.id));
@@ -81,7 +86,7 @@
   data-id={pile.id}
   class:empty
   class:inert={empty}
-  class:out={badge !== undefined}
+  class:out
   class:highlighted
   class:locked
   class:drop-pile={targeted}
@@ -111,11 +116,17 @@
     <span class="count">{count}</span>
   {/if}
 
-  {#if badge}
-    <span class="badge" role="img" aria-label={badge} title={badge}>
+  {#if out}
+    <div class="tray" class:joins-next={joinsNext} class:joins-previous={joinsPrevious}>
+      {#if !joinsPrevious}
+        <span class="tray-title">Out of play</span>
+      {/if}
+    </div>
+    <span class="label">
       {#if pile.kind === 'victory'}
         <!-- A trophy. -->
         <svg
+          class="trophy"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -142,20 +153,17 @@
           stroke-linejoin="round"
           aria-hidden="true"
         >
-          <path d="M6 3h12" />
-          <path d="M6 21h12" />
-          <path d="M7 3c0 5 5 6 5 9s-5 4-5 9" />
-          <path d="M17 3c0 5-5 6-5 9s5 4 5 9" />
-          <path d="M9.5 18.5h5" stroke-width="2.4" />
+          <path d="M6 3h12M6 21h12M7 3c0 5 10 5 10 9s-10 4-10 9M17 3c0 5-10 5-10 9" />
         </svg>
       {/if}
+      {label}
     </span>
   {/if}
 </div>
 
 <style>
   /*
-    Its own stacking context keeps the out-of-play tray (z-index -1) and the badge inside the pile.
+    Its own stacking context keeps the out-of-play tray (z-index -1) and the label inside the pile.
     At level 0, table cards (server z from 0, drawn after the piles) stay on top of it.
   */
   .card {
@@ -204,58 +212,94 @@
     white-space: nowrap;
   }
 
-  /* Out of play: a sunken tray with a dashed rim, and its cards washed out to greys. */
+  /* Out of play: the cards washed out to greys, in a sunken tray with a dashed rim. */
   .card.out {
     filter: none;
   }
 
-  .card.out::after {
-    content: '';
-    position: absolute;
-    inset: -8px;
-    border-radius: 12px;
-    border: 1.5px dashed #3a4566;
-    background: #0a0e17b0;
-    box-shadow: inset 0 2px 8px #000c;
-    z-index: -1;
-    pointer-events: none;
-  }
-
   .card.out .art {
     filter: grayscale(0.85) brightness(0.72);
-    opacity: 0.9;
   }
 
-  /* The tray already draws the dashed rim. */
   .card.out .slot {
-    border-color: transparent;
+    border-color: #232b40;
   }
 
+  /* The count goes to the top right corner, clear of the label. */
   .card.out .count {
+    bottom: auto;
+    left: auto;
+    top: -9px;
+    right: -9px;
+    transform: none;
     background: #0b0f18;
     color: var(--muted);
   }
 
-  /* The badge sits on the top edge, centred, in greys. */
-  .badge {
+  /*
+    Around the pile: room above for the title, below for the label. The hit area stays the pile's box.
+    The server sets out-of-play piles 20 below the top row (setup.go), which leaves room for the title.
+  */
+  .tray {
     position: absolute;
-    top: -13px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 5;
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    display: grid;
-    place-items: center;
-    background: #0b0f18;
-    border: 1px solid #3a4870;
-    box-shadow: 0 2px 6px #000a;
+    inset: -24px -10px -30px;
+    z-index: -1;
+    box-sizing: border-box;
+    padding: 5px 10px;
+    border-radius: 12px;
+    border: 1px dashed #2b3550;
+    background: #00000061;
+    box-shadow: inset 0 2px 12px #000000a6;
+    pointer-events: none;
   }
 
-  .badge svg {
-    width: 15px;
-    height: 15px;
-    color: #b3b9c6;
+  /* Two halves of one tray: the piles are 20 apart, so each half reaches the middle of the gap. */
+  .tray.joins-next {
+    border-right: none;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  .tray.joins-previous {
+    border-left: none;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+
+  .tray-title {
+    display: block;
+    font-size: 10px;
+    line-height: 12px;
+    font-weight: 800;
+    font-stretch: 75%;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: #737d99;
+  }
+
+  .label {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    line-height: 14px;
+    white-space: nowrap;
+    color: var(--muted);
+    pointer-events: none;
+  }
+
+  .label svg {
+    width: 13px;
+    height: 13px;
+    flex: none;
+  }
+
+  .label .trophy {
+    color: var(--spark, #ffce3a);
   }
 </style>

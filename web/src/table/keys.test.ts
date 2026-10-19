@@ -463,12 +463,12 @@ describe('keys on a hand card', () => {
   it('P plays to a free slot', async () => {
     const cards = [
       card('v', { code: '01094', owner: -1, back: 'villain', area: 'villain' }),
-      // 280–380 takes the slot at 280; a double-size card at 390–530 the one at 420.
-      card('a', { x: 280 }),
-      card('b', { code: '01010', x: 390 }),
+      // 520–620 takes the slot at 520; a double-size card at 630–770 the one at 660.
+      card('a', { x: 520 }),
+      card('b', { code: '01010', x: 630 }),
       // Below the top row, or in another area: not in the way.
-      card('low', { x: 560, y: 140 }),
-      card('there', { area: 'villain', x: 560 }),
+      card('low', { x: 800, y: 140 }),
+      card('there', { area: 'villain', x: 800 }),
       card('h', { zone: 'hand', area: undefined }),
     ];
     const { session } = await renderTable(makeView({ cards }));
@@ -479,7 +479,7 @@ describe('keys on a hand card', () => {
       kind: 'play',
       card: 'h',
       area: 'p0',
-      x: 560,
+      x: 800,
       y: 0,
     });
   });
@@ -504,47 +504,57 @@ describe('keys on a hand card', () => {
 
 describe('freeSlot', () => {
   const sizeOf = (c: TableCard): Size => (c.code === '01010' ? 'dstd' : 'std');
-  const deck = pile('deck:p0', { owner: 0, area: 'p0', x: 0 });
-  const discard = pile('disc:p0', { kind: 'discard', owner: 0, area: 'p0', x: 120 });
+  // The rail of the villain area, the widest: deck, discard, victory display, scenario set-aside.
+  const rail = [
+    pile('enc', { kind: 'encounter', x: 0 }),
+    pile('encd', { kind: 'encounterDiscard', x: 120 }),
+    pile('vic', { kind: 'victory', x: 240 }),
+    pile('saside', { kind: 'aside', x: 360 }),
+  ];
 
-  it('starts at 280, past the deck and the discard pile', () => {
-    expect(freeSlot([], [deck, discard], 'p0', sizeOf)).toEqual({ x: 280, y: 0 });
+  it('starts at 520, past the rail', () => {
+    expect(freeSlot([], rail, 'villain', sizeOf)).toEqual({ x: 520, y: 0 });
+    const aside = pile('aside:p0', { kind: 'aside', owner: 0, area: 'p0', x: 240 });
+    expect(freeSlot([], [aside], 'p0', sizeOf)).toEqual({ x: 520, y: 0 });
+  });
+
+  it('skips the identity or the villain, which lie at 520', () => {
+    const villain = card('v', { code: '01094', owner: -1, area: 'villain', x: 520, y: 20 });
+    expect(freeSlot([villain], rail, 'villain', sizeOf)).toEqual({ x: 660, y: 0 });
   });
 
   it('steps by 140, keeping 20 free on each side of a 100-wide card', () => {
-    // 280 needs 260–400 free: a card from 390 is in the way, and its right edge (490) blocks 420.
-    expect(freeSlot([card('a', { x: 390 })], [], 'p0', sizeOf)).toEqual({ x: 560, y: 0 });
-    // A card from 400 leaves 280 free; one ending at 400 leaves 420 free.
-    expect(freeSlot([card('a', { x: 400 })], [], 'p0', sizeOf)).toEqual({ x: 280, y: 0 });
-    expect(freeSlot([card('a', { x: 300 })], [], 'p0', sizeOf)).toEqual({ x: 420, y: 0 });
+    // 520 needs 500–640 free: a card from 630 is in the way, and its right edge (730) blocks 660.
+    expect(freeSlot([card('a', { x: 630 })], [], 'p0', sizeOf)).toEqual({ x: 800, y: 0 });
+    // A card from 640 leaves 520 free; one ending at 640 leaves 660 free.
+    expect(freeSlot([card('a', { x: 640 })], [], 'p0', sizeOf)).toEqual({ x: 520, y: 0 });
+    expect(freeSlot([card('a', { x: 540 })], [], 'p0', sizeOf)).toEqual({ x: 660, y: 0 });
   });
 
   it('counts the visible width of a card: double size, face down, tilted when exhausted', () => {
-    // Double size, 140 wide: 300–440 blocks 420.
-    expect(freeSlot([card('a', { code: '01010', x: 300 })], [], 'p0', sizeOf)).toEqual({
-      x: 560,
+    // Double size, 140 wide: 540–680 blocks 660.
+    expect(freeSlot([card('a', { code: '01010', x: 540 })], [], 'p0', sizeOf)).toEqual({
+      x: 800,
       y: 0,
     });
     // Face down, it is 100 wide again.
-    const faceDown = card('a', { code: '01010', faceDown: true, x: 300 });
-    expect(freeSlot([faceDown], [], 'p0', sizeOf)).toEqual({ x: 420, y: 0 });
-    // Exhausted, it turns 15°: its bounding box reaches past 400.
-    const exhausted = card('a', { x: 300, exhausted: true });
-    expect(freeSlot([exhausted], [], 'p0', sizeOf)).toEqual({ x: 560, y: 0 });
+    const faceDown = card('a', { code: '01010', faceDown: true, x: 540 });
+    expect(freeSlot([faceDown], [], 'p0', sizeOf)).toEqual({ x: 660, y: 0 });
+    // Exhausted, it turns 15°: its bounding box reaches past 640.
+    const exhausted = card('a', { x: 540, exhausted: true });
+    expect(freeSlot([exhausted], [], 'p0', sizeOf)).toEqual({ x: 800, y: 0 });
   });
 
-  it('a pile in play is in the way; a victory or set-aside pile is not', () => {
-    const inPlay = pile('deck:p0', { owner: 0, area: 'p0', x: 300 });
-    expect(freeSlot([], [inPlay], 'p0', sizeOf)).toEqual({ x: 420, y: 0 });
-    // Out-of-play piles are drawn at the right end of the zone, wherever the server put them.
-    const aside = pile('aside:p0', { kind: 'aside', owner: 0, area: 'p0', x: 280 });
-    const victory = pile('vic', { kind: 'victory', area: 'p0', x: 280 });
-    expect(freeSlot([], [aside, victory], 'p0', sizeOf)).toEqual({ x: 280, y: 0 });
+  it('a pile is in the way, in play or out of play', () => {
+    const inPlay = pile('deck:p0', { owner: 0, area: 'p0', x: 540 });
+    expect(freeSlot([], [inPlay], 'p0', sizeOf)).toEqual({ x: 660, y: 0 });
+    const aside = pile('aside:p0', { kind: 'aside', owner: 0, area: 'p0', x: 540 });
+    expect(freeSlot([], [aside], 'p0', sizeOf)).toEqual({ x: 660, y: 0 });
   });
 
   it('only the top row of the area counts', () => {
-    const cards = [card('low', { x: 280, y: 140 }), card('there', { area: 'p1', x: 280 })];
-    const piles = [pile('deck:p1', { owner: 1, area: 'p1', x: 280 })];
-    expect(freeSlot(cards, piles, 'p0', sizeOf)).toEqual({ x: 280, y: 0 });
+    const cards = [card('low', { x: 520, y: 140 }), card('there', { area: 'p1', x: 520 })];
+    const piles = [pile('deck:p1', { owner: 1, area: 'p1', x: 520 })];
+    expect(freeSlot(cards, piles, 'p0', sizeOf)).toEqual({ x: 520, y: 0 });
   });
 });

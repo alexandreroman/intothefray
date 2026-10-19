@@ -2,20 +2,25 @@
   import ConfirmDialog from './ConfirmDialog.svelte';
   import { on } from 'svelte/events';
   import Icon from './Icon.svelte';
+  import Logo from './Logo.svelte';
 
   let {
-    spectators,
-    side,
+    spectators = 0,
+    crumbs = [],
+    onback,
     onend,
   }: {
-    spectators: number;
-    /** The side panel toggle, on the table only. */
-    side?: { hidden: boolean; ontoggle: () => void };
+    spectators?: number;
+    /** Where the viewer is, after the logo: the first part stands out, the rest is dimmed. */
+    crumbs?: string[];
+    /** Goes back, from a back arrow before the logo. */
+    onback?: () => void;
     /** Ends the game for everyone, once confirmed. Given to the host only. */
     onend?: () => void;
   } = $props();
 
   const spectatorLabel = $derived(`${spectators} ${spectators === 1 ? 'spectator' : 'spectators'}`);
+  const [crumbHead, ...crumbRest] = $derived(crumbs);
 
   let confirmingEnd = $state(false);
 
@@ -72,7 +77,19 @@
 </script>
 
 <header>
-  <div class="logo">INTO <span>THE</span> FRAY</div>
+  {#if onback}
+    <button class="icon-button" aria-label="Back" title="Back" onclick={onback}>
+      <Icon name="back" />
+    </button>
+  {/if}
+  <Logo />
+  {#if crumbHead !== undefined}
+    <span class="divider" aria-hidden="true"></span>
+    <span class="crumbs">
+      <b>{crumbHead}</b>{#each crumbRest as crumb, i (i)}<span class="rest">{` / ${crumb}`}</span
+        >{/each}
+    </span>
+  {/if}
   <div class="actions">
     {#if spectators > 0}
       <span class="pill" role="img" aria-label={spectatorLabel} title={spectatorLabel}>
@@ -98,37 +115,7 @@
         title="End game"
         onclick={() => (confirmingEnd = true)}
       >
-        <Icon name="power" />
-      </button>
-    {/if}
-    {#if side}
-      <button
-        class="icon-button"
-        aria-label="Preview and history"
-        aria-pressed={!side.hidden}
-        title={side.hidden ? 'Show the preview and history' : 'Hide the preview and history'}
-        onclick={side.ontoggle}
-      >
-        <!-- A window with its right pane, filled while the panel shows. -->
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true"
-        >
-          <rect x="3" y="4" width="18" height="16" rx="2" />
-          <path
-            class="pane"
-            class:filled={!side.hidden}
-            d="M15 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4z"
-            fill="currentColor"
-            stroke="none"
-          />
-          <path d="M15 4v16" />
-        </svg>
+        <Icon name="cross" />
       </button>
     {/if}
   </div>
@@ -148,26 +135,39 @@
   header {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 8px 16px;
-    background: var(--panel);
-    border-bottom: 1px solid var(--line);
+    gap: 16px;
+    height: 56px;
+    padding: 0 16px 0 18px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--panel-2);
   }
 
-  .logo {
-    font-weight: 800;
-    letter-spacing: 0.5px;
+  .divider {
+    flex: none;
+    width: 1px;
+    height: 24px;
+    background: var(--line);
+  }
+
+  /* A long crumb gives way to the actions: it is cut short, never wrapped. */
+  .crumbs {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
+    font-size: 14px;
+    font-weight: 700;
   }
 
-  .logo span {
-    color: var(--accent);
+  .crumbs .rest {
+    color: var(--muted);
+    font-weight: 500;
   }
 
   .actions {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     margin-left: auto;
   }
 
@@ -175,10 +175,10 @@
   .pill {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    height: 33px;
-    padding: 0 12px;
-    background: var(--panel-2);
+    gap: 7px;
+    height: 38px;
+    padding: 0 13px;
+    background: var(--panel);
     border: 1px solid var(--line);
     border-radius: 999px;
     font-size: 13px;
@@ -191,40 +191,42 @@
     height: 17px;
   }
 
-  .actions button {
-    height: 33px;
-  }
-
   .icon-button {
     flex: none;
-    width: 33px;
-    padding: 6px;
+    width: 38px;
+    height: 38px;
+    padding: 0;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    background: var(--panel);
+    border-color: var(--line);
+    color: #c9cfdf;
+  }
+
+  .icon-button.active {
+    color: var(--sel);
   }
 
   .icon-button :global(svg) {
-    width: 19px;
-    height: 19px;
+    width: 18px;
+    height: 18px;
     display: block;
   }
 
-  .pane {
-    fill-opacity: 0;
-    transition: fill-opacity 0.25s;
-  }
-
-  .pane.filled {
-    fill-opacity: 0.35;
-  }
-
   /*
-   * A narrow bar drops its least useful items first: Fullscreen, then the
-   * spectator count. End game and the side panel toggle always stay. Fullscreen
+   * A narrow bar drops its least useful items first: the crumb, Fullscreen,
+   * then the spectator count. The logo and End game always stay. Fullscreen
    * stays while active, or a viewer without an Escape key could not leave it.
    */
   @media (max-width: 600px) {
+    header {
+      gap: 12px;
+      padding: 0 12px;
+    }
+
+    .divider,
+    .crumbs,
     .fullscreen:not(.active) {
       display: none;
     }

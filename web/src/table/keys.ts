@@ -7,13 +7,14 @@ import { modal } from '../components/modal.svelte';
 import type { Action, Area, CardView, PileView, Size, View } from '../lib/types';
 import type { ActionItem } from './actions';
 import { interaction } from './interaction.svelte';
-import { footprints, isOutOfPlay, visualBox } from './layout';
+import { footprints, visualBox } from './layout';
 import { ZOOM_STEP } from './zoom';
 
-// The prototype's free slot (ruling P5b-R5): from x 280, past the deck and
-// the discard pile, in 140 steps, a 100-wide card with 20 free on each side,
-// on the top row (140 high).
-const SLOT_FIRST_X = 280;
+// The prototype's free slot (ruling P5b-R5): from x 520, where the identity
+// lies past the rail of every area (deck, discard and out-of-play piles: see
+// internal/game/setup.go), in 140 steps, a 100-wide card with 20 free on each
+// side, on the top row (140 high).
+const SLOT_FIRST_X = 520;
 const SLOT_STEP = 140;
 const SLOT_CARD_WIDTH = 100;
 const SLOT_MARGIN = 20;
@@ -213,10 +214,9 @@ function handKey(key: string, id: string, table: KeyTable): boolean {
 
 /**
  * The prototype's free slot for a card played from the hand: the first spot
- * of the top row of an area, from x 280 in steps of 140, where a 100-wide
- * card keeps 20 free on each side. The area's table cards and in-play piles
- * are in the way; its victory and set-aside piles are not, being drawn at
- * the right end of the zone (placeOutPiles).
+ * of the top row of an area, from x 520 in steps of 140, where a 100-wide
+ * card keeps 20 free on each side. The area's table cards and piles are in
+ * the way.
  */
 export function freeSlot(
   cards: CardView[],
@@ -224,8 +224,7 @@ export function freeSlot(
   area: Area,
   sizeOf: (card: CardView) => Size,
 ): { x: number; y: number } {
-  const inPlay = piles.filter((p) => !isOutOfPlay(p));
-  const items = footprints(cards, inPlay, area, sizeOf).filter((item) => item.y < TOP_ROW_HEIGHT);
+  const items = footprints(cards, piles, area, sizeOf).filter((item) => item.y < TOP_ROW_HEIGHT);
   // Ends: every item is passed after a finite number of steps.
   for (let x = SLOT_FIRST_X; ; x += SLOT_STEP) {
     const blocked = items.some(

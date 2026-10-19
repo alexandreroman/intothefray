@@ -652,10 +652,10 @@
     pointer-events: none;
     box-shadow: 0 4px 12px #000a;
     background: var(--sel);
-    color: #04121a;
-    font:
-      700 12px/1 system-ui,
-      sans-serif;
+    color: var(--bg);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
     padding: 5px 9px;
     border-radius: 999px;
     white-space: nowrap;

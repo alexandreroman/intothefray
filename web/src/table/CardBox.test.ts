@@ -457,7 +457,8 @@ describe('CardBox', () => {
       kind: 'play',
       card: 'c1',
       area: 'p0',
-      x: 280,
+      // The first free slot from 520 past the deck at 600 (keys.ts).
+      x: 800,
       y: 0,
     });
     expect(tileBar()).toBeNull();

@@ -171,7 +171,7 @@
     /* Above the table and everything on it, below the open hand. */
     z-index: 2550;
     pointer-events: none;
-    background: #05080fa6;
+    background: linear-gradient(to top, #07090fe6 0%, #07090f9e 40%, #07090f66 100%);
     opacity: 0;
     transition: opacity 0.22s;
   }
@@ -199,7 +199,7 @@
     list-style: none;
     overflow: visible;
     pointer-events: none;
-    background: linear-gradient(to top, #0b0f18e6 0%, #0b0f18a0 55%, transparent 100%);
+    background: linear-gradient(to top, #07090fe6 0%, #07090fa0 55%, transparent 100%);
     transform: translateY(100px) scale(0.82);
     transform-origin: 50% 100%;
     transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -213,7 +213,7 @@
 
   /* A table card would go back to it. */
   .hand.drop {
-    background: linear-gradient(to top, #1a2a50f0 0%, #1a2a50a0 60%, transparent 100%);
+    background: linear-gradient(to top, #123349f0 0%, #123349a0 60%, transparent 100%);
   }
 
   /* Placed around the middle of the hand, below its top padding: --x is the card's middle. */
@@ -239,9 +239,9 @@
   }
 
   .hcard.gap .fan {
-    border: 2px dashed #4fd1ff88;
+    border: 2px dashed #49c6ff88;
     border-radius: 9px;
-    background: #4fd1ff14;
+    background: #49c6ff14;
     filter: none;
   }
 
@@ -267,13 +267,26 @@
     transform: translateY(calc(var(--ty) - 22px)) rotate(var(--rot)) scale(1.2);
   }
 
+  /* The card selected by a tap glows in the selection colour, as on the table. */
+  .hcard.locked .fan::before {
+    content: '';
+    position: absolute;
+    inset: 1%;
+    z-index: 1;
+    border-radius: 7px;
+    box-shadow:
+      0 0 0 2px var(--sel),
+      0 0 0 7px #49c6ff38;
+    pointer-events: none;
+  }
+
   /* The resting hand sits under the same veil the table gets when the hand is in use. */
   .fan::after {
     content: '';
     position: absolute;
     inset: 0;
     border-radius: 8px;
-    background: #05080fa6;
+    background: #07090fa6;
     clip-path: var(--card-cut);
     pointer-events: none;
     opacity: 1;

@@ -5,7 +5,7 @@ import {
   fanPositions,
   footprints,
   hiddenAside,
-  placeOutPiles,
+  isOutOfPlay,
   visualBox,
   zoneHeights,
   zoneMinHeight,
@@ -110,9 +110,13 @@ describe('zone size', () => {
     expect(zoneMinHeight(cards, [], 'villain', alwaysStd)).toBe(200);
   });
 
-  it('leaves out-of-play piles out, as they sit on the top row', () => {
-    const piles = [pile({ kind: 'aside', area: 'p0', y: 400 })];
-    expect(zoneMinHeight([], piles, 'p0', alwaysStd)).toBe(200);
+  it('counts out-of-play piles where the server put them', () => {
+    expect(zoneMinHeight([], [pile({ kind: 'aside', area: 'p0', y: 20 })], 'p0', alwaysStd)).toBe(
+      200,
+    );
+    expect(zoneMinHeight([], [pile({ kind: 'aside', area: 'p0', y: 400 })], 'p0', alwaysStd)).toBe(
+      560,
+    );
   });
 
   it('is 140 wider than its rightmost card', () => {
@@ -136,15 +140,18 @@ describe('zone size', () => {
     expect(zoneWidth(cards, [], 'villain', alwaysStd, 300)).toBe(640);
   });
 
-  it('adds 120 per out-of-play pile, wherever the server put it', () => {
-    const cards = [card({ area: 'villain', x: 400 })];
-    const piles = [
-      pile({ id: 'enc', kind: 'encounter', area: 'villain', x: 200 }),
-      pile({ id: 'vic', kind: 'victory', area: 'villain', x: 1080 }),
-      pile({ id: 'aside', kind: 'aside', area: 'villain', x: 1200 }),
-      pile({ id: 'other', kind: 'aside', area: 'p0', x: 1200 }),
+  it('measures out-of-play piles where the server put them, with no extra room', () => {
+    const cards = [card({ area: 'villain', x: 840 })];
+    const rail = [
+      pile({ id: 'enc', kind: 'encounter', area: 'villain', x: 0 }),
+      pile({ id: 'vic', kind: 'victory', area: 'villain', x: 240, y: 20 }),
+      pile({ id: 'aside', kind: 'aside', area: 'villain', x: 360, y: 20 }),
+      pile({ id: 'other', kind: 'aside', area: 'p0', x: 2000, y: 20 }),
     ];
-    expect(zoneWidth(cards, piles, 'villain', alwaysStd)).toBe(500 + 140 + 240);
+    expect(zoneWidth(cards, rail, 'villain', alwaysStd)).toBe(940 + 140);
+    // The rightmost item sets the width, whatever its kind.
+    const far = [pile({ id: 'vic', kind: 'victory', area: 'villain', x: 1200 })];
+    expect(zoneWidth(cards, far, 'villain', alwaysStd)).toBe(1300 + 140);
   });
 });
 
@@ -253,38 +260,12 @@ describe('an exhausted card', () => {
   });
 });
 
-describe('placeOutPiles', () => {
-  const villainPiles = [
-    pile({ id: 'aside', kind: 'aside', area: 'villain', x: 1200, y: 30 }),
-    pile({ id: 'enc', kind: 'encounter', area: 'villain', x: 200, y: 20 }),
-    pile({ id: 'vic', kind: 'victory', area: 'villain', x: 1080 }),
-    pile({ id: 'mine', kind: 'aside', area: 'p0', x: 1200 }),
-  ];
-
-  it('lines the victory display then the set-aside cards up against the right edge', () => {
-    const placed = placeOutPiles(villainPiles, 'villain', 880);
-    const at = (id: string) => placed.find((p) => p.id === id);
-
-    // 10 from the edge, 120 apart, on the top row.
-    expect(at('vic')).toMatchObject({ x: 650, y: 0 });
-    expect(at('aside')).toMatchObject({ x: 770, y: 0 });
-  });
-
-  it('keeps the other piles of the zone where they are, and leaves other zones out', () => {
-    const placed = placeOutPiles(villainPiles, 'villain', 880);
-    expect(placed.map((p) => p.id)).toEqual(['aside', 'enc', 'vic']);
-    expect(placed.find((p) => p.id === 'enc')).toMatchObject({ x: 200, y: 20 });
-  });
-
-  it("places a player's set-aside cards at the right of their zone", () => {
-    expect(placeOutPiles(villainPiles, 'p0', 1500)).toEqual([
-      { ...villainPiles[3], x: 1390, y: 0 },
-    ]);
-  });
-
-  it('does not change the piles it is given', () => {
-    placeOutPiles(villainPiles, 'villain', 880);
-    expect(villainPiles[0]).toMatchObject({ x: 1200, y: 30 });
+describe('isOutOfPlay', () => {
+  it('is true of the victory display and set-aside piles only', () => {
+    expect(isOutOfPlay(pile({ kind: 'victory' }))).toBe(true);
+    expect(isOutOfPlay(pile({ kind: 'aside' }))).toBe(true);
+    expect(isOutOfPlay(pile({ kind: 'encounter' }))).toBe(false);
+    expect(isOutOfPlay(pile({ kind: 'discard' }))).toBe(false);
   });
 });
 

@@ -36,15 +36,45 @@ function setFullscreenElement(
 }
 
 describe('TopBar', () => {
-  it('shows the logo, THE in the accent colour', () => {
-    const { container } = render(TopBar, { spectators: 0 });
-    const logo = container.querySelector('.logo');
-    expect(logo?.textContent).toBe('INTO THE FRAY');
-    expect(logo?.querySelector('span')?.textContent).toBe('THE');
+  it('shows the full logo', () => {
+    render(TopBar);
+    const logo = screen.getByRole('img', { name: 'Into The Fray' });
+    expect(logo.textContent?.replace(/\s+/g, ' ').trim()).toBe('INTO THE FRAY');
+  });
+
+  it('shows no crumb by default', () => {
+    const { container } = render(TopBar);
+    expect(container.querySelector('.crumbs')).toBeNull();
+    expect(container.querySelector('.divider')).toBeNull();
+  });
+
+  it('shows the crumbs, the first one strong and the rest dimmed', () => {
+    const { container } = render(TopBar, { crumbs: ['Rhino', 'Standard', 'Bomb Scare'] });
+    const crumbs = container.querySelector('.crumbs');
+    expect(crumbs?.textContent?.trim()).toBe('Rhino / Standard / Bomb Scare');
+    expect(crumbs?.querySelector('b')?.textContent).toBe('Rhino');
+    expect([...(crumbs?.querySelectorAll('.rest') ?? [])].map((rest) => rest.textContent)).toEqual([
+      ' / Standard',
+      ' / Bomb Scare',
+    ]);
+  });
+
+  it('shows a back arrow before the logo, only when it can go back', async () => {
+    const { unmount } = render(TopBar);
+    expect(screen.queryByRole('button', { name: 'Back' })).toBeNull();
+    unmount();
+
+    const onback = vi.fn();
+    const { container } = render(TopBar, { onback });
+    const back = screen.getByRole('button', { name: 'Back' });
+    expect(back.getAttribute('title')).toBe('Back');
+    expect(container.querySelector('header')?.firstElementChild).toBe(back);
+    await fireEvent.click(back);
+    expect(onback).toHaveBeenCalledOnce();
   });
 
   it('shows no spectator badge without spectators', () => {
-    const { container } = render(TopBar, { spectators: 0 });
+    const { container } = render(TopBar);
     expect(screen.queryByRole('img', { name: /spectator/ })).toBeNull();
     expect(container.querySelector('.pill')).toBeNull();
   });
@@ -91,17 +121,15 @@ describe('TopBar', () => {
     expect(onend).toHaveBeenCalledOnce();
   });
 
-  it('orders the actions, the side panel toggle last', () => {
+  it('orders the actions, End game last, with a cross', () => {
     document.documentElement.requestFullscreen = vi.fn();
-    render(TopBar, {
-      spectators: 0,
-      onend: () => {},
-      side: { hidden: false, ontoggle: () => {} },
-    });
+    render(TopBar, { spectators: 0, onend: () => {} });
     const names = screen
       .getAllByRole('button')
       .map((button) => button.getAttribute('aria-label') ?? button.textContent);
-    expect(names).toEqual(['Fullscreen', 'End game', 'Preview and history']);
+    expect(names).toEqual(['Fullscreen', 'End game']);
+    const cross = screen.getByRole('button', { name: 'End game' }).querySelector('path');
+    expect(cross?.getAttribute('d')).toBe('M6 6l12 12M18 6L6 18');
   });
 
   it('offers no Fullscreen button without the Fullscreen API', () => {

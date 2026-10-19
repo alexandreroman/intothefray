@@ -108,14 +108,13 @@
   .row input {
     width: 64px;
     text-align: center;
-    background: #0c111b;
+    background: var(--bg);
     color: var(--text);
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    font:
-      700 16px system-ui,
-      sans-serif;
-    padding: 6px 0;
+    border: 1px solid var(--line-strong);
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 700;
+    padding: 8px 0;
   }
 
   .row input:focus {
@@ -124,7 +123,8 @@
   }
 
   .step {
-    width: 34px;
+    width: 40px;
+    height: 40px;
     font-weight: 700;
   }
 
@@ -132,12 +132,24 @@
     display: flex;
     justify-content: flex-end;
     gap: 8px;
-    margin-top: 16px;
+    margin-top: 20px;
   }
 
+  .buttons button {
+    height: 40px;
+    padding: 0 20px;
+  }
+
+  /* Paper, as the confirmation of the app's other dialogs. */
   .ok {
-    border-color: var(--sel);
-    background: #23406a;
-    font-weight: 700;
+    background: var(--text);
+    border-color: var(--text);
+    color: var(--bg);
+    font-weight: 800;
+  }
+
+  .ok:hover:not(:disabled) {
+    background: #ffffff;
+    border-color: #ffffff;
   }
 </style>

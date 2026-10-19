@@ -416,10 +416,10 @@
     >
       <svg width="22" height="28" viewBox="0 0 22 28"
         ><path
-          d="M3 2.5 L3 21.5 L7.6 17.2 L10.7 24.4 L14.2 22.9 L11.2 15.9 L17.6 15.9 Z"
+          d="M3 2.5 L18 12 L11 13.5 L7.5 20 Z"
           style:fill={colourOf(cursor.color)}
-          stroke="#111"
-          stroke-width="1.2"
+          stroke="#07090f"
+          stroke-width="1.5"
           stroke-linejoin="round"
           stroke-linecap="round"
         /></svg
@@ -475,14 +475,14 @@
   .rcursor span {
     position: absolute;
     left: 16px;
-    top: 22px;
-    border: 1px solid #111;
-    color: #1a1208;
-    font-size: 11px;
+    top: 18px;
+    color: var(--bg);
+    font-size: 12px;
     font-weight: 700;
-    padding: 1px 6px;
+    padding: 3px 8px;
     border-radius: 6px;
     white-space: nowrap;
+    box-shadow: 0 2px 6px #0007;
   }
 
   /* Held at the zone's edge: its spot is scrolled out of view. */

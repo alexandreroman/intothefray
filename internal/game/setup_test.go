@@ -179,8 +179,8 @@ func TestSetupStages(t *testing.T) {
 	}
 
 	villain := cardWithCode(t, table, "01094")
-	if villain.Zone != ZoneTable || villain.Area != AreaVillain || villain.X != 280 || villain.Y != 0 {
-		t.Errorf("Rhino I = %+v, want on the table at villain (280, 0)", villain)
+	if villain.Zone != ZoneTable || villain.Area != AreaVillain || villain.X != 520 || villain.Y != 0 {
+		t.Errorf("Rhino I = %+v, want on the table at villain (520, 0)", villain)
 	}
 	for _, code := range []string{"01095", "01096"} {
 		if c := cardWithCode(t, table, code); c.Zone != ZoneStage {
@@ -189,8 +189,8 @@ func TestSetupStages(t *testing.T) {
 	}
 
 	scheme := cardWithCode(t, table, "01097")
-	if scheme.Zone != ZoneTable || scheme.Face != 1 || scheme.X != 420 || scheme.Y != 20 {
-		t.Errorf("main scheme = %+v, want on the table at (420, 20), face 1", scheme)
+	if scheme.Zone != ZoneTable || scheme.Face != 1 || scheme.X != 660 || scheme.Y != 20 {
+		t.Errorf("main scheme = %+v, want on the table at (660, 20), face 1", scheme)
 	}
 
 	if len(table.Stages) != 2 {
@@ -283,13 +283,13 @@ func TestSetupStandardAndExpertSets(t *testing.T) {
 		inPlay     []inPlayCard
 	}{
 		{"standard", pack.Standard, "standard", "", nil},
-		{"standard ii", pack.Standard, "standard_ii", "", []inPlayCard{{formidableFoe, 0, 600}}},
-		{"standard iii", pack.Standard, "standard_iii", "", []inPlayCard{{pursuedByThePast, 0, 600}}},
+		{"standard ii", pack.Standard, "standard_ii", "", []inPlayCard{{formidableFoe, 0, 840}}},
+		{"standard iii", pack.Standard, "standard_iii", "", []inPlayCard{{pursuedByThePast, 0, 840}}},
 		{"expert with standard", pack.Expert, "standard", "expert", nil},
 		{"expert ii with standard", pack.Expert, "standard", "expert_ii", nil},
-		{"expert ii with standard ii", pack.Expert, "standard_ii", "expert_ii", []inPlayCard{{formidableFoe, 1, 600}}},
-		{"expert with standard ii", pack.Expert, "standard_ii", "expert", []inPlayCard{{formidableFoe, 1, 600}}},
-		{"expert with standard iii", pack.Expert, "standard_iii", "expert", []inPlayCard{{pursuedByThePast, 0, 600}}},
+		{"expert ii with standard ii", pack.Expert, "standard_ii", "expert_ii", []inPlayCard{{formidableFoe, 1, 840}}},
+		{"expert with standard ii", pack.Expert, "standard_ii", "expert", []inPlayCard{{formidableFoe, 1, 840}}},
+		{"expert with standard iii", pack.Expert, "standard_iii", "expert", []inPlayCard{{pursuedByThePast, 0, 840}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -336,12 +336,12 @@ func TestSetupSetInPlayFollowsScenarioInPlay(t *testing.T) {
 	table := startedGame(t, cfg).Table
 
 	// Klaw's Defense Network takes the first in-play slot, Formidable Foe the next.
-	if c := cardWithCode(t, table, "01125"); c.Zone != ZoneTable || c.X != 600 || c.Y != 20 {
-		t.Errorf("Defense Network = %+v, want on the table at (600, 20)", c)
+	if c := cardWithCode(t, table, "01125"); c.Zone != ZoneTable || c.X != 840 || c.Y != 20 {
+		t.Errorf("Defense Network = %+v, want on the table at (840, 20)", c)
 	}
 	foe := cardWithCode(t, table, "24049")
-	if foe.Zone != ZoneTable || foe.Area != AreaVillain || foe.Face != 1 || foe.X != 760 || foe.Y != 20 {
-		t.Errorf("Formidable Foe = %+v, want in the villain area at (760, 20), face 1", foe)
+	if foe.Zone != ZoneTable || foe.Area != AreaVillain || foe.Face != 1 || foe.X != 1000 || foe.Y != 20 {
+		t.Errorf("Formidable Foe = %+v, want in the villain area at (1000, 20), face 1", foe)
 	}
 }
 
@@ -394,7 +394,7 @@ func TestSetupPlayers(t *testing.T) {
 				t.Fatalf("nemesis card %+v should belong to the encounter deck", c)
 			}
 		}
-		if aside.X != 1200 || aside.Y != 0 || aside.Area != area || aside.Owner != seat {
+		if aside.X != 240 || aside.Y != 20 || aside.Area != area || aside.Owner != seat {
 			t.Errorf("aside pile = %+v", aside)
 		}
 		if disc := table.Piles["disc:"+string(area)]; disc == nil || disc.X != 120 || len(disc.Cards) != 0 {
@@ -412,13 +412,13 @@ func TestSetupPlayers(t *testing.T) {
 		t.Fatalf("identity cards = %d, want 2", len(identities))
 	}
 	for _, identity := range identities {
-		if identity.Face != 1 || identity.Zone != ZoneTable || identity.X != 280 || identity.Y != 0 ||
+		if identity.Face != 1 || identity.Zone != ZoneTable || identity.X != 520 || identity.Y != 0 ||
 			identity.Area != PlayerArea(identity.Owner) || identity.Home != "deck:"+string(identity.Area) {
-			t.Errorf("identity = %+v, want alter ego on the table at (280, 0)", identity)
+			t.Errorf("identity = %+v, want alter ego on the table at (520, 0)", identity)
 		}
 	}
 
-	if table.FirstPlayer != (Point{Area: "p0", X: 420, Y: 0}) {
+	if table.FirstPlayer != (Point{Area: "p0", X: 660, Y: 0}) {
 		t.Errorf("first player = %+v", table.FirstPlayer)
 	}
 }
@@ -429,8 +429,8 @@ func TestSetupVillainPiles(t *testing.T) {
 	want := map[string][2]int{
 		PileEncounter:        {0, 0},
 		PileEncounterDiscard: {120, 0},
-		PileVictory:          {1080, 0},
-		PileScenarioAside:    {1200, 0},
+		PileVictory:          {240, 20},
+		PileScenarioAside:    {360, 20},
 	}
 	for id, pos := range want {
 		pile := table.Piles[id]
@@ -466,8 +466,8 @@ func TestSetupStartingThreatKlaw(t *testing.T) {
 	table := startedGame(t, cfg).Table
 
 	defense := cardWithCode(t, table, "01125")
-	if defense.Zone != ZoneTable || defense.Area != AreaVillain || defense.X != 600 || defense.Y != 20 {
-		t.Errorf("Defense Network = %+v, want in the villain area at (600, 20)", defense)
+	if defense.Zone != ZoneTable || defense.Area != AreaVillain || defense.X != 840 || defense.Y != 20 {
+		t.Errorf("Defense Network = %+v, want in the villain area at (840, 20)", defense)
 	}
 	if defense.Tokens["thr"] != 2 {
 		t.Errorf("Defense Network threat = %d, want 2", defense.Tokens["thr"])

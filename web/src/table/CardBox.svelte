@@ -610,7 +610,9 @@
   }
 
   .mhead b {
-    font-size: 16px;
+    font-stretch: 85%;
+    font-weight: 800;
+    font-size: 18px;
   }
 
   .mhead .aside {
@@ -622,10 +624,10 @@
   .mhead .filter {
     margin-left: auto;
     width: 220px;
-    padding: 6px 10px;
-    background: var(--panel-2);
-    border: 1px solid var(--line);
-    border-radius: 8px;
+    padding: 7px 12px;
+    background: var(--bg);
+    border: 1px solid var(--line-strong);
+    border-radius: 10px;
     color: var(--text);
     font: inherit;
   }
@@ -660,9 +662,9 @@
     aspect-ratio: 5 / 7;
     padding: 0;
     overflow: hidden;
-    background: #121827;
+    background: var(--bg);
     border: none;
-    border-radius: 8px;
+    border-radius: 9px;
     color: inherit;
     font: inherit;
   }
@@ -715,9 +717,9 @@
   }
 
   .tile.lifting .img {
-    outline: 2px dashed #4fd1ff88;
+    outline: 2px dashed #49c6ff88;
     outline-offset: -2px;
-    background: #4fd1ff14;
+    background: #49c6ff14;
   }
 
   .tile.lifting .img > :global(*) {
@@ -729,10 +731,12 @@
     top: 4px;
     left: 4px;
     z-index: 3;
-    padding: 0 7px;
-    background: #000c;
+    padding: 1px 7px;
+    background: #07090fcc;
+    border: 1px solid var(--line-strong);
     border-radius: 999px;
     font-size: 11px;
+    font-weight: 700;
   }
 
   .mempty {
@@ -751,7 +755,7 @@
   .mempty svg {
     width: 40px;
     height: 40px;
-    color: #4a5576;
+    color: var(--line-strong);
     fill: none;
     stroke: currentColor;
     stroke-width: 1.8;
@@ -769,8 +773,17 @@
     border-top: 1px solid var(--line);
   }
 
+  /* Paper, as the confirmation of the app's other dialogs. */
   .mfoot .primary {
-    border-color: var(--sel);
+    background: var(--text);
+    border-color: var(--text);
+    color: var(--bg);
+    font-weight: 800;
+  }
+
+  .mfoot .primary:hover:not(:disabled) {
+    background: #ffffff;
+    border-color: #ffffff;
   }
 
   /* The dragged card, the tile's size, its card contained as in the tile. */

@@ -2,17 +2,16 @@
   One zone of the table: its header, the separator handle that resizes the
   zone above (when that zone can be resized), and a horizontal scroller around
   the surface where its cards and piles lie, in table units. The zone is at
-  least as wide as its scroller, and its out-of-play piles follow its right
-  edge. Chips and fades at the edges tell what is scrolled out of view.
+  least as wide as its scroller. Chips and fades at the edges tell what is
+  scrolled out of view.
 -->
 <script lang="ts" module>
   export interface Heading {
+    /** "Villain", in a caption box, or the player's name. */
     name: string;
-    /** After the name: the villain's name or the hero's name. */
-    detail?: string;
-    /** Dimmed, in brackets. */
-    aside?: string;
-    /** CSS colour of the name, for the viewer's own zone. */
+    /** Dimmed after the name: the villain and its stage, or the hero, "you" and the hand size. */
+    details: string[];
+    /** CSS colour of a player's seat. */
     color?: string;
   }
 
@@ -29,7 +28,7 @@
   import type { Area, PackFace, CardView as TableCard, PileView as Pile, Size } from '../lib/types';
   import CardView from './CardView.svelte';
   import { snap } from './drag';
-  import { footprints, hiddenAside, placeOutPiles, zoneWidth, type Footprint } from './layout';
+  import { footprints, hiddenAside, zoneWidth, type Footprint } from './layout';
   import FirstPlayerToken from './FirstPlayerToken.svelte';
   import { interaction } from './interaction.svelte';
   import PileView from './PileView.svelte';
@@ -79,9 +78,10 @@
   const TOKEN_TIP = "First player — drag it into the next player's area";
 
   const titleId = $derived(`zone-${area}-title`);
-  // The space before the bracketed part belongs to the text, not to the dimmed span.
+  const villain = $derived(area === 'villain');
+  // The caption box stands apart from what follows; a name runs on with a dot.
   const detailText = $derived(
-    (heading.detail ? ` — ${heading.detail}` : '') + (heading.aside ? ' ' : ''),
+    heading.details.length === 0 ? '' : (villain ? ' ' : ' · ') + heading.details.join(' · '),
   );
 
   let scroller = $state<HTMLElement>();
@@ -89,7 +89,6 @@
   // What the scroller shows of the surface, in table units.
   const visibleWidth = $derived((scrollerWidth - 2 * SCROLL_PADDING) / zoom);
   const surfaceWidth = $derived(zoneWidth(cards, piles, area, sizeOf, visibleWidth));
-  const placedPiles = $derived(placeOutPiles(piles, area, surfaceWidth));
 
   let scrollLeft = $state(0);
   let fadeLeft = $state(false);
@@ -99,7 +98,7 @@
   const hidden = $derived(
     scrollerWidth > 0
       ? hiddenAside(
-          footprints(cards, placedPiles, area, sizeOf),
+          footprints(cards, piles, area, sizeOf),
           (scrollLeft - SCROLL_PADDING) / zoom,
           (scrollLeft + scrollerWidth - SCROLL_PADDING) / zoom,
         )
@@ -164,7 +163,14 @@
 
 <svelte:window onpointermove={moveResize} onpointerup={endResize} onpointercancel={endResize} />
 
-<section class="zsec" class:sep={!first} data-area={area} aria-labelledby={titleId}>
+<section
+  class="zsec"
+  class:sep={!first}
+  class:player={!villain}
+  style:--seat={heading.color}
+  data-area={area}
+  aria-labelledby={titleId}
+>
   {#if above}
     <div
       class="sep-handle"
@@ -177,11 +183,15 @@
   {/if}
 
   <div class="zh" id={titleId}>
-    <span
-      ><b style:color={heading.color}>{heading.name}</b>{detailText}{#if heading.aside}<span
-          class="aside">({heading.aside})</span
-        >{/if}</span
-    >
+    {#if villain}
+      <span class="caption">{heading.name}</span>
+    {:else}
+      <i class="seat" aria-hidden="true"></i>
+      <b>{heading.name}</b>
+    {/if}
+    {#if detailText}
+      <span class="details">{detailText}</span>
+    {/if}
   </div>
 
   <div class="zbox">
@@ -217,7 +227,7 @@
     >
       <!-- Card z-indexes come from the server and can be negative: the surface isolates them. -->
       <div class="surface" style:width="{surfaceWidth}px" style:height="{height}px">
-        {#each placedPiles as pile (pile.id)}
+        {#each piles as pile (pile.id)}
           {@const top = topOf(pile)}
           <PileView {pile} {top} face={faceOf(top)} foreign={foreign(pile)} />
         {/each}
@@ -242,32 +252,59 @@
 </section>
 
 <style>
+  /* As wide as the table, past its side padding, so that a player's tint reaches the edge. */
   .zsec {
     position: relative;
-    padding-top: 14px;
+    margin: 0 -20px;
+    padding: 14px 20px 30px;
   }
 
   .zsec.sep {
     border-top: 1px solid var(--line);
-    margin-top: 30px;
+  }
+
+  /* A player's zone is faintly lit from the left in their seat colour. */
+  .zsec.player {
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--seat, transparent) 6%, transparent),
+      transparent 40%
+    );
   }
 
   .zh {
     display: flex;
+    align-items: center;
+    height: 22px;
+    margin-bottom: 6px;
     font-size: 12px;
-    color: #c4cbe0;
-    height: 16px;
-    margin-bottom: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .zh .caption {
+    font-size: 11px;
+    padding: 4px 12px 4px 8px;
+    clip-path: polygon(0 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+  }
+
+  /* The seat colour, as a diamond before the name. */
+  .seat {
+    flex: none;
+    width: 8px;
+    height: 8px;
+    margin: 0 9px 0 2px;
+    border-radius: 2px;
+    transform: rotate(45deg);
+    background: var(--seat, var(--muted));
+  }
+
+  .details {
     white-space: pre;
-  }
-
-  .zh b {
-    color: var(--text);
-  }
-
-  /* Details in brackets matter less than the name. */
-  .zh .aside {
-    color: var(--faint);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--muted);
+    font-weight: 500;
   }
 
   /* The scroller clips, so it pads the surface; the negative margin keeps the surface in line. */
@@ -326,8 +363,8 @@
     font-size: 12px;
     padding: 4px 9px;
     border-radius: 999px;
-    background: #000c;
-    border: 1px solid var(--line);
+    background: #07090fcc;
+    border: 1px solid var(--line-strong);
   }
 
   .chip.l {

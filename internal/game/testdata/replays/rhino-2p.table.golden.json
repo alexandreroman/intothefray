@@ -1207,8 +1207,8 @@
       "kind": "aside",
       "owner": 0,
       "area": "p0",
-      "x": 1200,
-      "y": 0,
+      "x": 240,
+      "y": 20,
       "cards": [
         "c9vqye7uf",
         "c7sqzvnsj",
@@ -1222,8 +1222,8 @@
       "kind": "aside",
       "owner": 1,
       "area": "p1",
-      "x": 1200,
-      "y": 0,
+      "x": 240,
+      "y": 20,
       "cards": [
         "cx3a7hfr7",
         "cszysvnkv",
@@ -1352,8 +1352,8 @@
       "kind": "aside",
       "owner": -1,
       "area": "villain",
-      "x": 1200,
-      "y": 0,
+      "x": 360,
+      "y": 20,
       "cards": [
         "c3cm8pujd"
       ]
@@ -1363,8 +1363,8 @@
       "kind": "victory",
       "owner": -1,
       "area": "villain",
-      "x": 1080,
-      "y": 0,
+      "x": 240,
+      "y": 20,
       "cards": [
         "cu3cjcnfw"
       ]
@@ -1403,7 +1403,7 @@
   ],
   "firstPlayer": {
     "area": "p0",
-    "x": 420,
+    "x": 660,
     "y": 0
   },
   "arrows": [

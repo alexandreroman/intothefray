@@ -158,89 +158,59 @@
     scale: 1;
   }
 
+  /* Tokens sit astride the bottom edge, in the middle. */
   .tokens {
     position: absolute;
-    left: 4px;
-    bottom: 4px;
+    left: 50%;
+    bottom: -12px;
     z-index: 4;
     display: flex;
     gap: 3px;
-    flex-wrap: wrap;
+    transform: translateX(-50%);
   }
 
-  /* Tokens look like small cardboard chips: lit from the top left, a thin inner ring, a rim and a shadow. */
+  /* A flat pill with an ink rim, its count in the display face, ink on colour. */
   .tok {
-    --hi: #fff;
-    --base: #999;
-    --lo: #333;
-    --rim: #222;
-    --ink: #fff;
-    position: relative;
-    width: 26px;
+    min-width: 28px;
     height: 26px;
-    border-radius: 50%;
+    padding: 0 6px;
+    border-radius: 999px;
+    border: 2px solid var(--table-bg);
     display: grid;
     place-items: center;
-    font:
-      800 13px/1 system-ui,
-      sans-serif;
-    color: var(--ink);
-    text-shadow: 0 1px 1px #0008;
-    background: radial-gradient(circle at 34% 28%, var(--hi) 0%, var(--base) 48%, var(--lo) 100%);
-    border: 1.5px solid var(--rim);
-    box-shadow:
-      inset 0 1px 1px #ffffff80,
-      inset 0 -2px 3px #0000004d,
-      0 2px 4px #000000a0;
+    font-stretch: 62%;
+    font-weight: 900;
+    font-size: 17px;
+    line-height: 1;
+    color: var(--bg);
+    box-shadow: 0 2px 5px #000000a0;
   }
 
   /* Pointed at: the pill is up. */
   .tok:hover,
   .tok.hot {
     box-shadow:
-      inset 0 1px 1px #ffffff80,
-      inset 0 -2px 3px #0000004d,
-      0 0 0 2px #fff,
+      0 0 0 2px var(--text),
       0 2px 6px #000000a0;
   }
 
   .st:hover,
   .st.hot {
     box-shadow:
-      0 0 0 2px #fff,
+      0 0 0 2px var(--text),
       0 2px 4px #0009;
   }
 
-  .tok::before {
-    content: '';
-    position: absolute;
-    inset: 2.5px;
-    border-radius: 50%;
-    border: 1px solid #ffffff40;
-    pointer-events: none;
-  }
-
   .tok.dmg {
-    --hi: #ff9b8c;
-    --base: #d8352b;
-    --lo: #7a1210;
-    --rim: #4e0b09;
+    background: var(--accent);
   }
 
-  /* Same orange as Tough. */
   .tok.thr {
-    --hi: #ffd59a;
-    --base: #e08a1e;
-    --lo: #8a4a07;
-    --rim: #5a2f02;
+    background: var(--spark);
   }
 
-  /* Counters are green. */
   .tok.gen {
-    --hi: #9fe0b2;
-    --base: #1b8a4a;
-    --lo: #0a4723;
-    --rim: #052e16;
+    background: var(--text);
   }
 
   /* Status cards: small tabs sticking out of the right edge, like real cards tucked under. */
@@ -256,10 +226,11 @@
   }
 
   .st {
-    font:
-      800 8px/1 system-ui,
-      sans-serif;
-    letter-spacing: 0.3px;
+    font-stretch: 75%;
+    font-weight: 800;
+    font-size: 9px;
+    line-height: 1;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: #fff;
     padding: 3px 5px 3px 6px;
@@ -271,7 +242,6 @@
     text-shadow: 0 1px 1px #0008;
   }
 
-  /* Same green as the counter token. */
   .st.stunned {
     background: linear-gradient(#25a058, #11683a);
   }
@@ -280,7 +250,6 @@
     background: linear-gradient(#a274e6, #5c33a3);
   }
 
-  /* Same orange as the threat token. */
   .st.tough {
     background: linear-gradient(#f0a53a, #a8600f);
   }

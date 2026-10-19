@@ -10,18 +10,28 @@ import (
 )
 
 // Default positions on the table, in table units (see the geometry rules).
+//
+// Each area starts with a rail: the deck at x 0, the discard pile, then the
+// out-of-play piles, a little lower to leave room for the client's "Out of
+// play" title above them. The villain's rail, the widest, holds the victory
+// display and the scenario's set-aside cards; a player's holds their
+// set-aside cards. Everything else starts past the villain's rail in every
+// area, so that the zones line up.
 const (
-	villainPileX = 280
-	schemePileX  = 420
+	discardX       = 120
+	victoryX       = 240
+	scenarioAsideX = 360
+	playerAsideX   = 240
+	outOfPlayY     = 20
+
+	villainPileX = 520
+	schemePileX  = 660
 	schemePileY  = 20
-	inPlayStartX = 600
+	inPlayStartX = 840
 	inPlayStepX  = 160
 	inPlayY      = 20
-	discardX     = 120
-	victoryX     = 1080
-	asideX       = 1200
-	identityX    = 280
-	firstPlayerX = 420
+	identityX    = 520
+	firstPlayerX = 660
 )
 
 const (
@@ -104,23 +114,23 @@ func newEmptyTable(players int) *Table {
 		Hands:       map[Area][]string{},
 		FirstPlayer: Point{Area: PlayerArea(0), X: firstPlayerX, Y: 0},
 	}
-	t.addPile(PileEncounter, KindEncounter, NoOwner, AreaVillain, 0)
-	t.addPile(PileEncounterDiscard, KindEncounterDiscard, NoOwner, AreaVillain, discardX)
-	t.addPile(PileVictory, KindVictory, NoOwner, AreaVillain, victoryX)
-	t.addPile(PileScenarioAside, KindAside, NoOwner, AreaVillain, asideX)
+	t.addPile(PileEncounter, KindEncounter, NoOwner, AreaVillain, 0, 0)
+	t.addPile(PileEncounterDiscard, KindEncounterDiscard, NoOwner, AreaVillain, discardX, 0)
+	t.addPile(PileVictory, KindVictory, NoOwner, AreaVillain, victoryX, outOfPlayY)
+	t.addPile(PileScenarioAside, KindAside, NoOwner, AreaVillain, scenarioAsideX, outOfPlayY)
 
 	for seat := range players {
 		area := PlayerArea(seat)
-		t.addPile("deck:"+string(area), KindDeck, seat, area, 0)
-		t.addPile("disc:"+string(area), KindDiscard, seat, area, discardX)
-		t.addPile("aside:"+string(area), KindAside, seat, area, asideX)
+		t.addPile("deck:"+string(area), KindDeck, seat, area, 0, 0)
+		t.addPile("disc:"+string(area), KindDiscard, seat, area, discardX, 0)
+		t.addPile("aside:"+string(area), KindAside, seat, area, playerAsideX, outOfPlayY)
 		t.Hands[area] = []string{}
 	}
 	return t
 }
 
-func (t *Table) addPile(id string, kind PileKind, owner int, area Area, x int) {
-	t.Piles[id] = &Pile{ID: id, Kind: kind, Owner: owner, Area: area, X: x, Cards: []string{}}
+func (t *Table) addPile(id string, kind PileKind, owner int, area Area, x, y int) {
+	t.Piles[id] = &Pile{ID: id, Kind: kind, Owner: owner, Area: area, X: x, Y: y, Cards: []string{}}
 }
 
 // tableBuilder creates the cards of a new table.

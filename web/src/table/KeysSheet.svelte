@@ -158,10 +158,10 @@
     width: min(640px, calc(100vw - 32px));
     max-height: 80vh;
     overflow: auto;
-    background: #151c2c;
-    border: 1px solid #3a4870;
-    border-radius: 14px;
-    box-shadow: 0 20px 50px #000c;
+    background: var(--panel);
+    border: 1px solid var(--line-strong);
+    border-radius: 16px;
+    box-shadow: 0 24px 60px #000c;
   }
 
   .khead {
@@ -173,14 +173,17 @@
 
   .khead b {
     margin-right: auto;
-    font-size: 15px;
+    font-stretch: 85%;
+    font-weight: 800;
+    font-size: 18px;
   }
 
   .khead button {
     border: none;
     background: none;
-    font-size: 18px;
+    font-size: 20px;
     padding: 0 6px;
+    color: var(--muted);
   }
 
   .kcols {
@@ -191,11 +194,13 @@
   }
 
   h4 {
-    margin: 8px 0 4px;
-    font-size: 12px;
+    margin: 10px 0 4px;
+    font-stretch: 75%;
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    letter-spacing: 0.6px;
-    color: var(--muted);
+    color: var(--faint);
   }
 
   .row {
@@ -212,14 +217,13 @@
   }
 
   kbd {
-    font:
-      11px ui-monospace,
-      monospace;
-    color: var(--text);
-    background: #0c111b;
-    border: 1px solid var(--line);
-    border-radius: 4px;
-    padding: 0 4px;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    background: var(--bg);
+    border-radius: 5px;
+    padding: 1px 6px;
     margin-left: 4px;
   }
 </style>

@@ -1,13 +1,15 @@
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
+import { tick } from 'svelte';
 import Table from './Table.svelte';
 import { fanPositions, HAND_CARD_NARROW } from './layout';
-import { knownCard, loadGameCards } from '../lib/catalog';
+import { knownCard, loadGameCards, loadIndex } from '../lib/catalog';
 import type { CardView as TableCard, PresenceState, View } from '../lib/types';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
   knownCard: vi.fn(),
   loadGameCards: vi.fn(),
+  loadIndex: vi.fn(),
 }));
 
 /** A media query list whose match can be changed, as a resized window would. */
@@ -87,18 +89,20 @@ function fakeSession() {
   };
 }
 
-function sidePanel(): HTMLElement {
-  return screen.getByRole('complementary', { name: 'Preview and history' });
+function sidePanel(): HTMLElement | null {
+  return screen.queryByRole('complementary', { name: 'Preview and history' });
 }
 
-function sideToggle(): HTMLElement {
-  return screen.getByRole('button', { name: 'Preview and history' });
+/** The preview over the table, on a narrow screen. */
+function peek(container: HTMLElement): HTMLElement | null {
+  return container.querySelector('.peek');
 }
 
 beforeEach(() => {
   localStorage.clear();
   vi.mocked(loadGameCards).mockResolvedValue();
   vi.mocked(knownCard).mockReturnValue(null);
+  vi.mocked(loadIndex).mockReturnValue(new Promise(() => {}));
 });
 
 afterEach(() => {
@@ -106,48 +110,45 @@ afterEach(() => {
 });
 
 describe('Table on a narrow screen', () => {
-  it('narrow layout uses a drawer', async () => {
+  it('narrow layout shows the preview over the table, and no history', async () => {
     mockScreen(true);
     const { container } = render(Table, { session: fakeSession(), view: makeView() });
-    const app = container.querySelector('.app') as HTMLElement;
 
-    // Closed, the drawer is off the screen and out of reach of the keyboard.
-    expect(sidePanel().classList).not.toContain('open');
-    expect(sidePanel().inert).toBe(true);
-    expect(sideToggle().getAttribute('aria-pressed')).toBe('false');
+    expect(sidePanel()).toBeNull();
+    expect(screen.queryByRole('list', { name: 'History' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Preview and history' })).toBeNull();
+    // Nothing to preview: nothing over the table.
+    expect(peek(container)).toBeNull();
 
-    await fireEvent.click(sideToggle());
-    expect(sidePanel().classList).toContain('open');
-    expect(sidePanel().inert).toBe(false);
-    expect(sideToggle().getAttribute('aria-pressed')).toBe('true');
-    // The drawer is not the desktop column: its preference stays untouched.
-    expect(app.classList).not.toContain('side-hidden');
-    expect(localStorage.getItem('itf-side-hidden')).toBeNull();
-
-    await fireEvent.click(within(sidePanel()).getByRole('button', { name: 'Close' }));
-    expect(sidePanel().classList).not.toContain('open');
-    expect(sidePanel().inert).toBe(true);
+    const hand = screen.getByRole('list', { name: 'Your hand' });
+    await fireEvent.pointerEnter(within(hand).getAllByRole('listitem')[0] as HTMLElement);
+    const preview = peek(container);
+    expect(preview).not.toBeNull();
+    expect(within(preview as HTMLElement).getByLabelText('Card preview')).toBeTruthy();
+    expect(
+      within(preview as HTMLElement).getByRole('img', { name: 'Player card back' }),
+    ).toBeTruthy();
   });
 
-  it('wide layout keeps the column, without a close button', () => {
+  it('wide layout keeps the column, with the preview in it', () => {
     mockScreen(false);
-    render(Table, { session: fakeSession(), view: makeView() });
+    const { container } = render(Table, { session: fakeSession(), view: makeView() });
 
-    expect(sidePanel().inert).toBe(false);
-    expect(within(sidePanel()).queryByRole('button', { name: 'Close' })).toBeNull();
+    expect(within(sidePanel() as HTMLElement).getByLabelText('Card preview')).toBeTruthy();
+    expect(within(sidePanel() as HTMLElement).getByRole('list', { name: 'History' })).toBeTruthy();
+    expect(peek(container)).toBeNull();
   });
 
   it('follows the window as it narrows', async () => {
     const lists = mockScreen(false);
     render(Table, { session: fakeSession(), view: makeView() });
+    expect(sidePanel()).not.toBeNull();
 
     for (const list of lists) {
       list.resize(true);
     }
-    await fireEvent.click(sideToggle());
-
-    expect(sidePanel().classList).toContain('open');
-    expect(within(sidePanel()).getByRole('button', { name: 'Close' })).toBeTruthy();
+    await tick();
+    expect(sidePanel()).toBeNull();
   });
 
   it('narrow hand uses smaller cards', () => {

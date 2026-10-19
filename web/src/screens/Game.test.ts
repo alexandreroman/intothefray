@@ -8,6 +8,7 @@ vi.mock('../lib/session.svelte', () => ({ GameSession: vi.fn() }));
 vi.mock('../lib/catalog', () => ({
   loadGameCards: vi.fn(() => Promise.resolve()),
   knownCard: vi.fn(() => null),
+  loadIndex: vi.fn(() => new Promise(() => {})),
 }));
 
 const sessionMock = vi.mocked(GameSession);
@@ -114,6 +115,6 @@ describe('Game', () => {
     localStorage.setItem('itf-name', 'Alex');
     mockSession({ view: { ...playingView, phase: 'ended' } });
     render(Game, { id: 'x' });
-    expect(screen.getByText('This game has ended.')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /this game has ended/i })).toBeTruthy();
   });
 });

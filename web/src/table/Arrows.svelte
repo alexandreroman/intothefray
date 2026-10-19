@@ -239,7 +239,7 @@
         <path
           d="M0,0 L10,5 L0,10 z"
           style:fill={colourOf(color)}
-          stroke="#0b0f18"
+          stroke="#07090f"
           stroke-width="1"
         />
       </marker>
@@ -259,7 +259,7 @@
       cy={path.start.y}
       r="6"
       style:fill={colourOf(path.color)}
-      stroke="#0b0f18"
+      stroke="#07090f"
       stroke-width="2"
     />
   {/each}
@@ -278,7 +278,7 @@
   }
 
   .under {
-    stroke: #0b0f18;
+    stroke: #07090f;
     stroke-width: 8;
     fill: none;
     stroke-linecap: round;

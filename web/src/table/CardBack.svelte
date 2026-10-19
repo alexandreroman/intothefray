@@ -39,6 +39,7 @@
     object-fit: cover;
   }
 
+  /* Ink with an inner frame: the frame's colour tells a player card from an encounter one. */
   .back {
     display: flex;
     align-items: center;
@@ -47,18 +48,21 @@
     font-weight: 800;
     font-size: 12px;
     letter-spacing: 1px;
-    color: #fff;
+    color: var(--muted);
+    background: var(--bg);
+    border: 1px solid var(--line-strong);
+    box-shadow:
+      inset 0 0 0 7px var(--bg),
+      inset 0 0 0 8px var(--frame);
   }
 
   .player {
-    background: repeating-linear-gradient(45deg, #1d3f8f, #1d3f8f 8px, #234a9f 8px, #234a9f 16px);
-    border: 3px solid #0e1f47;
+    --frame: #6fa8ff73;
   }
 
   /* The prototype draws no villain back: villain cards share the encounter one. */
   .encounter,
   .villain {
-    background: repeating-linear-gradient(45deg, #6b2a8f, #6b2a8f 8px, #7a3299 8px, #7a3299 16px);
-    border: 3px solid #351447;
+    --frame: #ff443873;
   }
 </style>

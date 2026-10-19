@@ -1,20 +1,22 @@
 <!--
   The table page: the top bar, the table column (a vertical stack of zones,
   each scrolling horizontally on its own) and the side column (preview and
-  history).
+  history). On a narrow screen there is no side column: the preview shows
+  over the table.
 -->
 <script lang="ts">
   import { tick, untrack } from 'svelte';
   import { MediaQuery } from 'svelte/reactivity';
   import Tooltip from '../components/Tooltip.svelte';
   import TopBar from '../components/TopBar.svelte';
-  import { knownCard, loadGameCards } from '../lib/catalog';
-  import { getPref, setPref } from '../lib/prefs';
+  import { knownCard, loadGameCards, loadIndex } from '../lib/catalog';
   import type { GameSession } from '../lib/session.svelte';
   import type {
     Action,
     Area,
     CardView as TableCard,
+    Index,
+    LobbyConfig,
     PackFace,
     PileView,
     Size,
@@ -46,7 +48,8 @@
   import { motion } from './motion.svelte';
   import Presence from './Presence.svelte';
   import TokenPill from './TokenPill.svelte';
-  import SidePanel, { type Preview } from './SidePanel.svelte';
+  import CardPreview, { type Preview } from './CardPreview.svelte';
+  import SidePanel from './SidePanel.svelte';
   import Zone, { type Heading, type ResizeAbove } from './Zone.svelte';
   import ZoomControl from './ZoomControl.svelte';
   import { clampZoom, saveZoom, storedZoom, ZOOM_MAX, ZOOM_MIN } from './zoom';
@@ -89,6 +92,29 @@
     return faceOf(card)?.size ?? 'std';
   }
 
+  // The pack index names the scenario and the modular sets of the top bar's crumb.
+  let index = $state.raw<Index | null>(null);
+  loadIndex().then(
+    (loaded) => (index = loaded),
+    // Without names, the top bar shows no crumb.
+    () => {},
+  );
+
+  /** "Rhino / Standard / Bomb Scare": the scenario, its difficulty, then its modular sets. */
+  function crumbsOf(config: LobbyConfig, names: Index | null): string[] {
+    const scenario = names?.scenarios.find((s) => s.id === config.scenario);
+    if (!names || !scenario) {
+      return [];
+    }
+    const modulars = config.modulars.map(
+      (code) => names.sets.find((set) => set.code === code)?.name ?? code,
+    );
+    const difficulty = config.difficulty === 'expert' ? 'Expert' : 'Standard';
+    return [scenario.name, difficulty, ...modulars];
+  }
+
+  const crumbs = $derived(crumbsOf(view.config, index));
+
   const cards = $derived(view.table?.cards ?? []);
   const piles = $derived(view.table?.piles ?? []);
   const cardsById = $derived(new Map(cards.map((card) => [card.id, card])));
@@ -117,25 +143,28 @@
   function villainHeading(): Heading {
     const stage = view.table?.stages.find((s) => s.key === 'villain');
     const face = faceOf(stage ? cardsById.get(stage.current) : undefined);
-    return {
-      name: 'Villain',
-      detail: face?.name,
-      aside: face?.stage ? `stage ${face.stage}` : undefined,
-    };
+    const details = face ? [face.name] : [];
+    if (face?.stage) {
+      details.push(`stage ${face.stage}`);
+    }
+    return { name: 'Villain', details };
   }
 
   function playerHeading(area: Area): Heading {
     const player = view.players.find((p) => p.area === area);
     if (!player) {
-      return { name: area };
+      return { name: area, details: [] };
     }
     const cardsInHand = `${player.handCount} ${player.handCount === 1 ? 'card' : 'cards'} in hand`;
-    return {
-      name: player.name,
-      detail: player.heroName,
-      aside: cardsInHand,
-      color: area === ownArea ? `var(--p${player.color + 1})` : undefined,
-    };
+    const details: string[] = [];
+    if (player.heroName) {
+      details.push(player.heroName);
+    }
+    if (area === ownArea) {
+      details.push('you');
+    }
+    details.push(cardsInHand);
+    return { name: player.name, details, color: `var(--p${player.color + 1})` };
   }
 
   // The zone heights follow it, so it is declared before them.
@@ -690,27 +719,9 @@
     return wasShown;
   }
 
-  // Restored as the page is built, before any style applies, so the slide
-  // does not play at load; it plays on every toggle after that.
-  let sideHidden = $state(getPref('itf-side-hidden') === '1');
-
   // The breakpoint of the @media rules below. On a narrow screen the side
-  // panel is a drawer over the table, closed until asked for, and the stored
-  // column preference does not apply to it.
+  // column goes: the preview floats over the table, the history is not shown.
   const narrow = new MediaQuery('max-width: 900px');
-  let drawerOpen = $state(false);
-
-  const drawerShown = $derived(narrow.current && drawerOpen);
-  const sideShown = $derived(narrow.current ? drawerShown : !sideHidden);
-
-  function toggleSide(): void {
-    if (narrow.current) {
-      drawerOpen = !drawerOpen;
-      return;
-    }
-    sideHidden = !sideHidden;
-    setPref('itf-side-hidden', sideHidden ? '1' : '');
-  }
 
   let wrap = $state<HTMLElement>();
   let app = $state<HTMLElement>();
@@ -803,7 +814,6 @@
 <!-- The zoom is set on the whole page, so a layer outside the table (a drag ghost) can follow it. -->
 <div
   class="app"
-  class:side-hidden={sideHidden}
   class:arrowing={interaction.arrowFrom !== null}
   class:dragging={interaction.dragging !== null}
   style:--z={zoom}
@@ -812,7 +822,7 @@
   <div class="top">
     <TopBar
       spectators={view.spectators}
-      side={{ hidden: !sideShown, ontoggle: toggleSide }}
+      {crumbs}
       onend={view.you.host ? () => session.lobby('end') : undefined}
     />
   </div>
@@ -942,21 +952,20 @@
 
   <Tooltip />
 
-  <aside
-    class="side"
-    class:open={drawerShown}
-    aria-label="Preview and history"
-    inert={narrow.current && !drawerShown}
-  >
-    <SidePanel
-      {preview}
-      log={view.log}
-      canUndo={view.canUndo}
-      undoText={view.undoText}
-      onundo={() => session.act({ kind: 'undo' })}
-      onclose={narrow.current ? () => (drawerOpen = false) : undefined}
-    />
-  </aside>
+  {#if !narrow.current}
+    <aside class="side" aria-label="Preview and history">
+      <SidePanel
+        {preview}
+        log={view.log}
+        canUndo={view.canUndo}
+        onundo={() => session.act({ kind: 'undo' })}
+      />
+    </aside>
+  {:else if preview}
+    <div class="peek">
+      <CardPreview {preview} />
+    </div>
+  {/if}
 </div>
 
 <style>
@@ -965,7 +974,7 @@
     height: 100vh;
     height: 100dvh;
     grid-template-rows: auto minmax(0, 1fr);
-    grid-template-columns: minmax(0, 1fr) 300px;
+    grid-template-columns: minmax(0, 1fr) 320px;
     grid-template-areas:
       'top top'
       'table side';
@@ -988,7 +997,7 @@
 
   /* Room at the bottom to scroll the last zone above the floating hand. */
   .table {
-    padding: 0 20px 250px;
+    padding: 0 20px 220px;
     position: relative;
   }
 
@@ -1009,8 +1018,11 @@
     z-index: 1;
   }
 
+  /* The selection glows in the signal blue: a ring, then a soft halo. */
   .table :global(.card.locked)::before {
-    box-shadow: 0 0 0 3px var(--sel);
+    box-shadow:
+      0 0 0 2px var(--sel),
+      0 0 0 7px #49c6ff38;
   }
 
   .table :global(.card.highlighted)::before {
@@ -1044,8 +1056,8 @@
     grid-area: side;
     display: flex;
     flex-direction: column;
-    background: var(--panel);
-    border-left: 1px solid var(--line);
+    background: var(--bg);
+    border-left: 1px solid var(--panel-2);
     min-height: 0;
   }
 
@@ -1062,36 +1074,6 @@
     font-size: 13px;
   }
 
-  /* The column slides shut: the panel keeps its width and is pushed out on the right. */
-  @media (min-width: 901px) {
-    .app {
-      transition: grid-template-columns 0.28s ease;
-    }
-
-    .app.side-hidden {
-      grid-template-columns: minmax(0, 1fr) 0px;
-    }
-
-    .side {
-      overflow: hidden;
-      transition:
-        border-color 0.28s,
-        visibility 0s;
-    }
-
-    .side > :global(*) {
-      min-width: 299px;
-    }
-
-    .app.side-hidden .side {
-      border-left-color: transparent;
-      visibility: hidden;
-      transition:
-        border-color 0.28s,
-        visibility 0s 0.28s;
-    }
-  }
-
   @media (max-width: 900px) {
     .app {
       grid-template-columns: minmax(0, 1fr);
@@ -1099,25 +1081,19 @@
         'top'
         'table';
     }
+  }
 
-    /*
-      The drawer slides in from the right, over the table and what is drawn on it: the other
-      players' presence (2500), the veil and the open hand (2600). Drags (3000) still show over it.
-    */
-    .side {
-      position: fixed;
-      right: 0;
-      top: 0;
-      bottom: 0;
-      width: min(320px, 88vw);
-      z-index: 2700;
-      transform: translateX(100%);
-      transition: transform 0.2s;
-      box-shadow: -8px 0 24px #000a;
-    }
-
-    .side.open {
-      transform: none;
-    }
+  /*
+    The narrow screen's preview, at the top right of the table: over the other players' presence
+    (2500), the veil and the open hand (2600), under drags (3000). The pointer goes through it.
+  */
+  .peek {
+    grid-area: table;
+    align-self: start;
+    justify-self: end;
+    z-index: 2700;
+    width: min(180px, 40vw);
+    margin: 12px 12px 0 0;
+    pointer-events: none;
   }
 </style>

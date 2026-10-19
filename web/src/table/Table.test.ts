@@ -2,10 +2,11 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/sve
 import { tick } from 'svelte';
 import Table from './Table.svelte';
 import { interaction, LINGER_MS } from './interaction.svelte';
-import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
+import { knownCard, loadGameCards, loadIndex, type CardInfo } from '../lib/catalog';
 import type {
   Area,
   CardView as TableCard,
+  Index,
   PackFace,
   PileView,
   PresenceState,
@@ -16,6 +17,7 @@ vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
   knownCard: vi.fn(),
   loadGameCards: vi.fn(),
+  loadIndex: vi.fn(),
 }));
 
 /**
@@ -42,6 +44,20 @@ class ManualResizeObserver {
 }
 
 globalThis.ResizeObserver = ManualResizeObserver;
+
+// The pack index of the fixture: what the top bar's crumb names.
+const INDEX: Index = {
+  version: 1,
+  lang: 'en',
+  packs: [],
+  scenarios: [
+    { id: 'rhino', name: 'Rhino', pack: 'core', image: '', supported: true, recommended: [] },
+  ],
+  sets: [
+    { code: 'bomb_scare', name: 'Bomb Scare', pack: 'core', kind: 'modular' },
+    { code: 'masters_of_evil', name: 'Masters of Evil', pack: 'core', kind: 'modular' },
+  ],
+};
 
 const FIRST_PLAYER_TOKEN =
   'https://card-table.app/images/table/first_player_token_marvelchampions.png';
@@ -141,10 +157,10 @@ function surfaceOf(name: RegExp): HTMLElement {
   return surface;
 }
 
-/** Where an out-of-play pile of a zone lies, found by its badge. */
-function outPileLeft(zone: RegExp, badge: string): string | undefined {
+/** Where a pile of a zone lies, found by its id. */
+function pileLeft(zone: RegExp, id: string): string | undefined {
   const region = screen.getByRole('region', { name: zone });
-  return within(region).getByRole('img', { name: badge }).closest<HTMLElement>('.pile')?.style.left;
+  return region.querySelector<HTMLElement>(`.pile[data-id="${id}"]`)?.style.left;
 }
 
 function zoomLabel(): HTMLElement {
@@ -155,6 +171,7 @@ beforeEach(() => {
   localStorage.clear();
   vi.mocked(loadGameCards).mockResolvedValue();
   vi.mocked(knownCard).mockImplementation(infoOf);
+  vi.mocked(loadIndex).mockResolvedValue(INDEX);
 });
 
 afterEach(() => {
@@ -162,6 +179,7 @@ afterEach(() => {
   interaction.reset();
   vi.mocked(loadGameCards).mockReset();
   vi.mocked(knownCard).mockReset();
+  vi.mocked(loadIndex).mockReset();
 });
 
 describe('Table', () => {
@@ -191,15 +209,21 @@ describe('Table', () => {
   it('zone header text', async () => {
     render(Table, { session: fakeSession(), view: makeView() });
 
-    const villain = await screen.findByRole('region', { name: 'Villain — Rhino (stage I)' });
-    expect(within(villain).getByText('(stage I)').classList).toContain('aside');
+    // The villain's zone is named in a caption box.
+    const villain = await screen.findByRole('region', { name: 'Villain Rhino · stage I' });
+    expect(within(villain).getByText('Villain').classList).toContain('caption');
 
-    const own = screen.getByRole('region', { name: 'Sam — Ant-Man (5 cards in hand)' });
-    expect(within(own).getByText('Sam').getAttribute('style')).toContain('color: var(--p2)');
-    expect(within(own).getByText('(5 cards in hand)').classList).toContain('aside');
+    // A player's zone has their seat colour, and the viewer's own says so.
+    const own = screen.getByRole('region', { name: 'Sam · Ant-Man · you · 5 cards in hand' });
+    expect(own.getAttribute('style')).toContain('--seat: var(--p2)');
+    expect(own.querySelector('.seat')).not.toBeNull();
+    expect(
+      within(own).getByText('· Ant-Man · you · 5 cards in hand', { exact: false }),
+    ).toBeTruthy();
 
-    const other = screen.getByRole('region', { name: 'Alex — Spider-Man (6 cards in hand)' });
-    expect(within(other).getByText('Alex').getAttribute('style') ?? '').not.toContain('color');
+    const other = screen.getByRole('region', { name: 'Alex · Spider-Man · 6 cards in hand' });
+    expect(other.getAttribute('style')).toContain('--seat: var(--p1)');
+    expect(within(other).queryByText('Villain')).toBeNull();
   });
 
   it('zone height grows with a low card', async () => {
@@ -359,12 +383,12 @@ describe('Table', () => {
     expect(kbds).toEqual(['−', '0', '+']);
   });
 
-  it('places the out-of-play piles at the right of their zone', async () => {
+  it("keeps the out-of-play piles where the server sets them, in each zone's rail", async () => {
     const view = makeView();
     view.table?.piles.push(
-      pile('vic', { kind: 'victory', area: 'villain', x: 1080, count: 0 }),
-      pile('aside', { kind: 'aside', area: 'villain', x: 1200, count: 0 }),
-      pile('aside1', { kind: 'aside', owner: 1, area: 'p1', x: 1200, count: 0 }),
+      pile('vic', { kind: 'victory', area: 'villain', x: 240, y: 20, count: 0 }),
+      pile('aside', { kind: 'aside', area: 'villain', x: 360, y: 20, count: 0 }),
+      pile('aside1', { kind: 'aside', owner: 1, area: 'p1', x: 240, y: 20, count: 0 }),
     );
     // Each zone scroller shows 1200 table units at 100 %, past its 24 px padding on each side.
     // The zoom is pinned: prefs keep earlier tests' zoom in memory.
@@ -374,33 +398,25 @@ describe('Table', () => {
       render(Table, { session: fakeSession(), view });
       await screen.findByRole('region', { name: /Rhino/ });
 
-      // The villain's zone is the visible width: 1200 − 10 − 100, then 120 to the left.
       expect(surfaceOf(/^Villain/).style.width).toBe('1200px');
-      expect(outPileLeft(/^Villain/, 'Set-aside cards')).toBe('1090px');
-      expect(outPileLeft(/^Villain/, 'Victory display')).toBe('970px');
-      expect(outPileLeft(/^Sam/, 'Set-aside cards')).toBe('1090px');
-      // Piles in play keep their place.
-      expect(surfaceOf(/^Villain/).querySelector<HTMLElement>('.pile:not(.out)')?.style.left).toBe(
-        '500px',
-      );
+      expect(pileLeft(/^Villain/, 'vic')).toBe('240px');
+      expect(pileLeft(/^Villain/, 'aside')).toBe('360px');
+      expect(pileLeft(/^Sam/, 'aside1')).toBe('240px');
+      expect(pileLeft(/^Villain/, 'enc')).toBe('500px');
     } finally {
       width.mockRestore();
     }
   });
 
-  it('widens a zone past its cards in play to fit its out-of-play piles', async () => {
+  it('widens a zone past its rightmost pile, out-of-play ones included', async () => {
     const view = makeView();
-    view.table?.piles.push(
-      pile('vic', { kind: 'victory', area: 'villain', x: 1080, count: 0 }),
-      pile('aside', { kind: 'aside', area: 'villain', x: 1200, count: 0 }),
-    );
+    view.table?.piles.push(pile('aside', { kind: 'aside', area: 'villain', x: 800, count: 0 }));
     render(Table, { session: fakeSession(), view });
     await screen.findByRole('region', { name: /Rhino/ });
 
-    // The encounter deck ends at 600: 600 + 140 + 2 × 120.
-    expect(surfaceOf(/^Villain/).style.width).toBe('980px');
-    expect(outPileLeft(/^Villain/, 'Victory display')).toBe('750px');
-    expect(outPileLeft(/^Villain/, 'Set-aside cards')).toBe('870px');
+    // The set-aside pile ends at 900: 900 + 140.
+    expect(surfaceOf(/^Villain/).style.width).toBe('1040px');
+    expect(pileLeft(/^Villain/, 'aside')).toBe('800px');
   });
 
   it('chips count what is scrolled out of a zone, and scroll to it', async () => {
@@ -582,36 +598,44 @@ describe('Table', () => {
 
   it('undo sends the undo action', async () => {
     const session = fakeSession();
-    const view = { ...makeView(), canUndo: true, undoText: 'exhausted Rhino' };
+    const view = { ...makeView(), canUndo: true };
     render(Table, { session, view });
 
-    await fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Undo last action' }));
     expect(session.act).toHaveBeenCalledWith({ kind: 'undo' });
   });
 
-  it('side toggle persists and toggles class', async () => {
-    const { container } = render(Table, { session: fakeSession(), view: makeView() });
-    const app = container.querySelector('.app') as HTMLElement;
-    const toggle = screen.getByRole('button', { name: 'Preview and history' });
-    expect(app.classList).not.toContain('side-hidden');
-    expect(toggle.title).toBe('Hide the preview and history');
-    expect(toggle.querySelector('.pane')?.classList).toContain('filled');
+  it('always shows the side panel, with no toggle', () => {
+    localStorage.setItem('itf-side-hidden', '1');
+    render(Table, { session: fakeSession(), view: makeView() });
 
-    await fireEvent.click(toggle);
-    expect(app.classList).toContain('side-hidden');
-    expect(localStorage.getItem('itf-side-hidden')).toBe('1');
-    expect(toggle.title).toBe('Show the preview and history');
-    expect(toggle.querySelector('.pane')?.classList).not.toContain('filled');
-
-    await fireEvent.click(toggle);
-    expect(app.classList).not.toContain('side-hidden');
-    expect(localStorage.getItem('itf-side-hidden')).toBe('');
+    const side = screen.getByRole('complementary', { name: 'Preview and history' });
+    expect(within(side).getByLabelText('Card preview')).toBeTruthy();
+    expect(within(side).getByRole('list', { name: 'History' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Preview and history' })).toBeNull();
   });
 
-  it('restores a hidden side panel', () => {
-    localStorage.setItem('itf-side-hidden', '1');
+  it('names the scenario, its difficulty and its modular sets in the top bar', async () => {
+    const view = makeView();
+    view.config = {
+      ...view.config,
+      difficulty: 'expert',
+      modulars: ['bomb_scare', 'masters_of_evil'],
+    };
+    const { container } = render(Table, { session: fakeSession(), view });
+
+    await waitFor(() => {
+      expect(container.querySelector('header .crumbs')?.textContent?.trim()).toBe(
+        'Rhino / Expert / Bomb Scare / Masters of Evil',
+      );
+    });
+  });
+
+  it('shows no crumb when the pack index cannot be loaded', async () => {
+    vi.mocked(loadIndex).mockRejectedValue(new Error('offline'));
     const { container } = render(Table, { session: fakeSession(), view: makeView() });
-    expect(container.querySelector('.app')?.classList).toContain('side-hidden');
+    await screen.findByRole('region', { name: /Rhino/ });
+    expect(container.querySelector('header .crumbs')).toBeNull();
   });
 
   it('end game asks for confirmation (host only)', async () => {

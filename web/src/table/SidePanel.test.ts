@@ -62,15 +62,27 @@ describe('SidePanel', () => {
     const onundo = vi.fn();
     const { rerender } = render(SidePanel, { preview: null, log: LOG, onundo });
 
-    const undo = screen.getByRole('button', { name: 'Undo' });
+    const undo = screen.getByRole('button', { name: 'Undo last action' });
     expect((undo as HTMLButtonElement).disabled).toBe(true);
     expect(undo.title).toBe('Nothing of yours to undo');
 
-    await rerender({ preview: null, log: LOG, onundo, canUndo: true, undoText: 'drew 1 card' });
+    await rerender({ preview: null, log: LOG, onundo, canUndo: true });
     expect((undo as HTMLButtonElement).disabled).toBe(false);
-    expect(undo.title).toBe('Undo your last action: drew 1 card');
+    expect(undo.hasAttribute('title')).toBe(false);
     await fireEvent.click(undo);
     expect(onundo).toHaveBeenCalledOnce();
+  });
+
+  it('titles its sections', () => {
+    render(SidePanel, { preview: null, log: LOG, onundo: () => {} });
+    const titles = screen.getAllByRole('heading').map((heading) => heading.textContent);
+    expect(titles).toEqual(['Preview', 'History']);
+  });
+
+  it('shows each line time first', () => {
+    render(SidePanel, { preview: null, log: LOG, onundo: () => {} });
+    const [newest] = historyLines() as [HTMLElement];
+    expect(newest.firstElementChild?.textContent).toBe('14:03');
   });
 
   it('shows the empty preview frame', () => {

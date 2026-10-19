@@ -1,40 +1,24 @@
 <!--
-  The side column: the preview of the hovered card, then the history,
-  newest first, with the Undo button in its header.
+  The side column: the preview of the hovered card, the history, newest
+  first, and the Undo button under it.
 -->
-<script lang="ts" module>
-  import type { Back } from '../lib/types';
-
-  /** What the preview frame shows. */
-  export type Preview =
-    | { kind: 'face'; images: string[]; name: string; landscape: boolean }
-    | { kind: 'back'; back: Back };
-</script>
-
 <script lang="ts">
   import type { LogView } from '../lib/types';
   import { mergedLines } from './animate';
-  import CardBack from './CardBack.svelte';
-  import CardFace from './CardFace.svelte';
+  import CardPreview, { type Preview } from './CardPreview.svelte';
   import { interaction } from './interaction.svelte';
 
   let {
     preview,
     log,
     canUndo = false,
-    undoText,
     onundo,
-    onclose,
   }: {
     preview: Preview | null;
     /** Oldest first, as the server sends it. */
     log: LogView[];
     canUndo?: boolean;
-    /** The text of the line Undo would take back. */
-    undoText?: string;
     onundo: () => void;
-    /** Closes the panel, when it is a drawer (on a narrow screen). */
-    onclose?: () => void;
   } = $props();
 
   interface Part {
@@ -138,32 +122,13 @@
 {/snippet}
 
 <div class="preview">
-  <div class="frame" class:empty={!preview} aria-label="Card preview" role="figure">
-    {#if !preview}
-      <div class="hint">Hover a card<br />to see it here</div>
-    {:else if preview.kind === 'back'}
-      <div class="art">
-        <CardBack back={preview.back} />
-      </div>
-    {:else}
-      <div class="art" class:land={preview.landscape}>
-        <CardFace images={preview.images} name={preview.name} landscape={preview.landscape} />
-      </div>
-    {/if}
+  <h2>Preview</h2>
+  <div class="frame">
+    <CardPreview {preview} />
   </div>
 </div>
 
-<div class="loghead">
-  <b id="history-title">History</b>
-  <button
-    disabled={!canUndo}
-    title={canUndo ? `Undo your last action: ${undoText ?? ''}` : 'Nothing of yours to undo'}
-    onclick={onundo}>Undo</button
-  >
-  {#if onclose}
-    <button aria-label="Close" onclick={onclose}>×</button>
-  {/if}
-</div>
+<h2 class="loghead" id="history-title">History</h2>
 
 <ul class="log" aria-labelledby="history-title" bind:this={list}>
   {#each lines as { key, entry, parts, time, isNew } (key)}
@@ -175,72 +140,75 @@
       onpointerenter={(event) => enterLine(event, key, entry.cards)}
       onpointerleave={leaveLine}
     >
+      <time class="t">{time}</time>
       <span class="txt">{@render lineText(entry, parts)}</span>
-      <span class="t">{time}</span>
       {#if expanded === key}
         <div class="full">
-          <span class="t">{time}</span>{@render lineText(entry, parts)}
+          <time class="t">{time}</time>
+          <span>{@render lineText(entry, parts)}</span>
         </div>
       {/if}
     </li>
   {/each}
 </ul>
 
+<div class="undo">
+  <button
+    disabled={!canUndo}
+    title={canUndo ? undefined : 'Nothing of yours to undo'}
+    onclick={onundo}
+  >
+    <!-- A hooked arrow going back. -->
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M9 14L4 9l5-5" />
+      <path d="M4 9h11a5 5 0 0 1 0 10h-3" />
+    </svg>
+    Undo last action
+  </button>
+</div>
+
 <style>
-  .preview {
-    padding: 12px;
-    border-bottom: 1px solid var(--line);
-    flex: none;
-  }
-
-  /* Fixed size: a portrait card fills it, a landscape one sits in its middle. */
-  .frame {
-    width: 100%;
-    aspect-ratio: 5 / 7;
-    display: grid;
-    place-items: center;
-    border-radius: 8px;
-    overflow: hidden;
-  }
-
-  /* Only the empty frame is outlined: a shown card keeps its cut corners clear. */
-  .frame.empty {
-    border: 1px dashed #222b44;
-  }
-
-  .hint {
+  h2 {
+    margin: 0;
+    font-stretch: 75%;
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
     color: var(--muted);
-    font-size: 13px;
-    text-align: center;
-    padding: 12px;
   }
 
-  .art {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 5 / 7;
+  .preview {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 18px;
+    border-bottom: 1px solid var(--panel-2);
   }
 
-  .art.land {
-    aspect-ratio: 7 / 5;
+  .frame {
+    align-self: center;
+    width: min(100%, 220px);
   }
 
   .loghead {
-    display: flex;
-    align-items: center;
-    padding: 8px 12px;
-    gap: 8px;
-    border-bottom: 1px solid var(--line);
-  }
-
-  .loghead b {
-    margin-right: auto;
+    flex: none;
+    padding: 16px 18px 6px;
   }
 
   .log {
     overflow-y: auto;
     margin: 0;
-    padding: 6px 12px;
+    padding: 0 0 8px;
     list-style: none;
     flex: 1;
     min-height: 0;
@@ -249,18 +217,16 @@
   .e {
     position: relative;
     display: flex;
-    gap: 8px;
+    gap: 10px;
     align-items: baseline;
-    margin: 0 -6px;
-    padding: 5px 6px;
-    border-radius: 6px;
-    border-bottom: 1px solid #222b44;
+    padding: 8px 18px;
     font-size: 13px;
+    line-height: 1.4;
     cursor: pointer;
   }
 
   .e:hover {
-    background: #222c48;
+    background: #49c6ff14;
   }
 
   .e.new {
@@ -290,28 +256,51 @@
 
   .t {
     flex: none;
-    color: var(--muted);
+    width: 38px;
+    color: var(--faint);
     font-size: 11px;
+    font-variant-numeric: tabular-nums;
   }
 
   /* The full text floats over the list, so nothing below it moves. */
   .full {
     position: absolute;
-    left: -8px;
-    right: -8px;
+    left: 8px;
+    right: 8px;
     top: -1px;
     z-index: 5;
-    padding: 5px 8px;
-    border-radius: 8px;
-    background: #26314f;
-    border: 1px solid #3a4870;
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+    padding: 7px 10px;
+    border-radius: 10px;
+    background: var(--panel-2);
+    border: 1px solid var(--line-strong);
     box-shadow: 0 8px 20px #000a;
     white-space: normal;
   }
 
-  .full .t {
-    float: right;
-    margin-left: 8px;
+  .undo {
+    flex: none;
+    padding: 14px 18px;
+    border-top: 1px solid var(--panel-2);
+  }
+
+  .undo button {
+    width: 100%;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 14px;
+    background: var(--panel);
+    font-size: 13px;
+  }
+
+  .undo svg {
+    width: 16px;
+    height: 16px;
+    flex: none;
   }
 
   @keyframes slidein {

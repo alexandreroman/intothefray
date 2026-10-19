@@ -85,11 +85,11 @@
     z-index: 4500;
     display: flex;
     align-items: center;
-    padding: 1px;
-    background: #0b0f18f0;
-    border: 1px solid #3a4870;
+    padding: 2px;
+    background: var(--panel-2);
+    border: 1px solid var(--line-strong);
     border-radius: 999px;
-    box-shadow: 0 4px 10px #000a;
+    box-shadow: 0 8px 20px #0009;
     /* Measured before it is placed: unseen until then. */
     visibility: hidden;
   }
@@ -101,27 +101,27 @@
   button {
     border: none;
     background: none;
-    padding: 0 8px;
-    font:
-      700 14px/20px system-ui,
-      sans-serif;
+    padding: 0 9px;
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 22px;
     border-radius: 999px;
     color: var(--text);
   }
 
   button:hover {
-    background: #2a3555;
+    background: var(--line-strong);
   }
 
   .value {
-    min-width: 26px;
-    margin: 1px 0;
+    min-width: 28px;
     padding: 0 6px;
     text-align: center;
-    font:
-      800 14px/20px system-ui,
-      sans-serif;
-    background: #0c111b;
-    border-radius: 6px;
+    font-stretch: 62%;
+    font-weight: 900;
+    font-size: 17px;
+    line-height: 22px;
+    background: var(--bg);
+    border-radius: 7px;
   }
 </style>

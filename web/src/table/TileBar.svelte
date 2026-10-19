@@ -79,12 +79,12 @@
     position: fixed;
     z-index: 5;
     display: flex;
-    gap: 5px;
-    padding: 6px;
-    border: 1px solid #3a4870;
-    border-radius: 12px;
-    background: #1a2236f5;
-    box-shadow: 0 12px 30px #000c;
+    gap: 2px;
+    padding: 5px;
+    border: 1px solid var(--line-strong);
+    border-radius: 14px;
+    background: var(--panel-2);
+    box-shadow: 0 14px 34px #0000008c;
     /* Measured before it is placed: unseen until then. */
     visibility: hidden;
   }
@@ -105,14 +105,29 @@
     outline: none;
   }
 
+  button {
+    height: 34px;
+    padding: 0 11px;
+    border: none;
+    border-radius: 9px;
+    background: transparent;
+    font-size: 13px;
+  }
+
+  button:hover {
+    background: var(--line-strong);
+  }
+
   button.ico {
-    padding: 6px 8px;
+    width: 38px;
+    padding: 0;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
   }
 
   button.ico :global(svg) {
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
   }
 </style>
