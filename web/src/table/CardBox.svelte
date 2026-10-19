@@ -39,7 +39,7 @@
     sizeOf: (card: CardView) => Size;
     /** A spectator's box: it shows the cards and offers nothing. */
     readOnly: boolean;
-    act: (action: Action) => void;
+    act: (action: Action) => number | null;
     /** Closes the box; `shuffle` asks to shuffle the searched deck. */
     onclose: (shuffle: boolean) => void;
   } = $props();
@@ -172,10 +172,10 @@
 
   function runAction(action: TileAction, tile: Tile): void {
     hovered = null;
-    if (action.id === 'bottom') {
+    const sent = act(action.run());
+    if (action.id === 'bottom' && sent !== null) {
       sentDown = [...sentDown, tile.card.id];
     }
-    act(action.run());
   }
 
   function choose(tile: Tile): void {

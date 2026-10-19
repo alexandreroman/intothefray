@@ -333,6 +333,30 @@ describe('CardBox', () => {
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'closeView' });
   });
 
+  it('keeps the box open when the socket is down and a close is not sent', async () => {
+    const { session } = await renderTable(makeView({ private: SEARCH }));
+    session.act.mockReturnValue(null as never);
+
+    await fireEvent.click(within(box()).getByRole('button', { name: 'Shuffle & close' }));
+
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'closeView', where: 'shuffle' });
+    expect(box()).toBeTruthy();
+  });
+
+  it('keeps a tile when its action is not sent', async () => {
+    const { session } = await renderTable(makeView({ private: SEARCH }));
+    session.act.mockReturnValue(null as never);
+    await fireEvent.pointerEnter(tile('c1'));
+
+    const bar = tileBar() as HTMLElement;
+    await fireEvent.click(
+      within(bar).getByRole('button', { name: 'Put at the bottom of the deck' }),
+    );
+
+    expect(session.act).toHaveBeenCalledOnce();
+    expect(tile('c1')).toBeTruthy();
+  });
+
   it('escape closes a search like Close', async () => {
     const { session } = await renderTable(makeView({ private: SEARCH }));
 

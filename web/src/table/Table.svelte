@@ -488,8 +488,11 @@
 
   function closeBox(shuffle: boolean): void {
     if (shownBox?.kind === 'pile' && shownBox.mode !== 'browse') {
-      closingView = true;
-      session.act(shuffle ? { kind: 'closeView', where: 'shuffle' } : { kind: 'closeView' });
+      // Act returns null when nothing was sent: the box then stays, as the server never closes it.
+      const sent = session.act(
+        shuffle ? { kind: 'closeView', where: 'shuffle' } : { kind: 'closeView' },
+      );
+      closingView = sent !== null;
       return;
     }
     localBox = null;
