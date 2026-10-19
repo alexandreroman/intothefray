@@ -514,9 +514,9 @@ class TableInteraction {
   }
 
   /**
-   * A new view: the selected cards that left the table, or went onto a pile,
-   * drop out of the group. The same set stays when none did, so that nothing
-   * redraws.
+   * A new view or another row shown: the selected cards that left the table,
+   * went onto a pile, or are no longer drawn drop out of the group. The same
+   * set stays when none did, so that nothing redraws.
    */
   pruneGroup(cards: readonly CardView[]): void {
     const free = new Set(cards.filter(isFree).map((card) => card.id));

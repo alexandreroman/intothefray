@@ -99,7 +99,6 @@
   class:grab={draggable && !ghost}
   class:drop-target={tuckTarget}
   class:drop-pile={pileTarget}
-  class:selected
   style:left="{card.x}px"
   style:top="{card.y}px"
   style:width="{box.w}px"

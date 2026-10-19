@@ -1,4 +1,4 @@
-// Dragging several cards selected with the rubber band (spec 5.4). The
+// Dragging several cards selected with the rubber band (spec 5.2). The
 // fixtures mirror DragLayer.test.ts: the screen at zoom 1, the surface 20 px
 // in from the left and 40 px down from the top, the hand at the bottom.
 import { fireEvent, render, screen } from '@testing-library/svelte';

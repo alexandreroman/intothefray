@@ -1,4 +1,4 @@
-import { fireEvent, render } from '@testing-library/svelte';
+import { fireEvent, render, screen } from '@testing-library/svelte';
 import Table from './Table.svelte';
 import { interaction } from './interaction.svelte';
 import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
@@ -7,6 +7,7 @@ import type {
   Arrow,
   CardView as TableCard,
   PackFace,
+  PileView,
   PresenceState,
   SessionError,
   View,
@@ -58,7 +59,7 @@ const CARDS = [
 
 /** Alex (seat 0, colour 2: --p3) and Sam (seat 1) against Rhino; the viewer is Alex, or a spectator. */
 function makeView(
-  extra: { cards?: TableCard[]; arrows?: Arrow[]; spectator?: boolean } = {},
+  extra: { cards?: TableCard[]; piles?: PileView[]; arrows?: Arrow[]; spectator?: boolean } = {},
 ): View {
   return {
     id: 'g1',
@@ -86,7 +87,7 @@ function makeView(
     config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
     table: {
       cards: extra.cards ?? CARDS,
-      piles: [],
+      piles: extra.piles ?? [],
       hands: extra.spectator ? undefined : { p0: ['h'] },
       stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
       firstPlayer: { x: 860, y: 40 },
@@ -197,6 +198,10 @@ async function letGo(x: number, y: number) {
   await fireEvent.pointerUp(window, { clientX: x, clientY: y });
 }
 
+async function pressEscape() {
+  await fireEvent.keyDown(window, { key: 'Escape' });
+}
+
 const OWN_ARROW: Arrow = { from: 'mine', to: 'v', seat: 0 };
 
 beforeEach(() => {
@@ -270,6 +275,35 @@ describe('the rubber band', () => {
     expect(interaction.group.size).toBe(2);
   });
 
+  it('escCancelsBand: Esc ends the press, which draws no band again', async () => {
+    await renderTable();
+    interaction.setGroup(new Set(['sam']));
+    await pressEmpty(10, 320);
+    await moveTo(450, 500);
+    await pressEscape();
+    expect(interaction.band).toBeNull();
+    expect(interaction.group.size).toBe(0);
+
+    await moveTo(500, 520);
+    expect(interaction.band).toBeNull();
+    expect(drawnBand()).toBeNull();
+
+    await letGo(500, 520);
+    expect(interaction.group.size).toBe(0);
+    // Nor is the click that ends it a click on an empty spot.
+    expect(await fireEvent.click(surface())).toBe(false);
+  });
+
+  it('escapedBandKeepsArrows: a band cancelled with Esc clears no arrows when let go', async () => {
+    const { session } = await renderTable(makeView({ arrows: [OWN_ARROW] }));
+    await pressEmpty(10, 320);
+    await moveTo(450, 500);
+    await pressEscape();
+    await letGo(450, 500);
+
+    expect(session.act).not.toHaveBeenCalled();
+  });
+
   it('a band touching nothing clears the selection', async () => {
     await renderTable();
     interaction.setGroup(new Set(['mine']));
@@ -327,16 +361,34 @@ describe('the rubber band', () => {
     expect([...interaction.group]).toEqual(['other']);
   });
 
+  it('cards of a row no longer shown drop out of the selection', async () => {
+    // "Villain + player": Alex's row (row 1, from 470) or Sam's (row 2, from 800) under the villain's.
+    localStorage.setItem('itf-view', 'focus');
+    const piles: PileView[] = [
+      { id: 'd0', kind: 'deck', owner: 0, x: 600, y: 500, count: 3 },
+      { id: 'd1', kind: 'deck', owner: 1, x: 600, y: 830, count: 3 },
+    ];
+    const cards = [
+      card('v', { code: '01094', owner: -1, back: 'villain', x: 300 }),
+      card('mine', { y: 500 }),
+      card('sam', { owner: 1, y: 830 }),
+    ];
+    await renderTable(makeView({ cards, piles }));
+    interaction.setGroup(new Set(['v', 'mine']));
+
+    await fireEvent.click(screen.getByRole('radio', { name: /^Sam/ }));
+    expect([...interaction.group]).toEqual(['v']);
+  });
+
   it("selectedCardRinged: a selected card is ringed in the viewer's colour", async () => {
     await renderTable();
     interaction.setGroup(new Set(['mine']));
     await Promise.resolve();
 
-    expect(placed('mine').classList.contains('selected')).toBe(true);
-    expect(placed('other').classList.contains('selected')).toBe(false);
+    expect(placed('mine').querySelector('.sring')).not.toBeNull();
+    expect(placed('other').querySelector('.sring')).toBeNull();
     expect(document.querySelector<HTMLElement>('.app')?.style.getPropertyValue('--you')).toBe(
       'var(--p3)',
     );
-    expect(placed('mine').querySelector('.sring')).not.toBeNull();
   });
 });

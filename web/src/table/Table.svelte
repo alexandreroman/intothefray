@@ -972,6 +972,7 @@
           pointerId: event.pointerId,
           start: { x: event.clientX, y: event.clientY },
           canBand: canBand(event),
+          banded: false,
         };
       }
     }
@@ -979,8 +980,14 @@
 
   // ---- The rubber band ----
 
-  /** The press on an empty spot under way, until it is let go: it may become a rubber band. */
-  let emptyPress: { pointerId: number; start: Point; canBand: boolean } | null = null;
+  /**
+   * A press on an empty spot: it may become a rubber band. `banded` stays once
+   * it has, even when Esc took the band away.
+   */
+  type EmptyPress = { pointerId: number; start: Point; canBand: boolean; banded: boolean };
+
+  /** The press on an empty spot under way, until it is let go. */
+  let emptyPress: EmptyPress | null = null;
 
   /**
    * Only a player draws a band, with a mouse or a pen and no modifier key:
@@ -1036,23 +1043,25 @@
       return;
     }
     const at = { x: event.clientX, y: event.clientY };
-    if (
-      interaction.band === null &&
-      Math.hypot(at.x - press.start.x, at.y - press.start.y) < DRAG_THRESHOLD
-    ) {
-      return;
-    }
     if (interaction.band === null) {
+      // Esc took the band away: it does not come back for this press.
+      if (press.banded) {
+        return;
+      }
+      if (Math.hypot(at.x - press.start.x, at.y - press.start.y) < DRAG_THRESHOLD) {
+        return;
+      }
       // What the press started selecting in the page's text goes: the band takes the gesture.
       window.getSelection()?.removeAllRanges();
+      press.banded = true;
     }
     interaction.band = bandBetween(press.start, at);
   }
 
   /**
    * A press on an empty spot let go: a band selects the cards it touches,
-   * none when it touches nothing; a plain click clears the group and, ruling
-   * P5c-R7, the viewer's own arrows.
+   * none when it touches nothing, and one Esc took away selects nothing; a
+   * plain click clears the group and, ruling P5c-R7, the viewer's own arrows.
    */
   function endEmptyPress(event: PointerEvent): void {
     const press = emptyPress;
@@ -1061,12 +1070,14 @@
     }
     const band = interaction.band;
     forgetEmptyPress();
-    if (band === null) {
+    if (!press.banded) {
       interaction.clearGroup();
       clearOwnArrows();
       return;
     }
-    interaction.setGroup(new Set(cardsInBand(band, freeCardBoxes())));
+    if (band !== null) {
+      interaction.setGroup(new Set(cardsInBand(band, freeCardBoxes())));
+    }
     // The click that ends the band is no click on an empty spot: the arrows and a tap selection stay.
     interaction.swallowNextClick();
   }
@@ -1156,9 +1167,10 @@
     interaction.redrawn();
   });
 
-  // The selected cards that left the table, or went onto a pile, drop out of the group.
+  // The selected cards that left the table, went onto a pile, or lie in a row no longer shown drop out
+  // of the group: a group drag must not move cards the viewer cannot see.
   $effect.pre(() => {
-    const current = cards;
+    const current = tableCards;
     untrack(() => interaction.pruneGroup(current));
   });
 

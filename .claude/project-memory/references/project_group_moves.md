@@ -8,8 +8,9 @@ type: project
 
 - Selection is a rubber band: a drag on an empty table spot (mouse or pen,
   players only) selects the free table cards it touches. Touch keeps
-  native scrolling. Esc, a click on an empty spot or a press elsewhere
-  clears the selection.
+  native scrolling. Esc, a click on an empty spot, or a press on an
+  unselected card, a pile, a hand card or the token clears the selection;
+  it only holds cards drawn on the table.
 - A group only moves: dragging a selected card carries every selected
   unit, relative positions intact, each stack following its top card
   (see "Moving card stacks"). It drops on the table (no tuck over a card),

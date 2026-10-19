@@ -30,8 +30,8 @@ Everything below works today, except where noted.
   live cursors, pings, arrows and animated moves
 - **Group moves** — drag on an empty spot of the table to select
   the cards you touch, then drag one of them to move them all
-  together: elsewhere on the table, onto a pile or a deck, or back
-  to their owner's hand. `Esc` lets go of the selection
+  together: elsewhere on the table, onto a pile or a deck, or into
+  your hand when they are all yours. `Esc` lets go of the selection
 - **Undo** — take back your own last actions, across all your decks
 - **Keyboard shortcuts** — press `?` at the table for the full sheet
 - **Themes** — official, minimal or green felt, per viewer
