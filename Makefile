@@ -80,7 +80,7 @@ web-check: ## Type-check, lint and test the web app
 	cd web && pnpm check && pnpm lint && pnpm test
 
 .PHONY: web-build
-web-build: ## Build the web app into web/dist/
+web-build: web-install ## Build the web app into web/dist/
 	cd web && pnpm build
 
 ##@ Data

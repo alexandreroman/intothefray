@@ -10,6 +10,9 @@ http://:8080 {
 
 	# One origin for the SPA and the API: the server accepts same-origin
 	# requests, so the Host header is forwarded untouched.
+	# Health probe independent of the build output (web/dist may be empty)
+	respond /healthz 200
+
 	reverse_proxy /api/* {$API_UPSTREAM}
 	reverse_proxy /ws/* {$API_UPSTREAM}
 
