@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/svelte';
+import { render, screen } from '@testing-library/svelte';
 import Game from './Game.svelte';
 import { GameSession } from '../lib/session.svelte';
 import type { View } from '../lib/types';
@@ -51,18 +51,13 @@ afterEach(() => {
 });
 
 describe('Game', () => {
-  it('asks for a name, stores it, and only then creates the session', async () => {
+  it('joins with a generated name when none is stored, and stores it', () => {
     const session = mockSession({});
     render(Game, { id: 'x' });
 
-    expect(screen.getByText('Choose a name')).toBeTruthy();
-    expect(sessionMock).not.toHaveBeenCalled();
-
-    await fireEvent.input(screen.getByRole('textbox'), { target: { value: 'Jess' } });
-    await fireEvent.click(screen.getByRole('button', { name: 'OK' }));
-
-    expect(localStorage.getItem('itf-name')).toBe('Jess');
-    expect(sessionMock).toHaveBeenCalledWith('x', 'Jess');
+    const name = localStorage.getItem('itf-name');
+    expect(name).toMatch(/^[A-Z][a-z]+ [A-Z][a-z]+$/);
+    expect(sessionMock).toHaveBeenCalledWith('x', name);
     expect(session.connect).toHaveBeenCalledOnce();
   });
 
@@ -89,12 +84,6 @@ describe('Game', () => {
     mockSession({ status: 'open', view: null });
     render(Game, { id: 'x' });
     expect(screen.getByText('Connecting…')).toBeTruthy();
-  });
-
-  it('keeps the name dialog mandatory', () => {
-    mockSession({});
-    render(Game, { id: 'x' });
-    expect(screen.queryByRole('button', { name: 'Cancel' })).toBeNull();
   });
 
   it('shows no status line once open', () => {

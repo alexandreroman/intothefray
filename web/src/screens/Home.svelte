@@ -1,11 +1,10 @@
 <script lang="ts">
   import { createGame } from '../lib/api';
-  import { getPref, setPref, setToken } from '../lib/prefs';
+  import { playerName } from '../lib/names';
+  import { setToken } from '../lib/prefs';
   import { go } from '../lib/router.svelte';
   import Icon from '../components/Icon.svelte';
-  import NamePrompt from '../components/NamePrompt.svelte';
 
-  let askingName = $state(false);
   let starting = $state(false);
   let error = $state('');
 
@@ -24,18 +23,7 @@
   }
 
   function onStart(): void {
-    const name = getPref('itf-name')?.trim();
-    if (name) {
-      void startGame(name);
-    } else {
-      askingName = true;
-    }
-  }
-
-  function onNameChosen(name: string): void {
-    askingName = false;
-    setPref('itf-name', name);
-    void startGame(name);
+    void startGame(playerName());
   }
 </script>
 
@@ -56,10 +44,6 @@
     {/if}
   </section>
 </div>
-
-{#if askingName}
-  <NamePrompt onsubmit={onNameChosen} oncancel={() => (askingName = false)} />
-{/if}
 
 <style>
   .home {
