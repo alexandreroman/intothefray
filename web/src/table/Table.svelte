@@ -719,6 +719,10 @@
     return wasShown;
   }
 
+  function undo(): void {
+    session.act({ kind: 'undo' });
+  }
+
   // The breakpoint of the @media rules below. On a narrow screen the side
   // column goes: the preview floats over the table, the history is not shown.
   const narrow = new MediaQuery('max-width: 900px');
@@ -882,6 +886,32 @@
     bind:keysButton
   />
 
+  <!-- Touch screens have no Z key: without the side column, Undo floats at the bottom left. -->
+  {#if narrow.current}
+    <div class="undo">
+      <button
+        aria-label="Undo last action"
+        data-tip="Undo last action"
+        disabled={!view.canUndo}
+        onclick={undo}
+      >
+        <!-- A hooked arrow going back. -->
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M9 14L4 9l5-5" />
+          <path d="M4 9h11a5 5 0 0 1 0 10h-3" />
+        </svg>
+      </button>
+    </div>
+  {/if}
+
   {#if keySheetShown}
     <KeysSheet anchor={keysButton} onclose={hideKeySheet} />
   {/if}
@@ -954,12 +984,7 @@
 
   {#if !narrow.current}
     <aside class="side" aria-label="Preview and history">
-      <SidePanel
-        {preview}
-        log={view.log}
-        canUndo={view.canUndo}
-        onundo={() => session.act({ kind: 'undo' })}
-      />
+      <SidePanel {preview} log={view.log} canUndo={view.canUndo} onundo={undo} />
     </aside>
   {:else if preview}
     <div class="peek">
@@ -1072,6 +1097,42 @@
     border: 1px solid var(--accent);
     border-radius: 999px;
     font-size: 13px;
+  }
+
+  /* As the zoom control, at the other corner: under the veil and the raised hand. */
+  .undo {
+    grid-area: table;
+    align-self: end;
+    justify-self: start;
+    z-index: 30;
+    margin: 0 0 16px 16px;
+    padding: 4px;
+    background: #141a28eb;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    box-shadow: 0 6px 16px #0008;
+  }
+
+  .undo button {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 8px;
+    background: none;
+    color: #c9cfdf;
+  }
+
+  .undo button:hover:not(:disabled) {
+    background: var(--panel-2);
+  }
+
+  .undo svg {
+    width: 18px;
+    height: 18px;
   }
 
   @media (max-width: 900px) {

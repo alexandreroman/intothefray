@@ -151,6 +151,30 @@ describe('Table on a narrow screen', () => {
     expect(sidePanel()).toBeNull();
   });
 
+  it('narrow layout floats an Undo button over the table', async () => {
+    mockScreen(true);
+    const session = fakeSession();
+    const { rerender } = render(Table, { session, view: makeView() });
+
+    const undo = screen.getByRole('button', { name: 'Undo last action' }) as HTMLButtonElement;
+    expect(undo.dataset.tip).toBe('Undo last action');
+    expect(undo.disabled).toBe(true);
+
+    await rerender({ session, view: { ...makeView(), canUndo: true } });
+    expect(undo.disabled).toBe(false);
+    await fireEvent.click(undo);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'undo' });
+  });
+
+  it('wide layout has its Undo in the side column only', () => {
+    mockScreen(false);
+    render(Table, { session: fakeSession(), view: makeView() });
+
+    const [undo, ...others] = screen.getAllByRole('button', { name: 'Undo last action' });
+    expect(others).toHaveLength(0);
+    expect(sidePanel()?.contains(undo as HTMLElement)).toBe(true);
+  });
+
   it('narrow hand uses smaller cards', () => {
     mockScreen(true);
     vi.spyOn(Element.prototype, 'clientWidth', 'get').mockReturnValue(800);
