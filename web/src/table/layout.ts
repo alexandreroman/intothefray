@@ -191,6 +191,58 @@ export function zoneMinHeight(
   return Math.max(bottom + ZONE_BOTTOM_MARGIN, ZONE_MIN_HEIGHT);
 }
 
+/** At most this many zones share the visible height; more zones scroll. */
+export const ZONE_SPLIT_MAX = 3;
+
+/** What one zone's height is made from, in table units. */
+export interface ZoneSizing {
+  /** What its cards need: see zoneMinHeight. */
+  min: number;
+  /** The tallest its cards made it since it was last resized by hand. */
+  grown?: number;
+  /** The height chosen with the separator under it. */
+  chosen?: number;
+}
+
+/**
+ * The height each of `count` zones gets by default out of `available`, in
+ * whole table units: ZONE_SPLIT_MAX zones share it at most. 0 when nothing is
+ * available.
+ */
+export function zoneShare(count: number, available: number): number {
+  if (count <= 0) {
+    return 0;
+  }
+  return Math.max(0, Math.floor(available / Math.min(count, ZONE_SPLIT_MAX)));
+}
+
+/**
+ * Heights of the zones from top to bottom, in table units, sharing the
+ * `available` height. Each zone takes its chosen height, or else an equal
+ * share (ZONE_SPLIT_MAX zones share at most), and the last one takes what the
+ * others leave: up to ZONE_SPLIT_MAX zones always fill the available height.
+ * Past that, the last one gets at least a share too. No zone is ever shorter
+ * than its minimum or than what it grew to. With nothing available (not
+ * measured yet), a zone without a chosen height fits its cards.
+ */
+export function zoneHeights(zones: ZoneSizing[], available: number): number[] {
+  const last = zones.at(-1);
+  if (!last) {
+    return [];
+  }
+  const share = zoneShare(zones.length, available);
+  const heights = zones
+    .slice(0, -1)
+    .map((zone) => Math.max(zone.min, zone.grown ?? 0, zone.chosen ?? share));
+  const taken = heights.reduce((sum, height) => sum + height, 0);
+  // Rounded up: a fraction of a unit short would leave a strip under the last zone.
+  const rest = Math.ceil(available - taken);
+  // No separator lies under the last zone: it has no chosen height.
+  const atLeast = zones.length > ZONE_SPLIT_MAX ? share : 0;
+  heights.push(Math.max(last.min, last.grown ?? 0, rest, atLeast));
+  return heights;
+}
+
 /**
  * Width of a zone, as the prototype has it: at least the visible width (in
  * table units), and always room past the cards in play for 140 more, plus

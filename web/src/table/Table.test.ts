@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
+import { tick } from 'svelte';
 import Table from './Table.svelte';
 import { interaction, LINGER_MS } from './interaction.svelte';
 import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
@@ -16,6 +17,31 @@ vi.mock('../lib/catalog', async (importOriginal) => ({
   knownCard: vi.fn(),
   loadGameCards: vi.fn(),
 }));
+
+/**
+ * Svelte's size bindings (bind:clientHeight) share one ResizeObserver, made on
+ * first use: this one lets a test tell it an element was resized.
+ */
+class ManualResizeObserver {
+  static readonly all: ManualResizeObserver[] = [];
+
+  constructor(private readonly callback: ResizeObserverCallback) {
+    ManualResizeObserver.all.push(this);
+  }
+
+  static resized(target: Element): void {
+    const entries = [{ target } as ResizeObserverEntry];
+    for (const observer of ManualResizeObserver.all) {
+      observer.callback(entries, observer as unknown as ResizeObserver);
+    }
+  }
+
+  observe(): void {}
+  unobserve(): void {}
+  disconnect(): void {}
+}
+
+globalThis.ResizeObserver = ManualResizeObserver;
 
 const FIRST_PLAYER_TOKEN =
   'https://card-table.app/images/table/first_player_token_marvelchampions.png';
@@ -674,5 +700,138 @@ describe('Table', () => {
 
     await fireEvent.pointerDown(handle, { clientY: 100, pointerId: 7 });
     expect(capture).toHaveBeenCalledWith(7);
+  });
+});
+
+describe('Table zone heights', () => {
+  // The table shows 1590 px (until a test resizes it), and the zone headers and separators take
+  // 90 of them.
+  const VISIBLE = 1590;
+  const CHROME = 90;
+
+  let visible = VISIBLE;
+
+  /** Lays the table out as a browser would, as far as the zone heights go. */
+  function stubLayout(): void {
+    visible = VISIBLE;
+    vi.spyOn(Element.prototype, 'clientHeight', 'get').mockImplementation(function (this: Element) {
+      return this.classList.contains('tablewrap') ? visible : 0;
+    });
+    // From the top of the first zone to the bottom of the last; the surfaces count for nothing.
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: Element,
+    ) {
+      const height = this.classList.contains('zsec') ? CHROME : 0;
+      return { x: 0, y: 0, top: 0, left: 0, right: 0, bottom: height, width: 0, height } as DOMRect;
+    });
+  }
+
+  const heights = () => [/^Villain/, /^Sam/, /^Alex/].map((name) => surfaceOf(name).style.height);
+
+  /** Resizes the window: the table shows `height` px. */
+  function resizeTable(container: HTMLElement, height: number): Promise<void> {
+    visible = height;
+    const wrap = container.querySelector('.tablewrap');
+    if (!wrap) {
+      throw new Error('no table');
+    }
+    ManualResizeObserver.resized(wrap);
+    return tick();
+  }
+
+  beforeEach(stubLayout);
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('splits the visible height in thirds for two players', async () => {
+    render(Table, { session: fakeSession(), view: makeView() });
+
+    await waitFor(() => {
+      expect(heights()).toEqual(['500px', '500px', '500px']);
+    });
+  });
+
+  it('follows the zoom, the last zone taking the rounding', async () => {
+    render(Table, { session: fakeSession(), view: makeView() });
+    await waitFor(() => {
+      expect(heights()).toEqual(['500px', '500px', '500px']);
+    });
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Zoom in' }));
+    // 1500 px at 110 % are 1363.6 units: 454 each, and the last one gets the rest, rounded up.
+    expect(heights()).toEqual(['454px', '454px', '456px']);
+  });
+
+  it('gives a zone taller than its share what it needs, from the last one', async () => {
+    const view = makeView({
+      cards: [card('g', { code: '01010', area: 'villain', x: 200, y: 400 })],
+      piles: [],
+    });
+    render(Table, { session: fakeSession(), view });
+
+    // 400 + 200 + 20 for the villain's zone.
+    await waitFor(() => {
+      expect(heights()).toEqual(['620px', '500px', '380px']);
+    });
+  });
+
+  it('a resized zone only changes the last one', async () => {
+    render(Table, { session: fakeSession(), view: makeView() });
+    const handle = await screen.findByTitle("Drag to resize the villain's zone");
+    await waitFor(() => {
+      expect(heights()).toEqual(['500px', '500px', '500px']);
+    });
+
+    await fireEvent.pointerDown(handle, { clientY: 100 });
+    await fireEvent.pointerMove(window, { clientY: 200 });
+    await fireEvent.pointerUp(window);
+    expect(heights()).toEqual(['600px', '500px', '400px']);
+  });
+
+  it('follows the visible height when the window is resized', async () => {
+    const { container } = render(Table, { session: fakeSession(), view: makeView() });
+    await waitFor(() => {
+      expect(heights()).toEqual(['500px', '500px', '500px']);
+    });
+
+    await resizeTable(container, 1290);
+    expect(heights()).toEqual(['400px', '400px', '400px']);
+  });
+
+  it('a zone its cards kept under its share follows the share once they move up', async () => {
+    // 300 + 140 + 20: under the 500 share.
+    const low = card('v', { code: '01001', area: 'villain', x: 200, y: 300 });
+    const high = card('v', { code: '01001', area: 'villain', x: 200, y: 0 });
+    const { container, rerender } = render(Table, {
+      session: fakeSession(),
+      view: makeView({ cards: [low], piles: [] }),
+    });
+    await waitFor(() => {
+      expect(heights()).toEqual(['500px', '500px', '500px']);
+    });
+
+    await rerender({ session: fakeSession(), view: makeView({ cards: [high], piles: [] }) });
+    await resizeTable(container, 990);
+    expect(heights()).toEqual(['300px', '300px', '300px']);
+  });
+
+  it('a zone its cards took past its share stays that tall once they move up', async () => {
+    // 500 + 140 + 20: past the 500 share.
+    const low = card('v', { code: '01001', area: 'villain', x: 200, y: 500 });
+    const high = card('v', { code: '01001', area: 'villain', x: 200, y: 0 });
+    const { container, rerender } = render(Table, {
+      session: fakeSession(),
+      view: makeView({ cards: [low], piles: [] }),
+    });
+    await waitFor(() => {
+      expect(heights()).toEqual(['660px', '500px', '340px']);
+    });
+
+    await rerender({ session: fakeSession(), view: makeView({ cards: [high], piles: [] }) });
+    expect(heights()).toEqual(['660px', '500px', '340px']);
+    await resizeTable(container, 990);
+    expect(heights()).toEqual(['660px', '300px', '200px']);
   });
 });
