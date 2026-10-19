@@ -502,6 +502,57 @@ describe('dragging a table card', () => {
     expect(checked()).toEqual(['Alex · Ant-Man']);
   });
 
+  it("goes to its owner's hand, which then shows, while another player's row shows", async () => {
+    // Alex plays Spider-Man (p0) and Ant-Man (p1), Sam She-Hulk (p2); an Ant-Man card lies in the villain's
+    // row, which "Villain + player" shows above Sam's.
+    localStorage.setItem('itf-view', 'focus');
+    const view = makeView({ cards: [...CARDS, card('second', { owner: 1, x: 200, y: 0 })] });
+    view.you = { ...view.you, areas: ['p0', 'p1'] };
+    view.players = [
+      {
+        ...view.players[0]!,
+        decks: [
+          { area: 'p0', heroName: 'Spider-Man', ready: true, handCount: 3 },
+          { area: 'p1', heroName: 'Ant-Man', ready: true, handCount: 0 },
+        ],
+      },
+      {
+        name: 'Sam',
+        color: 1,
+        host: false,
+        ready: true,
+        decks: [{ area: 'p2', heroName: 'She-Hulk', ready: true, handCount: 0 }],
+      },
+    ];
+    view.table = {
+      ...view.table!,
+      piles: [
+        ...view.table!.piles,
+        pile('deck:p1', { owner: 1, y: 600 }),
+        pile('deck:p2', { owner: 2, y: 900 }),
+      ],
+      hands: { p0: ['h1', 'h2', 'h3'], p1: [] },
+    };
+    const { session } = await renderTable(view);
+    const picker = screen.getByRole('radiogroup', { name: 'Player shown' });
+    await fireEvent.click(within(picker).getByRole('radio', { name: 'Sam' }));
+    expect(document.querySelector('.hand')).toBeNull();
+
+    // No hand shows: the drop lands in the room an empty hand has, at the bottom middle of the table.
+    await press(placed('second'), 250, 100);
+    await moveTo(500, 850);
+    expect(screen.getByText("Ant-Man's hand")).toBeTruthy();
+
+    await release(500, 850);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'toHand', card: 'second' }, 1);
+    expect(
+      within(picker)
+        .getAllByRole('radio', { checked: true })
+        .map((swatch) => swatch.getAttribute('aria-label')),
+    ).toEqual(['Alex · Ant-Man']);
+    expect(document.querySelector('.hand')).not.toBeNull();
+  });
+
   it("is not taken by the hand when it is another player's card or an encounter card", async () => {
     const theirs = card('theirs', { owner: 1, x: 200, y: 300 });
     const { session } = await renderTable(makeView({ cards: [...CARDS, theirs] }));

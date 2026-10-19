@@ -1191,7 +1191,7 @@ describe('several decks', () => {
     expect(handNames()).toEqual(['Rhino']);
   });
 
-  it("keeps the hand on the last own deck when another player's row shows", async () => {
+  it("shows another player's row and no hand when their swatch is picked", async () => {
     localStorage.setItem('itf-view', 'focus');
     render(Table, { session: fakeSession(), view: makeTwoDeckView() });
     await within(hand()).findByRole('img', { name: 'Spider-Man' });
@@ -1207,7 +1207,21 @@ describe('several decks', () => {
     expect(checkedDeck('Player shown')).toEqual(['Sam']);
     expect(shownIds()).toContain('c');
     expect(shownIds()).not.toContain('b');
-    expect(handNames()).toEqual(['Rhino']);
+    expect(screen.queryByRole('list', { name: 'Your hand' })).toBeNull();
+  });
+
+  it("shows an own deck's hand again when its swatch is picked after another player's", async () => {
+    localStorage.setItem('itf-view', 'focus');
+    render(Table, { session: fakeSession(), view: makeTwoDeckView() });
+    await within(hand()).findByRole('img', { name: 'Spider-Man' });
+    await fireEvent.click(within(picker('Player shown')).getByRole('radio', { name: 'Sam' }));
+    expect(screen.queryByRole('list', { name: 'Your hand' })).toBeNull();
+
+    await fireEvent.click(
+      within(picker('Player shown')).getByRole('radio', { name: 'Alex · Spider-Man' }),
+    );
+    expect(checkedDeck('Player shown')).toEqual(['Alex · Spider-Man']);
+    expect(handNames()).toEqual(['Spider-Man']);
   });
 
   it('shows no selector to a player with one deck in the All view', async () => {
@@ -1234,6 +1248,7 @@ describe('several decks', () => {
     render(Table, { session: fakeSession(), view: makeTwoDeckView() });
     await within(hand()).findByRole('img', { name: 'Spider-Man' });
     await fireEvent.click(within(picker('Player shown')).getByRole('radio', { name: 'Sam' }));
+    expect(screen.queryByRole('list', { name: 'Your hand' })).toBeNull();
 
     await fireEvent.keyDown(window, { key: 'q' });
     expect(checkedDeck('Player shown')).toEqual(['Alex · Ant-Man']);
@@ -1264,6 +1279,22 @@ describe('several decks', () => {
     const bar = screen.getByRole('toolbar', { name: 'Actions' });
     await fireEvent.click(within(bar).getByRole('button', { name: 'Exhaust' }));
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'exhaust', card: 'v' }, 1);
+  });
+
+  it("credits an action on a shared card to the last own deck while another player's swatch is picked", async () => {
+    localStorage.setItem('itf-view', 'focus');
+    const session = fakeSession();
+    render(Table, { session, view: makeTwoDeckView() });
+    await within(hand()).findByRole('img', { name: 'Spider-Man' });
+    await fireEvent.click(
+      within(picker('Player shown')).getByRole('radio', { name: 'Alex · Ant-Man' }),
+    );
+    await fireEvent.click(within(picker('Player shown')).getByRole('radio', { name: 'Sam' }));
+
+    await fireEvent.pointerEnter(surface().querySelector<HTMLElement>('.card[data-id="s"]')!);
+    const bar = screen.getByRole('toolbar', { name: 'Actions' });
+    await fireEvent.click(within(bar).getByRole('button', { name: 'Exhaust' }));
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'exhaust', card: 's' }, 1);
   });
 
   it('credits a box action on an own card of a shared pile to the card', async () => {

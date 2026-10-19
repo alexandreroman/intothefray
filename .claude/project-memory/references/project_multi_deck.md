@@ -22,8 +22,8 @@ type: project
 - At the table the player selector (round swatches, bottom left) picks
   the selected deck: its hand shows and shared-card actions are credited
   to it. In "Villain + player" it lists every seat and shows the picked
-  seat's row; another player's swatch leaves the hand on the last own
-  deck. In "All" it lists only the viewer's own decks, for a player with
+  seat's row; another player's swatch shows their row and no hand, and
+  shared-card actions stay credited to the last own deck. In "All" it lists only the viewer's own decks, for a player with
   2 or more. The Q key and a card dragged to an own hand select that deck
   in the selector. Labels read "Alex · Spider-Man" only when the player
   has several decks.

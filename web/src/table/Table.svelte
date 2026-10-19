@@ -208,16 +208,6 @@
     cards.some((card) => card.zone === 'table' && card.exhausted === true && !isLocked(card)),
   );
 
-  // The selected deck's hand. Spectators have no hand.
-  const handCards = $derived(
-    selected !== null
-      ? (view.table?.hands?.[`p${selected}`] ?? []).flatMap((id) => {
-          const card = cardsById.get(id);
-          return card ? [card] : [];
-        })
-      : undefined,
-  );
-
   function topOf(pile: PileView): TableCard | undefined {
     // While a card taken from a pile is dragged or waits for the server, the pile shows its top card
     // without it; so it does while a card flies to it.
@@ -237,7 +227,8 @@
 
   /**
    * Picks a seat, in the player selector or otherwise: "Villain + player" shows its row, and when it is
-   * one of the viewer's decks, that deck is selected. Another player's seat leaves the selected deck.
+   * one of the viewer's decks, that deck is selected. Another player's seat shows no hand and leaves the
+   * selected deck, which shared-card actions stay credited to.
    */
   function selectSeat(seat: number): void {
     if (own.includes(seat)) {
@@ -269,6 +260,20 @@
 
   // With one player, "All" already shows the villain and that player: there is no choice to make.
   const focused = $derived(viewMode === 'focus' && seats.length > 1 && shownSeat !== null);
+
+  // The selected deck's hand, unless "Villain + player" shows another player's row: then no hand shows,
+  // as for a spectator, while shared-card actions stay credited to the selected deck.
+  const handSeat = $derived(
+    focused && shownSeat !== null && !own.includes(shownSeat) ? null : selected,
+  );
+  const handCards = $derived(
+    handSeat !== null
+      ? (view.table?.hands?.[`p${handSeat}`] ?? []).flatMap((id) => {
+          const card = cardsById.get(id);
+          return card ? [card] : [];
+        })
+      : undefined,
+  );
 
   const rowMap = $derived(
     focused && shownSeat !== null
