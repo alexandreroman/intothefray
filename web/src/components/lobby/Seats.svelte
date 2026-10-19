@@ -22,11 +22,13 @@
   // Built from the game id, so no token or other state leaks into the link.
   const inviteUrl = $derived(`${location.origin}${href(`/g/${encodeURIComponent(view.id)}`)}`);
   const isSpectator = $derived(view.you.role === 'spectator');
+  // A seat is one deck slot: a player with two decks takes two seats.
+  const deckCount = $derived(view.players.reduce((sum, p) => sum + p.decks.length, 0));
   // A newcomer takes the lowest colour no player uses.
   const freeColors = $derived(
     [0, 1, 2, 3]
       .filter((c) => !view.players.some((p) => p.color === c))
-      .slice(0, MAX_SEATS - view.players.length),
+      .slice(0, Math.max(0, MAX_SEATS - deckCount)),
   );
 
   let copied = $state(false);
@@ -98,41 +100,45 @@
   <div class="sect seats">
     {#each view.players as player (player.color)}
       <div class="seat" style:--pc={colorVar(player.color)}>
-        <HeroThumb image={player.heroImage} name={player.heroName} />
-        <div class="who">
-          <b>{player.name}</b>
-          {#if isMe(player) || player.host}
-            <span class="aside">{roles(player)}</span>
-          {/if}
-          <div class="deck">
-            {player.ready
-              ? `${player.heroName ?? '?'} — ${player.deckName ?? ''}`
-              : 'choosing a deck…'}
+        <div class="head">
+          <div class="who">
+            <b>{player.name}</b>
+            {#if isMe(player) || player.host}
+              <span class="aside">{roles(player)}</span>
+            {/if}
           </div>
+          {#if view.you.host && !isMe(player)}
+            {@const tip = `Take ${player.name} off this seat`}
+            <button
+              class="btn-ghost kick"
+              data-tip={tip}
+              aria-label={tip}
+              onclick={() => onremove(player.color)}
+            >
+              {@render cross()}
+            </button>
+          {:else if !view.you.host && isMe(player)}
+            <button
+              class="btn-ghost kick"
+              data-tip="Leave your seat"
+              aria-label="Leave your seat"
+              onclick={onleave}
+            >
+              {@render cross()}
+            </button>
+          {/if}
         </div>
-        <span class="st" class:ok={player.ready}>
-          <i></i>{player.ready ? 'Ready' : 'Waiting'}
-        </span>
-        {#if view.you.host && !isMe(player)}
-          {@const tip = `Take ${player.name} off this seat`}
-          <button
-            class="btn-ghost kick"
-            data-tip={tip}
-            aria-label={tip}
-            onclick={() => onremove(player.color)}
-          >
-            {@render cross()}
-          </button>
-        {:else if !view.you.host && isMe(player)}
-          <button
-            class="btn-ghost kick"
-            data-tip="Leave your seat"
-            aria-label="Leave your seat"
-            onclick={onleave}
-          >
-            {@render cross()}
-          </button>
-        {/if}
+        {#each player.decks as deck, slot (slot)}
+          <div class="slot">
+            <HeroThumb image={deck.heroImage} name={deck.heroName} />
+            <div class="deck">
+              {deck.ready ? `${deck.heroName ?? '?'} — ${deck.deckName ?? ''}` : 'No deck yet'}
+            </div>
+            <span class="st" class:ok={deck.ready}>
+              <i></i>{deck.ready ? 'Ready' : 'Waiting'}
+            </span>
+          </div>
+        {/each}
       </div>
     {/each}
     {#each freeColors as color (color)}
@@ -192,8 +198,8 @@
 
   .seat {
     display: flex;
-    align-items: center;
-    gap: 14px;
+    flex-direction: column;
+    gap: 8px;
     position: relative;
     overflow: hidden;
     padding: 12px 14px 12px 18px;
@@ -213,6 +219,18 @@
     background: var(--pc);
   }
 
+  .head,
+  .slot {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  /* The name line keeps the height of the remove button, with or without one. */
+  .head {
+    min-height: 32px;
+  }
+
   .who {
     flex: 1;
     min-width: 0;
@@ -223,7 +241,8 @@
   }
 
   .deck {
-    margin-top: 2px;
+    flex: 1;
+    min-width: 0;
     color: var(--muted);
     font-size: 13px;
     white-space: nowrap;

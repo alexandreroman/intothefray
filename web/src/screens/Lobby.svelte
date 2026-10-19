@@ -20,18 +20,29 @@
       .catch(() => (indexError = true));
   });
 
+  const MAX_DECKS = 4;
+
   const hostName = $derived(view.players.find((p) => p.host)?.name ?? 'the host');
   const me = $derived(
     view.you.role === 'player' ? view.players.find((p) => p.color === view.you.color) : undefined,
   );
+  const deckCount = $derived(view.players.reduce((sum, p) => sum + p.decks.length, 0));
+  // "your deck", "Sam's deck", "Jo's 2 decks": one phrase per player still missing a deck.
   const missingDecks = $derived(
-    view.players.filter((p) => !p.ready).map((p) => (p.color === me?.color ? 'you' : p.name)),
+    view.players.flatMap((p) => {
+      const missing = p.decks.filter((deck) => !deck.ready).length;
+      if (missing === 0) {
+        return [];
+      }
+      const owner = p.color === me?.color ? 'your' : `${p.name}'s`;
+      return [missing === 1 ? `${owner} deck` : `${owner} ${missing} decks`];
+    }),
   );
   const canStart = $derived(missingDecks.length === 0 && view.config.scenario !== '');
 
   const reason = $derived.by(() => {
     if (missingDecks.length > 0) {
-      return `Waiting for a deck from ${missingDecks.join(' and ')}.`;
+      return `Waiting for ${new Intl.ListFormat('en').format(missingDecks)}.`;
     }
     if (view.config.scenario === '') {
       return view.you.host
@@ -53,9 +64,15 @@
     return `${hostName} is the host: they choose the scenario, and everyone sees it. Bring your own deck.`;
   });
 
-  // A failed deck import shows under the deck field; anything else in the start bar.
+  // A failed deck import shows under the field of the slot it was loading; anything else in the start bar.
   const deckLoadError = $derived(session.deckLoadError?.message ?? null);
   const otherError = $derived(session.lastError?.message ?? null);
+  let loadingSlot = $state(0);
+
+  function loadDeck(slot: number, url: string): void {
+    loadingSlot = slot;
+    session.lobby('setDeck', { url, deck: slot });
+  }
 </script>
 
 <div class="screen">
@@ -100,12 +117,28 @@
           ontakeseat={() => session.lobby('takeSeat')}
         />
         {#if me}
-          <DeckLoader
-            {me}
-            deckError={session.deckError}
-            error={deckLoadError}
-            onload={(url) => session.lobby('setDeck', { url })}
-          />
+          {@const several = me.decks.length > 1}
+          <section class="card-box" style:--pc="var(--p{me.color + 1})">
+            <div class="bhead"><h2>Your decks</h2></div>
+            {#each me.decks as deck, slot (slot)}
+              <DeckLoader
+                {deck}
+                slot={several ? slot + 1 : null}
+                deckError={slot === loadingSlot ? session.deckError : null}
+                error={slot === loadingSlot ? deckLoadError : null}
+                onload={(url) => loadDeck(slot, url)}
+                onremove={several ? () => session.lobby('removeDeck', { deck: slot }) : undefined}
+              />
+            {/each}
+            {#if deckCount < MAX_DECKS}
+              <div class="sect">
+                <button class="btn add" onclick={() => session.lobby('addDeck')}>
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+                  Add a deck
+                </button>
+              </div>
+            {/if}
+          </section>
         {/if}
       </div>
     </div>
@@ -331,6 +364,15 @@
 
   .why.error {
     color: #ffb3c0;
+  }
+
+  .add svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
   }
 
   .go {
