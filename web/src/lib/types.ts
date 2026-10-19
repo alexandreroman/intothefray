@@ -245,6 +245,8 @@ export interface Action {
   area?: Area; // whose hand (draw, handOrder), or who is dealt a card (deal)
   x?: number;
   y?: number;
+  /** A card tucked under `target` (attach, play) lies at `x`, `y`, where it was dropped. */
+  placed?: boolean;
   n?: number;
   name?: string; // token or status name
   delta?: number;

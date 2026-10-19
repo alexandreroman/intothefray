@@ -189,13 +189,15 @@ function onCard(
   dealTo: Area,
   rows: RowMap,
 ): Action | null {
+  // Tucked where it is dropped, behind the card: the server keeps the spot (placed).
+  const { x, y } = spotOf(at, rows);
   switch (drag.kind) {
     case 'card':
-      return { kind: 'attach', card: drag.card, target: card };
+      return { kind: 'attach', card: drag.card, target: card, x, y, placed: true };
     case 'hand':
     case 'pile':
       // Played and tucked in one action: one undo step.
-      return { kind: 'play', card: drag.card, target: card };
+      return { kind: 'play', card: drag.card, target: card, x, y, placed: true };
     case 'encounter':
     case 'deck':
       // Put where it lands, over that card: dealt face down (spec 5.5), or played face up.
@@ -238,14 +240,21 @@ function onPile(drag: CardSource, pile: string, drop: PileDrop): Action | null {
   }
 }
 
-function place(drag: DragSource, at: Point, dealTo: Area, rows: RowMap): Action | null {
+/** Where a card whose corner is drawn at `at` lies on the table, on the grid. */
+function spotOf(at: Point, rows: RowMap): Point {
   // Snapped where it is drawn, then mapped to the table: snapping after would
   // push a card drawn at the bottom of a row into the next, hidden, one. A row
   // that ends there keeps the card on its last height, taken down to the grid.
   const onGrid = Math.floor(rows.toTable(snap(at.y)) / GRID) * GRID;
   // Within the server's bounds: never off the top or left edge, nor past TABLE_LIMIT.
-  const x = Math.min(TABLE_LIMIT, Math.max(0, snap(at.x)));
-  const y = Math.min(TABLE_LIMIT, Math.max(0, onGrid));
+  return {
+    x: Math.min(TABLE_LIMIT, Math.max(0, snap(at.x))),
+    y: Math.min(TABLE_LIMIT, Math.max(0, onGrid)),
+  };
+}
+
+function place(drag: DragSource, at: Point, dealTo: Area, rows: RowMap): Action | null {
+  const { x, y } = spotOf(at, rows);
   switch (drag.kind) {
     case 'card':
       // A revealed card dropped where it lies is still on its deck: nothing moves.

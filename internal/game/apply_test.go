@@ -90,6 +90,21 @@ func TestAttach(t *testing.T) {
 	}
 }
 
+func TestAttachWhereDropped(t *testing.T) {
+	table := newTestTable()
+
+	// c1 carries c2, tucked 20 below it: both go where c1 is dropped, behind c7.
+	mustApply(t, table, Action{Kind: ActAttach, Card: "c1", Target: "c7", X: 654, Y: 87, Placed: true})
+
+	c1, c2, c7 := table.Cards["c1"], table.Cards["c2"], table.Cards["c7"]
+	if c1.Parent != "c7" || c1.X != 650 || c1.Y != 90 || c1.Z >= c7.Z {
+		t.Errorf("c1 = %+v, want under c7 where dropped, at (650,90)", c1)
+	}
+	if c2.Parent != "c1" || c2.X != 650 || c2.Y != 110 || c2.Z >= c1.Z {
+		t.Errorf("c2 = %+v, want still under c1, at (650,110)", c2)
+	}
+}
+
 func TestAttachRejectsCycle(t *testing.T) {
 	table := newTestTable()
 	before := table.Clone()
@@ -326,6 +341,23 @@ func TestPlayUnderACardFromAPile(t *testing.T) {
 	}
 	if got := table.Piles["deck:p0"].Cards; !slices.Equal(got, []string{"c4", "c5"}) {
 		t.Errorf("deck = %v, want [c4 c5]", got)
+	}
+}
+
+func TestPlayUnderACardWhereDropped(t *testing.T) {
+	table := newTestTable()
+
+	mustApply(t, table, Action{Kind: ActPlay, Card: "c3", Target: "c7", X: 712, Y: 4, Placed: true})
+
+	c3, c7 := table.Cards["c3"], table.Cards["c7"]
+	if c3.Zone != ZoneTable || c3.Parent != "c7" || c3.X != 710 || c3.Y != 0 || c3.Z >= c7.Z {
+		t.Errorf("c3 = %+v, want under c7 where dropped, at (710,0)", c3)
+	}
+
+	// Moving the host carries it along, at the same offset.
+	mustApply(t, table, Action{Kind: ActMove, Card: "c7", X: 800, Y: 100})
+	if c3 := table.Cards["c3"]; c3.X != 910 || c3.Y != 80 {
+		t.Errorf("c3 = (%d,%d) after its host moved, want (910,80)", c3.X, c3.Y)
 	}
 }
 

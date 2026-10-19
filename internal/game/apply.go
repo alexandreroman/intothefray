@@ -288,7 +288,7 @@ func applyAttach(t *Table, a Action) error {
 		return invalid("card %q is tucked under %q", target.ID, c.ID)
 	}
 
-	x, y, z := tuckedPlace(target)
+	x, y, z := tuckedPlace(target, a)
 	dx, dy, dz := x-c.X, y-c.Y, z-c.Z
 	for _, child := range children {
 		child.X += dx
@@ -301,9 +301,13 @@ func applyAttach(t *Table, a Action) error {
 	return nil
 }
 
-// tuckedPlace returns where a card tucked under target lies: just below it,
-// one Z lower, so that its bottom edge shows.
-func tuckedPlace(target *Card) (x, y, z int) {
+// tuckedPlace returns where a card tucked under target by a lies, one Z
+// lower than target: where it was dropped (Action.Placed), snapped to the
+// grid, or else just below target, so that its bottom edge shows.
+func tuckedPlace(target *Card, a Action) (x, y, z int) {
+	if a.Placed {
+		return snap(a.X), snap(a.Y), target.Z - 1
+	}
 	return target.X, target.Y + attachOffsetY, target.Z - 1
 }
 
@@ -462,7 +466,7 @@ func applyPlay(t *Table, a Action) error {
 	c.Pile = ""
 	if target != nil {
 		c.Parent = target.ID
-		c.X, c.Y, c.Z = tuckedPlace(target)
+		c.X, c.Y, c.Z = tuckedPlace(target, a)
 		return nil
 	}
 	c.X, c.Y = snap(a.X), snap(a.Y)

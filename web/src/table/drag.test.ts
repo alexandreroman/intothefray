@@ -166,10 +166,14 @@ describe('dropAction', () => {
       z: 3,
       rect: rect(0, 0, 1, 1),
     };
-    expect(dropAction(TABLE_CARD, target, { x: 0, y: 0 }, DEAL_TO)).toEqual({
+    // Where it is dropped, on the grid: it stays there, behind the card.
+    expect(dropAction(TABLE_CARD, target, { x: 123, y: 456 }, DEAL_TO)).toEqual({
       kind: 'attach',
       card: 'c',
       target: 'hero',
+      x: 120,
+      y: 460,
+      placed: true,
     });
   });
 
@@ -277,12 +281,18 @@ describe('dropAction', () => {
       kind: 'play',
       card: 'h2',
       target: 'hero',
+      x: 300,
+      y: 300,
+      placed: true,
     });
     const fromPile: DragSource = { kind: 'pile', pile: 'encd', card: 'top' };
     expect(dropAction(fromPile, onCard, at, DEAL_TO)).toEqual({
       kind: 'play',
       card: 'top',
       target: 'hero',
+      x: 300,
+      y: 300,
+      placed: true,
     });
   });
 

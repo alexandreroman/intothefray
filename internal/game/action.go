@@ -45,13 +45,17 @@ const (
 // Action is one resolved player action. Which fields matter depends on Kind;
 // the others stay zero.
 type Action struct {
-	Kind   Kind     `json:"kind"`
-	Card   string   `json:"card,omitempty"`
-	Target string   `json:"target,omitempty"` // card id (attach, arrow, play under it) or pile id
-	Pile   string   `json:"pile,omitempty"`   // also the deck whose top card a play takes
-	Area   Area     `json:"area,omitempty"`   // whose hand (draw, handOrder), who is dealt to (deal)
-	X      int      `json:"x,omitempty"`
-	Y      int      `json:"y,omitempty"`
+	Kind   Kind   `json:"kind"`
+	Card   string `json:"card,omitempty"`
+	Target string `json:"target,omitempty"` // card id (attach, arrow, play under it) or pile id
+	Pile   string `json:"pile,omitempty"`   // also the deck whose top card a play takes
+	Area   Area   `json:"area,omitempty"`   // whose hand (draw, handOrder), who is dealt to (deal)
+	X      int    `json:"x,omitempty"`
+	Y      int    `json:"y,omitempty"`
+	// Placed tells that X and Y are where a card tucked under Target was
+	// dropped (attach, play under a card): it lies there, behind its host,
+	// rather than at the default tucked offset (see tuckedPlace).
+	Placed bool     `json:"placed,omitempty"`
 	N      int      `json:"n,omitempty"`
 	Name   string   `json:"name,omitempty"` // token or status name
 	Delta  int      `json:"delta,omitempty"`

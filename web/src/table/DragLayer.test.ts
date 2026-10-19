@@ -357,10 +357,14 @@ describe('dragging a table card', () => {
     expect(screen.getByText('Under Spider-Man')).toBeTruthy();
 
     await release(470, 420);
+    // Where it is dropped, behind the card.
     expect(session.act).toHaveBeenCalledExactlyOnceWith({
       kind: 'attach',
       card: 'mine',
       target: 'other',
+      x: expect.any(Number),
+      y: expect.any(Number),
+      placed: true,
     });
   });
 
@@ -515,10 +519,14 @@ describe('dragging from a pile', () => {
     expect(screen.getByText('Under Spider-Man')).toBeTruthy();
 
     await release(470, 420);
+    // Where it is dropped, behind the card.
     expect(session.act).toHaveBeenCalledExactlyOnceWith({
       kind: 'play',
       card: 'd1',
       target: 'other',
+      x: expect.any(Number),
+      y: expect.any(Number),
+      placed: true,
     });
   });
 
@@ -711,10 +719,14 @@ describe('dragging a hand card', () => {
     expect(screen.getByText('Under Spider-Man')).toBeTruthy();
 
     await release(470, 420);
+    // Where it is dropped, behind the card.
     expect(session.act).toHaveBeenCalledExactlyOnceWith({
       kind: 'play',
       card: 'h2',
       target: 'other',
+      x: expect.any(Number),
+      y: expect.any(Number),
+      placed: true,
     });
   });
 
