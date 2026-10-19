@@ -1,7 +1,7 @@
 // What the card boxes (Search, Look at top, Browse, the stage choice) show
-// and offer: the pile names, and the actions of a tile. As in actions.ts, the
-// client mirrors the server's permissions (internal/game/action.go) only to
-// hide what would be refused.
+// and offer: the pile names, the order of the tiles, and the actions of a
+// tile. As in actions.ts, the client mirrors the server's permissions
+// (internal/game/action.go) only to hide what would be refused.
 
 import type { Action, CardView, PackFace, PileView, Size, Stage, View } from '../lib/types';
 import { homeDeckOf } from './actions';
@@ -14,7 +14,8 @@ export type LocalBox = { kind: 'browse'; pile: string } | { kind: 'stage'; stage
 /**
  * What a box shows, as the current view has it: the cards of a pile, top
  * first (a Look or a Search the server sent, or a public pile browsed), or
- * the cards of a stage.
+ * the cards of a stage. The box lists the cards of a stage and of an
+ * out-of-play pile by card number instead (compareCardNumbers).
  */
 export type ShownBox =
   | { kind: 'pile'; pile: PileView; mode: 'top' | 'search' | 'browse'; cards: readonly string[] }
@@ -31,6 +32,35 @@ export function stageFaceName(face: PackFace | undefined, index: number): string
   return face.type === 'main_scheme'
     ? `${face.name} (${face.stage})`
     : `${face.name} (stage ${face.stage})`;
+}
+
+/**
+ * Orders cards by card number, their code: codes are zero-padded, so their text order is the
+ * numeric one, "01043a" before "01043b". Cards without a code (face down) go last; cards of
+ * one code by id, so that their order does not change with the pile's.
+ */
+export function compareCardNumbers(a: CardView, b: CardView): number {
+  if (a.code === b.code) {
+    return compareText(a.id, b.id);
+  }
+  if (a.code === undefined) {
+    return 1;
+  }
+  if (b.code === undefined) {
+    return -1;
+  }
+  return compareText(a.code, b.code);
+}
+
+// Plain code unit order: localeCompare could rank digits and letters otherwise.
+function compareText(a: string, b: string): number {
+  if (a < b) {
+    return -1;
+  }
+  if (a > b) {
+    return 1;
+  }
+  return 0;
 }
 
 /** An action of a tile's floating bar. */

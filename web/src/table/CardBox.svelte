@@ -3,8 +3,9 @@
   share one fixed-size box, two rows of 5:7 tiles with the rest scrolling, a
   name filter and a footer (the prototype's renderDeckView and
   renderStageView). Hovering a pile tile shows its floating bar; in Look at
-  top, tiles are reordered by dragging, with a live preview. The box follows
-  the view: cards that leave the pile leave the box.
+  top, tiles are reordered by dragging, with a live preview. The stage choice
+  and the out-of-play piles list their cards by card number, the other piles
+  top first. The box follows the view: cards that leave the pile leave the box.
 -->
 <script lang="ts">
   import { tick, untrack } from 'svelte';
@@ -12,6 +13,7 @@
   import type { Action, CardView, PackFace, PileView, Size, View } from '../lib/types';
   import {
     canShuffleIn,
+    compareCardNumbers,
     isDeck,
     pileLabel,
     stageFaceName,
@@ -21,6 +23,7 @@
   } from './boxes';
   import CardFace from './CardFace.svelte';
   import { LANDING_MS } from './interaction.svelte';
+  import { isOutOfPlay } from './layout';
   import { seatOf } from './actions';
   import TileBar from './TileBar.svelte';
 
@@ -68,7 +71,7 @@
     name: string;
     images: string[];
     landscape: boolean;
-    /** "#3" (place in the pile) or "On the table". */
+    /** "#3" (place in the pile, for a pile listed top first) or "On the table". */
     badge?: string;
     /** The stage face on the table. */
     shown: boolean;
@@ -86,15 +89,13 @@
   function tilesOf(shown: ShownBox): Tile[] {
     if (shown.kind === 'stage') {
       const stage = shown.stage;
-      return stage.cards.flatMap((id) => {
-        const card = cardsById.get(id);
-        if (!card) {
-          return [];
-        }
-        return facesOf(card).map((face, index) => {
-          const onTable = id === stage.current && card.face === index;
+      const cards = stage.cards.flatMap((id) => cardsById.get(id) ?? []);
+      // Each card's faces follow it in their own order, A before B.
+      return cards.sort(compareCardNumbers).flatMap((card) =>
+        facesOf(card).map((face, index) => {
+          const onTable = card.id === stage.current && card.face === index;
           return {
-            key: `${id}:${index}`,
+            key: `${card.id}:${index}`,
             card,
             face: index,
             name: stageFaceName(face, index),
@@ -103,10 +104,12 @@
             badge: onTable ? 'On the table' : undefined,
             shown: onTable,
           };
-        });
-      });
+        }),
+      );
     }
-    return pileCards.flatMap((id, index) => {
+    // The order of an out-of-play pile tells nothing: its tiles go by card number, with no place.
+    const byNumber = isOutOfPlay(shown.pile);
+    const pileTiles = pileCards.flatMap((id, index) => {
       const card = cardsById.get(id);
       if (!card) {
         return [];
@@ -120,11 +123,12 @@
           name: face?.name ?? '',
           images: face?.images ?? [],
           landscape: face ? isLandscape(face) : false,
-          badge: `#${index + 1}`,
+          badge: byNumber ? undefined : `#${index + 1}`,
           shown: false,
         },
       ];
     });
+    return byNumber ? pileTiles.sort((a, b) => compareCardNumbers(a.card, b.card)) : pileTiles;
   }
 
   function isLandscape(face: PackFace): boolean {

@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import Table from './Table.svelte';
 import boxSource from './CardBox.svelte?raw';
-import { pileLabel, tileActions, type TileAction } from './boxes';
+import { compareCardNumbers, pileLabel, tileActions, type TileAction } from './boxes';
 import { interaction } from './interaction.svelte';
 import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
 import type {
@@ -30,6 +30,10 @@ const FACES: Record<string, Partial<PackFace>[]> = {
   '01097': [
     { name: 'The Break-In!', stage: '1A', type: 'main_scheme', size: 'land' },
     { name: 'The Break-In!', stage: '1B', type: 'main_scheme', size: 'land' },
+  ],
+  '01098': [
+    { name: 'Crime Wave', stage: '2A', type: 'main_scheme', size: 'land' },
+    { name: 'Crime Wave', stage: '2B', type: 'main_scheme', size: 'land' },
   ],
   '01100': [{ name: 'Hard to Keep Down' }],
 };
@@ -166,6 +170,26 @@ function tile(id: string): HTMLElement {
 /** Clicks the face of a stage tile. */
 async function pick(key: string) {
   await fireEvent.click(within(tile(key)).getByRole('button'));
+}
+
+/** The place badges of the tiles, in their order. */
+function tileBadges(): string[] {
+  return [...box().querySelectorAll('.pos')].map((badge) => badge.textContent ?? '');
+}
+
+/**
+ * Three cards out of the deck, bottom to top as a public pile lists them: Swinging Web Kick,
+ * Hard to Keep Down, Web-Shooter. Top first, they are not in card number order.
+ */
+const LOOSE = ['k', 'h', 'w'];
+
+function withLooseCards(view: View): View {
+  view.table!.cards.push(
+    card('k', { code: '01021', zone: 'pile' }),
+    card('h', { code: '01100', owner: -1, back: 'encounter', zone: 'pile' }),
+    card('w', { code: '01020', zone: 'pile' }),
+  );
+  return view;
 }
 
 /** The names of the tiles, in their order. */
@@ -523,6 +547,65 @@ describe('CardBox', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
+  it('out-of-play piles list their cards by card number, with no place badge', async () => {
+    const view = withLooseCards(makeView());
+    view.table!.piles = view.table!.piles.map((p) =>
+      p.id === 'vic' ? { ...p, count: 3, cards: LOOSE } : p,
+    );
+    view.table!.piles.push(pile('saside', { kind: 'aside', count: 3, cards: LOOSE }));
+    await renderTable(view);
+
+    for (const name of ['Victory display (3)', 'Set-aside cards (3)']) {
+      await fireEvent.pointerEnter(placed('enc'));
+      await fireEvent.click(screen.getByRole('button', { name }));
+      expect(tileNames()).toEqual(['Web-Shooter', 'Swinging Web Kick', 'Hard to Keep Down']);
+      expect(tileBadges()).toEqual([]);
+      await fireEvent.click(within(box()).getByRole('button', { name: 'Close' }));
+    }
+  });
+
+  it('a browsed discard pile lists its cards top first, with their place', async () => {
+    const view = withLooseCards(makeView());
+    view.table!.piles.push(
+      pile('disc:p0', { kind: 'discard', owner: 0, x: 650, count: 3, cards: LOOSE }),
+    );
+    // Players search a discard pile through the server; spectators browse it.
+    await renderTable(asSpectator(view));
+
+    await fireEvent.pointerEnter(placed('disc:p0'));
+    await fireEvent.click(screen.getByRole('button', { name: 'Browse…' }));
+    expect(tileNames()).toEqual(['Web-Shooter', 'Hard to Keep Down', 'Swinging Web Kick']);
+    expect(tileBadges()).toEqual(['#1', '#2', '#3']);
+  });
+
+  it('stage box lists its cards by card number, each face A before B', async () => {
+    const view = makeView();
+    view.table!.cards.push(
+      card('s2', { code: '01098', owner: -1, back: 'encounter', zone: 'stage' }),
+    );
+    view.table!.stages = [
+      { key: 'villain', label: 'Villain', current: 'v', cards: ['v2', 'v'] },
+      { key: 'main', label: 'Main scheme', current: 's', cards: ['s2', 's'] },
+    ];
+    await renderTable(view);
+
+    await fireEvent.pointerEnter(placed('v'));
+    await fireEvent.click(screen.getByRole('button', { name: 'Choose the villain card to show' }));
+    expect(tileNames()).toEqual(['Rhino (stage I)', 'Rhino (stage II)']);
+    await fireEvent.click(within(box()).getByRole('button', { name: 'Close' }));
+
+    await fireEvent.pointerEnter(placed('s'));
+    await fireEvent.click(
+      screen.getByRole('button', { name: 'Choose the main scheme card to show' }),
+    );
+    expect(tileNames()).toEqual([
+      'The Break-In! (1A)',
+      'The Break-In! (1B)',
+      'Crime Wave (2A)',
+      'Crime Wave (2B)',
+    ]);
+  });
+
   it('an empty encounter deck still opens the victory display', async () => {
     const view = makeView();
     view.table!.piles = view.table!.piles.map((p) => (p.id === 'enc' ? { ...p, count: 0 } : p));
@@ -617,6 +700,27 @@ describe('tileActions', () => {
     const view = makeView();
     view.table?.piles.push(pile('aside:p1', { kind: 'aside', owner: 1, count: 1, cards: ['c1'] }));
     expect(actionsOf('c1', 'aside:p1', view)).toEqual([]);
+  });
+});
+
+describe('compareCardNumbers', () => {
+  it('orders by code, then by id, with the cards without a code last', () => {
+    const cards = [
+      card('faceDown', { code: undefined }),
+      card('b', { code: '01043b' }),
+      card('later', { code: '01100' }),
+      card('a2', { code: '01043a' }),
+      card('a1', { code: '01043a' }),
+      card('first', { code: '01020' }),
+    ];
+    expect(cards.sort(compareCardNumbers).map((c) => c.id)).toEqual([
+      'first',
+      'a1',
+      'a2',
+      'b',
+      'later',
+      'faceDown',
+    ]);
   });
 });
 
