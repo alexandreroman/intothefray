@@ -4,8 +4,7 @@
       "setup": "scripts/casper.sh setup",
       "teardown": "scripts/casper.sh teardown",
       "run": "scripts/casper.sh run",
-      "dev": "scripts/casper.sh dev",
-      "test": "make test"
+      "dev": "scripts/casper.sh dev"
     }
   }
 }
