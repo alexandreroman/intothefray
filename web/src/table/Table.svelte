@@ -42,7 +42,7 @@
   import { interaction } from './interaction.svelte';
   import { handleKey } from './keys';
   import KeysSheet from './KeysSheet.svelte';
-  import { zoneMinHeight, zoneOrder } from './layout';
+  import { zoneHeights, zoneMinHeight, zoneOrder, zoneShare } from './layout';
   import { motion } from './motion.svelte';
   import Presence from './Presence.svelte';
   import TokenPill from './TokenPill.svelte';
@@ -138,43 +138,103 @@
     };
   }
 
+  // The zone heights follow it, so it is declared before them.
+  let zoom = $state(storedZoom());
+
   // Heights chosen with the separators, kept for the session only. Only the
-  // villain's zone and the viewer's own can be resized; the other players'
-  // zones follow their cards.
+  // villain's zone and the viewer's own can be resized; until then, and for
+  // the other players' zones, a zone takes its share of the visible height.
   let chosenHeights = $state<Partial<Record<Area, number>>>({});
+  // A resizable zone only grows on its own: once its cards made it taller, it
+  // stays that tall when they move back up, until it is resized by hand. Kept
+  // apart from the chosen heights: a zone at its share still follows the
+  // visible height.
+  let grownHeights = $state<Partial<Record<Area, number>>>({});
 
   const resizable = (area: Area) => area === 'villain' || area === ownArea;
 
-  const zones = $derived(
-    zoneOrder(view).map((area) => {
-      const inArea = cards.filter((card) => card.zone === 'table' && card.area === area);
-      const pilesInArea = piles.filter((pile) => pile.area === area);
-      const min = zoneMinHeight(cards, piles, area, sizeOf);
-      return {
-        area,
-        heading: area === 'villain' ? villainHeading() : playerHeading(area),
-        cards: inArea,
-        piles: pilesInArea,
-        min,
-        height: Math.max(min, chosenHeights[area] ?? 0),
-      };
-    }),
-  );
+  // The table's visible size, in px; its width only matters to the zone chrome (see below).
+  let visibleHeight = $state(0);
+  let visibleWidth = $state(0);
+  // What the zones take of the visible height besides their surfaces, in px.
+  let zoneChrome = $state(0);
+  // In table units: the surfaces are zoomed, the chrome around them is not. 0 until measured.
+  const availableHeight = $derived(visibleHeight > 0 ? (visibleHeight - zoneChrome) / zoom : 0);
+
+  const zones = $derived.by(() => {
+    const placed = zoneOrder(view).map((area) => ({
+      area,
+      heading: area === 'villain' ? villainHeading() : playerHeading(area),
+      cards: cards.filter((card) => card.zone === 'table' && card.area === area),
+      piles: piles.filter((pile) => pile.area === area),
+      min: zoneMinHeight(cards, piles, area, sizeOf),
+    }));
+    const heights = zoneHeights(
+      placed.map((zone) => ({
+        min: zone.min,
+        grown: grownHeights[zone.area],
+        chosen: chosenHeights[zone.area],
+      })),
+      availableHeight,
+    );
+    return placed.map((zone, i) => ({ ...zone, height: heights[i] ?? zone.min }));
+  });
 
   type ZoneData = (typeof zones)[number];
 
-  // A resizable zone only grows on its own: once its cards made it taller, it
-  // stays that tall when they move back up, until it is resized by hand.
-  // Not while the catalog loads: every card counts as std until then, which
-  // can be taller than its real size.
+  // A zone grows only when its cards make it taller than it would be without
+  // them: its chosen height, or else its share (a zone at its share has not
+  // grown, and keeps following the visible height). Not while the catalog loads:
+  // every card counts as std until then, which can be taller than its real
+  // size. That also covers the first render, before the table is measured.
   $effect.pre(() => {
     if (catalog === 'loading') {
       return;
     }
+    const share = zoneShare(zones.length, availableHeight);
     for (const zone of zones) {
-      if (resizable(zone.area) && zone.height > (chosenHeights[zone.area] ?? 0)) {
-        chosenHeights[zone.area] = zone.height;
+      const without = Math.max(chosenHeights[zone.area] ?? share, grownHeights[zone.area] ?? 0);
+      if (resizable(zone.area) && zone.min > without) {
+        grownHeights[zone.area] = zone.min;
       }
+    }
+  });
+
+  /**
+   * The zone chrome: headers, separators and the horizontal scrollbar of a
+   * zone that overflows, in whole px. Measured rather than taken from Zone's
+   * styles, as the scrollbars come and go and their size depends on the
+   * platform. It runs to the bottom of the last section, which is the bottom
+   * of its scroller: the scroller's 24 px negative margin collapses outside
+   * the section. So the scrollbar of the last zone stays in view, and the
+   * room under its surface matches the room at its sides.
+   */
+  function measureZoneChrome(): number {
+    const sections = [...(wrap?.querySelectorAll<HTMLElement>('.zsec') ?? [])];
+    const first = sections.at(0);
+    const last = sections.at(-1);
+    if (!first || !last) {
+      return 0;
+    }
+    const stack = last.getBoundingClientRect().bottom - first.getBoundingClientRect().top;
+    let surfaces = 0;
+    for (const section of sections) {
+      surfaces += section.querySelector('.surface')?.getBoundingClientRect().height ?? 0;
+    }
+    // Rounded: the zoomed surfaces can end between two pixels.
+    return Math.round(stack - surfaces);
+  }
+
+  // Measured again whenever the zones or the visible size change. The chrome
+  // does not depend on the surfaces' heights, so the measure that follows the
+  // heights it gave finds the same value and stops there.
+  $effect(() => {
+    void [zones, zoom, visibleWidth, visibleHeight];
+    const measured = measureZoneChrome();
+    // Past 1 px only: at some zooms the surfaces end between two pixels, and
+    // the rounded measure can swing by one from a pass to the next.
+    if (Math.abs(measured - zoneChrome) > 1) {
+      zoneChrome = measured;
     }
   });
 
@@ -186,7 +246,12 @@
       title: `Drag to resize ${above.area === 'villain' ? "the villain's" : 'your'} zone`,
       height: above.height,
       min: above.min,
-      onresize: (height) => (chosenHeights[above.area] = height),
+      onresize: (height) => {
+        // Never under the zone's minimum (Zone sees to it), so what its cards grew it to no
+        // longer counts. Only the last zone gives or takes the difference.
+        chosenHeights[above.area] = height;
+        delete grownHeights[above.area];
+      },
     };
   }
 
@@ -647,7 +712,6 @@
     setPref('itf-side-hidden', sideHidden ? '1' : '');
   }
 
-  let zoom = $state(storedZoom());
   let wrap = $state<HTMLElement>();
   let app = $state<HTMLElement>();
   let presenceLayer = $state<ReturnType<typeof Presence>>();
@@ -657,7 +721,7 @@
   $effect.pre(() => {
     void view;
     void zoom;
-    // The zone heights: chosen with the separators, or grown with the cards.
+    // The zone heights: they follow the visible height, the separators and the cards.
     void zones;
     interaction.redrawn();
   });
@@ -757,6 +821,8 @@
     class="tablewrap"
     role="presentation"
     bind:this={wrap}
+    bind:clientHeight={visibleHeight}
+    bind:clientWidth={visibleWidth}
     onpointerdowncapture={onTablePointerDown}
   >
     <div class="table">

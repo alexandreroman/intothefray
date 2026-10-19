@@ -7,8 +7,10 @@ import {
   hiddenAside,
   placeOutPiles,
   visualBox,
+  zoneHeights,
   zoneMinHeight,
   zoneOrder,
+  zoneShare,
   zoneWidth,
   type Size,
 } from './layout';
@@ -143,6 +145,71 @@ describe('zone size', () => {
       pile({ id: 'other', kind: 'aside', area: 'p0', x: 1200 }),
     ];
     expect(zoneWidth(cards, piles, 'villain', alwaysStd)).toBe(500 + 140 + 240);
+  });
+});
+
+describe('zoneHeights', () => {
+  const empty = { min: 200 };
+
+  it('splits the available height in two for two zones', () => {
+    expect(zoneHeights([empty, empty], 1000)).toEqual([500, 500]);
+  });
+
+  it('splits it in thirds for three zones, the last one taking the rounding', () => {
+    expect(zoneHeights([empty, empty, empty], 1500)).toEqual([500, 500, 500]);
+    expect(zoneHeights([empty, empty, empty], 1000)).toEqual([333, 333, 334]);
+    // Rounded up: the zones never end short of the available height.
+    expect(zoneHeights([empty, empty, empty], 1000.5)).toEqual([333, 333, 335]);
+  });
+
+  it('shrinks the last zone when an earlier one is taller than its share', () => {
+    expect(zoneHeights([{ min: 600 }, empty, empty], 1500)).toEqual([600, 500, 400]);
+    expect(zoneHeights([{ min: 200, chosen: 700 }, empty], 1000)).toEqual([700, 300]);
+    expect(zoneHeights([empty, { min: 200, chosen: 300 }, empty], 1500)).toEqual([500, 300, 700]);
+  });
+
+  it('never makes the last zone shorter than its minimum', () => {
+    expect(zoneHeights([{ min: 900 }, empty], 1000)).toEqual([900, 200]);
+    expect(zoneHeights([empty, { min: 600 }], 1000)).toEqual([500, 600]);
+  });
+
+  it('caps the split at three shares, the last zone getting at least one', () => {
+    expect(zoneHeights([empty, empty, empty, empty], 1500)).toEqual([500, 500, 500, 500]);
+    expect(zoneHeights([empty, empty, empty, empty, empty], 900)).toEqual([
+      300, 300, 300, 300, 300,
+    ]);
+    expect(zoneHeights([empty, empty, empty, { min: 600 }], 1500)).toEqual([500, 500, 500, 600]);
+  });
+
+  it('fits the cards when nothing is available, keeping a chosen height', () => {
+    expect(zoneHeights([{ min: 460 }, empty, empty], 0)).toEqual([460, 200, 200]);
+    expect(zoneHeights([{ min: 200, chosen: 260 }, empty], 0)).toEqual([260, 200]);
+    expect(zoneHeights([empty, empty], -50)).toEqual([200, 200]);
+  });
+
+  it('keeps what a zone grew to', () => {
+    expect(zoneHeights([{ min: 200, grown: 700 }, empty], 1000)).toEqual([700, 300]);
+    expect(zoneHeights([{ min: 200, grown: 300, chosen: 260 }, empty], 1000)).toEqual([300, 700]);
+    expect(zoneHeights([empty, { min: 200, grown: 800 }], 1000)).toEqual([500, 800]);
+    expect(zoneHeights([{ min: 200, grown: 460 }, empty], 0)).toEqual([460, 200]);
+  });
+
+  it('returns nothing for no zone', () => {
+    expect(zoneHeights([], 1000)).toEqual([]);
+  });
+});
+
+describe('zoneShare', () => {
+  it('shares the available height between three zones at most, in whole units', () => {
+    expect(zoneShare(2, 1000)).toBe(500);
+    expect(zoneShare(3, 1000)).toBe(333);
+    expect(zoneShare(5, 1500)).toBe(500);
+  });
+
+  it('is 0 with nothing available or no zone', () => {
+    expect(zoneShare(3, 0)).toBe(0);
+    expect(zoneShare(3, -90)).toBe(0);
+    expect(zoneShare(0, 1000)).toBe(0);
   });
 });
 
