@@ -1,5 +1,5 @@
 <script lang="ts">
-  type Name = 'cards' | 'sliders' | 'back';
+  type Name = 'cards' | 'sliders' | 'back' | 'eye' | 'fullscreen' | 'exit-fullscreen' | 'power';
 
   let { name }: { name: Name } = $props();
 
@@ -22,6 +22,19 @@
     <path d="M4 7h10M18 7h2M4 17h4M12 17h8" />
     <circle cx="16" cy="7" r="2" />
     <circle cx="10" cy="17" r="2" />
+  {:else if name === 'eye'}
+    <path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z" />
+    <circle cx="12" cy="12" r="3" />
+  {:else if name === 'fullscreen'}
+    <!-- Four corners pointing outwards. -->
+    <path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5" />
+  {:else if name === 'exit-fullscreen'}
+    <!-- Four corners pointing inwards. -->
+    <path d="M4 9h5V4M15 4v5h5M20 15h-5v5M9 20v-5H4" />
+  {:else if name === 'power'}
+    <!-- An open circle with a vertical line. -->
+    <path d="M18.36 6.64a9 9 0 1 1-12.73 0" />
+    <path d="M12 2v10" />
   {:else}
     <path d="M15 5l-7 7 7 7" />
   {/if}

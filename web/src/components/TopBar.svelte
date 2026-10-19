@@ -1,20 +1,20 @@
 <script lang="ts">
-  import type { Snippet } from 'svelte';
   import ConfirmDialog from './ConfirmDialog.svelte';
+  import Icon from './Icon.svelte';
 
   let {
     spectators,
     side,
     onend,
-    children,
   }: {
     spectators: number;
     /** The side panel toggle, on the table only. */
     side?: { hidden: boolean; ontoggle: () => void };
     /** Ends the game for everyone, once confirmed. Given to the host only. */
     onend?: () => void;
-    children?: Snippet;
   } = $props();
+
+  const spectatorLabel = $derived(`${spectators} ${spectators === 1 ? 'spectator' : 'spectators'}`);
 
   let confirmingEnd = $state(false);
 
@@ -30,6 +30,7 @@
   // have their own top bar, and the fallback outlives either.
   let fallback = $state(document.body.classList.contains(FALLBACK_CLASS));
   const fullscreen = $derived(native || fallback);
+  const fullscreenLabel = $derived(fullscreen ? 'Exit fullscreen' : 'Fullscreen');
 
   function syncFullscreen(): void {
     native = Boolean(document.fullscreenElement);
@@ -60,28 +61,34 @@
 <header>
   <div class="logo">INTO <span>THE</span> FRAY</div>
   <div class="actions">
-    <span class="pill">
-      <svg
-        viewBox="0 0 24 24"
-        width="17"
-        height="17"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="1.8"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        aria-hidden="true"
+    {#if spectators > 0}
+      <span class="pill" role="img" aria-label={spectatorLabel} title={spectatorLabel}>
+        <Icon name="eye" />
+        {spectators}
+      </span>
+    {/if}
+    <button
+      class="icon-button fullscreen"
+      class:active={fullscreen}
+      aria-label={fullscreenLabel}
+      title={fullscreenLabel}
+      onclick={toggleFullscreen}
+    >
+      <Icon name={fullscreen ? 'exit-fullscreen' : 'fullscreen'} />
+    </button>
+    {#if onend}
+      <button
+        class="icon-button"
+        aria-label="End game"
+        title="End game"
+        onclick={() => (confirmingEnd = true)}
       >
-        <path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z" />
-        <circle cx="12" cy="12" r="3" />
-      </svg>
-      {spectators}
-      {spectators === 1 ? 'spectator' : 'spectators'}
-    </span>
-    <button onclick={toggleFullscreen}>⛶ {fullscreen ? 'Exit fullscreen' : 'Fullscreen'}</button>
+        <Icon name="power" />
+      </button>
+    {/if}
     {#if side}
       <button
-        class="side-toggle"
+        class="icon-button"
         aria-label="Preview and history"
         aria-pressed={!side.hidden}
         title={side.hidden ? 'Show the preview and history' : 'Hide the preview and history'}
@@ -109,10 +116,6 @@
         </svg>
       </button>
     {/if}
-    {#if onend}
-      <button onclick={() => (confirmingEnd = true)}>End game</button>
-    {/if}
-    {@render children?.()}
   </div>
 </header>
 
@@ -131,7 +134,6 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    flex-wrap: wrap;
     padding: 8px 16px;
     background: var(--panel);
     border-bottom: 1px solid var(--line);
@@ -140,6 +142,7 @@
   .logo {
     font-weight: 800;
     letter-spacing: 0.5px;
+    white-space: nowrap;
   }
 
   .logo span {
@@ -149,7 +152,6 @@
   .actions {
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
     gap: 6px;
     margin-left: auto;
   }
@@ -169,11 +171,17 @@
     white-space: nowrap;
   }
 
-  .actions :global(button) {
+  .pill :global(svg) {
+    width: 17px;
+    height: 17px;
+  }
+
+  .actions button {
     height: 33px;
   }
 
-  .side-toggle {
+  .icon-button {
+    flex: none;
     width: 33px;
     padding: 6px;
     display: inline-flex;
@@ -181,7 +189,7 @@
     justify-content: center;
   }
 
-  .side-toggle svg {
+  .icon-button :global(svg) {
     width: 19px;
     height: 19px;
     display: block;
@@ -194,5 +202,22 @@
 
   .pane.filled {
     fill-opacity: 0.35;
+  }
+
+  /*
+   * A narrow bar drops its least useful items first: Fullscreen, then the
+   * spectator count. End game and the side panel toggle always stay. Fullscreen
+   * stays while active, or the fallback could not be left.
+   */
+  @media (max-width: 600px) {
+    .fullscreen:not(.active) {
+      display: none;
+    }
+  }
+
+  @media (max-width: 400px) {
+    .pill {
+      display: none;
+    }
   }
 </style>
