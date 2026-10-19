@@ -134,6 +134,15 @@
     transform: rotate(var(--exhaust-angle));
   }
 
+  /* Around the card, where a change flashes in the colour of the player who made it (motion.svelte.ts). */
+  .card::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 8px;
+    pointer-events: none;
+  }
+
   .card.lifted {
     visibility: hidden;
   }

@@ -13,6 +13,7 @@
 
 <script lang="ts">
   import type { LogView } from '../lib/types';
+  import { mergedLines } from './animate';
   import CardBack from './CardBack.svelte';
   import CardFace from './CardFace.svelte';
   import { interaction } from './interaction.svelte';
@@ -71,6 +72,23 @@
   let seen = log.length;
   $effect(() => {
     seen = log.length;
+  });
+
+  // A line that a later change merged into (counters, flips) bumps, as in the prototype.
+  // From the empty end keyframe, the line goes back to its own background.
+  const BUMP = [{ backgroundColor: '#2a3a66' }, {}];
+  const BUMP_MS = 500;
+  // svelte-ignore state_referenced_locally
+  let drawnLog = log;
+  let list = $state<HTMLUListElement>();
+  $effect(() => {
+    const merged = mergedLines(drawnLog, log);
+    drawnLog = log;
+    for (const index of merged) {
+      const element = list?.querySelector<HTMLElement>(`[data-line="${index}"]`);
+      // jsdom has no Web Animations API.
+      element?.animate?.(BUMP, { duration: BUMP_MS, easing: 'ease-out' });
+    }
   });
 
   // Keyed by their position from the oldest, which does not move when lines are added.
@@ -147,10 +165,11 @@
   {/if}
 </div>
 
-<ul class="log" aria-labelledby="history-title">
+<ul class="log" aria-labelledby="history-title" bind:this={list}>
   {#each lines as { key, entry, parts, time, isNew } (key)}
     <li
       class="e"
+      data-line={key}
       class:undone={entry.undone}
       class:new={isNew}
       onpointerenter={(event) => enterLine(event, key, entry.cards)}

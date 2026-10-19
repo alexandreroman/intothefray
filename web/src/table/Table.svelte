@@ -21,6 +21,7 @@
     View,
   } from '../lib/types';
   import ActionBar from './ActionBar.svelte';
+  import { diffViews } from './animate';
   import {
     actionsFor,
     counterName,
@@ -35,11 +36,13 @@
   import type { LocalBox, ShownBox } from './boxes';
   import CardBox from './CardBox.svelte';
   import DragLayer from './DragLayer.svelte';
+  import Flights from './Flights.svelte';
   import { isHidden, pileBack } from './face';
   import Hand from './Hand.svelte';
   import { interaction } from './interaction.svelte';
   import { handleKey } from './keys';
   import { zoneMinHeight, zoneOrder } from './layout';
+  import { motion } from './motion.svelte';
   import Presence from './Presence.svelte';
   import TokenPill from './TokenPill.svelte';
   import SidePanel, { type Preview } from './SidePanel.svelte';
@@ -51,7 +54,8 @@
     session,
     view,
   }: {
-    session: Pick<GameSession, 'act' | 'lobby' | 'lastError' | 'presence' | 'sendPresence'>;
+    session: Pick<GameSession, 'act' | 'lobby' | 'lastError' | 'presence' | 'sendPresence'> &
+      Partial<Pick<GameSession, 'viewGap'>>;
     view: View;
   } = $props();
 
@@ -97,9 +101,12 @@
   );
 
   function topOf(pile: PileView): TableCard | undefined {
-    // While a card taken from a pile is dragged or waits for the server, the pile shows its top card without it.
+    // While a card taken from a pile is dragged or waits for the server, the pile shows its top card
+    // without it; so it does while a card flies to it.
     const taken = interaction.takenFrom(pile.id);
-    const topId = (pile.cards ?? []).filter((id) => !taken.includes(id)).at(-1);
+    const topId = (pile.cards ?? [])
+      .filter((id) => !taken.includes(id) && !motion.flying.has(id))
+      .at(-1);
     return topId === undefined ? undefined : cardsById.get(topId);
   }
 
@@ -212,6 +219,32 @@
 
   // The interaction state is shared: a previous game's must not show in the next one.
   $effect(() => () => interaction.reset());
+
+  // ---- Animations ----
+
+  // The view the table was last drawn from: the next one is animated from it.
+  // svelte-ignore state_referenced_locally
+  let drawnView = view;
+
+  // Before the new view is drawn, while the cards still show where they were.
+  // The viewer's own drop already lies where it went (DragLayer's landing,
+  // which ends with this view).
+  $effect.pre(() => {
+    const next = view;
+    untrack(() => {
+      const prev = drawnView;
+      drawnView = next;
+      if (prev === next) {
+        return;
+      }
+      const ownDrop = interaction.landing?.card ?? undefined;
+      const anims = diffViews(prev, next, ownDrop, session.viewGap ?? 0);
+      const cardsBefore = new Map((prev.table?.cards ?? []).map((card) => [card.id, card]));
+      void motion.animate(app, anims, cardsBefore, zoom);
+    });
+  });
+
+  $effect(() => () => motion.stop());
 
   // ---- The action bar ----
 
@@ -725,7 +758,8 @@
           above={resizeAbove(zones[i - 1])}
         />
       {/each}
-      <Arrows {view} root={app} layout={[zoom, zones]} />
+      <!-- The arrows follow the cards while they move. -->
+      <Arrows {view} root={app} layout={[zoom, zones, motion.frame]} />
     </div>
   </div>
 
@@ -749,6 +783,8 @@
   {#if handCards}
     <Hand cards={handCards} {faceOf} narrow={narrow.current} />
   {/if}
+
+  <Flights {faceOf} />
 
   <DragLayer
     {view}

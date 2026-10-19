@@ -160,6 +160,30 @@ describe('GameSession', () => {
     expect(FakeWebSocket.instances).toHaveLength(expectedDelays.length + 2);
   });
 
+  it('tells how long the view went stale across a reconnection, and no gap while connected', () => {
+    const session = newSession();
+    lastSocket().open();
+    lastSocket().receive({ type: 'view', version: 1, view: view() });
+    expect(session.viewGap).toBe(0);
+
+    // Live views are never stale, however quiet the table is between them.
+    vi.advanceTimersByTime(10_000);
+    lastSocket().receive({ type: 'view', version: 2, view: view() });
+    expect(session.viewGap).toBe(0);
+
+    // Dropped 1 s after the last view, back 0.5 s later, the new view 0.2 s after that.
+    vi.advanceTimersByTime(1000);
+    lastSocket().drop();
+    vi.advanceTimersByTime(500);
+    lastSocket().open();
+    vi.advanceTimersByTime(200);
+    lastSocket().receive({ type: 'view', version: 3, view: view() });
+    expect(session.viewGap).toBe(1700);
+
+    lastSocket().receive({ type: 'view', version: 4, view: view() });
+    expect(session.viewGap).toBe(0);
+  });
+
   it('stops reconnecting after close()', () => {
     const session = newSession();
     lastSocket().open();

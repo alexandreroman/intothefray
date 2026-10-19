@@ -48,6 +48,13 @@ export class GameSession {
   /** The error that answered the last deck load, kept until the next load or a new deck. */
   deckLoadError = $state<SessionError | null>(null);
   readonly presence: Map<number, PresenceState> = new SvelteMap();
+  /**
+   * How long the viewer went without a live view before the current one came,
+   * in ms: 0 when the connection held since the previous view, however long
+   * ago it came; after a reconnection, the time since that previous view.
+   * The table animates no change across a long gap.
+   */
+  viewGap = 0;
 
   readonly #gameId: string;
   readonly #name: string;
@@ -60,6 +67,9 @@ export class GameSession {
   // Lobby errors carry no request id: the first error after a setDeck is
   // taken as its answer.
   #deckLoadPending = false;
+  // When the last view came, and whether the connection dropped since.
+  #viewAt: number | null = null;
+  #droppedSinceView = false;
 
   // Presence throttling: a message goes out at once if none went out in the
   // last interval, otherwise the latest one waits for the trailing edge.
@@ -213,6 +223,10 @@ export class GameSession {
       this.deckLoadError = null;
       this.#deckLoadPending = false;
     }
+    const now = Date.now();
+    this.viewGap = this.#droppedSinceView && this.#viewAt !== null ? now - this.#viewAt : 0;
+    this.#droppedSinceView = false;
+    this.#viewAt = now;
     this.view = next;
     // A colour no longer seated has left: its cursor must not linger.
     for (const color of [...this.presence.keys()]) {
@@ -278,6 +292,7 @@ export class GameSession {
 
   #scheduleReconnect(): void {
     this.presence.clear();
+    this.#droppedSinceView = true;
     this.#deckLoadPending = false; // Its answer, if any, went with the old socket.
     this.status = 'reconnecting';
     const delay = BACKOFF_MS[Math.min(this.#failedAttempts, BACKOFF_MS.length - 1)] ?? 0;

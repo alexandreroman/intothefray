@@ -11,6 +11,7 @@
   import { isHidden, pileBack } from './face';
   import { interaction, type PreviewChange } from './interaction.svelte';
   import { cardBox } from './layout';
+  import { motion } from './motion.svelte';
 
   let {
     pile,
@@ -34,8 +35,10 @@
 
   const SLOT = cardBox('std', {});
 
-  // While a card taken from it is dragged or waits for the server, the pile counts it out.
-  const count = $derived(pile.count - interaction.takenFrom(pile.id).length);
+  // While a card taken from it is dragged or waits for the server, the pile counts it out; so it does
+  // with the cards still flying to it.
+  const arriving = $derived((pile.cards ?? []).filter((id) => motion.flying.has(id)).length);
+  const count = $derived(pile.count - interaction.takenFrom(pile.id).length - arriving);
   const empty = $derived(count === 0);
   const targeted = $derived(
     interaction.dropOn?.kind === 'pile' && interaction.dropOn.id === pile.id,

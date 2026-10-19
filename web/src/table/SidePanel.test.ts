@@ -140,4 +140,39 @@ describe('SidePanel', () => {
     await rerender({ preview: null, log: log.slice(0, 1), onundo: () => {} });
     expect(interaction.highlighted.size).toBe(0);
   });
+
+  it('a line that a later change merged into bumps', async () => {
+    const animate = vi.fn();
+    const original = Element.prototype.animate;
+    Element.prototype.animate = animate as unknown as typeof Element.prototype.animate;
+    try {
+      const first = line({ text: 'added 1 damage to Spider-Man', at: at(14, 5) });
+      const other = line({ text: 'drew 1 card', at: at(14, 4) });
+      const { rerender } = render(SidePanel, {
+        preview: null,
+        log: [other, first],
+        onundo: () => {},
+      });
+      expect(animate).not.toHaveBeenCalled();
+
+      const merged = { ...first, text: 'set damage on Spider-Man to 2', at: at(14, 6) };
+      await rerender({ preview: null, log: [other, merged], onundo: () => {} });
+      expect(animate).toHaveBeenCalledOnce();
+      expect(animate.mock.contexts[0]).toBe(historyLines()[0]);
+      expect(animate.mock.calls[0]?.[0]).toEqual([{ backgroundColor: '#2a3a66' }, {}]);
+
+      // Merged again: it bumps again. A new line slides in instead.
+      const again = { ...merged, text: 'set damage on Spider-Man to 3', at: at(14, 7) };
+      await rerender({ preview: null, log: [other, again], onundo: () => {} });
+      expect(animate).toHaveBeenCalledTimes(2);
+      await rerender({
+        preview: null,
+        log: [other, again, line({ text: 'drew 2 cards' })],
+        onundo: () => {},
+      });
+      expect(animate).toHaveBeenCalledTimes(2);
+    } finally {
+      Element.prototype.animate = original;
+    }
+  });
 });
