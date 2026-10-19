@@ -46,3 +46,4 @@
 - [Animated switches and card art](references/project_switches_card_art.md) — switches slide via selectionIndicator; thumbnails use CardArt
 - [Spectators have no stage button](references/project_spectator_stage.md) — no action on villain/main scheme cards for spectators
 - [CI scope](references/project_ci_scope.md) — ci.yml checks Go, web, Docker; pages.yml standalone; no packs sync, no Dependabot
+- [Moving several cards as a group](references/project_group_moves.md) — rubber band selection; a group only moves; one atomic group action

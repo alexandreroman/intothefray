@@ -27,9 +27,10 @@
   } = $props();
 
   /**
-   * A row: what it does, its keys (each in a kbd), the mouse part that goes
-   * with them, and whether it is only for a player with several decks, or
-   * only while Shift + ← / → has several heroes to step through.
+   * A row: what it does, its keys (each in a kbd; none for a plain mouse
+   * gesture), the mouse part that goes with them, and whether it is only for
+   * a player with several decks, or only while Shift + ← / → has several
+   * heroes to step through.
    */
   interface Row {
     what: string;
@@ -41,6 +42,14 @@
 
   function listed(row: Row): boolean {
     return (severalDecks || !row.severalDecks) && (severalHeroes || !row.severalHeroes);
+  }
+
+  /** The mouse part after the keys: "+ drag" after a key, the bare gesture on its own. */
+  function mousePart(row: Row): string {
+    if (!row.with) {
+      return '';
+    }
+    return row.keys.length > 0 ? ` + ${row.with}` : row.with;
   }
 
   // Modifiers as the system writes them (spec 5.10).
@@ -105,6 +114,8 @@
       [
         { what: 'Ping a spot', keys: ['Alt'], with: 'click' },
         { what: 'Arrow from a card to another', keys: ['Shift'], with: 'drag' },
+        { what: 'Select cards', keys: [], with: 'drag on an empty spot' },
+        { what: 'Move the selection', keys: [], with: 'drag a selected card' },
       ],
     ],
   ];
@@ -165,8 +176,7 @@
           <div class="row">
             <span>{row.what}</span>
             <span>
-              {#each row.keys as key (key)}<kbd>{key}</kbd
-                >{/each}{#if row.with}{` + ${row.with}`}{/if}
+              {#each row.keys as key (key)}<kbd>{key}</kbd>{/each}{mousePart(row)}
             </span>
           </div>
         {/each}
