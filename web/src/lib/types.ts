@@ -194,7 +194,6 @@ export interface View {
   table?: TableView;
   log: LogView[];
   canUndo?: boolean;
-  undoText?: string;
 }
 
 // ---- Actions ----

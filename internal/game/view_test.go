@@ -404,11 +404,11 @@ func TestCanUndoFollowsOwnStack(t *testing.T) {
 	f.mustDo(t, hostToken, Action{Kind: ActExhaust, Card: id}, at(1))
 
 	host := f.g.ViewFor(hostToken)
-	if !host.CanUndo || host.UndoText != f.lastLog().Text {
-		t.Errorf("host CanUndo = %v, text %q (log %q)", host.CanUndo, host.UndoText, f.lastLog().Text)
+	if !host.CanUndo {
+		t.Error("host CanUndo = false, want true")
 	}
-	if bob := f.g.ViewFor(bobToken); bob.CanUndo || bob.UndoText != "" {
-		t.Errorf("bob CanUndo = %v, text %q", bob.CanUndo, bob.UndoText)
+	if bob := f.g.ViewFor(bobToken); bob.CanUndo {
+		t.Error("bob CanUndo = true, want false")
 	}
 }
 

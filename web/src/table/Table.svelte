@@ -889,11 +889,16 @@
   <!-- Touch screens have no Z key: without the side column, Undo floats at the bottom left. -->
   {#if narrow.current}
     <div class="undo">
+      <!-- aria-disabled rather than disabled, so that the tooltip saying why still shows. -->
       <button
         aria-label="Undo last action"
-        data-tip="Undo last action"
-        disabled={!view.canUndo}
-        onclick={undo}
+        data-tip={view.canUndo ? 'Undo last action' : 'Nothing of yours to undo'}
+        aria-disabled={!view.canUndo}
+        onclick={() => {
+          if (view.canUndo) {
+            undo();
+          }
+        }}
       >
         <!-- A hooked arrow going back. -->
         <svg
@@ -1126,7 +1131,7 @@
     color: #c9cfdf;
   }
 
-  .undo button:hover:not(:disabled) {
+  .undo button:hover:not([aria-disabled='true']) {
     background: var(--panel-2);
   }
 

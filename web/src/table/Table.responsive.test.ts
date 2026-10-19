@@ -156,12 +156,15 @@ describe('Table on a narrow screen', () => {
     const session = fakeSession();
     const { rerender } = render(Table, { session, view: makeView() });
 
-    const undo = screen.getByRole('button', { name: 'Undo last action' }) as HTMLButtonElement;
-    expect(undo.dataset.tip).toBe('Undo last action');
-    expect(undo.disabled).toBe(true);
+    const undo = screen.getByRole('button', { name: 'Undo last action' });
+    expect(undo.getAttribute('aria-disabled')).toBe('true');
+    expect(undo.dataset.tip).toBe('Nothing of yours to undo');
+    await fireEvent.click(undo);
+    expect(session.act).not.toHaveBeenCalled();
 
     await rerender({ session, view: { ...makeView(), canUndo: true } });
-    expect(undo.disabled).toBe(false);
+    expect(undo.getAttribute('aria-disabled')).toBe('false');
+    expect(undo.dataset.tip).toBe('Undo last action');
     await fireEvent.click(undo);
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'undo' });
   });

@@ -63,12 +63,14 @@ describe('SidePanel', () => {
     const { rerender } = render(SidePanel, { preview: null, log: LOG, onundo });
 
     const undo = screen.getByRole('button', { name: 'Undo last action' });
-    expect((undo as HTMLButtonElement).disabled).toBe(true);
-    expect(undo.title).toBe('Nothing of yours to undo');
+    expect(undo.getAttribute('aria-disabled')).toBe('true');
+    expect(undo.dataset.tip).toBe('Nothing of yours to undo');
+    await fireEvent.click(undo);
+    expect(onundo).not.toHaveBeenCalled();
 
     await rerender({ preview: null, log: LOG, onundo, canUndo: true });
-    expect((undo as HTMLButtonElement).disabled).toBe(false);
-    expect(undo.hasAttribute('title')).toBe(false);
+    expect(undo.getAttribute('aria-disabled')).toBe('false');
+    expect(undo.hasAttribute('data-tip')).toBe(false);
     await fireEvent.click(undo);
     expect(onundo).toHaveBeenCalledOnce();
   });

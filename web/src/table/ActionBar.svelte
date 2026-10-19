@@ -480,7 +480,7 @@
     font-size: 10px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--faint);
+    color: var(--muted);
   }
 
   .msep {

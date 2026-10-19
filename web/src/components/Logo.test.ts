@@ -21,6 +21,15 @@ describe('Logo', () => {
     expect(logo.querySelector('svg')?.getAttribute('width')).toBe('40');
   });
 
+  it('takes an inherited size in em, with its spark', () => {
+    const { container } = render(Logo, { variant: 'mark', size: 'inherit' });
+
+    const logo = screen.getByRole('img', { name: 'Into The Fray' });
+    expect(logo.style.fontSize).toBe('');
+    expect(logo.querySelector('svg')?.getAttribute('width')).toBe('1em');
+    expect(container.querySelector('.spark')).not.toBeNull();
+  });
+
   it('is one image: its parts are hidden from assistive technologies', () => {
     render(Logo, { variant: 'stacked' });
 

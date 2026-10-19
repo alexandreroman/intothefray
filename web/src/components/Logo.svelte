@@ -11,8 +11,11 @@
   }: {
     /** The mark alone, or with the wordmark on one line (top bars) or two (home). */
     variant?: 'horizontal' | 'stacked' | 'mark';
-    /** In pixels: the mark's size for the mark alone, else the font size of "FRAY". */
-    size?: number;
+    /**
+     * In pixels: the mark's size for the mark alone, else the font size of "FRAY". 'inherit'
+     * takes the parent's font size instead, for a size set in CSS.
+     */
+    size?: number | 'inherit';
   } = $props();
 
   const DEFAULT_SIZE = { horizontal: 28, stacked: 120, mark: 64 };
@@ -25,14 +28,24 @@
   const topClipId = `${uid}-top`;
   const bottomClipId = `${uid}-bottom`;
 
-  let fontSize = $derived(size ?? DEFAULT_SIZE[variant]);
-  let markSize = $derived(fontSize * MARK_RATIO[variant]);
-  let spark = $derived(markSize >= SPARK_MIN_SIZE);
+  // Unset when inherited: the size is then unknown here.
+  let fontSize = $derived(size === 'inherit' ? undefined : (size ?? DEFAULT_SIZE[variant]));
+  // In pixels, or in em of the inherited font size.
+  let markSize = $derived(
+    fontSize === undefined ? `${MARK_RATIO[variant]}em` : fontSize * MARK_RATIO[variant],
+  );
+  // A mark of unknown size is taken as a large one, with its spark.
+  let spark = $derived(typeof markSize === 'string' || markSize >= SPARK_MIN_SIZE);
   // A small mark needs a wider fracture to show it.
-  let offset = $derived(markSize >= SPARK_MIN_SIZE ? 1.6 : 1.8);
+  let offset = $derived(spark ? 1.6 : 1.8);
 </script>
 
-<span class="logo {variant}" role="img" aria-label="Into The Fray" style:font-size="{fontSize}px">
+<span
+  class="logo {variant}"
+  role="img"
+  aria-label="Into The Fray"
+  style:font-size={fontSize === undefined ? undefined : `${fontSize}px`}
+>
   <svg width={markSize} height={markSize} viewBox="0 0 64 64" aria-hidden="true">
     <defs>
       <clipPath id={topClipId}><polygon points="0,0 64,0 64,19 35,29 39,33 0,45" /></clipPath>

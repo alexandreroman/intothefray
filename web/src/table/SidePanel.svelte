@@ -152,11 +152,16 @@
   {/each}
 </ul>
 
+<!-- aria-disabled rather than disabled, so that the tooltip saying why still shows. -->
 <div class="undo">
   <button
-    disabled={!canUndo}
-    title={canUndo ? undefined : 'Nothing of yours to undo'}
-    onclick={onundo}
+    aria-disabled={!canUndo}
+    data-tip={canUndo ? undefined : 'Nothing of yours to undo'}
+    onclick={() => {
+      if (canUndo) {
+        onundo();
+      }
+    }}
   >
     <!-- A hooked arrow going back. -->
     <svg
@@ -257,7 +262,7 @@
   .t {
     flex: none;
     width: 38px;
-    color: var(--faint);
+    color: var(--muted);
     font-size: 11px;
     font-variant-numeric: tabular-nums;
   }

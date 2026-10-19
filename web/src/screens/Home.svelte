@@ -6,23 +6,8 @@
   import Icon from '../components/Icon.svelte';
   import Logo from '../components/Logo.svelte';
 
-  // The stacked logo is about three times as wide as its "FRAY" is tall: it
-  // shrinks to fit a phone, within the page's side gutters.
-  const LOGO_MAX_SIZE = 168;
-  const LOGO_MIN_SIZE = 64;
-  const LOGO_WIDTH_RATIO = 3.2;
-  const PAGE_GUTTERS = 32;
-
   let starting = $state(false);
   let error = $state('');
-  let viewportWidth = $state(window.innerWidth);
-
-  const logoSize = $derived(
-    Math.max(
-      LOGO_MIN_SIZE,
-      Math.min(LOGO_MAX_SIZE, Math.floor((viewportWidth - PAGE_GUTTERS) / LOGO_WIDTH_RATIO)),
-    ),
-  );
 
   async function startGame(name: string): Promise<void> {
     starting = true;
@@ -43,14 +28,12 @@
   }
 </script>
 
-<svelte:window bind:innerWidth={viewportWidth} />
-
 <div class="home">
   <div class="halo"></div>
 
   <main>
     <div class="intro">
-      <h1><Logo variant="stacked" size={logoSize} /></h1>
+      <h1><Logo variant="stacked" size="inherit" /></h1>
 
       <div class="pitch">
         <p class="tagline">Play Marvel Champions in your browser.</p>
@@ -195,8 +178,13 @@
     gap: 32px;
   }
 
+  /* The logo's size, that of its "FRAY". The stacked logo is about 3.2 times as wide as
+     that: it shrinks to fit a phone, within the page's 32px of side gutters. As a flex
+     container, the heading draws no line box around the logo. */
   h1 {
+    display: flex;
     margin: 0;
+    font-size: clamp(64px, (100vw - 32px) / 3.2, 168px);
   }
 
   .pitch {

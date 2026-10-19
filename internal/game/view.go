@@ -104,7 +104,6 @@ type View struct {
 	Table      *TableView  `json:"table,omitempty"`
 	Log        []LogView   `json:"log"`
 	CanUndo    bool        `json:"canUndo,omitempty"`
-	UndoText   string      `json:"undoText,omitempty"`
 }
 
 // ViewFor builds the view of the participant holding token. An unknown token
@@ -133,10 +132,7 @@ func (g *Game) ViewFor(token string) View {
 	}
 	v.Log = g.logViews(v.Table)
 	if player != nil && g.History != nil {
-		if burst := g.History.lastUndoable(seat); burst != nil {
-			v.CanUndo = true
-			v.UndoText = g.Log[g.History.Events[burst[0]].Log].Text
-		}
+		v.CanUndo = g.History.lastUndoable(seat) != nil
 	}
 	return v
 }
