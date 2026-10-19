@@ -28,6 +28,8 @@
   const setNames = $derived(new Map(index.sets.map((s) => [s.code, s.name])));
   const standardSets = $derived(index.sets.filter((s) => s.kind === 'standard'));
   const expertSets = $derived(index.sets.filter((s) => s.kind === 'expert'));
+  const showStandardSet = $derived(isHost && standardSets.length > 1);
+  const showExpertSet = $derived(isHost && difficulty === 'expert' && expertSets.length > 1);
   const recommended = $derived(chosen?.recommended ?? []);
 
   // Recommended sets come first: the full list is long.
@@ -160,9 +162,9 @@
 <section class="card-box" class:guest={!isHost}>
   <div class="bhead">
     <h2>Scenario</h2>
-    <span class="aside"
-      >{isHost ? 'you choose: everyone sees it' : `chosen by ${hostName} (host)`}</span
-    >
+    {#if !isHost}
+      <span class="aside">chosen by {hostName} (host)</span>
+    {/if}
   </div>
 
   <div class="sect">
@@ -240,31 +242,35 @@
             {/if}
           {/each}
         </div>
-        {#if isHost && standardSets.length > 1}
-          <label class="set">
-            Standard set
-            <select
-              value={standardSet}
-              onchange={(e) => configure({ standard: e.currentTarget.value })}
-            >
-              {#each standardSets as set (set.code)}
-                <option value={set.code}>{set.name}</option>
-              {/each}
-            </select>
-          </label>
-        {/if}
-        {#if isHost && difficulty === 'expert' && expertSets.length > 1}
-          <label class="set">
-            Expert set
-            <select
-              value={expertSet}
-              onchange={(e) => configure({ expert: e.currentTarget.value })}
-            >
-              {#each expertSets as set (set.code)}
-                <option value={set.code}>{set.name}</option>
-              {/each}
-            </select>
-          </label>
+        {#if showStandardSet || showExpertSet}
+          <div class="sets">
+            {#if showStandardSet}
+              <label class="set">
+                <span>Standard set</span>
+                <select
+                  value={standardSet}
+                  onchange={(e) => configure({ standard: e.currentTarget.value })}
+                >
+                  {#each standardSets as set (set.code)}
+                    <option value={set.code}>{set.name}</option>
+                  {/each}
+                </select>
+              </label>
+            {/if}
+            {#if showExpertSet}
+              <label class="set">
+                <span>Expert set</span>
+                <select
+                  value={expertSet}
+                  onchange={(e) => configure({ expert: e.currentTarget.value })}
+                >
+                  {#each expertSets as set (set.code)}
+                    <option value={set.code}>{set.name}</option>
+                  {/each}
+                </select>
+              </label>
+            {/if}
+          </div>
         {/if}
       </div>
 
@@ -483,13 +489,21 @@
     align-items: flex-start;
   }
 
-  .set {
+  /* One grid for both set rows so their selects share a left edge whatever the label widths;
+     each label flattens into the grid but still wraps its select for accessibility. */
+  .sets {
     margin-top: 10px;
-    display: flex;
+    display: grid;
+    grid-template-columns: auto auto;
+    justify-content: start;
     align-items: center;
-    gap: 8px;
+    gap: 10px 8px;
     color: var(--muted);
     font-size: 12px;
+  }
+
+  .set {
+    display: contents;
   }
 
   .set select {
