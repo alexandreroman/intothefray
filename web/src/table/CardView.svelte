@@ -25,7 +25,10 @@
     landed?: boolean;
   } = $props();
 
-  const TOKENS = ['dmg', 'thr', 'gen'] as const;
+  type TokenKind = 'dmg' | 'thr' | 'gen';
+
+  // Damage and counters share a row on the lower part of the card; threat sits on its right side.
+  const ROW_TOKENS: readonly TokenKind[] = ['dmg', 'gen'];
   const STATUSES = [
     ['stunned', 'Stunned'],
     ['confused', 'Confused'],
@@ -35,7 +38,8 @@
   const hidden = $derived(isHidden(card));
   const box = $derived(cardBox(face?.size ?? 'std', { faceDown: hidden, onPile: !!card.onPile }));
   const landscape = $derived(!box.rotated && box.w > box.h);
-  const tokens = $derived(TOKENS.filter((k) => (card.tokens?.[k] ?? 0) > 0));
+  const rowTokens = $derived(ROW_TOKENS.filter((k) => (card.tokens?.[k] ?? 0) > 0));
+  const threat = $derived((card.tokens?.thr ?? 0) > 0);
   const statuses = $derived(STATUSES.filter(([k]) => (card.status?.[k] ?? 0) > 0));
   const element = $derived({ kind: 'card', id: card.id } as const);
   const locked = $derived(interaction.isLocked(element));
@@ -46,6 +50,18 @@
   const tuckTarget = $derived(dropOn?.kind === 'card' && dropOn.id === card.id);
   const pileTarget = $derived(dropOn?.kind === 'pile' && dropOn.id === card.onPile);
 </script>
+
+{#snippet token(k: TokenKind)}
+  {@const target = { card: card.id, kind: 'token', name: k } as const}
+  <span
+    class="tok {k}"
+    class:hot={interaction.isCounter(target)}
+    data-counter="token:{k}"
+    role="presentation"
+    onpointerenter={(event) => interaction.enterCounter(target, event)}
+    onpointerleave={() => interaction.leaveCounter()}>{card.tokens?.[k]}</span
+  >
+{/snippet}
 
 <!--
   z-index comes from the server and can be negative: the surface must isolate its stacking.
@@ -84,20 +100,16 @@
     />
   {/if}
 
-  {#if tokens.length > 0}
+  {#if rowTokens.length > 0}
     <div class="tokens">
-      {#each tokens as k (k)}
-        {@const target = { card: card.id, kind: 'token', name: k } as const}
-        <span
-          class="tok {k}"
-          class:hot={interaction.isCounter(target)}
-          data-counter="token:{k}"
-          role="presentation"
-          onpointerenter={(event) => interaction.enterCounter(target, event)}
-          onpointerleave={() => interaction.leaveCounter()}>{card.tokens?.[k]}</span
-        >
+      {#each rowTokens as k (k)}
+        {@render token(k)}
       {/each}
     </div>
+  {/if}
+
+  {#if threat}
+    {@render token('thr')}
   {/if}
 
   {#if statuses.length > 0}
@@ -158,15 +170,28 @@
     scale: 1;
   }
 
-  /* Tokens sit astride the bottom edge, in the middle. */
+  /*
+    Tokens sit inside the card, clear of its bottom strip where printed values such as the
+    villain's hit points are: damage and counters in a row on the lower part, in the middle.
+    Percentages follow the card box, portrait or landscape.
+  */
   .tokens {
     position: absolute;
     left: 50%;
-    bottom: -12px;
+    bottom: 20%;
     z-index: 4;
     display: flex;
     gap: 3px;
     transform: translateX(-50%);
+  }
+
+  /* Threat on the right side, vertically centred, landscape main schemes included. */
+  .tok.thr {
+    position: absolute;
+    right: 5%;
+    top: 50%;
+    z-index: 4;
+    transform: translateY(-50%);
   }
 
   /* A flat pill with an ink rim, its count in the display face, ink on colour. */
@@ -213,11 +238,15 @@
     background: var(--text);
   }
 
-  /* Status cards: small tabs sticking out of the right edge, like real cards tucked under. */
+  /*
+    Status cards: small tabs sticking out of the right edge, like real cards tucked under. They
+    end just above the middle, so a threat token there never covers them: half a token (13px)
+    and a 3px gap.
+  */
   .statuses {
     position: absolute;
     right: -8px;
-    top: 30px;
+    bottom: calc(50% + 16px);
     z-index: 4;
     display: flex;
     flex-direction: column;

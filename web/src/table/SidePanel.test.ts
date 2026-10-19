@@ -141,6 +141,34 @@ describe('SidePanel', () => {
     expect(interaction.highlighted.size).toBe(0);
   });
 
+  it('a truncated line shows its full text over the list while hovered', async () => {
+    const log = [
+      line({ text: 'played a short card', at: at(14, 4) }),
+      line({ text: 'moved a card with a very long name to the encounter discard', at: at(14, 5) }),
+    ];
+    render(SidePanel, { preview: null, log, onundo: () => {} });
+    const [long, short] = historyLines() as [HTMLElement, HTMLElement];
+
+    // jsdom lays nothing out: the long line's text says it overflows.
+    const text = long.querySelector('.txt') as HTMLElement;
+    Object.defineProperty(text, 'scrollWidth', { value: 400 });
+    Object.defineProperty(text, 'clientWidth', { value: 200 });
+
+    await fireEvent.pointerEnter(short);
+    expect(short.querySelector('.full')).toBeNull();
+    await fireEvent.pointerLeave(short);
+
+    await fireEvent.pointerEnter(long);
+    const full = long.querySelector('.full');
+    // The same line, time first, only unclipped.
+    expect(full?.firstElementChild?.textContent).toBe('14:05');
+    expect(full?.querySelector('.whole')?.textContent).toBe(text.textContent);
+    expect(full?.querySelector('.whole')?.classList).not.toContain('txt');
+
+    await fireEvent.pointerLeave(long);
+    expect(long.querySelector('.full')).toBeNull();
+  });
+
   it('a hovered line that leaves the list stops highlighting', async () => {
     const log = [
       line({ text: 'exhausted Spider-Man', cards: ['c1'] }),

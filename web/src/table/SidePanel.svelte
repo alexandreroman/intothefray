@@ -145,7 +145,7 @@
       {#if expanded === key}
         <div class="full">
           <time class="t">{time}</time>
-          <span>{@render lineText(entry, parts)}</span>
+          <span class="whole">{@render lineText(entry, parts)}</span>
         </div>
       {/if}
     </li>
@@ -211,6 +211,8 @@
   }
 
   .log {
+    /* A hovered line, and the full text of a truncated one, which must look the same. */
+    --line-hover: #49c6ff14;
     overflow-y: auto;
     margin: 0;
     padding: 0 0 8px;
@@ -219,33 +221,45 @@
     min-height: 0;
   }
 
-  .e {
-    position: relative;
+  .e,
+  .full {
     display: flex;
-    gap: 10px;
+    gap: 6px;
     align-items: baseline;
     padding: 8px 18px;
     font-size: 13px;
     line-height: 1.4;
+  }
+
+  .e {
+    position: relative;
     cursor: pointer;
   }
 
   .e:hover {
-    background: #49c6ff14;
+    background: var(--line-hover);
   }
 
   .e.new {
     animation: slidein 0.3s ease-out;
   }
 
-  .e.undone {
+  /* On the contents rather than the line: the full text must hide the lines below, and a
+     strike-through does not reach it as it is out of flow. */
+  .e.undone .t,
+  .e.undone .txt,
+  .e.undone .whole {
     opacity: 0.45;
     text-decoration: line-through;
   }
 
-  .txt {
+  .txt,
+  .whole {
     flex: 1;
     min-width: 0;
+  }
+
+  .txt {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -261,28 +275,25 @@
 
   .t {
     flex: none;
-    width: 38px;
+    /* Snug around "00:00": tabular digits are each 1ch wide, the colon narrower. */
+    width: 5ch;
     color: var(--muted);
     font-size: 11px;
     font-variant-numeric: tabular-nums;
   }
 
-  /* The full text floats over the list, so nothing below it moves. */
+  /*
+    The full text floats over the list, so nothing below it moves. It lies exactly on its line,
+    with the same padding and hover tint, and only wraps further down. The tint is laid on the
+    panel's ink so the lines below do not show through.
+  */
   .full {
     position: absolute;
-    left: 8px;
-    right: 8px;
-    top: -1px;
+    top: 0;
+    left: 0;
+    right: 0;
     z-index: 5;
-    display: flex;
-    gap: 10px;
-    align-items: baseline;
-    padding: 7px 10px;
-    border-radius: 10px;
-    background: var(--panel-2);
-    border: 1px solid var(--line-strong);
-    box-shadow: 0 8px 20px #000a;
-    white-space: normal;
+    background: linear-gradient(var(--line-hover), var(--line-hover)), var(--bg);
   }
 
   .undo {
