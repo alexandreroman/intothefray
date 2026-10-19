@@ -36,12 +36,23 @@
     <rect x="7" y="11" width="14" height="9.5" rx="1.5" fill="currentColor" fill-opacity=".18" />
   {:else if name === 'ready-all'}
     <!--
-      Exhaust the other way round: the card lying on its side (faint, dashed) stands up again;
-      a second card standing behind it says "all".
+      Exhaust the other way round: the card tilted to the right as exhausted (faint, dashed) turns
+      back to the left, counter-clockwise, and stands filled; a second card behind it says "all".
     -->
-    <rect x="3" y="12" width="14" height="9.5" rx="1.5" stroke-dasharray="2 2.2" opacity=".55" />
-    <rect x="12" y="1.5" width="9" height="13" rx="1.5" opacity=".55" />
-    <rect x="8.5" y="4" width="9" height="13" rx="1.5" fill="currentColor" fill-opacity=".18" />
+    <rect
+      x="13"
+      y="8.5"
+      width="8"
+      height="11.5"
+      rx="1.5"
+      transform="rotate(25 17 14.25)"
+      stroke-dasharray="2 2.2"
+      opacity=".55"
+    />
+    <rect x="6" y="3.5" width="8.5" height="12.5" rx="1.5" opacity=".55" />
+    <rect x="3" y="6.5" width="8.5" height="12.5" rx="1.5" fill="currentColor" fill-opacity=".18" />
+    <path d="M20.5 6.5Q18.5 2.2 14 2.6" />
+    <path d="M15.8 1 14 2.6 15.6 4.4" />
   {:else if name === 'flip'}
     <!-- A card with its vertical axis, and a curved arrow above: it turns over. -->
     <rect x="6.5" y="8.5" width="11" height="14" rx="1.6" />
