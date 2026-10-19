@@ -4,6 +4,8 @@
   deck's hand is the one shown; a click selects another (Q steps through them).
 -->
 <script lang="ts">
+  import { selectionIndicator } from '../lib/selectionIndicator';
+
   /** One of the viewer's decks, as the switcher shows it. */
   interface DeckSwatch {
     seat: number;
@@ -31,7 +33,14 @@
   }
 </script>
 
-<div class="handswitch" role="group" aria-label="Hand shown" style:--seat="var(--p{color + 1})">
+<div
+  class="handswitch"
+  role="group"
+  aria-label="Hand shown"
+  style:--seat="var(--p{color + 1})"
+  use:selectionIndicator
+>
+  <span class="indicator" data-indicator aria-hidden="true"></span>
   {#each decks as deck (deck.seat)}
     <button
       class="btn-ghost deck"
@@ -49,6 +58,7 @@
 <style>
   /* A raised strip, as the other controls over the table. */
   .handswitch {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 4px;
@@ -61,7 +71,9 @@
     pointer-events: auto;
   }
 
+  /* Over the indicator, which is positioned. */
   .deck {
+    position: relative;
     min-width: 0;
     display: flex;
     align-items: center;
@@ -74,11 +86,15 @@
     color: var(--muted);
   }
 
-  /* The deck whose hand shows: lit, and underlined in the player's colour. */
-  .deck[aria-pressed='true'] {
-    color: var(--text);
+  /* The deck whose hand shows: lit, over a surface underlined in the player's colour. */
+  .indicator {
+    border-radius: 8px;
     background: var(--panel-2);
     box-shadow: inset 0 -2px 0 var(--seat);
+  }
+
+  .deck[aria-pressed='true'] {
+    color: var(--text);
   }
 
   /*

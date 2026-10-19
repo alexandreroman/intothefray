@@ -200,6 +200,25 @@ afterEach(() => {
 });
 
 describe('Lobby', () => {
+  it('lets the host close the lobby, once confirmed', async () => {
+    const session = renderLobby({});
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Close the lobby' }));
+    expect(session.lobby).not.toHaveBeenCalled();
+
+    const dialog = screen.getByRole('alertdialog', {
+      name: 'Close the lobby? This ends the game for everyone.',
+    });
+    await fireEvent.click(within(dialog).getByRole('button', { name: 'Close the lobby' }));
+    expect(session.lobby).toHaveBeenCalledExactlyOnceWith('end');
+  });
+
+  it('offers a guest no way to close the lobby', () => {
+    renderLobby({ you: asSam });
+
+    expect(screen.queryByRole('button', { name: 'Close the lobby' })).toBeNull();
+  });
+
   it('titles the screen and tells the host what to do', () => {
     renderLobby({});
 
@@ -488,7 +507,7 @@ describe('Lobby', () => {
     const images = screen.getAllByRole('img', { name: 'Spider-Man' });
     expect(images.map((image) => image.getAttribute('src'))).toEqual(['hero.jpg', 'hero.jpg']);
     // Both boxes share one portrait size, so the names beside it line up the same way.
-    expect(images.every((image) => image.classList.contains('hero'))).toBe(true);
+    expect(images.every((image) => image.closest('.hero') !== null)).toBe(true);
   });
 
   it('loads a deck from its link', async () => {

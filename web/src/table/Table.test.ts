@@ -254,7 +254,7 @@ describe('Table', () => {
       'Sam : 5 cards in hand',
     ]);
     expect(boxes.map((box) => box.style.getPropertyValue('--owner'))).toEqual([
-      'var(--spark)',
+      'var(--villain)',
       'var(--p1)',
       'var(--p2)',
     ]);
@@ -1268,7 +1268,7 @@ describe('several decks', () => {
       '4 cards in hand',
     ]);
     expect(ownerBoxes().map((box) => box.style.getPropertyValue('--owner'))).toEqual([
-      'var(--spark)',
+      'var(--villain)',
       'var(--p1)',
       'var(--p1)',
       'var(--p2)',

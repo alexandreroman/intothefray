@@ -13,6 +13,7 @@
   import TopBar from '../components/TopBar.svelte';
   import { gameCards, knownCard, loadGameCards, loadIndex } from '../lib/catalog';
   import { getPref, setPref } from '../lib/prefs';
+  import { selectionIndicator } from '../lib/selectionIndicator';
   import type { GameSession } from '../lib/session.svelte';
   import type {
     Action,
@@ -318,7 +319,7 @@
   const owners = $derived(
     ownerFrames(tablePiles).map((frame): OwnerBox => {
       if (frame.owner === -1) {
-        return { frame, name: 'Villain', color: 'var(--spark)' };
+        return { frame, name: 'Villain', color: 'var(--villain)' };
       }
       const color = seatColor(view, frame.owner);
       const deck = deckAt(frame.owner);
@@ -1091,7 +1092,15 @@
       aria-label="Player shown"
       tabindex="-1"
       onkeydown={(event) => onSeatKey(event, current)}
+      use:selectionIndicator
     >
+      <!-- The ring around the player shown, in their colour: it slides, and its colour fades. -->
+      <span
+        class="ring"
+        data-indicator
+        aria-hidden="true"
+        style:--seat="var(--p{(seatColor(view, current) ?? 0) + 1})"
+      ></span>
       {#each seatedDecks as { seat, name, color } (seat)}
         <button
           class="seat"
@@ -1561,6 +1570,7 @@
 
   /* A round swatch of the seat colour; the player shown is ringed. */
   .seatpick .seats {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 4px;
@@ -1583,6 +1593,10 @@
 
   .seatpick .seat[aria-checked='true'] {
     opacity: 1;
+  }
+
+  .seatpick .ring {
+    border-radius: 50%;
     box-shadow:
       0 0 0 2px #141a28,
       0 0 0 4px var(--seat);

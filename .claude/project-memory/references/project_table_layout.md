@@ -13,8 +13,8 @@ type: project
   per seated player. Each row starts at the left with deck and discard,
   then the villain or identity and schemes; played cards go to the right.
 - Each owner's deck and discard sit in a frame in the seat colour labelled
-  with the player's name ("Villain" in yellow for the encounter piles);
-  the frame's tooltip gives that player's hand count.
+  with the player's name ("Villain" in purple, as in the game, for the
+  encounter piles); the frame's tooltip gives that player's hand count.
 - Out-of-play piles (victory display, set-aside) are not drawn on the
   table: the action bar of a deck or discard pile opens its owner's
   out-of-play piles.

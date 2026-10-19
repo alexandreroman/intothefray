@@ -96,7 +96,12 @@
 </script>
 
 <div class="screen">
-  <TopBar spectators={view.spectators} />
+  <TopBar
+    spectators={view.spectators}
+    onend={view.you.host ? () => session.lobby('end') : undefined}
+    endLabel="Close the lobby"
+    endQuestion="Close the lobby? This ends the game for everyone."
+  />
 
   <main class="lobby">
     <header class="intro">

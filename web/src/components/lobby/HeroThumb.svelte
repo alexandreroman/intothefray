@@ -1,4 +1,6 @@
 <script lang="ts">
+  import CardArt from '../CardArt.svelte';
+
   /** `image` is the hero face image of the player's identity, from the lobby view. */
   let { image, name }: { image?: string; name?: string } = $props();
 
@@ -7,7 +9,7 @@
 </script>
 
 {#if image}
-  <img class="hero" src={image} alt={name ?? ''} />
+  <span class="hero"><CardArt src={image} alt={name ?? ''} aspect={1} /></span>
 {:else}
   <span class="hero" aria-hidden="true">{initial}</span>
 {/if}
@@ -27,8 +29,6 @@
     font-weight: 900;
     font-style: italic;
     font-size: 22px;
-    /* A hero card is portrait: the square keeps its art, under the title bar. */
-    object-fit: cover;
-    object-position: 50% 30%;
+    overflow: hidden;
   }
 </style>

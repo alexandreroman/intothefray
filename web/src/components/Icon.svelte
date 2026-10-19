@@ -1,5 +1,5 @@
-<script lang="ts">
-  type Name =
+<script lang="ts" module>
+  export type IconName =
     | 'cards'
     | 'sliders'
     | 'back'
@@ -10,8 +10,10 @@
     | 'pencil'
     | 'rows-all'
     | 'rows-focus';
+</script>
 
-  let { name }: { name: Name } = $props();
+<script lang="ts">
+  let { name }: { name: IconName } = $props();
 
   // Stroke icons on a 24x24 grid, drawn with currentColor.
 </script>

@@ -33,6 +33,9 @@
   --p2: #f0505f;
   --p3: #46c06a;
   --p4: #e8d53a;
+  /* The villain's frame and name on the table: purple, as in the game. Bluer than Leadership
+     would blur with it; this one passes 4.5:1 on the ink and the felt, as the red does. */
+  --villain: #a66bff;
 
   /* One family, three widths: see .display, and the headings and captions. */
   --font: 'Archivo', system-ui, sans-serif;

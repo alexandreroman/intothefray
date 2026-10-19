@@ -1,5 +1,7 @@
 <script lang="ts">
   import { overflowTip } from '../../lib/overflowTip';
+  import CardArt from '../CardArt.svelte';
+  import Segmented from '../Segmented.svelte';
   import type { Difficulty, Index, LobbyConfig, ScenarioRef, View } from '../../lib/types';
 
   let {
@@ -11,7 +13,10 @@
   // Version I of each set, the default (spec 4.3).
   const DEFAULT_STANDARD = 'standard';
   const DEFAULT_EXPERT = 'expert';
-  const LEVELS: Difficulty[] = ['standard', 'expert'];
+  const LEVELS: { value: Difficulty; label: string }[] = [
+    { value: 'standard', label: 'Standard' },
+    { value: 'expert', label: 'Expert' },
+  ];
 
   let filter = $state('');
   let menuOpen = $state(false);
@@ -36,6 +41,8 @@
   const showStandardSet = $derived(isHost && standardSets.length > 0);
   const showExpertSet = $derived(isHost && difficulty === 'expert' && expertSets.length > 0);
   const recommended = $derived(chosen?.recommended ?? []);
+  // Guests see the chosen level only, read only.
+  const levels = $derived(isHost ? LEVELS : LEVELS.filter((level) => level.value === difficulty));
 
   // Recommended sets come first: the full list is long.
   const addableModulars = $derived(
@@ -203,7 +210,7 @@
                 onclick={() => chooseScenario(scenario)}
               >
                 {#if scenario.image}
-                  <img src={scenario.image} alt="" loading="lazy" />
+                  <CardArt src={scenario.image} aspect={4 / 3} loading="lazy" />
                 {/if}
                 {#if selected}
                   <span class="check">
@@ -232,21 +239,13 @@
     <div class="sect settings">
       <div class="difficulty">
         <div class="lbl">Difficulty</div>
-        <div class="seg">
-          {#each LEVELS as level (level)}
-            {#if isHost || level === difficulty}
-              <button
-                class="btn-ghost"
-                class:on={level === difficulty}
-                aria-pressed={level === difficulty}
-                disabled={!isHost}
-                onclick={() => chooseDifficulty(level)}
-              >
-                {level === 'standard' ? 'Standard' : 'Expert'}
-              </button>
-            {/if}
-          {/each}
-        </div>
+        <Segmented
+          options={levels}
+          value={difficulty}
+          onchange={chooseDifficulty}
+          label="Difficulty"
+          disabled={!isHost}
+        />
         {#if showStandardSet || showExpertSet}
           <div class="sets">
             {#if showStandardSet}
@@ -385,6 +384,7 @@
     gap: 12px;
   }
 
+  /* The aspect given to its CardArt too. */
   .vil {
     position: relative;
     aspect-ratio: 4 / 3;
@@ -400,15 +400,6 @@
      disabled fade: unsupported tiles get their own dimming below. */
   .vil:disabled {
     opacity: 1;
-  }
-
-  /* A villain card is portrait: the tile keeps its art, under the title bar. */
-  .vil img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: 50% 25%;
-    display: block;
   }
 
   .vil .nm {
@@ -434,7 +425,7 @@
     opacity: 0.45;
   }
 
-  .vil.unsupported img {
+  .vil.unsupported :global(img) {
     filter: grayscale(1);
   }
 
@@ -517,42 +508,6 @@
     width: auto;
     padding: 4px 8px;
     font-size: 13px;
-  }
-
-  /* A pill as tall as an encounter set's chip: 1px border, 3px padding, 26px buttons = 34px. */
-  .seg {
-    display: inline-flex;
-    gap: 2px;
-    height: 34px;
-    padding: 3px;
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    background: var(--table-bg);
-  }
-
-  .seg button {
-    height: 26px;
-    padding: 0 14px;
-    border: 0;
-    border-radius: 999px;
-    color: var(--muted);
-    font-size: 13px;
-    font-weight: 700;
-    line-height: 1;
-    white-space: nowrap;
-  }
-
-  .seg button.on {
-    background: var(--panel-2);
-    color: var(--text);
-  }
-
-  .seg button.on:hover:not(:disabled) {
-    background: var(--hover);
-  }
-
-  .seg button:disabled {
-    opacity: 1;
   }
 
   .modulars {

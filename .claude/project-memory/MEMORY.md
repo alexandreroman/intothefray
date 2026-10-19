@@ -43,3 +43,4 @@
 - [Top bar alignment](references/project_top_bar_alignment.md) — bar edges follow each screen's content column; table: icons 8px from window edge
 - [Several decks per player](references/project_multi_deck.md) — 1 to 4 deck slots per player, 4 in all; seat = deck; credited seat
 - [Truncated text shows a tooltip](references/project_truncated_text.md) — ellipsis text gets a full-text tooltip via use:overflowTip
+- [Animated switches and card art](references/project_switches_card_art.md) — switches slide via selectionIndicator; thumbnails use CardArt

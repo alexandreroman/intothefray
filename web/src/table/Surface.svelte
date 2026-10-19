@@ -13,7 +13,7 @@
     frame: OwnerFrame;
     /** The player's name, or "Villain". */
     name: string;
-    /** CSS colour of the frame and the name: the player's seat colour, or the spark. */
+    /** CSS colour of the frame and the name: the player's seat colour, or the villain's. */
     color: string;
     /** The tooltip: how many cards the player holds. */
     tip?: string;
