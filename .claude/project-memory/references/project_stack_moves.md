@@ -11,6 +11,10 @@ card (the one the others are tucked under) moves the whole stack. Moving a
 tucked card detaches it, together with anything tucked under it. Spec 5.2
 states this rule (decided 2026-10-19).
 
+A card tucked under another by a drag lies where it was dropped (grid
+snapped, behind its host, `placed` on attach and play); the fixed tucked
+offset applies only to tucks without a drop point.
+
 **Why:** players must be able to take an attachment off its host by drag,
 and still move a hero with all its upgrades in one gesture.
 
