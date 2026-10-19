@@ -124,16 +124,19 @@ both listing the workspace URLs in the Casper info panel:
   Redis) and follows its logs. Stopping the command runs
   `make app-down`.
 - **Dev** (`casper run dev`) starts `make dev` with hot reload (Redis,
-  Caddy, Air and the web build). Stopping the command stops the stack.
+  Caddy, Air and the web build). Stopping the command stops Air and the
+  web build only: the Redis and Caddy containers stay up (stop them
+  with `make infra-down`).
 
-Both stop their stack and clear the panel when the command ends. They
-bind the same server port, so run one at a time. Several workspaces can
+Run stops its stack and both clear the panel when the command ends.
+They bind the same server port, so run one at a time. Several workspaces can
 run at the same time, each with its own compose project. A `PORT` set in
 `.env` or `.env.local` overrides `.env.casper`.
 
-`.env.casper` no longer sets `VITE_API_URL` and `ALLOWED_ORIGINS`: in
-an existing Casper worktree, re-run `scripts/casper.sh setup` to
-regenerate it, since a stale file breaks both flows.
+`.env.casper` holds only the ports. In a worktree whose `.env.casper`
+still sets `VITE_API_URL` or `ALLOWED_ORIGINS`, re-run
+`scripts/casper.sh setup`: a stale file breaks the container flow
+(`casper run`) and makes the dev flow bypass Caddy.
 
 `make packs` downloads the card data from marvelcdb and Cerebro
 (cached in `packs/.cache`), merges the hand-written files of

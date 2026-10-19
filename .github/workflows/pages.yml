@@ -44,7 +44,8 @@ jobs:
         working-directory: web
         run: pnpm check && pnpm lint && pnpm test
 
-      # An unset variable would silently ship a frontend aimed at localhost.
+      # An unset variable would ship relative API URLs, which hit the GitHub
+      # Pages origin where no API runs.
       - name: Build
         working-directory: web
         run: |

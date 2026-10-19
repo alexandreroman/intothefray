@@ -27,12 +27,12 @@ INFRA_SERVICES := redis web
 
 ##@ Infra
 
+# The server runs on the host in dev, so Caddy proxies to it; app-up keeps the
+# compose default (the app container). --no-deps: the app service is not part
+# of the dev infrastructure.
 .PHONY: infra-up
 infra-up: ## Start local infrastructure services (Redis, Caddy)
 	mkdir -p web/dist
-	# The server runs on the host in dev, so Caddy proxies to it; app-up
-	# keeps the compose default (the app container). --no-deps: the app
-	# service is not part of the dev infrastructure.
 	API_UPSTREAM=host.docker.internal:$${PORT:-9000} $(COMPOSE) up -d --wait --no-deps $(INFRA_SERVICES)
 
 .PHONY: infra-down
