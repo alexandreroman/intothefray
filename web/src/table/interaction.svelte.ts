@@ -100,6 +100,8 @@ class TableInteraction {
   landing = $state.raw<Landing | null>(null);
 
   #pointer = { x: NaN, y: NaN };
+  // The viewer sent an action that no view has shown yet.
+  #acted = false;
   // Where the pointer was when the table was last redrawn.
   #drawnAt = { x: NaN, y: NaN };
   #pointerType = 'mouse';
@@ -112,6 +114,39 @@ class TableInteraction {
   /** Follows the pointer, to tell real hovers from the ones a redraw fires. */
   pointerMoved(event: PointerEvent): void {
     this.#pointer = { x: event.clientX, y: event.clientY };
+  }
+
+  /** Where the pointer was last seen on the screen; not a number before it moved. */
+  get pointer(): { x: number; y: number } {
+    return { ...this.#pointer };
+  }
+
+  /** The viewer sent an action: the view that shows it may put their own card under the pointer. */
+  acted(): void {
+    this.#acted = true;
+  }
+
+  /** Whether the viewer sent an action since the last call: the view drawn now shows it. */
+  takeActed(): boolean {
+    const acted = this.#acted;
+    this.#acted = false;
+    return acted;
+  }
+
+  /**
+   * The viewer's own action redrew what lies under a pointer at rest: a card
+   * dropped there, turned over or dealt. Unlike another player's redraw (spec
+   * 5.8), that is what they point at: it is hovered, as if entered, so that
+   * the bar and the keys act on it at once. Not during a drag, nor while a
+   * selection, a dropdown, the bar or the pill holds the hover.
+   */
+  rehover(element: TableElement): void {
+    if (this.dragging || this.locked || this.menu !== null || this.onBar || this.onPill) {
+      return;
+    }
+    this.#cancelHide();
+    this.hovered = element;
+    this.#changePreview(element, 'show');
   }
 
   /** Remembers the kind of the last pointer pressed: only a touch tap selects. */
@@ -228,7 +263,7 @@ class TableInteraction {
     this.handGap = null;
   }
 
-  /** To call when the table is redrawn. */
+  /** To call when the table is redrawn by a view or a zoom. */
   redrawn(): void {
     this.#drawnAt = { ...this.#pointer };
   }
@@ -406,6 +441,7 @@ class TableInteraction {
     this.onPill = false;
     this.#pointer = { x: NaN, y: NaN };
     this.#drawnAt = { x: NaN, y: NaN };
+    this.#acted = false;
     this.#pointerType = 'mouse';
   }
 

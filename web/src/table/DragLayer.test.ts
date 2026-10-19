@@ -992,3 +992,84 @@ describe('dragging the first player token', () => {
     expect(tokenGhost()).toBeNull();
   });
 });
+
+describe('the card under a still pointer after the viewer acts', () => {
+  /** The browser's hit test, from the laid out boxes: the topmost table card or hand card under the point. */
+  function hitTestFrom(): void {
+    document.elementFromPoint = (x: number, y: number) => {
+      const candidates = [
+        ...document.querySelectorAll<HTMLElement>('.surface .card, .hand .hcard'),
+      ];
+      const under = candidates.filter((element) => {
+        const box = element.getBoundingClientRect();
+        return x >= box.left && x <= box.right && y >= box.top && y <= box.bottom;
+      });
+      return under.at(-1) ?? null;
+    };
+  }
+
+  afterEach(() => {
+    // jsdom has no hit test of its own.
+    Reflect.deleteProperty(document, 'elementFromPoint');
+  });
+
+  it('hovers the card dealt under the pointer, so that F flips it, and F again flips it back', async () => {
+    hitTestFrom();
+    // A card with two faces: F turns it from one to the other.
+    const twoFaced = (code: string): CardInfo | null => {
+      if (code !== '01097') {
+        return infoOf(code);
+      }
+      const face = (name: string): PackFace => ({
+        name,
+        type: 'side_scheme',
+        size: 'std',
+        images: [`${name}.png`],
+      });
+      return {
+        card: { code, faces: [face('A'), face('B')], back: 'encounter', quantity: 1 },
+        face: 0,
+      };
+    };
+    vi.mocked(knownCard).mockImplementation(twoFaced);
+    const { session, rerender } = await renderTable();
+    await press(placed('enc'), 70, 100);
+    await moveTo(300, 450);
+    await release(300, 450);
+    expect(session.act).toHaveBeenLastCalledWith({ kind: 'deal', area: 'p0', x: 210, y: 310 });
+
+    // The server deals it face down where it was dropped, under the pointer, which has not moved.
+    const dealt = (extra: Partial<TableCard>) =>
+      card('dealt', { back: 'encounter', owner: -1, x: 210, y: 310, z: 5, ...extra });
+    await rerender(makeView({ cards: [...CARDS, dealt({ faceDown: true, code: undefined })] }));
+    await waitFor(() => expect(interaction.hovered).toEqual({ kind: 'card', id: 'dealt' }));
+
+    await fireEvent.keyDown(window, { key: 'f' });
+    expect(session.act).toHaveBeenLastCalledWith({ kind: 'flip', card: 'dealt' });
+
+    // Turned face up: it is still the one the keys act on, and turns to its other face.
+    await rerender(makeView({ cards: [...CARDS, dealt({ code: '01097' })] }));
+    await waitFor(() => expect(interaction.hovered).toEqual({ kind: 'card', id: 'dealt' }));
+    await fireEvent.keyDown(window, { key: 'f' });
+    expect(session.act).toHaveBeenCalledTimes(3);
+    expect(session.act).toHaveBeenLastCalledWith({ kind: 'flip', card: 'dealt' });
+  });
+
+  it("does not hover what another player's action puts under the pointer", async () => {
+    hitTestFrom();
+    const { rerender } = await renderTable();
+    await moveTo(300, 450, 0);
+
+    const dealt = card('dealt', {
+      back: 'encounter',
+      owner: -1,
+      faceDown: true,
+      code: undefined,
+      x: 210,
+      y: 310,
+    });
+    await rerender(makeView({ cards: [...CARDS, dealt] }));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(interaction.hovered).toBeNull();
+  });
+});

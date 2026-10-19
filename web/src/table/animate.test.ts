@@ -133,36 +133,88 @@ describe('diffViews', () => {
     ]);
   });
 
-  it('turns over a card flipped, shown on another face, or come face up from a deck', () => {
+  it('turns over a card flipped, or shown on another face', () => {
     const known = (id: string, extra: Partial<CardView> = {}) =>
       card(id, { code: '01001', ...extra });
+    const discard = (cards: string[]) =>
+      pile('disc:p0', { kind: 'discard', x: 720, count: cards.length, cards });
     const prev = view({
       cards: [
         known('down'),
         known('faces'),
-        card('fromDeck', { zone: 'pile' }),
         known('fromDiscard', { zone: 'pile' }),
         known('toDeck'),
         known('inHand', { zone: 'hand' }),
       ],
+      piles: [pile('deck:p0'), discard(['fromDiscard'])],
     });
     const next = view({
       cards: [
         card('down', { faceDown: true }),
         known('faces', { face: 1 }),
-        known('fromDeck', { x: 300 }),
         known('fromDiscard', { x: 500 }),
-        card('toDeck', { zone: 'pile' }),
         known('inHand', { zone: 'hand', face: 1 }),
       ],
+      // Put back on the deck, the card is no longer listed.
+      piles: [pile('deck:p0', { count: 11 }), discard([])],
     });
 
     const flips = diffViews(prev, next).filter((anim) => anim.kind === 'flip');
     expect(flips).toEqual([
       { kind: 'flip', id: 'down' },
       { kind: 'flip', id: 'faces' },
-      { kind: 'flip', id: 'fromDeck' },
     ]);
+  });
+
+  it('turns over a card played face up from a deck, or revealed from the encounter deck', () => {
+    // The server never lists the cards of a deck: they show up on the table as the deck shrinks.
+    const prev = view({ piles: [pile('deck:p0', { count: 10 })] });
+    const played = view({
+      cards: [card('fromDeck', { code: '01001', x: 300 })],
+      piles: [pile('deck:p0', { count: 9 })],
+    });
+    const encounter = (count: number) => pile('enc', { kind: 'encounter', owner: -1, count });
+    const revealed = view({
+      cards: [card('fromEncounter', { code: '01097', back: 'encounter', owner: -1 })],
+      piles: [encounter(19)],
+    });
+    // Dealt face down, it shows its back and does not turn over.
+    const dealt = view({
+      cards: [card('dealt', { faceDown: true, back: 'encounter', owner: -1 })],
+      piles: [encounter(19)],
+    });
+
+    expect(diffViews(prev, played)).toEqual([{ kind: 'flip', id: 'fromDeck' }]);
+    // The viewer's own play from the deck turns over too, as it lands.
+    expect(diffViews(prev, played, 'fromDeck')).toEqual([{ kind: 'flip', id: 'fromDeck' }]);
+    expect(diffViews(view({ piles: [encounter(20)] }), revealed)).toEqual([
+      { kind: 'flip', id: 'fromEncounter' },
+    ]);
+    expect(diffViews(view({ piles: [encounter(20)] }), dealt)).toEqual([]);
+  });
+
+  it('turns over a card played from a deck the viewer looks through', () => {
+    // An open view of the deck lists its cards, though the deck shows none.
+    const prev = view({
+      cards: [card('seen', { code: '01001', zone: 'pile' })],
+      piles: [pile('deck:p0', { count: 10 })],
+    });
+    const next = view({
+      cards: [card('seen', { code: '01001', x: 300 })],
+      piles: [pile('deck:p0', { count: 9 })],
+    });
+
+    expect(diffViews(prev, next).filter((anim) => anim.kind === 'flip')).toEqual([
+      { kind: 'flip', id: 'seen' },
+    ]);
+  });
+
+  it("does not turn over a card played from another player's hand", () => {
+    // Another player's hand is not listed either, but no deck shrinks.
+    const prev = view();
+    const next = view({ cards: [card('fromHand', { code: '01001', owner: 1, x: 300 })] });
+
+    expect(diffViews(prev, next)).toEqual([]);
   });
 
   it('a change with no new history line, or by the system, does not glow', () => {

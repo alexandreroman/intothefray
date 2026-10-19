@@ -78,7 +78,7 @@ describe('SidePanel', () => {
     render(SidePanel, { log: LOG, onundo: () => {} });
     const titles = screen.getAllByRole('heading').map((heading) => heading.textContent);
     expect(titles).toEqual(['History']);
-    expect(screen.queryByLabelText('Focus')).toBeNull();
+    expect(screen.queryByLabelText('Card preview')).toBeNull();
   });
 
   it('shows each line time first', () => {

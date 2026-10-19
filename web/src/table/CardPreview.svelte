@@ -26,7 +26,7 @@
   } = $props();
 </script>
 
-<div class="frame" class:empty={!preview} class:snug aria-label="Focus" role="figure">
+<div class="frame" class:empty={!preview} class:snug aria-label="Card preview" role="figure">
   {#if !preview}
     <div class="hint">Hover a card<br />to see it here</div>
   {:else if preview.kind === 'back'}

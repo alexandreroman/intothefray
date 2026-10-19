@@ -4,6 +4,7 @@ import {
   ALL_ROWS,
   focusRows,
   lastRow,
+  ROW_HEIGHT,
   rowOf,
   rowOfSeat,
   saveViewMode,
@@ -50,13 +51,53 @@ describe('rows', () => {
     expect(rows.toDisplay(5000)).toBe(4340);
   });
 
-  it('maps what it draws back to the table, the player row taking anything below the villain', () => {
-    const rows = focusRows(2, 3);
-    for (const y of [0, 30, 329, 660, 690, 989]) {
-      expect(rows.toTable(rows.toDisplay(y)!)).toBe(y);
+  // Every height drawn from the top of the surface to well below the shown rows, one table unit apart.
+  const DRAWN = Array.from({ length: 2000 }, (_, i) => i - 20);
+
+  it("maps anything drawn below the villain's row to the shown player's row, whichever it is", () => {
+    const last = 4;
+    for (let shown = 1; shown <= last; shown++) {
+      const rows = focusRows(shown, last);
+      for (const y of DRAWN) {
+        const row = rowOf(rows.toTable(y));
+        if (y < ROW_HEIGHT) {
+          expect(row).toBe(0);
+        } else if (shown === last) {
+          // The last row runs on downward, past its band.
+          expect(row).toBeGreaterThanOrEqual(shown);
+        } else {
+          expect(row).toBe(shown);
+        }
+      }
     }
-    // Drawn far below the shown rows: still the player's row, run on.
-    expect(rows.toTable(2000)).toBe(2330);
+  });
+
+  it('round trips between the table and the surface', () => {
+    const last = 4;
+    for (let shown = 1; shown <= last; shown++) {
+      const rows = focusRows(shown, last);
+      // Every height of the shown rows is drawn somewhere and maps back to itself.
+      for (let y = -20; y < ROW_HEIGHT * (last + 2); y++) {
+        const drawn = rows.toDisplay(y);
+        if (drawn !== null) {
+          expect(rows.toTable(drawn)).toBe(y);
+        }
+      }
+      // Every height drawn in the shown rows maps back to itself.
+      const bottom = shown === last ? Infinity : 2 * ROW_HEIGHT;
+      for (const y of DRAWN.filter((d) => d < bottom)) {
+        expect(rows.toDisplay(rows.toTable(y))).toBe(y);
+      }
+    }
+  });
+
+  it('keeps anything drawn below a row that is not the last one in that row', () => {
+    const rows = focusRows(2, 3);
+    expect(rows.toTable(659)).toBe(989);
+    expect(rows.toTable(660)).toBe(989);
+    expect(rows.toTable(2000)).toBe(989);
+    // The last row runs on.
+    expect(focusRows(3, 3).toTable(2000)).toBe(2660);
   });
 
   it('remembers the view mode, "All" by default', () => {

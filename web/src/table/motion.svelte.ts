@@ -273,6 +273,11 @@ class TableMotion {
     );
   }
 
+  /** Resolves once every animation playing now has finished, or was stopped. */
+  async settled(): Promise<void> {
+    await Promise.allSettled([...this.#running.keys()].map((animation) => animation.finished));
+  }
+
   /**
    * Stops what plays on the cards and piles these animations are about, and
    * on those the new table no longer shows; a flight also stops when its

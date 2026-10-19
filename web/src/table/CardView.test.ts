@@ -158,16 +158,20 @@ describe('CardView', () => {
   it.each([
     ['portrait', 'std'],
     ['landscape', 'land'],
-  ] as const)('puts every token of a %s classic card in its middle', (_, size) => {
-    const card = tableCard({ tokens: { dmg: 4, thr: 2, gen: 1 } });
-    const { container } = render(CardView, { card, face: face({ type: 'ally', size }) });
+  ] as const)(
+    'puts damage bottom right on a %s classic card, the other tokens in its middle',
+    (_, size) => {
+      const card = tableCard({ tokens: { dmg: 4, thr: 2, gen: 1 }, status: { stunned: 1 } });
+      const { container } = render(CardView, { card, face: face({ type: 'ally', size }) });
 
-    expect(tokenGroups(container)).toEqual({
-      middle: ['token:dmg', 'token:thr', 'token:gen'],
-    });
-    expect(container.querySelector('.tok.dmg')?.textContent).toBe('4');
-    expect(cardElement(container).classList.contains('scheme')).toBe(false);
-  });
+      expect(tokenGroups(container)).toEqual({
+        middle: ['token:thr', 'token:gen'],
+        'bottom-right': ['token:dmg'],
+      });
+      expect(container.querySelector('.tok.dmg')?.textContent).toBe('4');
+      expect(cardElement(container).classList.contains('scheme')).toBe(false);
+    },
+  );
 
   it.each([
     ['a portrait side scheme', 'side_scheme', 'std'],

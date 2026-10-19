@@ -50,11 +50,20 @@ export function diffViews(prev: View, next: View, ownDrop?: string, apart = 0): 
   // The glow takes the colour of whoever wrote the latest line; system lines have none.
   const actor = lines.at(-1)?.color ?? -1;
   const turned = turnedIn(before, after);
+  const revealed = hiddenPileShrank(before, after);
 
   const anims: Anim[] = [];
   for (const card of after.cards) {
     const was = previous.get(card.id);
-    if (!was || dropped.has(card.id)) {
+    if (!was) {
+      // Never listed before: it came out of a deck nobody sees, or out of another player's hand.
+      // Only the first turns over as it lands, the viewer's own drop included.
+      if (revealed && card.zone === 'table' && !isHidden(card)) {
+        anims.push({ kind: 'flip', id: card.id });
+      }
+      continue;
+    }
+    if (dropped.has(card.id)) {
       continue;
     }
     const travel = travelOf(was, card, after);
@@ -64,7 +73,7 @@ export function diffViews(prev: View, next: View, ownDrop?: string, apart = 0): 
     const turns = turned.has(card.id);
     if (turns) {
       anims.push({ kind: 'turnIn', id: card.id });
-    } else if (isTurnedOver(was, card)) {
+    } else if (isTurnedOver(was, card, before)) {
       anims.push({ kind: 'flip', id: card.id });
     }
     const changed = was.zone === 'table' && card.zone === 'table' && hasChanged(was, card);
@@ -121,18 +130,27 @@ function travelOf(was: CardView, card: CardView, table: TableView): Anim | null 
 }
 
 /**
- * A table card that shows another side: flipped face down or face up,
- * turned to another face, or a card nobody could see (a deck's) come onto
- * the table face up.
+ * A table card that shows another side: flipped face down or face up, turned
+ * to another face, or come face up out of a pile that does not show its
+ * cards (a deck the viewer was looking through).
  */
-function isTurnedOver(was: CardView, card: CardView): boolean {
+function isTurnedOver(was: CardView, card: CardView, before: TableView): boolean {
   if (card.zone !== 'table') {
     return false;
   }
   if (was.zone === 'table') {
     return was.face !== card.face || !!was.faceDown !== !!card.faceDown;
   }
-  return was.zone === 'pile' && isHidden(was) && !isHidden(card);
+  const wasPublic = before.piles.some((pile) => pile.cards?.includes(was.id));
+  return was.zone === 'pile' && !wasPublic && !isHidden(card);
+}
+
+/** Whether a pile that does not show its cards (a deck, the encounter deck) lost some. */
+function hiddenPileShrank(before: TableView, after: TableView): boolean {
+  return after.piles.some((pile) => {
+    const was = before.piles.find((p) => p.id === pile.id);
+    return pile.cards === undefined && was !== undefined && pile.count < was.count;
+  });
 }
 
 /** Exhausted or readied, flipped, turned face up, or its tokens or statuses changed. */

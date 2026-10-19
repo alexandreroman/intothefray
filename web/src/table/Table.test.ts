@@ -175,11 +175,11 @@ function zoomLabel(): HTMLElement {
 
 /** The preview floating over the table: only there while something is previewed. */
 function preview(): HTMLElement {
-  return screen.getByLabelText('Focus');
+  return screen.getByLabelText('Card preview');
 }
 
 function noPreview(): boolean {
-  return screen.queryByLabelText('Focus') === null;
+  return screen.queryByLabelText('Card preview') === null;
 }
 
 beforeEach(() => {
@@ -459,8 +459,8 @@ describe('Table', () => {
       if (this.classList.contains('tablewrap')) {
         return rect(0, 0, 1000, 800);
       }
-      // Rhino lies under the top right corner.
-      return (this as HTMLElement).dataset.id === 'v' ? rect(800, 50, 140, 196) : rect(0, 0, 0, 0);
+      // Rhino lies under the bottom right corner.
+      return (this as HTMLElement).dataset.id === 'v' ? rect(800, 500, 140, 196) : rect(0, 0, 0, 0);
     });
     vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(320);
     vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(450);
@@ -470,13 +470,49 @@ describe('Table', () => {
 
       await fireEvent.pointerEnter(surface().querySelector('.card[data-id="v"]') as HTMLElement);
       const panel = preview().closest('.peek');
-      expect(panel?.classList).toContain('top-left');
+      expect(panel?.classList).toContain('top-right');
       expect(panel?.classList).not.toContain('moved');
 
-      // Another card clear of the top right corner: the panel goes back home, fading in.
+      // Another card clear of the bottom right corner: the panel goes back home, fading in.
       await fireEvent.pointerEnter(surface().querySelector('.card[data-id="a"]') as HTMLElement);
-      expect(preview().closest('.peek')?.classList).toContain('top-right');
+      expect(preview().closest('.peek')?.classList).toContain('bottom-right');
       expect(preview().closest('.peek')?.classList).toContain('moved');
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
+
+  it('follows the pointer at the next frame, without measuring the hovered card at each move', async () => {
+    const rect = (left: number, top: number, width: number, height: number) =>
+      ({ left, top, width, height, right: left + width, bottom: top + height }) as DOMRect;
+    // The hovered card's measures: only the panel's placement reads them.
+    let cardMeasures = 0;
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: Element,
+    ) {
+      if (this.classList.contains('tablewrap')) {
+        return rect(0, 0, 1000, 800);
+      }
+      if ((this as HTMLElement).dataset.id === 'a') {
+        cardMeasures++;
+      }
+      return rect(0, 0, 10, 10);
+    });
+    vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(320);
+    vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(450);
+    try {
+      render(Table, { session: fakeSession(), view: makeView() });
+      await catalogLoaded();
+      await fireEvent.pointerEnter(surface().querySelector('.card[data-id="a"]') as HTMLElement);
+      expect(preview().closest('.peek')?.classList).toContain('bottom-right');
+
+      cardMeasures = 0;
+      // Over the bottom right corner, three times in a frame: placed at the next frame.
+      for (const x of [900, 910, 920]) {
+        await fireEvent.pointerMove(window, { clientX: x, clientY: 600 });
+      }
+      await waitFor(() => expect(preview().closest('.peek')?.classList).toContain('top-right'));
+      expect(cardMeasures).toBe(0);
     } finally {
       vi.restoreAllMocks();
     }
@@ -619,7 +655,7 @@ describe('Table', () => {
 
     const side = screen.getByRole('complementary', { name: 'History' });
     expect(within(side).getByRole('list', { name: 'History' })).toBeTruthy();
-    expect(within(side).queryByLabelText('Focus')).toBeNull();
+    expect(within(side).queryByLabelText('Card preview')).toBeNull();
     expect(screen.queryByRole('button', { name: 'History' })).toBeNull();
   });
 
@@ -631,10 +667,10 @@ describe('Table', () => {
     await fireEvent.pointerEnter(surface().querySelector('.card[data-id="v"]') as HTMLElement);
     expect(preview().closest('.peek')?.parentElement).toBe(container.querySelector('.app'));
     expect(within(preview()).getByRole('img', { name: 'Rhino' })).toBeTruthy();
-    // A framed panel at the top right, wider for a landscape card.
+    // A framed panel at the bottom right, wider for a landscape card.
     const panel = preview().closest<HTMLElement>('.peek')!;
     expect(panel.querySelector('.tab')).toBeNull();
-    expect(panel.classList).toContain('top-right');
+    expect(panel.classList).toContain('bottom-right');
     expect(panel.classList).not.toContain('land');
     await fireEvent.pointerEnter(surface().querySelector('.card[data-id="s"]') as HTMLElement);
     expect(preview().closest('.peek')?.classList).toContain('land');
@@ -791,7 +827,7 @@ describe('Table view modes', () => {
     await catalogLoaded();
     expect(viewButton('All').getAttribute('aria-pressed')).toBe('true');
     expect(shownIds()).toEqual(['enc', 'd0', 'd1', 'x1', 'v', 's', 'a', 'b']);
-    expect(screen.queryByRole('group', { name: 'Player shown' })).toBeNull();
+    expect(screen.queryByRole('radiogroup', { name: 'Player shown' })).toBeNull();
 
     await fireEvent.click(viewButton('Villain + player'));
     expect(viewButton('Villain + player').getAttribute('aria-pressed')).toBe('true');
@@ -811,24 +847,25 @@ describe('Table view modes', () => {
     render(Table, { session: fakeSession(), view: makeView() });
     await catalogLoaded();
 
-    const picker = screen.getByRole('group', { name: 'Player shown' });
-    const swatches = within(picker).getAllByRole('button');
-    // Swatches without a visible name: it is their label and tooltip.
+    const picker = screen.getByRole('radiogroup', { name: 'Player shown' });
+    const swatches = within(picker).getAllByRole('radio');
+    // Swatches without a visible name: it is their label and tooltip. Only the chosen one is tabbed to.
     expect(
       swatches.map((swatch) => [
         swatch.getAttribute('aria-label'),
         swatch.dataset.tip,
         swatch.textContent,
-        swatch.getAttribute('aria-pressed'),
+        swatch.getAttribute('aria-checked'),
+        swatch.tabIndex,
       ]),
     ).toEqual([
-      ['Alex', 'Alex', '', 'false'],
-      ['Sam', 'Sam', '', 'true'],
+      ['Alex', 'Alex', '', 'false', -1],
+      ['Sam', 'Sam', '', 'true', 0],
     ]);
     // Two players: no previous and next buttons.
-    expect(within(picker).queryByRole('button', { name: 'Next player' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Next player' })).toBeNull();
 
-    await fireEvent.click(within(picker).getByRole('button', { name: 'Alex' }));
+    await fireEvent.click(within(picker).getByRole('radio', { name: 'Alex' }));
     expect(shownIds()).toEqual(['enc', 'd0', 'v', 's', 'a']);
     expect(surface().querySelector<HTMLElement>('[data-id="a"]')?.style.top).toBe('360px');
   });
@@ -848,18 +885,49 @@ describe('Table view modes', () => {
     render(Table, { session: fakeSession(), view });
     await catalogLoaded();
 
-    const picker = screen.getByRole('group', { name: 'Player shown' });
-    const pressed = () =>
+    const picker = screen.getByRole('radiogroup', { name: 'Player shown' });
+    const checked = () =>
       within(picker)
-        .getAllByRole('button', { pressed: true })
+        .getAllByRole('radio', { checked: true })
         .map((swatch) => swatch.getAttribute('aria-label'));
-    expect(pressed()).toEqual(['Sam']);
-    await fireEvent.click(within(picker).getByRole('button', { name: 'Next player' }));
-    expect(pressed()).toEqual(['Kim']);
-    await fireEvent.click(within(picker).getByRole('button', { name: 'Next player' }));
-    expect(pressed()).toEqual(['Alex']);
-    await fireEvent.click(within(picker).getByRole('button', { name: 'Previous player' }));
-    expect(pressed()).toEqual(['Kim']);
+    expect(checked()).toEqual(['Sam']);
+    await fireEvent.click(screen.getByRole('button', { name: 'Next player' }));
+    expect(checked()).toEqual(['Kim']);
+    await fireEvent.click(screen.getByRole('button', { name: 'Next player' }));
+    expect(checked()).toEqual(['Alex']);
+    await fireEvent.click(screen.getByRole('button', { name: 'Previous player' }));
+    expect(checked()).toEqual(['Kim']);
+  });
+
+  it('moves the shown player and the focus with the arrow keys', async () => {
+    localStorage.setItem('itf-view', 'focus');
+    const view = makeView();
+    view.players.push({
+      name: 'Kim',
+      color: 2,
+      host: false,
+      area: 'p2',
+      ready: true,
+      handCount: 0,
+    });
+    view.table!.piles.push(pile('d2', { owner: 2, x: 0, y: 1020 }));
+    render(Table, { session: fakeSession(), view });
+    await catalogLoaded();
+
+    const picker = screen.getByRole('radiogroup', { name: 'Player shown' });
+    const sam = within(picker).getByRole('radio', { name: 'Sam' });
+    sam.focus();
+    await fireEvent.keyDown(sam, { key: 'ArrowRight' });
+    const kim = within(picker).getByRole('radio', { name: 'Kim' });
+    await waitFor(() => expect(document.activeElement).toBe(kim));
+    expect(kim.getAttribute('aria-checked')).toBe('true');
+    // Round the table, both ways.
+    await fireEvent.keyDown(kim, { key: 'ArrowDown' });
+    await waitFor(() => expect(document.activeElement?.getAttribute('aria-label')).toBe('Alex'));
+    await fireEvent.keyDown(document.activeElement!, { key: 'ArrowLeft' });
+    await waitFor(() => expect(document.activeElement).toBe(kim));
+    await fireEvent.keyDown(kim, { key: 'ArrowUp' });
+    await waitFor(() => expect(document.activeElement).toBe(sam));
   });
 
   it('offers no choice with one player: the table shows everything', async () => {
@@ -870,7 +938,7 @@ describe('Table view modes', () => {
     await catalogLoaded();
 
     expect(screen.queryByRole('group', { name: 'Table view' })).toBeNull();
-    expect(screen.queryByRole('group', { name: 'Player shown' })).toBeNull();
+    expect(screen.queryByRole('radiogroup', { name: 'Player shown' })).toBeNull();
     expect(shownIds()).toContain('a');
   });
 

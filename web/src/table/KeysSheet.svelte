@@ -9,10 +9,13 @@
 
   let {
     anchor,
+    alignTo = anchor,
     onclose,
   }: {
     /** The button the sheet opens from: a press on it is not a press outside. */
     anchor: HTMLElement | undefined;
+    /** The box whose right edge the sheet's lines up on (the controls around the button); the button by default. */
+    alignTo?: HTMLElement;
     onclose: () => void;
   } = $props();
 
@@ -95,14 +98,15 @@
   let top = $state(0);
   let left = $state(0);
 
-  /** Above the button, its right edge on the button's, kept inside the window. */
+  /** Above the button, its right edge on the aligned box's, kept inside the window. */
   function place(): void {
     if (!sheet || !anchor) {
       return;
     }
     const button = anchor.getBoundingClientRect();
+    const right = (alignTo ?? anchor).getBoundingClientRect().right;
     top = Math.max(EDGE, button.top - GAP - sheet.offsetHeight);
-    left = Math.max(EDGE, button.right - sheet.offsetWidth);
+    left = Math.max(EDGE, right - sheet.offsetWidth);
   }
 
   onMount(place);

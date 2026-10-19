@@ -152,11 +152,11 @@ async function renderTable(view = makeView()) {
 
 /** The preview floating over the table: only there while something is previewed. */
 function preview(): HTMLElement {
-  return screen.getByLabelText('Focus');
+  return screen.getByLabelText('Card preview');
 }
 
 function noPreview(): boolean {
-  return screen.queryByLabelText('Focus') === null;
+  return screen.queryByLabelText('Card preview') === null;
 }
 
 beforeEach(() => {

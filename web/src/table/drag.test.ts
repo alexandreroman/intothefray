@@ -15,6 +15,7 @@ import {
   type DropRect,
   type Rect,
 } from './drag';
+import { focusRows } from './rows';
 
 function rect(left: number, top: number, width: number, height: number): Rect {
   return { left, top, right: left + width, bottom: top + height };
@@ -143,6 +144,19 @@ describe('dropAction', () => {
       x: 20_000,
       y: 20_000,
     });
+  });
+
+  it('dropAction snaps where the card is drawn, then maps it to the shown row', () => {
+    // "Villain + player" with the second of three players: row 2 (660 to 990) drawn from 330.
+    const rows = focusRows(2, 3);
+    const yAt = (y: number) => dropAction(TABLE_CARD, TABLE, { x: 0, y }, DEAL_TO, rows)?.y;
+    // At the bottom of the villain's row: snapped onto the top of the shown row, not into row 1.
+    expect(yAt(327)).toBe(660);
+    expect(yAt(324)).toBe(320);
+    expect(yAt(503)).toBe(830);
+    // At the bottom of the shown row, or below it: on its last grid line, never in the hidden row 3.
+    expect(yAt(655)).toBe(980);
+    expect(yAt(2000)).toBe(980);
   });
 
   it('drop on card attaches', () => {

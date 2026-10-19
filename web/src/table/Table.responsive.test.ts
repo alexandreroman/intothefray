@@ -1,9 +1,11 @@
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import { tick } from 'svelte';
 import Table from './Table.svelte';
+import { TABLE_EDGE } from './focus';
 import { fanPositions, HAND_CARD_NARROW } from './layout';
 import { knownCard, loadGameCards, loadIndex } from '../lib/catalog';
 import type { CardView as TableCard, PresenceState, View } from '../lib/types';
+import tableSource from './Table.svelte?raw';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -124,7 +126,7 @@ describe('Table on a narrow screen', () => {
     await fireEvent.pointerEnter(within(hand).getAllByRole('listitem')[0] as HTMLElement);
     const preview = peek(container);
     expect(preview).not.toBeNull();
-    expect(within(preview as HTMLElement).getByLabelText('Focus')).toBeTruthy();
+    expect(within(preview as HTMLElement).getByLabelText('Card preview')).toBeTruthy();
     expect(
       within(preview as HTMLElement).getByRole('img', { name: 'Player card back' }),
     ).toBeTruthy();
@@ -135,12 +137,12 @@ describe('Table on a narrow screen', () => {
     const { container } = render(Table, { session: fakeSession(), view: makeView() });
 
     expect(within(sidePanel() as HTMLElement).getByRole('list', { name: 'History' })).toBeTruthy();
-    expect(within(sidePanel() as HTMLElement).queryByLabelText('Focus')).toBeNull();
+    expect(within(sidePanel() as HTMLElement).queryByLabelText('Card preview')).toBeNull();
     expect(peek(container)).toBeNull();
 
     const hand = screen.getByRole('list', { name: 'Your hand' });
     await fireEvent.pointerEnter(within(hand).getAllByRole('listitem')[0] as HTMLElement);
-    expect(within(peek(container) as HTMLElement).getByLabelText('Focus')).toBeTruthy();
+    expect(within(peek(container) as HTMLElement).getByLabelText('Card preview')).toBeTruthy();
   });
 
   it('follows the window as it narrows', async () => {
@@ -196,5 +198,45 @@ describe('Table on a narrow screen', () => {
       .getAllByRole('listitem')
       .map((item) => item.style.getPropertyValue('--x'));
     expect(xs).toEqual(slots.map((slot) => `${slot.x}px`));
+  });
+});
+
+describe('Table in the window', () => {
+  it('locks the page while it shows: only the surface scrolls', () => {
+    mockScreen(false);
+    const page = document.documentElement;
+    const { unmount } = render(Table, { session: fakeSession(), view: makeView() });
+    expect(page.classList).toContain('fixed-screen');
+
+    unmount();
+    expect(page.classList).not.toContain('fixed-screen');
+  });
+
+  it('keeps the page and the table to the window, clipping the lowered hand', () => {
+    // jsdom applies no stylesheet: the rules themselves are checked.
+    const pageRule = /:global\(html\.fixed-screen body\) \{([^}]*)\}/.exec(tableSource)?.[1];
+    expect(pageRule).toMatch(/height:\s*100%/);
+    expect(pageRule).toMatch(/overflow:\s*hidden/);
+    const appRule = /\n {2}\.app \{([^}]*)\}/.exec(tableSource)?.[1];
+    expect(appRule).toMatch(/height:\s*100dvh/);
+    expect(appRule).toMatch(/overflow:\s*clip/);
+  });
+
+  it('lines the preview, the zoom control and the player selector up on one edge', async () => {
+    mockScreen(false);
+    const { container } = render(Table, { session: fakeSession(), view: makeView() });
+    const app = container.querySelector<HTMLElement>('.app')!;
+    expect(app.style.getPropertyValue('--edge')).toBe(`${TABLE_EDGE}px`);
+
+    const hand = screen.getByRole('list', { name: 'Your hand' });
+    await fireEvent.pointerEnter(within(hand).getAllByRole('listitem')[0] as HTMLElement);
+    // At home, bottom right: the same room on the right as the controls under it.
+    const panel = peek(container)!;
+    expect(panel.classList).toContain('bottom-right');
+    expect(panel.style.margin.split(' ')[1]).toBe(`${TABLE_EDGE}px`);
+    const cornerRule = /\n {2}\.corner \{([^}]*)\}/.exec(tableSource)?.[1];
+    expect(cornerRule).toMatch(/margin: 0 var\(--edge\) var\(--edge\) 0;/);
+    const pickerRule = /\n {2}\.seatpick \{([^}]*)\}/.exec(tableSource)?.[1];
+    expect(pickerRule).toMatch(/margin: 0 0 var\(--edge\) var\(--edge\);/);
   });
 });

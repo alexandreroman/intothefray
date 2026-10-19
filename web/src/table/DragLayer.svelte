@@ -223,9 +223,9 @@
     if (from.kind === 'card') {
       const card = cardsById.get(from.card);
       const surface = surfaceRect(root);
-      if (card && surface) {
+      const corner = card && surface ? onScreen(card, surface) : null;
+      if (corner) {
         const box = boxOf(from);
-        const corner = onScreen(card, surface);
         return {
           x: (pressedAt.x - corner.x) / (box.w * zoom),
           y: (pressedAt.y - corner.y) / (box.h * zoom),
@@ -274,9 +274,10 @@
     return cardBox(sizeOf(card), {});
   }
 
-  /** Where a spot of the table shows on the screen, as the view mode draws it. */
-  function onScreen(point: Point, surface: Rect): Point {
-    return toScreen({ x: point.x, y: rowMap.toDisplay(point.y) ?? point.y }, surface, zoom);
+  /** Where a spot of the table shows on the screen, as the view mode draws it, or null when its row is hidden. */
+  function onScreen(point: Point, surface: Rect): Point | null {
+    const y = rowMap.toDisplay(point.y);
+    return y === null ? null : toScreen({ x: point.x, y }, surface, zoom);
   }
 
   /** The spot of the table drawn at a point of the screen, whatever the view mode. */
@@ -297,7 +298,8 @@
     if (!surface || action.x === undefined || action.y === undefined) {
       return cornerOf(from, at);
     }
-    return onScreen({ x: action.x, y: action.y }, surface);
+    // A placed card always lands in a shown row; the spot under the pointer covers any other case.
+    return onScreen({ x: action.x, y: action.y }, surface) ?? cornerOf(from, at);
   }
 
   function placedRect(selector: string, id: string): DOMRect | undefined {
@@ -362,11 +364,12 @@
       return null;
     }
     const surface = surfaceRect(root);
-    const spot = surface ? onTable(cornerOf(from, at), surface) : { x: 0, y: 0 };
+    // Where the corner is drawn: dropAction snaps it before mapping it to the table.
+    const spot = surface ? toTable(cornerOf(from, at), surface, zoom) : { x: 0, y: 0 };
     // An encounter card goes to the player whose row the pointer is in.
     const pointed = surface ? onTable(at, surface) : { x: 0, y: 0 };
     const dealTo = dealRecipient(view.table?.piles ?? [], pointed.y, own);
-    return { target, action: dropAction(from, target, spot, dealTo) };
+    return { target, action: dropAction(from, target, spot, dealTo, rowMap) };
   }
 
   /** Outlines and labels what the drop would land on, and opens the gap in the hand. */

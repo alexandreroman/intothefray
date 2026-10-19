@@ -1,7 +1,7 @@
 <!--
   The table page: the top bar, the table column (one surface for everyone,
   scrolling both ways) and the side column (history). The preview of the
-  hovered card floats over the table's top right corner. On a narrow screen
+  hovered card floats over the table's bottom right corner. On a narrow screen
   there is no side column.
 -->
 <script lang="ts">
@@ -57,7 +57,7 @@
   import Presence from './Presence.svelte';
   import TokenPill from './TokenPill.svelte';
   import CardPreview, { type Preview } from './CardPreview.svelte';
-  import { chooseCorner, FOCUS_MARGINS, type Corner } from './focus';
+  import { bottomRoom, chooseCorner, FOCUS_MARGINS, HOME, TABLE_EDGE, type Corner } from './focus';
   import SidePanel from './SidePanel.svelte';
   import Surface, { type OwnerBox } from './Surface.svelte';
   import ZoomControl from './ZoomControl.svelte';
@@ -192,6 +192,28 @@
     pickedSeat = seats[(index + step + seats.length) % seats.length] ?? current;
   }
 
+  // The arrow keys in the player swatches, as in any radio group.
+  const SEAT_STEPS: Record<string, number> = {
+    ArrowRight: 1,
+    ArrowDown: 1,
+    ArrowLeft: -1,
+    ArrowUp: -1,
+  };
+
+  /** Moves the choice, and the keyboard focus with it, to the next or previous swatch. */
+  async function onSeatKey(event: KeyboardEvent, current: number): Promise<void> {
+    const step = SEAT_STEPS[event.key];
+    if (step === undefined) {
+      return;
+    }
+    // Taken: the table's own shortcuts must not see it.
+    event.preventDefault();
+    const group = event.currentTarget as HTMLElement;
+    stepSeat(current, step);
+    await tick();
+    group.querySelector<HTMLElement>('[aria-checked="true"]')?.focus();
+  }
+
   /** What lies at a height of the table, drawn where the view mode shows it; nothing when hidden. */
   function shown<T extends { y: number }>(items: T[]): T[] {
     return items.flatMap((item) => {
@@ -270,8 +292,12 @@
 
   // ---- The Focus panel's corner ----
 
-  // Top right, unless that covers the pointer or the hovered element (focus.ts).
-  let focusCorner = $state<Corner>('top-right');
+  // Bottom right, unless that covers the pointer or the hovered element (focus.ts).
+  let focusCorner = $state<Corner>(HOME);
+  // The height of the controls at the bottom right (the zoom control, the narrow Undo): the panel sits above them.
+  let cornerHeight = $state(0);
+  // The controls' box at the bottom right: the keyboard shortcuts sheet lines up on its right edge.
+  let cornerBox = $state<HTMLElement>();
   // It changed corner while shown: it fades in at the new one.
   let focusMoved = $state(false);
   // The panel's size, kept from the last time it showed; a portrait card's until then.
@@ -279,6 +305,12 @@
   let focusHeight = $state(450);
   // Read by placeFocus only, at each pointer move: plain, not state.
   let focusPointer: { x: number; y: number } | null = null;
+  // The play area and the hovered element on the screen, measured when they may have moved
+  // (hover, scroll, zoom, resize), never at each pointer move.
+  let focusArea: DOMRect | null = null;
+  let focusHovered: DOMRect | null = null;
+  // The frame placing the panel after pointer moves: at most one per frame.
+  let focusFrame = 0;
   // Whether the panel is drawn already: only a drawn panel fades into its new corner.
   let focusDrawn = false;
 
@@ -296,18 +328,31 @@
     return app.querySelector(selector)?.getBoundingClientRect() ?? null;
   }
 
+  /** Measures the play area and the hovered element, then places the panel. */
+  function measureFocus(): void {
+    // Nothing previewed, nothing to place: it is measured again as soon as a card is.
+    if (!preview) {
+      return;
+    }
+    focusArea = wrap?.getBoundingClientRect() ?? null;
+    focusHovered = hoveredRect();
+    placeFocus();
+  }
+
+  /** Places the panel against the rects last measured. */
   function placeFocus(): void {
-    if (!preview || !wrap) {
+    if (!preview || !focusArea) {
       return;
     }
     const next = chooseCorner({
       current: focusCorner,
-      area: wrap.getBoundingClientRect(),
+      area: focusArea,
       size: { w: focusWidth, h: focusHeight },
-      hovered: hoveredRect(),
+      hovered: focusHovered,
       pointer: focusPointer,
-      // The zoom control (and Undo) at the bottom right, the player selector at the bottom left.
-      taken: focused ? ['bottom-right', 'bottom-left'] : ['bottom-right'],
+      controls: cornerHeight,
+      // The player selector at the bottom left.
+      taken: focused ? ['bottom-left'] : [],
     });
     if (next !== focusCorner) {
       focusCorner = next;
@@ -317,35 +362,61 @@
 
   function followPointerForFocus(event: PointerEvent): void {
     focusPointer = { x: event.clientX, y: event.clientY };
-    placeFocus();
+    if (focusFrame === 0) {
+      focusFrame = requestAnimationFrame(() => {
+        focusFrame = 0;
+        placeFocus();
+      });
+    }
   }
 
-  /** The panel's margins in its corner: off the play area's edges. */
+  /** The panel's margins in its corner: off the play area's edges, and above the controls at home. */
   function focusMargin(corner: Corner): string {
     const top = corner.startsWith('top') ? FOCUS_MARGINS.top : 0;
-    const bottom = corner.startsWith('bottom') ? FOCUS_MARGINS.bottom : 0;
+    const bottom = bottomRoom(corner, cornerHeight);
     const left = corner.endsWith('left') ? FOCUS_MARGINS.side : 0;
     const right = corner.endsWith('right') ? FOCUS_MARGINS.side : 0;
     return `${top}px ${right}px ${bottom}px ${left}px`;
   }
 
-  // Placed before it is drawn, when what is hovered, the zoom or the panel's size change.
+  // Placed before it is drawn, when what is hovered, the zoom, the play area's or the panel's size change.
   $effect.pre(() => {
-    void [preview, interaction.hovered, zoom, focusWidth, focusHeight, focused];
-    untrack(placeFocus);
+    void [
+      preview,
+      interaction.hovered,
+      zoom,
+      visibleWidth,
+      visibleHeight,
+      focusWidth,
+      focusHeight,
+      focused,
+      cornerHeight,
+    ];
+    untrack(measureFocus);
   });
+
+  $effect(() => () => cancelAnimationFrame(focusFrame));
 
   // Nothing previewed, it goes home: shown afresh, it appears there, without a fade.
   $effect(() => {
     focusDrawn = preview !== null;
     if (!preview) {
       focusMoved = false;
-      focusCorner = 'top-right';
+      focusCorner = HOME;
     }
   });
 
   // The interaction state is shared: a previous game's must not show in the next one.
   $effect(() => () => interaction.reset());
+
+  // The table is exactly the window: the page never scrolls under it, only the surface does
+  // (.fixed-screen below). Without this, the resting hand, lowered past the bottom, would make the page
+  // scrollable, and a wheel or a drag would scroll the page rather than the surface.
+  $effect(() => {
+    const page = document.documentElement;
+    page.classList.add('fixed-screen');
+    return () => page.classList.remove('fixed-screen');
+  });
 
   // ---- Animations ----
 
@@ -364,16 +435,57 @@
       if (prev === next) {
         return;
       }
+      const own = interaction.takeActed();
       // Back after a long gap: the table shows as it is now, nothing plays.
       if (session.viewGap > MAX_APART_MS) {
         motion.stop();
+        if (own) {
+          void tick().then(rehoverUnderPointer);
+        }
         return;
       }
       const ownDrop = interaction.landing?.card ?? undefined;
       const anims = diffViews(prev, next, ownDrop, session.viewGap);
-      void motion.animate(app, anims, { before: prev.table, after: next.table }, zoom);
+      void motion
+        .animate(app, anims, { before: prev.table, after: next.table }, zoom)
+        .then(async () => {
+          if (!own) {
+            return;
+          }
+          // Once drawn, then once still: a card turning over is edge-on, out of reach, meanwhile.
+          rehoverUnderPointer();
+          await motion.settled();
+          rehoverUnderPointer();
+        });
     });
   });
+
+  /** Hovers the card or hand card under a pointer at rest, after the viewer's own action redrew it. */
+  function rehoverUnderPointer(): void {
+    const { x, y } = interaction.pointer;
+    if (
+      !Number.isFinite(x) ||
+      !Number.isFinite(y) ||
+      typeof document.elementFromPoint !== 'function'
+    ) {
+      return;
+    }
+    // Piles keep their own hover: an empty one has none, a deck keeps the preview.
+    const hit = document
+      .elementFromPoint(x, y)
+      ?.closest<HTMLElement>('.surface .card:not(.pile, .ghost)[data-id], .hand .hcard[data-id]');
+    const id = hit?.dataset.id;
+    if (!hit || id === undefined) {
+      return;
+    }
+    interaction.rehover({ kind: hit.classList.contains('hcard') ? 'hand' : 'card', id });
+  }
+
+  /** Sends an action of the viewer's: the view that shows it hovers what lands under the pointer. */
+  function act(action: Action): number | null {
+    interaction.acted();
+    return session.act(action);
+  }
 
   $effect(() => () => motion.stop());
 
@@ -498,7 +610,7 @@
   function stepCounter(delta: number): void {
     const target = interaction.counter;
     if (target) {
-      session.act({ kind: target.kind, card: target.card, name: target.name, delta });
+      act({ kind: target.kind, card: target.card, name: target.name, delta });
     }
   }
 
@@ -560,7 +672,7 @@
     if (action.kind === 'look' || action.kind === 'search') {
       closingView = false;
     }
-    session.act(action);
+    act(action);
   }
 
   // ---- The card boxes ----
@@ -620,9 +732,7 @@
   function closeBox(shuffle: boolean): void {
     if (shownBox?.kind === 'pile' && shownBox.mode !== 'browse') {
       // Act returns null when nothing was sent: the box then stays, as the server never closes it.
-      const sent = session.act(
-        shuffle ? { kind: 'closeView', where: 'shuffle' } : { kind: 'closeView' },
-      );
+      const sent = act(shuffle ? { kind: 'closeView', where: 'shuffle' } : { kind: 'closeView' });
       closingView = sent !== null;
       return;
     }
@@ -639,7 +749,7 @@
     const seat = ownArea ? seatOf(ownArea) : null;
     const arrows = view.table?.arrows ?? [];
     if (seat !== null && arrows.some((arrow) => arrow.seat === seat)) {
-      session.act({ kind: 'arrowClear' });
+      act({ kind: 'arrowClear' });
     }
   }
 
@@ -668,7 +778,7 @@
   function endArrowAt(to: string | undefined): void {
     const from = interaction.arrowFrom;
     if (from !== null && to && to !== from) {
-      session.act({ kind: 'arrowAdd', card: from, target: to });
+      act({ kind: 'arrowAdd', card: from, target: to });
     }
     interaction.endArrow();
     // On touch, the tap goes on to the card as a click, which would select it;
@@ -757,7 +867,7 @@
   }
 
   function undo(): void {
-    session.act({ kind: 'undo' });
+    act({ kind: 'undo' });
   }
 
   // The breakpoint of the @media rules below. On a narrow screen the side
@@ -838,7 +948,7 @@
   for screen readers and in its tooltip only, as the name already shows above the player's deck.
 -->
 {#snippet seatPicker(current: number)}
-  <div class="seatpick" role="group" aria-label="Player shown">
+  <div class="seatpick">
     {#if seats.length > 2}
       <button
         class="step"
@@ -847,16 +957,26 @@
         onclick={() => stepSeat(current, -1)}>←</button
       >
     {/if}
-    {#each seatedPlayers as { seat, name, color } (seat)}
-      <button
-        class="seat"
-        style:--seat="var(--p{color + 1})"
-        aria-label={name}
-        data-tip={name}
-        aria-pressed={seat === current}
-        onclick={() => (pickedSeat = seat)}
-      ></button>
-    {/each}
+    <div
+      class="seats"
+      role="radiogroup"
+      aria-label="Player shown"
+      tabindex="-1"
+      onkeydown={(event) => onSeatKey(event, current)}
+    >
+      {#each seatedPlayers as { seat, name, color } (seat)}
+        <button
+          class="seat"
+          style:--seat="var(--p{color + 1})"
+          role="radio"
+          aria-label={name}
+          data-tip={name}
+          aria-checked={seat === current}
+          tabindex={seat === current ? 0 : -1}
+          onclick={() => (pickedSeat = seat)}
+        ></button>
+      {/each}
+    </div>
     {#if seats.length > 2}
       <button
         class="step"
@@ -878,6 +998,7 @@
   onpointerup={onPointerUp}
   onpointercancel={onPointerCancel}
   onkeydown={onKeydown}
+  onresize={measureFocus}
 />
 
 <!-- The zoom is set on the whole page, so a layer outside the table (a drag ghost) can follow it. -->
@@ -886,6 +1007,7 @@
   class:arrowing={interaction.arrowFrom !== null}
   class:dragging={interaction.dragging !== null}
   style:--z={zoom}
+  style:--edge="{TABLE_EDGE}px"
   bind:this={app}
 >
   <div class="top">
@@ -905,7 +1027,7 @@
     bind:clientHeight={visibleHeight}
     bind:clientWidth={visibleWidth}
     onpointerdowncapture={onTablePointerDown}
-    onscroll={placeFocus}
+    onscroll={measureFocus}
   >
     <div class="table">
       <Surface
@@ -946,7 +1068,7 @@
     The bottom right corner of the table. Touch screens have no Z key: without the side column,
     Undo floats there, left of the zoom control.
   -->
-  <div class="corner">
+  <div class="corner" bind:this={cornerBox} bind:clientHeight={cornerHeight}>
     {#if narrow.current}
       <div class="undo">
         <!-- aria-disabled rather than disabled, so that the tooltip saying why still shows. -->
@@ -990,7 +1112,7 @@
   {/if}
 
   {#if keySheetShown}
-    <KeysSheet anchor={keysButton} onclose={hideKeySheet} />
+    <KeysSheet anchor={keysButton} alignTo={cornerBox} onclose={hideKeySheet} />
   {/if}
 
   {#if handCards}
@@ -1006,7 +1128,7 @@
     {faceOf}
     {sizeOf}
     {rowMap}
-    act={(action) => session.act(action)}
+    {act}
     ondrag={(drag) => session.sendPresence({ drag })}
     lastError={session.lastError}
   />
@@ -1041,7 +1163,7 @@
         {facesOf}
         {sizeOf}
         readOnly={view.you.role !== 'player'}
-        act={(action) => session.act(action)}
+        {act}
         onclose={closeBox}
       />
     {/key}
@@ -1085,10 +1207,23 @@
 </div>
 
 <style>
+  /* While the table shows, the page is exactly the window and never scrolls. */
+  :global(html.fixed-screen),
+  :global(html.fixed-screen body) {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  /*
+    Exactly the window. What lies past its edges, as the resting hand lowered under the bottom, is
+    clipped: it never reaches the page, which would scroll.
+  */
   .app {
     display: grid;
     height: 100vh;
     height: 100dvh;
+    overflow: clip;
     grid-template-rows: auto minmax(0, 1fr);
     grid-template-columns: minmax(0, 1fr) 320px;
     grid-template-areas:
@@ -1202,7 +1337,7 @@
     align-self: end;
     justify-self: start;
     z-index: 30;
-    margin: 0 0 16px 16px;
+    margin: 0 0 var(--edge) var(--edge);
     display: flex;
     align-items: center;
     gap: 4px;
@@ -1227,6 +1362,12 @@
   }
 
   /* A round swatch of the seat colour; the player shown is ringed. */
+  .seatpick .seats {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
   .seatpick .seat {
     width: 18px;
     height: 18px;
@@ -1242,7 +1383,7 @@
     opacity: 1;
   }
 
-  .seatpick .seat[aria-pressed='true'] {
+  .seatpick .seat[aria-checked='true'] {
     opacity: 1;
     box-shadow:
       0 0 0 2px #141a28,
@@ -1255,7 +1396,7 @@
     align-self: end;
     justify-self: end;
     z-index: 30;
-    margin: 0 16px 16px 0;
+    margin: 0 var(--edge) var(--edge) 0;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -1301,9 +1442,9 @@
   }
 
   /*
-    The preview, at the top right of the table, still while the table scrolls under it. As the
-    zoom control: over the table, under the other players' presence (2500), the veil and the
-    raised hand (2600). Never as tall as to reach the zoom control at the bottom right; the
+    The preview, at the bottom right of the table above the zoom control, still while the table
+    scrolls under it. As the zoom control: over the table, under the other players' presence
+    (2500), the veil and the raised hand (2600). Never so tall that it leaves the table; the
     pointer goes through it.
   */
   .peek {

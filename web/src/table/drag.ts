@@ -6,6 +6,7 @@ import type { Action, Area, CardView, PileView, View } from '../lib/types';
 import { discardPileOf, homeDeckOf, seatOf, stageHeldBy } from './actions';
 import type { Pressable } from './interaction.svelte';
 import { GRID, TABLE_LIMIT } from './layout';
+import { ALL_ROWS, type RowMap } from './rows';
 
 /** A press turns into a drag once the pointer has moved this far, in screen pixels. */
 export const DRAG_THRESHOLD = 4;
@@ -131,22 +132,26 @@ export function dropTarget(point: Point, targets: DropRect[]): DropRect | null {
 
 /**
  * The action a drop sends: `at` is where the dragged card's top-left corner
- * lands, in table units, and `dealTo` the player an encounter card dealt
- * there goes to (see dealRecipient). Null when nothing would change: no
- * target, the spot it was taken from, or its own place in the hand.
+ * is drawn, in table units, `dealTo` the player an encounter card dealt there
+ * goes to (see dealRecipient), and `rows` where the view mode draws the rows.
+ * Null when nothing would change: no target, the spot it was taken from, or
+ * its own place in the hand.
  */
 export function dropAction(
   drag: DragSource,
   target: DropRect | null,
   at: Point,
   dealTo: Area,
+  rows: RowMap = ALL_ROWS,
 ): Action | null {
   if (target === null) {
     return null;
   }
   // The token lies anywhere on the table, over cards and piles alike.
   if (drag.kind === 'firstPlayer') {
-    return target.kind === 'hand' || target.kind === 'toHand' ? null : place(drag, at, dealTo);
+    return target.kind === 'hand' || target.kind === 'toHand'
+      ? null
+      : place(drag, at, dealTo, rows);
   }
   switch (target.kind) {
     case 'hand':
@@ -156,9 +161,9 @@ export function dropAction(
     case 'pile':
       return onPile(drag, target.pile, target.drop);
     case 'card':
-      return onCard(drag, target.card, at, dealTo);
+      return onCard(drag, target.card, at, dealTo, rows);
     case 'table':
-      return place(drag, at, dealTo);
+      return place(drag, at, dealTo, rows);
   }
 }
 
@@ -177,7 +182,13 @@ function toHand(drag: DragSource): Action | null {
 /** What can be dropped onto a card or a pile: everything but the token. */
 type CardSource = Exclude<DragSource, { kind: 'firstPlayer' }>;
 
-function onCard(drag: CardSource, card: string, at: Point, dealTo: Area): Action | null {
+function onCard(
+  drag: CardSource,
+  card: string,
+  at: Point,
+  dealTo: Area,
+  rows: RowMap,
+): Action | null {
   switch (drag.kind) {
     case 'card':
       return { kind: 'attach', card: drag.card, target: card };
@@ -188,7 +199,7 @@ function onCard(drag: CardSource, card: string, at: Point, dealTo: Area): Action
     case 'encounter':
     case 'deck':
       // Put where it lands, over that card: dealt face down (spec 5.5), or played face up.
-      return place(drag, at, dealTo);
+      return place(drag, at, dealTo, rows);
   }
 }
 
@@ -227,10 +238,14 @@ function onPile(drag: CardSource, pile: string, drop: PileDrop): Action | null {
   }
 }
 
-function place(drag: DragSource, at: Point, dealTo: Area): Action | null {
+function place(drag: DragSource, at: Point, dealTo: Area, rows: RowMap): Action | null {
+  // Snapped where it is drawn, then mapped to the table: snapping after would
+  // push a card drawn at the bottom of a row into the next, hidden, one. A row
+  // that ends there keeps the card on its last height, taken down to the grid.
+  const onGrid = Math.floor(rows.toTable(snap(at.y)) / GRID) * GRID;
   // Within the server's bounds: never off the top or left edge, nor past TABLE_LIMIT.
   const x = Math.min(TABLE_LIMIT, Math.max(0, snap(at.x)));
-  const y = Math.min(TABLE_LIMIT, Math.max(0, snap(at.y)));
+  const y = Math.min(TABLE_LIMIT, Math.max(0, onGrid));
   switch (drag.kind) {
     case 'card':
       // A revealed card dropped where it lies is still on its deck: nothing moves.

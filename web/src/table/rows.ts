@@ -44,12 +44,14 @@ export function rowOf(y: number): number {
 
 /**
  * "Villain + player": the villain's row (row 0) where it is, and the player's
- * row `row` drawn right under it. The last row of the table runs on
- * downward, so a card dropped below it stays with its player. Anything drawn
- * below the villain's row belongs to the player's row.
+ * row `row` drawn right under it. Anything drawn below the villain's row
+ * belongs to the player's row: the last row of the table runs on downward,
+ * so a card dropped below it stays with its player; any other row ends on
+ * its last height, so that nothing drawn lands in the hidden row after it.
  */
 export function focusRows(row: number, lastRow: number): RowMap {
   const shift = ROW_HEIGHT * (row - 1);
+  const bottom = row === lastRow ? Infinity : ROW_HEIGHT * (row + 1) - 1;
   return {
     toDisplay(y) {
       const at = rowOf(y);
@@ -60,7 +62,7 @@ export function focusRows(row: number, lastRow: number): RowMap {
       return shown ? y - shift : null;
     },
     toTable(y) {
-      return y < ROW_HEIGHT ? y : y + shift;
+      return y < ROW_HEIGHT ? y : Math.min(y + shift, bottom);
     },
   };
 }

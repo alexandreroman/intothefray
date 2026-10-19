@@ -469,16 +469,18 @@ describe('Table animations', () => {
   });
 
   it('a card come face up from a deck onto the table only turns in', async () => {
+    // The server never lists a deck's cards: the card shows up on the table as the deck shrinks.
     const session = fakeSession();
-    const { rerender } = render(Table, {
-      session,
-      view: makeView([card('a', { zone: 'pile', code: undefined })]),
-    });
+    const { rerender } = render(Table, { session, view: makeView([]) });
     await settle();
 
+    const deck = PILES.map((pile) => (pile.id === 'deck:p1' ? { ...pile, count: 29 } : pile));
     await rerender({
       session,
-      view: makeView([card('a', { x: 300 })], { log: [START, line('played Spider-Man')] }),
+      view: makeView([card('a', { x: 300 })], {
+        piles: deck,
+        log: [START, line('played Spider-Man')],
+      }),
     });
     await waitFor(() =>
       expect(animationsOf('.surface .card[data-id="a"]').map(([frames]) => frames)).toContainEqual([

@@ -27,10 +27,11 @@
 
   type TokenKind = 'dmg' | 'thr' | 'gen';
 
-  // On a scheme, threat sits in the top right corner and the other tokens pile up from the bottom
-  // right one; on any other card, every token sits in the middle.
-  const ALL_TOKENS: readonly TokenKind[] = ['dmg', 'thr', 'gen'];
-  const CORNER_TOKENS: readonly TokenKind[] = ['dmg', 'gen'];
+  // The tokens kept to the bottom right corner, piled up from it: on a scheme, all but the
+  // threat (top right); on any other card, the damage, the others in the middle.
+  const SCHEME_CORNER_TOKENS: readonly TokenKind[] = ['dmg', 'gen'];
+  const CARD_CORNER_TOKENS: readonly TokenKind[] = ['dmg'];
+  const CARD_MIDDLE_TOKENS: readonly TokenKind[] = ['thr', 'gen'];
   const SCHEME_TYPES: readonly string[] = ['main_scheme', 'side_scheme', 'player_side_scheme'];
   const STATUSES = [
     ['stunned', 'Stunned'],
@@ -44,8 +45,10 @@
   // A hidden card has no face: it is not known to be a scheme.
   const scheme = $derived(!hidden && SCHEME_TYPES.includes(face?.type ?? ''));
   const hasToken = (k: TokenKind) => (card.tokens?.[k] ?? 0) > 0;
-  const middleTokens = $derived(scheme ? [] : ALL_TOKENS.filter(hasToken));
-  const cornerTokens = $derived(scheme ? CORNER_TOKENS.filter(hasToken) : []);
+  const middleTokens = $derived(scheme ? [] : CARD_MIDDLE_TOKENS.filter(hasToken));
+  const cornerTokens = $derived(
+    (scheme ? SCHEME_CORNER_TOKENS : CARD_CORNER_TOKENS).filter(hasToken),
+  );
   const cornerThreat = $derived(scheme && hasToken('thr'));
   const statuses = $derived(STATUSES.filter(([k]) => (card.status?.[k] ?? 0) > 0));
   const element = $derived({ kind: 'card', id: card.id } as const);
@@ -195,7 +198,9 @@
   /*
     Tokens sit inside the card. On a scheme they keep to its right corners, clear of the printed
     threat values: threat at the top, damage and counters piled up from the bottom, the first
-    one in the corner. On any other card they sit together in the middle.
+    one in the corner. On any other card, damage sits in the bottom right corner, the others
+    together in the middle. The status tabs end above the middle, or lie along the top of a
+    landscape card: clear of both.
   */
   .tokens {
     position: absolute;
@@ -222,48 +227,79 @@
     top: 6px;
   }
 
-  /* A flat pill with an ink rim, its count in the display face, ink on colour. */
+  /* Tokens look like small cardboard chips: lit from the top left, a thin inner ring, a rim and a shadow. */
   .tok {
-    min-width: 28px;
+    --hi: #fff;
+    --base: #999;
+    --lo: #333;
+    --rim: #222;
+    --ink: #fff;
+    position: relative;
+    width: 26px;
     height: 26px;
-    padding: 0 6px;
-    border-radius: 999px;
-    border: 2px solid var(--table-bg);
+    border-radius: 50%;
     display: grid;
     place-items: center;
-    font-stretch: 62%;
-    font-weight: 900;
-    font-size: 17px;
-    line-height: 1;
-    color: var(--bg);
-    box-shadow: 0 2px 5px #000000a0;
+    font:
+      800 13px/1 system-ui,
+      sans-serif;
+    color: var(--ink);
+    text-shadow: 0 1px 1px #0008;
+    background: radial-gradient(circle at 34% 28%, var(--hi) 0%, var(--base) 48%, var(--lo) 100%);
+    border: 1.5px solid var(--rim);
+    box-shadow:
+      inset 0 1px 1px #ffffff80,
+      inset 0 -2px 3px #0000004d,
+      0 2px 4px #000000a0;
   }
 
-  /* Pointed at: the pill is up. */
+  /* Pointed at: the chip is ringed. */
   .tok:hover,
   .tok.hot {
     box-shadow:
-      0 0 0 2px var(--text),
+      inset 0 1px 1px #ffffff80,
+      inset 0 -2px 3px #0000004d,
+      0 0 0 2px #fff,
       0 2px 6px #000000a0;
   }
 
   .st:hover,
   .st.hot {
     box-shadow:
-      0 0 0 2px var(--text),
+      0 0 0 2px #fff,
       0 2px 4px #0009;
   }
 
+  .tok::before {
+    content: '';
+    position: absolute;
+    inset: 2.5px;
+    border-radius: 50%;
+    border: 1px solid #ffffff40;
+    pointer-events: none;
+  }
+
   .tok.dmg {
-    background: var(--accent);
+    --hi: #ff9b8c;
+    --base: #d8352b;
+    --lo: #7a1210;
+    --rim: #4e0b09;
   }
 
+  /* Same orange as Tough. */
   .tok.thr {
-    background: var(--spark);
+    --hi: #ffd59a;
+    --base: #e08a1e;
+    --lo: #8a4a07;
+    --rim: #5a2f02;
   }
 
+  /* Counters are green, as Stunned. */
   .tok.gen {
-    background: var(--text);
+    --hi: #9fe0b2;
+    --base: #1b8a4a;
+    --lo: #0a4723;
+    --rim: #052e16;
   }
 
   /*

@@ -165,6 +165,20 @@ describe('KeysSheet', () => {
     expect(sheet()!.style.left).toBe('290px');
   });
 
+  it("lines its right edge up on the controls' around its button", () => {
+    const anchor = document.body.appendChild(document.createElement('button'));
+    const controls = document.body.appendChild(document.createElement('div'));
+    vi.spyOn(anchor, 'getBoundingClientRect').mockReturnValue(new DOMRect(900, 700, 30, 26));
+    // The zoom control around the button: 5 px of padding and border on its right.
+    vi.spyOn(controls, 'getBoundingClientRect').mockReturnValue(new DOMRect(700, 695, 235, 36));
+    vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(640);
+    vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(400);
+    render(KeysSheet, { props: { anchor, alignTo: controls, onclose: vi.fn() } });
+
+    expect(sheet()!.style.top).toBe('286px');
+    expect(sheet()!.style.left).toBe(`${935 - 640}px`);
+  });
+
   it('the × button and a press outside close it; a press inside does not', async () => {
     const anchor = document.body.appendChild(document.createElement('button'));
     const outside = document.body.appendChild(document.createElement('div'));

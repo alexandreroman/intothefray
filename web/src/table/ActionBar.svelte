@@ -3,11 +3,14 @@
   centred above it, or below it when there is no room above, and lined up on
   its left or right edge when centring would cross the visible table. It
   stays while the pointer is on it, and is never moved under the pointer.
-  Its dropdowns open above it.
+  Its dropdowns open above it, or below it, always inside the visible table
+  and the window (dropdown.ts).
 -->
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import type { ActionItem } from './actions';
+  import { intersect } from './drag';
+  import { placeDropdown, type DropdownPlace } from './dropdown';
   import Icons from './Icons.svelte';
   import { interaction } from './interaction.svelte';
 
@@ -34,7 +37,6 @@
   // Room between the bar and its element, and from the table edges.
   const GAP = 8;
   const EDGE = 8;
-  const MENU_GAP = 6;
 
   let bar = $state<HTMLElement>();
   let position = $state<{ x: number; y: number } | null>(null);
@@ -80,6 +82,7 @@
     if (!interaction.onBar) {
       place();
     }
+    placeMenu();
   }
 
   /**
@@ -101,7 +104,7 @@
   // ---- Dropdowns ----
 
   let menuElement = $state<HTMLElement>();
-  let menuPosition = $state<{ left: number; bottom: number } | null>(null);
+  let menuPosition = $state<DropdownPlace | null>(null);
   const openMenu = $derived(list.find((item) => item.id === interaction.menu && item.menu));
 
   function toggleMenu(item: ActionItem): void {
@@ -111,8 +114,8 @@
     interaction.menu = interaction.menu === item.id ? null : item.id;
   }
 
-  // Opened above its button, kept inside the window.
-  $effect(() => {
+  /** Places the open dropdown by its button, whole inside the visible table and the window. */
+  function placeMenu(): void {
     if (!openMenu || !menuElement || !bar) {
       menuPosition = null;
       return;
@@ -121,12 +124,21 @@
     if (!button) {
       return;
     }
-    const r = button.getBoundingClientRect();
-    const width = menuElement.getBoundingClientRect().width;
-    menuPosition = {
-      left: Math.min(r.left, window.innerWidth - width - EDGE),
-      bottom: window.innerHeight - r.top + MENU_GAP,
+    // Its whole height, even while it is cut to scroll: the content's, and the borders.
+    const borders = menuElement.offsetHeight - menuElement.clientHeight;
+    const size = {
+      w: menuElement.getBoundingClientRect().width,
+      h: menuElement.scrollHeight + borders,
     };
+    const screen = { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight };
+    const room = intersect(bounds.getBoundingClientRect(), screen);
+    menuPosition = placeDropdown(button.getBoundingClientRect(), size, room);
+  }
+
+  // Placed as it opens, and again when the bar moves or the table zooms.
+  $effect(() => {
+    void [openMenu, menuElement, position, zoom];
+    placeMenu();
   });
 
   function onDocumentPointerDown(event: PointerEvent): void {
@@ -282,7 +294,8 @@
     tabindex="-1"
     bind:this={menuElement}
     style:left="{menuPosition?.left ?? 0}px"
-    style:bottom="{menuPosition?.bottom ?? 0}px"
+    style:top="{menuPosition?.top ?? 0}px"
+    style:max-height={menuPosition?.maxHeight == null ? undefined : `${menuPosition.maxHeight}px`}
     {@attach trackMenu}
     onpointerenter={() => {
       pointerOnMenu = true;
@@ -422,17 +435,24 @@
     font-size: 11px;
   }
 
+  /* Cut to the room it has, it scrolls inside (dropdown.ts). */
   .menu {
     position: fixed;
     z-index: 5000;
     display: flex;
     flex-direction: column;
+    overflow-y: auto;
     min-width: 180px;
     padding: 5px;
     border: 1px solid var(--line-strong);
     border-radius: 12px;
     background: var(--panel-2);
     box-shadow: 0 14px 34px #0009;
+  }
+
+  /* Cut short, its items keep their height: it scrolls rather than squeezing them. */
+  .menu > :global(*) {
+    flex-shrink: 0;
   }
 
   .menu:focus {
