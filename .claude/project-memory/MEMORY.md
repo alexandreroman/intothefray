@@ -44,3 +44,4 @@
 - [Several decks per player](references/project_multi_deck.md) — 1 to 4 deck slots per player, 4 in all; seat = deck; credited seat
 - [Truncated text shows a tooltip](references/project_truncated_text.md) — ellipsis text gets a full-text tooltip via use:overflowTip
 - [Animated switches and card art](references/project_switches_card_art.md) — switches slide via selectionIndicator; thumbnails use CardArt
+- [Spectators have no stage button](references/project_spectator_stage.md) — no action on villain/main scheme cards for spectators
