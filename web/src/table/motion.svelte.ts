@@ -51,6 +51,8 @@ interface Flight {
 
 const tableCard = (id: string) => `.surface .card:not(.pile)[data-id="${CSS.escape(id)}"]`;
 const handCard = (id: string) => `.hand .hcard[data-id="${CSS.escape(id)}"]`;
+/** A card another player drags, or has just let go of (Presence.svelte). */
+const remoteGhost = (id: string) => `.presence .card.ghost[data-id="${CSS.escape(id)}"]`;
 const tablePile = (id: string) => `.surface .pile[data-id="${CSS.escape(id)}"]`;
 
 /** What an animation plays on, "card:<id>" or "pile:<id>": a new view stops only what it touches. */
@@ -162,9 +164,10 @@ class TableMotion {
     const before = new Map<string, Measured>();
     for (const anim of shown) {
       if (anim.kind === 'move' || anim.kind === 'fly') {
-        const element = root?.querySelector<HTMLElement>(
-          `${tableCard(anim.id)}, ${handCard(anim.id)}`,
-        );
+        // Another player's drop goes from where their ghost lies, not from the spot it was taken from.
+        const element =
+          root?.querySelector<HTMLElement>(remoteGhost(anim.id)) ??
+          root?.querySelector<HTMLElement>(`${tableCard(anim.id)}, ${handCard(anim.id)}`);
         if (element) {
           before.set(anim.id, measure(element, zoom));
         }

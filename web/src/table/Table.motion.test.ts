@@ -1,5 +1,6 @@
 import { render, waitFor } from '@testing-library/svelte';
 import { tick } from 'svelte';
+import { SvelteMap } from 'svelte/reactivity';
 import Table from './Table.svelte';
 import { interaction } from './interaction.svelte';
 import { motion } from './motion.svelte';
@@ -211,6 +212,37 @@ describe('Table animations', () => {
     expect(keyframes[0]).toMatchObject({ translate: '-200px -20px' });
     expect(keyframes[1]).toMatchObject({ translate: '0px 0px' });
     expect(options.duration).toBe(250);
+  });
+
+  it("another player's drop slides the card from where they let it go, never from its old place", async () => {
+    const session = { ...fakeSession(), presence: new SvelteMap<number, PresenceState>() };
+    const { rerender } = render(Table, { session, view: makeView([card('a', { x: 0 })]) });
+    await settle();
+    const ghost = () => document.querySelector<HTMLElement>('.presence .card.ghost[data-id="a"]');
+    const placedA = () => document.querySelector<HTMLElement>('.surface .card[data-id="a"]')!;
+
+    // Alex drags it to 150, 20, then lets go: its ghost stays there, the card hidden in its place.
+    session.presence.set(0, {
+      color: 0,
+      name: 'Alex',
+      at: Date.now(),
+      drag: { cards: ['a'], x: 150, y: 20 },
+    });
+    await waitFor(() => expect(ghost()).not.toBeNull());
+    session.presence.set(0, { color: 0, name: 'Alex', at: Date.now(), drag: null });
+    await settle();
+    expect(ghost()).not.toBeNull();
+    expect(placedA().classList).toContain('lifted');
+
+    // The view puts it on the grid at 200, 20: it slides there from the ghost, and shows.
+    await rerender({ session, view: makeView([card('a', { x: 200, y: 20 })]) });
+    await waitFor(() => expect(animationsOf('.surface .card[data-id="a"]')).toHaveLength(1));
+    const [[keyframes]] = animationsOf('.surface .card[data-id="a"]') as [
+      [Keyframe[], KeyframeAnimationOptions],
+    ];
+    expect(keyframes[0]).toMatchObject({ translate: '-50px 0px' });
+    expect(ghost()).toBeNull();
+    expect(placedA().classList).not.toContain('lifted');
   });
 
   it('counts frames while a card moves, for the arrows to follow it', async () => {

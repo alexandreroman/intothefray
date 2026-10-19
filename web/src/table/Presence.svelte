@@ -1,6 +1,7 @@
 <!--
   The other players at the table (spec 5.8): their cursors, the card each one
-  previews, their pings and their drags, drawn over the table. It also tells
+  previews, their pings and their drags, drawn over the table (the table
+  cards they drag hidden in their places meanwhile). It also tells
   them about the viewer's own cursor, preview and pings; DragLayer tells them
   about the viewer's drags. Spectators send nothing, as no player draws them
   (ruling P5c-R2: the server refuses their pings and drags).
@@ -10,6 +11,7 @@
   layer draws them all in one pass per animation frame.
 -->
 <script lang="ts">
+  import { untrack } from 'svelte';
   import type {
     CardView as TableCard,
     PackFace,
@@ -60,6 +62,13 @@
   const LOST_MS = 60_000;
   /** How long a ping's rings expand. */
   const PING_MS = 1200;
+  /**
+   * How long a drag that ended keeps its ghost where it was let go, its cards
+   * hidden in their places, waiting for the view that shows where they went.
+   * Without one, it was cancelled or refused: the cards show in their places
+   * again.
+   */
+  const LANDING_MS = 2000;
   // The prototype's room at the table's edges for a cursor scrolled out of view. At the right and
   // bottom edges, the room keeps the pointer and its name label in view.
   const EDGE_IN = 8;
@@ -87,6 +96,26 @@
     until: number;
   }
 
+  /** Where a dragged table card lay as the drag started; a drop that moves it changes that. */
+  interface Spot {
+    zone: TableCard['zone'];
+    x: number;
+    y: number;
+    parent?: string;
+    onPile?: string;
+  }
+
+  /** Another player's drag under way: its cards as they lay when it started. */
+  interface Dragging {
+    drag: PresenceDrag;
+    from: Map<string, Spot>;
+  }
+
+  /** Another player's drag let go: its ghost stays where it was until the view moves its cards. */
+  interface Landing extends Dragging {
+    until: number;
+  }
+
   interface Drawn {
     cursors: (Placed & { color: number; name: string })[];
     rings: { color: number; left: number; top: number; width: number; height: number }[];
@@ -105,6 +134,11 @@
   /** Wakes the drawing pass when the next player falls silent or the next ping is done. */
   let wakeTimer: ReturnType<typeof setTimeout> | undefined;
   let frame = 0;
+  // Read and written outside any effect's dependencies: plain values, not state. By colour.
+  // eslint-disable-next-line svelte/prefer-svelte-reactivity
+  const draggings = new Map<number, Dragging>();
+  // eslint-disable-next-line svelte/prefer-svelte-reactivity
+  const landings = new Map<number, Landing>();
 
   const isPlayer = $derived(view.you.role === 'player');
 
@@ -168,9 +202,73 @@
     schedule();
   }
 
+  /** Where the view lays the table cards of a drag, by id. */
+  function spotsOf(drag: PresenceDrag): Map<string, Spot> {
+    // A value computed and compared at once: nothing reacts to it.
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    const spots = new Map<string, Spot>();
+    for (const card of view.table?.cards ?? []) {
+      if (card.zone === 'table' && drag.cards.includes(card.id)) {
+        const { zone, x, y, parent, onPile } = card;
+        spots.set(card.id, { zone, x, y, parent, onPile });
+      }
+    }
+    return spots;
+  }
+
+  /** Whether the view lays some card of the drag elsewhere than it lay as the drag started. */
+  function hasMoved(dragging: Dragging): boolean {
+    const now = spotsOf(dragging.drag);
+    for (const [id, was] of dragging.from) {
+      const spot = now.get(id);
+      if (
+        !spot ||
+        spot.x !== was.x ||
+        spot.y !== was.y ||
+        spot.parent !== was.parent ||
+        spot.onPile !== was.onPile
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Follows each player's drag: a new one notes where its cards lay, an
+   * ended one lands, unless the view already moved its cards. A player gone
+   * (left, or the connection dropped) takes theirs along.
+   */
+  function followDrags(now: number): void {
+    for (const color of [...draggings.keys(), ...landings.keys()]) {
+      if (!presence.has(color)) {
+        draggings.delete(color);
+        landings.delete(color);
+      }
+    }
+    for (const { color, drag } of presence.values()) {
+      const dragging = draggings.get(color);
+      if (drag) {
+        if (!dragging) {
+          landings.delete(color);
+          draggings.set(color, { drag, from: spotsOf(drag) });
+        } else {
+          dragging.drag = drag;
+        }
+      } else if (dragging) {
+        draggings.delete(color);
+        if (!hasMoved(dragging)) {
+          landings.set(color, { ...dragging, until: now + LANDING_MS });
+        }
+      }
+    }
+  }
+
   // Every message: a new ping starts its rings, and the layer is drawn again at the next frame.
   $effect(() => {
     const now = Date.now();
+    // Messages drive it, not views: the view is only read to note where the cards lay.
+    untrack(() => followDrags(now));
     for (const state of presence.values()) {
       const { color, ping: spot, pingAt } = state;
       if (spot && pingAt !== undefined && pingsSeen[color] !== pingAt) {
@@ -292,6 +390,20 @@
     });
   }
 
+  /**
+   * The table cards drawn as other players' drags, under way or landing:
+   * they are hidden in their places meanwhile, so that each shows once.
+   * They show again as soon as the drag is no longer drawn: landed, given
+   * up on, or its player lost.
+   */
+  function tableCardsOf(ghosts: Drawn['ghosts']): Set<string> {
+    const onTable = new Set(
+      (view.table?.cards ?? []).filter((card) => card.zone === 'table').map((card) => card.id),
+    );
+    const dragged = ghosts.flatMap((ghost) => ghost.cards.map((card) => card.id));
+    return new Set(dragged.filter((id) => onTable.has(id)));
+  }
+
   function measure(): void {
     if (!layer) {
       return;
@@ -322,6 +434,14 @@
         next.ghosts.push({ color: state.color, cards: ghostsOf(state.drag, origin) });
       }
     }
+    for (const [color, landing] of landings) {
+      if (landing.until <= now) {
+        landings.delete(color);
+        continue;
+      }
+      nextChange = Math.min(nextChange, landing.until);
+      next.ghosts.push({ color, cards: ghostsOf(landing.drag, origin) });
+    }
     pings = pings.filter((p) => p.until > now);
     for (const { key, color, spot, until } of pings) {
       nextChange = Math.min(nextChange, until);
@@ -332,6 +452,7 @@
       }
     }
     drawn = next;
+    interaction.liftByOthers(tableCardsOf(next.ghosts));
 
     clearTimeout(wakeTimer);
     if (nextChange !== Infinity) {
@@ -348,6 +469,21 @@
       });
     }
   }
+
+  // The view that shows where a landing's cards went ends it at once, before the next frame: its
+  // ghost goes as the cards show, flying from where it lay (motion.svelte.ts).
+  $effect(() => {
+    void view;
+    untrack(() => {
+      const landed = [...landings].filter(([, landing]) => hasMoved(landing));
+      for (const [color] of landed) {
+        landings.delete(color);
+      }
+      if (landed.length > 0) {
+        measure();
+      }
+    });
+  });
 
   // A new view, a zoom or a resized surface move the cards under the spots.
   $effect(() => {
@@ -380,6 +516,7 @@
   $effect(() => () => {
     cancelAnimationFrame(frame);
     clearTimeout(wakeTimer);
+    interaction.liftByOthers(new Set());
   });
 </script>
 

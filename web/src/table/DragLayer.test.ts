@@ -1141,7 +1141,7 @@ describe('the card under a still pointer after the viewer acts', () => {
     expect(session.act).toHaveBeenLastCalledWith({ kind: 'flip', card: 'dealt' });
   });
 
-  it("does not hover what another player's action puts under the pointer", async () => {
+  it("hovers what another player's action puts under the pointer, and drops what it takes away", async () => {
     hitTestFrom();
     const { rerender } = await renderTable();
     await moveTo(300, 450, 0);
@@ -1155,7 +1155,22 @@ describe('the card under a still pointer after the viewer acts', () => {
       y: 310,
     });
     await rerender(makeView({ cards: [...CARDS, dealt] }));
+    await waitFor(() => expect(interaction.hovered).toEqual({ kind: 'card', id: 'dealt' }));
+
+    // Moved away from under the pointer by someone else: nothing is hovered there any more.
+    await rerender(makeView({ cards: [...CARDS, { ...dealt, x: 700, y: 600 }] }));
+    await waitFor(() => expect(interaction.hovered).toBeNull());
+  });
+
+  it('keeps the hover while the pointer is on the action bar, whatever the view moves', async () => {
+    hitTestFrom();
+    const { rerender } = await renderTable();
+    await moveTo(300, 450, 0);
+    interaction.hovered = { kind: 'card', id: 'mine' };
+    interaction.enterBar();
+
+    await rerender(makeView({ cards: CARDS.map((c) => (c.id === 'mine' ? { ...c, x: 700 } : c)) }));
     await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(interaction.hovered).toBeNull();
+    expect(interaction.hovered).toEqual({ kind: 'card', id: 'mine' });
   });
 });

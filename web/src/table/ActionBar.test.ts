@@ -453,6 +453,8 @@ describe('ActionBar', () => {
     await fireEvent.pointerEnter(placed('mine'), { clientX: 40, clientY: 60 });
     expect(interaction.hovered).toEqual({ kind: 'card', id: 'mine' });
 
+    // The redraw leaves "mine" under the pointer: it stays hovered.
+    vi.spyOn(document, 'elementFromPoint').mockReturnValue(placed('mine'));
     await rerender({ view: makeView() });
     await fireEvent.pointerEnter(placed('two'), { clientX: 40, clientY: 60 });
     expect(interaction.hovered).toEqual({ kind: 'card', id: 'mine' });

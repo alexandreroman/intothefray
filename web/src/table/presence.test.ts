@@ -168,11 +168,15 @@ async function renderTable(view: View = makeView()) {
   session.connect();
   const socket = FakeWebSocket.last!;
   socket.open();
-  render(Table, { session, view });
+  const result = render(Table, { session, view });
   // The catalog loads.
   await Promise.resolve();
   return {
     socket,
+    /** A new view, as the server would send it. */
+    async show(next: View): Promise<void> {
+      await result.rerender({ session, view: next });
+    },
     /** The presence messages sent so far, without their type. */
     sent(): Record<string, unknown>[] {
       return socket.sent
@@ -484,8 +488,11 @@ describe("other players' presence", () => {
     // In table units of the layer: the surface lies at (20, 40) in it.
     expect([ghost!.style.left, ghost!.style.top]).toEqual(['520px', '360px']);
 
+    // Let go: it stays where it was until a view shows where it went, 2 s at most.
     receive({ color: 1, name: 'Sam', drag: null });
     await nextFrame();
+    expect(document.querySelector('.presence .card[data-id="sam"]')).not.toBeNull();
+    await vi.advanceTimersByTimeAsync(2_000);
     expect(document.querySelector('.presence .card')).toBeNull();
   });
 
@@ -512,6 +519,99 @@ describe("other players' presence", () => {
     await vi.advanceTimersByTimeAsync(1_100);
     expect(rings()).toEqual([]);
     expect(document.querySelector('.presence .card')).toBeNull();
+  });
+
+  it('hides the cards another player drags in their places, the whole stack, until it lands', async () => {
+    const { receive, show } = await renderTable();
+    const hidden = () =>
+      ['mine', 'v', 'sam'].filter((id) => placed(id).classList.contains('lifted'));
+
+    // Sam drags a stack of two table cards, and a card of their hand.
+    receive({ color: 1, name: 'Sam', drag: { cards: ['sam', 'mine', 'secret'], x: 500, y: 320 } });
+    await nextFrame();
+    expect(hidden()).toEqual(['mine', 'sam']);
+    // Each shows once: as a ghost under Sam's pointer.
+    const ghosts = [...document.querySelectorAll<HTMLElement>('.presence .card')];
+    expect(ghosts.map((ghost) => ghost.dataset.id)).toEqual(['sam', 'mine', 'secret']);
+    expect(ghosts.every((ghost) => !ghost.classList.contains('lifted'))).toBe(true);
+
+    // Let go: they stay hidden, their ghosts where they were dropped, until the view moves them.
+    receive({ color: 1, name: 'Sam', drag: null });
+    await nextFrame();
+    expect(hidden()).toEqual(['mine', 'sam']);
+    expect(document.querySelectorAll('.presence .card')).toHaveLength(3);
+    await vi.advanceTimersByTimeAsync(1_000);
+    expect(hidden()).toEqual(['mine', 'sam']);
+
+    // The view moves them: they show at once where they went, never in their old places.
+    const view = makeView();
+    const moved = view.table!.cards.map((card) =>
+      card.id === 'sam' || card.id === 'mine' ? { ...card, x: card.x + 500 } : card,
+    );
+    await show({ ...view, table: { ...view.table!, cards: moved } });
+    expect(hidden()).toEqual([]);
+    expect(document.querySelector('.presence .card')).toBeNull();
+  });
+
+  it('shows them in their places again when no view moves them within 2 s', async () => {
+    const { receive, show } = await renderTable();
+
+    receive({ color: 1, name: 'Sam', drag: { cards: ['sam'], x: 500, y: 320 } });
+    await nextFrame();
+    receive({ color: 1, name: 'Sam', drag: null });
+    await nextFrame();
+    // A view that does not move it (someone else acted) does not end the landing.
+    await show(makeView());
+    await vi.advanceTimersByTimeAsync(1_900);
+    expect(placed('sam').classList).toContain('lifted');
+    await vi.advanceTimersByTimeAsync(200);
+    expect(placed('sam').classList).not.toContain('lifted');
+  });
+
+  it('shows them where they went when the view came before the drag ended', async () => {
+    const { receive, show } = await renderTable();
+
+    receive({ color: 1, name: 'Sam', drag: { cards: ['sam'], x: 500, y: 320 } });
+    await nextFrame();
+    const view = makeView();
+    const moved = view.table!.cards.map((card) =>
+      card.id === 'sam' ? { ...card, x: 500, y: 320 } : card,
+    );
+    await show({ ...view, table: { ...view.table!, cards: moved } });
+    // Still dragged as far as the others know: hidden where it went, its ghost there.
+    expect(placed('sam').classList).toContain('lifted');
+
+    receive({ color: 1, name: 'Sam', drag: null });
+    await nextFrame();
+    expect(placed('sam').classList).not.toContain('lifted');
+    expect(document.querySelector('.presence .card')).toBeNull();
+  });
+
+  it('hides them from a spectator too', async () => {
+    const { receive } = await renderTable(makeView({ spectator: true }));
+
+    receive({ color: 1, name: 'Sam', drag: { cards: ['sam'], x: 500, y: 320 } });
+    await nextFrame();
+    expect(placed('sam').classList).toContain('lifted');
+  });
+
+  it('shows them again when the drag is lost: no message for 60 s, or a reconnection', async () => {
+    const { receive, socket } = await renderTable();
+
+    receive({ color: 1, name: 'Sam', drag: { cards: ['sam'], x: 500, y: 320 } });
+    await nextFrame();
+    await vi.advanceTimersByTimeAsync(59_000);
+    expect(placed('sam').classList).toContain('lifted');
+    await vi.advanceTimersByTimeAsync(1_100);
+    expect(placed('sam').classList).not.toContain('lifted');
+
+    receive({ color: 1, name: 'Sam', drag: { cards: ['sam'], x: 500, y: 320 } });
+    await nextFrame();
+    expect(placed('sam').classList).toContain('lifted');
+    // The connection drops: what was known of the others goes with it.
+    socket.onclose?.({ code: 1006 });
+    await nextFrame();
+    expect(placed('sam').classList).not.toContain('lifted');
   });
 
   it('draws a hostile message without throwing, skipping what the view does not know', async () => {

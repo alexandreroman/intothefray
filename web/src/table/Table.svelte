@@ -440,13 +440,10 @@
       if (prev === next) {
         return;
       }
-      const own = interaction.takeActed();
       // Back after a long gap: the table shows as it is now, nothing plays.
       if (session.viewGap > MAX_APART_MS) {
         motion.stop();
-        if (own) {
-          void tick().then(rehoverUnderPointer);
-        }
+        void tick().then(rehoverUnderPointer);
         return;
       }
       const ownDrop = interaction.landing?.card ?? undefined;
@@ -454,9 +451,6 @@
       void motion
         .animate(app, anims, { before: prev.table, after: next.table }, zoom)
         .then(async () => {
-          if (!own) {
-            return;
-          }
           // Once drawn, then once still: a card turning over is edge-on, out of reach, meanwhile.
           rehoverUnderPointer();
           await motion.settled();
@@ -465,7 +459,11 @@
     });
   });
 
-  /** Hovers the card or hand card under a pointer at rest, after the viewer's own action redrew it. */
+  /**
+   * Hovers what a new view put under a pointer at rest, whoever acted (spec
+   * 5.8): the card or hand card there, or nothing once the hovered card went
+   * from under it. The ring, the bar and the preview follow.
+   */
   function rehoverUnderPointer(): void {
     const { x, y } = interaction.pointer;
     if (
@@ -475,20 +473,23 @@
     ) {
       return;
     }
+    const under = document.elementFromPoint(x, y);
     // Piles keep their own hover: an empty one has none, a deck keeps the preview.
-    const hit = document
-      .elementFromPoint(x, y)
-      ?.closest<HTMLElement>('.surface .card:not(.pile, .ghost)[data-id], .hand .hcard[data-id]');
+    if (under?.closest('.surface .pile')) {
+      return;
+    }
+    const hit = under?.closest<HTMLElement>(
+      '.surface .card:not(.pile, .ghost)[data-id], .hand .hcard[data-id]',
+    );
     const id = hit?.dataset.id;
     if (!hit || id === undefined) {
+      interaction.rehover(null);
       return;
     }
     interaction.rehover({ kind: hit.classList.contains('hcard') ? 'hand' : 'card', id });
   }
 
-  /** Sends an action of the viewer's: the view that shows it hovers what lands under the pointer. */
   function act(action: Action): number | null {
-    interaction.acted();
     return session.act(action);
   }
 

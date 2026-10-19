@@ -75,6 +75,11 @@ class TableInteraction {
   previewed = $state.raw<TableElement | null>(null);
   /** The cards of the hovered history line, ringed on the table. */
   highlighted = $state.raw<ReadonlySet<string>>(new Set());
+  /**
+   * The table cards other players drag: hidden in place while their ghosts
+   * follow those players' pointers (Presence.svelte).
+   */
+  liftedByOthers = $state.raw<ReadonlySet<string>>(new Set());
   /** A tap selected the hovered element (touch): it stays until released. */
   locked = $state(false);
   /** The card an arrow starts from, while the viewer picks its target. */
@@ -101,8 +106,6 @@ class TableInteraction {
   landing = $state.raw<Landing | null>(null);
 
   #pointer = { x: NaN, y: NaN };
-  // The viewer sent an action that no view has shown yet.
-  #acted = false;
   // Where the pointer was when the table was last redrawn.
   #drawnAt = { x: NaN, y: NaN };
   #pointerType = 'mouse';
@@ -122,27 +125,17 @@ class TableInteraction {
     return { ...this.#pointer };
   }
 
-  /** The viewer sent an action: the view that shows it may put their own card under the pointer. */
-  acted(): void {
-    this.#acted = true;
-  }
-
-  /** Whether the viewer sent an action since the last call: the view drawn now shows it. */
-  takeActed(): boolean {
-    const acted = this.#acted;
-    this.#acted = false;
-    return acted;
-  }
-
   /**
-   * The viewer's own action redrew what lies under a pointer at rest: a card
-   * dropped there, turned over or dealt. Unlike another player's redraw (spec
-   * 5.8), that is what they point at: it is hovered, as if entered, so that
-   * the bar and the keys act on it at once. Not while a dialog is open, nor
-   * during a drag, nor while a selection, a dropdown, the bar or the pill
-   * holds the hover.
+   * A new view redrew what lies under a pointer at rest, whoever acted: a
+   * card dropped, moved, turned over or taken away. What is there now is
+   * hovered, as if entered, so that the ring, the bar, the preview and the
+   * keys follow it at once; null when no card is there any more, which drops
+   * a hovered card (a hovered pile keeps its hover). Not while a dialog is
+   * open, nor during a drag, nor while a selection, a dropdown, the bar or
+   * the pill holds the hover: the bar must not jump from under the pointer
+   * (spec 5.8).
    */
-  rehover(element: TableElement): void {
+  rehover(element: TableElement | null): void {
     if (
       modal.open ||
       this.dragging ||
@@ -151,6 +144,14 @@ class TableInteraction {
       this.onBar ||
       this.onPill
     ) {
+      return;
+    }
+    if (element === null) {
+      if (this.hovered !== null && this.hovered.kind !== 'pile') {
+        this.#cancelHide();
+        this.hovered = null;
+        this.previewed = null;
+      }
       return;
     }
     this.#cancelHide();
@@ -223,9 +224,23 @@ class TableInteraction {
     return moving;
   }
 
-  /** Whether the card is dragged or just dropped, its ghost drawn in the drag layer instead. */
+  /**
+   * Whether the card is dragged or just dropped, by the viewer or by another
+   * player: its ghost is drawn elsewhere instead.
+   */
   isLifted(id: string): boolean {
-    return this.#moving().some((moving) => moving.lifted.includes(id));
+    return (
+      this.liftedByOthers.has(id) || this.#moving().some((moving) => moving.lifted.includes(id))
+    );
+  }
+
+  /** The table cards other players drag now; a set equal to the current one changes nothing. */
+  liftByOthers(ids: ReadonlySet<string>): void {
+    const same =
+      ids.size === this.liftedByOthers.size && [...ids].every((id) => this.liftedByOthers.has(id));
+    if (!same) {
+      this.liftedByOthers = ids;
+    }
   }
 
   /** Whether the first player token is dragged or just dropped, drawn in the drag layer instead. */
@@ -445,12 +460,12 @@ class TableInteraction {
     this.endLanding();
     this.#swallowClick = false;
     this.highlighted = new Set();
+    this.liftedByOthers = new Set();
     this.endArrow();
     this.onBar = false;
     this.onPill = false;
     this.#pointer = { x: NaN, y: NaN };
     this.#drawnAt = { x: NaN, y: NaN };
-    this.#acted = false;
     this.#pointerType = 'mouse';
   }
 
