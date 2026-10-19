@@ -30,6 +30,23 @@ describe('Tooltip', () => {
     expect(tip.querySelector('kbd')?.textContent).toBe('E');
   });
 
+  it('speaks from below an element at the top of the window, else from above', async () => {
+    vi.useFakeTimers();
+    render(Tooltip);
+    const high = button('Fullscreen');
+    high.getBoundingClientRect = () => new DOMRect(100, 10, 40, 40);
+    const low = button('Draw 1');
+    low.getBoundingClientRect = () => new DOMRect(100, 400, 40, 40);
+
+    await fireEvent.pointerOver(high);
+    await vi.advanceTimersByTimeAsync(350);
+    expect(screen.getByRole('tooltip').classList.contains('below')).toBe(true);
+
+    await fireEvent.pointerOver(low);
+    await vi.advanceTimersByTimeAsync(350);
+    expect(screen.getByRole('tooltip').classList.contains('below')).toBe(false);
+  });
+
   it('hides when the pointer moves away or presses', async () => {
     vi.useFakeTimers();
     render(Tooltip);

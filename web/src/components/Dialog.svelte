@@ -134,12 +134,12 @@
     display: grid;
     place-items: center;
     padding: 16px;
-    background: #05080f99;
+    background: #07090fa6;
     animation: fadein 0.12s ease-out;
   }
 
   .backdrop.wide {
-    background: #05080fcc;
+    background: #07090fd9;
   }
 
   @keyframes fadein {
@@ -149,12 +149,12 @@
   }
 
   .box {
-    width: min(360px, calc(100vw - 32px));
-    padding: 16px;
+    width: min(380px, calc(100vw - 32px));
+    padding: 20px;
     background: var(--panel);
-    border: 1px solid #3a4870;
-    border-radius: 14px;
-    box-shadow: 0 20px 50px #000c;
+    border: 1px solid var(--line-strong);
+    border-radius: 16px;
+    box-shadow: 0 24px 60px #000c;
   }
 
   /* The prototype's .mbox: a column whose middle part scrolls. */
@@ -164,8 +164,6 @@
     width: min(920px, 100%);
     max-height: 88vh;
     padding: 0;
-    border-color: var(--line);
-    box-shadow: 0 24px 60px #000c;
   }
 
   .box:focus {
@@ -174,6 +172,9 @@
 
   b {
     display: block;
-    font-size: 16px;
+    font-stretch: 85%;
+    font-weight: 800;
+    font-size: 18px;
+    line-height: 1.25;
   }
 </style>

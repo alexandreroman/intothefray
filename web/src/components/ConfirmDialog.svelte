@@ -35,22 +35,35 @@
     display: flex;
     justify-content: flex-end;
     gap: 8px;
-    margin-top: 16px;
+    margin-top: 20px;
   }
 
   button {
-    padding: 8px 20px;
+    height: 40px;
+    padding: 0 20px;
     white-space: nowrap;
   }
 
+  /* Paper for a confirmation, Fray red for an action that cannot be taken back. */
   .ok {
-    background: #23406a;
-    border-color: var(--sel);
-    font-weight: 600;
+    background: var(--text);
+    border-color: var(--text);
+    color: var(--bg);
+    font-weight: 800;
   }
 
   .ok.danger {
-    background: #4a1c22;
+    background: var(--accent);
     border-color: var(--accent);
+  }
+
+  .ok:hover:not(:disabled) {
+    background: #ffffff;
+    border-color: #ffffff;
+  }
+
+  .ok.danger:hover:not(:disabled) {
+    background: #ff5e52;
+    border-color: #ff5e52;
   }
 </style>

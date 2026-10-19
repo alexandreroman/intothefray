@@ -1,15 +1,22 @@
 :root {
-  --bg: #0f1420;
-  --panel: #171e2e;
-  --panel-2: #1f2840;
-  --line: #2c3654;
-  --text: #e6e9f2;
-  --muted: #8d97b3;
-  --faint: #626b86;
-  --accent: #e23b3b;
-  --sel: #4fd1ff;
-  --dot: #161d2b;
-  --table-bg: #0c111b;
+  /* Ink, from the table up to the raised controls. */
+  --table-bg: #07090f;
+  --bg: #0d111b;
+  --panel: #141a28;
+  --panel-2: #1c2436;
+  --line: #232b40;
+  --line-strong: #2b3550;
+  --text: #eef1f8;
+  --muted: #9aa4bf;
+  --faint: #737d99;
+  --dot: #161c2b;
+
+  /* Fray red is the main action, with ink text on it; the spark is for captions,
+     threat and the first player; the signal blue is for selection and focus only. */
+  --accent: #ff4438;
+  --accent-deep: #c9241b;
+  --spark: #ffce3a;
+  --sel: #49c6ff;
   --ok: #57c78a;
   --warn: #f2b51d;
 
@@ -19,6 +26,9 @@
   --p3: #7fd67a;
   --p4: #c792ff;
 
+  /* One family, three widths: see .display, and the headings and captions. */
+  --font: 'Archivo', system-ui, sans-serif;
+
   /* An exhausted card is tilted, not turned all the way. */
   --exhaust-angle: 15deg;
   /* Uniform card corners: a hair off each edge, then rounded like a printed card. */
@@ -27,8 +37,8 @@
 }
 
 [data-theme='felt'] {
-  --table-bg: #0f2a1d;
-  --dot: #1d3a2b;
+  --table-bg: #0e2419;
+  --dot: #1b3a2a;
   --line: #2d5a42;
 }
 
@@ -42,26 +52,29 @@ body {
   min-height: 100%;
   background: var(--bg);
   color: var(--text);
-  font:
-    14px/1.4 system-ui,
-    -apple-system,
-    sans-serif;
+  font: 14px/1.4 var(--font);
 }
 
-/* A label never wraps. */
+/* The secondary button: rounded, raised ink. A label never wraps. */
 button {
   font: inherit;
+  font-weight: 600;
   color: inherit;
   background: var(--panel-2);
-  border: 1px solid var(--line);
-  border-radius: 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
   padding: 6px 10px;
   cursor: pointer;
   white-space: nowrap;
 }
 
 button:hover:not(:disabled, [aria-disabled='true']) {
-  border-color: var(--muted);
+  border-color: #4a5677;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--sel);
+  outline-offset: 2px;
 }
 
 /* aria-disabled keeps the button's tooltip: some browsers fire no pointer events on a disabled one. */
@@ -74,17 +87,67 @@ button[aria-disabled='true'] {
 input[type='text'],
 select {
   width: 100%;
-  background: #0c111b;
+  background: var(--bg);
   color: var(--text);
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 8px 10px;
   font: inherit;
 }
 
-input[type='text']:focus {
+input[type='text']:focus,
+select:focus {
   outline: 2px solid var(--sel);
+  outline-offset: 1px;
   border-color: transparent;
+}
+
+/* The one main action of a screen: a slanted red panel with ink text. */
+.btn-primary {
+  height: 48px;
+  padding: 0 30px;
+  border: 0;
+  border-radius: 0;
+  background: var(--accent);
+  color: var(--bg);
+  font-stretch: 85%;
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  clip-path: polygon(12px 0, 100% 0, calc(100% - 12px) 100%, 0 100%);
+}
+
+.btn-primary:hover:not(:disabled, [aria-disabled='true']) {
+  background: #ff5e52;
+}
+
+/* The clip-path would cut any outline off: the focus turns the whole panel signal blue. */
+.btn-primary:focus-visible {
+  outline: none;
+  background: var(--sel);
+}
+
+/* A section's narration box, as in a comic panel. */
+.caption {
+  display: inline-block;
+  padding: 5px 14px 5px 10px;
+  background: var(--spark);
+  color: var(--bg);
+  font-stretch: 75%;
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  line-height: 1.4;
+  text-transform: uppercase;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 7px) 100%, 0 100%);
+}
+
+/* The titles: condensed, heavy and leaning forward. */
+.display {
+  font-stretch: 62%;
+  font-weight: 900;
+  font-style: italic;
 }
 
 /* The empty table: dotted felt, shared by the screens outside a game. */
