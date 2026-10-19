@@ -334,3 +334,35 @@ func recordGroupGame(t *testing.T, recording, golden string) {
 	writeFile(t, recording, indentedJSON(t, recordedGame{Setup: setup, Events: f.g.History.Events}))
 	writeFile(t, golden, indentedJSON(t, f.g.Table))
 }
+
+// TestGroupDroppedWhole undoes the play of a card that Bob has since moved in
+// a group: the rebuild cannot move it any more, so Bob's whole group is
+// dropped, and his other card stays where he played it.
+func TestGroupDroppedWhole(t *testing.T) {
+	f := newDoFixture(t)
+	f.mustDo(t, "b", Action{Kind: ActDraw, N: 1}, at(1))
+	bobs := f.g.Table.Hands["p1"][0]
+	f.mustDo(t, "b", Action{Kind: ActPlay, Card: bobs, X: 600, Y: 200}, at(2))
+	f.mustDo(t, "h", Action{Kind: ActDraw, N: 1}, at(3))
+	hosts := f.g.Table.Hands["p0"][0]
+	f.mustDo(t, "h", Action{Kind: ActPlay, Card: hosts, X: 400, Y: 200}, at(30))
+	// Bob's card comes first: its move runs before the host's one fails.
+	f.mustDo(t, "b", moveGroup(800, 600, bobs, hosts), at(31))
+
+	f.mustDo(t, "h", Action{Kind: ActUndo}, at(32))
+
+	// The undo is the last event; Bob's group comes just before it.
+	events := f.g.History.Events
+	moved := events[len(events)-2]
+	if moved.Action.Kind != ActGroup || !moved.Dropped {
+		t.Errorf("event before the undo = %+v, want Bob's group, dropped", moved)
+	}
+	if c := f.g.Table.Cards[hosts]; c.Zone != ZoneHand {
+		t.Errorf("host's card in zone %q, want back in hand", c.Zone)
+	}
+	if c := f.g.Table.Cards[bobs]; c.Zone != ZoneTable || c.X != 600 || c.Y != 200 {
+		t.Errorf("Bob's card in zone %q at (%d,%d), want on the table at (600,200)", c.Zone, c.X, c.Y)
+	}
+	checkIntegrity(t, f.g.Table)
+	checkHistory(t, f.g)
+}

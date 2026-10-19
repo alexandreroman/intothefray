@@ -212,7 +212,7 @@ var groupableKinds = map[Kind]bool{
 }
 
 // resolveGroup checks a group: 2 to maxCount sub-actions of one groupable
-// kind, each on its own card, none tucked under another's. Every sub-action
+// kind and one place, each on its own card, none tucked under another's. Every sub-action
 // is resolved for who against the table as it stands, and the first error
 // rejects the whole group.
 func resolveGroup(g *Game, who actor, a Action, rng *rand.Rand) (Action, error) {
@@ -232,6 +232,10 @@ func resolveGroup(g *Game, who actor, a Action, rng *rand.Rand) (Action, error) 
 		}
 		if sub.Kind == ActToDeck && sub.Where == whereShuffle {
 			return a, invalid("a group cannot shuffle cards into their decks")
+		}
+		// The group's line names one place for all its cards.
+		if sub.Where != a.Actions[0].Where {
+			return a, invalid("a group mixes %q and %q places", a.Actions[0].Where, sub.Where)
 		}
 		if sub.Card == "" || cards[sub.Card] {
 			return a, invalid("each action of a group needs a card of its own")

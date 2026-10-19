@@ -273,3 +273,13 @@ func TestGroupRejectsShuffleWhere(t *testing.T) {
 		}
 	}
 }
+
+func TestGroupRejectsMixedWhere(t *testing.T) {
+	f := newResolveFixture(t)
+
+	// The line narrates one place for every card: they must all go there.
+	checkGroupRejected(t, f, group(
+		Action{Kind: ActToDeck, Card: f.hand, Where: whereTop},
+		Action{Kind: ActToDeck, Card: f.ownTable, Where: whereBottom},
+	), ErrInvalid)
+}
