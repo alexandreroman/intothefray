@@ -108,15 +108,15 @@ function makeView(extra: { cards?: TableCard[]; piles?: PileView[] } = {}): View
   const cards = extra.cards ?? [
     card('v', { code: '01094', back: 'villain', x: 360, y: 30 }),
     card('s', { code: '01097', back: 'encounter', x: 520, y: 30 }),
-    card('a', { code: '01001', owner: 0, x: 360, y: 360 }),
-    card('b', { code: '01001', owner: 1, x: 360, y: 690 }),
+    card('a', { code: '01001', owner: 0, x: 360, y: 550 }),
+    card('b', { code: '01001', owner: 1, x: 360, y: 880 }),
     card('h', { code: '01001', owner: 1, zone: 'hand', x: 0, y: 0 }),
   ];
   const piles = extra.piles ?? [
     pile('enc', { kind: 'encounter', x: 0, y: 30 }),
-    pile('d0', { owner: 0, x: 0, y: 360 }),
-    pile('d1', { owner: 1, x: 0, y: 690 }),
-    pile('x1', { kind: 'discard', owner: 1, x: 160, y: 690, count: 0 }),
+    pile('d0', { owner: 0, x: 0, y: 550 }),
+    pile('d1', { owner: 1, x: 0, y: 880 }),
+    pile('x1', { kind: 'discard', owner: 1, x: 160, y: 880, count: 0 }),
   ];
   return {
     id: 'g1',
@@ -218,7 +218,7 @@ describe('Table', () => {
       [...surface().querySelectorAll<HTMLElement>(selector)].map((element) => element.dataset.id);
     expect(ids(':scope > .card:not(.pile)')).toEqual(['v', 's', 'a', 'b']);
     expect(ids(':scope > .pile')).toEqual(['enc', 'd0', 'd1', 'x1']);
-    expect(surface().querySelector('[data-id="b"]')?.getAttribute('style')).toContain('top: 690px');
+    expect(surface().querySelector('[data-id="b"]')?.getAttribute('style')).toContain('top: 880px');
   });
 
   it('loads the cards of its game once', async () => {
@@ -263,11 +263,11 @@ describe('Table', () => {
       '6 cards in hand',
       '5 cards in hand',
     ]);
-    // Around Sam's deck (0, 690) and discard pile (160, 690), 10 units off their edges.
+    // Around Sam's deck (0, 880) and discard pile (160, 880), 10 units off their edges.
     const sam = boxes[2]!;
     expect([sam.style.left, sam.style.top, sam.style.width, sam.style.height]).toEqual([
       '-10px',
-      '680px',
+      '870px',
       '320px',
       '216px',
     ]);
@@ -278,7 +278,7 @@ describe('Table', () => {
     view.table?.piles.push(
       pile('vic', { kind: 'victory', x: 0, y: 30, count: 2, cards: ['q1', 'q2'] }),
       pile('saside', { kind: 'aside', x: 0, y: 30, count: 0 }),
-      pile('aside:p1', { kind: 'aside', owner: 1, x: 0, y: 690, count: 0 }),
+      pile('aside:p1', { kind: 'aside', owner: 1, x: 0, y: 880, count: 0 }),
     );
     render(Table, { session: fakeSession(), view });
     await catalogLoaded();
@@ -938,7 +938,7 @@ describe('Table view modes', () => {
     // Sam, the viewer, by default: Alex's row is hidden, Sam's drawn right under the villain's.
     expect(shownIds()).toEqual(['enc', 'd1', 'x1', 'v', 's', 'b']);
     const sam = surface().querySelector<HTMLElement>('[data-id="b"]')!;
-    expect(sam.style.top).toBe('360px');
+    expect(sam.style.top).toBe('550px');
     expect(ownerBoxes().map((box) => box.querySelector('.owner')?.textContent)).toEqual([
       'Villain',
       'Sam',
@@ -970,7 +970,7 @@ describe('Table view modes', () => {
 
     await fireEvent.click(within(picker).getByRole('radio', { name: 'Alex' }));
     expect(shownIds()).toEqual(['enc', 'd0', 'v', 's', 'a']);
-    expect(surface().querySelector<HTMLElement>('[data-id="a"]')?.style.top).toBe('360px');
+    expect(surface().querySelector<HTMLElement>('[data-id="a"]')?.style.top).toBe('550px');
   });
 
   it('steps round the table with three players or more', async () => {
@@ -983,7 +983,7 @@ describe('Table view modes', () => {
       ready: true,
       decks: [{ area: 'p2', ready: true, handCount: 0 }],
     });
-    view.table!.piles.push(pile('d2', { owner: 2, x: 0, y: 1020 }));
+    view.table!.piles.push(pile('d2', { owner: 2, x: 0, y: 1210 }));
     render(Table, { session: fakeSession(), view });
     await catalogLoaded();
 
@@ -1011,7 +1011,7 @@ describe('Table view modes', () => {
       ready: true,
       decks: [{ area: 'p2', ready: true, handCount: 0 }],
     });
-    view.table!.piles.push(pile('d2', { owner: 2, x: 0, y: 1020 }));
+    view.table!.piles.push(pile('d2', { owner: 2, x: 0, y: 1210 }));
     render(Table, { session: fakeSession(), view });
     await catalogLoaded();
 
@@ -1071,19 +1071,19 @@ describe('Table view modes', () => {
     render(Table, { session, view: makeView() });
     await catalogLoaded();
 
-    // Sam's identity lies at 360, 690 on the table, drawn at 360, 360.
+    // Sam's identity lies at 360, 880 on the table, drawn at 360, 550.
     const sam = surface().querySelector<HTMLElement>('[data-id="b"]')!;
-    await fireEvent.pointerDown(sam, { clientX: 400, clientY: 400, pointerType: 'mouse' });
-    await fireEvent.pointerMove(window, { clientX: 500, clientY: 450, buttons: 1 });
-    await fireEvent.pointerUp(window, { clientX: 500, clientY: 450 });
+    await fireEvent.pointerDown(sam, { clientX: 400, clientY: 590, pointerType: 'mouse' });
+    await fireEvent.pointerMove(window, { clientX: 500, clientY: 640, buttons: 1 });
+    await fireEvent.pointerUp(window, { clientX: 500, clientY: 640 });
 
-    // Its corner drawn at 460, 410: 460, 740 on the table.
+    // Its corner drawn at 460, 600: 460, 930 on the table.
     expect(session.act).toHaveBeenCalledExactlyOnceWith(
       {
         kind: 'move',
         card: 'b',
         x: 460,
-        y: 740,
+        y: 930,
       },
       1,
     );
@@ -1102,16 +1102,16 @@ describe('several decks', () => {
         card('v', { code: '01094', back: 'villain', x: 360, y: 30 }),
         card('s', { code: '01097', back: 'encounter', x: 520, y: 30 }),
         card('a', { code: '01001', owner: 0, x: 360, y: 360 }),
-        card('b', { code: '01001', owner: 1, x: 360, y: 690 }),
-        card('c', { code: '01001', owner: 2, x: 360, y: 1020 }),
+        card('b', { code: '01001', owner: 1, x: 360, y: 880 }),
+        card('c', { code: '01001', owner: 2, x: 360, y: 1210 }),
         card('h0', { code: '01001', owner: 0, zone: 'hand' }),
         card('h1', { code: '01094', owner: 1, zone: 'hand' }),
       ],
       piles: [
         pile('enc', { kind: 'encounter', x: 0, y: 30 }),
         pile('d0', { owner: 0, x: 0, y: 360 }),
-        pile('d1', { owner: 1, x: 0, y: 690 }),
-        pile('d2', { owner: 2, x: 0, y: 1020 }),
+        pile('d1', { owner: 1, x: 0, y: 880 }),
+        pile('d2', { owner: 2, x: 0, y: 1210 }),
       ],
     });
     view.you = { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0', 'p1'] };

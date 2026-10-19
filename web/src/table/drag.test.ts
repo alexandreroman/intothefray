@@ -152,16 +152,16 @@ describe('dropAction', () => {
   });
 
   it('dropAction snaps where the card is drawn, then maps it to the shown row', () => {
-    // "Villain + player" with the second of three players: row 2 (660 to 990) drawn from 330.
+    // "Villain + player" with the second of three players: row 2 (850 to 1180) drawn from 520.
     const rows = focusRows(2, 3);
     const yAt = (y: number) => dropAction(TABLE_CARD, TABLE, { x: 0, y }, DEAL_TO, rows)?.y;
     // At the bottom of the villain's row: snapped onto the top of the shown row, not into row 1.
-    expect(yAt(327)).toBe(660);
-    expect(yAt(324)).toBe(320);
-    expect(yAt(503)).toBe(830);
+    expect(yAt(517)).toBe(850);
+    expect(yAt(514)).toBe(510);
+    expect(yAt(693)).toBe(1020);
     // At the bottom of the shown row, or below it: on its last grid line, never in the hidden row 3.
-    expect(yAt(655)).toBe(980);
-    expect(yAt(2000)).toBe(980);
+    expect(yAt(845)).toBe(1170);
+    expect(yAt(2000)).toBe(1170);
   });
 
   it('drop on card attaches', () => {

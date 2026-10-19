@@ -11,17 +11,23 @@ import (
 
 // Default positions on the table, in table units (see the geometry rules).
 //
-// The table is laid out in rows of rowHeight: the villain's row on top, then
-// one row per seat (one deck, see seats.go), in seat order. Every row starts with its deck
+// The table is laid out in rows: the villain's row on top, villainRowHeight
+// high, then one row of rowHeight per seat (one deck, see seats.go), in seat order. Every row starts with its deck
 // and its discard pile, then the villain or the identity; the villain's row
 // goes on with the main scheme, the first player's row with the first player
 // token, and cards in play are added to the right. Things sit rowContentY
 // below the top of their row, leaving room for the client's owner label
 // above the piles. Out-of-play piles (victory display, set-aside cards) keep
 // a position for the model, on the deck, but the client never draws them.
+//
+// The villain's row is taller so that it reads apart from the players' rows:
+// one and a half portrait card heights (294 units) lie empty between its
+// cards and the owner label of the first player's row. The client's focus
+// view uses the same bands (web/src/table/rows.ts).
 const (
-	rowHeight   = 330
-	rowContentY = 30
+	villainRowHeight = 520
+	rowHeight        = 330
+	rowContentY      = 30
 
 	deckX        = 0
 	discardX     = 160
@@ -44,7 +50,15 @@ func playerRow(seat int) int {
 
 // rowY returns the y of the things lying in a row.
 func rowY(row int) int {
-	return rowHeight*row + rowContentY
+	return rowTop(row) + rowContentY
+}
+
+// rowTop returns the y of the top of a row.
+func rowTop(row int) int {
+	if row == villainRow {
+		return 0
+	}
+	return villainRowHeight + rowHeight*(row-1)
 }
 
 const (

@@ -426,7 +426,7 @@ func TestSetupPlayers(t *testing.T) {
 
 	for seat := range 2 {
 		area := PlayerArea(seat)
-		rowY := 330*(seat+1) + 30
+		rowY := 550 + 330*seat
 		if hand := table.Hands[area]; hand == nil || len(hand) != 0 {
 			t.Errorf("%s hand = %v, want empty and non-nil", area, hand)
 		}
@@ -473,7 +473,7 @@ func TestSetupPlayers(t *testing.T) {
 		t.Fatalf("identity cards = %d, want 2", len(identities))
 	}
 	for _, identity := range identities {
-		rowY := 330*(identity.Owner+1) + 30
+		rowY := 550 + 330*identity.Owner
 		if identity.Face != 1 || identity.Zone != ZoneTable || identity.X != 360 || identity.Y != rowY ||
 			identity.Home != "deck:"+string(PlayerArea(identity.Owner)) {
 			t.Errorf("identity = %+v, want alter ego on the table at (360, %d)", identity, rowY)
@@ -481,7 +481,7 @@ func TestSetupPlayers(t *testing.T) {
 	}
 
 	// The first player token lies in the row of the first player, seat 0.
-	if table.FirstPlayer != (Point{X: 520, Y: 360}) {
+	if table.FirstPlayer != (Point{X: 520, Y: 550}) {
 		t.Errorf("first player = %+v", table.FirstPlayer)
 	}
 }
@@ -721,5 +721,93 @@ func TestStartLogsTheGame(t *testing.T) {
 	}
 	if entry.Who != "Host" || entry.Color != 0 || !entry.At.Equal(testNow) {
 		t.Errorf("entry = %+v", entry)
+	}
+}
+
+// gameOfPlayers returns a started game of n Spider-Man players, one deck each.
+func gameOfPlayers(t *testing.T, n int) *Game {
+	t.Helper()
+	cat := newCatalog(t)
+	g := mustNewGame(t, "g1", "p0", "Player 0", testNow)
+	for i := 1; i < n; i++ {
+		if _, err := g.Join(fmt.Sprintf("p%d", i), fmt.Sprintf("Player %d", i)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := g.Configure("p0", rhinoConfig(), cat); err != nil {
+		t.Fatal(err)
+	}
+	for i := range n {
+		seatDeck(t, g, fmt.Sprintf("p%d", i), 0, spiderManDeck(t, cat), cat)
+	}
+	if err := g.Start("p0", cat, testSeed, testNow); err != nil {
+		t.Fatal(err)
+	}
+	return g
+}
+
+// faceHeight returns the height a face up card takes on the table, in table units.
+func faceHeight(t *testing.T, cat *pack.Catalog, c *Card) int {
+	t.Helper()
+	def, _, err := cat.Card(c.Code)
+	if err != nil {
+		t.Fatal(err)
+	}
+	switch size := def.Faces[c.Face].Size; size {
+	case pack.SizeStd, pack.SizeDoubleLand:
+		return 196
+	case pack.SizeLand:
+		return 140
+	case pack.SizeDoubleStd:
+		return 280
+	default:
+		t.Fatalf("card %s has an unknown size %q", c.Code, size)
+		return 0
+	}
+}
+
+func TestSetupLeavesRoomUnderTheVillainRow(t *testing.T) {
+	const pileHeight = 196
+	// One and a half portrait card heights.
+	const wantGap = 294
+
+	cat := newCatalog(t)
+	for _, players := range []int{1, 2} {
+		t.Run(fmt.Sprintf("%d players", players), func(t *testing.T) {
+			table := gameOfPlayers(t, players).Table
+
+			villainBottom := 0
+			for _, pile := range table.Piles {
+				if pile.Owner == NoOwner {
+					villainBottom = max(villainBottom, pile.Y+pileHeight)
+				}
+			}
+			for _, c := range table.Cards {
+				if c.Zone == ZoneTable && c.Owner == NoOwner {
+					villainBottom = max(villainBottom, c.Y+faceHeight(t, cat, c))
+				}
+			}
+
+			// The owner label of the first player's row lies in the room above its piles.
+			deck := table.Piles["deck:"+string(PlayerArea(0))]
+			firstRowTop := deck.Y - rowContentY
+			if gap := firstRowTop - villainBottom; gap != wantGap {
+				t.Errorf("room under the villain row = %d, want %d", gap, wantGap)
+			}
+			if deck.Y%10 != 0 || table.FirstPlayer.Y%10 != 0 {
+				t.Errorf("first player row at y %d (token %d), want on the 10-unit grid", deck.Y, table.FirstPlayer.Y)
+			}
+			if table.FirstPlayer.Y != deck.Y {
+				t.Errorf("first player token at y %d, want in the first player row at %d", table.FirstPlayer.Y, deck.Y)
+			}
+
+			for seat := 1; seat < players; seat++ {
+				previous := table.Piles["deck:"+string(PlayerArea(seat-1))]
+				current := table.Piles["deck:"+string(PlayerArea(seat))]
+				if pitch := current.Y - previous.Y; pitch != rowHeight {
+					t.Errorf("seat %d row %d below seat %d, want %d", seat, pitch, seat-1, rowHeight)
+				}
+			}
+		})
 	}
 }

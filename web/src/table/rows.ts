@@ -7,7 +7,13 @@
 import { getPref, setPref } from '../lib/prefs';
 import type { PileView } from '../lib/types';
 
-/** The height of a row of the table, in table units: row r covers [330·r, 330·(r+1)). */
+/**
+ * The height of the villain's row, in table units: it covers [0, 520), leaving
+ * room between its cards and the first player's row.
+ */
+export const VILLAIN_ROW_HEIGHT = 520;
+
+/** The height of a player's row, in table units: row r ≥ 1 covers [520 + 330·(r−1), 520 + 330·r). */
 export const ROW_HEIGHT = 330;
 
 export type ViewMode = 'all' | 'focus';
@@ -37,9 +43,17 @@ export const ALL_ROWS: RowMap = {
   toTable: (y) => y,
 };
 
+/** The height of the top of a row of the table. */
+function rowTop(row: number): number {
+  return row === 0 ? 0 : VILLAIN_ROW_HEIGHT + ROW_HEIGHT * (row - 1);
+}
+
 /** The row a height of the table is in; heights above the table count in the villain's row. */
 export function rowOf(y: number): number {
-  return Math.max(0, Math.floor(y / ROW_HEIGHT));
+  if (y < VILLAIN_ROW_HEIGHT) {
+    return 0;
+  }
+  return 1 + Math.floor((y - VILLAIN_ROW_HEIGHT) / ROW_HEIGHT);
 }
 
 /**
@@ -50,8 +64,8 @@ export function rowOf(y: number): number {
  * its last height, so that nothing drawn lands in the hidden row after it.
  */
 export function focusRows(row: number, lastRow: number): RowMap {
-  const shift = ROW_HEIGHT * (row - 1);
-  const bottom = row === lastRow ? Infinity : ROW_HEIGHT * (row + 1) - 1;
+  const shift = rowTop(row) - rowTop(1);
+  const bottom = row === lastRow ? Infinity : rowTop(row + 1) - 1;
   return {
     toDisplay(y) {
       const at = rowOf(y);
@@ -62,7 +76,7 @@ export function focusRows(row: number, lastRow: number): RowMap {
       return shown ? y - shift : null;
     },
     toTable(y) {
-      return y < ROW_HEIGHT ? y : Math.min(y + shift, bottom);
+      return y < VILLAIN_ROW_HEIGHT ? y : Math.min(y + shift, bottom);
     },
   };
 }
