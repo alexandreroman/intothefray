@@ -267,7 +267,9 @@ func (b *tableBuilder) setupScenario(cfg LobbyConfig) (pack.Scenario, error) {
 
 	encounterSets := []string{scenario.VillainSet}
 	encounterSets = append(encounterSets, cfg.Modulars...)
-	encounterSets = append(encounterSets, cfg.Standard)
+	if cfg.Standard != "" {
+		encounterSets = append(encounterSets, cfg.Standard)
+	}
 	if cfg.Expert != "" {
 		encounterSets = append(encounterSets, cfg.Expert)
 	}

@@ -184,7 +184,6 @@ func TestConfigureValidates(t *testing.T) {
 		{"valid", "h", func(*LobbyConfig) {}, nil},
 		{"valid expert", "h", func(c *LobbyConfig) { c.Difficulty, c.Expert = pack.Expert, "expert" }, nil},
 		{"unknown scenario", "h", func(c *LobbyConfig) { c.Scenario = "nope" }, ErrInvalid},
-		{"expert without set", "h", func(c *LobbyConfig) { c.Difficulty = pack.Expert }, ErrInvalid},
 		{"expert set on standard", "h", func(c *LobbyConfig) { c.Expert = "expert" }, ErrInvalid},
 		{"other standard", "h", func(c *LobbyConfig) { c.Standard = "standard_iii" }, nil},
 		{"unlisted PvP standard", "h", func(c *LobbyConfig) { c.Standard = "standard_pvp" }, ErrInvalid},
@@ -209,6 +208,32 @@ func TestConfigureValidates(t *testing.T) {
 	g.Phase = PhasePlaying
 	if err := g.Configure("h", valid, cat); !errors.Is(err, ErrPhase) {
 		t.Errorf("after start err = %v, want ErrPhase", err)
+	}
+}
+
+func TestConfigureNoStandard(t *testing.T) {
+	cat := newCatalog(t)
+	g := mustNewGame(t, "g1", "h", "Host", testNow)
+
+	cfg := LobbyConfig{Scenario: "rhino", Difficulty: pack.Standard, Standard: "", Modulars: []string{"bomb_scare"}}
+	if err := g.Configure("h", cfg, cat); err != nil {
+		t.Errorf("config without a standard set rejected: %v", err)
+	}
+	if g.Config.Standard != "" {
+		t.Errorf("standard = %q, want none", g.Config.Standard)
+	}
+}
+
+func TestConfigureExpertWithoutExpertSet(t *testing.T) {
+	cat := newCatalog(t)
+	g := mustNewGame(t, "g1", "h", "Host", testNow)
+
+	cfg := LobbyConfig{Scenario: "rhino", Difficulty: pack.Expert, Standard: "standard", Modulars: []string{"bomb_scare"}}
+	if err := g.Configure("h", cfg, cat); err != nil {
+		t.Errorf("expert config without an expert set rejected: %v", err)
+	}
+	if g.Config.Expert != "" {
+		t.Errorf("expert = %q, want none", g.Config.Expert)
 	}
 }
 

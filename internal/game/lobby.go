@@ -251,8 +251,12 @@ func validateConfig(cfg LobbyConfig, cat *pack.Catalog) error {
 	if _, ok := cat.Scenario(cfg.Scenario); !ok {
 		return fmt.Errorf("%w: unsupported scenario %q", ErrInvalid, cfg.Scenario)
 	}
-	if err := requireSetKind(cat, cfg.Standard, "standard"); err != nil {
-		return err
+	// An empty Standard or Expert set means the game plays without it, as
+	// some scenarios allow.
+	if cfg.Standard != "" {
+		if err := requireSetKind(cat, cfg.Standard, "standard"); err != nil {
+			return err
+		}
 	}
 
 	switch cfg.Difficulty {
@@ -261,8 +265,10 @@ func validateConfig(cfg LobbyConfig, cat *pack.Catalog) error {
 			return fmt.Errorf("%w: expert set %q without expert difficulty", ErrInvalid, cfg.Expert)
 		}
 	case pack.Expert:
-		if err := requireSetKind(cat, cfg.Expert, "expert"); err != nil {
-			return err
+		if cfg.Expert != "" {
+			if err := requireSetKind(cat, cfg.Expert, "expert"); err != nil {
+				return err
+			}
 		}
 	default:
 		return fmt.Errorf("%w: unknown difficulty %q", ErrInvalid, cfg.Difficulty)

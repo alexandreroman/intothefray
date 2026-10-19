@@ -76,8 +76,8 @@ type Spectator struct {
 type LobbyConfig struct {
 	Scenario   string          `json:"scenario"`
 	Difficulty pack.Difficulty `json:"difficulty"`
-	Standard   string          `json:"standard"`
-	Expert     string          `json:"expert"`
+	Standard   string          `json:"standard"` // empty: no Standard set
+	Expert     string          `json:"expert"`   // empty: no Expert set
 	Modulars   []string        `json:"modulars"`
 }
 

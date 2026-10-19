@@ -328,6 +328,48 @@ func TestSetupStandardAndExpertSets(t *testing.T) {
 	}
 }
 
+func TestStartWithoutStandard(t *testing.T) {
+	cat := newCatalog(t)
+	cfg := rhinoConfig()
+	cfg.Standard = ""
+	table := startedGame(t, cfg).Table
+
+	want := setCodes(t, cat, []string{"01094", "01095", "01096", "01097"}, "rhino", "bomb_scare")
+	want = append(want, "01165", "01165")
+	slices.Sort(want)
+	if got := codesOf(table, table.Piles[PileEncounter].Cards); !slices.Equal(got, want) {
+		t.Errorf("encounter deck = %v, want %v", got, want)
+	}
+
+	for _, c := range table.Cards {
+		card, _, err := cat.Card(c.Code)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if set, ok := cat.Set(card.Set); ok && set.Kind == "standard" {
+			t.Errorf("standard card %s is on the table (zone %q)", c.Code, c.Zone)
+		}
+	}
+}
+
+func TestStartExpertWithoutExpertSet(t *testing.T) {
+	cat := newCatalog(t)
+	cfg := rhinoConfig()
+	cfg.Difficulty = pack.Expert
+	cfg.Expert = ""
+	table := startedGame(t, cfg).Table
+
+	for _, c := range table.Cards {
+		card, _, err := cat.Card(c.Code)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if set, ok := cat.Set(card.Set); ok && set.Kind == "expert" {
+			t.Errorf("expert card %s is on the table (zone %q)", c.Code, c.Zone)
+		}
+	}
+}
+
 func TestSetupSetInPlayFollowsScenarioInPlay(t *testing.T) {
 	cfg := rhinoConfig()
 	cfg.Scenario = "klaw"

@@ -21,15 +21,20 @@
   const config = $derived(view.config);
   const chosen = $derived(index.scenarios.find((s) => s.id === config.scenario));
   const difficulty = $derived<Difficulty>(config.difficulty === 'expert' ? 'expert' : 'standard');
-  const standardSet = $derived(config.standard || DEFAULT_STANDARD);
-  const expertSet = $derived(config.expert || DEFAULT_EXPERT);
+  // An empty set means none, as some scenarios allow. The defaults only fill in a config that
+  // has no scenario yet, or no expert set because the difficulty is Standard.
+  const standardSet = $derived(config.scenario === '' ? DEFAULT_STANDARD : config.standard);
+  const expertSet = $derived(
+    config.scenario === '' || difficulty !== 'expert' ? DEFAULT_EXPERT : config.expert,
+  );
 
   const packNames = $derived(new Map(index.packs.map((p) => [p.code, p.name])));
   const setNames = $derived(new Map(index.sets.map((s) => [s.code, s.name])));
   const standardSets = $derived(index.sets.filter((s) => s.kind === 'standard'));
   const expertSets = $derived(index.sets.filter((s) => s.kind === 'expert'));
-  const showStandardSet = $derived(isHost && standardSets.length > 1);
-  const showExpertSet = $derived(isHost && difficulty === 'expert' && expertSets.length > 1);
+  // "None" is always a choice, so even a single set gets a dropdown.
+  const showStandardSet = $derived(isHost && standardSets.length > 0);
+  const showExpertSet = $derived(isHost && difficulty === 'expert' && expertSets.length > 0);
   const recommended = $derived(chosen?.recommended ?? []);
 
   // Recommended sets come first: the full list is long.
@@ -251,6 +256,7 @@
                   value={standardSet}
                   onchange={(e) => configure({ standard: e.currentTarget.value })}
                 >
+                  <option value="">None</option>
                   {#each standardSets as set (set.code)}
                     <option value={set.code}>{set.name}</option>
                   {/each}
@@ -264,6 +270,7 @@
                   value={expertSet}
                   onchange={(e) => configure({ expert: e.currentTarget.value })}
                 >
+                  <option value="">None</option>
                   {#each expertSets as set (set.code)}
                     <option value={set.code}>{set.name}</option>
                   {/each}
