@@ -168,11 +168,70 @@ afterEach(() => {
 });
 
 describe('Lobby', () => {
+  it('titles the screen and tells the host what to do', () => {
+    renderLobby({});
+
+    expect(screen.getByText('Lobby').classList.contains('caption')).toBe(true);
+    expect(screen.getByRole('heading', { level: 1, name: 'ASSEMBLE YOUR TEAM' })).toBeTruthy();
+    expect(
+      screen.getByText(
+        'You are the host: you choose the scenario, and everyone sees it. Each player brings their own deck.',
+      ),
+    ).toBeTruthy();
+  });
+
+  it('tells a guest who chooses the scenario', () => {
+    renderLobby({ you: asSam });
+
+    expect(
+      screen.getByText(
+        'Alex is the host: they choose the scenario, and everyone sees it. Bring your own deck.',
+      ),
+    ).toBeTruthy();
+  });
+
+  it('tells a spectator who chooses the scenario', () => {
+    renderLobby({ you: { role: 'spectator', name: 'Max', color: 0, host: false } });
+
+    expect(
+      screen.getByText(
+        'You are watching: Alex chooses the scenario, and each player brings their own deck.',
+      ),
+    ).toBeTruthy();
+  });
+
+  it('marks the chosen scenario as pressed', async () => {
+    renderLobby({
+      config: {
+        scenario: 'rhino',
+        difficulty: 'standard',
+        standard: 'standard',
+        expert: '',
+        modulars: ['bomb_scare'],
+      },
+    });
+
+    const rhino = await screen.findByRole('button', { name: /Rhino/ });
+    expect(rhino.getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByRole('button', { name: /Klaw/ }).getAttribute('aria-pressed')).toBe('false');
+    expect(screen.getByText('Modular sets')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Remove Bomb Scare' })).toBeTruthy();
+  });
+
+  it('names no deck provider in its copy', async () => {
+    renderLobby({});
+    await screen.findByRole('button', { name: /Rhino/ });
+
+    const deckLink = screen.getByRole('textbox', { name: 'Deck link' });
+    expect(deckLink.getAttribute('placeholder')).toBe('Paste a deck link…');
+    expect(document.body.innerHTML).not.toMatch(/marvelcdb/i);
+  });
+
   it('unsupported scenarios are not clickable', async () => {
     const session = renderLobby({});
 
     const tile = await screen.findByRole('button', { name: /Marauders/ });
-    expect(tile.textContent).toContain('not supported yet');
+    expect(tile.textContent).toContain('Not supported yet');
     expect((tile as HTMLButtonElement).disabled).toBe(true);
     await fireEvent.click(tile);
     expect(session.lobby).not.toHaveBeenCalled();
@@ -294,7 +353,7 @@ describe('Lobby', () => {
   it('loads a deck from its link', async () => {
     const session = renderLobby({});
 
-    await fireEvent.input(screen.getByPlaceholderText('https://marvelcdb.com/decklist/view/…'), {
+    await fireEvent.input(screen.getByRole('textbox', { name: 'Deck link' }), {
       target: { value: ' https://marvelcdb.com/decklist/view/1 ' },
     });
     await fireEvent.click(screen.getByRole('button', { name: 'Load' }));
@@ -359,7 +418,7 @@ describe('Lobby', () => {
       },
     });
 
-    await fireEvent.click(await screen.findByRole('button', { name: '+ Modular set' }));
+    await fireEvent.click(await screen.findByRole('button', { name: '+ Add a set' }));
     const menu = document.querySelector('.menu');
     if (!menu) throw new Error('menu did not open');
     await fireEvent.click(menu);

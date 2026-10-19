@@ -3,13 +3,13 @@
 // pile, and piles that were shuffled. Pure: the table plays the list
 // (motion.svelte.ts).
 
-import type { Area, CardView, LogView, PileView, TableView, View, Zone } from '../lib/types';
+import type { CardView, LogView, PileView, TableView, View, Zone } from '../lib/types';
 import { stackOf } from './drag';
+import { isHidden } from './face';
 
 /** Where a card lies in a view: its zone, and its spot when it is on the table. */
 export interface Box {
   zone: Zone;
-  area?: Area;
   x: number;
   y: number;
 }
@@ -18,6 +18,8 @@ export type Anim =
   | { kind: 'move'; id: string; from: Box; to: Box }
   | { kind: 'glow'; id: string; color: number }
   | { kind: 'turnIn'; id: string }
+  /** Turned over on the table: flipped, another face shown, or a hidden card come face up. */
+  | { kind: 'flip'; id: string }
   | { kind: 'shuffle'; pile: string }
   | { kind: 'fly'; id: string; toPile: string };
 
@@ -48,11 +50,20 @@ export function diffViews(prev: View, next: View, ownDrop?: string, apart = 0): 
   // The glow takes the colour of whoever wrote the latest line; system lines have none.
   const actor = lines.at(-1)?.color ?? -1;
   const turned = turnedIn(before, after);
+  const revealed = hiddenPileShrank(before, after);
 
   const anims: Anim[] = [];
   for (const card of after.cards) {
     const was = previous.get(card.id);
-    if (!was || dropped.has(card.id)) {
+    if (!was) {
+      // Never listed before: it came out of a deck nobody sees, or out of another player's hand.
+      // Only the first turns over as it lands, the viewer's own drop included.
+      if (revealed && card.zone === 'table' && !isHidden(card)) {
+        anims.push({ kind: 'flip', id: card.id });
+      }
+      continue;
+    }
+    if (dropped.has(card.id)) {
       continue;
     }
     const travel = travelOf(was, card, after);
@@ -62,6 +73,8 @@ export function diffViews(prev: View, next: View, ownDrop?: string, apart = 0): 
     const turns = turned.has(card.id);
     if (turns) {
       anims.push({ kind: 'turnIn', id: card.id });
+    } else if (isTurnedOver(was, card, before)) {
+      anims.push({ kind: 'flip', id: card.id });
     }
     const changed = was.zone === 'table' && card.zone === 'table' && hasChanged(was, card);
     if (actor >= 0 && (turns || changed)) {
@@ -100,7 +113,7 @@ function isPlaced(card: CardView): boolean {
 }
 
 function boxOf(card: CardView): Box {
-  return { zone: card.zone, area: card.area, x: card.x, y: card.y };
+  return { zone: card.zone, x: card.x, y: card.y };
 }
 
 /** A card that went somewhere else on the table or the hand, or onto a pile that shows its cards. */
@@ -109,12 +122,35 @@ function travelOf(was: CardView, card: CardView, table: TableView): Anim | null 
     return null;
   }
   if (isPlaced(card)) {
-    const moved =
-      was.zone !== card.zone || was.area !== card.area || was.x !== card.x || was.y !== card.y;
+    const moved = was.zone !== card.zone || was.x !== card.x || was.y !== card.y;
     return moved ? { kind: 'move', id: card.id, from: boxOf(was), to: boxOf(card) } : null;
   }
   const pile = table.piles.find((p) => p.cards?.includes(card.id));
   return pile ? { kind: 'fly', id: card.id, toPile: pile.id } : null;
+}
+
+/**
+ * A table card that shows another side: flipped face down or face up, turned
+ * to another face, or come face up out of a pile that does not show its
+ * cards (a deck the viewer was looking through).
+ */
+function isTurnedOver(was: CardView, card: CardView, before: TableView): boolean {
+  if (card.zone !== 'table') {
+    return false;
+  }
+  if (was.zone === 'table') {
+    return was.face !== card.face || !!was.faceDown !== !!card.faceDown;
+  }
+  const wasPublic = before.piles.some((pile) => pile.cards?.includes(was.id));
+  return was.zone === 'pile' && !wasPublic && !isHidden(card);
+}
+
+/** Whether a pile that does not show its cards (a deck, the encounter deck) lost some. */
+function hiddenPileShrank(before: TableView, after: TableView): boolean {
+  return after.piles.some((pile) => {
+    const was = before.piles.find((p) => p.id === pile.id);
+    return pile.cards === undefined && was !== undefined && pile.count < was.count;
+  });
 }
 
 /** Exhausted or readied, flipped, turned face up, or its tokens or statuses changed. */

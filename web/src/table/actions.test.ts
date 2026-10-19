@@ -42,7 +42,6 @@ function card(id: string, extra: Partial<CardView> = {}): CardView {
     back: 'player',
     owner: 0,
     zone: 'table',
-    area: 'p0',
     x: 0,
     y: 0,
     z: 1,
@@ -51,7 +50,7 @@ function card(id: string, extra: Partial<CardView> = {}): CardView {
 }
 
 function pile(id: string, extra: Partial<PileView>): PileView {
-  return { id, kind: 'deck', owner: -1, area: 'villain', x: 0, y: 0, count: 5, ...extra };
+  return { id, kind: 'deck', owner: -1, x: 0, y: 0, count: 5, ...extra };
 }
 
 /** Rhino with two players, Alex (p0) and Sam (p1), and every pile of a real table. */
@@ -60,19 +59,19 @@ function makeView(extra: { cards?: CardView[]; piles?: PileView[] } = {}): View 
     card('mine'),
     card('two', { code: '01002' }),
     card('down', { code: undefined, faceDown: true }),
-    card('theirs', { owner: 1, area: 'p1' }),
-    card('enemy', { code: '01100', owner: -1, back: 'encounter', area: 'p0' }),
-    card('v', { code: '01094', owner: -1, back: 'villain', area: 'villain', stage: 'villain' }),
-    card('s', { code: '01097', owner: -1, back: 'encounter', area: 'villain', stage: 'main' }),
-    card('h', { zone: 'hand', area: undefined }),
+    card('theirs', { owner: 1 }),
+    card('enemy', { code: '01100', owner: -1, back: 'encounter' }),
+    card('v', { code: '01094', owner: -1, back: 'villain', stage: 'villain' }),
+    card('s', { code: '01097', owner: -1, back: 'encounter', stage: 'main' }),
+    card('h', { zone: 'hand' }),
   ];
   const piles = extra.piles ?? [
-    pile('deck:p0', { owner: 0, area: 'p0', count: 30 }),
-    pile('disc:p0', { kind: 'discard', owner: 0, area: 'p0', count: 2, cards: ['x', 'y'] }),
-    pile('aside:p0', { kind: 'aside', owner: 0, area: 'p0', count: 1, cards: ['z'] }),
-    pile('deck:p1', { owner: 1, area: 'p1', count: 30 }),
-    pile('disc:p1', { kind: 'discard', owner: 1, area: 'p1', count: 1, cards: ['w'] }),
-    pile('aside:p1', { kind: 'aside', owner: 1, area: 'p1', count: 1, cards: ['u'] }),
+    pile('deck:p0', { owner: 0, count: 30 }),
+    pile('disc:p0', { kind: 'discard', owner: 0, count: 2, cards: ['x', 'y'] }),
+    pile('aside:p0', { kind: 'aside', owner: 0, count: 1, cards: ['z'] }),
+    pile('deck:p1', { owner: 1, count: 30 }),
+    pile('disc:p1', { kind: 'discard', owner: 1, count: 1, cards: ['w'] }),
+    pile('aside:p1', { kind: 'aside', owner: 1, count: 1, cards: ['u'] }),
     pile('enc', { kind: 'encounter', count: 20 }),
     pile('encd', { kind: 'encounterDiscard', count: 1, cards: ['t'] }),
     pile('vic', { kind: 'victory', count: 1, cards: ['q'] }),
@@ -96,7 +95,7 @@ function makeView(extra: { cards?: CardView[]; piles?: PileView[] } = {}): View 
         { key: 'villain', label: 'Villain', current: 'v', cards: ['v'] },
         { key: 'main', label: 'Main scheme', current: 's', cards: ['s'] },
       ],
-      firstPlayer: { area: 'p0', x: 860, y: 40 },
+      firstPlayer: { x: 860, y: 40 },
     },
     log: [],
   };
@@ -159,43 +158,54 @@ describe('actionsFor', () => {
   it('card in play groups and order', () => {
     const items = itemsFor({ kind: 'card', id: 'mine' });
 
-    expect(groups(items)).toEqual([['exhaust'], ['token', 'status'], ['discard', 'moveTo']]);
+    expect(groups(items)).toEqual([['exhaust'], ['counters'], ['discard', 'moveTo']]);
     const exhaust = item(items, 'exhaust');
     expect(exhaust).toMatchObject({ label: 'Exhaust', icon: 'exhaust', key: 'E', tip: 'Exhaust' });
     expect(actionOf(exhaust)).toEqual({ kind: 'exhaust', card: 'mine' });
     // The arrow starts with its key (A) or a Shift + drag: the bar has no button for it.
     expect(items.map((i) => i.id)).not.toContain('arrow');
     const discard = item(items, 'discard');
-    expect(discard).toMatchObject({ label: 'Discard', icon: 'discard', key: 'X', tip: 'Discard' });
+    expect(discard).toMatchObject({
+      label: 'Discard',
+      icon: 'discard',
+      key: 'Backspace',
+      tip: 'Discard',
+    });
     expect(actionOf(discard)).toEqual({ kind: 'discard', card: 'mine' });
 
-    expect(item(items, 'token')).toMatchObject({ label: '+ Token', tip: 'Add a token' });
-    expect(menuOf(items, 'token').map((it) => [it.id, it.label, it.key])).toEqual([
-      ['dmg', 'Damage', 'D'],
-      ['thr', 'Threat', 'T'],
-      ['gen', 'Counter', 'N'],
+    // One "+" dropdown for both: the tokens, then the statuses, each in its section.
+    expect(item(items, 'counters')).toMatchObject({
+      label: 'Add a token or status',
+      tip: 'Add a token or status',
+      icon: 'token',
+    });
+    const counters = menuOf(items, 'counters');
+    expect(counters.map((it) => [it.section, it.id, it.label, it.key])).toEqual([
+      ['Tokens', 'dmg', 'Damage', 'D'],
+      ['Tokens', 'thr', 'Threat', 'T'],
+      ['Tokens', 'gen', 'Counter', 'N'],
+      ['Status', 'stunned', 'Stunned', 'S'],
+      ['Status', 'confused', 'Confused', 'C'],
+      ['Status', 'tough', 'Tough', 'G'],
+      ['Status', 'locked', 'Locked', 'L'],
     ]);
-    expect(actionOf(item(menuOf(items, 'token'), 'thr'))).toEqual({
+    expect(actionOf(item(counters, 'thr'))).toEqual({
       kind: 'token',
       card: 'mine',
       name: 'thr',
       delta: 1,
     });
-    expect(item(items, 'status')).toMatchObject({ label: '+ Status', tip: 'Add a status' });
-    expect(menuOf(items, 'status').map((it) => [it.id, it.label, it.key])).toEqual([
-      ['stunned', 'Stunned', 'S'],
-      ['confused', 'Confused', 'C'],
-      ['tough', 'Tough', 'G'],
-    ]);
-    expect(actionOf(item(menuOf(items, 'status'), 'tough'))).toEqual({
+    expect(actionOf(item(counters, 'tough'))).toEqual({
       kind: 'status',
       card: 'mine',
       name: 'tough',
       delta: 1,
     });
 
+    // Move to is an icon: its name stays in the label and the tip.
     const move = menuOf(items, 'moveTo');
-    expect(item(items, 'moveTo')).toMatchObject({ label: 'Move to', tip: 'Move to' });
+    expect(item(items, 'moveTo')).toMatchObject({ label: 'Move to', icon: 'move', tip: 'Move to' });
+    expect(move.every((it) => it.section === undefined)).toBe(true);
     expect(move.map((it) => it.id)).toEqual([
       'hand',
       'deckTop',
@@ -239,7 +249,7 @@ describe('actionsFor', () => {
     });
   });
 
-  it('an exhausted card shows ready and the token menus give the counts', () => {
+  it('an exhausted card shows ready and the counter menu gives the counts', () => {
     const view = makeView({
       cards: [card('mine', { exhausted: true, tokens: { dmg: 2 }, status: { stunned: 1 } })],
     });
@@ -251,27 +261,37 @@ describe('actionsFor', () => {
       key: 'E',
       pressed: true,
     });
-    expect(menuOf(items, 'token').map((it) => it.label)).toEqual([
+    expect(menuOf(items, 'counters').map((it) => it.label)).toEqual([
       'Damage (2)',
       'Threat',
       'Counter',
-    ]);
-    expect(menuOf(items, 'status').map((it) => it.label)).toEqual([
       'Stunned (1)',
       'Confused',
       'Tough',
+      'Locked',
     ]);
+  });
+
+  it('an exhausted locked card cannot be readied; a ready one can still be exhausted', () => {
+    const lockedCard = (exhausted: boolean) =>
+      makeView({ cards: [card('mine', { exhausted, status: { locked: 1 } })] });
+
+    expect(item(itemsFor({ kind: 'card', id: 'mine' }, lockedCard(true)), 'exhaust')).toMatchObject(
+      {
+        label: 'Ready',
+        tip: 'Locked: this card does not ready',
+        disabled: true,
+      },
+    );
+    expect(
+      item(itemsFor({ kind: 'card', id: 'mine' }, lockedCard(false)), 'exhaust'),
+    ).toMatchObject({ label: 'Exhaust', tip: 'Exhaust', disabled: false });
   });
 
   it('a card with several faces shows flip', () => {
     const items = itemsFor({ kind: 'card', id: 'two' });
 
-    expect(groups(items)).toEqual([
-      ['exhaust'],
-      ['flip'],
-      ['token', 'status'],
-      ['discard', 'moveTo'],
-    ]);
+    expect(groups(items)).toEqual([['exhaust', 'flip'], ['counters'], ['discard', 'moveTo']]);
     const flip = item(items, 'flip');
     expect(flip).toMatchObject({ label: 'Flip', icon: 'flip', key: 'F', tip: 'Flip' });
     expect(actionOf(flip)).toEqual({ kind: 'flip', card: 'two' });
@@ -281,12 +301,7 @@ describe('actionsFor', () => {
     // The main scheme has two faces, yet its card choice replaces Flip.
     const items = itemsFor({ kind: 'card', id: 's' });
 
-    expect(groups(items)).toEqual([
-      ['exhaust'],
-      ['stage'],
-      ['token', 'status'],
-      ['discard', 'moveTo'],
-    ]);
+    expect(groups(items)).toEqual([['exhaust', 'stage'], ['counters'], ['discard', 'moveTo']]);
     const stage = item(items, 'stage');
     expect(stage).toMatchObject({
       label: 'Choose the main scheme card to show',
@@ -312,7 +327,7 @@ describe('actionsFor', () => {
     const view = makeView({
       cards: [
         card('mine'),
-        card('v', { code: '01094', owner: -1, area: 'villain', stage: 'villain', parent: 'mine' }),
+        card('v', { code: '01094', owner: -1, stage: 'villain', parent: 'mine' }),
       ],
     });
     const items = itemsFor({ kind: 'card', id: 'mine' }, view);
@@ -324,12 +339,7 @@ describe('actionsFor', () => {
   it('face-down card shows flip', () => {
     const items = itemsFor({ kind: 'card', id: 'down' });
 
-    expect(groups(items)).toEqual([
-      ['exhaust'],
-      ['flip'],
-      ['token', 'status'],
-      ['discard', 'moveTo'],
-    ]);
+    expect(groups(items)).toEqual([['exhaust', 'flip'], ['counters'], ['discard', 'moveTo']]);
     expect(actionOf(item(items, 'flip'))).toEqual({ kind: 'flip', card: 'down' });
   });
 
@@ -365,7 +375,7 @@ describe('actionsFor', () => {
   it('own deck items', () => {
     const items = itemsFor({ kind: 'pile', id: 'deck:p0' });
 
-    expect(groups(items)).toEqual([['draw1', 'look', 'deck']]);
+    expect(groups(items)).toEqual([['draw1', 'look', 'deck'], ['aside']]);
     const draw = item(items, 'draw1');
     expect(draw).toMatchObject({ label: 'Draw 1', key: 'W', tip: 'Draw 1' });
     expect(actionOf(draw)).toEqual({ kind: 'draw', n: 1 });
@@ -424,7 +434,7 @@ describe('actionsFor', () => {
   });
 
   it('a count is never asked beyond what the server accepts', () => {
-    const view = makeView({ piles: [pile('deck:p0', { owner: 0, area: 'p0', count: 120 })] });
+    const view = makeView({ piles: [pile('deck:p0', { owner: 0, count: 120 })] });
     const lookTop = item(
       menuOf(itemsFor({ kind: 'pile', id: 'deck:p0' }, view), 'look'),
       'lookTop',
@@ -436,7 +446,10 @@ describe('actionsFor', () => {
   it('encounter deck items', () => {
     const items = itemsFor({ kind: 'pile', id: 'enc' });
 
-    expect(groups(items)).toEqual([['reveal', 'look', 'deck']]);
+    expect(groups(items)).toEqual([
+      ['reveal', 'look', 'deck'],
+      ['victory', 'aside'],
+    ]);
     const reveal = item(items, 'reveal');
     expect(reveal).toMatchObject({ label: 'Reveal', key: 'R', tip: 'Reveal' });
     expect(reveal.disabled).toBeFalsy();
@@ -457,7 +470,7 @@ describe('actionsFor', () => {
 
   it('encounter reveal disabled while revealed', () => {
     const view = makeView({
-      cards: [card('r', { code: '01100', owner: -1, area: 'villain', onPile: 'enc' })],
+      cards: [card('r', { code: '01100', owner: -1, onPile: 'enc' })],
       piles: [pile('enc', { kind: 'encounter', count: 20 })],
     });
     const reveal = item(itemsFor({ kind: 'pile', id: 'enc' }, view), 'reveal');
@@ -469,7 +482,7 @@ describe('actionsFor', () => {
   it('discard pile items', () => {
     const items = itemsFor({ kind: 'pile', id: 'disc:p0' });
 
-    expect(groups(items)).toEqual([['search', 'shuffleBack']]);
+    expect(groups(items)).toEqual([['search', 'shuffleBack'], ['aside']]);
     const search = item(items, 'search');
     expect(search).toMatchObject({ label: 'Search…', key: 'K', tip: 'Search…' });
     expect(actionOf(search)).toEqual({ kind: 'search', pile: 'disc:p0' });
@@ -479,61 +492,119 @@ describe('actionsFor', () => {
       tip: 'Shuffle this discard pile back into its deck',
     });
     expect(actionOf(back)).toEqual({ kind: 'shuffleBack', pile: 'disc:p0' });
-    expect(groups(itemsFor({ kind: 'pile', id: 'encd' }))).toEqual([['search', 'shuffleBack']]);
+    expect(groups(itemsFor({ kind: 'pile', id: 'encd' }))).toEqual([
+      ['search', 'shuffleBack'],
+      ['victory', 'aside'],
+    ]);
   });
 
   it("another player's discard pile can only be searched", () => {
-    expect(groups(itemsFor({ kind: 'pile', id: 'disc:p1' }))).toEqual([['search']]);
+    expect(groups(itemsFor({ kind: 'pile', id: 'disc:p1' }))).toEqual([['search'], ['aside']]);
   });
 
-  it('victory display can be browsed', () => {
-    const items = itemsFor({ kind: 'pile', id: 'vic' });
-
-    expect(groups(items)).toEqual([['browse']]);
-    expect(item(items, 'browse')).toMatchObject({ label: 'Browse…', key: 'K', tip: 'Browse…' });
-    expect(item(items, 'browse').run?.()).toEqual({ local: 'browseBox' });
+  it('out-of-play piles have no bar: they are not drawn on the table', () => {
+    for (const id of ['vic', 'saside', 'aside:p0', 'aside:p1']) {
+      expect(itemsFor({ kind: 'pile', id })).toEqual([]);
+      const spectator: { role: Role } = { role: 'spectator' };
+      expect(itemsFor({ kind: 'pile', id }, makeView(), spectator)).toEqual([]);
+    }
   });
 
-  it('aside pile has shuffle in', () => {
-    const items = itemsFor({ kind: 'pile', id: 'saside' });
-
-    expect(groups(items)).toEqual([['browse', 'shuffleIn']]);
-    const shuffleIn = item(items, 'shuffleIn');
-    expect(shuffleIn).toMatchObject({
-      label: 'Shuffle in',
-      tip: 'Shuffle all these cards into the encounter deck',
-    });
-    expect(actionOf(shuffleIn)).toEqual({ kind: 'shuffleIn', pile: 'saside' });
-    expect(groups(itemsFor({ kind: 'pile', id: 'aside:p0' }))).toEqual([['browse', 'shuffleIn']]);
-    expect(groups(itemsFor({ kind: 'pile', id: 'aside:p1' }))).toEqual([['browse']]);
+  it("other player's deck only opens their set-aside cards", () => {
+    expect(groups(itemsFor({ kind: 'pile', id: 'deck:p1' }))).toEqual([['aside']]);
   });
 
-  it("other player's deck shows the belongs text", () => {
-    expect(actionsFor({ kind: 'pile', id: 'deck:p1' }, makeView(), ALEX)).toEqual({
+  it("other player's deck shows the belongs text without set-aside cards", () => {
+    const view = makeView({ piles: [pile('deck:p1', { owner: 1, count: 30 })] });
+    expect(actionsFor({ kind: 'pile', id: 'deck:p1' }, view, ALEX)).toEqual({
       text: 'Belongs to Sam — only they can use it.',
+    });
+  });
+
+  it("deck and discard piles open their owner's out-of-play piles, with their counts", () => {
+    const own = item(itemsFor({ kind: 'pile', id: 'deck:p0' }), 'aside');
+    expect(own).toMatchObject({
+      label: 'Set-aside cards (1)',
+      icon: 'hourglass',
+      tip: 'Set-aside cards (1)',
+    });
+    expect(own.disabled).toBeFalsy();
+    expect(own.run?.()).toEqual({ local: 'browseBox', pile: 'aside:p0' });
+    expect(item(itemsFor({ kind: 'pile', id: 'disc:p1' }), 'aside').run?.()).toEqual({
+      local: 'browseBox',
+      pile: 'aside:p1',
+    });
+
+    const encounter = itemsFor({ kind: 'pile', id: 'enc' });
+    expect(item(encounter, 'victory')).toMatchObject({
+      label: 'Victory display (1)',
+      icon: 'trophy',
+    });
+    expect(item(encounter, 'victory').run?.()).toEqual({ local: 'browseBox', pile: 'vic' });
+    expect(item(encounter, 'aside')).toMatchObject({ label: 'Set-aside cards (3)' });
+    expect(item(encounter, 'aside').run?.()).toEqual({ local: 'browseBox', pile: 'saside' });
+  });
+
+  it('an empty out-of-play pile shows disabled, its count 0', () => {
+    const view = makeView({
+      piles: [
+        pile('enc', { kind: 'encounter', count: 20 }),
+        pile('vic', { kind: 'victory', count: 0, cards: [] }),
+      ],
+    });
+    const items = itemsFor({ kind: 'pile', id: 'enc' }, view);
+
+    expect(groups(items)).toEqual([['reveal', 'look', 'deck'], ['victory']]);
+    expect(item(items, 'victory')).toMatchObject({
+      label: 'Victory display (0)',
+      tip: 'Victory display (0): empty',
+      disabled: true,
     });
   });
 
   it('an empty pile has no actions', () => {
     const view = makeView({
-      piles: [pile('disc:p0', { kind: 'discard', owner: 0, area: 'p0', count: 0 })],
+      piles: [pile('disc:p0', { kind: 'discard', owner: 0, count: 0 })],
     });
 
     expect(actionsFor({ kind: 'pile', id: 'disc:p0' }, view, ALEX)).toEqual([]);
   });
 
-  it('spectator only browses public piles and sees the stage choice', () => {
+  it("an empty deck or discard pile still opens its owner's out-of-play piles", () => {
+    const view = makeView({
+      piles: [
+        pile('disc:p0', { kind: 'discard', owner: 0, count: 0 }),
+        pile('aside:p0', { kind: 'aside', owner: 0, count: 0, cards: [] }),
+        pile('enc', { kind: 'encounter', count: 0 }),
+        pile('vic', { kind: 'victory', count: 1, cards: ['q'] }),
+      ],
+    });
+
+    expect(groups(itemsFor({ kind: 'pile', id: 'disc:p0' }, view))).toEqual([['aside']]);
+    expect(groups(itemsFor({ kind: 'pile', id: 'enc' }, view))).toEqual([['victory']]);
+    const spectator: { role: Role } = { role: 'spectator' };
+    view.you = { role: 'spectator', name: 'Kim', color: -1, host: false };
+    expect(itemsFor({ kind: 'pile', id: 'enc' }, view, spectator).map((it) => it.id)).toEqual([
+      'victory',
+    ]);
+  });
+
+  it('spectator only browses public piles, opens out-of-play piles and sees the stage choice', () => {
     const view = makeView();
     view.you = { role: 'spectator', name: 'Kim', color: -1, host: false };
     const spectator: { role: Role } = { role: 'spectator' };
 
     expect(actionsFor({ kind: 'card', id: 'mine' }, view, spectator)).toEqual([]);
-    expect(actionsFor({ kind: 'pile', id: 'deck:p0' }, view, spectator)).toEqual([]);
-    expect(actionsFor({ kind: 'pile', id: 'enc' }, view, spectator)).toEqual([]);
-    for (const id of ['disc:p0', 'encd', 'vic', 'aside:p1']) {
+    // Decks only open their owner's out-of-play piles.
+    const ids = (id: string) => itemsFor({ kind: 'pile', id }, view, spectator).map((it) => it.id);
+    expect(ids('deck:p0')).toEqual(['aside']);
+    expect(ids('enc')).toEqual(['victory', 'aside']);
+    expect(ids('disc:p0')).toEqual(['browse', 'aside']);
+    expect(ids('encd')).toEqual(['browse', 'victory', 'aside']);
+    for (const id of ['disc:p0', 'encd']) {
       const items = itemsFor({ kind: 'pile', id }, view, spectator);
-      expect(items.map((it) => it.id)).toEqual(['browse']);
-      expect(items[0]?.run?.()).toEqual({ local: 'browseBox' });
+      expect(items[0]?.id).toBe('browse');
+      expect(items[0]?.run?.()).toEqual({ local: 'browseBox', pile: id });
       // Spectators have no game keys (P5b-R6): the tooltip shows none.
       expect(items[0]?.key).toBeUndefined();
     }

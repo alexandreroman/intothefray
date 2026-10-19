@@ -1,5 +1,8 @@
 import { render, screen } from '@testing-library/svelte';
+import { interaction } from './interaction.svelte';
 import PileView from './PileView.svelte';
+import pileSource from './PileView.svelte?raw';
+import tableSource from './Table.svelte?raw';
 import type { CardView as TableCard, PackFace, PileView as Pile } from '../lib/types';
 
 const ENCOUNTER_BACK =
@@ -10,7 +13,6 @@ function pile(extra: Partial<Pile> = {}): Pile {
     id: 'enc',
     kind: 'encounter',
     owner: -1,
-    area: 'villain',
     x: 0,
     y: 0,
     count: 0,
@@ -70,13 +72,33 @@ describe('PileView', () => {
     expect(el.querySelector('.count')?.textContent).toBe('12');
     expect(el.style.left).toBe('120px');
     expect(el.style.top).toBe('20px');
-    expect(el.style.width).toBe('100px');
-    expect(el.style.height).toBe('140px');
+    expect(el.style.width).toBe('140px');
+    expect(el.style.height).toBe('196px');
     expect(el.dataset.id).toBe('enc');
   });
 
+  it('draws its count over its card and every ring the table draws on it', () => {
+    const zOf = (rule: string | undefined) => Number(/z-index: (\d+);/.exec(rule ?? '')?.[1]);
+    const count = zOf(/\n {2}\.count \{([^}]*)\}/.exec(pileSource)?.[1]);
+    const rings = zOf(/drop-pile\)::before \{([^}]*)\}/.exec(tableSource)?.[1]);
+    expect(rings).toBeGreaterThan(0);
+    expect(count).toBeGreaterThan(rings);
+  });
+
+  it('draws the ring of the player who previews it inside itself, so that it follows the pile', () => {
+    interaction.previewByOthers(new Map([['enc', 2]]));
+    try {
+      const { container } = render(PileView, { pile: pile({ count: 3 }) });
+
+      const ring = pileElement(container).querySelector<HTMLElement>(':scope > .rring');
+      expect(ring?.style.getPropertyValue('--c')).toBe('var(--p3)');
+    } finally {
+      interaction.reset();
+    }
+  });
+
   it('a player deck shows the player back', () => {
-    render(PileView, { pile: pile({ kind: 'deck', owner: 0, area: 'p0', count: 30 }) });
+    render(PileView, { pile: pile({ kind: 'deck', owner: 0, count: 30 }) });
     expect(screen.getByRole('img', { name: 'Player card back' })).toBeTruthy();
   });
 
@@ -106,34 +128,16 @@ describe('PileView', () => {
 
     expect(screen.getByRole('img', { name: 'Bomb Scare' })).toBeTruthy();
     const el = pileElement(container);
-    expect(el.style.width).toBe('100px');
-    expect(el.style.height).toBe('140px');
+    expect(el.style.width).toBe('140px');
+    expect(el.style.height).toBe('196px');
     expect(el.querySelector('.land-in-portrait img')).toBeTruthy();
   });
 
-  it('the victory display is out of play, with a trophy badge', () => {
-    const victory = pile({ id: 'vic', kind: 'victory', count: 1, cards: ['c9'] });
-    const { container } = render(PileView, { pile: victory, top: topCard(), face: face() });
-
-    expect(screen.getByRole('img', { name: 'Hydra Mercenary' })).toBeTruthy();
-    expect(pileElement(container).classList.contains('out')).toBe(true);
-    expect(screen.getByRole('img', { name: 'Victory display' })).toBeTruthy();
-  });
-
-  it('the set-aside cards are out of play, with an hourglass badge', () => {
-    const { container } = render(PileView, {
-      pile: pile({ id: 'aside', kind: 'aside', count: 0 }),
-    });
+  it('a pile has no label: its owner is named by the frame around it', () => {
+    const { container } = render(PileView, { pile: pile({ count: 3 }) });
 
     const el = pileElement(container);
-    expect(el.classList.contains('out')).toBe(true);
-    expect(el.querySelector('.slot')).toBeTruthy();
-    expect(screen.getByRole('img', { name: 'Set-aside cards' })).toBeTruthy();
-  });
-
-  it('a pile in play has no badge', () => {
-    render(PileView, { pile: pile({ count: 3 }) });
-    expect(screen.queryByRole('img', { name: 'Victory display' })).toBeNull();
-    expect(screen.queryByRole('img', { name: 'Set-aside cards' })).toBeNull();
+    expect(el.querySelector('.label')).toBeNull();
+    expect(el.querySelector('.tray')).toBeNull();
   });
 });

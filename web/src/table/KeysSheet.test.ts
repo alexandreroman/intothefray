@@ -23,7 +23,6 @@ const MINE: TableCard = {
   back: 'player',
   owner: 0,
   zone: 'table',
-  area: 'p0',
   x: 280,
   y: 0,
   z: 1,
@@ -42,7 +41,7 @@ function makeView(): View {
       cards: [MINE],
       piles: [],
       stages: [],
-      firstPlayer: { area: 'p0', x: 860, y: 40 },
+      firstPlayer: { x: 860, y: 40 },
     },
     log: [],
   };
@@ -104,7 +103,7 @@ describe('KeysSheet', () => {
           'Exhaust / ready: E',
           'Flip: F',
           'Draw an arrow to another card: A',
-          'Discard: X',
+          'Discard: ⌫',
           'Back to hand: H',
         ],
       ],
@@ -112,7 +111,7 @@ describe('KeysSheet', () => {
         'Tokens (Shift removes)',
         ['Damage: D', 'Threat: T', 'Counter: N', 'Stunned: S', 'Confused: C', 'Tough: G'],
       ],
-      ['Card in your hand', ['Play: P', 'Discard: X']],
+      ['Card in your hand', ['Play: P', 'Discard: ⌫']],
       [
         'Deck under the mouse',
         [
@@ -127,6 +126,7 @@ describe('KeysSheet', () => {
         'Table',
         [
           'Undo your last action: Z',
+          'Ready all cards: ⇧ Space',
           'Zoom in / out: +−',
           'Zoom back to 100%: 0',
           'Zoom around the mouse: Ctrl + wheel',
@@ -166,21 +166,41 @@ describe('KeysSheet', () => {
     expect(sheet()!.style.left).toBe('290px');
   });
 
-  it('the × button and a press outside close it; a press inside does not', async () => {
+  it("lines its right edge up on the controls' around its button", () => {
     const anchor = document.body.appendChild(document.createElement('button'));
-    const outside = document.body.appendChild(document.createElement('div'));
+    const controls = document.body.appendChild(document.createElement('div'));
+    vi.spyOn(anchor, 'getBoundingClientRect').mockReturnValue(new DOMRect(900, 700, 30, 26));
+    // The zoom control around the button: 5 px of padding and border on its right.
+    vi.spyOn(controls, 'getBoundingClientRect').mockReturnValue(new DOMRect(700, 695, 235, 36));
+    vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(640);
+    vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(400);
+    render(KeysSheet, { props: { anchor, alignTo: controls, onclose: vi.fn() } });
+
+    expect(sheet()!.style.top).toBe('286px');
+    expect(sheet()!.style.left).toBe(`${935 - 640}px`);
+  });
+
+  it('the × button, ?, Escape and a click on the backdrop close it; a click inside does not', async () => {
+    const anchor = document.body.appendChild(document.createElement('button'));
     const onclose = vi.fn();
     render(KeysSheet, { props: { anchor, onclose } });
+    // A dialog like the others: modal, the focus moved into it.
+    expect(sheet()!.getAttribute('aria-modal')).toBe('true');
+    const close = screen.getByRole('button', { name: 'Close' });
+    expect(document.activeElement).toBe(close);
 
-    await fireEvent.pointerDown(sheet()!.querySelector('h4')!);
-    // The button toggles the sheet itself: a press on it is not outside.
-    await fireEvent.pointerDown(anchor);
+    const inside = sheet()!.querySelector('h4')!;
+    await fireEvent.pointerDown(inside);
+    await fireEvent.click(inside);
     expect(onclose).not.toHaveBeenCalled();
 
-    await fireEvent.pointerDown(outside);
-    expect(onclose).toHaveBeenCalledTimes(1);
-    await fireEvent.click(screen.getByRole('button', { name: 'Close' }));
-    expect(onclose).toHaveBeenCalledTimes(2);
+    await fireEvent.click(close);
+    await fireEvent.keyDown(close, { key: '?' });
+    await fireEvent.keyDown(window, { key: 'Escape' });
+    const backdrop = screen.getByRole('presentation');
+    await fireEvent.pointerDown(backdrop);
+    await fireEvent.click(backdrop);
+    expect(onclose).toHaveBeenCalledTimes(4);
   });
 });
 
@@ -192,44 +212,43 @@ describe('the sheet on the table', () => {
     return session;
   }
 
-  it('? toggles the sheet', async () => {
+  function mine(): HTMLElement {
+    return document.querySelector<HTMLElement>('.surface [data-id="mine"]')!;
+  }
+
+  it('? or the keyboard button opens it; ? closes it again', async () => {
     await renderTable();
     expect(sheet()).toBeNull();
 
     await press('?');
     expect(sheet()).not.toBeNull();
-    await press('?');
+    await fireEvent.keyDown(document.activeElement!, { key: '?' });
     expect(sheet()).toBeNull();
 
-    // So does the keyboard button next to the zoom.
     const button = screen.getByRole('button', { name: 'Keyboard shortcuts' });
     // Its tooltip names its key, as the prototype's does.
     expect(button.dataset).toMatchObject({ tip: 'Keyboard shortcuts', kbd: '?' });
     await fireEvent.click(button);
     expect(sheet()).not.toBeNull();
     expect(button.getAttribute('aria-expanded')).toBe('true');
-    await fireEvent.click(button);
-    expect(sheet()).toBeNull();
   });
 
-  it('Esc closes', async () => {
-    await renderTable();
-    await fireEvent.pointerEnter(document.querySelector<HTMLElement>('.surface [data-id="mine"]')!);
+  it('freezes the table while it is open; Escape gives it back', async () => {
+    const session = await renderTable();
+    await fireEvent.pointerEnter(mine());
     await press('?');
+    // Opening it lets go of the hovered card.
+    expect(interaction.hovered).toBeNull();
+
+    await fireEvent.pointerEnter(mine());
+    await press('e');
+    expect(interaction.hovered).toBeNull();
+    expect(session.act).not.toHaveBeenCalled();
 
     await press('Escape');
     expect(sheet()).toBeNull();
-    // The first Escape is the sheet's: the hovered card stays the bar's.
-    expect(interaction.hovered).toEqual({ kind: 'card', id: 'mine' });
-  });
-
-  it('the other keys still act while the sheet is shown', async () => {
-    const session = await renderTable();
-    await fireEvent.pointerEnter(document.querySelector<HTMLElement>('.surface [data-id="mine"]')!);
-    await press('?');
-
+    await fireEvent.pointerEnter(mine(), { clientX: 1 });
     await press('e');
     expect(session.act).toHaveBeenCalledWith({ kind: 'exhaust', card: 'mine' });
-    expect(sheet()).not.toBeNull();
   });
 });

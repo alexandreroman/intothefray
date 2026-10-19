@@ -2,10 +2,11 @@
 // dropped, and the action a drop sends. Pure helpers; DragLayer.svelte follows
 // the pointer, measures the screen and calls them.
 
-import type { Action, Area, CardView, View } from '../lib/types';
-import { asidePileOf, discardPileOf, homeDeckOf, seatOf, stageHeldBy } from './actions';
+import type { Action, Area, CardView, PileView, View } from '../lib/types';
+import { discardPileOf, homeDeckOf, seatOf, stageHeldBy } from './actions';
 import type { Pressable } from './interaction.svelte';
-import { GRID } from './layout';
+import { GRID, TABLE_LIMIT } from './layout';
+import { ALL_ROWS, type RowMap } from './rows';
 
 /** A press turns into a drag once the pointer has moved this far, in screen pixels. */
 export const DRAG_THRESHOLD = 4;
@@ -40,32 +41,32 @@ export type DropRect =
   | { kind: 'hand'; index: number; rect: Rect }
   /** The hand as a whole, for a table card going back to it. */
   | { kind: 'toHand'; rect: Rect }
-  | { kind: 'zone'; area: Area; rect: Rect }
-  | { kind: 'pile'; pile: string; area: Area; drop: PileDrop; label: string; rect: Rect }
-  | { kind: 'card'; card: string; area: Area; z: number; rect: Rect };
+  /** The table itself, where it shows. */
+  | { kind: 'table'; rect: Rect }
+  | { kind: 'pile'; pile: string; drop: PileDrop; label: string; rect: Rect }
+  | { kind: 'card'; card: string; z: number; rect: Rect };
 
-export type ZoneRect = Extract<DropRect, { kind: 'zone' }>;
+export type TableRect = Extract<DropRect, { kind: 'table' }>;
 type PileRect = Extract<DropRect, { kind: 'pile' }>;
 type CardRect = Extract<DropRect, { kind: 'card' }>;
 
 /** What is dragged, read from the current view. */
 export type DragSource =
   /** A table card, with the cards tucked under it. */
-  | { kind: 'card'; card: string; area: Area; x: number; y: number; onPile?: string }
+  | { kind: 'card'; card: string; x: number; y: number; onPile?: string }
+  /** A card of the hand of the player seated in `area`. */
   | { kind: 'hand'; card: string; hand: readonly string[]; area: Area }
   /** The top card of a pile that shows its cards. */
   | { kind: 'pile'; pile: string; card: string }
   /** The unknown top card of the encounter deck, dealt face down. */
   | { kind: 'encounter'; pile: string }
+  /** The unknown top card of the viewer's own deck: drawn, discarded, or played face up. */
+  | { kind: 'deck'; pile: string }
   /** The first player token (spec 5.8), from where it lies. */
-  | { kind: 'firstPlayer'; area: Area; x: number; y: number };
+  | { kind: 'firstPlayer'; x: number; y: number };
 
-/** A spot of a zone, in table units. */
-export interface TablePoint {
-  area: Area;
-  x: number;
-  y: number;
-}
+// A row of the table starts this far above its owner's deck: the owner's name lies there.
+const ROW_LABEL_ROOM = 30;
 
 export function snap(v: number): number {
   return Math.round(v / GRID) * GRID;
@@ -94,9 +95,9 @@ function distance(rect: Rect, point: Point): number {
 }
 
 /**
- * What a drop at the point lands on: the hand, if it is a target, then within
- * the zone under the point, the nearest pile up to 20 px away, the topmost
- * card under the point, or else the zone itself. Null outside every zone.
+ * What a drop at the point lands on: the hand, if it is a target, then the
+ * nearest pile up to 20 px away, the topmost card under the point, or else
+ * the table itself. Null outside the table.
  */
 export function dropTarget(point: Point, targets: DropRect[]): DropRect | null {
   const hand = targets.find(
@@ -105,8 +106,8 @@ export function dropTarget(point: Point, targets: DropRect[]): DropRect | null {
   if (hand) {
     return hand;
   }
-  const zone = targets.find((t): t is ZoneRect => t.kind === 'zone' && contains(t.rect, point));
-  if (!zone) {
+  const table = targets.find((t): t is TableRect => t.kind === 'table' && contains(t.rect, point));
+  if (!table) {
     return null;
   }
 
@@ -114,70 +115,93 @@ export function dropTarget(point: Point, targets: DropRect[]): DropRect | null {
   let nearestDistance = PILE_MARGIN;
   let topCard: CardRect | null = null;
   for (const target of targets) {
-    if (target.kind === 'pile' && target.area === zone.area) {
+    if (target.kind === 'pile') {
       const d = distance(target.rect, point);
       if (d <= nearestDistance) {
         nearestPile = target;
         nearestDistance = d;
       }
-    } else if (
-      target.kind === 'card' &&
-      target.area === zone.area &&
-      contains(target.rect, point)
-    ) {
+    } else if (target.kind === 'card' && contains(target.rect, point)) {
       if (topCard === null || target.z > topCard.z) {
         topCard = target;
       }
     }
   }
-  return nearestPile ?? topCard ?? zone;
+  return nearestPile ?? topCard ?? table;
 }
 
 /**
  * The action a drop sends: `at` is where the dragged card's top-left corner
- * lands, in table units. Null when nothing would change: no target, the spot
- * it was taken from, or its own place in the hand.
+ * is drawn, in table units, `dealTo` the player an encounter card dealt there
+ * goes to (see dealRecipient), and `rows` where the view mode draws the rows.
+ * Null when nothing would change: no target, the spot it was taken from, or
+ * its own place in the hand.
  */
 export function dropAction(
   drag: DragSource,
   target: DropRect | null,
-  at: TablePoint,
+  at: Point,
+  dealTo: Area,
+  rows: RowMap = ALL_ROWS,
 ): Action | null {
   if (target === null) {
     return null;
   }
-  // The token lies anywhere in a zone, over cards and piles alike.
+  // The token lies anywhere on the table, over cards and piles alike.
   if (drag.kind === 'firstPlayer') {
-    return 'area' in target ? place(drag, at) : null;
+    return target.kind === 'hand' || target.kind === 'toHand'
+      ? null
+      : place(drag, at, dealTo, rows);
   }
   switch (target.kind) {
     case 'hand':
       return drag.kind === 'hand' ? reorder(drag, target.index) : null;
     case 'toHand':
-      return drag.kind === 'card' ? { kind: 'toHand', card: drag.card } : null;
+      return toHand(drag);
     case 'pile':
       return onPile(drag, target.pile, target.drop);
     case 'card':
-      return onCard(drag, target.card, at);
-    case 'zone':
-      return place(drag, at);
+      return onCard(drag, target.card, at, dealTo, rows);
+    case 'table':
+      return place(drag, at, dealTo, rows);
+  }
+}
+
+/** A table card goes back to the hand; the top card of the viewer's deck is drawn. */
+function toHand(drag: DragSource): Action | null {
+  switch (drag.kind) {
+    case 'card':
+      return { kind: 'toHand', card: drag.card };
+    case 'deck':
+      return { kind: 'draw', n: 1 };
+    default:
+      return null;
   }
 }
 
 /** What can be dropped onto a card or a pile: everything but the token. */
 type CardSource = Exclude<DragSource, { kind: 'firstPlayer' }>;
 
-function onCard(drag: CardSource, card: string, at: TablePoint): Action | null {
+function onCard(
+  drag: CardSource,
+  card: string,
+  at: Point,
+  dealTo: Area,
+  rows: RowMap,
+): Action | null {
+  // Tucked where it is dropped, behind the card: the server keeps the spot (placed).
+  const { x, y } = spotOf(at, rows);
   switch (drag.kind) {
     case 'card':
-      return { kind: 'attach', card: drag.card, target: card };
+      return { kind: 'attach', card: drag.card, target: card, x, y, placed: true };
     case 'hand':
     case 'pile':
       // Played and tucked in one action: one undo step.
-      return { kind: 'play', card: drag.card, target: card };
+      return { kind: 'play', card: drag.card, target: card, x, y, placed: true };
     case 'encounter':
-      // Dealt face down where it lands (spec 5.5), over that card.
-      return place(drag, at);
+    case 'deck':
+      // Put where it lands, over that card: dealt face down (spec 5.5), or played face up.
+      return place(drag, at, dealTo, rows);
   }
 }
 
@@ -203,7 +227,7 @@ function onPile(drag: CardSource, pile: string, drop: PileDrop): Action | null {
   ) {
     return null;
   }
-  if (drag.kind === 'encounter') {
+  if (drag.kind === 'encounter' || drag.kind === 'deck') {
     return drop === 'discard' ? { kind: 'discardTop', pile: drag.pile, n: 1 } : null;
   }
   switch (drop) {
@@ -216,33 +240,67 @@ function onPile(drag: CardSource, pile: string, drop: PileDrop): Action | null {
   }
 }
 
-function place(drag: DragSource, at: TablePoint): Action | null {
-  const x = Math.max(0, snap(at.x));
-  const y = Math.max(0, snap(at.y));
+/** Where a card whose corner is drawn at `at` lies on the table, on the grid. */
+function spotOf(at: Point, rows: RowMap): Point {
+  // Snapped where it is drawn, then mapped to the table: snapping after would
+  // push a card drawn at the bottom of a row into the next, hidden, one. A row
+  // that ends there keeps the card on its last height, taken down to the grid.
+  const onGrid = Math.floor(rows.toTable(snap(at.y)) / GRID) * GRID;
+  // Within the server's bounds: never off the top or left edge, nor past TABLE_LIMIT.
+  return {
+    x: Math.min(TABLE_LIMIT, Math.max(0, snap(at.x))),
+    y: Math.min(TABLE_LIMIT, Math.max(0, onGrid)),
+  };
+}
+
+function place(drag: DragSource, at: Point, dealTo: Area, rows: RowMap): Action | null {
+  const { x, y } = spotOf(at, rows);
   switch (drag.kind) {
     case 'card':
       // A revealed card dropped where it lies is still on its deck: nothing moves.
-      if (at.area === drag.area && x === drag.x && y === drag.y) {
+      if (x === drag.x && y === drag.y) {
         return null;
       }
-      return { kind: 'move', card: drag.card, area: at.area, x, y };
+      return { kind: 'move', card: drag.card, x, y };
     case 'hand':
     case 'pile':
-      return { kind: 'play', card: drag.card, area: at.area, x, y };
+      return { kind: 'play', card: drag.card, x, y };
     case 'encounter':
-      return { kind: 'deal', area: at.area, x, y };
+      return { kind: 'deal', area: dealTo, x, y };
+    case 'deck':
+      // The server plays the deck's top card, which the client does not know.
+      return { kind: 'play', pile: drag.pile, x, y };
     case 'firstPlayer':
-      if (at.area === drag.area && x === drag.x && y === drag.y) {
+      if (x === drag.x && y === drag.y) {
         return null;
       }
-      return { kind: 'firstPlayer', area: at.area, x, y };
+      return { kind: 'firstPlayer', x, y };
   }
 }
 
 /**
+ * Who an encounter card dealt at height `y` of the table (in table units)
+ * goes to: the player whose row holds that spot. Each player's row starts
+ * just above their deck, where their name lies, and runs down to the next
+ * row. Above every player's row (the villain's), it goes to the viewer.
+ */
+export function dealRecipient(piles: readonly PileView[], y: number, viewer: Area): Area {
+  let recipient = viewer;
+  let rowTop = -Infinity;
+  for (const pile of piles) {
+    const top = pile.y - ROW_LABEL_ROOM;
+    if (pile.kind === 'deck' && top <= y && top > rowTop) {
+      rowTop = top;
+      recipient = `p${pile.owner}`;
+    }
+  }
+  return recipient;
+}
+
+/**
  * What pressing the element drags, in the current view, or null when it
- * cannot be dragged: a spectator, a deck, an empty pile, another player's
- * set-aside cards, or a card that is no longer there. During a drag from a
+ * cannot be dragged: a spectator, another player's deck, an empty pile, an
+ * out-of-play pile, or a card that is no longer there. During a drag from a
  * pile, `taken` is the card taken from it: the drag follows that card while
  * it is still in the pile, whatever lands on top of it. Any player can move
  * the first player token.
@@ -258,16 +316,10 @@ export function sourceOf(element: Pressable, view: View, taken?: string): DragSo
       return { kind: 'firstPlayer', ...table.firstPlayer };
     case 'card': {
       const card = table.cards.find((c) => c.id === element.id);
-      if (card?.zone !== 'table' || !card.area) {
+      if (card?.zone !== 'table') {
         return null;
       }
-      const source: DragSource = {
-        kind: 'card',
-        card: card.id,
-        area: card.area,
-        x: card.x,
-        y: card.y,
-      };
+      const source: DragSource = { kind: 'card', card: card.id, x: card.x, y: card.y };
       return card.onPile ? { ...source, onPile: card.onPile } : source;
     }
     case 'hand': {
@@ -282,12 +334,12 @@ export function sourceOf(element: Pressable, view: View, taken?: string): DragSo
       if (pile.kind === 'encounter') {
         return { kind: 'encounter', pile: pile.id };
       }
-      // Set-aside cards are private to their owner, as checkPile has it.
-      const open =
-        pile.kind === 'discard' ||
-        pile.kind === 'encounterDiscard' ||
-        pile.kind === 'victory' ||
-        (pile.kind === 'aside' && (pile.owner === -1 || `p${pile.owner}` === area));
+      // A deck is private to its owner, as checkPile has it.
+      if (pile.kind === 'deck') {
+        return `p${pile.owner}` === area ? { kind: 'deck', pile: pile.id } : null;
+      }
+      // Out-of-play piles are not drawn on the table: only a discard pile is dragged from.
+      const open = pile.kind === 'discard' || pile.kind === 'encounterDiscard';
       const card = taken ?? pile.cards?.at(-1);
       const inPile = card !== undefined && (pile.cards ?? []).includes(card);
       return open && inPile ? { kind: 'pile', pile: pile.id, card } : null;
@@ -296,13 +348,20 @@ export function sourceOf(element: Pressable, view: View, taken?: string): DragSo
 }
 
 /**
- * Whether the hand takes the dragged card back: only a table card of the
- * viewer's own, as Move to ▾ Hand has it (ruling P5b-R10). The prototype
- * returns it to the hand from anywhere over the fan.
+ * Whether the hand takes the dragged card: a table card of the viewer's own,
+ * as Move to ▾ Hand has it (ruling P5b-R10), or the top card of their deck,
+ * which is drawn. The prototype takes it from anywhere over the fan.
  */
 export function goesToHand(drag: DragSource, view: View): boolean {
   const seat = view.you.area ? seatOf(view.you.area) : null;
-  if (drag.kind !== 'card' || view.you.role !== 'player' || seat === null) {
+  if (view.you.role !== 'player' || seat === null) {
+    return false;
+  }
+  // Only the viewer's own deck can be dragged (sourceOf): its top card is drawn.
+  if (drag.kind === 'deck') {
+    return true;
+  }
+  if (drag.kind !== 'card') {
     return false;
   }
   return view.table?.cards.find((c) => c.id === drag.card)?.owner === seat;
@@ -336,6 +395,10 @@ export function pileTargets(drag: DragSource, view: View): PileTarget[] {
     const encounterDiscard: PileTarget = { pile: 'encd', drop: 'discard', label: 'Discard' };
     return [encounterDiscard].filter(exists);
   }
+  if (drag.kind === 'deck') {
+    const discard: PileTarget = { pile: `disc:p${seat}`, drop: 'discard', label: 'Discard' };
+    return [discard].filter(exists);
+  }
 
   const card = table.cards.find((c) => c.id === drag.card);
   // Mirrors checkNotStageCurrent: the card a stage shows stays on the table.
@@ -347,11 +410,8 @@ export function pileTargets(drag: DragSource, view: View): PileTarget[] {
   if (card.owner === seat || card.owner === -1) {
     targets.push({ pile: homeDeckOf(card), drop: 'top', label: 'Top of deck' });
   }
-  targets.push(
-    { pile: discardPileOf(card), drop: 'discard', label: 'Discard' },
-    { pile: 'vic', drop: 'pile', label: 'Victory display' },
-    { pile: asidePileOf(card, seat), drop: 'pile', label: 'Set aside' },
-  );
+  // The out-of-play piles are not drawn: Move to ▾ sends a card there.
+  targets.push({ pile: discardPileOf(card), drop: 'discard', label: 'Discard' });
   return targets.filter(exists);
 }
 

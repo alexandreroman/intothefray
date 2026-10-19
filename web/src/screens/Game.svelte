@@ -29,8 +29,9 @@
 
 {#if notFound}
   <div class="message table-bg">
+    <span class="caption">Game not found</span>
     <p>This game doesn't exist or has expired.</p>
-    <a href={href('/')}>Back to home</a>
+    <a class="btn-primary" href={href('/')}>Back to home</a>
   </div>
 {:else}
   {#if waiting}
@@ -56,27 +57,38 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 12px;
+    gap: 16px;
+    padding: 24px 16px;
+    text-align: center;
   }
 
   p {
     margin: 0;
   }
 
-  .status {
-    position: fixed;
-    top: 8px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 4px 14px;
-    background: var(--panel-2);
-    border: 1px solid var(--line);
-    border-radius: 999px;
+  .message p {
     color: var(--muted);
-    z-index: 5;
+    font-size: 16px;
   }
 
-  a {
-    color: var(--sel);
+  /* A link drawn as the primary button. */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+  }
+
+  .status {
+    position: fixed;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 6px 14px;
+    background: var(--panel);
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    color: var(--muted);
+    font-size: 13px;
+    z-index: 5;
   }
 </style>

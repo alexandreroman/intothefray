@@ -1,5 +1,14 @@
 <script lang="ts">
-  type Name = 'cards' | 'sliders' | 'back' | 'eye' | 'fullscreen' | 'exit-fullscreen' | 'power';
+  type Name =
+    | 'cards'
+    | 'sliders'
+    | 'back'
+    | 'eye'
+    | 'fullscreen'
+    | 'exit-fullscreen'
+    | 'cross'
+    | 'rows-all'
+    | 'rows-focus';
 
   let { name }: { name: Name } = $props();
 
@@ -31,12 +40,20 @@
   {:else if name === 'exit-fullscreen'}
     <!-- Four corners pointing inwards. -->
     <path d="M4 9h5V4M15 4v5h5M20 15h-5v5M9 20v-5H4" />
-  {:else if name === 'power'}
-    <!-- An open circle with a vertical line. -->
-    <path d="M18.36 6.64a9 9 0 1 1-12.73 0" />
-    <path d="M12 2v10" />
+  {:else if name === 'cross'}
+    <path d="M6 6l12 12M18 6L6 18" />
+  {:else if name === 'rows-all'}
+    <!-- Every row of the table. -->
+    <rect x="4" y="4" width="16" height="4" rx="1" />
+    <rect x="4" y="10" width="16" height="4" rx="1" />
+    <rect x="4" y="16" width="16" height="4" rx="1" />
+  {:else if name === 'rows-focus'}
+    <!-- The villain's row, and one player's row under it. -->
+    <rect x="4" y="5" width="16" height="5" rx="1" fill="currentColor" fill-opacity=".25" />
+    <rect x="4" y="14" width="16" height="5" rx="1" />
   {:else}
-    <path d="M15 5l-7 7 7 7" />
+    <!-- An arrow pointing left. -->
+    <path d="M19 12H5M11 6l-6 6 6 6" />
   {/if}
 </svg>
 

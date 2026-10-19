@@ -3,6 +3,7 @@
   import DeckLoader from '../components/lobby/DeckLoader.svelte';
   import ScenarioPicker from '../components/lobby/ScenarioPicker.svelte';
   import Seats from '../components/lobby/Seats.svelte';
+  import Tooltip from '../components/Tooltip.svelte';
   import TopBar from '../components/TopBar.svelte';
   import { loadIndex } from '../lib/catalog';
   import type { GameSession } from '../lib/session.svelte';
@@ -42,6 +43,16 @@
       : `Everyone is ready — waiting for ${hostName} to set up the table.`;
   });
 
+  const intro = $derived.by(() => {
+    if (view.you.host) {
+      return 'You are the host: you choose the scenario, and everyone sees it. Each player brings their own deck.';
+    }
+    if (view.you.role === 'spectator') {
+      return `You are watching: ${hostName} chooses the scenario, and each player brings their own deck.`;
+    }
+    return `${hostName} is the host: they choose the scenario, and everyone sees it. Bring your own deck.`;
+  });
+
   // A failed deck import shows under the deck field; anything else in the start bar.
   const deckLoadError = $derived(session.deckLoadError?.message ?? null);
   const otherError = $derived(session.lastError?.message ?? null);
@@ -51,100 +62,172 @@
   <TopBar spectators={view.spectators} />
 
   <main class="lobby">
-    {#if index}
-      <ScenarioPicker
-        {view}
-        {index}
-        onconfigure={(config) => session.lobby('configure', { config })}
-      />
-    {:else}
-      <section class="card-box">
-        <div class="bhead"><b>Scenario</b></div>
-        <div class="sect">
-          <p class="aside">
-            {indexError
-              ? 'The scenarios could not be loaded. Reload the page.'
-              : 'Loading scenarios…'}
-          </p>
-        </div>
-      </section>
-    {/if}
+    <header class="intro">
+      <div class="heading">
+        <span class="caption">Lobby</span>
+        <h1 class="display">ASSEMBLE YOUR TEAM</h1>
+      </div>
+      <p>{intro}</p>
+    </header>
 
-    <div class="column">
-      <Seats
-        {view}
-        onremove={(color) => session.lobby('removePlayer', { color })}
-        onleave={() => session.lobby('leave')}
-        ontakeseat={() => session.lobby('takeSeat')}
-      />
-      {#if me}
-        <DeckLoader
-          {me}
-          deckError={session.deckError}
-          error={deckLoadError}
-          onload={(url) => session.lobby('setDeck', { url })}
+    <div class="columns">
+      <div class="wide">
+        {#if index}
+          <ScenarioPicker
+            {view}
+            {index}
+            onconfigure={(config) => session.lobby('configure', { config })}
+          />
+        {:else}
+          <section class="card-box">
+            <div class="bhead"><h2>Scenario</h2></div>
+            <div class="sect">
+              <p class="aside">
+                {indexError
+                  ? 'The scenarios could not be loaded. Reload the page.'
+                  : 'Loading scenarios…'}
+              </p>
+            </div>
+          </section>
+        {/if}
+      </div>
+
+      <div class="narrow">
+        <Seats
+          {view}
+          onremove={(color) => session.lobby('removePlayer', { color })}
+          onleave={() => session.lobby('leave')}
+          ontakeseat={() => session.lobby('takeSeat')}
         />
-      {/if}
+        {#if me}
+          <DeckLoader
+            {me}
+            deckError={session.deckError}
+            error={deckLoadError}
+            onload={(url) => session.lobby('setDeck', { url })}
+          />
+        {/if}
+      </div>
     </div>
   </main>
 
   <div class="startbar">
-    {#if otherError}
-      <span class="why error" role="alert">{otherError}</span>
-    {:else}
-      <span class="why">{reason}</span>
-    {/if}
-    {#if view.you.host}
-      <button class="go" disabled={!canStart} onclick={() => session.lobby('start')}
-        >Set up the table</button
-      >
-    {/if}
+    <div class="startbar-inner">
+      {#if otherError}
+        <span class="why error" role="alert">{otherError}</span>
+      {:else}
+        <span class="why" class:ready={canStart}><i></i>{reason}</span>
+      {/if}
+      {#if view.you.host}
+        <button class="btn-primary go" disabled={!canStart} onclick={() => session.lobby('start')}>
+          Set up the table
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+        </button>
+      {/if}
+    </div>
   </div>
 </div>
 
+<Tooltip />
+
 <style>
+  /* The start bar sticks to the bottom of the window, at the end of a full-height column. */
   .screen {
     min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--table-bg);
   }
 
   .lobby {
-    max-width: 1100px;
+    flex: 1;
+    width: 100%;
+    max-width: 1200px;
     margin: 0 auto;
-    padding: 20px 16px 120px;
-    display: grid;
-    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
-    gap: 16px;
-    align-items: start;
-  }
-
-  @media (max-width: 860px) {
-    .lobby {
-      grid-template-columns: minmax(0, 1fr);
-    }
-  }
-
-  .column {
+    padding: 36px 24px 48px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 28px;
+  }
+
+  .intro {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px 32px;
+  }
+
+  .heading {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 56px;
+    line-height: 0.9;
+  }
+
+  .intro p {
+    max-width: 420px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* Two columns that wrap into one on a narrow screen. */
+  .columns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    align-items: flex-start;
+  }
+
+  .wide {
+    flex: 999 1 560px;
+    min-width: 0;
+  }
+
+  .narrow {
+    flex: 1 1 360px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  @media (max-width: 600px) {
+    .lobby {
+      padding: 24px 16px 32px;
+    }
+
+    h1 {
+      font-size: 44px;
+    }
   }
 
   /* Box primitives shared by the lobby components. */
   .lobby :global(.card-box) {
-    background: var(--panel);
+    background: var(--bg);
     border: 1px solid var(--line);
-    border-radius: 14px;
+    border-radius: 18px;
   }
 
   .lobby :global(.bhead) {
     display: flex;
     align-items: baseline;
-    gap: 10px;
-    padding: 14px 16px 0;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 20px 22px 0;
   }
 
-  .lobby :global(.bhead b) {
-    font-size: 16px;
+  .lobby :global(.bhead h2) {
+    margin: 0;
+    font-stretch: 85%;
+    font-weight: 800;
+    font-size: 20px;
   }
 
   .lobby :global(.aside) {
@@ -154,26 +237,44 @@
   }
 
   .lobby :global(.sect) {
-    padding: 12px 16px 16px;
+    padding: 16px 22px 22px;
   }
 
   .lobby :global(.sect + .sect) {
-    border-top: 1px solid var(--line);
+    border-top: 1px solid var(--panel-2);
   }
 
   .lobby :global(.lbl) {
-    font-weight: 600;
-    margin-bottom: 8px;
-    display: flex;
-    align-items: baseline;
-    gap: 4px 8px;
-    flex-wrap: wrap;
+    display: block;
+    margin-bottom: 10px;
+    color: var(--muted);
+    font-stretch: 75%;
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
   }
 
   .lobby :global(.hint) {
     color: var(--muted);
     font-size: 12px;
-    margin-top: 8px;
+    margin-top: 10px;
+  }
+
+  .lobby :global(input[type='text']) {
+    height: 44px;
+    padding: 0 14px;
+    background: var(--table-bg);
+  }
+
+  /* A secondary button as tall as a field. */
+  .lobby :global(.btn) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 44px;
+    padding: 0 16px;
   }
 
   p {
@@ -181,23 +282,41 @@
   }
 
   .startbar {
-    position: fixed;
-    left: 0;
-    right: 0;
+    position: sticky;
     bottom: 0;
-    background: #171e2ef2;
-    border-top: 1px solid var(--line);
-    padding: 12px 16px;
+    background: #0d111beb;
+    border-top: 1px solid var(--panel-2);
+    backdrop-filter: blur(10px);
+  }
+
+  .startbar-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 14px 24px;
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    justify-content: center;
-    gap: 16px;
-    backdrop-filter: blur(6px);
+    justify-content: flex-end;
+    gap: 12px 24px;
   }
 
   .why {
-    color: var(--muted);
-    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #c9cfdf;
+  }
+
+  .why i {
+    flex: none;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--warn);
+  }
+
+  .why.ready i {
+    background: var(--ok);
   }
 
   .why.error {
@@ -205,11 +324,18 @@
   }
 
   .go {
-    background: #23406a;
-    border-color: var(--sel);
-    font-weight: 700;
-    font-size: 15px;
-    padding: 10px 22px;
-    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .go svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
 </style>

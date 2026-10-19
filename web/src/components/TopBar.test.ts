@@ -36,15 +36,64 @@ function setFullscreenElement(
 }
 
 describe('TopBar', () => {
-  it('shows the logo, THE in the accent colour', () => {
-    const { container } = render(TopBar, { spectators: 0 });
-    const logo = container.querySelector('.logo');
-    expect(logo?.textContent).toBe('INTO THE FRAY');
-    expect(logo?.querySelector('span')?.textContent).toBe('THE');
+  it('shows the full logo', () => {
+    render(TopBar);
+    const logo = screen.getByRole('img', { name: 'Into The Fray' });
+    expect(logo.textContent?.replace(/\s+/g, ' ').trim()).toBe('INTO THE FRAY');
+  });
+
+  it('shows no crumb by default', () => {
+    const { container } = render(TopBar);
+    expect(container.querySelector('.crumbs')).toBeNull();
+    expect(container.querySelector('.divider')).toBeNull();
+  });
+
+  it('shows the crumbs, the first one strong and the rest dimmed', () => {
+    const { container } = render(TopBar, { crumbs: ['Rhino', 'Bomb Scare', 'Masters of Evil'] });
+    const crumbs = container.querySelector('.crumbs');
+    expect(crumbs?.textContent?.trim()).toBe('Rhino / Bomb Scare / Masters of Evil');
+    expect(crumbs?.querySelector('b')?.textContent).toBe('Rhino');
+    expect([...(crumbs?.querySelectorAll('.rest') ?? [])].map((rest) => rest.textContent)).toEqual([
+      ' / Bomb Scare',
+      ' / Masters of Evil',
+    ]);
+  });
+
+  it('offers Ready all on the table, off while there is nothing to ready', async () => {
+    const { unmount } = render(TopBar);
+    expect(screen.queryByRole('button', { name: 'Ready all cards' })).toBeNull();
+    unmount();
+
+    const run = vi.fn();
+    const { rerender } = render(TopBar, { readyAll: { disabled: true, run } });
+    const button = screen.getByRole('button', { name: 'Ready all cards' });
+    expect(button.dataset).toMatchObject({ tip: 'Ready all cards', kbd: '⇧ Space' });
+    expect(button.getAttribute('aria-disabled')).toBe('true');
+    await fireEvent.click(button);
+    expect(run).not.toHaveBeenCalled();
+
+    await rerender({ readyAll: { disabled: false, run } });
+    expect(button.getAttribute('aria-disabled')).toBe('false');
+    await fireEvent.click(button);
+    expect(run).toHaveBeenCalledOnce();
+  });
+
+  it('shows a back arrow before the logo, only when it can go back', async () => {
+    const { unmount } = render(TopBar);
+    expect(screen.queryByRole('button', { name: 'Back' })).toBeNull();
+    unmount();
+
+    const onback = vi.fn();
+    const { container } = render(TopBar, { onback });
+    const back = screen.getByRole('button', { name: 'Back' });
+    expect(back.getAttribute('title')).toBe('Back');
+    expect(container.querySelector('header')?.firstElementChild).toBe(back);
+    await fireEvent.click(back);
+    expect(onback).toHaveBeenCalledOnce();
   });
 
   it('shows no spectator badge without spectators', () => {
-    const { container } = render(TopBar, { spectators: 0 });
+    const { container } = render(TopBar);
     expect(screen.queryByRole('img', { name: /spectator/ })).toBeNull();
     expect(container.querySelector('.pill')).toBeNull();
   });
@@ -91,17 +140,36 @@ describe('TopBar', () => {
     expect(onend).toHaveBeenCalledOnce();
   });
 
-  it('orders the actions, the side panel toggle last', () => {
+  it('orders the actions, End game last, with a cross', () => {
     document.documentElement.requestFullscreen = vi.fn();
-    render(TopBar, {
-      spectators: 0,
-      onend: () => {},
-      side: { hidden: false, ontoggle: () => {} },
-    });
+    render(TopBar, { spectators: 0, onend: () => {} });
     const names = screen
       .getAllByRole('button')
       .map((button) => button.getAttribute('aria-label') ?? button.textContent);
-    expect(names).toEqual(['Fullscreen', 'End game', 'Preview and history']);
+    expect(names).toEqual(['Fullscreen', 'End game']);
+    const cross = screen.getByRole('button', { name: 'End game' }).querySelector('path');
+    expect(cross?.getAttribute('d')).toBe('M6 6l12 12M18 6L6 18');
+  });
+
+  it('puts the spectators before Ready all, then Fullscreen and End game', () => {
+    document.documentElement.requestFullscreen = vi.fn();
+    const { container } = render(TopBar, {
+      spectators: 2,
+      viewMode: 'all',
+      onviewmode: () => {},
+      readyAll: { disabled: false, run: () => {} },
+      onend: () => {},
+    });
+    const names = [...container.querySelectorAll('.actions > *')].map(
+      (element) => element.getAttribute('aria-label') ?? '',
+    );
+    expect(names).toEqual([
+      'Table view',
+      '2 spectators',
+      'Ready all cards',
+      'Fullscreen',
+      'End game',
+    ]);
   });
 
   it('offers no Fullscreen button without the Fullscreen API', () => {
@@ -178,5 +246,42 @@ describe('TopBar', () => {
     await fireEvent.click(screen.getByRole('button', { name: 'Exit fullscreen' }));
     expect(refusal.caught).toHaveBeenCalledOnce();
     expect(screen.getByRole('button', { name: 'Exit fullscreen' })).toBeTruthy();
+  });
+});
+
+describe('TopBar view modes', () => {
+  it('shows no view control outside the table', () => {
+    render(TopBar, {});
+    expect(screen.queryByRole('group', { name: 'Table view' })).toBeNull();
+  });
+
+  it('offers All and Villain + player, the current one pressed', async () => {
+    const onviewmode = vi.fn();
+    render(TopBar, { viewMode: 'all', onviewmode });
+
+    const group = screen.getByRole('group', { name: 'Table view' });
+    const buttons = within(group).getAllByRole('button');
+    expect(
+      buttons.map((b) => [b.getAttribute('aria-label'), b.getAttribute('aria-pressed')]),
+    ).toEqual([
+      ['All', 'true'],
+      ['Villain + player', 'false'],
+    ]);
+    expect(buttons.every((b) => b.querySelector('svg') !== null)).toBe(true);
+
+    await fireEvent.click(within(group).getByRole('button', { name: 'Villain + player' }));
+    expect(onviewmode).toHaveBeenCalledExactlyOnceWith('focus');
+  });
+
+  it('slides its highlight to the chosen view, but not into its first place', async () => {
+    const { rerender } = render(TopBar, { viewMode: 'all', onviewmode: () => {} });
+    const thumb = () => document.querySelector<HTMLElement>('.views .thumb');
+    expect(thumb()).not.toBeNull();
+    expect(thumb()?.getAttribute('aria-hidden')).toBe('true');
+    expect(thumb()?.classList).not.toContain('slides');
+
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    await rerender({ viewMode: 'focus', onviewmode: () => {} });
+    expect(thumb()?.classList).toContain('slides');
   });
 });

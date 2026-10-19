@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/svelte';
 import CardView from './CardView.svelte';
 import type { CardView as TableCard, PackFace } from '../lib/types';
+import { cardBox } from './layout';
 
 const HERO_BACK = 'https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/HeroBack.jpg';
 
@@ -12,7 +13,6 @@ function tableCard(extra: Partial<TableCard> = {}): TableCard {
     back: 'player',
     owner: 0,
     zone: 'table',
-    area: 'p0',
     x: 120,
     y: 40,
     z: 7,
@@ -71,16 +71,19 @@ describe('CardView', () => {
     expect(el.style.left).toBe('120px');
     expect(el.style.top).toBe('40px');
     expect(el.style.zIndex).toBe('7');
-    expect(el.style.width).toBe('140px');
-    expect(el.style.height).toBe('100px');
+    const land = cardBox('land', {});
+    expect(el.style.width).toBe(`${land.w}px`);
+    expect(el.style.height).toBe(`${land.h}px`);
+    expect(land.w).toBeGreaterThan(land.h);
     expect(el.dataset.id).toBe('c1');
   });
 
   it('an unknown face is a std placeholder', () => {
     const { container } = render(CardView, { card: tableCard(), face: null });
     const el = cardElement(container);
-    expect(el.style.width).toBe('100px');
-    expect(el.style.height).toBe('140px');
+    const portrait = cardBox('std', {});
+    expect(el.style.width).toBe(`${portrait.w}px`);
+    expect(el.style.height).toBe(`${portrait.h}px`);
     expect(screen.queryByRole('img')).toBeNull();
   });
 
@@ -90,8 +93,9 @@ describe('CardView', () => {
       face: face({ size: 'dland' }),
     });
     const el = cardElement(container);
-    expect(el.style.width).toBe('100px');
-    expect(el.style.height).toBe('140px');
+    const portrait = cardBox('std', {});
+    expect(el.style.width).toBe(`${portrait.w}px`);
+    expect(el.style.height).toBe(`${portrait.h}px`);
   });
 
   it('a landscape card on a pile keeps a portrait slot and turns its image', () => {
@@ -102,9 +106,19 @@ describe('CardView', () => {
 
     expect(screen.getByRole('img', { name: 'Bomb Scare' })).toBeTruthy();
     const el = cardElement(container);
-    expect(el.style.width).toBe('100px');
-    expect(el.style.height).toBe('140px');
+    const portrait = cardBox('std', {});
+    expect(el.style.width).toBe(`${portrait.w}px`);
+    expect(el.style.height).toBe(`${portrait.h}px`);
     expect(container.querySelector('.land-in-portrait img')).toBeTruthy();
+  });
+
+  it('marks a landscape card, whose statuses lie along its top', () => {
+    const land = render(CardView, { card: tableCard(), face: face({ size: 'land' }) });
+    expect(cardElement(land.container).classList.contains('land')).toBe(true);
+    land.unmount();
+
+    const portrait = render(CardView, { card: tableCard(), face: face() });
+    expect(cardElement(portrait.container).classList.contains('land')).toBe(false);
   });
 
   it('tilts an exhausted card', () => {
@@ -125,6 +139,80 @@ describe('CardView', () => {
     expect(container.querySelector('.st.stunned')?.textContent).toBe('Stunned');
     expect(container.querySelector('.st.confused')).toBeNull();
     expect(container.querySelector('.st.tough')?.textContent).toBe('Tough ×2');
+  });
+
+  it('shows the Locked status with a small lock', () => {
+    const card = tableCard({ status: { locked: 1 } });
+    const { container } = render(CardView, { card, face: face() });
+
+    const tab = container.querySelector('.st.locked');
+    expect(tab?.textContent).toBe('Locked');
+    expect(tab?.querySelector('svg.lock')).not.toBeNull();
+  });
+
+  /** The counter names of the tokens in each group of the card. */
+  function tokenGroups(container: HTMLElement): Record<string, string[]> {
+    const groups: Record<string, string[]> = {};
+    for (const group of container.querySelectorAll<HTMLElement>('.tokens')) {
+      const where = ['middle', 'bottom-right', 'top-right'].find((c) =>
+        group.classList.contains(c),
+      );
+      groups[where ?? '?'] = [...group.querySelectorAll<HTMLElement>('[data-counter]')].map(
+        (tok) => tok.dataset.counter ?? '',
+      );
+    }
+    return groups;
+  }
+
+  it.each([
+    ['portrait', 'std'],
+    ['landscape', 'land'],
+  ] as const)(
+    'piles damage then counters up bottom right on a %s classic card, threat in its middle',
+    (_, size) => {
+      const card = tableCard({ tokens: { dmg: 4, thr: 2, gen: 1 }, status: { stunned: 1 } });
+      const { container } = render(CardView, { card, face: face({ type: 'ally', size }) });
+
+      expect(tokenGroups(container)).toEqual({
+        middle: ['token:thr'],
+        // In the order they pile up from the corner.
+        'bottom-right': ['token:dmg', 'token:gen'],
+      });
+      expect(container.querySelector('.tok.dmg')?.textContent).toBe('4');
+      expect(cardElement(container).classList.contains('scheme')).toBe(false);
+    },
+  );
+
+  it.each([
+    ['a portrait side scheme', 'side_scheme', 'std'],
+    ['a landscape main scheme', 'main_scheme', 'land'],
+  ] as const)(
+    'puts threat top right and piles the others up bottom right on %s',
+    (_, type, size) => {
+      const card = tableCard({ tokens: { dmg: 4, thr: 2, gen: 1 } });
+      const { container } = render(CardView, { card, face: face({ type, size }) });
+
+      expect(tokenGroups(container)).toEqual({
+        // In the order they pile up from the corner.
+        'bottom-right': ['token:dmg', 'token:gen'],
+        'top-right': ['token:thr'],
+      });
+      // The token pill finds every token by its counter name.
+      expect(container.querySelector('[data-counter="token:thr"]')?.textContent).toBe('2');
+      expect(cardElement(container).classList.contains('scheme')).toBe(true);
+    },
+  );
+
+  it('draws only the corners that hold a token on a scheme', () => {
+    const card = tableCard({ tokens: { thr: 3 } });
+    const { container } = render(CardView, { card, face: face({ type: 'main_scheme' }) });
+    expect(tokenGroups(container)).toEqual({ 'top-right': ['token:thr'] });
+  });
+
+  it('a face-down scheme is not known to be one: its tokens sit in the middle', () => {
+    const card = tableCard({ faceDown: true, tokens: { thr: 3 } });
+    const { container } = render(CardView, { card, face: face({ type: 'side_scheme' }) });
+    expect(tokenGroups(container)).toEqual({ middle: ['token:thr'] });
   });
 
   it('shows no token or status row when there is none', () => {

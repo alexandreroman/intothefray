@@ -1,17 +1,21 @@
 <!--
   The other players at the table (spec 5.8): their cursors, the card each one
-  previews, their pings and their drags, drawn over the table. It also tells
+  previews, their pings and their drags, drawn over the table (the table
+  cards they drag hidden in their places meanwhile). It also tells
   them about the viewer's own cursor, preview and pings; DragLayer tells them
-  about the viewer's drags. Spectators send nothing, as no player draws them
-  (ruling P5c-R2: the server refuses their pings and drags).
+  about the viewer's drags. While the viewer is away from the table (hand
+  raised, dialog open), their cursor is hidden from the others: nothing tells
+  where the pointer goes in the hand or in the dialog. Spectators send
+  nothing, as no player draws them (ruling P5c-R2: the server refuses their
+  pings and drags).
 
-  Spots travel as table units of a zone (screen.ts). Messages can come in
+  Spots travel as table units of the surface (screen.ts). Messages can come in
   floods: the session keeps only the latest state of each player, and the
   layer draws them all in one pass per animation frame.
 -->
 <script lang="ts">
+  import { untrack } from 'svelte';
   import type {
-    Area,
     CardView as TableCard,
     PackFace,
     PresenceDrag,
@@ -24,16 +28,18 @@
   import { contains } from './drag';
   import { pileBack } from './face';
   import { interaction } from './interaction.svelte';
-  import { zoneOrder } from './layout';
+  import { ALL_ROWS, type RowMap } from './rows';
   import { scrollerRect, surfaceRect, toScreen, toTable } from './screen';
 
   let {
     view,
     presence,
     send,
+    away,
     root,
     zoom,
     faceOf,
+    rowMap = ALL_ROWS,
     layout,
   }: {
     view: View;
@@ -41,11 +47,15 @@
     presence: ReadonlyMap<number, PresenceState>;
     /** Sends the viewer's own presence; the session throttles it. */
     send: (fields: PresenceFields) => void;
-    /** The page: the zones and their cards are measured there. */
+    /** Whether the viewer is away from the table: their hand raised, or a dialog open. */
+    away: boolean;
+    /** The page: the surface and its cards are measured there. */
     root: HTMLElement | undefined;
     zoom: number;
     faceOf: (card: TableCard | undefined) => PackFace | null;
-    /** What moves the cards on the screen without a new view (the zone heights): redrawn on change. */
+    /** Where the view mode draws the heights of the table (rows.ts). */
+    rowMap?: RowMap;
+    /** What moves the cards on the screen without a new view (the surface size): redrawn on change. */
     layout: unknown;
   } = $props();
 
@@ -58,17 +68,30 @@
   const LOST_MS = 60_000;
   /** How long a ping's rings expand. */
   const PING_MS = 1200;
-  // The prototype's room at a zone's edges for a cursor scrolled out of view.
+  /**
+   * How long a drag that ended keeps its ghost where it was let go, its cards
+   * hidden in their places, waiting for the view that shows where they went.
+   * Without one, it was cancelled or refused: the cards show in their places
+   * again.
+   */
+  const LANDING_MS = 2000;
+  // The prototype's room at the table's edges for a cursor scrolled out of view. At the right and
+  // bottom edges, the room keeps the pointer and its name label in view.
   const EDGE_IN = 8;
   const RIGHT_EDGE_ROOM = 70;
   const LEFT_EDGE_ROOM = 4;
+  const BOTTOM_EDGE_ROOM = 44;
+  const TOP_EDGE_ROOM = 4;
 
   /** Where something lies on the layer, in screen pixels. */
   interface Placed {
     x: number;
     y: number;
-    /** An arrow towards a cursor held at the zone's edge, when its spot is scrolled out of view. */
-    side: '' | ' ←' | ' →';
+    /**
+     * Arrows towards a cursor held at the table's edges, when its spot is scrolled out of view:
+     * " ↑", " →", " ↓ ←"…, and '' when it shows.
+     */
+    side: string;
   }
 
   interface Ping {
@@ -79,16 +102,39 @@
     until: number;
   }
 
+  /** Where a dragged table card lay as the drag started; a drop that moves it changes that. */
+  interface Spot {
+    zone: TableCard['zone'];
+    x: number;
+    y: number;
+    parent?: string;
+    onPile?: string;
+  }
+
+  /** Another player's drag under way: its cards as they lay when it started. */
+  interface Dragging {
+    drag: PresenceDrag;
+    from: Map<string, Spot>;
+    /** The table cards as it started: a card taken from a pile or a hand is new to it once dropped. */
+    onTable: Set<string>;
+  }
+
+  /** Another player's drag let go: its ghost stays where it was until the view moves its cards. */
+  interface Landing extends Dragging {
+    until: number;
+    /** The view as it was let go. */
+    view: View;
+  }
+
   interface Drawn {
     cursors: (Placed & { color: number; name: string })[];
-    rings: { color: number; left: number; top: number; width: number; height: number }[];
     /** The cards of each drag, in table units of the zoomed ghost layer. */
     ghosts: { color: number; cards: TableCard[] }[];
     pings: (Placed & { key: number; color: number })[];
   }
 
   let layer = $state<HTMLElement>();
-  let drawn = $state.raw<Drawn>({ cursors: [], rings: [], ghosts: [], pings: [] });
+  let drawn = $state.raw<Drawn>({ cursors: [], ghosts: [], pings: [] });
   // Read by the drawing pass only, which runs outside any effect: plain values, not state.
   let pings: Ping[] = [];
   let nextPing = 0;
@@ -97,6 +143,11 @@
   /** Wakes the drawing pass when the next player falls silent or the next ping is done. */
   let wakeTimer: ReturnType<typeof setTimeout> | undefined;
   let frame = 0;
+  // Read and written outside any effect's dependencies: plain values, not state. By colour.
+  // eslint-disable-next-line svelte/prefer-svelte-reactivity
+  const draggings = new Map<number, Dragging>();
+  // eslint-disable-next-line svelte/prefer-svelte-reactivity
+  const landings = new Map<number, Landing>();
 
   const isPlayer = $derived(view.you.role === 'player');
 
@@ -106,26 +157,16 @@
 
   // ---- The viewer's own presence ----
 
-  /**
-   * The spot of the table under a point of the screen: in the zone that
-   * starts last above it, so that a spot between two zones belongs to the one
-   * above. Null outside the table.
-   */
+  /** The spot of the table under a point of the screen. Null outside the table. */
   function spotAt(at: { x: number; y: number }): PresencePoint | null {
-    const table = root?.querySelector('.tablewrap')?.getBoundingClientRect();
-    if (!root || !table || !contains(table, at)) {
-      return null;
-    }
-    const sections = [...root.querySelectorAll<HTMLElement>('.zsec[data-area]')];
-    const above = sections.filter((section) => section.getBoundingClientRect().top <= at.y);
-    const area = (above.at(-1) ?? sections[0])?.dataset.area as Area | undefined;
-    const surface = area ? surfaceRect(root, area) : undefined;
-    if (!area || !surface) {
+    const table = scrollerRect(root);
+    const surface = surfaceRect(root);
+    if (!table || !surface || !contains(table, at)) {
       return null;
     }
     // The server takes whole table units only.
     const point = toTable(at, surface, zoom);
-    return { area, x: Math.round(point.x), y: Math.round(point.y) };
+    return { x: Math.round(point.x), y: Math.round(rowMap.toTable(point.y)) };
   }
 
   function onPointerMove(event: PointerEvent): void {
@@ -133,9 +174,17 @@
       return;
     }
     const cursor = spotAt({ x: event.clientX, y: event.clientY });
-    if (cursor) {
-      send({ cursor });
+    if (!cursor) {
+      return;
     }
+    // Decided once every handler of the move has run: the hand (Hand.svelte) handles it after
+    // this layer, and the move that raises it must not tell the others where the pointer went,
+    // while the move that lowers it shows the cursor again.
+    queueMicrotask(() => {
+      if (!away) {
+        send({ cursor });
+      }
+    });
   }
 
   /**
@@ -151,6 +200,14 @@
     showPing(view.you.color, spot);
     return true;
   }
+
+  // Away from the table, the cursor is hidden at once, before the pointer moves on: the next
+  // move back on the table shows it again.
+  $effect(() => {
+    if (isPlayer && away) {
+      send({ cursor: null });
+    }
+  });
 
   // The preview others see: a table card or a pile, never a hand card, which is private.
   let previewSent = '';
@@ -170,9 +227,108 @@
     schedule();
   }
 
+  /** Where the view lays the table cards of a drag, by id. */
+  function spotsOf(drag: PresenceDrag): Map<string, Spot> {
+    // A value computed and compared at once: nothing reacts to it.
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    const spots = new Map<string, Spot>();
+    for (const card of view.table?.cards ?? []) {
+      if (card.zone === 'table' && drag.cards.includes(card.id)) {
+        const { zone, x, y, parent, onPile } = card;
+        spots.set(card.id, { zone, x, y, parent, onPile });
+      }
+    }
+    return spots;
+  }
+
+  /** The ids of the table cards of the view. */
+  function tableCardIds(): Set<string> {
+    // A value computed and compared at once: nothing reacts to it.
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    const ids = new Set<string>();
+    for (const card of view.table?.cards ?? []) {
+      if (card.zone === 'table') {
+        ids.add(card.id);
+      }
+    }
+    return ids;
+  }
+
+  /**
+   * Whether the drag carries a card that did not lie on the table as it
+   * started: a deck's unknown top card (carried as its pile), a card of a
+   * public pile, or a hand card. The view that shows where it went cannot be
+   * told by its id: it may be a card the viewer never saw.
+   */
+  function takesFromOutside(dragging: Dragging): boolean {
+    return dragging.drag.cards.some((id) => !dragging.from.has(id));
+  }
+
+  /**
+   * Whether the view lays some card of the drag elsewhere than it lay as the
+   * drag started, or, for a card taken from outside the table, lays a card
+   * on the table that was not there then.
+   */
+  function hasMoved(dragging: Dragging): boolean {
+    if (takesFromOutside(dragging)) {
+      const onTable = tableCardIds();
+      for (const id of onTable) {
+        if (!dragging.onTable.has(id)) {
+          return true;
+        }
+      }
+    }
+    const now = spotsOf(dragging.drag);
+    for (const [id, was] of dragging.from) {
+      const spot = now.get(id);
+      if (
+        !spot ||
+        spot.x !== was.x ||
+        spot.y !== was.y ||
+        spot.parent !== was.parent ||
+        spot.onPile !== was.onPile
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Follows each player's drag: a new one notes where its cards lay, an
+   * ended one lands, unless the view already moved its cards. A player gone
+   * (left, or the connection dropped) takes theirs along.
+   */
+  function followDrags(now: number): void {
+    for (const color of [...draggings.keys(), ...landings.keys()]) {
+      if (!presence.has(color)) {
+        draggings.delete(color);
+        landings.delete(color);
+      }
+    }
+    for (const { color, drag } of presence.values()) {
+      const dragging = draggings.get(color);
+      if (drag) {
+        if (!dragging) {
+          landings.delete(color);
+          draggings.set(color, { drag, from: spotsOf(drag), onTable: tableCardIds() });
+        } else {
+          dragging.drag = drag;
+        }
+      } else if (dragging) {
+        draggings.delete(color);
+        if (!hasMoved(dragging)) {
+          landings.set(color, { ...dragging, until: now + LANDING_MS, view });
+        }
+      }
+    }
+  }
+
   // Every message: a new ping starts its rings, and the layer is drawn again at the next frame.
   $effect(() => {
     const now = Date.now();
+    // Messages drive it, not views: the view is only read to note where the cards lay.
+    untrack(() => followDrags(now));
     for (const state of presence.values()) {
       const { color, ping: spot, pingAt } = state;
       if (spot && pingAt !== undefined && pingsSeen[color] !== pingAt) {
@@ -186,58 +342,38 @@
     schedule();
   });
 
-  // Relayed messages come from other clients: only the areas and cards the view knows are drawn.
-  function isKnownArea(area: string): area is Area {
-    return zoneOrder(view).some((known) => known === area);
+  // Relayed messages come from other clients: only spots given in numbers are drawn.
+  function isSpot(spot: PresencePoint): boolean {
+    return Number.isFinite(spot.x) && Number.isFinite(spot.y);
   }
 
-  function isKnownElement(id: string): boolean {
-    const table = view.table;
-    return (
-      (table?.cards ?? []).some((card) => card.id === id && card.zone === 'table') ||
-      (table?.piles ?? []).some((pile) => pile.id === id)
-    );
-  }
-
-  /** Where a spot of the table shows, held within its zone's scroller as in the prototype. */
+  /** Where a spot of the table shows, held within the visible table as in the prototype. */
   function place(spot: PresencePoint, origin: DOMRect): Placed | null {
-    if (!isKnownArea(spot.area)) {
+    const surface = surfaceRect(root);
+    const scroller = scrollerRect(root);
+    const shownY = isSpot(spot) ? rowMap.toDisplay(spot.y) : null;
+    if (!surface || !scroller || shownY === null) {
       return null;
     }
-    const surface = surfaceRect(root, spot.area);
-    const scroller = scrollerRect(root, spot.area);
-    if (!surface || !scroller) {
-      return null;
+    const at = toScreen({ x: spot.x, y: shownY }, surface, zoom);
+    let { x, y } = at;
+    let vertical = '';
+    if (y > scroller.bottom - EDGE_IN) {
+      y = scroller.bottom - BOTTOM_EDGE_ROOM;
+      vertical = ' ↓';
+    } else if (y < scroller.top) {
+      y = scroller.top + TOP_EDGE_ROOM;
+      vertical = ' ↑';
     }
-    const at = toScreen(spot, surface, zoom);
-    let x = at.x;
-    let side: Placed['side'] = '';
+    let horizontal = '';
     if (x > scroller.right - EDGE_IN) {
       x = scroller.right - RIGHT_EDGE_ROOM;
-      side = ' →';
+      horizontal = ' →';
     } else if (x < scroller.left) {
       x = scroller.left + LEFT_EDGE_ROOM;
-      side = ' ←';
+      horizontal = ' ←';
     }
-    return { x: x - origin.left, y: at.y - origin.top, side };
-  }
-
-  /** The card or pile a player previews, on the layer. */
-  function ringOf(id: string, origin: DOMRect): Omit<Drawn['rings'][number], 'color'> | null {
-    if (!isKnownElement(id)) {
-      return null;
-    }
-    const selector = `.surface .card[data-id="${CSS.escape(id)}"]`;
-    const rect = root?.querySelector(selector)?.getBoundingClientRect();
-    if (!rect || rect.width === 0) {
-      return null;
-    }
-    return {
-      left: rect.left - origin.left,
-      top: rect.top - origin.top,
-      width: rect.width,
-      height: rect.height,
-    };
+    return { x: x - origin.left, y: y - origin.top, side: vertical + horizontal };
   }
 
   /**
@@ -264,11 +400,12 @@
    * tucked under the first keeping their offsets.
    */
   function ghostsOf(drag: PresenceDrag, origin: DOMRect): TableCard[] {
-    const surface = isKnownArea(drag.area) ? surfaceRect(root, drag.area) : undefined;
-    if (!surface) {
+    const surface = surfaceRect(root);
+    const shownY = isSpot(drag) ? rowMap.toDisplay(drag.y) : null;
+    if (!surface || shownY === null) {
       return [];
     }
-    const corner = toScreen(drag, surface, zoom);
+    const corner = toScreen({ x: drag.x, y: shownY }, surface, zoom);
     const x = (corner.x - origin.left) / zoom;
     const y = (corner.y - origin.top) / zoom;
     const cards = new Map((view.table?.cards ?? []).map((card) => [card.id, card]));
@@ -286,13 +423,30 @@
     });
   }
 
+  /**
+   * The table cards drawn as other players' drags, under way or landing:
+   * they are hidden in their places meanwhile, so that each shows once.
+   * They show again as soon as the drag is no longer drawn: landed, given
+   * up on, or its player lost.
+   */
+  function tableCardsOf(ghosts: Drawn['ghosts']): Set<string> {
+    const onTable = new Set(
+      (view.table?.cards ?? []).filter((card) => card.zone === 'table').map((card) => card.id),
+    );
+    const dragged = ghosts.flatMap((ghost) => ghost.cards.map((card) => card.id));
+    return new Set(dragged.filter((id) => onTable.has(id)));
+  }
+
   function measure(): void {
     if (!layer) {
       return;
     }
     const origin = layer.getBoundingClientRect();
     const now = Date.now();
-    const next: Drawn = { cursors: [], rings: [], ghosts: [], pings: [] };
+    const next: Drawn = { cursors: [], ghosts: [], pings: [] };
+    // The card or pile each player previews: the first player keeps a card that several preview.
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    const previews = new Map<string, number>();
     // When something drawn now must go: a cursor falling silent, a lost player, or a ping done.
     let nextChange = Infinity;
     for (const state of presence.values()) {
@@ -308,13 +462,20 @@
           next.cursors.push({ ...cursor, color: state.color, name: state.name });
         }
       }
-      const ring = state.preview ? ringOf(state.preview, origin) : null;
-      if (ring) {
-        next.rings.push({ ...ring, color: state.color });
+      if (state.preview && !previews.has(state.preview)) {
+        previews.set(state.preview, state.color);
       }
       if (state.drag) {
         next.ghosts.push({ color: state.color, cards: ghostsOf(state.drag, origin) });
       }
+    }
+    for (const [color, landing] of landings) {
+      if (landing.until <= now) {
+        landings.delete(color);
+        continue;
+      }
+      nextChange = Math.min(nextChange, landing.until);
+      next.ghosts.push({ color, cards: ghostsOf(landing.drag, origin) });
     }
     pings = pings.filter((p) => p.until > now);
     for (const { key, color, spot, until } of pings) {
@@ -326,6 +487,9 @@
       }
     }
     drawn = next;
+    interaction.liftByOthers(tableCardsOf(next.ghosts));
+    // Each card or pile draws its ring itself, which follows it as it moves (CardView, PileView).
+    interaction.previewByOthers(previews);
 
     clearTimeout(wakeTimer);
     if (nextChange !== Infinity) {
@@ -343,7 +507,31 @@
     }
   }
 
-  // A new view, a zoom or resized zones move the cards under the spots.
+  /**
+   * Whether the view shows where a landing's cards went. A card taken from
+   * outside the table cannot be followed by its id: the first view after the
+   * drop is taken for the one it brought.
+   */
+  function hasLanded(landing: Landing): boolean {
+    return hasMoved(landing) || (takesFromOutside(landing) && view !== landing.view);
+  }
+
+  // The view that shows where a landing's cards went ends it at once, before the next frame: its
+  // ghost goes as the cards show, flying from where it lay (motion.svelte.ts).
+  $effect(() => {
+    void view;
+    untrack(() => {
+      const landed = [...landings].filter(([, landing]) => hasLanded(landing));
+      for (const [color] of landed) {
+        landings.delete(color);
+      }
+      if (landed.length > 0) {
+        measure();
+      }
+    });
+  });
+
+  // A new view, a zoom or a resized surface move the cards under the spots.
   $effect(() => {
     void view;
     void zoom;
@@ -351,7 +539,7 @@
     schedule();
   });
 
-  // Scrolling a zone or the table, in the capture phase: scroll events do not bubble.
+  // Scrolling the table, in the capture phase: scroll events do not bubble.
   $effect(() => {
     const page = root;
     if (!page) {
@@ -374,22 +562,14 @@
   $effect(() => () => {
     cancelAnimationFrame(frame);
     clearTimeout(wakeTimer);
+    interaction.liftByOthers(new Set());
+    interaction.previewByOthers(new Map());
   });
 </script>
 
 <svelte:window onpointermove={onPointerMove} onresize={schedule} />
 
 <div class="presence" bind:this={layer} aria-hidden="true">
-  {#each drawn.rings as ring (ring.color)}
-    <div
-      class="rring"
-      style:--c={colourOf(ring.color)}
-      style:left="{ring.left}px"
-      style:top="{ring.top}px"
-      style:width="{ring.width}px"
-      style:height="{ring.height}px"
-    ></div>
-  {/each}
   <div class="ghosts">
     {#each drawn.ghosts as ghost (ghost.color)}
       {#each ghost.cards as card (card.id)}
@@ -416,10 +596,10 @@
     >
       <svg width="22" height="28" viewBox="0 0 22 28"
         ><path
-          d="M3 2.5 L3 21.5 L7.6 17.2 L10.7 24.4 L14.2 22.9 L11.2 15.9 L17.6 15.9 Z"
+          d="M3 2.5 L18 12 L11 13.5 L7.5 20 Z"
           style:fill={colourOf(cursor.color)}
-          stroke="#111"
-          stroke-width="1.2"
+          stroke="#07090f"
+          stroke-width="1.5"
           stroke-linejoin="round"
           stroke-linecap="round"
         /></svg
@@ -436,15 +616,6 @@
     z-index: 2500;
     overflow: hidden;
     pointer-events: none;
-  }
-
-  /* The ring of the card another player previews: the hover ring, in their colour. */
-  .rring {
-    position: absolute;
-    border-radius: 7px;
-    box-shadow:
-      0 0 0 2px var(--c),
-      0 0 22px 6px color-mix(in srgb, var(--c) 22%, transparent);
   }
 
   /*
@@ -475,17 +646,17 @@
   .rcursor span {
     position: absolute;
     left: 16px;
-    top: 22px;
-    border: 1px solid #111;
-    color: #1a1208;
-    font-size: 11px;
+    top: 18px;
+    color: var(--bg);
+    font-size: 12px;
     font-weight: 700;
-    padding: 1px 6px;
+    padding: 3px 8px;
     border-radius: 6px;
     white-space: nowrap;
+    box-shadow: 0 2px 6px #0007;
   }
 
-  /* Held at the zone's edge: its spot is scrolled out of view. */
+  /* Held at the table's edge: its spot is scrolled out of view. */
   .rcursor.off svg {
     opacity: 0.35;
   }

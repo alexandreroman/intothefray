@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import Table from './Table.svelte';
+import boxSource from './CardBox.svelte?raw';
 import { pileLabel, tileActions, type TileAction } from './boxes';
 import { interaction } from './interaction.svelte';
 import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
@@ -56,7 +57,6 @@ function card(id: string, extra: Partial<TableCard> = {}): TableCard {
     back: 'player',
     owner: 0,
     zone: 'table',
-    area: 'p0',
     x: 0,
     y: 0,
     z: 1,
@@ -65,27 +65,27 @@ function card(id: string, extra: Partial<TableCard> = {}): TableCard {
 }
 
 function pile(id: string, extra: Partial<PileView>): PileView {
-  return { id, kind: 'deck', owner: -1, area: 'villain', x: 0, y: 0, count: 30, ...extra };
+  return { id, kind: 'deck', owner: -1, x: 0, y: 0, count: 30, ...extra };
 }
 
 /** Three cards of Alex's deck, top first: Web-Shooter, Swinging Web Kick, Backflip. */
 const DECK_TOP = ['c1', 'c2', 'c3'];
 
 function inDeck(id: string, code: string): TableCard {
-  return card(id, { code, zone: 'pile', area: undefined });
+  return card(id, { code, zone: 'pile' });
 }
 
 /** Rhino with Alex (p0, the viewer) and Sam (p1). */
 function makeView(extra: { private?: PrivateView; cards?: TableCard[] } = {}): View {
   const cards = extra.cards ?? [
     card('mine'),
-    card('v', { code: '01094', owner: -1, back: 'villain', area: 'villain', x: 10 }),
-    card('v2', { code: '01095', owner: -1, back: 'villain', zone: 'stage', area: undefined }),
-    card('s', { code: '01097', owner: -1, back: 'encounter', area: 'villain', x: 130 }),
+    card('v', { code: '01094', owner: -1, back: 'villain', x: 10 }),
+    card('v2', { code: '01095', owner: -1, back: 'villain', zone: 'stage' }),
+    card('s', { code: '01097', owner: -1, back: 'encounter', x: 130 }),
     inDeck('c1', '01020'),
     inDeck('c2', '01021'),
     inDeck('c3', '01022'),
-    card('q1', { code: '01100', owner: -1, back: 'encounter', zone: 'pile', area: undefined }),
+    card('q1', { code: '01100', owner: -1, back: 'encounter', zone: 'pile' }),
   ];
   return {
     id: 'g1',
@@ -100,7 +100,7 @@ function makeView(extra: { private?: PrivateView; cards?: TableCard[] } = {}): V
     table: {
       cards,
       piles: [
-        pile('deck:p0', { owner: 0, area: 'p0', x: 600 }),
+        pile('deck:p0', { owner: 0, x: 600 }),
         pile('enc', { kind: 'encounter', x: 500, count: 20 }),
         pile('vic', { kind: 'victory', x: 700, count: 1, cards: ['q1'] }),
       ],
@@ -109,7 +109,7 @@ function makeView(extra: { private?: PrivateView; cards?: TableCard[] } = {}): V
         { key: 'villain', label: 'Villain', current: 'v', cards: ['v', 'v2'] },
         { key: 'main', label: 'Main scheme', current: 's', cards: ['s'] },
       ],
-      firstPlayer: { area: 'p0', x: 860, y: 40 },
+      firstPlayer: { x: 860, y: 40 },
       private: extra.private,
     },
     log: [],
@@ -135,12 +135,11 @@ async function renderTable(view = makeView()) {
   const session = fakeSession();
   const result = render(Table, { session, view });
   // The catalog loads asynchronously: wait for the faces to show.
-  await within(screen.getByRole('region', { name: /^Villain/ })).findByRole('img', {
-    name: 'Rhino',
-  });
+  await screen.findByRole('img', { name: 'Rhino' });
   return {
     session,
     rerender: (next: View) => result.rerender({ session, view: next }),
+    unmount: () => result.unmount(),
   };
 }
 
@@ -248,6 +247,17 @@ describe('CardBox', () => {
 
     expect(within(dialog).getByRole('button', { name: 'Close without shuffling' })).toBeTruthy();
     expect(within(dialog).getByRole('button', { name: 'Shuffle & close' })).toBeTruthy();
+  });
+
+  it('shows its cards about as large as the preview, which a box keeps hidden', async () => {
+    await renderTable(makeView({ private: SEARCH }));
+
+    // Wide enough for five 220 px columns, never wider than the window.
+    expect(box().style.width).toBe('min(1200px, 100%)');
+    const grid = /\n {2}\.mgrid \{([^}]*)\}/.exec(boxSource)?.[1] ?? '';
+    expect(grid).toMatch(/grid-template-columns: repeat\(auto-fill, minmax\(220px, 1fr\)\);/);
+    expect(grid).toMatch(/overflow-y: auto;/);
+    expect(boxSource).toMatch(/const MIN_TILE = 220;/);
   });
 
   it('look box titles the top count and closes with Close', async () => {
@@ -456,23 +466,77 @@ describe('CardBox', () => {
     expect(session.act).toHaveBeenCalledExactlyOnceWith({
       kind: 'play',
       card: 'c1',
-      area: 'p0',
-      x: 280,
+      // The first free slot of Alex's row from 760, past the deck at 600 (keys.ts).
+      x: 980,
       y: 0,
     });
     expect(tileBar()).toBeNull();
   });
 
+  it("shuffles the scenario's set-aside cards into the encounter deck from their box", async () => {
+    const view = makeView();
+    view.table!.piles.push(
+      pile('saside', { kind: 'aside', count: 1, cards: ['q1'] }),
+      pile('aside:p1', { kind: 'aside', owner: 1, count: 1, cards: ['q1'] }),
+    );
+    const { session } = await renderTable(view);
+    await fireEvent.pointerEnter(placed('enc'));
+    await fireEvent.click(screen.getByRole('button', { name: 'Set-aside cards (1)' }));
+
+    await fireEvent.click(
+      within(box()).getByRole('button', { name: 'Shuffle into the encounter deck' }),
+    );
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'shuffleIn', pile: 'saside' });
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it("offers no shuffle in for another player's set-aside cards, nor to a spectator", async () => {
+    const view = makeView();
+    view.table!.piles.push(
+      pile('deck:p1', { owner: 1, x: 800 }),
+      pile('aside:p1', { kind: 'aside', owner: 1, count: 1, cards: ['q1'] }),
+      pile('saside', { kind: 'aside', count: 1, cards: ['q1'] }),
+    );
+    const player = await renderTable(view);
+    await fireEvent.pointerEnter(placed('deck:p1'));
+    await fireEvent.click(screen.getByRole('button', { name: 'Set-aside cards (1)' }));
+    expect(within(box()).queryByRole('button', { name: /^Shuffle into/ })).toBeNull();
+    player.unmount();
+
+    await renderTable(asSpectator(view));
+    await fireEvent.pointerEnter(placed('enc'));
+    await fireEvent.click(screen.getByRole('button', { name: 'Set-aside cards (1)' }));
+    expect(within(box()).queryByRole('button', { name: /^Shuffle into/ })).toBeNull();
+  });
+
   it('browse lists a public pile without the server', async () => {
     const { session } = await renderTable();
-    await fireEvent.pointerEnter(placed('vic'));
-    await fireEvent.click(screen.getByRole('button', { name: 'Browse…' }));
+    // The victory display is not drawn on the table: the encounter deck's bar opens it.
+    expect(document.querySelector('.surface [data-id="vic"]')).toBeNull();
+    await fireEvent.pointerEnter(placed('enc'));
+    await fireEvent.click(screen.getByRole('button', { name: 'Victory display (1)' }));
 
     expect(screen.getByRole('dialog', { name: 'Victory display' })).toBeTruthy();
     expect(tileNames()).toEqual(['Hard to Keep Down']);
     await fireEvent.click(within(box()).getByRole('button', { name: 'Close' }));
     expect(session.act).not.toHaveBeenCalled();
     expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('an empty encounter deck still opens the victory display', async () => {
+    const view = makeView();
+    view.table!.piles = view.table!.piles.map((p) => (p.id === 'enc' ? { ...p, count: 0 } : p));
+    await renderTable(view);
+
+    await fireEvent.pointerEnter(placed('enc'));
+    const bar = tableBar() as HTMLElement;
+    expect(
+      within(bar)
+        .getAllByRole('button')
+        .map((b) => b.getAttribute('aria-label')),
+    ).toEqual(['Victory display (1)']);
+    await fireEvent.click(within(bar).getByRole('button', { name: 'Victory display (1)' }));
+    expect(screen.getByRole('dialog', { name: 'Victory display' })).toBeTruthy();
   });
 
   it('spectator cannot open look', async () => {
@@ -484,15 +548,15 @@ describe('CardBox', () => {
     await fireEvent.keyDown(window, { key: 'k' });
     expect(screen.queryByRole('dialog')).toBeNull();
 
-    // Browse… only, read-only: no tile actions.
-    await fireEvent.pointerEnter(placed('vic'));
+    // The encounter deck opens the victory display, read-only: no tile actions.
+    await fireEvent.pointerEnter(placed('enc'));
     const bar = tableBar() as HTMLElement;
     expect(
       within(bar)
         .getAllByRole('button')
-        .map((b) => b.textContent),
-    ).toEqual(['Browse…']);
-    await fireEvent.click(within(bar).getByRole('button', { name: 'Browse…' }));
+        .map((b) => b.getAttribute('aria-label')),
+    ).toEqual(['Victory display (1)']);
+    await fireEvent.click(within(bar).getByRole('button', { name: 'Victory display (1)' }));
     await fireEvent.pointerEnter(tile('q1'));
     expect(tileBar()).toBeNull();
     await fireEvent.click(within(box()).getByRole('button', { name: 'Close' }));
@@ -542,8 +606,8 @@ describe('tileActions', () => {
   it('a discard pile offers Draw to its owner only', () => {
     const view = makeView();
     view.table?.piles.push(
-      pile('disc:p0', { kind: 'discard', owner: 0, area: 'p0', count: 1, cards: ['c1'] }),
-      pile('disc:p1', { kind: 'discard', owner: 1, area: 'p1', count: 1, cards: ['c1'] }),
+      pile('disc:p0', { kind: 'discard', owner: 0, count: 1, cards: ['c1'] }),
+      pile('disc:p1', { kind: 'discard', owner: 1, count: 1, cards: ['c1'] }),
     );
     expect(actionsOf('c1', 'disc:p0', view).map((a) => a.id)).toEqual(['draw', 'play']);
     expect(actionsOf('c1', 'disc:p1', view).map((a) => a.id)).toEqual(['play']);
@@ -551,9 +615,7 @@ describe('tileActions', () => {
 
   it("another player's set-aside cards cannot be touched", () => {
     const view = makeView();
-    view.table?.piles.push(
-      pile('aside:p1', { kind: 'aside', owner: 1, area: 'p1', count: 1, cards: ['c1'] }),
-    );
+    view.table?.piles.push(pile('aside:p1', { kind: 'aside', owner: 1, count: 1, cards: ['c1'] }));
     expect(actionsOf('c1', 'aside:p1', view)).toEqual([]);
   });
 });

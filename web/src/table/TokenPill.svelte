@@ -53,6 +53,11 @@
     place();
   });
 
+  /** Quick clicks on − and + never start a text selection, in any browser. */
+  function noSelection(event: MouseEvent): void {
+    event.preventDefault();
+  }
+
   // Gone with its token, the pill is no longer under the pointer.
   onDestroy(() => {
     interaction.onPill = false;
@@ -72,11 +77,23 @@
   onpointerenter={() => interaction.enterPill()}
   onpointerleave={() => interaction.leavePill()}
 >
-  <button type="button" aria-label="Remove 1" data-tip="Remove 1" onclick={() => onstep(-1)}
-    >−</button
+  <button
+    class="btn-ghost"
+    type="button"
+    aria-label="Remove 1"
+    data-tip="Remove 1"
+    onmousedown={noSelection}
+    onclick={() => onstep(-1)}>−</button
   >
   <span class="value">{value}</span>
-  <button type="button" aria-label="Add 1" data-tip="Add 1" onclick={() => onstep(1)}>+</button>
+  <button
+    class="btn-ghost"
+    type="button"
+    aria-label="Add 1"
+    data-tip="Add 1"
+    onmousedown={noSelection}
+    onclick={() => onstep(1)}>+</button
+  >
 </div>
 
 <style>
@@ -85,11 +102,17 @@
     z-index: 4500;
     display: flex;
     align-items: center;
-    padding: 1px;
-    background: #0b0f18f0;
-    border: 1px solid #3a4870;
+    padding: 2px;
+    background: var(--panel-2);
+    border: 1px solid var(--line-strong);
     border-radius: 999px;
-    box-shadow: 0 4px 10px #000a;
+    box-shadow: 0 8px 20px #0009;
+    /*
+      Nothing in it is text to select: quick clicks on − and + must not select the value (their
+      mousedown's default is prevented too, for the browsers that select around it anyway).
+    */
+    user-select: none;
+    -webkit-user-select: none;
     /* Measured before it is placed: unseen until then. */
     visibility: hidden;
   }
@@ -100,28 +123,23 @@
 
   button {
     border: none;
-    background: none;
-    padding: 0 8px;
-    font:
-      700 14px/20px system-ui,
-      sans-serif;
+    padding: 0 9px;
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 22px;
     border-radius: 999px;
     color: var(--text);
   }
 
-  button:hover {
-    background: #2a3555;
-  }
-
   .value {
-    min-width: 26px;
-    margin: 1px 0;
+    min-width: 28px;
     padding: 0 6px;
     text-align: center;
-    font:
-      800 14px/20px system-ui,
-      sans-serif;
-    background: #0c111b;
-    border-radius: 6px;
+    font-stretch: 62%;
+    font-weight: 900;
+    font-size: 17px;
+    line-height: 22px;
+    background: var(--bg);
+    border-radius: 7px;
   }
 </style>

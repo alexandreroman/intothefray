@@ -404,11 +404,11 @@ func TestCanUndoFollowsOwnStack(t *testing.T) {
 	f.mustDo(t, hostToken, Action{Kind: ActExhaust, Card: id}, at(1))
 
 	host := f.g.ViewFor(hostToken)
-	if !host.CanUndo || host.UndoText != f.lastLog().Text {
-		t.Errorf("host CanUndo = %v, text %q (log %q)", host.CanUndo, host.UndoText, f.lastLog().Text)
+	if !host.CanUndo {
+		t.Error("host CanUndo = false, want true")
 	}
-	if bob := f.g.ViewFor(bobToken); bob.CanUndo || bob.UndoText != "" {
-		t.Errorf("bob CanUndo = %v, text %q", bob.CanUndo, bob.UndoText)
+	if bob := f.g.ViewFor(bobToken); bob.CanUndo {
+		t.Error("bob CanUndo = true, want false")
 	}
 }
 
@@ -416,7 +416,7 @@ func TestLogCardsFilteredToTheView(t *testing.T) {
 	f := newViewFixture(t)
 	f.mustDo(t, hostToken, Action{Kind: ActDraw, N: 1}, at(1))
 	id := f.g.Table.Hands["p0"][0]
-	f.mustDo(t, hostToken, Action{Kind: ActPlay, Card: id, Area: "p0", X: 400, Y: 200}, at(2))
+	f.mustDo(t, hostToken, Action{Kind: ActPlay, Card: id, X: 400, Y: 200}, at(2))
 	// Back into the hand: the log line still names the card.
 	f.mustDo(t, hostToken, Action{Kind: ActToHand, Card: id}, at(3))
 

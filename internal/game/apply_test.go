@@ -15,15 +15,15 @@ func newTestTable() *Table {
 	t := &Table{
 		Cards: map[string]*Card{
 			"c1": {
-				ID: "c1", Owner: 0, Home: "deck:p0", Zone: ZoneTable, Area: "p0", X: 100, Y: 200, Z: 5,
+				ID: "c1", Owner: 0, Home: "deck:p0", Zone: ZoneTable, X: 100, Y: 200, Z: 5,
 				Tokens: map[string]int{"dmg": 2}, Status: map[string]int{"stunned": 1}, Exhausted: true, Face: 1, Faces: 2,
 			},
-			"c2": {ID: "c2", Owner: 0, Home: "deck:p0", Zone: ZoneTable, Area: "p0", X: 100, Y: 220, Z: 4, Parent: "c1"},
-			"c3": {ID: "c3", Owner: 0, Home: "deck:p0", Zone: ZoneHand, Area: "p0"},
+			"c2": {ID: "c2", Owner: 0, Home: "deck:p0", Zone: ZoneTable, X: 100, Y: 220, Z: 4, Parent: "c1"},
+			"c3": {ID: "c3", Owner: 0, Home: "deck:p0", Zone: ZoneHand},
 			"c4": {ID: "c4", Owner: 0, Home: "deck:p0", Zone: ZonePile, Pile: "deck:p0"},
 			"c5": {ID: "c5", Owner: 0, Home: "deck:p0", Zone: ZonePile, Pile: "deck:p0"},
 			"c6": {ID: "c6", Owner: 0, Home: "deck:p0", Zone: ZonePile, Pile: "deck:p0"},
-			"c7": {ID: "c7", Owner: NoOwner, Home: PileEncounter, Zone: ZoneTable, Area: AreaVillain, X: 600, Y: 20, Z: 6},
+			"c7": {ID: "c7", Owner: NoOwner, Home: PileEncounter, Zone: ZoneTable, X: 600, Y: 20, Z: 6},
 			"c8": {ID: "c8", Owner: NoOwner, Home: PileEncounter, Zone: ZonePile, Pile: PileEncounter},
 		},
 		Piles: map[string]*Pile{
@@ -51,14 +51,14 @@ func mustApply(t *testing.T, table *Table, a Action) {
 func TestMoveCarriesAttachments(t *testing.T) {
 	table := newTestTable()
 
-	mustApply(t, table, Action{Kind: ActMove, Card: "c1", Area: "p1", X: 304, Y: 296})
+	mustApply(t, table, Action{Kind: ActMove, Card: "c1", X: 304, Y: 296})
 
 	c1, c2 := table.Cards["c1"], table.Cards["c2"]
-	if c1.Area != "p1" || c1.X != 300 || c1.Y != 300 {
-		t.Errorf("c1 at %s (%d,%d), want p1 (300,300)", c1.Area, c1.X, c1.Y)
+	if c1.X != 300 || c1.Y != 300 {
+		t.Errorf("c1 at (%d,%d), want (300,300)", c1.X, c1.Y)
 	}
-	if c2.Area != "p1" || c2.X != 300 || c2.Y != 320 {
-		t.Errorf("c2 at %s (%d,%d), want p1 (300,320)", c2.Area, c2.X, c2.Y)
+	if c2.X != 300 || c2.Y != 320 {
+		t.Errorf("c2 at (%d,%d), want (300,320)", c2.X, c2.Y)
 	}
 	if c2.Parent != "c1" {
 		t.Errorf("c2 parent = %q, want c1", c2.Parent)
@@ -68,11 +68,44 @@ func TestMoveCarriesAttachments(t *testing.T) {
 	}
 }
 
+func TestMoveCarriesTheWholeStack(t *testing.T) {
+	table := newTestTable()
+	// c7 carries two attachments where they were dropped, c1 (with c2 still
+	// tucked under it) and c3, and c4, tucked at the default offset.
+	mustApply(t, table, Action{Kind: ActAttach, Card: "c1", Target: "c7", X: 640, Y: 100, Placed: true})
+	mustApply(t, table, Action{Kind: ActPlay, Card: "c3", Target: "c7", X: 700, Y: 140, Placed: true})
+	mustApply(t, table, Action{Kind: ActPlay, Card: "c4", Target: "c7"})
+	stack := []string{"c1", "c2", "c3", "c4"}
+	type offset struct{ dx, dy int }
+	offsets := map[string]offset{}
+	host := table.Cards["c7"]
+	for _, id := range stack {
+		c := table.Cards[id]
+		offsets[id] = offset{c.X - host.X, c.Y - host.Y}
+	}
+
+	mustApply(t, table, Action{Kind: ActMove, Card: "c7", X: 1000, Y: 500})
+
+	host = table.Cards["c7"]
+	if host.X != 1000 || host.Y != 500 {
+		t.Fatalf("c7 at (%d,%d), want (1000,500)", host.X, host.Y)
+	}
+	for _, id := range stack {
+		c := table.Cards[id]
+		if got := (offset{c.X - host.X, c.Y - host.Y}); got != offsets[id] {
+			t.Errorf("%s lies at offset %v from c7, want %v", id, got, offsets[id])
+		}
+		if c.Z >= host.Z {
+			t.Errorf("%s Z = %d, want below c7 (%d)", id, c.Z, host.Z)
+		}
+	}
+}
+
 func TestMoveClearsOnPile(t *testing.T) {
 	table := newTestTable()
 	table.Cards["c7"].OnPile = PileEncounter
 
-	mustApply(t, table, Action{Kind: ActMove, Card: "c7", Area: AreaVillain, X: 700, Y: 0})
+	mustApply(t, table, Action{Kind: ActMove, Card: "c7", X: 700, Y: 0})
 
 	if got := table.Cards["c7"].OnPile; got != "" {
 		t.Errorf("OnPile = %q, want empty", got)
@@ -85,8 +118,23 @@ func TestAttach(t *testing.T) {
 	mustApply(t, table, Action{Kind: ActAttach, Card: "c7", Target: "c1"})
 
 	c7 := table.Cards["c7"]
-	if c7.Parent != "c1" || c7.Area != "p0" || c7.X != 100 || c7.Y != 220 || c7.Z >= table.Cards["c1"].Z {
+	if c7.Parent != "c1" || c7.X != 100 || c7.Y != 220 || c7.Z >= table.Cards["c1"].Z {
 		t.Errorf("c7 = %+v, want tucked under c1 at (100,220)", c7)
+	}
+}
+
+func TestAttachWhereDropped(t *testing.T) {
+	table := newTestTable()
+
+	// c1 carries c2, tucked 20 below it: both go where c1 is dropped, behind c7.
+	mustApply(t, table, Action{Kind: ActAttach, Card: "c1", Target: "c7", X: 654, Y: 87, Placed: true})
+
+	c1, c2, c7 := table.Cards["c1"], table.Cards["c2"], table.Cards["c7"]
+	if c1.Parent != "c7" || c1.X != 650 || c1.Y != 90 || c1.Z >= c7.Z {
+		t.Errorf("c1 = %+v, want under c7 where dropped, at (650,90)", c1)
+	}
+	if c2.Parent != "c1" || c2.X != 650 || c2.Y != 110 || c2.Z >= c1.Z {
+		t.Errorf("c2 = %+v, want still under c1, at (650,110)", c2)
 	}
 }
 
@@ -250,7 +298,7 @@ func TestUnknownIDIsRejected(t *testing.T) {
 	table := newTestTable()
 	before := table.Clone()
 
-	err := apply(table, Action{Kind: ActMove, Card: "c999", Area: "p0", X: 0, Y: 0})
+	err := apply(table, Action{Kind: ActMove, Card: "c999", X: 0, Y: 0})
 
 	if !errors.Is(err, ErrInvalid) {
 		t.Fatalf("err = %v, want ErrInvalid", err)
@@ -269,10 +317,10 @@ func TestUnknownKindIsRejected(t *testing.T) {
 func TestPlayFromHand(t *testing.T) {
 	table := newTestTable()
 
-	mustApply(t, table, Action{Kind: ActPlay, Card: "c3", Area: "p0", X: 247, Y: 83})
+	mustApply(t, table, Action{Kind: ActPlay, Card: "c3", X: 247, Y: 83})
 
 	c3 := table.Cards["c3"]
-	if c3.Zone != ZoneTable || c3.Area != "p0" || c3.X != 250 || c3.Y != 80 || c3.Z != 10 {
+	if c3.Zone != ZoneTable || c3.X != 250 || c3.Y != 80 || c3.Z != 10 {
 		t.Errorf("c3 = %+v, want on table at (250,80) with Z 10", c3)
 	}
 	if got := table.Hands["p0"]; len(got) != 0 {
@@ -284,7 +332,7 @@ func TestPlayFromPile(t *testing.T) {
 	table := newTestTable()
 	table.Cards["c4"].FaceDown = true
 
-	mustApply(t, table, Action{Kind: ActPlay, Card: "c4", Area: "p0", X: 300, Y: 100})
+	mustApply(t, table, Action{Kind: ActPlay, Card: "c4", X: 300, Y: 100})
 
 	c4 := table.Cards["c4"]
 	if c4.Zone != ZoneTable || c4.Pile != "" || c4.FaceDown || c4.X != 300 || c4.Y != 100 {
@@ -298,12 +346,12 @@ func TestPlayFromPile(t *testing.T) {
 func TestPlayUnderACard(t *testing.T) {
 	table := newTestTable()
 
-	// Area and position are the target's: what the client sends for them does not count.
-	mustApply(t, table, Action{Kind: ActPlay, Card: "c3", Target: "c7", Area: "p0", X: 10, Y: 10})
+	// The position is the target's: what the client sends for it does not count.
+	mustApply(t, table, Action{Kind: ActPlay, Card: "c3", Target: "c7", X: 10, Y: 10})
 
 	c3, c7 := table.Cards["c3"], table.Cards["c7"]
-	if c3.Zone != ZoneTable || c3.Parent != "c7" || c3.Area != AreaVillain || c3.X != 600 || c3.Y != 40 {
-		t.Errorf("c3 = %+v, want tucked under c7 at villain (600,40)", c3)
+	if c3.Zone != ZoneTable || c3.Parent != "c7" || c3.X != 600 || c3.Y != 40 {
+		t.Errorf("c3 = %+v, want tucked under c7 at (600,40)", c3)
 	}
 	if c3.Z >= c7.Z {
 		t.Errorf("c3.Z = %d, want below c7.Z = %d", c3.Z, c7.Z)
@@ -320,12 +368,29 @@ func TestPlayUnderACardFromAPile(t *testing.T) {
 	mustApply(t, table, Action{Kind: ActPlay, Card: "c6", Target: "c1"})
 
 	c6 := table.Cards["c6"]
-	if c6.Zone != ZoneTable || c6.Pile != "" || c6.FaceDown || c6.Parent != "c1" || c6.Area != "p0" ||
+	if c6.Zone != ZoneTable || c6.Pile != "" || c6.FaceDown || c6.Parent != "c1" ||
 		c6.X != 100 || c6.Y != 220 {
-		t.Errorf("c6 = %+v, want face up under c1 at p0 (100,220)", c6)
+		t.Errorf("c6 = %+v, want face up under c1 at (100,220)", c6)
 	}
 	if got := table.Piles["deck:p0"].Cards; !slices.Equal(got, []string{"c4", "c5"}) {
 		t.Errorf("deck = %v, want [c4 c5]", got)
+	}
+}
+
+func TestPlayUnderACardWhereDropped(t *testing.T) {
+	table := newTestTable()
+
+	mustApply(t, table, Action{Kind: ActPlay, Card: "c3", Target: "c7", X: 712, Y: 4, Placed: true})
+
+	c3, c7 := table.Cards["c3"], table.Cards["c7"]
+	if c3.Zone != ZoneTable || c3.Parent != "c7" || c3.X != 710 || c3.Y != 0 || c3.Z >= c7.Z {
+		t.Errorf("c3 = %+v, want under c7 where dropped, at (710,0)", c3)
+	}
+
+	// Moving the host carries it along, at the same offset.
+	mustApply(t, table, Action{Kind: ActMove, Card: "c7", X: 800, Y: 100})
+	if c3 := table.Cards["c3"]; c3.X != 910 || c3.Y != 80 {
+		t.Errorf("c3 = (%d,%d) after its host moved, want (910,80)", c3.X, c3.Y)
 	}
 }
 
@@ -349,7 +414,7 @@ func TestPlayRefusesCardsOutsideHandAndPiles(t *testing.T) {
 	table := newStageTable()
 
 	for _, id := range []string{"c1", "c22"} {
-		if err := apply(table, Action{Kind: ActPlay, Card: id, Area: "p0"}); !errors.Is(err, ErrInvalid) {
+		if err := apply(table, Action{Kind: ActPlay, Card: id}); !errors.Is(err, ErrInvalid) {
 			t.Errorf("card %s: err = %v, want ErrInvalid", id, err)
 		}
 	}
@@ -361,11 +426,11 @@ func TestPlayRefusesCardsOutsideHandAndPiles(t *testing.T) {
 func newStageTable() *Table {
 	table := newTestTable()
 	table.Cards["c20"] = &Card{
-		ID: "c20", Owner: NoOwner, Zone: ZoneTable, Area: AreaVillain, X: 280, Y: 0, Z: 7, Faces: 2,
+		ID: "c20", Owner: NoOwner, Zone: ZoneTable, X: 280, Y: 0, Z: 7, Faces: 2,
 		Tokens: map[string]int{"dmg": 3}, Status: map[string]int{"tough": 1}, Exhausted: true,
 	}
 	table.Cards["c21"] = &Card{
-		ID: "c21", Owner: NoOwner, Zone: ZoneTable, Area: AreaVillain, X: 280, Y: 20, Z: 6, Parent: "c20",
+		ID: "c21", Owner: NoOwner, Zone: ZoneTable, X: 280, Y: 20, Z: 6, Parent: "c20",
 	}
 	table.Cards["c22"] = &Card{ID: "c22", Owner: NoOwner, Zone: ZoneStage, Faces: 2}
 	table.Stages = []*Stage{{Key: "villain", Label: "Villain", Current: "c20", Cards: []string{"c20", "c22"}}}
@@ -472,7 +537,7 @@ func TestChooseStageKeepsTokensOnPreviousCard(t *testing.T) {
 	mustApply(t, table, Action{Kind: ActChooseStage, Stage: "villain", Card: "c22", Face: 1})
 
 	next, prev, attachment := table.Cards["c22"], table.Cards["c20"], table.Cards["c21"]
-	if next.Zone != ZoneTable || next.Area != AreaVillain || next.X != 280 || next.Y != 0 || next.Z != 7 {
+	if next.Zone != ZoneTable || next.X != 280 || next.Y != 0 || next.Z != 7 {
 		t.Errorf("c22 = %+v, want on the table at the position of c20", next)
 	}
 	if next.Face != 1 || next.Exhausted {
@@ -481,7 +546,7 @@ func TestChooseStageKeepsTokensOnPreviousCard(t *testing.T) {
 	if prev.Zone != ZoneStage || prev.Tokens["dmg"] != 3 || prev.Status["tough"] != 1 {
 		t.Errorf("c20 = %+v, want in the stage zone keeping dmg=3 and tough=1", prev)
 	}
-	if prev.Exhausted || prev.Area != "" || prev.X != 0 || prev.Y != 0 {
+	if prev.Exhausted || prev.X != 0 || prev.Y != 0 {
 		t.Errorf("c20 = %+v, want ready and without a position", prev)
 	}
 	if attachment.Parent != "c22" {
@@ -576,14 +641,13 @@ func TestDrawRejectsWrongCards(t *testing.T) {
 
 func TestRevealPutsTopCardOnPilePosition(t *testing.T) {
 	table := newTestTable()
-	table.Piles[PileEncounter].Area = AreaVillain
 	table.Piles[PileEncounter].X, table.Piles[PileEncounter].Y = 0, 0
 	table.Cards["c8"].FaceDown = true
 
 	mustApply(t, table, Action{Kind: ActReveal, Cards: []string{"c8"}})
 
 	c := table.Cards["c8"]
-	if c.Zone != ZoneTable || c.Area != AreaVillain || c.OnPile != PileEncounter || c.FaceDown || c.Z != 10 {
+	if c.Zone != ZoneTable || c.OnPile != PileEncounter || c.FaceDown || c.Z != 10 {
 		t.Errorf("c8 = %+v, want a face-up revealed table card with Z 10", c)
 	}
 	if len(table.Piles[PileEncounter].Cards) != 0 {
@@ -654,8 +718,8 @@ func TestDealFaceDown(t *testing.T) {
 	mustApply(t, table, Action{Kind: ActDeal, Area: "p1", X: 104, Y: 96, Cards: []string{"c8"}})
 
 	c := table.Cards["c8"]
-	if c.Zone != ZoneTable || !c.FaceDown || c.Area != "p1" || c.X != 100 || c.Y != 100 || c.OnPile != "" {
-		t.Errorf("c8 = %+v, want a face-down card at p1 (100,100)", c)
+	if c.Zone != ZoneTable || !c.FaceDown || c.X != 100 || c.Y != 100 || c.OnPile != "" {
+		t.Errorf("c8 = %+v, want a face-down card at (100,100)", c)
 	}
 }
 
@@ -665,7 +729,7 @@ func TestDealWhileRevealedDealsTheRevealedCard(t *testing.T) {
 
 	mustApply(t, table, Action{Kind: ActDeal, Area: "p1", X: 0, Y: 0, Cards: []string{"c7"}})
 
-	if c := table.Cards["c7"]; !c.FaceDown || c.OnPile != "" || c.Area != "p1" {
+	if c := table.Cards["c7"]; !c.FaceDown || c.OnPile != "" {
 		t.Errorf("c7 = %+v, want dealt face down", c)
 	}
 	if got := table.Piles[PileEncounter].Cards; !slices.Equal(got, []string{"c8"}) {
@@ -803,9 +867,9 @@ func TestHandOrder(t *testing.T) {
 func TestFirstPlayer(t *testing.T) {
 	table := newTestTable()
 
-	mustApply(t, table, Action{Kind: ActFirstPlayer, Area: "p1", X: 423, Y: 7})
+	mustApply(t, table, Action{Kind: ActFirstPlayer, X: 423, Y: 7})
 
-	if want := (Point{Area: "p1", X: 420, Y: 10}); table.FirstPlayer != want {
+	if want := (Point{X: 420, Y: 10}); table.FirstPlayer != want {
 		t.Errorf("FirstPlayer = %+v, want %+v", table.FirstPlayer, want)
 	}
 }
@@ -834,7 +898,7 @@ func TestArrowAddRequiresTableCards(t *testing.T) {
 
 func TestLeavingTableRemovesArrows(t *testing.T) {
 	table := newTestTable()
-	table.Cards["c9"] = &Card{ID: "c9", Owner: 0, Home: "deck:p0", Zone: ZoneTable, Area: "p0", Z: 1}
+	table.Cards["c9"] = &Card{ID: "c9", Owner: 0, Home: "deck:p0", Zone: ZoneTable, Z: 1}
 	mustApply(t, table, Action{Kind: ActArrowAdd, Card: "c1", Target: "c7", Seat: 0})
 	mustApply(t, table, Action{Kind: ActArrowAdd, Card: "c7", Target: "c2", Seat: 1})
 	mustApply(t, table, Action{Kind: ActArrowAdd, Card: "c7", Target: "c9", Seat: 1})
@@ -859,8 +923,8 @@ func TestHandOrderWithNilHands(t *testing.T) {
 	}
 }
 
-func TestHandOrderRefusesVillainArea(t *testing.T) {
-	err := apply(newTestTable(), Action{Kind: ActHandOrder, Area: AreaVillain, Cards: []string{}})
+func TestHandOrderRefusesUnknownArea(t *testing.T) {
+	err := apply(newTestTable(), Action{Kind: ActHandOrder, Area: "villain", Cards: []string{}})
 	if !errors.Is(err, ErrInvalid) {
 		t.Errorf("err = %v, want ErrInvalid", err)
 	}

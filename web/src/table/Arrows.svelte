@@ -1,9 +1,8 @@
 <!--
   The arrows from card to card (spec 5.8): curved paths in their owner's
-  colour, drawn over the zones inside the table, so that they scroll with it.
-  Arrows can link cards of different zones, each zone scrolling on its own:
-  the paths are measured from the cards on the screen, again whenever a zone
-  or the table scrolls, the table is resized, or the cards move. In arrow
+  colour, drawn over the surface inside the table, so that they scroll with
+  it. The paths are measured from the cards on the screen, again whenever the
+  table scrolls or is resized, or the cards move. In arrow
   mode, a dashed rubber band runs from the source card to the pointer, or to
   the card under it.
 -->
@@ -15,12 +14,15 @@
     view,
     root,
     layout,
+    raised = false,
   }: {
     view: View;
-    /** The page: the cards are found in its zones, and in its drag layer while dragged. */
+    /** The page: the cards are found on its surface, and in its drag layer while dragged. */
     root: HTMLElement | undefined;
-    /** What moves the cards on the screen without a new view (the zoom, the zone heights): redrawn on change. */
+    /** What moves the cards on the screen without a new view (the zoom, the surface size): redrawn on change. */
     layout: unknown;
+    /** Cards move (dragged, landing, animated or flying): the arrows go over their layers. */
+    raised?: boolean;
   } = $props();
 
   /** An end of an arrow, in the layer's coordinates, with the half size of its card. */
@@ -41,8 +43,6 @@
 
   // The player colours (--p1 to --p4), one arrowhead each.
   const COLORS = [0, 1, 2, 3];
-  // The prototype's room at a zone edge for the end of an arrow whose card is scrolled out of view.
-  const EDGE_ROOM = 12;
   // How far into the target card an arrow stops, past its edge.
   const INTO_CARD = 10;
 
@@ -65,7 +65,7 @@
     return view.players.find((player) => player.area === `p${seat}`)?.color ?? null;
   }
 
-  /** The card drawn for that id: its ghost while it is dragged, or else the card in its zone. */
+  /** The card drawn for that id: its ghost while it is dragged, or else the card on the table. */
   function cardElement(id: string): Element | null {
     if (!root) {
       return null;
@@ -76,16 +76,11 @@
     );
   }
 
-  /** The middle of a card, held within its zone when the zone is scrolled past it. */
+  /** The middle of a card. */
   function endOf(element: Element, layer: DOMRect): End {
     const rect = element.getBoundingClientRect();
-    let x = rect.left + rect.width / 2;
-    const scroller = element.closest('.zscroll')?.getBoundingClientRect();
-    if (scroller) {
-      x = Math.max(scroller.left + EDGE_ROOM, Math.min(scroller.right - EDGE_ROOM, x));
-    }
     return {
-      x: x - layer.left,
+      x: rect.left + rect.width / 2 - layer.left,
       y: rect.top + rect.height / 2 - layer.top,
       hw: rect.width / 2,
       hh: rect.height / 2,
@@ -180,7 +175,7 @@
     }
   }
 
-  // After every redraw of the table: a new view, a zoom, resized zones, the arrow mode, and a
+  // After every redraw of the table: a new view, a zoom, a resized surface, the arrow mode, and a
   // drag that starts or ends (a drop that sends nothing, or that the server refuses, brings no view).
   $effect(() => {
     void layout;
@@ -189,7 +184,7 @@
     measure();
   });
 
-  // Scrolling a zone or the table, in the capture phase: scroll events do not bubble.
+  // Scrolling the table, in the capture phase: scroll events do not bubble.
   $effect(() => {
     const page = root;
     if (!page) {
@@ -199,7 +194,7 @@
     return () => page.removeEventListener('scroll', schedule, true);
   });
 
-  // The table resized: the side panel slid, or a zone grew.
+  // The table resized: the side panel slid, or the surface grew.
   $effect(() => {
     const table = svg?.parentElement;
     if (!table) {
@@ -224,7 +219,7 @@
 
 <svelte:window onpointermove={onPointerMove} onresize={schedule} />
 
-<svg class="arrows" bind:this={svg} aria-hidden="true">
+<svg class="arrows" class:raised bind:this={svg} aria-hidden="true">
   <defs>
     {#each [...COLORS, null] as color (color)}
       <marker
@@ -239,7 +234,7 @@
         <path
           d="M0,0 L10,5 L0,10 z"
           style:fill={colourOf(color)}
-          stroke="#0b0f18"
+          stroke="#07090f"
           stroke-width="1"
         />
       </marker>
@@ -259,14 +254,20 @@
       cy={path.start.y}
       r="6"
       style:fill={colourOf(path.color)}
-      stroke="#0b0f18"
+      stroke="#07090f"
       stroke-width="2"
     />
   {/each}
 </svg>
 
 <style>
-  /* Over the cards and the zone edge fades, under the scroll chips and the separator handles. */
+  /*
+    Over the cards, and under everything else at rest: the resting hand (20), the preview (30),
+    the other players' presence (2500), the veil and the raised hand (2600). While cards move, over
+    the flights (2900) and the drag layer (3000) too, still under the action bar (3500), the token
+    pill, the menus, the dialogs and the tooltips. The table does not isolate its stacking for
+    that: the arrows, though clipped and scrolled by it, stack with the page's layers.
+  */
   .arrows {
     position: absolute;
     inset: 0;
@@ -274,11 +275,15 @@
     height: 100%;
     overflow: visible;
     pointer-events: none;
-    z-index: 900;
+    z-index: 1;
+  }
+
+  .arrows.raised {
+    z-index: 3050;
   }
 
   .under {
-    stroke: #0b0f18;
+    stroke: #07090f;
     stroke-width: 8;
     fill: none;
     stroke-linecap: round;

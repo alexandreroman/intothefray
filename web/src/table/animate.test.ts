@@ -8,7 +8,6 @@ function card(id: string, extra: Partial<CardView> = {}): CardView {
     back: 'player',
     owner: 0,
     zone: 'table',
-    area: 'p0',
     x: 0,
     y: 0,
     z: 1,
@@ -17,7 +16,7 @@ function card(id: string, extra: Partial<CardView> = {}): CardView {
 }
 
 function pile(id: string, extra: Partial<PileView> = {}): PileView {
-  return { id, kind: 'deck', owner: 0, area: 'p0', x: 600, y: 0, count: 10, ...extra };
+  return { id, kind: 'deck', owner: 0, x: 600, y: 0, count: 10, ...extra };
 }
 
 function line(text: string, extra: Partial<LogView> = {}): LogView {
@@ -46,13 +45,13 @@ function view(
       piles: extra.piles ?? [
         pile('deck:p0'),
         pile('disc:p0', { kind: 'discard', x: 720, count: 0, cards: [] }),
-        pile('deck:p1', { owner: 1, area: 'p1' }),
-        pile('enc', { kind: 'encounter', owner: -1, area: 'villain' }),
+        pile('deck:p1', { owner: 1 }),
+        pile('enc', { kind: 'encounter', owner: -1 }),
       ],
       stages: [
         { key: 'villain', label: 'Villain', current: extra.current ?? 'v1', cards: ['v1', 'v2'] },
       ],
-      firstPlayer: { area: 'p0', x: 0, y: 0 },
+      firstPlayer: { x: 0, y: 0 },
     },
     log: extra.log ?? [OLD_LINE],
   };
@@ -61,20 +60,20 @@ function view(
 describe('diffViews', () => {
   it('moved card yields move', () => {
     const prev = view({ cards: [card('a', { x: 0, y: 0 }), card('b', { x: 200 })] });
-    const next = view({ cards: [card('a', { area: 'p1', x: 300, y: 40 }), card('b', { x: 200 })] });
+    const next = view({ cards: [card('a', { x: 300, y: 40 }), card('b', { x: 200 })] });
 
     expect(diffViews(prev, next)).toEqual([
       {
         kind: 'move',
         id: 'a',
-        from: { zone: 'table', area: 'p0', x: 0, y: 0 },
-        to: { zone: 'table', area: 'p1', x: 300, y: 40 },
+        from: { zone: 'table', x: 0, y: 0 },
+        to: { zone: 'table', x: 300, y: 40 },
       },
     ]);
   });
 
   it('a card played from the hand moves to the table', () => {
-    const prev = view({ cards: [card('h', { zone: 'hand', area: undefined })] });
+    const prev = view({ cards: [card('h', { zone: 'hand' })] });
     const next = view({
       cards: [card('h', { x: 100 })],
       log: [OLD_LINE, line('played Spider-Man')],
@@ -84,8 +83,8 @@ describe('diffViews', () => {
       {
         kind: 'move',
         id: 'h',
-        from: { zone: 'hand', area: undefined, x: 0, y: 0 },
-        to: { zone: 'table', area: 'p0', x: 100, y: 0 },
+        from: { zone: 'hand', x: 0, y: 0 },
+        to: { zone: 'table', x: 100, y: 0 },
       },
     ]);
   });
@@ -127,9 +126,95 @@ describe('diffViews', () => {
 
     expect(diffViews(prev, next)).toEqual([
       { kind: 'glow', id: 'a', color: 1 },
+      // Turned face up: it also turns over.
+      { kind: 'flip', id: 'b' },
       { kind: 'glow', id: 'b', color: 1 },
       { kind: 'glow', id: 'c', color: 1 },
     ]);
+  });
+
+  it('turns over a card flipped, or shown on another face', () => {
+    const known = (id: string, extra: Partial<CardView> = {}) =>
+      card(id, { code: '01001', ...extra });
+    const discard = (cards: string[]) =>
+      pile('disc:p0', { kind: 'discard', x: 720, count: cards.length, cards });
+    const prev = view({
+      cards: [
+        known('down'),
+        known('faces'),
+        known('fromDiscard', { zone: 'pile' }),
+        known('toDeck'),
+        known('inHand', { zone: 'hand' }),
+      ],
+      piles: [pile('deck:p0'), discard(['fromDiscard'])],
+    });
+    const next = view({
+      cards: [
+        card('down', { faceDown: true }),
+        known('faces', { face: 1 }),
+        known('fromDiscard', { x: 500 }),
+        known('inHand', { zone: 'hand', face: 1 }),
+      ],
+      // Put back on the deck, the card is no longer listed.
+      piles: [pile('deck:p0', { count: 11 }), discard([])],
+    });
+
+    const flips = diffViews(prev, next).filter((anim) => anim.kind === 'flip');
+    expect(flips).toEqual([
+      { kind: 'flip', id: 'down' },
+      { kind: 'flip', id: 'faces' },
+    ]);
+  });
+
+  it('turns over a card played face up from a deck, or revealed from the encounter deck', () => {
+    // The server never lists the cards of a deck: they show up on the table as the deck shrinks.
+    const prev = view({ piles: [pile('deck:p0', { count: 10 })] });
+    const played = view({
+      cards: [card('fromDeck', { code: '01001', x: 300 })],
+      piles: [pile('deck:p0', { count: 9 })],
+    });
+    const encounter = (count: number) => pile('enc', { kind: 'encounter', owner: -1, count });
+    const revealed = view({
+      cards: [card('fromEncounter', { code: '01097', back: 'encounter', owner: -1 })],
+      piles: [encounter(19)],
+    });
+    // Dealt face down, it shows its back and does not turn over.
+    const dealt = view({
+      cards: [card('dealt', { faceDown: true, back: 'encounter', owner: -1 })],
+      piles: [encounter(19)],
+    });
+
+    expect(diffViews(prev, played)).toEqual([{ kind: 'flip', id: 'fromDeck' }]);
+    // The viewer's own play from the deck turns over too, as it lands.
+    expect(diffViews(prev, played, 'fromDeck')).toEqual([{ kind: 'flip', id: 'fromDeck' }]);
+    expect(diffViews(view({ piles: [encounter(20)] }), revealed)).toEqual([
+      { kind: 'flip', id: 'fromEncounter' },
+    ]);
+    expect(diffViews(view({ piles: [encounter(20)] }), dealt)).toEqual([]);
+  });
+
+  it('turns over a card played from a deck the viewer looks through', () => {
+    // An open view of the deck lists its cards, though the deck shows none.
+    const prev = view({
+      cards: [card('seen', { code: '01001', zone: 'pile' })],
+      piles: [pile('deck:p0', { count: 10 })],
+    });
+    const next = view({
+      cards: [card('seen', { code: '01001', x: 300 })],
+      piles: [pile('deck:p0', { count: 9 })],
+    });
+
+    expect(diffViews(prev, next).filter((anim) => anim.kind === 'flip')).toEqual([
+      { kind: 'flip', id: 'seen' },
+    ]);
+  });
+
+  it("does not turn over a card played from another player's hand", () => {
+    // Another player's hand is not listed either, but no deck shrinks.
+    const prev = view();
+    const next = view({ cards: [card('fromHand', { code: '01001', owner: 1, x: 300 })] });
+
+    expect(diffViews(prev, next)).toEqual([]);
   });
 
   it('a change with no new history line, or by the system, does not glow', () => {
@@ -146,16 +231,10 @@ describe('diffViews', () => {
 
   it('stage swap yields turnIn', () => {
     const prev = view({
-      cards: [
-        card('v1', { owner: -1, area: 'villain' }),
-        card('v2', { owner: -1, zone: 'stage', area: undefined }),
-      ],
+      cards: [card('v1', { owner: -1 }), card('v2', { owner: -1, zone: 'stage' })],
     });
     const next = view({
-      cards: [
-        card('v1', { owner: -1, zone: 'stage', area: undefined }),
-        card('v2', { owner: -1, area: 'villain' }),
-      ],
+      cards: [card('v1', { owner: -1, zone: 'stage' }), card('v2', { owner: -1 })],
       current: 'v2',
       log: [OLD_LINE, line('replaced the villain Rhino (stage I) with Rhino (stage II)')],
     });
@@ -167,9 +246,9 @@ describe('diffViews', () => {
   });
 
   it('turning the stage card to its other face turns it in', () => {
-    const prev = view({ cards: [card('v1', { owner: -1, area: 'villain' })] });
+    const prev = view({ cards: [card('v1', { owner: -1 })] });
     const next = view({
-      cards: [card('v1', { owner: -1, area: 'villain', face: 1 })],
+      cards: [card('v1', { owner: -1, face: 1 })],
       log: [OLD_LINE, line('turned the main scheme to The Break-In! (1B)')],
     });
 
@@ -211,7 +290,7 @@ describe('diffViews', () => {
   it('a discarded card flies to its pile', () => {
     const prev = view({ cards: [card('a', { x: 40 })] });
     const next = view({
-      cards: [card('a', { zone: 'pile', area: undefined })],
+      cards: [card('a', { zone: 'pile' })],
       piles: [
         pile('deck:p0'),
         pile('disc:p0', { kind: 'discard', x: 720, count: 1, cards: ['a'] }),
@@ -234,7 +313,7 @@ describe('diffViews', () => {
   it('own drop onto a pile does not fly', () => {
     const prev = view({ cards: [card('a', { x: 40 })] });
     const next = view({
-      cards: [card('a', { zone: 'pile', area: undefined })],
+      cards: [card('a', { zone: 'pile' })],
       piles: [pile('disc:p0', { kind: 'discard', x: 720, count: 1, cards: ['a'] })],
       log: [OLD_LINE, line('discarded Spider-Man', { who: 'Alex', color: 0 })],
     });

@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"maps"
 	"math/rand/v2"
 	"slices"
 )
@@ -21,6 +22,7 @@ const (
 	ActPlay    Kind = "play"
 
 	ActExhaust     Kind = "exhaust"
+	ActReadyAll    Kind = "readyAll"
 	ActFlip        Kind = "flip"
 	ActToken       Kind = "token"
 	ActStatus      Kind = "status"
@@ -43,13 +45,17 @@ const (
 // Action is one resolved player action. Which fields matter depends on Kind;
 // the others stay zero.
 type Action struct {
-	Kind   Kind     `json:"kind"`
-	Card   string   `json:"card,omitempty"`
-	Target string   `json:"target,omitempty"` // card id (attach, arrow, play under it) or pile id
-	Pile   string   `json:"pile,omitempty"`
-	Area   Area     `json:"area,omitempty"`
-	X      int      `json:"x,omitempty"`
-	Y      int      `json:"y,omitempty"`
+	Kind   Kind   `json:"kind"`
+	Card   string `json:"card,omitempty"`
+	Target string `json:"target,omitempty"` // card id (attach, arrow, play under it) or pile id
+	Pile   string `json:"pile,omitempty"`   // also the deck whose top card a play takes
+	Area   Area   `json:"area,omitempty"`   // whose hand (draw, handOrder), who is dealt to (deal)
+	X      int    `json:"x,omitempty"`
+	Y      int    `json:"y,omitempty"`
+	// Placed tells that X and Y are where a card tucked under Target was
+	// dropped (attach, play under a card): it lies there, behind its host,
+	// rather than at the default tucked offset (see tuckedPlace).
+	Placed bool     `json:"placed,omitempty"`
 	N      int      `json:"n,omitempty"`
 	Name   string   `json:"name,omitempty"` // token or status name
 	Delta  int      `json:"delta,omitempty"`
@@ -101,11 +107,14 @@ func resolve(g *Game, seat int, a Action, rng *rand.Rand) (Action, error) {
 		return a, checkCards(t, seat, a.Card)
 	case ActExhaust:
 		return resolveExhaust(t, seat, a)
+	case ActReadyAll:
+		return resolveReadyAll(t, a)
 	case ActFlip:
 		return resolveFlip(t, seat, a)
-	case ActAttach, ActArrowAdd, ActPlay:
-		// A play may tuck the card under a target card.
+	case ActAttach, ActArrowAdd:
 		return a, checkCards(t, seat, a.Card, a.Target)
+	case ActPlay:
+		return resolvePlay(t, seat, a)
 	case ActToHand:
 		return resolveToHand(t, seat, a)
 	case ActToDeck:
@@ -138,12 +147,8 @@ func resolve(g *Game, seat int, a Action, rng *rand.Rand) (Action, error) {
 	}
 }
 
-// seatedArea reports whether area is the villain side or the side of a
-// seated player.
+// seatedArea reports whether area names the seat of a seated player.
 func (g *Game) seatedArea(area Area) bool {
-	if area == AreaVillain {
-		return true
-	}
 	for seat := range g.Players {
 		if area == PlayerArea(seat) {
 			return true
@@ -241,14 +246,40 @@ func checkCard(t *Table, seat int, c *Card) error {
 }
 
 // resolveExhaust records whether the card ends exhausted (see
-// Action.Exhausted).
+// Action.Exhausted). A locked card is exhausted, but never readied.
 func resolveExhaust(t *Table, seat int, a Action) (Action, error) {
 	c, err := usableTableCard(t, seat, a.Card)
 	if err != nil {
 		return a, err
 	}
+	if c.Exhausted && locked(c) {
+		return a, invalid("card %q is locked: it does not ready", c.ID)
+	}
 	a.Exhausted = new(!c.Exhausted)
 	return a, nil
+}
+
+// resolveReadyAll records the cards to ready: every exhausted table card,
+// whoever owns it, but the locked ones, in id order. A rebuild readies those
+// cards, whatever lies on the table then.
+func resolveReadyAll(t *Table, a Action) (Action, error) {
+	a.Cards = nil
+	for _, id := range slices.Sorted(maps.Keys(t.Cards)) {
+		c := t.Cards[id]
+		if c.Zone == ZoneTable && c.Exhausted && !locked(c) {
+			a.Cards = append(a.Cards, id)
+		}
+	}
+	if len(a.Cards) == 0 {
+		return a, invalid("no card on the table to ready")
+	}
+	return a, nil
+}
+
+// locked reports whether c carries the locked status, which keeps it from
+// readying.
+func locked(c *Card) bool {
+	return c.Status[statusLocked] > 0
 }
 
 // resolveFlip records the side the card ends on: a face-down card turns face
@@ -356,9 +387,33 @@ func resolveReveal(t *Table, a Action) (Action, error) {
 	return a, nil
 }
 
+// resolvePlay checks a play, which may tuck the card under a target card. A
+// play from the top of the player's own deck names the deck rather than a
+// card, as the client does not know its cards: resolve records the top card,
+// whatever card the client names, so that a rebuild plays that card.
+func resolvePlay(t *Table, seat int, a Action) (Action, error) {
+	if a.Pile != "" {
+		deck, err := ownPile(t, seat, a.Pile)
+		if err != nil {
+			return a, err
+		}
+		if deck.Kind != KindDeck {
+			return a, invalid("only a deck's top card is played from its pile, not %q's", deck.ID)
+		}
+		if len(deck.Cards) == 0 {
+			return a, invalid("pile %q is empty", deck.ID)
+		}
+		a.Card = topCards(deck, 1)[0]
+	}
+	return a, checkCards(t, seat, a.Card, a.Target)
+}
+
 // resolveDeal records the card to deal, so that a rebuild deals that card
 // (see resolveReveal).
 func resolveDeal(t *Table, a Action) (Action, error) {
+	if a.Area == "" {
+		return a, invalid("a deal needs a recipient")
+	}
 	id := t.dealtCard()
 	if id == "" {
 		return a, invalid("encounter deck is empty")
@@ -381,7 +436,7 @@ func resolveDiscardTop(t *Table, seat int, a Action) (Action, error) {
 }
 
 func resolveHandOrder(seat int, a Action) (Action, error) {
-	if !validArea(a.Area) || a.Area == AreaVillain {
+	if !validArea(a.Area) {
 		return a, invalid("area %q has no hand", a.Area)
 	}
 	if a.Area != PlayerArea(seat) {

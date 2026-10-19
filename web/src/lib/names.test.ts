@@ -1,4 +1,4 @@
-import { ADJECTIVES, NOUNS, playerName, randomName } from './names';
+import { ADJECTIVES, NOUNS, playerName, randomName, savePlayerName } from './names';
 import { getPref, setPref } from './prefs';
 
 afterEach(() => {
@@ -53,5 +53,13 @@ describe('playerName', () => {
 
   it('returns the same name on a second call', () => {
     expect(playerName()).toBe(playerName());
+  });
+});
+
+describe('savePlayerName', () => {
+  it('stores the name trimmed', () => {
+    savePlayerName('  Alex ');
+    expect(getPref('itf-name')).toBe('Alex');
+    expect(playerName()).toBe('Alex');
   });
 });

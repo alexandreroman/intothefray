@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import Hand from './Hand.svelte';
+import handSource from './Hand.svelte?raw';
 import { interaction } from './interaction.svelte';
 import { fanPositions, HAND_CARD } from './layout';
 import type { CardView as TableCard, PackFace } from '../lib/types';
@@ -57,11 +58,11 @@ describe('Hand', () => {
     expect(handList().style.getPropertyValue('--card-h')).toBe(`${HAND_CARD.h}px`);
 
     const slots = fanPositions(3, 1200);
-    const fans = handCards().map((item) => item.querySelector<HTMLElement>('.fan'));
-    expect(fans.map((fan) => fan?.style.getPropertyValue('--rot'))).toEqual(
+    // Set on the card, for both its drawn card and its hit area.
+    expect(handCards().map((item) => item.style.getPropertyValue('--rot'))).toEqual(
       slots.map((slot) => `${slot.angle}deg`),
     );
-    expect(fans.map((fan) => fan?.style.getPropertyValue('--ty'))).toEqual(
+    expect(handCards().map((item) => item.style.getPropertyValue('--ty'))).toEqual(
       slots.map((slot) => `${slot.y}px`),
     );
     expect(handCards().map((item) => item.style.getPropertyValue('--x'))).toEqual(
@@ -122,11 +123,40 @@ describe('Hand', () => {
     expect(handList().classList).not.toContain('open');
   });
 
-  it('hovering a card shows it in the preview', async () => {
+  it('hovering a card hovers it, with no preview', async () => {
     render(Hand, { cards: CARDS, faceOf });
 
     await fireEvent.pointerEnter(handCards()[1] as HTMLElement);
     expect(interaction.hovered).toEqual({ kind: 'hand', id: 'h2' });
+    expect(interaction.previewed).toBeNull();
+  });
+
+  it('picks the hovered card from its place at rest, which the pop never moves', () => {
+    render(Hand, { cards: CARDS, faceOf });
+    for (const card of handCards()) {
+      // The hit area comes before the drawn card, which lets the pointer through to it.
+      expect([...card.children].map((child) => child.className.split(' ')[0])).toEqual([
+        'hit',
+        'fan',
+      ]);
+    }
+    /** The declarations of a rule of the hand's stylesheet. */
+    const rule = (selector: string) =>
+      new RegExp(`\\n {2}${selector.replace(/[.]/g, '\\.')} \\{([^}]*)\\}`).exec(handSource)?.[1] ??
+      '';
+    // Only the hit area takes the pointer, on the card's resting transform.
+    expect(rule('.hcard')).toMatch(/pointer-events: none;/);
+    expect(rule('.fan')).toMatch(/pointer-events: none;/);
+    expect(rule('.hit')).toMatch(/pointer-events: auto;/);
+    expect(rule('.hit')).toMatch(/transform: translateY\(var\(--ty\)\) rotate\(var\(--rot\)\);/);
+    // The pop (hover, tap selection) changes the drawn card only, never the hit area.
+    const popRules = [...handSource.matchAll(/\n {2}([^{}\n]*(?::hover|\.locked)[^{}]*)\{/g)].map(
+      (match) => match[1] ?? '',
+    );
+    expect(popRules.length).toBeGreaterThan(0);
+    for (const selector of popRules) {
+      expect(selector).not.toContain('.hit');
+    }
   });
 
   it('turns a landscape card a quarter to fit its slot', () => {

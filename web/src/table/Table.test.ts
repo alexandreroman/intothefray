@@ -2,10 +2,11 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/sve
 import { tick } from 'svelte';
 import Table from './Table.svelte';
 import { interaction, LINGER_MS } from './interaction.svelte';
-import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
+import { knownCard, loadGameCards, loadIndex, type CardInfo } from '../lib/catalog';
+import { clearPrefMemory } from '../lib/prefs';
 import type {
-  Area,
   CardView as TableCard,
+  Index,
   PackFace,
   PileView,
   PresenceState,
@@ -16,6 +17,7 @@ vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
   knownCard: vi.fn(),
   loadGameCards: vi.fn(),
+  loadIndex: vi.fn(),
 }));
 
 /**
@@ -43,6 +45,20 @@ class ManualResizeObserver {
 
 globalThis.ResizeObserver = ManualResizeObserver;
 
+// The pack index of the fixture: what the top bar's crumb names.
+const INDEX: Index = {
+  version: 1,
+  lang: 'en',
+  packs: [],
+  scenarios: [
+    { id: 'rhino', name: 'Rhino', pack: 'core', image: '', supported: true, recommended: [] },
+  ],
+  sets: [
+    { code: 'bomb_scare', name: 'Bomb Scare', pack: 'core', kind: 'modular' },
+    { code: 'masters_of_evil', name: 'Masters of Evil', pack: 'core', kind: 'modular' },
+  ],
+};
+
 const FIRST_PLAYER_TOKEN =
   'https://card-table.app/images/table/first_player_token_marvelchampions.png';
 
@@ -68,7 +84,7 @@ function card(id: string, extra: Partial<TableCard>): TableCard {
 }
 
 function pile(id: string, extra: Partial<PileView>): PileView {
-  return { id, kind: 'deck', owner: -1, area: 'villain', x: 0, y: 0, count: 3, ...extra };
+  return { id, kind: 'deck', owner: -1, x: 0, y: 0, count: 3, ...extra };
 }
 
 function fakeSession() {
@@ -82,20 +98,24 @@ function fakeSession() {
   };
 }
 
-/** Rhino with two players; the viewer is Sam, seated second (area p1). */
+/**
+ * Rhino with two players; the viewer is Sam, seated second (p1). As the setup
+ * lays them out: the villain's row at the top, Alex's row 330 below it, then
+ * Sam's, each starting with its deck and discard pile.
+ */
 function makeView(extra: { cards?: TableCard[]; piles?: PileView[] } = {}): View {
   const cards = extra.cards ?? [
-    card('v', { code: '01094', back: 'villain', area: 'villain', x: 10, y: 0 }),
-    card('s', { code: '01097', back: 'encounter', area: 'villain', x: 130, y: 0 }),
-    card('a', { code: '01001', owner: 0, area: 'p0', x: 0, y: 0 }),
-    card('b', { code: '01001', owner: 1, area: 'p1', x: 0, y: 0 }),
+    card('v', { code: '01094', back: 'villain', x: 360, y: 30 }),
+    card('s', { code: '01097', back: 'encounter', x: 520, y: 30 }),
+    card('a', { code: '01001', owner: 0, x: 360, y: 360 }),
+    card('b', { code: '01001', owner: 1, x: 360, y: 690 }),
     card('h', { code: '01001', owner: 1, zone: 'hand', x: 0, y: 0 }),
   ];
   const piles = extra.piles ?? [
-    pile('enc', { kind: 'encounter', area: 'villain', x: 500 }),
-    pile('d0', { owner: 0, area: 'p0', x: 600 }),
-    pile('d1', { owner: 1, area: 'p1', x: 600 }),
-    pile('x1', { kind: 'discard', owner: 1, area: 'p1', x: 720, count: 0 }),
+    pile('enc', { kind: 'encounter', x: 0, y: 30 }),
+    pile('d0', { owner: 0, x: 0, y: 360 }),
+    pile('d1', { owner: 1, x: 0, y: 690 }),
+    pile('x1', { kind: 'discard', owner: 1, x: 160, y: 690, count: 0 }),
   ];
   return {
     id: 'g1',
@@ -127,34 +147,46 @@ function makeView(extra: { cards?: TableCard[]; piles?: PileView[] } = {}): View
       cards,
       piles,
       stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
-      firstPlayer: { area: 'p0', x: 860, y: 40 },
+      firstPlayer: { x: 860, y: 40 },
     },
     log: [],
   };
 }
 
-function surfaceOf(name: RegExp): HTMLElement {
-  const surface = screen.getByRole('region', { name }).querySelector<HTMLElement>('.surface');
-  if (!surface) {
-    throw new Error(`no surface in ${String(name)}`);
+function surface(): HTMLElement {
+  const element = document.querySelector<HTMLElement>('.tablewrap .surface');
+  if (!element) {
+    throw new Error('no surface');
   }
-  return surface;
+  return element;
 }
 
-/** Where an out-of-play pile of a zone lies, found by its badge. */
-function outPileLeft(zone: RegExp, badge: string): string | undefined {
-  const region = screen.getByRole('region', { name: zone });
-  return within(region).getByRole('img', { name: badge }).closest<HTMLElement>('.pile')?.style.left;
+/** Waits for the catalog: the villain shows its face. */
+async function catalogLoaded(): Promise<void> {
+  await within(surface()).findByRole('img', { name: 'Rhino' });
 }
 
+function ownerBoxes(): HTMLElement[] {
+  return [...document.querySelectorAll<HTMLElement>('.surface .ownerbox')];
+}
 function zoomLabel(): HTMLElement {
   return screen.getByRole('button', { name: 'Back to 100%' });
+}
+
+/** The preview floating over the table: only there while something is previewed. */
+function preview(): HTMLElement {
+  return screen.getByLabelText('Card preview');
+}
+
+function noPreview(): boolean {
+  return screen.queryByLabelText('Card preview') === null;
 }
 
 beforeEach(() => {
   localStorage.clear();
   vi.mocked(loadGameCards).mockResolvedValue();
   vi.mocked(knownCard).mockImplementation(infoOf);
+  vi.mocked(loadIndex).mockResolvedValue(INDEX);
 });
 
 afterEach(() => {
@@ -162,77 +194,138 @@ afterEach(() => {
   interaction.reset();
   vi.mocked(loadGameCards).mockReset();
   vi.mocked(knownCard).mockReset();
+  vi.mocked(loadIndex).mockReset();
 });
 
+beforeEach(() => {
+  localStorage.clear();
+  vi.mocked(loadGameCards).mockResolvedValue();
+  vi.mocked(knownCard).mockImplementation(infoOf);
+  vi.mocked(loadIndex).mockResolvedValue(INDEX);
+});
+
+afterEach(() => {
+  vi.useRealTimers();
+  interaction.reset();
+  vi.mocked(loadGameCards).mockReset();
+  vi.mocked(knownCard).mockReset();
+  vi.mocked(loadIndex).mockReset();
+});
 describe('Table', () => {
-  it('renders a zone per area in order', async () => {
+  it('draws every table card and pile on one surface; the hand is not on the table', async () => {
     render(Table, { session: fakeSession(), view: makeView() });
+    await catalogLoaded();
 
-    const zones = await screen.findAllByRole('region');
-    expect(zones.map((z) => z.getAttribute('data-area'))).toEqual(['villain', 'p1', 'p0']);
-
-    // Table cards and piles of each area, in that area's zone only; the hand is not on the table.
-    const count = (zone: HTMLElement, selector: string) => zone.querySelectorAll(selector).length;
-    const [villain, own, other] = zones as [HTMLElement, HTMLElement, HTMLElement];
-    expect(count(villain, '.surface > .card:not(.pile)')).toBe(2);
-    expect(count(villain, '.surface > .pile')).toBe(1);
-    expect(count(own, '.surface > .card:not(.pile)')).toBe(1);
-    expect(count(own, '.surface > .pile')).toBe(2);
-    expect(count(other, '.surface > .card:not(.pile)')).toBe(1);
-    expect(count(other, '.surface > .pile')).toBe(1);
+    expect(document.querySelectorAll('.tablewrap .surface')).toHaveLength(1);
+    const ids = (selector: string) =>
+      [...surface().querySelectorAll<HTMLElement>(selector)].map((element) => element.dataset.id);
+    expect(ids(':scope > .card:not(.pile)')).toEqual(['v', 's', 'a', 'b']);
+    expect(ids(':scope > .pile')).toEqual(['enc', 'd0', 'd1', 'x1']);
+    expect(surface().querySelector('[data-id="b"]')?.getAttribute('style')).toContain('top: 690px');
   });
 
-  it('loads the cards of its game once for every zone', async () => {
+  it('loads the cards of its game once', async () => {
     render(Table, { session: fakeSession(), view: makeView() });
-    await screen.findByRole('region', { name: /Rhino/ });
+    await catalogLoaded();
     expect(loadGameCards).toHaveBeenCalledExactlyOnceWith('g1');
   });
 
-  it('zone header text', async () => {
+  it("frames each owner's deck and discard pile, named after them, their hand count as tip", async () => {
     render(Table, { session: fakeSession(), view: makeView() });
+    await catalogLoaded();
 
-    const villain = await screen.findByRole('region', { name: 'Villain — Rhino (stage I)' });
-    expect(within(villain).getByText('(stage I)').classList).toContain('aside');
-
-    const own = screen.getByRole('region', { name: 'Sam — Ant-Man (5 cards in hand)' });
-    expect(within(own).getByText('Sam').getAttribute('style')).toContain('color: var(--p2)');
-    expect(within(own).getByText('(5 cards in hand)').classList).toContain('aside');
-
-    const other = screen.getByRole('region', { name: 'Alex — Spider-Man (6 cards in hand)' });
-    expect(within(other).getByText('Alex').getAttribute('style') ?? '').not.toContain('color');
+    const boxes = ownerBoxes();
+    expect(boxes.map((box) => box.querySelector('.owner')?.textContent)).toEqual([
+      'Villain',
+      'Alex',
+      'Sam',
+    ]);
+    // Screen readers read the hand count, which the pointer finds in the tooltip.
+    expect(boxes.map((box) => box.textContent?.replace(/\s+/g, ' ').trim())).toEqual([
+      'Villain',
+      'Alex : 6 cards in hand',
+      'Sam : 5 cards in hand',
+    ]);
+    expect(boxes.map((box) => box.style.getPropertyValue('--owner'))).toEqual([
+      'var(--spark)',
+      'var(--p1)',
+      'var(--p2)',
+    ]);
+    expect(boxes.map((box) => box.dataset.tip)).toEqual([
+      undefined,
+      '6 cards in hand',
+      '5 cards in hand',
+    ]);
+    // Around Sam's deck (0, 690) and discard pile (160, 690), 10 units off their edges.
+    const sam = boxes[2]!;
+    expect([sam.style.left, sam.style.top, sam.style.width, sam.style.height]).toEqual([
+      '-10px',
+      '680px',
+      '320px',
+      '216px',
+    ]);
   });
 
-  it('zone height grows with a low card', async () => {
+  it('draws no out-of-play pile on the table', async () => {
+    const view = makeView();
+    view.table?.piles.push(
+      pile('vic', { kind: 'victory', x: 0, y: 30, count: 2, cards: ['q1', 'q2'] }),
+      pile('saside', { kind: 'aside', x: 0, y: 30, count: 0 }),
+      pile('aside:p1', { kind: 'aside', owner: 1, x: 0, y: 690, count: 0 }),
+    );
+    render(Table, { session: fakeSession(), view });
+    await catalogLoaded();
+
+    for (const id of ['vic', 'saside', 'aside:p1']) {
+      expect(surface().querySelector(`[data-id="${id}"]`)).toBeNull();
+    }
+  });
+
+  it('leaves room past the rightmost and the lowest card', async () => {
     const view = makeView({
-      cards: [
-        card('v', { code: '01094', back: 'villain', area: 'villain', x: 10, y: 0 }),
-        // A double-size card (200 high) whose top is at 300: 300 + 200 + 20.
-        card('g', { code: '01010', area: 'villain', x: 200, y: 300 }),
-      ],
+      // A double-size card, 196 by 280, at 200, 300.
+      cards: [card('g', { code: '01010', x: 200, y: 300 })],
       piles: [],
     });
     render(Table, { session: fakeSession(), view });
 
+    // 200 + 196 + 200 wide, 300 + 280 + 300 tall.
     await waitFor(() => {
-      expect(surfaceOf(/^Villain/).style.height).toBe('520px');
+      expect(surface().style.width).toBe('596px');
     });
-    // An empty zone keeps one card row plus 60.
-    expect(surfaceOf(/^Alex/).style.height).toBe('200px');
+    expect(surface().style.height).toBe('880px');
   });
 
   it('sizes cards as std until the catalog is loaded', () => {
     vi.mocked(loadGameCards).mockReturnValue(new Promise(() => {}));
     const view = makeView({
-      cards: [card('g', { code: '01010', area: 'villain', x: 0, y: 300 })],
+      cards: [card('g', { code: '01010', x: 0, y: 300 })],
       piles: [],
     });
     render(Table, { session: fakeSession(), view });
 
-    // 300 + 140 + 20, and the card itself gets the std box.
-    expect(surfaceOf(/^Villain/).style.height).toBe('460px');
-    const placed = surfaceOf(/^Villain/).querySelector<HTMLElement>('.card');
-    expect(placed?.style.height).toBe('140px');
+    // 300 + 196 + 300, and the card itself gets the std box.
+    expect(surface().style.height).toBe('796px');
+    expect(surface().querySelector<HTMLElement>('.card')?.style.height).toBe('196px');
     expect(knownCard).not.toHaveBeenCalled();
+  });
+
+  it('does not keep the size measured before the catalog is loaded', async () => {
+    let loaded = () => {};
+    vi.mocked(loadGameCards).mockReturnValue(new Promise<void>((resolve) => (loaded = resolve)));
+    // The main scheme is landscape (140 high), but counts as std (196) until its size is known.
+    const view = makeView({
+      cards: [card('s', { code: '01097', x: 0, y: 300 })],
+      piles: [],
+    });
+    render(Table, { session: fakeSession(), view });
+    expect(surface().style.height).toBe('796px');
+
+    loaded();
+    // 300 + 140 + 300.
+    await waitFor(() => {
+      expect(surface().style.height).toBe('740px');
+    });
   });
 
   it('shows a non-blocking error when the catalog fails to load', async () => {
@@ -242,55 +335,23 @@ describe('Table', () => {
     expect((await screen.findByRole('alert')).textContent).toContain(
       'Card data could not be loaded',
     );
-    expect(screen.getAllByRole('region')).toHaveLength(3);
+    expect(surface().querySelectorAll('.card:not(.pile)')).toHaveLength(4);
   });
 
-  it('after a failed load, every card is a std placeholder, as its zone is sized', async () => {
+  it('after a failed load, every card is a std placeholder, as the surface is sized', async () => {
     vi.mocked(loadGameCards).mockRejectedValue(new Error('offline'));
     const view = makeView({
-      cards: [card('g', { code: '01010', area: 'villain', x: 0, y: 300 })],
+      cards: [card('g', { code: '01010', x: 0, y: 300 })],
       piles: [],
     });
     render(Table, { session: fakeSession(), view });
     await screen.findByRole('alert');
 
-    const surface = surfaceOf(/^Villain/);
-    // 300 + 140 + 20: the zone counts the card as std, and the card is drawn std.
-    expect(surface.style.height).toBe('460px');
+    // 300 + 196 + 300: the surface counts the card as std, and the card is drawn std.
+    expect(surface().style.height).toBe('796px');
     await Promise.resolve();
-    expect(surface.querySelector<HTMLElement>('.card')?.style.height).toBe('140px');
-    expect(within(surface).queryByRole('img', { name: 'Giant form' })).toBeNull();
-  });
-
-  it('dragging a separator resizes the zone above, snapped and never below its minimum', async () => {
-    render(Table, { session: fakeSession(), view: makeView() });
-    const handle = await screen.findByTitle("Drag to resize the villain's zone");
-
-    await fireEvent.pointerDown(handle, { clientY: 100 });
-    await fireEvent.pointerMove(window, { clientY: 157 });
-    expect(surfaceOf(/^Villain/).style.height).toBe('260px');
-
-    await fireEvent.pointerMove(window, { clientY: -500 });
-    expect(surfaceOf(/^Villain/).style.height).toBe('200px');
-
-    await fireEvent.pointerUp(window);
-    await fireEvent.pointerMove(window, { clientY: 400 });
-    expect(surfaceOf(/^Villain/).style.height).toBe('200px');
-
-    // Mine can be resized too; another player's zone follows its cards.
-    expect(screen.getByTitle('Drag to resize your zone')).toBeTruthy();
-    expect(screen.getAllByTitle(/^Drag to resize/)).toHaveLength(2);
-  });
-
-  it('a separator drag counts the pointer move in table units at any zoom', async () => {
-    localStorage.setItem('itf-zoom', '2');
-    render(Table, { session: fakeSession(), view: makeView() });
-    const handle = await screen.findByTitle("Drag to resize the villain's zone");
-
-    await fireEvent.pointerDown(handle, { clientY: 100 });
-    await fireEvent.pointerMove(window, { clientY: 157 });
-    // 57 px at 200 % are 28.5 units: 228.5, snapped to 230.
-    expect(surfaceOf(/^Villain/).style.height).toBe('230px');
+    expect(surface().querySelector<HTMLElement>('.card')?.style.height).toBe('196px');
+    expect(within(surface()).queryByRole('img', { name: 'Giant form' })).toBeNull();
   });
 
   it('zoom buttons clamp to 50–200 and persist', async () => {
@@ -359,92 +420,7 @@ describe('Table', () => {
     expect(kbds).toEqual(['−', '0', '+']);
   });
 
-  it('places the out-of-play piles at the right of their zone', async () => {
-    const view = makeView();
-    view.table?.piles.push(
-      pile('vic', { kind: 'victory', area: 'villain', x: 1080, count: 0 }),
-      pile('aside', { kind: 'aside', area: 'villain', x: 1200, count: 0 }),
-      pile('aside1', { kind: 'aside', owner: 1, area: 'p1', x: 1200, count: 0 }),
-    );
-    // Each zone scroller shows 1200 table units at 100 %, past its 24 px padding on each side.
-    // The zoom is pinned: prefs keep earlier tests' zoom in memory.
-    localStorage.setItem('itf-zoom', '1');
-    const width = vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(1248);
-    try {
-      render(Table, { session: fakeSession(), view });
-      await screen.findByRole('region', { name: /Rhino/ });
-
-      // The villain's zone is the visible width: 1200 − 10 − 100, then 120 to the left.
-      expect(surfaceOf(/^Villain/).style.width).toBe('1200px');
-      expect(outPileLeft(/^Villain/, 'Set-aside cards')).toBe('1090px');
-      expect(outPileLeft(/^Villain/, 'Victory display')).toBe('970px');
-      expect(outPileLeft(/^Sam/, 'Set-aside cards')).toBe('1090px');
-      // Piles in play keep their place.
-      expect(surfaceOf(/^Villain/).querySelector<HTMLElement>('.pile:not(.out)')?.style.left).toBe(
-        '500px',
-      );
-    } finally {
-      width.mockRestore();
-    }
-  });
-
-  it('widens a zone past its cards in play to fit its out-of-play piles', async () => {
-    const view = makeView();
-    view.table?.piles.push(
-      pile('vic', { kind: 'victory', area: 'villain', x: 1080, count: 0 }),
-      pile('aside', { kind: 'aside', area: 'villain', x: 1200, count: 0 }),
-    );
-    render(Table, { session: fakeSession(), view });
-    await screen.findByRole('region', { name: /Rhino/ });
-
-    // The encounter deck ends at 600: 600 + 140 + 2 × 120.
-    expect(surfaceOf(/^Villain/).style.width).toBe('980px');
-    expect(outPileLeft(/^Villain/, 'Victory display')).toBe('750px');
-    expect(outPileLeft(/^Villain/, 'Set-aside cards')).toBe('870px');
-  });
-
-  it('chips count what is scrolled out of a zone, and scroll to it', async () => {
-    localStorage.setItem('itf-zoom', '1');
-    // Each zone scroller shows 200 table units.
-    const width = vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(248);
-    try {
-      render(Table, { session: fakeSession(), view: makeView() });
-      const villain = await screen.findByRole('region', { name: /Rhino/ });
-      const scroller = villain.querySelector<HTMLElement>('.zscroll');
-      if (!scroller) {
-        throw new Error('no scroller');
-      }
-      const scrollTo = vi.fn();
-      scroller.scrollTo = scrollTo;
-
-      // At the start, the encounter deck (x 500) is out of view on the right.
-      expect(within(villain).queryByRole('button', { name: /on the left/ })).toBeNull();
-      const right = within(villain).getByRole('button', { name: '1 more on the right' });
-      expect(right.textContent?.trim()).toBe('1 →');
-      await fireEvent.click(right);
-      expect(scrollTo).toHaveBeenLastCalledWith({ left: 484, behavior: 'smooth' });
-
-      // Scrolled to 600 px: Rhino and the main scheme are out on the left.
-      Object.defineProperty(scroller, 'scrollLeft', { value: 600, configurable: true });
-      await fireEvent.scroll(scroller);
-      const left = within(villain).getByRole('button', { name: '2 more on the left' });
-      expect(left.textContent?.trim()).toBe('← 2');
-      expect(within(villain).queryByRole('button', { name: /on the right/ })).toBeNull();
-      // Back to the nearest one, the main scheme at 130.
-      await fireEvent.click(left);
-      expect(scrollTo).toHaveBeenLastCalledWith({ left: 114, behavior: 'smooth' });
-    } finally {
-      width.mockRestore();
-    }
-  });
-
-  it('shows no chip before the zone is measured', async () => {
-    render(Table, { session: fakeSession(), view: makeView() });
-    const villain = await screen.findByRole('region', { name: /Rhino/ });
-    expect(within(villain).queryByRole('button', { name: /more on the/ })).toBeNull();
-  });
-
-  it('places the first player token in its zone', async () => {
+  it('places the first player token on the table', async () => {
     render(Table, { session: fakeSession(), view: makeView() });
 
     const token = await screen.findByRole('img', { name: 'First player' });
@@ -452,7 +428,7 @@ describe('Table', () => {
     const placed = token.closest<HTMLElement>('.fptoken');
     expect(placed?.style.left).toBe('860px');
     expect(placed?.style.top).toBe('40px');
-    expect(surfaceOf(/^Alex/).contains(token)).toBe(true);
+    expect(surface().contains(token)).toBe(true);
   });
 
   it('draws the first player token with the minimal theme', () => {
@@ -466,64 +442,168 @@ describe('Table', () => {
   it('shows the top card of a pile that lists its cards', async () => {
     const view = makeView({
       cards: [card('t', { code: '01001', zone: 'pile', x: 0, y: 0 })],
-      piles: [pile('x0', { kind: 'discard', owner: 0, area: 'p0', count: 1, cards: ['t'] })],
+      piles: [pile('x0', { kind: 'discard', owner: 0, count: 1, cards: ['t'] })],
     });
     render(Table, { session: fakeSession(), view });
 
-    const top = await within(screen.getByRole('region', { name: /^Alex/ })).findByRole('img', {
-      name: 'Spider-Man',
-    });
+    const top = await within(surface()).findByRole('img', { name: 'Spider-Man' });
     expect(top.getAttribute('src')).toBe('01001.png');
   });
 
+  it('moves the Focus panel to a corner clear of the hovered card', async () => {
+    const rect = (left: number, top: number, width: number, height: number) =>
+      ({ left, top, width, height, right: left + width, bottom: top + height }) as DOMRect;
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: Element,
+    ) {
+      if (this.classList.contains('tablewrap')) {
+        return rect(0, 0, 1000, 800);
+      }
+      // Rhino lies under the bottom right corner.
+      return (this as HTMLElement).dataset.id === 'v' ? rect(800, 500, 140, 196) : rect(0, 0, 0, 0);
+    });
+    vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(320);
+    vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(450);
+    try {
+      render(Table, { session: fakeSession(), view: makeView() });
+      await catalogLoaded();
+
+      await fireEvent.pointerEnter(surface().querySelector('.card[data-id="v"]') as HTMLElement);
+      // The facing corner on the same edge.
+      const panel = preview().closest('.peek');
+      expect(panel?.classList).toContain('bottom-left');
+
+      // Another card clear of the bottom right corner: the panel goes back home, drawn afresh
+      // there, so that it fades in.
+      await fireEvent.pointerEnter(surface().querySelector('.card[data-id="a"]') as HTMLElement);
+      expect(preview().closest('.peek')?.classList).toContain('bottom-right');
+      expect(preview().closest('.peek')).not.toBe(panel);
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
+
+  it('stays put as the pointer moves: only the hovered card counts', async () => {
+    const rect = (left: number, top: number, width: number, height: number) =>
+      ({ left, top, width, height, right: left + width, bottom: top + height }) as DOMRect;
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: Element,
+    ) {
+      if (this.classList.contains('tablewrap')) {
+        return rect(0, 0, 1000, 800);
+      }
+      return rect(0, 0, 10, 10);
+    });
+    vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(320);
+    vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(450);
+    try {
+      render(Table, { session: fakeSession(), view: makeView() });
+      await catalogLoaded();
+      await fireEvent.pointerEnter(surface().querySelector('.card[data-id="a"]') as HTMLElement);
+      expect(preview().closest('.peek')?.classList).toContain('bottom-right');
+
+      // Over the bottom right corner: the panel stays home.
+      await fireEvent.pointerMove(window, { clientX: 900, clientY: 600 });
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      expect(preview().closest('.peek')?.classList).toContain('bottom-right');
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
+
+  it('rings the hovered card or pile, not a tap selection, which has its own ring', async () => {
+    render(Table, { session: fakeSession(), view: makeView() });
+    await catalogLoaded();
+    const rhino = surface().querySelector<HTMLElement>('.card[data-id="v"]')!;
+    const deck = surface().querySelector<HTMLElement>('.pile[data-id="d1"]')!;
+
+    await fireEvent.pointerEnter(rhino);
+    expect(rhino.classList).toContain('hovered');
+    await fireEvent.pointerEnter(deck);
+    expect(deck.classList).toContain('hovered');
+    expect(rhino.classList).not.toContain('hovered');
+
+    await fireEvent.pointerDown(rhino, { pointerType: 'touch' });
+    await fireEvent.click(rhino);
+    expect(rhino.classList).toContain('locked');
+    expect(rhino.classList).not.toContain('hovered');
+  });
+
   it('hovering a card previews it; leaving it clears the preview after a linger', async () => {
-    const { container } = render(Table, { session: fakeSession(), view: makeView() });
-    const preview = screen.getByLabelText('Card preview');
-    const villain = await screen.findByRole('region', { name: /Rhino/ });
+    render(Table, { session: fakeSession(), view: makeView() });
+    const villain = surface();
     const rhino = await within(villain).findByRole('img', { name: 'Rhino' });
 
     await fireEvent.pointerEnter(rhino.closest('.card') as HTMLElement);
-    expect(within(preview).getByRole('img', { name: 'Rhino' }).getAttribute('src')).toBe(
+    expect(within(preview()).getByRole('img', { name: 'Rhino' }).getAttribute('src')).toBe(
       '01094.png',
     );
 
     // The main scheme is landscape.
     const scheme = within(villain).getByRole('img', { name: 'The Break-In!' });
     await fireEvent.pointerEnter(scheme.closest('.card') as HTMLElement);
-    expect(within(preview).getByRole('img', { name: 'The Break-In!' }).classList).toContain('land');
+    expect(within(preview()).getByRole('img', { name: 'The Break-In!' }).classList).toContain(
+      'land',
+    );
 
     vi.useFakeTimers();
     await fireEvent.pointerLeave(scheme.closest('.card') as HTMLElement);
     await vi.advanceTimersByTimeAsync(LINGER_MS - 1);
-    expect(within(preview).getByRole('img', { name: 'The Break-In!' })).toBeTruthy();
+    expect(within(preview()).getByRole('img', { name: 'The Break-In!' })).toBeTruthy();
     await vi.advanceTimersByTimeAsync(1);
-    expect(preview.textContent).toContain('Hover a card');
-    expect(container.querySelector('.preview .art')).toBeNull();
+    expect(noPreview()).toBe(true);
   });
 
-  it('previews the back of a face-down card; a deck keeps it, an empty pile clears it', async () => {
-    localStorage.setItem('itf-theme', 'minimal');
+  it('shows no preview for a card back: a face-down card, a deck; nor for an empty pile', async () => {
     const view = makeView({
-      cards: [card('f', { code: '01001', faceDown: true, back: 'player', area: 'villain' })],
+      cards: [
+        card('f', { code: '01001', faceDown: true, back: 'player' }),
+        card('up', { code: '01001', x: 200 }),
+      ],
       piles: [
-        pile('enc', { kind: 'encounter', area: 'villain', x: 500 }),
-        pile('x1', { kind: 'discard', owner: 1, area: 'p1', x: 720, count: 0 }),
+        pile('enc', { kind: 'encounter', x: 500 }),
+        pile('x1', { kind: 'discard', owner: 1, x: 720, count: 0 }),
       ],
     });
     const { container } = render(Table, { session: fakeSession(), view });
-    const preview = screen.getByLabelText('Card preview');
-    const surface = surfaceOf(/^Villain/);
+    const table = surface();
 
-    await fireEvent.pointerEnter(surface.querySelector('.card:not(.pile)') as HTMLElement);
-    expect(within(preview).getByRole('img', { name: 'Player card back' })).toBeTruthy();
+    await fireEvent.pointerEnter(table.querySelector('.card[data-id="f"]') as HTMLElement);
+    expect(noPreview()).toBe(true);
 
-    // A deck shows nothing new: the preview keeps the card seen before.
-    await fireEvent.pointerEnter(surface.querySelector('.pile') as HTMLElement);
-    expect(within(preview).getByRole('img', { name: 'Player card back' })).toBeTruthy();
+    // A face-up card is previewed; a deck then clears it rather than show its back.
+    await fireEvent.pointerEnter(table.querySelector('.card[data-id="up"]') as HTMLElement);
+    expect(noPreview()).toBe(false);
+    await fireEvent.pointerEnter(table.querySelector('.pile') as HTMLElement);
+    expect(noPreview()).toBe(true);
 
-    // An empty pile shows nothing.
     await fireEvent.pointerEnter(container.querySelector('.pile.empty') as HTMLElement);
-    expect(preview.textContent).toContain('Hover a card');
+    expect(noPreview()).toBe(true);
+  });
+
+  it('fades the preview out as it goes; another card swaps in without a fade', async () => {
+    render(Table, { session: fakeSession(), view: makeView() });
+    await catalogLoaded();
+    await fireEvent.pointerEnter(surface().querySelector('.card[data-id="a"]') as HTMLElement);
+    const panel = preview().closest('.peek');
+    expect(panel?.classList).not.toContain('leaving');
+
+    await fireEvent.pointerEnter(surface().querySelector('.card[data-id="b"]') as HTMLElement);
+    expect(preview().closest('.peek')).toBe(panel);
+
+    vi.useFakeTimers();
+    try {
+      interaction.release();
+      await tick();
+      // Still drawn while it fades out, though no longer a preview for assistive technologies.
+      expect(noPreview()).toBe(true);
+      expect(document.querySelector('.peek')?.classList).toContain('leaving');
+      expect(document.querySelector('.peek .frame')?.getAttribute('aria-hidden')).toBe('true');
+      await vi.advanceTimersByTimeAsync(110);
+      expect(document.querySelector('.peek')).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('hovering a history line rings its cards on the table', async () => {
@@ -532,7 +612,7 @@ describe('Table', () => {
       { who: 'Sam', color: 1, text: 'exhausted Rhino', at: new Date().toISOString(), cards: ['v'] },
     ];
     render(Table, { session: fakeSession(), view });
-    const villain = await screen.findByRole('region', { name: /Rhino/ });
+    const villain = surface();
     const rhino = await within(villain).findByRole('img', { name: 'Rhino' });
     const placed = rhino.closest('.card') as HTMLElement;
     expect(placed.classList).not.toContain('highlighted');
@@ -566,52 +646,153 @@ describe('Table', () => {
     expect(screen.queryByRole('list', { name: 'Your hand' })).toBeNull();
   });
 
-  it('hovering a hand card previews it', async () => {
+  it("hovering a hand card shows no preview, and clears a table card's", async () => {
     const view = makeView();
     view.table = { ...view.table!, hand: ['h'] };
     render(Table, { session: fakeSession(), view });
     const hand = screen.getByRole('list', { name: 'Your hand' });
     const inHand = await within(hand).findByRole('img', { name: 'Spider-Man' });
+    await fireEvent.pointerEnter(surface().querySelector('.card[data-id="a"]') as HTMLElement);
+    expect(noPreview()).toBe(false);
 
     await fireEvent.pointerEnter(inHand.closest('li') as HTMLElement);
-    const preview = screen.getByLabelText('Card preview');
-    expect(within(preview).getByRole('img', { name: 'Spider-Man' }).getAttribute('src')).toBe(
-      '01001.png',
-    );
+    expect(interaction.hovered).toEqual({ kind: 'hand', id: 'h' });
+    expect(noPreview()).toBe(true);
   });
 
   it('undo sends the undo action', async () => {
     const session = fakeSession();
-    const view = { ...makeView(), canUndo: true, undoText: 'exhausted Rhino' };
+    const view = { ...makeView(), canUndo: true };
     render(Table, { session, view });
 
-    await fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Undo last action' }));
     expect(session.act).toHaveBeenCalledWith({ kind: 'undo' });
   });
 
-  it('side toggle persists and toggles class', async () => {
-    const { container } = render(Table, { session: fakeSession(), view: makeView() });
-    const app = container.querySelector('.app') as HTMLElement;
-    const toggle = screen.getByRole('button', { name: 'Preview and history' });
-    expect(app.classList).not.toContain('side-hidden');
-    expect(toggle.title).toBe('Hide the preview and history');
-    expect(toggle.querySelector('.pane')?.classList).toContain('filled');
+  it('shows the side panel, which holds the history only', () => {
+    localStorage.setItem('itf-side-hidden', '1');
+    render(Table, { session: fakeSession(), view: makeView() });
 
-    await fireEvent.click(toggle);
-    expect(app.classList).toContain('side-hidden');
-    expect(localStorage.getItem('itf-side-hidden')).toBe('1');
-    expect(toggle.title).toBe('Show the preview and history');
-    expect(toggle.querySelector('.pane')?.classList).not.toContain('filled');
-
-    await fireEvent.click(toggle);
-    expect(app.classList).not.toContain('side-hidden');
-    expect(localStorage.getItem('itf-side-hidden')).toBe('');
+    const side = screen.getByRole('complementary', { name: 'History' });
+    expect(within(side).getByRole('list', { name: 'History' })).toBeTruthy();
+    expect(within(side).queryByLabelText('Card preview')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'History' })).toBeNull();
   });
 
-  it('restores a hidden side panel', () => {
-    localStorage.setItem('itf-side-hidden', '1');
+  it('collapses the history to a strip keeping Undo, remembered for the viewer', async () => {
+    const session = fakeSession();
+    const view = { ...makeView(), canUndo: true };
+    const { container, unmount } = render(Table, { session, view });
+    const app = container.querySelector<HTMLElement>('.app')!;
+    const side = screen.getByRole('complementary', { name: 'History' });
+    expect(app.classList).not.toContain('history-collapsed');
+
+    const collapse = screen.getByRole('button', { name: 'Collapse history' });
+    expect(collapse.getAttribute('aria-controls')).toBe(side.id);
+    await fireEvent.click(collapse);
+    expect(app.classList).toContain('history-collapsed');
+    expect(screen.queryByRole('list', { name: 'History' })).toBeNull();
+    expect(localStorage.getItem('itf-history-collapsed')).toBe('1');
+    // The focus goes to the button that took its place.
+    const expand = screen.getByRole('button', { name: 'Expand history' });
+    await waitFor(() => expect(document.activeElement).toBe(expand));
+    await fireEvent.click(within(side).getByRole('button', { name: 'Undo last action' }));
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'undo' });
+    unmount();
+
+    // The next table opens collapsed.
+    const again = render(Table, { session: fakeSession(), view });
+    expect(again.container.querySelector('.app')?.classList).toContain('history-collapsed');
+    await fireEvent.click(screen.getByRole('button', { name: 'Expand history' }));
+    expect(again.container.querySelector('.app')?.classList).not.toContain('history-collapsed');
+    expect(screen.getByRole('list', { name: 'History' })).toBeTruthy();
+    expect(localStorage.getItem('itf-history-collapsed')).toBe('0');
+  });
+
+  it('floats the preview over the table, only while something is previewed', async () => {
     const { container } = render(Table, { session: fakeSession(), view: makeView() });
-    expect(container.querySelector('.app')?.classList).toContain('side-hidden');
+    await catalogLoaded();
+    expect(noPreview()).toBe(true);
+
+    await fireEvent.pointerEnter(surface().querySelector('.card[data-id="v"]') as HTMLElement);
+    expect(preview().closest('.peek')?.parentElement).toBe(container.querySelector('.app'));
+    expect(within(preview()).getByRole('img', { name: 'Rhino' })).toBeTruthy();
+    // A framed panel at the bottom right, wider for a landscape card.
+    const panel = preview().closest<HTMLElement>('.peek')!;
+    expect(panel.querySelector('.tab')).toBeNull();
+    expect(panel.classList).toContain('bottom-right');
+    expect(panel.classList).not.toContain('land');
+    await fireEvent.pointerEnter(surface().querySelector('.card[data-id="s"]') as HTMLElement);
+    expect(preview().closest('.peek')?.classList).toContain('land');
+  });
+
+  it('names the scenario and its modular sets in the top bar, not the difficulty', async () => {
+    const view = makeView();
+    view.config = {
+      ...view.config,
+      difficulty: 'expert',
+      modulars: ['bomb_scare', 'masters_of_evil'],
+    };
+    const { container } = render(Table, { session: fakeSession(), view });
+
+    await waitFor(() => {
+      expect(container.querySelector('header .crumbs')?.textContent?.trim()).toBe(
+        'Rhino / Bomb Scare / Masters of Evil',
+      );
+    });
+  });
+
+  it('shows no crumb when the pack index cannot be loaded', async () => {
+    vi.mocked(loadIndex).mockRejectedValue(new Error('offline'));
+    const { container } = render(Table, { session: fakeSession(), view: makeView() });
+    await catalogLoaded();
+    expect(container.querySelector('header .crumbs')).toBeNull();
+  });
+
+  it('Ready all readies every card, whoever owns it; spectators have no such button', async () => {
+    const session = fakeSession();
+    const view = makeView();
+    const { unmount } = render(Table, { session, view });
+    // Nothing exhausted: the button is off.
+    const button = screen.getByRole('button', { name: 'Ready all cards' });
+    expect(button.getAttribute('aria-disabled')).toBe('true');
+    unmount();
+
+    // Sam (p1) readies Alex's (p0) card: it does not need to be Sam's.
+    const tired = makeView({
+      cards: [card('a', { code: '01001', owner: 0, x: 360, y: 360, exhausted: true })],
+    });
+    render(Table, { session, view: tired });
+    await fireEvent.click(screen.getByRole('button', { name: 'Ready all cards' }));
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'readyAll' });
+    document.body.replaceChildren();
+
+    render(Table, {
+      session: fakeSession(),
+      view: { ...view, you: { role: 'spectator', name: 'Kim', color: -1, host: false } },
+    });
+    expect(screen.queryByRole('button', { name: 'Ready all cards' })).toBeNull();
+  });
+
+  it('grabs what the viewer can drag, points at the piles that only have a bar', async () => {
+    const { unmount } = render(Table, { session: fakeSession(), view: makeView() });
+    const at = (id: string) => surface().querySelector<HTMLElement>(`.card[data-id="${id}"]`)!;
+    // Sam (p1): every table card, their own deck and the encounter deck.
+    for (const id of ['a', 'b', 'v', 'd1', 'enc']) {
+      expect(at(id).classList, id).toContain('grab');
+    }
+    // Alex's deck is private: it has a bar, nothing to drag.
+    expect(at('d0').classList).not.toContain('grab');
+    expect(at('d0').classList).not.toContain('inert');
+    // An empty discard pile without a bar is not even pointed at.
+    expect(at('x1').classList).toContain('inert');
+    unmount();
+
+    render(Table, {
+      session: fakeSession(),
+      view: { ...makeView(), you: { role: 'spectator', name: 'Kim', color: -1, host: false } },
+    });
+    expect(surface().querySelectorAll('.card.grab')).toHaveLength(0);
   });
 
   it('end game asks for confirmation (host only)', async () => {
@@ -641,96 +822,30 @@ describe('Table', () => {
     expect(session.lobby).toHaveBeenCalledExactlyOnceWith('end');
     expect(screen.queryByRole('alertdialog')).toBeNull();
   });
-
-  it('the villain and own zones only grow on their own; other zones fit both ways', async () => {
-    const low = (id: string, area: Area) => card(id, { code: '01001', area, x: 200, y: 300 });
-    const high = (id: string, area: Area) => card(id, { code: '01001', area, x: 200, y: 0 });
-    const viewWith = (cards: TableCard[]) => makeView({ cards, piles: [] });
-
-    const { rerender } = render(Table, {
-      session: fakeSession(),
-      view: viewWith([low('v', 'villain'), low('b', 'p1'), low('a', 'p0')]),
-    });
-    // 300 + 140 + 20 in every zone.
-    await waitFor(() => {
-      expect(surfaceOf(/^Villain/).style.height).toBe('460px');
-    });
-    expect(surfaceOf(/^Sam/).style.height).toBe('460px');
-    expect(surfaceOf(/^Alex/).style.height).toBe('460px');
-
-    await rerender({
-      session: fakeSession(),
-      view: viewWith([high('v', 'villain'), high('b', 'p1'), high('a', 'p0')]),
-    });
-    expect(surfaceOf(/^Villain/).style.height).toBe('460px');
-    expect(surfaceOf(/^Sam/).style.height).toBe('460px');
-    expect(surfaceOf(/^Alex/).style.height).toBe('200px');
-
-    // A grown zone can still be shrunk by hand, down to its cards.
-    const handle = screen.getByTitle("Drag to resize the villain's zone");
-    await fireEvent.pointerDown(handle, { clientY: 400 });
-    await fireEvent.pointerMove(window, { clientY: 0 });
-    await fireEvent.pointerUp(window);
-    expect(surfaceOf(/^Villain/).style.height).toBe('200px');
-  });
-
-  it('does not keep the heights measured before the catalog is loaded', async () => {
-    let loaded = () => {};
-    vi.mocked(loadGameCards).mockReturnValue(new Promise<void>((resolve) => (loaded = resolve)));
-    // The main scheme is landscape (100 high), but counts as std (140) until its size is known.
-    const view = makeView({
-      cards: [card('s', { code: '01097', area: 'villain', x: 0, y: 300 })],
-      piles: [],
-    });
-    render(Table, { session: fakeSession(), view });
-    expect(surfaceOf(/^Villain/).style.height).toBe('460px');
-
-    loaded();
-    // 300 + 100 + 20.
-    await waitFor(() => {
-      expect(surfaceOf(/^Villain/).style.height).toBe('420px');
-    });
-  });
-
-  it('a separator drag captures the pointer, keeping the resize cursor', async () => {
-    render(Table, { session: fakeSession(), view: makeView() });
-    const handle = await screen.findByTitle("Drag to resize the villain's zone");
-    const capture = vi.fn();
-    handle.setPointerCapture = capture;
-
-    await fireEvent.pointerDown(handle, { clientY: 100, pointerId: 7 });
-    expect(capture).toHaveBeenCalledWith(7);
-  });
 });
 
-describe('Table zone heights', () => {
-  // The table shows 1590 px (until a test resizes it), and the zone headers and separators take
-  // 90 of them.
-  const VISIBLE = 1590;
-  const CHROME = 90;
+describe('Table surface size', () => {
+  // The table shows 1248 by 948 px, 1200 by 900 past the scroller's 24 px padding.
+  let visible = { w: 1248, h: 948 };
 
-  let visible = VISIBLE;
-
-  /** Lays the table out as a browser would, as far as the zone heights go. */
-  function stubLayout(): void {
-    visible = VISIBLE;
+  beforeEach(() => {
+    visible = { w: 1248, h: 948 };
+    localStorage.setItem('itf-zoom', '1');
+    vi.spyOn(Element.prototype, 'clientWidth', 'get').mockImplementation(function (this: Element) {
+      return this.classList.contains('tablewrap') ? visible.w : 0;
+    });
     vi.spyOn(Element.prototype, 'clientHeight', 'get').mockImplementation(function (this: Element) {
-      return this.classList.contains('tablewrap') ? visible : 0;
+      return this.classList.contains('tablewrap') ? visible.h : 0;
     });
-    // From the top of the first zone to the bottom of the last; the surfaces count for nothing.
-    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
-      this: Element,
-    ) {
-      const height = this.classList.contains('zsec') ? CHROME : 0;
-      return { x: 0, y: 0, top: 0, left: 0, right: 0, bottom: height, width: 0, height } as DOMRect;
-    });
-  }
+  });
 
-  const heights = () => [/^Villain/, /^Sam/, /^Alex/].map((name) => surfaceOf(name).style.height);
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
 
-  /** Resizes the window: the table shows `height` px. */
-  function resizeTable(container: HTMLElement, height: number): Promise<void> {
-    visible = height;
+  /** Resizes the window: the table shows `w` by `h` px. */
+  function resizeTable(container: HTMLElement, w: number, h: number): Promise<void> {
+    visible = { w, h };
     const wrap = container.querySelector('.tablewrap');
     if (!wrap) {
       throw new Error('no table');
@@ -739,99 +854,230 @@ describe('Table zone heights', () => {
     return tick();
   }
 
-  beforeEach(stubLayout);
+  it('fills what shows of the table, in table units at the zoom', async () => {
+    // One card, from 800 to 940: the surface needs 1140 units of width.
+    const view = makeView({ cards: [card('v', { code: '01094', x: 800, y: 0 })], piles: [] });
+    const { container } = render(Table, { session: fakeSession(), view });
+    await waitFor(() => {
+      expect([surface().style.width, surface().style.height]).toEqual(['1200px', '900px']);
+    });
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Zoom out' }));
+    // 1200 by 900 px at 90 % are 1333.3 by 1000 units, rounded down.
+    expect([surface().style.width, surface().style.height]).toEqual(['1333px', '1000px']);
+
+    await resizeTable(container, 648, 1848);
+    // 600 by 1800 px at 90 % are 666.7 by 2000 units: the card needs more width.
+    expect([surface().style.width, surface().style.height]).toEqual(['1140px', '2000px']);
+  });
+
+  it('zooms around the pointer, keeping the table spot under it in place', async () => {
+    const { container } = render(Table, { session: fakeSession(), view: makeView() });
+    const wrap = container.querySelector<HTMLElement>('.tablewrap')!;
+    vi.spyOn(wrap, 'getBoundingClientRect').mockReturnValue({
+      left: 0,
+      top: 0,
+      right: 1000,
+      bottom: 800,
+      width: 1000,
+      height: 800,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    });
+    Object.defineProperty(wrap, 'scrollLeft', { value: 100, writable: true });
+    Object.defineProperty(wrap, 'scrollTop', { value: 50, writable: true });
+
+    // The pointer at 524, 424: 600, 450 px into the surface, past the scroller's padding.
+    await fireEvent.wheel(wrap, { deltaY: -20, ctrlKey: true, clientX: 524, clientY: 424 });
+    expect(zoomLabel().textContent).toBe('120%');
+    // At 120 %, that spot is 720, 540 px into the surface: still under the pointer.
+    await waitFor(() => {
+      expect([wrap.scrollLeft, wrap.scrollTop]).toEqual([220, 140]);
+    });
+  });
+});
+
+describe('Table view modes', () => {
+  beforeEach(() => {
+    localStorage.setItem('itf-zoom', '1');
+  });
 
   afterEach(() => {
     vi.restoreAllMocks();
+    clearPrefMemory();
   });
 
-  it('splits the visible height in thirds for two players', async () => {
+  function viewButton(name: string): HTMLElement {
+    return within(screen.getByRole('group', { name: 'Table view' })).getByRole('button', { name });
+  }
+
+  function shownIds(): string[] {
+    return [...surface().querySelectorAll<HTMLElement>(':scope > [data-id]')].map(
+      (element) => element.dataset.id ?? '',
+    );
+  }
+
+  it('switches between all the rows and the villain with one player, remembered', async () => {
     render(Table, { session: fakeSession(), view: makeView() });
+    await catalogLoaded();
+    expect(viewButton('All').getAttribute('aria-pressed')).toBe('true');
+    expect(shownIds()).toEqual(['enc', 'd0', 'd1', 'x1', 'v', 's', 'a', 'b']);
+    expect(screen.queryByRole('radiogroup', { name: 'Player shown' })).toBeNull();
 
-    await waitFor(() => {
-      expect(heights()).toEqual(['500px', '500px', '500px']);
-    });
+    await fireEvent.click(viewButton('Villain + player'));
+    expect(viewButton('Villain + player').getAttribute('aria-pressed')).toBe('true');
+    expect(localStorage.getItem('itf-view')).toBe('focus');
+    // Sam, the viewer, by default: Alex's row is hidden, Sam's drawn right under the villain's.
+    expect(shownIds()).toEqual(['enc', 'd1', 'x1', 'v', 's', 'b']);
+    const sam = surface().querySelector<HTMLElement>('[data-id="b"]')!;
+    expect(sam.style.top).toBe('360px');
+    expect(ownerBoxes().map((box) => box.querySelector('.owner')?.textContent)).toEqual([
+      'Villain',
+      'Sam',
+    ]);
   });
 
-  it('follows the zoom, the last zone taking the rounding', async () => {
+  it("picks the player whose row shows, at the bottom left, the viewer's own first", async () => {
+    localStorage.setItem('itf-view', 'focus');
     render(Table, { session: fakeSession(), view: makeView() });
-    await waitFor(() => {
-      expect(heights()).toEqual(['500px', '500px', '500px']);
-    });
+    await catalogLoaded();
 
-    await fireEvent.click(screen.getByRole('button', { name: 'Zoom in' }));
-    // 1500 px at 110 % are 1363.6 units: 454 each, and the last one gets the rest, rounded up.
-    expect(heights()).toEqual(['454px', '454px', '456px']);
+    const picker = screen.getByRole('radiogroup', { name: 'Player shown' });
+    const swatches = within(picker).getAllByRole('radio');
+    // Swatches without a visible name: it is their label and tooltip. Only the chosen one is tabbed to.
+    expect(
+      swatches.map((swatch) => [
+        swatch.getAttribute('aria-label'),
+        swatch.dataset.tip,
+        swatch.textContent,
+        swatch.getAttribute('aria-checked'),
+        swatch.tabIndex,
+      ]),
+    ).toEqual([
+      ['Alex', 'Alex', '', 'false', -1],
+      ['Sam', 'Sam', '', 'true', 0],
+    ]);
+    // Two players: no previous and next buttons.
+    expect(screen.queryByRole('button', { name: 'Next player' })).toBeNull();
+
+    await fireEvent.click(within(picker).getByRole('radio', { name: 'Alex' }));
+    expect(shownIds()).toEqual(['enc', 'd0', 'v', 's', 'a']);
+    expect(surface().querySelector<HTMLElement>('[data-id="a"]')?.style.top).toBe('360px');
   });
 
-  it('gives a zone taller than its share what it needs, from the last one', async () => {
-    const view = makeView({
-      cards: [card('g', { code: '01010', area: 'villain', x: 200, y: 400 })],
-      piles: [],
+  it('steps round the table with three players or more', async () => {
+    localStorage.setItem('itf-view', 'focus');
+    const view = makeView();
+    view.players.push({
+      name: 'Kim',
+      color: 2,
+      host: false,
+      area: 'p2',
+      ready: true,
+      handCount: 0,
     });
+    view.table!.piles.push(pile('d2', { owner: 2, x: 0, y: 1020 }));
     render(Table, { session: fakeSession(), view });
+    await catalogLoaded();
 
-    // 400 + 200 + 20 for the villain's zone.
-    await waitFor(() => {
-      expect(heights()).toEqual(['620px', '500px', '380px']);
-    });
+    const picker = screen.getByRole('radiogroup', { name: 'Player shown' });
+    const checked = () =>
+      within(picker)
+        .getAllByRole('radio', { checked: true })
+        .map((swatch) => swatch.getAttribute('aria-label'));
+    expect(checked()).toEqual(['Sam']);
+    await fireEvent.click(screen.getByRole('button', { name: 'Next player' }));
+    expect(checked()).toEqual(['Kim']);
+    await fireEvent.click(screen.getByRole('button', { name: 'Next player' }));
+    expect(checked()).toEqual(['Alex']);
+    await fireEvent.click(screen.getByRole('button', { name: 'Previous player' }));
+    expect(checked()).toEqual(['Kim']);
   });
 
-  it('a resized zone only changes the last one', async () => {
-    render(Table, { session: fakeSession(), view: makeView() });
-    const handle = await screen.findByTitle("Drag to resize the villain's zone");
-    await waitFor(() => {
-      expect(heights()).toEqual(['500px', '500px', '500px']);
+  it('moves the shown player and the focus with the arrow keys', async () => {
+    localStorage.setItem('itf-view', 'focus');
+    const view = makeView();
+    view.players.push({
+      name: 'Kim',
+      color: 2,
+      host: false,
+      area: 'p2',
+      ready: true,
+      handCount: 0,
     });
+    view.table!.piles.push(pile('d2', { owner: 2, x: 0, y: 1020 }));
+    render(Table, { session: fakeSession(), view });
+    await catalogLoaded();
 
-    await fireEvent.pointerDown(handle, { clientY: 100 });
-    await fireEvent.pointerMove(window, { clientY: 200 });
-    await fireEvent.pointerUp(window);
-    expect(heights()).toEqual(['600px', '500px', '400px']);
+    const picker = screen.getByRole('radiogroup', { name: 'Player shown' });
+    const sam = within(picker).getByRole('radio', { name: 'Sam' });
+    sam.focus();
+    await fireEvent.keyDown(sam, { key: 'ArrowRight' });
+    const kim = within(picker).getByRole('radio', { name: 'Kim' });
+    await waitFor(() => expect(document.activeElement).toBe(kim));
+    expect(kim.getAttribute('aria-checked')).toBe('true');
+    // Round the table, both ways.
+    await fireEvent.keyDown(kim, { key: 'ArrowDown' });
+    await waitFor(() => expect(document.activeElement?.getAttribute('aria-label')).toBe('Alex'));
+    await fireEvent.keyDown(document.activeElement!, { key: 'ArrowLeft' });
+    await waitFor(() => expect(document.activeElement).toBe(kim));
+    await fireEvent.keyDown(kim, { key: 'ArrowUp' });
+    await waitFor(() => expect(document.activeElement).toBe(sam));
   });
 
-  it('follows the visible height when the window is resized', async () => {
-    const { container } = render(Table, { session: fakeSession(), view: makeView() });
-    await waitFor(() => {
-      expect(heights()).toEqual(['500px', '500px', '500px']);
-    });
+  it('offers no choice with one player: the table shows everything', async () => {
+    localStorage.setItem('itf-view', 'focus');
+    const view = makeView();
+    view.players = [view.players[1]!];
+    render(Table, { session: fakeSession(), view });
+    await catalogLoaded();
 
-    await resizeTable(container, 1290);
-    expect(heights()).toEqual(['400px', '400px', '400px']);
+    expect(screen.queryByRole('group', { name: 'Table view' })).toBeNull();
+    expect(screen.queryByRole('radiogroup', { name: 'Player shown' })).toBeNull();
+    expect(shownIds()).toContain('a');
   });
 
-  it('a zone its cards kept under its share follows the share once they move up', async () => {
-    // 300 + 140 + 20: under the 500 share.
-    const low = card('v', { code: '01001', area: 'villain', x: 200, y: 300 });
-    const high = card('v', { code: '01001', area: 'villain', x: 200, y: 0 });
-    const { container, rerender } = render(Table, {
-      session: fakeSession(),
-      view: makeView({ cards: [low], piles: [] }),
+  it('sends where a card is dropped on the table, not where it is drawn', async () => {
+    localStorage.setItem('itf-view', 'focus');
+    // The surface at the top left of the screen: elements show where their styles put them.
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: Element,
+    ) {
+      const style = (this as HTMLElement).style;
+      const inSurface = this.closest('.surface') !== null && !this.classList.contains('surface');
+      const left = inSurface ? Number.parseFloat(style.left) || 0 : 0;
+      const top = inSurface ? Number.parseFloat(style.top) || 0 : 0;
+      const width = inSurface ? Number.parseFloat(style.width) || 0 : 1000;
+      const height = inSurface ? Number.parseFloat(style.height) || 0 : 900;
+      return {
+        left,
+        top,
+        width,
+        height,
+        right: left + width,
+        bottom: top + height,
+        x: left,
+        y: top,
+        toJSON: () => ({}),
+      } as DOMRect;
     });
-    await waitFor(() => {
-      expect(heights()).toEqual(['500px', '500px', '500px']);
-    });
+    const session = fakeSession();
+    render(Table, { session, view: makeView() });
+    await catalogLoaded();
 
-    await rerender({ session: fakeSession(), view: makeView({ cards: [high], piles: [] }) });
-    await resizeTable(container, 990);
-    expect(heights()).toEqual(['300px', '300px', '300px']);
-  });
+    // Sam's identity lies at 360, 690 on the table, drawn at 360, 360.
+    const sam = surface().querySelector<HTMLElement>('[data-id="b"]')!;
+    await fireEvent.pointerDown(sam, { clientX: 400, clientY: 400, pointerType: 'mouse' });
+    await fireEvent.pointerMove(window, { clientX: 500, clientY: 450, buttons: 1 });
+    await fireEvent.pointerUp(window, { clientX: 500, clientY: 450 });
 
-  it('a zone its cards took past its share stays that tall once they move up', async () => {
-    // 500 + 140 + 20: past the 500 share.
-    const low = card('v', { code: '01001', area: 'villain', x: 200, y: 500 });
-    const high = card('v', { code: '01001', area: 'villain', x: 200, y: 0 });
-    const { container, rerender } = render(Table, {
-      session: fakeSession(),
-      view: makeView({ cards: [low], piles: [] }),
+    // Its corner drawn at 460, 410: 460, 740 on the table.
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({
+      kind: 'move',
+      card: 'b',
+      x: 460,
+      y: 740,
     });
-    await waitFor(() => {
-      expect(heights()).toEqual(['660px', '500px', '340px']);
-    });
-
-    await rerender({ session: fakeSession(), view: makeView({ cards: [high], piles: [] }) });
-    expect(heights()).toEqual(['660px', '500px', '340px']);
-    await resizeTable(container, 990);
-    expect(heights()).toEqual(['660px', '300px', '200px']);
   });
 });

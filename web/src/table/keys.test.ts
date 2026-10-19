@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/svelte';
+import { fireEvent, render, screen } from '@testing-library/svelte';
 import Table from './Table.svelte';
 import { interaction } from './interaction.svelte';
 import { freeSlot } from './keys';
@@ -49,7 +49,6 @@ function card(id: string, extra: Partial<TableCard> = {}): TableCard {
     back: 'player',
     owner: 0,
     zone: 'table',
-    area: 'p0',
     x: 0,
     y: 0,
     z: 1,
@@ -58,7 +57,7 @@ function card(id: string, extra: Partial<TableCard> = {}): TableCard {
 }
 
 function pile(id: string, extra: Partial<PileView>): PileView {
-  return { id, kind: 'deck', owner: -1, area: 'villain', x: 0, y: 0, count: 30, ...extra };
+  return { id, kind: 'deck', owner: -1, x: 0, y: 0, count: 30, ...extra };
 }
 
 /** Rhino with Alex (p0, the viewer) alone. */
@@ -66,8 +65,8 @@ function makeView(extra: Partial<View> & { cards?: TableCard[] } = {}): View {
   const { cards: extraCards, ...rest } = extra;
   const cards = extraCards ?? [
     card('mine', { x: 280, tokens: { dmg: 2 } }),
-    card('v', { code: '01094', owner: -1, back: 'villain', area: 'villain' }),
-    card('h', { zone: 'hand', area: undefined }),
+    card('v', { code: '01094', owner: -1, back: 'villain' }),
+    card('h', { zone: 'hand' }),
   ];
   return {
     id: 'g1',
@@ -89,12 +88,12 @@ function makeView(extra: Partial<View> & { cards?: TableCard[] } = {}): View {
     table: {
       cards,
       piles: [
-        pile('deck:p0', { owner: 0, area: 'p0', x: 0 }),
+        pile('deck:p0', { owner: 0, x: 0 }),
         pile('enc', { kind: 'encounter', x: 500, count: 20 }),
       ],
       hand: ['h'],
       stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
-      firstPlayer: { area: 'p0', x: 860, y: 40 },
+      firstPlayer: { x: 860, y: 40 },
     },
     log: [],
     ...rest,
@@ -132,9 +131,7 @@ async function renderTable(view = makeView()) {
   const session = fakeSession();
   const result = render(Table, { session, view });
   // The catalog loads asynchronously: wait for the faces to show.
-  await within(screen.getByRole('region', { name: /^Villain/ })).findByRole('img', {
-    name: 'Rhino',
-  });
+  await screen.findByRole('img', { name: 'Rhino' });
   return { session, ...result };
 }
 
@@ -167,6 +164,38 @@ describe('keys on the table', () => {
 
     await press('e');
     expect(session.act).toHaveBeenCalledWith({ kind: 'exhaust', card: 'mine' });
+  });
+
+  it('Shift + Space readies all cards, wherever the pointer is', async () => {
+    // Only the villain is exhausted: Ready all readies it too.
+    const exhausted = [card('v', { code: '01094', owner: -1, back: 'villain', exhausted: true })];
+    const { session } = await renderTable(makeView({ cards: exhausted }));
+
+    // Held down, it readies once; it never scrolls the page.
+    expect(await press(' ', { shiftKey: true, repeat: true })).toBe(false);
+    expect(session.act).not.toHaveBeenCalled();
+    expect(await press(' ', { shiftKey: true })).toBe(false);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'readyAll' });
+    // Shift + E is not it.
+    await press('E', { shiftKey: true });
+    expect(session.act).toHaveBeenCalledOnce();
+  });
+
+  it('Shift + Space does nothing without a card to ready, nor in a field', async () => {
+    // Alex's card is exhausted, but locked: it does not ready; the villain is ready.
+    const lockedOnly = [
+      card('mine', { x: 280, exhausted: true, status: { locked: 1 } }),
+      card('v', { code: '01094', owner: -1, back: 'villain' }),
+    ];
+    const { session } = await renderTable(makeView({ cards: lockedOnly }));
+
+    await press(' ', { shiftKey: true });
+    expect(session.act).not.toHaveBeenCalled();
+
+    // In a field, a space is typed as ever.
+    const field = document.body.appendChild(document.createElement('input'));
+    expect(await fireEvent.keyDown(field, { key: ' ', shiftKey: true })).toBe(true);
+    field.remove();
   });
 
   it('keys act on the hovered element only, whatever their case', async () => {
@@ -209,8 +238,26 @@ describe('keys on the table', () => {
     await press('S', { shiftKey: true });
     await press('T', { shiftKey: true });
     // Shift with a key that is not a token or a status does nothing.
-    await press('E', { shiftKey: true });
+    await press(' ', { shiftKey: true });
     expect(session.act).not.toHaveBeenCalled();
+
+    // In a field, a space is typed as ever.
+    const field = document.body.appendChild(document.createElement('input'));
+    expect(await fireEvent.keyDown(field, { key: ' ', shiftKey: true })).toBe(true);
+    field.remove();
+  });
+
+  it('the status keys reach the second section of the counter menu', async () => {
+    const { session } = await renderTable();
+    await fireEvent.pointerEnter(placed('mine'));
+
+    await press('g');
+    expect(session.act).toHaveBeenCalledWith({
+      kind: 'status',
+      card: 'mine',
+      name: 'tough',
+      delta: 1,
+    });
   });
 
   it('menu items answer to their keys', async () => {
@@ -249,18 +296,18 @@ describe('keys on the table', () => {
 
   it('disabled items do nothing, nor do the items of a disabled dropdown', async () => {
     const cards = [
-      // The villain card is tucked under 'host': Discard and Move to ▾ (and its Hand) are disabled.
-      card('v', { code: '01094', owner: -1, back: 'villain', area: 'villain', parent: 'host' }),
-      card('host', { area: 'villain', x: 200 }),
+      // The villain card is tucked under 'host': Discard and Move to (and its Hand) are disabled.
+      card('v', { code: '01094', owner: -1, back: 'villain', parent: 'host' }),
+      card('host', { x: 200 }),
       // Reveal is disabled while a card is revealed on the encounter deck.
-      card('shown', { owner: -1, area: 'villain', x: 500, onPile: 'enc' }),
+      card('shown', { owner: -1, x: 500, onPile: 'enc' }),
     ];
     const { session } = await renderTable(makeView({ cards }));
 
     await fireEvent.pointerEnter(placed('enc'));
     await press('r');
     await fireEvent.pointerEnter(placed('host'));
-    await press('x');
+    await press('Backspace');
     await press('h');
     expect(session.act).not.toHaveBeenCalled();
   });
@@ -305,7 +352,8 @@ describe('keys on the table', () => {
     close();
     expect(session.act).not.toHaveBeenCalled();
     expect(zoomLabel()).toBe('100%');
-    expect(interaction.hovered).toEqual({ kind: 'card', id: 'mine' });
+    // The dialog froze the table: it let go of the hovered card.
+    expect(interaction.hovered).toBeNull();
   });
 
   it('no key acts with ⌘ or Ctrl held: those are browser shortcuts', async () => {
@@ -388,7 +436,7 @@ describe('held keys', () => {
     await fireEvent.pointerEnter(inHand('h'));
 
     await press('p', { repeat: true });
-    await press('x', { repeat: true });
+    await press('Backspace', { repeat: true });
     expect(session.act).not.toHaveBeenCalled();
   });
 });
@@ -402,7 +450,7 @@ describe('keys during a drag', () => {
     await fireEvent.pointerMove(window, { clientX: 340, clientY: 330, buttons: 1 });
     expect(interaction.dragging).not.toBeNull();
 
-    await press('x');
+    await press('Backspace');
     await press('e');
     await press('d');
     await press('a');
@@ -424,7 +472,7 @@ describe('keys during a drag', () => {
     await fireEvent.pointerMove(window, { clientX: 340, clientY: 500, buttons: 1 });
     expect(interaction.dragging).not.toBeNull();
 
-    await press('x');
+    await press('Backspace');
     await press('p');
     expect(session.act).not.toHaveBeenCalled();
   });
@@ -449,34 +497,51 @@ describe('Escape', () => {
 describe('keys on a hand card', () => {
   it('P plays to a free slot', async () => {
     const cards = [
-      card('v', { code: '01094', owner: -1, back: 'villain', area: 'villain' }),
-      // 280–380 takes the slot at 280; a double-size card at 390–530 the one at 420.
-      card('a', { x: 280 }),
-      card('b', { code: '01010', x: 390 }),
-      // Below the top row, or in another area: not in the way.
-      card('low', { x: 560, y: 140 }),
-      card('there', { area: 'villain', x: 560 }),
-      card('h', { zone: 'hand', area: undefined }),
+      card('v', { code: '01094', owner: -1, back: 'villain' }),
+      // 760–900 takes the slot at 760; a double-size card at 960–1156 the one at 980.
+      card('a', { x: 760 }),
+      card('b', { code: '01010', x: 960 }),
+      // Below the viewer's row, or in another row: not in the way.
+      card('low', { x: 1200, y: 200 }),
+      card('there', { x: 1200, y: 330 }),
+      card('h', { zone: 'hand' }),
     ];
     const { session } = await renderTable(makeView({ cards }));
     await fireEvent.pointerEnter(inHand('h'));
 
     await press('p');
-    expect(session.act).toHaveBeenCalledWith({
-      kind: 'play',
-      card: 'h',
-      area: 'p0',
-      x: 560,
-      y: 0,
-    });
+    expect(session.act).toHaveBeenCalledWith({ kind: 'play', card: 'h', x: 1200, y: 0 });
   });
 
-  it('X discards a hand card', async () => {
+  it('Backspace discards a hand card', async () => {
     const { session } = await renderTable();
     await fireEvent.pointerEnter(inHand('h'));
 
-    await press('x');
+    await press('Backspace');
     expect(session.act).toHaveBeenCalledWith({ kind: 'discard', card: 'h' });
+  });
+
+  it('Backspace discards a table card; X does nothing any more', async () => {
+    const { session } = await renderTable();
+    await fireEvent.pointerEnter(placed('mine'));
+
+    await press('x');
+    expect(session.act).not.toHaveBeenCalled();
+    await press('Backspace');
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'discard', card: 'mine' });
+  });
+
+  it('Backspace never goes back in history, and is left to the fields', async () => {
+    const { session } = await renderTable();
+    // Over nothing: no discard, and still no navigation.
+    expect(await press('Backspace')).toBe(false);
+
+    const field = document.body.appendChild(document.createElement('input'));
+    await fireEvent.pointerEnter(placed('mine'));
+    // In a field, it deletes a character as ever.
+    expect(await fireEvent.keyDown(field, { key: 'Backspace' })).toBe(true);
+    expect(session.act).not.toHaveBeenCalled();
+    field.remove();
   });
 
   it('other keys do nothing on a hand card', async () => {
@@ -491,47 +556,59 @@ describe('keys on a hand card', () => {
 
 describe('freeSlot', () => {
   const sizeOf = (c: TableCard): Size => (c.code === '01010' ? 'dstd' : 'std');
-  const deck = pile('deck:p0', { owner: 0, area: 'p0', x: 0 });
-  const discard = pile('disc:p0', { kind: 'discard', owner: 0, area: 'p0', x: 120 });
+  // Alex's row, as the setup lays it out: deck, discard, identity at 360.
+  const row = [
+    pile('deck:p0', { owner: 0, x: 0, y: 360 }),
+    pile('disc:p0', { kind: 'discard', owner: 0, x: 160, y: 360 }),
+  ];
+  const identity = card('id', { x: 360, y: 360 });
 
-  it('starts at 280, past the deck and the discard pile', () => {
-    expect(freeSlot([], [deck, discard], 'p0', sizeOf)).toEqual({ x: 280, y: 0 });
+  it("starts at 760 on the viewer's row, the height of their deck", () => {
+    expect(freeSlot([identity], row, 0, sizeOf)).toEqual({ x: 760, y: 360 });
   });
 
-  it('steps by 140, keeping 20 free on each side of a 100-wide card', () => {
-    // 280 needs 260–400 free: a card from 390 is in the way, and its right edge (490) blocks 420.
-    expect(freeSlot([card('a', { x: 390 })], [], 'p0', sizeOf)).toEqual({ x: 560, y: 0 });
-    // A card from 400 leaves 280 free; one ending at 400 leaves 420 free.
-    expect(freeSlot([card('a', { x: 400 })], [], 'p0', sizeOf)).toEqual({ x: 280, y: 0 });
-    expect(freeSlot([card('a', { x: 300 })], [], 'p0', sizeOf)).toEqual({ x: 420, y: 0 });
+  it('starts at the top of the table without a deck', () => {
+    expect(freeSlot([], [], 0, sizeOf)).toEqual({ x: 760, y: 0 });
+  });
+
+  it('steps by 220, keeping 40 free on each side of a 140-wide card', () => {
+    // 760 needs 720–940 free: a card from 930 is in the way, and its right edge (1070) blocks 980.
+    expect(freeSlot([card('a', { x: 930, y: 360 })], row, 0, sizeOf)).toEqual({ x: 1200, y: 360 });
+    // A card from 940 leaves 760 free; one ending at 940 leaves 980 free.
+    expect(freeSlot([card('a', { x: 940, y: 360 })], row, 0, sizeOf)).toEqual({ x: 760, y: 360 });
+    expect(freeSlot([card('a', { x: 800, y: 360 })], row, 0, sizeOf)).toEqual({ x: 980, y: 360 });
   });
 
   it('counts the visible width of a card: double size, face down, tilted when exhausted', () => {
-    // Double size, 140 wide: 300–440 blocks 420.
-    expect(freeSlot([card('a', { code: '01010', x: 300 })], [], 'p0', sizeOf)).toEqual({
-      x: 560,
-      y: 0,
+    // Double size, 196 wide: 760–956 blocks 980.
+    const double = card('a', { code: '01010', x: 760, y: 360 });
+    expect(freeSlot([double], row, 0, sizeOf)).toEqual({ x: 1200, y: 360 });
+    // Face down, it is 140 wide again.
+    const faceDown = card('a', { code: '01010', faceDown: true, x: 760, y: 360 });
+    expect(freeSlot([faceDown], row, 0, sizeOf)).toEqual({ x: 980, y: 360 });
+    // Exhausted, it turns 15°: its bounding box reaches past 940.
+    const exhausted = card('a', { x: 800, y: 360, exhausted: true });
+    expect(freeSlot([exhausted], row, 0, sizeOf)).toEqual({ x: 1200, y: 360 });
+  });
+
+  it('a pile is in the way, but not an out-of-play pile, which is not drawn', () => {
+    const inPlay = pile('deck:p1', { owner: 1, x: 780, y: 360 });
+    expect(freeSlot([], [...row, inPlay], 0, sizeOf)).toEqual({ x: 980, y: 360 });
+    const aside = pile('aside:p0', { kind: 'aside', owner: 0, x: 780, y: 360 });
+    expect(freeSlot([], [...row, aside], 0, sizeOf)).toEqual({ x: 760, y: 360 });
+  });
+
+  it("only what reaches into the viewer's row counts", () => {
+    const cards = [
+      card('above', { x: 760, y: 160 }),
+      card('reaching', { x: 980, y: 170 }),
+      card('below', { x: 1200, y: 560 }),
+    ];
+    // "above" ends at 356, "reaching" at 366: only the second one is in the way.
+    expect(freeSlot(cards, row, 0, sizeOf)).toEqual({ x: 760, y: 360 });
+    expect(freeSlot([...cards, card('a', { x: 760, y: 400 })], row, 0, sizeOf)).toEqual({
+      x: 1200,
+      y: 360,
     });
-    // Face down, it is 100 wide again.
-    const faceDown = card('a', { code: '01010', faceDown: true, x: 300 });
-    expect(freeSlot([faceDown], [], 'p0', sizeOf)).toEqual({ x: 420, y: 0 });
-    // Exhausted, it turns 15°: its bounding box reaches past 400.
-    const exhausted = card('a', { x: 300, exhausted: true });
-    expect(freeSlot([exhausted], [], 'p0', sizeOf)).toEqual({ x: 560, y: 0 });
-  });
-
-  it('a pile in play is in the way; a victory or set-aside pile is not', () => {
-    const inPlay = pile('deck:p0', { owner: 0, area: 'p0', x: 300 });
-    expect(freeSlot([], [inPlay], 'p0', sizeOf)).toEqual({ x: 420, y: 0 });
-    // Out-of-play piles are drawn at the right end of the zone, wherever the server put them.
-    const aside = pile('aside:p0', { kind: 'aside', owner: 0, area: 'p0', x: 280 });
-    const victory = pile('vic', { kind: 'victory', area: 'p0', x: 280 });
-    expect(freeSlot([], [aside, victory], 'p0', sizeOf)).toEqual({ x: 280, y: 0 });
-  });
-
-  it('only the top row of the area counts', () => {
-    const cards = [card('low', { x: 280, y: 140 }), card('there', { area: 'p1', x: 280 })];
-    const piles = [pile('deck:p1', { owner: 1, area: 'p1', x: 280 })];
-    expect(freeSlot(cards, piles, 'p0', sizeOf)).toEqual({ x: 280, y: 0 });
   });
 });

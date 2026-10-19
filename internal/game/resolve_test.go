@@ -65,18 +65,22 @@ func TestPermissions(t *testing.T) {
 		a    Action
 		want error // nil = allowed
 	}{
-		{"owner plays own hand card", 0, Action{Kind: ActPlay, Card: f.hand, Area: "p0"}, nil},
-		{"other plays hand card", 1, Action{Kind: ActPlay, Card: f.hand, Area: "p1"}, ErrForbidden},
+		{"owner plays own hand card", 0, Action{Kind: ActPlay, Card: f.hand}, nil},
+		{"other plays hand card", 1, Action{Kind: ActPlay, Card: f.hand}, ErrForbidden},
+		{"owner plays own deck top", 0, Action{Kind: ActPlay, Pile: "deck:p0", X: 400, Y: 200}, nil},
+		{"other plays deck top", 1, Action{Kind: ActPlay, Pile: "deck:p0", X: 400, Y: 200}, ErrForbidden},
+		{"plays discard top by its pile", 0, Action{Kind: ActPlay, Pile: "disc:p0"}, ErrInvalid},
+		{"plays encounter deck top", 0, Action{Kind: ActPlay, Pile: PileEncounter}, ErrInvalid},
 		{"other discards hand card", 1, Action{Kind: ActDiscard, Card: f.hand}, ErrForbidden},
 		{"other sends hand card to deck", 1, Action{Kind: ActToDeck, Card: f.hand, Where: "top"}, ErrForbidden},
 		{"other sends hand card to pile", 1, Action{Kind: ActToPile, Card: f.hand, Target: PileVictory}, ErrForbidden},
 		{"other takes hand card", 1, Action{Kind: ActToHand, Card: f.hand}, ErrForbidden},
 		{"other orders hand", 1, Action{Kind: ActHandOrder, Area: "p0"}, ErrForbidden},
 		{"owner orders hand", 0, Action{Kind: ActHandOrder, Area: "p0"}, nil},
-		{"hand order of villain", 0, Action{Kind: ActHandOrder, Area: AreaVillain}, ErrInvalid},
+		{"hand order of villain", 0, Action{Kind: ActHandOrder, Area: "villain"}, ErrInvalid},
 
 		{"other exhausts table card", 1, Action{Kind: ActExhaust, Card: f.ownTable}, nil},
-		{"other moves table card", 1, Action{Kind: ActMove, Card: f.ownTable, Area: "p1", X: 10, Y: 10}, nil},
+		{"other moves table card", 1, Action{Kind: ActMove, Card: f.ownTable, X: 10, Y: 10}, nil},
 		{"other takes table card to its hand", 1, Action{Kind: ActToHand, Card: f.ownTable}, ErrForbidden},
 		{"owner takes table card", 0, Action{Kind: ActToHand, Card: f.ownTable}, nil},
 		{"anyone takes encounter card", 0, Action{Kind: ActToHand, Card: f.encTable}, ErrForbidden},
@@ -110,6 +114,7 @@ func TestPermissions(t *testing.T) {
 		{"draw", 1, Action{Kind: ActDraw, N: 1}, nil},
 		{"reveal", 1, Action{Kind: ActReveal}, nil},
 		{"deal", 1, Action{Kind: ActDeal, Area: "p1"}, nil},
+		{"deal to nobody", 1, Action{Kind: ActDeal}, ErrInvalid},
 		{"arrow", 1, Action{Kind: ActArrowAdd, Card: f.ownTable, Target: f.encTable}, nil},
 		{"attach", 1, Action{Kind: ActAttach, Card: f.ownTable, Target: f.encTable}, nil},
 	}
@@ -136,9 +141,9 @@ func TestResolveRejectsInvalidInput(t *testing.T) {
 		{"toPile without card", Action{Kind: ActToPile, Target: PileVictory}},
 		{"toDeck unknown position", Action{Kind: ActToDeck, Card: f.ownTable, Where: "middle"}},
 		{"unknown pile", Action{Kind: ActShuffle, Pile: "nope"}},
-		{"negative x", Action{Kind: ActMove, Card: f.ownTable, Area: "p0", X: -1}},
-		{"x too large", Action{Kind: ActMove, Card: f.ownTable, Area: "p0", X: 20001}},
-		{"y too large", Action{Kind: ActMove, Card: f.ownTable, Area: "p0", Y: 20001}},
+		{"negative x", Action{Kind: ActMove, Card: f.ownTable, X: -1}},
+		{"x too large", Action{Kind: ActMove, Card: f.ownTable, X: 20001}},
+		{"y too large", Action{Kind: ActMove, Card: f.ownTable, Y: 20001}},
 		{"delta too large", Action{Kind: ActToken, Card: f.ownTable, Name: "dmg", Delta: 100}},
 		{"delta too small", Action{Kind: ActStatus, Card: f.ownTable, Name: "tough", Delta: -100}},
 		{"discard zero", Action{Kind: ActDiscardTop, Pile: "deck:p0", N: 0}},
@@ -160,19 +165,16 @@ func TestResolveRejectsInvalidInput(t *testing.T) {
 }
 
 // TestResolveRejectsAreasOfEmptySeats checks that a two-player table only
-// knows the villain area and the areas p0 and p1.
+// knows the areas p0 and p1: the seats of its players.
 func TestResolveRejectsAreasOfEmptySeats(t *testing.T) {
 	f := newResolveFixture(t)
 	actions := map[string]func(area Area) Action{
-		"move":        func(area Area) Action { return Action{Kind: ActMove, Card: f.ownTable, Area: area} },
-		"play":        func(area Area) Action { return Action{Kind: ActPlay, Card: f.hand, Area: area} },
-		"deal":        func(area Area) Action { return Action{Kind: ActDeal, Area: area} },
-		"firstPlayer": func(area Area) Action { return Action{Kind: ActFirstPlayer, Area: area} },
-		"handOrder":   func(area Area) Action { return Action{Kind: ActHandOrder, Area: area} },
+		"deal":      func(area Area) Action { return Action{Kind: ActDeal, Area: area} },
+		"handOrder": func(area Area) Action { return Action{Kind: ActHandOrder, Area: area} },
 	}
 	for name, action := range actions {
 		t.Run(name, func(t *testing.T) {
-			for _, area := range []Area{"p2", "p3", "p4", "nowhere"} {
+			for _, area := range []Area{"p2", "p3", "p4", "villain", "nowhere"} {
 				if _, err := resolve(f.g, 0, action(area), newTestRNG()); !errors.Is(err, ErrInvalid) {
 					t.Errorf("area %s: resolve() error = %v, want ErrInvalid", area, err)
 				}
@@ -180,7 +182,7 @@ func TestResolveRejectsAreasOfEmptySeats(t *testing.T) {
 			if name == "handOrder" {
 				return
 			}
-			for _, area := range []Area{AreaVillain, "p0", "p1"} {
+			for _, area := range []Area{"p0", "p1"} {
 				if _, err := resolve(f.g, 0, action(area), newTestRNG()); err != nil {
 					t.Errorf("area %s: resolve() error = %v, want nil", area, err)
 				}
@@ -230,6 +232,40 @@ func TestResolveDealRecordsTheRevealedCard(t *testing.T) {
 	}
 	if !slices.Equal(got.Cards, revealed) {
 		t.Errorf("Cards = %v, want the revealed card %v", got.Cards, revealed)
+	}
+}
+
+func TestResolvePlayFromDeckTakesItsTopCard(t *testing.T) {
+	f := newResolveFixture(t)
+	top := topCards(f.g.Table.Piles["deck:p0"], 1)[0]
+
+	// The client cannot pick a card of its deck: the top card is played, whatever it names.
+	got, err := resolve(f.g, 0, Action{Kind: ActPlay, Pile: "deck:p0", Card: f.hand, X: 400, Y: 200}, newTestRNG())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.Card != top {
+		t.Fatalf("Card = %q, want the deck's top card %q", got.Card, top)
+	}
+
+	table := f.g.Table.Clone()
+	mustApply(t, table, got)
+	c := table.Cards[top]
+	if c.Zone != ZoneTable || c.FaceDown || c.X != 400 || c.Y != 200 {
+		t.Errorf("played card = %+v, want it face up on the table at 400, 200", c)
+	}
+	if n := len(table.Piles["deck:p0"].Cards); n != f.deckCount-4 {
+		t.Errorf("deck holds %d cards, want %d", n, f.deckCount-4)
+	}
+}
+
+func TestResolvePlayFromAnEmptyDeckFails(t *testing.T) {
+	f := newResolveFixture(t)
+	f.g.Table.Piles["deck:p0"].Cards = nil
+
+	_, err := resolve(f.g, 0, Action{Kind: ActPlay, Pile: "deck:p0", X: 400, Y: 200}, newTestRNG())
+	if !errors.Is(err, ErrInvalid) {
+		t.Errorf("resolve() error = %v, want ErrInvalid", err)
 	}
 }
 

@@ -1,41 +1,56 @@
 <!--
-  The side column: the preview of the hovered card, then the history,
-  newest first, with the Undo button in its header.
+  The side column: the history, newest first, and the Undo button under it.
+  Collapsed, a slim strip holds only the buttons that expand it and undo.
+  The preview of the hovered card floats over the table (Table.svelte).
 -->
-<script lang="ts" module>
-  import type { Back } from '../lib/types';
-
-  /** What the preview frame shows. */
-  export type Preview =
-    | { kind: 'face'; images: string[]; name: string; landscape: boolean }
-    | { kind: 'back'; back: Back };
-</script>
-
 <script lang="ts">
+  import { tick } from 'svelte';
   import type { LogView } from '../lib/types';
   import { mergedLines } from './animate';
-  import CardBack from './CardBack.svelte';
-  import CardFace from './CardFace.svelte';
   import { interaction } from './interaction.svelte';
 
   let {
-    preview,
     log,
     canUndo = false,
-    undoText,
     onundo,
-    onclose,
+    collapsed = false,
+    ontoggle,
+    controls,
   }: {
-    preview: Preview | null;
     /** Oldest first, as the server sends it. */
     log: LogView[];
     canUndo?: boolean;
-    /** The text of the line Undo would take back. */
-    undoText?: string;
     onundo: () => void;
-    /** Closes the panel, when it is a drawer (on a narrow screen). */
-    onclose?: () => void;
+    /** Only a strip shows: the buttons to expand it and to undo. */
+    collapsed?: boolean;
+    /** Collapses or expands the panel; without it, the panel has no such button. */
+    ontoggle?: () => void;
+    /** The id of the element that collapses (aria-controls). */
+    controls?: string;
   } = $props();
+
+  const UNDO_TIP = 'Undo last action';
+  const NOTHING_TO_UNDO = 'Nothing of yours to undo';
+
+  let collapseButton = $state<HTMLButtonElement>();
+  let expandButton = $state<HTMLButtonElement>();
+
+  // The button pressed goes with the side it was on: the focus moves to the one that takes its place.
+  async function toggle(): Promise<void> {
+    if (!ontoggle) {
+      return;
+    }
+    leaveLine();
+    ontoggle();
+    await tick();
+    (collapsed ? expandButton : collapseButton)?.focus();
+  }
+
+  function undo(): void {
+    if (canUndo) {
+      onundo();
+    }
+  }
 
   interface Part {
     text: string;
@@ -137,144 +152,239 @@
       >{:else}{part.text}{/if}{/each}
 {/snippet}
 
-<div class="preview">
-  <div class="frame" class:empty={!preview} aria-label="Card preview" role="figure">
-    {#if !preview}
-      <div class="hint">Hover a card<br />to see it here</div>
-    {:else if preview.kind === 'back'}
-      <div class="art">
-        <CardBack back={preview.back} />
-      </div>
-    {:else}
-      <div class="art" class:land={preview.landscape}>
-        <CardFace images={preview.images} name={preview.name} landscape={preview.landscape} />
-      </div>
+{#snippet undoIcon()}
+  <!-- A hooked arrow going back. -->
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M9 14L4 9l5-5" />
+    <path d="M4 9h11a5 5 0 0 1 0 10h-3" />
+  </svg>
+{/snippet}
+
+{#snippet panelIcon()}
+  <!-- The panel's edge, and a chevron pushing it to the right (drawn flipped to expand). -->
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.8"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <rect x="4" y="4" width="16" height="16" rx="2" />
+    <path d="M15 4v16M8 9l3 3-3 3" />
+  </svg>
+{/snippet}
+
+{#if collapsed}
+  <div class="strip">
+    <button
+      class="btn-ghost toggle expand"
+      aria-label="Expand history"
+      data-tip="Expand history"
+      aria-expanded="false"
+      aria-controls={controls}
+      bind:this={expandButton}
+      onclick={toggle}
+    >
+      {@render panelIcon()}
+    </button>
+    <!-- aria-disabled rather than disabled, so that the tooltip saying why still shows. -->
+    <div class="strip-undo">
+      <button
+        class="btn-ghost"
+        aria-label={UNDO_TIP}
+        data-tip={canUndo ? UNDO_TIP : NOTHING_TO_UNDO}
+        aria-disabled={!canUndo}
+        onclick={undo}
+      >
+        {@render undoIcon()}
+      </button>
+    </div>
+  </div>
+{:else}
+  <div class="loghead">
+    <h2 id="history-title">History</h2>
+    {#if ontoggle}
+      <button
+        class="btn-ghost toggle"
+        aria-label="Collapse history"
+        data-tip="Collapse history"
+        aria-expanded="true"
+        aria-controls={controls}
+        bind:this={collapseButton}
+        onclick={toggle}
+      >
+        {@render panelIcon()}
+      </button>
     {/if}
   </div>
-</div>
 
-<div class="loghead">
-  <b id="history-title">History</b>
-  <button
-    disabled={!canUndo}
-    title={canUndo ? `Undo your last action: ${undoText ?? ''}` : 'Nothing of yours to undo'}
-    onclick={onundo}>Undo</button
-  >
-  {#if onclose}
-    <button aria-label="Close" onclick={onclose}>×</button>
-  {/if}
-</div>
+  <ul class="log" aria-labelledby="history-title" bind:this={list}>
+    {#each lines as { key, entry, parts, time, isNew } (key)}
+      <li
+        class="e"
+        data-line={key}
+        class:undone={entry.undone}
+        class:new={isNew}
+        onpointerenter={(event) => enterLine(event, key, entry.cards)}
+        onpointerleave={leaveLine}
+      >
+        <time class="t">{time}</time>
+        <span class="txt">{@render lineText(entry, parts)}</span>
+        {#if expanded === key}
+          <div class="full">
+            <time class="t">{time}</time>
+            <span class="whole">{@render lineText(entry, parts)}</span>
+          </div>
+        {/if}
+      </li>
+    {/each}
+  </ul>
 
-<ul class="log" aria-labelledby="history-title" bind:this={list}>
-  {#each lines as { key, entry, parts, time, isNew } (key)}
-    <li
-      class="e"
-      data-line={key}
-      class:undone={entry.undone}
-      class:new={isNew}
-      onpointerenter={(event) => enterLine(event, key, entry.cards)}
-      onpointerleave={leaveLine}
+  <!-- aria-disabled rather than disabled, so that the tooltip saying why still shows. -->
+  <div class="undo">
+    <button
+      aria-disabled={!canUndo}
+      data-tip={canUndo ? undefined : NOTHING_TO_UNDO}
+      onclick={undo}
     >
-      <span class="txt">{@render lineText(entry, parts)}</span>
-      <span class="t">{time}</span>
-      {#if expanded === key}
-        <div class="full">
-          <span class="t">{time}</span>{@render lineText(entry, parts)}
-        </div>
-      {/if}
-    </li>
-  {/each}
-</ul>
+      {@render undoIcon()}
+      {UNDO_TIP}
+    </button>
+  </div>
+{/if}
 
 <style>
-  .preview {
-    padding: 12px;
-    border-bottom: 1px solid var(--line);
-    flex: none;
-  }
-
-  /* Fixed size: a portrait card fills it, a landscape one sits in its middle. */
-  .frame {
-    width: 100%;
-    aspect-ratio: 5 / 7;
-    display: grid;
-    place-items: center;
-    border-radius: 8px;
-    overflow: hidden;
-  }
-
-  /* Only the empty frame is outlined: a shown card keeps its cut corners clear. */
-  .frame.empty {
-    border: 1px dashed #222b44;
-  }
-
-  .hint {
+  h2 {
+    margin: 0;
+    font-stretch: 75%;
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
     color: var(--muted);
-    font-size: 13px;
-    text-align: center;
-    padding: 12px;
-  }
-
-  .art {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 5 / 7;
-  }
-
-  .art.land {
-    aspect-ratio: 7 / 5;
   }
 
   .loghead {
+    flex: none;
     display: flex;
     align-items: center;
-    padding: 8px 12px;
+    justify-content: space-between;
     gap: 8px;
-    border-bottom: 1px solid var(--line);
+    padding: 10px 6px 0 18px;
   }
 
-  .loghead b {
-    margin-right: auto;
+  .toggle {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    color: var(--muted);
+  }
+
+  .toggle svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* The same icon, the other way round. */
+  .toggle.expand svg {
+    transform: scaleX(-1);
+  }
+
+  /* Collapsed: the expand button at the top, Undo at the bottom, on the expanded Undo's line. */
+  .strip {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 10px;
+  }
+
+  .strip-undo {
+    margin-top: auto;
+    padding-bottom: calc(var(--edge-bottom) + 5px);
+  }
+
+  .strip-undo button {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    color: #c9cfdf;
+  }
+
+  .strip-undo svg {
+    width: 16px;
+    height: 16px;
   }
 
   .log {
+    /* A hovered line, and the full text of a truncated one, which must look the same. */
+    --line-hover: #49c6ff14;
     overflow-y: auto;
     margin: 0;
-    padding: 6px 12px;
+    padding: 0 0 8px;
     list-style: none;
     flex: 1;
     min-height: 0;
   }
 
+  .e,
+  .full {
+    display: flex;
+    gap: 6px;
+    align-items: baseline;
+    padding: 8px 18px;
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
   .e {
     position: relative;
-    display: flex;
-    gap: 8px;
-    align-items: baseline;
-    margin: 0 -6px;
-    padding: 5px 6px;
-    border-radius: 6px;
-    border-bottom: 1px solid #222b44;
-    font-size: 13px;
     cursor: pointer;
   }
 
   .e:hover {
-    background: #222c48;
+    background: var(--line-hover);
   }
 
   .e.new {
     animation: slidein 0.3s ease-out;
   }
 
-  .e.undone {
+  /* On the contents rather than the line: the full text must hide the lines below, and a
+     strike-through does not reach it as it is out of flow. */
+  .e.undone .t,
+  .e.undone .txt,
+  .e.undone .whole {
     opacity: 0.45;
     text-decoration: line-through;
   }
 
-  .txt {
+  .txt,
+  .whole {
     flex: 1;
     min-width: 0;
+  }
+
+  .txt {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -290,28 +400,49 @@
 
   .t {
     flex: none;
+    /* Snug around "00:00": tabular digits are each 1ch wide, the colon narrower. */
+    width: 5ch;
     color: var(--muted);
     font-size: 11px;
+    font-variant-numeric: tabular-nums;
   }
 
-  /* The full text floats over the list, so nothing below it moves. */
+  /*
+    The full text floats over the list, so nothing below it moves. It lies exactly on its line,
+    with the same padding and hover tint, and only wraps further down. The tint is laid on the
+    panel's ink so the lines below do not show through.
+  */
   .full {
     position: absolute;
-    left: -8px;
-    right: -8px;
-    top: -1px;
+    top: 0;
+    left: 0;
+    right: 0;
     z-index: 5;
-    padding: 5px 8px;
-    border-radius: 8px;
-    background: #26314f;
-    border: 1px solid #3a4870;
-    box-shadow: 0 8px 20px #000a;
-    white-space: normal;
+    background: linear-gradient(var(--line-hover), var(--line-hover)), var(--bg);
   }
 
-  .full .t {
-    float: right;
-    margin-left: 8px;
+  /* Its button's bottom edge on the zoom control's, across the table (--edge-bottom, focus.ts). */
+  .undo {
+    flex: none;
+    padding: 14px 18px var(--edge-bottom);
+    border-top: 1px solid var(--panel-2);
+  }
+
+  .undo button {
+    width: 100%;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 14px;
+    background: var(--panel);
+    font-size: 13px;
+  }
+
+  .undo svg {
+    width: 16px;
+    height: 16px;
+    flex: none;
   }
 
   @keyframes slidein {

@@ -4,20 +4,20 @@
 // bar, get their own keys here.
 
 import { modal } from '../components/modal.svelte';
-import type { Action, Area, CardView, PileView, Size, View } from '../lib/types';
-import type { ActionItem } from './actions';
+import type { Action, CardView, PileView, Size, View } from '../lib/types';
+import { seatOf, type ActionItem } from './actions';
 import { interaction } from './interaction.svelte';
-import { footprints, isOutOfPlay, visualBox } from './layout';
+import { footprints, visualBox } from './layout';
 import { ZOOM_STEP } from './zoom';
 
-// The prototype's free slot (ruling P5b-R5): from x 280, past the deck and
-// the discard pile, in 140 steps, a 100-wide card with 20 free on each side,
-// on the top row (140 high).
-const SLOT_FIRST_X = 280;
-const SLOT_STEP = 140;
-const SLOT_CARD_WIDTH = 100;
-const SLOT_MARGIN = 20;
-const TOP_ROW_HEIGHT = 140;
+// The free slot of a player's row (ruling P5b-R5): from x 760, where the
+// cards in play start past the deck, the discard pile, the identity and the
+// main scheme (internal/game/setup.go), in 220 steps, a 140-wide card with 40
+// free on each side, as high as a portrait card.
+const SLOT_FIRST_X = 760;
+const SLOT_STEP = 220;
+const SLOT_CARD = { w: 140, h: 196 };
+const SLOT_MARGIN = 40;
 
 /** What the keys need from the table. */
 export interface KeyTable {
@@ -29,10 +29,10 @@ export interface KeyTable {
   /** Runs a bar item, as a click on it would. */
   run: (item: ActionItem) => void;
   act: (action: Action) => void;
-  /** Shows the keyboard shortcuts sheet, or hides it when it is shown. */
-  toggleKeys: () => void;
-  /** Hides the keyboard shortcuts sheet; returns whether it was shown. */
-  hideKeys: () => boolean;
+  /** Whether the table has a card that Ready all would ready. */
+  canReadyAll: boolean;
+  /** Shows the keyboard shortcuts sheet (a dialog: it has the keys while it is open). */
+  showKeys: () => void;
   sizeOf: (card: CardView) => Size;
 }
 
@@ -41,12 +41,19 @@ export interface KeyTable {
  * open, and only Escape while the viewer types in a field: the keys are theirs.
  */
 export function handleKey(event: KeyboardEvent, table: KeyTable): void {
-  if (event.defaultPrevented || modal.open) {
+  if (event.defaultPrevented) {
     return;
   }
-  // Escape closes the sheet, or else lets go of the table, even from a field, as in the prototype.
+  // Outside a field, Backspace discards: it never takes the browser back in its history.
+  if (event.key === 'Backspace' && !isTyping(event.target)) {
+    event.preventDefault();
+  }
+  if (modal.open) {
+    return;
+  }
+  // Escape lets go of the table, even from a field, as in the prototype.
   if (event.key === 'Escape') {
-    if (!event.repeat && !table.hideKeys()) {
+    if (!event.repeat) {
       interaction.escape();
     }
     return;
@@ -86,7 +93,7 @@ function tableKey(event: KeyboardEvent, table: KeyTable): boolean {
       return true;
     case '?':
       if (!event.repeat) {
-        table.toggleKeys();
+        table.showKeys();
       }
       return true;
     default:
@@ -111,6 +118,15 @@ function playerKey(event: KeyboardEvent, table: KeyTable): boolean {
       return false;
     }
     table.act({ kind: 'undo' });
+    return true;
+  }
+
+  // Shift + Space readies all the player's cards, wherever the pointer is. Handled even when
+  // there is nothing to ready: Space never scrolls the page under the table.
+  if (key === ' ' && event.shiftKey) {
+    if (!event.repeat && table.canReadyAll) {
+      table.act({ kind: 'readyAll' });
+    }
     return true;
   }
 
@@ -190,20 +206,20 @@ function removeOne(adds: Action, table: KeyTable): boolean {
   return true;
 }
 
-/** P plays a card of the hand to the first free slot of the viewer's area, X discards it. */
+/** P plays a card of the hand to the first free slot of the viewer's row, Backspace discards it. */
 function handKey(key: string, id: string, table: KeyTable): boolean {
   switch (key) {
     case 'p': {
-      const area = table.view.you.area;
-      if (!area || !table.view.table) {
+      const seat = table.view.you.area ? seatOf(table.view.you.area) : null;
+      if (seat === null || !table.view.table) {
         return false;
       }
       const { cards, piles } = table.view.table;
-      const { x, y } = freeSlot(cards, piles, area, table.sizeOf);
-      table.act({ kind: 'play', card: id, area, x, y });
+      const { x, y } = freeSlot(cards, piles, seat, table.sizeOf);
+      table.act({ kind: 'play', card: id, x, y });
       return true;
     }
-    case 'x':
+    case 'backspace':
       table.act({ kind: 'discard', card: id });
       return true;
     default:
@@ -212,28 +228,30 @@ function handKey(key: string, id: string, table: KeyTable): boolean {
 }
 
 /**
- * The prototype's free slot for a card played from the hand: the first spot
- * of the top row of an area, from x 280 in steps of 140, where a 100-wide
- * card keeps 20 free on each side. The area's table cards and in-play piles
- * are in the way; its victory and set-aside piles are not, being drawn at
- * the right end of the zone (placeOutPiles).
+ * The free slot for a card played from the hand: the first spot of the
+ * player's row, from x 760 in steps of 220, where a 140-wide card keeps 40
+ * free on each side. The row is the height of the player's deck (the top of
+ * the table without one). Every table card and pile reaching into the row is
+ * in the way.
  */
 export function freeSlot(
   cards: CardView[],
   piles: PileView[],
-  area: Area,
+  seat: number,
   sizeOf: (card: CardView) => Size,
 ): { x: number; y: number } {
-  const inPlay = piles.filter((p) => !isOutOfPlay(p));
-  const items = footprints(cards, inPlay, area, sizeOf).filter((item) => item.y < TOP_ROW_HEIGHT);
+  const deck = piles.find((pile) => pile.kind === 'deck' && pile.owner === seat);
+  const y = deck?.y ?? 0;
+  const items = footprints(cards, piles, sizeOf).filter(
+    (item) => item.y < y + SLOT_CARD.h && visualBox(item).bottom > y,
+  );
   // Ends: every item is passed after a finite number of steps.
   for (let x = SLOT_FIRST_X; ; x += SLOT_STEP) {
     const blocked = items.some(
-      (item) =>
-        item.x < x + SLOT_CARD_WIDTH + SLOT_MARGIN && visualBox(item).right > x - SLOT_MARGIN,
+      (item) => item.x < x + SLOT_CARD.w + SLOT_MARGIN && visualBox(item).right > x - SLOT_MARGIN,
     );
     if (!blocked) {
-      return { x, y: 0 };
+      return { x, y };
     }
   }
 }

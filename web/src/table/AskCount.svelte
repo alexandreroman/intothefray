@@ -1,7 +1,8 @@
 <!--
   "How many cards?": the app's own dialog for a number of cards, instead of
-  the browser's prompt. − value + (5 by default), Enter confirms, Escape or
-  a click outside cancels.
+  the browser's prompt. − value + (5 by default): the value is not typed but
+  stepped, with the buttons or the keys (arrows, + and −, Home and End).
+  Enter confirms; Escape, Cancel or a click outside cancels.
 -->
 <script lang="ts">
   import { untrack } from 'svelte';
@@ -25,68 +26,106 @@
     oncancel: () => void;
   } = $props();
 
-  // The default is only the starting value: a changed max does not reset what was typed.
+  // The default is only the starting value: a changed max does not reset the chosen one.
   // svelte-ignore state_referenced_locally
-  let text = $state(String(Math.min(5, max)));
+  let count = $state(Math.max(1, Math.min(5, max)));
 
   // A max that drops below the value (the pile shrank) lowers it; one that rises leaves it.
   $effect(() => {
     const limit = max;
     untrack(() => {
-      if ((parseInt(text, 10) || 0) > limit) {
-        text = String(limit);
+      if (count > limit) {
+        count = Math.max(1, limit);
       }
     });
   });
 
-  /** The typed value, kept between 1 and max. */
-  function value(): number {
-    const typed = parseInt(text, 10) || 0;
-    return Math.max(1, Math.min(max, typed));
+  /** Sets the value, kept between 1 and max. */
+  function setCount(n: number): void {
+    count = Math.max(1, Math.min(max, n));
   }
 
   function step(by: number): void {
-    text = String(Math.max(1, Math.min(max, value() + by)));
+    setCount(count + by);
   }
 
   function confirm(): void {
-    onconfirm(value());
+    onconfirm(count);
   }
 
-  // Digits only, three at most: no pile holds a thousand cards.
-  function onInput(event: Event): void {
-    const input = event.currentTarget as HTMLInputElement;
-    text = input.value.replace(/\D/g, '').slice(0, 3);
-    input.value = text;
-  }
+  // The keys of a spin button (WAI-ARIA), plus + and −; they work wherever the focus is in the box.
+  const KEY_STEPS: Record<string, number> = {
+    ArrowUp: 1,
+    ArrowRight: 1,
+    '+': 1,
+    '=': 1,
+    ArrowDown: -1,
+    ArrowLeft: -1,
+    '-': -1,
+    '−': -1,
+  };
 
   function onKeydown(event: KeyboardEvent): void {
+    const by = KEY_STEPS[event.key];
     // Enter on a button presses that button (Cancel, − or +), as the browser has it.
     if (event.key === 'Enter' && !(event.target instanceof HTMLButtonElement)) {
       event.preventDefault();
       confirm();
-    } else if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+    } else if (by !== undefined) {
       event.preventDefault();
-      step(event.key === 'ArrowUp' ? 1 : -1);
+      step(by);
+    } else if (event.key === 'Home' || event.key === 'End') {
+      event.preventDefault();
+      setCount(event.key === 'Home' ? 1 : max);
     }
   }
 
-  function selectAll(input: HTMLInputElement): void {
-    input.focus();
-    input.select();
+  // The value has the focus as the box opens: the keys change it at once.
+  function focusOnOpen(element: HTMLElement): void {
+    element.focus();
+  }
+
+  /** Quick clicks on − and + never start a text selection. */
+  function noSelection(event: MouseEvent): void {
+    event.preventDefault();
   }
 </script>
 
 <Dialog {title} {oncancel} onkeydown={onKeydown}>
   <p>{question}</p>
   <div class="row">
-    <button type="button" class="step" aria-label="One less" onclick={() => step(-1)}>−</button>
-    <input type="text" inputmode="numeric" value={text} oninput={onInput} {@attach selectAll} />
-    <button type="button" class="step" aria-label="One more" onclick={() => step(1)}>+</button>
+    <button
+      type="button"
+      class="step"
+      aria-label="One less"
+      disabled={count <= 1}
+      onmousedown={noSelection}
+      onclick={() => step(-1)}>−</button
+    >
+    <div
+      class="value"
+      role="spinbutton"
+      tabindex="0"
+      aria-label="Number of cards"
+      aria-valuenow={count}
+      aria-valuemin={1}
+      aria-valuemax={max}
+      {@attach focusOnOpen}
+    >
+      {count}
+    </div>
+    <button
+      type="button"
+      class="step"
+      aria-label="One more"
+      disabled={count >= max}
+      onmousedown={noSelection}
+      onclick={() => step(1)}>+</button
+    >
   </div>
   <div class="buttons">
     <button type="button" onclick={oncancel}>Cancel</button>
-    <button type="button" class="ok" onclick={confirm}>{ok}</button>
+    <button type="button" class="btn-primary compact" onclick={confirm}>{ok}</button>
   </div>
 </Dialog>
 
@@ -104,27 +143,28 @@
     gap: 8px;
   }
 
-  /* More specific than the app's input[type='text'], which spans the whole width. */
-  .row input {
-    width: 64px;
+  /* Read only, as the token pill's value: nothing in it to select. */
+  .value {
+    min-width: 64px;
     text-align: center;
-    background: #0c111b;
-    color: var(--text);
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    font:
-      700 16px system-ui,
-      sans-serif;
-    padding: 6px 0;
+    font-size: 16px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    padding: 8px 0;
+    border-radius: 10px;
+    background: var(--bg);
+    user-select: none;
+    -webkit-user-select: none;
   }
 
-  .row input:focus {
+  .value:focus-visible {
     outline: 2px solid var(--sel);
-    border-color: transparent;
+    outline-offset: 2px;
   }
 
   .step {
-    width: 34px;
+    width: 40px;
+    height: 40px;
     font-weight: 700;
   }
 
@@ -132,12 +172,11 @@
     display: flex;
     justify-content: flex-end;
     gap: 8px;
-    margin-top: 16px;
+    margin-top: 20px;
   }
 
-  .ok {
-    border-color: var(--sel);
-    background: #23406a;
-    font-weight: 700;
+  .buttons button:not(.btn-primary) {
+    height: 40px;
+    padding: 0 20px;
   }
 </style>

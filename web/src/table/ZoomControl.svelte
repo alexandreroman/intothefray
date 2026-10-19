@@ -25,13 +25,14 @@
 
 <div class="zoomctl">
   <button
+    class="btn-ghost"
     data-tip="Zoom out"
     data-kbd="−"
     aria-label="Zoom out"
     onclick={() => onzoom(zoom - ZOOM_STEP)}>−</button
   >
   <button
-    class="pct"
+    class="btn-ghost pct"
     data-tip="Back to 100%"
     data-kbd="0"
     aria-label="Back to 100%"
@@ -40,6 +41,7 @@
     {Math.round(zoom * 100)}%
   </button>
   <button
+    class="btn-ghost"
     data-tip="Zoom in"
     data-kbd="+"
     aria-label="Zoom in"
@@ -47,7 +49,7 @@
   >
   <span class="sep"></span>
   <button
-    class="keys"
+    class="btn-ghost keys"
     data-tip="Keyboard shortcuts"
     data-kbd="?"
     aria-label="Keyboard shortcuts"
@@ -75,49 +77,49 @@
 </div>
 
 <style>
-  /* Bottom right of the table column: never over a zone's piles. */
+  /* Placed by the table, at the bottom right: never over the piles, which start at the left. */
   .zoomctl {
-    grid-area: table;
-    align-self: end;
-    justify-self: end;
-    margin: 0 16px 14px 0;
-    z-index: 30;
     display: flex;
+    align-items: center;
     gap: 2px;
-    background: #0b0f18e6;
+    padding: 4px;
+    background: #141a28eb;
     border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 3px;
+    border-radius: 12px;
     box-shadow: 0 6px 16px #0008;
   }
 
   button {
+    height: 32px;
+    min-width: 32px;
+    padding: 0 8px;
     border: none;
-    background: none;
-    padding: 3px 9px;
-    border-radius: 7px;
+    border-radius: 8px;
+    color: #c9cfdf;
     font-weight: 700;
-  }
-
-  button:hover {
-    background: #2a3555;
   }
 
   .pct {
     min-width: 54px;
-    font-weight: 600;
+    font-size: 12px;
     font-variant-numeric: tabular-nums;
   }
 
   .sep {
     width: 1px;
-    background: var(--line);
-    margin: 3px 2px;
+    height: 20px;
+    margin: 0 2px;
+    background: var(--line-strong);
   }
 
   .keys {
-    padding: 3px 7px;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .keys[aria-expanded='true'] {
+    color: var(--sel);
   }
 </style>

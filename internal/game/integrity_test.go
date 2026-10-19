@@ -51,7 +51,8 @@ func checkIntegrity(t *testing.T, table *Table) {
 		switch c.Zone {
 		case ZoneTable:
 		case ZoneHand:
-			want = []string{"hand:" + string(c.Area)}
+			// Only the owner's hand may hold a card.
+			want = []string{"hand:" + string(PlayerArea(c.Owner))}
 		case ZonePile:
 			want = []string{"pile:" + c.Pile}
 		case ZoneStage:
@@ -143,7 +144,7 @@ func TestIntegrityAfterActions(t *testing.T) {
 	f.mustDo(t, "h", Action{Kind: ActDraw, N: 3}, at(1))
 	f.mustDo(t, "b", Action{Kind: ActDraw, N: 2}, at(2))
 	played := f.g.Table.Hands["p0"][0]
-	f.mustDo(t, "h", Action{Kind: ActPlay, Card: played, Area: "p0", X: 400, Y: 200}, at(3))
+	f.mustDo(t, "h", Action{Kind: ActPlay, Card: played, X: 400, Y: 200}, at(3))
 	f.mustDo(t, "h", Action{Kind: ActAttach, Card: played, Target: identity}, at(4))
 	f.mustDo(t, "b", Action{Kind: ActReveal}, at(5))
 	revealed := f.g.Table.revealed()[0].ID

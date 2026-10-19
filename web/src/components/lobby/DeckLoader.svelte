@@ -14,6 +14,8 @@
     onload: (url: string) => void;
   } = $props();
 
+  const inputId = $props.id();
+
   let url = $state('');
   // The deck being replaced after Change: the form shows until another deck arrives.
   let changingFrom = $state<string | null>(null);
@@ -36,23 +38,16 @@
   }
 </script>
 
-<section class="card-box">
-  <div class="bhead"><b>Your deck</b></div>
+<section class="card-box" style:--pc="var(--p{me.color + 1})">
+  <div class="bhead"><h2>Your deck</h2></div>
   <div class="sect">
     {#if showForm}
-      <div class="lbl">
-        Deck link <span class="aside">from marvelcdb.com (deck or decklist)</span>
-      </div>
+      <label class="lbl" for={inputId}>Deck link</label>
       <form class="row" onsubmit={load}>
-        <input
-          type="text"
-          aria-label="Deck link"
-          placeholder="https://marvelcdb.com/decklist/view/…"
-          bind:value={url}
-        />
-        <button type="submit" disabled={url.trim() === ''}>Load</button>
+        <input id={inputId} type="text" placeholder="Paste a deck link…" bind:value={url} />
+        <button class="btn" type="submit" disabled={url.trim() === ''}>Load</button>
         {#if changingFrom !== null}
-          <button type="button" onclick={() => (changingFrom = null)}>Cancel</button>
+          <button class="btn" type="button" onclick={() => (changingFrom = null)}>Cancel</button>
         {/if}
       </form>
       {#if deckError && deckError.length > 0}
@@ -80,9 +75,9 @@
         <div class="info">
           <b>{me.heroName}</b>
           <!-- The view carries no card count for a deck, so none is shown. -->
-          <span>{me.deckName} · marvelcdb.com</span>
+          <span>{me.deckName}</span>
         </div>
-        <button onclick={() => (changingFrom = signature)}>Change</button>
+        <button class="btn" onclick={() => (changingFrom = signature)}>Change</button>
       </div>
     {/if}
   </div>
@@ -91,7 +86,7 @@
 <style>
   .row {
     display: flex;
-    gap: 6px;
+    gap: 8px;
   }
 
   .row button {
@@ -100,7 +95,7 @@
 
   .loaded {
     display: flex;
-    gap: 10px;
+    gap: 14px;
     align-items: center;
   }
 
@@ -111,19 +106,25 @@
 
   .info b {
     display: block;
+    font-size: 17px;
   }
 
   .info span {
+    display: block;
+    margin-top: 2px;
     color: var(--muted);
-    font-size: 12px;
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .err {
-    margin: 8px 0 0;
+    margin: 10px 0 0;
     border: 1px solid #6a2e3a;
     background: #2a1520;
     color: #ffb3c0;
-    border-radius: 8px;
+    border-radius: 10px;
     padding: 8px 10px;
     font-size: 12px;
   }

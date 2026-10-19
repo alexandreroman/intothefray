@@ -1,7 +1,8 @@
+import { modal } from '../components/modal.svelte';
 import type { TableElement } from './actions';
 
 /** How long the bar and the preview stay after the pointer leaves their element. */
-export const LINGER_MS = 250;
+export const LINGER_MS = 100;
 
 /** How long a drop waits for the server's answer before its cards go back. */
 export const LANDING_MS = 2000;
@@ -59,7 +60,7 @@ export interface DropOn {
 }
 
 /** What hovering an element does to the side preview. */
-export type PreviewChange = 'show' | 'keep' | 'clear';
+export type PreviewChange = 'show' | 'clear';
 
 /**
  * What the viewer points at on the table, shared by the table, the hand, the
@@ -70,10 +71,21 @@ export type PreviewChange = 'show' | 'keep' | 'clear';
 class TableInteraction {
   /** What the action bar and the keys act on. */
   hovered = $state.raw<TableElement | null>(null);
-  /** What the side preview shows: hovering a deck keeps the previous one. */
+  /** The element previewed: the preview shows its face, and nothing for a card back. */
   previewed = $state.raw<TableElement | null>(null);
   /** The cards of the hovered history line, ringed on the table. */
   highlighted = $state.raw<ReadonlySet<string>>(new Set());
+  /**
+   * The table cards other players drag: hidden in place while their ghosts
+   * follow those players' pointers (Presence.svelte).
+   */
+  liftedByOthers = $state.raw<ReadonlySet<string>>(new Set());
+  /**
+   * The cards and piles other players preview, with the colour of the player
+   * who does: each draws that player's ring itself, so that the ring follows
+   * it through every move, turn and tilt (Presence.svelte).
+   */
+  previewedByOthers = $state.raw<ReadonlyMap<string, number>>(new Map());
   /** A tap selected the hovered element (touch): it stays until released. */
   locked = $state(false);
   /** The card an arrow starts from, while the viewer picks its target. */
@@ -114,6 +126,45 @@ class TableInteraction {
     this.#pointer = { x: event.clientX, y: event.clientY };
   }
 
+  /** Where the pointer was last seen on the screen; not a number before it moved. */
+  get pointer(): { x: number; y: number } {
+    return { ...this.#pointer };
+  }
+
+  /**
+   * A new view redrew what lies under a pointer at rest, whoever acted: a
+   * card dropped, moved, turned over or taken away. What is there now is
+   * hovered, as if entered, so that the ring, the bar, the preview and the
+   * keys follow it at once; null when no card is there any more, which drops
+   * a hovered card (a hovered pile keeps its hover). Not while a dialog is
+   * open, nor during a drag, nor while a selection, a dropdown, the bar or
+   * the pill holds the hover: the bar must not jump from under the pointer
+   * (spec 5.8).
+   */
+  rehover(element: TableElement | null): void {
+    if (
+      modal.open ||
+      this.dragging ||
+      this.locked ||
+      this.menu !== null ||
+      this.onBar ||
+      this.onPill
+    ) {
+      return;
+    }
+    if (element === null) {
+      if (this.hovered !== null && this.hovered.kind !== 'pile') {
+        this.#cancelHide();
+        this.hovered = null;
+        this.previewed = null;
+      }
+      return;
+    }
+    this.#cancelHide();
+    this.hovered = element;
+    this.#changePreview(element, 'show');
+  }
+
   /** Remembers the kind of the last pointer pressed: only a touch tap selects. */
   pointerPressed(event: PointerEvent): void {
     this.#pointerType = event.pointerType || 'mouse';
@@ -141,8 +192,8 @@ class TableInteraction {
 
   /** A press on a card, a pile, a hand card or the token, with the main button or a finger. */
   press(element: Pressable, event: PointerEvent): void {
-    // A second finger does not take over a drag.
-    if (event.button !== 0 || this.dragging !== null) {
+    // A second finger does not take over a drag; a dialog freezes the table.
+    if (event.button !== 0 || this.dragging !== null || modal.open) {
       return;
     }
     // No text selection or native image drag: the press may become our drag.
@@ -179,9 +230,39 @@ class TableInteraction {
     return moving;
   }
 
-  /** Whether the card is dragged or just dropped, its ghost drawn in the drag layer instead. */
+  /**
+   * Whether the card is dragged or just dropped, by the viewer or by another
+   * player: its ghost is drawn elsewhere instead.
+   */
   isLifted(id: string): boolean {
-    return this.#moving().some((moving) => moving.lifted.includes(id));
+    return (
+      this.liftedByOthers.has(id) || this.#moving().some((moving) => moving.lifted.includes(id))
+    );
+  }
+
+  /** The table cards other players drag now; a set equal to the current one changes nothing. */
+  liftByOthers(ids: ReadonlySet<string>): void {
+    const same =
+      ids.size === this.liftedByOthers.size && [...ids].every((id) => this.liftedByOthers.has(id));
+    if (!same) {
+      this.liftedByOthers = ids;
+    }
+  }
+
+  /** The cards and piles other players preview now; a map equal to the current one changes nothing. */
+  previewByOthers(previews: ReadonlyMap<string, number>): void {
+    const current = this.previewedByOthers;
+    const same =
+      previews.size === current.size &&
+      [...previews].every(([id, color]) => current.get(id) === color);
+    if (!same) {
+      this.previewedByOthers = previews;
+    }
+  }
+
+  /** The colour of the other player who previews the card or pile, if any. */
+  previewerOf(id: string): number | undefined {
+    return this.previewedByOthers.get(id);
   }
 
   /** Whether the first player token is dragged or just dropped, drawn in the drag layer instead. */
@@ -228,7 +309,7 @@ class TableInteraction {
     this.handGap = null;
   }
 
-  /** To call when the table is redrawn. */
+  /** To call when the table is redrawn by a view or a zoom. */
   redrawn(): void {
     this.#drawnAt = { ...this.#pointer };
   }
@@ -244,8 +325,8 @@ class TableInteraction {
 
   /** The pointer entered a card, a pile or a hand card. */
   enter(element: TableElement, event: PointerEvent, preview: PreviewChange = 'show'): void {
-    // The pointer passes over what lies under a drag: that is not hovering it.
-    if (!this.#isReal(event) || this.dragging) {
+    // The pointer passes over what lies under a drag: that is not hovering it. A dialog freezes the table.
+    if (!this.#isReal(event) || this.dragging || modal.open) {
       return;
     }
     this.#cancelHide();
@@ -296,7 +377,7 @@ class TableInteraction {
 
   /** The pointer entered a token or a status. */
   enterCounter(target: CounterTarget, event: PointerEvent): void {
-    if (!this.#isReal(event)) {
+    if (!this.#isReal(event) || modal.open) {
       return;
     }
     this.#cancelCounterHide();
@@ -340,13 +421,19 @@ class TableInteraction {
 
   /** A tap on an element. Only touch selects: with a mouse, hovering is enough. */
   select(element: TableElement, preview: PreviewChange = 'show'): void {
-    if (this.#pointerType !== 'touch') {
+    if (this.#pointerType !== 'touch' || modal.open) {
       return;
     }
     this.#cancelHide();
     this.hovered = element;
     this.#changePreview(element, preview);
     this.locked = true;
+  }
+
+  /** Whether the pointer rests on this element, which a tap did not select: it gets the bar. */
+  isHovered(element: TableElement): boolean {
+    const hovered = this.hovered;
+    return !this.locked && hovered?.kind === element.kind && hovered.id === element.id;
   }
 
   /** Whether a tap selected this element. */
@@ -395,6 +482,8 @@ class TableInteraction {
     this.endLanding();
     this.#swallowClick = false;
     this.highlighted = new Set();
+    this.liftedByOthers = new Set();
+    this.previewedByOthers = new Map();
     this.endArrow();
     this.onBar = false;
     this.onPill = false;
@@ -403,11 +492,12 @@ class TableInteraction {
     this.#pointerType = 'mouse';
   }
 
+  /** A hand card is never previewed: the raised hand shows it large enough. */
   #changePreview(element: TableElement, preview: PreviewChange): void {
-    if (preview === 'show') {
-      this.previewed = element;
-    } else if (preview === 'clear') {
+    if (preview === 'clear' || element.kind === 'hand') {
       this.previewed = null;
+    } else if (preview === 'show') {
+      this.previewed = element;
     }
   }
 

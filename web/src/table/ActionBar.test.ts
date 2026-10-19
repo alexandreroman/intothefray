@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
 import Table from './Table.svelte';
-import { interaction } from './interaction.svelte';
+import { interaction, LINGER_MS } from './interaction.svelte';
 import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
 import type { CardView as TableCard, PackFace, PileView, PresenceState, View } from '../lib/types';
 
@@ -40,7 +40,6 @@ function card(id: string, extra: Partial<TableCard> = {}): TableCard {
     back: 'player',
     owner: 0,
     zone: 'table',
-    area: 'p0',
     x: 0,
     y: 0,
     z: 1,
@@ -49,7 +48,7 @@ function card(id: string, extra: Partial<TableCard> = {}): TableCard {
 }
 
 function pile(id: string, extra: Partial<PileView>): PileView {
-  return { id, kind: 'deck', owner: -1, area: 'villain', x: 0, y: 0, count: 30, ...extra };
+  return { id, kind: 'deck', owner: -1, x: 0, y: 0, count: 30, ...extra };
 }
 
 /** Rhino with Alex (p0, the viewer) and Sam (p1). */
@@ -57,15 +56,15 @@ function makeView(extra: { cards?: TableCard[]; piles?: PileView[] } = {}): View
   const cards = extra.cards ?? [
     card('mine', { x: 0 }),
     card('two', { code: '01002', x: 200 }),
-    card('v', { code: '01094', owner: -1, back: 'villain', area: 'villain' }),
-    card('theirs', { owner: 1, area: 'p1' }),
-    card('h', { zone: 'hand', area: undefined }),
+    card('v', { code: '01094', owner: -1, back: 'villain' }),
+    card('theirs', { owner: 1 }),
+    card('h', { zone: 'hand' }),
   ];
   const piles = extra.piles ?? [
-    pile('deck:p0', { owner: 0, area: 'p0', x: 600 }),
-    pile('deck:p1', { owner: 1, area: 'p1', x: 600 }),
+    pile('deck:p0', { owner: 0, x: 600 }),
+    pile('deck:p1', { owner: 1, x: 600 }),
     pile('enc', { kind: 'encounter', x: 500, count: 20 }),
-    pile('disc:p0', { kind: 'discard', owner: 0, area: 'p0', x: 720, count: 1, cards: ['mine'] }),
+    pile('disc:p0', { kind: 'discard', owner: 0, x: 720, count: 1, cards: ['mine'] }),
   ];
   return {
     id: 'g1',
@@ -98,7 +97,7 @@ function makeView(extra: { cards?: TableCard[]; piles?: PileView[] } = {}): View
       piles,
       hand: ['h'],
       stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
-      firstPlayer: { area: 'p0', x: 860, y: 40 },
+      firstPlayer: { x: 860, y: 40 },
     },
     log: [],
   };
@@ -147,10 +146,17 @@ async function renderTable(view = makeView()) {
   const session = fakeSession();
   const result = render(Table, { session, view });
   // The catalog loads asynchronously: wait for the faces to show.
-  await within(screen.getByRole('region', { name: /^Villain/ })).findByRole('img', {
-    name: 'Rhino',
-  });
+  await screen.findByRole('img', { name: 'Rhino' });
   return { session, ...result };
+}
+
+/** The preview floating over the table: only there while something is previewed. */
+function preview(): HTMLElement {
+  return screen.getByLabelText('Card preview');
+}
+
+function noPreview(): boolean {
+  return screen.queryByLabelText('Card preview') === null;
 }
 
 beforeEach(() => {
@@ -172,14 +178,51 @@ describe('ActionBar', () => {
     expect(bar()).toBeNull();
 
     await fireEvent.pointerEnter(placed('mine'));
-    expect(barButtons()).toEqual(['Exhaust', '+ Token', '+ Status', 'Discard', 'Move to']);
-    // Groups are separated: Exhaust | tokens, statuses | Discard, Move to.
+    expect(barButtons()).toEqual(['Exhaust', 'Add a token or status', 'Discard', 'Move to']);
+    // Groups are separated: Exhaust | tokens and statuses | Discard, Move to.
     expect(bar()?.querySelectorAll('.sep')).toHaveLength(2);
     // The name and the key are in the tooltip, never on the button.
     const exhaust = within(bar()!).getByRole('button', { name: 'Exhaust' });
     expect(exhaust.dataset.tip).toBe('Exhaust');
     expect(exhaust.dataset.kbd).toBe('E');
     expect(exhaust.textContent?.trim()).toBe('');
+  });
+
+  it('exhaust and flip share a group', async () => {
+    await renderTable();
+    await fireEvent.pointerEnter(placed('two'));
+
+    expect(barButtons()).toEqual([
+      'Exhaust',
+      'Flip',
+      'Add a token or status',
+      'Discard',
+      'Move to',
+    ]);
+    // No separator between Exhaust and Flip.
+    const flip = within(bar()!).getByRole('button', { name: 'Flip' });
+    expect(flip.previousElementSibling?.getAttribute('aria-label')).toBe('Exhaust');
+    expect(bar()?.querySelectorAll('.sep')).toHaveLength(2);
+  });
+
+  it('move to is an icon dropdown, named by its tooltip', async () => {
+    await renderTable();
+    await fireEvent.pointerEnter(placed('mine'));
+
+    const moveTo = within(bar()!).getByRole('button', { name: 'Move to' });
+    expect(moveTo.dataset.tip).toBe('Move to');
+    expect(moveTo.getAttribute('aria-haspopup')).toBe('menu');
+    // An icon, without a caret or a text.
+    expect(moveTo.querySelector('svg')).not.toBeNull();
+    expect(moveTo.querySelector('.caret')).toBeNull();
+    expect(moveTo.textContent?.trim()).toBe('');
+
+    await fireEvent.click(moveTo);
+    expect(moveTo.getAttribute('aria-expanded')).toBe('true');
+    const menu = screen.getByRole('menu', { name: 'Move to' });
+    // Its choices have no section: no group, no heading.
+    expect(within(menu).queryAllByRole('group')).toHaveLength(0);
+    expect(menu.querySelector('.heading')).toBeNull();
   });
 
   it('a hand card gets no bar', async () => {
@@ -237,8 +280,8 @@ describe('ActionBar', () => {
     expect(screen.queryByRole('menu')).toBeNull();
     const dialog = screen.getByRole('dialog', { name: 'Look at the top cards' });
     expect(dialog.textContent).toContain('How many cards from the top of your deck?');
-    const value = within(dialog).getByRole('textbox');
-    expect((value as HTMLInputElement).value).toBe('5');
+    const value = within(dialog).getByRole('spinbutton', { name: 'Number of cards' });
+    expect(value.getAttribute('aria-valuenow')).toBe('5');
     expect(session.act).not.toHaveBeenCalled();
 
     await fireEvent.click(within(dialog).getByRole('button', { name: 'One more' }));
@@ -253,8 +296,8 @@ describe('ActionBar', () => {
     await fireEvent.click(within(bar()!).getByRole('button', { name: 'Look' }));
     await fireEvent.click(screen.getByRole('menuitem', { name: /Look at top…/ }));
     const dialog = screen.getByRole('dialog', { name: 'Look at the top cards' });
-    const value = within(dialog).getByRole('textbox') as HTMLInputElement;
-    expect(value.value).toBe('5');
+    const value = within(dialog).getByRole('spinbutton', { name: 'Number of cards' });
+    expect(value.getAttribute('aria-valuenow')).toBe('5');
 
     // Sam deals encounter cards meanwhile: three are left.
     const shrunk = (count: number) =>
@@ -262,9 +305,9 @@ describe('ActionBar', () => {
         piles: makeView().table!.piles.map((p) => (p.id === 'enc' ? { ...p, count } : p)),
       });
     await rerender({ view: shrunk(3) });
-    expect(value.value).toBe('3');
+    expect(value.getAttribute('aria-valuenow')).toBe('3');
     await fireEvent.click(within(dialog).getByRole('button', { name: 'One more' }));
-    expect(value.value).toBe('3');
+    expect(value.getAttribute('aria-valuenow')).toBe('3');
     await fireEvent.click(within(dialog).getByRole('button', { name: 'Look' }));
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'look', pile: 'enc', n: 3 });
   });
@@ -305,9 +348,7 @@ describe('ActionBar', () => {
   it('a disabled button shows its tooltip and sends nothing', async () => {
     const view = makeView();
     // A card revealed on the encounter deck: Reveal waits until it is moved.
-    view.table!.cards.push(
-      card('rev', { owner: -1, back: 'encounter', area: 'villain', x: 500, onPile: 'enc' }),
-    );
+    view.table!.cards.push(card('rev', { owner: -1, back: 'encounter', x: 500, onPile: 'enc' }));
     const { session } = await renderTable(view);
     vi.useFakeTimers();
     await fireEvent.pointerEnter(placed('enc'));
@@ -333,7 +374,8 @@ describe('ActionBar', () => {
     // The card the villain stage shows stays on the table.
     await fireEvent.pointerEnter(placed('v'));
     const tip = 'The villain card stays on the table — choose another card to show';
-    const moveTo = within(bar()!).getByRole('button', { name: /^Move to/ });
+    // Its name stays Move to: the tooltip says why it is disabled.
+    const moveTo = within(bar()!).getByRole('button', { name: 'Move to' });
     expect(moveTo.getAttribute('aria-disabled')).toBe('true');
     expect(moveTo.hasAttribute('disabled')).toBe(false);
     expect(moveTo.dataset.tip).toBe(tip);
@@ -385,24 +427,25 @@ describe('ActionBar', () => {
     expect(bar()?.style.top).toBe('352px');
   });
 
-  it('lingers 250 ms after the pointer leaves, and stays while the pointer is on it', async () => {
+  it('lingers 100 ms after the pointer leaves, and stays while the pointer is on it', async () => {
     await renderTable();
     vi.useFakeTimers();
     await fireEvent.pointerEnter(placed('mine'));
     await fireEvent.pointerLeave(placed('mine'));
 
-    await vi.advanceTimersByTimeAsync(200);
+    // Long enough to cross the 8 px gap between the card and its bar.
+    await vi.advanceTimersByTimeAsync(LINGER_MS - 10);
     expect(bar()).not.toBeNull();
     await fireEvent.pointerEnter(bar()!);
     await vi.advanceTimersByTimeAsync(1000);
     expect(bar()).not.toBeNull();
 
     await fireEvent.pointerLeave(bar()!);
-    await vi.advanceTimersByTimeAsync(249);
+    await vi.advanceTimersByTimeAsync(LINGER_MS - 1);
     expect(bar()).not.toBeNull();
     await vi.advanceTimersByTimeAsync(1);
     expect(bar()).toBeNull();
-    expect(screen.getByLabelText('Card preview').textContent).toContain('Hover a card');
+    expect(noPreview()).toBe(true);
   });
 
   it('ignores the pointerenter a redraw fires under a resting pointer', async () => {
@@ -411,6 +454,8 @@ describe('ActionBar', () => {
     await fireEvent.pointerEnter(placed('mine'), { clientX: 40, clientY: 60 });
     expect(interaction.hovered).toEqual({ kind: 'card', id: 'mine' });
 
+    // The redraw leaves "mine" under the pointer: it stays hovered.
+    vi.spyOn(document, 'elementFromPoint').mockReturnValue(placed('mine'));
     await rerender({ view: makeView() });
     await fireEvent.pointerEnter(placed('two'), { clientX: 40, clientY: 60 });
     expect(interaction.hovered).toEqual({ kind: 'card', id: 'mine' });
@@ -428,20 +473,6 @@ describe('ActionBar', () => {
     expect(interaction.hovered).toBeNull();
 
     await fireEvent.pointerEnter(placed('mine'), { clientX: 41, clientY: 60 });
-    expect(interaction.hovered).toEqual({ kind: 'card', id: 'mine' });
-  });
-
-  it('ignores the pointerenter a separator drag fires under a resting pointer', async () => {
-    await renderTable();
-    const handle = screen.getByTitle("Drag to resize the villain's zone");
-
-    await fireEvent.pointerDown(handle, { clientX: 40, clientY: 100 });
-    await fireEvent.pointerMove(window, { clientX: 40, clientY: 160 });
-    await fireEvent.pointerUp(window, { clientX: 40, clientY: 160 });
-    await fireEvent.pointerEnter(placed('mine'), { clientX: 40, clientY: 160 });
-    expect(interaction.hovered).toBeNull();
-
-    await fireEvent.pointerEnter(placed('mine'), { clientX: 40, clientY: 161 });
     expect(interaction.hovered).toEqual({ kind: 'card', id: 'mine' });
   });
 
@@ -503,7 +534,7 @@ describe('ActionBar', () => {
     vi.useFakeTimers();
     await fireEvent.click(screen.getByRole('menuitem', { name: 'Bottom of deck' }));
     expect(interaction.onBar).toBe(false);
-    await vi.advanceTimersByTimeAsync(250);
+    await vi.advanceTimersByTimeAsync(LINGER_MS);
     expect(bar()).toBeNull();
   });
 
@@ -567,7 +598,7 @@ describe('ActionBar', () => {
     await fireEvent.pointerEnter(placed('two'));
     expect(bar()?.style.left).toBe('300px');
     await fireEvent.pointerLeave(placed('two'));
-    await vi.advanceTimersByTimeAsync(250);
+    await vi.advanceTimersByTimeAsync(LINGER_MS);
     expect(interaction.hovered).toBeNull();
     expect(interaction.arrowFrom).toBe('mine');
     expect(bar()?.textContent).toContain('Click the card to point at');
@@ -642,8 +673,8 @@ describe('ActionBar', () => {
     await fireEvent.click(hcard);
     expect(interaction.isLocked({ kind: 'hand', id: 'h' })).toBe(true);
 
-    // The hand lets taps through (pointer-events: none): around its cards, they land on the zone.
-    const scroller = placed('mine').closest<HTMLElement>('.zscroll')!;
+    // The hand lets taps through (pointer-events: none): around its cards, they land on the table.
+    const scroller = placed('mine').closest<HTMLElement>('.tablewrap')!;
     await fireEvent.pointerDown(scroller, { pointerType: 'touch' });
     expect(interaction.locked).toBe(false);
     expect(interaction.hovered).toBeNull();
@@ -656,39 +687,37 @@ describe('ActionBar', () => {
     await fireEvent.pointerDown(placed('mine'), { pointerType: 'mouse' });
     await fireEvent.click(placed('mine'));
     await fireEvent.pointerLeave(placed('mine'));
-    await vi.advanceTimersByTimeAsync(250);
+    await vi.advanceTimersByTimeAsync(LINGER_MS);
     expect(bar()).toBeNull();
   });
 });
 
 describe('pile preview', () => {
-  it('a deck keeps the preview; a pile listing its cards shows its top', async () => {
+  it('a deck, which shows its back, has no preview; a pile listing its cards shows its top', async () => {
     await renderTable();
-    const preview = screen.getByLabelText('Card preview');
 
     await fireEvent.pointerEnter(placed('two'));
-    expect(within(preview).getByRole('img', { name: 'Peter Parker' })).toBeTruthy();
+    expect(within(preview()).getByRole('img', { name: 'Peter Parker' })).toBeTruthy();
     await fireEvent.pointerEnter(placed('deck:p0'));
-    expect(within(preview).getByRole('img', { name: 'Peter Parker' })).toBeTruthy();
+    expect(noPreview()).toBe(true);
 
     await fireEvent.pointerEnter(placed('disc:p0'));
-    expect(within(preview).getByRole('img', { name: 'Spider-Man' })).toBeTruthy();
+    expect(within(preview()).getByRole('img', { name: 'Spider-Man' })).toBeTruthy();
   });
 
   it("another player's deck clears the preview", async () => {
     await renderTable();
-    const preview = screen.getByLabelText('Card preview');
 
     await fireEvent.pointerEnter(placed('two'));
     await fireEvent.pointerEnter(placed('deck:p1'));
-    expect(preview.textContent).toContain('Hover a card');
+    expect(noPreview()).toBe(true);
   });
 });
 
 describe('tokens and statuses', () => {
   const others = [
-    card('v', { code: '01094', owner: -1, back: 'villain', area: 'villain' }),
-    card('theirs', { owner: 1, area: 'p1' }),
+    card('v', { code: '01094', owner: -1, back: 'villain' }),
+    card('theirs', { owner: 1 }),
   ];
 
   function viewWithCounters(tokens = { dmg: 2 }, status: Record<string, number> = { stunned: 1 }) {
@@ -707,16 +736,60 @@ describe('tokens and statuses', () => {
     return screen.queryByRole('group', { name: /^Change / });
   }
 
-  it('token menu adds one', async () => {
+  function addButton(): HTMLElement {
+    return within(bar()!).getByRole('button', { name: 'Add a token or status' });
+  }
+
+  it('one menu holds the tokens and the statuses, in two sections', async () => {
+    await renderTable(viewWithCounters());
+    await fireEvent.pointerEnter(placed('mine'));
+
+    const add = addButton();
+    // An icon like the others, with no border of its own: no caret, no text; the name is in the
+    // tooltip.
+    expect(add.classList.contains('ico')).toBe(true);
+    expect(add.classList.contains('add')).toBe(false);
+    expect(add.dataset.tip).toBe('Add a token or status');
+    expect(add.querySelector('svg')).not.toBeNull();
+    expect(add.querySelector('.caret')).toBeNull();
+    expect(add.textContent?.trim()).toBe('');
+
+    await fireEvent.click(add);
+    const menu = screen.getByRole('menu', { name: 'Add a token or status' });
+    // The headings are captions, not choices: each names its group of menu items.
+    const sections = within(menu).getAllByRole('group');
+    expect(sections.map((group) => group.getAttribute('aria-label'))).toEqual(['Tokens', 'Status']);
+    expect([...menu.querySelectorAll('.heading')].map((heading) => heading.textContent)).toEqual([
+      'Tokens',
+      'Status',
+    ]);
+    // Each choice keeps its key, and its count in brackets.
+    const choices = (group: HTMLElement) =>
+      within(group)
+        .getAllByRole('menuitem')
+        .map((choice) => [
+          choice.querySelector('span')?.textContent,
+          choice.querySelector('kbd')?.textContent,
+        ]);
+    expect(choices(sections[0]!)).toEqual([
+      ['Damage (2)', 'D'],
+      ['Threat', 'T'],
+      ['Counter', 'N'],
+    ]);
+    expect(choices(sections[1]!)).toEqual([
+      ['Stunned (1)', 'S'],
+      ['Confused', 'C'],
+      ['Tough', 'G'],
+      ['Locked', 'L'],
+    ]);
+    expect(within(menu).getAllByRole('menuitem')).toHaveLength(7);
+  });
+
+  it('a token choice adds one', async () => {
     const { session } = await renderTable(viewWithCounters());
     await fireEvent.pointerEnter(placed('mine'));
 
-    const add = within(bar()!).getByRole('button', { name: '+ Token' });
-    // A dashed "+" button: no caret.
-    expect(add.classList.contains('add')).toBe(true);
-    expect(add.querySelector('.caret')).toBeNull();
-
-    await fireEvent.click(add);
+    await fireEvent.click(addButton());
     await fireEvent.click(screen.getByRole('menuitem', { name: /^Damage/ }));
     expect(session.act).toHaveBeenCalledWith({
       kind: 'token',
@@ -726,11 +799,11 @@ describe('tokens and statuses', () => {
     });
   });
 
-  it('status menu adds one', async () => {
+  it('a status choice adds one', async () => {
     const { session } = await renderTable(viewWithCounters());
     await fireEvent.pointerEnter(placed('mine'));
 
-    await fireEvent.click(within(bar()!).getByRole('button', { name: '+ Status' }));
+    await fireEvent.click(addButton());
     await fireEvent.click(screen.getByRole('menuitem', { name: /^Tough/ }));
     expect(session.act).toHaveBeenCalledWith({
       kind: 'status',
@@ -812,7 +885,6 @@ describe('tokens and statuses', () => {
   it('the bar and the preview stay while the pointer is on the pill', async () => {
     await renderTable(viewWithCounters());
     vi.useFakeTimers();
-    const preview = screen.getByLabelText('Card preview');
     await fireEvent.pointerEnter(placed('mine'));
     const token = counter('mine', 'token:dmg');
     await fireEvent.pointerEnter(token);
@@ -823,16 +895,16 @@ describe('tokens and statuses', () => {
     await fireEvent.pointerEnter(pill()!);
     await vi.advanceTimersByTimeAsync(1000);
     expect(bar()).not.toBeNull();
-    expect(within(preview).getByRole('img', { name: 'Spider-Man' })).toBeTruthy();
+    expect(within(preview()).getByRole('img', { name: 'Spider-Man' })).toBeTruthy();
 
     await fireEvent.pointerLeave(pill()!);
     await vi.advanceTimersByTimeAsync(300);
     expect(bar()).toBeNull();
-    expect(preview.textContent).toContain('Hover a card');
+    expect(noPreview()).toBe(true);
     expect(pill()).toBeNull();
   });
 
-  it('lingers 250 ms after the pointer leaves, and stays while the pointer is on it', async () => {
+  it('lingers 100 ms after the pointer leaves, and stays while the pointer is on it', async () => {
     await renderTable(viewWithCounters());
     vi.useFakeTimers();
     await fireEvent.pointerEnter(placed('mine'));
@@ -840,9 +912,9 @@ describe('tokens and statuses', () => {
 
     await fireEvent.pointerEnter(token);
     await fireEvent.pointerLeave(token);
-    await vi.advanceTimersByTimeAsync(200);
+    await vi.advanceTimersByTimeAsync(LINGER_MS - 1);
     expect(pill()).not.toBeNull();
-    await vi.advanceTimersByTimeAsync(60);
+    await vi.advanceTimersByTimeAsync(1);
     expect(pill()).toBeNull();
 
     await fireEvent.pointerEnter(token);
@@ -852,7 +924,7 @@ describe('tokens and statuses', () => {
     expect(pill()).not.toBeNull();
 
     await fireEvent.pointerLeave(pill()!);
-    await vi.advanceTimersByTimeAsync(260);
+    await vi.advanceTimersByTimeAsync(LINGER_MS);
     expect(pill()).toBeNull();
   });
 });

@@ -123,7 +123,7 @@
 
 <section class="card-box" class:guest={!isHost}>
   <div class="bhead">
-    <b>Scenario</b>
+    <h2>Scenario</h2>
     <span class="aside"
       >{isHost ? 'you choose — everyone sees it' : `chosen by ${hostName} (host)`}</span
     >
@@ -135,6 +135,7 @@
       <input
         type="text"
         class="filter"
+        aria-label="Filter by scenario or pack"
         placeholder="Filter by scenario or pack…"
         bind:value={filter}
       />
@@ -145,10 +146,12 @@
           <div class="pkname">{group.pack.name}</div>
           <div class="vgrid">
             {#each group.scenarios as scenario (scenario.id)}
+              {@const selected = scenario.id === config.scenario}
               <button
                 class="vil"
-                class:on={scenario.id === config.scenario}
+                class:on={selected}
                 class:unsupported={!scenario.supported}
+                aria-pressed={selected}
                 disabled={!isHost || !scenario.supported}
                 title="{scenario.name} — {group.pack.name}"
                 onclick={() => chooseScenario(scenario)}
@@ -156,8 +159,15 @@
                 {#if scenario.image}
                   <img src={scenario.image} alt="" loading="lazy" />
                 {/if}
+                {#if selected}
+                  <span class="check">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"
+                      ><path d="M5 12.5l4.5 4.5L19 7.5" /></svg
+                    >
+                  </span>
+                {/if}
                 {#if !scenario.supported}
-                  <span class="soon">not supported yet</span>
+                  <span class="soon">Not supported yet</span>
                 {/if}
                 <span class="nm">{scenario.name}</span>
               </button>
@@ -173,14 +183,16 @@
   </div>
 
   {#if chosen}
-    <div class="sect">
-      <div class="lbl">Difficulty</div>
-      <div class="controls">
+    <div class="sect settings">
+      <div class="difficulty">
+        <div class="lbl">Difficulty</div>
         <div class="seg">
           {#each LEVELS as level (level)}
             {#if isHost || level === difficulty}
               <button
+                class="btn-ghost"
                 class:on={level === difficulty}
+                aria-pressed={level === difficulty}
                 disabled={!isHost}
                 onclick={() => chooseDifficulty(level)}
               >
@@ -190,7 +202,7 @@
           {/each}
         </div>
         {#if isHost && standardSets.length > 1}
-          <label>
+          <label class="set">
             Standard set
             <select
               value={standardSet}
@@ -203,7 +215,7 @@
           </label>
         {/if}
         {#if isHost && difficulty === 'expert' && expertSets.length > 1}
-          <label>
+          <label class="set">
             Expert set
             <select
               value={expertSet}
@@ -216,95 +228,99 @@
           </label>
         {/if}
       </div>
-    </div>
 
-    <div class="sect">
-      <div class="lbl">
-        Encounter sets
-        {#if recommended.length > 0}
-          <span class="aside">recommended: {recommended.map(setName).join(', ')}</span>
-        {/if}
-      </div>
-      <div class="chips">
-        <span class="chip fixed" title="Always part of this scenario">{chosen.name}</span>
-        <span class="chip fixed" title="Always part of this scenario">{setName(standardSet)}</span>
-        {#if difficulty === 'expert'}
-          <span class="chip fixed" title="Always part of this scenario">{setName(expertSet)}</span>
-        {/if}
-        {#each config.modulars as code (code)}
-          <span class="chip" class:guest-chip={!isHost}>
-            {setName(code)}
-            {#if recommended.includes(code)}
-              <span class="rec">★</span>
+      <div class="modulars">
+        <div class="lbl">Modular sets</div>
+        <div class="chips">
+          {#each config.modulars as code (code)}
+            <span class="chip" class:guest-chip={!isHost}>
+              {setName(code)}
+              {#if recommended.includes(code)}
+                <span class="rec" title="Recommended for this scenario">★</span>
+              {/if}
+              {#if isHost}
+                <button
+                  class="btn-ghost x"
+                  aria-label="Remove {setName(code)}"
+                  onclick={() => removeModular(code)}
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg
+                  >
+                </button>
+              {/if}
+            </span>
+          {:else}
+            {#if !isHost}
+              <span class="aside">None</span>
             {/if}
-            {#if isHost}
-              <button
-                class="x"
-                aria-label="Remove {setName(code)}"
-                onclick={() => removeModular(code)}>×</button
-              >
-            {/if}
-          </span>
-        {/each}
-        {#if isHost}
-          <span class="add-wrap">
-            <button class="add" aria-expanded={menuOpen} onclick={toggleMenu}>+ Modular set</button>
-            {#if menuOpen}
-              <div class="menu">
-                {#each addableModulars as set (set.code)}
-                  <button onclick={() => addModular(set.code)}>
-                    {set.name}
-                    {#if recommended.includes(set.code)}
-                      <span class="rec">★ recommended</span>
-                    {/if}
-                  </button>
-                {/each}
-              </div>
-            {/if}
-          </span>
-        {/if}
-      </div>
-      {#if isHost}
-        <div class="hint">
-          The scenario's recommended modular sets are added for you; change them freely.
+          {/each}
+          {#if isHost}
+            <span class="add-wrap">
+              <button class="add" aria-expanded={menuOpen} onclick={toggleMenu}>+ Add a set</button>
+              {#if menuOpen}
+                <div class="menu">
+                  {#each addableModulars as set (set.code)}
+                    <button class="btn-ghost" onclick={() => addModular(set.code)}>
+                      {set.name}
+                      {#if recommended.includes(set.code)}
+                        <span class="rec">★ recommended</span>
+                      {/if}
+                    </button>
+                  {/each}
+                </div>
+              {/if}
+            </span>
+          {/if}
         </div>
-      {/if}
+        {#if isHost}
+          <p class="hint">
+            The scenario's recommended sets (★) are added for you; change them freely.
+          </p>
+        {:else if recommended.length > 0}
+          <p class="hint">Recommended: {recommended.map(setName).join(', ')}</p>
+        {/if}
+      </div>
     </div>
   {/if}
 </section>
 
 <style>
   .filter {
-    margin-bottom: 10px;
+    margin-bottom: 4px;
   }
 
   /* The whole range scrolls inside the box. */
   .villains {
-    max-height: 430px;
+    max-height: 520px;
     overflow-y: auto;
-    margin-right: -8px;
-    padding-right: 8px;
+    margin-right: -10px;
+    padding-right: 10px;
   }
 
   .guest .villains {
     max-height: none;
   }
 
-  .pack + .pack {
-    margin-top: 14px;
-  }
-
+  /* The pack's name, then a rule to the edge. */
   .pkname {
     position: sticky;
     top: 0;
     z-index: 2;
-    background: var(--panel);
-    padding: 2px 0 6px;
-    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 0 10px;
+    background: var(--bg);
+    color: #c9cfdf;
+    font-size: 13px;
     font-weight: 700;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
+  }
+
+  .pkname::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--panel-2);
   }
 
   .guest .pkname {
@@ -313,18 +329,19 @@
 
   .vgrid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
-    gap: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
   }
 
   .vil {
-    padding: 0;
-    border-radius: 8px;
-    background: linear-gradient(160deg, #2a3350, #151b2b);
-    overflow: hidden;
     position: relative;
-    aspect-ratio: 5 / 7;
-    border: 2px solid transparent;
+    aspect-ratio: 4 / 3;
+    padding: 0;
+    overflow: hidden;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: var(--panel);
+    text-align: left;
   }
 
   /* Disabled tiles (a guest's read-only ones, unsupported ones) skip the global
@@ -333,10 +350,12 @@
     opacity: 1;
   }
 
+  /* A villain card is portrait: the tile keeps its art, under the title bar. */
   .vil img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: 50% 25%;
     display: block;
   }
 
@@ -345,49 +364,57 @@
     left: 0;
     right: 0;
     bottom: 0;
-    padding: 14px 6px 5px;
-    font-size: 12px;
-    font-weight: 700;
-    background: linear-gradient(transparent, #000d);
-    text-align: left;
+    padding: 22px 12px 10px;
+    background: linear-gradient(transparent, #07090feb);
+    font-stretch: 85%;
+    font-weight: 800;
+    font-size: 16px;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
   .vil.on {
-    border-color: var(--sel);
-    box-shadow: 0 0 0 2px #4fd1ff55;
-  }
-
-  .vil:not(.on):not(:disabled):hover {
-    border-color: #ffffff80;
+    border: 2px solid var(--sel);
+    box-shadow: 0 0 0 4px #49c6ff29;
   }
 
   .vil.unsupported {
-    filter: grayscale(1);
-    opacity: 0.6;
+    opacity: 0.45;
   }
 
   .vil.unsupported img {
-    opacity: 0.6;
+    filter: grayscale(1);
   }
 
-  .vil.unsupported .nm {
-    color: var(--muted);
+  .check {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--sel);
+    color: var(--table-bg);
+    display: grid;
+    place-items: center;
+  }
+
+  .check svg {
+    width: 14px;
+    height: 14px;
+    stroke-width: 3;
   }
 
   .soon {
     position: absolute;
-    top: 4px;
-    left: 4px;
-    right: 4px;
-    padding: 2px 4px;
-    border-radius: 4px;
-    background: #0c111bd9;
-    color: var(--muted);
-    font-size: 10px;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    top: 8px;
+    left: 8px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: var(--table-bg);
+    color: #c9cfdf;
+    font-size: 11px;
+    font-weight: 700;
   }
 
   .none {
@@ -396,22 +423,39 @@
     padding: 30px 0;
   }
 
-  .controls {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px 16px;
+  svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
 
-  .controls label {
+  .settings {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px 40px;
+  }
+
+  .difficulty {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .difficulty .lbl {
+    margin-bottom: 0;
+  }
+
+  .set {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     color: var(--muted);
     font-size: 12px;
   }
 
-  .controls select {
+  .set select {
     width: auto;
     padding: 4px 8px;
     font-size: 13px;
@@ -419,72 +463,83 @@
 
   .seg {
     display: inline-flex;
+    gap: 4px;
+    padding: 4px;
     border: 1px solid var(--line);
-    border-radius: 8px;
-    overflow: hidden;
+    border-radius: 12px;
+    background: var(--table-bg);
   }
 
   .seg button {
+    height: 36px;
+    padding: 0 18px;
     border: 0;
-    border-radius: 0;
-    background: transparent;
-    padding: 6px 14px;
-  }
-
-  .seg button + button {
-    border-left: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--muted);
+    font-weight: 700;
   }
 
   .seg button.on {
-    background: #23406a;
+    background: var(--panel-2);
+    color: var(--text);
+  }
+
+  .seg button.on:hover:not(:disabled) {
+    background: var(--hover);
   }
 
   .seg button:disabled {
     opacity: 1;
   }
 
+  .modulars {
+    flex: 1;
+    min-width: 240px;
+  }
+
   .chips {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 8px;
     align-items: center;
   }
 
   .chip {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    border: 1px solid var(--line);
-    background: var(--panel-2);
+    gap: 8px;
+    height: 34px;
+    padding: 0 6px 0 12px;
+    border: 1px solid var(--line-strong);
     border-radius: 999px;
-    padding: 3px 4px 3px 10px;
+    background: var(--panel);
     font-size: 13px;
+    font-weight: 600;
   }
 
-  .chip.fixed,
   .chip.guest-chip {
-    padding-right: 10px;
-  }
-
-  .chip.fixed {
-    color: var(--muted);
+    padding-right: 12px;
   }
 
   .chip .x {
+    width: 24px;
+    height: 24px;
+    padding: 0;
     border: 0;
-    background: transparent;
-    padding: 0 6px;
+    border-radius: 50%;
     color: var(--muted);
-    border-radius: 999px;
+    display: inline-grid;
+    place-items: center;
   }
 
-  .chip .x:hover {
-    color: var(--text);
-    background: #ffffff14;
+  .chip .x svg {
+    width: 12px;
+    height: 12px;
+    stroke-width: 2.6;
   }
 
   .rec {
-    color: var(--warn);
+    color: var(--spark);
     font-size: 11px;
   }
 
@@ -493,11 +548,12 @@
   }
 
   .add {
+    height: 34px;
+    padding: 0 14px;
     border-style: dashed;
     border-radius: 999px;
-    padding: 3px 10px;
+    background: transparent;
     font-size: 13px;
-    color: var(--muted);
   }
 
   .menu {
@@ -507,8 +563,8 @@
     max-height: 320px;
     overflow-y: auto;
     background: var(--panel-2);
-    border: 1px solid #3a4870;
-    border-radius: 10px;
+    border: 1px solid var(--line-strong);
+    border-radius: 12px;
     padding: 4px;
     box-shadow: 0 12px 30px #000c;
     min-width: 220px;
@@ -518,14 +574,10 @@
     display: flex;
     width: 100%;
     border: 0;
-    background: transparent;
     text-align: left;
     padding: 6px 10px;
     gap: 8px;
-  }
-
-  .menu button:hover {
-    background: #2a355a;
+    font-weight: 400;
   }
 
   .menu .rec {

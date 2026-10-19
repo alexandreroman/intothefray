@@ -46,8 +46,12 @@
     clip-path: var(--card-cut);
   }
 
+  /*
+    The whole printed card shows, its bottom line included: scans are a hair off the 5:7 slot,
+    and covering it would cut their edges. Stretched by a percent or two, nothing is lost.
+  */
   img {
-    object-fit: cover;
+    object-fit: fill;
     backface-visibility: hidden;
   }
 
@@ -59,7 +63,7 @@
     display: grid;
     place-items: center;
     padding: 8px;
-    background: #0b0f18;
+    background: var(--bg);
     color: var(--muted);
     font-size: 12px;
     font-weight: 700;

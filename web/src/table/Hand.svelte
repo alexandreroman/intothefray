@@ -4,17 +4,21 @@
   behind it dims.
 -->
 <script lang="ts">
+  import { tick } from 'svelte';
+  import { modal } from '../components/modal.svelte';
   import type { CardView as TableCard, PackFace } from '../lib/types';
   import CardBack from './CardBack.svelte';
   import CardFace from './CardFace.svelte';
   import { isHidden } from './face';
   import { interaction } from './interaction.svelte';
   import { cardBox, fanPositions, HAND_CARD, HAND_CARD_NARROW } from './layout';
+  import { motion } from './motion.svelte';
 
   let {
     cards,
     faceOf,
     narrow = false,
+    open = $bindable(false),
   }: {
     /** The hand, in its order. */
     cards: TableCard[];
@@ -22,6 +26,8 @@
     faceOf: (card: TableCard) => PackFace | null;
     /** A narrow screen, where the cards are smaller. */
     narrow?: boolean;
+    /** Whether the hand is raised. */
+    open?: boolean;
   } = $props();
 
   const cardSize = $derived(narrow ? HAND_CARD_NARROW : HAND_CARD);
@@ -50,15 +56,12 @@
   let width = $state(0);
   const slots = $derived(fanPositions(shown.length, width, cardSize.w));
 
-  let open = $state(false);
-
   // A table card of the viewer's own, dragged over the hand to go back to it.
   const dropTarget = $derived(interaction.dropOn?.kind === 'hand');
 
   // While something is dragged, the drag decides: the hand rises only under a
-  // hand card brought back over it, or a table card going back to it. It is
-  // left as it was when the card is dropped, so a reordered hand stays up,
-  // until the pointer moves again.
+  // hand card brought back over it, or a table card going back to it. Once
+  // the card is dropped, the pointer decides again (see below).
   $effect.pre(() => {
     const drag = interaction.dragging;
     if (drag) {
@@ -73,28 +76,79 @@
   const RESTING_MARGIN = 6;
   const OPEN_MARGIN = 24;
 
+  // Where the pointer was last seen, drags included.
+  let pointer: { x: number; y: number } | null = null;
+
   /**
    * Decided from the pointer position rather than :hover: as the hand rises,
    * its cards move away from a pointer resting at the bottom of the screen,
    * and :hover would flip on and off.
    */
   function followPointer(event: PointerEvent): void {
-    if (interaction.dragging) {
+    pointer = { x: event.clientX, y: event.clientY };
+    if (!interaction.dragging) {
+      followBand(pointer);
+    }
+  }
+
+  /** Opens the hand while the pointer is in its band, and lowers it once it is out. */
+  function followBand(at: { x: number; y: number }): void {
+    // A dialog freezes the table: the hand stays down under its backdrop.
+    if (modal.open) {
+      open = false;
       return;
     }
-    const boxes = [...(list?.querySelectorAll('.hcard') ?? [])].map((card) =>
-      card.getBoundingClientRect(),
-    );
-    if (boxes.length === 0) {
+    const cardsShown = [...(list?.querySelectorAll('.hcard') ?? [])];
+    if (cardsShown.length === 0) {
       open = false;
+      return;
+    }
+    // A card flying in (drawn, or brought back from the table) is drawn away from its slot
+    // meanwhile: the band is the resting cards'. Once it has landed, the band is measured again.
+    const boxes = cardsShown
+      .filter((card) => !isMoving(card))
+      .map((card) => card.getBoundingClientRect());
+    if (boxes.length === 0) {
       return;
     }
     const margin = open ? OPEN_MARGIN : RESTING_MARGIN;
     const left = Math.min(...boxes.map((box) => box.left)) - margin;
     const right = Math.max(...boxes.map((box) => box.right)) + margin;
     const top = Math.min(...boxes.map((box) => box.top)) - margin;
-    open = event.clientX >= left && event.clientX <= right && event.clientY >= top;
+    open = at.x >= left && at.x <= right && at.y >= top;
   }
+
+  function isMoving(card: Element): boolean {
+    // Some environments (tests) have no Web Animations: nothing moves there.
+    return card.getAnimations?.().some((animation) => animation.playState === 'running') ?? false;
+  }
+
+  // When a drag ends, and once the cards a view brought have landed, the band is measured again
+  // at the pointer, even if it does not move: dropped away from the hand, or with the pointer
+  // gone from it as the new cards flew in, the hand lowers.
+  let wasDragging = false;
+  $effect(() => {
+    const dragging = interaction.dragging !== null;
+    if (wasDragging && !dragging && pointer) {
+      followBand(pointer);
+    }
+    wasDragging = dragging;
+  });
+
+  $effect(() => {
+    void shown;
+    let stale = false;
+    void tick()
+      .then(() => motion.settled())
+      .then(() => {
+        if (!stale && pointer && !interaction.dragging) {
+          followBand(pointer);
+        }
+      });
+    return () => {
+      stale = true;
+    };
+  });
 
   // The window has no pointerleave of its own: the root element gets it.
   $effect(() => {
@@ -102,6 +156,7 @@
     // A drag keeps the hand as the drag has it, even off the window.
     const close = () => {
       if (!interaction.dragging) {
+        pointer = null;
         open = false;
       }
     };
@@ -127,8 +182,14 @@
   {#each shown as card, i (card === 'gap' ? card : card.id)}
     {@const slot = slots[i]}
     {#if card === 'gap'}
-      <li class="hcard gap" aria-hidden="true" style:--x="{slot?.x ?? 0}px">
-        <div class="fan" style:--rot="{slot?.angle ?? 0}deg" style:--ty="{slot?.y ?? 0}px"></div>
+      <li
+        class="hcard gap"
+        aria-hidden="true"
+        style:--x="{slot?.x ?? 0}px"
+        style:--rot="{slot?.angle ?? 0}deg"
+        style:--ty="{slot?.y ?? 0}px"
+      >
+        <div class="fan"></div>
       </li>
     {:else}
       {@const face = faceOf(card)}
@@ -142,12 +203,16 @@
         data-id={card.id}
         class:locked={interaction.isLocked({ kind: 'hand', id: card.id })}
         style:--x="{slot?.x ?? 0}px"
+        style:--rot="{slot?.angle ?? 0}deg"
+        style:--ty="{slot?.y ?? 0}px"
         onpointerenter={(event) => interaction.enter({ kind: 'hand', id: card.id }, event)}
         onpointerleave={() => interaction.leave()}
         onpointerdown={(event) => interaction.press({ kind: 'hand', id: card.id }, event)}
         onclick={() => interaction.select({ kind: 'hand', id: card.id })}
       >
-        <div class="fan" style:--rot="{slot?.angle ?? 0}deg" style:--ty="{slot?.y ?? 0}px">
+        <!-- What the pointer hovers: the card at rest, which the pop does not move. -->
+        <div class="hit"></div>
+        <div class="fan">
           {#if isHidden(card)}
             <CardBack back={card.back} />
           {:else}
@@ -171,7 +236,7 @@
     /* Above the table and everything on it, below the open hand. */
     z-index: 2550;
     pointer-events: none;
-    background: #05080fa6;
+    background: linear-gradient(to top, #07090fe6 0%, #07090f9e 40%, #07090f66 100%);
     opacity: 0;
     transition: opacity 0.22s;
   }
@@ -199,8 +264,9 @@
     list-style: none;
     overflow: visible;
     pointer-events: none;
-    background: linear-gradient(to top, #0b0f18e6 0%, #0b0f18a0 55%, transparent 100%);
-    transform: translateY(100px) scale(0.82);
+    background: linear-gradient(to top, #07090fe6 0%, #07090fa0 55%, transparent 100%);
+    /* Low enough that only the top part of the cards shows. */
+    transform: translateY(140px) scale(0.82);
     transform-origin: 50% 100%;
     transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
@@ -213,7 +279,7 @@
 
   /* A table card would go back to it. */
   .hand.drop {
-    background: linear-gradient(to top, #1a2a50f0 0%, #1a2a50a0 60%, transparent 100%);
+    background: linear-gradient(to top, #123349f0 0%, #123349a0 60%, transparent 100%);
   }
 
   /* Placed around the middle of the hand, below its top padding: --x is the card's middle. */
@@ -224,7 +290,8 @@
     width: var(--card-w);
     height: var(--card-h);
     transform: translateX(-50%);
-    pointer-events: auto;
+    /* Only its hit area takes the pointer (see .hit). */
+    pointer-events: none;
     cursor: grab;
     touch-action: none;
     user-select: none;
@@ -239,9 +306,9 @@
   }
 
   .hcard.gap .fan {
-    border: 2px dashed #4fd1ff88;
+    border: 2px dashed #49c6ff88;
     border-radius: 9px;
-    background: #4fd1ff14;
+    background: #49c6ff14;
     filter: none;
   }
 
@@ -251,10 +318,24 @@
     z-index: 60;
   }
 
+  /*
+    The card's place at rest on the fan, which takes the pointer. The hovered card pops (.fan
+    below) without moving it: were the hit area the popped card, a pointer near its lower edge
+    would lose it as it pops, get it back as it falls, and so on.
+  */
+  .hit {
+    position: absolute;
+    inset: 0;
+    transform-origin: 50% 110%;
+    transform: translateY(var(--ty)) rotate(var(--rot));
+    pointer-events: auto;
+  }
+
   .fan {
     position: relative;
     width: 100%;
     height: 100%;
+    pointer-events: none;
     transform-origin: 50% 110%;
     transform: translateY(var(--ty)) rotate(var(--rot));
     transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -264,7 +345,20 @@
   /* The hovered card pops up larger, keeping its tilt on the arc. */
   .hcard:hover .fan,
   .hcard.locked .fan {
-    transform: translateY(calc(var(--ty) - 22px)) rotate(var(--rot)) scale(1.2);
+    transform: translateY(calc(var(--ty) - 31px)) rotate(var(--rot)) scale(1.2);
+  }
+
+  /* The card selected by a tap glows in the selection colour, as on the table. */
+  .hcard.locked .fan::before {
+    content: '';
+    position: absolute;
+    inset: 1%;
+    z-index: 1;
+    border-radius: 7px;
+    box-shadow:
+      0 0 0 2px var(--sel),
+      0 0 0 7px #49c6ff38;
+    pointer-events: none;
   }
 
   /* The resting hand sits under the same veil the table gets when the hand is in use. */
@@ -273,7 +367,7 @@
     position: absolute;
     inset: 0;
     border-radius: 8px;
-    background: #05080fa6;
+    background: #07090fa6;
     clip-path: var(--card-cut);
     pointer-events: none;
     opacity: 1;

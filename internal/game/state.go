@@ -8,11 +8,10 @@ import (
 	"github.com/alexandreroman/intothefray/internal/pack"
 )
 
-// Area is a region of the table: the villain side or one player's side.
+// Area names the seat of a player: "p0", "p1"... Hands and private views
+// are keyed by it. The table itself is one surface shared by everyone, with
+// no areas.
 type Area string
-
-// AreaVillain is the villain side of the table.
-const AreaVillain Area = "villain"
 
 // PlayerArea returns the area of the player seated at seat (0 → "p0").
 func PlayerArea(seat int) Area {
@@ -44,7 +43,6 @@ type Card struct {
 	Owner     int            `json:"owner"` // seat, or NoOwner
 	Home      string         `json:"home"`  // id of the pile it returns to: "deck:p0" or "enc"
 	Zone      Zone           `json:"zone"`
-	Area      Area           `json:"area,omitempty"`
 	X         int            `json:"x"`
 	Y         int            `json:"y"`
 	Z         int            `json:"z"`
@@ -82,7 +80,6 @@ type Pile struct {
 	ID    string   `json:"id"`
 	Kind  PileKind `json:"kind"`
 	Owner int      `json:"owner"`
-	Area  Area     `json:"area"`
 	X     int      `json:"x"`
 	Y     int      `json:"y"`
 	Cards []string `json:"cards"` // bottom → top
@@ -103,11 +100,10 @@ type Arrow struct {
 	Seat int    `json:"seat"`
 }
 
-// Point is a position within an area.
+// Point is a position on the table, in table units.
 type Point struct {
-	Area Area `json:"area"`
-	X    int  `json:"x"`
-	Y    int  `json:"y"`
+	X int `json:"x"`
+	Y int `json:"y"`
 }
 
 // PrivateView is a Look or Search a player has opened on a pile.

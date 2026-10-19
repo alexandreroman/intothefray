@@ -79,6 +79,14 @@ function ownerOf(pile: PileView, view: View): string {
   return `${view.players[pile.owner]?.name ?? 'Another player'}'s`;
 }
 
+/**
+ * Whether the viewer may shuffle a set-aside pile into the encounter deck from
+ * its box: the scenario's own, or their own, once it holds cards.
+ */
+export function canShuffleIn(pile: PileView, seat: number): boolean {
+  return pile.kind === 'aside' && (pile.owner === -1 || pile.owner === seat) && pile.count > 0;
+}
+
 /** Whether the pile is a deck the boxes search with a choice to shuffle on closing. */
 export function isDeck(pile: PileView): boolean {
   return pile.kind === 'deck' || pile.kind === 'encounter';
@@ -87,7 +95,7 @@ export function isDeck(pile: PileView): boolean {
 /**
  * The actions of a card in a pile box, in bar order (the prototype's
  * renderDeckView): Draw from the own deck or discard pile, Play to the first
- * free slot of the viewer's area, Discard, Put at the bottom of the deck, and
+ * free slot of the viewer's row, Discard, Put at the bottom of the deck, and
  * Shuffle into its deck for the out-of-play piles. Another player's deck or
  * set-aside cards cannot be touched.
  */
@@ -139,8 +147,7 @@ export function tileActions(card: CardView, pile: PileView, context: TileContext
 }
 
 function playAction(card: CardView, context: TileContext): Action {
-  const area = `p${context.seat}` as const;
   const table = context.view.table;
-  const { x, y } = freeSlot(table?.cards ?? [], table?.piles ?? [], area, context.sizeOf);
-  return { kind: 'play', card: card.id, area, x, y };
+  const { x, y } = freeSlot(table?.cards ?? [], table?.piles ?? [], context.seat, context.sizeOf);
+  return { kind: 'play', card: card.id, x, y };
 }

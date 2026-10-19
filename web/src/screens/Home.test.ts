@@ -52,6 +52,32 @@ describe('Home', () => {
     expect(window.location.pathname).toBe('/');
   });
 
+  it('shows the logo, the pitch and the disclaimer', () => {
+    render(Home);
+
+    expect(screen.getByRole('heading', { level: 1, name: 'Into The Fray' })).toBeTruthy();
+    expect(screen.getByText('Play Marvel Champions in your browser.')).toBeTruthy();
+    for (const feature of ['A true sandbox', 'Up to 4 heroes', 'Bring your own deck']) {
+      expect(screen.getByText(feature)).toBeTruthy();
+    }
+    expect(
+      screen.getByText(
+        'Fan-made and unofficial. Not affiliated with Marvel or Fantasy Flight Games.',
+      ),
+    ).toBeTruthy();
+  });
+
+  it('disables the start button while the game is being created', async () => {
+    localStorage.setItem('itf-name', 'Alex');
+    createGameMock.mockReturnValue(new Promise(() => {}));
+    render(Home);
+    const start = screen.getByRole('button', { name: 'Start a game' });
+
+    await fireEvent.click(start);
+
+    expect((start as HTMLButtonElement).disabled).toBe(true);
+  });
+
   it('goes to the options screen', async () => {
     render(Home);
     await fireEvent.click(screen.getByRole('button', { name: 'Options' }));

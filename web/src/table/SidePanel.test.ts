@@ -28,7 +28,7 @@ afterEach(() => {
 
 describe('SidePanel', () => {
   it('history shows newest first with struck undone lines', () => {
-    render(SidePanel, { preview: null, log: LOG, onundo: () => {} });
+    render(SidePanel, { log: LOG, onundo: () => {} });
 
     const lines = historyLines();
     expect(lines.map((l) => l.querySelector('.txt')?.textContent)).toEqual([
@@ -50,7 +50,6 @@ describe('SidePanel', () => {
 
   it('leaves system lines uncoloured', () => {
     render(SidePanel, {
-      preview: null,
       log: [line({ who: 'Table', color: -1, text: 'shuffled' })],
       onundo: () => {},
     });
@@ -60,64 +59,81 @@ describe('SidePanel', () => {
 
   it('undo button disabled without undo', async () => {
     const onundo = vi.fn();
-    const { rerender } = render(SidePanel, { preview: null, log: LOG, onundo });
+    const { rerender } = render(SidePanel, { log: LOG, onundo });
 
-    const undo = screen.getByRole('button', { name: 'Undo' });
-    expect((undo as HTMLButtonElement).disabled).toBe(true);
-    expect(undo.title).toBe('Nothing of yours to undo');
+    const undo = screen.getByRole('button', { name: 'Undo last action' });
+    expect(undo.getAttribute('aria-disabled')).toBe('true');
+    expect(undo.dataset.tip).toBe('Nothing of yours to undo');
+    await fireEvent.click(undo);
+    expect(onundo).not.toHaveBeenCalled();
 
-    await rerender({ preview: null, log: LOG, onundo, canUndo: true, undoText: 'drew 1 card' });
-    expect((undo as HTMLButtonElement).disabled).toBe(false);
-    expect(undo.title).toBe('Undo your last action: drew 1 card');
+    await rerender({ log: LOG, onundo, canUndo: true });
+    expect(undo.getAttribute('aria-disabled')).toBe('false');
+    expect(undo.hasAttribute('data-tip')).toBe(false);
     await fireEvent.click(undo);
     expect(onundo).toHaveBeenCalledOnce();
   });
 
-  it('shows the empty preview frame', () => {
-    render(SidePanel, { preview: null, log: [], onundo: () => {} });
-    const frame = screen.getByLabelText('Card preview');
-    expect(frame.textContent).toContain('Hover a card');
-    expect(frame.textContent).toContain('to see it here');
-    expect(frame.classList).toContain('empty');
+  it('offers to collapse when it can, and says what it controls', async () => {
+    const { unmount } = render(SidePanel, { log: LOG, onundo: () => {} });
+    expect(screen.queryByRole('button', { name: 'Collapse history' })).toBeNull();
+    unmount();
+
+    const ontoggle = vi.fn();
+    render(SidePanel, { log: LOG, onundo: () => {}, ontoggle, controls: 'history-panel' });
+    const collapse = screen.getByRole('button', { name: 'Collapse history' });
+    expect(collapse.getAttribute('aria-expanded')).toBe('true');
+    expect(collapse.getAttribute('aria-controls')).toBe('history-panel');
+    expect(collapse.dataset.tip).toBe('Collapse history');
+    await fireEvent.click(collapse);
+    expect(ontoggle).toHaveBeenCalledOnce();
   });
 
-  it('previews a face, adapting to landscape', async () => {
-    const face = { kind: 'face' as const, images: ['scheme.png'], name: 'The Break-In!' };
-    const { rerender } = render(SidePanel, {
-      preview: { ...face, landscape: false },
-      log: [],
-      onundo: () => {},
-    });
+  it('collapsed, shows a strip with Expand and an Undo icon, and no history', async () => {
+    const onundo = vi.fn();
+    const ontoggle = vi.fn();
+    const props = { log: LOG, onundo, ontoggle, collapsed: true, controls: 'history-panel' };
+    const { rerender } = render(SidePanel, props);
 
-    const frame = screen.getByLabelText('Card preview');
-    expect(frame.classList).not.toContain('empty');
-    expect(screen.getByRole('img', { name: 'The Break-In!' }).getAttribute('src')).toBe(
-      'scheme.png',
-    );
-    expect(frame.querySelector('.art')?.classList).not.toContain('land');
+    expect(screen.queryByRole('list', { name: 'History' })).toBeNull();
+    expect(screen.queryByRole('heading')).toBeNull();
+    const expand = screen.getByRole('button', { name: 'Expand history' });
+    expect(expand.getAttribute('aria-expanded')).toBe('false');
+    expect(expand.getAttribute('aria-controls')).toBe('history-panel');
+    await fireEvent.click(expand);
+    expect(ontoggle).toHaveBeenCalledOnce();
 
-    await rerender({ preview: { ...face, landscape: true }, log: [], onundo: () => {} });
-    expect(frame.querySelector('.art')?.classList).toContain('land');
-    expect(screen.getByRole('img', { name: 'The Break-In!' }).classList).toContain('land');
+    // Undo, as an icon: off with nothing to undo, the tip saying why.
+    const undo = screen.getByRole('button', { name: 'Undo last action' });
+    expect(undo.textContent?.trim()).toBe('');
+    expect(undo.getAttribute('aria-disabled')).toBe('true');
+    expect(undo.dataset.tip).toBe('Nothing of yours to undo');
+    await fireEvent.click(undo);
+    expect(onundo).not.toHaveBeenCalled();
+
+    await rerender({ ...props, canUndo: true });
+    expect(undo.getAttribute('aria-disabled')).toBe('false');
+    expect(undo.dataset.tip).toBe('Undo last action');
+    await fireEvent.click(undo);
+    expect(onundo).toHaveBeenCalledOnce();
   });
 
-  it('previews a card back', () => {
-    localStorage.setItem('itf-theme', 'minimal');
-    try {
-      render(SidePanel, {
-        preview: { kind: 'back', back: 'encounter' },
-        log: [],
-        onundo: () => {},
-      });
-      expect(screen.getByRole('img', { name: 'Encounter card back' })).toBeTruthy();
-    } finally {
-      localStorage.clear();
-    }
+  it('titles its history, and holds no preview', () => {
+    render(SidePanel, { log: LOG, onundo: () => {} });
+    const titles = screen.getAllByRole('heading').map((heading) => heading.textContent);
+    expect(titles).toEqual(['History']);
+    expect(screen.queryByLabelText('Card preview')).toBeNull();
+  });
+
+  it('shows each line time first', () => {
+    render(SidePanel, { log: LOG, onundo: () => {} });
+    const [newest] = historyLines() as [HTMLElement];
+    expect(newest.firstElementChild?.textContent).toBe('14:03');
   });
 
   it('hovering a line highlights its cards', async () => {
     const log = [line({ text: 'exhausted Spider-Man', cards: ['c1', 'c2'] })];
-    render(SidePanel, { preview: null, log, onundo: () => {} });
+    render(SidePanel, { log, onundo: () => {} });
 
     const [entry] = historyLines() as [HTMLElement];
     await fireEvent.pointerEnter(entry);
@@ -127,17 +143,45 @@ describe('SidePanel', () => {
     expect(interaction.highlighted.size).toBe(0);
   });
 
+  it('a truncated line shows its full text over the list while hovered', async () => {
+    const log = [
+      line({ text: 'played a short card', at: at(14, 4) }),
+      line({ text: 'moved a card with a very long name to the encounter discard', at: at(14, 5) }),
+    ];
+    render(SidePanel, { log, onundo: () => {} });
+    const [long, short] = historyLines() as [HTMLElement, HTMLElement];
+
+    // jsdom lays nothing out: the long line's text says it overflows.
+    const text = long.querySelector('.txt') as HTMLElement;
+    Object.defineProperty(text, 'scrollWidth', { value: 400 });
+    Object.defineProperty(text, 'clientWidth', { value: 200 });
+
+    await fireEvent.pointerEnter(short);
+    expect(short.querySelector('.full')).toBeNull();
+    await fireEvent.pointerLeave(short);
+
+    await fireEvent.pointerEnter(long);
+    const full = long.querySelector('.full');
+    // The same line, time first, only unclipped.
+    expect(full?.firstElementChild?.textContent).toBe('14:05');
+    expect(full?.querySelector('.whole')?.textContent).toBe(text.textContent);
+    expect(full?.querySelector('.whole')?.classList).not.toContain('txt');
+
+    await fireEvent.pointerLeave(long);
+    expect(long.querySelector('.full')).toBeNull();
+  });
+
   it('a hovered line that leaves the list stops highlighting', async () => {
     const log = [
       line({ text: 'exhausted Spider-Man', cards: ['c1'] }),
       line({ text: 'readied Spider-Man', cards: ['c1'] }),
     ];
-    const { rerender } = render(SidePanel, { preview: null, log, onundo: () => {} });
+    const { rerender } = render(SidePanel, { log, onundo: () => {} });
 
     // The newest line is gone with no pointerleave (a new history, say).
     await fireEvent.pointerEnter(historyLines()[0] as HTMLElement);
     expect([...interaction.highlighted]).toEqual(['c1']);
-    await rerender({ preview: null, log: log.slice(0, 1), onundo: () => {} });
+    await rerender({ log: log.slice(0, 1), onundo: () => {} });
     expect(interaction.highlighted.size).toBe(0);
   });
 
@@ -149,24 +193,22 @@ describe('SidePanel', () => {
       const first = line({ text: 'added 1 damage to Spider-Man', at: at(14, 5) });
       const other = line({ text: 'drew 1 card', at: at(14, 4) });
       const { rerender } = render(SidePanel, {
-        preview: null,
         log: [other, first],
         onundo: () => {},
       });
       expect(animate).not.toHaveBeenCalled();
 
       const merged = { ...first, text: 'set damage on Spider-Man to 2', at: at(14, 6) };
-      await rerender({ preview: null, log: [other, merged], onundo: () => {} });
+      await rerender({ log: [other, merged], onundo: () => {} });
       expect(animate).toHaveBeenCalledOnce();
       expect(animate.mock.contexts[0]).toBe(historyLines()[0]);
       expect(animate.mock.calls[0]?.[0]).toEqual([{ backgroundColor: '#2a3a66' }, {}]);
 
       // Merged again: it bumps again. A new line slides in instead.
       const again = { ...merged, text: 'set damage on Spider-Man to 3', at: at(14, 7) };
-      await rerender({ preview: null, log: [other, again], onundo: () => {} });
+      await rerender({ log: [other, again], onundo: () => {} });
       expect(animate).toHaveBeenCalledTimes(2);
       await rerender({
-        preview: null,
         log: [other, again, line({ text: 'drew 2 cards' })],
         onundo: () => {},
       });

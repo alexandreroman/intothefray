@@ -1,20 +1,24 @@
 <!--
-  The table page: the top bar, the table column (a vertical stack of zones,
-  each scrolling horizontally on its own) and the side column (preview and
-  history).
+  The table page: the top bar, the table column (one surface for everyone,
+  scrolling both ways) and the side column (history), which collapses to a
+  slim strip. The preview of the hovered card floats over the table's bottom
+  right corner. On a narrow screen there is no side column.
 -->
 <script lang="ts">
   import { tick, untrack } from 'svelte';
+  import { modal } from '../components/modal.svelte';
+  import { prefersReducedMotion } from 'svelte/motion';
   import { MediaQuery } from 'svelte/reactivity';
   import Tooltip from '../components/Tooltip.svelte';
   import TopBar from '../components/TopBar.svelte';
-  import { knownCard, loadGameCards } from '../lib/catalog';
+  import { knownCard, loadGameCards, loadIndex } from '../lib/catalog';
   import { getPref, setPref } from '../lib/prefs';
   import type { GameSession } from '../lib/session.svelte';
   import type {
     Action,
-    Area,
     CardView as TableCard,
+    Index,
+    LobbyConfig,
     PackFace,
     PileView,
     Size,
@@ -25,6 +29,7 @@
   import {
     actionsFor,
     counterName,
+    isLocked,
     seatOf,
     type ActionItem,
     type CountQuestion,
@@ -36,18 +41,38 @@
   import type { LocalBox, ShownBox } from './boxes';
   import CardBox from './CardBox.svelte';
   import DragLayer from './DragLayer.svelte';
+  import { sourceOf } from './drag';
   import Flights from './Flights.svelte';
-  import { isHidden, pileBack } from './face';
+  import { isHidden } from './face';
   import Hand from './Hand.svelte';
   import { interaction } from './interaction.svelte';
   import { handleKey } from './keys';
   import KeysSheet from './KeysSheet.svelte';
-  import { zoneHeights, zoneMinHeight, zoneOrder, zoneShare } from './layout';
+  import { isOutOfPlay, ownerFrames, surfaceSize } from './layout';
+  import {
+    ALL_ROWS,
+    focusRows,
+    lastRow,
+    rowOfSeat,
+    saveViewMode,
+    storedViewMode,
+    type ViewMode,
+  } from './rows';
   import { motion } from './motion.svelte';
   import Presence from './Presence.svelte';
   import TokenPill from './TokenPill.svelte';
-  import SidePanel, { type Preview } from './SidePanel.svelte';
-  import Zone, { type Heading, type ResizeAbove } from './Zone.svelte';
+  import CardPreview, { type Preview } from './CardPreview.svelte';
+  import {
+    bottomRoom,
+    chooseCorner,
+    FOCUS_MARGINS,
+    HOME,
+    TABLE_EDGE,
+    TABLE_EDGE_BOTTOM,
+    type Corner,
+  } from './focus';
+  import SidePanel from './SidePanel.svelte';
+  import Surface, { type OwnerBox } from './Surface.svelte';
   import ZoomControl from './ZoomControl.svelte';
   import { clampZoom, saveZoom, storedZoom, ZOOM_MAX, ZOOM_MIN } from './zoom';
 
@@ -89,10 +114,37 @@
     return faceOf(card)?.size ?? 'std';
   }
 
+  // The pack index names the scenario and the modular sets of the top bar's crumb.
+  let index = $state.raw<Index | null>(null);
+  loadIndex().then(
+    (loaded) => (index = loaded),
+    // Without names, the top bar shows no crumb.
+    () => {},
+  );
+
+  /** "Rhino / Bomb Scare": the scenario, then its modular sets. */
+  function crumbsOf(config: LobbyConfig, names: Index | null): string[] {
+    const scenario = names?.scenarios.find((s) => s.id === config.scenario);
+    if (!names || !scenario) {
+      return [];
+    }
+    const modulars = config.modulars.map(
+      (code) => names.sets.find((set) => set.code === code)?.name ?? code,
+    );
+    return [scenario.name, ...modulars];
+  }
+
+  const crumbs = $derived(crumbsOf(view.config, index));
+
   const cards = $derived(view.table?.cards ?? []);
   const piles = $derived(view.table?.piles ?? []);
   const cardsById = $derived(new Map(cards.map((card) => [card.id, card])));
   const ownArea = $derived(view.you.role === 'player' ? view.you.area : undefined);
+
+  // Ready all has something to ready: an exhausted card on the table, whoever owns it, not locked.
+  const canReadyAll = $derived(
+    cards.some((card) => card.zone === 'table' && card.exhausted === true && !isLocked(card)),
+  );
 
   // Spectators have no hand.
   const handCards = $derived(
@@ -114,169 +166,135 @@
     return topId === undefined ? undefined : cardsById.get(topId);
   }
 
-  function villainHeading(): Heading {
-    const stage = view.table?.stages.find((s) => s.key === 'villain');
-    const face = faceOf(stage ? cardsById.get(stage.current) : undefined);
-    return {
-      name: 'Villain',
-      detail: face?.name,
-      aside: face?.stage ? `stage ${face.stage}` : undefined,
-    };
+  // ---- What the surface shows ----
+
+  // "All", or the villain's row and one player's row under it (rows.ts).
+  let viewMode = $state<ViewMode>(storedViewMode());
+  // The player whose row "Villain + player" shows, once picked.
+  let pickedSeat = $state<number | null>(null);
+
+  function changeViewMode(mode: ViewMode): void {
+    viewMode = mode;
+    saveViewMode(mode);
   }
 
-  function playerHeading(area: Area): Heading {
-    const player = view.players.find((p) => p.area === area);
-    if (!player) {
-      return { name: area };
+  /** The players at the table, with their seat, in seat order. */
+  const seatedPlayers = $derived(
+    view.players.flatMap((player) =>
+      player.area ? [{ seat: seatOf(player.area), name: player.name, color: player.color }] : [],
+    ),
+  );
+  const seats = $derived(seatedPlayers.map((player) => player.seat));
+  // The viewer's own row first; a spectator starts with the first seat.
+  const shownSeat = $derived.by(() => {
+    if (pickedSeat !== null && seats.includes(pickedSeat)) {
+      return pickedSeat;
     }
-    const cardsInHand = `${player.handCount} ${player.handCount === 1 ? 'card' : 'cards'} in hand`;
-    return {
-      name: player.name,
-      detail: player.heroName,
-      aside: cardsInHand,
-      color: area === ownArea ? `var(--p${player.color + 1})` : undefined,
-    };
-  }
-
-  // The zone heights follow it, so it is declared before them.
-  let zoom = $state(storedZoom());
-
-  // Heights chosen with the separators, kept for the session only. Only the
-  // villain's zone and the viewer's own can be resized; until then, and for
-  // the other players' zones, a zone takes its share of the visible height.
-  let chosenHeights = $state<Partial<Record<Area, number>>>({});
-  // A resizable zone only grows on its own: once its cards made it taller, it
-  // stays that tall when they move back up, until it is resized by hand. Kept
-  // apart from the chosen heights: a zone at its share still follows the
-  // visible height.
-  let grownHeights = $state<Partial<Record<Area, number>>>({});
-
-  const resizable = (area: Area) => area === 'villain' || area === ownArea;
-
-  // The table's visible size, in px; its width only matters to the zone chrome (see below).
-  let visibleHeight = $state(0);
-  let visibleWidth = $state(0);
-  // What the zones take of the visible height besides their surfaces, in px.
-  let zoneChrome = $state(0);
-  // In table units: the surfaces are zoomed, the chrome around them is not. 0 until measured.
-  const availableHeight = $derived(visibleHeight > 0 ? (visibleHeight - zoneChrome) / zoom : 0);
-
-  const zones = $derived.by(() => {
-    const placed = zoneOrder(view).map((area) => ({
-      area,
-      heading: area === 'villain' ? villainHeading() : playerHeading(area),
-      cards: cards.filter((card) => card.zone === 'table' && card.area === area),
-      piles: piles.filter((pile) => pile.area === area),
-      min: zoneMinHeight(cards, piles, area, sizeOf),
-    }));
-    const heights = zoneHeights(
-      placed.map((zone) => ({
-        min: zone.min,
-        grown: grownHeights[zone.area],
-        chosen: chosenHeights[zone.area],
-      })),
-      availableHeight,
-    );
-    return placed.map((zone, i) => ({ ...zone, height: heights[i] ?? zone.min }));
+    const own = ownArea ? seatOf(ownArea) : null;
+    return own !== null && seats.includes(own) ? own : (seats[0] ?? null);
   });
 
-  type ZoneData = (typeof zones)[number];
+  // With one player, "All" already shows the villain and that player: there is no choice to make.
+  const focused = $derived(viewMode === 'focus' && seats.length > 1 && shownSeat !== null);
 
-  // A zone grows only when its cards make it taller than it would be without
-  // them: its chosen height, or else its share (a zone at its share has not
-  // grown, and keeps following the visible height). Not while the catalog loads:
-  // every card counts as std until then, which can be taller than its real
-  // size. That also covers the first render, before the table is measured.
-  $effect.pre(() => {
-    if (catalog === 'loading') {
+  const rowMap = $derived(
+    focused && shownSeat !== null
+      ? focusRows(rowOfSeat(piles, shownSeat), lastRow(piles))
+      : ALL_ROWS,
+  );
+
+  /** Shows the row of the player seated `step` seats after the shown one, round the table. */
+  function stepSeat(current: number, step: number): void {
+    const index = seats.indexOf(current);
+    pickedSeat = seats[(index + step + seats.length) % seats.length] ?? current;
+  }
+
+  // The arrow keys in the player swatches, as in any radio group.
+  const SEAT_STEPS: Record<string, number> = {
+    ArrowRight: 1,
+    ArrowDown: 1,
+    ArrowLeft: -1,
+    ArrowUp: -1,
+  };
+
+  /** Moves the choice, and the keyboard focus with it, to the next or previous swatch. */
+  async function onSeatKey(event: KeyboardEvent, current: number): Promise<void> {
+    const step = SEAT_STEPS[event.key];
+    if (step === undefined) {
       return;
     }
-    const share = zoneShare(zones.length, availableHeight);
-    for (const zone of zones) {
-      const without = Math.max(chosenHeights[zone.area] ?? share, grownHeights[zone.area] ?? 0);
-      if (resizable(zone.area) && zone.min > without) {
-        grownHeights[zone.area] = zone.min;
+    // Taken: the table's own shortcuts must not see it.
+    event.preventDefault();
+    const group = event.currentTarget as HTMLElement;
+    stepSeat(current, step);
+    await tick();
+    group.querySelector<HTMLElement>('[aria-checked="true"]')?.focus();
+  }
+
+  /** What lies at a height of the table, drawn where the view mode shows it; nothing when hidden. */
+  function shown<T extends { y: number }>(items: T[]): T[] {
+    return items.flatMap((item) => {
+      const y = rowMap.toDisplay(item.y);
+      return y === null ? [] : [{ ...item, y }];
+    });
+  }
+
+  // Out-of-play piles are not drawn: the bars of their owner's deck and discard pile open them.
+  const tablePiles = $derived(shown(piles.filter((pile) => !isOutOfPlay(pile))));
+  const tableCards = $derived(shown(cards.filter((card) => card.zone === 'table')));
+
+  /** The frames around each owner's deck and discard pile, named after their owner. */
+  const owners = $derived(
+    ownerFrames(tablePiles).map((frame): OwnerBox => {
+      if (frame.owner === -1) {
+        return { frame, name: 'Villain', color: 'var(--spark)' };
       }
-    }
-  });
+      const player = view.players[frame.owner];
+      if (!player) {
+        return { frame, name: `Player ${frame.owner + 1}`, color: 'var(--muted)' };
+      }
+      const inHand = `${player.handCount} ${player.handCount === 1 ? 'card' : 'cards'} in hand`;
+      return { frame, name: player.name, color: `var(--p${player.color + 1})`, tip: inHand };
+    }),
+  );
 
-  /**
-   * The zone chrome: headers, separators and the horizontal scrollbar of a
-   * zone that overflows, in whole px. Measured rather than taken from Zone's
-   * styles, as the scrollbars come and go and their size depends on the
-   * platform. It runs to the bottom of the last section, which is the bottom
-   * of its scroller: the scroller's 24 px negative margin collapses outside
-   * the section. So the scrollbar of the last zone stays in view, and the
-   * room under its surface matches the room at its sides.
-   */
-  function measureZoneChrome(): number {
-    const sections = [...(wrap?.querySelectorAll<HTMLElement>('.zsec') ?? [])];
-    const first = sections.at(0);
-    const last = sections.at(-1);
-    if (!first || !last) {
-      return 0;
-    }
-    const stack = last.getBoundingClientRect().bottom - first.getBoundingClientRect().top;
-    let surfaces = 0;
-    for (const section of sections) {
-      surfaces += section.querySelector('.surface')?.getBoundingClientRect().height ?? 0;
-    }
-    // Rounded: the zoomed surfaces can end between two pixels.
-    return Math.round(stack - surfaces);
-  }
+  // The surface size follows it, so it is declared before it.
+  let zoom = $state(storedZoom());
 
-  // Measured again whenever the zones or the visible size change. The chrome
-  // does not depend on the surfaces' heights, so the measure that follows the
-  // heights it gave finds the same value and stops there.
-  $effect(() => {
-    void [zones, zoom, visibleWidth, visibleHeight];
-    const measured = measureZoneChrome();
-    // Past 1 px only: at some zooms the surfaces end between two pixels, and
-    // the rounded measure can swing by one from a pass to the next.
-    if (Math.abs(measured - zoneChrome) > 1) {
-      zoneChrome = measured;
-    }
-  });
+  // The scroller pads the surface, so that glows, tilted cards and outlines near an edge show.
+  const SCROLL_PADDING = 24;
 
-  function resizeAbove(above: ZoneData | undefined): ResizeAbove | undefined {
-    if (!above || !resizable(above.area)) {
-      return undefined;
-    }
-    return {
-      title: `Drag to resize ${above.area === 'villain' ? "the villain's" : 'your'} zone`,
-      height: above.height,
-      min: above.min,
-      onresize: (height) => {
-        // Never under the zone's minimum (Zone sees to it), so what its cards grew it to no
-        // longer counts. Only the last zone gives or takes the difference.
-        chosenHeights[above.area] = height;
-        delete grownHeights[above.area];
-      },
-    };
-  }
+  // The table's visible size, in px.
+  let visibleWidth = $state(0);
+  let visibleHeight = $state(0);
 
-  const firstPlayer = $derived(view.table?.firstPlayer);
+  // In table units: at least what shows, rounded down so that an empty table never scrolls.
+  const surface = $derived(
+    surfaceSize(tableCards, tablePiles, sizeOf, {
+      w: Math.max(0, Math.floor((visibleWidth - 2 * SCROLL_PADDING) / zoom)),
+      h: Math.max(0, Math.floor((visibleHeight - 2 * SCROLL_PADDING) / zoom)),
+    }),
+  );
 
+  const firstPlayer = $derived(shown(view.table?.firstPlayer ? [view.table.firstPlayer] : [])[0]);
+
+  /** The face the preview shows; none for a card back, which tells nothing more on the table. */
   function previewOf(previewed: TableElement | null): Preview | null {
     if (previewed?.kind === 'pile') {
       const pile = piles.find((p) => p.id === previewed.id);
-      if (!pile || pile.count === 0) {
-        return null;
-      }
-      const top = topOf(pile);
-      return top ? previewOfCard(top) : { kind: 'back', back: pileBack(pile.kind) };
+      const top = pile && pile.count > 0 ? topOf(pile) : undefined;
+      return top ? previewOfCard(top) : null;
     }
     const card = previewed ? cardsById.get(previewed.id) : undefined;
     return card ? previewOfCard(card) : null;
   }
 
-  function previewOfCard(card: TableCard): Preview {
+  function previewOfCard(card: TableCard): Preview | null {
     if (isHidden(card)) {
-      return { kind: 'back', back: card.back };
+      return null;
     }
     const face = faceOf(card);
     return {
-      kind: 'face',
       images: face?.images ?? [],
       name: face?.name ?? '',
       landscape: face?.size === 'land' || face?.size === 'dland',
@@ -286,8 +304,125 @@
   // From ids, so the preview follows a flip or a pile's new top card.
   const preview = $derived(previewOf(interaction.previewed));
 
+  // The preview fades in as it shows and out as it goes; another card swaps in at once. While
+  // it fades out, the last one stays drawn, out of the accessibility tree.
+  const PREVIEW_FADE_MS = 110;
+  let fading = $state<Preview | null>(null);
+  let lastPreview: Preview | null = null;
+  let fadeTimer: ReturnType<typeof setTimeout> | undefined;
+
+  $effect.pre(() => {
+    const current = preview;
+    untrack(() => {
+      clearTimeout(fadeTimer);
+      if (current) {
+        fading = null;
+        lastPreview = current;
+        return;
+      }
+      if (lastPreview && !prefersReducedMotion.current) {
+        fading = lastPreview;
+        fadeTimer = setTimeout(() => (fading = null), PREVIEW_FADE_MS);
+      }
+      lastPreview = null;
+    });
+  });
+
+  $effect(() => () => clearTimeout(fadeTimer));
+
+  const drawnPreview = $derived(preview ?? fading);
+
+  // ---- The Focus panel's corner ----
+
+  // Bottom right, unless that hides the whole hovered element (focus.ts).
+  let focusCorner = $state<Corner>(HOME);
+  // The height of the controls at the bottom right (the zoom control, the narrow Undo): the panel sits above them.
+  let cornerHeight = $state(0);
+  // The controls' box at the bottom right: the keyboard shortcuts sheet lines up on its right edge.
+  let cornerBox = $state<HTMLElement>();
+  // The panel's size, kept from the last time it showed; a portrait card's until then.
+  let focusWidth = $state(320);
+  let focusHeight = $state(450);
+  // The play area and the hovered element on the screen, measured when they may have moved
+  // (hover, scroll, zoom, resize).
+  let focusArea: DOMRect | null = null;
+  let focusHovered: DOMRect | null = null;
+
+  /** The hovered card or pile, on the screen. A hovered hand card has no preview to place. */
+  function hoveredRect(): DOMRect | null {
+    const hovered = interaction.hovered;
+    if (!hovered || hovered.kind === 'hand' || !app) {
+      return null;
+    }
+    const id = CSS.escape(hovered.id);
+    const selector = `.surface ${hovered.kind === 'pile' ? '.pile' : '.card:not(.pile)'}[data-id="${id}"]`;
+    return app.querySelector(selector)?.getBoundingClientRect() ?? null;
+  }
+
+  /** Measures the play area and the hovered element, then places the panel. */
+  function measureFocus(): void {
+    // Nothing previewed, nothing to place: it is measured again as soon as a card is.
+    if (!preview) {
+      return;
+    }
+    focusArea = wrap?.getBoundingClientRect() ?? null;
+    focusHovered = hoveredRect();
+    placeFocus();
+  }
+
+  /** Places the panel against the rects last measured. */
+  function placeFocus(): void {
+    if (!preview || !focusArea) {
+      return;
+    }
+    const next = chooseCorner({
+      current: focusCorner,
+      area: focusArea,
+      size: { w: focusWidth, h: focusHeight },
+      hovered: focusHovered,
+      controls: cornerHeight,
+      // The player selector at the bottom left.
+      taken: focused ? ['bottom-left'] : [],
+    });
+    focusCorner = next;
+  }
+
+  /** The panel's margins in its corner: off the play area's edges, and above the controls at home. */
+  function focusMargin(corner: Corner): string {
+    const top = corner.startsWith('top') ? FOCUS_MARGINS.top : 0;
+    const bottom = bottomRoom(corner, cornerHeight);
+    const left = corner.endsWith('left') ? FOCUS_MARGINS.side : 0;
+    const right = corner.endsWith('right') ? FOCUS_MARGINS.side : 0;
+    return `${top}px ${right}px ${bottom}px ${left}px`;
+  }
+
+  // Placed before it is drawn, when what is hovered, the zoom, the play area's or the panel's size change.
+  $effect.pre(() => {
+    void [
+      preview,
+      interaction.hovered,
+      zoom,
+      visibleWidth,
+      visibleHeight,
+      focusWidth,
+      focusHeight,
+      focused,
+      cornerHeight,
+    ];
+    untrack(measureFocus);
+  });
+
   // The interaction state is shared: a previous game's must not show in the next one.
   $effect(() => () => interaction.reset());
+
+  // The table is exactly the window: the page never scrolls under it, only the surface does
+  // (.fixed-screen below). Without this, the resting hand, lowered past the bottom, would make the page
+  // scrollable, and a wheel or a drag would scroll the page rather than the surface.
+  $effect(() => {
+    const page = document.documentElement;
+    page.classList.add('fixed-screen');
+    return () => page.classList.remove('fixed-screen');
+  });
 
   // ---- Animations ----
 
@@ -309,21 +444,68 @@
       // Back after a long gap: the table shows as it is now, nothing plays.
       if (session.viewGap > MAX_APART_MS) {
         motion.stop();
+        void tick().then(rehoverUnderPointer);
         return;
       }
       const ownDrop = interaction.landing?.card ?? undefined;
       const anims = diffViews(prev, next, ownDrop, session.viewGap);
-      void motion.animate(app, anims, { before: prev.table, after: next.table }, zoom);
+      void motion
+        .animate(app, anims, { before: prev.table, after: next.table }, zoom)
+        .then(async () => {
+          // Once drawn, then once still: a card turning over is edge-on, out of reach, meanwhile.
+          rehoverUnderPointer();
+          await motion.settled();
+          rehoverUnderPointer();
+        });
     });
   });
+
+  /**
+   * Hovers what a new view put under a pointer at rest, whoever acted (spec
+   * 5.8): the card or hand card there, or nothing once the hovered card went
+   * from under it. The ring, the bar and the preview follow.
+   */
+  function rehoverUnderPointer(): void {
+    const { x, y } = interaction.pointer;
+    if (
+      !Number.isFinite(x) ||
+      !Number.isFinite(y) ||
+      typeof document.elementFromPoint !== 'function'
+    ) {
+      return;
+    }
+    const under = document.elementFromPoint(x, y);
+    // Piles keep their own hover: an empty one has none, a deck keeps the preview.
+    if (under?.closest('.surface .pile')) {
+      return;
+    }
+    const hit = under?.closest<HTMLElement>(
+      '.surface .card:not(.pile, .ghost)[data-id], .hand .hcard[data-id]',
+    );
+    const id = hit?.dataset.id;
+    if (!hit || id === undefined) {
+      interaction.rehover(null);
+      return;
+    }
+    interaction.rehover({ kind: hit.classList.contains('hcard') ? 'hand' : 'card', id });
+  }
+
+  function act(action: Action): number | null {
+    return session.act(action);
+  }
 
   $effect(() => () => motion.stop());
 
   // ---- The action bar ----
 
-  /** Another player's pile: hovering it clears the preview rather than keeping it. */
-  function isForeign(pile: PileView): boolean {
-    return pile.owner >= 0 && `p${pile.owner}` !== ownArea;
+  /** Whether an empty pile still has a bar: one opening its owner's out-of-play piles. */
+  function hasBarWhenEmpty(pile: PileView): boolean {
+    const role = view.you.role;
+    if (role === undefined) {
+      return false;
+    }
+    const items = actionsFor({ kind: 'pile', id: pile.id }, view, { area: ownArea, role });
+    return Array.isArray(items) && items.length > 0;
   }
 
   /** Whether the element is still where it was hovered: on the table, or in the hand. */
@@ -430,7 +612,7 @@
   function stepCounter(delta: number): void {
     const target = interaction.counter;
     if (target) {
-      session.act({ kind: target.kind, card: target.card, name: target.name, delta });
+      act({ kind: target.kind, card: target.card, name: target.name, delta });
     }
   }
 
@@ -458,16 +640,16 @@
     if ('ask' in result) {
       asking = result.ask;
     } else if ('local' in result) {
-      runLocal(result.local, element);
+      runLocal(result, element);
     } else {
       send(result);
     }
   }
 
   function runLocal(local: LocalAction, element: TableElement): void {
-    switch (local) {
+    switch (local.local) {
       case 'browseBox':
-        localBox = { kind: 'browse', pile: element.id };
+        localBox = { kind: 'browse', pile: local.pile };
         return;
       case 'stageBox': {
         const stage = view.table?.stages.find((s) => s.current === element.id);
@@ -492,7 +674,7 @@
     if (action.kind === 'look' || action.kind === 'search') {
       closingView = false;
     }
-    session.act(action);
+    act(action);
   }
 
   // ---- The card boxes ----
@@ -541,20 +723,22 @@
     return shownBox ? `stage:${shownBox.stage.key}` : '';
   });
 
-  // A box takes over from the table: its bar, preview and selection go.
-  const boxOpen = $derived(shownBox !== null);
+  // A dialog (a card box, the count question, the shortcuts sheet, a
+  // confirmation) freezes the table under its backdrop: its bar, preview,
+  // selection and any press or drag under way go.
   $effect(() => {
-    if (boxOpen) {
-      untrack(() => interaction.release());
+    if (modal.open) {
+      untrack(() => {
+        interaction.release();
+        interaction.letGo();
+      });
     }
   });
 
   function closeBox(shuffle: boolean): void {
     if (shownBox?.kind === 'pile' && shownBox.mode !== 'browse') {
       // Act returns null when nothing was sent: the box then stays, as the server never closes it.
-      const sent = session.act(
-        shuffle ? { kind: 'closeView', where: 'shuffle' } : { kind: 'closeView' },
-      );
+      const sent = act(shuffle ? { kind: 'closeView', where: 'shuffle' } : { kind: 'closeView' });
       closingView = sent !== null;
       return;
     }
@@ -571,30 +755,28 @@
     const seat = ownArea ? seatOf(ownArea) : null;
     const arrows = view.table?.arrows ?? [];
     if (seat !== null && arrows.some((arrow) => arrow.seat === seat)) {
-      session.act({ kind: 'arrowClear' });
+      act({ kind: 'arrowClear' });
     }
   }
 
-  /**
-   * A press on a zone's horizontal scrollbar: on the scroller, below its
-   * content (the event's offsetY past its clientHeight).
-   */
+  /** A press on one of the table's scrollbars: on the scroller, past its content. */
   function onScrollbar(event: PointerEvent, target: HTMLElement): boolean {
-    if (!target.classList.contains('zscroll')) {
+    if (target !== wrap) {
       return false;
     }
-    const offsetY = event.clientY - target.getBoundingClientRect().top - target.clientTop;
-    return offsetY > target.clientHeight;
+    const box = target.getBoundingClientRect();
+    const offsetX = event.clientX - box.left - target.clientLeft;
+    const offsetY = event.clientY - box.top - target.clientTop;
+    return offsetX > target.clientWidth || offsetY > target.clientHeight;
   }
 
-  /** An empty spot: the table itself, a zone's surface or scroller, or its header. */
+  /** An empty spot: the table itself, its surface, or the frame around an owner's piles. */
   function isEmptySpot(target: HTMLElement): boolean {
     return (
       target === wrap ||
       target.classList.contains('table') ||
       target.classList.contains('surface') ||
-      target.classList.contains('zscroll') ||
-      target.closest('.zh') !== null
+      target.closest('.ownerbox') !== null
     );
   }
 
@@ -602,7 +784,7 @@
   function endArrowAt(to: string | undefined): void {
     const from = interaction.arrowFrom;
     if (from !== null && to && to !== from) {
-      session.act({ kind: 'arrowAdd', card: from, target: to });
+      act({ kind: 'arrowAdd', card: from, target: to });
     }
     interaction.endArrow();
     // On touch, the tap goes on to the card as a click, which would select it;
@@ -641,7 +823,7 @@
     }
     if (isEmptySpot(target)) {
       interaction.release();
-      // Ruling P5c-R7: not with another button, nor while scrolling a zone with its scrollbar.
+      // Ruling P5c-R7: not with another button, nor while scrolling the table with its scrollbars.
       if (event.button === 0 && !onScrollbar(event, target)) {
         clearOwnArrows();
       }
@@ -669,8 +851,8 @@
       setZoom: zoomWithButtons,
       run: runItem,
       act: send,
-      toggleKeys: toggleKeySheet,
-      hideKeys: hideKeySheet,
+      showKeys: showKeySheet,
+      canReadyAll,
       sizeOf,
     });
   }
@@ -684,45 +866,41 @@
     keySheetShown = !keySheetShown;
   }
 
-  function hideKeySheet(): boolean {
-    const wasShown = keySheetShown;
-    keySheetShown = false;
-    return wasShown;
+  function showKeySheet(): void {
+    keySheetShown = true;
   }
 
-  // Restored as the page is built, before any style applies, so the slide
-  // does not play at load; it plays on every toggle after that.
-  let sideHidden = $state(getPref('itf-side-hidden') === '1');
+  function hideKeySheet(): void {
+    keySheetShown = false;
+  }
+
+  function undo(): void {
+    act({ kind: 'undo' });
+  }
 
   // The breakpoint of the @media rules below. On a narrow screen the side
-  // panel is a drawer over the table, closed until asked for, and the stored
-  // column preference does not apply to it.
+  // column goes: the history is not shown.
   const narrow = new MediaQuery('max-width: 900px');
-  let drawerOpen = $state(false);
 
-  const drawerShown = $derived(narrow.current && drawerOpen);
-  const sideShown = $derived(narrow.current ? drawerShown : !sideHidden);
+  // Remembered per viewer: the table takes the width the history leaves.
+  const HISTORY_COLLAPSED_KEY = 'itf-history-collapsed';
+  let historyCollapsed = $state(getPref(HISTORY_COLLAPSED_KEY) === '1');
 
-  function toggleSide(): void {
-    if (narrow.current) {
-      drawerOpen = !drawerOpen;
-      return;
-    }
-    sideHidden = !sideHidden;
-    setPref('itf-side-hidden', sideHidden ? '1' : '');
+  function toggleHistory(): void {
+    historyCollapsed = !historyCollapsed;
+    setPref(HISTORY_COLLAPSED_KEY, historyCollapsed ? '1' : '0');
   }
 
   let wrap = $state<HTMLElement>();
   let app = $state<HTMLElement>();
   let presenceLayer = $state<ReturnType<typeof Presence>>();
+  let handRaised = $state(false);
 
-  // A new view, a zoom or a resized zone moves the elements under a pointer at
-  // rest: the ones it lands on are not hovered by the viewer.
+  // A new view or a zoom moves the elements under a pointer at rest: the ones
+  // it lands on are not hovered by the viewer.
   $effect.pre(() => {
     void view;
     void zoom;
-    // The zone heights: they follow the visible height, the separators and the cards.
-    void zones;
     interaction.redrawn();
   });
 
@@ -741,24 +919,16 @@
     const y = pointY ?? box.top + box.height / 2;
     const scale = next / zoom;
 
-    // What lies under the point now: per zone horizontally, and in the whole table vertically.
-    const scrollers = [...wrap.querySelectorAll<HTMLElement>('.zscroll')].map((scroller) => ({
-      scroller,
-      under: scroller.scrollLeft + x - scroller.getBoundingClientRect().left,
-    }));
-    const underY = wrap.scrollTop + y - box.top;
+    // What lies under the point now, in zoomed px of the surface (past the scroller's padding).
+    const underX = wrap.scrollLeft + x - box.left - SCROLL_PADDING;
+    const underY = wrap.scrollTop + y - box.top - SCROLL_PADDING;
 
     zoom = next;
     saveZoom(next);
     await tick();
 
-    for (const { scroller, under } of scrollers) {
-      scroller.scrollLeft = Math.max(
-        0,
-        under * scale - (x - scroller.getBoundingClientRect().left),
-      );
-    }
-    wrap.scrollTop = underY * scale - (y - box.top);
+    wrap.scrollLeft = Math.max(0, SCROLL_PADDING + underX * scale - (x - box.left));
+    wrap.scrollTop = Math.max(0, SCROLL_PADDING + underY * scale - (y - box.top));
   }
 
   // The wheel can zoom finer than the 10 % steps: it keeps its own target so
@@ -791,6 +961,51 @@
   });
 </script>
 
+<!--
+  Which player's row "Villain + player" shows: one swatch in each seated player's colour, named
+  for screen readers and in its tooltip only, as the name already shows above the player's deck.
+-->
+{#snippet seatPicker(current: number)}
+  <div class="seatpick">
+    {#if seats.length > 2}
+      <button
+        class="btn-ghost step"
+        aria-label="Previous player"
+        data-tip="Previous player"
+        onclick={() => stepSeat(current, -1)}>←</button
+      >
+    {/if}
+    <div
+      class="seats"
+      role="radiogroup"
+      aria-label="Player shown"
+      tabindex="-1"
+      onkeydown={(event) => onSeatKey(event, current)}
+    >
+      {#each seatedPlayers as { seat, name, color } (seat)}
+        <button
+          class="seat"
+          style:--seat="var(--p{color + 1})"
+          role="radio"
+          aria-label={name}
+          data-tip={name}
+          aria-checked={seat === current}
+          tabindex={seat === current ? 0 : -1}
+          onclick={() => (pickedSeat = seat)}
+        ></button>
+      {/each}
+    </div>
+    {#if seats.length > 2}
+      <button
+        class="btn-ghost step"
+        aria-label="Next player"
+        data-tip="Next player"
+        onclick={() => stepSeat(current, 1)}>→</button
+      >
+    {/if}
+  </div>
+{/snippet}
+
 <svelte:window
   onpointermove={(event) => interaction.pointerMoved(event)}
   onpointerdowncapture={(event) => interaction.pointerPressed(event)}
@@ -798,22 +1013,30 @@
   onpointerup={onPointerUp}
   onpointercancel={onPointerCancel}
   onkeydown={onKeydown}
+  onresize={measureFocus}
 />
 
 <!-- The zoom is set on the whole page, so a layer outside the table (a drag ghost) can follow it. -->
 <div
   class="app"
-  class:side-hidden={sideHidden}
   class:arrowing={interaction.arrowFrom !== null}
   class:dragging={interaction.dragging !== null}
+  class:history-collapsed={historyCollapsed && !narrow.current}
   style:--z={zoom}
+  style:--edge="{TABLE_EDGE}px"
+  style:--edge-bottom="{TABLE_EDGE_BOTTOM}px"
   bind:this={app}
 >
   <div class="top">
     <TopBar
       spectators={view.spectators}
-      side={{ hidden: !sideShown, ontoggle: toggleSide }}
+      {crumbs}
       onend={view.you.host ? () => session.lobby('end') : undefined}
+      viewMode={seats.length > 1 ? viewMode : undefined}
+      onviewmode={changeViewMode}
+      readyAll={ownArea
+        ? { disabled: !canReadyAll, run: () => act({ kind: 'readyAll' }) }
+        : undefined}
     />
   </div>
 
@@ -824,28 +1047,29 @@
     bind:clientHeight={visibleHeight}
     bind:clientWidth={visibleWidth}
     onpointerdowncapture={onTablePointerDown}
+    onscroll={measureFocus}
   >
     <div class="table">
-      {#each zones as zone, i (zone.area)}
-        <Zone
-          area={zone.area}
-          heading={zone.heading}
-          cards={zone.cards}
-          piles={zone.piles}
-          {topOf}
-          {faceOf}
-          {sizeOf}
-          foreign={isForeign}
-          height={zone.height}
-          {zoom}
-          first={i === 0}
-          firstPlayer={firstPlayer?.area === zone.area ? firstPlayer : undefined}
-          tokenMovable={view.you.role === 'player'}
-          above={resizeAbove(zones[i - 1])}
-        />
-      {/each}
+      <Surface
+        cards={tableCards}
+        piles={tablePiles}
+        {owners}
+        {topOf}
+        {faceOf}
+        barWhenEmpty={hasBarWhenEmpty}
+        width={surface.w}
+        height={surface.h}
+        {firstPlayer}
+        tokenMovable={view.you.role === 'player'}
+        canDrag={(element) => sourceOf(element, view) !== null}
+      />
       <!-- The arrows follow the cards while they move. -->
-      <Arrows {view} root={app} layout={[zoom, zones, motion.frame]} />
+      <Arrows
+        {view}
+        root={app}
+        layout={[zoom, surface, rowMap, motion.frame]}
+        raised={interaction.dragging !== null || interaction.landing !== null || motion.moving}
+      />
     </div>
   </div>
 
@@ -854,30 +1078,72 @@
     {view}
     presence={session.presence}
     send={(fields) => session.sendPresence(fields)}
+    away={modal.open || (handCards !== undefined && handRaised)}
     root={app}
     {zoom}
     {faceOf}
-    layout={zones}
+    {rowMap}
+    layout={[surface, rowMap]}
   />
 
   {#if catalog === 'failed'}
     <p class="notice" role="alert">Card data could not be loaded: cards show as placeholders.</p>
   {/if}
 
-  <ZoomControl
-    {zoom}
-    onzoom={zoomWithButtons}
-    onkeys={toggleKeySheet}
-    keysShown={keySheetShown}
-    bind:keysButton
-  />
+  <!--
+    The bottom right corner of the table. Touch screens have no Z key: without the side column,
+    Undo floats there, left of the zoom control.
+  -->
+  <div class="corner" bind:this={cornerBox} bind:clientHeight={cornerHeight}>
+    {#if narrow.current}
+      <div class="undo">
+        <!-- aria-disabled rather than disabled, so that the tooltip saying why still shows. -->
+        <button
+          class="btn-ghost"
+          aria-label="Undo last action"
+          data-tip={view.canUndo ? 'Undo last action' : 'Nothing of yours to undo'}
+          aria-disabled={!view.canUndo}
+          onclick={() => {
+            if (view.canUndo) {
+              undo();
+            }
+          }}
+        >
+          <!-- A hooked arrow going back. -->
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M9 14L4 9l5-5" />
+            <path d="M4 9h11a5 5 0 0 1 0 10h-3" />
+          </svg>
+        </button>
+      </div>
+    {/if}
+    <ZoomControl
+      {zoom}
+      onzoom={zoomWithButtons}
+      onkeys={toggleKeySheet}
+      keysShown={keySheetShown}
+      bind:keysButton
+    />
+  </div>
+
+  {#if focused && shownSeat !== null}
+    {@render seatPicker(shownSeat)}
+  {/if}
 
   {#if keySheetShown}
-    <KeysSheet anchor={keysButton} onclose={hideKeySheet} />
+    <KeysSheet anchor={keysButton} alignTo={cornerBox} onclose={hideKeySheet} />
   {/if}
 
   {#if handCards}
-    <Hand cards={handCards} {faceOf} narrow={narrow.current} />
+    <Hand cards={handCards} {faceOf} narrow={narrow.current} bind:open={handRaised} />
   {/if}
 
   <Flights {faceOf} />
@@ -888,7 +1154,8 @@
     root={app}
     {faceOf}
     {sizeOf}
-    act={(action) => session.act(action)}
+    {rowMap}
+    {act}
     ondrag={(drag) => session.sendPresence({ drag })}
     lastError={session.lastError}
   />
@@ -923,7 +1190,7 @@
         {facesOf}
         {sizeOf}
         readOnly={view.you.role !== 'player'}
-        act={(action) => session.act(action)}
+        {act}
         onclose={closeBox}
       />
     {/key}
@@ -942,54 +1209,90 @@
 
   <Tooltip />
 
-  <aside
-    class="side"
-    class:open={drawerShown}
-    aria-label="Preview and history"
-    inert={narrow.current && !drawerShown}
-  >
-    <SidePanel
-      {preview}
-      log={view.log}
-      canUndo={view.canUndo}
-      undoText={view.undoText}
-      onundo={() => session.act({ kind: 'undo' })}
-      onclose={narrow.current ? () => (drawerOpen = false) : undefined}
-    />
-  </aside>
+  {#if !narrow.current}
+    <aside class="side" id="history-panel" aria-label="History">
+      <SidePanel
+        log={view.log}
+        canUndo={view.canUndo}
+        onundo={undo}
+        collapsed={historyCollapsed}
+        ontoggle={toggleHistory}
+        controls="history-panel"
+      />
+    </aside>
+  {/if}
+
+  {#if drawnPreview}
+    <!-- Created again in its new corner: it fades in there. -->
+    {#key focusCorner}
+      <div
+        class="peek {focusCorner}"
+        class:land={drawnPreview.landscape}
+        class:leaving={!preview}
+        style:margin={focusMargin(focusCorner)}
+        bind:offsetWidth={focusWidth}
+        bind:offsetHeight={focusHeight}
+      >
+        <CardPreview preview={drawnPreview} snug hidden={!preview} />
+      </div>
+    {/key}
+  {/if}
 </div>
 
 <style>
+  /* While the table shows, the page is exactly the window and never scrolls. */
+  :global(html.fixed-screen),
+  :global(html.fixed-screen body) {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  /*
+    Exactly the window. What lies past its edges, as the resting hand lowered under the bottom, is
+    clipped: it never reaches the page, which would scroll.
+  */
   .app {
     display: grid;
     height: 100vh;
     height: 100dvh;
+    overflow: clip;
     grid-template-rows: auto minmax(0, 1fr);
-    grid-template-columns: minmax(0, 1fr) 300px;
+    grid-template-columns: minmax(0, 1fr) 320px;
     grid-template-areas:
       'top top'
       'table side';
+    transition: grid-template-columns 0.2s ease;
+  }
+
+  /* The history collapsed to a strip: the table takes the rest. */
+  .app.history-collapsed {
+    grid-template-columns: minmax(0, 1fr) 44px;
   }
 
   .top {
     grid-area: top;
   }
 
+  /*
+    No stacking context of its own: the arrows inside it stack with the page's layers
+    (Arrows.svelte), while the surface isolates the cards' own z-indexes.
+  */
   .tablewrap {
     grid-area: table;
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #2c3654 transparent;
     position: relative;
-    z-index: 0;
-    isolation: isolate;
     background: var(--table-bg);
     min-width: 0;
   }
 
-  /* Room at the bottom to scroll the last zone above the floating hand. */
+  /* As wide and tall as the surface, which the padding keeps off the scroller's edges. */
   .table {
-    padding: 0 20px 250px;
     position: relative;
+    width: max-content;
+    padding: 24px;
   }
 
   /*
@@ -998,6 +1301,7 @@
     and the drop outlines.
   */
   .table :global(.card.locked)::before,
+  .table :global(.card.hovered)::before,
   .table :global(.card.highlighted)::before,
   .table :global(.card.drop-target)::before,
   .table :global(.card.drop-pile)::before {
@@ -1009,14 +1313,34 @@
     z-index: 1;
   }
 
+  /* The selection glows in the signal blue: a ring, then a soft halo. */
   .table :global(.card.locked)::before {
-    box-shadow: 0 0 0 3px var(--sel);
+    box-shadow:
+      0 0 0 2px var(--sel),
+      0 0 0 7px #49c6ff38;
   }
 
+  /* The hovered card or pile, whose bar shows, has the same white ring as the prototype's. */
+  .table :global(.card.hovered)::before,
   .table :global(.card.highlighted)::before {
     box-shadow:
       0 0 0 2px #ffffffb0,
       0 0 22px 6px #ffffff38;
+  }
+
+  /*
+    The card or pile another player previews: the hover ring, in their colour. Drawn by the card
+    itself (CardView, PileView), it moves, turns and tilts with it.
+  */
+  .table :global(.card > .rring) {
+    position: absolute;
+    inset: 1%;
+    border-radius: 7px;
+    pointer-events: none;
+    z-index: 1;
+    box-shadow:
+      0 0 0 2px var(--c),
+      0 0 22px 6px color-mix(in srgb, var(--c) 22%, transparent);
   }
 
   /* Where a drop would go: under a card (the prototype's threat orange), or onto a pile. */
@@ -1035,6 +1359,15 @@
     --dot: #34405f;
   }
 
+  /*
+    Whatever lies under the pointer while something is dragged, the pointer holds it. Important:
+    the grab and pointer cursors of the cards and piles are set by their own components.
+  */
+  .app.dragging,
+  .app.dragging :global(*) {
+    cursor: grabbing !important;
+  }
+
   /* Picking the card an arrow points at. */
   .app.arrowing :global(.surface .card) {
     cursor: crosshair;
@@ -1044,8 +1377,8 @@
     grid-area: side;
     display: flex;
     flex-direction: column;
-    background: var(--panel);
-    border-left: 1px solid var(--line);
+    background: var(--bg);
+    border-left: 1px solid var(--panel-2);
     min-height: 0;
   }
 
@@ -1062,34 +1395,96 @@
     font-size: 13px;
   }
 
-  /* The column slides shut: the panel keeps its width and is pushed out on the right. */
-  @media (min-width: 901px) {
-    .app {
-      transition: grid-template-columns 0.28s ease;
-    }
+  /* As the zoom control, at the other corner: under the veil and the raised hand. */
+  /* At the bottom left, as the zoom control at the bottom right: under the veil and the hand. */
+  .seatpick {
+    grid-area: table;
+    align-self: end;
+    justify-self: start;
+    z-index: 30;
+    margin: 0 0 var(--edge-bottom) var(--edge);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px;
+    background: #141a28eb;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    box-shadow: 0 6px 16px #0008;
+  }
 
-    .app.side-hidden {
-      grid-template-columns: minmax(0, 1fr) 0px;
-    }
+  .seatpick .step {
+    height: 28px;
+    padding: 0 8px;
+    border: none;
+    border-radius: 8px;
+    color: #c9cfdf;
+  }
 
-    .side {
-      overflow: hidden;
-      transition:
-        border-color 0.28s,
-        visibility 0s;
-    }
+  /* A round swatch of the seat colour; the player shown is ringed. */
+  .seatpick .seats {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
 
-    .side > :global(*) {
-      min-width: 299px;
-    }
+  .seatpick .seat {
+    width: 18px;
+    height: 18px;
+    margin: 5px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: var(--seat);
+    opacity: 0.6;
+  }
 
-    .app.side-hidden .side {
-      border-left-color: transparent;
-      visibility: hidden;
-      transition:
-        border-color 0.28s,
-        visibility 0s 0.28s;
-    }
+  .seatpick .seat:hover {
+    opacity: 1;
+  }
+
+  .seatpick .seat[aria-checked='true'] {
+    opacity: 1;
+    box-shadow:
+      0 0 0 2px #141a28,
+      0 0 0 4px var(--seat);
+  }
+
+  /* As the zoom control: under the veil and the raised hand. */
+  .corner {
+    grid-area: table;
+    align-self: end;
+    justify-self: end;
+    z-index: 30;
+    margin: 0 var(--edge) var(--edge-bottom) 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .undo {
+    padding: 4px;
+    background: #141a28eb;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    box-shadow: 0 6px 16px #0008;
+  }
+
+  .undo button {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 8px;
+    color: #c9cfdf;
+  }
+
+  .undo svg {
+    width: 18px;
+    height: 18px;
   }
 
   @media (max-width: 900px) {
@@ -1099,25 +1494,78 @@
         'top'
         'table';
     }
+  }
 
+  /*
+    The preview, at the bottom right of the table above the zoom control, still while the table
+    scrolls under it. As the zoom control: over the table, under the other players' presence
+    (2500), the veil and the raised hand (2600). Never so tall that it leaves the table; the
+    pointer goes through it.
+  */
+  .peek {
+    grid-area: table;
+    align-self: start;
+    justify-self: end;
+    z-index: 30;
+    position: relative;
     /*
-      The drawer slides in from the right, over the table and what is drawn on it: the other
-      players' presence (2500), the veil and the open hand (2600). Drags (3000) still show over it.
+      A 300 px wide portrait card in its 10 px padding, never wider than 45 % of the table, nor
+      so tall that it reaches the zoom control: the top bar and the corners keep 200 px.
     */
-    .side {
-      position: fixed;
-      right: 0;
-      top: 0;
-      bottom: 0;
-      width: min(320px, 88vw);
-      z-index: 2700;
-      transform: translateX(100%);
-      transition: transform 0.2s;
-      box-shadow: -8px 0 24px #000a;
+    width: min(320px, 45%, calc((100dvh - 200px) * 5 / 7 + 20px));
+    padding: 10px;
+    background: var(--panel);
+    border: 1px solid var(--line-strong);
+    border-radius: 14px;
+    box-shadow: 0 14px 36px #000000a6;
+    pointer-events: none;
+  }
+
+  /* A landscape card: 420 px wide. */
+  .peek.land {
+    width: min(440px, 45%);
+  }
+
+  /* Out of the pointer's and the hovered card's way, in another corner (focus.ts). */
+  .peek.top-left,
+  .peek.bottom-left {
+    justify-self: start;
+  }
+
+  .peek.bottom-left,
+  .peek.bottom-right {
+    align-self: end;
+  }
+
+  /* It fades in as it shows, or at its new corner, and out as it goes (PREVIEW_FADE_MS). */
+  .peek {
+    animation: focus-in 0.11s ease-out;
+  }
+
+  .peek.leaving {
+    animation: focus-out 0.11s ease-in forwards;
+  }
+
+  @keyframes focus-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes focus-out {
+    to {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .peek,
+    .peek.leaving {
+      animation: none;
     }
 
-    .side.open {
-      transform: none;
+    .app {
+      transition: none;
     }
   }
 </style>

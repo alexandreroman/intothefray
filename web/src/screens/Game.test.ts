@@ -8,6 +8,7 @@ vi.mock('../lib/session.svelte', () => ({ GameSession: vi.fn() }));
 vi.mock('../lib/catalog', () => ({
   loadGameCards: vi.fn(() => Promise.resolve()),
   knownCard: vi.fn(() => null),
+  loadIndex: vi.fn(() => new Promise(() => {})),
 }));
 
 const sessionMock = vi.mocked(GameSession);
@@ -18,7 +19,7 @@ const playingView = {
   you: { role: 'spectator', color: -1, host: false },
   players: [],
   spectators: 2,
-  table: { cards: [], piles: [], stages: [], firstPlayer: { area: 'villain', x: 0, y: 0 } },
+  table: { cards: [], piles: [], stages: [], firstPlayer: { x: 0, y: 0 } },
   log: [],
 } as unknown as View;
 
@@ -106,7 +107,7 @@ describe('Game', () => {
     mockSession({ view: playingView });
     render(Game, { id: 'x' });
 
-    expect(screen.getByRole('region', { name: /^Villain/ })).toBeTruthy();
+    expect(document.querySelector('.tablewrap .surface')).toBeTruthy();
     expect(screen.getByRole('img', { name: '2 spectators' })).toBeTruthy();
   });
 
@@ -114,6 +115,6 @@ describe('Game', () => {
     localStorage.setItem('itf-name', 'Alex');
     mockSession({ view: { ...playingView, phase: 'ended' } });
     render(Game, { id: 'x' });
-    expect(screen.getByText('This game has ended.')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /this game has ended/i })).toBeTruthy();
   });
 });

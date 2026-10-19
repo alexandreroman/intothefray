@@ -3,11 +3,14 @@
   centred above it, or below it when there is no room above, and lined up on
   its left or right edge when centring would cross the visible table. It
   stays while the pointer is on it, and is never moved under the pointer.
-  Its dropdowns open above it.
+  Its dropdowns open above it, or below it, always inside the visible table
+  and the window (dropdown.ts).
 -->
 <script lang="ts">
   import { onDestroy } from 'svelte';
-  import type { ActionItem } from './actions';
+  import { keyLabel, type ActionItem } from './actions';
+  import { intersect } from './drag';
+  import { placeDropdown, type DropdownPlace } from './dropdown';
   import Icons from './Icons.svelte';
   import { interaction } from './interaction.svelte';
 
@@ -34,7 +37,6 @@
   // Room between the bar and its element, and from the table edges.
   const GAP = 8;
   const EDGE = 8;
-  const MENU_GAP = 6;
 
   let bar = $state<HTMLElement>();
   let position = $state<{ x: number; y: number } | null>(null);
@@ -80,6 +82,7 @@
     if (!interaction.onBar) {
       place();
     }
+    placeMenu();
   }
 
   /**
@@ -101,7 +104,7 @@
   // ---- Dropdowns ----
 
   let menuElement = $state<HTMLElement>();
-  let menuPosition = $state<{ left: number; bottom: number } | null>(null);
+  let menuPosition = $state<DropdownPlace | null>(null);
   const openMenu = $derived(list.find((item) => item.id === interaction.menu && item.menu));
 
   function toggleMenu(item: ActionItem): void {
@@ -111,8 +114,8 @@
     interaction.menu = interaction.menu === item.id ? null : item.id;
   }
 
-  // Opened above its button, kept inside the window.
-  $effect(() => {
+  /** Places the open dropdown by its button, whole inside the visible table and the window. */
+  function placeMenu(): void {
     if (!openMenu || !menuElement || !bar) {
       menuPosition = null;
       return;
@@ -121,12 +124,21 @@
     if (!button) {
       return;
     }
-    const r = button.getBoundingClientRect();
-    const width = menuElement.getBoundingClientRect().width;
-    menuPosition = {
-      left: Math.min(r.left, window.innerWidth - width - EDGE),
-      bottom: window.innerHeight - r.top + MENU_GAP,
+    // Its whole height, even while it is cut to scroll: the content's, and the borders.
+    const borders = menuElement.offsetHeight - menuElement.clientHeight;
+    const size = {
+      w: menuElement.getBoundingClientRect().width,
+      h: menuElement.scrollHeight + borders,
     };
+    const screen = { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight };
+    const room = intersect(bounds.getBoundingClientRect(), screen);
+    menuPosition = placeDropdown(button.getBoundingClientRect(), size, room);
+  }
+
+  // Placed as it opens, and again when the bar moves or the table zooms.
+  $effect(() => {
+    void [openMenu, menuElement, position, zoom];
+    placeMenu();
   });
 
   function onDocumentPointerDown(event: PointerEvent): void {
@@ -139,6 +151,20 @@
       interaction.menu = null;
     }
   }
+
+  /** The open dropdown's items, cut where their section changes; items without one have no heading. */
+  const menuSections = $derived.by(() => {
+    const sections: { name?: string; choices: ActionItem[] }[] = [];
+    for (const choice of openMenu?.menu ?? []) {
+      const last = sections.at(-1);
+      if (last && last.name === choice.section) {
+        last.choices.push(choice);
+      } else {
+        sections.push({ name: choice.section, choices: [choice] });
+      }
+    }
+    return sections;
+  });
 
   // A dropdown whose item is gone (a redraw changed the bar) closes.
   $effect(() => {
@@ -215,26 +241,33 @@
         <span class="sep" role="separator"></span>
       {/if}
       {#if item.menu}
+        <!-- An icon dropdown is named by its label: a disabled one explains why in its tooltip only. -->
         <button
           type="button"
-          class="dd"
-          class:add={item.add}
+          class="btn-ghost dd"
+          class:ico={item.icon !== undefined}
           data-menu={item.id}
           data-tip={item.tip ?? item.label}
+          aria-label={item.icon ? item.label : undefined}
           aria-haspopup="menu"
           aria-expanded={interaction.menu === item.id}
           aria-disabled={item.disabled}
           onclick={() => toggleMenu(item)}
-          >{item.label}{#if !item.add}<span class="caret" aria-hidden="true">▾</span>{/if}</button
         >
+          {#if item.icon}
+            <Icons name={item.icon} />
+          {:else}
+            {item.label}<span class="caret" aria-hidden="true">▾</span>
+          {/if}
+        </button>
       {:else if item.icon}
         <button
           type="button"
-          class="ico"
+          class="btn-ghost ico"
           class:on={item.pressed}
           aria-label={item.tip ?? item.label}
           data-tip={item.tip ?? item.label}
-          data-kbd={item.key}
+          data-kbd={item.key && keyLabel(item.key)}
           aria-disabled={item.disabled}
           onclick={() => runItem(item.id)}
         >
@@ -242,9 +275,10 @@
         </button>
       {:else}
         <button
+          class="btn-ghost"
           type="button"
           data-tip={item.tip ?? item.label}
-          data-kbd={item.key}
+          data-kbd={item.key && keyLabel(item.key)}
           aria-disabled={item.disabled}
           onclick={() => runItem(item.id)}>{item.label}</button
         >
@@ -261,7 +295,8 @@
     tabindex="-1"
     bind:this={menuElement}
     style:left="{menuPosition?.left ?? 0}px"
-    style:bottom="{menuPosition?.bottom ?? 0}px"
+    style:top="{menuPosition?.top ?? 0}px"
+    style:max-height={menuPosition?.maxHeight == null ? undefined : `${menuPosition.maxHeight}px`}
     {@attach trackMenu}
     onpointerenter={() => {
       pointerOnMenu = true;
@@ -272,22 +307,37 @@
       followPointer();
     }}
   >
-    {#each openMenu.menu ?? [] as choice, i (choice.id === 'sep' ? `sep-${i}` : choice.id)}
-      {#if choice.id === 'sep'}
-        <div class="msep" role="separator"></div>
+    {#each menuSections as section, s (s)}
+      {#if section.name === undefined}
+        {@render choices(section.choices, openMenu.id)}
       {:else}
-        <button
-          type="button"
-          role="menuitem"
-          disabled={choice.disabled}
-          title={choice.tip}
-          onclick={() => runItem(choice.id, openMenu.id)}
-          ><span>{choice.label}</span>{#if choice.key}<kbd>{choice.key}</kbd>{/if}</button
-        >
+        <!-- The group is named by its heading, which is not read a second time. -->
+        <div class="section" role="group" aria-label={section.name}>
+          <div class="heading" aria-hidden="true">{section.name}</div>
+          {@render choices(section.choices, openMenu.id)}
+        </div>
       {/if}
     {/each}
   </div>
 {/if}
+
+{#snippet choices(list: ActionItem[], menuId: string)}
+  {#each list as choice, i (choice.id === 'sep' ? `sep-${i}` : choice.id)}
+    {#if choice.id === 'sep'}
+      <div class="msep" role="separator"></div>
+    {:else}
+      <button
+        class="btn-ghost"
+        type="button"
+        role="menuitem"
+        disabled={choice.disabled}
+        title={choice.tip}
+        onclick={() => runItem(choice.id, menuId)}
+        ><span>{choice.label}</span>{#if choice.key}<kbd>{keyLabel(choice.key)}</kbd>{/if}</button
+      >
+    {/if}
+  {/each}
+{/snippet}
 
 <style>
   .actionbar {
@@ -296,13 +346,13 @@
     display: flex;
     flex-wrap: nowrap;
     align-items: center;
-    gap: 5px;
+    gap: 2px;
     max-width: calc(100vw - 16px);
-    padding: 6px;
-    border: 1px solid #3a4870;
-    border-radius: 12px;
-    background: #1a2236f5;
-    box-shadow: 0 12px 30px #000c;
+    padding: 5px;
+    border: 1px solid var(--line-strong);
+    border-radius: 14px;
+    background: var(--panel-2);
+    box-shadow: 0 14px 34px #0000008c;
     cursor: default;
     /* Measured before it is placed: unseen until then. */
     visibility: hidden;
@@ -328,36 +378,59 @@
     color: var(--muted);
     font-size: 13px;
     white-space: nowrap;
-    padding: 0 4px;
+    padding: 0 6px;
   }
 
   .sep {
     width: 1px;
     align-self: stretch;
-    background: var(--line);
-    margin: 0 2px;
+    margin: 6px 3px;
+    background: var(--line-strong);
+  }
+
+  /* Flat buttons on the ink panel: only the hovered one lights up. */
+  .actionbar button,
+  .menu button {
+    height: 34px;
+    padding: 0 11px;
+    border: 0;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .actionbar button:focus-visible,
+  .menu button:focus-visible {
+    outline: 2px solid var(--sel);
+    outline-offset: -2px;
   }
 
   button.ico {
-    padding: 6px 8px;
+    width: 38px;
+    padding: 0;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
   }
 
+  /* Pressed: Ready on an exhausted card. */
   button.ico.on {
-    background: #2f3d63;
-    border-color: var(--sel);
+    background: color-mix(in srgb, var(--sel) 16%, transparent);
+    color: var(--sel);
+    box-shadow: inset 0 0 0 1px var(--sel);
   }
 
-  /* "+ Token" and "+ Status" add something: dashed, and quiet until used. */
-  button.add {
-    border-style: dashed;
-    color: var(--muted);
+  button.ico.on:hover:not([aria-disabled='true']) {
+    background: color-mix(in srgb, var(--sel) 28%, transparent);
   }
 
-  button.add:hover:not(:disabled, [aria-disabled='true']),
-  button.add[aria-expanded='true'] {
-    color: var(--text);
+  /* A dropdown whose menu is open stays lit, as under the pointer. */
+  .actionbar button[aria-expanded='true'] {
+    background: var(--line-strong);
+  }
+
+  .actionbar button[aria-expanded='true']:hover:not([aria-disabled='true']) {
+    background: color-mix(in srgb, var(--line-strong), var(--text) 10%);
   }
 
   .caret {
@@ -366,17 +439,24 @@
     font-size: 11px;
   }
 
+  /* Cut to the room it has, it scrolls inside (dropdown.ts). */
   .menu {
     position: fixed;
     z-index: 5000;
     display: flex;
     flex-direction: column;
-    min-width: 170px;
-    padding: 4px;
+    overflow-y: auto;
+    min-width: 180px;
+    padding: 5px;
+    border: 1px solid var(--line-strong);
+    border-radius: 12px;
     background: var(--panel-2);
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    box-shadow: 0 12px 30px #000b;
+    box-shadow: 0 14px 34px #0009;
+  }
+
+  /* Cut short, its items keep their height: it scrolls rather than squeezing them. */
+  .menu > :global(*) {
+    flex-shrink: 0;
   }
 
   .menu:focus {
@@ -387,31 +467,46 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border: none;
-    background: none;
+    gap: 16px;
+    width: 100%;
     text-align: left;
-    border-radius: 6px;
   }
 
-  .menu button:hover:not(:disabled) {
-    background: #2a3555;
+  .section {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .section + .section {
+    margin-top: 4px;
+    border-top: 1px solid var(--line-strong);
+  }
+
+  /* A section's caption: small, wide-spaced capitals. */
+  .heading {
+    padding: 8px 11px 4px;
+    font-stretch: 75%;
+    font-weight: 800;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
   }
 
   .msep {
     height: 1px;
     margin: 4px 2px;
-    background: var(--line);
+    background: var(--line-strong);
   }
 
-  /* The key of a choice, in grey. */
+  /* The key of a choice, on a dark chip. */
   kbd {
-    margin-left: 6px;
-    font:
-      11px ui-monospace,
-      monospace;
+    padding: 1px 6px;
+    border-radius: 5px;
+    background: var(--bg);
     color: var(--muted);
-    border: 1px solid var(--line);
-    border-radius: 4px;
-    padding: 0 4px;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 700;
   }
 </style>

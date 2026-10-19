@@ -1,23 +1,17 @@
-// The zones of the table on the screen. A spot of the table is told in table
-// units of its zone's surface, so that it lands on the same card whatever the
-// zoom, the scroll positions or the window size of each viewer.
+// The table's surface on the screen. A spot of the table is told in table
+// units of the surface, so that it lands on the same card whatever the zoom,
+// the scroll position or the window size of each viewer.
 
-import type { Area } from '../lib/types';
 import type { Point, Rect } from './drag';
 
-/** The surface of a zone, where its cards lie, measured on the screen. */
-export function surfaceRect(root: ParentNode | undefined, area: Area): DOMRect | undefined {
-  return root?.querySelector(`${zoneSelector(area)} .surface`)?.getBoundingClientRect();
+/** The surface, where the cards and piles lie, measured on the screen. */
+export function surfaceRect(root: ParentNode | undefined): DOMRect | undefined {
+  return root?.querySelector('.tablewrap .surface')?.getBoundingClientRect();
 }
 
-/** The horizontal scroller of a zone: what shows of its surface. */
-export function scrollerRect(root: ParentNode | undefined, area: Area): DOMRect | undefined {
-  return root?.querySelector(`${zoneSelector(area)} .zscroll`)?.getBoundingClientRect();
-}
-
-// An area can come from another client's presence message: escaped, it cannot break the selector.
-function zoneSelector(area: Area): string {
-  return `.zsec[data-area="${CSS.escape(area)}"]`;
+/** The table's scroller: what shows of the surface. */
+export function scrollerRect(root: ParentNode | undefined): DOMRect | undefined {
+  return root?.querySelector('.tablewrap')?.getBoundingClientRect();
 }
 
 /** A point of the screen, in table units of the surface. */

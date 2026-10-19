@@ -2,20 +2,61 @@
   import ConfirmDialog from './ConfirmDialog.svelte';
   import { on } from 'svelte/events';
   import Icon from './Icon.svelte';
+  import Icons from '../table/Icons.svelte';
+  import Logo from './Logo.svelte';
 
   let {
-    spectators,
-    side,
+    spectators = 0,
+    crumbs = [],
+    onback,
     onend,
+    viewMode,
+    onviewmode,
+    readyAll,
   }: {
-    spectators: number;
-    /** The side panel toggle, on the table only. */
-    side?: { hidden: boolean; ontoggle: () => void };
+    spectators?: number;
+    /** Where the viewer is, after the logo: the first part stands out, the rest is dimmed. */
+    crumbs?: string[];
+    /** Goes back, from a back arrow before the logo. */
+    onback?: () => void;
     /** Ends the game for everyone, once confirmed. Given to the host only. */
     onend?: () => void;
+    /** What the table shows, on the table only: every row, or the villain's and one player's. */
+    viewMode?: 'all' | 'focus';
+    onviewmode?: (mode: 'all' | 'focus') => void;
+    /** Readies every card of the player's that can be: on the table, for players only. */
+    readyAll?: { disabled: boolean; run: () => void };
   } = $props();
 
+  const VIEW_MODES = [
+    { mode: 'all', label: 'All', icon: 'rows-all' },
+    { mode: 'focus', label: 'Villain + player', icon: 'rows-focus' },
+  ] as const;
+
+  // The highlight behind the chosen view, placed over its button. It slides to the other one
+  // when the view changes, but not into its first place.
+  let views = $state<HTMLElement>();
+  let viewsWidth = $state(0);
+  let thumb = $state<{ left: number; width: number } | null>(null);
+  let thumbSlides = $state(false);
+
+  $effect(() => {
+    // Placed again when the view changes, or the labels come and go with the width.
+    void [viewMode, viewsWidth];
+    const chosen = views?.querySelector<HTMLElement>('button[aria-pressed="true"]');
+    if (!chosen) {
+      return;
+    }
+    thumb = { left: chosen.offsetLeft, width: chosen.offsetWidth };
+    if (!thumbSlides) {
+      // From the next frame on: the first place is taken without sliding.
+      const frame = requestAnimationFrame(() => (thumbSlides = true));
+      return () => cancelAnimationFrame(frame);
+    }
+  });
+
   const spectatorLabel = $derived(`${spectators} ${spectators === 1 ? 'spectator' : 'spectators'}`);
+  const [crumbHead, ...crumbRest] = $derived(crumbs);
 
   let confirmingEnd = $state(false);
 
@@ -72,13 +113,76 @@
 </script>
 
 <header>
-  <div class="logo">INTO <span>THE</span> FRAY</div>
+  {#if onback}
+    <button class="icon-button" aria-label="Back" title="Back" onclick={onback}>
+      <Icon name="back" />
+    </button>
+  {/if}
+  <Logo />
+  {#if crumbHead !== undefined}
+    <span class="divider" aria-hidden="true"></span>
+    <span class="crumbs">
+      <b>{crumbHead}</b>{#each crumbRest as crumb, i (i)}<span class="rest">{` / ${crumb}`}</span
+        >{/each}
+    </span>
+  {/if}
   <div class="actions">
+    {#if viewMode && onviewmode}
+      <div
+        class="views"
+        role="group"
+        aria-label="Table view"
+        bind:this={views}
+        bind:clientWidth={viewsWidth}
+      >
+        {#if thumb}
+          <span
+            class="thumb"
+            class:slides={thumbSlides}
+            style:left="{thumb.left}px"
+            style:width="{thumb.width}px"
+            aria-hidden="true"
+          ></span>
+        {/if}
+        {#each VIEW_MODES as choice (choice.mode)}
+          <button
+            class="btn-ghost"
+            type="button"
+            aria-label={choice.label}
+            title={choice.label}
+            aria-pressed={viewMode === choice.mode}
+            onclick={() => onviewmode(choice.mode)}
+          >
+            <Icon name={choice.icon} />
+            <span>{choice.label}</span>
+          </button>
+        {/each}
+      </div>
+    {/if}
     {#if spectators > 0}
       <span class="pill" role="img" aria-label={spectatorLabel} title={spectatorLabel}>
         <Icon name="eye" />
         {spectators}
       </span>
+    {/if}
+    {#if readyAll}
+      <!-- aria-disabled rather than disabled, so that the tooltip still shows. -->
+      <button
+        class="icon-button"
+        aria-label="Ready all cards"
+        data-tip="Ready all cards"
+        data-kbd="⇧ Space"
+        aria-keyshortcuts="Shift+Space"
+        aria-disabled={readyAll.disabled}
+        onclick={() => {
+          if (!readyAll.disabled) {
+            readyAll.run();
+          }
+        }}
+      >
+        <!-- The action bar's family: Exhaust, the other way round. -->
+        <Icons name="ready-all" />
+      </button>
     {/if}
     {#if fullscreenSupported}
       <button
@@ -98,37 +202,7 @@
         title="End game"
         onclick={() => (confirmingEnd = true)}
       >
-        <Icon name="power" />
-      </button>
-    {/if}
-    {#if side}
-      <button
-        class="icon-button"
-        aria-label="Preview and history"
-        aria-pressed={!side.hidden}
-        title={side.hidden ? 'Show the preview and history' : 'Hide the preview and history'}
-        onclick={side.ontoggle}
-      >
-        <!-- A window with its right pane, filled while the panel shows. -->
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true"
-        >
-          <rect x="3" y="4" width="18" height="16" rx="2" />
-          <path
-            class="pane"
-            class:filled={!side.hidden}
-            d="M15 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4z"
-            fill="currentColor"
-            stroke="none"
-          />
-          <path d="M15 4v16" />
-        </svg>
+        <Icon name="cross" />
       </button>
     {/if}
   </div>
@@ -148,37 +222,104 @@
   header {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 8px 16px;
-    background: var(--panel);
-    border-bottom: 1px solid var(--line);
+    gap: 16px;
+    height: 56px;
+    padding: 0 8px 0 18px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--panel-2);
   }
 
-  .logo {
-    font-weight: 800;
-    letter-spacing: 0.5px;
+  .divider {
+    flex: none;
+    width: 1px;
+    height: 24px;
+    background: var(--line);
+  }
+
+  /* A long crumb gives way to the actions: it is cut short, never wrapped. */
+  .crumbs {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
+    font-size: 14px;
+    font-weight: 700;
   }
 
-  .logo span {
-    color: var(--accent);
+  .crumbs .rest {
+    color: var(--muted);
+    font-weight: 500;
   }
 
   .actions {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     margin-left: auto;
+  }
+
+  /* A segmented control: the chosen view is lit. */
+  .views {
+    position: relative;
+    display: flex;
+    height: 38px;
+    padding: 3px;
+    gap: 2px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+  }
+
+  .views button {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 12px;
+    border: none;
+    border-radius: 999px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .views button[aria-pressed='true'] {
+    color: var(--text);
+  }
+
+  /* Behind the labels, the height of the buttons. */
+  .thumb {
+    position: absolute;
+    top: 3px;
+    bottom: 3px;
+    border-radius: 999px;
+    background: var(--panel-2);
+  }
+
+  .thumb.slides {
+    transition:
+      left 0.2s ease-out,
+      width 0.2s ease-out;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .thumb.slides {
+      transition: none;
+    }
+  }
+
+  .views :global(svg) {
+    width: 16px;
+    height: 16px;
   }
 
   /* Buttons in the row share one height: the pill matches them. */
   .pill {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    height: 33px;
-    padding: 0 12px;
-    background: var(--panel-2);
+    gap: 7px;
+    height: 38px;
+    padding: 0 13px;
+    background: var(--panel);
     border: 1px solid var(--line);
     border-radius: 999px;
     font-size: 13px;
@@ -191,40 +332,47 @@
     height: 17px;
   }
 
-  .actions button {
-    height: 33px;
-  }
-
   .icon-button {
     flex: none;
-    width: 33px;
-    padding: 6px;
+    width: 38px;
+    height: 38px;
+    padding: 0;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    background: var(--panel);
+    border-color: var(--line);
+    color: #c9cfdf;
+  }
+
+  .icon-button.active {
+    color: var(--sel);
   }
 
   .icon-button :global(svg) {
-    width: 19px;
-    height: 19px;
+    width: 18px;
+    height: 18px;
     display: block;
   }
 
-  .pane {
-    fill-opacity: 0;
-    transition: fill-opacity 0.25s;
-  }
-
-  .pane.filled {
-    fill-opacity: 0.35;
-  }
-
   /*
-   * A narrow bar drops its least useful items first: Fullscreen, then the
-   * spectator count. End game and the side panel toggle always stay. Fullscreen
+   * A narrow bar drops its least useful items first: the crumb, Fullscreen,
+   * then the spectator count. The logo and End game always stay. Fullscreen
    * stays while active, or a viewer without an Escape key could not leave it.
    */
   @media (max-width: 600px) {
+    header {
+      gap: 12px;
+      padding: 0 8px 0 12px;
+    }
+
+    /* The icons say it: the labels go. */
+    .views span {
+      display: none;
+    }
+
+    .divider,
+    .crumbs,
     .fullscreen:not(.active) {
       display: none;
     }

@@ -103,6 +103,7 @@ var counterNouns = map[string]counterNoun{
 	"stunned":  {"stunned status", "stunned statuses"},
 	"confused": {"confused status", "confused statuses"},
 	"tough":    {"tough status", "tough statuses"},
+	"locked":   {"locked status", "locked statuses"},
 }
 
 // hiddenCard is how the history names a card nobody could see.
@@ -159,6 +160,8 @@ func (n narrator) describe(a Action) (logLine, bool) {
 			verb = "exhausted "
 		}
 		return logLine{text: verb + n.name(a.Card), cards: n.visibleCards(a.Card)}, true
+	case ActReadyAll:
+		return logLine{text: fmt.Sprintf("readied all cards (%d)", len(a.Cards)), cards: n.visibleCards(a.Cards...)}, true
 	case ActFlip:
 		return n.flipEvent(a), true
 	case ActToken, ActStatus:
@@ -275,14 +278,14 @@ func (n narrator) stageEvent(a Action) logLine {
 	}
 }
 
-// areaName names a side of the table.
+// areaName names the player seated at area.
 func (n narrator) areaName(area Area) string {
 	for seat := range n.game.Players {
 		if PlayerArea(seat) == area {
 			return n.game.playerName(seat)
 		}
 	}
-	return "the villain"
+	return n.game.playerName(NoOwner)
 }
 
 // name names card id if everyone could see it before or after the action,

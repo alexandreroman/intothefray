@@ -125,6 +125,9 @@ func (c *testClient) awaitView(done func(game.View) bool) received {
 	}
 }
 
+// bobSeat is the seat of Bob, who joins a twoPlayerGame after Alex.
+const bobSeat = 1
+
 // twoPlayerGame is a game between Alex, the host on one instance, and Bob on
 // another instance.
 type twoPlayerGame struct {
@@ -179,7 +182,7 @@ func TestTwoInstancesSeeEachOther(t *testing.T) {
 	const draws = 5
 
 	g := startTwoPlayerGame(t)
-	card := readyCardIn(t, g.bobView.View, g.bobView.View.You.Area)
+	card := readyCardOf(t, g.bobView.View, bobSeat)
 
 	g.bob.send(map[string]any{"type": "action", "id": 1, "action": map[string]any{"kind": "exhaust", "card": card}})
 
@@ -262,13 +265,13 @@ func TestPresenceRelayed(t *testing.T) {
 	bob.hello("", "Bob")
 	alex.awaitView(func(v game.View) bool { return len(v.Players) == 2 })
 
-	alex.send(map[string]any{"type": "presence", "cursor": map[string]any{"area": "p0", "x": 120, "y": 340}})
+	alex.send(map[string]any{"type": "presence", "cursor": map[string]any{"x": 120, "y": 340}})
 
 	got := bob.expect("presence")
 	if got.Color == nil || *got.Color != alexView.View.You.Color || got.Name != "Alex" {
 		t.Errorf("presence = %s, want Alex's name and colour %d", got.raw, alexView.View.You.Color)
 	}
-	if want := (presencePoint{Area: "p0", X: 120, Y: 340}); got.Cursor == nil || *got.Cursor != want {
+	if want := (presencePoint{X: 120, Y: 340}); got.Cursor == nil || *got.Cursor != want {
 		t.Errorf("cursor = %s, want %+v", got.raw, want)
 	}
 	for _, secret := range []string{created.Token, `"from"`, `"kind"`} {
@@ -281,6 +284,26 @@ func TestPresenceRelayed(t *testing.T) {
 	bob.send(map[string]any{"type": "presence", "preview": "c1"})
 	if back := alex.expect("presence"); back.Name != "Bob" {
 		t.Errorf("Alex got presence %s, want Bob's and never his own", back.raw)
+	}
+}
+
+func TestHiddenCursorRelayed(t *testing.T) {
+	mr := miniredis.RunT(t)
+	ts := startInstance(t, mr, nil)
+	created := createGame(t, ts, "Alex")
+	alex := connect(t, ts, created.ID)
+	alex.hello(created.Token, "Alex")
+	bob := connect(t, ts, created.ID)
+	bob.hello("", "Bob")
+	alex.awaitView(func(v game.View) bool { return len(v.Players) == 2 })
+
+	// Alex raises his hand or opens a dialog: his cursor goes, and nothing
+	// tells where his pointer is.
+	alex.send(map[string]any{"type": "presence", "cursor": nil})
+
+	got := bob.expect("presence")
+	if !strings.Contains(string(got.raw), `"cursor":null`) {
+		t.Errorf("presence = %s, want the cursor hidden", got.raw)
 	}
 }
 
@@ -298,7 +321,7 @@ func TestSpectatorPresence(t *testing.T) {
 	guest.awaitView(func(v game.View) bool { return v.You.Role == game.RoleSpectator })
 
 	for _, field := range []string{"ping", "drag"} {
-		value := map[string]any{"area": "p0", "x": 1, "y": 2}
+		value := map[string]any{"x": 1, "y": 2}
 		if field == "drag" {
 			value["cards"] = []string{"c1"}
 		}
@@ -307,7 +330,7 @@ func TestSpectatorPresence(t *testing.T) {
 			t.Errorf("spectator %s: error = %s, want code forbidden", field, reply.raw)
 		}
 	}
-	guest.send(map[string]any{"type": "presence", "cursor": map[string]any{"area": "p0", "x": 1, "y": 2}})
+	guest.send(map[string]any{"type": "presence", "cursor": map[string]any{"x": 1, "y": 2}})
 
 	got := host.expect("presence")
 	if got.Color == nil || *got.Color != -1 || got.Name != "Bob" {
@@ -321,9 +344,9 @@ func TestPresenceValidation(t *testing.T) {
 	for i := range tooManyCards {
 		tooManyCards[i] = "c1"
 	}
-	point := map[string]any{"area": "p0", "x": 1, "y": 2}
+	point := map[string]any{"x": 1, "y": 2}
 	drag := func(cards []string) map[string]any {
-		return map[string]any{"cards": cards, "area": "p0", "x": 1, "y": 2}
+		return map[string]any{"cards": cards, "x": 1, "y": 2}
 	}
 
 	tests := []struct {
@@ -332,22 +355,22 @@ func TestPresenceValidation(t *testing.T) {
 		valid bool
 	}{
 		{"cursor", map[string]any{"cursor": point}, true},
+		{"hidden cursor", map[string]any{"cursor": nil}, true},
 		{"preview", map[string]any{"preview": "c1"}, true},
 		{"cleared preview", map[string]any{"preview": ""}, true},
 		{"drag", map[string]any{"drag": drag([]string{"c1", "c2"})}, true},
 		{"ended drag", map[string]any{"drag": nil}, true},
 		{"ping", map[string]any{"ping": point}, true},
 		{"nothing", map[string]any{}, false},
-		{"cursor without area", map[string]any{"cursor": map[string]any{"x": 1, "y": 2}}, false},
-		{"cursor with a long area", map[string]any{"cursor": map[string]any{"area": long, "x": 1, "y": 2}}, false},
-		{"cursor with a text x", map[string]any{"cursor": map[string]any{"area": "p0", "x": "1", "y": 2}}, false},
+		{"cursor with a text x", map[string]any{"cursor": map[string]any{"x": "1", "y": 2}}, false},
+		{"cursor as text", map[string]any{"cursor": "here"}, false},
 		{"long preview", map[string]any{"preview": long}, false},
 		{"drag without cards", map[string]any{"drag": drag([]string{})}, false},
 		{"drag of too many cards", map[string]any{"drag": drag(tooManyCards)}, false},
 		{"drag with a long card id", map[string]any{"drag": drag([]string{long})}, false},
 		{"drag with an empty card id", map[string]any{"drag": drag([]string{""})}, false},
 		{"drag as text", map[string]any{"drag": "c1"}, false},
-		{"ping without area", map[string]any{"ping": map[string]any{"x": 1}}, false},
+		{"ping with a text y", map[string]any{"ping": map[string]any{"x": 1, "y": "2"}}, false},
 	}
 
 	mr := miniredis.RunT(t)
@@ -707,14 +730,14 @@ func TestSlowTouchDoesNotDelayPresence(t *testing.T) {
 	}
 }
 
-// readyCardIn returns a card lying ready on the table in area.
-func readyCardIn(t *testing.T, v game.View, area game.Area) string {
+// readyCardOf returns a card of owner lying ready on the table.
+func readyCardOf(t *testing.T, v game.View, owner int) string {
 	t.Helper()
 	i := slices.IndexFunc(v.Table.Cards, func(c game.CardView) bool {
-		return c.Zone == game.ZoneTable && c.Area == area && !c.Exhausted
+		return c.Zone == game.ZoneTable && c.Owner == owner && !c.Exhausted
 	})
 	if i < 0 {
-		t.Fatalf("no ready card in area %s", area)
+		t.Fatalf("no ready card of seat %d on the table", owner)
 	}
 	return v.Table.Cards[i].ID
 }

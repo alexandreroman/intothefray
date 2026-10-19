@@ -15,6 +15,7 @@
     face,
     ghost = false,
     landed = false,
+    draggable = false,
   }: {
     card: TableCard;
     /** The catalog face the card shows, null while unknown: it is then a std placeholder. */
@@ -23,29 +24,58 @@
     ghost?: boolean;
     /** A ghost set down where the card was dropped, until the server answers. */
     landed?: boolean;
+    /** The viewer can drag it: the pointer grabs it. */
+    draggable?: boolean;
   } = $props();
 
-  const TOKENS = ['dmg', 'thr', 'gen'] as const;
+  type TokenKind = 'dmg' | 'thr' | 'gen';
+
+  // The tokens piled up from the bottom right corner, damage first, on every card. The threat
+  // goes to the top right corner of a scheme, to the middle of any other card.
+  const CORNER_TOKENS: readonly TokenKind[] = ['dmg', 'gen'];
+  const SCHEME_TYPES: readonly string[] = ['main_scheme', 'side_scheme', 'player_side_scheme'];
   const STATUSES = [
     ['stunned', 'Stunned'],
     ['confused', 'Confused'],
     ['tough', 'Tough'],
+    ['locked', 'Locked'],
   ] as const;
 
   const hidden = $derived(isHidden(card));
   const box = $derived(cardBox(face?.size ?? 'std', { faceDown: hidden, onPile: !!card.onPile }));
   const landscape = $derived(!box.rotated && box.w > box.h);
-  const tokens = $derived(TOKENS.filter((k) => (card.tokens?.[k] ?? 0) > 0));
+  // A hidden card has no face: it is not known to be a scheme.
+  const scheme = $derived(!hidden && SCHEME_TYPES.includes(face?.type ?? ''));
+  const hasToken = (k: TokenKind) => (card.tokens?.[k] ?? 0) > 0;
+  const cornerTokens = $derived(CORNER_TOKENS.filter(hasToken));
+  const middleThreat = $derived(!scheme && hasToken('thr'));
+  const cornerThreat = $derived(scheme && hasToken('thr'));
   const statuses = $derived(STATUSES.filter(([k]) => (card.status?.[k] ?? 0) > 0));
   const element = $derived({ kind: 'card', id: card.id } as const);
   const locked = $derived(interaction.isLocked(element));
+  // A ghost is a copy: only the card on the table shows that it is hovered.
+  const hovered = $derived(!ghost && interaction.isHovered(element));
   // While dragged, the card on the table makes way for its ghost.
   const lifted = $derived(!ghost && interaction.isLifted(card.id));
   // A drop would tuck the dragged card under this one, or go onto the pile this card is revealed on.
   const dropOn = $derived(ghost ? null : interaction.dropOn);
   const tuckTarget = $derived(dropOn?.kind === 'card' && dropOn.id === card.id);
   const pileTarget = $derived(dropOn?.kind === 'pile' && dropOn.id === card.onPile);
+  // Another player previews the card: their ring is drawn inside it, so it follows every move.
+  const previewer = $derived(ghost ? undefined : interaction.previewerOf(card.id));
 </script>
+
+{#snippet token(k: TokenKind)}
+  {@const target = { card: card.id, kind: 'token', name: k } as const}
+  <span
+    class="tok {k}"
+    class:hot={interaction.isCounter(target)}
+    data-counter="token:{k}"
+    role="presentation"
+    onpointerenter={(event) => interaction.enterCounter(target, event)}
+    onpointerleave={() => interaction.leaveCounter()}>{card.tokens?.[k]}</span
+  >
+{/snippet}
 
 <!--
   z-index comes from the server and can be negative: the surface must isolate its stacking.
@@ -58,9 +88,13 @@
   class:exhausted={card.exhausted}
   class:highlighted={interaction.highlighted.has(card.id)}
   class:locked
+  class:hovered
+  class:land={landscape}
+  class:scheme
   class:lifted
   class:ghost
   class:landed
+  class:grab={draggable && !ghost}
   class:drop-target={tuckTarget}
   class:drop-pile={pileTarget}
   style:left="{card.x}px"
@@ -84,19 +118,23 @@
     />
   {/if}
 
-  {#if tokens.length > 0}
-    <div class="tokens">
-      {#each tokens as k (k)}
-        {@const target = { card: card.id, kind: 'token', name: k } as const}
-        <span
-          class="tok {k}"
-          class:hot={interaction.isCounter(target)}
-          data-counter="token:{k}"
-          role="presentation"
-          onpointerenter={(event) => interaction.enterCounter(target, event)}
-          onpointerleave={() => interaction.leaveCounter()}>{card.tokens?.[k]}</span
-        >
+  {#if middleThreat}
+    <div class="tokens middle">
+      {@render token('thr')}
+    </div>
+  {/if}
+
+  {#if cornerTokens.length > 0}
+    <div class="tokens bottom-right">
+      {#each cornerTokens as k (k)}
+        {@render token(k)}
       {/each}
+    </div>
+  {/if}
+
+  {#if cornerThreat}
+    <div class="tokens top-right">
+      {@render token('thr')}
     </div>
   {/if}
 
@@ -111,10 +149,19 @@
           data-counter="status:{k}"
           role="presentation"
           onpointerenter={(event) => interaction.enterCounter(target, event)}
-          onpointerleave={() => interaction.leaveCounter()}>{label}{n > 1 ? ` ×${n}` : ''}</span
+          onpointerleave={() => interaction.leaveCounter()}
+          >{#if k === 'locked'}<svg class="lock" viewBox="0 0 10 10" aria-hidden="true"
+              ><rect x="1.5" y="4.5" width="7" height="5" rx="1" /><path
+                d="M3 4.5V3a2 2 0 0 1 4 0v1.5"
+              /></svg
+            >{/if}{label}{n > 1 ? ` ×${n}` : ''}</span
         >
       {/each}
     </div>
+  {/if}
+
+  {#if previewer !== undefined}
+    <div class="rring" style:--c="var(--p{previewer + 1})"></div>
   {/if}
 </div>
 
@@ -147,6 +194,10 @@
     visibility: hidden;
   }
 
+  .card.grab {
+    cursor: grab;
+  }
+
   /* Held up under the pointer. */
   .card.ghost {
     cursor: grabbing;
@@ -158,14 +209,36 @@
     scale: 1;
   }
 
+  /*
+    Tokens sit inside the card. Damage and counters pile up from the bottom right corner, damage
+    in the corner. The threat sits in the top right corner of a scheme, clear of its printed
+    threat values, and in the middle of any other card. The status tabs end above the middle,
+    or lie along the top of a landscape card: clear of both, and of the corner pile, which is
+    at most two tokens high.
+  */
   .tokens {
     position: absolute;
-    left: 4px;
-    bottom: 4px;
     z-index: 4;
     display: flex;
     gap: 3px;
-    flex-wrap: wrap;
+  }
+
+  .tokens.middle {
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .tokens.bottom-right {
+    right: 6px;
+    bottom: 6px;
+    flex-direction: column-reverse;
+    align-items: flex-end;
+  }
+
+  .tokens.top-right {
+    right: 6px;
+    top: 6px;
   }
 
   /* Tokens look like small cardboard chips: lit from the top left, a thin inner ring, a rim and a shadow. */
@@ -194,7 +267,7 @@
       0 2px 4px #000000a0;
   }
 
-  /* Pointed at: the pill is up. */
+  /* Pointed at: the chip is ringed. */
   .tok:hover,
   .tok.hot {
     box-shadow:
@@ -235,7 +308,7 @@
     --rim: #5a2f02;
   }
 
-  /* Counters are green. */
+  /* Counters are green, as Stunned. */
   .tok.gen {
     --hi: #9fe0b2;
     --base: #1b8a4a;
@@ -243,11 +316,15 @@
     --rim: #052e16;
   }
 
-  /* Status cards: small tabs sticking out of the right edge, like real cards tucked under. */
+  /*
+    Status cards: small tabs sticking out of the right edge, like real cards tucked under. They
+    end just above the middle, so the tokens there never cover them: half a token (13px) and a
+    3px gap.
+  */
   .statuses {
     position: absolute;
     right: -8px;
-    top: 30px;
+    bottom: calc(50% + 16px);
     z-index: 4;
     display: flex;
     flex-direction: column;
@@ -255,11 +332,37 @@
     gap: 3px;
   }
 
+  /*
+    A landscape card is too low for three tabs above its middle: they lie side by side along its
+    top instead, the last one sticking out of the right edge.
+  */
+  .card.land .statuses {
+    top: 6px;
+    bottom: auto;
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  /* On a scheme, the right corners hold the tokens: the tabs stick out of the left edge. */
+  .card.scheme .statuses {
+    top: 6px;
+    right: auto;
+    bottom: auto;
+    left: -8px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .card.scheme .st {
+    border-radius: 6px 4px 4px 6px;
+  }
+
   .st {
-    font:
-      800 8px/1 system-ui,
-      sans-serif;
-    letter-spacing: 0.3px;
+    font-stretch: 75%;
+    font-weight: 800;
+    font-size: 9px;
+    line-height: 1;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: #fff;
     padding: 3px 5px 3px 6px;
@@ -271,7 +374,6 @@
     text-shadow: 0 1px 1px #0008;
   }
 
-  /* Same green as the counter token. */
   .st.stunned {
     background: linear-gradient(#25a058, #11683a);
   }
@@ -280,8 +382,22 @@
     background: linear-gradient(#a274e6, #5c33a3);
   }
 
-  /* Same orange as the threat token. */
   .st.tough {
     background: linear-gradient(#f0a53a, #a8600f);
+  }
+
+  .st.locked {
+    background: linear-gradient(#7d8aa8, #46506b);
+  }
+
+  /* The small lock before the Locked label. */
+  .st .lock {
+    width: 8px;
+    height: 8px;
+    margin-right: 3px;
+    vertical-align: -1px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.4;
   }
 </style>

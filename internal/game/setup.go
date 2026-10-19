@@ -10,19 +10,42 @@ import (
 )
 
 // Default positions on the table, in table units (see the geometry rules).
+//
+// The table is laid out in rows of rowHeight: the villain's row on top, then
+// one row per seated player, in seat order. Every row starts with its deck
+// and its discard pile, then the villain or the identity; the villain's row
+// goes on with the main scheme, the first player's row with the first player
+// token, and cards in play are added to the right. Things sit rowContentY
+// below the top of their row, leaving room for the client's owner label
+// above the piles. Out-of-play piles (victory display, set-aside cards) keep
+// a position for the model, on the deck, but the client never draws them.
 const (
-	villainPileX = 280
-	schemePileX  = 420
-	schemePileY  = 20
-	inPlayStartX = 600
-	inPlayStepX  = 160
-	inPlayY      = 20
-	discardX     = 120
-	victoryX     = 1080
-	asideX       = 1200
-	identityX    = 280
-	firstPlayerX = 420
+	rowHeight   = 330
+	rowContentY = 30
+
+	deckX        = 0
+	discardX     = 160
+	outOfPlayX   = 0
+	identityX    = 360
+	villainX     = 360
+	mainSchemeX  = 520
+	firstPlayerX = 520
+	inPlayStartX = 760
+	inPlayStepX  = 220
 )
+
+// villainRow is the row of the villain; a player's row is playerRow.
+const villainRow = 0
+
+// playerRow returns the row of the player seated at seat.
+func playerRow(seat int) int {
+	return seat + 1
+}
+
+// rowY returns the y of the things lying in a row.
+func rowY(row int) int {
+	return rowHeight*row + rowContentY
+}
 
 const (
 	pileKeyVillain = "villain"
@@ -96,31 +119,34 @@ func setNames(cat *pack.Catalog, codes []string) ([]string, error) {
 	return names, nil
 }
 
-// newEmptyTable returns a table with every pile of every area, all empty.
+// newEmptyTable returns a table with every pile of the villain and of every
+// player, all empty.
 func newEmptyTable(players int) *Table {
 	t := &Table{
 		Cards:       map[string]*Card{},
 		Piles:       map[string]*Pile{},
 		Hands:       map[Area][]string{},
-		FirstPlayer: Point{Area: PlayerArea(0), X: firstPlayerX, Y: 0},
+		FirstPlayer: Point{X: firstPlayerX, Y: rowY(playerRow(0))},
 	}
-	t.addPile(PileEncounter, KindEncounter, NoOwner, AreaVillain, 0)
-	t.addPile(PileEncounterDiscard, KindEncounterDiscard, NoOwner, AreaVillain, discardX)
-	t.addPile(PileVictory, KindVictory, NoOwner, AreaVillain, victoryX)
-	t.addPile(PileScenarioAside, KindAside, NoOwner, AreaVillain, asideX)
+	villainY := rowY(villainRow)
+	t.addPile(PileEncounter, KindEncounter, NoOwner, deckX, villainY)
+	t.addPile(PileEncounterDiscard, KindEncounterDiscard, NoOwner, discardX, villainY)
+	t.addPile(PileVictory, KindVictory, NoOwner, outOfPlayX, villainY)
+	t.addPile(PileScenarioAside, KindAside, NoOwner, outOfPlayX, villainY)
 
 	for seat := range players {
 		area := PlayerArea(seat)
-		t.addPile("deck:"+string(area), KindDeck, seat, area, 0)
-		t.addPile("disc:"+string(area), KindDiscard, seat, area, discardX)
-		t.addPile("aside:"+string(area), KindAside, seat, area, asideX)
+		y := rowY(playerRow(seat))
+		t.addPile("deck:"+string(area), KindDeck, seat, deckX, y)
+		t.addPile("disc:"+string(area), KindDiscard, seat, discardX, y)
+		t.addPile("aside:"+string(area), KindAside, seat, outOfPlayX, y)
 		t.Hands[area] = []string{}
 	}
 	return t
 }
 
-func (t *Table) addPile(id string, kind PileKind, owner int, area Area, x int) {
-	t.Piles[id] = &Pile{ID: id, Kind: kind, Owner: owner, Area: area, X: x, Cards: []string{}}
+func (t *Table) addPile(id string, kind PileKind, owner int, x, y int) {
+	t.Piles[id] = &Pile{ID: id, Kind: kind, Owner: owner, X: x, Y: y, Cards: []string{}}
 }
 
 // tableBuilder creates the cards of a new table.
@@ -160,9 +186,9 @@ func (b *tableBuilder) pushToPile(pileID string, c *Card) {
 }
 
 // placeOnTable puts a new card on the table.
-func (b *tableBuilder) placeOnTable(c *Card, face int, area Area, x, y int) {
+func (b *tableBuilder) placeOnTable(c *Card, face int, x, y int) {
 	c.Face = face
-	b.table.placeOnTable(c, area, x, y)
+	b.table.placeOnTable(c, x, y)
 }
 
 // addSetToPile creates every copy of every card of a set, owned by nobody,
@@ -200,7 +226,7 @@ func (b *tableBuilder) canonical(code string) (string, error) {
 	return def.Code, nil
 }
 
-// setupScenario creates the villain side: stages, starting cards, set-aside
+// setupScenario creates the villain's row: stages, starting cards, set-aside
 // cards and the encounter deck. The deck stays unshuffled until the
 // obligations of the heroes have joined it.
 func (b *tableBuilder) setupScenario(cfg LobbyConfig) (pack.Scenario, error) {
@@ -222,7 +248,7 @@ func (b *tableBuilder) setupScenario(cfg LobbyConfig) (pack.Scenario, error) {
 		}
 	}
 	for i, ref := range start.InPlay {
-		c, err := b.putInPlay(ref, inPlayStartX+inPlayStepX*i, inPlayY)
+		c, err := b.putInPlay(ref, inPlayX(i))
 		if err != nil {
 			return pack.Scenario{}, err
 		}
@@ -266,7 +292,7 @@ func (b *tableBuilder) setupScenario(cfg LobbyConfig) (pack.Scenario, error) {
 }
 
 // putSetInPlay puts the cards a set starts in play at this difficulty (the
-// "Setup." keyword) on the villain side, in the in-play row from firstSlot
+// "Setup." keyword) in the villain's row, in the in-play slots from firstSlot
 // on. It returns the canonical codes it placed, which stay out of the
 // encounter deck, and the number of slots it used.
 func (b *tableBuilder) putSetInPlay(
@@ -283,7 +309,7 @@ func (b *tableBuilder) putSetInPlay(
 	refs := set.InPlay[difficulty]
 	for i, ref := range refs {
 		slot := firstSlot + i
-		c, err := b.putInPlay(ref, inPlayStartX+inPlayStepX*slot, inPlayY)
+		c, err := b.putInPlay(ref, inPlayX(slot))
 		if err != nil {
 			return nil, 0, err
 		}
@@ -332,33 +358,38 @@ func (b *tableBuilder) setupStage(pile pack.Pile, top pack.FaceRef, apart map[st
 func stagePosition(key string) (x, y int, err error) {
 	switch key {
 	case pileKeyVillain:
-		return villainPileX, 0, nil
+		return villainX, rowY(villainRow), nil
 	case pileKeyScheme:
-		return schemePileX, schemePileY, nil
+		return mainSchemeX, rowY(villainRow), nil
 	default:
 		return 0, 0, fmt.Errorf("%w: unknown stage pile %q", ErrInvalid, key)
 	}
 }
 
-// putInPlay creates a starting card and puts it on the villain side.
-func (b *tableBuilder) putInPlay(ref pack.FaceRef, x, y int) (*Card, error) {
+// inPlayX returns the x of the in-play slot with the given index.
+func inPlayX(slot int) int {
+	return inPlayStartX + inPlayStepX*slot
+}
+
+// putInPlay creates a starting card and puts it in the villain's row, at x.
+func (b *tableBuilder) putInPlay(ref pack.FaceRef, x int) (*Card, error) {
 	c, def, err := b.newEncounterCard(ref.Card)
 	if err != nil {
 		return nil, err
 	}
-	if err := b.placeFace(c, def, ref.Face, x, y); err != nil {
+	if err := b.placeFace(c, def, ref.Face, x, rowY(villainRow)); err != nil {
 		return nil, err
 	}
 	return c, nil
 }
 
-// placeFace puts a new card on the villain side, face up on the given face,
-// with the starting threat that face prints, if any.
+// placeFace puts a new encounter card on the table, face up on the given
+// face, with the starting threat that face prints, if any.
 func (b *tableBuilder) placeFace(c *Card, def pack.Card, face, x, y int) error {
 	if face < 0 || face >= len(def.Faces) {
 		return fmt.Errorf("%w: card %s has no face %d", ErrInvalid, def.Code, face)
 	}
-	b.placeOnTable(c, face, AreaVillain, x, y)
+	b.placeOnTable(c, face, x, y)
 
 	threat := def.Faces[face].StartingThreat
 	if threat == nil {
@@ -387,7 +418,7 @@ func (b *tableBuilder) setupPlayer(seat int, deck *DeckChoice) error {
 	if err != nil {
 		return err
 	}
-	b.placeOnTable(identity, alterEgoFace(identityDef), area, identityX, 0)
+	b.placeOnTable(identity, alterEgoFace(identityDef), identityX, rowY(playerRow(seat)))
 
 	hero, ok := b.cat.HeroByIdentity(deck.Hero)
 	if !ok {

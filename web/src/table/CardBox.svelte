@@ -9,8 +9,9 @@
 <script lang="ts">
   import { tick, untrack } from 'svelte';
   import Dialog from '../components/Dialog.svelte';
-  import type { Action, CardView, PackFace, Size, View } from '../lib/types';
+  import type { Action, CardView, PackFace, PileView, Size, View } from '../lib/types';
   import {
+    canShuffleIn,
     isDeck,
     pileLabel,
     stageFaceName,
@@ -51,9 +52,12 @@
   const DRAG_THRESHOLD = 5;
   const EDGE_SCROLL = 40;
   const SCROLL_STEP = 12;
-  // Tiles are at least this wide; a card is 1.4 times as high as wide.
-  const MIN_TILE = 132;
+  // Tiles are at least this wide, about the preview's card, which does not show while a box is
+  // open: the cards are read in the box. A card is 1.4 times as high as wide.
+  const MIN_TILE = 220;
   const CARD_RATIO = 1.4;
+  // Never wider than the window: the box keeps inside it, its grid scrolls.
+  const BOX_WIDTH = 'min(1200px, 100%)';
   const SLIDE_MS = 180;
 
   interface Tile {
@@ -457,6 +461,19 @@
     !readOnly && box.kind === 'pile' && box.mode === 'search' && isDeck(box.pile),
   );
 
+  // A set-aside pile is reached from its box only: it is not drawn on the table.
+  const shuffleInPile = $derived(
+    !readOnly && box.kind === 'pile' && seat !== null && canShuffleIn(box.pile, seat)
+      ? box.pile
+      : null,
+  );
+
+  function shuffleIn(pile: PileView): void {
+    if (act({ kind: 'shuffleIn', pile: pile.id }) !== null) {
+      onclose(false);
+    }
+  }
+
   $effect(() => () => {
     clearTimeout(hideTimer);
     clearTimeout(pendingTimer);
@@ -469,7 +486,8 @@
   onpointercancel={() => (drag = null)}
 />
 
-<Dialog title={fullTitle} wide oncancel={() => onclose(false)}>
+<!-- Five columns of tiles about 220 px wide on a large screen, fewer on a smaller one. -->
+<Dialog title={fullTitle} wide width={BOX_WIDTH} oncancel={() => onclose(false)}>
   {#snippet heading(id: string)}
     <div class="mhead">
       <b {id}
@@ -490,6 +508,7 @@
     class="mgrid"
     aria-label="Cards"
     bind:this={grid}
+    class:dragging={drag?.lifted}
     style:height={gridHeight === null ? undefined : `${gridHeight}px`}
     {@attach sizeGrid}
     onscroll={() => (hovered = null)}
@@ -550,9 +569,17 @@
   <div class="mfoot">
     {#if shuffleChoice}
       <button type="button" onclick={() => onclose(false)}>Close without shuffling</button>
-      <button type="button" class="primary" onclick={() => onclose(true)}>Shuffle & close</button>
+      <button type="button" class="btn-primary compact" onclick={() => onclose(true)}
+        >Shuffle & close</button
+      >
     {:else}
-      <button type="button" class="primary" onclick={() => onclose(false)}>Close</button>
+      {#if shuffleInPile}
+        {@const pile = shuffleInPile}
+        <button type="button" onclick={() => shuffleIn(pile)}>
+          Shuffle into the encounter deck
+        </button>
+      {/if}
+      <button type="button" onclick={() => onclose(false)}>Close</button>
     {/if}
   </div>
 
@@ -610,7 +637,9 @@
   }
 
   .mhead b {
-    font-size: 16px;
+    font-stretch: 85%;
+    font-weight: 800;
+    font-size: 18px;
   }
 
   .mhead .aside {
@@ -622,10 +651,10 @@
   .mhead .filter {
     margin-left: auto;
     width: 220px;
-    padding: 6px 10px;
-    background: var(--panel-2);
-    border: 1px solid var(--line);
-    border-radius: 8px;
+    padding: 7px 12px;
+    background: var(--bg);
+    border: 1px solid var(--line-strong);
+    border-radius: 10px;
     color: var(--text);
     font: inherit;
   }
@@ -633,7 +662,8 @@
   .mgrid {
     position: relative;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+    /* As wide as MIN_TILE at least; the columns fill the row. */
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     align-content: start;
     gap: 14px;
     margin: 0;
@@ -660,9 +690,9 @@
     aspect-ratio: 5 / 7;
     padding: 0;
     overflow: hidden;
-    background: #121827;
+    background: var(--bg);
     border: none;
-    border-radius: 8px;
+    border-radius: 9px;
     color: inherit;
     font: inherit;
   }
@@ -679,6 +709,12 @@
   .tile.pick .img:disabled {
     cursor: default;
     opacity: 1;
+  }
+
+  /* While a tile is moved, the pointer holds it, over any tile. After the rules above. */
+  .mgrid.dragging,
+  .mgrid.dragging :global(*) {
+    cursor: grabbing;
   }
 
   /* The card itself, contained in the 5:7 tile: a landscape card lies across it. */
@@ -715,9 +751,9 @@
   }
 
   .tile.lifting .img {
-    outline: 2px dashed #4fd1ff88;
+    outline: 2px dashed #49c6ff88;
     outline-offset: -2px;
-    background: #4fd1ff14;
+    background: #49c6ff14;
   }
 
   .tile.lifting .img > :global(*) {
@@ -729,10 +765,12 @@
     top: 4px;
     left: 4px;
     z-index: 3;
-    padding: 0 7px;
-    background: #000c;
+    padding: 1px 7px;
+    background: #07090fcc;
+    border: 1px solid var(--line-strong);
     border-radius: 999px;
     font-size: 11px;
+    font-weight: 700;
   }
 
   .mempty {
@@ -751,7 +789,7 @@
   .mempty svg {
     width: 40px;
     height: 40px;
-    color: #4a5576;
+    color: var(--line-strong);
     fill: none;
     stroke: currentColor;
     stroke-width: 1.8;
@@ -769,8 +807,10 @@
     border-top: 1px solid var(--line);
   }
 
-  .mfoot .primary {
-    border-color: var(--sel);
+  /* The secondary buttons stand as tall as the main one (.btn-primary.compact). */
+  .mfoot button:not(.btn-primary) {
+    height: 40px;
+    padding: 0 20px;
   }
 
   /* The dragged card, the tile's size, its card contained as in the tile. */

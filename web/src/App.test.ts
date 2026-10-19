@@ -11,7 +11,7 @@ describe('App', () => {
   it('shows the title on the home route', () => {
     navigate('/');
     render(App);
-    expect(screen.getByRole('heading', { name: 'INTO THE FRAY' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Into The Fray' })).toBeTruthy();
   });
 });
 
@@ -19,6 +19,8 @@ describe('App routes', () => {
   it('shows the options screen', async () => {
     navigate('/options');
     render(App);
-    expect(await screen.findByText('Saved in this browser only.')).toBeTruthy();
+    expect(
+      await screen.findByText('Saved in this browser only. Changes apply right away.'),
+    ).toBeTruthy();
   });
 });
