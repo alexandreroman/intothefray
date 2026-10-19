@@ -1280,6 +1280,8 @@
     clipped: it never reaches the page, which would scroll.
   */
   .app {
+    /* The top bar's gutter, on both sides of the window: the play area's own on the left. */
+    --content-gutter: 24px;
     display: grid;
     height: 100vh;
     height: 100dvh;
@@ -1319,7 +1321,7 @@
   .table {
     position: relative;
     width: max-content;
-    padding: 24px;
+    padding: 24px var(--content-gutter);
   }
 
   /*

@@ -131,8 +131,13 @@
 <Tooltip />
 
 <style>
-  /* The start bar sticks to the bottom of the window, at the end of a full-height column. */
+  /*
+    The start bar sticks to the bottom of the window, at the end of a full-height column. The
+    column's width and gutter are shared with the top bar.
+  */
   .screen {
+    --content-max: 1200px;
+    --content-gutter: 24px;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -142,9 +147,9 @@
   .lobby {
     flex: 1;
     width: 100%;
-    max-width: 1200px;
+    max-width: var(--content-max);
     margin: 0 auto;
-    padding: 36px 24px 48px;
+    padding: 36px var(--content-gutter) 48px;
     display: flex;
     flex-direction: column;
     gap: 28px;
@@ -199,8 +204,13 @@
   }
 
   @media (max-width: 600px) {
+    .screen {
+      --content-gutter: 16px;
+    }
+
     .lobby {
-      padding: 24px 16px 32px;
+      padding-top: 24px;
+      padding-bottom: 32px;
     }
 
     h1 {
@@ -290,9 +300,9 @@
   }
 
   .startbar-inner {
-    max-width: 1200px;
+    max-width: var(--content-max);
     margin: 0 auto;
-    padding: 14px 24px;
+    padding: 14px var(--content-gutter);
     display: flex;
     flex-wrap: wrap;
     align-items: center;

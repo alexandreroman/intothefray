@@ -145,7 +145,10 @@
 </div>
 
 <style>
+  /* The column's width and gutter are shared with the top bar. */
   .options {
+    --content-max: 920px;
+    --content-gutter: 24px;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -155,9 +158,9 @@
   main {
     flex: 1;
     width: 100%;
-    max-width: 920px;
+    max-width: var(--content-max);
     margin: 0 auto;
-    padding: 44px 24px 56px;
+    padding: 44px var(--content-gutter) 56px;
     display: flex;
     flex-direction: column;
     animation: rise 0.25s ease-out;
@@ -420,8 +423,13 @@
 
   /* A phone: 16px gutters, and smaller theme cards to fit three in a row. */
   @media (max-width: 560px) {
+    .options {
+      --content-gutter: 16px;
+    }
+
     main {
-      padding: 32px 16px 40px;
+      padding-top: 32px;
+      padding-bottom: 40px;
     }
 
     .themes {
