@@ -669,7 +669,7 @@ describe('Table', () => {
     expect(session.act).toHaveBeenCalledWith({ kind: 'undo' });
   });
 
-  it('always shows the side panel, with no toggle; it holds the history only', () => {
+  it('shows the side panel, which holds the history only', () => {
     localStorage.setItem('itf-side-hidden', '1');
     render(Table, { session: fakeSession(), view: makeView() });
 
@@ -677,6 +677,36 @@ describe('Table', () => {
     expect(within(side).getByRole('list', { name: 'History' })).toBeTruthy();
     expect(within(side).queryByLabelText('Card preview')).toBeNull();
     expect(screen.queryByRole('button', { name: 'History' })).toBeNull();
+  });
+
+  it('collapses the history to a strip keeping Undo, remembered for the viewer', async () => {
+    const session = fakeSession();
+    const view = { ...makeView(), canUndo: true };
+    const { container, unmount } = render(Table, { session, view });
+    const app = container.querySelector<HTMLElement>('.app')!;
+    const side = screen.getByRole('complementary', { name: 'History' });
+    expect(app.classList).not.toContain('history-collapsed');
+
+    const collapse = screen.getByRole('button', { name: 'Collapse history' });
+    expect(collapse.getAttribute('aria-controls')).toBe(side.id);
+    await fireEvent.click(collapse);
+    expect(app.classList).toContain('history-collapsed');
+    expect(screen.queryByRole('list', { name: 'History' })).toBeNull();
+    expect(localStorage.getItem('itf-history-collapsed')).toBe('1');
+    // The focus goes to the button that took its place.
+    const expand = screen.getByRole('button', { name: 'Expand history' });
+    await waitFor(() => expect(document.activeElement).toBe(expand));
+    await fireEvent.click(within(side).getByRole('button', { name: 'Undo last action' }));
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'undo' });
+    unmount();
+
+    // The next table opens collapsed.
+    const again = render(Table, { session: fakeSession(), view });
+    expect(again.container.querySelector('.app')?.classList).toContain('history-collapsed');
+    await fireEvent.click(screen.getByRole('button', { name: 'Expand history' }));
+    expect(again.container.querySelector('.app')?.classList).not.toContain('history-collapsed');
+    expect(screen.getByRole('list', { name: 'History' })).toBeTruthy();
+    expect(localStorage.getItem('itf-history-collapsed')).toBe('0');
   });
 
   it('floats the preview over the table, only while something is previewed', async () => {

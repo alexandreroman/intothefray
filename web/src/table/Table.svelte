@@ -1,8 +1,8 @@
 <!--
   The table page: the top bar, the table column (one surface for everyone,
-  scrolling both ways) and the side column (history). The preview of the
-  hovered card floats over the table's bottom right corner. On a narrow screen
-  there is no side column.
+  scrolling both ways) and the side column (history), which collapses to a
+  slim strip. The preview of the hovered card floats over the table's bottom
+  right corner. On a narrow screen there is no side column.
 -->
 <script lang="ts">
   import { tick, untrack } from 'svelte';
@@ -12,6 +12,7 @@
   import Tooltip from '../components/Tooltip.svelte';
   import TopBar from '../components/TopBar.svelte';
   import { knownCard, loadGameCards, loadIndex } from '../lib/catalog';
+  import { getPref, setPref } from '../lib/prefs';
   import type { GameSession } from '../lib/session.svelte';
   import type {
     Action,
@@ -881,6 +882,15 @@
   // column goes: the history is not shown.
   const narrow = new MediaQuery('max-width: 900px');
 
+  // Remembered per viewer: the table takes the width the history leaves.
+  const HISTORY_COLLAPSED_KEY = 'itf-history-collapsed';
+  let historyCollapsed = $state(getPref(HISTORY_COLLAPSED_KEY) === '1');
+
+  function toggleHistory(): void {
+    historyCollapsed = !historyCollapsed;
+    setPref(HISTORY_COLLAPSED_KEY, historyCollapsed ? '1' : '0');
+  }
+
   let wrap = $state<HTMLElement>();
   let app = $state<HTMLElement>();
   let presenceLayer = $state<ReturnType<typeof Presence>>();
@@ -1010,6 +1020,7 @@
   class="app"
   class:arrowing={interaction.arrowFrom !== null}
   class:dragging={interaction.dragging !== null}
+  class:history-collapsed={historyCollapsed && !narrow.current}
   style:--z={zoom}
   style:--edge="{TABLE_EDGE}px"
   style:--edge-bottom="{TABLE_EDGE_BOTTOM}px"
@@ -1197,8 +1208,15 @@
   <Tooltip />
 
   {#if !narrow.current}
-    <aside class="side" aria-label="History">
-      <SidePanel log={view.log} canUndo={view.canUndo} onundo={undo} />
+    <aside class="side" id="history-panel" aria-label="History">
+      <SidePanel
+        log={view.log}
+        canUndo={view.canUndo}
+        onundo={undo}
+        collapsed={historyCollapsed}
+        ontoggle={toggleHistory}
+        controls="history-panel"
+      />
     </aside>
   {/if}
 
@@ -1242,6 +1260,12 @@
     grid-template-areas:
       'top top'
       'table side';
+    transition: grid-template-columns 0.2s ease;
+  }
+
+  /* The history collapsed to a strip: the table takes the rest. */
+  .app.history-collapsed {
+    grid-template-columns: minmax(0, 1fr) 44px;
   }
 
   .top {
@@ -1521,6 +1545,10 @@
     .peek,
     .peek.leaving {
       animation: none;
+    }
+
+    .app {
+      transition: none;
     }
   }
 </style>

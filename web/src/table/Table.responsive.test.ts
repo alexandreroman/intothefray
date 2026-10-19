@@ -188,6 +188,17 @@ describe('Table on a narrow screen', () => {
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'undo' });
   });
 
+  it('narrow layout ignores a collapsed history: no strip, the floating Undo', () => {
+    localStorage.setItem('itf-history-collapsed', '1');
+    mockScreen(true);
+    const { container } = render(Table, { session: fakeSession(), view: makeView() });
+
+    expect(container.querySelector('.app')?.classList).not.toContain('history-collapsed');
+    expect(sidePanel()).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Expand history' })).toBeNull();
+    expect(screen.getAllByRole('button', { name: 'Undo last action' })).toHaveLength(1);
+  });
+
   it('wide layout has its Undo in the side column only', () => {
     mockScreen(false);
     render(Table, { session: fakeSession(), view: makeView() });

@@ -74,6 +74,50 @@ describe('SidePanel', () => {
     expect(onundo).toHaveBeenCalledOnce();
   });
 
+  it('offers to collapse when it can, and says what it controls', async () => {
+    const { unmount } = render(SidePanel, { log: LOG, onundo: () => {} });
+    expect(screen.queryByRole('button', { name: 'Collapse history' })).toBeNull();
+    unmount();
+
+    const ontoggle = vi.fn();
+    render(SidePanel, { log: LOG, onundo: () => {}, ontoggle, controls: 'history-panel' });
+    const collapse = screen.getByRole('button', { name: 'Collapse history' });
+    expect(collapse.getAttribute('aria-expanded')).toBe('true');
+    expect(collapse.getAttribute('aria-controls')).toBe('history-panel');
+    expect(collapse.dataset.tip).toBe('Collapse history');
+    await fireEvent.click(collapse);
+    expect(ontoggle).toHaveBeenCalledOnce();
+  });
+
+  it('collapsed, shows a strip with Expand and an Undo icon, and no history', async () => {
+    const onundo = vi.fn();
+    const ontoggle = vi.fn();
+    const props = { log: LOG, onundo, ontoggle, collapsed: true, controls: 'history-panel' };
+    const { rerender } = render(SidePanel, props);
+
+    expect(screen.queryByRole('list', { name: 'History' })).toBeNull();
+    expect(screen.queryByRole('heading')).toBeNull();
+    const expand = screen.getByRole('button', { name: 'Expand history' });
+    expect(expand.getAttribute('aria-expanded')).toBe('false');
+    expect(expand.getAttribute('aria-controls')).toBe('history-panel');
+    await fireEvent.click(expand);
+    expect(ontoggle).toHaveBeenCalledOnce();
+
+    // Undo, as an icon: off with nothing to undo, the tip saying why.
+    const undo = screen.getByRole('button', { name: 'Undo last action' });
+    expect(undo.textContent?.trim()).toBe('');
+    expect(undo.getAttribute('aria-disabled')).toBe('true');
+    expect(undo.dataset.tip).toBe('Nothing of yours to undo');
+    await fireEvent.click(undo);
+    expect(onundo).not.toHaveBeenCalled();
+
+    await rerender({ ...props, canUndo: true });
+    expect(undo.getAttribute('aria-disabled')).toBe('false');
+    expect(undo.dataset.tip).toBe('Undo last action');
+    await fireEvent.click(undo);
+    expect(onundo).toHaveBeenCalledOnce();
+  });
+
   it('titles its history, and holds no preview', () => {
     render(SidePanel, { log: LOG, onundo: () => {} });
     const titles = screen.getAllByRole('heading').map((heading) => heading.textContent);

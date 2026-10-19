@@ -21,9 +21,11 @@ type: project
 - A portrait table card is 140×196 table units, chosen for readability;
   the hand and the preview have their own sizes. Tokens sit inside the
   card: damage and counters on its lower part, threat on its right side.
-- The preview and history panel is always shown on a wide screen and has
-  no toggle. On a narrow screen the preview is an overlay, the history is
-  hidden and a floating button offers Undo ("Undo last action").
+- On a wide screen the history panel shows at the right; it can be
+  collapsed to a slim strip that keeps Undo, remembered per viewer
+  (`itf-history-collapsed`). On a narrow screen the preview is an overlay,
+  the history is hidden and a floating button offers Undo ("Undo last
+  action").
 - The card action bar groups Exhaust and Flip, puts tokens and statuses in
   one menu behind a token icon, and shows Move to as an icon.
 

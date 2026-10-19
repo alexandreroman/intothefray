@@ -1,8 +1,10 @@
 <!--
   The side column: the history, newest first, and the Undo button under it.
+  Collapsed, a slim strip holds only the buttons that expand it and undo.
   The preview of the hovered card floats over the table (Table.svelte).
 -->
 <script lang="ts">
+  import { tick } from 'svelte';
   import type { LogView } from '../lib/types';
   import { mergedLines } from './animate';
   import { interaction } from './interaction.svelte';
@@ -11,12 +13,44 @@
     log,
     canUndo = false,
     onundo,
+    collapsed = false,
+    ontoggle,
+    controls,
   }: {
     /** Oldest first, as the server sends it. */
     log: LogView[];
     canUndo?: boolean;
     onundo: () => void;
+    /** Only a strip shows: the buttons to expand it and to undo. */
+    collapsed?: boolean;
+    /** Collapses or expands the panel; without it, the panel has no such button. */
+    ontoggle?: () => void;
+    /** The id of the element that collapses (aria-controls). */
+    controls?: string;
   } = $props();
+
+  const UNDO_TIP = 'Undo last action';
+  const NOTHING_TO_UNDO = 'Nothing of yours to undo';
+
+  let collapseButton = $state<HTMLButtonElement>();
+  let expandButton = $state<HTMLButtonElement>();
+
+  // The button pressed goes with the side it was on: the focus moves to the one that takes its place.
+  async function toggle(): Promise<void> {
+    if (!ontoggle) {
+      return;
+    }
+    leaveLine();
+    ontoggle();
+    await tick();
+    (collapsed ? expandButton : collapseButton)?.focus();
+  }
+
+  function undo(): void {
+    if (canUndo) {
+      onundo();
+    }
+  }
 
   interface Part {
     text: string;
@@ -118,57 +152,116 @@
       >{:else}{part.text}{/if}{/each}
 {/snippet}
 
-<h2 class="loghead" id="history-title">History</h2>
-
-<ul class="log" aria-labelledby="history-title" bind:this={list}>
-  {#each lines as { key, entry, parts, time, isNew } (key)}
-    <li
-      class="e"
-      data-line={key}
-      class:undone={entry.undone}
-      class:new={isNew}
-      onpointerenter={(event) => enterLine(event, key, entry.cards)}
-      onpointerleave={leaveLine}
-    >
-      <time class="t">{time}</time>
-      <span class="txt">{@render lineText(entry, parts)}</span>
-      {#if expanded === key}
-        <div class="full">
-          <time class="t">{time}</time>
-          <span class="whole">{@render lineText(entry, parts)}</span>
-        </div>
-      {/if}
-    </li>
-  {/each}
-</ul>
-
-<!-- aria-disabled rather than disabled, so that the tooltip saying why still shows. -->
-<div class="undo">
-  <button
-    aria-disabled={!canUndo}
-    data-tip={canUndo ? undefined : 'Nothing of yours to undo'}
-    onclick={() => {
-      if (canUndo) {
-        onundo();
-      }
-    }}
+{#snippet undoIcon()}
+  <!-- A hooked arrow going back. -->
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
   >
-    <!-- A hooked arrow going back. -->
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      aria-hidden="true"
+    <path d="M9 14L4 9l5-5" />
+    <path d="M4 9h11a5 5 0 0 1 0 10h-3" />
+  </svg>
+{/snippet}
+
+{#snippet panelIcon()}
+  <!-- The panel's edge, and a chevron pushing it to the right (drawn flipped to expand). -->
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.8"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <rect x="4" y="4" width="16" height="16" rx="2" />
+    <path d="M15 4v16M8 9l3 3-3 3" />
+  </svg>
+{/snippet}
+
+{#if collapsed}
+  <div class="strip">
+    <button
+      class="btn-ghost toggle expand"
+      aria-label="Expand history"
+      data-tip="Expand history"
+      aria-expanded="false"
+      aria-controls={controls}
+      bind:this={expandButton}
+      onclick={toggle}
     >
-      <path d="M9 14L4 9l5-5" />
-      <path d="M4 9h11a5 5 0 0 1 0 10h-3" />
-    </svg>
-    Undo last action
-  </button>
-</div>
+      {@render panelIcon()}
+    </button>
+    <!-- aria-disabled rather than disabled, so that the tooltip saying why still shows. -->
+    <div class="strip-undo">
+      <button
+        class="btn-ghost"
+        aria-label={UNDO_TIP}
+        data-tip={canUndo ? UNDO_TIP : NOTHING_TO_UNDO}
+        aria-disabled={!canUndo}
+        onclick={undo}
+      >
+        {@render undoIcon()}
+      </button>
+    </div>
+  </div>
+{:else}
+  <div class="loghead">
+    <h2 id="history-title">History</h2>
+    {#if ontoggle}
+      <button
+        class="btn-ghost toggle"
+        aria-label="Collapse history"
+        data-tip="Collapse history"
+        aria-expanded="true"
+        aria-controls={controls}
+        bind:this={collapseButton}
+        onclick={toggle}
+      >
+        {@render panelIcon()}
+      </button>
+    {/if}
+  </div>
+
+  <ul class="log" aria-labelledby="history-title" bind:this={list}>
+    {#each lines as { key, entry, parts, time, isNew } (key)}
+      <li
+        class="e"
+        data-line={key}
+        class:undone={entry.undone}
+        class:new={isNew}
+        onpointerenter={(event) => enterLine(event, key, entry.cards)}
+        onpointerleave={leaveLine}
+      >
+        <time class="t">{time}</time>
+        <span class="txt">{@render lineText(entry, parts)}</span>
+        {#if expanded === key}
+          <div class="full">
+            <time class="t">{time}</time>
+            <span class="whole">{@render lineText(entry, parts)}</span>
+          </div>
+        {/if}
+      </li>
+    {/each}
+  </ul>
+
+  <!-- aria-disabled rather than disabled, so that the tooltip saying why still shows. -->
+  <div class="undo">
+    <button
+      aria-disabled={!canUndo}
+      data-tip={canUndo ? undefined : NOTHING_TO_UNDO}
+      onclick={undo}
+    >
+      {@render undoIcon()}
+      {UNDO_TIP}
+    </button>
+  </div>
+{/if}
 
 <style>
   h2 {
@@ -183,7 +276,63 @@
 
   .loghead {
     flex: none;
-    padding: 16px 18px 6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px 6px 0 18px;
+  }
+
+  .toggle {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    color: var(--muted);
+  }
+
+  .toggle svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* The same icon, the other way round. */
+  .toggle.expand svg {
+    transform: scaleX(-1);
+  }
+
+  /* Collapsed: the expand button at the top, Undo at the bottom, on the expanded Undo's line. */
+  .strip {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 10px;
+  }
+
+  .strip-undo {
+    margin-top: auto;
+    padding-bottom: calc(var(--edge-bottom) + 5px);
+  }
+
+  .strip-undo button {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    color: #c9cfdf;
+  }
+
+  .strip-undo svg {
+    width: 16px;
+    height: 16px;
   }
 
   .log {
