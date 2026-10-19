@@ -36,3 +36,6 @@
 - [Standard and Expert set setup](references/project_set_setup.md) — Setup-keyword set cards start in play via sets.json; Standard PvP unlisted
 - [Per-game card pool](references/project_card_pool.md) — table loads GET /api/games/{id}/cards; SPA ships pack index only
 - [No compression in the backend](references/project_no_backend_compression.md) — Go sends HTTP/WS uncompressed; Caddy/CDN compress
+- [Visual identity](references/project_visual_identity.md) — Ink & Signal: Archivo, ink palette, split-card logo, full wordmark in bars
+- [Table layout](references/project_table_layout.md) — left rail per zone (deck, discard, out of play); side panel has no toggle
+- [Provider-neutral UI copy](references/project_provider_neutral_copy.md) — UI says "deck link", names no deck provider
