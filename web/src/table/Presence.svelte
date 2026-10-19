@@ -109,11 +109,15 @@
   interface Dragging {
     drag: PresenceDrag;
     from: Map<string, Spot>;
+    /** The table cards as it started: a card taken from a pile or a hand is new to it once dropped. */
+    onTable: Set<string>;
   }
 
   /** Another player's drag let go: its ghost stays where it was until the view moves its cards. */
   interface Landing extends Dragging {
     until: number;
+    /** The view as it was let go. */
+    view: View;
   }
 
   interface Drawn {
@@ -215,8 +219,43 @@
     return spots;
   }
 
-  /** Whether the view lays some card of the drag elsewhere than it lay as the drag started. */
+  /** The ids of the table cards of the view. */
+  function tableCardIds(): Set<string> {
+    // A value computed and compared at once: nothing reacts to it.
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    const ids = new Set<string>();
+    for (const card of view.table?.cards ?? []) {
+      if (card.zone === 'table') {
+        ids.add(card.id);
+      }
+    }
+    return ids;
+  }
+
+  /**
+   * Whether the drag carries a card that did not lie on the table as it
+   * started: a deck's unknown top card (carried as its pile), a card of a
+   * public pile, or a hand card. The view that shows where it went cannot be
+   * told by its id: it may be a card the viewer never saw.
+   */
+  function takesFromOutside(dragging: Dragging): boolean {
+    return dragging.drag.cards.some((id) => !dragging.from.has(id));
+  }
+
+  /**
+   * Whether the view lays some card of the drag elsewhere than it lay as the
+   * drag started, or, for a card taken from outside the table, lays a card
+   * on the table that was not there then.
+   */
   function hasMoved(dragging: Dragging): boolean {
+    if (takesFromOutside(dragging)) {
+      const onTable = tableCardIds();
+      for (const id of onTable) {
+        if (!dragging.onTable.has(id)) {
+          return true;
+        }
+      }
+    }
     const now = spotsOf(dragging.drag);
     for (const [id, was] of dragging.from) {
       const spot = now.get(id);
@@ -250,14 +289,14 @@
       if (drag) {
         if (!dragging) {
           landings.delete(color);
-          draggings.set(color, { drag, from: spotsOf(drag) });
+          draggings.set(color, { drag, from: spotsOf(drag), onTable: tableCardIds() });
         } else {
           dragging.drag = drag;
         }
       } else if (dragging) {
         draggings.delete(color);
         if (!hasMoved(dragging)) {
-          landings.set(color, { ...dragging, until: now + LANDING_MS });
+          landings.set(color, { ...dragging, until: now + LANDING_MS, view });
         }
       }
     }
@@ -446,12 +485,21 @@
     }
   }
 
+  /**
+   * Whether the view shows where a landing's cards went. A card taken from
+   * outside the table cannot be followed by its id: the first view after the
+   * drop is taken for the one it brought.
+   */
+  function hasLanded(landing: Landing): boolean {
+    return hasMoved(landing) || (takesFromOutside(landing) && view !== landing.view);
+  }
+
   // The view that shows where a landing's cards went ends it at once, before the next frame: its
   // ghost goes as the cards show, flying from where it lay (motion.svelte.ts).
   $effect(() => {
     void view;
     untrack(() => {
-      const landed = [...landings].filter(([, landing]) => hasMoved(landing));
+      const landed = [...landings].filter(([, landing]) => hasLanded(landing));
       for (const [color] of landed) {
         landings.delete(color);
       }

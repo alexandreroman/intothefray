@@ -3,7 +3,7 @@ import Table from './Table.svelte';
 import { interaction } from './interaction.svelte';
 import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
 import { GameSession } from '../lib/session.svelte';
-import type { Arrow, CardView as TableCard, PackFace, View } from '../lib/types';
+import type { Arrow, CardView as TableCard, PackFace, PileView, View } from '../lib/types';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -608,6 +608,79 @@ describe("other players' presence", () => {
     await nextFrame();
     expect(placed('sam').classList).not.toContain('lifted');
     expect(document.querySelector('.presence .card')).toBeNull();
+  });
+
+  describe('a card taken from a pile, which the view did not know before the drop', () => {
+    // Sam's deck, and their discard pile, whose cards everybody sees.
+    const DECK: PileView = { id: 'deck1', kind: 'deck', owner: 1, x: 0, y: 600, count: 30 };
+    const DISCARD: PileView = {
+      id: 'discard1',
+      kind: 'discard',
+      owner: 1,
+      x: 100,
+      y: 600,
+      count: 1,
+      cards: ['old'],
+    };
+
+    function withPiles(view: View, cards: TableCard[] = view.table!.cards): View {
+      return { ...view, table: { ...view.table!, cards, piles: [DECK, DISCARD] } };
+    }
+
+    async function spectate() {
+      const start = withPiles(makeView({ spectator: true }), [
+        ...CARDS.filter((c) => c.zone !== 'hand'),
+        card('old', { owner: 1, zone: 'pile' }),
+      ]);
+      return { start, ...(await renderTable(start)) };
+    }
+
+    it('shows the top card of a deck on the next view, with no wait', async () => {
+      const { start, receive, show } = await spectate();
+
+      // The deck's top card is not known: the drag carries the deck.
+      receive({ color: 1, name: 'Sam', drag: { cards: ['deck1'], x: 500, y: 320 } });
+      await nextFrame();
+      receive({ color: 1, name: 'Sam', drag: null });
+      await nextFrame();
+      expect(document.querySelector('.presence .card[data-id="deck1"]')).not.toBeNull();
+
+      // The view lays a card the spectator never saw where it was dropped.
+      const drawn = card('drawn', { owner: 1, x: 500, y: 320 });
+      await show(withPiles(start, [...start.table!.cards, drawn]));
+      expect(document.querySelector('.presence .card')).toBeNull();
+      expect(placed('drawn').classList).not.toContain('lifted');
+    });
+
+    it('shows a card of a discard pile on the next view, with no wait', async () => {
+      const { start, receive, show } = await spectate();
+
+      receive({ color: 1, name: 'Sam', drag: { cards: ['old'], x: 500, y: 320 } });
+      await nextFrame();
+      receive({ color: 1, name: 'Sam', drag: null });
+      await nextFrame();
+      expect(document.querySelector('.presence .card[data-id="old"]')).not.toBeNull();
+
+      const cards = start.table!.cards.map((c) =>
+        c.id === 'old' ? { ...c, zone: 'table' as const, x: 500, y: 320 } : c,
+      );
+      await show(withPiles(start, cards));
+      expect(document.querySelector('.presence .card')).toBeNull();
+      expect(placed('old').classList).not.toContain('lifted');
+    });
+
+    it('lets go of the ghost when the view came before the drag ended', async () => {
+      const { start, receive, show } = await spectate();
+
+      receive({ color: 1, name: 'Sam', drag: { cards: ['deck1'], x: 500, y: 320 } });
+      await nextFrame();
+      const drawn = card('drawn', { owner: 1, x: 500, y: 320 });
+      await show(withPiles(start, [...start.table!.cards, drawn]));
+
+      receive({ color: 1, name: 'Sam', drag: null });
+      await nextFrame();
+      expect(document.querySelector('.presence .card')).toBeNull();
+    });
   });
 
   it('hides them from a spectator too', async () => {
