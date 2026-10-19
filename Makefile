@@ -23,13 +23,17 @@ endif
 endif
 
 COMPOSE := docker compose
-INFRA_SERVICES := redis
+INFRA_SERVICES := redis web
 
 ##@ Infra
 
 .PHONY: infra-up
-infra-up: ## Start local infrastructure services (Redis)
-	$(COMPOSE) up -d --wait $(INFRA_SERVICES)
+infra-up: ## Start local infrastructure services (Redis, Caddy)
+	mkdir -p web/dist
+	# The server runs on the host in dev, so Caddy proxies to it; app-up
+	# keeps the compose default (the app container). --no-deps: the app
+	# service is not part of the dev infrastructure.
+	API_UPSTREAM=host.docker.internal:$${PORT:-9000} $(COMPOSE) up -d --wait --no-deps $(INFRA_SERVICES)
 
 .PHONY: infra-down
 infra-down: ## Stop local infrastructure services
@@ -42,7 +46,7 @@ infra-logs: ## Follow logs from infrastructure services
 ##@ Stack
 
 .PHONY: app-up
-app-up: ## Build and start the full stack (web + server + Redis)
+app-up: web-build ## Build and start the full stack (web + server + Redis)
 	$(COMPOSE) up -d --build --wait
 
 .PHONY: app-down
@@ -56,13 +60,13 @@ app-logs: ## Follow logs from the full stack
 ##@ Develop
 
 .PHONY: dev
-dev: infra-up web-install ## Start infra, then run the API and the web app with hot reload
+dev: infra-up web-install ## Start infra, then run the API (hot reload) and the web build (reload the page)
 	# Trap reaps the whole process group (kill 0) on exit or signal, so no
 	# orphaned processes survive Ctrl-C or a child crash. For multiple dev
 	# processes, background each as `( cmd; kill 0 ) &` before the wait.
 	@trap 'kill 0' EXIT INT TERM; \
 		( air; kill 0 ) & \
-		( cd web && pnpm dev; kill 0 ) & \
+		( cd web && pnpm watch; kill 0 ) & \
 		wait
 
 ##@ Web

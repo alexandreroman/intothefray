@@ -1,0 +1,24 @@
+{
+	# Static, stateless container: no admin API, no config autosave
+	admin off
+	persist_config off
+}
+
+http://:8080 {
+	root * /srv
+	encode zstd gzip
+
+	# One origin for the SPA and the API: the server accepts same-origin
+	# requests, so the Host header is forwarded untouched.
+	reverse_proxy /api/* {$API_UPSTREAM}
+	reverse_proxy /ws/* {$API_UPSTREAM}
+
+	# Hashed bundles never change; packs and the entry point may
+	@index path / /index.html
+	header /assets/* Cache-Control "public, max-age=31536000, immutable"
+	header /packs/* Cache-Control "public, max-age=300, must-revalidate"
+	header @index Cache-Control "no-cache"
+
+	# Routes are hash-based: no history fallback needed
+	file_server
+}
