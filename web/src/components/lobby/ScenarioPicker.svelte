@@ -327,8 +327,6 @@
           <p class="hint">
             The scenario's recommended sets (★) are added for you; change them freely.
           </p>
-        {:else if recommended.length > 0}
-          <p class="hint">Recommended: {recommended.map(setName).join(', ')}</p>
         {/if}
       </div>
     </div>

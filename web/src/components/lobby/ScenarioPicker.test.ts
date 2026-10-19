@@ -34,6 +34,7 @@ const index: Index = {
 };
 
 const asHost: YouView = { role: 'player', name: 'Alex', color: 0, host: true };
+const asGuest: YouView = { role: 'player', name: 'Sam', color: 1, host: false };
 
 const rhino: LobbyConfig = {
   scenario: 'rhino',
@@ -43,11 +44,11 @@ const rhino: LobbyConfig = {
   modulars: ['bomb_scare'],
 };
 
-function viewOf(config: LobbyConfig): View {
+function viewOf(config: LobbyConfig, you: YouView = asHost): View {
   return {
     id: 'g1',
     phase: 'lobby',
-    you: asHost,
+    you,
     players: [{ name: 'Alex', color: 0, host: true, ready: false, decks: [] }],
     spectators: 0,
     config,
@@ -55,9 +56,9 @@ function viewOf(config: LobbyConfig): View {
   };
 }
 
-function renderPicker(config: LobbyConfig) {
+function renderPicker(config: LobbyConfig, you: YouView = asHost) {
   const onconfigure = vi.fn();
-  const result = render(ScenarioPicker, { view: viewOf(config), index, onconfigure });
+  const result = render(ScenarioPicker, { view: viewOf(config, you), index, onconfigure });
   return { onconfigure, ...result };
 }
 
@@ -134,5 +135,21 @@ describe('ScenarioPicker set dropdowns', () => {
     await fireEvent.click(screen.getByRole('button', { name: 'Expert' }));
 
     expect(onconfigure).toHaveBeenCalledWith({ ...rhino, difficulty: 'expert', expert: 'expert' });
+  });
+});
+
+describe('ScenarioPicker recommended sets hint', () => {
+  it('shows the hint to the host', () => {
+    renderPicker(rhino);
+
+    expect(screen.getByText(/recommended sets \(★\) are added for you/)).toBeTruthy();
+  });
+
+  it('hides every recommended sets hint from a guest', () => {
+    const { container } = renderPicker(rhino, asGuest);
+
+    expect(container.querySelector('.modulars .hint')).toBeNull();
+    expect(screen.queryByText(/^Recommended:/)).toBeNull();
+    expect(screen.getByText('Bomb Scare')).toBeTruthy();
   });
 });
