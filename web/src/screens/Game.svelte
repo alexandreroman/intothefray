@@ -1,6 +1,5 @@
 <script lang="ts">
-  import NamePrompt from '../components/NamePrompt.svelte';
-  import { getPref, setPref } from '../lib/prefs';
+  import { playerName } from '../lib/names';
   import { href } from '../lib/router.svelte';
   import { GameSession } from '../lib/session.svelte';
   import Table from '../table/Table.svelte';
@@ -10,26 +9,16 @@
   // The parent keys this component on the game id: one instance per game.
   let { id }: { id: string } = $props();
 
-  let name = $state(getPref('itf-name')?.trim() ?? '');
   let session = $state.raw<GameSession | null>(null);
 
-  // The session is created only once the viewer has a name to join with.
   $effect(() => {
-    if (name === '') {
-      return;
-    }
-    const created = new GameSession(id, name);
+    const created = new GameSession(id, playerName());
     session = created;
     created.connect();
     return () => {
       created.close();
     };
   });
-
-  function onNameChosen(chosen: string): void {
-    setPref('itf-name', chosen);
-    name = chosen;
-  }
 
   // Also covers the gap between the socket opening and the first view.
   const waiting = $derived(
@@ -38,9 +27,7 @@
   const notFound = $derived(session?.status === 'closed' && session.lastError?.code === 'notFound');
 </script>
 
-{#if name === ''}
-  <NamePrompt onsubmit={onNameChosen} />
-{:else if notFound}
+{#if notFound}
   <div class="message table-bg">
     <p>This game doesn't exist or has expired.</p>
     <a href={href('/')}>Back to home</a>
