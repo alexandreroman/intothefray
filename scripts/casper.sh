@@ -1,7 +1,7 @@
 #!/bin/sh
 # Optional Casper workspace support: per-worktree ports and the info panel.
 # Nothing else in the project depends on this script.
-# Usage: scripts/casper.sh setup|run|info|clear|teardown
+# Usage: scripts/casper.sh setup|run|dev|info <dev|containers>|clear|teardown
 #
 # Known limit: variables that .env or .env.local assign are applied by the
 # Makefile on top of the environment, so a PORT set there wins over the
@@ -52,10 +52,13 @@ ENV
 	go mod download
 }
 
-# Publish the endpoints to the info panel. The ports come from the
-# environment that run loaded from .env.casper, never recomputed.
+# Publish the endpoints of the given mode (dev or containers) to the info
+# panel. `casper info set` replaces the whole panel, so each mode writes a
+# complete document. The ports come from the environment that run/dev loaded
+# from .env.casper, never recomputed.
 info() {
 	has_casper || return 0
+	mode=$1
 	web_port=${WEB_PORT:-5173}
 	server_port=${PORT:-8080}
 	redis_port=${REDIS_PORT:-6379}
@@ -64,8 +67,9 @@ info() {
 	file=$(mktemp /tmp/casper-info.XXXXXX) || return 0
 	mv "$file" "$file.md" && file=$file.md
 
-	cat >"$file" <<DOC
-# Into The Fray — workspace stack
+	if [ "$mode" = dev ]; then
+		cat >"$file" <<DOC
+# Into The Fray — dev stack
 
 ## Endpoints
 
@@ -80,8 +84,30 @@ info() {
 redis-cli -p $redis_port
 \`\`\`
 
+Restart with \`casper run dev\`.
+DOC
+	else
+		cat >"$file" <<DOC
+# Into The Fray — container stack
+
+## Endpoints
+
+| Endpoint      | URL                                     |
+| ------------- | --------------------------------------- |
+| Server health | <http://localhost:$server_port/healthz> |
+
+The container stack serves the API only, without the web app. Use Dev
+for the frontend.
+
+## Redis
+
+\`\`\`
+redis-cli -p $redis_port
+\`\`\`
+
 Restart with \`casper run\`.
 DOC
+	fi
 	casper info set --file "$file" >/dev/null 2>&1 || true
 	rm -f "$file"
 }
@@ -91,19 +117,43 @@ clear_info() {
 	casper info clear >/dev/null 2>&1 || true
 }
 
-# Start the dev stack with this workspace's ports and list its URLs in the
-# info panel. make is not exec'd so that the EXIT trap can clear the panel.
-# make dev ends with `kill 0` on the process group, which signals this shell
-# too: the TERM trap turns that into a normal exit, and the EXIT trap then
-# clears the panel once.
-run() {
+# Start the hot-reload stack with this workspace's ports and list its URLs
+# in the info panel. make is not exec'd so that the EXIT trap can clear the
+# panel. make dev ends with `kill 0` on the process group, which signals this
+# shell too: the TERM trap turns that into a normal exit, and the EXIT trap
+# then clears the panel once.
+dev() {
 	load_env
 	cd "$root"
-	info
+	info dev
 	trap clear_info EXIT
 	trap 'exit 130' INT
 	trap 'exit 143' TERM
 	make dev
+}
+
+# Stop the container stack and clear the panel. The INT and TERM traps turn
+# a signal into a normal exit, so this runs once, from the EXIT trap only.
+# app-down failure is ignored: the container engine may be gone already.
+stop_containers() {
+	trap - EXIT INT TERM
+	clear_info
+	make app-down >/dev/null 2>&1 || true
+}
+
+# Start the container stack (app image + Redis), then follow its logs so the
+# command stays attached: stopping it stops the stack, like dev. The trap is
+# installed before app-up so that a failed or interrupted start is cleaned
+# up too; the panel is only published once the stack is healthy.
+run() {
+	load_env
+	cd "$root"
+	trap stop_containers EXIT
+	trap 'exit 130' INT
+	trap 'exit 143' TERM
+	make app-up
+	info containers
+	make app-logs
 }
 
 # Stop this workspace's containers. Failure is ignored: the container
@@ -119,11 +169,12 @@ teardown() {
 case "${1:-}" in
 setup) setup ;;
 run) run ;;
-info) info ;;
+dev) dev ;;
+info) info "${2:-containers}" ;;
 clear) clear_info ;;
 teardown) teardown ;;
 *)
-	echo "usage: $0 setup|run|info|clear|teardown" >&2
+	echo "usage: $0 setup|run|dev|info <dev|containers>|clear|teardown" >&2
 	exit 2
 	;;
 esac

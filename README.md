@@ -102,11 +102,20 @@ In a Casper worktree workspace, the setup hook of `.casper.json`
 | Server  | `CASPER_PORT + 1` |
 | Redis   | `CASPER_PORT + 2` |
 
-`casper run` (that is, `scripts/casper.sh run`) loads `.env.casper`,
-starts `make dev` with those ports, lists the workspace URLs in the
-Casper info panel, and clears them when it stops. Several workspaces
-can run at the same time, each with its own compose project. A `PORT`
-set in `.env` or `.env.local` overrides `.env.casper`.
+Two commands start the stack, both with the ports of `.env.casper` and
+both listing the workspace URLs in the Casper info panel:
+
+- **Run** (`casper run`, that is `scripts/casper.sh run`) starts the
+  container stack with `make app-up` (app image and Redis) and follows
+  its logs. It serves the API only. Stopping the command runs
+  `make app-down`.
+- **Dev** (`casper run dev`) starts `make dev` with hot reload (Redis,
+  Air and Vite). Stopping the command stops the stack.
+
+Both stop their stack and clear the panel when the command ends. They
+bind the same server port, so run one at a time. Several workspaces can
+run at the same time, each with its own compose project. A `PORT` set in
+`.env` or `.env.local` overrides `.env.casper`.
 
 `make packs` downloads the card data from marvelcdb and Cerebro
 (cached in `packs/.cache`), merges the hand-written files of
