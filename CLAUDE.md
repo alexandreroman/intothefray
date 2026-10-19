@@ -58,7 +58,9 @@ make web-build    # production build into web/dist/
 - `scripts/` — optional Casper workspace support (`casper.sh`:
   per-worktree ports, info panel)
 - `.casper.json` — optional Casper workspace config (scripts and hooks)
-- `.github/workflows/` — `pages.yml` publishes `web/` to GitHub Pages
+- `.github/workflows/` — `ci.yml` builds and tests the Go code, the web
+  app and the Docker image on pull requests and `main`; `pages.yml`
+  publishes `web/` to GitHub Pages
 - `Dockerfile` — container image of the server
 - `compose.yaml` — local stack: Redis (in memory), the app service and
   the web service (Caddy serving `web/dist`)
