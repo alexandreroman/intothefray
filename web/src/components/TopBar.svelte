@@ -159,6 +159,12 @@
         {/each}
       </div>
     {/if}
+    {#if spectators > 0}
+      <span class="pill" role="img" aria-label={spectatorLabel} title={spectatorLabel}>
+        <Icon name="eye" />
+        {spectators}
+      </span>
+    {/if}
     {#if readyAll}
       <!-- aria-disabled rather than disabled, so that the tooltip still shows. -->
       <button
@@ -177,12 +183,6 @@
         <!-- The action bar's family: Exhaust, the other way round. -->
         <Icons name="ready-all" />
       </button>
-    {/if}
-    {#if spectators > 0}
-      <span class="pill" role="img" aria-label={spectatorLabel} title={spectatorLabel}>
-        <Icon name="eye" />
-        {spectators}
-      </span>
     {/if}
     {#if fullscreenSupported}
       <button
@@ -224,7 +224,7 @@
     align-items: center;
     gap: 16px;
     height: 56px;
-    padding: 0 16px 0 18px;
+    padding: 0 8px 0 18px;
     background: var(--bg);
     border-bottom: 1px solid var(--panel-2);
   }
@@ -363,7 +363,7 @@
   @media (max-width: 600px) {
     header {
       gap: 12px;
-      padding: 0 12px;
+      padding: 0 8px 0 12px;
     }
 
     /* The icons say it: the labels go. */

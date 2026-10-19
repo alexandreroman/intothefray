@@ -151,6 +151,27 @@ describe('TopBar', () => {
     expect(cross?.getAttribute('d')).toBe('M6 6l12 12M18 6L6 18');
   });
 
+  it('puts the spectators before Ready all, then Fullscreen and End game', () => {
+    document.documentElement.requestFullscreen = vi.fn();
+    const { container } = render(TopBar, {
+      spectators: 2,
+      viewMode: 'all',
+      onviewmode: () => {},
+      readyAll: { disabled: false, run: () => {} },
+      onend: () => {},
+    });
+    const names = [...container.querySelectorAll('.actions > *')].map(
+      (element) => element.getAttribute('aria-label') ?? '',
+    );
+    expect(names).toEqual([
+      'Table view',
+      '2 spectators',
+      'Ready all cards',
+      'Fullscreen',
+      'End game',
+    ]);
+  });
+
   it('offers no Fullscreen button without the Fullscreen API', () => {
     render(TopBar, { spectators: 0 });
     expect(screen.queryByRole('button', { name: /fullscreen/i })).toBeNull();
