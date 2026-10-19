@@ -238,6 +238,18 @@ describe('keys on the table', () => {
     expect(interaction.arrowFrom).toBe('mine');
   });
 
+  it('A starts no arrow from a hand card or a pile, nor with Shift or held', async () => {
+    await renderTable();
+    await fireEvent.pointerEnter(inHand('h'));
+    await press('a');
+    await fireEvent.pointerEnter(placed('deck:p0'));
+    await press('a');
+    await fireEvent.pointerEnter(placed('mine'));
+    await press('A', { shiftKey: true });
+    await press('a', { repeat: true });
+    expect(interaction.arrowFrom).toBeNull();
+  });
+
   it('disabled items do nothing, nor do the items of a disabled dropdown', async () => {
     const cards = [
       // The villain card is tucked under 'host': Discard and Move to ▾ (and its Hand) are disabled.
@@ -335,8 +347,10 @@ describe('keys on the table', () => {
 
     await press('e');
     await press('z');
+    await press('a');
     await press('+');
     expect(session.act).not.toHaveBeenCalled();
+    expect(interaction.arrowFrom).toBeNull();
     expect(zoomLabel()).toBe('110%');
   });
 });
@@ -394,7 +408,9 @@ describe('keys during a drag', () => {
     await press('x');
     await press('e');
     await press('d');
+    await press('a');
     expect(session.act).not.toHaveBeenCalled();
+    expect(interaction.arrowFrom).toBeNull();
     expect(interaction.dragging).not.toBeNull();
 
     await press('+');

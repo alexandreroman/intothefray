@@ -175,8 +175,8 @@ describe('ActionBar', () => {
     expect(bar()).toBeNull();
 
     await fireEvent.pointerEnter(placed('mine'));
-    expect(barButtons()).toEqual(['Exhaust', 'Arrow', '+ Token', '+ Status', 'Discard', 'Move to']);
-    // Groups are separated: Exhaust | Arrow, tokens, statuses | Discard, Move to.
+    expect(barButtons()).toEqual(['Exhaust', '+ Token', '+ Status', 'Discard', 'Move to']);
+    // Groups are separated: Exhaust | tokens, statuses | Discard, Move to.
     expect(bar()?.querySelectorAll('.sep')).toHaveLength(2);
     // The name and the key are in the tooltip, never on the button.
     const exhaust = within(bar()!).getByRole('button', { name: 'Exhaust' });
@@ -520,7 +520,7 @@ describe('ActionBar', () => {
   it('arrow mode: a click on another card sends the arrow', async () => {
     const { session } = await renderTable();
     await fireEvent.pointerEnter(placed('mine'));
-    await fireEvent.click(within(bar()!).getByRole('button', { name: 'Arrow' }));
+    await fireEvent.keyDown(window, { key: 'a' });
     expect(bar()?.textContent).toContain('Click the card to point at');
 
     await fireEvent.pointerDown(placed('v'));
@@ -561,7 +561,7 @@ describe('ActionBar', () => {
     await renderTable();
     vi.useFakeTimers();
     await fireEvent.pointerEnter(placed('mine'));
-    await fireEvent.click(within(bar()!).getByRole('button', { name: 'Arrow' }));
+    await fireEvent.keyDown(window, { key: 'a' });
     // Centred above "mine".
     expect(bar()?.style.left).toBe('300px');
 
@@ -580,7 +580,7 @@ describe('ActionBar', () => {
   it('arrow mode: on touch, the tap that picks the target does not select it', async () => {
     const { session } = await renderTable();
     await fireEvent.pointerEnter(placed('mine'));
-    await fireEvent.click(within(bar()!).getByRole('button', { name: 'Arrow' }));
+    await fireEvent.keyDown(window, { key: 'a' });
 
     await fireEvent.pointerDown(placed('v'), { pointerType: 'touch' });
     await fireEvent.click(placed('v'));
@@ -596,12 +596,12 @@ describe('ActionBar', () => {
   it('arrow mode: Escape or a click on an empty spot cancels', async () => {
     const { session } = await renderTable();
     await fireEvent.pointerEnter(placed('mine'));
-    await fireEvent.click(within(bar()!).getByRole('button', { name: 'Arrow' }));
+    await fireEvent.keyDown(window, { key: 'a' });
     await fireEvent.keyDown(window, { key: 'Escape' });
     expect(interaction.arrowFrom).toBeNull();
 
     await fireEvent.pointerEnter(placed('mine'));
-    await fireEvent.click(within(bar()!).getByRole('button', { name: 'Arrow' }));
+    await fireEvent.keyDown(window, { key: 'a' });
     await fireEvent.pointerDown(placed('mine').parentElement as HTMLElement);
     expect(interaction.arrowFrom).toBeNull();
     expect(session.act).not.toHaveBeenCalled();

@@ -3,8 +3,7 @@
   icons on a 24 × 24 grid, drawn with currentColor.
 -->
 <script lang="ts" module>
-  export type IconName =
-    'exhaust' | 'flip' | 'arrow' | 'discard' | 'stage-pick' | 'bottom' | 'shuffle';
+  export type IconName = 'exhaust' | 'flip' | 'discard' | 'stage-pick' | 'bottom' | 'shuffle';
 </script>
 
 <script lang="ts">
@@ -30,13 +29,6 @@
     <path d="M12 7v17" opacity=".6" />
     <path d="M5 5.5Q12 1.5 19 5.5" />
     <path d="M16 6 19 5.5 18 2.7" />
-  {:else if name === 'arrow'}
-    <!-- A straight arrow flying into a target. -->
-    <circle cx="15.5" cy="8.5" r="6" />
-    <circle cx="15.5" cy="8.5" r="2.2" />
-    <path d="M2.5 21.5 14 10" />
-    <path d="M8.2 10h5.8v5.8" />
-    <path d="M2.5 18.5v3h3" />
   {:else if name === 'discard'}
     <!-- A bin. -->
     <path d="M4 7h16" />

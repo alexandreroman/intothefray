@@ -26,10 +26,10 @@ export interface CountQuestion {
 }
 
 /** Something the client does by itself, without sending an action. */
-export type LocalAction = 'arrow' | 'stageBox' | 'browseBox';
+export type LocalAction = 'stageBox' | 'browseBox';
 
 export interface ActionItem {
-  /** Stable id: 'exhaust', 'flip', 'stage', 'arrow', 'token', 'status', 'discard', 'moveTo', 'draw1', … */
+  /** Stable id: 'exhaust', 'flip', 'stage', 'token', 'status', 'discard', 'moveTo', 'draw1', … */
   id: string;
   label: string;
   icon?: IconName;
@@ -166,15 +166,6 @@ function cardActions(card: CardView, context: Context): ActionItem[] {
     items.push(flipItem(card));
   }
   items.push(
-    {
-      id: 'arrow',
-      label: 'Arrow',
-      icon: 'arrow',
-      key: 'A',
-      tip: 'Arrow',
-      group: GROUP_MARK,
-      run: () => ({ local: 'arrow' }),
-    },
     counterMenu(card, 'token', '+ Token', 'Add a token', TOKENS, card.tokens),
     counterMenu(card, 'status', '+ Status', 'Add a status', STATUSES, card.status),
   );
