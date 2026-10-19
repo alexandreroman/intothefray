@@ -243,6 +243,10 @@
     font-size: 15px;
   }
 
+  .who .aside {
+    margin-left: 6px;
+  }
+
   .nodeck {
     flex: 1;
     min-width: 0;
