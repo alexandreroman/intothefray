@@ -298,7 +298,7 @@ func fourPlayerGame(t *testing.T) *doFixture {
 		t.Fatal(err)
 	}
 	for _, p := range g.Players {
-		if err := g.SetDeck(p.Token, deck, cat); err != nil {
+		if err := g.SetDeck(p.Token, 0, deck, cat); err != nil {
 			t.Fatal(err)
 		}
 	}

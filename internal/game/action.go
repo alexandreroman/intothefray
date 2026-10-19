@@ -88,7 +88,7 @@ func resolve(g *Game, seat int, a Action, rng *rand.Rand) (Action, error) {
 	if g.Table == nil {
 		return Action{}, fmt.Errorf("%w: the game has no table", ErrPhase)
 	}
-	if seat < 0 || seat >= len(g.Players) {
+	if seat < 0 || seat >= g.seatCount() {
 		return Action{}, forbidden("seat %d is not at this table", seat)
 	}
 	if err := checkLimits(a); err != nil {
@@ -147,9 +147,9 @@ func resolve(g *Game, seat int, a Action, rng *rand.Rand) (Action, error) {
 	}
 }
 
-// seatedArea reports whether area names the seat of a seated player.
+// seatedArea reports whether area names a seat at this table.
 func (g *Game) seatedArea(area Area) bool {
-	for seat := range g.Players {
+	for seat := range g.seatCount() {
 		if area == PlayerArea(seat) {
 			return true
 		}

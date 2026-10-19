@@ -52,11 +52,13 @@ func (g *Game) pileName(seat int, id string) string {
 	return g.playerName(pile.Owner) + "'s " + noun
 }
 
+// playerName names the player who holds seat.
 func (g *Game) playerName(seat int) string {
-	if seat < 0 || seat >= len(g.Players) {
+	player := g.seatPlayer(seat)
+	if player < 0 {
 		return "another player"
 	}
-	return g.Players[seat].Name
+	return g.Players[player].Name
 }
 
 // logLine is the history line of one recorded action.
@@ -278,9 +280,9 @@ func (n narrator) stageEvent(a Action) logLine {
 	}
 }
 
-// areaName names the player seated at area.
+// areaName names the player who holds the seat of area.
 func (n narrator) areaName(area Area) string {
-	for seat := range n.game.Players {
+	for seat := range n.game.seatCount() {
 		if PlayerArea(seat) == area {
 			return n.game.playerName(seat)
 		}

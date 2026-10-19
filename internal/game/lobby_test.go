@@ -3,6 +3,7 @@ package game
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -244,15 +245,15 @@ func TestSetDeckRejectsUnknownCodes(t *testing.T) {
 	cat := newCatalog(t)
 	g := lobbyOfFour(t)
 
-	err := g.SetDeck("b", DeckChoice{Name: "Bad", Cards: []DeckEntry{{Code: "99999", Qty: 1}}}, cat)
+	err := g.SetDeck("b", 0, DeckChoice{Name: "Bad", Cards: []DeckEntry{{Code: "99999", Qty: 1}}}, cat)
 	if err == nil || !strings.Contains(err.Error(), "99999") {
 		t.Fatalf("err = %v, want a message naming 99999", err)
 	}
-	if g.Players[1].Deck != nil {
+	if g.Players[1].Decks[0] != nil {
 		t.Error("a rejected deck must not be stored")
 	}
 
-	if err := g.SetDeck("zz", DeckChoice{}, cat); !errors.Is(err, ErrForbidden) {
+	if err := g.SetDeck("zz", 0, DeckChoice{}, cat); !errors.Is(err, ErrForbidden) {
 		t.Errorf("non-player err = %v, want ErrForbidden", err)
 	}
 }
@@ -275,7 +276,7 @@ func TestSetDeckRejectsQuantities(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("qty %d", tt.qty), func(t *testing.T) {
 			g := lobbyOfFour(t)
-			err := g.SetDeck("b", DeckChoice{Name: "Deck", Cards: []DeckEntry{{Code: code, Qty: tt.qty}}}, cat)
+			err := g.SetDeck("b", 0, DeckChoice{Name: "Deck", Cards: []DeckEntry{{Code: code, Qty: tt.qty}}}, cat)
 			if tt.wantErr && !errors.Is(err, ErrInvalid) {
 				t.Errorf("SetDeck = %v, want ErrInvalid", err)
 			}
@@ -292,10 +293,10 @@ func TestSetDeckStoresDeck(t *testing.T) {
 
 	set, _ := cat.Set("standard")
 	deck := DeckChoice{Name: "Good", Cards: []DeckEntry{{Code: set.Cards[0], Qty: 2}}}
-	if err := g.SetDeck("b", deck, cat); err != nil {
+	if err := g.SetDeck("b", 0, deck, cat); err != nil {
 		t.Fatal(err)
 	}
-	if got := g.Players[1].Deck; got == nil || got.Name != "Good" {
+	if got := g.Players[1].Decks[0]; got == nil || got.Name != "Good" {
 		t.Errorf("deck = %+v", got)
 	}
 }
@@ -326,13 +327,124 @@ func TestSetDeckFillsHeroImage(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			g := lobbyOfFour(t)
-			if err := g.SetDeck("b", tt.deck, cat); err != nil {
+			if err := g.SetDeck("b", 0, tt.deck, cat); err != nil {
 				t.Fatal(err)
 			}
-			if got := g.Players[1].Deck.HeroImage; got != tt.want {
+			if got := g.Players[1].Decks[0].HeroImage; got != tt.want {
 				t.Errorf("HeroImage = %q, want %q", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestNewcomerGetsOneSlot(t *testing.T) {
+	g := lobbyOfFour(t)
+	if err := g.RemovePlayer("h", "b"); err != nil {
+		t.Fatal(err)
+	}
+	if err := g.TakeSeat("b"); err != nil {
+		t.Fatal(err)
+	}
+
+	// The host from NewGame, "c" and "d" from Join, "b" from TakeSeat.
+	for _, p := range g.Players {
+		if len(p.Decks) != 1 || p.Decks[0] != nil {
+			t.Errorf("%s decks = %v, want one empty slot", p.Token, p.Decks)
+		}
+	}
+}
+
+func TestAddDeck(t *testing.T) {
+	g := mustNewGame(t, "g1", "h", "Host", testNow)
+
+	if err := g.AddDeck("h"); err != nil {
+		t.Fatal(err)
+	}
+	if decks := g.Players[0].Decks; len(decks) != 2 || decks[1] != nil {
+		t.Errorf("decks = %v, want two empty slots", decks)
+	}
+	if err := g.AddDeck("zz"); !errors.Is(err, ErrForbidden) {
+		t.Errorf("AddDeck by a non-player = %v, want ErrForbidden", err)
+	}
+}
+
+func TestAddDeckAfterStart(t *testing.T) {
+	cat := newCatalog(t)
+	g := startedGame(t, rhinoConfig())
+
+	if err := g.AddDeck("h"); !errors.Is(err, ErrPhase) {
+		t.Errorf("AddDeck after start = %v, want ErrPhase", err)
+	}
+	if err := g.RemoveDeck("h", 0); !errors.Is(err, ErrPhase) {
+		t.Errorf("RemoveDeck after start = %v, want ErrPhase", err)
+	}
+	if err := g.SetDeck("h", 0, spiderManDeck(t, cat), cat); !errors.Is(err, ErrPhase) {
+		t.Errorf("SetDeck after start = %v, want ErrPhase", err)
+	}
+}
+
+func TestRemoveDeckShiftsSlots(t *testing.T) {
+	g := mustNewGame(t, "g1", "h", "Host", testNow)
+	a, b, c := &DeckChoice{Name: "A"}, &DeckChoice{Name: "B"}, &DeckChoice{Name: "C"}
+	g.Players[0].Decks = []*DeckChoice{a, b, c}
+
+	if err := g.RemoveDeck("h", 1); err != nil {
+		t.Fatal(err)
+	}
+	if got := g.Players[0].Decks; !slices.Equal(got, []*DeckChoice{a, c}) {
+		t.Errorf("decks = %v, want [A C]", got)
+	}
+	if err := g.RemoveDeck("zz", 0); !errors.Is(err, ErrForbidden) {
+		t.Errorf("RemoveDeck by a non-player = %v, want ErrForbidden", err)
+	}
+}
+
+func TestRemoveLastDeckRefused(t *testing.T) {
+	g := mustNewGame(t, "g1", "h", "Host", testNow)
+
+	if err := g.RemoveDeck("h", 0); !errors.Is(err, ErrInvalid) {
+		t.Errorf("RemoveDeck of the last slot = %v, want ErrInvalid", err)
+	}
+	if err := g.AddDeck("h"); err != nil {
+		t.Fatal(err)
+	}
+	for _, deck := range []int{-1, 2} {
+		if err := g.RemoveDeck("h", deck); !errors.Is(err, ErrInvalid) {
+			t.Errorf("RemoveDeck(%d) = %v, want ErrInvalid", deck, err)
+		}
+	}
+	if len(g.Players[0].Decks) != 2 {
+		t.Errorf("decks = %v, want both slots kept", g.Players[0].Decks)
+	}
+}
+
+func TestSetDeckBadIndex(t *testing.T) {
+	cat := newCatalog(t)
+	g := mustNewGame(t, "g1", "h", "Host", testNow)
+
+	for _, deck := range []int{-1, 1, 3} {
+		if err := g.SetDeck("h", deck, spiderManDeck(t, cat), cat); !errors.Is(err, ErrInvalid) {
+			t.Errorf("SetDeck(%d) of 1 slot = %v, want ErrInvalid", deck, err)
+		}
+	}
+	if g.Players[0].Decks[0] != nil {
+		t.Error("a rejected deck must not be stored")
+	}
+}
+
+func TestSetDeckFillsItsSlot(t *testing.T) {
+	cat := newCatalog(t)
+	g := mustNewGame(t, "g1", "h", "Host", testNow)
+	if err := g.AddDeck("h"); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := g.SetDeck("h", 1, DeckChoice{Name: "Second"}, cat); err != nil {
+		t.Fatal(err)
+	}
+	decks := g.Players[0].Decks
+	if decks[0] != nil || decks[1] == nil || decks[1].Name != "Second" {
+		t.Errorf("decks = %v, want slot 1 filled only", decks)
 	}
 }
 

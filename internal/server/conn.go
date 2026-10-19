@@ -478,7 +478,7 @@ func (s *Server) setDeck(ctx context.Context, c *conn, link string) error {
 		return nil
 	}
 	return s.update(ctx, c.gameID, func(g *game.Game) error {
-		return g.SetDeck(c.token, deck, s.deps.Catalog)
+		return g.SetDeck(c.token, 0, deck, s.deps.Catalog)
 	})
 }
 

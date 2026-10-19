@@ -10,15 +10,16 @@ import (
 )
 
 const (
-	maxPlayers   = 4
+	maxSeats     = 4 // deck slots across all players, so heroes at the table
 	maxNameRunes = 24
 	maxCopies    = 20 // copies of one card in a deck
 
 	standardVersionI = "standard"
 )
 
-// NewGame creates a game in the lobby, with the host seated first. It returns
-// ErrInvalid when the host name is empty once cleaned.
+// NewGame creates a game in the lobby, with the host seated first. Like every
+// newcomer, the host starts with one empty deck slot. It returns ErrInvalid
+// when the host name is empty once cleaned.
 func NewGame(id, hostToken, hostName string, now time.Time) (*Game, error) {
 	name := cleanName(hostName)
 	if name == "" {
@@ -28,12 +29,13 @@ func NewGame(id, hostToken, hostName string, now time.Time) (*Game, error) {
 		ID:        id,
 		Phase:     PhaseLobby,
 		CreatedAt: now,
-		Players:   []*Player{{Token: hostToken, Name: name, Color: 0, Host: true}},
+		Players:   []*Player{{Token: hostToken, Name: name, Color: 0, Host: true, Decks: []*DeckChoice{nil}}},
 	}, nil
 }
 
-// Join seats a newcomer as a player while the lobby has room, otherwise as a
-// spectator. A known token gets its current role back.
+// Join seats a newcomer as a player, with one empty deck slot, while the
+// lobby has a free seat, otherwise as a spectator. A known token gets its
+// current role back.
 func (g *Game) Join(token, name string) (Role, error) {
 	if token == "" {
 		return "", fmt.Errorf("%w: empty token", ErrInvalid)
@@ -50,8 +52,8 @@ func (g *Game) Join(token, name string) (Role, error) {
 		return "", fmt.Errorf("%w: empty name", ErrInvalid)
 	}
 
-	if g.Phase == PhaseLobby && len(g.Players) < maxPlayers {
-		g.Players = append(g.Players, &Player{Token: token, Name: name, Color: g.freeColor()})
+	if g.Phase == PhaseLobby && g.seatCount() < maxSeats {
+		g.Players = append(g.Players, &Player{Token: token, Name: name, Color: g.freeColor(), Decks: []*DeckChoice{nil}})
 		return RolePlayer, nil
 	}
 	g.Spectators = append(g.Spectators, &Spectator{Token: token, Name: name})
@@ -79,8 +81,8 @@ func (g *Game) Leave(token string) error {
 	return nil
 }
 
-// TakeSeat moves a spectator to a free seat during the lobby, with the
-// lowest free colour.
+// TakeSeat moves a spectator to a free seat during the lobby, with one empty
+// deck slot and the lowest free colour.
 func (g *Game) TakeSeat(token string) error {
 	if g.player(token) != nil {
 		return nil
@@ -92,11 +94,16 @@ func (g *Game) TakeSeat(token string) error {
 	if err := g.requireLobby(); err != nil {
 		return err
 	}
-	if len(g.Players) >= maxPlayers {
+	if g.seatCount() >= maxSeats {
 		return fmt.Errorf("%w: all seats are taken", ErrInvalid)
 	}
 	g.Spectators = slices.DeleteFunc(g.Spectators, func(s *Spectator) bool { return s == spectator })
-	g.Players = append(g.Players, &Player{Token: token, Name: spectator.Name, Color: g.freeColor()})
+	g.Players = append(g.Players, &Player{
+		Token: token,
+		Name:  spectator.Name,
+		Color: g.freeColor(),
+		Decks: []*DeckChoice{nil},
+	})
 	return nil
 }
 
@@ -138,22 +145,63 @@ func (g *Game) Configure(hostToken string, cfg LobbyConfig, cat *pack.Catalog) e
 	return nil
 }
 
-// SetDeck stores the deck of a player during the lobby. Every card code must
-// be known to the catalog.
-func (g *Game) SetDeck(token string, deck DeckChoice, cat *pack.Catalog) error {
+// AddDeck gives the player an extra empty deck slot during the lobby, while
+// the table has a free seat.
+func (g *Game) AddDeck(token string) error {
 	if err := g.requireLobby(); err != nil {
 		return err
 	}
 	player := g.player(token)
 	if player == nil {
-		return fmt.Errorf("%w: only players have a deck", ErrForbidden)
+		return fmt.Errorf("%w: only players have decks", ErrForbidden)
+	}
+	if g.seatCount() >= maxSeats {
+		return fmt.Errorf("%w: all seats are taken", ErrInvalid)
+	}
+	player.Decks = append(player.Decks, nil)
+	return nil
+}
+
+// RemoveDeck drops the player's deck slot with the given index during the
+// lobby; the slots after it move down by one. A player keeps at least one
+// slot.
+func (g *Game) RemoveDeck(token string, deck int) error {
+	if err := g.requireLobby(); err != nil {
+		return err
+	}
+	player := g.player(token)
+	if player == nil {
+		return fmt.Errorf("%w: only players have decks", ErrForbidden)
+	}
+	if !player.hasSlot(deck) {
+		return fmt.Errorf("%w: %s has no deck slot %d", ErrInvalid, player.Name, deck)
+	}
+	if len(player.Decks) == 1 {
+		return fmt.Errorf("%w: a player keeps at least one deck", ErrInvalid)
+	}
+	player.Decks = slices.Delete(player.Decks, deck, deck+1)
+	return nil
+}
+
+// SetDeck stores a deck in the player's deck slot with the given index during
+// the lobby. Every card code must be known to the catalog.
+func (g *Game) SetDeck(token string, deck int, choice DeckChoice, cat *pack.Catalog) error {
+	if err := g.requireLobby(); err != nil {
+		return err
+	}
+	player := g.player(token)
+	if player == nil {
+		return fmt.Errorf("%w: only players have decks", ErrForbidden)
+	}
+	if !player.hasSlot(deck) {
+		return fmt.Errorf("%w: %s has no deck slot %d", ErrInvalid, player.Name, deck)
 	}
 
 	var unknown []string
-	if deck.Hero != "" && !knownCard(cat, deck.Hero) {
-		unknown = append(unknown, deck.Hero)
+	if choice.Hero != "" && !knownCard(cat, choice.Hero) {
+		unknown = append(unknown, choice.Hero)
 	}
-	for _, entry := range deck.Cards {
+	for _, entry := range choice.Cards {
 		if entry.Qty < 1 || entry.Qty > maxCopies {
 			return fmt.Errorf("%w: card %s has quantity %d, want 1 to %d", ErrInvalid, entry.Code, entry.Qty, maxCopies)
 		}
@@ -165,10 +213,10 @@ func (g *Game) SetDeck(token string, deck DeckChoice, cat *pack.Catalog) error {
 		return fmt.Errorf("%w: unknown card codes: %s", ErrInvalid, strings.Join(unknown, ", "))
 	}
 
-	deck.Cards = slices.Clone(deck.Cards)
+	choice.Cards = slices.Clone(choice.Cards)
 	// The image comes from the catalog, whatever the client sent.
-	deck.HeroImage = heroImage(cat, deck.Hero)
-	player.Deck = &deck
+	choice.HeroImage = heroImage(cat, choice.Hero)
+	player.Decks[deck] = &choice
 	return nil
 }
 
@@ -287,7 +335,17 @@ func (g *Game) freeColor() int {
 	}
 }
 
-// demote moves a player to the spectators, freeing the seat and colour.
+// hasSlot reports whether the player has a deck slot with the given index.
+func (p *Player) hasSlot(deck int) bool {
+	return deck >= 0 && deck < len(p.Decks)
+}
+
+// ready reports whether every deck slot of the player holds a deck.
+func (p *Player) ready() bool {
+	return !slices.Contains(p.Decks, nil)
+}
+
+// demote moves a player to the spectators, freeing the seats and colour.
 func (g *Game) demote(player *Player) {
 	g.Players = slices.DeleteFunc(g.Players, func(p *Player) bool { return p == player })
 	g.Spectators = append(g.Spectators, &Spectator{Token: player.Token, Name: player.Name})

@@ -1331,7 +1331,9 @@ func TestReplayChecksThePlayers(t *testing.T) {
 		"no player":    func(s *ReplaySetup) { s.Players = nil },
 		"five players": func(s *ReplaySetup) { s.Players = slices.Repeat(s.Players[:1], 5) },
 		"same colour":  func(s *ReplaySetup) { s.Players[1].Color = s.Players[0].Color },
-		"bad colour":   func(s *ReplaySetup) { s.Players[1].Color = maxPlayers },
+		"bad colour":   func(s *ReplaySetup) { s.Players[1].Color = maxSeats },
+		"no deck":      func(s *ReplaySetup) { s.Players[1].Decks = nil },
+		"five decks":   func(s *ReplaySetup) { s.Players[0].Decks = slices.Repeat(s.Players[0].Decks, 4) },
 	}
 	for name, change := range tests {
 		t.Run(name, func(t *testing.T) {

@@ -55,13 +55,15 @@ type DeckChoice struct {
 	Cards     []DeckEntry `json:"cards"`
 }
 
-// Player is a seated participant.
+// Player is a seated participant. A player brings 1 to maxSeats decks, one
+// per slot; each slot takes a seat at the table (see seatsOf). A nil slot is a
+// deck not loaded yet.
 type Player struct {
-	Token string      `json:"token"`
-	Name  string      `json:"name"`
-	Color int         `json:"color"`
-	Host  bool        `json:"host"`
-	Deck  *DeckChoice `json:"deck,omitempty"`
+	Token string        `json:"token"`
+	Name  string        `json:"name"`
+	Color int           `json:"color"`
+	Host  bool          `json:"host"`
+	Decks []*DeckChoice `json:"decks"`
 }
 
 // Spectator watches the game without acting.

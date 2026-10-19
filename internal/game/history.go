@@ -44,9 +44,9 @@ const (
 	maxUndoDepth = 10
 )
 
-// Do performs one action for the player holding token: it changes the table,
-// writes the history line and records the event. An error leaves the game
-// unchanged.
+// Do performs one action for the player holding token, who acts from their
+// home seat: it changes the table, writes the history line and records the
+// event. An error leaves the game unchanged.
 func (g *Game) Do(token string, a Action, cat *pack.Catalog, now time.Time) error {
 	player := g.player(token)
 	if player == nil {
@@ -55,7 +55,7 @@ func (g *Game) Do(token string, a Action, cat *pack.Catalog, now time.Time) erro
 	if g.Phase != PhasePlaying || g.Table == nil || g.History == nil {
 		return fmt.Errorf("%w: the game is not being played", ErrPhase)
 	}
-	return g.do(slices.Index(g.Players, player), a, cat, now)
+	return g.do(g.homeSeat(slices.Index(g.Players, player)), a, cat, now)
 }
 
 // do performs a for the player at seat. Its randomness is the stream of the
@@ -245,8 +245,9 @@ func (g *Game) strikeDeadLines() {
 	}
 }
 
+// appendLog writes a history line by the player who holds seat.
 func (g *Game) appendLog(seat int, text string, cards []string, now time.Time) {
-	p := g.Players[seat]
+	p := g.Players[g.seatPlayer(seat)]
 	g.Log = append(g.Log, LogEntry{Who: p.Name, Color: p.Color, Text: text, At: now, Cards: cards})
 }
 

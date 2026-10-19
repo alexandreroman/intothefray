@@ -71,7 +71,7 @@ func newCardsGame(t *testing.T, id string) *game.Game {
 			deck.Cards = append(deck.Cards, game.DeckEntry{Code: code, Qty: 1})
 		}
 	}
-	if err := g.SetDeck(cardsHostToken, deck, cat); err != nil {
+	if err := g.SetDeck(cardsHostToken, 0, deck, cat); err != nil {
 		t.Fatal(err)
 	}
 	return g

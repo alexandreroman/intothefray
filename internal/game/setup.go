@@ -12,7 +12,7 @@ import (
 // Default positions on the table, in table units (see the geometry rules).
 //
 // The table is laid out in rows of rowHeight: the villain's row on top, then
-// one row per seated player, in seat order. Every row starts with its deck
+// one row per seat (one deck, see seats.go), in seat order. Every row starts with its deck
 // and its discard pile, then the villain or the identity; the villain's row
 // goes on with the main scheme, the first player's row with the first player
 // token, and cards in play are added to the right. Things sit rowContentY
@@ -34,10 +34,10 @@ const (
 	inPlayStepX  = 220
 )
 
-// villainRow is the row of the villain; a player's row is playerRow.
+// villainRow is the row of the villain; a seat's row is playerRow.
 const villainRow = 0
 
-// playerRow returns the row of the player seated at seat.
+// playerRow returns the row of seat.
 func playerRow(seat int) int {
 	return seat + 1
 }
@@ -70,20 +70,22 @@ func (g *Game) Start(hostToken string, cat *pack.Catalog, seed uint64, now time.
 		return fmt.Errorf("%w: no scenario is configured", ErrInvalid)
 	}
 	for _, p := range g.Players {
-		if p.Deck == nil {
-			return fmt.Errorf("%w: %s has no deck", ErrInvalid, p.Name)
+		if !p.ready() {
+			return fmt.Errorf("%w: %s is missing a deck", ErrInvalid, p.Name)
 		}
 	}
 
 	// The table is built apart so that a failed setup leaves the lobby intact.
-	b := &tableBuilder{cat: cat, rng: setupRNG(seed), table: newEmptyTable(len(g.Players))}
+	b := &tableBuilder{cat: cat, rng: setupRNG(seed), table: newEmptyTable(g.seatCount())}
 	scenario, err := b.setupScenario(g.Config)
 	if err != nil {
 		return err
 	}
-	for seat, p := range g.Players {
-		if err := b.setupPlayer(seat, p.Deck); err != nil {
-			return fmt.Errorf("%s: %w", p.Name, err)
+	for i, p := range g.Players {
+		for slot, seat := range g.seatsOf(i) {
+			if err := b.setupPlayer(seat, p.Decks[slot]); err != nil {
+				return fmt.Errorf("%s: %w", p.Name, err)
+			}
 		}
 	}
 	b.shuffle(PileEncounter)
@@ -120,8 +122,8 @@ func setNames(cat *pack.Catalog, codes []string) ([]string, error) {
 }
 
 // newEmptyTable returns a table with every pile of the villain and of every
-// player, all empty.
-func newEmptyTable(players int) *Table {
+// seat, all empty.
+func newEmptyTable(seatCount int) *Table {
 	t := &Table{
 		Cards:       map[string]*Card{},
 		Piles:       map[string]*Pile{},
@@ -134,7 +136,7 @@ func newEmptyTable(players int) *Table {
 	t.addPile(PileVictory, KindVictory, NoOwner, outOfPlayX, villainY)
 	t.addPile(PileScenarioAside, KindAside, NoOwner, outOfPlayX, villainY)
 
-	for seat := range players {
+	for seat := range seatCount {
 		area := PlayerArea(seat)
 		y := rowY(playerRow(seat))
 		t.addPile("deck:"+string(area), KindDeck, seat, deckX, y)
@@ -406,7 +408,7 @@ func (b *tableBuilder) placeFace(c *Card, def pack.Card, face, x, y int) error {
 }
 
 // setupPlayer creates the identity, the nemesis cards, the obligation and the
-// shuffled deck of one player.
+// shuffled deck of one seat.
 func (b *tableBuilder) setupPlayer(seat int, deck *DeckChoice) error {
 	if deck.Hero == "" {
 		return fmt.Errorf("%w: the deck has no hero", ErrInvalid)

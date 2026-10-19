@@ -97,7 +97,7 @@ func startedGame(t *testing.T, cfg LobbyConfig) *Game {
 		t.Fatal(err)
 	}
 	for _, token := range []string{"h", "b"} {
-		if err := g.SetDeck(token, spiderManDeck(t, cat), cat); err != nil {
+		if err := g.SetDeck(token, 0, spiderManDeck(t, cat), cat); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -518,7 +518,7 @@ func TestStartRequiresDecks(t *testing.T) {
 	if err := g.Configure("h", rhinoConfig(), cat); err != nil {
 		t.Fatal(err)
 	}
-	if err := g.SetDeck("h", spiderManDeck(t, cat), cat); err != nil {
+	if err := g.SetDeck("h", 0, spiderManDeck(t, cat), cat); err != nil {
 		t.Fatal(err)
 	}
 
@@ -531,12 +531,106 @@ func TestStartRequiresDecks(t *testing.T) {
 	}
 }
 
+// twoDeckGame returns a started game where Alex ("a", host) plays two
+// Spider-Man decks, seats 0 and 1, and Sam ("s") one, seat 2.
+func twoDeckGame(t *testing.T) *Game {
+	t.Helper()
+	cat := newCatalog(t)
+	g := twoSlotLobby(t)
+	if err := g.Configure("a", rhinoConfig(), cat); err != nil {
+		t.Fatal(err)
+	}
+	for _, slot := range []struct {
+		token string
+		deck  int
+	}{{"a", 0}, {"a", 1}, {"s", 0}} {
+		if err := g.SetDeck(slot.token, slot.deck, spiderManDeck(t, cat), cat); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := g.Start("a", cat, testSeed, testNow); err != nil {
+		t.Fatal(err)
+	}
+	return g
+}
+
+func TestStartNeedsEverySlot(t *testing.T) {
+	cat := newCatalog(t)
+	g := twoSlotLobby(t)
+	if err := g.Configure("a", rhinoConfig(), cat); err != nil {
+		t.Fatal(err)
+	}
+	for _, token := range []string{"a", "s"} {
+		if err := g.SetDeck(token, 0, spiderManDeck(t, cat), cat); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	err := g.Start("a", cat, testSeed, testNow)
+	if !errors.Is(err, ErrInvalid) || !strings.Contains(err.Error(), "Alex") {
+		t.Errorf("Start with an empty slot = %v, want ErrInvalid naming Alex", err)
+	}
+	if g.Phase != PhaseLobby || g.Table != nil {
+		t.Error("a failed Start must leave the game in the lobby")
+	}
+}
+
+func TestStartRowsPerSeat(t *testing.T) {
+	g := twoDeckGame(t)
+	table := g.Table
+
+	for seat := range 3 {
+		area := PlayerArea(seat)
+		if hand, ok := table.Hands[area]; !ok || len(hand) != 0 {
+			t.Errorf("%s hand = %v (exists %v), want empty", area, hand, ok)
+		}
+		for _, prefix := range []string{"deck:", "disc:", "aside:"} {
+			pile := table.Piles[prefix+string(area)]
+			if pile == nil || pile.Owner != seat || pile.Y != rowY(playerRow(seat)) {
+				t.Errorf("pile %s%s = %+v, want owner %d in row %d", prefix, area, pile, seat, playerRow(seat))
+			}
+		}
+	}
+	if _, ok := table.Hands["p3"]; ok {
+		t.Error("the table has a fourth seat")
+	}
+
+	identities := map[int]*Card{}
+	for _, c := range table.Cards {
+		if c.Code == "01001" {
+			identities[c.Owner] = c
+		}
+	}
+	for seat := range 3 {
+		identity := identities[seat]
+		if identity == nil || identity.Zone != ZoneTable || identity.Y != rowY(playerRow(seat)) {
+			t.Errorf("identity of seat %d = %+v, want on row %d", seat, identity, playerRow(seat))
+		}
+	}
+	if table.FirstPlayer != (Point{X: firstPlayerX, Y: rowY(playerRow(0))}) {
+		t.Errorf("first player = %+v, want in the row of seat 0", table.FirstPlayer)
+	}
+
+	// Starting threat per player counts the seats, one per hero.
+	b := &tableBuilder{cat: newCatalog(t), rng: newTestRNG(), table: table}
+	c, def, err := b.newEncounterCard("01108") // 2 per player
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := b.placeFace(c, def, 0, 0, 0); err != nil {
+		t.Fatal(err)
+	}
+	if c.Tokens["thr"] != 6 {
+		t.Errorf("threat = %d, want 6", c.Tokens["thr"])
+	}
+}
+
 func TestStartGuards(t *testing.T) {
 	cat := newCatalog(t)
 
 	t.Run("not configured", func(t *testing.T) {
 		g := mustNewGame(t, "g1", "h", "Host", testNow)
-		if err := g.SetDeck("h", spiderManDeck(t, cat), cat); err != nil {
+		if err := g.SetDeck("h", 0, spiderManDeck(t, cat), cat); err != nil {
 			t.Fatal(err)
 		}
 		if err := g.Start("h", cat, testSeed, testNow); !errors.Is(err, ErrInvalid) {

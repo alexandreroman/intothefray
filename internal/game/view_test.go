@@ -63,7 +63,7 @@ func newViewFixture(t *testing.T) *viewFixture {
 	for i, token := range []string{hostToken, bobToken} {
 		deck := base
 		deck.Cards = append(slices.Clone(base.Cards), DeckEntry{Code: extra[i], Qty: 1})
-		if err := g.SetDeck(token, deck, cat); err != nil {
+		if err := g.SetDeck(token, 0, deck, cat); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -176,10 +176,10 @@ func TestViewNeverLeaksHiddenCodes(t *testing.T) {
 		t.Error("bob does not see the card in his own hand")
 	}
 	host := f.g.ViewFor(hostToken)
-	if len(host.Table.Hand) != 1 {
-		t.Fatalf("host hand = %v, want 1 card", host.Table.Hand)
+	if len(host.Table.Hands["p0"]) != 1 {
+		t.Fatalf("host hand = %v, want 1 card", host.Table.Hands["p0"])
 	}
-	handCode := table.Cards[host.Table.Hand[0]].Code
+	handCode := table.Cards[host.Table.Hands["p0"][0]].Code
 	if !hasCode(mustJSON(t, host), handCode) {
 		t.Error("host does not see the code of the card in its own hand")
 	}
@@ -201,8 +201,8 @@ func TestOwnHandAndPrivateViewVisible(t *testing.T) {
 	if !slices.Equal(host.Table.Private.Cards, top3) {
 		t.Errorf("private cards = %v, want %v", host.Table.Private.Cards, top3)
 	}
-	if !slices.Equal(host.Table.Hand, hand) {
-		t.Errorf("hand = %v, want %v", host.Table.Hand, hand)
+	if !slices.Equal(host.Table.Hands["p0"], hand) {
+		t.Errorf("hand = %v, want %v", host.Table.Hands["p0"], hand)
 	}
 	hostDoc := mustJSON(t, host)
 	for _, id := range append(slices.Clone(top3), hand...) {
@@ -213,8 +213,8 @@ func TestOwnHandAndPrivateViewVisible(t *testing.T) {
 
 	for _, token := range []string{bobToken, specToken} {
 		v := f.g.ViewFor(token)
-		if v.Table.Private != nil || len(v.Table.Hand) != 0 {
-			t.Errorf("%s sees a private view or a hand", token)
+		if _, ok := v.Table.Hands["p0"]; v.Table.Private != nil || ok {
+			t.Errorf("%s sees a private view or the host's hand", token)
 		}
 		for _, id := range append(slices.Clone(top3), hand...) {
 			if slices.ContainsFunc(v.Table.Cards, func(c CardView) bool { return c.ID == id }) {
@@ -222,7 +222,7 @@ func TestOwnHandAndPrivateViewVisible(t *testing.T) {
 			}
 		}
 	}
-	if got := f.g.ViewFor(bobToken).Players[0].HandCount; got != 2 {
+	if got := f.g.ViewFor(bobToken).Players[0].Decks[0].HandCount; got != 2 {
 		t.Errorf("host hand count seen by bob = %d, want 2", got)
 	}
 }
@@ -331,29 +331,134 @@ func TestViewIdentity(t *testing.T) {
 	f := newViewFixture(t)
 
 	host := f.g.ViewFor(hostToken)
-	if host.You.Role != RolePlayer || !host.You.Host || host.You.Area != "p0" || host.You.Name != "Host" {
+	if host.You.Role != RolePlayer || !host.You.Host || !slices.Equal(host.You.Areas, []Area{"p0"}) ||
+		host.You.Name != "Host" {
 		t.Errorf("host You = %+v", host.You)
 	}
 	bob := f.g.ViewFor(bobToken)
-	if bob.You.Area != "p1" || bob.You.Host {
+	if !slices.Equal(bob.You.Areas, []Area{"p1"}) || bob.You.Host {
 		t.Errorf("bob You = %+v", bob.You)
 	}
-	if got := f.g.ViewFor(specToken).You; got.Role != RoleSpectator || got.Area != "" {
+	if got := f.g.ViewFor(specToken).You; got.Role != RoleSpectator || len(got.Areas) != 0 {
 		t.Errorf("spectator You = %+v", got)
 	}
 	unknown := f.g.ViewFor("nobody")
-	if unknown.You.Role != "" || unknown.Table.Private != nil || len(unknown.Table.Hand) != 0 || unknown.CanUndo {
+	if unknown.You.Role != "" || unknown.Table.Private != nil || len(unknown.Table.Hands) != 0 || unknown.CanUndo {
 		t.Errorf("unknown viewer = %+v", unknown.You)
 	}
 	if host.Spectators != 0 || len(host.Players) != 2 {
 		t.Errorf("spectators = %d, players = %d; want 0, filled by the server, and 2", host.Spectators, len(host.Players))
 	}
 	p := host.Players[1]
-	if p.Name != "Bob" || !p.Ready || p.Area != "p1" || p.HeroName != "Spider-Man" || p.DeckName != "Spidey" || p.Hero == "" {
-		t.Errorf("player view = %+v", p)
+	if p.Name != "Bob" || !p.Ready || len(p.Decks) != 1 {
+		t.Fatalf("player view = %+v", p)
 	}
-	if want := f.g.Players[1].Deck.HeroImage; want == "" || p.HeroImage != want {
-		t.Errorf("player hero image = %q, want %q", p.HeroImage, want)
+	d := p.Decks[0]
+	if d.Area != "p1" || !d.Ready || d.HeroName != "Spider-Man" || d.DeckName != "Spidey" || d.Hero == "" {
+		t.Errorf("deck view = %+v", d)
+	}
+	if want := f.g.Players[1].Decks[0].HeroImage; want == "" || d.HeroImage != want {
+		t.Errorf("deck hero image = %q, want %q", d.HeroImage, want)
+	}
+}
+
+func TestViewHandsOfOwnSeats(t *testing.T) {
+	cat := newCatalog(t)
+	g := twoDeckGame(t)
+	// Alex draws into the hand of his first deck, Sam into his only one.
+	if err := g.Do("a", Action{Kind: ActDraw, N: 1}, cat, at(1)); err != nil {
+		t.Fatal(err)
+	}
+	if err := g.Do("s", Action{Kind: ActDraw, N: 2}, cat, at(2)); err != nil {
+		t.Fatal(err)
+	}
+	// A card goes straight into the hand of Alex's second deck.
+	deck := g.Table.Piles["deck:p1"]
+	moved := deck.Cards[len(deck.Cards)-1]
+	deck.Cards = deck.Cards[:len(deck.Cards)-1]
+	g.Table.Hands["p1"] = append(g.Table.Hands["p1"], moved)
+	g.Table.Cards[moved].Zone = ZoneHand
+
+	alex := g.ViewFor("a")
+	if len(alex.Table.Hands) != 2 || !slices.Equal(alex.Table.Hands["p0"], g.Table.Hands["p0"]) ||
+		!slices.Equal(alex.Table.Hands["p1"], g.Table.Hands["p1"]) {
+		t.Errorf("Alex's hands = %v, want p0 and p1", alex.Table.Hands)
+	}
+	if !slices.ContainsFunc(alex.Table.Cards, func(c CardView) bool { return c.ID == moved }) {
+		t.Error("Alex does not see the card in the hand of his second deck")
+	}
+	for _, id := range g.Table.Hands["p2"] {
+		if slices.ContainsFunc(alex.Table.Cards, func(c CardView) bool { return c.ID == id }) {
+			t.Errorf("Alex sees card %s of Sam's hand", id)
+		}
+	}
+
+	sam := g.ViewFor("s")
+	if len(sam.Table.Hands) != 1 || !slices.Equal(sam.Table.Hands["p2"], g.Table.Hands["p2"]) {
+		t.Errorf("Sam's hands = %v, want p2 only", sam.Table.Hands)
+	}
+
+	decks := sam.Players[0].Decks
+	if len(decks) != 2 {
+		t.Fatalf("Alex's decks seen by Sam = %+v, want 2", decks)
+	}
+	for i, want := range []struct {
+		area  Area
+		count int
+	}{{"p0", 1}, {"p1", 1}} {
+		if decks[i].Area != want.area || decks[i].HandCount != want.count {
+			t.Errorf("deck %d = %+v, want area %s with %d cards in hand", i, decks[i], want.area, want.count)
+		}
+	}
+	if got := sam.Players[1].Decks[0]; got.Area != "p2" || got.HandCount != 2 {
+		t.Errorf("Sam's deck = %+v, want p2 with 2 cards in hand", got)
+	}
+}
+
+func TestPlayerReadyNeedsEverySlot(t *testing.T) {
+	cat := newCatalog(t)
+	g := twoSlotLobby(t)
+	if err := g.SetDeck("a", 0, spiderManDeck(t, cat), cat); err != nil {
+		t.Fatal(err)
+	}
+
+	p := g.ViewFor("s").Players[0]
+	if p.Ready || len(p.Decks) != 2 || !p.Decks[0].Ready || p.Decks[1].Ready {
+		t.Errorf("Alex with one deck of two = %+v, want not ready, slot 0 ready only", p)
+	}
+	if err := g.SetDeck("a", 1, spiderManDeck(t, cat), cat); err != nil {
+		t.Fatal(err)
+	}
+	if p := g.ViewFor("s").Players[0]; !p.Ready {
+		t.Errorf("Alex with both decks = %+v, want ready", p)
+	}
+}
+
+func TestYouAreas(t *testing.T) {
+	g := twoDeckGame(t)
+
+	if got := g.ViewFor("a").You.Areas; !slices.Equal(got, []Area{"p0", "p1"}) {
+		t.Errorf("Alex's areas = %v, want [p0 p1]", got)
+	}
+	if got := g.ViewFor("s").You.Areas; !slices.Equal(got, []Area{"p2"}) {
+		t.Errorf("Sam's areas = %v, want [p2]", got)
+	}
+}
+
+func TestSpectatorNoHands(t *testing.T) {
+	g := twoDeckGame(t)
+	if _, err := g.Join("w", "Watcher"); err != nil {
+		t.Fatal(err)
+	}
+
+	for _, token := range []string{"w", "nobody"} {
+		v := g.ViewFor(token)
+		if v.Table.Hands != nil || len(v.You.Areas) != 0 {
+			t.Errorf("%s: hands = %v, areas = %v; want none", token, v.Table.Hands, v.You.Areas)
+		}
+		if doc := mustJSON(t, v); strings.Contains(doc, `"hands"`) || strings.Contains(doc, `"areas"`) {
+			t.Errorf("%s: view has a hands or areas key", token)
+		}
 	}
 }
 
@@ -390,8 +495,12 @@ func TestLobbyView(t *testing.T) {
 	if v.Table != nil || v.Phase != PhaseLobby {
 		t.Errorf("lobby view = phase %s, table %v", v.Phase, v.Table)
 	}
-	if p := v.Players[0]; p.Ready || p.Area != "" || p.HandCount != 0 {
-		t.Errorf("lobby player = %+v", p)
+	p := v.Players[0]
+	if p.Ready || len(p.Decks) != 1 {
+		t.Fatalf("lobby player = %+v", p)
+	}
+	if d := p.Decks[0]; d.Ready || d.Area != "" || d.HandCount != 0 || d.Hero != "" {
+		t.Errorf("lobby deck = %+v", d)
 	}
 	if strings.Contains(mustJSON(t, v), `"table"`) {
 		t.Error("lobby view has a table key")

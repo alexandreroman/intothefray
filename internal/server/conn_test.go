@@ -363,8 +363,8 @@ func TestStartThenAct(t *testing.T) {
 	if started.View.Phase != game.PhasePlaying || started.View.Table == nil {
 		t.Fatalf("view after start = %s, want a table in play", started.raw)
 	}
-	if got := len(drawn.View.Table.Hand); got != len(started.View.Table.Hand)+1 {
-		t.Errorf("hand has %d cards after the draw, want %d", got, len(started.View.Table.Hand)+1)
+	if got := len(ownHand(drawn.View)); got != len(ownHand(started.View))+1 {
+		t.Errorf("hand has %d cards after the draw, want %d", got, len(ownHand(started.View))+1)
 	}
 	if drawn.Version <= started.Version {
 		t.Errorf("version %d after the draw, want more than %d", drawn.Version, started.Version)

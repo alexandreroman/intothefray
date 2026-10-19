@@ -112,7 +112,7 @@ func snap(v int) int {
 
 // validArea reports whether a names a seat.
 func validArea(a Area) bool {
-	for seat := range maxPlayers {
+	for seat := range maxSeats {
 		if a == PlayerArea(seat) {
 			return true
 		}
@@ -948,7 +948,7 @@ func applyFirstPlayer(t *Table, a Action) error {
 }
 
 func validSeat(seat int) bool {
-	return seat >= 0 && seat < maxPlayers
+	return seat >= 0 && seat < maxSeats
 }
 
 func applyArrowAdd(t *Table, a Action) error {
