@@ -270,7 +270,7 @@ describe('keys on the table', () => {
     await fireEvent.pointerEnter(placed('enc'));
     await press('r');
     await fireEvent.pointerEnter(placed('host'));
-    await press('x');
+    await press('Backspace');
     await press('h');
     expect(session.act).not.toHaveBeenCalled();
   });
@@ -399,7 +399,7 @@ describe('held keys', () => {
     await fireEvent.pointerEnter(inHand('h'));
 
     await press('p', { repeat: true });
-    await press('x', { repeat: true });
+    await press('Backspace', { repeat: true });
     expect(session.act).not.toHaveBeenCalled();
   });
 });
@@ -413,7 +413,7 @@ describe('keys during a drag', () => {
     await fireEvent.pointerMove(window, { clientX: 340, clientY: 330, buttons: 1 });
     expect(interaction.dragging).not.toBeNull();
 
-    await press('x');
+    await press('Backspace');
     await press('e');
     await press('d');
     await press('a');
@@ -435,7 +435,7 @@ describe('keys during a drag', () => {
     await fireEvent.pointerMove(window, { clientX: 340, clientY: 500, buttons: 1 });
     expect(interaction.dragging).not.toBeNull();
 
-    await press('x');
+    await press('Backspace');
     await press('p');
     expect(session.act).not.toHaveBeenCalled();
   });
@@ -476,12 +476,35 @@ describe('keys on a hand card', () => {
     expect(session.act).toHaveBeenCalledWith({ kind: 'play', card: 'h', x: 1200, y: 0 });
   });
 
-  it('X discards a hand card', async () => {
+  it('Backspace discards a hand card', async () => {
     const { session } = await renderTable();
     await fireEvent.pointerEnter(inHand('h'));
 
-    await press('x');
+    await press('Backspace');
     expect(session.act).toHaveBeenCalledWith({ kind: 'discard', card: 'h' });
+  });
+
+  it('Backspace discards a table card; X does nothing any more', async () => {
+    const { session } = await renderTable();
+    await fireEvent.pointerEnter(placed('mine'));
+
+    await press('x');
+    expect(session.act).not.toHaveBeenCalled();
+    await press('Backspace');
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'discard', card: 'mine' });
+  });
+
+  it('Backspace never goes back in history, and is left to the fields', async () => {
+    const { session } = await renderTable();
+    // Over nothing: no discard, and still no navigation.
+    expect(await press('Backspace')).toBe(false);
+
+    const field = document.body.appendChild(document.createElement('input'));
+    await fireEvent.pointerEnter(placed('mine'));
+    // In a field, it deletes a character as ever.
+    expect(await fireEvent.keyDown(field, { key: 'Backspace' })).toBe(true);
+    expect(session.act).not.toHaveBeenCalled();
+    field.remove();
   });
 
   it('other keys do nothing on a hand card', async () => {

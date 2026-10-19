@@ -8,7 +8,7 @@
 -->
 <script lang="ts">
   import { onDestroy } from 'svelte';
-  import type { ActionItem } from './actions';
+  import { keyLabel, type ActionItem } from './actions';
   import { intersect } from './drag';
   import { placeDropdown, type DropdownPlace } from './dropdown';
   import Icons from './Icons.svelte';
@@ -267,7 +267,7 @@
           class:on={item.pressed}
           aria-label={item.tip ?? item.label}
           data-tip={item.tip ?? item.label}
-          data-kbd={item.key}
+          data-kbd={item.key && keyLabel(item.key)}
           aria-disabled={item.disabled}
           onclick={() => runItem(item.id)}
         >
@@ -278,7 +278,7 @@
           class="btn-ghost"
           type="button"
           data-tip={item.tip ?? item.label}
-          data-kbd={item.key}
+          data-kbd={item.key && keyLabel(item.key)}
           aria-disabled={item.disabled}
           onclick={() => runItem(item.id)}>{item.label}</button
         >
@@ -333,7 +333,7 @@
         disabled={choice.disabled}
         title={choice.tip}
         onclick={() => runItem(choice.id, menuId)}
-        ><span>{choice.label}</span>{#if choice.key}<kbd>{choice.key}</kbd>{/if}</button
+        ><span>{choice.label}</span>{#if choice.key}<kbd>{keyLabel(choice.key)}</kbd>{/if}</button
       >
     {/if}
   {/each}

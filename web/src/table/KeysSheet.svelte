@@ -38,7 +38,7 @@
         { what: 'Exhaust / ready', keys: ['E'] },
         { what: 'Flip', keys: ['F'] },
         { what: 'Draw an arrow to another card', keys: ['A'] },
-        { what: 'Discard', keys: ['X'] },
+        { what: 'Discard', keys: ['⌫'] },
         { what: 'Back to hand', keys: ['H'] },
       ],
     ],
@@ -57,7 +57,7 @@
       'Card in your hand',
       [
         { what: 'Play', keys: ['P'] },
-        { what: 'Discard', keys: ['X'] },
+        { what: 'Discard', keys: ['⌫'] },
       ],
     ],
     [

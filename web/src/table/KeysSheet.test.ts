@@ -103,7 +103,7 @@ describe('KeysSheet', () => {
           'Exhaust / ready: E',
           'Flip: F',
           'Draw an arrow to another card: A',
-          'Discard: X',
+          'Discard: ⌫',
           'Back to hand: H',
         ],
       ],
@@ -111,7 +111,7 @@ describe('KeysSheet', () => {
         'Tokens (Shift removes)',
         ['Damage: D', 'Threat: T', 'Counter: N', 'Stunned: S', 'Confused: C', 'Tough: G'],
       ],
-      ['Card in your hand', ['Play: P', 'Discard: X']],
+      ['Card in your hand', ['Play: P', 'Discard: ⌫']],
       [
         'Deck under the mouse',
         [

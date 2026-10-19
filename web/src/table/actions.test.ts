@@ -165,7 +165,12 @@ describe('actionsFor', () => {
     // The arrow starts with its key (A) or a Shift + drag: the bar has no button for it.
     expect(items.map((i) => i.id)).not.toContain('arrow');
     const discard = item(items, 'discard');
-    expect(discard).toMatchObject({ label: 'Discard', icon: 'discard', key: 'X', tip: 'Discard' });
+    expect(discard).toMatchObject({
+      label: 'Discard',
+      icon: 'discard',
+      key: 'Backspace',
+      tip: 'Discard',
+    });
     expect(actionOf(discard)).toEqual({ kind: 'discard', card: 'mine' });
 
     // One "+" dropdown for both: the tokens, then the statuses, each in its section.

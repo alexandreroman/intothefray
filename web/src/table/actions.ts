@@ -33,6 +33,11 @@ export type LocalAction =
   /** The cards of a public pile: the hovered one, or one of its owner's out-of-play piles. */
   | { local: 'browseBox'; pile: string };
 
+/** How a key shows in a tooltip, a menu or the shortcuts sheet: Backspace as its ⌫ glyph. */
+export function keyLabel(key: string): string {
+  return key === 'Backspace' ? '⌫' : key;
+}
+
 export interface ActionItem {
   /** Stable id: 'exhaust', 'flip', 'stage', 'counters', 'discard', 'moveTo', 'draw1', … */
   id: string;
@@ -278,7 +283,7 @@ function leaveItems(card: CardView, context: Context): ActionItem[] {
     id: 'discard',
     label: 'Discard',
     icon: 'discard',
-    key: 'X',
+    key: 'Backspace',
     tip: 'Discard',
     group: GROUP_LEAVE,
     run: () => ({ kind: 'discard', card: card.id }),

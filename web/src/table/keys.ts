@@ -39,7 +39,14 @@ export interface KeyTable {
  * open, and only Escape while the viewer types in a field: the keys are theirs.
  */
 export function handleKey(event: KeyboardEvent, table: KeyTable): void {
-  if (event.defaultPrevented || modal.open) {
+  if (event.defaultPrevented) {
+    return;
+  }
+  // Outside a field, Backspace discards: it never takes the browser back in its history.
+  if (event.key === 'Backspace' && !isTyping(event.target)) {
+    event.preventDefault();
+  }
+  if (modal.open) {
     return;
   }
   // Escape lets go of the table, even from a field, as in the prototype.
@@ -188,7 +195,7 @@ function removeOne(adds: Action, table: KeyTable): boolean {
   return true;
 }
 
-/** P plays a card of the hand to the first free slot of the viewer's row, X discards it. */
+/** P plays a card of the hand to the first free slot of the viewer's row, Backspace discards it. */
 function handKey(key: string, id: string, table: KeyTable): boolean {
   switch (key) {
     case 'p': {
@@ -201,7 +208,7 @@ function handKey(key: string, id: string, table: KeyTable): boolean {
       table.act({ kind: 'play', card: id, x, y });
       return true;
     }
-    case 'x':
+    case 'backspace':
       table.act({ kind: 'discard', card: id });
       return true;
     default:
