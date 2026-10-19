@@ -163,6 +163,13 @@ async function catalogLoaded(): Promise<void> {
   await within(surface()).findByRole('img', { name: 'Rhino' });
 }
 
+/** The ids of the cards and piles the surface draws, in drawing order. */
+function shownIds(): string[] {
+  return [...surface().querySelectorAll<HTMLElement>(':scope > [data-id]')].map(
+    (element) => element.dataset.id ?? '',
+  );
+}
+
 function ownerBoxes(): HTMLElement[] {
   return [...document.querySelectorAll<HTMLElement>('.surface .ownerbox')];
 }
@@ -919,12 +926,6 @@ describe('Table view modes', () => {
     return within(screen.getByRole('group', { name: 'Table view' })).getByRole('button', { name });
   }
 
-  function shownIds(): string[] {
-    return [...surface().querySelectorAll<HTMLElement>(':scope > [data-id]')].map(
-      (element) => element.dataset.id ?? '',
-    );
-  }
-
   it('switches between all the rows and the villain with one player, remembered', async () => {
     render(Table, { session: fakeSession(), view: makeView() });
     await catalogLoaded();
@@ -1148,15 +1149,15 @@ describe('several decks', () => {
       .map((image) => image.getAttribute('alt'));
   }
 
-  function switcher(): HTMLElement {
-    return screen.getByRole('group', { name: 'Hand shown' });
+  /** The player selector at the bottom left: in "All", the viewer's own decks only. */
+  function picker(name = 'Hand shown'): HTMLElement {
+    return screen.getByRole('radiogroup', { name });
   }
 
-  function pressedDeck(): string | undefined {
-    const pressed = within(switcher())
-      .getAllByRole('button')
-      .find((button) => button.getAttribute('aria-pressed') === 'true');
-    return pressed?.querySelector('.hero')?.textContent?.trim();
+  function checkedDeck(name?: string): (string | null)[] {
+    return within(picker(name))
+      .getAllByRole('radio', { checked: true })
+      .map((swatch) => swatch.getAttribute('aria-label'));
   }
 
   it('hand shows selected deck', async () => {
@@ -1164,23 +1165,56 @@ describe('several decks', () => {
     await within(hand()).findByRole('img', { name: 'Spider-Man' });
 
     expect(handNames()).toEqual(['Spider-Man']);
-    expect(pressedDeck()).toBe('Spider-Man');
+    expect(checkedDeck()).toEqual(['Alex · Spider-Man']);
   });
 
-  it('switcher click selects', async () => {
+  it("lists only the viewer's own decks in the selector of the All view", async () => {
+    render(Table, { session: fakeSession(), view: makeTwoDeckView() });
+    await catalogLoaded();
+
+    const swatches = within(picker()).getAllByRole('radio');
+    expect(
+      swatches.map((swatch) => [swatch.getAttribute('aria-label'), swatch.dataset.tip]),
+    ).toEqual([
+      ['Alex · Spider-Man', 'Alex · Spider-Man'],
+      ['Alex · Ant-Man', 'Alex · Ant-Man'],
+    ]);
+    expect(screen.queryByRole('group', { name: 'Hand shown' })).toBeNull();
+  });
+
+  it('shows the hand of an own deck picked in the selector', async () => {
     render(Table, { session: fakeSession(), view: makeTwoDeckView() });
     await within(hand()).findByRole('img', { name: 'Spider-Man' });
 
-    await fireEvent.click(within(switcher()).getByRole('button', { name: /Ant-Man/ }));
-    expect(pressedDeck()).toBe('Ant-Man');
+    await fireEvent.click(within(picker()).getByRole('radio', { name: 'Alex · Ant-Man' }));
+    expect(checkedDeck()).toEqual(['Alex · Ant-Man']);
     expect(handNames()).toEqual(['Rhino']);
   });
 
-  it('switcher hidden with one deck', async () => {
+  it("keeps the hand on the last own deck when another player's row shows", async () => {
+    localStorage.setItem('itf-view', 'focus');
+    render(Table, { session: fakeSession(), view: makeTwoDeckView() });
+    await within(hand()).findByRole('img', { name: 'Spider-Man' });
+
+    // In "Villain + player", an own deck shows its row and its hand.
+    await fireEvent.click(
+      within(picker('Player shown')).getByRole('radio', { name: 'Alex · Ant-Man' }),
+    );
+    expect(handNames()).toEqual(['Rhino']);
+    expect(shownIds()).toContain('b');
+
+    await fireEvent.click(within(picker('Player shown')).getByRole('radio', { name: 'Sam' }));
+    expect(checkedDeck('Player shown')).toEqual(['Sam']);
+    expect(shownIds()).toContain('c');
+    expect(shownIds()).not.toContain('b');
+    expect(handNames()).toEqual(['Rhino']);
+  });
+
+  it('shows no selector to a player with one deck in the All view', async () => {
     render(Table, { session: fakeSession(), view: makeView() });
     await catalogLoaded();
 
-    expect(screen.queryByRole('group', { name: 'Hand shown' })).toBeNull();
+    expect(screen.queryByRole('radiogroup')).toBeNull();
   });
 
   it('Q selects next deck', async () => {
@@ -1188,11 +1222,24 @@ describe('several decks', () => {
     await within(hand()).findByRole('img', { name: 'Spider-Man' });
 
     await fireEvent.keyDown(window, { key: 'q' });
-    expect(pressedDeck()).toBe('Ant-Man');
+    expect(checkedDeck()).toEqual(['Alex · Ant-Man']);
     expect(handNames()).toEqual(['Rhino']);
     // Round the viewer's decks.
     await fireEvent.keyDown(window, { key: 'q' });
-    expect(pressedDeck()).toBe('Spider-Man');
+    expect(checkedDeck()).toEqual(['Alex · Spider-Man']);
+  });
+
+  it("Q shows the next own deck's row in the Villain + player view", async () => {
+    localStorage.setItem('itf-view', 'focus');
+    render(Table, { session: fakeSession(), view: makeTwoDeckView() });
+    await within(hand()).findByRole('img', { name: 'Spider-Man' });
+    await fireEvent.click(within(picker('Player shown')).getByRole('radio', { name: 'Sam' }));
+
+    await fireEvent.keyDown(window, { key: 'q' });
+    expect(checkedDeck('Player shown')).toEqual(['Alex · Ant-Man']);
+    expect(handNames()).toEqual(['Rhino']);
+    expect(shownIds()).toContain('b');
+    expect(shownIds()).not.toContain('c');
   });
 
   it('action sends credited seat', async () => {
@@ -1211,7 +1258,7 @@ describe('several decks', () => {
     const session = fakeSession();
     render(Table, { session, view: makeTwoDeckView() });
     await within(hand()).findByRole('img', { name: 'Spider-Man' });
-    await fireEvent.click(within(switcher()).getByRole('button', { name: /Ant-Man/ }));
+    await fireEvent.click(within(picker()).getByRole('radio', { name: 'Alex · Ant-Man' }));
 
     await fireEvent.pointerEnter(surface().querySelector<HTMLElement>('.card[data-id="v"]')!);
     const bar = screen.getByRole('toolbar', { name: 'Actions' });
@@ -1247,10 +1294,10 @@ describe('several decks', () => {
   it('keeps the selected deck across new views', async () => {
     const result = render(Table, { session: fakeSession(), view: makeTwoDeckView() });
     await within(hand()).findByRole('img', { name: 'Spider-Man' });
-    await fireEvent.click(within(switcher()).getByRole('button', { name: /Ant-Man/ }));
+    await fireEvent.click(within(picker()).getByRole('radio', { name: 'Alex · Ant-Man' }));
 
     await result.rerender({ session: fakeSession(), view: makeTwoDeckView() });
-    expect(pressedDeck()).toBe('Ant-Man');
+    expect(checkedDeck()).toEqual(['Alex · Ant-Man']);
     expect(handNames()).toEqual(['Rhino']);
   });
 
@@ -1275,23 +1322,13 @@ describe('several decks', () => {
     ]);
   });
 
-  it('names each deck in the hand switcher with its hand count', async () => {
-    render(Table, { session: fakeSession(), view: makeTwoDeckView() });
-    await catalogLoaded();
-
-    const labels = within(switcher())
-      .getAllByRole('button')
-      .map((button) => button.getAttribute('aria-label'));
-    expect(labels).toEqual(['Spider-Man: 1 card in hand', 'Ant-Man: 1 card in hand']);
-  });
-
-  it('shows a spectator no hand and no switcher', async () => {
+  it('shows a spectator no hand and no selector in the All view', async () => {
     const view = makeTwoDeckView();
     view.you = { role: 'spectator', name: 'Kim', color: -1, host: false };
     render(Table, { session: fakeSession(), view });
     await catalogLoaded();
 
     expect(screen.queryByRole('list', { name: 'Your hand' })).toBeNull();
-    expect(screen.queryByRole('group', { name: 'Hand shown' })).toBeNull();
+    expect(screen.queryByRole('radiogroup')).toBeNull();
   });
 });

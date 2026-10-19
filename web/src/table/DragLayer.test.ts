@@ -485,13 +485,12 @@ describe('dragging a table card', () => {
     ];
     view.table = { ...view.table!, hands: { p0: ['h1', 'h2', 'h3'], p1: [] } };
     const { session } = await renderTable(view);
-    const switcher = screen.getByRole('group', { name: 'Hand shown' });
-    const pressed = () =>
-      within(switcher)
-        .getAllByRole('button')
-        .filter((button) => button.getAttribute('aria-pressed') === 'true')
-        .map((button) => button.getAttribute('aria-label'));
-    expect(pressed()).toEqual(['Spider-Man: 3 cards in hand']);
+    const picker = screen.getByRole('radiogroup', { name: 'Hand shown' });
+    const checked = () =>
+      within(picker)
+        .getAllByRole('radio', { checked: true })
+        .map((swatch) => swatch.getAttribute('aria-label'));
+    expect(checked()).toEqual(['Alex · Spider-Man']);
 
     await press(placed('second'), 250, 400);
     await moveTo(450, 740);
@@ -500,7 +499,7 @@ describe('dragging a table card', () => {
 
     await release(450, 740);
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'toHand', card: 'second' }, 1);
-    expect(pressed()).toEqual(['Ant-Man: 0 cards in hand']);
+    expect(checked()).toEqual(['Alex · Ant-Man']);
   });
 
   it("is not taken by the hand when it is another player's card or an encounter card", async () => {

@@ -7,6 +7,7 @@ import { knownCard, loadGameCards, loadIndex } from '../lib/catalog';
 import type { CardView as TableCard, PresenceState, View } from '../lib/types';
 import tableSource from './Table.svelte?raw';
 import sidePanelSource from './SidePanel.svelte?raw';
+import zoomSource from './ZoomControl.svelte?raw';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -265,5 +266,16 @@ describe('Table in the window', () => {
     const undoRule = /\n {2}\.undo \{([^}]*)\}/.exec(sidePanelSource)?.[1];
     expect(undoRule).toMatch(/padding: [^;]* var\(--edge-bottom\);/);
     expect(FOCUS_MARGINS.bottom).toBe(TABLE_EDGE_BOTTOM);
+  });
+
+  it("gives the player selector the zoom control's height, so that their edges line up", () => {
+    const appRule = /\n {2}\.app \{([^}]*)\}/.exec(tableSource)?.[1];
+    expect(appRule).toMatch(/--bar-button: 32px;/);
+    const zoomButtonRule = /\n {2}button \{([^}]*)\}/.exec(zoomSource)?.[1];
+    expect(zoomButtonRule).toMatch(/height: var\(--bar-button\);/);
+    const swatchesRule = /\n {2}\.seatpick \.seats \{([^}]*)\}/.exec(tableSource)?.[1];
+    expect(swatchesRule).toMatch(/height: var\(--bar-button\);/);
+    const stepRule = /\n {2}\.seatpick \.step \{([^}]*)\}/.exec(tableSource)?.[1];
+    expect(stepRule).toMatch(/height: var\(--bar-button\);/);
   });
 });

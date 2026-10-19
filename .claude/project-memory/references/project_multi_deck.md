@@ -15,12 +15,18 @@ type: project
   obligations, nemesis sets and starting threat are all per seat.
 - Each action carries the seat it is credited to: the owner of the card
   or pile touched when it is one of the player's seats, else the deck
-  selected in the hand switcher. The server checks ownership.
+  selected in the player selector. The server checks ownership.
 - Undo takes back the player's last burst across all their seats. The
   player has one private view (Look at top / Search), kept at their first
   seat.
-- At the table a hand switcher and the Q key pick the hand shown; labels
-  read "Alex · Spider-Man" only when the player has several decks.
+- At the table the player selector (round swatches, bottom left) picks
+  the selected deck: its hand shows and shared-card actions are credited
+  to it. In "Villain + player" it lists every seat and shows the picked
+  seat's row; another player's swatch leaves the hand on the last own
+  deck. In "All" it lists only the viewer's own decks, for a player with
+  2 or more. The Q key and a card dragged to an own hand select that deck
+  in the selector. Labels read "Alex · Spider-Man" only when the player
+  has several decks.
 
 **Why:** decided with the user on 2026-10-19: one person can play a
 multi-handed game alone or alongside friends, and per-deck rules stay

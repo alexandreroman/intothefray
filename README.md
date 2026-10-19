@@ -20,9 +20,9 @@ Everything below works today, except where noted.
   four decks in all at the table and any split between players; each
   deck has its own deck link and its own Ready
 - **Several hands** — at the table each deck has its own row. With
-  several decks, the hand switcher on the hand bar or the `Q` key
-  picks the hand shown. An action is credited to the deck of the card
-  or pile you touch, else to the selected deck
+  several decks, the player selector at the bottom left or the `Q`
+  key picks the hand shown. An action is credited to the deck of the
+  card or pile you touch, else to the selected deck
 - **Automated setup** — pick a scenario, a difficulty and the
   modular sets: villain, main scheme and decks are laid out for you
 - **Discoverable actions** — every action one or two clicks away,

@@ -46,7 +46,6 @@
   import Flights from './Flights.svelte';
   import { isHidden } from './face';
   import Hand from './Hand.svelte';
-  import HandSwitch from './HandSwitch.svelte';
   import { interaction } from './interaction.svelte';
   import { handleKey } from './keys';
   import KeysSheet from './KeysSheet.svelte';
@@ -182,7 +181,8 @@
 
   // The viewer's own seats, one per deck (spec 5); none for a spectator.
   const own = $derived(ownSeats(view));
-  // The deck picked in the hand switcher, or with Q, kept while it is still one of the viewer's.
+  // The deck picked in the player selector, with Q or by dragging a card to its hand, kept while it is
+  // still one of the viewer's.
   let pickedDeck = $state<number | null>(null);
   /** The selected deck: its hand shows, and an action on a shared card is credited to it. */
   const selected = $derived(
@@ -194,23 +194,13 @@
     return seatPlayer(view, seat)?.decks.find((deck) => deck.area === `p${seat}`);
   }
 
-  /** The viewer's decks in the hand switcher: shown only to a player with two decks or more. */
-  const switchedDecks = $derived(
-    own.length < 2
-      ? []
-      : own.map((seat, i) => {
-          const deck = deckAt(seat);
-          return { seat, name: deck?.heroName ?? `Deck ${i + 1}`, handCount: deck?.handCount ?? 0 };
-        }),
-  );
-
   /** Shows the hand of the viewer's next deck, round their decks (Q). */
   function selectNextDeck(): void {
     if (selected === null) {
       return;
     }
     const next = (own.indexOf(selected) + 1) % own.length;
-    pickedDeck = own[next] ?? selected;
+    selectSeat(own[next] ?? selected);
   }
 
   // Ready all has something to ready: an exhausted card on the table, whoever owns it, not locked.
@@ -245,6 +235,17 @@
   // The player whose row "Villain + player" shows, once picked.
   let pickedSeat = $state<number | null>(null);
 
+  /**
+   * Picks a seat, in the player selector or otherwise: "Villain + player" shows its row, and when it is
+   * one of the viewer's decks, that deck is selected. Another player's seat leaves the selected deck.
+   */
+  function selectSeat(seat: number): void {
+    if (own.includes(seat)) {
+      pickedDeck = seat;
+    }
+    pickedSeat = seat;
+  }
+
   function changeViewMode(mode: ViewMode): void {
     viewMode = mode;
     saveViewMode(mode);
@@ -275,10 +276,22 @@
       : ALL_ROWS,
   );
 
-  /** Shows the row of the player seated `step` seats after the shown one, round the table. */
+  // The player selector at the bottom left: every seat in "Villain + player"; in "All", only the viewer's
+  // own decks, when they play several, to pick the hand shown.
+  const pickerDecks = $derived.by(() => {
+    if (focused) {
+      return seatedDecks;
+    }
+    return own.length > 1 ? seatedDecks.filter((deck) => own.includes(deck.seat)) : [];
+  });
+  const pickerSeat = $derived(focused ? shownSeat : selected);
+  const pickerShown = $derived(pickerDecks.length > 0 && pickerSeat !== null);
+
+  /** Picks the seat `step` swatches after the current one in the player selector, round it. */
   function stepSeat(current: number, step: number): void {
-    const index = seats.indexOf(current);
-    pickedSeat = seats[(index + step + seats.length) % seats.length] ?? current;
+    const choices = pickerDecks.map((deck) => deck.seat);
+    const index = choices.indexOf(current);
+    selectSeat(choices[(index + step + choices.length) % choices.length] ?? current);
   }
 
   // The arrow keys in the player swatches, as in any radio group.
@@ -456,7 +469,7 @@
       hovered: focusHovered,
       controls: cornerHeight,
       // The player selector at the bottom left.
-      taken: focused ? ['bottom-left'] : [],
+      taken: pickerShown ? ['bottom-left'] : [],
     });
     focusCorner = next;
   }
@@ -480,7 +493,7 @@
       visibleHeight,
       focusWidth,
       focusHeight,
-      focused,
+      pickerShown,
       cornerHeight,
     ];
     untrack(measureFocus);
@@ -1073,23 +1086,24 @@
 </script>
 
 <!--
-  Which player's row "Villain + player" shows: one swatch in each seated player's colour, named
-  for screen readers and in its tooltip only, as the name already shows above the player's deck.
+  The player selector: which player's row "Villain + player" shows, and which of the viewer's decks
+  is selected (its hand shows). One swatch in each seat's colour, named for screen readers and in its
+  tooltip only, as the name already shows above the player's deck.
 -->
 {#snippet seatPicker(current: number)}
   <div class="seatpick">
-    {#if seats.length > 2}
+    {#if pickerDecks.length > 2}
       <button
         class="btn-ghost step"
-        aria-label="Previous player"
-        data-tip="Previous player"
+        aria-label={focused ? 'Previous player' : 'Previous deck'}
+        data-tip={focused ? 'Previous player' : 'Previous deck'}
         onclick={() => stepSeat(current, -1)}>←</button
       >
     {/if}
     <div
       class="seats"
       role="radiogroup"
-      aria-label="Player shown"
+      aria-label={focused ? 'Player shown' : 'Hand shown'}
       tabindex="-1"
       onkeydown={(event) => onSeatKey(event, current)}
       use:selectionIndicator
@@ -1101,7 +1115,7 @@
         aria-hidden="true"
         style:--seat="var(--p{(seatColor(view, current) ?? 0) + 1})"
       ></span>
-      {#each seatedDecks as { seat, name, color } (seat)}
+      {#each pickerDecks as { seat, name, color } (seat)}
         <button
           class="seat"
           style:--seat="var(--p{color + 1})"
@@ -1110,29 +1124,19 @@
           data-tip={name}
           aria-checked={seat === current}
           tabindex={seat === current ? 0 : -1}
-          onclick={() => (pickedSeat = seat)}
+          onclick={() => selectSeat(seat)}
         ></button>
       {/each}
     </div>
-    {#if seats.length > 2}
+    {#if pickerDecks.length > 2}
       <button
         class="btn-ghost step"
-        aria-label="Next player"
-        data-tip="Next player"
+        aria-label={focused ? 'Next player' : 'Next deck'}
+        data-tip={focused ? 'Next player' : 'Next deck'}
         onclick={() => stepSeat(current, 1)}>→</button
       >
     {/if}
   </div>
-{/snippet}
-
-<!-- The viewer's decks on top of their hand, the selected one pressed. -->
-{#snippet handSwitch()}
-  <HandSwitch
-    decks={switchedDecks}
-    selected={selected ?? 0}
-    color={view.you.color}
-    onselect={(seat) => (pickedDeck = seat)}
-  />
 {/snippet}
 
 <svelte:window
@@ -1263,8 +1267,8 @@
     />
   </div>
 
-  {#if focused && shownSeat !== null}
-    {@render seatPicker(shownSeat)}
+  {#if pickerShown && pickerSeat !== null}
+    {@render seatPicker(pickerSeat)}
   {/if}
 
   {#if keySheetShown}
@@ -1277,13 +1281,7 @@
   {/if}
 
   {#if handCards}
-    <Hand
-      cards={handCards}
-      {faceOf}
-      narrow={narrow.current}
-      bind:open={handRaised}
-      switcher={switchedDecks.length > 0 ? handSwitch : undefined}
-    />
+    <Hand cards={handCards} {faceOf} narrow={narrow.current} bind:open={handRaised} />
   {/if}
 
   <Flights {faceOf} />
@@ -1297,7 +1295,7 @@
     {rowMap}
     {selected}
     act={(action, element) => act(action, element.kind === 'firstPlayer' ? null : element)}
-    onhand={(seat) => (pickedDeck = seat)}
+    onhand={selectSeat}
     ondrag={(drag) => session.sendPresence({ drag })}
     lastError={session.lastError}
   />
@@ -1398,6 +1396,12 @@
   .app {
     /* The play area's gutter, which the top bar's left edge shares. */
     --content-gutter: 24px;
+    /*
+      The height of a button in the bars floating at the bottom of the table (the zoom control, the
+      narrow screen's Undo, the player selector): with the same padding and the same room under them
+      (--edge-bottom), the bars share their top and bottom edges.
+    */
+    --bar-button: 32px;
     display: grid;
     height: 100vh;
     height: 100dvh;
@@ -1542,7 +1546,6 @@
     font-size: 13px;
   }
 
-  /* As the zoom control, at the other corner: under the veil and the raised hand. */
   /* At the bottom left, as the zoom control at the bottom right: under the veil and the hand. */
   .seatpick {
     grid-area: table;
@@ -1561,7 +1564,7 @@
   }
 
   .seatpick .step {
-    height: 28px;
+    height: var(--bar-button);
     padding: 0 8px;
     border: none;
     border-radius: 8px;
@@ -1571,6 +1574,7 @@
   /* A round swatch of the seat colour; the player shown is ringed. */
   .seatpick .seats {
     position: relative;
+    height: var(--bar-button);
     display: flex;
     align-items: center;
     gap: 4px;
@@ -1623,8 +1627,8 @@
   }
 
   .undo button {
-    width: 32px;
-    height: 32px;
+    width: var(--bar-button);
+    height: var(--bar-button);
     padding: 0;
     display: flex;
     align-items: center;

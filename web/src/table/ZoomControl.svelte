@@ -90,8 +90,9 @@
   }
 
   button {
-    height: 32px;
-    min-width: 32px;
+    /* The table's bar button height: the bars at the bottom of the table line up. */
+    height: var(--bar-button);
+    min-width: var(--bar-button);
     padding: 0 8px;
     border: none;
     border-radius: 8px;
