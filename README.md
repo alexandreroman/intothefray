@@ -88,7 +88,7 @@ starting the other.
 ### Casper workspaces
 
 The main checkout keeps the default ports (web 5173, server 8080,
-Redis 6379). In a [Casper](https://github.com/alexandreroman/casper-skills)
+Redis 6379). In a [Casper](https://github.com/alexandreroman/casper)
 worktree workspace, the setup hook of `.casper.json`
 (`scripts/casper.sh setup`) writes an untracked `.env.casper` from
 `CASPER_PORT`:

@@ -8,7 +8,7 @@ export default defineConfig({
   plugins: [svelte(), svelteTesting()],
   // WEB_PORT lets parallel workspaces each use their own port. A busy port
   // must fail loudly: the backend only accepts this origin.
-  server: { port: Number(process.env.WEB_PORT ?? 5173), strictPort: true },
+  server: { port: Number(process.env.WEB_PORT) || 5173, strictPort: true },
   test: {
     environment: 'jsdom',
     globals: true,
