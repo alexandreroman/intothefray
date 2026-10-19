@@ -117,7 +117,7 @@
         <div class="back middle"><Logo variant="mark" size={96} /></div>
         <div class="back right"></div>
       </div>
-      <span class="caption">Solo or 4 players</span>
+      <span class="caption">1 to 4 players</span>
     </div>
   </main>
 
