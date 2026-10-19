@@ -696,7 +696,7 @@ describe('Table', () => {
     expect(preview().closest('.peek')?.classList).toContain('land');
   });
 
-  it('names the scenario, its difficulty and its modular sets in the top bar', async () => {
+  it('names the scenario and its modular sets in the top bar, not the difficulty', async () => {
     const view = makeView();
     view.config = {
       ...view.config,
@@ -707,7 +707,7 @@ describe('Table', () => {
 
     await waitFor(() => {
       expect(container.querySelector('header .crumbs')?.textContent?.trim()).toBe(
-        'Rhino / Expert / Bomb Scare / Masters of Evil',
+        'Rhino / Bomb Scare / Masters of Evil',
       );
     });
   });

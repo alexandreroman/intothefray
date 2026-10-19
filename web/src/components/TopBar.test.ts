@@ -49,13 +49,13 @@ describe('TopBar', () => {
   });
 
   it('shows the crumbs, the first one strong and the rest dimmed', () => {
-    const { container } = render(TopBar, { crumbs: ['Rhino', 'Standard', 'Bomb Scare'] });
+    const { container } = render(TopBar, { crumbs: ['Rhino', 'Bomb Scare', 'Masters of Evil'] });
     const crumbs = container.querySelector('.crumbs');
-    expect(crumbs?.textContent?.trim()).toBe('Rhino / Standard / Bomb Scare');
+    expect(crumbs?.textContent?.trim()).toBe('Rhino / Bomb Scare / Masters of Evil');
     expect(crumbs?.querySelector('b')?.textContent).toBe('Rhino');
     expect([...(crumbs?.querySelectorAll('.rest') ?? [])].map((rest) => rest.textContent)).toEqual([
-      ' / Standard',
       ' / Bomb Scare',
+      ' / Masters of Evil',
     ]);
   });
 

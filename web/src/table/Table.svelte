@@ -111,7 +111,7 @@
     () => {},
   );
 
-  /** "Rhino / Standard / Bomb Scare": the scenario, its difficulty, then its modular sets. */
+  /** "Rhino / Bomb Scare": the scenario, then its modular sets. */
   function crumbsOf(config: LobbyConfig, names: Index | null): string[] {
     const scenario = names?.scenarios.find((s) => s.id === config.scenario);
     if (!names || !scenario) {
@@ -120,8 +120,7 @@
     const modulars = config.modulars.map(
       (code) => names.sets.find((set) => set.code === code)?.name ?? code,
     );
-    const difficulty = config.difficulty === 'expert' ? 'Expert' : 'Standard';
-    return [scenario.name, difficulty, ...modulars];
+    return [scenario.name, ...modulars];
   }
 
   const crumbs = $derived(crumbsOf(view.config, index));
