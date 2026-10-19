@@ -59,7 +59,8 @@ func (g *Game) Join(token, name string) (Role, error) {
 }
 
 // Leave turns a player into a spectator during the lobby. The host cannot
-// leave. After the start seats are fixed, since table areas follow them.
+// leave. After the start seats are fixed, since hands and table rows follow
+// them.
 func (g *Game) Leave(token string) error {
 	player := g.player(token)
 	if player == nil {

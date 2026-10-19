@@ -52,7 +52,7 @@ func (f *doFixture) villain() string {
 func (f *doFixture) identity(t *testing.T) string {
 	t.Helper()
 	for id, c := range f.g.Table.Cards {
-		if c.Zone == ZoneTable && c.Area == "p0" && c.Owner == 0 {
+		if c.Zone == ZoneTable && c.Owner == 0 {
 			return id
 		}
 	}
@@ -196,7 +196,7 @@ func TestMoveIsUntracked(t *testing.T) {
 	f := newDoFixture(t)
 	lines := len(f.g.Log)
 
-	f.mustDo(t, "h", Action{Kind: ActMove, Card: f.villain(), Area: AreaVillain, X: 500, Y: 300}, at(1))
+	f.mustDo(t, "h", Action{Kind: ActMove, Card: f.villain(), X: 500, Y: 300}, at(1))
 
 	if got := len(f.g.Log); got != lines {
 		t.Errorf("move wrote lines %q", f.logTexts()[lines:])
@@ -300,7 +300,7 @@ func TestLogTexts(t *testing.T) {
 		{"play", func(t *testing.T, f *doFixture) string {
 			f.mustDo(t, "h", Action{Kind: ActDraw, N: 1}, at(1))
 			card := f.g.Table.Hands["p0"][0]
-			f.mustDo(t, "h", Action{Kind: ActPlay, Card: card, Area: "p0", X: 400, Y: 200}, at(2))
+			f.mustDo(t, "h", Action{Kind: ActPlay, Card: card, X: 400, Y: 200}, at(2))
 			return "played " + f.nameOf(t, card)
 		}},
 		{"hand card to deck", func(t *testing.T, f *doFixture) string {
@@ -351,7 +351,7 @@ func TestLogNeverShowsHiddenCards(t *testing.T) {
 	if got := f.lastLog(); len(got.Cards) != 0 || got.Text != "put a card at the bottom of their deck" {
 		t.Errorf("toDeck line = %q with cards %v", got.Text, got.Cards)
 	}
-	f.mustDo(t, "h", Action{Kind: ActPlay, Card: hand[1], Area: "p0", X: 400, Y: 200}, at(3))
+	f.mustDo(t, "h", Action{Kind: ActPlay, Card: hand[1], X: 400, Y: 200}, at(3))
 	if got := f.lastLog().Cards; !slices.Equal(got, []string{hand[1]}) {
 		t.Errorf("play line cards = %v, want %v", got, []string{hand[1]})
 	}
@@ -577,7 +577,7 @@ func TestUndoKeepsOwnUntrackedActions(t *testing.T) {
 	f := newDoFixture(t)
 	rhino := f.villain()
 	f.mustDo(t, "h", Action{Kind: ActExhaust, Card: rhino}, at(1))
-	f.mustDo(t, "h", Action{Kind: ActMove, Card: rhino, Area: AreaVillain, X: 500, Y: 300}, at(2))
+	f.mustDo(t, "h", Action{Kind: ActMove, Card: rhino, X: 500, Y: 300}, at(2))
 
 	f.mustDo(t, "h", Action{Kind: ActUndo}, at(3))
 
@@ -602,7 +602,7 @@ func TestUndoOfDealPutsTheRevealedCardBack(t *testing.T) {
 	f.mustDo(t, "b", Action{Kind: ActUndo}, at(3))
 
 	c := f.g.Table.Cards[revealed.ID]
-	if c.Area != revealed.Area || c.X != revealed.X || c.Y != revealed.Y || c.OnPile != PileEncounter || c.FaceDown {
+	if c.X != revealed.X || c.Y != revealed.Y || c.OnPile != PileEncounter || c.FaceDown {
 		t.Errorf("card = %+v, want it revealed again on the encounter deck at (%d,%d)", c, revealed.X, revealed.Y)
 	}
 	checkIntegrity(t, f.g.Table)
@@ -679,13 +679,13 @@ func TestUndoKeepsLiveArrangement(t *testing.T) {
 	rhino := f.villain()
 	bobIdentity := ""
 	for id, c := range f.g.Table.Cards {
-		if c.Zone == ZoneTable && c.Area == "p1" && c.Owner == 1 {
+		if c.Zone == ZoneTable && c.Owner == 1 {
 			bobIdentity = id
 		}
 	}
 	f.mustDo(t, "b", Action{Kind: ActDraw, N: 3}, at(1))
 	f.mustDo(t, "h", Action{Kind: ActExhaust, Card: rhino}, at(2))
-	f.mustDo(t, "b", Action{Kind: ActMove, Card: bobIdentity, Area: "p1", X: 700, Y: 400}, at(3))
+	f.mustDo(t, "b", Action{Kind: ActMove, Card: bobIdentity, X: 700, Y: 400}, at(3))
 	order := slices.Clone(f.g.Table.Hands["p1"])
 	slices.Reverse(order)
 	f.mustDo(t, "b", Action{Kind: ActHandOrder, Area: "p1", Cards: order}, at(4))
@@ -901,7 +901,7 @@ func TestPlayFromPileThroughDo(t *testing.T) {
 			id := tt.card(t, f)
 			lines := len(f.g.Log)
 
-			err := f.do(tt.token, Action{Kind: ActPlay, Card: id, Area: "p1", X: 400, Y: 200}, at(5))
+			err := f.do(tt.token, Action{Kind: ActPlay, Card: id, X: 400, Y: 200}, at(5))
 
 			if tt.want != nil {
 				if !errors.Is(err, tt.want) {
@@ -913,8 +913,8 @@ func TestPlayFromPileThroughDo(t *testing.T) {
 				t.Fatalf("play = %v, want allowed", err)
 			}
 			c := f.g.Table.Cards[id]
-			if c.Zone != ZoneTable || c.FaceDown || c.Area != "p1" || c.X != 400 || c.Y != 200 {
-				t.Errorf("played card = %+v, want face up on the table at p1 (400,200)", c)
+			if c.Zone != ZoneTable || c.FaceDown || c.X != 400 || c.Y != 200 {
+				t.Errorf("played card = %+v, want face up on the table at (400,200)", c)
 			}
 			if got := len(f.g.Log); got != lines+1 {
 				t.Fatalf("play wrote %d lines, want 1", got-lines)
@@ -1013,8 +1013,8 @@ func TestAttachThenDiscardSurvivesAnotherUndo(t *testing.T) {
 	f.mustDo(t, "h", Action{Kind: ActDraw, N: 2}, at(1))
 	hand := slices.Clone(f.g.Table.Hands["p0"])
 	parent, child := hand[0], hand[1]
-	f.mustDo(t, "h", Action{Kind: ActPlay, Card: parent, Area: "p0", X: 400, Y: 200}, at(30))
-	f.mustDo(t, "h", Action{Kind: ActPlay, Card: child, Area: "p0", X: 500, Y: 200}, at(60))
+	f.mustDo(t, "h", Action{Kind: ActPlay, Card: parent, X: 400, Y: 200}, at(30))
+	f.mustDo(t, "h", Action{Kind: ActPlay, Card: child, X: 500, Y: 200}, at(60))
 	f.mustDo(t, "b", Action{Kind: ActExhaust, Card: f.villain()}, at(90))
 	f.mustDo(t, "h", Action{Kind: ActAttach, Card: child, Target: parent}, at(91))
 	f.mustDo(t, "h", Action{Kind: ActDiscard, Card: parent}, at(92))
@@ -1066,13 +1066,13 @@ func TestTwoRevealsSurviveAnotherUndo(t *testing.T) {
 	f.mustDo(t, "b", Action{Kind: ActExhaust, Card: f.villain()}, at(1))
 	f.mustDo(t, "h", Action{Kind: ActReveal}, at(2))
 	first := f.g.Table.revealed()[0].ID
-	f.mustDo(t, "h", Action{Kind: ActMove, Card: first, Area: "p0", X: 600, Y: 300}, at(3))
+	f.mustDo(t, "h", Action{Kind: ActMove, Card: first, X: 600, Y: 300}, at(3))
 	f.mustDo(t, "h", Action{Kind: ActReveal}, at(4))
 	second := f.g.Table.revealed()[0].ID
 
 	f.mustDo(t, "b", Action{Kind: ActUndo}, at(5))
 
-	if c := f.g.Table.Cards[first]; c.Zone != ZoneTable || c.Area != "p0" || c.X != 600 || c.Y != 300 {
+	if c := f.g.Table.Cards[first]; c.Zone != ZoneTable || c.X != 600 || c.Y != 300 {
 		t.Errorf("first revealed card = %+v, want it where Host moved it", c)
 	}
 	if got := f.g.Table.revealed(); len(got) != 1 || got[0].ID != second {
@@ -1145,7 +1145,7 @@ func TestUndoDropsWhatNoLongerApplies(t *testing.T) {
 	f := newDoFixture(t)
 	f.mustDo(t, "h", Action{Kind: ActDraw, N: 1}, at(1))
 	card := f.g.Table.Hands["p0"][0]
-	f.mustDo(t, "h", Action{Kind: ActPlay, Card: card, Area: "p0", X: 400, Y: 200}, at(30))
+	f.mustDo(t, "h", Action{Kind: ActPlay, Card: card, X: 400, Y: 200}, at(30))
 	f.mustDo(t, "b", Action{Kind: ActExhaust, Card: card}, at(31))
 
 	f.mustDo(t, "h", Action{Kind: ActUndo}, at(32))
@@ -1170,8 +1170,8 @@ func TestUndoDropsWhatNoLongerApplies(t *testing.T) {
 func TestMoveReplacesTheSamePlayersLastMove(t *testing.T) {
 	f := newDoFixture(t)
 	rhino := f.villain()
-	f.mustDo(t, "h", Action{Kind: ActMove, Card: rhino, Area: AreaVillain, X: 500, Y: 300}, at(1))
-	f.mustDo(t, "h", Action{Kind: ActMove, Card: rhino, Area: AreaVillain, X: 700, Y: 300}, at(2))
+	f.mustDo(t, "h", Action{Kind: ActMove, Card: rhino, X: 500, Y: 300}, at(1))
+	f.mustDo(t, "h", Action{Kind: ActMove, Card: rhino, X: 700, Y: 300}, at(2))
 
 	events := f.g.History.Events
 	if len(events) != 1 || events[0].Action.X != 700 || events[0].Seq != 2 {
@@ -1179,8 +1179,8 @@ func TestMoveReplacesTheSamePlayersLastMove(t *testing.T) {
 	}
 	checkHistory(t, f.g)
 
-	f.mustDo(t, "b", Action{Kind: ActMove, Card: rhino, Area: AreaVillain, X: 900, Y: 300}, at(3))
-	f.mustDo(t, "h", Action{Kind: ActMove, Card: rhino, Area: AreaVillain, X: 100, Y: 300}, at(4))
+	f.mustDo(t, "b", Action{Kind: ActMove, Card: rhino, X: 900, Y: 300}, at(3))
+	f.mustDo(t, "h", Action{Kind: ActMove, Card: rhino, X: 100, Y: 300}, at(4))
 	if got := len(f.g.History.Events); got != 3 {
 		t.Errorf("%d events, want 3: a move by another player is kept apart", got)
 	}
@@ -1198,7 +1198,7 @@ func TestArrangingActionsAreUntrackedEvents(t *testing.T) {
 	slices.Reverse(top)
 
 	actions := []Action{
-		{Kind: ActMove, Card: rhino, Area: AreaVillain, X: 500, Y: 300},
+		{Kind: ActMove, Card: rhino, X: 500, Y: 300},
 		{Kind: ActAttach, Card: identity, Target: rhino},
 		{Kind: ActHandOrder, Area: "p0", Cards: hand},
 		{Kind: ActReorderTop, Pile: "deck:p0", Cards: top},

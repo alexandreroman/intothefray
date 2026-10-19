@@ -85,7 +85,7 @@ func randomAction(r *rand.Rand, t *Table, seat int) Action {
 	case 0, 1:
 		return Action{Kind: ActDraw, N: 1 + r.IntN(3)}
 	case 2:
-		return Action{Kind: ActPlay, Card: pick(hand), Area: area, X: x, Y: y}
+		return Action{Kind: ActPlay, Card: pick(hand), X: x, Y: y}
 	case 3:
 		return Action{Kind: ActPlay, Card: pick(hand), Target: pick(onTable)}
 	case 4:
@@ -105,7 +105,7 @@ func randomAction(r *rand.Rand, t *Table, seat int) Action {
 	case 11:
 		return Action{Kind: ActDiscardTop, Pile: oneOf(PileEncounter, deck), N: 1 + r.IntN(2)}
 	case 12, 13:
-		return Action{Kind: ActMove, Card: pick(onTable), Area: area, X: x, Y: y}
+		return Action{Kind: ActMove, Card: pick(onTable), X: x, Y: y}
 	case 14:
 		return Action{Kind: ActAttach, Card: pick(onTable), Target: pick(onTable)}
 	case 15:
@@ -138,7 +138,7 @@ func randomAction(r *rand.Rand, t *Table, seat int) Action {
 		case 1:
 			return Action{Kind: ActArrowClear}
 		default:
-			return Action{Kind: ActFirstPlayer, Area: area, X: x, Y: y}
+			return Action{Kind: ActFirstPlayer, X: x, Y: y}
 		}
 	case 25:
 		if t.Views[area] != nil {

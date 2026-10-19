@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	// maxPresenceText bounds every text of a presence message: areas and
-	// card ids.
+	// maxPresenceText bounds every text of a presence message: the preview
+	// and the card ids of a drag.
 	maxPresenceText = 64
 	// maxDragCards bounds the cards of one drag.
 	maxDragCards = 50
@@ -84,10 +84,6 @@ func presenceFieldsOf(msg clientMessage) (presenceFields, error) {
 	switch {
 	case fields.Cursor == nil && fields.Preview == nil && fields.Drag == nil && fields.Ping == nil:
 		return presenceFields{}, fmt.Errorf("%w: empty presence", errInvalidMessage)
-	case fields.Cursor != nil && !fields.Cursor.valid():
-		return presenceFields{}, fmt.Errorf("%w: cursor out of bounds", errInvalidMessage)
-	case fields.Ping != nil && !fields.Ping.valid():
-		return presenceFields{}, fmt.Errorf("%w: ping out of bounds", errInvalidMessage)
 	case fields.Preview != nil && len(*fields.Preview) > maxPresenceText:
 		// An empty preview is valid: it clears the previous one.
 		return presenceFields{}, fmt.Errorf("%w: preview too long", errInvalidMessage)
@@ -95,12 +91,8 @@ func presenceFieldsOf(msg clientMessage) (presenceFields, error) {
 	return fields, nil
 }
 
-func (p *presencePoint) valid() bool {
-	return validPresenceText(p.Area)
-}
-
 func (d *presenceDrag) valid() bool {
-	if len(d.Cards) == 0 || len(d.Cards) > maxDragCards || !validPresenceText(d.Area) {
+	if len(d.Cards) == 0 || len(d.Cards) > maxDragCards {
 		return false
 	}
 	for _, id := range d.Cards {

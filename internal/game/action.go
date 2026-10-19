@@ -47,7 +47,7 @@ type Action struct {
 	Card   string   `json:"card,omitempty"`
 	Target string   `json:"target,omitempty"` // card id (attach, arrow, play under it) or pile id
 	Pile   string   `json:"pile,omitempty"`
-	Area   Area     `json:"area,omitempty"`
+	Area   Area     `json:"area,omitempty"` // whose hand (draw, handOrder), who is dealt to (deal)
 	X      int      `json:"x,omitempty"`
 	Y      int      `json:"y,omitempty"`
 	N      int      `json:"n,omitempty"`
@@ -138,12 +138,8 @@ func resolve(g *Game, seat int, a Action, rng *rand.Rand) (Action, error) {
 	}
 }
 
-// seatedArea reports whether area is the villain side or the side of a
-// seated player.
+// seatedArea reports whether area names the seat of a seated player.
 func (g *Game) seatedArea(area Area) bool {
-	if area == AreaVillain {
-		return true
-	}
 	for seat := range g.Players {
 		if area == PlayerArea(seat) {
 			return true
@@ -359,6 +355,9 @@ func resolveReveal(t *Table, a Action) (Action, error) {
 // resolveDeal records the card to deal, so that a rebuild deals that card
 // (see resolveReveal).
 func resolveDeal(t *Table, a Action) (Action, error) {
+	if a.Area == "" {
+		return a, invalid("a deal needs a recipient")
+	}
 	id := t.dealtCard()
 	if id == "" {
 		return a, invalid("encounter deck is empty")
@@ -381,7 +380,7 @@ func resolveDiscardTop(t *Table, seat int, a Action) (Action, error) {
 }
 
 func resolveHandOrder(seat int, a Action) (Action, error) {
-	if !validArea(a.Area) || a.Area == AreaVillain {
+	if !validArea(a.Area) {
 		return a, invalid("area %q has no hand", a.Area)
 	}
 	if a.Area != PlayerArea(seat) {

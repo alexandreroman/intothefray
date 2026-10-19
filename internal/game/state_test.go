@@ -14,7 +14,7 @@ func sampleTable() *Table {
 		Cards: map[string]*Card{
 			"c1": {
 				ID: "c1", Code: "01001a", Face: 0, Faces: 2, Back: pack.BackPlayer, Owner: 0,
-				Home: "deck:p0", Zone: ZoneTable, Area: PlayerArea(0), X: 280, Y: 0, Z: 3,
+				Home: "deck:p0", Zone: ZoneTable, X: 280, Y: 0, Z: 3,
 				Exhausted: true, Tokens: map[string]int{"dmg": 2}, Status: map[string]int{"stunned": 1},
 			},
 			"c2": {
@@ -31,12 +31,12 @@ func sampleTable() *Table {
 			},
 		},
 		Piles: map[string]*Pile{
-			"deck:p0": {ID: "deck:p0", Kind: KindDeck, Owner: 0, Area: PlayerArea(0), Cards: []string{"c3"}},
-			"enc":     {ID: "enc", Kind: KindEncounter, Owner: NoOwner, Area: AreaVillain, X: 0, Y: 0},
+			"deck:p0": {ID: "deck:p0", Kind: KindDeck, Owner: 0, Cards: []string{"c3"}},
+			"enc":     {ID: "enc", Kind: KindEncounter, Owner: NoOwner, X: 0, Y: 0},
 		},
 		Hands:       map[Area][]string{PlayerArea(0): {"c2"}},
 		Stages:      []*Stage{{Key: "main", Label: "Main scheme", Current: "c4", Cards: []string{"c4"}}},
-		FirstPlayer: Point{Area: PlayerArea(0), X: 420, Y: 0},
+		FirstPlayer: Point{X: 420, Y: 0},
 		Arrows:      []Arrow{{From: "c1", To: "c4", Seat: 0}},
 		Views: map[Area]*PrivateView{
 			PlayerArea(0): {Pile: "deck:p0", Mode: "top", Cards: []string{"c3"}},

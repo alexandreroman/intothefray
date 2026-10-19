@@ -108,11 +108,8 @@ func snap(v int) int {
 	return int(math.Round(float64(v)/gridSize)) * gridSize
 }
 
-// validArea reports whether a is the villain side or a seat's side.
+// validArea reports whether a names a seat.
 func validArea(a Area) bool {
-	if a == AreaVillain {
-		return true
-	}
 	for seat := range maxPlayers {
 		if a == PlayerArea(seat) {
 			return true
@@ -248,9 +245,6 @@ func applyMove(t *Table, a Action) error {
 	if err != nil {
 		return err
 	}
-	if !validArea(a.Area) {
-		return invalid("unknown area %q", a.Area)
-	}
 
 	x, y := snap(a.X), snap(a.Y)
 	dx, dy := x-c.X, y-c.Y
@@ -258,12 +252,11 @@ func applyMove(t *Table, a Action) error {
 
 	// Children go just below the moved card, which takes the top Z.
 	for _, child := range children {
-		child.Area = a.Area
 		child.X += dx
 		child.Y += dy
 		child.Z = t.nextZ()
 	}
-	c.Area, c.X, c.Y = a.Area, x, y
+	c.X, c.Y = x, y
 	c.Z = t.nextZ()
 	c.Parent = ""
 	c.OnPile = ""
@@ -296,14 +289,13 @@ func applyAttach(t *Table, a Action) error {
 	x, y, z := tuckedPlace(target)
 	dx, dy, dz := x-c.X, y-c.Y, z-c.Z
 	for _, child := range children {
-		child.Area = target.Area
 		child.X += dx
 		child.Y += dy
 		child.Z += dz
 	}
 	c.Parent = target.ID
 	c.OnPile = ""
-	c.Area, c.X, c.Y, c.Z = target.Area, x, y, z
+	c.X, c.Y, c.Z = x, y, z
 	return nil
 }
 
@@ -333,7 +325,6 @@ func applyToHand(t *Table, a Action) error {
 	t.Hands[area] = append(t.Hands[area], c.ID)
 	c.Zone = ZoneHand
 	c.Pile = ""
-	c.Area = area
 	return nil
 }
 
@@ -444,8 +435,7 @@ func isPlainTargetPile(id string) bool {
 }
 
 // applyPlay puts a card from a hand or a pile face up on the table: at a
-// point of an area, or, with a target, tucked under that table card as
-// attach does. Area and position are then the target's.
+// point, or, with a target, tucked under that table card as attach does.
 func applyPlay(t *Table, a Action) error {
 	c, err := t.card(a.Card)
 	if err != nil {
@@ -460,8 +450,6 @@ func applyPlay(t *Table, a Action) error {
 		if target, err = t.tableCard(a.Target); err != nil {
 			return err
 		}
-	} else if !validArea(a.Area) {
-		return invalid("unknown area %q", a.Area)
 	}
 	if err := t.checkLeave(c); err != nil {
 		return err
@@ -472,11 +460,10 @@ func applyPlay(t *Table, a Action) error {
 	c.Pile = ""
 	if target != nil {
 		c.Parent = target.ID
-		c.Area = target.Area
 		c.X, c.Y, c.Z = tuckedPlace(target)
 		return nil
 	}
-	c.Area, c.X, c.Y = a.Area, snap(a.X), snap(a.Y)
+	c.X, c.Y = snap(a.X), snap(a.Y)
 	c.Z = t.nextZ()
 	return nil
 }
@@ -583,7 +570,7 @@ func applyChooseStage(t *Table, a Action) error {
 		}
 	}
 	chosen.Zone = ZoneTable
-	chosen.Area, chosen.X, chosen.Y, chosen.Z = previous.Area, previous.X, previous.Y, previous.Z
+	chosen.X, chosen.Y, chosen.Z = previous.X, previous.Y, previous.Z
 	chosen.Parent = previous.Parent
 	chosen.OnPile = previous.OnPile
 	chosen.Face = a.Face
@@ -593,7 +580,7 @@ func applyChooseStage(t *Table, a Action) error {
 	// Tokens and statuses stay on the previous card, so going back restores them.
 	t.removeArrows(previous.ID)
 	previous.Zone = ZoneStage
-	previous.Area, previous.X, previous.Y, previous.Z = "", 0, 0, 0
+	previous.X, previous.Y, previous.Z = 0, 0, 0
 	previous.Parent = ""
 	previous.OnPile = ""
 	previous.Exhausted = false
@@ -662,10 +649,10 @@ func (t *Table) putOnPile(pile *Pile, c *Card) {
 }
 
 // placeOnTable puts c, which has just left a pile, on the table.
-func (t *Table) placeOnTable(c *Card, area Area, x, y int) {
+func (t *Table) placeOnTable(c *Card, x, y int) {
 	c.Zone = ZoneTable
 	c.Pile = ""
-	c.Area, c.X, c.Y = area, x, y
+	c.X, c.Y = x, y
 	c.Z = t.nextZ()
 }
 
@@ -673,7 +660,7 @@ func (t *Table) placeOnTable(c *Card, area Area, x, y int) {
 // order. Resolve records the top cards, but an undo may have put other cards
 // above them since: they are taken wherever they are in the deck.
 func applyDraw(t *Table, a Action) error {
-	if !validArea(a.Area) || a.Area == AreaVillain {
+	if !validArea(a.Area) {
 		return invalid("area %q has no hand", a.Area)
 	}
 	deck, err := t.pile("deck:" + string(a.Area))
@@ -693,7 +680,6 @@ func applyDraw(t *Table, a Action) error {
 		t.Hands[a.Area] = append(t.Hands[a.Area], id)
 		c.Zone = ZoneHand
 		c.Pile = ""
-		c.Area = a.Area
 	}
 	return nil
 }
@@ -717,7 +703,7 @@ func applyReveal(t *Table, a Action) error {
 
 	c := t.Cards[a.Cards[0]]
 	t.leave(c)
-	t.placeOnTable(c, AreaVillain, enc.X, enc.Y)
+	t.placeOnTable(c, enc.X, enc.Y)
 	c.OnPile = PileEncounter
 	return nil
 }
@@ -754,10 +740,11 @@ func (t *Table) dealtCard() string {
 // applyDeal deals the recorded encounter card face down, wherever it is in the
 // encounter deck (see applyDraw). Revealed cards are first put back face down
 // on top of the encounter deck, so a revealed card can be dealt too (see
-// dealtCard).
+// dealtCard). The card goes to the action's position; its area only names
+// the recipient, for the history.
 func applyDeal(t *Table, a Action) error {
 	if !validArea(a.Area) {
-		return invalid("unknown area %q", a.Area)
+		return invalid("unknown recipient %q", a.Area)
 	}
 	enc, err := t.pile(PileEncounter)
 	if err != nil {
@@ -783,7 +770,7 @@ func applyDeal(t *Table, a Action) error {
 	}
 	c := t.Cards[dealt]
 	t.leave(c)
-	t.placeOnTable(c, a.Area, snap(a.X), snap(a.Y))
+	t.placeOnTable(c, snap(a.X), snap(a.Y))
 	c.FaceDown = true
 	return nil
 }
@@ -913,7 +900,7 @@ func applyReorderTop(t *Table, a Action) error {
 }
 
 func applyHandOrder(t *Table, a Action) error {
-	if !validArea(a.Area) || a.Area == AreaVillain {
+	if !validArea(a.Area) {
 		return invalid("area %q has no hand", a.Area)
 	}
 	if !samePermutation(t.Hands[a.Area], a.Cards) {
@@ -927,10 +914,7 @@ func applyHandOrder(t *Table, a Action) error {
 }
 
 func applyFirstPlayer(t *Table, a Action) error {
-	if !validArea(a.Area) {
-		return invalid("unknown area %q", a.Area)
-	}
-	t.FirstPlayer = Point{Area: a.Area, X: snap(a.X), Y: snap(a.Y)}
+	t.FirstPlayer = Point{X: snap(a.X), Y: snap(a.Y)}
 	return nil
 }
 

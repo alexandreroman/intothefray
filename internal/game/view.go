@@ -19,7 +19,6 @@ type CardView struct {
 	Back      pack.Back      `json:"back"`
 	Owner     int            `json:"owner"`
 	Zone      Zone           `json:"zone"`
-	Area      Area           `json:"area,omitempty"`
 	X         int            `json:"x"`
 	Y         int            `json:"y"`
 	Z         int            `json:"z"`
@@ -37,7 +36,6 @@ type PileView struct {
 	ID    string   `json:"id"`
 	Kind  PileKind `json:"kind"`
 	Owner int      `json:"owner"`
-	Area  Area     `json:"area"`
 	X     int      `json:"x"`
 	Y     int      `json:"y"`
 	Count int      `json:"count"`
@@ -289,7 +287,7 @@ func (k PileKind) public() bool {
 }
 
 func (p *Pile) viewOf() PileView {
-	pv := PileView{ID: p.ID, Kind: p.Kind, Owner: p.Owner, Area: p.Area, X: p.X, Y: p.Y, Count: len(p.Cards)}
+	pv := PileView{ID: p.ID, Kind: p.Kind, Owner: p.Owner, X: p.X, Y: p.Y, Count: len(p.Cards)}
 	if p.Kind.public() {
 		pv.Cards = slices.Clone(p.Cards)
 	}
@@ -302,7 +300,7 @@ func (p *Pile) viewOf() PileView {
 func (c *Card) viewOf(stageKey string) CardView {
 	cv := CardView{
 		ID: c.ID, Code: c.Code, Face: c.Face, FaceDown: c.FaceDown, Back: c.Back,
-		Owner: c.Owner, Zone: c.Zone, Area: c.Area, X: c.X, Y: c.Y, Z: c.Z,
+		Owner: c.Owner, Zone: c.Zone, X: c.X, Y: c.Y, Z: c.Z,
 		Parent: c.Parent, OnPile: c.OnPile, Exhausted: c.Exhausted,
 		Tokens: maps.Clone(c.Tokens), Status: maps.Clone(c.Status), Stage: stageKey,
 	}

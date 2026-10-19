@@ -226,7 +226,6 @@
       "action": {
         "kind": "move",
         "card": "csdbghyga",
-        "area": "p0",
         "x": 160,
         "y": 330
       },
@@ -307,7 +306,6 @@
       "action": {
         "kind": "move",
         "card": "cz3w3cktw",
-        "area": "p1",
         "x": 580,
         "y": 320,
         "seat": 1
@@ -557,7 +555,6 @@
       "action": {
         "kind": "move",
         "card": "cfcr5z4y3",
-        "area": "p1",
         "x": 360,
         "y": 170,
         "seat": 1
@@ -834,7 +831,6 @@
       "action": {
         "kind": "play",
         "card": "cz3w3cktw",
-        "area": "p1",
         "x": 70,
         "y": 140,
         "seat": 1
@@ -888,7 +884,6 @@
       "action": {
         "kind": "move",
         "card": "cwwnhqp2r",
-        "area": "p0",
         "x": 380,
         "y": 100
       },
@@ -910,7 +905,6 @@
       "action": {
         "kind": "move",
         "card": "cwwnhqp2r",
-        "area": "p0",
         "x": 870,
         "y": 130
       },
@@ -945,7 +939,6 @@
       "action": {
         "kind": "move",
         "card": "cu3cjcnfw",
-        "area": "p1",
         "x": 250,
         "y": 120,
         "seat": 1
@@ -1005,7 +998,6 @@
       "action": {
         "kind": "play",
         "card": "csczhef9v",
-        "area": "p1",
         "x": 310,
         "y": 330,
         "seat": 1
@@ -1107,7 +1099,6 @@
       "action": {
         "kind": "move",
         "card": "cn5ph3gpe",
-        "area": "p1",
         "x": 280,
         "y": 190,
         "seat": 1
@@ -1239,7 +1230,6 @@
       "action": {
         "kind": "move",
         "card": "csdbghyga",
-        "area": "p1",
         "x": 240,
         "y": 340,
         "seat": 1
@@ -1307,7 +1297,6 @@
       "action": {
         "kind": "move",
         "card": "cjg69eskk",
-        "area": "p1",
         "x": 500,
         "y": 90,
         "seat": 1
@@ -1467,7 +1456,6 @@
       "action": {
         "kind": "play",
         "card": "c3cm8pujd",
-        "area": "p1",
         "x": 160,
         "y": 230,
         "seat": 1
@@ -1737,7 +1725,6 @@
       "action": {
         "kind": "move",
         "card": "ckesc9e6h",
-        "area": "p1",
         "x": 610,
         "y": 340,
         "seat": 1

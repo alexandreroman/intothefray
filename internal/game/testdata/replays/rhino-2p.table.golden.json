@@ -51,7 +51,6 @@
       "owner": 1,
       "home": "deck:p1",
       "zone": "pile",
-      "area": "p1",
       "x": 160,
       "y": 230,
       "z": 17,
@@ -191,7 +190,6 @@
       "owner": 1,
       "home": "deck:p1",
       "zone": "hand",
-      "area": "p1",
       "x": 0,
       "y": 0,
       "z": 0
@@ -219,7 +217,6 @@
       "owner": 1,
       "home": "deck:p1",
       "zone": "hand",
-      "area": "p1",
       "x": 0,
       "y": 0,
       "z": 0
@@ -331,7 +328,6 @@
       "owner": 1,
       "home": "deck:p1",
       "zone": "hand",
-      "area": "p1",
       "x": 0,
       "y": 0,
       "z": 0
@@ -359,7 +355,6 @@
       "owner": -1,
       "home": "enc",
       "zone": "pile",
-      "area": "p0",
       "x": 760,
       "y": 340,
       "z": 8,
@@ -431,7 +426,6 @@
       "owner": -1,
       "home": "enc",
       "zone": "table",
-      "area": "p1",
       "x": 100,
       "y": 190,
       "z": 18
@@ -473,7 +467,6 @@
       "owner": 1,
       "home": "deck:p1",
       "zone": "hand",
-      "area": "p1",
       "x": 0,
       "y": 0,
       "z": 0
@@ -627,7 +620,6 @@
       "owner": -1,
       "home": "enc",
       "zone": "table",
-      "area": "p1",
       "x": 500,
       "y": 90,
       "z": 16
@@ -669,7 +661,6 @@
       "owner": -1,
       "home": "enc",
       "zone": "table",
-      "area": "p1",
       "x": 610,
       "y": 340,
       "z": 19
@@ -683,7 +674,6 @@
       "owner": 1,
       "home": "deck:p1",
       "zone": "hand",
-      "area": "p1",
       "x": 0,
       "y": 0,
       "z": 0
@@ -725,7 +715,6 @@
       "owner": -1,
       "home": "enc",
       "zone": "table",
-      "area": "p1",
       "x": 280,
       "y": 190,
       "z": 14,
@@ -871,7 +860,6 @@
       "owner": 1,
       "home": "deck:p1",
       "zone": "table",
-      "area": "p1",
       "x": 310,
       "y": 330,
       "z": 12,
@@ -887,7 +875,6 @@
       "owner": -1,
       "home": "enc",
       "zone": "table",
-      "area": "p1",
       "x": 240,
       "y": 340,
       "z": 15,
@@ -975,7 +962,6 @@
       "owner": -1,
       "home": "enc",
       "zone": "pile",
-      "area": "p1",
       "x": 250,
       "y": 120,
       "z": 11,
@@ -1023,7 +1009,6 @@
       "owner": 1,
       "home": "deck:p1",
       "zone": "hand",
-      "area": "p1",
       "x": 0,
       "y": 0,
       "z": 0
@@ -1065,7 +1050,6 @@
       "owner": 0,
       "home": "deck:p0",
       "zone": "table",
-      "area": "p0",
       "x": 870,
       "y": 130,
       "z": 10,
@@ -1180,7 +1164,6 @@
       "owner": 1,
       "home": "deck:p1",
       "zone": "table",
-      "area": "p1",
       "x": 500,
       "y": 110,
       "z": 15,
@@ -1206,9 +1189,8 @@
       "id": "aside:p0",
       "kind": "aside",
       "owner": 0,
-      "area": "p0",
-      "x": 240,
-      "y": 20,
+      "x": 0,
+      "y": 360,
       "cards": [
         "c9vqye7uf",
         "c7sqzvnsj",
@@ -1221,9 +1203,8 @@
       "id": "aside:p1",
       "kind": "aside",
       "owner": 1,
-      "area": "p1",
-      "x": 240,
-      "y": 20,
+      "x": 0,
+      "y": 690,
       "cards": [
         "cx3a7hfr7",
         "cszysvnkv",
@@ -1236,9 +1217,8 @@
       "id": "deck:p0",
       "kind": "deck",
       "owner": 0,
-      "area": "p0",
       "x": 0,
-      "y": 0,
+      "y": 360,
       "cards": [
         "c4jga2epk",
         "cwpdk4822",
@@ -1264,9 +1244,8 @@
       "id": "deck:p1",
       "kind": "deck",
       "owner": 1,
-      "area": "p1",
       "x": 0,
-      "y": 0,
+      "y": 690,
       "cards": [
         "cfexperac",
         "cykx5z7ju",
@@ -1282,18 +1261,16 @@
       "id": "disc:p0",
       "kind": "discard",
       "owner": 0,
-      "area": "p0",
-      "x": 120,
-      "y": 0,
+      "x": 160,
+      "y": 360,
       "cards": []
     },
     "disc:p1": {
       "id": "disc:p1",
       "kind": "discard",
       "owner": 1,
-      "area": "p1",
-      "x": 120,
-      "y": 0,
+      "x": 160,
+      "y": 690,
       "cards": [
         "cnppnrucq",
         "crjsaksm9"
@@ -1303,9 +1280,8 @@
       "id": "enc",
       "kind": "encounter",
       "owner": -1,
-      "area": "villain",
       "x": 0,
-      "y": 0,
+      "y": 30,
       "cards": [
         "casxsapsr",
         "c6e952ntx",
@@ -1340,9 +1316,8 @@
       "id": "encd",
       "kind": "encounterDiscard",
       "owner": -1,
-      "area": "villain",
-      "x": 120,
-      "y": 0,
+      "x": 160,
+      "y": 30,
       "cards": [
         "cakvu9hy6"
       ]
@@ -1351,9 +1326,8 @@
       "id": "saside",
       "kind": "aside",
       "owner": -1,
-      "area": "villain",
-      "x": 360,
-      "y": 20,
+      "x": 0,
+      "y": 30,
       "cards": [
         "c3cm8pujd"
       ]
@@ -1362,9 +1336,8 @@
       "id": "vic",
       "kind": "victory",
       "owner": -1,
-      "area": "villain",
-      "x": 240,
-      "y": 20,
+      "x": 0,
+      "y": 30,
       "cards": [
         "cu3cjcnfw"
       ]
@@ -1402,9 +1375,8 @@
     }
   ],
   "firstPlayer": {
-    "area": "p0",
-    "x": 660,
-    "y": 0
+    "x": 520,
+    "y": 360
   },
   "arrows": [
     {

@@ -275,14 +275,14 @@ func (n narrator) stageEvent(a Action) logLine {
 	}
 }
 
-// areaName names a side of the table.
+// areaName names the player seated at area.
 func (n narrator) areaName(area Area) string {
 	for seat := range n.game.Players {
 		if PlayerArea(seat) == area {
 			return n.game.playerName(seat)
 		}
 	}
-	return "the villain"
+	return n.game.playerName(NoOwner)
 }
 
 // name names card id if everyone could see it before or after the action,

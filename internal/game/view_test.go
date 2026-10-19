@@ -416,7 +416,7 @@ func TestLogCardsFilteredToTheView(t *testing.T) {
 	f := newViewFixture(t)
 	f.mustDo(t, hostToken, Action{Kind: ActDraw, N: 1}, at(1))
 	id := f.g.Table.Hands["p0"][0]
-	f.mustDo(t, hostToken, Action{Kind: ActPlay, Card: id, Area: "p0", X: 400, Y: 200}, at(2))
+	f.mustDo(t, hostToken, Action{Kind: ActPlay, Card: id, X: 400, Y: 200}, at(2))
 	// Back into the hand: the log line still names the card.
 	f.mustDo(t, hostToken, Action{Kind: ActToHand, Card: id}, at(3))
 

@@ -148,18 +148,17 @@ type onlineEvent struct {
 	Kind string `json:"kind"`
 }
 
-// presencePoint is a spot of the table: where a cursor is, or what a ping
-// points at.
+// presencePoint is a spot of the table, in table units: where a cursor is,
+// or what a ping points at.
 type presencePoint struct {
-	Area string `json:"area"`
-	X    int    `json:"x"`
-	Y    int    `json:"y"`
+	X int `json:"x"`
+	Y int `json:"y"`
 }
 
-// presenceDrag is a drag in progress: the cards dragged and where they are.
+// presenceDrag is a drag in progress: the cards dragged and where they are,
+// in table units.
 type presenceDrag struct {
 	Cards []string `json:"cards"`
-	Area  string   `json:"area"`
 	X     int      `json:"x"`
 	Y     int      `json:"y"`
 }
