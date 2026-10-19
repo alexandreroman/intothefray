@@ -27,11 +27,9 @@
 
   type TokenKind = 'dmg' | 'thr' | 'gen';
 
-  // The tokens kept to the bottom right corner, piled up from it: on a scheme, all but the
-  // threat (top right); on any other card, the damage, the others in the middle.
-  const SCHEME_CORNER_TOKENS: readonly TokenKind[] = ['dmg', 'gen'];
-  const CARD_CORNER_TOKENS: readonly TokenKind[] = ['dmg'];
-  const CARD_MIDDLE_TOKENS: readonly TokenKind[] = ['thr', 'gen'];
+  // The tokens piled up from the bottom right corner, damage first, on every card. The threat
+  // goes to the top right corner of a scheme, to the middle of any other card.
+  const CORNER_TOKENS: readonly TokenKind[] = ['dmg', 'gen'];
   const SCHEME_TYPES: readonly string[] = ['main_scheme', 'side_scheme', 'player_side_scheme'];
   const STATUSES = [
     ['stunned', 'Stunned'],
@@ -45,10 +43,8 @@
   // A hidden card has no face: it is not known to be a scheme.
   const scheme = $derived(!hidden && SCHEME_TYPES.includes(face?.type ?? ''));
   const hasToken = (k: TokenKind) => (card.tokens?.[k] ?? 0) > 0;
-  const middleTokens = $derived(scheme ? [] : CARD_MIDDLE_TOKENS.filter(hasToken));
-  const cornerTokens = $derived(
-    (scheme ? SCHEME_CORNER_TOKENS : CARD_CORNER_TOKENS).filter(hasToken),
-  );
+  const cornerTokens = $derived(CORNER_TOKENS.filter(hasToken));
+  const middleThreat = $derived(!scheme && hasToken('thr'));
   const cornerThreat = $derived(scheme && hasToken('thr'));
   const statuses = $derived(STATUSES.filter(([k]) => (card.status?.[k] ?? 0) > 0));
   const element = $derived({ kind: 'card', id: card.id } as const);
@@ -115,11 +111,9 @@
     />
   {/if}
 
-  {#if middleTokens.length > 0}
+  {#if middleThreat}
     <div class="tokens middle">
-      {#each middleTokens as k (k)}
-        {@render token(k)}
-      {/each}
+      {@render token('thr')}
     </div>
   {/if}
 
@@ -196,11 +190,11 @@
   }
 
   /*
-    Tokens sit inside the card. On a scheme they keep to its right corners, clear of the printed
-    threat values: threat at the top, damage and counters piled up from the bottom, the first
-    one in the corner. On any other card, damage sits in the bottom right corner, the others
-    together in the middle. The status tabs end above the middle, or lie along the top of a
-    landscape card: clear of both.
+    Tokens sit inside the card. Damage and counters pile up from the bottom right corner, damage
+    in the corner. The threat sits in the top right corner of a scheme, clear of its printed
+    threat values, and in the middle of any other card. The status tabs end above the middle,
+    or lie along the top of a landscape card: clear of both, and of the corner pile, which is
+    at most two tokens high.
   */
   .tokens {
     position: absolute;
