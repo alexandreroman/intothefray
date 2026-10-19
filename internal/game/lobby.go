@@ -165,6 +165,8 @@ func (g *Game) SetDeck(token string, deck DeckChoice, cat *pack.Catalog) error {
 	}
 
 	deck.Cards = slices.Clone(deck.Cards)
+	// The image comes from the catalog, whatever the client sent.
+	deck.HeroImage = heroImage(cat, deck.Hero)
 	player.Deck = &deck
 	return nil
 }
@@ -243,6 +245,27 @@ func requireSetKind(cat *pack.Catalog, code, kind string) error {
 func knownCard(cat *pack.Catalog, code string) bool {
 	_, _, err := cat.Card(code)
 	return err == nil
+}
+
+// heroImage returns the first image of the hero face of the identity card
+// with the given code (any alias), or of its first face when no face is a
+// hero face. It is empty for an unknown code or a face without images.
+func heroImage(cat *pack.Catalog, identity string) string {
+	card, _, err := cat.Card(identity)
+	if err != nil || len(card.Faces) == 0 {
+		return ""
+	}
+	face := card.Faces[0]
+	for _, f := range card.Faces {
+		if f.Type == faceTypeHero {
+			face = f
+			break
+		}
+	}
+	if len(face.Images) == 0 {
+		return ""
+	}
+	return face.Images[0]
 }
 
 // cleanName trims a display name and cuts it to maxNameRunes runes.

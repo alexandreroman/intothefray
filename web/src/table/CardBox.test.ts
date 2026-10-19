@@ -2,7 +2,7 @@ import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import Table from './Table.svelte';
 import { pileLabel, tileActions, type TileAction } from './boxes';
 import { interaction } from './interaction.svelte';
-import { cardByCode, knownCard, loadAllCards, type CardInfo } from '../lib/catalog';
+import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
 import type {
   CardView as TableCard,
   PackFace,
@@ -14,9 +14,8 @@ import type {
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
-  cardByCode: vi.fn(),
   knownCard: vi.fn(),
-  loadAllCards: vi.fn(),
+  loadGameCards: vi.fn(),
 }));
 
 // The catalog of the fixture: code -> faces.
@@ -46,7 +45,7 @@ function infoOf(code: string): CardInfo | null {
     images: [`${code}.png`],
     ...face,
   }));
-  return { card: { code, faces: full, back: 'player', quantity: 1 }, face: 0, pack: 'core' };
+  return { card: { code, faces: full, back: 'player', quantity: 1 }, face: 0 };
 }
 
 function card(id: string, extra: Partial<TableCard> = {}): TableCard {
@@ -215,17 +214,15 @@ function layOutTiles(): void {
 }
 
 beforeEach(() => {
-  vi.mocked(loadAllCards).mockResolvedValue();
+  vi.mocked(loadGameCards).mockResolvedValue();
   vi.mocked(knownCard).mockImplementation(infoOf);
-  vi.mocked(cardByCode).mockImplementation((code) => Promise.resolve(infoOf(code)));
 });
 
 afterEach(() => {
   vi.useRealTimers();
   vi.restoreAllMocks();
-  vi.mocked(loadAllCards).mockReset();
+  vi.mocked(loadGameCards).mockReset();
   vi.mocked(knownCard).mockReset();
-  vi.mocked(cardByCode).mockReset();
   interaction.reset();
 });
 

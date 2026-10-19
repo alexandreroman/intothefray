@@ -31,7 +31,7 @@ function infoOf(code: string): CardInfo | null {
     images: [],
     ...face,
   }));
-  return { card: { code, faces: full, back: 'player', quantity: 1 }, face: 0, pack: 'core' };
+  return { card: { code, faces: full, back: 'player', quantity: 1 }, face: 0 };
 }
 
 function card(id: string, extra: Partial<CardView> = {}): CardView {

@@ -52,6 +52,7 @@ type PlayerView struct {
 	Area      Area   `json:"area,omitempty"`
 	Hero      string `json:"hero,omitempty"`
 	HeroName  string `json:"heroName,omitempty"`
+	HeroImage string `json:"heroImage,omitempty"`
 	DeckName  string `json:"deckName,omitempty"`
 	Ready     bool   `json:"ready"` // has a deck
 	HandCount int    `json:"handCount"`
@@ -156,6 +157,7 @@ func (g *Game) playerView(p *Player, seat int) PlayerView {
 	if p.Deck != nil {
 		pv.Hero = p.Deck.Hero
 		pv.HeroName = p.Deck.HeroName
+		pv.HeroImage = p.Deck.HeroImage
 		pv.DeckName = p.Deck.Name
 	}
 	if g.Table != nil {

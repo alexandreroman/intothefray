@@ -47,11 +47,12 @@ type DeckEntry struct {
 
 // DeckChoice is the deck a player brings to the table.
 type DeckChoice struct {
-	URL      string      `json:"url"`
-	Name     string      `json:"name"`
-	Hero     string      `json:"hero"` // identity code, any alias
-	HeroName string      `json:"heroName"`
-	Cards    []DeckEntry `json:"cards"`
+	URL       string      `json:"url"`
+	Name      string      `json:"name"`
+	Hero      string      `json:"hero"` // identity code, any alias
+	HeroName  string      `json:"heroName"`
+	HeroImage string      `json:"heroImage,omitempty"` // hero face image, set by SetDeck from the catalog
+	Cards     []DeckEntry `json:"cards"`
 }
 
 // Player is a seated participant.

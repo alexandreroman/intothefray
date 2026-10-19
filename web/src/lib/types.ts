@@ -33,59 +33,6 @@ export interface PackCard {
   aliases?: string[];
 }
 
-export interface PackSet {
-  code: string;
-  name: string;
-  kind: string;
-  cards: string[];
-  inPlay?: Partial<Record<Difficulty, FaceRef[]>>;
-  unlisted?: boolean;
-}
-
-export interface PackHero {
-  identity: string;
-  set: string;
-  obligation?: string;
-  nemesis?: string;
-}
-
-export interface FaceRef {
-  card: string;
-  face: number;
-}
-
-export interface PackPile {
-  key: string;
-  label: string;
-  cards: string[];
-}
-
-export interface PackStart {
-  top: Record<string, FaceRef>;
-  inPlay?: FaceRef[];
-}
-
-export interface PackScenario {
-  id: string;
-  name: string;
-  pack: string;
-  villainSet: string;
-  piles: PackPile[];
-  start: Partial<Record<Difficulty, PackStart>>;
-  setAside?: string[];
-  recommended?: string[];
-}
-
-export interface PackFile {
-  code: string;
-  name: string;
-  position: number;
-  cards: PackCard[];
-  sets: PackSet[];
-  heroes?: PackHero[];
-  scenarios?: PackScenario[];
-}
-
 export interface PackRef {
   code: string;
   name: string;
@@ -115,6 +62,12 @@ export interface Index {
   packs: PackRef[];
   scenarios: ScenarioRef[];
   sets: SetRef[];
+}
+
+/** The cards of a started game, from GET /api/games/{id}/cards: one entry per distinct card. */
+export interface CardPool {
+  version: number;
+  cards: PackCard[];
 }
 
 // ---- Game view (internal/game) ----
@@ -165,6 +118,7 @@ export interface PlayerView {
   area?: Area;
   hero?: string;
   heroName?: string;
+  heroImage?: string; // the hero face image of the identity
   deckName?: string;
   ready: boolean;
   handCount: number;

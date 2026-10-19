@@ -1,13 +1,13 @@
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import Table from './Table.svelte';
 import { fanPositions, HAND_CARD_NARROW } from './layout';
-import { knownCard, loadAllCards } from '../lib/catalog';
+import { knownCard, loadGameCards } from '../lib/catalog';
 import type { CardView as TableCard, PresenceState, View } from '../lib/types';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
   knownCard: vi.fn(),
-  loadAllCards: vi.fn(),
+  loadGameCards: vi.fn(),
 }));
 
 /** A media query list whose match can be changed, as a resized window would. */
@@ -97,7 +97,7 @@ function sideToggle(): HTMLElement {
 
 beforeEach(() => {
   localStorage.clear();
-  vi.mocked(loadAllCards).mockResolvedValue();
+  vi.mocked(loadGameCards).mockResolvedValue();
   vi.mocked(knownCard).mockReturnValue(null);
 });
 

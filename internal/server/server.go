@@ -90,12 +90,13 @@ func New(d Deps) *Server {
 // the origin literally.
 var patternEscaper = strings.NewReplacer(`\`, `\\`, "*", `\*`, "?", `\?`, "[", `\[`, "]", `\]`)
 
-// Handler returns the routes: GET /healthz, POST /api/games and
-// GET /ws/games/{id}.
+// Handler returns the routes: GET /healthz, POST /api/games,
+// GET /api/games/{id}/cards and GET /ws/games/{id}.
 func (s *Server) Handler() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", handleHealthz)
 	mux.HandleFunc("POST /api/games", s.handleCreateGame)
+	mux.HandleFunc("GET /api/games/{id}/cards", s.handleGameCards)
 	mux.HandleFunc("GET /ws/games/{id}", s.handleGameSocket)
 	return s.withCORS(mux)
 }

@@ -28,6 +28,7 @@ const (
 	pileKeyVillain = "villain"
 	pileKeyScheme  = "scheme"
 
+	faceTypeHero     = "hero"
 	faceTypeAlterEgo = "alter_ego"
 )
 

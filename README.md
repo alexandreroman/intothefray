@@ -191,6 +191,10 @@ The backend must accept the Pages origin: add it to
 `ALLOWED_ORIGINS`, written `scheme://host` with no path, for example
 `https://alexandreroman.github.io`.
 
+The backend sends its responses uncompressed: put it behind a proxy
+or CDN that compresses them (Cloudflare or equivalent), as Caddy does
+locally.
+
 The workflow builds the app under the site's base path, as reported
 by `actions/configure-pages`: `/<repo>/` for a project site, `/` at
 the domain root (custom domain or user/organisation site). Pages has
@@ -211,6 +215,13 @@ graph TD
     S -->|decks| M[marvelcdb.com API]
     B -->|card images| I[marvelcdb / Cerebro images]
 ```
+
+The server embeds every card pack. The frontend publishes only the
+pack index (`packs/<lang>/index.json`), which the lobby reads to
+pick a scenario. Once the table is set up, the client downloads the
+game's card pool from `GET /api/games/{id}/cards`: the definitions
+of the cards in that game only, cached by the browser (`ETag`,
+immutable).
 
 | Path                | Description                                    |
 | ------------------- | ---------------------------------------------- |

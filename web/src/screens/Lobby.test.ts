@@ -1,14 +1,12 @@
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import Lobby from './Lobby.svelte';
-import { cardByCode, loadIndex } from '../lib/catalog';
+import { loadIndex } from '../lib/catalog';
 import { GameSession } from '../lib/session.svelte';
-import type { CardInfo } from '../lib/catalog';
 import type { Index, LobbyConfig, PlayerView, UnsupportedCard, View, YouView } from '../lib/types';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
   loadIndex: vi.fn(),
-  cardByCode: vi.fn(),
 }));
 
 const index: Index = {
@@ -163,12 +161,10 @@ function renderLobby(fields: {
 
 beforeEach(() => {
   vi.mocked(loadIndex).mockResolvedValue(index);
-  vi.mocked(cardByCode).mockResolvedValue(null);
 });
 
 afterEach(() => {
   vi.mocked(loadIndex).mockReset();
-  vi.mocked(cardByCode).mockReset();
 });
 
 describe('Lobby', () => {
@@ -273,27 +269,26 @@ describe('Lobby', () => {
     expect(session.lobby).toHaveBeenCalledWith('takeSeat');
   });
 
-  it("shows the image of the hero face of a player's identity", async () => {
-    const identity = {
-      card: {
-        code: '01001',
-        back: 'player',
-        quantity: 1,
-        faces: [
-          { name: 'Peter Parker', type: 'alter_ego', size: 'std', images: ['alter-ego.jpg'] },
-          { name: 'Spider-Man', type: 'hero', size: 'std', images: ['hero.jpg'] },
-        ],
-      },
-      face: 0,
-      pack: 'core',
-    } satisfies CardInfo;
-    vi.mocked(cardByCode).mockResolvedValue(identity);
-    renderLobby({ players: [alex, jo] });
+  it("shows the hero image of a player's identity, from the view", async () => {
+    renderLobby({ players: [alex, { ...jo, heroImage: 'hero.jpg' }] });
 
     const image = await screen.findByRole('img', { name: 'Spider-Man' });
     expect(image.getAttribute('src')).toBe('hero.jpg');
-    expect(cardByCode).toHaveBeenCalledWith('01001a');
     expect(screen.getByText('Spider-Man — Friendly neighbourhood')).toBeTruthy();
+  });
+
+  it('shows a placeholder for a player without a hero image', () => {
+    renderLobby({ players: [alex, jo] });
+    expect(screen.queryByRole('img', { name: 'Spider-Man' })).toBeNull();
+  });
+
+  it('shows the hero image of the loaded deck, large', () => {
+    const asJo: YouView = { role: 'player', name: 'Jo', color: 2, host: false };
+    renderLobby({ you: asJo, players: [alex, { ...jo, heroImage: 'hero.jpg' }] });
+
+    const images = screen.getAllByRole('img', { name: 'Spider-Man' });
+    expect(images.map((image) => image.getAttribute('src'))).toEqual(['hero.jpg', 'hero.jpg']);
+    expect(images.filter((image) => image.classList.contains('large'))).toHaveLength(1);
   });
 
   it('loads a deck from its link', async () => {

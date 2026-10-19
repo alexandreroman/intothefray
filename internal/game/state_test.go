@@ -3,6 +3,7 @@ package game
 import (
 	"encoding/json"
 	"reflect"
+	"slices"
 	"testing"
 
 	"github.com/alexandreroman/intothefray/internal/pack"
@@ -113,6 +114,48 @@ func TestPlayerArea(t *testing.T) {
 	for seat, want := range []Area{"p0", "p1", "p2", "p3"} {
 		if got := PlayerArea(seat); got != want {
 			t.Errorf("PlayerArea(%d) = %q, want %q", seat, got, want)
+		}
+	}
+}
+
+func TestCardCodes(t *testing.T) {
+	withDuplicates := &Table{Cards: map[string]*Card{
+		"c1": {ID: "c1", Code: "01011"},
+		"c2": {ID: "c2", Code: "01001"},
+		"c3": {ID: "c3", Code: "01011"},
+		"c4": {ID: "c4", Code: "01100"},
+	}}
+
+	tests := []struct {
+		name  string
+		table *Table
+		want  []string
+	}{
+		{"empty", &Table{}, []string{}},
+		{"sorted and deduplicated", withDuplicates, []string{"01001", "01011", "01100"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.table.CardCodes(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("CardCodes() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestCardCodesOfStartedGame(t *testing.T) {
+	g := startedGame(t, rhinoConfig())
+
+	codes := g.Table.CardCodes()
+	if !slices.IsSorted(codes) || len(slices.Compact(slices.Clone(codes))) != len(codes) {
+		t.Errorf("codes are not sorted and distinct: %v", codes)
+	}
+	if want := len(codeCounts(g.Table)); len(codes) != want {
+		t.Errorf("got %d codes, want %d", len(codes), want)
+	}
+	for _, c := range g.Table.Cards {
+		if !slices.Contains(codes, c.Code) {
+			t.Errorf("code %s of card %s is missing", c.Code, c.ID)
 		}
 	}
 }

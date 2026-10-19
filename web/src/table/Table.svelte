@@ -8,7 +8,7 @@
   import { MediaQuery } from 'svelte/reactivity';
   import Tooltip from '../components/Tooltip.svelte';
   import TopBar from '../components/TopBar.svelte';
-  import { knownCard, loadAllCards } from '../lib/catalog';
+  import { knownCard, loadGameCards } from '../lib/catalog';
   import { getPref, setPref } from '../lib/prefs';
   import type { GameSession } from '../lib/session.svelte';
   import type {
@@ -62,9 +62,10 @@
     view: View;
   } = $props();
 
-  // P5a-R2: the catalog is loaded once, then card sizes are looked up synchronously.
+  // P5a-R2: the cards of the game are loaded once, then card sizes are looked up synchronously.
+  // The table belongs to one game: its id never changes while it is shown.
   let catalog = $state<'loading' | 'ready' | 'failed'>('loading');
-  loadAllCards().then(
+  loadGameCards(untrack(() => view.id)).then(
     () => (catalog = 'ready'),
     () => (catalog = 'failed'),
   );

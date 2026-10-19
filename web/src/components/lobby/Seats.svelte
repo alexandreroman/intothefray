@@ -80,7 +80,7 @@
     <div class="seats">
       {#each view.players as player (player.color)}
         <div class="seat" style:--pc={colorVar(player.color)}>
-          <HeroThumb code={player.hero} name={player.heroName} />
+          <HeroThumb image={player.heroImage} name={player.heroName} />
           <div class="who">
             <div class="nm">
               <span class="pn">{player.name}</span>

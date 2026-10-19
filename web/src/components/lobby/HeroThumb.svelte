@@ -1,36 +1,6 @@
 <script lang="ts">
-  import { cardByCode, imageUrls } from '../../lib/catalog';
-
-  let { code, name, large = false }: { code?: string; name?: string; large?: boolean } = $props();
-
-  let image = $state<string | null>(null);
-
-  /** The first image of the identity's hero face (face 0 when it has none). */
-  async function heroImage(identity: string): Promise<string | null> {
-    const info = await cardByCode(identity);
-    const faces = info?.card.faces ?? [];
-    const face = faces.find((f) => f.type === 'hero') ?? faces[0];
-    return face ? (imageUrls(face)[0] ?? null) : null;
-  }
-
-  $effect(() => {
-    image = null;
-    if (!code) {
-      return;
-    }
-    // A late answer for a previous code must not overwrite the current one.
-    let current = true;
-    heroImage(code)
-      .then((url) => {
-        if (current) {
-          image = url;
-        }
-      })
-      .catch(() => {}); // The "?" stays: the packs could not be loaded.
-    return () => {
-      current = false;
-    };
-  });
+  /** `image` is the hero face image of the player's identity, from the lobby view. */
+  let { image, name, large = false }: { image?: string; name?: string; large?: boolean } = $props();
 </script>
 
 {#if image}
