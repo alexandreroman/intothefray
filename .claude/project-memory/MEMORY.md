@@ -28,3 +28,4 @@
 - [Card data sources](references/reference_card_sources.md) — marvelcdb and Cerebro APIs and image URLs
 - [Automated setup scope](references/project_setup_scope.md) — setup places cards; players draw their own opening hand
 - [Replayable board state](references/project_replayable_state.md) — seed at start, full action history, snapshots every 10 actions
+- [Moving card stacks](references/project_stack_moves.md) — top card moves the whole stack; a tucked card detaches
