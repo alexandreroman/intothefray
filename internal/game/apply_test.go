@@ -68,6 +68,39 @@ func TestMoveCarriesAttachments(t *testing.T) {
 	}
 }
 
+func TestMoveCarriesTheWholeStack(t *testing.T) {
+	table := newTestTable()
+	// c7 carries two attachments where they were dropped, c1 (with c2 still
+	// tucked under it) and c3, and c4, tucked at the default offset.
+	mustApply(t, table, Action{Kind: ActAttach, Card: "c1", Target: "c7", X: 640, Y: 100, Placed: true})
+	mustApply(t, table, Action{Kind: ActPlay, Card: "c3", Target: "c7", X: 700, Y: 140, Placed: true})
+	mustApply(t, table, Action{Kind: ActPlay, Card: "c4", Target: "c7"})
+	stack := []string{"c1", "c2", "c3", "c4"}
+	type offset struct{ dx, dy int }
+	offsets := map[string]offset{}
+	host := table.Cards["c7"]
+	for _, id := range stack {
+		c := table.Cards[id]
+		offsets[id] = offset{c.X - host.X, c.Y - host.Y}
+	}
+
+	mustApply(t, table, Action{Kind: ActMove, Card: "c7", X: 1000, Y: 500})
+
+	host = table.Cards["c7"]
+	if host.X != 1000 || host.Y != 500 {
+		t.Fatalf("c7 at (%d,%d), want (1000,500)", host.X, host.Y)
+	}
+	for _, id := range stack {
+		c := table.Cards[id]
+		if got := (offset{c.X - host.X, c.Y - host.Y}); got != offsets[id] {
+			t.Errorf("%s lies at offset %v from c7, want %v", id, got, offsets[id])
+		}
+		if c.Z >= host.Z {
+			t.Errorf("%s Z = %d, want below c7 (%d)", id, c.Z, host.Z)
+		}
+	}
+}
+
 func TestMoveClearsOnPile(t *testing.T) {
 	table := newTestTable()
 	table.Cards["c7"].OnPile = PileEncounter

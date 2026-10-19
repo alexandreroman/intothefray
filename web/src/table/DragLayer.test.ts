@@ -290,6 +290,52 @@ describe('dragging a table card', () => {
     });
   });
 
+  it('carries every card of the stack, each at its offset, until the server answers', async () => {
+    // Two attachments where they were dropped, one tucked at the default offset.
+    const stack = [
+      ...CARDS.filter((c) => c.id !== 'mine'),
+      card('mine', { y: 300, z: 10 }),
+      card('a1', { x: 40, y: 380, z: 9, parent: 'mine' }),
+      card('a2', { x: 100, y: 420, z: 9, parent: 'mine' }),
+      card('t1', { x: 0, y: 320, z: 9, parent: 'mine' }),
+    ];
+    const { session } = await renderTable(makeView({ cards: stack }));
+    const ids = ['mine', 'a1', 'a2', 't1'];
+    const corners = () =>
+      ghosts().map((g) => [g.dataset.id, parseFloat(g.style.left), parseFloat(g.style.top)]);
+    const expected = [
+      ['mine', 224, 392],
+      ['a1', 264, 472],
+      ['a2', 324, 512],
+      ['t1', 224, 412],
+    ];
+
+    await press(placed('mine'), 50, 400);
+    await moveTo(254, 452);
+    expect(corners()).toEqual(expected);
+    for (const id of ids) {
+      expect(placed(id).classList, id).toContain('lifted');
+    }
+
+    await release(254, 452);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({
+      kind: 'move',
+      card: 'mine',
+      x: 200,
+      y: 350,
+    });
+    // Waiting for the server: the whole stack stays where it landed, on the grid.
+    expect(corners()).toEqual([
+      ['mine', 220, 390],
+      ['a1', 260, 470],
+      ['a2', 320, 510],
+      ['t1', 220, 410],
+    ]);
+    for (const id of ids) {
+      expect(placed(id).classList, id).toContain('lifted');
+    }
+  });
+
   it('counts the move in table units at another zoom', async () => {
     localStorage.setItem('itf-zoom', '2');
     const { session } = await renderTable();
