@@ -400,9 +400,6 @@
 
   function runLocal(local: LocalAction, element: TableElement): void {
     switch (local) {
-      case 'arrow':
-        interaction.startArrow(element.id);
-        return;
       case 'browseBox':
         localBox = { kind: 'browse', pile: element.id };
         return;

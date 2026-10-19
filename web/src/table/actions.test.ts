@@ -159,21 +159,12 @@ describe('actionsFor', () => {
   it('card in play groups and order', () => {
     const items = itemsFor({ kind: 'card', id: 'mine' });
 
-    expect(groups(items)).toEqual([
-      ['exhaust'],
-      ['arrow', 'token', 'status'],
-      ['discard', 'moveTo'],
-    ]);
+    expect(groups(items)).toEqual([['exhaust'], ['token', 'status'], ['discard', 'moveTo']]);
     const exhaust = item(items, 'exhaust');
     expect(exhaust).toMatchObject({ label: 'Exhaust', icon: 'exhaust', key: 'E', tip: 'Exhaust' });
     expect(actionOf(exhaust)).toEqual({ kind: 'exhaust', card: 'mine' });
-    expect(item(items, 'arrow')).toMatchObject({
-      label: 'Arrow',
-      icon: 'arrow',
-      key: 'A',
-      tip: 'Arrow',
-    });
-    expect(item(items, 'arrow').run?.()).toEqual({ local: 'arrow' });
+    // The arrow starts with its key (A) or a Shift + drag: the bar has no button for it.
+    expect(items.map((i) => i.id)).not.toContain('arrow');
     const discard = item(items, 'discard');
     expect(discard).toMatchObject({ label: 'Discard', icon: 'discard', key: 'X', tip: 'Discard' });
     expect(actionOf(discard)).toEqual({ kind: 'discard', card: 'mine' });
@@ -278,7 +269,7 @@ describe('actionsFor', () => {
     expect(groups(items)).toEqual([
       ['exhaust'],
       ['flip'],
-      ['arrow', 'token', 'status'],
+      ['token', 'status'],
       ['discard', 'moveTo'],
     ]);
     const flip = item(items, 'flip');
@@ -293,7 +284,7 @@ describe('actionsFor', () => {
     expect(groups(items)).toEqual([
       ['exhaust'],
       ['stage'],
-      ['arrow', 'token', 'status'],
+      ['token', 'status'],
       ['discard', 'moveTo'],
     ]);
     const stage = item(items, 'stage');
@@ -336,7 +327,7 @@ describe('actionsFor', () => {
     expect(groups(items)).toEqual([
       ['exhaust'],
       ['flip'],
-      ['arrow', 'token', 'status'],
+      ['token', 'status'],
       ['discard', 'moveTo'],
     ]);
     expect(actionOf(item(items, 'flip'))).toEqual({ kind: 'flip', card: 'down' });

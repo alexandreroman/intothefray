@@ -1,6 +1,7 @@
 // The table's keyboard shortcuts (spec 5.10). One keydown listener on the
 // window acts on the element under the pointer, with the items its action bar
-// offers; the hand cards, which have no bar, get their own keys here.
+// offers; the arrow, which has no button, and the hand cards, which have no
+// bar, get their own keys here.
 
 import { modal } from '../components/modal.svelte';
 import type { Action, Area, CardView, PileView, Size, View } from '../lib/types';
@@ -120,6 +121,15 @@ function playerKey(event: KeyboardEvent, table: KeyTable): boolean {
   }
   if (hovered.kind === 'hand') {
     return !event.shiftKey && !event.repeat && handKey(key, hovered.id, table);
+  }
+  // A starts an arrow from a card in play; a click then picks the card it points at.
+  if (key === 'a' && hovered.kind === 'card') {
+    const card = table.view.table?.cards.find((c) => c.id === hovered.id);
+    if (event.shiftKey || event.repeat || card?.zone !== 'table') {
+      return false;
+    }
+    interaction.startArrow(hovered.id);
+    return true;
   }
   if (!Array.isArray(table.items)) {
     return false;
