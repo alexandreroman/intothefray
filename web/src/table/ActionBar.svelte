@@ -420,9 +420,17 @@
     box-shadow: inset 0 0 0 1px var(--sel);
   }
 
+  button.ico.on:hover:not([aria-disabled='true']) {
+    background: color-mix(in srgb, var(--sel) 28%, transparent);
+  }
+
   /* A dropdown whose menu is open stays lit, as under the pointer. */
   .actionbar button[aria-expanded='true'] {
     background: var(--line-strong);
+  }
+
+  .actionbar button[aria-expanded='true']:hover:not([aria-disabled='true']) {
+    background: color-mix(in srgb, var(--line-strong), var(--text) 10%);
   }
 
   .caret {

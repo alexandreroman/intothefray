@@ -12,15 +12,17 @@
   --dot: #161c2b;
 
   /* Hover, the same for every button of a kind (see the button rules below): a lighter
-     surface for the standard button, a light wash for a ghost button or a menu item. */
+     surface for the standard button, a light wash for a ghost button or a menu item, a
+     darker paper for a paper button (already near white, it cannot get lighter). */
   --hover: #243049;
   --hover-wash: rgb(238 241 248 / 8%);
+  --paper-hover: #d5dae6;
 
   /* Fray red is the main action, with ink text on it; the spark is for captions,
      threat and the first player; the signal blue is for selection and focus only. */
   --accent: #ff4438;
   --accent-deep: #c9241b;
-  --accent-hover: #ff5e52;
+  --accent-hover: #ff6c61;
   --spark: #ffce3a;
   --sel: #49c6ff;
   --ok: #57c78a;
@@ -65,9 +67,11 @@ body {
   The buttons, one hover per kind:
   - standard (this rule): rounded, raised ink; a lighter surface and a brighter edge on hover;
   - .btn-ghost: no surface of its own (icons, ×, toolbar and menu items); a light wash on hover;
-  - .btn-paper: a dialog's confirmation; .btn-danger: one that cannot be taken back;
-  - .btn-primary: the one main action of a screen.
-  A disabled button has no hover. A pressed or "on" state set by a component keeps its look.
+  - .btn-paper: a dialog's confirmation; a darker paper and an ink-tinted edge on hover;
+  - .btn-danger: one that cannot be taken back; .btn-primary: the one main action of a
+    screen; both a lighter red on hover.
+  A disabled button has no hover. A pressed or "on" state set by a component keeps its look
+  and gives its own hover.
   A label never wraps.
 */
 button {
@@ -113,8 +117,8 @@ button:hover:not(:disabled, [aria-disabled='true']) {
 }
 
 .btn-paper:hover:not(:disabled, [aria-disabled='true']) {
-  background-color: #ffffff;
-  border-color: #ffffff;
+  background-color: var(--paper-hover);
+  border-color: var(--muted);
 }
 
 .btn-danger {

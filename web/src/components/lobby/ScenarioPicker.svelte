@@ -484,6 +484,10 @@
     color: var(--text);
   }
 
+  .seg button.on:hover:not(:disabled) {
+    background: var(--hover);
+  }
+
   .seg button:disabled {
     opacity: 1;
   }
