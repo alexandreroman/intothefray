@@ -27,8 +27,9 @@ const SIZES: Record<Size, { w: number; h: number }> = {
 const PORTRAIT_CARD = SIZES.std;
 const PILE_BOX = PORTRAIT_CARD;
 
-// Free room past the rightmost and the lowest item of the table, so that a card can always be
-// dropped beyond them. The bottom room also keeps the last row clear of the floating hand.
+// Free room past the rightmost and the lowest item of the table, once they reach the edge of what
+// shows, so that a card can always be dropped beyond them. The bottom room also keeps the last
+// row clear of the floating hand.
 const FREE_ROOM_RIGHT = 200;
 const FREE_ROOM_BOTTOM = 300;
 
@@ -126,9 +127,10 @@ export function footprints(
 }
 
 /**
- * The size of the table's surface, in table units: at least what shows of it
- * (`visible`), and free room past its rightmost and its lowest item, up to
- * where a card lying at the server's bound ends.
+ * The size of the table's surface, in table units, along each axis: what
+ * shows of it (`visible`) while its items fit there, so that it does not
+ * scroll; once they reach past it, free room beyond the rightmost or the
+ * lowest item, up to where a card lying at the server's bound ends.
  */
 export function surfaceSize(
   cards: CardView[],
@@ -141,9 +143,17 @@ export function surfaceSize(
   const right = Math.ceil(Math.max(0, ...boxes.map((box) => box.right)));
   const bottom = Math.ceil(Math.max(0, ...boxes.map((box) => box.bottom)));
   return {
-    w: Math.max(visible.w, Math.min(SURFACE_LIMIT, right + FREE_ROOM_RIGHT)),
-    h: Math.max(visible.h, Math.min(SURFACE_LIMIT, bottom + FREE_ROOM_BOTTOM)),
+    w: axisSize(right, visible.w, FREE_ROOM_RIGHT),
+    h: axisSize(bottom, visible.h, FREE_ROOM_BOTTOM),
   };
+}
+
+/** One axis of the surface: the items' end, the length that shows, and the free room past them. */
+function axisSize(end: number, visible: number, freeRoom: number): number {
+  if (end <= visible) {
+    return visible;
+  }
+  return Math.max(visible, Math.min(SURFACE_LIMIT, end + freeRoom));
 }
 
 /** The frame drawn around an owner's deck and discard pile, in table units. */

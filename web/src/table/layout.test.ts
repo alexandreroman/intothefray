@@ -83,7 +83,8 @@ describe('surfaceSize', () => {
 
   it('ignores the cards that are not on the table', () => {
     const cards = [card({ zone: 'hand', x: 900, y: 900 })];
-    expect(surfaceSize(cards, [], alwaysStd, nothingShows)).toEqual({ w: 200, h: 300 });
+    // Nothing on the table: it fits, with no free room.
+    expect(surfaceSize(cards, [], alwaysStd, nothingShows)).toEqual({ w: 0, h: 0 });
   });
 
   it('never grows past where a card at the server bound of 20000 ends', () => {
@@ -98,7 +99,19 @@ describe('surfaceSize', () => {
   it('fills what shows of the table', () => {
     const cards = [card({ x: 400 })];
     expect(surfaceSize(cards, [], alwaysStd, { w: 1200, h: 900 })).toEqual({ w: 1200, h: 900 });
-    expect(surfaceSize(cards, [], alwaysStd, { w: 300, h: 200 })).toEqual({ w: 740, h: 496 });
+    // Too narrow for the card, tall enough: free room on the right only.
+    expect(surfaceSize(cards, [], alwaysStd, { w: 300, h: 200 })).toEqual({ w: 740, h: 200 });
+  });
+
+  it('adds free room only once the items no longer fit in what shows', () => {
+    // The lowest item ends at 556: in a 744 tall view, the table does not scroll.
+    const cards = [card({ x: 0, y: 360 })];
+    expect(surfaceSize(cards, [], alwaysStd, { w: 1200, h: 744 }).h).toBe(744);
+    // Right at the edge, it still fits.
+    expect(surfaceSize(cards, [], alwaysStd, { w: 1200, h: 556 }).h).toBe(556);
+    // One unit past it, there is room to drop a card under it.
+    expect(surfaceSize(cards, [], alwaysStd, { w: 1200, h: 555 }).h).toBe(856);
+    expect(surfaceSize(cards, [], alwaysStd, { w: 139, h: 744 }).w).toBe(340);
   });
 });
 
