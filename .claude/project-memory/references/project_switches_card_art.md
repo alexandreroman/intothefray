@@ -17,6 +17,10 @@ type: project
   (`ART_LEFT`, `ART_RIGHT`, `ART_TOP`, `ART_BOTTOM` in
   `web/src/lib/cardArt.ts`), clear of the stat column, the title bar and
   the text box.
+- A villain tile the host can pick zooms its art (scale 1.07, 0.2 s
+  ease-out) on hover and keyboard focus, via the `--art-zoom` custom
+  property that `CardArt` reads; disabled tiles, hero thumbnails and
+  `prefers-reduced-motion` get no zoom.
 
 **Why:** user decisions of 2026-10-19, for a livelier and cleaner UI.
 
