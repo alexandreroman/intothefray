@@ -52,9 +52,12 @@
   const DRAG_THRESHOLD = 5;
   const EDGE_SCROLL = 40;
   const SCROLL_STEP = 12;
-  // Tiles are at least this wide; a card is 1.4 times as high as wide.
-  const MIN_TILE = 132;
+  // Tiles are at least this wide, about the preview's card, which does not show while a box is
+  // open: the cards are read in the box. A card is 1.4 times as high as wide.
+  const MIN_TILE = 220;
   const CARD_RATIO = 1.4;
+  // Never wider than the window: the box keeps inside it, its grid scrolls.
+  const BOX_WIDTH = 'min(1200px, 100%)';
   const SLIDE_MS = 180;
 
   interface Tile {
@@ -483,7 +486,8 @@
   onpointercancel={() => (drag = null)}
 />
 
-<Dialog title={fullTitle} wide oncancel={() => onclose(false)}>
+<!-- Five columns of tiles about 220 px wide on a large screen, fewer on a smaller one. -->
+<Dialog title={fullTitle} wide width={BOX_WIDTH} oncancel={() => onclose(false)}>
   {#snippet heading(id: string)}
     <div class="mhead">
       <b {id}
@@ -655,7 +659,8 @@
   .mgrid {
     position: relative;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+    /* As wide as MIN_TILE at least; the columns fill the row. */
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     align-content: start;
     gap: 14px;
     margin: 0;

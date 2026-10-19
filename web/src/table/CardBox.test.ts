@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import Table from './Table.svelte';
+import boxSource from './CardBox.svelte?raw';
 import { pileLabel, tileActions, type TileAction } from './boxes';
 import { interaction } from './interaction.svelte';
 import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
@@ -246,6 +247,17 @@ describe('CardBox', () => {
 
     expect(within(dialog).getByRole('button', { name: 'Close without shuffling' })).toBeTruthy();
     expect(within(dialog).getByRole('button', { name: 'Shuffle & close' })).toBeTruthy();
+  });
+
+  it('shows its cards about as large as the preview, which a box keeps hidden', async () => {
+    await renderTable(makeView({ private: SEARCH }));
+
+    // Wide enough for five 220 px columns, never wider than the window.
+    expect(box().style.width).toBe('min(1200px, 100%)');
+    const grid = /\n {2}\.mgrid \{([^}]*)\}/.exec(boxSource)?.[1] ?? '';
+    expect(grid).toMatch(/grid-template-columns: repeat\(auto-fill, minmax\(220px, 1fr\)\);/);
+    expect(grid).toMatch(/overflow-y: auto;/);
+    expect(boxSource).toMatch(/const MIN_TILE = 220;/);
   });
 
   it('look box titles the top count and closes with Close', async () => {
