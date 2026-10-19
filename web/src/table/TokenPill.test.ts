@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import TokenPill from './TokenPill.svelte';
+import pillSource from './TokenPill.svelte?raw';
 
 function renderPill(value = 3, anchor = document.createElement('span')) {
   document.body.append(anchor);
@@ -33,5 +34,16 @@ describe('TokenPill', () => {
     expect(pill.style.left).toBe('314px');
     expect(pill.style.top).toBe('198px');
     expect(pill.classList).toContain('placed');
+  });
+
+  it('never starts a text selection, however quickly − and + are clicked', async () => {
+    renderPill();
+    for (const name of ['Remove 1', 'Add 1']) {
+      const button = screen.getByRole('button', { name });
+      // fireEvent returns false when the default (starting a selection) is prevented.
+      expect(await fireEvent.mouseDown(button, { detail: 2 })).toBe(false);
+    }
+    // Nor in the browsers that select around a click anyway: nothing in the pill is selectable.
+    expect(/\.tokpill \{[^}]*user-select: none;/.exec(pillSource)).not.toBeNull();
   });
 });

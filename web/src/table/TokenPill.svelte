@@ -53,6 +53,11 @@
     place();
   });
 
+  /** Quick clicks on − and + never start a text selection, in any browser. */
+  function noSelection(event: MouseEvent): void {
+    event.preventDefault();
+  }
+
   // Gone with its token, the pill is no longer under the pointer.
   onDestroy(() => {
     interaction.onPill = false;
@@ -77,6 +82,7 @@
     type="button"
     aria-label="Remove 1"
     data-tip="Remove 1"
+    onmousedown={noSelection}
     onclick={() => onstep(-1)}>−</button
   >
   <span class="value">{value}</span>
@@ -85,6 +91,7 @@
     type="button"
     aria-label="Add 1"
     data-tip="Add 1"
+    onmousedown={noSelection}
     onclick={() => onstep(1)}>+</button
   >
 </div>
@@ -100,6 +107,12 @@
     border: 1px solid var(--line-strong);
     border-radius: 999px;
     box-shadow: 0 8px 20px #0009;
+    /*
+      Nothing in it is text to select: quick clicks on − and + must not select the value (their
+      mousedown's default is prevented too, for the browsers that select around it anyway).
+    */
+    user-select: none;
+    -webkit-user-select: none;
     /* Measured before it is placed: unseen until then. */
     visibility: hidden;
   }
