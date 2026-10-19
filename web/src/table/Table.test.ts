@@ -241,24 +241,25 @@ describe('Table', () => {
     const name = ownerBoxes()[1]!.querySelector<HTMLElement>('.owner')!;
     cutShort(name);
     await fireEvent.pointerOver(name);
-    expect(name.dataset.tip).toBe('Alex');
+    expect(name.dataset.tip).toBe('Alex · Spider-Man');
   });
 
-  it("frames each owner's deck and discard pile, named after them, their hand count as tip", async () => {
+  it("frames each owner's deck and discard pile, named after them and their hero, their hand count as tip", async () => {
     render(Table, { session: fakeSession(), view: makeView() });
     await catalogLoaded();
 
     const boxes = ownerBoxes();
+    // The hero is named even for a player with one deck.
     expect(boxes.map((box) => box.querySelector('.owner')?.textContent)).toEqual([
       'Villain',
-      'Alex',
-      'Sam',
+      'Alex · Spider-Man',
+      'Sam · Ant-Man',
     ]);
     // Screen readers read the hand count, which the pointer finds in the tooltip.
     expect(boxes.map((box) => box.textContent?.replace(/\s+/g, ' ').trim())).toEqual([
       'Villain',
-      'Alex : 6 cards in hand',
-      'Sam : 5 cards in hand',
+      'Alex · Spider-Man : 6 cards in hand',
+      'Sam · Ant-Man : 5 cards in hand',
     ]);
     expect(boxes.map((box) => box.style.getPropertyValue('--owner'))).toEqual([
       'var(--villain)',
@@ -942,7 +943,7 @@ describe('Table view modes', () => {
     expect(sam.style.top).toBe('500px');
     expect(ownerBoxes().map((box) => box.querySelector('.owner')?.textContent)).toEqual([
       'Villain',
-      'Sam',
+      'Sam · Ant-Man',
     ]);
   });
 
@@ -1393,7 +1394,7 @@ describe('several decks', () => {
     await catalogLoaded();
 
     const frames = ownerBoxes().map((box) => box.querySelector('.owner')?.textContent);
-    expect(frames).toEqual(['Villain', 'Alex · Spider-Man', 'Alex · Ant-Man', 'Sam']);
+    expect(frames).toEqual(['Villain', 'Alex · Spider-Man', 'Alex · Ant-Man', 'Sam · She-Hulk']);
     // Each deck its own hand count; one player, one colour.
     expect(ownerBoxes().map((box) => box.dataset.tip)).toEqual([
       undefined,

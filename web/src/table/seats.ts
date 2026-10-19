@@ -94,22 +94,10 @@ export function seatColor(view: View, seat: number): number | null {
 }
 
 /**
- * How the seat reads: the player's name, plus the hero for a player with
- * several decks ("Alex · Spider-Man"). Empty for a seat nobody sits at.
- */
-export function seatLabel(view: View, seat: number): string {
-  const player = seatPlayer(view, seat);
-  if (!player) {
-    return '';
-  }
-  const hero = seatHero(view, seat);
-  return hero ? `${player.name} · ${hero}` : player.name;
-}
-
-/**
- * How the seat reads in the player selector: the player's name plus the
- * deck's hero whatever the number of decks ("Sam · Captain Marvel"), the
- * name alone while the deck has no hero. Empty for a seat nobody sits at.
+ * How the seat reads in the player selector and on its owner frame: the
+ * player's name plus the deck's hero whatever the number of decks ("Sam ·
+ * Captain Marvel"), the name alone while the deck has no hero. Empty for a
+ * seat nobody sits at.
  */
 export function seatFullLabel(view: View, seat: number): string {
   const found = seatAt(view, seat);

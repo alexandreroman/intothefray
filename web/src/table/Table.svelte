@@ -67,7 +67,6 @@
     ownSeats,
     seatColor,
     seatFullLabel,
-    seatLabel,
     seatOf,
     seatPlayer,
   } from './seats';
@@ -359,7 +358,7 @@
         return { frame, name: `Player ${frame.owner + 1}`, color: 'var(--muted)' };
       }
       const inHand = `${deck.handCount} ${deck.handCount === 1 ? 'card' : 'cards'} in hand`;
-      const name = seatLabel(view, frame.owner);
+      const name = seatFullLabel(view, frame.owner);
       return { frame, name, color: `var(--p${color + 1})`, tip: inHand };
     }),
   );

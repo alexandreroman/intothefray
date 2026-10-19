@@ -5,7 +5,6 @@ import {
   seatColor,
   seatFullLabel,
   seatHero,
-  seatLabel,
   seatOf,
 } from './seats';
 import type { CardView, PileView, View } from '../lib/types';
@@ -132,18 +131,6 @@ describe('seatColor', () => {
     expect(seatColor(view, 1)).toBe(0);
     expect(seatColor(view, 2)).toBe(1);
     expect(seatColor(view, 3)).toBeNull();
-  });
-});
-
-describe('seatLabel', () => {
-  it('adds the hero to the name of a player with several decks', () => {
-    const view = makeView();
-    expect(seatLabel(view, 1)).toBe('Alex · Spider-Man');
-    expect(seatLabel(view, 2)).toBe('Sam');
-  });
-
-  it('is empty for an unknown seat', () => {
-    expect(seatLabel(makeView(), 3)).toBe('');
   });
 });
 
