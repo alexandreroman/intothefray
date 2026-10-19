@@ -4,10 +4,10 @@
 // (internal/game/action.go) only to hide what would be refused.
 
 import type { Action, CardView, PackFace, PileView, Size, Stage, View } from '../lib/types';
-import { homeDeckOf } from './actions';
+import { homeDeckOf, type TableElement } from './actions';
 import type { IconName } from './Icons.svelte';
 import { freeSlot } from './keys';
-import { creditedSeat, ownSeats, seatPlayer } from './seats';
+import { creditedSeatAmong, ownSeats, seatPlayer } from './seats';
 
 /** A box opened by the client alone: browsing a public pile, or choosing a stage card. */
 export type LocalBox = { kind: 'browse'; pile: string } | { kind: 'stage'; stage: string };
@@ -182,7 +182,12 @@ export function tileActions(card: CardView, pile: PileView, context: TileContext
 
 function playAction(card: CardView, pile: PileView, context: TileContext): Action {
   const { view, selected, sizeOf } = context;
-  const seat = creditedSeat({ kind: 'pile', id: pile.id }, view, selected) ?? selected;
+  // The card first: an own card of a shared pile goes to its own deck's row.
+  const touched: TableElement[] = [
+    { kind: 'card', id: card.id },
+    { kind: 'pile', id: pile.id },
+  ];
+  const seat = creditedSeatAmong(touched, view, selected) ?? selected;
   const { x, y } = freeSlot(view.table?.cards ?? [], view.table?.piles ?? [], seat, sizeOf);
   return { kind: 'play', card: card.id, x, y };
 }

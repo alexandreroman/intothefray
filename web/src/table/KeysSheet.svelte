@@ -11,20 +11,27 @@
   let {
     anchor,
     alignTo = anchor,
+    severalDecks = false,
     onclose,
   }: {
     /** The button the sheet opens from. */
     anchor: HTMLElement | undefined;
     /** The box whose right edge the sheet's lines up on (the controls around the button); the button by default. */
     alignTo?: HTMLElement;
+    /** Whether the viewer plays several decks: only they switch decks with Q. */
+    severalDecks?: boolean;
     onclose: () => void;
   } = $props();
 
-  /** A row: what it does, its keys (each in a kbd), and the mouse part that goes with them. */
+  /**
+   * A row: what it does, its keys (each in a kbd), the mouse part that goes
+   * with them, and whether it is only for a player with several decks.
+   */
   interface Row {
     what: string;
     keys: string[];
     with?: string;
+    severalDecks?: boolean;
   }
 
   // Modifiers as the system writes them (spec 5.10).
@@ -75,7 +82,7 @@
       [
         { what: 'Undo your last action', keys: ['Z'] },
         { what: 'Ready all cards', keys: ['⇧ Space'] },
-        { what: 'Next deck', keys: ['Q'] },
+        { what: 'Next deck', keys: ['Q'], severalDecks: true },
         { what: 'Zoom in / out', keys: ['+', '−'] },
         { what: 'Zoom back to 100%', keys: ['0'] },
         { what: 'Zoom around the mouse', keys: [MOD], with: 'wheel' },
@@ -144,7 +151,7 @@
     {#each GROUPS as [title, rows] (title)}
       <section>
         <h4>{title}</h4>
-        {#each rows as row (row.what)}
+        {#each rows.filter((row) => severalDecks || !row.severalDecks) as row (row.what)}
           <div class="row">
             <span>{row.what}</span>
             <span>

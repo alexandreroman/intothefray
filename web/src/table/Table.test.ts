@@ -1208,6 +1208,31 @@ describe('several decks', () => {
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'exhaust', card: 'v' }, 1);
   });
 
+  it('credits a box action on an own card of a shared pile to the card', async () => {
+    const session = fakeSession();
+    const view = makeTwoDeckView();
+    view.table!.cards.push(card('x', { code: '01001', owner: 1, zone: 'pile' }));
+    view.table!.piles.push(pile('vic', { kind: 'victory', x: 0, y: 30, count: 1, cards: ['x'] }));
+    view.table!.private = { pile: 'vic', mode: 'search', cards: ['x'] };
+    render(Table, { session, view });
+    await catalogLoaded();
+
+    // Spider-Man (seat 0) is selected; the card belongs to Ant-Man, Alex's seat 1.
+    const box = screen.getByRole('dialog');
+    await fireEvent.pointerEnter(box.querySelector<HTMLElement>('.tile[data-id="x"]')!);
+    const bar = screen.getByRole('toolbar', { name: 'Card actions' });
+    await fireEvent.click(within(bar).getByRole('button', { name: 'Discard' }));
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'discard', card: 'x' }, 1);
+  });
+
+  it('lists the next deck key in the shortcuts sheet', async () => {
+    render(Table, { session: fakeSession(), view: makeTwoDeckView() });
+    await catalogLoaded();
+
+    await fireEvent.keyDown(window, { key: '?' });
+    expect(within(screen.getByRole('dialog')).getByText('Next deck')).toBeTruthy();
+  });
+
   it('keeps the selected deck across new views', async () => {
     const result = render(Table, { session: fakeSession(), view: makeTwoDeckView() });
     await within(hand()).findByRole('img', { name: 'Spider-Man' });

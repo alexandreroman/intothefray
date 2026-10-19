@@ -61,7 +61,15 @@
   } from './rows';
   import { motion } from './motion.svelte';
   import Presence from './Presence.svelte';
-  import { creditedSeat, ownSeats, seatColor, seatLabel, seatOf, seatPlayer } from './seats';
+  import {
+    creditedSeat,
+    creditedSeatAmong,
+    ownSeats,
+    seatColor,
+    seatLabel,
+    seatOf,
+    seatPlayer,
+  } from './seats';
   import TokenPill from './TokenPill.svelte';
   import CardPreview, { type Preview } from './CardPreview.svelte';
   import {
@@ -798,6 +806,22 @@
     shownBox?.kind === 'pile' ? { kind: 'pile', id: shownBox.pile.id } : null,
   );
 
+  /**
+   * Sends a box action, credited to the card it touches before the box's pile:
+   * an own card of a shared pile (victory display, encounter discard) goes to
+   * the card's seat, not the selected deck.
+   */
+  function actInBox(action: Action): number | null {
+    const touched: TableElement[] = [];
+    if (action.card) {
+      touched.push({ kind: 'card', id: action.card });
+    }
+    if (boxTarget) {
+      touched.push(boxTarget);
+    }
+    return session.act(action, creditedSeatAmong(touched, view, selected));
+  }
+
   /** Tells one box from another, so that a new box starts afresh. */
   const boxKey = $derived.by(() => {
     if (shownBox?.kind === 'pile') {
@@ -1235,7 +1259,12 @@
   {/if}
 
   {#if keySheetShown}
-    <KeysSheet anchor={keysButton} alignTo={cornerBox} onclose={hideKeySheet} />
+    <KeysSheet
+      anchor={keysButton}
+      alignTo={cornerBox}
+      severalDecks={own.length > 1}
+      onclose={hideKeySheet}
+    />
   {/if}
 
   {#if handCards}
@@ -1295,7 +1324,7 @@
         {sizeOf}
         readOnly={view.you.role !== 'player'}
         {selected}
-        act={(action) => act(action, boxTarget)}
+        act={actInBox}
         onclose={closeBox}
       />
     {/key}

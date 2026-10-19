@@ -75,6 +75,17 @@ describe('a player with two decks', () => {
     expect(pileLabel(pileOf('deck:p1'), view)).toBe('Your deck');
   });
 
+  it('plays an own card of a shared pile to the row of its own deck', () => {
+    const view = makeView();
+    const won = card('v', 1);
+    view.table!.cards = [won];
+    const victory = pile('vic', { kind: 'victory', cards: ['v'] });
+    const tiles = tileActions(won, victory, contextOf(view));
+    const play = tiles.find((tile) => tile.id === 'play');
+    // Seat 1's row, though seat 0 is selected.
+    expect(play?.run()).toEqual({ kind: 'play', card: 'v', x: 760, y: 330 });
+  });
+
   it("keeps another player's deck and set-aside cards out", () => {
     const view = makeView();
     expect(tileActions(card('s', 2), pileOf('deck:p2'), contextOf(view))).toEqual([]);

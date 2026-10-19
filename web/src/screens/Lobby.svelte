@@ -67,11 +67,17 @@
   // A failed deck import shows under the field of the slot it was loading; anything else in the start bar.
   const deckLoadError = $derived(session.deckLoadError?.message ?? null);
   const otherError = $derived(session.lastError?.message ?? null);
+  // The slot whose load is under way or failed. A removal shifts the slots, so it starts over.
   let loadingSlot = $state(0);
 
   function loadDeck(slot: number, url: string): void {
     loadingSlot = slot;
     session.lobby('setDeck', { url, deck: slot });
+  }
+
+  function removeDeck(slot: number): void {
+    loadingSlot = 0;
+    session.lobby('removeDeck', { deck: slot });
   }
 </script>
 
@@ -120,16 +126,20 @@
           {@const several = me.decks.length > 1}
           <section class="card-box" style:--pc="var(--p{me.color + 1})">
             <div class="bhead"><h2>Your decks</h2></div>
-            {#each me.decks as deck, slot (slot)}
-              <DeckLoader
-                {deck}
-                slot={several ? slot + 1 : null}
-                deckError={slot === loadingSlot ? session.deckError : null}
-                error={slot === loadingSlot ? deckLoadError : null}
-                onload={(url) => loadDeck(slot, url)}
-                onremove={several ? () => session.lobby('removeDeck', { deck: slot }) : undefined}
-              />
-            {/each}
+            <!-- The slots have no identity but their index: a new slot count remounts them, so that
+                 a link typed for a removed deck does not stay in the slot that takes its place. -->
+            {#key me.decks.length}
+              {#each me.decks as deck, slot (slot)}
+                <DeckLoader
+                  {deck}
+                  slot={several ? slot + 1 : null}
+                  deckError={slot === loadingSlot ? session.deckError : null}
+                  error={slot === loadingSlot ? deckLoadError : null}
+                  onload={(url) => loadDeck(slot, url)}
+                  onremove={several ? () => removeDeck(slot) : undefined}
+                />
+              {/each}
+            {/key}
             {#if deckCount < MAX_DECKS}
               <div class="sect">
                 <button class="btn add" onclick={() => session.lobby('addDeck')}>

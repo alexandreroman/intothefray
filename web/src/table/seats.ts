@@ -29,13 +29,29 @@ export function creditedSeat(
   view: View,
   selected: number | null,
 ): number | undefined {
+  return creditedSeatAmong([target], view, selected);
+}
+
+/**
+ * The seat an action touching several elements is credited to: the owner of
+ * the first one that is one of the viewer's seats, else the selected deck. A
+ * box action names its card before its pile, so that an own card of a shared
+ * pile (victory display, encounter discard) is credited to the card's seat.
+ */
+export function creditedSeatAmong(
+  targets: readonly TableElement[],
+  view: View,
+  selected: number | null,
+): number | undefined {
   const seats = ownSeats(view);
   if (seats.length === 0) {
     return undefined;
   }
-  const owner = ownerOf(target, view);
-  if (owner !== undefined && seats.includes(owner)) {
-    return owner;
+  for (const target of targets) {
+    const owner = ownerOf(target, view);
+    if (owner !== undefined && seats.includes(owner)) {
+      return owner;
+    }
   }
   return selected ?? undefined;
 }
@@ -82,13 +98,23 @@ export function seatColor(view: View, seat: number): number | null {
  * several decks ("Alex · Spider-Man"). Empty for a seat nobody sits at.
  */
 export function seatLabel(view: View, seat: number): string {
-  const found = seatAt(view, seat);
-  if (!found) {
+  const player = seatPlayer(view, seat);
+  if (!player) {
     return '';
   }
-  const { player, deck } = found;
-  if (player.decks.length < 2 || !deck.heroName) {
-    return player.name;
+  const hero = seatHero(view, seat);
+  return hero ? `${player.name} · ${hero}` : player.name;
+}
+
+/**
+ * The hero of the deck at the seat when its player holds several decks, ""
+ * otherwise: the player's name alone tells the deck of a one-deck player
+ * (Game.deckHero in narrate.go).
+ */
+export function seatHero(view: View, seat: number): string {
+  const found = seatAt(view, seat);
+  if (!found || found.player.decks.length < 2) {
+    return '';
   }
-  return `${player.name} · ${deck.heroName}`;
+  return found.deck.heroName ?? '';
 }

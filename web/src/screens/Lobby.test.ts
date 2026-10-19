@@ -571,4 +571,51 @@ describe('Lobby', () => {
       screen.getByRole('textbox', { name: 'Deck 2 link' }).id,
     );
   });
+
+  it('keeps no typed link in a slot once an earlier slot is removed', async () => {
+    const live = renderLive();
+    await live.receive({
+      type: 'view',
+      version: 2,
+      view: lobbyView([{ ...alex, decks: [noDeck, noDeck, noDeck] }, sam]),
+    });
+    await fireEvent.input(screen.getByRole('textbox', { name: 'Deck 1 link' }), {
+      target: { value: 'https://example.com/deck/1' },
+    });
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Remove deck 1' }));
+    await live.receive({
+      type: 'view',
+      version: 3,
+      view: lobbyView([{ ...alex, decks: [noDeck, noDeck] }, sam]),
+    });
+
+    // Deck 1 is the former deck 2 now: the link typed for the removed deck is gone.
+    expect(screen.getByRole<HTMLInputElement>('textbox', { name: 'Deck 1 link' }).value).toBe('');
+  });
+
+  it('shows no failed deck load under another slot once a slot is removed', async () => {
+    const live = renderLive();
+    await live.receive({
+      type: 'view',
+      version: 2,
+      view: lobbyView([{ ...alex, decks: [noDeck, noDeck, noDeck] }, sam]),
+    });
+    await fireEvent.input(screen.getByRole('textbox', { name: 'Deck 2 link' }), {
+      target: { value: 'https://example.com/nope' },
+    });
+    await fireEvent.click(screen.getAllByRole('button', { name: 'Load' })[1]!);
+    await live.receive({ type: 'error', code: 'deck', message: 'This deck link is not valid.' });
+    expect(screen.getByRole('alert')).toBeTruthy();
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Remove deck 1' }));
+    await live.receive({
+      type: 'view',
+      version: 3,
+      view: lobbyView([{ ...alex, decks: [noDeck, noDeck] }, sam]),
+    });
+
+    // Slot 1 now holds the former deck 3, which never failed to load.
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
 });

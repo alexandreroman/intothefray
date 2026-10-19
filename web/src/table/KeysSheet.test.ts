@@ -135,7 +135,6 @@ describe('KeysSheet', () => {
         [
           'Undo your last action: Z',
           'Ready all cards: ⇧ Space',
-          'Next deck: Q',
           'Zoom in / out: +−',
           'Zoom back to 100%: 0',
           'Zoom around the mouse: Ctrl + wheel',
@@ -147,6 +146,18 @@ describe('KeysSheet', () => {
     ]);
     // Each key is a kbd.
     expect(within(sheet()!).getAllByText('E')[0]?.tagName).toBe('KBD');
+  });
+
+  it('lists the next deck key only to a player with several decks', () => {
+    const anchor = document.body.appendChild(document.createElement('button'));
+    render(KeysSheet, { props: { anchor, severalDecks: true, onclose: vi.fn() } });
+
+    const table = groupsOf(sheet()!).find(([title]) => title === 'Table');
+    expect(table?.[1].slice(0, 3)).toEqual([
+      'Undo your last action: Z',
+      'Ready all cards: ⇧ Space',
+      'Next deck: Q',
+    ]);
   });
 
   it('shows ⌘ for the modifier on macOS', () => {

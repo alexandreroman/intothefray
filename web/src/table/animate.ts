@@ -3,9 +3,10 @@
 // pile, and piles that were shuffled. Pure: the table plays the list
 // (motion.svelte.ts).
 
-import type { CardView, LogView, PileView, TableView, View, Zone } from '../lib/types';
+import type { CardView, LogView, PileView, PlayerView, TableView, View, Zone } from '../lib/types';
 import { stackOf } from './drag';
 import { isHidden } from './face';
+import { seatHero, seatPlayer } from './seats';
 
 /** Where a card lies in a view: its zone, and its spot when it is on the table. */
 export interface Box {
@@ -199,10 +200,10 @@ function shuffledPiles(lines: LogView[], view: View, piles: PileView[]): string[
     if (line.undone || !line.text.startsWith(SHUFFLED)) {
       continue;
     }
-    const seat = view.players.findIndex((player) => player.color === line.color);
+    const writer = view.players.find((player) => player.color === line.color);
     let best: { pile: string; name: string } | null = null;
     for (const pile of piles) {
-      const name = narratedName(pile, seat, view);
+      const name = narratedName(pile, writer, view);
       if (line.text.endsWith(` ${name}`) && (!best || name.length > best.name.length)) {
         best = { pile: pile.id, name };
       }
@@ -227,15 +228,25 @@ const PILE_NOUNS: Partial<Record<PileView['kind'], string>> = {
   aside: 'set-aside cards',
 };
 
-/** A pile's name in the history, written by the player at seat (Game.pileName in narrate.go). */
-function narratedName(pile: PileView, seat: number, view: View): string {
+/**
+ * A pile's name in the history, written by the writer (Game.pileName in
+ * narrate.go): the piles of any of the writer's seats are "their" piles, and
+ * the pile of a player holding several decks adds the deck's hero ("their
+ * Spider-Man deck", "Alex's Spider-Man deck").
+ */
+function narratedName(pile: PileView, writer: PlayerView | undefined, view: View): string {
   const shared = SHARED_PILE_NAMES[pile.id];
   if (shared) {
     return shared;
   }
-  const noun = PILE_NOUNS[pile.kind] ?? 'pile';
-  if (pile.owner === seat) {
+  let noun = PILE_NOUNS[pile.kind] ?? 'pile';
+  const hero = seatHero(view, pile.owner);
+  if (hero) {
+    noun = `${hero} ${noun}`;
+  }
+  const owner = seatPlayer(view, pile.owner);
+  if (writer !== undefined && owner === writer) {
     return `their ${noun}`;
   }
-  return `${view.players[pile.owner]?.name ?? 'another player'}'s ${noun}`;
+  return `${owner?.name ?? 'another player'}'s ${noun}`;
 }

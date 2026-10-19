@@ -1,4 +1,12 @@
-import { creditedSeat, ownSeats, seatColor, seatLabel, seatOf } from './seats';
+import {
+  creditedSeat,
+  creditedSeatAmong,
+  ownSeats,
+  seatColor,
+  seatHero,
+  seatLabel,
+  seatOf,
+} from './seats';
 import type { CardView, PileView, View } from '../lib/types';
 
 function card(id: string, owner: number): CardView {
@@ -91,6 +99,29 @@ describe('creditedSeat', () => {
   it('credits nothing without a selection, nor for a spectator', () => {
     expect(creditedSeat({ kind: 'card', id: 'enemy' }, makeView(), null)).toBeUndefined();
     expect(creditedSeat({ kind: 'card', id: 'alex1' }, makeView(SPECTATOR), 0)).toBeUndefined();
+  });
+});
+
+describe('creditedSeatAmong', () => {
+  it('credits the first own element: a card before its shared pile', () => {
+    const view = makeView();
+    const touched = [
+      { kind: 'card', id: 'alex1' },
+      { kind: 'pile', id: 'enc' },
+    ] as const;
+    expect(creditedSeatAmong(touched, view, 0)).toBe(1);
+    expect(creditedSeatAmong([{ kind: 'card', id: 'enemy' }, ...touched], view, 0)).toBe(1);
+    expect(creditedSeatAmong([{ kind: 'card', id: 'sam' }], view, 0)).toBe(0);
+    expect(creditedSeatAmong([], view, 1)).toBe(1);
+  });
+});
+
+describe('seatHero', () => {
+  it('names the hero of a deck of a player with several decks only', () => {
+    const view = makeView();
+    expect(seatHero(view, 1)).toBe('Spider-Man');
+    expect(seatHero(view, 2)).toBe('');
+    expect(seatHero(view, 3)).toBe('');
   });
 });
 

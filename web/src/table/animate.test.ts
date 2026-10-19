@@ -286,6 +286,66 @@ describe('diffViews', () => {
     expect(diffViews(prev, back)).toEqual([{ kind: 'shuffle', pile: 'deck:p0' }]);
   });
 
+  it('shuffle of a player with two decks names the seats of each player', () => {
+    // Alex (colour 0) plays Spider-Man (p0) and Iron Man (p1); Sam (colour 1) plays p2.
+    function twoDecks(log: LogView[]): View {
+      const base = view({
+        log,
+        piles: [
+          pile('deck:p0'),
+          pile('deck:p1', { owner: 1 }),
+          pile('disc:p1', { kind: 'discard', owner: 1, count: 0, cards: [] }),
+          pile('deck:p2', { owner: 2 }),
+        ],
+      });
+      base.you = { ...base.you, areas: ['p0', 'p1'] };
+      base.players = [
+        {
+          name: 'Alex',
+          color: 0,
+          host: true,
+          ready: true,
+          decks: [
+            { area: 'p0', heroName: 'Spider-Man', ready: true, handCount: 0 },
+            { area: 'p1', heroName: 'Iron Man', ready: true, handCount: 0 },
+          ],
+        },
+        {
+          name: 'Sam',
+          color: 1,
+          host: false,
+          ready: true,
+          decks: [{ area: 'p2', heroName: 'She-Hulk', ready: true, handCount: 0 }],
+        },
+      ];
+      return base;
+    }
+    const alex = { who: 'Alex', color: 0 };
+    const prev = twoDecks([OLD_LINE]);
+
+    expect(diffViews(prev, twoDecks([OLD_LINE, line('shuffled their deck')]))).toEqual([
+      { kind: 'shuffle', pile: 'deck:p2' },
+    ]);
+    expect(
+      diffViews(prev, twoDecks([OLD_LINE, line('shuffled their Iron Man deck', alex)])),
+    ).toEqual([{ kind: 'shuffle', pile: 'deck:p1' }]);
+    expect(diffViews(prev, twoDecks([OLD_LINE, line("shuffled Alex's Spider-Man deck")]))).toEqual([
+      { kind: 'shuffle', pile: 'deck:p0' },
+    ]);
+    expect(diffViews(prev, twoDecks([OLD_LINE, line("shuffled Sam's deck", alex)]))).toEqual([
+      { kind: 'shuffle', pile: 'deck:p2' },
+    ]);
+    expect(
+      diffViews(
+        prev,
+        twoDecks([
+          OLD_LINE,
+          line('shuffled their Iron Man discard pile into their Iron Man deck', alex),
+        ]),
+      ),
+    ).toEqual([{ kind: 'shuffle', pile: 'deck:p1' }]);
+  });
+
   it('an undone shuffle does not shuffle again', () => {
     const prev = view({ log: [OLD_LINE, line('shuffled their deck')] });
     const next = view({
