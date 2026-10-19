@@ -186,6 +186,20 @@ development targets.
 The web port is read from `WEB_PORT` (default `8080`) and the Redis
 host port of the compose stack from `REDIS_PORT` (default `6379`).
 
+## Continuous integration
+
+The `CI` workflow runs on every pull request and every push to `main`,
+in three jobs:
+
+- `go`: build, `go vet`, tests with the race detector, golangci-lint;
+- `web`: svelte-check, ESLint and Prettier, Vitest, production build;
+- `docker`: image build (not pushed), validation of `compose.yaml` and
+  of the Caddyfile.
+
+It runs the same checks as `make check` and `make build`. It does not
+regenerate `packs/dist`: the generator needs marvelcdb and Cerebro
+over the network, so the committed files are used as they are.
+
 ## Deployment
 
 The frontend is published to GitHub Pages by the `Pages` workflow
@@ -247,7 +261,7 @@ time it appears (not when the browser asks to save data).
 | `packs/`            | Curated files, generated and committed `dist/` |
 | `web/`              | Svelte frontend (Vite, pnpm, Caddyfile)        |
 | `mise.toml`         | Node.js and pnpm versions                      |
-| `.github/`          | GitHub Actions (Pages deployment)              |
+| `.github/`          | GitHub Actions (CI, Pages deployment)          |
 
 ## License
 
