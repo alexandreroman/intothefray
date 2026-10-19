@@ -1,5 +1,6 @@
 <script lang="ts">
   import ConfirmDialog from './ConfirmDialog.svelte';
+  import { on } from 'svelte/events';
   import Icon from './Icon.svelte';
 
   let {
@@ -23,40 +24,52 @@
     onend?.();
   }
 
-  const FALLBACK_CLASS = 'fs-fallback';
+  // iPad and older Safari only have the WebKit-prefixed Fullscreen API, whose
+  // calls may return nothing rather than a promise.
+  type WebkitDocument = Document & {
+    webkitFullscreenElement?: Element | null;
+    webkitExitFullscreen?: () => Promise<void> | void;
+  };
+  type WebkitElement = HTMLElement & {
+    webkitRequestFullscreen?: () => Promise<void> | void;
+  };
 
-  let native = $state(Boolean(document.fullscreenElement));
-  // On the body rather than in this component: the lobby and the table each
-  // have their own top bar, and the fallback outlives either.
-  let fallback = $state(document.body.classList.contains(FALLBACK_CLASS));
-  const fullscreen = $derived(native || fallback);
+  const webkitDocument = document as WebkitDocument;
+  const root = document.documentElement as WebkitElement;
+
+  // iPhone Safari has neither API: the button is not shown there.
+  const fullscreenSupported = Boolean(root.requestFullscreen ?? root.webkitRequestFullscreen);
+
+  function fullscreenElement(): Element | null {
+    return document.fullscreenElement ?? webkitDocument.webkitFullscreenElement ?? null;
+  }
+
+  let fullscreen = $state(fullscreenElement() !== null);
   const fullscreenLabel = $derived(fullscreen ? 'Exit fullscreen' : 'Fullscreen');
 
   function syncFullscreen(): void {
-    native = Boolean(document.fullscreenElement);
+    fullscreen = fullscreenElement() !== null;
   }
 
-  function setFallback(on: boolean): void {
-    fallback = on;
-    document.body.classList.toggle(FALLBACK_CLASS, on);
-  }
+  // The WebKit event has no <svelte:document> attribute, so both are listened to here.
+  $effect(() => {
+    const offStandard = on(document, 'fullscreenchange', syncFullscreen);
+    const offWebkit = on(document, 'webkitfullscreenchange', syncFullscreen);
+    return () => {
+      offStandard();
+      offWebkit();
+    };
+  });
 
   function toggleFullscreen(): void {
-    if (fallback) {
-      setFallback(false);
-    } else if (document.fullscreenElement) {
-      void document.exitFullscreen?.().catch(() => {});
-    } else if (document.documentElement.requestFullscreen) {
-      // A request can be denied (no user gesture, a policy of the embedding page).
-      void document.documentElement.requestFullscreen().catch(() => setFallback(true));
-    } else {
-      // Not every browser offers the Fullscreen API (iPhone Safari, some embedded views).
-      setFallback(true);
-    }
+    const result = fullscreenElement()
+      ? (document.exitFullscreen?.() ?? webkitDocument.webkitExitFullscreen?.())
+      : (root.requestFullscreen?.() ?? root.webkitRequestFullscreen?.());
+    // A request can be refused (no user gesture, a policy of the embedding
+    // page): nothing changes then.
+    void Promise.resolve(result).catch(() => {});
   }
 </script>
-
-<svelte:document onfullscreenchange={syncFullscreen} />
 
 <header>
   <div class="logo">INTO <span>THE</span> FRAY</div>
@@ -67,15 +80,17 @@
         {spectators}
       </span>
     {/if}
-    <button
-      class="icon-button fullscreen"
-      class:active={fullscreen}
-      aria-label={fullscreenLabel}
-      title={fullscreenLabel}
-      onclick={toggleFullscreen}
-    >
-      <Icon name={fullscreen ? 'exit-fullscreen' : 'fullscreen'} />
-    </button>
+    {#if fullscreenSupported}
+      <button
+        class="icon-button fullscreen"
+        class:active={fullscreen}
+        aria-label={fullscreenLabel}
+        title={fullscreenLabel}
+        onclick={toggleFullscreen}
+      >
+        <Icon name={fullscreen ? 'exit-fullscreen' : 'fullscreen'} />
+      </button>
+    {/if}
     {#if onend}
       <button
         class="icon-button"
@@ -207,7 +222,7 @@
   /*
    * A narrow bar drops its least useful items first: Fullscreen, then the
    * spectator count. End game and the side panel toggle always stay. Fullscreen
-   * stays while active, or the fallback could not be left.
+   * stays while active, or a viewer without an Escape key could not leave it.
    */
   @media (max-width: 600px) {
     .fullscreen:not(.active) {
