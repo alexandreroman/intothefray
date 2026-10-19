@@ -75,13 +75,8 @@
 </div>
 
 <style>
-  /* Bottom right of the table column: never over the piles, which start at the left. */
+  /* Placed by the table, at the bottom right: never over the piles, which start at the left. */
   .zoomctl {
-    grid-area: table;
-    align-self: end;
-    justify-self: end;
-    margin: 0 16px 16px 0;
-    z-index: 30;
     display: flex;
     align-items: center;
     gap: 2px;

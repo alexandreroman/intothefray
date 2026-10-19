@@ -1,5 +1,14 @@
 <script lang="ts">
-  type Name = 'cards' | 'sliders' | 'back' | 'eye' | 'fullscreen' | 'exit-fullscreen' | 'cross';
+  type Name =
+    | 'cards'
+    | 'sliders'
+    | 'back'
+    | 'eye'
+    | 'fullscreen'
+    | 'exit-fullscreen'
+    | 'cross'
+    | 'rows-all'
+    | 'rows-focus';
 
   let { name }: { name: Name } = $props();
 
@@ -33,6 +42,15 @@
     <path d="M4 9h5V4M15 4v5h5M20 15h-5v5M9 20v-5H4" />
   {:else if name === 'cross'}
     <path d="M6 6l12 12M18 6L6 18" />
+  {:else if name === 'rows-all'}
+    <!-- Every row of the table. -->
+    <rect x="4" y="4" width="16" height="4" rx="1" />
+    <rect x="4" y="10" width="16" height="4" rx="1" />
+    <rect x="4" y="16" width="16" height="4" rx="1" />
+  {:else if name === 'rows-focus'}
+    <!-- The villain's row, and one player's row under it. -->
+    <rect x="4" y="5" width="16" height="5" rx="1" fill="currentColor" fill-opacity=".25" />
+    <rect x="4" y="14" width="16" height="5" rx="1" />
   {:else}
     <!-- An arrow pointing left. -->
     <path d="M19 12H5M11 6l-6 6 6 6" />

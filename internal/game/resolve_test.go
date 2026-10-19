@@ -67,6 +67,10 @@ func TestPermissions(t *testing.T) {
 	}{
 		{"owner plays own hand card", 0, Action{Kind: ActPlay, Card: f.hand}, nil},
 		{"other plays hand card", 1, Action{Kind: ActPlay, Card: f.hand}, ErrForbidden},
+		{"owner plays own deck top", 0, Action{Kind: ActPlay, Pile: "deck:p0", X: 400, Y: 200}, nil},
+		{"other plays deck top", 1, Action{Kind: ActPlay, Pile: "deck:p0", X: 400, Y: 200}, ErrForbidden},
+		{"plays discard top by its pile", 0, Action{Kind: ActPlay, Pile: "disc:p0"}, ErrInvalid},
+		{"plays encounter deck top", 0, Action{Kind: ActPlay, Pile: PileEncounter}, ErrInvalid},
 		{"other discards hand card", 1, Action{Kind: ActDiscard, Card: f.hand}, ErrForbidden},
 		{"other sends hand card to deck", 1, Action{Kind: ActToDeck, Card: f.hand, Where: "top"}, ErrForbidden},
 		{"other sends hand card to pile", 1, Action{Kind: ActToPile, Card: f.hand, Target: PileVictory}, ErrForbidden},
@@ -228,6 +232,40 @@ func TestResolveDealRecordsTheRevealedCard(t *testing.T) {
 	}
 	if !slices.Equal(got.Cards, revealed) {
 		t.Errorf("Cards = %v, want the revealed card %v", got.Cards, revealed)
+	}
+}
+
+func TestResolvePlayFromDeckTakesItsTopCard(t *testing.T) {
+	f := newResolveFixture(t)
+	top := topCards(f.g.Table.Piles["deck:p0"], 1)[0]
+
+	// The client cannot pick a card of its deck: the top card is played, whatever it names.
+	got, err := resolve(f.g, 0, Action{Kind: ActPlay, Pile: "deck:p0", Card: f.hand, X: 400, Y: 200}, newTestRNG())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.Card != top {
+		t.Fatalf("Card = %q, want the deck's top card %q", got.Card, top)
+	}
+
+	table := f.g.Table.Clone()
+	mustApply(t, table, got)
+	c := table.Cards[top]
+	if c.Zone != ZoneTable || c.FaceDown || c.X != 400 || c.Y != 200 {
+		t.Errorf("played card = %+v, want it face up on the table at 400, 200", c)
+	}
+	if n := len(table.Piles["deck:p0"].Cards); n != f.deckCount-4 {
+		t.Errorf("deck holds %d cards, want %d", n, f.deckCount-4)
+	}
+}
+
+func TestResolvePlayFromAnEmptyDeckFails(t *testing.T) {
+	f := newResolveFixture(t)
+	f.g.Table.Piles["deck:p0"].Cards = nil
+
+	_, err := resolve(f.g, 0, Action{Kind: ActPlay, Pile: "deck:p0", X: 400, Y: 200}, newTestRNG())
+	if !errors.Is(err, ErrInvalid) {
+		t.Errorf("resolve() error = %v, want ErrInvalid", err)
 	}
 }
 

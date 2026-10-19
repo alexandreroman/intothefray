@@ -1058,6 +1058,28 @@ func TestReorderThenDrawSurvivesAnotherUndo(t *testing.T) {
 	checkHistory(t, f.g)
 }
 
+func TestPlayFromDeckIsNarratedAndSurvivesAnotherUndo(t *testing.T) {
+	f := newDoFixture(t)
+	top := topCards(f.g.Table.Piles["deck:p0"], 1)[0]
+	f.mustDo(t, "b", Action{Kind: ActExhaust, Card: f.villain()}, at(1))
+	f.mustDo(t, "h", Action{Kind: ActPlay, Pile: "deck:p0", X: 400, Y: 200}, at(2))
+
+	if got, want := f.lastLog().Text, "played "+f.nameOf(t, top); got != want {
+		t.Errorf("last line = %q, want %q", got, want)
+	}
+	if got := f.lastLog().Cards; !slices.Equal(got, []string{top}) {
+		t.Errorf("play line cards = %v, want %v", got, []string{top})
+	}
+
+	f.mustDo(t, "b", Action{Kind: ActUndo}, at(3))
+
+	if c := f.g.Table.Cards[top]; c.Zone != ZoneTable || c.FaceDown || c.X != 400 || c.Y != 200 {
+		t.Errorf("played card = %+v after Bob's undo, want it face up at 400, 200", c)
+	}
+	checkIntegrity(t, f.g.Table)
+	checkHistory(t, f.g)
+}
+
 // TestTwoRevealsSurviveAnotherUndo is a reviewer repro: Host reveals, moves
 // the revealed card away and reveals again after Bob's exhaust; Bob's undo
 // must leave both revealed cards on the table.

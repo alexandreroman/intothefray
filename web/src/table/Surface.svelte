@@ -69,7 +69,6 @@
   {#each owners as owner (owner.frame.owner)}
     <div
       class="ownerbox"
-      role="presentation"
       data-owner={owner.frame.owner}
       data-tip={owner.tip}
       style:--owner={owner.color}
@@ -79,6 +78,10 @@
       style:height="{owner.frame.h}px"
     >
       <span class="owner">{owner.name}</span>
+      {#if owner.tip}
+        <!-- The tooltip is for the pointer: screen readers read the hand count here. -->
+        <span class="sr-only">: {owner.tip}</span>
+      {/if}
     </div>
   {/each}
   {#each piles as pile (pile.id)}
@@ -126,18 +129,27 @@
     background: color-mix(in srgb, var(--owner) 6%, transparent);
   }
 
-  /* The owner's name, in the room above the frame. */
+  /* The owner's name, in the room above the frame, clear of it. */
   .owner {
     position: absolute;
     left: 4px;
-    bottom: calc(100% + 2px);
+    bottom: calc(100% + 6px);
     max-width: calc(100% - 8px);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     font-size: 13px;
-    line-height: 16px;
+    line-height: 14px;
     font-weight: 700;
     color: var(--owner);
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 </style>

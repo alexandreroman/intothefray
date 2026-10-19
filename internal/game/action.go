@@ -46,8 +46,8 @@ type Action struct {
 	Kind   Kind     `json:"kind"`
 	Card   string   `json:"card,omitempty"`
 	Target string   `json:"target,omitempty"` // card id (attach, arrow, play under it) or pile id
-	Pile   string   `json:"pile,omitempty"`
-	Area   Area     `json:"area,omitempty"` // whose hand (draw, handOrder), who is dealt to (deal)
+	Pile   string   `json:"pile,omitempty"`   // also the deck whose top card a play takes
+	Area   Area     `json:"area,omitempty"`   // whose hand (draw, handOrder), who is dealt to (deal)
 	X      int      `json:"x,omitempty"`
 	Y      int      `json:"y,omitempty"`
 	N      int      `json:"n,omitempty"`
@@ -103,9 +103,10 @@ func resolve(g *Game, seat int, a Action, rng *rand.Rand) (Action, error) {
 		return resolveExhaust(t, seat, a)
 	case ActFlip:
 		return resolveFlip(t, seat, a)
-	case ActAttach, ActArrowAdd, ActPlay:
-		// A play may tuck the card under a target card.
+	case ActAttach, ActArrowAdd:
 		return a, checkCards(t, seat, a.Card, a.Target)
+	case ActPlay:
+		return resolvePlay(t, seat, a)
 	case ActToHand:
 		return resolveToHand(t, seat, a)
 	case ActToDeck:
@@ -350,6 +351,27 @@ func resolveReveal(t *Table, a Action) (Action, error) {
 	}
 	a.Cards = topCards(enc, 1)
 	return a, nil
+}
+
+// resolvePlay checks a play, which may tuck the card under a target card. A
+// play from the top of the player's own deck names the deck rather than a
+// card, as the client does not know its cards: resolve records the top card,
+// whatever card the client names, so that a rebuild plays that card.
+func resolvePlay(t *Table, seat int, a Action) (Action, error) {
+	if a.Pile != "" {
+		deck, err := ownPile(t, seat, a.Pile)
+		if err != nil {
+			return a, err
+		}
+		if deck.Kind != KindDeck {
+			return a, invalid("only a deck's top card is played from its pile, not %q's", deck.ID)
+		}
+		if len(deck.Cards) == 0 {
+			return a, invalid("pile %q is empty", deck.ID)
+		}
+		a.Card = topCards(deck, 1)[0]
+	}
+	return a, checkCards(t, seat, a.Card, a.Target)
 }
 
 // resolveDeal records the card to deal, so that a rebuild deals that card

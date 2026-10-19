@@ -200,7 +200,8 @@
     overflow: visible;
     pointer-events: none;
     background: linear-gradient(to top, #07090fe6 0%, #07090fa0 55%, transparent 100%);
-    transform: translateY(100px) scale(0.82);
+    /* Low enough that only the top part of the cards shows. */
+    transform: translateY(140px) scale(0.82);
     transform-origin: 50% 100%;
     transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
@@ -264,7 +265,7 @@
   /* The hovered card pops up larger, keeping its tilt on the arc. */
   .hcard:hover .fan,
   .hcard.locked .fan {
-    transform: translateY(calc(var(--ty) - 22px)) rotate(var(--rot)) scale(1.2);
+    transform: translateY(calc(var(--ty) - 31px)) rotate(var(--rot)) scale(1.2);
   }
 
   /* The card selected by a tap glows in the selection colour, as on the table. */

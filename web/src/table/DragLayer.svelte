@@ -44,6 +44,7 @@
   import { isHidden } from './face';
   import { interaction, type DropOn, type Held } from './interaction.svelte';
   import { cardBox, FIRST_PLAYER_BOX, HAND_CARD, type Box } from './layout';
+  import { ALL_ROWS, type RowMap } from './rows';
   import { surfaceRect, toScreen, toTable } from './screen';
 
   let {
@@ -52,6 +53,7 @@
     root,
     faceOf,
     sizeOf,
+    rowMap = ALL_ROWS,
     act,
     ondrag,
     lastError,
@@ -62,6 +64,8 @@
     root: HTMLElement | undefined;
     faceOf: (card: TableCard | undefined) => PackFace | null;
     sizeOf: (card: TableCard) => Size;
+    /** Where the view mode draws the heights of the table (rows.ts). */
+    rowMap?: RowMap;
     /** Sends a drop's action: its id, or null when it could not be sent. */
     act: (action: Action) => number | null;
     /** Tells the other players where the drag is, and null once it is over (spec 5.8). */
@@ -70,7 +74,7 @@
     lastError: SessionError | null;
   } = $props();
 
-  // The encounter deck's top card is not known: its ghost is a face-down card.
+  // The top card of a deck is not known: its ghost is a face-down card, until the server answers.
   const ENCOUNTER_TOP: TableCard = {
     id: 'encounter-top',
     face: 0,
@@ -126,9 +130,18 @@
   const source = $derived(held ? sourceOf(held.element, view, held.card ?? undefined) : null);
   const overHand = $derived(interaction.handGap !== null);
 
-  /** The card a source moves; null for the encounter deck's hidden top card and the token. */
+  const DECK_TOP: TableCard = { ...ENCOUNTER_TOP, id: 'deck-top', back: 'player' };
+
+  /** The card a source moves; null for a deck's hidden top card and the token. */
   function movedCard(from: DragSource): string | null {
-    return from.kind === 'encounter' || from.kind === 'firstPlayer' ? null : from.card;
+    switch (from.kind) {
+      case 'encounter':
+      case 'deck':
+      case 'firstPlayer':
+        return null;
+      default:
+        return from.card;
+    }
   }
 
   /** Whether the dragged thing is still there in the view, the same card as when the drag started. */
@@ -212,7 +225,7 @@
       const surface = surfaceRect(root);
       if (card && surface) {
         const box = boxOf(from);
-        const corner = toScreen(card, surface, zoom);
+        const corner = onScreen(card, surface);
         return {
           x: (pressedAt.x - corner.x) / (box.w * zoom),
           y: (pressedAt.y - corner.y) / (box.h * zoom),
@@ -247,7 +260,7 @@
     if (from.kind === 'firstPlayer') {
       return { ...FIRST_PLAYER_BOX, rotated: false };
     }
-    if (from.kind === 'encounter') {
+    if (from.kind === 'encounter' || from.kind === 'deck') {
       return cardBox('std', { faceDown: true });
     }
     const card = cardsById.get(from.card);
@@ -259,6 +272,17 @@
       return cardBox(sizeOf(card), { faceDown: card.faceDown, onPile: !!card.onPile });
     }
     return cardBox(sizeOf(card), {});
+  }
+
+  /** Where a spot of the table shows on the screen, as the view mode draws it. */
+  function onScreen(point: Point, surface: Rect): Point {
+    return toScreen({ x: point.x, y: rowMap.toDisplay(point.y) ?? point.y }, surface, zoom);
+  }
+
+  /** The spot of the table drawn at a point of the screen, whatever the view mode. */
+  function onTable(at: Point, surface: Rect): Point {
+    const drawn = toTable(at, surface, zoom);
+    return { x: drawn.x, y: rowMap.toTable(drawn.y) };
   }
 
   /** The top-left corner of the dragged card at table size, on the screen. */
@@ -273,7 +297,7 @@
     if (!surface || action.x === undefined || action.y === undefined) {
       return cornerOf(from, at);
     }
-    return toScreen({ x: action.x, y: action.y }, surface, zoom);
+    return onScreen({ x: action.x, y: action.y }, surface);
   }
 
   function placedRect(selector: string, id: string): DOMRect | undefined {
@@ -338,9 +362,9 @@
       return null;
     }
     const surface = surfaceRect(root);
-    const spot = surface ? toTable(cornerOf(from, at), surface, zoom) : { x: 0, y: 0 };
+    const spot = surface ? onTable(cornerOf(from, at), surface) : { x: 0, y: 0 };
     // An encounter card goes to the player whose row the pointer is in.
-    const pointed = surface ? toTable(at, surface, zoom) : { x: 0, y: 0 };
+    const pointed = surface ? onTable(at, surface) : { x: 0, y: 0 };
     const dealTo = dealRecipient(view.table?.piles ?? [], pointed.y, own);
     return { target, action: dropAction(from, target, spot, dealTo) };
   }
@@ -458,8 +482,8 @@
   /**
    * The ids of the dragged cards, as the other players may know them: a
    * table card or a card of a public pile by its id, a hand card (or a card
-   * of a pile they cannot see) by a stand-in, and the encounter deck's
-   * unknown top card by its pile.
+   * of a pile they cannot see) by a stand-in, and a deck's unknown top card
+   * by its pile.
    */
   function cardsShown(from: Exclude<DragSource, { kind: 'firstPlayer' }>): readonly string[] {
     switch (from.kind) {
@@ -471,6 +495,7 @@
         return listed ? [from.card] : [HIDDEN_CARD];
       }
       case 'encounter':
+      case 'deck':
         return [from.pile];
       case 'hand':
         return [HIDDEN_CARD];
@@ -493,7 +518,7 @@
       return null;
     }
     const cards = cardsShown(from);
-    const corner = toTable(cornerOf(from, at), surface, zoom);
+    const corner = onTable(cornerOf(from, at), surface);
     return {
       cards: cards.slice(0, MAX_DRAG_CARDS),
       x: Math.round(corner.x),
@@ -513,6 +538,9 @@
     }
     if (from.kind === 'encounter') {
       return [{ ...ENCOUNTER_TOP, x, y }];
+    }
+    if (from.kind === 'deck') {
+      return [{ ...DECK_TOP, x, y }];
     }
     const card = cardsById.get(from.card);
     if (!card) {

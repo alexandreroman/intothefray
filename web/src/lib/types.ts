@@ -78,11 +78,10 @@ export type Zone = 'table' | 'hand' | 'pile' | 'stage';
 export type PileKind = 'deck' | 'discard' | 'encounter' | 'encounterDiscard' | 'victory' | 'aside';
 
 /**
- * "villain", or "p0".."p3" for the player seated at that index. It names a
- * seat (whose hand, whose view), never a place on the table: the table is
- * one surface.
+ * A seat: "p0".."p3" for the player seated at that index. It says whose hand
+ * or whose view, never a place on the table: the table is one surface.
  */
-export type Area = 'villain' | `p${number}`;
+export type Area = `p${number}`;
 
 export interface CardView {
   id: string;

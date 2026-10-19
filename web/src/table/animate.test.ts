@@ -126,8 +126,42 @@ describe('diffViews', () => {
 
     expect(diffViews(prev, next)).toEqual([
       { kind: 'glow', id: 'a', color: 1 },
+      // Turned face up: it also turns over.
+      { kind: 'flip', id: 'b' },
       { kind: 'glow', id: 'b', color: 1 },
       { kind: 'glow', id: 'c', color: 1 },
+    ]);
+  });
+
+  it('turns over a card flipped, shown on another face, or come face up from a deck', () => {
+    const known = (id: string, extra: Partial<CardView> = {}) =>
+      card(id, { code: '01001', ...extra });
+    const prev = view({
+      cards: [
+        known('down'),
+        known('faces'),
+        card('fromDeck', { zone: 'pile' }),
+        known('fromDiscard', { zone: 'pile' }),
+        known('toDeck'),
+        known('inHand', { zone: 'hand' }),
+      ],
+    });
+    const next = view({
+      cards: [
+        card('down', { faceDown: true }),
+        known('faces', { face: 1 }),
+        known('fromDeck', { x: 300 }),
+        known('fromDiscard', { x: 500 }),
+        card('toDeck', { zone: 'pile' }),
+        known('inHand', { zone: 'hand', face: 1 }),
+      ],
+    });
+
+    const flips = diffViews(prev, next).filter((anim) => anim.kind === 'flip');
+    expect(flips).toEqual([
+      { kind: 'flip', id: 'down' },
+      { kind: 'flip', id: 'faces' },
+      { kind: 'flip', id: 'fromDeck' },
     ]);
   });
 

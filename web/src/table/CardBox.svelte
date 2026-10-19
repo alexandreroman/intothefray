@@ -9,8 +9,9 @@
 <script lang="ts">
   import { tick, untrack } from 'svelte';
   import Dialog from '../components/Dialog.svelte';
-  import type { Action, CardView, PackFace, Size, View } from '../lib/types';
+  import type { Action, CardView, PackFace, PileView, Size, View } from '../lib/types';
   import {
+    canShuffleIn,
     isDeck,
     pileLabel,
     stageFaceName,
@@ -457,6 +458,19 @@
     !readOnly && box.kind === 'pile' && box.mode === 'search' && isDeck(box.pile),
   );
 
+  // A set-aside pile is reached from its box only: it is not drawn on the table.
+  const shuffleInPile = $derived(
+    !readOnly && box.kind === 'pile' && seat !== null && canShuffleIn(box.pile, seat)
+      ? box.pile
+      : null,
+  );
+
+  function shuffleIn(pile: PileView): void {
+    if (act({ kind: 'shuffleIn', pile: pile.id }) !== null) {
+      onclose(false);
+    }
+  }
+
   $effect(() => () => {
     clearTimeout(hideTimer);
     clearTimeout(pendingTimer);
@@ -552,6 +566,12 @@
       <button type="button" onclick={() => onclose(false)}>Close without shuffling</button>
       <button type="button" class="primary" onclick={() => onclose(true)}>Shuffle & close</button>
     {:else}
+      {#if shuffleInPile}
+        {@const pile = shuffleInPile}
+        <button type="button" onclick={() => shuffleIn(pile)}>
+          Shuffle into the encounter deck
+        </button>
+      {/if}
       <button type="button" class="primary" onclick={() => onclose(false)}>Close</button>
     {/if}
   </div>

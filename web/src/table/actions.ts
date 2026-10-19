@@ -5,6 +5,7 @@
 
 import { knownCard } from '../lib/catalog';
 import type { IconName } from './Icons.svelte';
+import { isOutOfPlay } from './layout';
 import type { Action, Area, CardView, PileView, Role, Stage, TableView, View } from '../lib/types';
 
 /**
@@ -46,8 +47,6 @@ export interface ActionItem {
   group: number;
   /** A dropdown item under a heading: the heading starts where the section changes. */
   section?: string;
-  /** Drawn as a dashed, quiet button: it adds something. */
-  add?: boolean;
   /** Dropdown items; a separator is an item with the id 'sep'. A dropdown with an icon has no caret. */
   menu?: ActionItem[];
   run?: () => Action | { ask: CountQuestion } | LocalAction;
@@ -151,6 +150,10 @@ function spectatorActions(el: TableElement, table: TableView): ActionItem[] {
       if (!pile) {
         return [];
       }
+      // Not drawn on the table: their box opens from their owner's deck or discard pile.
+      if (isOutOfPlay(pile)) {
+        return [];
+      }
       if (pile.count === 0) {
         return outOfPlayItems(pile, table);
       }
@@ -169,11 +172,8 @@ function spectatorActions(el: TableElement, table: TableView): ActionItem[] {
   }
 }
 
-/** The seat of a player area ("p1" is seat 1), or null for the villain side. */
-export function seatOf(area: Area): number | null {
-  if (!area.startsWith('p')) {
-    return null;
-  }
+/** The seat index of a seat area: "p1" is seat 1. */
+export function seatOf(area: Area): number {
   return Number(area.slice(1));
 }
 
@@ -248,7 +248,7 @@ function counterMenu(card: CardView): ActionItem {
     ...counterItems(card, 'token', 'Tokens', TOKENS, card.tokens),
     ...counterItems(card, 'status', 'Status', STATUSES, card.status),
   ];
-  return { id: 'counters', label, icon: 'token', tip: label, group: GROUP_MARK, add: true, menu };
+  return { id: 'counters', label, icon: 'token', tip: label, group: GROUP_MARK, menu };
 }
 
 /** Each counter adds one, its current count in brackets. */
@@ -436,10 +436,9 @@ function pileActions(pile: PileView, context: Context): ActionItem[] | { text: s
         ? [searchItem(pile), shuffleBackItem(pile), ...outOfPlay]
         : [searchItem(pile), ...outOfPlay];
     case 'victory':
-      return [browseItem(pile)];
     case 'aside':
-      // Anyone may browse a set-aside pile; only its owner shuffles it in.
-      return own ? [browseItem(pile), shuffleInItem(pile)] : [browseItem(pile)];
+      // Not drawn on the table: their box opens from their owner's deck or discard pile.
+      return [];
   }
 }
 
@@ -639,15 +638,5 @@ function browseItem(pile: PileView): ActionItem {
     tip: 'Browse…',
     group: GROUP_PILE,
     run: () => ({ local: 'browseBox', pile: pile.id }),
-  };
-}
-
-function shuffleInItem(pile: PileView): ActionItem {
-  return {
-    id: 'shuffleIn',
-    label: 'Shuffle in',
-    tip: 'Shuffle all these cards into the encounter deck',
-    group: 0,
-    run: () => ({ kind: 'shuffleIn', pile: pile.id }),
   };
 }

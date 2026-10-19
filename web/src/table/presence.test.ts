@@ -380,6 +380,24 @@ describe("other players' presence", () => {
     expect(cursors()[0]!.classList.contains('off')).toBe(true);
   });
 
+  it('holds a cursor scrolled out of view at the top or bottom edge, its label pointing there', async () => {
+    const { receive } = await renderTable();
+    // Far below what shows: the table spans 40 to 900 on the screen, the layer starting at 40.
+    receive({ color: 1, name: 'Sam', cursor: { x: 100, y: 5000 } });
+    await nextFrame();
+    expect(cursors()[0]!.style.transform).toBe('translate(120px, 816px)');
+    expect(cursors()[0]!.textContent).toBe('Sam ↓');
+    expect(cursors()[0]!.classList.contains('off')).toBe(true);
+
+    // Scrolled past it, above the top edge and to the left.
+    scrolled = { x: 300, y: 500 };
+    receive({ color: 1, name: 'Sam', cursor: { x: 100, y: 50 } });
+    await fireEvent.scroll(document.querySelector('.tablewrap')!);
+    await nextFrame();
+    expect(cursors()[0]!.style.transform).toBe('translate(4px, 4px)');
+    expect(cursors()[0]!.textContent).toBe('Sam ↑ ←');
+  });
+
   it('stale cursor hidden after 10 s', async () => {
     const { receive } = await renderTable();
     receive({ color: 1, name: 'Sam', cursor: { x: 100, y: 650 } });

@@ -138,6 +138,7 @@ async function renderTable(view = makeView()) {
   return {
     session,
     rerender: (next: View) => result.rerender({ session, view: next }),
+    unmount: () => result.unmount(),
   };
 }
 
@@ -458,6 +459,42 @@ describe('CardBox', () => {
       y: 0,
     });
     expect(tileBar()).toBeNull();
+  });
+
+  it("shuffles the scenario's set-aside cards into the encounter deck from their box", async () => {
+    const view = makeView();
+    view.table!.piles.push(
+      pile('saside', { kind: 'aside', count: 1, cards: ['q1'] }),
+      pile('aside:p1', { kind: 'aside', owner: 1, count: 1, cards: ['q1'] }),
+    );
+    const { session } = await renderTable(view);
+    await fireEvent.pointerEnter(placed('enc'));
+    await fireEvent.click(screen.getByRole('button', { name: 'Set-aside cards (1)' }));
+
+    await fireEvent.click(
+      within(box()).getByRole('button', { name: 'Shuffle into the encounter deck' }),
+    );
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'shuffleIn', pile: 'saside' });
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it("offers no shuffle in for another player's set-aside cards, nor to a spectator", async () => {
+    const view = makeView();
+    view.table!.piles.push(
+      pile('deck:p1', { owner: 1, x: 800 }),
+      pile('aside:p1', { kind: 'aside', owner: 1, count: 1, cards: ['q1'] }),
+      pile('saside', { kind: 'aside', count: 1, cards: ['q1'] }),
+    );
+    const player = await renderTable(view);
+    await fireEvent.pointerEnter(placed('deck:p1'));
+    await fireEvent.click(screen.getByRole('button', { name: 'Set-aside cards (1)' }));
+    expect(within(box()).queryByRole('button', { name: /^Shuffle into/ })).toBeNull();
+    player.unmount();
+
+    await renderTable(asSpectator(view));
+    await fireEvent.pointerEnter(placed('enc'));
+    await fireEvent.click(screen.getByRole('button', { name: 'Set-aside cards (1)' }));
+    expect(within(box()).queryByRole('button', { name: /^Shuffle into/ })).toBeNull();
   });
 
   it('browse lists a public pile without the server', async () => {

@@ -208,3 +208,40 @@ describe('TopBar', () => {
     expect(screen.getByRole('button', { name: 'Exit fullscreen' })).toBeTruthy();
   });
 });
+
+describe('TopBar view modes', () => {
+  it('shows no view control outside the table', () => {
+    render(TopBar, {});
+    expect(screen.queryByRole('group', { name: 'Table view' })).toBeNull();
+  });
+
+  it('offers All and Villain + player, the current one pressed', async () => {
+    const onviewmode = vi.fn();
+    render(TopBar, { viewMode: 'all', onviewmode });
+
+    const group = screen.getByRole('group', { name: 'Table view' });
+    const buttons = within(group).getAllByRole('button');
+    expect(
+      buttons.map((b) => [b.getAttribute('aria-label'), b.getAttribute('aria-pressed')]),
+    ).toEqual([
+      ['All', 'true'],
+      ['Villain + player', 'false'],
+    ]);
+    expect(buttons.every((b) => b.querySelector('svg') !== null)).toBe(true);
+
+    await fireEvent.click(within(group).getByRole('button', { name: 'Villain + player' }));
+    expect(onviewmode).toHaveBeenCalledExactlyOnceWith('focus');
+  });
+
+  it('slides its highlight to the chosen view, but not into its first place', async () => {
+    const { rerender } = render(TopBar, { viewMode: 'all', onviewmode: () => {} });
+    const thumb = () => document.querySelector<HTMLElement>('.views .thumb');
+    expect(thumb()).not.toBeNull();
+    expect(thumb()?.getAttribute('aria-hidden')).toBe('true');
+    expect(thumb()?.classList).not.toContain('slides');
+
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    await rerender({ viewMode: 'focus', onviewmode: () => {} });
+    expect(thumb()?.classList).toContain('slides');
+  });
+});

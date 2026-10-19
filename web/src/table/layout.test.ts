@@ -86,6 +86,15 @@ describe('surfaceSize', () => {
     expect(surfaceSize(cards, [], alwaysStd, nothingShows)).toEqual({ w: 200, h: 300 });
   });
 
+  it('never grows past where a card at the server bound of 20000 ends', () => {
+    const cards = [card({ x: 20_000, y: 20_000 })];
+    expect(surfaceSize(cards, [], alwaysStd, nothingShows)).toEqual({ w: 20_280, h: 20_280 });
+    expect(surfaceSize(cards, [], alwaysStd, { w: 30_000, h: 25_000 })).toEqual({
+      w: 30_000,
+      h: 25_000,
+    });
+  });
+
   it('fills what shows of the table', () => {
     const cards = [card({ x: 400 })];
     expect(surfaceSize(cards, [], alwaysStd, { w: 1200, h: 900 })).toEqual({ w: 1200, h: 900 });
@@ -175,8 +184,8 @@ describe('ownerFrames', () => {
 });
 
 describe('fanPositions', () => {
-  const cardWidth = 132;
-  const cardHeight = (cardWidth * 185) / 132;
+  const cardWidth = 185;
+  const cardHeight = 259;
 
   /** The distance between two neighbouring cards. */
   function pitchOf(fan: { x: number }[]): number {
@@ -197,14 +206,14 @@ describe('fanPositions', () => {
     return Math.max(...xs) - Math.min(...xs);
   }
 
-  it('overlaps the cards by 28 when there is room', () => {
-    expect(pitchOf(fanPositions(5, 1200))).toBeCloseTo(104);
-    expect(pitchOf(fanPositions(5, 1200, 100))).toBeCloseTo(72);
+  it('overlaps the cards by 40 when there is room', () => {
+    expect(pitchOf(fanPositions(5, 1200))).toBeCloseTo(145);
+    expect(pitchOf(fanPositions(5, 1200, 140))).toBeCloseTo(100);
   });
 
   it.each([
-    [12, 85.6],
-    [15, 67.3],
+    [12, 76.2],
+    [15, 59.9],
   ])('overlaps %i cards more to fit 1200', (n, pitch) => {
     const fan = fanPositions(n, 1200);
     expect(pitchOf(fan)).toBeCloseTo(pitch, 1);
@@ -217,8 +226,8 @@ describe('fanPositions', () => {
     [15, 1200],
     [12, 700],
     [30, 900],
-  ])('keeps %i cards inside %i, but for the accepted 8.4 on each side', (n, width) => {
-    expect(boundingWidth(fanPositions(n, width))).toBeLessThanOrEqual(width + 2 * 8.4);
+  ])('keeps %i cards inside %i, but for the accepted 11.7 on each side', (n, width) => {
+    expect(boundingWidth(fanPositions(n, width))).toBeLessThanOrEqual(width + 2 * 11.7);
   });
 
   it('piles the cards up rather than reversing them when there is no room', () => {
@@ -234,9 +243,9 @@ describe('fanPositions', () => {
     expect(wide[wide.length - 1]! - wide[0]!).toBeCloseTo(44);
   });
 
-  it('sags along a circle of radius 900', () => {
+  it('sags along a circle of radius 1260', () => {
     for (const p of fanPositions(12, 1200)) {
-      expect(p.y).toBeCloseTo(900 * (1 - Math.cos((p.angle * Math.PI) / 180)), 6);
+      expect(p.y).toBeCloseTo(1260 * (1 - Math.cos((p.angle * Math.PI) / 180)), 6);
     }
   });
 

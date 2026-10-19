@@ -13,6 +13,9 @@ const MOVE_MS = 250;
 const MOVE_EASING = 'cubic-bezier(.2, .8, .2, 1)';
 /** A stage card just chosen turns in like a card being put down. */
 const TURN_IN_MS = 420;
+/** A card turned over: its old side turns away edge-on, then its new side turns in. */
+const FLIP_MS = 360;
+const FLIP_PERSPECTIVE = 'perspective(700px)';
 /** The soft flash on a card that just changed. */
 const GLOW_MS = 1100;
 /** Copies of the pile's back split left and right, then riffle back in, one after the other. */
@@ -172,6 +175,18 @@ class TableMotion {
     for (const id of flying) {
       this.flying.add(id);
     }
+    // The side a card showed before it was turned over: the new view is about to replace it.
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    const oldSides = new Map<string, HTMLElement>();
+    for (const anim of shown) {
+      if (anim.kind !== 'flip') {
+        continue;
+      }
+      const element = root.querySelector(tableCard(anim.id));
+      if (element instanceof HTMLElement) {
+        oldSides.set(anim.id, element.cloneNode(true) as HTMLElement);
+      }
+    }
 
     await tick();
     // A newer view came meanwhile, and animates from what is drawn now.
@@ -191,6 +206,9 @@ class TableMotion {
           break;
         case 'turnIn':
           this.#turnIn(root, anim.id);
+          break;
+        case 'flip':
+          this.#flip(root, anim.id, oldSides.get(anim.id));
           break;
         case 'glow':
           this.#glow(root, anim.id, anim.color);
@@ -340,6 +358,54 @@ class TableMotion {
       cardSubject(id),
       true,
     );
+  }
+
+  /**
+   * Turns a card over around its vertical axis: a copy of its old side turns
+   * away to edge-on, then the card, drawn with its new side, turns back flat.
+   * Without an old side (a hidden card come onto the table), only the second
+   * half plays. An exhausted card keeps its tilt.
+   */
+  #flip(root: HTMLElement, id: string, oldSide: HTMLElement | undefined): void {
+    const element = root.querySelector<HTMLElement>(tableCard(id));
+    if (!element || typeof element.animate !== 'function') {
+      return;
+    }
+    const tilt = getComputedStyle(element).transform;
+    const rest = tilt && tilt !== 'none' ? ` ${tilt}` : '';
+    const flat = `${FLIP_PERSPECTIVE} rotateY(0deg)${rest}`;
+    const edgeOn = `${FLIP_PERSPECTIVE} rotateY(90deg)${rest}`;
+    const half = FLIP_MS / 2;
+
+    if (oldSide && element.parentElement) {
+      // A picture only: it neither takes the pointer nor answers to the card's id.
+      oldSide.removeAttribute('data-id');
+      oldSide.setAttribute('aria-hidden', 'true');
+      oldSide.style.pointerEvents = 'none';
+      // At the end of the surface, clear of the cards Svelte lays out; its own z-index stacks it.
+      element.parentElement.append(oldSide);
+      this.#copies.set(oldSide, cardSubject(id));
+      const away = this.#run(
+        oldSide,
+        [{ transform: flat }, { transform: edgeOn }],
+        { duration: half, easing: 'ease-in', fill: 'forwards' },
+        cardSubject(id),
+      );
+      const remove = () => {
+        oldSide.remove();
+        this.#copies.delete(oldSide);
+      };
+      void away?.finished.then(remove, remove);
+    }
+    // Edge-on, the card is not seen while its old side turns away.
+    const keyframes: Keyframe[] = oldSide
+      ? [
+          { transform: edgeOn, offset: 0 },
+          { transform: edgeOn, offset: 0.5, easing: 'ease-out' },
+          { transform: flat, offset: 1 },
+        ]
+      : [{ transform: edgeOn }, { transform: flat }];
+    this.#run(element, keyframes, { duration: oldSide ? FLIP_MS : half }, cardSubject(id));
   }
 
   #glow(root: HTMLElement, id: string, color: number): void {

@@ -150,6 +150,15 @@ async function renderTable(view = makeView()) {
   return { session, ...result };
 }
 
+/** The preview floating over the table: only there while something is previewed. */
+function preview(): HTMLElement {
+  return screen.getByLabelText('Focus');
+}
+
+function noPreview(): boolean {
+  return screen.queryByLabelText('Focus') === null;
+}
+
 beforeEach(() => {
   vi.mocked(loadGameCards).mockResolvedValue();
   vi.mocked(knownCard).mockImplementation(infoOf);
@@ -435,7 +444,7 @@ describe('ActionBar', () => {
     expect(bar()).not.toBeNull();
     await vi.advanceTimersByTimeAsync(1);
     expect(bar()).toBeNull();
-    expect(screen.getByLabelText('Card preview').textContent).toContain('Hover a card');
+    expect(noPreview()).toBe(true);
   });
 
   it('ignores the pointerenter a redraw fires under a resting pointer', async () => {
@@ -683,24 +692,22 @@ describe('ActionBar', () => {
 describe('pile preview', () => {
   it('a deck keeps the preview; a pile listing its cards shows its top', async () => {
     await renderTable();
-    const preview = screen.getByLabelText('Card preview');
 
     await fireEvent.pointerEnter(placed('two'));
-    expect(within(preview).getByRole('img', { name: 'Peter Parker' })).toBeTruthy();
+    expect(within(preview()).getByRole('img', { name: 'Peter Parker' })).toBeTruthy();
     await fireEvent.pointerEnter(placed('deck:p0'));
-    expect(within(preview).getByRole('img', { name: 'Peter Parker' })).toBeTruthy();
+    expect(within(preview()).getByRole('img', { name: 'Peter Parker' })).toBeTruthy();
 
     await fireEvent.pointerEnter(placed('disc:p0'));
-    expect(within(preview).getByRole('img', { name: 'Spider-Man' })).toBeTruthy();
+    expect(within(preview()).getByRole('img', { name: 'Spider-Man' })).toBeTruthy();
   });
 
   it("another player's deck clears the preview", async () => {
     await renderTable();
-    const preview = screen.getByLabelText('Card preview');
 
     await fireEvent.pointerEnter(placed('two'));
     await fireEvent.pointerEnter(placed('deck:p1'));
-    expect(preview.textContent).toContain('Hover a card');
+    expect(noPreview()).toBe(true);
   });
 });
 
@@ -735,8 +742,10 @@ describe('tokens and statuses', () => {
     await fireEvent.pointerEnter(placed('mine'));
 
     const add = addButton();
-    // A dashed "+" icon: no caret, no text; the name is in the tooltip.
-    expect(add.classList.contains('add')).toBe(true);
+    // An icon like the others, with no border of its own: no caret, no text; the name is in the
+    // tooltip.
+    expect(add.classList.contains('ico')).toBe(true);
+    expect(add.classList.contains('add')).toBe(false);
     expect(add.dataset.tip).toBe('Add a token or status');
     expect(add.querySelector('svg')).not.toBeNull();
     expect(add.querySelector('.caret')).toBeNull();
@@ -872,7 +881,6 @@ describe('tokens and statuses', () => {
   it('the bar and the preview stay while the pointer is on the pill', async () => {
     await renderTable(viewWithCounters());
     vi.useFakeTimers();
-    const preview = screen.getByLabelText('Card preview');
     await fireEvent.pointerEnter(placed('mine'));
     const token = counter('mine', 'token:dmg');
     await fireEvent.pointerEnter(token);
@@ -883,12 +891,12 @@ describe('tokens and statuses', () => {
     await fireEvent.pointerEnter(pill()!);
     await vi.advanceTimersByTimeAsync(1000);
     expect(bar()).not.toBeNull();
-    expect(within(preview).getByRole('img', { name: 'Spider-Man' })).toBeTruthy();
+    expect(within(preview()).getByRole('img', { name: 'Spider-Man' })).toBeTruthy();
 
     await fireEvent.pointerLeave(pill()!);
     await vi.advanceTimersByTimeAsync(300);
     expect(bar()).toBeNull();
-    expect(preview.textContent).toContain('Hover a card');
+    expect(noPreview()).toBe(true);
     expect(pill()).toBeNull();
   });
 

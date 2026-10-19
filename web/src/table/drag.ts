@@ -3,9 +3,9 @@
 // the pointer, measures the screen and calls them.
 
 import type { Action, Area, CardView, PileView, View } from '../lib/types';
-import { asidePileOf, discardPileOf, homeDeckOf, seatOf, stageHeldBy } from './actions';
+import { discardPileOf, homeDeckOf, seatOf, stageHeldBy } from './actions';
 import type { Pressable } from './interaction.svelte';
-import { GRID } from './layout';
+import { GRID, TABLE_LIMIT } from './layout';
 
 /** A press turns into a drag once the pointer has moved this far, in screen pixels. */
 export const DRAG_THRESHOLD = 4;
@@ -59,6 +59,8 @@ export type DragSource =
   | { kind: 'pile'; pile: string; card: string }
   /** The unknown top card of the encounter deck, dealt face down. */
   | { kind: 'encounter'; pile: string }
+  /** The unknown top card of the viewer's own deck: drawn, discarded, or played face up. */
+  | { kind: 'deck'; pile: string }
   /** The first player token (spec 5.8), from where it lies. */
   | { kind: 'firstPlayer'; x: number; y: number };
 
@@ -150,13 +152,25 @@ export function dropAction(
     case 'hand':
       return drag.kind === 'hand' ? reorder(drag, target.index) : null;
     case 'toHand':
-      return drag.kind === 'card' ? { kind: 'toHand', card: drag.card } : null;
+      return toHand(drag);
     case 'pile':
       return onPile(drag, target.pile, target.drop);
     case 'card':
       return onCard(drag, target.card, at, dealTo);
     case 'table':
       return place(drag, at, dealTo);
+  }
+}
+
+/** A table card goes back to the hand; the top card of the viewer's deck is drawn. */
+function toHand(drag: DragSource): Action | null {
+  switch (drag.kind) {
+    case 'card':
+      return { kind: 'toHand', card: drag.card };
+    case 'deck':
+      return { kind: 'draw', n: 1 };
+    default:
+      return null;
   }
 }
 
@@ -172,7 +186,8 @@ function onCard(drag: CardSource, card: string, at: Point, dealTo: Area): Action
       // Played and tucked in one action: one undo step.
       return { kind: 'play', card: drag.card, target: card };
     case 'encounter':
-      // Dealt face down where it lands (spec 5.5), over that card.
+    case 'deck':
+      // Put where it lands, over that card: dealt face down (spec 5.5), or played face up.
       return place(drag, at, dealTo);
   }
 }
@@ -199,7 +214,7 @@ function onPile(drag: CardSource, pile: string, drop: PileDrop): Action | null {
   ) {
     return null;
   }
-  if (drag.kind === 'encounter') {
+  if (drag.kind === 'encounter' || drag.kind === 'deck') {
     return drop === 'discard' ? { kind: 'discardTop', pile: drag.pile, n: 1 } : null;
   }
   switch (drop) {
@@ -213,8 +228,9 @@ function onPile(drag: CardSource, pile: string, drop: PileDrop): Action | null {
 }
 
 function place(drag: DragSource, at: Point, dealTo: Area): Action | null {
-  const x = Math.max(0, snap(at.x));
-  const y = Math.max(0, snap(at.y));
+  // Within the server's bounds: never off the top or left edge, nor past TABLE_LIMIT.
+  const x = Math.min(TABLE_LIMIT, Math.max(0, snap(at.x)));
+  const y = Math.min(TABLE_LIMIT, Math.max(0, snap(at.y)));
   switch (drag.kind) {
     case 'card':
       // A revealed card dropped where it lies is still on its deck: nothing moves.
@@ -227,6 +243,9 @@ function place(drag: DragSource, at: Point, dealTo: Area): Action | null {
       return { kind: 'play', card: drag.card, x, y };
     case 'encounter':
       return { kind: 'deal', area: dealTo, x, y };
+    case 'deck':
+      // The server plays the deck's top card, which the client does not know.
+      return { kind: 'play', pile: drag.pile, x, y };
     case 'firstPlayer':
       if (x === drag.x && y === drag.y) {
         return null;
@@ -256,8 +275,8 @@ export function dealRecipient(piles: readonly PileView[], y: number, viewer: Are
 
 /**
  * What pressing the element drags, in the current view, or null when it
- * cannot be dragged: a spectator, a deck, an empty pile, another player's
- * set-aside cards, or a card that is no longer there. During a drag from a
+ * cannot be dragged: a spectator, another player's deck, an empty pile, an
+ * out-of-play pile, or a card that is no longer there. During a drag from a
  * pile, `taken` is the card taken from it: the drag follows that card while
  * it is still in the pile, whatever lands on top of it. Any player can move
  * the first player token.
@@ -291,12 +310,12 @@ export function sourceOf(element: Pressable, view: View, taken?: string): DragSo
       if (pile.kind === 'encounter') {
         return { kind: 'encounter', pile: pile.id };
       }
-      // Set-aside cards are private to their owner, as checkPile has it.
-      const open =
-        pile.kind === 'discard' ||
-        pile.kind === 'encounterDiscard' ||
-        pile.kind === 'victory' ||
-        (pile.kind === 'aside' && (pile.owner === -1 || `p${pile.owner}` === area));
+      // A deck is private to its owner, as checkPile has it.
+      if (pile.kind === 'deck') {
+        return `p${pile.owner}` === area ? { kind: 'deck', pile: pile.id } : null;
+      }
+      // Out-of-play piles are not drawn on the table: only a discard pile is dragged from.
+      const open = pile.kind === 'discard' || pile.kind === 'encounterDiscard';
       const card = taken ?? pile.cards?.at(-1);
       const inPile = card !== undefined && (pile.cards ?? []).includes(card);
       return open && inPile ? { kind: 'pile', pile: pile.id, card } : null;
@@ -305,13 +324,20 @@ export function sourceOf(element: Pressable, view: View, taken?: string): DragSo
 }
 
 /**
- * Whether the hand takes the dragged card back: only a table card of the
- * viewer's own, as Move to ▾ Hand has it (ruling P5b-R10). The prototype
- * returns it to the hand from anywhere over the fan.
+ * Whether the hand takes the dragged card: a table card of the viewer's own,
+ * as Move to ▾ Hand has it (ruling P5b-R10), or the top card of their deck,
+ * which is drawn. The prototype takes it from anywhere over the fan.
  */
 export function goesToHand(drag: DragSource, view: View): boolean {
   const seat = view.you.area ? seatOf(view.you.area) : null;
-  if (drag.kind !== 'card' || view.you.role !== 'player' || seat === null) {
+  if (view.you.role !== 'player' || seat === null) {
+    return false;
+  }
+  // Only the viewer's own deck can be dragged (sourceOf): its top card is drawn.
+  if (drag.kind === 'deck') {
+    return true;
+  }
+  if (drag.kind !== 'card') {
     return false;
   }
   return view.table?.cards.find((c) => c.id === drag.card)?.owner === seat;
@@ -345,6 +371,10 @@ export function pileTargets(drag: DragSource, view: View): PileTarget[] {
     const encounterDiscard: PileTarget = { pile: 'encd', drop: 'discard', label: 'Discard' };
     return [encounterDiscard].filter(exists);
   }
+  if (drag.kind === 'deck') {
+    const discard: PileTarget = { pile: `disc:p${seat}`, drop: 'discard', label: 'Discard' };
+    return [discard].filter(exists);
+  }
 
   const card = table.cards.find((c) => c.id === drag.card);
   // Mirrors checkNotStageCurrent: the card a stage shows stays on the table.
@@ -356,11 +386,8 @@ export function pileTargets(drag: DragSource, view: View): PileTarget[] {
   if (card.owner === seat || card.owner === -1) {
     targets.push({ pile: homeDeckOf(card), drop: 'top', label: 'Top of deck' });
   }
-  targets.push(
-    { pile: discardPileOf(card), drop: 'discard', label: 'Discard' },
-    { pile: 'vic', drop: 'pile', label: 'Victory display' },
-    { pile: asidePileOf(card, seat), drop: 'pile', label: 'Set aside' },
-  );
+  // The out-of-play piles are not drawn: Move to ▾ sends a card there.
+  targets.push({ pile: discardPileOf(card), drop: 'discard', label: 'Discard' });
   return targets.filter(exists);
 }
 

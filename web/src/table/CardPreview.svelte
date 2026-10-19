@@ -1,7 +1,7 @@
 <!--
   The large picture of the hovered card: its face, or its back when hidden.
-  Without a card, the frame is empty and says how to fill it. Shown in the
-  side column, or over the table on a narrow screen.
+  Without a card, the frame is empty and says how to fill it. Shown over the
+  table, at its top right corner.
 -->
 <script lang="ts" module>
   import type { Back } from '../lib/types';
@@ -16,10 +16,17 @@
   import CardBack from './CardBack.svelte';
   import CardFace from './CardFace.svelte';
 
-  let { preview }: { preview: Preview | null } = $props();
+  let {
+    preview,
+    snug = false,
+  }: {
+    preview: Preview | null;
+    /** The frame takes the card's own shape, landscape included, rather than a portrait slot. */
+    snug?: boolean;
+  } = $props();
 </script>
 
-<div class="frame" class:empty={!preview} aria-label="Card preview" role="figure">
+<div class="frame" class:empty={!preview} class:snug aria-label="Focus" role="figure">
   {#if !preview}
     <div class="hint">Hover a card<br />to see it here</div>
   {:else if preview.kind === 'back'}
@@ -41,6 +48,10 @@
     display: grid;
     place-items: center;
     border-radius: 14px;
+  }
+
+  .frame.snug {
+    aspect-ratio: auto;
   }
 
   /* Only the empty frame is outlined: a shown card keeps its cut corners clear. */

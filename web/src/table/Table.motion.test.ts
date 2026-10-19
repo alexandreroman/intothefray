@@ -431,6 +431,63 @@ describe('Table animations', () => {
     }
   });
 
+  it('a card turned over turns away on its old side, then back on its new one', async () => {
+    const session = fakeSession();
+    const { rerender, container } = render(Table, {
+      session,
+      view: makeView([card('a', { x: 40 })]),
+    });
+    await settle();
+
+    const next = makeView([card('a', { x: 40, faceDown: true, code: undefined })], {
+      log: [START, line('flipped Spider-Man face down')],
+    });
+    await rerender({ session, view: next });
+
+    const flat = 'perspective(700px) rotateY(0deg)';
+    const edgeOn = 'perspective(700px) rotateY(90deg)';
+    await waitFor(() =>
+      expect(animationsOf('.surface .card[data-id="a"]').map(([frames]) => frames)).toContainEqual([
+        { transform: edgeOn, offset: 0 },
+        { transform: edgeOn, offset: 0.5, easing: 'ease-out' },
+        { transform: flat, offset: 1 },
+      ]),
+    );
+    // The old side is a copy that answers to nothing, turning away to edge-on.
+    const copy = container.querySelector<HTMLElement>('.surface .card[aria-hidden="true"]');
+    expect(copy).not.toBeNull();
+    expect(copy?.hasAttribute('data-id')).toBe(false);
+    expect(copy?.style.pointerEvents).toBe('none');
+    const [[away]] = animationsOf('.surface .card[aria-hidden="true"]') as [
+      [Keyframe[], KeyframeAnimationOptions],
+    ];
+    expect(away).toEqual([{ transform: flat }, { transform: edgeOn }]);
+
+    // A stop takes the copy away.
+    motion.stop();
+    expect(container.querySelector('.surface .card[aria-hidden="true"]')).toBeNull();
+  });
+
+  it('a card come face up from a deck onto the table only turns in', async () => {
+    const session = fakeSession();
+    const { rerender } = render(Table, {
+      session,
+      view: makeView([card('a', { zone: 'pile', code: undefined })]),
+    });
+    await settle();
+
+    await rerender({
+      session,
+      view: makeView([card('a', { x: 300 })], { log: [START, line('played Spider-Man')] }),
+    });
+    await waitFor(() =>
+      expect(animationsOf('.surface .card[data-id="a"]').map(([frames]) => frames)).toContainEqual([
+        { transform: 'perspective(700px) rotateY(90deg)' },
+        { transform: 'perspective(700px) rotateY(0deg)' },
+      ]),
+    );
+  });
+
   it('a glow plays on through an unrelated view', async () => {
     const session = fakeSession();
     const cards = (tokens: number, bX: number) => [

@@ -23,6 +23,7 @@
   import { contains } from './drag';
   import { pileBack } from './face';
   import { interaction } from './interaction.svelte';
+  import { ALL_ROWS, type RowMap } from './rows';
   import { scrollerRect, surfaceRect, toScreen, toTable } from './screen';
 
   let {
@@ -32,6 +33,7 @@
     root,
     zoom,
     faceOf,
+    rowMap = ALL_ROWS,
     layout,
   }: {
     view: View;
@@ -43,6 +45,8 @@
     root: HTMLElement | undefined;
     zoom: number;
     faceOf: (card: TableCard | undefined) => PackFace | null;
+    /** Where the view mode draws the heights of the table (rows.ts). */
+    rowMap?: RowMap;
     /** What moves the cards on the screen without a new view (the surface size): redrawn on change. */
     layout: unknown;
   } = $props();
@@ -56,17 +60,23 @@
   const LOST_MS = 60_000;
   /** How long a ping's rings expand. */
   const PING_MS = 1200;
-  // The prototype's room at the table's edges for a cursor scrolled out of view.
+  // The prototype's room at the table's edges for a cursor scrolled out of view. At the right and
+  // bottom edges, the room keeps the pointer and its name label in view.
   const EDGE_IN = 8;
   const RIGHT_EDGE_ROOM = 70;
   const LEFT_EDGE_ROOM = 4;
+  const BOTTOM_EDGE_ROOM = 44;
+  const TOP_EDGE_ROOM = 4;
 
   /** Where something lies on the layer, in screen pixels. */
   interface Placed {
     x: number;
     y: number;
-    /** An arrow towards a cursor held at the table's edge, when its spot is scrolled out of view. */
-    side: '' | ' ←' | ' →';
+    /**
+     * Arrows towards a cursor held at the table's edges, when its spot is scrolled out of view:
+     * " ↑", " →", " ↓ ←"…, and '' when it shows.
+     */
+    side: string;
   }
 
   interface Ping {
@@ -113,7 +123,7 @@
     }
     // The server takes whole table units only.
     const point = toTable(at, surface, zoom);
-    return { x: Math.round(point.x), y: Math.round(point.y) };
+    return { x: Math.round(point.x), y: Math.round(rowMap.toTable(point.y)) };
   }
 
   function onPointerMove(event: PointerEvent): void {
@@ -188,24 +198,33 @@
     );
   }
 
-  /** Where a spot of the table shows, held within the table's width as in the prototype. */
+  /** Where a spot of the table shows, held within the visible table as in the prototype. */
   function place(spot: PresencePoint, origin: DOMRect): Placed | null {
     const surface = surfaceRect(root);
     const scroller = scrollerRect(root);
-    if (!surface || !scroller || !isSpot(spot)) {
+    const shownY = isSpot(spot) ? rowMap.toDisplay(spot.y) : null;
+    if (!surface || !scroller || shownY === null) {
       return null;
     }
-    const at = toScreen(spot, surface, zoom);
-    let x = at.x;
-    let side: Placed['side'] = '';
+    const at = toScreen({ x: spot.x, y: shownY }, surface, zoom);
+    let { x, y } = at;
+    let vertical = '';
+    if (y > scroller.bottom - EDGE_IN) {
+      y = scroller.bottom - BOTTOM_EDGE_ROOM;
+      vertical = ' ↓';
+    } else if (y < scroller.top) {
+      y = scroller.top + TOP_EDGE_ROOM;
+      vertical = ' ↑';
+    }
+    let horizontal = '';
     if (x > scroller.right - EDGE_IN) {
       x = scroller.right - RIGHT_EDGE_ROOM;
-      side = ' →';
+      horizontal = ' →';
     } else if (x < scroller.left) {
       x = scroller.left + LEFT_EDGE_ROOM;
-      side = ' ←';
+      horizontal = ' ←';
     }
-    return { x: x - origin.left, y: at.y - origin.top, side };
+    return { x: x - origin.left, y: y - origin.top, side: vertical + horizontal };
   }
 
   /** The card or pile a player previews, on the layer. */
@@ -251,10 +270,11 @@
    */
   function ghostsOf(drag: PresenceDrag, origin: DOMRect): TableCard[] {
     const surface = surfaceRect(root);
-    if (!surface || !isSpot(drag)) {
+    const shownY = isSpot(drag) ? rowMap.toDisplay(drag.y) : null;
+    if (!surface || shownY === null) {
       return [];
     }
-    const corner = toScreen(drag, surface, zoom);
+    const corner = toScreen({ x: drag.x, y: shownY }, surface, zoom);
     const x = (corner.x - origin.left) / zoom;
     const y = (corner.y - origin.top) / zoom;
     const cards = new Map((view.table?.cards ?? []).map((card) => [card.id, card]));

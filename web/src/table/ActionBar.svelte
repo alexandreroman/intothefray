@@ -234,7 +234,6 @@
           type="button"
           class="dd"
           class:ico={item.icon !== undefined}
-          class:add={item.add}
           data-menu={item.id}
           data-tip={item.tip ?? item.label}
           aria-label={item.icon ? item.label : undefined}
@@ -412,22 +411,9 @@
     box-shadow: inset 0 0 0 1px var(--sel);
   }
 
-  /* The "+" dropdown adds something: dashed, and quiet until used. */
-  button.add {
-    margin: 0 1px;
-    border: 1px dashed #3a4766;
-    color: var(--muted);
-  }
-
-  button.add:hover:not([aria-disabled='true']) {
-    color: var(--text);
-  }
-
-  button.add[aria-expanded='true'] {
-    border-style: solid;
-    border-color: #5a6890;
+  /* A dropdown whose menu is open stays lit, as under the pointer. */
+  .actionbar button[aria-expanded='true'] {
     background: var(--line-strong);
-    color: var(--text);
   }
 
   .caret {

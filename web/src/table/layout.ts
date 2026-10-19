@@ -5,6 +5,9 @@ export type { Size };
 /** Table units are multiples of this. */
 export const GRID = 10;
 
+/** The farthest a card can lie on the table, both ways, in table units: the server's bound. */
+export const TABLE_LIMIT = 20000;
+
 export interface Box {
   w: number;
   h: number;
@@ -12,7 +15,8 @@ export interface Box {
   rotated: boolean;
 }
 
-// Table cards are 40 % larger than the hand's and the preview's.
+// Table cards are 40 % larger than the 100 × 140 they used to be on the table; the hand and the
+// preview keep their own sizes.
 const SIZES: Record<Size, { w: number; h: number }> = {
   std: { w: 140, h: 196 },
   land: { w: 196, h: 140 },
@@ -28,18 +32,22 @@ const PILE_BOX = PORTRAIT_CARD;
 const FREE_ROOM_RIGHT = 200;
 const FREE_ROOM_BOTTOM = 300;
 
+// The surface never grows past where a card can lie plus the largest card, 280 units long.
+const SURFACE_LIMIT = TABLE_LIMIT + 280;
+
 const OUT_OF_PLAY_KINDS: readonly PileKind[] = ['victory', 'aside'];
 
-const FAN_RADIUS = 900;
+// The prototype's fan (ruling P5a-R5), its lengths 40 % larger with the hand cards.
+const FAN_RADIUS = 1260;
 const FAN_MAX_STEP_DEG = 5;
 const FAN_MAX_TOTAL_DEG = 44;
-const FAN_OVERLAP = 28;
-// Kept free beside the row, and the share of a card the tilted outer cards take beyond it.
-// The prototype's values (ruling P5a-R5). The cards turn around a point below their bottom edge
-// (Hand.svelte's transform-origin 50% 110%), so at the full 22° the top corners of 132 × 185
-// outer cards reach about 8 px past this room on each side, into the hand's padding. Reserving
-// that overhang instead would pack a 10-card hand tighter than the prototype does at 1200 px.
-const FAN_SIDE_ROOM = 80;
+const FAN_OVERLAP = 40;
+// Kept free beside the row, and the share of a card the tilted outer cards take beyond it. The
+// cards turn around a point below their bottom edge (Hand.svelte's transform-origin 50% 110%),
+// so at the full 22° the top corners of 185 × 259 outer cards reach about 12 px past this room
+// on each side, into the hand's padding. Reserving that overhang instead would pack a 10-card
+// hand tighter than the prototype does.
+const FAN_SIDE_ROOM = 112;
 const FAN_TILT_ROOM = 0.35;
 
 /** The box a card takes on the table. */
@@ -119,7 +127,8 @@ export function footprints(
 
 /**
  * The size of the table's surface, in table units: at least what shows of it
- * (`visible`), and always free room past its rightmost and its lowest item.
+ * (`visible`), and free room past its rightmost and its lowest item, up to
+ * where a card lying at the server's bound ends.
  */
 export function surfaceSize(
   cards: CardView[],
@@ -132,8 +141,8 @@ export function surfaceSize(
   const right = Math.ceil(Math.max(0, ...boxes.map((box) => box.right)));
   const bottom = Math.ceil(Math.max(0, ...boxes.map((box) => box.bottom)));
   return {
-    w: Math.max(visible.w, right + FREE_ROOM_RIGHT),
-    h: Math.max(visible.h, bottom + FREE_ROOM_BOTTOM),
+    w: Math.max(visible.w, Math.min(SURFACE_LIMIT, right + FREE_ROOM_RIGHT)),
+    h: Math.max(visible.h, Math.min(SURFACE_LIMIT, bottom + FREE_ROOM_BOTTOM)),
   };
 }
 
@@ -183,20 +192,20 @@ export interface FanSlot {
 /** The first player token, in table units. */
 export const FIRST_PLAYER_BOX = { w: 84, h: 70 } as const;
 
-/** A card in the hand. */
-export const HAND_CARD = { w: 132, h: 185 } as const;
+/** A card in the hand, as large as a card on the table at 100 %. */
+export const HAND_CARD = { w: 185, h: 259 } as const;
 
 /** A card in the hand on a narrow screen (900 px wide or less). */
-export const HAND_CARD_NARROW = { w: 100, h: 140 } as const;
+export const HAND_CARD_NARROW = { w: 140, h: 196 } as const;
 
 const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
 
 /**
  * Lays out `n` cards of a hand, as the prototype does: the cards overlap by
- * 28, more when the row does not fit `width` (keeping 80 plus a third of a
+ * 40, more when the row does not fit `width` (keeping 112 plus a third of a
  * card for the tilted outer cards), and turn 5 degrees apart, 44 at most in
- * total. Each card sags by how far a circle of radius 900 falls away from its
- * top at that angle.
+ * total. Each card sags by how far a circle of radius 1260 falls away from
+ * its top at that angle.
  *
  * Coordinates are relative to the fan centre, the middle of the middle card:
  * `x` grows to the right, `y` grows downward (outer cards sit lower), `angle`

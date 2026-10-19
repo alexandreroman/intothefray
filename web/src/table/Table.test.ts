@@ -3,6 +3,7 @@ import { tick } from 'svelte';
 import Table from './Table.svelte';
 import { interaction, LINGER_MS } from './interaction.svelte';
 import { knownCard, loadGameCards, loadIndex, type CardInfo } from '../lib/catalog';
+import { clearPrefMemory } from '../lib/prefs';
 import type {
   CardView as TableCard,
   Index,
@@ -172,6 +173,15 @@ function zoomLabel(): HTMLElement {
   return screen.getByRole('button', { name: 'Back to 100%' });
 }
 
+/** The preview floating over the table: only there while something is previewed. */
+function preview(): HTMLElement {
+  return screen.getByLabelText('Focus');
+}
+
+function noPreview(): boolean {
+  return screen.queryByLabelText('Focus') === null;
+}
+
 beforeEach(() => {
   localStorage.clear();
   vi.mocked(loadGameCards).mockResolvedValue();
@@ -225,7 +235,17 @@ describe('Table', () => {
     await catalogLoaded();
 
     const boxes = ownerBoxes();
-    expect(boxes.map((box) => box.textContent?.trim())).toEqual(['Villain', 'Alex', 'Sam']);
+    expect(boxes.map((box) => box.querySelector('.owner')?.textContent)).toEqual([
+      'Villain',
+      'Alex',
+      'Sam',
+    ]);
+    // Screen readers read the hand count, which the pointer finds in the tooltip.
+    expect(boxes.map((box) => box.textContent?.replace(/\s+/g, ' ').trim())).toEqual([
+      'Villain',
+      'Alex : 6 cards in hand',
+      'Sam : 5 cards in hand',
+    ]);
     expect(boxes.map((box) => box.style.getPropertyValue('--owner'))).toEqual([
       'var(--spark)',
       'var(--p1)',
@@ -430,29 +450,79 @@ describe('Table', () => {
     expect(top.getAttribute('src')).toBe('01001.png');
   });
 
+  it('moves the Focus panel to a corner clear of the hovered card', async () => {
+    const rect = (left: number, top: number, width: number, height: number) =>
+      ({ left, top, width, height, right: left + width, bottom: top + height }) as DOMRect;
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: Element,
+    ) {
+      if (this.classList.contains('tablewrap')) {
+        return rect(0, 0, 1000, 800);
+      }
+      // Rhino lies under the top right corner.
+      return (this as HTMLElement).dataset.id === 'v' ? rect(800, 50, 140, 196) : rect(0, 0, 0, 0);
+    });
+    vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(320);
+    vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(450);
+    try {
+      render(Table, { session: fakeSession(), view: makeView() });
+      await catalogLoaded();
+
+      await fireEvent.pointerEnter(surface().querySelector('.card[data-id="v"]') as HTMLElement);
+      const panel = preview().closest('.peek');
+      expect(panel?.classList).toContain('top-left');
+      expect(panel?.classList).not.toContain('moved');
+
+      // Another card clear of the top right corner: the panel goes back home, fading in.
+      await fireEvent.pointerEnter(surface().querySelector('.card[data-id="a"]') as HTMLElement);
+      expect(preview().closest('.peek')?.classList).toContain('top-right');
+      expect(preview().closest('.peek')?.classList).toContain('moved');
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
+
+  it('rings the hovered card or pile, not a tap selection, which has its own ring', async () => {
+    render(Table, { session: fakeSession(), view: makeView() });
+    await catalogLoaded();
+    const rhino = surface().querySelector<HTMLElement>('.card[data-id="v"]')!;
+    const deck = surface().querySelector<HTMLElement>('.pile[data-id="d1"]')!;
+
+    await fireEvent.pointerEnter(rhino);
+    expect(rhino.classList).toContain('hovered');
+    await fireEvent.pointerEnter(deck);
+    expect(deck.classList).toContain('hovered');
+    expect(rhino.classList).not.toContain('hovered');
+
+    await fireEvent.pointerDown(rhino, { pointerType: 'touch' });
+    await fireEvent.click(rhino);
+    expect(rhino.classList).toContain('locked');
+    expect(rhino.classList).not.toContain('hovered');
+  });
+
   it('hovering a card previews it; leaving it clears the preview after a linger', async () => {
-    const { container } = render(Table, { session: fakeSession(), view: makeView() });
-    const preview = screen.getByLabelText('Card preview');
+    render(Table, { session: fakeSession(), view: makeView() });
     const villain = surface();
     const rhino = await within(villain).findByRole('img', { name: 'Rhino' });
 
     await fireEvent.pointerEnter(rhino.closest('.card') as HTMLElement);
-    expect(within(preview).getByRole('img', { name: 'Rhino' }).getAttribute('src')).toBe(
+    expect(within(preview()).getByRole('img', { name: 'Rhino' }).getAttribute('src')).toBe(
       '01094.png',
     );
 
     // The main scheme is landscape.
     const scheme = within(villain).getByRole('img', { name: 'The Break-In!' });
     await fireEvent.pointerEnter(scheme.closest('.card') as HTMLElement);
-    expect(within(preview).getByRole('img', { name: 'The Break-In!' }).classList).toContain('land');
+    expect(within(preview()).getByRole('img', { name: 'The Break-In!' }).classList).toContain(
+      'land',
+    );
 
     vi.useFakeTimers();
     await fireEvent.pointerLeave(scheme.closest('.card') as HTMLElement);
     await vi.advanceTimersByTimeAsync(LINGER_MS - 1);
-    expect(within(preview).getByRole('img', { name: 'The Break-In!' })).toBeTruthy();
+    expect(within(preview()).getByRole('img', { name: 'The Break-In!' })).toBeTruthy();
     await vi.advanceTimersByTimeAsync(1);
-    expect(preview.textContent).toContain('Hover a card');
-    expect(container.querySelector('.preview .art')).toBeNull();
+    expect(noPreview()).toBe(true);
   });
 
   it('previews the back of a face-down card; a deck keeps it, an empty pile clears it', async () => {
@@ -465,19 +535,18 @@ describe('Table', () => {
       ],
     });
     const { container } = render(Table, { session: fakeSession(), view });
-    const preview = screen.getByLabelText('Card preview');
     const table = surface();
 
     await fireEvent.pointerEnter(table.querySelector('.card:not(.pile)') as HTMLElement);
-    expect(within(preview).getByRole('img', { name: 'Player card back' })).toBeTruthy();
+    expect(within(preview()).getByRole('img', { name: 'Player card back' })).toBeTruthy();
 
     // A deck shows nothing new: the preview keeps the card seen before.
     await fireEvent.pointerEnter(table.querySelector('.pile') as HTMLElement);
-    expect(within(preview).getByRole('img', { name: 'Player card back' })).toBeTruthy();
+    expect(within(preview()).getByRole('img', { name: 'Player card back' })).toBeTruthy();
 
     // An empty pile shows nothing.
     await fireEvent.pointerEnter(container.querySelector('.pile.empty') as HTMLElement);
-    expect(preview.textContent).toContain('Hover a card');
+    expect(noPreview()).toBe(true);
   });
 
   it('hovering a history line rings its cards on the table', async () => {
@@ -528,10 +597,11 @@ describe('Table', () => {
     const inHand = await within(hand).findByRole('img', { name: 'Spider-Man' });
 
     await fireEvent.pointerEnter(inHand.closest('li') as HTMLElement);
-    const preview = screen.getByLabelText('Card preview');
-    expect(within(preview).getByRole('img', { name: 'Spider-Man' }).getAttribute('src')).toBe(
+    expect(within(preview()).getByRole('img', { name: 'Spider-Man' }).getAttribute('src')).toBe(
       '01001.png',
     );
+    // Drawn above the raised hand, unlike a table card's.
+    expect(preview().closest('.peek')?.classList).toContain('over-hand');
   });
 
   it('undo sends the undo action', async () => {
@@ -543,14 +613,31 @@ describe('Table', () => {
     expect(session.act).toHaveBeenCalledWith({ kind: 'undo' });
   });
 
-  it('always shows the side panel, with no toggle', () => {
+  it('always shows the side panel, with no toggle; it holds the history only', () => {
     localStorage.setItem('itf-side-hidden', '1');
     render(Table, { session: fakeSession(), view: makeView() });
 
-    const side = screen.getByRole('complementary', { name: 'Preview and history' });
-    expect(within(side).getByLabelText('Card preview')).toBeTruthy();
+    const side = screen.getByRole('complementary', { name: 'History' });
     expect(within(side).getByRole('list', { name: 'History' })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Preview and history' })).toBeNull();
+    expect(within(side).queryByLabelText('Focus')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'History' })).toBeNull();
+  });
+
+  it('floats the preview over the table, only while something is previewed', async () => {
+    const { container } = render(Table, { session: fakeSession(), view: makeView() });
+    await catalogLoaded();
+    expect(noPreview()).toBe(true);
+
+    await fireEvent.pointerEnter(surface().querySelector('.card[data-id="v"]') as HTMLElement);
+    expect(preview().closest('.peek')?.parentElement).toBe(container.querySelector('.app'));
+    expect(within(preview()).getByRole('img', { name: 'Rhino' })).toBeTruthy();
+    // A framed panel at the top right, wider for a landscape card.
+    const panel = preview().closest<HTMLElement>('.peek')!;
+    expect(panel.querySelector('.tab')).toBeNull();
+    expect(panel.classList).toContain('top-right');
+    expect(panel.classList).not.toContain('land');
+    await fireEvent.pointerEnter(surface().querySelector('.card[data-id="s"]') as HTMLElement);
+    expect(preview().closest('.peek')?.classList).toContain('land');
   });
 
   it('names the scenario, its difficulty and its modular sets in the top bar', async () => {
@@ -675,6 +762,158 @@ describe('Table surface size', () => {
     // At 120 %, that spot is 720, 540 px into the surface: still under the pointer.
     await waitFor(() => {
       expect([wrap.scrollLeft, wrap.scrollTop]).toEqual([220, 140]);
+    });
+  });
+});
+
+describe('Table view modes', () => {
+  beforeEach(() => {
+    localStorage.setItem('itf-zoom', '1');
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    clearPrefMemory();
+  });
+
+  function viewButton(name: string): HTMLElement {
+    return within(screen.getByRole('group', { name: 'Table view' })).getByRole('button', { name });
+  }
+
+  function shownIds(): string[] {
+    return [...surface().querySelectorAll<HTMLElement>(':scope > [data-id]')].map(
+      (element) => element.dataset.id ?? '',
+    );
+  }
+
+  it('switches between all the rows and the villain with one player, remembered', async () => {
+    render(Table, { session: fakeSession(), view: makeView() });
+    await catalogLoaded();
+    expect(viewButton('All').getAttribute('aria-pressed')).toBe('true');
+    expect(shownIds()).toEqual(['enc', 'd0', 'd1', 'x1', 'v', 's', 'a', 'b']);
+    expect(screen.queryByRole('group', { name: 'Player shown' })).toBeNull();
+
+    await fireEvent.click(viewButton('Villain + player'));
+    expect(viewButton('Villain + player').getAttribute('aria-pressed')).toBe('true');
+    expect(localStorage.getItem('itf-view')).toBe('focus');
+    // Sam, the viewer, by default: Alex's row is hidden, Sam's drawn right under the villain's.
+    expect(shownIds()).toEqual(['enc', 'd1', 'x1', 'v', 's', 'b']);
+    const sam = surface().querySelector<HTMLElement>('[data-id="b"]')!;
+    expect(sam.style.top).toBe('360px');
+    expect(ownerBoxes().map((box) => box.querySelector('.owner')?.textContent)).toEqual([
+      'Villain',
+      'Sam',
+    ]);
+  });
+
+  it("picks the player whose row shows, at the bottom left, the viewer's own first", async () => {
+    localStorage.setItem('itf-view', 'focus');
+    render(Table, { session: fakeSession(), view: makeView() });
+    await catalogLoaded();
+
+    const picker = screen.getByRole('group', { name: 'Player shown' });
+    const swatches = within(picker).getAllByRole('button');
+    // Swatches without a visible name: it is their label and tooltip.
+    expect(
+      swatches.map((swatch) => [
+        swatch.getAttribute('aria-label'),
+        swatch.dataset.tip,
+        swatch.textContent,
+        swatch.getAttribute('aria-pressed'),
+      ]),
+    ).toEqual([
+      ['Alex', 'Alex', '', 'false'],
+      ['Sam', 'Sam', '', 'true'],
+    ]);
+    // Two players: no previous and next buttons.
+    expect(within(picker).queryByRole('button', { name: 'Next player' })).toBeNull();
+
+    await fireEvent.click(within(picker).getByRole('button', { name: 'Alex' }));
+    expect(shownIds()).toEqual(['enc', 'd0', 'v', 's', 'a']);
+    expect(surface().querySelector<HTMLElement>('[data-id="a"]')?.style.top).toBe('360px');
+  });
+
+  it('steps round the table with three players or more', async () => {
+    localStorage.setItem('itf-view', 'focus');
+    const view = makeView();
+    view.players.push({
+      name: 'Kim',
+      color: 2,
+      host: false,
+      area: 'p2',
+      ready: true,
+      handCount: 0,
+    });
+    view.table!.piles.push(pile('d2', { owner: 2, x: 0, y: 1020 }));
+    render(Table, { session: fakeSession(), view });
+    await catalogLoaded();
+
+    const picker = screen.getByRole('group', { name: 'Player shown' });
+    const pressed = () =>
+      within(picker)
+        .getAllByRole('button', { pressed: true })
+        .map((swatch) => swatch.getAttribute('aria-label'));
+    expect(pressed()).toEqual(['Sam']);
+    await fireEvent.click(within(picker).getByRole('button', { name: 'Next player' }));
+    expect(pressed()).toEqual(['Kim']);
+    await fireEvent.click(within(picker).getByRole('button', { name: 'Next player' }));
+    expect(pressed()).toEqual(['Alex']);
+    await fireEvent.click(within(picker).getByRole('button', { name: 'Previous player' }));
+    expect(pressed()).toEqual(['Kim']);
+  });
+
+  it('offers no choice with one player: the table shows everything', async () => {
+    localStorage.setItem('itf-view', 'focus');
+    const view = makeView();
+    view.players = [view.players[1]!];
+    render(Table, { session: fakeSession(), view });
+    await catalogLoaded();
+
+    expect(screen.queryByRole('group', { name: 'Table view' })).toBeNull();
+    expect(screen.queryByRole('group', { name: 'Player shown' })).toBeNull();
+    expect(shownIds()).toContain('a');
+  });
+
+  it('sends where a card is dropped on the table, not where it is drawn', async () => {
+    localStorage.setItem('itf-view', 'focus');
+    // The surface at the top left of the screen: elements show where their styles put them.
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: Element,
+    ) {
+      const style = (this as HTMLElement).style;
+      const inSurface = this.closest('.surface') !== null && !this.classList.contains('surface');
+      const left = inSurface ? Number.parseFloat(style.left) || 0 : 0;
+      const top = inSurface ? Number.parseFloat(style.top) || 0 : 0;
+      const width = inSurface ? Number.parseFloat(style.width) || 0 : 1000;
+      const height = inSurface ? Number.parseFloat(style.height) || 0 : 900;
+      return {
+        left,
+        top,
+        width,
+        height,
+        right: left + width,
+        bottom: top + height,
+        x: left,
+        y: top,
+        toJSON: () => ({}),
+      } as DOMRect;
+    });
+    const session = fakeSession();
+    render(Table, { session, view: makeView() });
+    await catalogLoaded();
+
+    // Sam's identity lies at 360, 690 on the table, drawn at 360, 360.
+    const sam = surface().querySelector<HTMLElement>('[data-id="b"]')!;
+    await fireEvent.pointerDown(sam, { clientX: 400, clientY: 400, pointerType: 'mouse' });
+    await fireEvent.pointerMove(window, { clientX: 500, clientY: 450, buttons: 1 });
+    await fireEvent.pointerUp(window, { clientX: 500, clientY: 450 });
+
+    // Its corner drawn at 460, 410: 460, 740 on the table.
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({
+      kind: 'move',
+      card: 'b',
+      x: 460,
+      y: 740,
     });
   });
 });

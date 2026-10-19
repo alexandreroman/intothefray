@@ -90,10 +90,10 @@ function fakeSession() {
 }
 
 function sidePanel(): HTMLElement | null {
-  return screen.queryByRole('complementary', { name: 'Preview and history' });
+  return screen.queryByRole('complementary', { name: 'History' });
 }
 
-/** The preview over the table, on a narrow screen. */
+/** The preview over the table. */
 function peek(container: HTMLElement): HTMLElement | null {
   return container.querySelector('.peek');
 }
@@ -116,7 +116,7 @@ describe('Table on a narrow screen', () => {
 
     expect(sidePanel()).toBeNull();
     expect(screen.queryByRole('list', { name: 'History' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Preview and history' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'History' })).toBeNull();
     // Nothing to preview: nothing over the table.
     expect(peek(container)).toBeNull();
 
@@ -124,19 +124,23 @@ describe('Table on a narrow screen', () => {
     await fireEvent.pointerEnter(within(hand).getAllByRole('listitem')[0] as HTMLElement);
     const preview = peek(container);
     expect(preview).not.toBeNull();
-    expect(within(preview as HTMLElement).getByLabelText('Card preview')).toBeTruthy();
+    expect(within(preview as HTMLElement).getByLabelText('Focus')).toBeTruthy();
     expect(
       within(preview as HTMLElement).getByRole('img', { name: 'Player card back' }),
     ).toBeTruthy();
   });
 
-  it('wide layout keeps the column, with the preview in it', () => {
+  it('wide layout keeps the history column, the preview floating over the table', async () => {
     mockScreen(false);
     const { container } = render(Table, { session: fakeSession(), view: makeView() });
 
-    expect(within(sidePanel() as HTMLElement).getByLabelText('Card preview')).toBeTruthy();
     expect(within(sidePanel() as HTMLElement).getByRole('list', { name: 'History' })).toBeTruthy();
+    expect(within(sidePanel() as HTMLElement).queryByLabelText('Focus')).toBeNull();
     expect(peek(container)).toBeNull();
+
+    const hand = screen.getByRole('list', { name: 'Your hand' });
+    await fireEvent.pointerEnter(within(hand).getAllByRole('listitem')[0] as HTMLElement);
+    expect(within(peek(container) as HTMLElement).getByLabelText('Focus')).toBeTruthy();
   });
 
   it('follows the window as it narrows', async () => {

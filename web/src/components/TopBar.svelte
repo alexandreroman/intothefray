@@ -9,6 +9,8 @@
     crumbs = [],
     onback,
     onend,
+    viewMode,
+    onviewmode,
   }: {
     spectators?: number;
     /** Where the viewer is, after the logo: the first part stands out, the rest is dimmed. */
@@ -17,7 +19,37 @@
     onback?: () => void;
     /** Ends the game for everyone, once confirmed. Given to the host only. */
     onend?: () => void;
+    /** What the table shows, on the table only: every row, or the villain's and one player's. */
+    viewMode?: 'all' | 'focus';
+    onviewmode?: (mode: 'all' | 'focus') => void;
   } = $props();
+
+  const VIEW_MODES = [
+    { mode: 'all', label: 'All', icon: 'rows-all' },
+    { mode: 'focus', label: 'Villain + player', icon: 'rows-focus' },
+  ] as const;
+
+  // The highlight behind the chosen view, placed over its button. It slides to the other one
+  // when the view changes, but not into its first place.
+  let views = $state<HTMLElement>();
+  let viewsWidth = $state(0);
+  let thumb = $state<{ left: number; width: number } | null>(null);
+  let thumbSlides = $state(false);
+
+  $effect(() => {
+    // Placed again when the view changes, or the labels come and go with the width.
+    void [viewMode, viewsWidth];
+    const chosen = views?.querySelector<HTMLElement>('button[aria-pressed="true"]');
+    if (!chosen) {
+      return;
+    }
+    thumb = { left: chosen.offsetLeft, width: chosen.offsetWidth };
+    if (!thumbSlides) {
+      // From the next frame on: the first place is taken without sliding.
+      const frame = requestAnimationFrame(() => (thumbSlides = true));
+      return () => cancelAnimationFrame(frame);
+    }
+  });
 
   const spectatorLabel = $derived(`${spectators} ${spectators === 1 ? 'spectator' : 'spectators'}`);
   const [crumbHead, ...crumbRest] = $derived(crumbs);
@@ -91,6 +123,37 @@
     </span>
   {/if}
   <div class="actions">
+    {#if viewMode && onviewmode}
+      <div
+        class="views"
+        role="group"
+        aria-label="Table view"
+        bind:this={views}
+        bind:clientWidth={viewsWidth}
+      >
+        {#if thumb}
+          <span
+            class="thumb"
+            class:slides={thumbSlides}
+            style:left="{thumb.left}px"
+            style:width="{thumb.width}px"
+            aria-hidden="true"
+          ></span>
+        {/if}
+        {#each VIEW_MODES as choice (choice.mode)}
+          <button
+            type="button"
+            aria-label={choice.label}
+            title={choice.label}
+            aria-pressed={viewMode === choice.mode}
+            onclick={() => onviewmode(choice.mode)}
+          >
+            <Icon name={choice.icon} />
+            <span>{choice.label}</span>
+          </button>
+        {/each}
+      </div>
+    {/if}
     {#if spectators > 0}
       <span class="pill" role="img" aria-label={spectatorLabel} title={spectatorLabel}>
         <Icon name="eye" />
@@ -171,6 +234,63 @@
     margin-left: auto;
   }
 
+  /* A segmented control: the chosen view is lit. */
+  .views {
+    position: relative;
+    display: flex;
+    height: 38px;
+    padding: 3px;
+    gap: 2px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+  }
+
+  .views button {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 12px;
+    border: none;
+    border-radius: 999px;
+    background: none;
+    color: var(--muted);
+    font-size: 13px;
+    transition: color 0.2s ease-out;
+  }
+
+  .views button[aria-pressed='true'] {
+    color: var(--text);
+  }
+
+  /* Behind the labels, the height of the buttons. */
+  .thumb {
+    position: absolute;
+    top: 3px;
+    bottom: 3px;
+    border-radius: 999px;
+    background: var(--panel-2);
+  }
+
+  .thumb.slides {
+    transition:
+      left 0.2s ease-out,
+      width 0.2s ease-out;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .thumb.slides,
+    .views button {
+      transition: none;
+    }
+  }
+
+  .views :global(svg) {
+    width: 16px;
+    height: 16px;
+  }
+
   /* Buttons in the row share one height: the pill matches them. */
   .pill {
     display: inline-flex;
@@ -223,6 +343,11 @@
     header {
       gap: 12px;
       padding: 0 12px;
+    }
+
+    /* The icons say it: the labels go. */
+    .views span {
+      display: none;
     }
 
     .divider,

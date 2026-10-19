@@ -47,6 +47,7 @@
   const highlighted = $derived(shownTop !== undefined && interaction.highlighted.has(shownTop.id));
   const element = $derived({ kind: 'pile', id: pile.id } as const);
   const locked = $derived(interaction.isLocked(element));
+  const hovered = $derived(interaction.isHovered(element));
 
   /**
    * The preview shows the top card of a pile that lists its cards. A deck
@@ -81,6 +82,7 @@
   class:inert
   class:highlighted
   class:locked
+  class:hovered
   class:drop-pile={targeted}
   style:left="{pile.x}px"
   style:top="{pile.y}px"

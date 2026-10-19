@@ -173,7 +173,6 @@ describe('actionsFor', () => {
       label: 'Add a token or status',
       tip: 'Add a token or status',
       icon: 'token',
-      add: true,
     });
     const counters = menuOf(items, 'counters');
     expect(counters.map((it) => [it.section, it.id, it.label, it.key])).toEqual([
@@ -480,26 +479,12 @@ describe('actionsFor', () => {
     expect(groups(itemsFor({ kind: 'pile', id: 'disc:p1' }))).toEqual([['search'], ['aside']]);
   });
 
-  it('victory display can be browsed', () => {
-    const items = itemsFor({ kind: 'pile', id: 'vic' });
-
-    expect(groups(items)).toEqual([['browse']]);
-    expect(item(items, 'browse')).toMatchObject({ label: 'Browse…', key: 'K', tip: 'Browse…' });
-    expect(item(items, 'browse').run?.()).toEqual({ local: 'browseBox', pile: 'vic' });
-  });
-
-  it('aside pile has shuffle in', () => {
-    const items = itemsFor({ kind: 'pile', id: 'saside' });
-
-    expect(groups(items)).toEqual([['browse', 'shuffleIn']]);
-    const shuffleIn = item(items, 'shuffleIn');
-    expect(shuffleIn).toMatchObject({
-      label: 'Shuffle in',
-      tip: 'Shuffle all these cards into the encounter deck',
-    });
-    expect(actionOf(shuffleIn)).toEqual({ kind: 'shuffleIn', pile: 'saside' });
-    expect(groups(itemsFor({ kind: 'pile', id: 'aside:p0' }))).toEqual([['browse', 'shuffleIn']]);
-    expect(groups(itemsFor({ kind: 'pile', id: 'aside:p1' }))).toEqual([['browse']]);
+  it('out-of-play piles have no bar: they are not drawn on the table', () => {
+    for (const id of ['vic', 'saside', 'aside:p0', 'aside:p1']) {
+      expect(itemsFor({ kind: 'pile', id })).toEqual([]);
+      const spectator: { role: Role } = { role: 'spectator' };
+      expect(itemsFor({ kind: 'pile', id }, makeView(), spectator)).toEqual([]);
+    }
   });
 
   it("other player's deck only opens their set-aside cards", () => {
@@ -593,7 +578,7 @@ describe('actionsFor', () => {
     expect(ids('enc')).toEqual(['victory', 'aside']);
     expect(ids('disc:p0')).toEqual(['browse', 'aside']);
     expect(ids('encd')).toEqual(['browse', 'victory', 'aside']);
-    for (const id of ['disc:p0', 'encd', 'vic', 'aside:p1']) {
+    for (const id of ['disc:p0', 'encd']) {
       const items = itemsFor({ kind: 'pile', id }, view, spectator);
       expect(items[0]?.id).toBe('browse');
       expect(items[0]?.run?.()).toEqual({ local: 'browseBox', pile: id });

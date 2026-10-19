@@ -349,6 +349,12 @@ class TableInteraction {
     this.locked = true;
   }
 
+  /** Whether the pointer rests on this element, which a tap did not select: it gets the bar. */
+  isHovered(element: TableElement): boolean {
+    const hovered = this.hovered;
+    return !this.locked && hovered?.kind === element.kind && hovered.id === element.id;
+  }
+
   /** Whether a tap selected this element. */
   isLocked(element: TableElement): boolean {
     const hovered = this.hovered;

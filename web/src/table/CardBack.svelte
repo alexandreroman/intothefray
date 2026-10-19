@@ -35,8 +35,9 @@
     clip-path: var(--card-cut);
   }
 
+  /* The whole printed back shows, as a face does (CardFace.svelte). */
   img {
-    object-fit: cover;
+    object-fit: fill;
   }
 
   /* Ink with an inner frame: the frame's colour tells a player card from an encounter one. */

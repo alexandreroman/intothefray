@@ -27,8 +27,11 @@
 
   type TokenKind = 'dmg' | 'thr' | 'gen';
 
-  // Damage and counters share a row on the lower part of the card; threat sits on its right side.
-  const ROW_TOKENS: readonly TokenKind[] = ['dmg', 'gen'];
+  // On a scheme, threat sits in the top right corner and the other tokens pile up from the bottom
+  // right one; on any other card, every token sits in the middle.
+  const ALL_TOKENS: readonly TokenKind[] = ['dmg', 'thr', 'gen'];
+  const CORNER_TOKENS: readonly TokenKind[] = ['dmg', 'gen'];
+  const SCHEME_TYPES: readonly string[] = ['main_scheme', 'side_scheme', 'player_side_scheme'];
   const STATUSES = [
     ['stunned', 'Stunned'],
     ['confused', 'Confused'],
@@ -38,11 +41,17 @@
   const hidden = $derived(isHidden(card));
   const box = $derived(cardBox(face?.size ?? 'std', { faceDown: hidden, onPile: !!card.onPile }));
   const landscape = $derived(!box.rotated && box.w > box.h);
-  const rowTokens = $derived(ROW_TOKENS.filter((k) => (card.tokens?.[k] ?? 0) > 0));
-  const threat = $derived((card.tokens?.thr ?? 0) > 0);
+  // A hidden card has no face: it is not known to be a scheme.
+  const scheme = $derived(!hidden && SCHEME_TYPES.includes(face?.type ?? ''));
+  const hasToken = (k: TokenKind) => (card.tokens?.[k] ?? 0) > 0;
+  const middleTokens = $derived(scheme ? [] : ALL_TOKENS.filter(hasToken));
+  const cornerTokens = $derived(scheme ? CORNER_TOKENS.filter(hasToken) : []);
+  const cornerThreat = $derived(scheme && hasToken('thr'));
   const statuses = $derived(STATUSES.filter(([k]) => (card.status?.[k] ?? 0) > 0));
   const element = $derived({ kind: 'card', id: card.id } as const);
   const locked = $derived(interaction.isLocked(element));
+  // A ghost is a copy: only the card on the table shows that it is hovered.
+  const hovered = $derived(!ghost && interaction.isHovered(element));
   // While dragged, the card on the table makes way for its ghost.
   const lifted = $derived(!ghost && interaction.isLifted(card.id));
   // A drop would tuck the dragged card under this one, or go onto the pile this card is revealed on.
@@ -74,6 +83,9 @@
   class:exhausted={card.exhausted}
   class:highlighted={interaction.highlighted.has(card.id)}
   class:locked
+  class:hovered
+  class:land={landscape}
+  class:scheme
   class:lifted
   class:ghost
   class:landed
@@ -100,16 +112,26 @@
     />
   {/if}
 
-  {#if rowTokens.length > 0}
-    <div class="tokens">
-      {#each rowTokens as k (k)}
+  {#if middleTokens.length > 0}
+    <div class="tokens middle">
+      {#each middleTokens as k (k)}
         {@render token(k)}
       {/each}
     </div>
   {/if}
 
-  {#if threat}
-    {@render token('thr')}
+  {#if cornerTokens.length > 0}
+    <div class="tokens bottom-right">
+      {#each cornerTokens as k (k)}
+        {@render token(k)}
+      {/each}
+    </div>
+  {/if}
+
+  {#if cornerThreat}
+    <div class="tokens top-right">
+      {@render token('thr')}
+    </div>
   {/if}
 
   {#if statuses.length > 0}
@@ -171,27 +193,33 @@
   }
 
   /*
-    Tokens sit inside the card, clear of its bottom strip where printed values such as the
-    villain's hit points are: damage and counters in a row on the lower part, in the middle.
-    Percentages follow the card box, portrait or landscape.
+    Tokens sit inside the card. On a scheme they keep to its right corners, clear of the printed
+    threat values: threat at the top, damage and counters piled up from the bottom, the first
+    one in the corner. On any other card they sit together in the middle.
   */
   .tokens {
     position: absolute;
-    left: 50%;
-    bottom: 20%;
     z-index: 4;
     display: flex;
     gap: 3px;
-    transform: translateX(-50%);
   }
 
-  /* Threat on the right side, vertically centred, landscape main schemes included. */
-  .tok.thr {
-    position: absolute;
-    right: 5%;
+  .tokens.middle {
+    left: 50%;
     top: 50%;
-    z-index: 4;
-    transform: translateY(-50%);
+    transform: translate(-50%, -50%);
+  }
+
+  .tokens.bottom-right {
+    right: 6px;
+    bottom: 6px;
+    flex-direction: column-reverse;
+    align-items: flex-end;
+  }
+
+  .tokens.top-right {
+    right: 6px;
+    top: 6px;
   }
 
   /* A flat pill with an ink rim, its count in the display face, ink on colour. */
@@ -240,8 +268,8 @@
 
   /*
     Status cards: small tabs sticking out of the right edge, like real cards tucked under. They
-    end just above the middle, so a threat token there never covers them: half a token (13px)
-    and a 3px gap.
+    end just above the middle, so the tokens there never cover them: half a token (13px) and a
+    3px gap.
   */
   .statuses {
     position: absolute;
@@ -252,6 +280,31 @@
     flex-direction: column;
     align-items: flex-end;
     gap: 3px;
+  }
+
+  /*
+    A landscape card is too low for three tabs above its middle: they lie side by side along its
+    top instead, the last one sticking out of the right edge.
+  */
+  .card.land .statuses {
+    top: 6px;
+    bottom: auto;
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  /* On a scheme, the right corners hold the tokens: the tabs stick out of the left edge. */
+  .card.scheme .statuses {
+    top: 6px;
+    right: auto;
+    bottom: auto;
+    left: -8px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .card.scheme .st {
+    border-radius: 6px 4px 4px 6px;
   }
 
   .st {

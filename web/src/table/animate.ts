@@ -5,6 +5,7 @@
 
 import type { CardView, LogView, PileView, TableView, View, Zone } from '../lib/types';
 import { stackOf } from './drag';
+import { isHidden } from './face';
 
 /** Where a card lies in a view: its zone, and its spot when it is on the table. */
 export interface Box {
@@ -17,6 +18,8 @@ export type Anim =
   | { kind: 'move'; id: string; from: Box; to: Box }
   | { kind: 'glow'; id: string; color: number }
   | { kind: 'turnIn'; id: string }
+  /** Turned over on the table: flipped, another face shown, or a hidden card come face up. */
+  | { kind: 'flip'; id: string }
   | { kind: 'shuffle'; pile: string }
   | { kind: 'fly'; id: string; toPile: string };
 
@@ -61,6 +64,8 @@ export function diffViews(prev: View, next: View, ownDrop?: string, apart = 0): 
     const turns = turned.has(card.id);
     if (turns) {
       anims.push({ kind: 'turnIn', id: card.id });
+    } else if (isTurnedOver(was, card)) {
+      anims.push({ kind: 'flip', id: card.id });
     }
     const changed = was.zone === 'table' && card.zone === 'table' && hasChanged(was, card);
     if (actor >= 0 && (turns || changed)) {
@@ -113,6 +118,21 @@ function travelOf(was: CardView, card: CardView, table: TableView): Anim | null 
   }
   const pile = table.piles.find((p) => p.cards?.includes(card.id));
   return pile ? { kind: 'fly', id: card.id, toPile: pile.id } : null;
+}
+
+/**
+ * A table card that shows another side: flipped face down or face up,
+ * turned to another face, or a card nobody could see (a deck's) come onto
+ * the table face up.
+ */
+function isTurnedOver(was: CardView, card: CardView): boolean {
+  if (card.zone !== 'table') {
+    return false;
+  }
+  if (was.zone === 'table') {
+    return was.face !== card.face || !!was.faceDown !== !!card.faceDown;
+  }
+  return was.zone === 'pile' && isHidden(was) && !isHidden(card);
 }
 
 /** Exhausted or readied, flipped, turned face up, or its tokens or statuses changed. */

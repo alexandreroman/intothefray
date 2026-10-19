@@ -1,7 +1,8 @@
 <!--
   The table page: the top bar, the table column (one surface for everyone,
-  scrolling both ways) and the side column (preview and history). On a
-  narrow screen there is no side column: the preview shows over the table.
+  scrolling both ways) and the side column (history). The preview of the
+  hovered card floats over the table's top right corner. On a narrow screen
+  there is no side column.
 -->
 <script lang="ts">
   import { tick, untrack } from 'svelte';
@@ -43,10 +44,20 @@
   import { handleKey } from './keys';
   import KeysSheet from './KeysSheet.svelte';
   import { isOutOfPlay, ownerFrames, surfaceSize } from './layout';
+  import {
+    ALL_ROWS,
+    focusRows,
+    lastRow,
+    rowOfSeat,
+    saveViewMode,
+    storedViewMode,
+    type ViewMode,
+  } from './rows';
   import { motion } from './motion.svelte';
   import Presence from './Presence.svelte';
   import TokenPill from './TokenPill.svelte';
   import CardPreview, { type Preview } from './CardPreview.svelte';
+  import { chooseCorner, FOCUS_MARGINS, type Corner } from './focus';
   import SidePanel from './SidePanel.svelte';
   import Surface, { type OwnerBox } from './Surface.svelte';
   import ZoomControl from './ZoomControl.svelte';
@@ -138,9 +149,64 @@
     return topId === undefined ? undefined : cardsById.get(topId);
   }
 
+  // ---- What the surface shows ----
+
+  // "All", or the villain's row and one player's row under it (rows.ts).
+  let viewMode = $state<ViewMode>(storedViewMode());
+  // The player whose row "Villain + player" shows, once picked.
+  let pickedSeat = $state<number | null>(null);
+
+  function changeViewMode(mode: ViewMode): void {
+    viewMode = mode;
+    saveViewMode(mode);
+  }
+
+  /** The players at the table, with their seat, in seat order. */
+  const seatedPlayers = $derived(
+    view.players.flatMap((player) =>
+      player.area ? [{ seat: seatOf(player.area), name: player.name, color: player.color }] : [],
+    ),
+  );
+  const seats = $derived(seatedPlayers.map((player) => player.seat));
+  // The viewer's own row first; a spectator starts with the first seat.
+  const shownSeat = $derived.by(() => {
+    if (pickedSeat !== null && seats.includes(pickedSeat)) {
+      return pickedSeat;
+    }
+    const own = ownArea ? seatOf(ownArea) : null;
+    return own !== null && seats.includes(own) ? own : (seats[0] ?? null);
+  });
+
+  // With one player, "All" already shows the villain and that player: there is no choice to make.
+  const focused = $derived(viewMode === 'focus' && seats.length > 1 && shownSeat !== null);
+
+  const rowMap = $derived(
+    focused && shownSeat !== null
+      ? focusRows(rowOfSeat(piles, shownSeat), lastRow(piles))
+      : ALL_ROWS,
+  );
+
+  /** Shows the row of the player seated `step` seats after the shown one, round the table. */
+  function stepSeat(current: number, step: number): void {
+    const index = seats.indexOf(current);
+    pickedSeat = seats[(index + step + seats.length) % seats.length] ?? current;
+  }
+
+  /** What lies at a height of the table, drawn where the view mode shows it; nothing when hidden. */
+  function shown<T extends { y: number }>(items: T[]): T[] {
+    return items.flatMap((item) => {
+      const y = rowMap.toDisplay(item.y);
+      return y === null ? [] : [{ ...item, y }];
+    });
+  }
+
+  // Out-of-play piles are not drawn: the bars of their owner's deck and discard pile open them.
+  const tablePiles = $derived(shown(piles.filter((pile) => !isOutOfPlay(pile))));
+  const tableCards = $derived(shown(cards.filter((card) => card.zone === 'table')));
+
   /** The frames around each owner's deck and discard pile, named after their owner. */
   const owners = $derived(
-    ownerFrames(piles).map((frame): OwnerBox => {
+    ownerFrames(tablePiles).map((frame): OwnerBox => {
       if (frame.owner === -1) {
         return { frame, name: 'Villain', color: 'var(--spark)' };
       }
@@ -163,10 +229,6 @@
   let visibleWidth = $state(0);
   let visibleHeight = $state(0);
 
-  // Out-of-play piles are not drawn: the bars of their owner's deck and discard pile open them.
-  const tablePiles = $derived(piles.filter((pile) => !isOutOfPlay(pile)));
-  const tableCards = $derived(cards.filter((card) => card.zone === 'table'));
-
   // In table units: at least what shows, rounded down so that an empty table never scrolls.
   const surface = $derived(
     surfaceSize(tableCards, tablePiles, sizeOf, {
@@ -175,7 +237,7 @@
     }),
   );
 
-  const firstPlayer = $derived(view.table?.firstPlayer);
+  const firstPlayer = $derived(shown(view.table?.firstPlayer ? [view.table.firstPlayer] : [])[0]);
 
   function previewOf(previewed: TableElement | null): Preview | null {
     if (previewed?.kind === 'pile') {
@@ -205,6 +267,82 @@
 
   // From ids, so the preview follows a flip or a pile's new top card.
   const preview = $derived(previewOf(interaction.previewed));
+
+  // ---- The Focus panel's corner ----
+
+  // Top right, unless that covers the pointer or the hovered element (focus.ts).
+  let focusCorner = $state<Corner>('top-right');
+  // It changed corner while shown: it fades in at the new one.
+  let focusMoved = $state(false);
+  // The panel's size, kept from the last time it showed; a portrait card's until then.
+  let focusWidth = $state(320);
+  let focusHeight = $state(450);
+  // Read by placeFocus only, at each pointer move: plain, not state.
+  let focusPointer: { x: number; y: number } | null = null;
+  // Whether the panel is drawn already: only a drawn panel fades into its new corner.
+  let focusDrawn = false;
+
+  /** The hovered card, pile or hand card, on the screen. */
+  function hoveredRect(): DOMRect | null {
+    const hovered = interaction.hovered;
+    if (!hovered || !app) {
+      return null;
+    }
+    const id = CSS.escape(hovered.id);
+    const selector =
+      hovered.kind === 'hand'
+        ? `.hand .hcard[data-id="${id}"]`
+        : `.surface ${hovered.kind === 'pile' ? '.pile' : '.card:not(.pile)'}[data-id="${id}"]`;
+    return app.querySelector(selector)?.getBoundingClientRect() ?? null;
+  }
+
+  function placeFocus(): void {
+    if (!preview || !wrap) {
+      return;
+    }
+    const next = chooseCorner({
+      current: focusCorner,
+      area: wrap.getBoundingClientRect(),
+      size: { w: focusWidth, h: focusHeight },
+      hovered: hoveredRect(),
+      pointer: focusPointer,
+      // The zoom control (and Undo) at the bottom right, the player selector at the bottom left.
+      taken: focused ? ['bottom-right', 'bottom-left'] : ['bottom-right'],
+    });
+    if (next !== focusCorner) {
+      focusCorner = next;
+      focusMoved = focusDrawn;
+    }
+  }
+
+  function followPointerForFocus(event: PointerEvent): void {
+    focusPointer = { x: event.clientX, y: event.clientY };
+    placeFocus();
+  }
+
+  /** The panel's margins in its corner: off the play area's edges. */
+  function focusMargin(corner: Corner): string {
+    const top = corner.startsWith('top') ? FOCUS_MARGINS.top : 0;
+    const bottom = corner.startsWith('bottom') ? FOCUS_MARGINS.bottom : 0;
+    const left = corner.endsWith('left') ? FOCUS_MARGINS.side : 0;
+    const right = corner.endsWith('right') ? FOCUS_MARGINS.side : 0;
+    return `${top}px ${right}px ${bottom}px ${left}px`;
+  }
+
+  // Placed before it is drawn, when what is hovered, the zoom or the panel's size change.
+  $effect.pre(() => {
+    void [preview, interaction.hovered, zoom, focusWidth, focusHeight, focused];
+    untrack(placeFocus);
+  });
+
+  // Nothing previewed, it goes home: shown afresh, it appears there, without a fade.
+  $effect(() => {
+    focusDrawn = preview !== null;
+    if (!preview) {
+      focusMoved = false;
+      focusCorner = 'top-right';
+    }
+  });
 
   // The interaction state is shared: a previous game's must not show in the next one.
   $effect(() => () => interaction.reset());
@@ -623,7 +761,7 @@
   }
 
   // The breakpoint of the @media rules below. On a narrow screen the side
-  // column goes: the preview floats over the table, the history is not shown.
+  // column goes: the history is not shown.
   const narrow = new MediaQuery('max-width: 900px');
 
   let wrap = $state<HTMLElement>();
@@ -695,8 +833,46 @@
   });
 </script>
 
+<!--
+  Which player's row "Villain + player" shows: one swatch in each seated player's colour, named
+  for screen readers and in its tooltip only, as the name already shows above the player's deck.
+-->
+{#snippet seatPicker(current: number)}
+  <div class="seatpick" role="group" aria-label="Player shown">
+    {#if seats.length > 2}
+      <button
+        class="step"
+        aria-label="Previous player"
+        data-tip="Previous player"
+        onclick={() => stepSeat(current, -1)}>←</button
+      >
+    {/if}
+    {#each seatedPlayers as { seat, name, color } (seat)}
+      <button
+        class="seat"
+        style:--seat="var(--p{color + 1})"
+        aria-label={name}
+        data-tip={name}
+        aria-pressed={seat === current}
+        onclick={() => (pickedSeat = seat)}
+      ></button>
+    {/each}
+    {#if seats.length > 2}
+      <button
+        class="step"
+        aria-label="Next player"
+        data-tip="Next player"
+        onclick={() => stepSeat(current, 1)}>→</button
+      >
+    {/if}
+  </div>
+{/snippet}
+
 <svelte:window
-  onpointermove={(event) => interaction.pointerMoved(event)}
+  onpointermove={(event) => {
+    interaction.pointerMoved(event);
+    followPointerForFocus(event);
+  }}
   onpointerdowncapture={(event) => interaction.pointerPressed(event)}
   onclickcapture={(event) => interaction.clicked(event)}
   onpointerup={onPointerUp}
@@ -717,6 +893,8 @@
       spectators={view.spectators}
       {crumbs}
       onend={view.you.host ? () => session.lobby('end') : undefined}
+      viewMode={seats.length > 1 ? viewMode : undefined}
+      onviewmode={changeViewMode}
     />
   </div>
 
@@ -727,6 +905,7 @@
     bind:clientHeight={visibleHeight}
     bind:clientWidth={visibleWidth}
     onpointerdowncapture={onTablePointerDown}
+    onscroll={placeFocus}
   >
     <div class="table">
       <Surface
@@ -743,7 +922,7 @@
         tokenMovable={view.you.role === 'player'}
       />
       <!-- The arrows follow the cards while they move. -->
-      <Arrows {view} root={app} layout={[zoom, surface, motion.frame]} />
+      <Arrows {view} root={app} layout={[zoom, surface, rowMap, motion.frame]} />
     </div>
   </div>
 
@@ -755,50 +934,59 @@
     root={app}
     {zoom}
     {faceOf}
-    layout={surface}
+    {rowMap}
+    layout={[surface, rowMap]}
   />
 
   {#if catalog === 'failed'}
     <p class="notice" role="alert">Card data could not be loaded: cards show as placeholders.</p>
   {/if}
 
-  <ZoomControl
-    {zoom}
-    onzoom={zoomWithButtons}
-    onkeys={toggleKeySheet}
-    keysShown={keySheetShown}
-    bind:keysButton
-  />
-
-  <!-- Touch screens have no Z key: without the side column, Undo floats at the bottom left. -->
-  {#if narrow.current}
-    <div class="undo">
-      <!-- aria-disabled rather than disabled, so that the tooltip saying why still shows. -->
-      <button
-        aria-label="Undo last action"
-        data-tip={view.canUndo ? 'Undo last action' : 'Nothing of yours to undo'}
-        aria-disabled={!view.canUndo}
-        onclick={() => {
-          if (view.canUndo) {
-            undo();
-          }
-        }}
-      >
-        <!-- A hooked arrow going back. -->
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true"
+  <!--
+    The bottom right corner of the table. Touch screens have no Z key: without the side column,
+    Undo floats there, left of the zoom control.
+  -->
+  <div class="corner">
+    {#if narrow.current}
+      <div class="undo">
+        <!-- aria-disabled rather than disabled, so that the tooltip saying why still shows. -->
+        <button
+          aria-label="Undo last action"
+          data-tip={view.canUndo ? 'Undo last action' : 'Nothing of yours to undo'}
+          aria-disabled={!view.canUndo}
+          onclick={() => {
+            if (view.canUndo) {
+              undo();
+            }
+          }}
         >
-          <path d="M9 14L4 9l5-5" />
-          <path d="M4 9h11a5 5 0 0 1 0 10h-3" />
-        </svg>
-      </button>
-    </div>
+          <!-- A hooked arrow going back. -->
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M9 14L4 9l5-5" />
+            <path d="M4 9h11a5 5 0 0 1 0 10h-3" />
+          </svg>
+        </button>
+      </div>
+    {/if}
+    <ZoomControl
+      {zoom}
+      onzoom={zoomWithButtons}
+      onkeys={toggleKeySheet}
+      keysShown={keySheetShown}
+      bind:keysButton
+    />
+  </div>
+
+  {#if focused && shownSeat !== null}
+    {@render seatPicker(shownSeat)}
   {/if}
 
   {#if keySheetShown}
@@ -817,6 +1005,7 @@
     root={app}
     {faceOf}
     {sizeOf}
+    {rowMap}
     act={(action) => session.act(action)}
     ondrag={(drag) => session.sendPresence({ drag })}
     lastError={session.lastError}
@@ -872,13 +1061,26 @@
   <Tooltip />
 
   {#if !narrow.current}
-    <aside class="side" aria-label="Preview and history">
-      <SidePanel {preview} log={view.log} canUndo={view.canUndo} onundo={undo} />
+    <aside class="side" aria-label="History">
+      <SidePanel log={view.log} canUndo={view.canUndo} onundo={undo} />
     </aside>
-  {:else if preview}
-    <div class="peek">
-      <CardPreview {preview} />
-    </div>
+  {/if}
+
+  {#if preview}
+    <!-- Created again in its new corner: it fades in there. -->
+    {#key focusCorner}
+      <div
+        class="peek {focusCorner}"
+        class:land={preview.kind === 'face' && preview.landscape}
+        class:moved={focusMoved}
+        class:over-hand={interaction.previewed?.kind === 'hand'}
+        style:margin={focusMargin(focusCorner)}
+        bind:offsetWidth={focusWidth}
+        bind:offsetHeight={focusHeight}
+      >
+        <CardPreview {preview} snug />
+      </div>
+    {/key}
   {/if}
 </div>
 
@@ -923,6 +1125,7 @@
     and the drop outlines.
   */
   .table :global(.card.locked)::before,
+  .table :global(.card.hovered)::before,
   .table :global(.card.highlighted)::before,
   .table :global(.card.drop-target)::before,
   .table :global(.card.drop-pile)::before {
@@ -941,6 +1144,8 @@
       0 0 0 7px #49c6ff38;
   }
 
+  /* The hovered card or pile, whose bar shows, has the same white ring as the prototype's. */
+  .table :global(.card.hovered)::before,
   .table :global(.card.highlighted)::before {
     box-shadow:
       0 0 0 2px #ffffffb0,
@@ -991,12 +1196,72 @@
   }
 
   /* As the zoom control, at the other corner: under the veil and the raised hand. */
-  .undo {
+  /* At the bottom left, as the zoom control at the bottom right: under the veil and the hand. */
+  .seatpick {
     grid-area: table;
     align-self: end;
     justify-self: start;
     z-index: 30;
     margin: 0 0 16px 16px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px;
+    background: #141a28eb;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    box-shadow: 0 6px 16px #0008;
+  }
+
+  .seatpick .step {
+    height: 28px;
+    padding: 0 8px;
+    border: none;
+    border-radius: 8px;
+    background: none;
+    color: #c9cfdf;
+  }
+
+  .seatpick .step:hover {
+    background: var(--panel-2);
+  }
+
+  /* A round swatch of the seat colour; the player shown is ringed. */
+  .seatpick .seat {
+    width: 18px;
+    height: 18px;
+    margin: 5px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: var(--seat);
+    opacity: 0.6;
+  }
+
+  .seatpick .seat:hover {
+    opacity: 1;
+  }
+
+  .seatpick .seat[aria-pressed='true'] {
+    opacity: 1;
+    box-shadow:
+      0 0 0 2px #141a28,
+      0 0 0 4px var(--seat);
+  }
+
+  /* As the zoom control: under the veil and the raised hand. */
+  .corner {
+    grid-area: table;
+    align-self: end;
+    justify-self: end;
+    z-index: 30;
+    margin: 0 16px 16px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .undo {
     padding: 4px;
     background: #141a28eb;
     border: 1px solid var(--line);
@@ -1036,16 +1301,67 @@
   }
 
   /*
-    The narrow screen's preview, at the top right of the table: over the other players' presence
-    (2500), the veil and the open hand (2600), under drags (3000). The pointer goes through it.
+    The preview, at the top right of the table, still while the table scrolls under it. As the
+    zoom control: over the table, under the other players' presence (2500), the veil and the
+    raised hand (2600). Never as tall as to reach the zoom control at the bottom right; the
+    pointer goes through it.
   */
   .peek {
     grid-area: table;
     align-self: start;
     justify-self: end;
-    z-index: 2700;
-    width: min(180px, 40vw);
-    margin: 12px 12px 0 0;
+    z-index: 30;
+    position: relative;
+    /*
+      A 300 px wide portrait card in its 10 px padding, never wider than 45 % of the table, nor
+      so tall that it reaches the zoom control: the top bar and the corners keep 200 px.
+    */
+    width: min(320px, 45%, calc((100dvh - 200px) * 5 / 7 + 20px));
+    padding: 10px;
+    background: var(--panel);
+    border: 1px solid var(--line-strong);
+    border-radius: 14px;
+    box-shadow: 0 14px 36px #000000a6;
     pointer-events: none;
+  }
+
+  /* A landscape card: 420 px wide. */
+  .peek.land {
+    width: min(440px, 45%);
+  }
+
+  /* Out of the pointer's and the hovered card's way, in another corner (focus.ts). */
+  .peek.top-left,
+  .peek.bottom-left {
+    justify-self: start;
+  }
+
+  .peek.bottom-left,
+  .peek.bottom-right {
+    align-self: end;
+  }
+
+  /*
+    A hand card's: above the raised hand (2600) and the dimmed table, under drags (3000), so that
+    it stays readable while the hand is in use.
+  */
+  .peek.over-hand {
+    z-index: 2700;
+  }
+
+  .peek.moved {
+    animation: focus-in 0.14s ease-out;
+  }
+
+  @keyframes focus-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .peek.moved {
+      animation: none;
+    }
   }
 </style>

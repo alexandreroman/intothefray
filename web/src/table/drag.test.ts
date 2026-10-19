@@ -134,10 +134,14 @@ describe('dropAction', () => {
       x: 120,
       y: 50,
     });
-    // Never off the top or left edge.
+    // Never off the top or left edge, nor past the server's bound.
     expect(dropAction(TABLE_CARD, TABLE, { x: -12, y: -30 }, DEAL_TO)).toMatchObject({
       x: 0,
       y: 0,
+    });
+    expect(dropAction(TABLE_CARD, TABLE, { x: 25_000, y: 20_004 }, DEAL_TO)).toMatchObject({
+      x: 20_000,
+      y: 20_000,
     });
   });
 
@@ -406,10 +410,20 @@ describe('sourceOf', () => {
     expect(sourceOf({ kind: 'pile', id: 'encd' }, grown, 'gone')).toBeNull();
   });
 
-  it("leaves decks, empty piles and other players' set-aside cards where they are", () => {
-    expect(sourceOf({ kind: 'pile', id: 'deck:p0' }, view)).toBeNull();
+  it("leaves other players' decks, empty piles and the out-of-play piles where they are", () => {
+    const withSam = makeView({ piles: [pile('deck:p1', { owner: 1 })] });
+    expect(sourceOf({ kind: 'pile', id: 'deck:p1' }, withSam)).toBeNull();
     expect(sourceOf({ kind: 'pile', id: 'vic' }, view)).toBeNull();
     expect(sourceOf({ kind: 'pile', id: 'aside:p1' }, view)).toBeNull();
+  });
+
+  it("takes the unknown top card of the viewer's own deck, never a spectator", () => {
+    expect(sourceOf({ kind: 'pile', id: 'deck:p0' }, view)).toEqual({
+      kind: 'deck',
+      pile: 'deck:p0',
+    });
+    const spectating = makeView({ piles: [pile('deck:p0', { owner: 0 })], spectator: true });
+    expect(sourceOf({ kind: 'pile', id: 'deck:p0' }, spectating)).toBeNull();
   });
 
   it('gives nothing for a card that is gone, or to a spectator', () => {
@@ -444,34 +458,27 @@ describe('pileTargets', () => {
   const of = (id: string) =>
     pileTargets({ kind: 'card', card: id, x: 0, y: 0 }, view).map((t) => [t.pile, t.drop, t.label]);
 
-  it("offers a card its owner's deck and discard pile, the victory display and a set-aside pile", () => {
+  it("offers a card its owner's deck and discard pile, not the out-of-play piles", () => {
+    // Those are not drawn on the table: Move to ▾ sends a card there.
     expect(of('mine')).toEqual([
       ['deck:p0', 'top', 'Top of deck'],
       ['disc:p0', 'discard', 'Discard'],
-      ['vic', 'pile', 'Victory display'],
-      ['aside:p0', 'pile', 'Set aside'],
     ]);
     expect(of('minion')).toEqual([
       ['enc', 'top', 'Top of deck'],
       ['encd', 'discard', 'Discard'],
-      ['vic', 'pile', 'Victory display'],
-      ['saside', 'pile', 'Set aside'],
     ]);
   });
 
   it("keeps another player's deck out, as the menus do", () => {
-    expect(of('theirs')).toEqual([
-      ['disc:p1', 'discard', 'Discard'],
-      ['vic', 'pile', 'Victory display'],
-      ['saside', 'pile', 'Set aside'],
-    ]);
+    expect(of('theirs')).toEqual([['disc:p1', 'discard', 'Discard']]);
   });
 
   it('offers nothing for the card a stage shows, or a card it is tucked under', () => {
     expect(of('v')).toEqual([]);
     expect(of('over')).toEqual([]);
     // What is tucked under it can go.
-    expect(of('under')).toHaveLength(4);
+    expect(of('under')).toHaveLength(2);
   });
 
   it('offers the encounter deck its discard pile only', () => {
@@ -550,6 +557,57 @@ describe('the hand', () => {
     expect(insertIndex([100, 200, 300], 50)).toBe(0);
     expect(insertIndex([100, 200, 300], 250)).toBe(2);
     expect(insertIndex([100, 200, 300], 900)).toBe(3);
+  });
+});
+
+describe("the top card of the viewer's deck", () => {
+  const deck: DragSource = { kind: 'deck', pile: 'deck:p0' };
+  const view = makeView({
+    piles: [
+      pile('deck:p0', { owner: 0 }),
+      pile('disc:p0', { kind: 'discard', owner: 0, count: 0, cards: [] }),
+      pile('disc:p1', { kind: 'discard', owner: 1, count: 0, cards: [] }),
+    ],
+  });
+
+  it('is drawn when dropped on the hand', () => {
+    expect(goesToHand(deck, view)).toBe(true);
+    const hand: DropRect = { kind: 'toHand', rect: rect(0, 0, 1, 1) };
+    expect(dropAction(deck, hand, AT_ORIGIN, DEAL_TO)).toEqual({ kind: 'draw', n: 1 });
+  });
+
+  it('is discarded on its own discard pile only', () => {
+    expect(pileTargets(deck, view)).toEqual([
+      { pile: 'disc:p0', drop: 'discard', label: 'Discard' },
+    ]);
+    const discard: DropRect = {
+      kind: 'pile',
+      pile: 'disc:p0',
+      drop: 'discard',
+      label: 'Discard',
+      rect: rect(0, 0, 1, 1),
+    };
+    expect(dropAction(deck, discard, AT_ORIGIN, DEAL_TO)).toEqual({
+      kind: 'discardTop',
+      pile: 'deck:p0',
+      n: 1,
+    });
+  });
+
+  it('is played face up where it lands on the table, even over a card', () => {
+    expect(dropAction(deck, TABLE, { x: 304, y: 296 }, DEAL_TO)).toEqual({
+      kind: 'play',
+      pile: 'deck:p0',
+      x: 300,
+      y: 300,
+    });
+    const onCard: DropRect = { kind: 'card', card: 'x', z: 1, rect: rect(0, 0, 1, 1) };
+    expect(dropAction(deck, onCard, { x: 40, y: 60 }, DEAL_TO)).toEqual({
+      kind: 'play',
+      pile: 'deck:p0',
+      x: 40,
+      y: 60,
+    });
   });
 });
 

@@ -1,20 +1,17 @@
 <!--
-  The side column: the preview of the hovered card, the history, newest
-  first, and the Undo button under it.
+  The side column: the history, newest first, and the Undo button under it.
+  The preview of the hovered card floats over the table (Table.svelte).
 -->
 <script lang="ts">
   import type { LogView } from '../lib/types';
   import { mergedLines } from './animate';
-  import CardPreview, { type Preview } from './CardPreview.svelte';
   import { interaction } from './interaction.svelte';
 
   let {
-    preview,
     log,
     canUndo = false,
     onundo,
   }: {
-    preview: Preview | null;
     /** Oldest first, as the server sends it. */
     log: LogView[];
     canUndo?: boolean;
@@ -121,13 +118,6 @@
       >{:else}{part.text}{/if}{/each}
 {/snippet}
 
-<div class="preview">
-  <h2>Preview</h2>
-  <div class="frame">
-    <CardPreview {preview} />
-  </div>
-</div>
-
 <h2 class="loghead" id="history-title">History</h2>
 
 <ul class="log" aria-labelledby="history-title" bind:this={list}>
@@ -189,20 +179,6 @@
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--muted);
-  }
-
-  .preview {
-    flex: none;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    padding: 18px;
-    border-bottom: 1px solid var(--panel-2);
-  }
-
-  .frame {
-    align-self: center;
-    width: min(100%, 220px);
   }
 
   .loghead {

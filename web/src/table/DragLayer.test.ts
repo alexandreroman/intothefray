@@ -608,6 +608,52 @@ describe('dragging from a pile', () => {
   });
 });
 
+describe("dragging the top card of the viewer's deck", () => {
+  it('plays it face up where it lands, showing only its back until then', async () => {
+    const { session } = await renderTable();
+    // The deck lies at 620, 340 on the screen.
+    await press(placed('deck:p0'), 690, 410);
+    await moveTo(300, 450);
+    const [ghost] = ghosts();
+    expect(ghost?.querySelector('[alt="Player card back"]')).not.toBeNull();
+    expect(placed('deck:p0').querySelector('.count')?.textContent).toBe('29');
+
+    await release(300, 450);
+    // Held by its middle: its corner at 230, 352 on the screen, 210, 312 on the table.
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({
+      kind: 'play',
+      pile: 'deck:p0',
+      x: 210,
+      y: 310,
+    });
+  });
+
+  it('draws it when dropped on the hand, and discards it on the discard pile', async () => {
+    const { session } = await renderTable();
+    await press(placed('deck:p0'), 690, 410);
+    await moveTo(450, 740);
+    expect(screen.getByText('Hand')).toBeTruthy();
+    await release(450, 740);
+    expect(session.act).toHaveBeenLastCalledWith({ kind: 'draw', n: 1 });
+
+    await press(placed('deck:p0'), 690, 410);
+    await moveTo(850, 400);
+    expect(screen.getByText('Discard')).toBeTruthy();
+    await release(850, 400);
+    expect(session.act).toHaveBeenLastCalledWith({ kind: 'discardTop', pile: 'deck:p0', n: 1 });
+  });
+
+  it("cannot be dragged from another player's deck", async () => {
+    const view = makeView({ withSam: true });
+    const { session } = await renderTable(view);
+    await press(placed('deck:p1'), 690, 710);
+    await moveTo(300, 450);
+    expect(ghosts()).toEqual([]);
+    await release(300, 450);
+    expect(session.act).not.toHaveBeenCalled();
+  });
+});
+
 describe('dragging a hand card', () => {
   it('plays it where it lands on the table', async () => {
     const { session } = await renderTable();
