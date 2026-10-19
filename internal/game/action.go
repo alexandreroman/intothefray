@@ -80,16 +80,51 @@ const (
 	maxCount      = 99    // cards per draw/discard, and counter delta magnitude
 )
 
-// resolve checks that the player seated at seat may perform a, and fills the
-// fields the client cannot decide: the acting seat, the cards drawn and the
-// outcome of every shuffle. The returned action is what gets applied and
-// recorded, so replaying it needs no randomness. g is never modified.
-func resolve(g *Game, seat int, a Action, rng *rand.Rand) (Action, error) {
+// actor is who performs an action: the credited seat, which the event records,
+// and every seat of its player. A player may use the hands, decks, set-aside
+// and discard piles of all their seats, whichever one is credited.
+type actor struct {
+	seat  int
+	seats []int // in order; the first one is the home seat
+}
+
+// actorOf returns the actor credited to seat, with every seat of its player.
+func (g *Game) actorOf(seat int) actor {
+	return actor{seat: seat, seats: g.seatsOf(g.seatPlayer(seat))}
+}
+
+// owns reports whether owner, the Owner of a card or pile, is one of the
+// actor's seats.
+func (w actor) owns(owner int) bool {
+	return slices.Contains(w.seats, owner)
+}
+
+// ownsArea reports whether area is the area of one of the actor's seats.
+func (w actor) ownsArea(area Area) bool {
+	for _, seat := range w.seats {
+		if PlayerArea(seat) == area {
+			return true
+		}
+	}
+	return false
+}
+
+// homeArea returns the area of the actor's home seat, where their private
+// view lives: one per player, whatever pile it opens.
+func (w actor) homeArea() Area {
+	return PlayerArea(w.seats[0])
+}
+
+// resolve checks that who may perform a, and fills the fields the client
+// cannot decide: the acting seat, the cards drawn and the outcome of every
+// shuffle. The returned action is what gets applied and recorded, so
+// replaying it needs no randomness. g is never modified.
+func resolve(g *Game, who actor, a Action, rng *rand.Rand) (Action, error) {
 	if g.Table == nil {
 		return Action{}, fmt.Errorf("%w: the game has no table", ErrPhase)
 	}
-	if seat < 0 || seat >= g.seatCount() {
-		return Action{}, forbidden("seat %d is not at this table", seat)
+	if who.seat < 0 || who.seat >= g.seatCount() {
+		return Action{}, forbidden("seat %d is not at this table", who.seat)
 	}
 	if err := checkLimits(a); err != nil {
 		return Action{}, err
@@ -99,28 +134,28 @@ func resolve(g *Game, seat int, a Action, rng *rand.Rand) (Action, error) {
 	}
 
 	// The client never chooses who acts.
-	a.Seat = seat
+	a.Seat = who.seat
 	t := g.Table
 
 	switch a.Kind {
 	case ActMove, ActToken, ActStatus, ActChooseStage, ActDiscard:
-		return a, checkCards(t, seat, a.Card)
+		return a, checkCards(t, who, a.Card)
 	case ActExhaust:
-		return resolveExhaust(t, seat, a)
+		return resolveExhaust(t, who, a)
 	case ActReadyAll:
 		return resolveReadyAll(t, a)
 	case ActFlip:
-		return resolveFlip(t, seat, a)
+		return resolveFlip(t, who, a)
 	case ActAttach, ActArrowAdd:
-		return a, checkCards(t, seat, a.Card, a.Target)
+		return a, checkCards(t, who, a.Card, a.Target)
 	case ActPlay:
-		return resolvePlay(t, seat, a)
+		return resolvePlay(t, who, a)
 	case ActToHand:
-		return resolveToHand(t, seat, a)
+		return resolveToHand(t, who, a)
 	case ActToDeck:
-		return resolveToDeck(t, seat, a, rng)
+		return resolveToDeck(t, who, a, rng)
 	case ActToPile:
-		return resolveToPile(t, seat, a)
+		return resolveToPile(t, who, a)
 	case ActReveal:
 		return resolveReveal(t, a)
 	case ActDeal:
@@ -128,20 +163,20 @@ func resolve(g *Game, seat int, a Action, rng *rand.Rand) (Action, error) {
 	case ActFirstPlayer, ActArrowClear:
 		return a, nil
 	case ActDraw:
-		return resolveDraw(t, seat, a)
+		return resolveDraw(t, who, a)
 	case ActHandOrder:
-		return resolveHandOrder(seat, a)
+		return resolveHandOrder(who, a)
 	case ActDiscardTop:
-		return resolveDiscardTop(t, seat, a)
+		return resolveDiscardTop(t, who, a)
 	case ActReorderTop:
-		_, err := ownPile(t, seat, a.Pile)
+		_, err := ownPile(t, who, a.Pile)
 		return a, err
 	case ActShuffle:
-		return resolveShuffle(t, seat, a, rng)
+		return resolveShuffle(t, who, a, rng)
 	case ActShuffleBack:
-		return resolveShuffleBack(t, seat, a, rng)
+		return resolveShuffleBack(t, who, a, rng)
 	case ActShuffleIn:
-		return resolveShuffleIn(t, seat, a, rng)
+		return resolveShuffleIn(t, who, a, rng)
 	default:
 		return Action{}, invalid("unknown action kind %q", a.Kind)
 	}
@@ -183,30 +218,30 @@ func checkCount(n int) error {
 	return nil
 }
 
-// checkPile verifies that seat may use pile. Decks and set-aside piles are
-// private to their owner; so are discard piles when privateDiscard is set
+// checkPile verifies that who may use pile. Decks and set-aside piles are
+// private to their owner's player; so are discard piles when privateDiscard is set
 // (piles operations), while cards lying in a discard pile stay shared.
-func checkPile(pile *Pile, seat int, privateDiscard bool) error {
+func checkPile(pile *Pile, who actor, privateDiscard bool) error {
 	private := pile.Kind == KindDeck || pile.Kind == KindAside ||
 		(pile.Kind == KindDiscard && privateDiscard)
-	if private && pile.Owner != NoOwner && pile.Owner != seat {
+	if private && pile.Owner != NoOwner && !who.owns(pile.Owner) {
 		return forbidden("pile %q belongs to another player", pile.ID)
 	}
 	return nil
 }
 
-// ownPile returns the pile with the given id when seat may operate on it.
-func ownPile(t *Table, seat int, id string) (*Pile, error) {
+// ownPile returns the pile with the given id when who may operate on it.
+func ownPile(t *Table, who actor, id string) (*Pile, error) {
 	pile, err := t.pile(id)
 	if err != nil {
 		return nil, err
 	}
-	return pile, checkPile(pile, seat, true)
+	return pile, checkPile(pile, who, true)
 }
 
-// checkCards verifies that seat may touch each card: nobody else's hand,
+// checkCards verifies that who may touch each card: nobody else's hand,
 // deck or set-aside pile. Empty ids are skipped.
-func checkCards(t *Table, seat int, ids ...string) error {
+func checkCards(t *Table, who actor, ids ...string) error {
 	for _, id := range ids {
 		if id == "" {
 			continue
@@ -215,31 +250,31 @@ func checkCards(t *Table, seat int, ids ...string) error {
 		if err != nil {
 			return err
 		}
-		if err := checkCard(t, seat, c); err != nil {
+		if err := checkCard(t, who, c); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-// usableCard returns the card with the given id when seat may touch it.
-func usableCard(t *Table, seat int, id string) (*Card, error) {
+// usableCard returns the card with the given id when who may touch it.
+func usableCard(t *Table, who actor, id string) (*Card, error) {
 	c, err := t.card(id)
 	if err != nil {
 		return nil, err
 	}
-	return c, checkCard(t, seat, c)
+	return c, checkCard(t, who, c)
 }
 
-func checkCard(t *Table, seat int, c *Card) error {
+func checkCard(t *Table, who actor, c *Card) error {
 	switch c.Zone {
 	case ZoneHand:
-		if owner := handOf(t, c.ID); owner != "" && owner != PlayerArea(seat) {
+		if owner := handOf(t, c.ID); owner != "" && !who.ownsArea(owner) {
 			return forbidden("card %q is in another player's hand", c.ID)
 		}
 	case ZonePile:
 		if pile, ok := t.Piles[c.Pile]; ok {
-			return checkPile(pile, seat, false)
+			return checkPile(pile, who, false)
 		}
 	}
 	return nil
@@ -247,8 +282,8 @@ func checkCard(t *Table, seat int, c *Card) error {
 
 // resolveExhaust records whether the card ends exhausted (see
 // Action.Exhausted). A locked card is exhausted, but never readied.
-func resolveExhaust(t *Table, seat int, a Action) (Action, error) {
-	c, err := usableTableCard(t, seat, a.Card)
+func resolveExhaust(t *Table, who actor, a Action) (Action, error) {
+	c, err := usableTableCard(t, who, a.Card)
 	if err != nil {
 		return a, err
 	}
@@ -284,8 +319,8 @@ func locked(c *Card) bool {
 
 // resolveFlip records the side the card ends on: a face-down card turns face
 // up, any other goes to its next face.
-func resolveFlip(t *Table, seat int, a Action) (Action, error) {
-	c, err := usableTableCard(t, seat, a.Card)
+func resolveFlip(t *Table, who actor, a Action) (Action, error) {
+	c, err := usableTableCard(t, who, a.Card)
 	if err != nil {
 		return a, err
 	}
@@ -297,10 +332,10 @@ func resolveFlip(t *Table, seat int, a Action) (Action, error) {
 	return a, nil
 }
 
-// usableTableCard returns the table card with the given id when seat may
+// usableTableCard returns the table card with the given id when who may
 // touch it.
-func usableTableCard(t *Table, seat int, id string) (*Card, error) {
-	c, err := usableCard(t, seat, id)
+func usableTableCard(t *Table, who actor, id string) (*Card, error) {
+	c, err := usableCard(t, who, id)
 	if err != nil {
 		return nil, err
 	}
@@ -310,33 +345,33 @@ func usableTableCard(t *Table, seat int, id string) (*Card, error) {
 	return c, nil
 }
 
-func resolveToHand(t *Table, seat int, a Action) (Action, error) {
-	c, err := usableCard(t, seat, a.Card)
+func resolveToHand(t *Table, who actor, a Action) (Action, error) {
+	c, err := usableCard(t, who, a.Card)
 	if err != nil {
 		return a, err
 	}
 	if c.Owner == NoOwner {
 		return a, forbidden("encounter card %q cannot go to a hand", c.ID)
 	}
-	if c.Owner != seat {
+	if !who.owns(c.Owner) {
 		return a, forbidden("card %q belongs to another player", c.ID)
 	}
 	return a, nil
 }
 
-func resolveToPile(t *Table, seat int, a Action) (Action, error) {
-	if _, err := usableCard(t, seat, a.Card); err != nil {
+func resolveToPile(t *Table, who actor, a Action) (Action, error) {
+	if _, err := usableCard(t, who, a.Card); err != nil {
 		return a, err
 	}
 	target, err := t.pile(a.Target)
 	if err != nil {
 		return a, err
 	}
-	return a, checkPile(target, seat, false)
+	return a, checkPile(target, who, false)
 }
 
-func resolveToDeck(t *Table, seat int, a Action, rng *rand.Rand) (Action, error) {
-	c, err := usableCard(t, seat, a.Card)
+func resolveToDeck(t *Table, who actor, a Action, rng *rand.Rand) (Action, error) {
+	c, err := usableCard(t, who, a.Card)
 	if err != nil {
 		return a, err
 	}
@@ -344,7 +379,7 @@ func resolveToDeck(t *Table, seat int, a Action, rng *rand.Rand) (Action, error)
 	if err != nil {
 		return a, err
 	}
-	if err := checkPile(deck, seat, false); err != nil {
+	if err := checkPile(deck, who, false); err != nil {
 		return a, err
 	}
 	switch a.Where {
@@ -357,15 +392,26 @@ func resolveToDeck(t *Table, seat int, a Action, rng *rand.Rand) (Action, error)
 	return a, nil
 }
 
-func resolveDraw(t *Table, seat int, a Action) (Action, error) {
+// resolveDraw records whose hand the cards go to and which cards they are. A
+// draw takes from the deck of the credited seat, or from the deck a.Pile
+// names, which must be one of the actor's: the cards go to that deck's
+// owner's hand. The client-provided area is ignored.
+func resolveDraw(t *Table, who actor, a Action) (Action, error) {
 	if err := checkCount(a.N); err != nil {
 		return a, err
 	}
-	a.Area = PlayerArea(seat)
-	deck, err := t.pile("deck:" + string(a.Area))
+	deckID := "deck:" + string(PlayerArea(who.seat))
+	if a.Pile != "" {
+		deckID = a.Pile
+	}
+	deck, err := ownPile(t, who, deckID)
 	if err != nil {
 		return a, err
 	}
+	if deck.Kind != KindDeck {
+		return a, invalid("cards are drawn from a player's deck, not from %q", deck.ID)
+	}
+	a.Area = PlayerArea(deck.Owner)
 	if a.N > len(deck.Cards) {
 		return a, invalid("cannot draw %d cards from pile %q", a.N, deck.ID)
 	}
@@ -391,9 +437,9 @@ func resolveReveal(t *Table, a Action) (Action, error) {
 // play from the top of the player's own deck names the deck rather than a
 // card, as the client does not know its cards: resolve records the top card,
 // whatever card the client names, so that a rebuild plays that card.
-func resolvePlay(t *Table, seat int, a Action) (Action, error) {
+func resolvePlay(t *Table, who actor, a Action) (Action, error) {
 	if a.Pile != "" {
-		deck, err := ownPile(t, seat, a.Pile)
+		deck, err := ownPile(t, who, a.Pile)
 		if err != nil {
 			return a, err
 		}
@@ -405,7 +451,7 @@ func resolvePlay(t *Table, seat int, a Action) (Action, error) {
 		}
 		a.Card = topCards(deck, 1)[0]
 	}
-	return a, checkCards(t, seat, a.Card, a.Target)
+	return a, checkCards(t, who, a.Card, a.Target)
 }
 
 // resolveDeal records the card to deal, so that a rebuild deals that card
@@ -423,8 +469,8 @@ func resolveDeal(t *Table, a Action) (Action, error) {
 }
 
 // resolveDiscardTop records the cards to discard, top first.
-func resolveDiscardTop(t *Table, seat int, a Action) (Action, error) {
-	pile, err := ownPile(t, seat, a.Pile)
+func resolveDiscardTop(t *Table, who actor, a Action) (Action, error) {
+	pile, err := ownPile(t, who, a.Pile)
 	if err != nil {
 		return a, err
 	}
@@ -435,11 +481,11 @@ func resolveDiscardTop(t *Table, seat int, a Action) (Action, error) {
 	return a, nil
 }
 
-func resolveHandOrder(seat int, a Action) (Action, error) {
+func resolveHandOrder(who actor, a Action) (Action, error) {
 	if !validArea(a.Area) {
 		return a, invalid("area %q has no hand", a.Area)
 	}
-	if a.Area != PlayerArea(seat) {
+	if !who.ownsArea(a.Area) {
 		return a, forbidden("hand %q belongs to another player", a.Area)
 	}
 	return a, nil
@@ -447,23 +493,23 @@ func resolveHandOrder(seat int, a Action) (Action, error) {
 
 // resolveShuffleKind resolves a shuffle-producing action (see producesShuffle)
 // on t. A rebuild uses it when the recorded outcome no longer fits.
-func resolveShuffleKind(t *Table, seat int, a Action, rng *rand.Rand) (Action, error) {
+func resolveShuffleKind(t *Table, who actor, a Action, rng *rand.Rand) (Action, error) {
 	switch a.Kind {
 	case ActShuffle:
-		return resolveShuffle(t, seat, a, rng)
+		return resolveShuffle(t, who, a, rng)
 	case ActShuffleBack:
-		return resolveShuffleBack(t, seat, a, rng)
+		return resolveShuffleBack(t, who, a, rng)
 	case ActShuffleIn:
-		return resolveShuffleIn(t, seat, a, rng)
+		return resolveShuffleIn(t, who, a, rng)
 	case ActToDeck:
-		return resolveToDeck(t, seat, a, rng)
+		return resolveToDeck(t, who, a, rng)
 	default:
 		return a, invalid("%q does not shuffle", a.Kind)
 	}
 }
 
-func resolveShuffle(t *Table, seat int, a Action, rng *rand.Rand) (Action, error) {
-	pile, err := ownPile(t, seat, a.Pile)
+func resolveShuffle(t *Table, who actor, a Action, rng *rand.Rand) (Action, error) {
+	pile, err := ownPile(t, who, a.Pile)
 	if err != nil {
 		return a, err
 	}
@@ -474,8 +520,8 @@ func resolveShuffle(t *Table, seat int, a Action, rng *rand.Rand) (Action, error
 	return a, nil
 }
 
-func resolveShuffleBack(t *Table, seat int, a Action, rng *rand.Rand) (Action, error) {
-	source, err := ownPile(t, seat, a.Pile)
+func resolveShuffleBack(t *Table, who actor, a Action, rng *rand.Rand) (Action, error) {
+	source, err := ownPile(t, who, a.Pile)
 	if err != nil {
 		return a, err
 	}
@@ -491,8 +537,8 @@ func resolveShuffleBack(t *Table, seat int, a Action, rng *rand.Rand) (Action, e
 	return a, nil
 }
 
-func resolveShuffleIn(t *Table, seat int, a Action, rng *rand.Rand) (Action, error) {
-	source, err := ownPile(t, seat, a.Pile)
+func resolveShuffleIn(t *Table, who actor, a Action, rng *rand.Rand) (Action, error) {
+	source, err := ownPile(t, who, a.Pile)
 	if err != nil {
 		return a, err
 	}

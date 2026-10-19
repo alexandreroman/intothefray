@@ -366,10 +366,10 @@ func TestViewHandsOfOwnSeats(t *testing.T) {
 	cat := newCatalog(t)
 	g := twoDeckGame(t)
 	// Alex draws into the hand of his first deck, Sam into his only one.
-	if err := g.Do("a", Action{Kind: ActDraw, N: 1}, cat, at(1)); err != nil {
+	if err := g.Do("a", -1, Action{Kind: ActDraw, N: 1}, cat, at(1)); err != nil {
 		t.Fatal(err)
 	}
-	if err := g.Do("s", Action{Kind: ActDraw, N: 2}, cat, at(2)); err != nil {
+	if err := g.Do("s", -1, Action{Kind: ActDraw, N: 2}, cat, at(2)); err != nil {
 		t.Fatal(err)
 	}
 	// A card goes straight into the hand of Alex's second deck.

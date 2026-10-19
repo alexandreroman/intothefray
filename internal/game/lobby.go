@@ -340,9 +340,10 @@ func (p *Player) hasSlot(deck int) bool {
 	return deck >= 0 && deck < len(p.Decks)
 }
 
-// ready reports whether every deck slot of the player holds a deck.
+// ready reports whether the player has a deck slot and every one holds a
+// deck.
 func (p *Player) ready() bool {
-	return !slices.Contains(p.Decks, nil)
+	return len(p.Decks) > 0 && !slices.Contains(p.Decks, nil)
 }
 
 // demote moves a player to the spectators, freeing the seats and colour.

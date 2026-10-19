@@ -44,10 +44,11 @@ const (
 	maxUndoDepth = 10
 )
 
-// Do performs one action for the player holding token, who acts from their
-// home seat: it changes the table, writes the history line and records the
-// event. An error leaves the game unchanged.
-func (g *Game) Do(token string, a Action, cat *pack.Catalog, now time.Time) error {
+// Do performs one action for the player holding token, credited to seat, one
+// of the player's own seats; a negative seat stands for their home seat. It
+// changes the table, writes the history line and records the event under the
+// credited seat. An error leaves the game unchanged.
+func (g *Game) Do(token string, seat int, a Action, cat *pack.Catalog, now time.Time) error {
 	player := g.player(token)
 	if player == nil {
 		return forbidden("only players can act")
@@ -55,22 +56,31 @@ func (g *Game) Do(token string, a Action, cat *pack.Catalog, now time.Time) erro
 	if g.Phase != PhasePlaying || g.Table == nil || g.History == nil {
 		return fmt.Errorf("%w: the game is not being played", ErrPhase)
 	}
-	return g.do(g.homeSeat(slices.Index(g.Players, player)), a, cat, now)
+	index := slices.Index(g.Players, player)
+	if seat < 0 {
+		seat = g.homeSeat(index)
+	}
+	// A player without any seat, only found in games stored before deck
+	// slots, has no seat to act from.
+	if seat < 0 || g.seatPlayer(seat) != index {
+		return forbidden("seat %d is not yours", seat)
+	}
+	return g.do(g.actorOf(seat), a, cat, now)
 }
 
-// do performs a for the player at seat. Its randomness is the stream of the
-// first event it records, so that a replay draws the same.
-func (g *Game) do(seat int, a Action, cat *pack.Catalog, now time.Time) error {
+// do performs a for who. Its randomness is the stream of the first event it
+// records, so that a replay draws the same.
+func (g *Game) do(who actor, a Action, cat *pack.Catalog, now time.Time) error {
 	rng := g.History.rngFor(g.History.LastSeq + 1)
 	switch a.Kind {
 	case ActUndo:
-		return g.undo(seat, rng, now)
+		return g.undo(who, rng, now)
 	case ActLook, ActSearch:
-		return g.openView(seat, a, now)
+		return g.openView(who, a, now)
 	case ActCloseView:
-		return g.closeView(seat, a, cat, rng, now)
+		return g.closeView(who, a, cat, rng, now)
 	default:
-		return g.perform(seat, a, cat, rng, now)
+		return g.perform(who, a, cat, rng, now)
 	}
 }
 
@@ -80,8 +90,8 @@ func (g *Game) do(seat int, a Action, cat *pack.Catalog, now time.Time) error {
 //   - shuffles: a tracked event with a history line, never undoable, since
 //     undoing one would bring back an order a player may have seen;
 //   - arranging the table (see arrangingKinds): an untracked event, no line.
-func (g *Game) perform(seat int, a Action, cat *pack.Catalog, rng *rand.Rand, now time.Time) error {
-	resolved, err := resolve(g, seat, a, rng)
+func (g *Game) perform(who actor, a Action, cat *pack.Catalog, rng *rand.Rand, now time.Time) error {
+	resolved, err := resolve(g, who, a, rng)
 	if err != nil {
 		return err
 	}
@@ -94,18 +104,18 @@ func (g *Game) perform(seat int, a Action, cat *pack.Catalog, rng *rand.Rand, no
 		return nil
 	}
 
-	n := narrator{game: g, cat: cat, seat: seat, before: before, after: g.Table}
+	n := narrator{game: g, cat: cat, who: who, before: before, after: g.Table}
 	line, logged := n.describe(resolved)
 	if !logged {
-		g.recordArranging(seat, resolved, rng, now)
+		g.recordArranging(who.seat, resolved, rng, now)
 		return nil
 	}
-	if burst := g.mergeTarget(seat, resolved, now); burst != nil {
-		g.merge(seat, burst, resolved, line, rng, now)
+	if burst := g.mergeTarget(who, resolved, now); burst != nil {
+		g.merge(who.seat, burst, resolved, line, rng, now)
 		return nil
 	}
-	g.appendLog(seat, line.text, line.cards, now)
-	g.History.record(Event{Seat: seat, Action: resolved, Tracked: true, Log: len(g.Log) - 1, At: now}, g.Table)
+	g.appendLog(who.seat, line.text, line.cards, now)
+	g.History.record(Event{Seat: who.seat, Action: resolved, Tracked: true, Log: len(g.Log) - 1, At: now}, g.Table)
 	return nil
 }
 
@@ -152,12 +162,12 @@ func replacesMove(prev, next Event) bool {
 }
 
 // mergeTarget returns the event indices of the burst that a extends, or nil.
-// The burst must be the player's last undoable one, with the same merge key,
-// still own the last history line, and have changed less than mergeWindow
-// ago.
-func (g *Game) mergeTarget(seat int, a Action, now time.Time) []int {
+// The burst must be the player's last undoable one, among all their seats,
+// with the same merge key, still own the last history line, and have changed
+// less than mergeWindow ago.
+func (g *Game) mergeTarget(who actor, a Action, now time.Time) []int {
 	key := mergeKey(a)
-	burst := g.History.lastUndoable(seat)
+	burst := g.History.lastUndoable(who.seats...)
 	if key == "" || burst == nil {
 		return nil
 	}
@@ -251,12 +261,13 @@ func (g *Game) appendLog(seat int, text string, cards []string, now time.Time) {
 	g.Log = append(g.Log, LogEntry{Who: p.Name, Color: p.Color, Text: text, At: now, Cards: cards})
 }
 
-// undo takes back the player's last undoable burst: the burst is marked
-// undone and the live table is rebuilt without it, every later event of
-// every player re-applied. rng re-resolves the shuffles the rebuild changes.
-func (g *Game) undo(seat int, rng *rand.Rand, now time.Time) error {
+// undo takes back the player's last undoable burst, whichever of their seats
+// it is credited to: the burst is marked undone and the live table is rebuilt
+// without it, every later event of every player re-applied. rng re-resolves
+// the shuffles the rebuild changes.
+func (g *Game) undo(who actor, rng *rand.Rand, now time.Time) error {
 	h := g.History
-	burst := h.lastUndoable(seat)
+	burst := h.lastUndoable(who.seats...)
 	if burst == nil {
 		return invalid("nothing to undo")
 	}
@@ -268,21 +279,22 @@ func (g *Game) undo(seat int, rng *rand.Rand, now time.Time) error {
 	g.install(h.rebuild(events, burst[0], rng))
 
 	original := g.Log[h.Events[burst[0]].Log]
-	g.appendLog(seat, "undid “"+original.Text+"”", nil, now)
-	h.record(Event{Seat: seat, Action: Action{Kind: ActUndo}, Log: len(g.Log) - 1, At: now}, g.Table)
+	g.appendLog(who.seat, "undid “"+original.Text+"”", nil, now)
+	h.record(Event{Seat: who.seat, Action: Action{Kind: ActUndo}, Log: len(g.Log) - 1, At: now}, g.Table)
 	return nil
 }
 
-// openView opens a Look or a Search on a pile for the player. It is logged
-// but cannot be undone.
-func (g *Game) openView(seat int, a Action, now time.Time) error {
+// openView opens a Look or a Search on a pile for the player. A player has
+// one private view, kept in the area of their home seat. It is logged but
+// cannot be undone.
+func (g *Game) openView(who actor, a Action, now time.Time) error {
 	pile, err := g.Table.pile(a.Pile)
 	if err != nil {
 		return err
 	}
 	// Decks are private to their owner; every other pile is either the
 	// shared encounter deck or face up, so anyone may look through it.
-	if pile.Kind == KindDeck && pile.Owner != seat {
+	if pile.Kind == KindDeck && !who.owns(pile.Owner) {
 		return forbidden("pile %q belongs to another player", pile.ID)
 	}
 	if len(pile.Cards) == 0 {
@@ -298,28 +310,28 @@ func (g *Game) openView(seat int, a Action, now time.Time) error {
 		n := min(a.N, len(pile.Cards))
 		view.Mode = viewModeTop
 		view.Cards = topCards(pile, n)
-		text = fmt.Sprintf("is looking at %s of %s", topCount(n), g.pileName(seat, pile.ID))
+		text = fmt.Sprintf("is looking at %s of %s", topCount(n), g.pileName(who, pile.ID))
 	} else {
 		view.Mode = viewModeSearch
 		view.Cards = topCards(pile, len(pile.Cards))
-		text = "is searching " + g.pileName(seat, pile.ID)
+		text = "is searching " + g.pileName(who, pile.ID)
 	}
 
 	if g.Table.Views == nil {
 		g.Table.Views = map[Area]*PrivateView{}
 	}
-	g.Table.Views[PlayerArea(seat)] = view
-	g.appendLog(seat, text, nil, now)
+	g.Table.Views[who.homeArea()] = view
+	g.appendLog(who.seat, text, nil, now)
 	recorded := Action{Kind: a.Kind, Pile: a.Pile, N: a.N}
-	g.History.record(Event{Seat: seat, Action: recorded, Log: len(g.Log) - 1, At: now}, g.Table)
+	g.History.record(Event{Seat: who.seat, Action: recorded, Log: len(g.Log) - 1, At: now}, g.Table)
 	return nil
 }
 
 // closeView closes the player's open view. Closing with a shuffle shuffles the
 // viewed pile, as a regular shuffle action: it is recorded as that shuffle,
 // then a plain close.
-func (g *Game) closeView(seat int, a Action, cat *pack.Catalog, rng *rand.Rand, now time.Time) error {
-	area := PlayerArea(seat)
+func (g *Game) closeView(who actor, a Action, cat *pack.Catalog, rng *rand.Rand, now time.Time) error {
+	area := who.homeArea()
 	view := g.Table.Views[area]
 	if view == nil {
 		return invalid("no view is open")
@@ -327,13 +339,13 @@ func (g *Game) closeView(seat int, a Action, cat *pack.Catalog, rng *rand.Rand, 
 	switch a.Where {
 	case "":
 	case whereShuffle:
-		if err := g.perform(seat, Action{Kind: ActShuffle, Pile: view.Pile}, cat, rng, now); err != nil {
+		if err := g.perform(who, Action{Kind: ActShuffle, Pile: view.Pile}, cat, rng, now); err != nil {
 			return err
 		}
 	default:
 		return invalid("unknown way to close a view %q", a.Where)
 	}
 	delete(g.Table.Views, area)
-	g.History.record(Event{Seat: seat, Action: Action{Kind: ActCloseView}, Log: -1, At: now}, g.Table)
+	g.History.record(Event{Seat: who.seat, Action: Action{Kind: ActCloseView}, Log: -1, At: now}, g.Table)
 	return nil
 }

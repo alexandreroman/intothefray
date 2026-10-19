@@ -141,7 +141,7 @@ func (g *Game) ViewFor(token string) View {
 	}
 	v.Log = g.logViews(v.Table)
 	if player != nil && g.History != nil {
-		v.CanUndo = g.History.lastUndoable(home) != nil
+		v.CanUndo = g.History.lastUndoable(seats...) != nil
 	}
 	return v
 }

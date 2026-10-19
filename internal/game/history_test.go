@@ -33,7 +33,7 @@ func klawFixture(t *testing.T) *doFixture {
 }
 
 func (f *doFixture) do(token string, a Action, at time.Time) error {
-	return f.g.Do(token, a, f.cat, at)
+	return f.g.Do(token, -1, a, f.cat, at)
 }
 
 func (f *doFixture) mustDo(t *testing.T, token string, a Action, at time.Time) {
@@ -223,7 +223,7 @@ func TestSpectatorCannotAct(t *testing.T) {
 func TestDoRequiresPlaying(t *testing.T) {
 	g := mustNewGame(t, "g1", "h", "Host", testNow)
 
-	err := g.Do("h", Action{Kind: ActDraw, N: 1}, newCatalog(t), testNow)
+	err := g.Do("h", -1, Action{Kind: ActDraw, N: 1}, newCatalog(t), testNow)
 	if !errors.Is(err, ErrPhase) {
 		t.Errorf("Do in the lobby = %v, want ErrPhase", err)
 	}

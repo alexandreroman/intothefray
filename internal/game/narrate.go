@@ -18,8 +18,10 @@ func topCount(n int) string {
 	return fmt.Sprintf("the top %d cards", n)
 }
 
-// pileName names a pile from the point of view of the player at seat.
-func (g *Game) pileName(seat int, id string) string {
+// pileName names a pile from the point of view of who: the piles of any of
+// their seats are "their" piles. The pile of a player who holds several decks
+// adds the deck's hero: "their Spider-Man deck", "Alex's Spider-Man deck".
+func (g *Game) pileName(who actor, id string) string {
 	switch id {
 	case PileEncounter:
 		return "the encounter deck"
@@ -46,10 +48,42 @@ func (g *Game) pileName(seat int, id string) string {
 	default:
 		noun = "pile"
 	}
-	if pile.Owner == seat {
+	if hero := g.deckHero(pile.Owner); hero != "" {
+		noun = hero + " " + noun
+	}
+	if who.owns(pile.Owner) {
 		return "their " + noun
 	}
 	return g.playerName(pile.Owner) + "'s " + noun
+}
+
+// seatName names the deck at seat: its player, with the deck's hero when the
+// player holds several decks, as in "Alex (Spider-Man)".
+func (g *Game) seatName(seat int) string {
+	name := g.playerName(seat)
+	if hero := g.deckHero(seat); hero != "" {
+		name += " (" + hero + ")"
+	}
+	return name
+}
+
+// deckHero returns the hero name of the deck at seat when its player holds
+// several decks, "" otherwise: the player's name alone tells the decks of a
+// one-deck player apart.
+func (g *Game) deckHero(seat int) string {
+	player := g.seatPlayer(seat)
+	if player < 0 {
+		return ""
+	}
+	seats := g.seatsOf(player)
+	if len(seats) < 2 {
+		return ""
+	}
+	deck := g.Players[player].Decks[seat-seats[0]]
+	if deck == nil {
+		return ""
+	}
+	return deck.HeroName
 }
 
 // playerName names the player who holds seat.
@@ -116,7 +150,7 @@ const hiddenCard = "a card"
 type narrator struct {
 	game   *Game
 	cat    *pack.Catalog
-	seat   int
+	who    actor
 	before *Table
 	after  *Table
 }
@@ -148,7 +182,7 @@ func (n narrator) describe(a Action) (logLine, bool) {
 		}
 		return logLine{text: text, cards: n.visibleCards(a.Card)}, true
 	case ActToPile:
-		text := fmt.Sprintf("moved %s to %s", n.name(a.Card), n.game.pileName(n.seat, a.Target))
+		text := fmt.Sprintf("moved %s to %s", n.name(a.Card), n.game.pileName(n.who, a.Target))
 		return logLine{text: text, cards: n.visibleCards(a.Card)}, true
 	case ActPlay:
 		if a.Target != "" {
@@ -181,17 +215,17 @@ func (n narrator) describe(a Action) (logLine, bool) {
 	case ActDeal:
 		return logLine{text: "dealt an encounter card face down to " + n.areaName(a.Area)}, true
 	case ActDiscardTop:
-		text := fmt.Sprintf("discarded %s of %s", topCount(len(a.Cards)), n.game.pileName(n.seat, a.Pile))
+		text := fmt.Sprintf("discarded %s of %s", topCount(len(a.Cards)), n.game.pileName(n.who, a.Pile))
 		return logLine{text: text, cards: n.visibleCards(a.Cards...)}, true
 	case ActShuffle:
-		return logLine{text: "shuffled " + n.game.pileName(n.seat, a.Pile)}, true
+		return logLine{text: "shuffled " + n.game.pileName(n.who, a.Pile)}, true
 	case ActShuffleBack:
 		deck, _ := deckOfDiscard(a.Pile)
 		return logLine{text: fmt.Sprintf("shuffled %s into %s",
-			n.game.pileName(n.seat, a.Pile), n.game.pileName(n.seat, deck))}, true
+			n.game.pileName(n.who, a.Pile), n.game.pileName(n.who, deck))}, true
 	case ActShuffleIn:
 		return logLine{text: fmt.Sprintf("shuffled %s into %s",
-			n.game.pileName(n.seat, a.Pile), n.game.pileName(n.seat, PileEncounter))}, true
+			n.game.pileName(n.who, a.Pile), n.game.pileName(n.who, PileEncounter))}, true
 	default:
 		return logLine{}, false
 	}
@@ -200,14 +234,14 @@ func (n narrator) describe(a Action) (logLine, bool) {
 func (n narrator) toHandEvent(a Action) logLine {
 	c := n.before.Cards[a.Card]
 	if c.Zone == ZonePile && !visible(n.before, a.Card) {
-		return logLine{text: "took a card from " + n.game.pileName(n.seat, c.Pile) + " into hand"}
+		return logLine{text: "took a card from " + n.game.pileName(n.who, c.Pile) + " into hand"}
 	}
 	return logLine{text: "took " + n.name(a.Card) + " into hand"}
 }
 
 func (n narrator) toDeckEvent(a Action) logLine {
 	card := n.name(a.Card)
-	deck := n.game.pileName(n.seat, n.before.Cards[a.Card].Home)
+	deck := n.game.pileName(n.who, n.before.Cards[a.Card].Home)
 	var text string
 	switch a.Where {
 	case whereBottom:
@@ -280,11 +314,11 @@ func (n narrator) stageEvent(a Action) logLine {
 	}
 }
 
-// areaName names the player who holds the seat of area.
+// areaName names the deck at the seat of area (see seatName).
 func (n narrator) areaName(area Area) string {
 	for seat := range n.game.seatCount() {
 		if PlayerArea(seat) == area {
-			return n.game.playerName(seat)
+			return n.game.seatName(seat)
 		}
 	}
 	return n.game.playerName(NoOwner)

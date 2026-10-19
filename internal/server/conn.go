@@ -503,7 +503,7 @@ func (s *Server) act(ctx context.Context, c *conn, msg clientMessage) error {
 		return fmt.Errorf("%w: action without an action", errInvalidMessage)
 	}
 	return s.update(ctx, c.gameID, func(g *game.Game) error {
-		return g.Do(c.token, *msg.Action, s.deps.Catalog, s.deps.Now())
+		return g.Do(c.token, -1, *msg.Action, s.deps.Catalog, s.deps.Now())
 	})
 }
 

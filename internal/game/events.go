@@ -113,17 +113,17 @@ func withoutViews(t *Table) *Table {
 	return clone
 }
 
-// undoableBursts returns the bursts seat can undo, newest first; each is the
-// ascending list of its event indices. They are taken among the seat's last
-// maxUndoDepth tracked bursts, undone ones included so that undoing never
+// undoableBursts returns the bursts a player holding seats can undo, newest
+// first; each is the ascending list of its event indices. They are taken
+// among the last maxUndoDepth tracked bursts credited to any of the seats, undone ones included so that undoing never
 // reaches further back. Shuffles never count (P2-R17): undoing one would bring
 // back an order a player may have seen. Nor do bursts cancelled by flipping
 // back, which changed nothing.
-func (h *History) undoableBursts(seat int) [][]int {
+func (h *History) undoableBursts(seats ...int) [][]int {
 	var bursts [][]int
 	for i := len(h.Events) - 1; i >= 0; i-- {
 		e := h.Events[i]
-		if e.Seat != seat || !e.Tracked || producesShuffle(e.Action) || e.cancelled() {
+		if !slices.Contains(seats, e.Seat) || !e.Tracked || producesShuffle(e.Action) || e.cancelled() {
 			continue
 		}
 		if n := len(bursts); n > 0 && e.Burst > 0 && h.Events[bursts[n-1][0]].Burst == e.Burst {
@@ -140,9 +140,10 @@ func (h *History) undoableBursts(seat int) [][]int {
 	})
 }
 
-// lastUndoable returns the event indices of the burst seat would undo, or nil.
-func (h *History) lastUndoable(seat int) []int {
-	if bursts := h.undoableBursts(seat); len(bursts) > 0 {
+// lastUndoable returns the event indices of the burst a player holding seats
+// would undo, or nil.
+func (h *History) lastUndoable(seats ...int) []int {
+	if bursts := h.undoableBursts(seats...); len(bursts) > 0 {
 		return bursts[0]
 	}
 	return nil
@@ -198,13 +199,25 @@ func replayEvent(t *Table, e *Event, rng *rand.Rand) {
 		return
 	}
 	if producesShuffle(e.Action) {
-		fresh, err := resolveShuffleKind(t, e.Seat, e.Action, rng)
+		// The event passed its checks when it was recorded: the rebuild only
+		// draws a new order, so its actor may use every pile.
+		trusted := actor{seat: e.Seat, seats: everySeat()}
+		fresh, err := resolveShuffleKind(t, trusted, e.Action, rng)
 		if err == nil && apply(t, fresh) == nil {
 			e.Action = fresh
 			return
 		}
 	}
 	e.Dropped = true
+}
+
+// everySeat returns every seat a table may hold.
+func everySeat() []int {
+	seats := make([]int, maxSeats)
+	for seat := range seats {
+		seats[seat] = seat
+	}
+	return seats
 }
 
 // producesShuffle reports whether a gives a pile a new random order.

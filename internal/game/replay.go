@@ -74,7 +74,7 @@ func Replay(cat *pack.Catalog, setup ReplaySetup, events []Event) (*Game, error)
 		}
 		// Moves that replaced one another leave gaps in the numbering.
 		g.History.LastSeq = e.Seq - 1
-		if err := g.do(e.Seat, e.Action, cat, e.At); err != nil {
+		if err := g.do(g.actorOf(e.Seat), e.Action, cat, e.At); err != nil {
 			return nil, fmt.Errorf("replay event %d (seq %d, %s): %w", i, e.Seq, e.Action.Kind, err)
 		}
 	}
