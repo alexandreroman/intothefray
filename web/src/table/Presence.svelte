@@ -118,14 +118,13 @@
 
   interface Drawn {
     cursors: (Placed & { color: number; name: string })[];
-    rings: { color: number; left: number; top: number; width: number; height: number }[];
     /** The cards of each drag, in table units of the zoomed ghost layer. */
     ghosts: { color: number; cards: TableCard[] }[];
     pings: (Placed & { key: number; color: number })[];
   }
 
   let layer = $state<HTMLElement>();
-  let drawn = $state.raw<Drawn>({ cursors: [], rings: [], ghosts: [], pings: [] });
+  let drawn = $state.raw<Drawn>({ cursors: [], ghosts: [], pings: [] });
   // Read by the drawing pass only, which runs outside any effect: plain values, not state.
   let pings: Ping[] = [];
   let nextPing = 0;
@@ -282,18 +281,9 @@
     schedule();
   });
 
-  // Relayed messages come from other clients: only spots given in numbers are drawn, and only the
-  // cards the view knows are ringed.
+  // Relayed messages come from other clients: only spots given in numbers are drawn.
   function isSpot(spot: PresencePoint): boolean {
     return Number.isFinite(spot.x) && Number.isFinite(spot.y);
-  }
-
-  function isKnownElement(id: string): boolean {
-    const table = view.table;
-    return (
-      (table?.cards ?? []).some((card) => card.id === id && card.zone === 'table') ||
-      (table?.piles ?? []).some((pile) => pile.id === id)
-    );
   }
 
   /** Where a spot of the table shows, held within the visible table as in the prototype. */
@@ -323,24 +313,6 @@
       horizontal = ' ←';
     }
     return { x: x - origin.left, y: y - origin.top, side: vertical + horizontal };
-  }
-
-  /** The card or pile a player previews, on the layer. */
-  function ringOf(id: string, origin: DOMRect): Omit<Drawn['rings'][number], 'color'> | null {
-    if (!isKnownElement(id)) {
-      return null;
-    }
-    const selector = `.surface .card[data-id="${CSS.escape(id)}"]`;
-    const rect = root?.querySelector(selector)?.getBoundingClientRect();
-    if (!rect || rect.width === 0) {
-      return null;
-    }
-    return {
-      left: rect.left - origin.left,
-      top: rect.top - origin.top,
-      width: rect.width,
-      height: rect.height,
-    };
   }
 
   /**
@@ -410,7 +382,10 @@
     }
     const origin = layer.getBoundingClientRect();
     const now = Date.now();
-    const next: Drawn = { cursors: [], rings: [], ghosts: [], pings: [] };
+    const next: Drawn = { cursors: [], ghosts: [], pings: [] };
+    // The card or pile each player previews: the first player keeps a card that several preview.
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    const previews = new Map<string, number>();
     // When something drawn now must go: a cursor falling silent, a lost player, or a ping done.
     let nextChange = Infinity;
     for (const state of presence.values()) {
@@ -426,9 +401,8 @@
           next.cursors.push({ ...cursor, color: state.color, name: state.name });
         }
       }
-      const ring = state.preview ? ringOf(state.preview, origin) : null;
-      if (ring) {
-        next.rings.push({ ...ring, color: state.color });
+      if (state.preview && !previews.has(state.preview)) {
+        previews.set(state.preview, state.color);
       }
       if (state.drag) {
         next.ghosts.push({ color: state.color, cards: ghostsOf(state.drag, origin) });
@@ -453,6 +427,8 @@
     }
     drawn = next;
     interaction.liftByOthers(tableCardsOf(next.ghosts));
+    // Each card or pile draws its ring itself, which follows it as it moves (CardView, PileView).
+    interaction.previewByOthers(previews);
 
     clearTimeout(wakeTimer);
     if (nextChange !== Infinity) {
@@ -517,22 +493,13 @@
     cancelAnimationFrame(frame);
     clearTimeout(wakeTimer);
     interaction.liftByOthers(new Set());
+    interaction.previewByOthers(new Map());
   });
 </script>
 
 <svelte:window onpointermove={onPointerMove} onresize={schedule} />
 
 <div class="presence" bind:this={layer} aria-hidden="true">
-  {#each drawn.rings as ring (ring.color)}
-    <div
-      class="rring"
-      style:--c={colourOf(ring.color)}
-      style:left="{ring.left}px"
-      style:top="{ring.top}px"
-      style:width="{ring.width}px"
-      style:height="{ring.height}px"
-    ></div>
-  {/each}
   <div class="ghosts">
     {#each drawn.ghosts as ghost (ghost.color)}
       {#each ghost.cards as card (card.id)}
@@ -579,15 +546,6 @@
     z-index: 2500;
     overflow: hidden;
     pointer-events: none;
-  }
-
-  /* The ring of the card another player previews: the hover ring, in their colour. */
-  .rring {
-    position: absolute;
-    border-radius: 7px;
-    box-shadow:
-      0 0 0 2px var(--c),
-      0 0 22px 6px color-mix(in srgb, var(--c) 22%, transparent);
   }
 
   /*

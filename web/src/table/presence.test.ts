@@ -219,8 +219,9 @@ function pings(): HTMLElement[] {
   return [...document.querySelectorAll<HTMLElement>('.presence .ping')];
 }
 
+/** The rings of the cards other players preview, each drawn inside its card. */
 function rings(): HTMLElement[] {
-  return [...document.querySelectorAll<HTMLElement>('.presence .rring')];
+  return [...document.querySelectorAll<HTMLElement>('.rring')];
 }
 
 beforeEach(() => {
@@ -448,17 +449,39 @@ describe("other players' presence", () => {
     const [ring] = rings();
     expect(ring).toBeDefined();
     expect(ring!.style.getPropertyValue('--c')).toBe('var(--p2)');
-    // Rhino lies at x 300 of the surface: (320, 80) on the screen.
-    expect([ring!.style.left, ring!.style.top, ring!.style.width, ring!.style.height]).toEqual([
-      '320px',
-      '40px',
-      '100px',
-      '140px',
-    ]);
+    // Drawn by Rhino itself, never measured over it.
+    expect(ring!.parentElement).toBe(placed('v'));
+    expect(document.querySelector('.presence .rring')).toBeNull();
 
     receive({ color: 1, name: 'Sam', preview: '' });
     await nextFrame();
     expect(rings()).toEqual([]);
+  });
+
+  it('keeps the ring on the card a view moves, with no frame nor message to measure it again', async () => {
+    const { receive, show } = await renderTable(makeView({ spectator: true }));
+    receive({ color: 1, name: 'Sam', preview: 'sam' });
+    await nextFrame();
+    expect(rings().map((ring) => ring.parentElement)).toEqual([placed('sam')]);
+
+    // Sam moved the card: the ring is still drawn by it, wherever it flies, turns or tilts.
+    const view = makeView({ spectator: true });
+    const moved = view.table!.cards.map((card) =>
+      card.id === 'sam' ? { ...card, x: card.x + 500, exhausted: true } : card,
+    );
+    await show({ ...view, table: { ...view.table!, cards: moved } });
+    expect(placed('sam').style.left).toBe('700px');
+    expect(rings().map((ring) => ring.parentElement)).toEqual([placed('sam')]);
+  });
+
+  it('draws one ring on a card several players preview, and none on the ghost of a drag', async () => {
+    const { receive } = await renderTable(makeView({ spectator: true }));
+
+    receive({ color: 0, name: 'Alex', preview: 'sam' });
+    receive({ color: 1, name: 'Sam', preview: 'sam', drag: { cards: ['sam'], x: 500, y: 320 } });
+    await nextFrame();
+    expect(rings()).toHaveLength(1);
+    expect(rings()[0]!.parentElement).toBe(placed('sam'));
   });
 
   it('shows the ping of another player for 1.2 s', async () => {

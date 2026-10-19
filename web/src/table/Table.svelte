@@ -1326,6 +1326,21 @@
       0 0 22px 6px #ffffff38;
   }
 
+  /*
+    The card or pile another player previews: the hover ring, in their colour. Drawn by the card
+    itself (CardView, PileView), it moves, turns and tilts with it.
+  */
+  .table :global(.card > .rring) {
+    position: absolute;
+    inset: 1%;
+    border-radius: 7px;
+    pointer-events: none;
+    z-index: 1;
+    box-shadow:
+      0 0 0 2px var(--c),
+      0 0 22px 6px color-mix(in srgb, var(--c) 22%, transparent);
+  }
+
   /* Where a drop would go: under a card (the prototype's threat orange), or onto a pile. */
   .table :global(.card.drop-target)::before {
     outline: 3px dashed var(--warn);

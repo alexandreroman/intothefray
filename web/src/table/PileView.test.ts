@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/svelte';
+import { interaction } from './interaction.svelte';
 import PileView from './PileView.svelte';
 import pileSource from './PileView.svelte?raw';
 import tableSource from './Table.svelte?raw';
@@ -82,6 +83,18 @@ describe('PileView', () => {
     const rings = zOf(/drop-pile\)::before \{([^}]*)\}/.exec(tableSource)?.[1]);
     expect(rings).toBeGreaterThan(0);
     expect(count).toBeGreaterThan(rings);
+  });
+
+  it('draws the ring of the player who previews it inside itself, so that it follows the pile', () => {
+    interaction.previewByOthers(new Map([['enc', 2]]));
+    try {
+      const { container } = render(PileView, { pile: pile({ count: 3 }) });
+
+      const ring = pileElement(container).querySelector<HTMLElement>(':scope > .rring');
+      expect(ring?.style.getPropertyValue('--c')).toBe('var(--p3)');
+    } finally {
+      interaction.reset();
+    }
   });
 
   it('a player deck shows the player back', () => {

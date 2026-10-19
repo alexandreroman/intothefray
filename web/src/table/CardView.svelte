@@ -61,6 +61,8 @@
   const dropOn = $derived(ghost ? null : interaction.dropOn);
   const tuckTarget = $derived(dropOn?.kind === 'card' && dropOn.id === card.id);
   const pileTarget = $derived(dropOn?.kind === 'pile' && dropOn.id === card.onPile);
+  // Another player previews the card: their ring is drawn inside it, so it follows every move.
+  const previewer = $derived(ghost ? undefined : interaction.previewerOf(card.id));
 </script>
 
 {#snippet token(k: TokenKind)}
@@ -156,6 +158,10 @@
         >
       {/each}
     </div>
+  {/if}
+
+  {#if previewer !== undefined}
+    <div class="rring" style:--c="var(--p{previewer + 1})"></div>
   {/if}
 </div>
 

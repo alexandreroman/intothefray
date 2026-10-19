@@ -48,6 +48,8 @@
   const element = $derived({ kind: 'pile', id: pile.id } as const);
   const locked = $derived(interaction.isLocked(element));
   const hovered = $derived(interaction.isHovered(element));
+  // Another player previews the pile: their ring is drawn inside it, as on a card.
+  const previewer = $derived(interaction.previewerOf(pile.id));
 
   /** The preview shows the top card of a pile that lists its cards; a deck, which shows its back, has none. */
   const previewChange = $derived<PreviewChange>(shownTop ? 'show' : 'clear');
@@ -103,6 +105,10 @@
 
   {#if !empty}
     <span class="count">{count}</span>
+  {/if}
+
+  {#if previewer !== undefined}
+    <div class="rring" style:--c="var(--p{previewer + 1})"></div>
   {/if}
 </div>
 

@@ -80,6 +80,12 @@ class TableInteraction {
    * follow those players' pointers (Presence.svelte).
    */
   liftedByOthers = $state.raw<ReadonlySet<string>>(new Set());
+  /**
+   * The cards and piles other players preview, with the colour of the player
+   * who does: each draws that player's ring itself, so that the ring follows
+   * it through every move, turn and tilt (Presence.svelte).
+   */
+  previewedByOthers = $state.raw<ReadonlyMap<string, number>>(new Map());
   /** A tap selected the hovered element (touch): it stays until released. */
   locked = $state(false);
   /** The card an arrow starts from, while the viewer picks its target. */
@@ -241,6 +247,22 @@ class TableInteraction {
     if (!same) {
       this.liftedByOthers = ids;
     }
+  }
+
+  /** The cards and piles other players preview now; a map equal to the current one changes nothing. */
+  previewByOthers(previews: ReadonlyMap<string, number>): void {
+    const current = this.previewedByOthers;
+    const same =
+      previews.size === current.size &&
+      [...previews].every(([id, color]) => current.get(id) === color);
+    if (!same) {
+      this.previewedByOthers = previews;
+    }
+  }
+
+  /** The colour of the other player who previews the card or pile, if any. */
+  previewerOf(id: string): number | undefined {
+    return this.previewedByOthers.get(id);
   }
 
   /** Whether the first player token is dragged or just dropped, drawn in the drag layer instead. */
@@ -461,6 +483,7 @@ class TableInteraction {
     this.#swallowClick = false;
     this.highlighted = new Set();
     this.liftedByOthers = new Set();
+    this.previewedByOthers = new Map();
     this.endArrow();
     this.onBar = false;
     this.onPill = false;
