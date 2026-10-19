@@ -12,6 +12,7 @@
     anchor,
     alignTo = anchor,
     severalDecks = false,
+    severalHeroes = false,
     onclose,
   }: {
     /** The button the sheet opens from. */
@@ -20,18 +21,26 @@
     alignTo?: HTMLElement;
     /** Whether the viewer plays several decks: only they switch decks with Q. */
     severalDecks?: boolean;
+    /** Whether the player selector has two heroes or more to step through with Shift + ← / →. */
+    severalHeroes?: boolean;
     onclose: () => void;
   } = $props();
 
   /**
    * A row: what it does, its keys (each in a kbd), the mouse part that goes
-   * with them, and whether it is only for a player with several decks.
+   * with them, and whether it is only for a player with several decks, or
+   * only while the player selector has several heroes.
    */
   interface Row {
     what: string;
     keys: string[];
     with?: string;
     severalDecks?: boolean;
+    severalHeroes?: boolean;
+  }
+
+  function listed(row: Row): boolean {
+    return (severalDecks || !row.severalDecks) && (severalHeroes || !row.severalHeroes);
   }
 
   // Modifiers as the system writes them (spec 5.10).
@@ -82,6 +91,7 @@
       [
         { what: 'Undo your last action', keys: ['Z'] },
         { what: 'Ready all cards', keys: ['⇧ Space'] },
+        { what: 'Previous / next hero', keys: ['⇧ ←', '⇧ →'], severalHeroes: true },
         { what: 'Next deck', keys: ['Q'], severalDecks: true },
         { what: 'Zoom in / out', keys: ['+', '−'] },
         { what: 'Zoom back to 100%', keys: ['0'] },
@@ -151,7 +161,7 @@
     {#each GROUPS as [title, rows] (title)}
       <section>
         <h4>{title}</h4>
-        {#each rows.filter((row) => severalDecks || !row.severalDecks) as row (row.what)}
+        {#each rows.filter(listed) as row (row.what)}
           <div class="row">
             <span>{row.what}</span>
             <span>

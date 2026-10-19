@@ -296,6 +296,15 @@
   });
   const pickerSeat = $derived(focused ? shownSeat : selected);
   const pickerShown = $derived(pickerDecks.length > 0 && pickerSeat !== null);
+  // Shift + ← / → steps through the selector's heroes, when it has two or more.
+  const canStepHero = $derived(pickerShown && pickerDecks.length > 1);
+
+  /** Picks the previous or next hero in the player selector (Shift + ← / →). */
+  function stepHero(step: -1 | 1): void {
+    if (pickerSeat !== null) {
+      stepSeat(pickerSeat, step);
+    }
+  }
 
   /** Picks the seat `step` swatches after the current one in the player selector, round it. */
   function stepSeat(current: number, step: number): void {
@@ -986,6 +995,8 @@
       act: (action) => send(action, targetOfKey(action)),
       showKeys: showKeySheet,
       selectNextDeck,
+      canStepHero,
+      stepHero,
       canReadyAll,
       sizeOf,
     });
@@ -1286,6 +1297,7 @@
       anchor={keysButton}
       alignTo={cornerBox}
       severalDecks={own.length > 1}
+      severalHeroes={canStepHero}
       onclose={hideKeySheet}
     />
   {/if}

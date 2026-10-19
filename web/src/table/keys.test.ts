@@ -652,6 +652,8 @@ describe('a player with two decks', () => {
       canReadyAll: false,
       showKeys: vi.fn(),
       selectNextDeck: vi.fn(),
+      canStepHero: false,
+      stepHero: vi.fn(),
       sizeOf: () => 'std',
     };
   }
@@ -681,6 +683,44 @@ describe('a player with two decks', () => {
     const watcher = keyTable(spectating);
     handleKey(keyDown('q'), watcher);
     expect(watcher.selectNextDeck).not.toHaveBeenCalled();
+  });
+
+  it('Shift + ← / → steps the player selector to the previous / next hero, once per press', () => {
+    const table = { ...keyTable(twoDeckView()), canStepHero: true };
+    const next = keyDown('ArrowRight', { shiftKey: true });
+    handleKey(next, table);
+    expect(table.stepHero).toHaveBeenLastCalledWith(1);
+    expect(next.defaultPrevented).toBe(true);
+    handleKey(keyDown('ArrowLeft', { shiftKey: true }), table);
+    expect(table.stepHero).toHaveBeenLastCalledWith(-1);
+
+    handleKey(keyDown('ArrowRight', { shiftKey: true, repeat: true }), table);
+    const plain = keyDown('ArrowRight');
+    handleKey(plain, table);
+    expect(table.stepHero).toHaveBeenCalledTimes(2);
+    expect(plain.defaultPrevented).toBe(false);
+  });
+
+  it('Shift + ← / → steps a spectator through the players too', () => {
+    const spectating = twoDeckView();
+    spectating.you = { role: 'spectator', color: -1, host: false };
+    const table = { ...keyTable(spectating), canStepHero: true };
+    handleKey(keyDown('ArrowRight', { shiftKey: true }), table);
+    expect(table.stepHero).toHaveBeenCalledExactlyOnceWith(1);
+  });
+
+  it('Shift + ← / → does nothing without two heroes to step through, nor in a field', () => {
+    const single = keyTable(makeView());
+    const event = keyDown('ArrowRight', { shiftKey: true });
+    handleKey(event, single);
+    expect(single.stepHero).not.toHaveBeenCalled();
+    expect(event.defaultPrevented).toBe(false);
+
+    const table = { ...keyTable(twoDeckView()), canStepHero: true };
+    const input = document.body.appendChild(document.createElement('input'));
+    input.addEventListener('keydown', (typed) => handleKey(typed, table));
+    input.dispatchEvent(keyDown('ArrowLeft', { shiftKey: true, bubbles: true }));
+    expect(table.stepHero).not.toHaveBeenCalled();
   });
 
   it("P plays a card of the second deck's hand to that deck's row", () => {

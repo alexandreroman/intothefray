@@ -25,7 +25,8 @@ type: project
   seat's row; another player's swatch shows their row and no hand, and
   shared-card actions stay credited to the last own deck. In "All" it
   lists only the viewer's own decks, for a player with 2 or more. The Q
-  key and a card dragged to an own hand select that deck in the selector.
+  key and a card dragged to an own hand select that deck in the selector;
+  Shift + ← / → steps through the selector's swatches, round them.
   Selector swatches always name the hero ("Sam · Captain Marvel"); history
   lines, owner frames and box titles add the hero ("Alex · Spider-Man")
   only when the player has several decks.

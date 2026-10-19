@@ -160,6 +160,18 @@ describe('KeysSheet', () => {
     ]);
   });
 
+  it('lists the hero stepping keys only when the player selector has heroes to step through', () => {
+    const anchor = document.body.appendChild(document.createElement('button'));
+    render(KeysSheet, { props: { anchor, severalHeroes: true, onclose: vi.fn() } });
+
+    const table = groupsOf(sheet()!).find(([title]) => title === 'Table');
+    expect(table?.[1].slice(0, 3)).toEqual([
+      'Undo your last action: Z',
+      'Ready all cards: ⇧ Space',
+      'Previous / next hero: ⇧ ←⇧ →',
+    ]);
+  });
+
   it('shows ⌘ for the modifier on macOS', () => {
     vi.stubGlobal('navigator', {
       ...navigator,

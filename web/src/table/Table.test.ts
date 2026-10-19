@@ -1265,6 +1265,47 @@ describe('several decks', () => {
     expect(shownIds()).not.toContain('c');
   });
 
+  it('Shift + ← / → steps round every seat in the Villain + player view', async () => {
+    localStorage.setItem('itf-view', 'focus');
+    render(Table, { session: fakeSession(), view: makeTwoDeckView() });
+    await within(hand()).findByRole('img', { name: 'Spider-Man' });
+
+    await fireEvent.keyDown(window, { key: 'ArrowRight', shiftKey: true });
+    expect(checkedDeck('Player shown')).toEqual(['Alex · Ant-Man']);
+    expect(handNames()).toEqual(['Rhino']);
+    expect(shownIds()).toContain('b');
+
+    // Another player's seat: their row, no hand.
+    await fireEvent.keyDown(window, { key: 'ArrowRight', shiftKey: true });
+    expect(checkedDeck('Player shown')).toEqual(['Sam · She-Hulk']);
+    expect(shownIds()).toContain('c');
+    expect(screen.queryByRole('list', { name: 'Your hand' })).toBeNull();
+
+    // Round the table, both ways.
+    await fireEvent.keyDown(window, { key: 'ArrowRight', shiftKey: true });
+    expect(checkedDeck('Player shown')).toEqual(['Alex · Spider-Man']);
+    await fireEvent.keyDown(window, { key: 'ArrowLeft', shiftKey: true });
+    expect(checkedDeck('Player shown')).toEqual(['Sam · She-Hulk']);
+  });
+
+  it("Shift + ← / → steps among the viewer's own decks in the All view", async () => {
+    render(Table, { session: fakeSession(), view: makeTwoDeckView() });
+    await within(hand()).findByRole('img', { name: 'Spider-Man' });
+
+    await fireEvent.keyDown(window, { key: 'ArrowRight', shiftKey: true });
+    expect(checkedDeck()).toEqual(['Alex · Ant-Man']);
+    expect(handNames()).toEqual(['Rhino']);
+    await fireEvent.keyDown(window, { key: 'ArrowRight', shiftKey: true });
+    expect(checkedDeck()).toEqual(['Alex · Spider-Man']);
+  });
+
+  it('leaves Shift + ← / → to the browser without a player selector', async () => {
+    render(Table, { session: fakeSession(), view: makeView() });
+    await catalogLoaded();
+
+    expect(await fireEvent.keyDown(window, { key: 'ArrowRight', shiftKey: true })).toBe(true);
+  });
+
   it('action sends credited seat', async () => {
     const session = fakeSession();
     render(Table, { session, view: makeTwoDeckView() });
