@@ -272,9 +272,10 @@
     background: linear-gradient(var(--line-hover), var(--line-hover)), var(--bg);
   }
 
+  /* Its button's bottom edge on the zoom control's, across the table (--edge-bottom, focus.ts). */
   .undo {
     flex: none;
-    padding: 14px 18px;
+    padding: 14px 18px var(--edge-bottom);
     border-top: 1px solid var(--panel-2);
   }
 

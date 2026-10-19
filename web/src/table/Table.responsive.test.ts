@@ -1,11 +1,12 @@
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import { tick } from 'svelte';
 import Table from './Table.svelte';
-import { TABLE_EDGE } from './focus';
+import { FOCUS_MARGINS, TABLE_EDGE, TABLE_EDGE_BOTTOM } from './focus';
 import { fanPositions, HAND_CARD_NARROW } from './layout';
 import { knownCard, loadGameCards, loadIndex } from '../lib/catalog';
 import type { CardView as TableCard, PresenceState, View } from '../lib/types';
 import tableSource from './Table.svelte?raw';
+import sidePanelSource from './SidePanel.svelte?raw';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -246,8 +247,14 @@ describe('Table in the window', () => {
     expect(panel.classList).toContain('bottom-right');
     expect(panel.style.margin.split(' ')[1]).toBe(`${TABLE_EDGE}px`);
     const cornerRule = /\n {2}\.corner \{([^}]*)\}/.exec(tableSource)?.[1];
-    expect(cornerRule).toMatch(/margin: 0 var\(--edge\) var\(--edge\) 0;/);
+    expect(cornerRule).toMatch(/margin: 0 var\(--edge\) var\(--edge-bottom\) 0;/);
     const pickerRule = /\n {2}\.seatpick \{([^}]*)\}/.exec(tableSource)?.[1];
-    expect(pickerRule).toMatch(/margin: 0 0 var\(--edge\) var\(--edge\);/);
+    expect(pickerRule).toMatch(/margin: 0 0 var\(--edge-bottom\) var\(--edge\);/);
+    // The history's Undo button keeps the same room under it: its bottom edge on the zoom
+    // control's.
+    expect(app.style.getPropertyValue('--edge-bottom')).toBe(`${TABLE_EDGE_BOTTOM}px`);
+    const undoRule = /\n {2}\.undo \{([^}]*)\}/.exec(sidePanelSource)?.[1];
+    expect(undoRule).toMatch(/padding: [^;]* var\(--edge-bottom\);/);
+    expect(FOCUS_MARGINS.bottom).toBe(TABLE_EDGE_BOTTOM);
   });
 });

@@ -24,11 +24,19 @@ export const CORNERS: readonly Corner[] = [HOME, 'bottom-left', 'top-left', 'top
  */
 export const TABLE_EDGE = 16;
 
+/**
+ * The room under what sits at the bottom of the window, in px: the zoom
+ * control, the player selector, the panel in a bottom corner and, on a wide
+ * screen, the history's Undo button all keep it, so that their bottom edges
+ * line up. The table sets it as --edge-bottom.
+ */
+export const TABLE_EDGE_BOTTOM = 16;
+
 /** The room between the panel and the play area's edges, and above the controls at home, in px. */
 export const FOCUS_MARGINS = {
   top: 12,
   side: TABLE_EDGE,
-  bottom: TABLE_EDGE,
+  bottom: TABLE_EDGE_BOTTOM,
   aboveControls: 8,
 } as const;
 

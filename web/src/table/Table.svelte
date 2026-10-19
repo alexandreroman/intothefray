@@ -59,7 +59,15 @@
   import Presence from './Presence.svelte';
   import TokenPill from './TokenPill.svelte';
   import CardPreview, { type Preview } from './CardPreview.svelte';
-  import { bottomRoom, chooseCorner, FOCUS_MARGINS, HOME, TABLE_EDGE, type Corner } from './focus';
+  import {
+    bottomRoom,
+    chooseCorner,
+    FOCUS_MARGINS,
+    HOME,
+    TABLE_EDGE,
+    TABLE_EDGE_BOTTOM,
+    type Corner,
+  } from './focus';
   import SidePanel from './SidePanel.svelte';
   import Surface, { type OwnerBox } from './Surface.svelte';
   import ZoomControl from './ZoomControl.svelte';
@@ -995,6 +1003,7 @@
   class:dragging={interaction.dragging !== null}
   style:--z={zoom}
   style:--edge="{TABLE_EDGE}px"
+  style:--edge-bottom="{TABLE_EDGE_BOTTOM}px"
   bind:this={app}
 >
   <div class="top">
@@ -1330,7 +1339,7 @@
     align-self: end;
     justify-self: start;
     z-index: 30;
-    margin: 0 0 var(--edge) var(--edge);
+    margin: 0 0 var(--edge-bottom) var(--edge);
     display: flex;
     align-items: center;
     gap: 4px;
@@ -1384,7 +1393,7 @@
     align-self: end;
     justify-self: end;
     z-index: 30;
-    margin: 0 var(--edge) var(--edge) 0;
+    margin: 0 var(--edge) var(--edge-bottom) 0;
     display: flex;
     align-items: center;
     gap: 8px;
