@@ -16,6 +16,10 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # configure-pages reads the site settings to find its base path.
+      pages: read
     steps:
       # The full checkout is needed: the web build copies ../packs/dist.
       - uses: actions/checkout@v7
@@ -44,6 +48,11 @@ jobs:
         working-directory: web
         run: pnpm check && pnpm lint && pnpm test
 
+      # The site's base path: "/<repo>" for a project site, empty at the domain
+      # root (custom domain or user/organisation site).
+      - id: pages
+        uses: actions/configure-pages@v6
+
       # An unset variable would ship relative API URLs, which hit the GitHub
       # Pages origin where no API runs.
       - name: Build
@@ -53,9 +62,12 @@ jobs:
             echo "::error::The API_URL repository variable is not set"
             exit 1
           fi
-          pnpm build
+          pnpm build --base "$BASE_PATH/"
+          # Pages has no rewrite: its 404 page serves the SPA for deep links.
+          cp dist/index.html dist/404.html
         env:
           VITE_API_URL: ${{ vars.API_URL }}
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}
 
       - uses: actions/upload-pages-artifact@v5
         with:

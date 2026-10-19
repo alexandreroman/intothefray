@@ -11,7 +11,11 @@ type: project
   other database.
 - Frontend in TypeScript with Svelte 5 + Vite, built as a static SPA and
   served separately from the backend (GitHub Pages or equivalent), with
-  hash routes (`#/g/<id>`).
+  History API path routes (`/`, `/options`, `/g/<id>`) under the build's
+  base path. Caddy falls back to `index.html` for app routes; GitHub
+  Pages serves a `404.html` copy of it, and the workflow takes the base
+  path from `actions/configure-pages`. Hash URLs (`#/…`) are not
+  supported: there is no compatibility redirect.
 - Real time over WebSocket; clients send intents, the server applies them.
 
 **Why:** Go, Redis, TypeScript and separate static hosting are the user's

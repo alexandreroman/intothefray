@@ -1,6 +1,7 @@
 <script lang="ts">
   import NamePrompt from '../components/NamePrompt.svelte';
   import { getPref, setPref } from '../lib/prefs';
+  import { href } from '../lib/router.svelte';
   import { GameSession } from '../lib/session.svelte';
   import Table from '../table/Table.svelte';
   import Ended from './Ended.svelte';
@@ -42,7 +43,7 @@
 {:else if notFound}
   <div class="message table-bg">
     <p>This game doesn't exist or has expired.</p>
-    <a href="#/">Back to home</a>
+    <a href={href('/')}>Back to home</a>
   </div>
 {:else}
   {#if waiting}

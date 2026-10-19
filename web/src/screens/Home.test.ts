@@ -9,7 +9,7 @@ const createGameMock = vi.mocked(createGame);
 
 beforeEach(() => {
   localStorage.clear();
-  window.location.hash = '#/';
+  window.history.pushState(null, '', '/');
 });
 
 afterEach(() => {
@@ -24,7 +24,7 @@ describe('Home', () => {
 
     await fireEvent.click(screen.getByRole('button', { name: 'Start a game' }));
 
-    await waitFor(() => expect(window.location.hash).toBe('#/g/g1'));
+    await waitFor(() => expect(window.location.pathname).toBe('/g/g1'));
     expect(createGameMock).toHaveBeenCalledWith('Alex');
     expect(getToken('g1')).toBe('tok');
   });
@@ -48,7 +48,7 @@ describe('Home', () => {
     await fireEvent.input(screen.getByRole('textbox'), { target: { value: '  Jess  ' } });
     await fireEvent.click(screen.getByRole('button', { name: 'OK' }));
 
-    await waitFor(() => expect(window.location.hash).toBe('#/g/g2'));
+    await waitFor(() => expect(window.location.pathname).toBe('/g/g2'));
     expect(getPref('itf-name')).toBe('Jess');
     expect(createGameMock).toHaveBeenCalledWith('Jess');
   });
@@ -61,12 +61,12 @@ describe('Home', () => {
     await fireEvent.click(screen.getByRole('button', { name: 'Start a game' }));
 
     expect((await screen.findByRole('alert')).textContent).toContain('boom');
-    expect(window.location.hash).toBe('#/');
+    expect(window.location.pathname).toBe('/');
   });
 
   it('goes to the options screen', async () => {
     render(Home);
     await fireEvent.click(screen.getByRole('button', { name: 'Options' }));
-    expect(window.location.hash).toBe('#/options');
+    expect(window.location.pathname).toBe('/options');
   });
 });

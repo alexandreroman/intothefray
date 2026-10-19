@@ -28,9 +28,9 @@ describe('Options', () => {
   });
 
   it('goes back home', async () => {
-    window.location.hash = '#/options';
+    window.history.pushState(null, '', '/options');
     render(Options);
     await fireEvent.click(screen.getByRole('button', { name: 'Back' }));
-    expect(window.location.hash).toBe('#/');
+    expect(window.location.pathname).toBe('/');
   });
 });

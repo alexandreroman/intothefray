@@ -1,10 +1,12 @@
 <script lang="ts">
+  import { href } from '../lib/router.svelte';
+
   // No state: the end screen only points back to home.
 </script>
 
 <div class="screen table-bg">
   <p>This game has ended.</p>
-  <a href="#/">Back to home</a>
+  <a href={href('/')}>Back to home</a>
 </div>
 
 <style>

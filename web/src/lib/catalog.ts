@@ -6,7 +6,8 @@ export interface CardInfo {
   pack: string;
 }
 
-const BASE = 'packs/en/';
+// Absolute, so the packs resolve the same from any route (/g/<id> included).
+const BASE = `${import.meta.env.BASE_URL}packs/en/`;
 
 // Same shape as the face codes of the Go catalog: five digits and a letter.
 const FACE_CODE = /^\d{5}[a-z]$/;

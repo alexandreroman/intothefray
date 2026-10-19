@@ -3,8 +3,9 @@ import { svelteTesting } from '@testing-library/svelte/vite';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
-  // Relative base so the build works under a GitHub Pages sub-path.
-  base: './',
+  // Absolute base: routes are real paths (/g/<id>), so assets must not resolve
+  // against them. The GitHub Pages build passes its sub-path with --base.
+  base: '/',
   plugins: [svelte(), svelteTesting()],
   test: {
     environment: 'jsdom',
