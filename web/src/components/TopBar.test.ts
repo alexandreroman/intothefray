@@ -87,7 +87,7 @@ describe('TopBar', () => {
     const { container } = render(TopBar, { onback });
     const back = screen.getByRole('button', { name: 'Back' });
     expect(back.getAttribute('title')).toBe('Back');
-    expect(container.querySelector('header')?.firstElementChild).toBe(back);
+    expect(container.querySelector('header .bar')?.firstElementChild).toBe(back);
     await fireEvent.click(back);
     expect(onback).toHaveBeenCalledOnce();
   });

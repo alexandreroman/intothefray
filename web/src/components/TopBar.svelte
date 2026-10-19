@@ -113,98 +113,100 @@
 </script>
 
 <header>
-  {#if onback}
-    <button class="icon-button" aria-label="Back" title="Back" onclick={onback}>
-      <Icon name="back" />
-    </button>
-  {/if}
-  <Logo />
-  {#if crumbHead !== undefined}
-    <span class="divider" aria-hidden="true"></span>
-    <span class="crumbs">
-      <b>{crumbHead}</b>{#each crumbRest as crumb, i (i)}<span class="rest">{` / ${crumb}`}</span
-        >{/each}
-    </span>
-  {/if}
-  <div class="actions">
-    {#if viewMode && onviewmode}
-      <div
-        class="views"
-        role="group"
-        aria-label="Table view"
-        bind:this={views}
-        bind:clientWidth={viewsWidth}
-      >
-        {#if thumb}
-          <span
-            class="thumb"
-            class:slides={thumbSlides}
-            style:left="{thumb.left}px"
-            style:width="{thumb.width}px"
-            aria-hidden="true"
-          ></span>
-        {/if}
-        {#each VIEW_MODES as choice (choice.mode)}
-          <button
-            class="btn-ghost"
-            type="button"
-            aria-label={choice.label}
-            title={choice.label}
-            aria-pressed={viewMode === choice.mode}
-            onclick={() => onviewmode(choice.mode)}
-          >
-            <Icon name={choice.icon} />
-            <span>{choice.label}</span>
-          </button>
-        {/each}
-      </div>
+  <div class="bar">
+    {#if onback}
+      <button class="icon-button" aria-label="Back" title="Back" onclick={onback}>
+        <Icon name="back" />
+      </button>
     {/if}
-    {#if spectators > 0}
-      <span class="pill" role="img" aria-label={spectatorLabel} title={spectatorLabel}>
-        <Icon name="eye" />
-        {spectators}
+    <Logo />
+    {#if crumbHead !== undefined}
+      <span class="divider" aria-hidden="true"></span>
+      <span class="crumbs">
+        <b>{crumbHead}</b>{#each crumbRest as crumb, i (i)}<span class="rest">{` / ${crumb}`}</span
+          >{/each}
       </span>
     {/if}
-    {#if readyAll}
-      <!-- aria-disabled rather than disabled, so that the tooltip still shows. -->
-      <button
-        class="icon-button"
-        aria-label="Ready all cards"
-        data-tip="Ready all cards"
-        data-kbd="⇧ Space"
-        aria-keyshortcuts="Shift+Space"
-        aria-disabled={readyAll.disabled}
-        onclick={() => {
-          if (!readyAll.disabled) {
-            readyAll.run();
-          }
-        }}
-      >
-        <!-- The action bar's family: Exhaust, the other way round. -->
-        <Icons name="ready-all" />
-      </button>
-    {/if}
-    {#if fullscreenSupported}
-      <button
-        class="icon-button fullscreen"
-        class:active={fullscreen}
-        aria-label={fullscreenLabel}
-        title={fullscreenLabel}
-        onclick={toggleFullscreen}
-      >
-        <Icon name={fullscreen ? 'exit-fullscreen' : 'fullscreen'} />
-      </button>
-    {/if}
-    {#if onend}
-      <button
-        class="icon-button"
-        aria-label="End game"
-        title="End game"
-        onclick={() => (confirmingEnd = true)}
-      >
-        <Icon name="cross" />
-      </button>
-    {/if}
+    <div class="actions">
+      {#if viewMode && onviewmode}
+        <div
+          class="views"
+          role="group"
+          aria-label="Table view"
+          bind:this={views}
+          bind:clientWidth={viewsWidth}
+        >
+          {#if thumb}
+            <span
+              class="thumb"
+              class:slides={thumbSlides}
+              style:left="{thumb.left}px"
+              style:width="{thumb.width}px"
+              aria-hidden="true"
+            ></span>
+          {/if}
+          {#each VIEW_MODES as choice (choice.mode)}
+            <button
+              class="btn-ghost"
+              type="button"
+              aria-label={choice.label}
+              title={choice.label}
+              aria-pressed={viewMode === choice.mode}
+              onclick={() => onviewmode(choice.mode)}
+            >
+              <Icon name={choice.icon} />
+              <span>{choice.label}</span>
+            </button>
+          {/each}
+        </div>
+      {/if}
+      {#if spectators > 0}
+        <span class="pill" role="img" aria-label={spectatorLabel} title={spectatorLabel}>
+          <Icon name="eye" />
+          {spectators}
+        </span>
+      {/if}
+      {#if readyAll}
+        <!-- aria-disabled rather than disabled, so that the tooltip still shows. -->
+        <button
+          class="icon-button"
+          aria-label="Ready all cards"
+          data-tip="Ready all cards"
+          data-kbd="⇧ Space"
+          aria-keyshortcuts="Shift+Space"
+          aria-disabled={readyAll.disabled}
+          onclick={() => {
+            if (!readyAll.disabled) {
+              readyAll.run();
+            }
+          }}
+        >
+          <!-- The action bar's family: Exhaust, the other way round. -->
+          <Icons name="ready-all" />
+        </button>
+      {/if}
+      {#if fullscreenSupported}
+        <button
+          class="icon-button fullscreen"
+          class:active={fullscreen}
+          aria-label={fullscreenLabel}
+          title={fullscreenLabel}
+          onclick={toggleFullscreen}
+        >
+          <Icon name={fullscreen ? 'exit-fullscreen' : 'fullscreen'} />
+        </button>
+      {/if}
+      {#if onend}
+        <button
+          class="icon-button"
+          aria-label="End game"
+          title="End game"
+          onclick={() => (confirmingEnd = true)}
+        >
+          <Icon name="cross" />
+        </button>
+      {/if}
+    </div>
   </div>
 </header>
 
@@ -219,14 +221,26 @@
 {/if}
 
 <style>
+  /* The background and the border span the window. */
   header {
+    height: 56px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--panel-2);
+  }
+
+  /*
+   * The bar follows the screen's content column: its first and last items line up with the
+   * column's edges. Each screen sets the column's width and gutter on its root element, and
+   * may give the end its own gutter.
+   */
+  .bar {
     display: flex;
     align-items: center;
     gap: 16px;
-    height: 56px;
-    padding: 0 8px 0 18px;
-    background: var(--bg);
-    border-bottom: 1px solid var(--panel-2);
+    height: 100%;
+    max-width: var(--content-max, none);
+    margin: 0 auto;
+    padding-inline: var(--content-gutter, 24px) var(--bar-gutter-end, var(--content-gutter, 24px));
   }
 
   .divider {
@@ -361,9 +375,8 @@
    * stays while active, or a viewer without an Escape key could not leave it.
    */
   @media (max-width: 600px) {
-    header {
+    .bar {
       gap: 12px;
-      padding: 0 8px 0 12px;
     }
 
     /* The icons say it: the labels go. */
