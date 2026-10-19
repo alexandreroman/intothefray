@@ -1,8 +1,10 @@
-const DEFAULT_API_URL = 'http://localhost:9000';
-
-function apiUrl(): string {
+/**
+ * The base URL of the API, without trailing slashes. Empty (same origin) unless VITE_API_URL is set,
+ * as it is for the cross-origin GitHub Pages build.
+ */
+export function apiUrl(): string {
   const configured = import.meta.env.VITE_API_URL as string | undefined;
-  return (configured || DEFAULT_API_URL).replace(/\/+$/, '');
+  return (configured ?? '').replace(/\/+$/, '');
 }
 
 /** Creates a game hosted by `name`. The token is the host's credential. */
@@ -31,7 +33,14 @@ async function errorText(response: Response): Promise<string> {
   return `Request failed (${response.status})`;
 }
 
-/** The WebSocket endpoint of a game, derived from the API URL (http -> ws, https -> wss). */
+/**
+ * The WebSocket endpoint of a game. Without an API URL it follows the page origin; otherwise it is
+ * derived from the API URL (http -> ws, https -> wss).
+ */
 export function wsUrl(gameId: string): string {
-  return `${apiUrl().replace(/^http/, 'ws')}/ws/games/${encodeURIComponent(gameId)}`;
+  const configured = apiUrl();
+  const base = configured
+    ? configured.replace(/^http/, 'ws')
+    : `${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}`;
+  return `${base}/ws/games/${encodeURIComponent(gameId)}`;
 }

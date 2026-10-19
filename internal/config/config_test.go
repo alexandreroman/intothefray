@@ -22,7 +22,7 @@ func TestLoadDefaults(t *testing.T) {
 	want := Config{
 		Port:           "9000",
 		RedisURL:       "redis://localhost:6379/0",
-		AllowedOrigins: []string{"http://localhost:8080"},
+		AllowedOrigins: nil,
 		GameTTL:        24 * time.Hour,
 		MarvelcdbURL:   "https://marvelcdb.com",
 	}
@@ -82,6 +82,7 @@ func TestLoadAllowedOrigins(t *testing.T) {
 		value string
 		want  []string
 	}{
+		{"separators only", " , ,", nil},
 		{"origin", "https://front.example", []string{"https://front.example"}},
 		{"trailing slash", "https://front.example/", []string{"https://front.example"}},
 		{"port", "http://localhost:8080", []string{"http://localhost:8080"}},
@@ -110,7 +111,6 @@ func TestLoadBadAllowedOrigins(t *testing.T) {
 		value string
 	}{
 		{"path", "https://alexandreroman.github.io/intothefray"},
-		{"separators only", " , ,"},
 		{"no scheme", "front.example"},
 		{"other scheme", "ftp://front.example"},
 		{"no host", "https://"},

@@ -8,7 +8,9 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
@@ -277,6 +279,53 @@ func TestOriginChecks(t *testing.T) {
 		}
 		_ = conn.CloseNow()
 	})
+}
+
+// newSameOriginServer starts a server with no ALLOWED_ORIGINS, as behind a
+// reverse proxy that serves the frontend and the API from one origin.
+func newSameOriginServer(t *testing.T) *httptest.Server {
+	t.Helper()
+
+	cfg := config.Config{GameTTL: time.Hour}
+	ts := httptest.NewServer(newServerWithConfig(t, miniredis.RunT(t), cfg).Handler())
+	t.Cleanup(ts.Close)
+	return ts
+}
+
+func TestSameOriginPost(t *testing.T) {
+	ts := newSameOriginServer(t)
+
+	resp := postGame(t, ts, ts.URL, `{"name": "Alex"}`)
+
+	if resp.status != http.StatusCreated {
+		t.Fatalf("status = %d, want %d", resp.status, http.StatusCreated)
+	}
+	if got := resp.header.Get("Access-Control-Allow-Origin"); got != "" {
+		t.Errorf("Access-Control-Allow-Origin = %q, want none", got)
+	}
+
+	u, err := url.Parse(ts.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	port, err := strconv.Atoi(u.Port())
+	if err != nil {
+		t.Fatal(err)
+	}
+	otherPort := "http://" + net.JoinHostPort(u.Hostname(), strconv.Itoa(port+1))
+	if resp := postGame(t, ts, otherPort, `{"name": "Alex"}`); resp.status != http.StatusForbidden {
+		t.Errorf("other port: status = %d, want %d", resp.status, http.StatusForbidden)
+	}
+}
+
+func TestSameOriginWebSocket(t *testing.T) {
+	ts := newSameOriginServer(t)
+
+	conn, status, err := dial(t, wsURL(ts, createGameID(t, ts)), ts.URL)
+	if err != nil {
+		t.Fatalf("websocket dial: status = %d, err = %v", status, err)
+	}
+	_ = conn.CloseNow()
 }
 
 // TestCORSAndWebSocketAgree checks that an origin from the environment is

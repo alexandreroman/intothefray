@@ -7,9 +7,9 @@ type: project
 # Optional Casper support
 
 The project supports Casper workspaces, as an option. The build files
-(`Makefile`, `compose.yaml`, `web/vite.config.ts`) never call or mention
-Casper: without Casper, `make dev` and the other targets work on their
-default ports. All Casper wiring lives in `.casper.json` and
+(`Makefile`, `compose.yaml`, `web/Caddyfile`, `web/vite.config.ts`) never
+call or mention Casper: without Casper, `make dev` and the other targets
+work on their default ports. All Casper wiring lives in `.casper.json` and
 `scripts/casper.sh`: the `setup` hook writes `.env.casper` with the
 worktree's ports (web `CASPER_PORT`, server +1, Redis +2). The Casper
 commands are **Run** (`scripts/casper.sh run`: the whole stack in

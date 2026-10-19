@@ -12,6 +12,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"slices"
 	"strings"
 	"time"
@@ -106,13 +107,16 @@ func handleHealthz(w http.ResponseWriter, _ *http.Request) {
 }
 
 // withCORS answers preflight requests and adds CORS headers for allowed
-// origins. State-changing requests from other origins are refused: the
-// browser would block the response anyway, but the game must not be created.
+// origins. Same-origin requests (the Origin host is the request's Host, as
+// behind a reverse proxy that serves the frontend too) need no CORS headers.
+// State-changing requests from other origins are refused: the browser would
+// block the response anyway, but the game must not be created.
 // Requests without an Origin header (curl, health checks) pass through.
 func (s *Server) withCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
 		allowed := slices.Contains(s.deps.Config.AllowedOrigins, origin)
+		sameOrigin := isSameOrigin(origin, r.Host)
 
 		if allowed {
 			w.Header().Add("Vary", "Origin")
@@ -126,12 +130,23 @@ func (s *Server) withCORS(next http.Handler) http.Handler {
 				w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 			}
 			w.WriteHeader(http.StatusNoContent)
-		case r.Method == http.MethodPost && origin != "" && !allowed:
+		case r.Method == http.MethodPost && origin != "" && !allowed && !sameOrigin:
 			writeError(w, http.StatusForbidden, "origin not allowed")
 		default:
 			next.ServeHTTP(w, r)
 		}
 	})
+}
+
+// isSameOrigin reports whether origin points at host, the Host of the request.
+// The scheme is ignored: behind a TLS-terminating proxy the server only sees
+// plain http.
+func isSameOrigin(origin, host string) bool {
+	u, err := url.Parse(origin)
+	if err != nil || u.Host == "" {
+		return false
+	}
+	return strings.EqualFold(u.Host, host)
 }
 
 func (s *Server) handleCreateGame(w http.ResponseWriter, r *http.Request) {

@@ -6,9 +6,6 @@ export default defineConfig({
   // Relative base so the build works under a GitHub Pages sub-path.
   base: './',
   plugins: [svelte(), svelteTesting()],
-  // WEB_PORT overrides the port. A busy port must fail loudly: the backend
-  // only accepts this origin.
-  server: { port: Number(process.env.WEB_PORT) || 8080, strictPort: true },
   test: {
     environment: 'jsdom',
     globals: true,

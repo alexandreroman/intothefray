@@ -96,7 +96,6 @@ describe('GameSession', () => {
   it('connects to the game socket', () => {
     newSession('abc');
     expect(lastSocket().url).toBe(wsUrl('abc'));
-    expect(wsUrl('abc')).toBe('ws://localhost:9000/ws/games/abc');
   });
 
   it('sends hello with the stored token', () => {

@@ -18,7 +18,6 @@ services:
       - "${PORT:-9000}:9000"
     environment:
       REDIS_URL: redis://redis:6379/0
-      ALLOWED_ORIGINS: http://localhost:${WEB_PORT:-8080}
     depends_on:
       redis:
         condition: service_healthy
@@ -29,20 +28,27 @@ services:
       retries: 3
 
   web:
-    build:
-      context: .
-      dockerfile: web/Dockerfile
-      args:
-        # The browser reaches the server on its host port
-        VITE_API_URL: http://localhost:${PORT:-9000}
+    # The Caddy version is pinned here only: the web app has no Dockerfile
+    image: caddy:2.11.7-alpine
     restart: on-failure
+    # Unprivileged: the Caddyfile disables the admin API and config autosave,
+    # so nothing needs a writable home
+    user: "65534:65534"
     ports:
       - "${WEB_PORT:-8080}:8080"
+    volumes:
+      - ./web/dist:/srv:ro
+      - ./web/Caddyfile:/etc/caddy/Caddyfile:ro
+    environment:
+      # `make infra-up` points it to the server running on the host
+      API_UPSTREAM: ${API_UPSTREAM:-app:9000}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       app:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8080/"]
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8080/healthz"]
       interval: 10s
       timeout: 10s
       retries: 3

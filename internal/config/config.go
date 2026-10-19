@@ -2,7 +2,6 @@
 package config
 
 import (
-	"errors"
 	"fmt"
 	"net/url"
 	"strings"
@@ -18,9 +17,10 @@ type Config struct {
 	Port string
 	// RedisURL is the Redis connection URL.
 	RedisURL string
-	// AllowedOrigins lists the frontend origins allowed by CORS and WebSocket,
-	// each normalised to scheme://host[:port] in lower case, as browsers send
-	// them in the Origin header.
+	// AllowedOrigins lists the cross-origin frontends allowed by CORS and
+	// WebSocket, each normalised to scheme://host[:port] in lower case, as
+	// browsers send them in the Origin header. It is empty when the frontend
+	// is served from the API's own origin: same-origin requests always pass.
 	AllowedOrigins []string
 	// GameTTL is the expiry of a game nobody touches.
 	GameTTL time.Duration
@@ -46,7 +46,7 @@ func Load(getenv func(string) string) (Config, error) {
 		return Config{}, fmt.Errorf("invalid GAME_TTL: %s must be positive", ttl)
 	}
 
-	origins, err := parseOrigins(withDefault("ALLOWED_ORIGINS", "http://localhost:8080"))
+	origins, err := parseOrigins(getenv("ALLOWED_ORIGINS"))
 	if err != nil {
 		return Config{}, fmt.Errorf("invalid ALLOWED_ORIGINS: %w", err)
 	}
@@ -62,7 +62,8 @@ func Load(getenv func(string) string) (Config, error) {
 
 // parseOrigins reads a comma-separated list of origins. Each entry must be an
 // http or https URL with a host and nothing after it but an optional "/": a
-// path would never match the Origin header that browsers send.
+// path would never match the Origin header that browsers send. An empty list
+// is valid: it means no cross-origin frontend.
 func parseOrigins(value string) ([]string, error) {
 	var origins []string
 	for _, entry := range splitList(value) {
@@ -71,9 +72,6 @@ func parseOrigins(value string) ([]string, error) {
 			return nil, err
 		}
 		origins = append(origins, origin)
-	}
-	if len(origins) == 0 {
-		return nil, errors.New("no origin listed")
 	}
 	return origins, nil
 }

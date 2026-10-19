@@ -18,7 +18,7 @@ has_casper() {
 }
 
 # Export every variable of .env.casper (written by setup) so that make,
-# compose, air and vite see this workspace's ports. Absent in the main
+# compose and air see this workspace's ports. Absent in the main
 # checkout, which keeps the default ports.
 load_env() {
 	[ -f "$root/.env.casper" ] || return 0
@@ -43,8 +43,6 @@ WEB_PORT=$web_port
 PORT=$server_port
 REDIS_PORT=$redis_port
 REDIS_URL=redis://localhost:$redis_port/0
-ALLOWED_ORIGINS=http://localhost:$web_port
-VITE_API_URL=http://localhost:$server_port
 ENV
 	fi
 	cd "$root"
@@ -139,8 +137,8 @@ stop_containers() {
 	make app-down >/dev/null 2>&1 || true
 }
 
-# Start the container stack (web and app images + Redis), then follow its logs so the
-# command stays attached: stopping it stops the stack, like dev. The trap is
+# Start the container stack (web, app and Redis), then follow its logs so
+# the command stays attached: stopping it stops the stack, like dev. The trap is
 # installed before app-up so that a failed or interrupted start is cleaned
 # up too; the panel is only published once the stack is healthy.
 run() {

@@ -19,7 +19,7 @@ See [README.md](README.md) for full documentation.
 ## Build & run
 
 ```bash
-make dev          # Redis in a container, then the server under Air and Vite
+make dev          # Redis + Caddy in containers, Air, web build
 make test         # go test -race -shuffle=on ./...
 make check        # tests, web-check, then golangci-lint
 make build        # bin/intothefray
@@ -48,14 +48,16 @@ make web-build    # production build into web/dist/
 - `web/` — Svelte 5 + Vite SPA (standalone pnpm project; screens, lib,
   components, table: the table with its rendering, interactions,
   boxes, presence and animations)
+- `web/Caddyfile` — Caddy config of the web app (dev and containers):
+  serves `web/dist`, proxies `/api/*` and `/ws/*`, answers `/healthz`
+- `mise.toml` — pinned node and pnpm versions (local and CI)
 - `scripts/` — optional Casper workspace support (`casper.sh`:
   per-worktree ports, info panel)
 - `.casper.json` — optional Casper workspace config (scripts and hooks)
 - `.github/workflows/` — `pages.yml` publishes `web/` to GitHub Pages
-- `Dockerfile` — container image of the server; `web/Dockerfile` — the
-  web app on nginx
+- `Dockerfile` — container image of the server
 - `compose.yaml` — local stack: Redis (in memory), the app service and
-  the web service
+  the web service (Caddy serving `web/dist`)
 
 ## Agents
 

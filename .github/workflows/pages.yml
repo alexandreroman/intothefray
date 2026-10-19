@@ -22,16 +22,19 @@ jobs:
         with:
           persist-credentials: false
 
-      # Reads the pnpm version from "packageManager" in web/package.json.
-      - uses: pnpm/action-setup@v6
-        with:
-          package_json_file: web/package.json
+      # Installs node and pnpm as pinned in the root mise.toml, and caches them.
+      - uses: jdx/mise-action@v5
 
-      - uses: actions/setup-node@v7
+      - name: Locate the pnpm store
+        id: pnpm-store
+        working-directory: web
+        run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v6
         with:
-          node-version-file: web/.nvmrc
-          cache: pnpm
-          cache-dependency-path: web/pnpm-lock.yaml
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: pnpm-store-${{ runner.os }}-${{ hashFiles('web/pnpm-lock.yaml') }}
+          restore-keys: pnpm-store-${{ runner.os }}-
 
       - name: Install dependencies
         working-directory: web
@@ -41,7 +44,8 @@ jobs:
         working-directory: web
         run: pnpm check && pnpm lint && pnpm test
 
-      # An unset variable would silently ship a frontend aimed at localhost.
+      # An unset variable would ship relative API URLs, which hit the GitHub
+      # Pages origin where no API runs.
       - name: Build
         working-directory: web
         run: |
