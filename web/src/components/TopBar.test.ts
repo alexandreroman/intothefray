@@ -163,7 +163,7 @@ describe('TopBar', () => {
     expect(cross?.getAttribute('d')).toBe('M6 6l12 12M18 6L6 18');
   });
 
-  it('puts the spectators before Ready all, then Fullscreen and End game', () => {
+  it('puts the spectators first, then the view switch, Ready all, Fullscreen and End game', () => {
     document.documentElement.requestFullscreen = vi.fn();
     const { container } = render(TopBar, {
       spectators: 2,
@@ -176,12 +176,19 @@ describe('TopBar', () => {
       (element) => element.getAttribute('aria-label') ?? '',
     );
     expect(names).toEqual([
-      'Table view',
       '2 spectators',
+      'Table view',
       'Ready all cards',
       'Fullscreen',
       'End game',
     ]);
+  });
+
+  it('puts the spectators first outside the table too', () => {
+    document.documentElement.requestFullscreen = vi.fn();
+    const { container } = render(TopBar, { spectators: 1, onend: () => {} });
+    const badge = screen.getByRole('img', { name: '1 spectator' });
+    expect(container.querySelector('.actions')?.firstElementChild).toBe(badge);
   });
 
   it('offers no Fullscreen button without the Fullscreen API', () => {

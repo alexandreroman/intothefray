@@ -115,14 +115,15 @@
       </span>
     {/if}
     <div class="actions">
-      {#if viewMode && onviewmode}
-        <Segmented options={VIEW_MODES} value={viewMode} onchange={onviewmode} label="Table view" />
-      {/if}
+      <!-- The spectator count leads the actions on every screen. -->
       {#if spectators > 0}
         <span class="pill" role="img" aria-label={spectatorLabel} title={spectatorLabel}>
           <Icon name="eye" />
           {spectators}
         </span>
+      {/if}
+      {#if viewMode && onviewmode}
+        <Segmented options={VIEW_MODES} value={viewMode} onchange={onviewmode} label="Table view" />
       {/if}
       {#if readyAll}
         <!-- aria-disabled rather than disabled, so that the tooltip still shows. -->
