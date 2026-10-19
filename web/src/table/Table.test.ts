@@ -483,19 +483,14 @@ describe('Table', () => {
     }
   });
 
-  it('follows the pointer at the next frame, without measuring the hovered card at each move', async () => {
+  it('stays put as the pointer moves: only the hovered card counts', async () => {
     const rect = (left: number, top: number, width: number, height: number) =>
       ({ left, top, width, height, right: left + width, bottom: top + height }) as DOMRect;
-    // The hovered card's measures: only the panel's placement reads them.
-    let cardMeasures = 0;
     vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
       this: Element,
     ) {
       if (this.classList.contains('tablewrap')) {
         return rect(0, 0, 1000, 800);
-      }
-      if ((this as HTMLElement).dataset.id === 'a') {
-        cardMeasures++;
       }
       return rect(0, 0, 10, 10);
     });
@@ -507,13 +502,10 @@ describe('Table', () => {
       await fireEvent.pointerEnter(surface().querySelector('.card[data-id="a"]') as HTMLElement);
       expect(preview().closest('.peek')?.classList).toContain('bottom-right');
 
-      cardMeasures = 0;
-      // Over the bottom right corner, three times in a frame: placed at the next frame.
-      for (const x of [900, 910, 920]) {
-        await fireEvent.pointerMove(window, { clientX: x, clientY: 600 });
-      }
-      await waitFor(() => expect(preview().closest('.peek')?.classList).toContain('bottom-left'));
-      expect(cardMeasures).toBe(0);
+      // Over the bottom right corner: the panel stays home.
+      await fireEvent.pointerMove(window, { clientX: 900, clientY: 600 });
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      expect(preview().closest('.peek')?.classList).toContain('bottom-right');
     } finally {
       vi.restoreAllMocks();
     }

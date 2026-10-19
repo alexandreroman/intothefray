@@ -1,9 +1,9 @@
 // Where the Focus panel (the preview of the hovered card) floats over the
-// table: in a corner of the play area that covers neither the pointer nor the
+// table: in a corner of the play area where it does not hide the whole of the
 // hovered element, nor the controls in the corners. At home, bottom right, it
 // sits right above the zoom control (and the narrow screen's Undo).
 
-import { contains, type Point, type Rect } from './drag';
+import type { Rect } from './drag';
 
 export type Corner = 'top-right' | 'top-left' | 'bottom-left' | 'bottom-right';
 
@@ -59,8 +59,19 @@ export function cornerRect(
   return { left, top, right: left + size.w, bottom: top + size.h };
 }
 
-function overlaps(a: Rect, b: Rect): boolean {
-  return a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+/**
+ * Whether the panel would hide all that shows of the hovered element: its
+ * part inside the play area, entirely under the panel.
+ */
+function hidesWhole(panel: Rect, hovered: Rect, area: Rect): boolean {
+  const left = Math.max(hovered.left, area.left);
+  const top = Math.max(hovered.top, area.top);
+  const right = Math.min(hovered.right, area.right);
+  const bottom = Math.min(hovered.bottom, area.bottom);
+  if (left >= right || top >= bottom) {
+    return false;
+  }
+  return left >= panel.left && right <= panel.right && top >= panel.top && bottom <= panel.bottom;
 }
 
 export interface CornerChoice {
@@ -72,7 +83,6 @@ export interface CornerChoice {
   size: { w: number; h: number };
   /** The hovered card or pile, on the screen. */
   hovered: Rect | null;
-  pointer: Point | null;
   /** The height of the controls at home, under the panel (the zoom control, the narrow Undo), in px. */
   controls: number;
   /** The corners other controls take: the player selector. */
@@ -81,12 +91,12 @@ export interface CornerChoice {
 
 /**
  * The corner the panel goes to: the first clear one in the order of CORNERS.
- * Clear is neither taken by a control nor over the pointer or the hovered
- * element. Bottom right is its home: it goes back there whenever that is
- * clear, and nothing hovered clears every corner. Blocked there, it goes to
- * the bottom left, then the top left, then the top right. With no clear
- * corner, it stays where it is, unless a control took that corner meanwhile:
- * then it goes home.
+ * Clear is not taken by a control, and does not hide the whole of the hovered
+ * element: hiding part of it, or the pointer, is fine. Bottom right is its
+ * home: it goes back there whenever that is clear, and nothing hovered clears
+ * every corner. Blocked there, it goes to the bottom left, then the top left,
+ * then the top right. With no clear corner, it stays where it is, unless a
+ * control took that corner meanwhile: then it goes home.
  */
 export function chooseCorner(choice: CornerChoice): Corner {
   const clear = (corner: Corner) => {
@@ -94,9 +104,7 @@ export function chooseCorner(choice: CornerChoice): Corner {
       return false;
     }
     const rect = cornerRect(corner, choice.area, choice.size, choice.controls);
-    const overHovered = choice.hovered !== null && overlaps(rect, choice.hovered);
-    const overPointer = choice.pointer !== null && contains(rect, choice.pointer);
-    return !overHovered && !overPointer;
+    return choice.hovered === null || !hidesWhole(rect, choice.hovered, choice.area);
   };
   const next = CORNERS.find(clear);
   if (next) {

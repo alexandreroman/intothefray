@@ -19,7 +19,6 @@ function choice(extra: Partial<CornerChoice> = {}): CornerChoice {
     area: AREA,
     size: SIZE,
     hovered: null,
-    pointer: null,
     controls: CONTROLS,
     taken: [],
     ...extra,
@@ -58,71 +57,60 @@ describe('cornerRect', () => {
 });
 
 describe('chooseCorner', () => {
-  it('stays bottom right while nothing is under it', () => {
+  // Home lies at 684–984 × 316–736; the bottom left corner at 16–316 × 364–784.
+  const UNDER_HOME = { left: 800, top: 500, right: 940, bottom: 696 };
+
+  it('stays bottom right while nothing is hovered', () => {
     expect(HOME).toBe('bottom-right');
-    expect(chooseCorner(choice({ pointer: { x: 100, y: 100 } }))).toBe(HOME);
+    expect(chooseCorner(choice())).toBe(HOME);
   });
 
-  it('moves to the facing corner on the same edge, bottom left, when home is covered', () => {
-    const card = { left: 800, top: 500, right: 940, bottom: 696 };
-    expect(chooseCorner(choice({ hovered: card }))).toBe('bottom-left');
-    expect(chooseCorner(choice({ pointer: { x: 900, y: 600 } }))).toBe('bottom-left');
+  it('stays home when it hides only part of the hovered card', () => {
+    // Half of the card sticks out of the panel, to its left.
+    const partly = { left: 600, top: 500, right: 740, bottom: 696 };
+    expect(chooseCorner(choice({ hovered: partly }))).toBe(HOME);
+  });
+
+  it('moves to the facing corner, bottom left, when it would hide the whole hovered card', () => {
+    expect(chooseCorner(choice({ hovered: UNDER_HOME }))).toBe('bottom-left');
+  });
+
+  it('counts only what shows of the card in the play area', () => {
+    // Entirely out of the play area: nothing of it shows, nothing to hide.
+    const outside = { left: 1100, top: 500, right: 1240, bottom: 696 };
+    expect(chooseCorner(choice({ hovered: outside }))).toBe(HOME);
   });
 
   it('then top left, then top right, skipping the corners other controls take', () => {
-    // A long card across the bottom, then the pointer in the top left corner as well.
-    const bottom = { left: 0, top: 600, right: 1000, bottom: 750 };
-    expect(chooseCorner(choice({ hovered: bottom }))).toBe('top-left');
-    expect(chooseCorner(choice({ hovered: bottom, pointer: { x: 100, y: 100 } }))).toBe(
-      'top-right',
-    );
-    // A long card down the right side, the player selector at the bottom left.
-    const right = { left: 700, top: 0, right: 1000, bottom: 800 };
-    expect(chooseCorner(choice({ hovered: right, taken: ['bottom-left'] }))).toBe('top-left');
-    // No clear corner: it stays where it is.
-    const top = { left: 0, top: 50, right: 1000, bottom: 200 };
-    expect(
-      chooseCorner(
-        choice({
-          current: 'top-right',
-          hovered: top,
-          pointer: { x: 900, y: 600 },
-          taken: ['bottom-left'],
-        }),
-      ),
-    ).toBe('top-right');
+    // The player selector takes the bottom left: the next is the top left.
+    expect(chooseCorner(choice({ hovered: UNDER_HOME, taken: ['bottom-left'] }))).toBe('top-left');
+    // A small card in the overlap of home and the top right panel (684–984 × 12–432):
+    // the bottom left is taken, the top left is clear.
+    const small = { left: 700, top: 330, right: 760, bottom: 400 };
+    expect(chooseCorner(choice({ hovered: small, taken: ['bottom-left'] }))).toBe('top-left');
   });
 
-  it('goes back home as soon as it is clear, or when nothing is hovered', () => {
-    expect(chooseCorner(choice({ current: 'top-left', pointer: { x: 500, y: 100 } }))).toBe(HOME);
-    expect(chooseCorner(choice({ current: 'bottom-left' }))).toBe(HOME);
-  });
-
-  it('always takes the first clear corner in that order, wherever it is', () => {
-    // A long card across the bottom: from the top right, it goes to the top left.
-    const card = { left: 0, top: 600, right: 1000, bottom: 750 };
-    expect(
-      chooseCorner(choice({ current: 'top-right', hovered: card, pointer: { x: 500, y: 650 } })),
-    ).toBe('top-left');
+  it('goes back home as soon as it is clear', () => {
+    expect(chooseCorner(choice({ current: 'top-left' }))).toBe(HOME);
+    const partly = { left: 600, top: 500, right: 740, bottom: 696 };
+    expect(chooseCorner(choice({ current: 'bottom-left', hovered: partly }))).toBe(HOME);
   });
 
   it('stays where it is when no corner is clear', () => {
-    const everywhere = { left: 0, top: 0, right: 1000, bottom: 800 };
-    expect(chooseCorner(choice({ current: 'top-left', hovered: everywhere }))).toBe('top-left');
+    // A panel as large as the play area hides the card from every corner.
+    const huge = { w: 1000, h: 800 };
+    const card = { left: 400, top: 300, right: 540, bottom: 496 };
+    expect(chooseCorner(choice({ current: 'top-left', size: huge, hovered: card }))).toBe(
+      'top-left',
+    );
   });
 
   it('goes home when no corner is clear and a control took the one it is in', () => {
-    // In the bottom left corner when the player selector shows up there, over a card that covers everything.
-    const everywhere = { left: 0, top: 0, right: 1000, bottom: 800 };
+    const huge = { w: 1000, h: 800 };
+    const card = { left: 400, top: 300, right: 540, bottom: 496 };
     const taken: Corner[] = ['bottom-left'];
-    expect(chooseCorner(choice({ current: 'bottom-left', hovered: everywhere, taken }))).toBe(HOME);
-  });
-
-  it('leaves a corner a control took for a clear one', () => {
-    // A long card down the right side: bottom left was clear, until the player selector took it.
-    const card = { left: 700, top: 0, right: 1000, bottom: 800 };
-    expect(
-      chooseCorner(choice({ current: 'bottom-left', hovered: card, taken: ['bottom-left'] })),
-    ).toBe('top-left');
+    expect(chooseCorner(choice({ current: 'bottom-left', size: huge, hovered: card, taken }))).toBe(
+      HOME,
+    );
   });
 });

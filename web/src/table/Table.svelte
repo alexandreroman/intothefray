@@ -319,7 +319,7 @@
 
   // ---- The Focus panel's corner ----
 
-  // Bottom right, unless that covers the pointer or the hovered element (focus.ts).
+  // Bottom right, unless that hides the whole hovered element (focus.ts).
   let focusCorner = $state<Corner>(HOME);
   // The height of the controls at the bottom right (the zoom control, the narrow Undo): the panel sits above them.
   let cornerHeight = $state(0);
@@ -328,14 +328,10 @@
   // The panel's size, kept from the last time it showed; a portrait card's until then.
   let focusWidth = $state(320);
   let focusHeight = $state(450);
-  // Read by placeFocus only, at each pointer move: plain, not state.
-  let focusPointer: { x: number; y: number } | null = null;
   // The play area and the hovered element on the screen, measured when they may have moved
-  // (hover, scroll, zoom, resize), never at each pointer move.
+  // (hover, scroll, zoom, resize).
   let focusArea: DOMRect | null = null;
   let focusHovered: DOMRect | null = null;
-  // The frame placing the panel after pointer moves: at most one per frame.
-  let focusFrame = 0;
 
   /** The hovered card or pile, on the screen. A hovered hand card has no preview to place. */
   function hoveredRect(): DOMRect | null {
@@ -369,22 +365,11 @@
       area: focusArea,
       size: { w: focusWidth, h: focusHeight },
       hovered: focusHovered,
-      pointer: focusPointer,
       controls: cornerHeight,
       // The player selector at the bottom left.
       taken: focused ? ['bottom-left'] : [],
     });
     focusCorner = next;
-  }
-
-  function followPointerForFocus(event: PointerEvent): void {
-    focusPointer = { x: event.clientX, y: event.clientY };
-    if (focusFrame === 0) {
-      focusFrame = requestAnimationFrame(() => {
-        focusFrame = 0;
-        placeFocus();
-      });
-    }
   }
 
   /** The panel's margins in its corner: off the play area's edges, and above the controls at home. */
@@ -411,8 +396,6 @@
     ];
     untrack(measureFocus);
   });
-
-  $effect(() => () => cancelAnimationFrame(focusFrame));
 
   // The interaction state is shared: a previous game's must not show in the next one.
   $effect(() => () => interaction.reset());
@@ -997,10 +980,7 @@
 {/snippet}
 
 <svelte:window
-  onpointermove={(event) => {
-    interaction.pointerMoved(event);
-    followPointerForFocus(event);
-  }}
+  onpointermove={(event) => interaction.pointerMoved(event)}
   onpointerdowncapture={(event) => interaction.pointerPressed(event)}
   onclickcapture={(event) => interaction.clicked(event)}
   onpointerup={onPointerUp}
