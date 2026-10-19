@@ -87,9 +87,12 @@ starting the other.
 
 ### Casper workspaces
 
-The main checkout keeps the default ports (web 5173, server 8080,
-Redis 6379). In a [Casper](https://github.com/alexandreroman/casper)
-worktree workspace, the setup hook of `.casper.json`
+Support for [Casper](https://github.com/alexandreroman/casper) is
+optional: without it nothing changes, and `make dev`, `make app-up` and
+the other targets work as described above. The Makefile never reads
+Casper files.
+
+In a Casper worktree workspace, the setup hook of `.casper.json`
 (`scripts/casper.sh setup`) writes an untracked `.env.casper` from
 `CASPER_PORT`:
 
@@ -99,10 +102,11 @@ worktree workspace, the setup hook of `.casper.json`
 | Server  | `CASPER_PORT + 1` |
 | Redis   | `CASPER_PORT + 2` |
 
-Several workspaces can then run `make dev` at the same time, each with
-its own compose project. `make dev` lists the workspace URLs in the
-Casper info panel and clears them when it stops. `.env.casper` wins
-over `.env.local`.
+`casper run` (that is, `scripts/casper.sh run`) loads `.env.casper`,
+starts `make dev` with those ports, lists the workspace URLs in the
+Casper info panel, and clears them when it stops. Several workspaces
+can run at the same time, each with its own compose project. A `PORT`
+set in `.env` or `.env.local` overrides `.env.casper`.
 
 `make packs` downloads the card data from marvelcdb and Cerebro
 (cached in `packs/.cache`), merges the hand-written files of
@@ -123,11 +127,11 @@ regenerated files with the change that caused them.
 `scheme://host[:port]` (http or https, no path): the server refuses
 to start otherwise.
 
-`make` loads `.env` when it exists, and `.env.local` then
-`.env.casper` for the development targets (see
-[Casper workspaces](#casper-workspaces)). The web port is read from
-`WEB_PORT` (default `5173`) and the Redis host port of the compose
-stack from `REDIS_PORT` (default `6379`).
+`make` loads `.env` when it exists, and `.env.local` for the
+development targets.
+
+The web port is read from `WEB_PORT` (default `5173`) and the Redis
+host port of the compose stack from `REDIS_PORT` (default `6379`).
 
 ## Deployment
 

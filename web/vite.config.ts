@@ -6,8 +6,8 @@ export default defineConfig({
   // Relative base so the build works under a GitHub Pages sub-path.
   base: './',
   plugins: [svelte(), svelteTesting()],
-  // WEB_PORT lets parallel workspaces each use their own port. A busy port
-  // must fail loudly: the backend only accepts this origin.
+  // WEB_PORT overrides the port. A busy port must fail loudly: the backend
+  // only accepts this origin.
   server: { port: Number(process.env.WEB_PORT) || 5173, strictPort: true },
   test: {
     environment: 'jsdom',

@@ -10,21 +10,14 @@ include .env
 export
 endif
 
-# Local overrides, loaded only for dev/test targets (and the local
-# compose stack) so that deploy/release targets see the canonical .env
-# values only.
+# Local overrides, loaded only for dev/test targets so that
+# deploy/release targets see the canonical .env values only.
 # Sequential include means later assignments win.
-DEV_TARGETS := dev test check web-install web-check infra-up infra-down infra-logs app-up app-down app-logs
+DEV_TARGETS := dev test check web-install web-check infra-up infra-down infra-logs
 GOALS := $(or $(MAKECMDGOALS),$(.DEFAULT_GOAL))
 ifneq (,$(filter $(DEV_TARGETS),$(GOALS)))
 ifneq (,$(wildcard .env.local))
 include .env.local
-export
-endif
-# Per-workspace ports written by scripts/casper.sh setup; they win over
-# .env.local. Absent in the main checkout.
-ifneq (,$(wildcard .env.casper))
-include .env.casper
 export
 endif
 endif
@@ -67,10 +60,7 @@ dev: infra-up web-install ## Start infra, then run the API and the web app with 
 	# Trap reaps the whole process group (kill 0) on exit or signal, so no
 	# orphaned processes survive Ctrl-C or a child crash. For multiple dev
 	# processes, background each as `( cmd; kill 0 ) &` before the wait.
-	# The recipe never returns, so publish the endpoints first and clear them
-	# in the trap.
-	@scripts/casper.sh info
-	@trap 'scripts/casper.sh clear; kill 0' EXIT INT TERM; \
+	@trap 'kill 0' EXIT INT TERM; \
 		( air; kill 0 ) & \
 		( cd web && pnpm dev; kill 0 ) & \
 		wait

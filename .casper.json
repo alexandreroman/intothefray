@@ -3,7 +3,7 @@
     "scripts": {
       "setup": "scripts/casper.sh setup",
       "teardown": "scripts/casper.sh teardown",
-      "run": "make dev",
+      "run": "scripts/casper.sh run",
       "test": "make test",
       "check": "make check",
       "build": "make build"

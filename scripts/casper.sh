@@ -1,6 +1,11 @@
 #!/bin/sh
-# Casper workspace hooks: per-worktree ports and the info panel.
-# Usage: scripts/casper.sh setup|info|clear|teardown
+# Optional Casper workspace support: per-worktree ports and the info panel.
+# Nothing else in the project depends on this script.
+# Usage: scripts/casper.sh setup|run|info|clear|teardown
+#
+# Known limit: variables that .env or .env.local assign are applied by the
+# Makefile on top of the environment, so a PORT set there wins over the
+# value of .env.casper.
 set -eu
 
 # Resolve the repo root from the script location, not the cwd.
@@ -10,6 +15,16 @@ root=$(cd "$(dirname "$0")/.." && pwd)
 # so every caller treats "false" as a silent no-op.
 has_casper() {
 	[ -n "${CASPER_WORKSPACE_ID:-}" ] && command -v casper >/dev/null 2>&1
+}
+
+# Export every variable of .env.casper (written by setup) so that make,
+# compose, air and vite see this workspace's ports. Absent in the main
+# checkout, which keeps the default ports.
+load_env() {
+	[ -f "$root/.env.casper" ] || return 0
+	set -a
+	. "$root/.env.casper"
+	set +a
 }
 
 # Give a worktree workspace its own ports, from the band Casper reserved
@@ -38,7 +53,7 @@ ENV
 }
 
 # Publish the endpoints to the info panel. The ports come from the
-# environment (exported by make from .env.casper), never recomputed.
+# environment that run loaded from .env.casper, never recomputed.
 info() {
 	has_casper || return 0
 	web_port=${WEB_PORT:-5173}
@@ -76,9 +91,26 @@ clear_info() {
 	casper info clear >/dev/null 2>&1 || true
 }
 
+# Start the dev stack with this workspace's ports and list its URLs in the
+# info panel. make is not exec'd so that the EXIT trap can clear the panel.
+# make dev ends with `kill 0` on the process group, which signals this shell
+# too: the TERM trap turns that into a normal exit, and the EXIT trap then
+# clears the panel once.
+run() {
+	load_env
+	cd "$root"
+	info
+	trap clear_info EXIT
+	trap 'exit 130' INT
+	trap 'exit 143' TERM
+	make dev
+}
+
 # Stop this workspace's containers. Failure is ignored: the container
 # engine may not be running, and teardown must not block deletion.
 teardown() {
+	# The environment carries COMPOSE_PROJECT_NAME and the ports to compose.
+	load_env
 	clear_info
 	cd "$root"
 	make app-down || true
@@ -86,11 +118,12 @@ teardown() {
 
 case "${1:-}" in
 setup) setup ;;
+run) run ;;
 info) info ;;
 clear) clear_info ;;
 teardown) teardown ;;
 *)
-	echo "usage: $0 setup|info|clear|teardown" >&2
+	echo "usage: $0 setup|run|info|clear|teardown" >&2
 	exit 2
 	;;
 esac
