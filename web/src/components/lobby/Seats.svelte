@@ -116,7 +116,7 @@
         {#if view.you.host && !isMe(player)}
           {@const tip = `Take ${player.name} off this seat`}
           <button
-            class="kick"
+            class="btn-ghost kick"
             data-tip={tip}
             aria-label={tip}
             onclick={() => onremove(player.color)}
@@ -125,7 +125,7 @@
           </button>
         {:else if !view.you.host && isMe(player)}
           <button
-            class="kick"
+            class="btn-ghost kick"
             data-tip="Leave your seat"
             aria-label="Leave your seat"
             onclick={onleave}
@@ -137,7 +137,7 @@
     {/each}
     {#each freeColors as color (color)}
       {#if isSpectator}
-        <button class="free" style:--pc={colorVar(color)} onclick={ontakeseat}>
+        <button class="btn-ghost free" style:--pc={colorVar(color)} onclick={ontakeseat}>
           <i></i>Take this seat
         </button>
       {:else}
@@ -257,17 +257,10 @@
     width: 32px;
     height: 32px;
     padding: 0;
-    border-color: transparent;
-    background: transparent;
     color: var(--faint);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-  }
-
-  .kick:hover {
-    color: var(--text);
-    background: #ffffff14;
   }
 
   .kick svg {
@@ -284,7 +277,6 @@
     padding: 14px 18px;
     border: 1.5px dashed var(--line-strong);
     border-radius: 14px;
-    background: transparent;
     color: var(--muted);
     font-size: 14px;
     font-weight: 400;
@@ -294,7 +286,6 @@
   /* A spectator's free seat is a button: it takes the seat. */
   button.free:hover:not(:disabled) {
     border-color: var(--pc);
-    color: var(--text);
   }
 
   .free i {

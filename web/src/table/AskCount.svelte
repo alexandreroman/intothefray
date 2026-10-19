@@ -86,7 +86,7 @@
   </div>
   <div class="buttons">
     <button type="button" onclick={oncancel}>Cancel</button>
-    <button type="button" class="ok" onclick={confirm}>{ok}</button>
+    <button type="button" class="btn-paper" onclick={confirm}>{ok}</button>
   </div>
 </Dialog>
 
@@ -138,18 +138,5 @@
   .buttons button {
     height: 40px;
     padding: 0 20px;
-  }
-
-  /* Paper, as the confirmation of the app's other dialogs. */
-  .ok {
-    background: var(--text);
-    border-color: var(--text);
-    color: var(--bg);
-    font-weight: 800;
-  }
-
-  .ok:hover:not(:disabled) {
-    background: #ffffff;
-    border-color: #ffffff;
   }
 </style>

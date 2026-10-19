@@ -25,13 +25,14 @@
 
 <div class="zoomctl">
   <button
+    class="btn-ghost"
     data-tip="Zoom out"
     data-kbd="−"
     aria-label="Zoom out"
     onclick={() => onzoom(zoom - ZOOM_STEP)}>−</button
   >
   <button
-    class="pct"
+    class="btn-ghost pct"
     data-tip="Back to 100%"
     data-kbd="0"
     aria-label="Back to 100%"
@@ -40,6 +41,7 @@
     {Math.round(zoom * 100)}%
   </button>
   <button
+    class="btn-ghost"
     data-tip="Zoom in"
     data-kbd="+"
     aria-label="Zoom in"
@@ -47,7 +49,7 @@
   >
   <span class="sep"></span>
   <button
-    class="keys"
+    class="btn-ghost keys"
     data-tip="Keyboard shortcuts"
     data-kbd="?"
     aria-label="Keyboard shortcuts"
@@ -93,13 +95,8 @@
     padding: 0 8px;
     border: none;
     border-radius: 8px;
-    background: none;
     color: #c9cfdf;
     font-weight: 700;
-  }
-
-  button:hover {
-    background: var(--panel-2);
   }
 
   .pct {

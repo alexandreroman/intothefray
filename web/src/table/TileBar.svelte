@@ -60,7 +60,7 @@
     {#if action.icon}
       <button
         type="button"
-        class="ico"
+        class="btn-ghost ico"
         aria-label={action.label}
         data-tip={action.label}
         onclick={() => onrun(action)}
@@ -68,7 +68,7 @@
         <Icons name={action.icon} />
       </button>
     {:else}
-      <button type="button" onclick={() => onrun(action)}>{action.label}</button>
+      <button class="btn-ghost" type="button" onclick={() => onrun(action)}>{action.label}</button>
     {/if}
   {/each}
 </div>
@@ -110,12 +110,7 @@
     padding: 0 11px;
     border: none;
     border-radius: 9px;
-    background: transparent;
     font-size: 13px;
-  }
-
-  button:hover {
-    background: var(--line-strong);
   }
 
   button.ico {

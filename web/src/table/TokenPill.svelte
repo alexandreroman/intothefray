@@ -72,11 +72,21 @@
   onpointerenter={() => interaction.enterPill()}
   onpointerleave={() => interaction.leavePill()}
 >
-  <button type="button" aria-label="Remove 1" data-tip="Remove 1" onclick={() => onstep(-1)}
-    >−</button
+  <button
+    class="btn-ghost"
+    type="button"
+    aria-label="Remove 1"
+    data-tip="Remove 1"
+    onclick={() => onstep(-1)}>−</button
   >
   <span class="value">{value}</span>
-  <button type="button" aria-label="Add 1" data-tip="Add 1" onclick={() => onstep(1)}>+</button>
+  <button
+    class="btn-ghost"
+    type="button"
+    aria-label="Add 1"
+    data-tip="Add 1"
+    onclick={() => onstep(1)}>+</button
+  >
 </div>
 
 <style>
@@ -100,17 +110,12 @@
 
   button {
     border: none;
-    background: none;
     padding: 0 9px;
     font-size: 15px;
     font-weight: 800;
     line-height: 22px;
     border-radius: 999px;
     color: var(--text);
-  }
-
-  button:hover {
-    background: var(--line-strong);
   }
 
   .value {

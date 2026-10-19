@@ -954,7 +954,7 @@
   <div class="seatpick">
     {#if seats.length > 2}
       <button
-        class="step"
+        class="btn-ghost step"
         aria-label="Previous player"
         data-tip="Previous player"
         onclick={() => stepSeat(current, -1)}>←</button
@@ -982,7 +982,7 @@
     </div>
     {#if seats.length > 2}
       <button
-        class="step"
+        class="btn-ghost step"
         aria-label="Next player"
         data-tip="Next player"
         onclick={() => stepSeat(current, 1)}>→</button
@@ -1076,6 +1076,7 @@
       <div class="undo">
         <!-- aria-disabled rather than disabled, so that the tooltip saying why still shows. -->
         <button
+          class="btn-ghost"
           aria-label="Undo last action"
           data-tip={view.canUndo ? 'Undo last action' : 'Nothing of yours to undo'}
           aria-disabled={!view.canUndo}
@@ -1355,12 +1356,7 @@
     padding: 0 8px;
     border: none;
     border-radius: 8px;
-    background: none;
     color: #c9cfdf;
-  }
-
-  .seatpick .step:hover {
-    background: var(--panel-2);
   }
 
   /* A round swatch of the seat colour; the player shown is ringed. */
@@ -1421,12 +1417,7 @@
     justify-content: center;
     border: none;
     border-radius: 8px;
-    background: none;
     color: #c9cfdf;
-  }
-
-  .undo button:hover:not([aria-disabled='true']) {
-    background: var(--panel-2);
   }
 
   .undo svg {

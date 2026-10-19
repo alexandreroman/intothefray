@@ -26,7 +26,9 @@
     <!-- The safe choice has the focus. -->
     <!-- svelte-ignore a11y_autofocus -->
     <button type="button" onclick={oncancel} autofocus>Cancel</button>
-    <button type="button" class="ok" class:danger onclick={onconfirm}>{confirmLabel}</button>
+    <button type="button" class={danger ? 'btn-danger' : 'btn-paper'} onclick={onconfirm}
+      >{confirmLabel}</button
+    >
   </div>
 </Dialog>
 
@@ -42,28 +44,5 @@
     height: 40px;
     padding: 0 20px;
     white-space: nowrap;
-  }
-
-  /* Paper for a confirmation, Fray red for an action that cannot be taken back. */
-  .ok {
-    background: var(--text);
-    border-color: var(--text);
-    color: var(--bg);
-    font-weight: 800;
-  }
-
-  .ok.danger {
-    background: var(--accent);
-    border-color: var(--accent);
-  }
-
-  .ok:hover:not(:disabled) {
-    background: #ffffff;
-    border-color: #ffffff;
-  }
-
-  .ok.danger:hover:not(:disabled) {
-    background: #ff5e52;
-    border-color: #ff5e52;
   }
 </style>

@@ -142,6 +142,7 @@
         {/if}
         {#each VIEW_MODES as choice (choice.mode)}
           <button
+            class="btn-ghost"
             type="button"
             aria-label={choice.label}
             title={choice.label}
@@ -254,10 +255,8 @@
     padding: 0 12px;
     border: none;
     border-radius: 999px;
-    background: none;
     color: var(--muted);
     font-size: 13px;
-    transition: color 0.2s ease-out;
   }
 
   .views button[aria-pressed='true'] {
@@ -280,8 +279,7 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .thumb.slides,
-    .views button {
+    .thumb.slides {
       transition: none;
     }
   }

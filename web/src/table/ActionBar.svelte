@@ -244,7 +244,7 @@
         <!-- An icon dropdown is named by its label: a disabled one explains why in its tooltip only. -->
         <button
           type="button"
-          class="dd"
+          class="btn-ghost dd"
           class:ico={item.icon !== undefined}
           data-menu={item.id}
           data-tip={item.tip ?? item.label}
@@ -263,7 +263,7 @@
       {:else if item.icon}
         <button
           type="button"
-          class="ico"
+          class="btn-ghost ico"
           class:on={item.pressed}
           aria-label={item.tip ?? item.label}
           data-tip={item.tip ?? item.label}
@@ -275,6 +275,7 @@
         </button>
       {:else}
         <button
+          class="btn-ghost"
           type="button"
           data-tip={item.tip ?? item.label}
           data-kbd={item.key}
@@ -326,6 +327,7 @@
       <div class="msep" role="separator"></div>
     {:else}
       <button
+        class="btn-ghost"
         type="button"
         role="menuitem"
         disabled={choice.disabled}
@@ -393,14 +395,8 @@
     padding: 0 11px;
     border: 0;
     border-radius: 9px;
-    background: transparent;
     font-size: 13px;
     font-weight: 600;
-  }
-
-  .actionbar button:hover:not([aria-disabled='true']),
-  .menu button:hover:not(:disabled) {
-    background: var(--line-strong);
   }
 
   .actionbar button:focus-visible,

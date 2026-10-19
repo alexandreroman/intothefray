@@ -11,10 +11,16 @@
   --faint: #737d99;
   --dot: #161c2b;
 
+  /* Hover, the same for every button of a kind (see the button rules below): a lighter
+     surface for the standard button, a light wash for a ghost button or a menu item. */
+  --hover: #243049;
+  --hover-wash: rgb(238 241 248 / 8%);
+
   /* Fray red is the main action, with ink text on it; the spark is for captions,
      threat and the first player; the signal blue is for selection and focus only. */
   --accent: #ff4438;
   --accent-deep: #c9241b;
+  --accent-hover: #ff5e52;
   --spark: #ffce3a;
   --sel: #49c6ff;
   --ok: #57c78a;
@@ -55,7 +61,15 @@ body {
   font: 14px/1.4 var(--font);
 }
 
-/* The secondary button: rounded, raised ink. A label never wraps. */
+/*
+  The buttons, one hover per kind:
+  - standard (this rule): rounded, raised ink; a lighter surface and a brighter edge on hover;
+  - .btn-ghost: no surface of its own (icons, ×, toolbar and menu items); a light wash on hover;
+  - .btn-paper: a dialog's confirmation; .btn-danger: one that cannot be taken back;
+  - .btn-primary: the one main action of a screen.
+  A disabled button has no hover. A pressed or "on" state set by a component keeps its look.
+  A label never wraps.
+*/
 button {
   font: inherit;
   font-weight: 600;
@@ -66,10 +80,56 @@ button {
   padding: 6px 10px;
   cursor: pointer;
   white-space: nowrap;
+  transition:
+    background-color 0.12s,
+    border-color 0.12s,
+    color 0.12s;
 }
 
 button:hover:not(:disabled, [aria-disabled='true']) {
-  border-color: #4a5677;
+  background-color: var(--hover);
+  border-color: var(--muted);
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: transparent;
+}
+
+.btn-ghost:hover:not(:disabled, [aria-disabled='true']) {
+  background-color: var(--hover-wash);
+  border-color: transparent;
+  color: var(--text);
+}
+
+.btn-paper {
+  background: var(--text);
+  border-color: var(--text);
+  color: var(--bg);
+  font-weight: 800;
+}
+
+.btn-paper:hover:not(:disabled, [aria-disabled='true']) {
+  background-color: #ffffff;
+  border-color: #ffffff;
+}
+
+.btn-danger {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+  font-weight: 800;
+}
+
+.btn-danger:hover:not(:disabled, [aria-disabled='true']) {
+  background-color: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button {
+    transition: none;
+  }
 }
 
 button:focus-visible {
@@ -119,7 +179,7 @@ select:focus {
 }
 
 .btn-primary:hover:not(:disabled, [aria-disabled='true']) {
-  background: #ff5e52;
+  background: var(--accent-hover);
 }
 
 /* The clip-path cuts any outline and the slanted sides off: the focus draws signal blue

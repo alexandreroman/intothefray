@@ -135,7 +135,7 @@
   {#snippet heading(id: string)}
     <div class="khead">
       <b {id}>Keyboard shortcuts</b>
-      <button type="button" aria-label="Close" onclick={onclose}>×</button>
+      <button class="btn-ghost" type="button" aria-label="Close" onclick={onclose}>×</button>
     </div>
   {/snippet}
   <div class="kcols">
@@ -173,7 +173,6 @@
 
   .khead button {
     border: none;
-    background: none;
     font-size: 20px;
     padding: 0 6px;
     color: var(--muted);

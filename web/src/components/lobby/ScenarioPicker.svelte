@@ -190,6 +190,7 @@
           {#each LEVELS as level (level)}
             {#if isHost || level === difficulty}
               <button
+                class="btn-ghost"
                 class:on={level === difficulty}
                 aria-pressed={level === difficulty}
                 disabled={!isHost}
@@ -239,7 +240,7 @@
               {/if}
               {#if isHost}
                 <button
-                  class="x"
+                  class="btn-ghost x"
                   aria-label="Remove {setName(code)}"
                   onclick={() => removeModular(code)}
                 >
@@ -259,7 +260,7 @@
               {#if menuOpen}
                 <div class="menu">
                   {#each addableModulars as set (set.code)}
-                    <button onclick={() => addModular(set.code)}>
+                    <button class="btn-ghost" onclick={() => addModular(set.code)}>
                       {set.name}
                       {#if recommended.includes(set.code)}
                         <span class="rec">★ recommended</span>
@@ -377,10 +378,6 @@
     box-shadow: 0 0 0 4px #49c6ff29;
   }
 
-  .vil:not(.on):not(:disabled):hover {
-    border-color: #4a5677;
-  }
-
   .vil.unsupported {
     opacity: 0.45;
   }
@@ -478,7 +475,6 @@
     padding: 0 18px;
     border: 0;
     border-radius: 8px;
-    background: transparent;
     color: var(--muted);
     font-weight: 700;
   }
@@ -527,14 +523,9 @@
     padding: 0;
     border: 0;
     border-radius: 50%;
-    background: var(--panel-2);
     color: var(--muted);
     display: inline-grid;
     place-items: center;
-  }
-
-  .chip .x:hover {
-    color: var(--text);
   }
 
   .chip .x svg {
@@ -579,15 +570,10 @@
     display: flex;
     width: 100%;
     border: 0;
-    background: transparent;
     text-align: left;
     padding: 6px 10px;
     gap: 8px;
     font-weight: 400;
-  }
-
-  .menu button:hover {
-    background: #2a355a;
   }
 
   .menu .rec {
