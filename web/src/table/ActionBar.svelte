@@ -140,6 +140,20 @@
     }
   }
 
+  /** The open dropdown's items, cut where their section changes; items without one have no heading. */
+  const menuSections = $derived.by(() => {
+    const sections: { name?: string; choices: ActionItem[] }[] = [];
+    for (const choice of openMenu?.menu ?? []) {
+      const last = sections.at(-1);
+      if (last && last.name === choice.section) {
+        last.choices.push(choice);
+      } else {
+        sections.push({ name: choice.section, choices: [choice] });
+      }
+    }
+    return sections;
+  });
+
   // A dropdown whose item is gone (a redraw changed the bar) closes.
   $effect(() => {
     if (interaction.menu !== null && !openMenu) {
@@ -215,18 +229,26 @@
         <span class="sep" role="separator"></span>
       {/if}
       {#if item.menu}
+        <!-- An icon dropdown is named by its label: a disabled one explains why in its tooltip only. -->
         <button
           type="button"
           class="dd"
+          class:ico={item.icon !== undefined}
           class:add={item.add}
           data-menu={item.id}
           data-tip={item.tip ?? item.label}
+          aria-label={item.icon ? item.label : undefined}
           aria-haspopup="menu"
           aria-expanded={interaction.menu === item.id}
           aria-disabled={item.disabled}
           onclick={() => toggleMenu(item)}
-          >{item.label}{#if !item.add}<span class="caret" aria-hidden="true">▾</span>{/if}</button
         >
+          {#if item.icon}
+            <Icons name={item.icon} />
+          {:else}
+            {item.label}<span class="caret" aria-hidden="true">▾</span>
+          {/if}
+        </button>
       {:else if item.icon}
         <button
           type="button"
@@ -272,22 +294,36 @@
       followPointer();
     }}
   >
-    {#each openMenu.menu ?? [] as choice, i (choice.id === 'sep' ? `sep-${i}` : choice.id)}
-      {#if choice.id === 'sep'}
-        <div class="msep" role="separator"></div>
+    {#each menuSections as section, s (s)}
+      {#if section.name === undefined}
+        {@render choices(section.choices, openMenu.id)}
       {:else}
-        <button
-          type="button"
-          role="menuitem"
-          disabled={choice.disabled}
-          title={choice.tip}
-          onclick={() => runItem(choice.id, openMenu.id)}
-          ><span>{choice.label}</span>{#if choice.key}<kbd>{choice.key}</kbd>{/if}</button
-        >
+        <!-- The group is named by its heading, which is not read a second time. -->
+        <div class="section" role="group" aria-label={section.name}>
+          <div class="heading" aria-hidden="true">{section.name}</div>
+          {@render choices(section.choices, openMenu.id)}
+        </div>
       {/if}
     {/each}
   </div>
 {/if}
+
+{#snippet choices(list: ActionItem[], menuId: string)}
+  {#each list as choice, i (choice.id === 'sep' ? `sep-${i}` : choice.id)}
+    {#if choice.id === 'sep'}
+      <div class="msep" role="separator"></div>
+    {:else}
+      <button
+        type="button"
+        role="menuitem"
+        disabled={choice.disabled}
+        title={choice.tip}
+        onclick={() => runItem(choice.id, menuId)}
+        ><span>{choice.label}</span>{#if choice.key}<kbd>{choice.key}</kbd>{/if}</button
+      >
+    {/if}
+  {/each}
+{/snippet}
 
 <style>
   .actionbar {
@@ -296,13 +332,13 @@
     display: flex;
     flex-wrap: nowrap;
     align-items: center;
-    gap: 5px;
+    gap: 2px;
     max-width: calc(100vw - 16px);
-    padding: 6px;
-    border: 1px solid #3a4870;
-    border-radius: 12px;
-    background: #1a2236f5;
-    box-shadow: 0 12px 30px #000c;
+    padding: 5px;
+    border: 1px solid var(--line-strong);
+    border-radius: 14px;
+    background: var(--panel-2);
+    box-shadow: 0 14px 34px #0000008c;
     cursor: default;
     /* Measured before it is placed: unseen until then. */
     visibility: hidden;
@@ -328,35 +364,69 @@
     color: var(--muted);
     font-size: 13px;
     white-space: nowrap;
-    padding: 0 4px;
+    padding: 0 6px;
   }
 
   .sep {
     width: 1px;
     align-self: stretch;
-    background: var(--line);
-    margin: 0 2px;
+    margin: 6px 3px;
+    background: var(--line-strong);
+  }
+
+  /* Flat buttons on the ink panel: only the hovered one lights up. */
+  .actionbar button,
+  .menu button {
+    height: 34px;
+    padding: 0 11px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .actionbar button:hover:not([aria-disabled='true']),
+  .menu button:hover:not(:disabled) {
+    background: var(--line-strong);
+  }
+
+  .actionbar button:focus-visible,
+  .menu button:focus-visible {
+    outline: 2px solid var(--sel);
+    outline-offset: -2px;
   }
 
   button.ico {
-    padding: 6px 8px;
+    width: 38px;
+    padding: 0;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
   }
 
+  /* Pressed: Ready on an exhausted card. */
   button.ico.on {
-    background: #2f3d63;
-    border-color: var(--sel);
+    background: color-mix(in srgb, var(--sel) 16%, transparent);
+    color: var(--sel);
+    box-shadow: inset 0 0 0 1px var(--sel);
   }
 
-  /* "+ Token" and "+ Status" add something: dashed, and quiet until used. */
+  /* The "+" dropdown adds something: dashed, and quiet until used. */
   button.add {
-    border-style: dashed;
+    margin: 0 1px;
+    border: 1px dashed #3a4766;
     color: var(--muted);
   }
 
-  button.add:hover:not(:disabled, [aria-disabled='true']),
+  button.add:hover:not([aria-disabled='true']) {
+    color: var(--text);
+  }
+
   button.add[aria-expanded='true'] {
+    border-style: solid;
+    border-color: #5a6890;
+    background: var(--line-strong);
     color: var(--text);
   }
 
@@ -371,12 +441,12 @@
     z-index: 5000;
     display: flex;
     flex-direction: column;
-    min-width: 170px;
-    padding: 4px;
+    min-width: 180px;
+    padding: 5px;
+    border: 1px solid var(--line-strong);
+    border-radius: 12px;
     background: var(--panel-2);
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    box-shadow: 0 12px 30px #000b;
+    box-shadow: 0 14px 34px #0009;
   }
 
   .menu:focus {
@@ -387,31 +457,46 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border: none;
-    background: none;
+    gap: 16px;
+    width: 100%;
     text-align: left;
-    border-radius: 6px;
   }
 
-  .menu button:hover:not(:disabled) {
-    background: #2a3555;
+  .section {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .section + .section {
+    margin-top: 4px;
+    border-top: 1px solid var(--line-strong);
+  }
+
+  /* A section's caption: small, wide-spaced capitals. */
+  .heading {
+    padding: 8px 11px 4px;
+    font-stretch: 75%;
+    font-weight: 800;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--faint);
   }
 
   .msep {
     height: 1px;
     margin: 4px 2px;
-    background: var(--line);
+    background: var(--line-strong);
   }
 
-  /* The key of a choice, in grey. */
+  /* The key of a choice, on a dark chip. */
   kbd {
-    margin-left: 6px;
-    font:
-      11px ui-monospace,
-      monospace;
+    padding: 1px 6px;
+    border-radius: 5px;
+    background: var(--bg);
     color: var(--muted);
-    border: 1px solid var(--line);
-    border-radius: 4px;
-    padding: 0 4px;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 700;
   }
 </style>

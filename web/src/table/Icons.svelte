@@ -3,7 +3,8 @@
   icons on a 24 × 24 grid, drawn with currentColor.
 -->
 <script lang="ts" module>
-  export type IconName = 'exhaust' | 'flip' | 'discard' | 'stage-pick' | 'bottom' | 'shuffle';
+  export type IconName =
+    'exhaust' | 'flip' | 'discard' | 'stage-pick' | 'bottom' | 'shuffle' | 'token' | 'move';
 </script>
 
 <script lang="ts">
@@ -50,6 +51,16 @@
     </g>
     <path d="M21.5 11.5v3.5a3.5 3.5 0 0 1-3.5 3.5h-1.5" stroke-width="1.7" />
     <path d="M18.8 16 16.3 18.5 18.8 21" stroke-width="1.7" />
+  {:else if name === 'token'}
+    <!-- A round token, and a "+" beside it: add one. -->
+    <circle cx="9.5" cy="14" r="6.5" fill="currentColor" fill-opacity=".18" />
+    <circle cx="9.5" cy="14" r="3" opacity=".6" />
+    <path d="M18.5 2.5v6M15.5 5.5h6" />
+  {:else if name === 'move'}
+    <!-- A card, and an arrow leaving it to the right. -->
+    <rect x="2.5" y="5" width="9" height="13" rx="1.5" fill="currentColor" fill-opacity=".18" />
+    <path d="M9 11.5h12" />
+    <path d="M17.5 8 21 11.5 17.5 15" />
   {:else}
     <!-- Shuffle: two crossing arrows. -->
     <path d="M3 7h3.5c3 0 4.5 10 8 10H20" />

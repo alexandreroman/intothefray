@@ -29,7 +29,7 @@ export interface CountQuestion {
 export type LocalAction = 'stageBox' | 'browseBox';
 
 export interface ActionItem {
-  /** Stable id: 'exhaust', 'flip', 'stage', 'token', 'status', 'discard', 'moveTo', 'draw1', … */
+  /** Stable id: 'exhaust', 'flip', 'stage', 'counters', 'discard', 'moveTo', 'draw1', … */
   id: string;
   label: string;
   icon?: IconName;
@@ -40,9 +40,11 @@ export interface ActionItem {
   pressed?: boolean;
   /** Items of different groups are drawn with a separator between them. */
   group: number;
-  /** Drawn as a dashed "+" button, without the dropdown caret. */
+  /** A dropdown item under a heading: the heading starts where the section changes. */
+  section?: string;
+  /** Drawn as a dashed, quiet button: it adds something. */
   add?: boolean;
-  /** Dropdown items; a separator is an item with the id 'sep'. */
+  /** Dropdown items; a separator is an item with the id 'sep'. A dropdown with an icon has no caret. */
   menu?: ActionItem[];
   run?: () => Action | { ask: CountQuestion } | { local: LocalAction };
 }
@@ -50,11 +52,11 @@ export interface ActionItem {
 /** Mirrors maxCount in internal/game/action.go: the most cards one action takes. */
 const MAX_COUNT = 99;
 
-// Groups of a card in play, in bar order.
-const GROUP_EXHAUST = 0;
-const GROUP_FACES = 1;
-const GROUP_MARK = 2;
-const GROUP_LEAVE = 3;
+// Groups of a card in play, in bar order: Exhaust and Flip (or the stage
+// choice) turn the card, the counters mark it, Discard and Move to take it away.
+const GROUP_TURN = 0;
+const GROUP_MARK = 1;
+const GROUP_LEAVE = 2;
 
 const SEPARATOR: ActionItem = { id: 'sep', label: '-', group: 0 };
 
@@ -165,10 +167,7 @@ function cardActions(card: CardView, context: Context): ActionItem[] {
   } else if (canFlip(card)) {
     items.push(flipItem(card));
   }
-  items.push(
-    counterMenu(card, 'token', '+ Token', 'Add a token', TOKENS, card.tokens),
-    counterMenu(card, 'status', '+ Status', 'Add a status', STATUSES, card.status),
-  );
+  items.push(counterMenu(card));
   items.push(...leaveItems(card, context));
   return items;
 }
@@ -182,7 +181,7 @@ function exhaustItem(card: CardView): ActionItem {
     key: 'E',
     tip: label,
     pressed: card.exhausted,
-    group: GROUP_EXHAUST,
+    group: GROUP_TURN,
     // The server decides the outcome (resolveExhaust): the client sends only the card.
     run: () => ({ kind: 'exhaust', card: card.id }),
   };
@@ -196,7 +195,7 @@ function stageItem(stage: Stage): ActionItem {
     label,
     icon: 'stage-pick',
     tip: label,
-    group: GROUP_FACES,
+    group: GROUP_TURN,
     run: () => ({ local: 'stageBox' }),
   };
 }
@@ -216,35 +215,44 @@ function flipItem(card: CardView): ActionItem {
     icon: 'flip',
     key: 'F',
     tip: 'Flip',
-    group: GROUP_FACES,
+    group: GROUP_TURN,
     // The server picks the face the card ends on (resolveFlip).
     run: () => ({ kind: 'flip', card: card.id }),
   };
 }
 
-/** "+ Token ▾" or "+ Status ▾": each counter adds one, its current count in brackets. */
-function counterMenu(
+/** The "+" dropdown: the tokens, then the statuses, each in its section. */
+function counterMenu(card: CardView): ActionItem {
+  const label = 'Add a token or status';
+  const menu = [
+    ...counterItems(card, 'token', 'Tokens', TOKENS, card.tokens),
+    ...counterItems(card, 'status', 'Status', STATUSES, card.status),
+  ];
+  return { id: 'counters', label, icon: 'token', tip: label, group: GROUP_MARK, add: true, menu };
+}
+
+/** Each counter adds one, its current count in brackets. */
+function counterItems(
   card: CardView,
   kind: 'token' | 'status',
-  label: string,
-  tip: string,
+  section: string,
   counters: { name: string; label: string; key: string }[],
   counts: Record<string, number> | undefined,
-): ActionItem {
-  const menu = counters.map((counter): ActionItem => {
+): ActionItem[] {
+  return counters.map((counter): ActionItem => {
     const count = counts?.[counter.name] ?? 0;
     return {
       id: counter.name,
       label: count > 0 ? `${counter.label} (${count})` : counter.label,
       key: counter.key,
       group: 0,
+      section,
       run: () => ({ kind, card: card.id, name: counter.name, delta: 1 }),
     };
   });
-  return { id: kind, label, tip, group: GROUP_MARK, add: true, menu };
 }
 
-/** Discard and Move to ▾, disabled while the card holds what a stage shows. */
+/** Discard and Move to, disabled while the card holds what a stage shows. */
 function leaveItems(card: CardView, context: Context): ActionItem[] {
   const discard: ActionItem = {
     id: 'discard',
@@ -258,6 +266,7 @@ function leaveItems(card: CardView, context: Context): ActionItem[] {
   const moveTo: ActionItem = {
     id: 'moveTo',
     label: 'Move to',
+    icon: 'move',
     tip: 'Move to',
     group: GROUP_LEAVE,
     menu: moveMenu(card, context),

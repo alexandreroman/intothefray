@@ -213,6 +213,19 @@ describe('keys on the table', () => {
     expect(session.act).not.toHaveBeenCalled();
   });
 
+  it('the status keys reach the second section of the counter menu', async () => {
+    const { session } = await renderTable();
+    await fireEvent.pointerEnter(placed('mine'));
+
+    await press('g');
+    expect(session.act).toHaveBeenCalledWith({
+      kind: 'status',
+      card: 'mine',
+      name: 'tough',
+      delta: 1,
+    });
+  });
+
   it('menu items answer to their keys', async () => {
     const { session } = await renderTable();
     await fireEvent.pointerEnter(placed('mine'));
@@ -249,7 +262,7 @@ describe('keys on the table', () => {
 
   it('disabled items do nothing, nor do the items of a disabled dropdown', async () => {
     const cards = [
-      // The villain card is tucked under 'host': Discard and Move to ▾ (and its Hand) are disabled.
+      // The villain card is tucked under 'host': Discard and Move to (and its Hand) are disabled.
       card('v', { code: '01094', owner: -1, back: 'villain', area: 'villain', parent: 'host' }),
       card('host', { area: 'villain', x: 200 }),
       // Reveal is disabled while a card is revealed on the encounter deck.

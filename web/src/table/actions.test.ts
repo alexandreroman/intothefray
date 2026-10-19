@@ -159,7 +159,7 @@ describe('actionsFor', () => {
   it('card in play groups and order', () => {
     const items = itemsFor({ kind: 'card', id: 'mine' });
 
-    expect(groups(items)).toEqual([['exhaust'], ['token', 'status'], ['discard', 'moveTo']]);
+    expect(groups(items)).toEqual([['exhaust'], ['counters'], ['discard', 'moveTo']]);
     const exhaust = item(items, 'exhaust');
     expect(exhaust).toMatchObject({ label: 'Exhaust', icon: 'exhaust', key: 'E', tip: 'Exhaust' });
     expect(actionOf(exhaust)).toEqual({ kind: 'exhaust', card: 'mine' });
@@ -169,33 +169,39 @@ describe('actionsFor', () => {
     expect(discard).toMatchObject({ label: 'Discard', icon: 'discard', key: 'X', tip: 'Discard' });
     expect(actionOf(discard)).toEqual({ kind: 'discard', card: 'mine' });
 
-    expect(item(items, 'token')).toMatchObject({ label: '+ Token', tip: 'Add a token' });
-    expect(menuOf(items, 'token').map((it) => [it.id, it.label, it.key])).toEqual([
-      ['dmg', 'Damage', 'D'],
-      ['thr', 'Threat', 'T'],
-      ['gen', 'Counter', 'N'],
+    // One "+" dropdown for both: the tokens, then the statuses, each in its section.
+    expect(item(items, 'counters')).toMatchObject({
+      label: 'Add a token or status',
+      tip: 'Add a token or status',
+      icon: 'token',
+      add: true,
+    });
+    const counters = menuOf(items, 'counters');
+    expect(counters.map((it) => [it.section, it.id, it.label, it.key])).toEqual([
+      ['Tokens', 'dmg', 'Damage', 'D'],
+      ['Tokens', 'thr', 'Threat', 'T'],
+      ['Tokens', 'gen', 'Counter', 'N'],
+      ['Status', 'stunned', 'Stunned', 'S'],
+      ['Status', 'confused', 'Confused', 'C'],
+      ['Status', 'tough', 'Tough', 'G'],
     ]);
-    expect(actionOf(item(menuOf(items, 'token'), 'thr'))).toEqual({
+    expect(actionOf(item(counters, 'thr'))).toEqual({
       kind: 'token',
       card: 'mine',
       name: 'thr',
       delta: 1,
     });
-    expect(item(items, 'status')).toMatchObject({ label: '+ Status', tip: 'Add a status' });
-    expect(menuOf(items, 'status').map((it) => [it.id, it.label, it.key])).toEqual([
-      ['stunned', 'Stunned', 'S'],
-      ['confused', 'Confused', 'C'],
-      ['tough', 'Tough', 'G'],
-    ]);
-    expect(actionOf(item(menuOf(items, 'status'), 'tough'))).toEqual({
+    expect(actionOf(item(counters, 'tough'))).toEqual({
       kind: 'status',
       card: 'mine',
       name: 'tough',
       delta: 1,
     });
 
+    // Move to is an icon: its name stays in the label and the tip.
     const move = menuOf(items, 'moveTo');
-    expect(item(items, 'moveTo')).toMatchObject({ label: 'Move to', tip: 'Move to' });
+    expect(item(items, 'moveTo')).toMatchObject({ label: 'Move to', icon: 'move', tip: 'Move to' });
+    expect(move.every((it) => it.section === undefined)).toBe(true);
     expect(move.map((it) => it.id)).toEqual([
       'hand',
       'deckTop',
@@ -239,7 +245,7 @@ describe('actionsFor', () => {
     });
   });
 
-  it('an exhausted card shows ready and the token menus give the counts', () => {
+  it('an exhausted card shows ready and the counter menu gives the counts', () => {
     const view = makeView({
       cards: [card('mine', { exhausted: true, tokens: { dmg: 2 }, status: { stunned: 1 } })],
     });
@@ -251,12 +257,10 @@ describe('actionsFor', () => {
       key: 'E',
       pressed: true,
     });
-    expect(menuOf(items, 'token').map((it) => it.label)).toEqual([
+    expect(menuOf(items, 'counters').map((it) => it.label)).toEqual([
       'Damage (2)',
       'Threat',
       'Counter',
-    ]);
-    expect(menuOf(items, 'status').map((it) => it.label)).toEqual([
       'Stunned (1)',
       'Confused',
       'Tough',
@@ -266,12 +270,7 @@ describe('actionsFor', () => {
   it('a card with several faces shows flip', () => {
     const items = itemsFor({ kind: 'card', id: 'two' });
 
-    expect(groups(items)).toEqual([
-      ['exhaust'],
-      ['flip'],
-      ['token', 'status'],
-      ['discard', 'moveTo'],
-    ]);
+    expect(groups(items)).toEqual([['exhaust', 'flip'], ['counters'], ['discard', 'moveTo']]);
     const flip = item(items, 'flip');
     expect(flip).toMatchObject({ label: 'Flip', icon: 'flip', key: 'F', tip: 'Flip' });
     expect(actionOf(flip)).toEqual({ kind: 'flip', card: 'two' });
@@ -281,12 +280,7 @@ describe('actionsFor', () => {
     // The main scheme has two faces, yet its card choice replaces Flip.
     const items = itemsFor({ kind: 'card', id: 's' });
 
-    expect(groups(items)).toEqual([
-      ['exhaust'],
-      ['stage'],
-      ['token', 'status'],
-      ['discard', 'moveTo'],
-    ]);
+    expect(groups(items)).toEqual([['exhaust', 'stage'], ['counters'], ['discard', 'moveTo']]);
     const stage = item(items, 'stage');
     expect(stage).toMatchObject({
       label: 'Choose the main scheme card to show',
@@ -324,12 +318,7 @@ describe('actionsFor', () => {
   it('face-down card shows flip', () => {
     const items = itemsFor({ kind: 'card', id: 'down' });
 
-    expect(groups(items)).toEqual([
-      ['exhaust'],
-      ['flip'],
-      ['token', 'status'],
-      ['discard', 'moveTo'],
-    ]);
+    expect(groups(items)).toEqual([['exhaust', 'flip'], ['counters'], ['discard', 'moveTo']]);
     expect(actionOf(item(items, 'flip'))).toEqual({ kind: 'flip', card: 'down' });
   });
 

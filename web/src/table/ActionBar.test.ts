@@ -172,14 +172,51 @@ describe('ActionBar', () => {
     expect(bar()).toBeNull();
 
     await fireEvent.pointerEnter(placed('mine'));
-    expect(barButtons()).toEqual(['Exhaust', '+ Token', '+ Status', 'Discard', 'Move to']);
-    // Groups are separated: Exhaust | tokens, statuses | Discard, Move to.
+    expect(barButtons()).toEqual(['Exhaust', 'Add a token or status', 'Discard', 'Move to']);
+    // Groups are separated: Exhaust | tokens and statuses | Discard, Move to.
     expect(bar()?.querySelectorAll('.sep')).toHaveLength(2);
     // The name and the key are in the tooltip, never on the button.
     const exhaust = within(bar()!).getByRole('button', { name: 'Exhaust' });
     expect(exhaust.dataset.tip).toBe('Exhaust');
     expect(exhaust.dataset.kbd).toBe('E');
     expect(exhaust.textContent?.trim()).toBe('');
+  });
+
+  it('exhaust and flip share a group', async () => {
+    await renderTable();
+    await fireEvent.pointerEnter(placed('two'));
+
+    expect(barButtons()).toEqual([
+      'Exhaust',
+      'Flip',
+      'Add a token or status',
+      'Discard',
+      'Move to',
+    ]);
+    // No separator between Exhaust and Flip.
+    const flip = within(bar()!).getByRole('button', { name: 'Flip' });
+    expect(flip.previousElementSibling?.getAttribute('aria-label')).toBe('Exhaust');
+    expect(bar()?.querySelectorAll('.sep')).toHaveLength(2);
+  });
+
+  it('move to is an icon dropdown, named by its tooltip', async () => {
+    await renderTable();
+    await fireEvent.pointerEnter(placed('mine'));
+
+    const moveTo = within(bar()!).getByRole('button', { name: 'Move to' });
+    expect(moveTo.dataset.tip).toBe('Move to');
+    expect(moveTo.getAttribute('aria-haspopup')).toBe('menu');
+    // An icon, without a caret or a text.
+    expect(moveTo.querySelector('svg')).not.toBeNull();
+    expect(moveTo.querySelector('.caret')).toBeNull();
+    expect(moveTo.textContent?.trim()).toBe('');
+
+    await fireEvent.click(moveTo);
+    expect(moveTo.getAttribute('aria-expanded')).toBe('true');
+    const menu = screen.getByRole('menu', { name: 'Move to' });
+    // Its choices have no section: no group, no heading.
+    expect(within(menu).queryAllByRole('group')).toHaveLength(0);
+    expect(menu.querySelector('.heading')).toBeNull();
   });
 
   it('a hand card gets no bar', async () => {
@@ -333,7 +370,8 @@ describe('ActionBar', () => {
     // The card the villain stage shows stays on the table.
     await fireEvent.pointerEnter(placed('v'));
     const tip = 'The villain card stays on the table — choose another card to show';
-    const moveTo = within(bar()!).getByRole('button', { name: /^Move to/ });
+    // Its name stays Move to: the tooltip says why it is disabled.
+    const moveTo = within(bar()!).getByRole('button', { name: 'Move to' });
     expect(moveTo.getAttribute('aria-disabled')).toBe('true');
     expect(moveTo.hasAttribute('disabled')).toBe(false);
     expect(moveTo.dataset.tip).toBe(tip);
@@ -707,16 +745,57 @@ describe('tokens and statuses', () => {
     return screen.queryByRole('group', { name: /^Change / });
   }
 
-  it('token menu adds one', async () => {
+  function addButton(): HTMLElement {
+    return within(bar()!).getByRole('button', { name: 'Add a token or status' });
+  }
+
+  it('one menu holds the tokens and the statuses, in two sections', async () => {
+    await renderTable(viewWithCounters());
+    await fireEvent.pointerEnter(placed('mine'));
+
+    const add = addButton();
+    // A dashed "+" icon: no caret, no text; the name is in the tooltip.
+    expect(add.classList.contains('add')).toBe(true);
+    expect(add.dataset.tip).toBe('Add a token or status');
+    expect(add.querySelector('svg')).not.toBeNull();
+    expect(add.querySelector('.caret')).toBeNull();
+    expect(add.textContent?.trim()).toBe('');
+
+    await fireEvent.click(add);
+    const menu = screen.getByRole('menu', { name: 'Add a token or status' });
+    // The headings are captions, not choices: each names its group of menu items.
+    const sections = within(menu).getAllByRole('group');
+    expect(sections.map((group) => group.getAttribute('aria-label'))).toEqual(['Tokens', 'Status']);
+    expect([...menu.querySelectorAll('.heading')].map((heading) => heading.textContent)).toEqual([
+      'Tokens',
+      'Status',
+    ]);
+    // Each choice keeps its key, and its count in brackets.
+    const choices = (group: HTMLElement) =>
+      within(group)
+        .getAllByRole('menuitem')
+        .map((choice) => [
+          choice.querySelector('span')?.textContent,
+          choice.querySelector('kbd')?.textContent,
+        ]);
+    expect(choices(sections[0]!)).toEqual([
+      ['Damage (2)', 'D'],
+      ['Threat', 'T'],
+      ['Counter', 'N'],
+    ]);
+    expect(choices(sections[1]!)).toEqual([
+      ['Stunned (1)', 'S'],
+      ['Confused', 'C'],
+      ['Tough', 'G'],
+    ]);
+    expect(within(menu).getAllByRole('menuitem')).toHaveLength(6);
+  });
+
+  it('a token choice adds one', async () => {
     const { session } = await renderTable(viewWithCounters());
     await fireEvent.pointerEnter(placed('mine'));
 
-    const add = within(bar()!).getByRole('button', { name: '+ Token' });
-    // A dashed "+" button: no caret.
-    expect(add.classList.contains('add')).toBe(true);
-    expect(add.querySelector('.caret')).toBeNull();
-
-    await fireEvent.click(add);
+    await fireEvent.click(addButton());
     await fireEvent.click(screen.getByRole('menuitem', { name: /^Damage/ }));
     expect(session.act).toHaveBeenCalledWith({
       kind: 'token',
@@ -726,11 +805,11 @@ describe('tokens and statuses', () => {
     });
   });
 
-  it('status menu adds one', async () => {
+  it('a status choice adds one', async () => {
     const { session } = await renderTable(viewWithCounters());
     await fireEvent.pointerEnter(placed('mine'));
 
-    await fireEvent.click(within(bar()!).getByRole('button', { name: '+ Status' }));
+    await fireEvent.click(addButton());
     await fireEvent.click(screen.getByRole('menuitem', { name: /^Tough/ }));
     expect(session.act).toHaveBeenCalledWith({
       kind: 'status',
