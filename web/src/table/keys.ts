@@ -111,8 +111,9 @@ function playerKey(event: KeyboardEvent, table: KeyTable): boolean {
     return true;
   }
 
+  // During a drag, the hovered element is still the one pressed: a key would act on the card in mid-air.
   const hovered = interaction.hovered;
-  if (hovered === null) {
+  if (hovered === null || interaction.dragging !== null) {
     return false;
   }
   if (hovered.kind === 'hand') {

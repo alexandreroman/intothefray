@@ -382,6 +382,41 @@ describe('held keys', () => {
   });
 });
 
+describe('keys during a drag', () => {
+  it('the keys of the dragged element do nothing; undo and the zoom still work', async () => {
+    const { session } = await renderTable(makeView({ canUndo: true }));
+    const mine = placed('mine');
+    await fireEvent.pointerEnter(mine);
+    await fireEvent.pointerDown(mine, { clientX: 300, clientY: 300 });
+    await fireEvent.pointerMove(window, { clientX: 340, clientY: 330, buttons: 1 });
+    expect(interaction.dragging).not.toBeNull();
+
+    await press('x');
+    await press('e');
+    await press('d');
+    expect(session.act).not.toHaveBeenCalled();
+    expect(interaction.dragging).not.toBeNull();
+
+    await press('+');
+    expect(zoomLabel()).toBe('110%');
+    await press('z');
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'undo' });
+  });
+
+  it('nor do the keys of a dragged hand card', async () => {
+    const { session } = await renderTable();
+    const held = inHand('h');
+    await fireEvent.pointerEnter(held);
+    await fireEvent.pointerDown(held, { clientX: 300, clientY: 700 });
+    await fireEvent.pointerMove(window, { clientX: 340, clientY: 500, buttons: 1 });
+    expect(interaction.dragging).not.toBeNull();
+
+    await press('x');
+    await press('p');
+    expect(session.act).not.toHaveBeenCalled();
+  });
+});
+
 describe('Escape', () => {
   it('acts even while a field has the focus', async () => {
     await renderTable();
