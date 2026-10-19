@@ -214,6 +214,11 @@ describe.each(KINDS)('while $name is open', ({ open, close, closing }) => {
     expect(session.act).not.toHaveBeenCalled();
   });
 
+  it("the viewer's cursor is hidden from the others", async () => {
+    const session = await openOverTable();
+    expect(session.sendPresence).toHaveBeenCalledWith({ cursor: null });
+  });
+
   it('a click on the backdrop closes it, and does nothing else', async () => {
     const session = await openOverTable();
     const backdrop = dialog()!.parentElement!;

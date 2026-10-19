@@ -273,7 +273,7 @@ export interface PresenceDrag {
 
 /** The fields a presence message relays; each is absent when it did not change. */
 export interface PresenceFields {
-  cursor?: PresencePoint;
+  cursor?: PresencePoint | null; // null while the viewer is off the table: hand raised, dialog open
   preview?: string; // id of the card or pile being previewed, '' once cleared
   drag?: PresenceDrag | null; // null once the drag ended
   ping?: PresencePoint;

@@ -274,6 +274,54 @@ describe("the viewer's own presence", () => {
     expect(sent()).toEqual([]);
   });
 
+  it('hides the cursor while the hand is raised, never telling where the pointer goes in it', async () => {
+    const { sent } = await renderTable();
+    await fireEvent.pointerMove(window, { clientX: 220, clientY: 480 });
+    await vi.advanceTimersByTimeAsync(50);
+    expect(sent()).toEqual([{ cursor: { x: 200, y: 400 } }]);
+
+    // Over the hand's band (its cards are measured at the window's corner here): it rises.
+    await fireEvent.pointerMove(window, { clientX: 3, clientY: 500 });
+    expect(document.querySelector('.hand')?.classList).toContain('open');
+    await fireEvent.pointerMove(window, { clientX: 5, clientY: 600 });
+    await vi.advanceTimersByTimeAsync(100);
+    expect(sent()).toEqual([{ cursor: { x: 200, y: 400 } }, { cursor: null }]);
+
+    // Back on the table, the hand lowers and the cursor shows again.
+    await fireEvent.pointerMove(window, { clientX: 320, clientY: 480 });
+    await vi.advanceTimersByTimeAsync(50);
+    expect(document.querySelector('.hand')?.classList).not.toContain('open');
+    expect(sent().at(-1)).toEqual({ cursor: { x: 300, y: 400 } });
+  });
+
+  it('hides the cursor while a dialog is open', async () => {
+    const { sent } = await renderTable();
+    await fireEvent.pointerMove(window, { clientX: 220, clientY: 480 });
+    await vi.advanceTimersByTimeAsync(50);
+
+    // The shortcuts sheet opens from the keyboard, the pointer still on the table.
+    await fireEvent.keyDown(window, { key: '?' });
+    expect(document.querySelector('[aria-modal="true"]')).not.toBeNull();
+    await fireEvent.pointerMove(window, { clientX: 400, clientY: 300 });
+    await vi.advanceTimersByTimeAsync(100);
+    expect(sent()).toEqual([{ cursor: { x: 200, y: 400 } }, { cursor: null }]);
+
+    await fireEvent.keyDown(window, { key: 'Escape' });
+    expect(document.querySelector('[aria-modal="true"]')).toBeNull();
+    await fireEvent.pointerMove(window, { clientX: 320, clientY: 480 });
+    await vi.advanceTimersByTimeAsync(50);
+    expect(sent().at(-1)).toEqual({ cursor: { x: 300, y: 400 } });
+  });
+
+  it('spectator sends no hidden cursor', async () => {
+    const { sent } = await renderTable(makeView({ spectator: true }));
+
+    await fireEvent.keyDown(window, { key: '?' });
+    await vi.advanceTimersByTimeAsync(100);
+
+    expect(sent()).toEqual([]);
+  });
+
   it('sends the card previewed, and an empty preview once it is cleared', async () => {
     const { sent } = await renderTable();
 
@@ -401,6 +449,31 @@ describe("other players' presence", () => {
     await nextFrame();
     expect(cursors()[0]!.style.transform).toBe('translate(4px, 4px)');
     expect(cursors()[0]!.textContent).toBe('Sam ↑ ←');
+  });
+
+  it('hides a cursor its player hid, held at an edge or not, until their next move', async () => {
+    const { receive } = await renderTable();
+    receive({ color: 1, name: 'Sam', cursor: { x: 100, y: 650 }, preview: 'sam' });
+    await nextFrame();
+    expect(cursors()).toHaveLength(1);
+
+    // Sam raises their hand or opens a dialog: the cursor goes, the preview stays.
+    receive({ color: 1, name: 'Sam', cursor: null });
+    await nextFrame();
+    expect(cursors()).toEqual([]);
+    expect(rings()).toHaveLength(1);
+
+    // Held at the bottom edge, scrolled out of view: its arrow goes too.
+    receive({ color: 1, name: 'Sam', cursor: { x: 100, y: 5000 } });
+    await nextFrame();
+    expect(cursors()[0]!.textContent).toBe('Sam ↓');
+    receive({ color: 1, name: 'Sam', cursor: null });
+    await nextFrame();
+    expect(cursors()).toEqual([]);
+
+    receive({ color: 1, name: 'Sam', cursor: { x: 110, y: 650 } });
+    await nextFrame();
+    expect(cursors()).toHaveLength(1);
   });
 
   it('stale cursor hidden after 10 s', async () => {

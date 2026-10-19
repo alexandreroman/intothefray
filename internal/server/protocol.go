@@ -88,12 +88,12 @@ type clientMessage struct {
 	ID     int64        `json:"id"` // client sequence number, echoed in errors
 	Action *game.Action `json:"action"`
 
-	// presence
-	Cursor  *presencePoint `json:"cursor"`
-	Preview *string        `json:"preview"`
-	// Drag is kept raw to tell an ended drag (null) from an absent one.
-	Drag json.RawMessage `json:"drag"`
-	Ping *presencePoint  `json:"ping"`
+	// presence. Cursor and Drag are kept raw to tell a hidden cursor or an
+	// ended drag (null) from an absent one.
+	Cursor  json.RawMessage `json:"cursor"`
+	Preview *string         `json:"preview"`
+	Drag    json.RawMessage `json:"drag"`
+	Ping    *presencePoint  `json:"ping"`
 }
 
 // welcomeMessage answers a successful hello. It is the only message that
@@ -164,10 +164,11 @@ type presenceDrag struct {
 }
 
 // presenceFields are the relayed fields of a presence message; each is
-// absent when it did not change. Drag is the JSON of a presenceDrag, or null
-// once the drag ends.
+// absent when it did not change. Cursor is the JSON of a presencePoint, or
+// null while the viewer is off the table (hand raised, dialog open). Drag is
+// the JSON of a presenceDrag, or null once the drag ends.
 type presenceFields struct {
-	Cursor  *presencePoint  `json:"cursor,omitempty"`
+	Cursor  json.RawMessage `json:"cursor,omitempty"`
 	Preview *string         `json:"preview,omitempty"`
 	Drag    json.RawMessage `json:"drag,omitempty"`
 	Ping    *presencePoint  `json:"ping,omitempty"`

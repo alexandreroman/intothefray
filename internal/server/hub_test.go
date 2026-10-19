@@ -287,6 +287,26 @@ func TestPresenceRelayed(t *testing.T) {
 	}
 }
 
+func TestHiddenCursorRelayed(t *testing.T) {
+	mr := miniredis.RunT(t)
+	ts := startInstance(t, mr, nil)
+	created := createGame(t, ts, "Alex")
+	alex := connect(t, ts, created.ID)
+	alex.hello(created.Token, "Alex")
+	bob := connect(t, ts, created.ID)
+	bob.hello("", "Bob")
+	alex.awaitView(func(v game.View) bool { return len(v.Players) == 2 })
+
+	// Alex raises his hand or opens a dialog: his cursor goes, and nothing
+	// tells where his pointer is.
+	alex.send(map[string]any{"type": "presence", "cursor": nil})
+
+	got := bob.expect("presence")
+	if !strings.Contains(string(got.raw), `"cursor":null`) {
+		t.Errorf("presence = %s, want the cursor hidden", got.raw)
+	}
+}
+
 func TestSpectatorPresence(t *testing.T) {
 	mr := miniredis.RunT(t)
 	ts := startInstance(t, mr, nil)
@@ -335,6 +355,7 @@ func TestPresenceValidation(t *testing.T) {
 		valid bool
 	}{
 		{"cursor", map[string]any{"cursor": point}, true},
+		{"hidden cursor", map[string]any{"cursor": nil}, true},
 		{"preview", map[string]any{"preview": "c1"}, true},
 		{"cleared preview", map[string]any{"preview": ""}, true},
 		{"drag", map[string]any{"drag": drag([]string{"c1", "c2"})}, true},
@@ -342,6 +363,7 @@ func TestPresenceValidation(t *testing.T) {
 		{"ping", map[string]any{"ping": point}, true},
 		{"nothing", map[string]any{}, false},
 		{"cursor with a text x", map[string]any{"cursor": map[string]any{"x": "1", "y": 2}}, false},
+		{"cursor as text", map[string]any{"cursor": "here"}, false},
 		{"long preview", map[string]any{"preview": long}, false},
 		{"drag without cards", map[string]any{"drag": drag([]string{})}, false},
 		{"drag of too many cards", map[string]any{"drag": drag(tooManyCards)}, false},

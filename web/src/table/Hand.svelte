@@ -18,6 +18,7 @@
     cards,
     faceOf,
     narrow = false,
+    open = $bindable(false),
   }: {
     /** The hand, in its order. */
     cards: TableCard[];
@@ -25,6 +26,8 @@
     faceOf: (card: TableCard) => PackFace | null;
     /** A narrow screen, where the cards are smaller. */
     narrow?: boolean;
+    /** Whether the hand is raised. */
+    open?: boolean;
   } = $props();
 
   const cardSize = $derived(narrow ? HAND_CARD_NARROW : HAND_CARD);
@@ -52,8 +55,6 @@
   // The whole hand's width, padding included: fanPositions keeps that padding free.
   let width = $state(0);
   const slots = $derived(fanPositions(shown.length, width, cardSize.w));
-
-  let open = $state(false);
 
   // A table card of the viewer's own, dragged over the hand to go back to it.
   const dropTarget = $derived(interaction.dropOn?.kind === 'hand');

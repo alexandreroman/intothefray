@@ -3,8 +3,11 @@
   previews, their pings and their drags, drawn over the table (the table
   cards they drag hidden in their places meanwhile). It also tells
   them about the viewer's own cursor, preview and pings; DragLayer tells them
-  about the viewer's drags. Spectators send nothing, as no player draws them
-  (ruling P5c-R2: the server refuses their pings and drags).
+  about the viewer's drags. While the viewer is away from the table (hand
+  raised, dialog open), their cursor is hidden from the others: nothing tells
+  where the pointer goes in the hand or in the dialog. Spectators send
+  nothing, as no player draws them (ruling P5c-R2: the server refuses their
+  pings and drags).
 
   Spots travel as table units of the surface (screen.ts). Messages can come in
   floods: the session keeps only the latest state of each player, and the
@@ -32,6 +35,7 @@
     view,
     presence,
     send,
+    away,
     root,
     zoom,
     faceOf,
@@ -43,6 +47,8 @@
     presence: ReadonlyMap<number, PresenceState>;
     /** Sends the viewer's own presence; the session throttles it. */
     send: (fields: PresenceFields) => void;
+    /** Whether the viewer is away from the table: their hand raised, or a dialog open. */
+    away: boolean;
     /** The page: the surface and its cards are measured there. */
     root: HTMLElement | undefined;
     zoom: number;
@@ -168,9 +174,17 @@
       return;
     }
     const cursor = spotAt({ x: event.clientX, y: event.clientY });
-    if (cursor) {
-      send({ cursor });
+    if (!cursor) {
+      return;
     }
+    // Decided once every handler of the move has run: the hand (Hand.svelte) handles it after
+    // this layer, and the move that raises it must not tell the others where the pointer went,
+    // while the move that lowers it shows the cursor again.
+    queueMicrotask(() => {
+      if (!away) {
+        send({ cursor });
+      }
+    });
   }
 
   /**
@@ -186,6 +200,14 @@
     showPing(view.you.color, spot);
     return true;
   }
+
+  // Away from the table, the cursor is hidden at once, before the pointer moves on: the next
+  // move back on the table shows it again.
+  $effect(() => {
+    if (isPlayer && away) {
+      send({ cursor: null });
+    }
+  });
 
   // The preview others see: a table card or a pile, never a hand card, which is private.
   let previewSent = '';

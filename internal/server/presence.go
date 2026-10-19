@@ -62,10 +62,21 @@ func (s *Server) presence(ctx context.Context, c *conn, msg clientMessage) error
 	return nil
 }
 
-// presenceFieldsOf validates the presence fields of msg. A drag is decoded
-// and encoded again, so that only its known fields are relayed.
+// presenceFieldsOf validates the presence fields of msg. A cursor and a drag
+// are decoded and encoded again, so that only their known fields are relayed.
 func presenceFieldsOf(msg clientMessage) (presenceFields, error) {
-	fields := presenceFields{Cursor: msg.Cursor, Preview: msg.Preview, Ping: msg.Ping}
+	fields := presenceFields{Preview: msg.Preview, Ping: msg.Ping}
+	if msg.Cursor != nil {
+		var cursor *presencePoint
+		if err := json.Unmarshal(msg.Cursor, &cursor); err != nil {
+			return presenceFields{}, fmt.Errorf("%w: cursor: %w", errInvalidMessage, err)
+		}
+		encoded, err := json.Marshal(cursor) // null while the viewer is off the table
+		if err != nil {
+			return presenceFields{}, err
+		}
+		fields.Cursor = encoded
+	}
 	if msg.Drag != nil {
 		var drag *presenceDrag
 		if err := json.Unmarshal(msg.Drag, &drag); err != nil {

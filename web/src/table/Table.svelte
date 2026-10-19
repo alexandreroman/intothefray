@@ -894,6 +894,7 @@
   let wrap = $state<HTMLElement>();
   let app = $state<HTMLElement>();
   let presenceLayer = $state<ReturnType<typeof Presence>>();
+  let handRaised = $state(false);
 
   // A new view or a zoom moves the elements under a pointer at rest: the ones
   // it lands on are not hovered by the viewer.
@@ -1077,6 +1078,7 @@
     {view}
     presence={session.presence}
     send={(fields) => session.sendPresence(fields)}
+    away={modal.open || (handCards !== undefined && handRaised)}
     root={app}
     {zoom}
     {faceOf}
@@ -1141,7 +1143,7 @@
   {/if}
 
   {#if handCards}
-    <Hand cards={handCards} {faceOf} narrow={narrow.current} />
+    <Hand cards={handCards} {faceOf} narrow={narrow.current} bind:open={handRaised} />
   {/if}
 
   <Flights {faceOf} />
