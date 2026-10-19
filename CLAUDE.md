@@ -52,8 +52,10 @@ make web-build    # production build into web/dist/
   per-worktree ports, info panel)
 - `.casper.json` — optional Casper workspace config (scripts and hooks)
 - `.github/workflows/` — `pages.yml` publishes `web/` to GitHub Pages
-- `Dockerfile` — container image of the server
-- `compose.yaml` — local stack: Redis (in memory) and the app service
+- `Dockerfile` — container image of the server; `web/Dockerfile` — the
+  web app on nginx
+- `compose.yaml` — local stack: Redis (in memory), the app service and
+  the web service
 
 ## Agents
 

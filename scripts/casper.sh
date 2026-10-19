@@ -94,10 +94,8 @@ DOC
 
 | Endpoint      | URL                                     |
 | ------------- | --------------------------------------- |
+| Web app       | <http://localhost:$web_port>            |
 | Server health | <http://localhost:$server_port/healthz> |
-
-The container stack serves the API only, without the web app. Use Dev
-for the frontend.
 
 ## Redis
 
@@ -141,7 +139,7 @@ stop_containers() {
 	make app-down >/dev/null 2>&1 || true
 }
 
-# Start the container stack (app image + Redis), then follow its logs so the
+# Start the container stack (web and app images + Redis), then follow its logs so the
 # command stays attached: stopping it stops the stack, like dev. The trap is
 # installed before app-up so that a failed or interrupted start is cleaned
 # up too; the panel is only published once the stack is healthy.

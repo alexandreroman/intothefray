@@ -27,3 +27,22 @@ services:
       interval: 10s
       timeout: 10s
       retries: 3
+
+  web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+      args:
+        # The browser reaches the server on its host port
+        VITE_API_URL: http://localhost:${PORT:-8080}
+    restart: on-failure
+    ports:
+      - "${WEB_PORT:-5173}:8080"
+    depends_on:
+      app:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8080/"]
+      interval: 10s
+      timeout: 10s
+      retries: 3

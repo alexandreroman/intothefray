@@ -42,7 +42,7 @@ infra-logs: ## Follow logs from infrastructure services
 ##@ Stack
 
 .PHONY: app-up
-app-up: ## Build and start the full stack (app + Redis)
+app-up: ## Build and start the full stack (web + server + Redis)
 	$(COMPOSE) up -d --build --wait
 
 .PHONY: app-down

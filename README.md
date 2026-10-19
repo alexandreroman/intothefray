@@ -70,7 +70,7 @@ make web-build  # build the web app into web/dist
 make build      # build bin/intothefray
 make packs      # regenerate the card packs in packs/dist
 make infra-down # stop Redis
-make app-up     # build the image, start the app and Redis in containers
+make app-up     # build the images, start the web app, server and Redis
 make app-logs   # follow the logs of the containerised stack
 make app-down   # stop and remove the containerised stack
 ```
@@ -82,8 +82,10 @@ make app-down   # stop and remove the containerised stack
 container engine: Docker, or Podman with its Docker-compatible
 `docker` command (or pass `COMPOSE="podman compose"` to `make`).
 
-`make dev` and `make app-up` both bind port 8080: stop one before
-starting the other.
+`make app-up` serves the web app at <http://localhost:5173>.
+
+`make dev` and `make app-up` both bind ports 8080 and 5173: stop one
+before starting the other.
 
 ### Casper workspaces
 
@@ -106,8 +108,8 @@ Two commands start the stack, both with the ports of `.env.casper` and
 both listing the workspace URLs in the Casper info panel:
 
 - **Run** (`casper run`, that is `scripts/casper.sh run`) starts the
-  container stack with `make app-up` (app image and Redis) and follows
-  its logs. It serves the API only. Stopping the command runs
+  whole stack in containers with `make app-up` (web app, server and
+  Redis) and follows its logs. Stopping the command runs
   `make app-down`.
 - **Dev** (`casper run dev`) starts `make dev` with hot reload (Redis,
   Air and Vite). Stopping the command stops the stack.
