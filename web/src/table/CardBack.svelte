@@ -58,7 +58,7 @@
   }
 
   .player {
-    --frame: #6fa8ff73;
+    --frame: color-mix(in srgb, var(--p1) 45%, transparent);
   }
 
   /* The prototype draws no villain back: villain cards share the encounter one. */

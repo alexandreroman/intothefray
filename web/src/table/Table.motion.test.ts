@@ -179,7 +179,7 @@ beforeEach(() => {
   };
   Element.prototype.animate = animate as unknown as typeof Element.prototype.animate;
   HTMLElement.prototype.getBoundingClientRect = fakeRect;
-  document.documentElement.style.setProperty('--p1', '#6fa8ff');
+  document.documentElement.style.setProperty('--p1', '#4f9dff');
 });
 
 afterEach(() => {
@@ -335,7 +335,7 @@ describe('Table animations', () => {
     const [[keyframes, options]] = animationsOf('.surface .card[data-id="a"]') as [
       [Keyframe[], KeyframeAnimationOptions],
     ];
-    expect(String(keyframes[0]?.boxShadow)).toContain('#6fa8ff');
+    expect(String(keyframes[0]?.boxShadow)).toContain('#4f9dff');
     expect(options).toMatchObject({ duration: 1100, pseudoElement: '::after' });
   });
 
