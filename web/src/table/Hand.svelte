@@ -4,6 +4,7 @@
   behind it dims.
 -->
 <script lang="ts">
+  import { modal } from '../components/modal.svelte';
   import type { CardView as TableCard, PackFace } from '../lib/types';
   import CardBack from './CardBack.svelte';
   import CardFace from './CardFace.svelte';
@@ -80,6 +81,11 @@
    */
   function followPointer(event: PointerEvent): void {
     if (interaction.dragging) {
+      return;
+    }
+    // A dialog freezes the table: the hand stays down under its backdrop.
+    if (modal.open) {
+      open = false;
       return;
     }
     const boxes = [...(list?.querySelectorAll('.hcard') ?? [])].map((card) =>

@@ -1,8 +1,11 @@
 <!--
-  The shell of the app's own dialogs: a backdrop, a box titled by its first
-  line, and the focus kept inside it. Escape or a click outside cancels.
-  While it is shown, a modal counts as open (see modal.svelte.ts). A wide box
-  (the card boxes) draws its own heading and spacing.
+  The shell of every dialog of the app, the one modal layer: a backdrop that
+  dims and freezes the page under it, a box titled by its first line, and the
+  focus moved into it and kept there. Escape, or a click on the backdrop,
+  cancels; the click does nothing else. While it is shown, a modal counts as
+  open (see modal.svelte.ts): the table keys, hover and drags stop. A wide box
+  (the card boxes, the shortcuts sheet) draws its own heading and spacing. The
+  box is centred unless `at` places it.
 -->
 <script lang="ts">
   import { onDestroy, onMount, type Snippet } from 'svelte';
@@ -14,6 +17,9 @@
     oncancel,
     onkeydown,
     wide = false,
+    at,
+    width,
+    box = $bindable(),
     heading,
     children,
   }: {
@@ -26,6 +32,12 @@
     onkeydown?: (event: KeyboardEvent) => void;
     /** The card boxes' size, as wide as the window allows, without padding. */
     wide?: boolean;
+    /** Where the box's top left corner goes, in px from the window's; centred without it. */
+    at?: { top: number; left: number };
+    /** A width of its own (any CSS length), rather than its kind's. */
+    width?: string;
+    /** The box, for whoever places it. */
+    box?: HTMLElement;
     /** Draws the heading instead of the title; the element it gives the id to names the box. */
     heading?: Snippet<[string]>;
     children: Snippet;
@@ -33,8 +45,6 @@
 
   const uid = $props.id();
   const titleId = `${uid}-title`;
-
-  let box = $state<HTMLElement>();
 
   // Counted at once, not in an effect: whoever checks right after the dialog
   // is shown must see it open.
@@ -96,20 +106,39 @@
     }
   }
 
-  function onBackdrop(event: PointerEvent): void {
-    if (event.target === event.currentTarget) {
+  // A click cancels only when it starts on the backdrop too: a press inside the
+  // box that ends outside it (a text selection, a card dragged out) does not.
+  let pressedOnBackdrop = false;
+
+  function onBackdropPointerDown(event: PointerEvent): void {
+    pressedOnBackdrop = event.target === event.currentTarget;
+  }
+
+  function onBackdropClick(event: MouseEvent): void {
+    if (pressedOnBackdrop && event.target === event.currentTarget) {
       oncancel();
     }
+    pressedOnBackdrop = false;
   }
 </script>
 
 <!-- On the window: Escape must work wherever the focus is. -->
 <svelte:window onkeydown={onWindowKeydown} />
 
-<div class="backdrop" class:wide role="presentation" onpointerdown={onBackdrop}>
+<!-- The backdrop is a pointer target only: the keyboard closes the dialog with Escape. -->
+<div
+  class="backdrop"
+  role="presentation"
+  onpointerdown={onBackdropPointerDown}
+  onclick={onBackdropClick}
+>
   <div
     class="box"
     class:wide
+    class:placed={at !== undefined}
+    style:top={at ? `${at.top}px` : undefined}
+    style:left={at ? `${at.left}px` : undefined}
+    style:width
     {role}
     aria-modal="true"
     aria-labelledby={titleId}
@@ -127,6 +156,7 @@
 </div>
 
 <style>
+  /* Over everything of the page but the tooltips (6000): the same dim for every dialog. */
   .backdrop {
     position: fixed;
     inset: 0;
@@ -136,10 +166,6 @@
     padding: 16px;
     background: #07090fa6;
     animation: fadein 0.12s ease-out;
-  }
-
-  .backdrop.wide {
-    background: #07090fd9;
   }
 
   @keyframes fadein {
@@ -164,6 +190,10 @@
     width: min(920px, 100%);
     max-height: 88vh;
     padding: 0;
+  }
+
+  .box.placed {
+    position: fixed;
   }
 
   .box:focus {

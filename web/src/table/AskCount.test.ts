@@ -111,7 +111,9 @@ describe('AskCount', () => {
 
     await fireEvent.keyDown(window, { key: 'Escape' });
     await fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
-    await fireEvent.pointerDown(dialog.parentElement as HTMLElement);
+    const backdrop = dialog.parentElement as HTMLElement;
+    await fireEvent.pointerDown(backdrop);
+    await fireEvent.click(backdrop);
     expect(oncancel).toHaveBeenCalledTimes(3);
     expect(onconfirm).not.toHaveBeenCalled();
   });

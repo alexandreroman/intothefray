@@ -315,7 +315,8 @@ describe('keys on the table', () => {
     close();
     expect(session.act).not.toHaveBeenCalled();
     expect(zoomLabel()).toBe('100%');
-    expect(interaction.hovered).toEqual({ kind: 'card', id: 'mine' });
+    // The dialog froze the table: it let go of the hovered card.
+    expect(interaction.hovered).toBeNull();
   });
 
   it('no key acts with ⌘ or Ctrl held: those are browser shortcuts', async () => {

@@ -21,14 +21,21 @@ describe('ConfirmDialog', () => {
 
   it('cancels with Escape or a click outside, not a click inside', async () => {
     const { onconfirm, oncancel } = renderDialog();
+    const dialog = screen.getByRole('alertdialog');
+    const backdrop = screen.getByRole('presentation');
 
-    await fireEvent.pointerDown(screen.getByRole('alertdialog'));
+    await fireEvent.pointerDown(dialog);
+    await fireEvent.click(dialog);
+    // A press inside that ends outside is not a click outside.
+    await fireEvent.pointerDown(dialog);
+    await fireEvent.click(backdrop);
     expect(oncancel).not.toHaveBeenCalled();
 
     await fireEvent.keyDown(window, { key: 'Escape' });
     expect(oncancel).toHaveBeenCalledOnce();
 
-    await fireEvent.pointerDown(screen.getByRole('presentation'));
+    await fireEvent.pointerDown(backdrop);
+    await fireEvent.click(backdrop);
     expect(oncancel).toHaveBeenCalledTimes(2);
     expect(onconfirm).not.toHaveBeenCalled();
   });

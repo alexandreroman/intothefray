@@ -1,18 +1,19 @@
 <!--
   The keyboard shortcuts sheet (spec 5.10), opening upward from the keyboard
-  button of the zoom control. It is not a modal: the table keys still work
-  while it shows, ? hides it again, and Escape or a press outside closes it
-  (keys.ts handles both keys).
+  button of the zoom control. A dialog like any other (Dialog.svelte): the
+  table is frozen under its backdrop. Its × button, ?, Escape or a click on
+  the backdrop closes it.
 -->
 <script lang="ts">
   import { onMount } from 'svelte';
+  import Dialog from '../components/Dialog.svelte';
 
   let {
     anchor,
     alignTo = anchor,
     onclose,
   }: {
-    /** The button the sheet opens from: a press on it is not a press outside. */
+    /** The button the sheet opens from. */
     anchor: HTMLElement | undefined;
     /** The box whose right edge the sheet's lines up on (the controls around the button); the button by default. */
     alignTo?: HTMLElement;
@@ -93,10 +94,8 @@
   const EDGE = 16;
   const GAP = 14;
 
-  const uid = $props.id();
   let sheet = $state<HTMLElement>();
-  let top = $state(0);
-  let left = $state(0);
+  let at = $state<{ top: number; left: number }>();
 
   /** Above the button, its right edge on the aligned box's, kept inside the window. */
   function place(): void {
@@ -105,37 +104,40 @@
     }
     const button = anchor.getBoundingClientRect();
     const right = (alignTo ?? anchor).getBoundingClientRect().right;
-    top = Math.max(EDGE, button.top - GAP - sheet.offsetHeight);
-    left = Math.max(EDGE, right - sheet.offsetWidth);
+    at = {
+      top: Math.max(EDGE, button.top - GAP - sheet.offsetHeight),
+      left: Math.max(EDGE, right - sheet.offsetWidth),
+    };
   }
 
   onMount(place);
 
-  function onPointerDown(event: PointerEvent): void {
-    const target = event.target instanceof Node ? event.target : null;
-    if (sheet?.contains(target) || anchor?.contains(target)) {
-      return;
+  // ? shows the sheet, and hides it again: the table keys are off while it is open.
+  function onKeydown(event: KeyboardEvent): void {
+    if (event.key === '?' && !event.repeat) {
+      event.preventDefault();
+      onclose();
     }
-    onclose();
   }
 </script>
 
-<!-- In the capture phase: a press that something else stops still closes the sheet. -->
-<svelte:window onpointerdowncapture={onPointerDown} onresize={place} />
+<svelte:window onresize={place} />
 
-<div
-  class="keys"
-  role="dialog"
-  aria-modal="false"
-  aria-labelledby="{uid}-title"
-  bind:this={sheet}
-  style:top="{top}px"
-  style:left="{left}px"
+<Dialog
+  title="Keyboard shortcuts"
+  wide
+  width="min(640px, calc(100vw - 32px))"
+  {at}
+  bind:box={sheet}
+  oncancel={onclose}
+  onkeydown={onKeydown}
 >
-  <div class="khead">
-    <b id="{uid}-title">Keyboard shortcuts</b>
-    <button aria-label="Close" onclick={onclose}>×</button>
-  </div>
+  {#snippet heading(id: string)}
+    <div class="khead">
+      <b {id}>Keyboard shortcuts</b>
+      <button type="button" aria-label="Close" onclick={onclose}>×</button>
+    </div>
+  {/snippet}
   <div class="kcols">
     {#each GROUPS as [title, rows] (title)}
       <section>
@@ -152,22 +154,9 @@
       </section>
     {/each}
   </div>
-</div>
+</Dialog>
 
 <style>
-  /* Over the table, the hand and the action bar; under the dialogs (5600). */
-  .keys {
-    position: fixed;
-    z-index: 5200;
-    width: min(640px, calc(100vw - 32px));
-    max-height: 80vh;
-    overflow: auto;
-    background: var(--panel);
-    border: 1px solid var(--line-strong);
-    border-radius: 16px;
-    box-shadow: 0 24px 60px #000c;
-  }
-
   .khead {
     display: flex;
     align-items: center;
@@ -190,7 +179,10 @@
     color: var(--muted);
   }
 
+  /* The part that scrolls when the window is short. */
   .kcols {
+    min-height: 0;
+    overflow: auto;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
     gap: 6px 24px;

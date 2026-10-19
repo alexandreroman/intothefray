@@ -179,21 +179,27 @@ describe('KeysSheet', () => {
     expect(sheet()!.style.left).toBe(`${935 - 640}px`);
   });
 
-  it('the × button and a press outside close it; a press inside does not', async () => {
+  it('the × button, ?, Escape and a click on the backdrop close it; a click inside does not', async () => {
     const anchor = document.body.appendChild(document.createElement('button'));
-    const outside = document.body.appendChild(document.createElement('div'));
     const onclose = vi.fn();
     render(KeysSheet, { props: { anchor, onclose } });
+    // A dialog like the others: modal, the focus moved into it.
+    expect(sheet()!.getAttribute('aria-modal')).toBe('true');
+    const close = screen.getByRole('button', { name: 'Close' });
+    expect(document.activeElement).toBe(close);
 
-    await fireEvent.pointerDown(sheet()!.querySelector('h4')!);
-    // The button toggles the sheet itself: a press on it is not outside.
-    await fireEvent.pointerDown(anchor);
+    const inside = sheet()!.querySelector('h4')!;
+    await fireEvent.pointerDown(inside);
+    await fireEvent.click(inside);
     expect(onclose).not.toHaveBeenCalled();
 
-    await fireEvent.pointerDown(outside);
-    expect(onclose).toHaveBeenCalledTimes(1);
-    await fireEvent.click(screen.getByRole('button', { name: 'Close' }));
-    expect(onclose).toHaveBeenCalledTimes(2);
+    await fireEvent.click(close);
+    await fireEvent.keyDown(close, { key: '?' });
+    await fireEvent.keyDown(window, { key: 'Escape' });
+    const backdrop = screen.getByRole('presentation');
+    await fireEvent.pointerDown(backdrop);
+    await fireEvent.click(backdrop);
+    expect(onclose).toHaveBeenCalledTimes(4);
   });
 });
 
@@ -205,44 +211,43 @@ describe('the sheet on the table', () => {
     return session;
   }
 
-  it('? toggles the sheet', async () => {
+  function mine(): HTMLElement {
+    return document.querySelector<HTMLElement>('.surface [data-id="mine"]')!;
+  }
+
+  it('? or the keyboard button opens it; ? closes it again', async () => {
     await renderTable();
     expect(sheet()).toBeNull();
 
     await press('?');
     expect(sheet()).not.toBeNull();
-    await press('?');
+    await fireEvent.keyDown(document.activeElement!, { key: '?' });
     expect(sheet()).toBeNull();
 
-    // So does the keyboard button next to the zoom.
     const button = screen.getByRole('button', { name: 'Keyboard shortcuts' });
     // Its tooltip names its key, as the prototype's does.
     expect(button.dataset).toMatchObject({ tip: 'Keyboard shortcuts', kbd: '?' });
     await fireEvent.click(button);
     expect(sheet()).not.toBeNull();
     expect(button.getAttribute('aria-expanded')).toBe('true');
-    await fireEvent.click(button);
-    expect(sheet()).toBeNull();
   });
 
-  it('Esc closes', async () => {
-    await renderTable();
-    await fireEvent.pointerEnter(document.querySelector<HTMLElement>('.surface [data-id="mine"]')!);
+  it('freezes the table while it is open; Escape gives it back', async () => {
+    const session = await renderTable();
+    await fireEvent.pointerEnter(mine());
     await press('?');
+    // Opening it lets go of the hovered card.
+    expect(interaction.hovered).toBeNull();
+
+    await fireEvent.pointerEnter(mine());
+    await press('e');
+    expect(interaction.hovered).toBeNull();
+    expect(session.act).not.toHaveBeenCalled();
 
     await press('Escape');
     expect(sheet()).toBeNull();
-    // The first Escape is the sheet's: the hovered card stays the bar's.
-    expect(interaction.hovered).toEqual({ kind: 'card', id: 'mine' });
-  });
-
-  it('the other keys still act while the sheet is shown', async () => {
-    const session = await renderTable();
-    await fireEvent.pointerEnter(document.querySelector<HTMLElement>('.surface [data-id="mine"]')!);
-    await press('?');
-
+    await fireEvent.pointerEnter(mine(), { clientX: 1 });
     await press('e');
     expect(session.act).toHaveBeenCalledWith({ kind: 'exhaust', card: 'mine' });
-    expect(sheet()).not.toBeNull();
   });
 });

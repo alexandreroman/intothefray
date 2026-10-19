@@ -6,6 +6,7 @@
 -->
 <script lang="ts">
   import { tick, untrack } from 'svelte';
+  import { modal } from '../components/modal.svelte';
   import { MediaQuery } from 'svelte/reactivity';
   import Tooltip from '../components/Tooltip.svelte';
   import TopBar from '../components/TopBar.svelte';
@@ -718,11 +719,15 @@
     return shownBox ? `stage:${shownBox.stage.key}` : '';
   });
 
-  // A box takes over from the table: its bar, preview and selection go.
-  const boxOpen = $derived(shownBox !== null);
+  // A dialog (a card box, the count question, the shortcuts sheet, a
+  // confirmation) freezes the table under its backdrop: its bar, preview,
+  // selection and any press or drag under way go.
   $effect(() => {
-    if (boxOpen) {
-      untrack(() => interaction.release());
+    if (modal.open) {
+      untrack(() => {
+        interaction.release();
+        interaction.letGo();
+      });
     }
   });
 
@@ -842,8 +847,7 @@
       setZoom: zoomWithButtons,
       run: runItem,
       act: send,
-      toggleKeys: toggleKeySheet,
-      hideKeys: hideKeySheet,
+      showKeys: showKeySheet,
       sizeOf,
     });
   }
@@ -857,10 +861,12 @@
     keySheetShown = !keySheetShown;
   }
 
-  function hideKeySheet(): boolean {
-    const wasShown = keySheetShown;
+  function showKeySheet(): void {
+    keySheetShown = true;
+  }
+
+  function hideKeySheet(): void {
     keySheetShown = false;
-    return wasShown;
   }
 
   function undo(): void {

@@ -1,3 +1,4 @@
+import { modal } from '../components/modal.svelte';
 import type { TableElement } from './actions';
 
 /** How long the bar and the preview stay after the pointer leaves their element. */
@@ -137,11 +138,19 @@ class TableInteraction {
    * The viewer's own action redrew what lies under a pointer at rest: a card
    * dropped there, turned over or dealt. Unlike another player's redraw (spec
    * 5.8), that is what they point at: it is hovered, as if entered, so that
-   * the bar and the keys act on it at once. Not during a drag, nor while a
-   * selection, a dropdown, the bar or the pill holds the hover.
+   * the bar and the keys act on it at once. Not while a dialog is open, nor
+   * during a drag, nor while a selection, a dropdown, the bar or the pill
+   * holds the hover.
    */
   rehover(element: TableElement): void {
-    if (this.dragging || this.locked || this.menu !== null || this.onBar || this.onPill) {
+    if (
+      modal.open ||
+      this.dragging ||
+      this.locked ||
+      this.menu !== null ||
+      this.onBar ||
+      this.onPill
+    ) {
       return;
     }
     this.#cancelHide();
@@ -176,8 +185,8 @@ class TableInteraction {
 
   /** A press on a card, a pile, a hand card or the token, with the main button or a finger. */
   press(element: Pressable, event: PointerEvent): void {
-    // A second finger does not take over a drag.
-    if (event.button !== 0 || this.dragging !== null) {
+    // A second finger does not take over a drag; a dialog freezes the table.
+    if (event.button !== 0 || this.dragging !== null || modal.open) {
       return;
     }
     // No text selection or native image drag: the press may become our drag.
@@ -279,8 +288,8 @@ class TableInteraction {
 
   /** The pointer entered a card, a pile or a hand card. */
   enter(element: TableElement, event: PointerEvent, preview: PreviewChange = 'show'): void {
-    // The pointer passes over what lies under a drag: that is not hovering it.
-    if (!this.#isReal(event) || this.dragging) {
+    // The pointer passes over what lies under a drag: that is not hovering it. A dialog freezes the table.
+    if (!this.#isReal(event) || this.dragging || modal.open) {
       return;
     }
     this.#cancelHide();
@@ -331,7 +340,7 @@ class TableInteraction {
 
   /** The pointer entered a token or a status. */
   enterCounter(target: CounterTarget, event: PointerEvent): void {
-    if (!this.#isReal(event)) {
+    if (!this.#isReal(event) || modal.open) {
       return;
     }
     this.#cancelCounterHide();
@@ -375,7 +384,7 @@ class TableInteraction {
 
   /** A tap on an element. Only touch selects: with a mouse, hovering is enough. */
   select(element: TableElement, preview: PreviewChange = 'show'): void {
-    if (this.#pointerType !== 'touch') {
+    if (this.#pointerType !== 'touch' || modal.open) {
       return;
     }
     this.#cancelHide();

@@ -1,8 +1,9 @@
 let openDialogs = $state(0);
 
 /**
- * Whether one of the app's dialogs is open. While one is, the table keys do
- * nothing: the dialog has the keyboard.
+ * Whether one of the app's dialogs is open. While one is, the table is
+ * frozen: its keys, hover, presses and drags do nothing, and the dialog has
+ * the keyboard.
  */
 export const modal = {
   get open(): boolean {
