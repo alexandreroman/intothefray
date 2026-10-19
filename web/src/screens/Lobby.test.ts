@@ -615,6 +615,48 @@ describe('Lobby', () => {
     expect(session.lobby).toHaveBeenCalledWith('addDeck');
   });
 
+  it('focuses the deck link of the slot the viewer just added', async () => {
+    const live = renderLive();
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Add a deck' }));
+    await live.receive({
+      type: 'view',
+      version: 2,
+      view: lobbyView([{ ...alex, decks: [noDeck, noDeck] }, sam]),
+    });
+    await tick();
+
+    expect(document.activeElement).toBe(screen.getByRole('textbox', { name: 'Deck 2 link' }));
+  });
+
+  it('moves no focus when the slots change without an Add a deck', async () => {
+    const live = renderLive();
+
+    await live.receive({
+      type: 'view',
+      version: 2,
+      view: lobbyView([{ ...alex, decks: [noDeck, noDeck] }, sam]),
+    });
+    await tick();
+
+    expect(document.activeElement).toBe(document.body);
+  });
+
+  it('moves no focus once the Add a deck failed', async () => {
+    const live = renderLive();
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Add a deck' }));
+    await live.receive({ type: 'error', code: 'lobby', message: 'No deck slot is left.' });
+    await live.receive({
+      type: 'view',
+      version: 2,
+      view: lobbyView([{ ...alex, decks: [noDeck, noDeck] }, sam]),
+    });
+    await tick();
+
+    expect(document.activeElement).toBe(document.body);
+  });
+
   it('load on slot 1 sends setDeck deck 1', async () => {
     const session = renderLobby({ players: [{ ...alex, decks: [spiderMan, noDeck] }, sam] });
 

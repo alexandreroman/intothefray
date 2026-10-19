@@ -89,7 +89,29 @@
     session.lobby('setDeck', { url, deck: slot });
   }
 
+  // The own slot count when the viewer asked for one more deck. The view that shows that many plus
+  // one has the new slot last, and its deck link takes the focus as it mounts. The slots remount
+  // only when their count changes, so the value can stay once the slot is there.
+  let addingFrom = $state<number | null>(null);
+  const focusSlot = $derived(
+    addingFrom !== null && me?.decks.length === addingFrom + 1 ? addingFrom : null,
+  );
+
+  // A failed Add a deck brings no new slot.
+  $effect(() => {
+    if (session.lastError !== null) {
+      addingFrom = null;
+    }
+  });
+
+  function addDeck(): void {
+    if (me && session.lobby('addDeck')) {
+      addingFrom = me.decks.length;
+    }
+  }
+
   function removeDeck(slot: number): void {
+    addingFrom = null;
     loadingSlot = 0;
     session.lobby('removeDeck', { deck: slot });
   }
@@ -156,12 +178,13 @@
                   error={slot === loadingSlot ? deckLoadError : null}
                   onload={(url) => loadDeck(slot, url)}
                   onremove={several ? () => removeDeck(slot) : undefined}
+                  autofocus={slot === focusSlot}
                 />
               {/each}
             {/key}
             {#if deckCount < MAX_DECKS}
               <div class="sect">
-                <button class="btn add" onclick={() => session.lobby('addDeck')}>
+                <button class="btn add" onclick={addDeck}>
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
                   Add a deck
                 </button>

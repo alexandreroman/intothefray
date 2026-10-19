@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount, tick } from 'svelte';
   import type { DeckView, UnsupportedCard } from '../../lib/types';
   import Icon from '../Icon.svelte';
   import DeckNames from './DeckNames.svelte';
@@ -7,7 +8,8 @@
   /**
    * One deck slot of the viewer. `slot` is the 1-based number shown when the
    * player has several decks, null with a single one; `onremove` is given only
-   * when the slot can be removed.
+   * when the slot can be removed. `autofocus` focuses the deck link as the slot
+   * mounts.
    */
   let {
     deck,
@@ -16,6 +18,7 @@
     error,
     onload,
     onremove,
+    autofocus = false,
   }: {
     deck: DeckView;
     slot: number | null;
@@ -23,11 +26,13 @@
     error: string | null;
     onload: (url: string) => void;
     onremove?: () => void;
+    autofocus?: boolean;
   } = $props();
 
   const inputId = $props.id();
 
   let url = $state('');
+  let input = $state<HTMLInputElement>();
   // The deck being replaced after Change: the form shows until another deck arrives.
   let changingFrom = $state<string | null>(null);
 
@@ -42,6 +47,16 @@
       ? "1 card isn't supported."
       : `${unsupportedCount} cards aren't supported.`,
   );
+
+  onMount(async () => {
+    if (!autofocus) {
+      return;
+    }
+    // The input shows once the first render settles.
+    await tick();
+    input?.focus();
+    input?.select();
+  });
 
   function load(event: SubmitEvent): void {
     event.preventDefault();
@@ -59,7 +74,13 @@
       {@render remove()}
     </div>
     <form class="row" onsubmit={load}>
-      <input id={inputId} type="text" placeholder="Paste a deck link…" bind:value={url} />
+      <input
+        id={inputId}
+        type="text"
+        placeholder="Paste a deck link…"
+        bind:value={url}
+        bind:this={input}
+      />
       <button class="btn" type="submit" disabled={url.trim() === ''}>Load</button>
       {#if changingFrom !== null}
         <button class="btn" type="button" onclick={() => (changingFrom = null)}>Cancel</button>
