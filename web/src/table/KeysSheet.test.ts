@@ -126,7 +126,7 @@ describe('KeysSheet', () => {
         'Table',
         [
           'Undo your last action: Z',
-          'Ready all your cards: ⇧ Space',
+          'Ready all cards: ⇧ Space',
           'Zoom in / out: +−',
           'Zoom back to 100%: 0',
           'Zoom around the mouse: Ctrl + wheel',

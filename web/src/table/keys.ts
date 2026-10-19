@@ -29,7 +29,7 @@ export interface KeyTable {
   /** Runs a bar item, as a click on it would. */
   run: (item: ActionItem) => void;
   act: (action: Action) => void;
-  /** Whether the viewer has a card that Ready all would ready. */
+  /** Whether the table has a card that Ready all would ready. */
   canReadyAll: boolean;
   /** Shows the keyboard shortcuts sheet (a dialog: it has the keys while it is open). */
   showKeys: () => void;

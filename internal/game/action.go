@@ -108,7 +108,7 @@ func resolve(g *Game, seat int, a Action, rng *rand.Rand) (Action, error) {
 	case ActExhaust:
 		return resolveExhaust(t, seat, a)
 	case ActReadyAll:
-		return resolveReadyAll(t, seat, a)
+		return resolveReadyAll(t, a)
 	case ActFlip:
 		return resolveFlip(t, seat, a)
 	case ActAttach, ActArrowAdd:
@@ -259,19 +259,19 @@ func resolveExhaust(t *Table, seat int, a Action) (Action, error) {
 	return a, nil
 }
 
-// resolveReadyAll records the cards to ready: every exhausted table card of
-// the acting player's, but the locked ones, in id order. A rebuild readies
-// those cards, whatever lies on the table then.
-func resolveReadyAll(t *Table, seat int, a Action) (Action, error) {
+// resolveReadyAll records the cards to ready: every exhausted table card,
+// whoever owns it, but the locked ones, in id order. A rebuild readies those
+// cards, whatever lies on the table then.
+func resolveReadyAll(t *Table, a Action) (Action, error) {
 	a.Cards = nil
 	for _, id := range slices.Sorted(maps.Keys(t.Cards)) {
 		c := t.Cards[id]
-		if c.Zone == ZoneTable && c.Owner == seat && c.Exhausted && !locked(c) {
+		if c.Zone == ZoneTable && c.Exhausted && !locked(c) {
 			a.Cards = append(a.Cards, id)
 		}
 	}
 	if len(a.Cards) == 0 {
-		return a, invalid("no card of seat %d to ready", seat)
+		return a, invalid("no card on the table to ready")
 	}
 	return a, nil
 }

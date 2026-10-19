@@ -163,8 +163,8 @@
       <!-- aria-disabled rather than disabled, so that the tooltip still shows. -->
       <button
         class="icon-button"
-        aria-label="Ready all your cards"
-        data-tip="Ready all your cards"
+        aria-label="Ready all cards"
+        data-tip="Ready all cards"
         data-kbd="⇧ Space"
         aria-keyshortcuts="Shift+Space"
         aria-disabled={readyAll.disabled}

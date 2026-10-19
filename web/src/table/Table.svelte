@@ -140,14 +140,10 @@
   const cardsById = $derived(new Map(cards.map((card) => [card.id, card])));
   const ownArea = $derived(view.you.role === 'player' ? view.you.area : undefined);
 
-  // Ready all has something to ready: an exhausted card of the player's on the table, not locked.
-  const canReadyAll = $derived.by(() => {
-    const seat = ownArea ? seatOf(ownArea) : null;
-    return (view.table?.cards ?? []).some(
-      (card) =>
-        card.zone === 'table' && card.owner === seat && card.exhausted === true && !isLocked(card),
-    );
-  });
+  // Ready all has something to ready: an exhausted card on the table, whoever owns it, not locked.
+  const canReadyAll = $derived(
+    cards.some((card) => card.zone === 'table' && card.exhausted === true && !isLocked(card)),
+  );
 
   // Spectators have no hand.
   const handCards = $derived(

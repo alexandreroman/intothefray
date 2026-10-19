@@ -208,7 +208,7 @@ export type ActionKind =
   | 'toPile'
   | 'play'
   | 'exhaust'
-  | 'readyAll' // ready every exhausted table card of the acting player's
+  | 'readyAll' // ready every exhausted table card, whoever owns it
   | 'flip'
   | 'token'
   | 'status'

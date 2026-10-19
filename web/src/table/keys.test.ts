@@ -166,11 +166,9 @@ describe('keys on the table', () => {
     expect(session.act).toHaveBeenCalledWith({ kind: 'exhaust', card: 'mine' });
   });
 
-  it('Shift + Space readies all your cards, wherever the pointer is', async () => {
-    const exhausted = [
-      card('mine', { x: 280, exhausted: true }),
-      card('v', { code: '01094', owner: -1, back: 'villain', exhausted: true }),
-    ];
+  it('Shift + Space readies all cards, wherever the pointer is', async () => {
+    // Only the villain is exhausted: Ready all readies it too.
+    const exhausted = [card('v', { code: '01094', owner: -1, back: 'villain', exhausted: true })];
     const { session } = await renderTable(makeView({ cards: exhausted }));
 
     // Held down, it readies once; it never scrolls the page.
@@ -183,13 +181,13 @@ describe('keys on the table', () => {
     expect(session.act).toHaveBeenCalledOnce();
   });
 
-  it('Shift + Space does nothing without a card of yours to ready, nor in a field', async () => {
-    // Alex's card is exhausted, but locked: it does not ready.
-    const villainOnly = [
+  it('Shift + Space does nothing without a card to ready, nor in a field', async () => {
+    // Alex's card is exhausted, but locked: it does not ready; the villain is ready.
+    const lockedOnly = [
       card('mine', { x: 280, exhausted: true, status: { locked: 1 } }),
-      card('v', { code: '01094', owner: -1, back: 'villain', exhausted: true }),
+      card('v', { code: '01094', owner: -1, back: 'villain' }),
     ];
-    const { session } = await renderTable(makeView({ cards: villainOnly }));
+    const { session } = await renderTable(makeView({ cards: lockedOnly }));
 
     await press(' ', { shiftKey: true });
     expect(session.act).not.toHaveBeenCalled();

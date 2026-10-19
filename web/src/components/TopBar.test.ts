@@ -61,13 +61,13 @@ describe('TopBar', () => {
 
   it('offers Ready all on the table, off while there is nothing to ready', async () => {
     const { unmount } = render(TopBar);
-    expect(screen.queryByRole('button', { name: 'Ready all your cards' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Ready all cards' })).toBeNull();
     unmount();
 
     const run = vi.fn();
     const { rerender } = render(TopBar, { readyAll: { disabled: true, run } });
-    const button = screen.getByRole('button', { name: 'Ready all your cards' });
-    expect(button.dataset).toMatchObject({ tip: 'Ready all your cards', kbd: '⇧ Space' });
+    const button = screen.getByRole('button', { name: 'Ready all cards' });
+    expect(button.dataset).toMatchObject({ tip: 'Ready all cards', kbd: '⇧ Space' });
     expect(button.getAttribute('aria-disabled')).toBe('true');
     await fireEvent.click(button);
     expect(run).not.toHaveBeenCalled();

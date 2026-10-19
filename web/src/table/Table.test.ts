@@ -719,24 +719,21 @@ describe('Table', () => {
     expect(container.querySelector('header .crumbs')).toBeNull();
   });
 
-  it("Ready all readies the player's cards; spectators have no such button", async () => {
+  it('Ready all readies every card, whoever owns it; spectators have no such button', async () => {
     const session = fakeSession();
     const view = makeView();
     const { unmount } = render(Table, { session, view });
     // Nothing exhausted: the button is off.
-    const button = screen.getByRole('button', { name: 'Ready all your cards' });
+    const button = screen.getByRole('button', { name: 'Ready all cards' });
     expect(button.getAttribute('aria-disabled')).toBe('true');
     unmount();
 
+    // Sam (p1) readies Alex's (p0) card: it does not need to be Sam's.
     const tired = makeView({
-      // Sam's (p1) card; Alex's exhausted card is not Sam's to ready.
-      cards: [
-        card('a', { code: '01001', owner: 0, x: 360, y: 360, exhausted: true }),
-        card('b', { code: '01001', owner: 1, x: 360, y: 690, exhausted: true }),
-      ],
+      cards: [card('a', { code: '01001', owner: 0, x: 360, y: 360, exhausted: true })],
     });
     render(Table, { session, view: tired });
-    await fireEvent.click(screen.getByRole('button', { name: 'Ready all your cards' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Ready all cards' }));
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'readyAll' });
     document.body.replaceChildren();
 
@@ -744,7 +741,7 @@ describe('Table', () => {
       session: fakeSession(),
       view: { ...view, you: { role: 'spectator', name: 'Kim', color: -1, host: false } },
     });
-    expect(screen.queryByRole('button', { name: 'Ready all your cards' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Ready all cards' })).toBeNull();
   });
 
   it('grabs what the viewer can drag, points at the piles that only have a bar', async () => {

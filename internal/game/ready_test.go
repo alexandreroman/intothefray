@@ -7,7 +7,8 @@ import (
 )
 
 // readyFixture is a started game where Host (p0) has exhausted their
-// identity and a played card, and the villain is exhausted too.
+// identity and a played card, and the villain is exhausted too; Bob
+// (p1) has nothing exhausted.
 type readyFixture struct {
 	*doFixture
 	identity string
@@ -27,32 +28,34 @@ func newReadyFixture(t *testing.T) *readyFixture {
 	return f
 }
 
-func TestReadyAllReadiesTheActorsCardsInOneLine(t *testing.T) {
+func TestReadyAllReadiesEveryCardInOneLine(t *testing.T) {
 	f := newReadyFixture(t)
 	lines := len(f.g.Log)
 
-	f.mustDo(t, "h", Action{Kind: ActReadyAll}, at(6))
+	// Bob readies Host's cards and the villain's too.
+	f.mustDo(t, "b", Action{Kind: ActReadyAll}, at(6))
 
 	table := f.g.Table
-	if table.Cards[f.identity].Exhausted || table.Cards[f.played].Exhausted {
-		t.Error("Host's cards are still exhausted after Ready all")
-	}
-	if !table.Cards[f.villain()].Exhausted {
-		t.Error("Ready all readied the villain, which is nobody's")
+	for _, id := range []string{f.identity, f.played, f.villain()} {
+		if table.Cards[id].Exhausted {
+			t.Errorf("card %q is still exhausted after Ready all", id)
+		}
 	}
 	if got, want := len(f.g.Log), lines+1; got != want {
 		t.Fatalf("log has %d lines, want %d", got, want)
 	}
-	if got, want := f.lastLog().Text, "readied all their cards (2)"; got != want {
+	if got, want := f.lastLog().Text, "readied all cards (3)"; got != want {
 		t.Errorf("last line = %q, want %q", got, want)
 	}
 
-	// One undo exhausts them both again.
-	f.mustDo(t, "h", Action{Kind: ActUndo}, at(7))
+	// One undo exhausts them all again.
+	f.mustDo(t, "b", Action{Kind: ActUndo}, at(7))
 	// An undo rebuilds the table.
 	table = f.g.Table
-	if !table.Cards[f.identity].Exhausted || !table.Cards[f.played].Exhausted {
-		t.Error("undoing Ready all left Host's cards ready")
+	for _, id := range []string{f.identity, f.played, f.villain()} {
+		if !table.Cards[id].Exhausted {
+			t.Errorf("undoing Ready all left card %q ready", id)
+		}
 	}
 	checkReplay(t, f.doFixture)
 }
@@ -63,13 +66,13 @@ func TestReadyAllSkipsLockedCards(t *testing.T) {
 
 	f.mustDo(t, "h", Action{Kind: ActReadyAll}, at(7))
 
-	if f.g.Table.Cards[f.identity].Exhausted {
-		t.Error("the identity is still exhausted")
+	if f.g.Table.Cards[f.identity].Exhausted || f.g.Table.Cards[f.villain()].Exhausted {
+		t.Error("an unlocked card is still exhausted")
 	}
 	if !f.g.Table.Cards[f.played].Exhausted {
 		t.Error("Ready all readied a locked card")
 	}
-	if got, want := f.lastLog().Text, "readied all their cards (1)"; got != want {
+	if got, want := f.lastLog().Text, "readied all cards (2)"; got != want {
 		t.Errorf("last line = %q, want %q", got, want)
 	}
 	checkReplay(t, f.doFixture)
@@ -79,7 +82,6 @@ func TestReadyAllRefusedWithNothingToReady(t *testing.T) {
 	f := newReadyFixture(t)
 	f.mustDo(t, "h", Action{Kind: ActReadyAll}, at(6))
 
-	// The villain is still exhausted, but it is nobody's.
 	err := f.do("h", Action{Kind: ActReadyAll}, at(7))
 	if !errors.Is(err, ErrInvalid) {
 		t.Errorf("second Ready all = %v, want ErrInvalid", err)
