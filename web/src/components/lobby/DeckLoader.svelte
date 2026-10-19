@@ -86,7 +86,7 @@
     {/if}
   {:else}
     <div class="loaded">
-      <HeroThumb image={deck.heroImage} name={deck.heroName} large />
+      <HeroThumb image={deck.heroImage} name={deck.heroName} />
       <!-- The view carries no card count for a deck, so none is shown. -->
       <DeckNames heroName={deck.heroName ?? ''} deckName={deck.deckName ?? ''} />
       <div class="tools">

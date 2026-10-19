@@ -44,6 +44,14 @@ const index: Index = {
       recommended: ['masters_of_evil'],
     },
     {
+      id: 'wrecking_crew',
+      name: 'Wrecking Crew',
+      pack: 'core',
+      image: 'wrecking_crew.jpg',
+      supported: true,
+      recommended: [],
+    },
+    {
       id: 'marauders',
       name: 'Marauders',
       pack: 'next_evol',
@@ -378,6 +386,44 @@ describe('Lobby', () => {
     expect(screen.getByText("Waiting for your deck and Sam's deck.")).toBeTruthy();
   });
 
+  it('start disabled until a modular set is chosen for a scenario that recommends one', async () => {
+    const rhino: LobbyConfig = { ...noScenario, scenario: 'rhino', standard: 'standard' };
+    renderLobby({ players: [{ ...alex, decks: [spiderMan] }], config: rhino });
+
+    expect(await screen.findByText('Choose at least one modular set.')).toBeTruthy();
+    const start = screen.getByRole('button', { name: 'Set up the table' });
+    expect((start as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it('start enabled once a modular set is chosen', async () => {
+    const rhino: LobbyConfig = {
+      ...noScenario,
+      scenario: 'rhino',
+      standard: 'standard',
+      modulars: ['bomb_scare'],
+    };
+    renderLobby({ players: [{ ...alex, decks: [spiderMan] }], config: rhino });
+
+    await screen.findByRole('button', { name: /Rhino/ });
+    expect(screen.getByText('Everyone is ready.')).toBeTruthy();
+    const start = screen.getByRole('button', { name: 'Set up the table' });
+    expect((start as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  it('start enabled without a modular set for a scenario that recommends none', async () => {
+    const wreckingCrew: LobbyConfig = {
+      ...noScenario,
+      scenario: 'wrecking_crew',
+      standard: 'standard',
+    };
+    renderLobby({ players: [{ ...alex, decks: [spiderMan] }], config: wreckingCrew });
+
+    await screen.findByRole('button', { name: /Wrecking Crew/ });
+    expect(screen.getByText('Everyone is ready.')).toBeTruthy();
+    const start = screen.getByRole('button', { name: 'Set up the table' });
+    expect((start as HTMLButtonElement).disabled).toBe(false);
+  });
+
   it('guest sees no remove buttons except leave on own row', async () => {
     const session = renderLobby({ you: asSam, players: [alex, sam, jo] });
 
@@ -432,7 +478,7 @@ describe('Lobby', () => {
     expect(screen.queryByRole('img', { name: 'Spider-Man' })).toBeNull();
   });
 
-  it('shows the hero image of the loaded deck, large', () => {
+  it('shows the hero image of the loaded deck at the size of its seat', () => {
     const asJo: YouView = { role: 'player', name: 'Jo', color: 2, host: false };
     renderLobby({
       you: asJo,
@@ -441,7 +487,8 @@ describe('Lobby', () => {
 
     const images = screen.getAllByRole('img', { name: 'Spider-Man' });
     expect(images.map((image) => image.getAttribute('src'))).toEqual(['hero.jpg', 'hero.jpg']);
-    expect(images.filter((image) => image.classList.contains('large'))).toHaveLength(1);
+    // Both boxes share one portrait size, so the names beside it line up the same way.
+    expect(images.every((image) => image.classList.contains('hero'))).toBe(true);
   });
 
   it('loads a deck from its link', async () => {

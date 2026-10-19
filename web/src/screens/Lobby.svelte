@@ -38,7 +38,16 @@
       return [missing === 1 ? `${owner} deck` : `${owner} ${missing} decks`];
     }),
   );
-  const canStart = $derived(missingDecks.length === 0 && view.config.scenario !== '');
+  // A scenario that recommends no modular set, like Wrecking Crew, may start without one. While the
+  // index is unknown, the scenario is taken to need one.
+  const chosenScenario = $derived(index?.scenarios.find((s) => s.id === view.config.scenario));
+  const needsModular = $derived(
+    chosenScenario === undefined || chosenScenario.recommended.length > 0,
+  );
+  const missingModular = $derived(needsModular && view.config.modulars.length === 0);
+  const canStart = $derived(
+    missingDecks.length === 0 && view.config.scenario !== '' && !missingModular,
+  );
 
   const reason = $derived.by(() => {
     if (missingDecks.length > 0) {
@@ -48,6 +57,11 @@
       return view.you.host
         ? 'Choose a scenario first.'
         : `Waiting for ${hostName} to choose a scenario.`;
+    }
+    if (missingModular) {
+      return view.you.host
+        ? 'Choose at least one modular set.'
+        : `Waiting for ${hostName} to choose at least one modular set.`;
     }
     return view.you.host
       ? 'Everyone is ready.'
@@ -124,7 +138,7 @@
         />
         {#if me}
           {@const several = me.decks.length > 1}
-          <section class="card-box" style:--pc="var(--p{me.color + 1})">
+          <section class="card-box decks" style:--pc="var(--p{me.color + 1})">
             <div class="bhead"><h2>Your decks</h2></div>
             <!-- The slots have no identity but their index: a new slot count remounts them, so that
                  a link typed for a removed deck does not stay in the slot that takes its place. -->
@@ -295,6 +309,19 @@
 
   .lobby :global(.sect + .sect) {
     border-top: 1px solid var(--panel-2);
+  }
+
+  /*
+    Deck slots sit closer together than plain sections. The first slot keeps the section's top
+    padding under the heading, a last slot its bottom padding at the foot of the box, and the
+    Add a deck section its own top padding, so the button stands a little apart from the slots.
+  */
+  .decks :global(.slot + .slot) {
+    padding-top: 9px;
+  }
+
+  .decks :global(.slot:not(:last-child)) {
+    padding-bottom: 9px;
   }
 
   .lobby :global(.lbl) {
