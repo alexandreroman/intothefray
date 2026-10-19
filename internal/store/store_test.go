@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"errors"
+	"maps"
 	"sync"
 	"testing"
 	"time"
@@ -232,6 +233,97 @@ func TestTouchEndedGameKeepsShortTTL(t *testing.T) {
 	}
 	if ttl := mr.TTL("game:abc"); ttl != time.Hour {
 		t.Errorf("ttl = %v, want 1h", ttl)
+	}
+}
+
+const testLease = 90 * time.Second
+
+// online returns the online tokens of game abc at now, and fails the test on
+// an error.
+func online(t *testing.T, s *Store, now time.Time) map[string]bool {
+	t.Helper()
+	tokens, err := s.Online(t.Context(), "abc", now)
+	if err != nil {
+		t.Fatalf("Online: %v", err)
+	}
+	return tokens
+}
+
+func TestKeepOnline(t *testing.T) {
+	s, mr := newTestStore(t)
+	now := time.Now()
+	conns := []Connection{{Token: "alex", ID: "tab1"}, {Token: "alex", ID: "tab2"}, {Token: "bob", ID: "tab1"}}
+
+	dropped, err := s.KeepOnline(t.Context(), "abc", conns, now, testLease)
+	if err != nil {
+		t.Fatalf("KeepOnline: %v", err)
+	}
+
+	if dropped != 0 {
+		t.Errorf("dropped = %d, want 0", dropped)
+	}
+	if got, want := online(t, s, now), map[string]bool{"alex": true, "bob": true}; !maps.Equal(got, want) {
+		t.Errorf("online = %v, want %v", got, want)
+	}
+	if ttl := mr.TTL("online:abc"); ttl != testLease {
+		t.Errorf("ttl = %v, want the lease %v", ttl, testLease)
+	}
+	if got := online(t, s, now.Add(testLease)); len(got) != 0 {
+		t.Errorf("online once the lease passed = %v, want none", got)
+	}
+}
+
+func TestKeepOnlineDropsPassedLeases(t *testing.T) {
+	s, _ := newTestStore(t)
+	ctx := t.Context()
+	start := time.Now()
+	if _, err := s.KeepOnline(ctx, "abc", []Connection{{Token: "gone", ID: "tab1"}}, start, testLease); err != nil {
+		t.Fatalf("KeepOnline gone: %v", err)
+	}
+	if _, err := s.KeepOnline(ctx, "abc", []Connection{{Token: "alex", ID: "tab1"}}, start, testLease); err != nil {
+		t.Fatalf("KeepOnline alex: %v", err)
+	}
+
+	// Only alex is renewed once the first leases passed.
+	later := start.Add(testLease + time.Second)
+	dropped, err := s.KeepOnline(ctx, "abc", []Connection{{Token: "alex", ID: "tab1"}}, later, testLease)
+	if err != nil {
+		t.Fatalf("KeepOnline: %v", err)
+	}
+
+	if dropped != 1 {
+		t.Errorf("dropped = %d, want 1", dropped)
+	}
+	if got, want := online(t, s, later), map[string]bool{"alex": true}; !maps.Equal(got, want) {
+		t.Errorf("online = %v, want %v", got, want)
+	}
+}
+
+func TestSetOfflineKeepsOtherConnections(t *testing.T) {
+	s, _ := newTestStore(t)
+	ctx := t.Context()
+	now := time.Now()
+	conns := []Connection{{Token: "alex", ID: "tab1"}, {Token: "alex", ID: "tab2"}, {Token: "bob", ID: "tab1"}}
+	if _, err := s.KeepOnline(ctx, "abc", conns, now, testLease); err != nil {
+		t.Fatalf("KeepOnline: %v", err)
+	}
+
+	for _, c := range []Connection{{Token: "alex", ID: "tab1"}, {Token: "bob", ID: "tab1"}} {
+		if err := s.SetOffline(ctx, "abc", c); err != nil {
+			t.Fatalf("SetOffline %+v: %v", c, err)
+		}
+	}
+
+	if got, want := online(t, s, now), map[string]bool{"alex": true}; !maps.Equal(got, want) {
+		t.Errorf("online = %v, want alex, still connected in another tab", got)
+	}
+}
+
+func TestOnlineOfGameWithoutConnections(t *testing.T) {
+	s, _ := newTestStore(t)
+
+	if got := online(t, s, time.Now()); len(got) != 0 {
+		t.Errorf("online = %v, want none", got)
 	}
 }
 

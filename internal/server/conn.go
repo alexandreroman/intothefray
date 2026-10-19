@@ -33,6 +33,9 @@ const (
 	writeTimeout = 60 * time.Second
 	// publishTimeout bounds telling the other instances about a change.
 	publishTimeout = 2 * time.Second
+	// keepSpectators stands for a count of connected spectators that could
+	// not be read: the view goes out with the last count sent instead.
+	keepSpectators = -1
 )
 
 // errInvalidMessage reports a message that breaks the protocol.
@@ -50,10 +53,13 @@ type conn struct {
 	ws     *websocket.Conn
 	gameID string
 	logger *slog.Logger
-	// token and presenceID are set by a successful hello, before the hub
-	// registers the connection, and never change afterwards.
+	// token, presenceID and onlineID are set by a successful hello, before
+	// the hub registers the connection, and never change afterwards.
+	// onlineID tells this connection apart from the other tabs of the token
+	// in the store.
 	token      string
 	presenceID string
+	onlineID   string
 	// presenceLimit is only used by the read loop.
 	presenceLimit rateLimiter
 
@@ -66,9 +72,10 @@ type conn struct {
 	viewReady chan struct{}
 	// viewMu guards the view state, so that concurrent broadcasts leave the
 	// newest version pending.
-	viewMu      sync.Mutex
-	pendingView []byte
-	lastVersion int64
+	viewMu         sync.Mutex
+	pendingView    []byte
+	lastVersion    int64
+	lastSpectators int
 	// you is who the viewer is in the last view sent, which presence
 	// messages are signed with.
 	you game.YouView
@@ -113,27 +120,41 @@ func (c *conn) sendPresence(data []byte) {
 	}
 }
 
-// sendView makes the viewer's view of g the pending view, unless the viewer
-// already has this version or a newer one.
-func (c *conn) sendView(g *game.Game, version int64) {
+// sendView makes the viewer's view of g the pending view, with spectators as
+// the count of connected spectators, or the last count sent when it is
+// keepSpectators. The viewer gets a version newer than the last one sent, or
+// the same version when the count changed: viewers come and go without the
+// game changing.
+func (c *conn) sendView(g *game.Game, version int64, spectators int) {
 	c.viewMu.Lock()
 	defer c.viewMu.Unlock()
 
-	if version <= c.lastVersion {
+	if spectators == keepSpectators {
+		spectators = c.lastSpectators
+	}
+	if version < c.lastVersion || (version == c.lastVersion && spectators == c.lastSpectators) {
 		return
 	}
 	view := g.ViewFor(c.token)
+	view.Spectators = spectators
 	data, err := c.encode(viewMessage{Type: typeView, Version: version, View: view})
 	if err != nil {
 		return
 	}
 	c.you = view.You
 	c.lastVersion = version
+	c.lastSpectators = spectators
 	c.pendingView = data
 	select {
 	case c.viewReady <- struct{}{}:
 	default: // already signalled
 	}
+}
+
+// online returns the connection as the store records it. The connection must
+// have said hello.
+func (c *conn) online() store.Connection {
+	return store.Connection{Token: c.token, ID: c.onlineID}
 }
 
 // identity returns who the viewer is in the last view sent.
@@ -253,10 +274,14 @@ func (s *Server) serveConn(ctx context.Context, ws *websocket.Conn, gameID strin
 	}
 	ctx, cancel := context.WithCancel(ctx)
 	var wg sync.WaitGroup
-	// Deferred, so that even a panic leaves neither the hub entry nor the
-	// socket behind.
+	// Deferred, so that even a panic leaves neither the hub entry, the online
+	// connection nor the socket behind. The read loop that sets the token has
+	// returned: reading it here is safe.
 	defer func() {
 		s.hub.remove(c)
+		if c.token != "" {
+			s.setOffline(ctx, c)
+		}
 		cancel()
 		wg.Wait()
 		_ = ws.CloseNow()
@@ -343,6 +368,10 @@ func (s *Server) hello(ctx context.Context, c *conn, msg clientMessage) error {
 	if err != nil {
 		return err
 	}
+	onlineID, err := newToken()
+	if err != nil {
+		return err
+	}
 
 	var token string
 	var role game.Role
@@ -361,8 +390,10 @@ func (s *Server) hello(ctx context.Context, c *conn, msg clientMessage) error {
 
 	c.token = token
 	c.presenceID = presenceID(token)
+	c.onlineID = onlineID
 	c.send(welcomeMessage{Type: typeWelcome, Token: token, Role: role})
 	s.hub.register(c)
+	s.keepOnline(ctx, c.gameID, []store.Connection{c.online()})
 	// Loading after registering leaves no gap: an update made since the join
 	// is either in this view or broadcast to c.
 	g, version, err := s.deps.Store.Load(ctx, c.gameID)
@@ -373,8 +404,24 @@ func (s *Server) hello(ctx context.Context, c *conn, msg clientMessage) error {
 		_ = c.ws.Close(websocket.StatusInternalError, "internal error")
 		return nil
 	}
-	c.sendView(g, version)
+	c.sendView(g, version, s.onlineSpectators(ctx, g))
+	// The other viewers count c from now on, when it is a spectator.
+	s.publishOnline(ctx, c.gameID)
 	return nil
+}
+
+// setOffline forgets c among the connections of its game, and tells every
+// instance so that the viewers stop counting it. It runs as c closes, so its
+// store call outlives c's context, like publish.
+func (s *Server) setOffline(ctx context.Context, c *conn) {
+	storeCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), storeCallTimeout)
+	defer cancel()
+
+	if err := s.deps.Store.SetOffline(storeCtx, c.gameID, c.online()); err != nil {
+		// Its lease passes in time: the count corrects itself then.
+		s.deps.Logger.Warn("set connection offline", "game_id", c.gameID, "error", err)
+	}
+	s.publishOnline(ctx, c.gameID)
 }
 
 func (s *Server) lobby(ctx context.Context, c *conn, msg clientMessage) error {
@@ -467,7 +514,7 @@ func (s *Server) update(ctx context.Context, gameID string, change func(*game.Ga
 	if err != nil {
 		return err
 	}
-	s.hub.broadcast(g, version)
+	s.hub.broadcast(g, version, s.onlineSpectators(ctx, g))
 	s.publishUpdated(ctx, gameID, version)
 	return nil
 }
@@ -479,6 +526,18 @@ func (s *Server) publishUpdated(ctx context.Context, gameID string, version int6
 	payload, err := json.Marshal(updatedEvent{Kind: eventUpdated, Version: version})
 	if err != nil {
 		s.deps.Logger.Error("encode game update", "game_id", gameID, "error", err)
+		return
+	}
+	s.publish(ctx, gameID, payload)
+}
+
+// publishOnline tells every instance that a viewer of the game connected or
+// disconnected. A failure is only logged: the lease rounds send the count
+// again.
+func (s *Server) publishOnline(ctx context.Context, gameID string) {
+	payload, err := json.Marshal(onlineEvent{Kind: eventOnline})
+	if err != nil {
+		s.deps.Logger.Error("encode online event", "game_id", gameID, "error", err)
 		return
 	}
 	s.publish(ctx, gameID, payload)

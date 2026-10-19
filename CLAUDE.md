@@ -10,7 +10,8 @@ See [README.md](README.md) for full documentation.
 
 - Backend: Go (standard library `net/http`, WebSocket),
   stateless, scaled horizontally
-- Shared state: Redis (in memory, game state + pub/sub)
+- Shared state: Redis (in memory, game state, connection
+  leases, pub/sub)
 - Frontend: TypeScript, Svelte 5 + Vite, static SPA served
   separately (GitHub Pages)
 - Card data: per-pack JSON files generated from marvelcdb and
@@ -38,7 +39,8 @@ make web-build    # production build into web/dist/
 - `internal/game/` — pure game engine (lobby, setup, actions, undo, views)
 - `internal/server/` — HTTP API, game creation, game card pool,
   WebSocket endpoint, cross-instance fan-out (hub)
-- `internal/store/` — Redis game store and game event pub/sub
+- `internal/store/` — Redis game store, connection leases and game
+  event pub/sub
 - `internal/pack/` — card pack schema (types) and catalog
 - `internal/packgen/` — generator internals (fetch, marvelcdb, cerebro,
   build, images, curated, report, write)

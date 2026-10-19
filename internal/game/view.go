@@ -91,16 +91,20 @@ type TableView struct {
 // View is the game as one viewer may see it. It is the only game data sent to
 // clients: it holds no token and nothing hidden from this viewer.
 type View struct {
-	ID         string       `json:"id"`
-	Phase      Phase        `json:"phase"`
-	You        YouView      `json:"you"`
-	Players    []PlayerView `json:"players"`
-	Spectators int          `json:"spectators"`
-	Config     LobbyConfig  `json:"config"`
-	Table      *TableView   `json:"table,omitempty"`
-	Log        []LogView    `json:"log"`
-	CanUndo    bool         `json:"canUndo,omitempty"`
-	UndoText   string       `json:"undoText,omitempty"`
+	ID      string       `json:"id"`
+	Phase   Phase        `json:"phase"`
+	You     YouView      `json:"you"`
+	Players []PlayerView `json:"players"`
+	// Spectators is the number of spectators connected to the game, those
+	// who closed every tab left out. The game does not know who is
+	// connected: ViewFor leaves it at zero and the server fills it, with
+	// OnlineSpectators.
+	Spectators int         `json:"spectators"`
+	Config     LobbyConfig `json:"config"`
+	Table      *TableView  `json:"table,omitempty"`
+	Log        []LogView   `json:"log"`
+	CanUndo    bool        `json:"canUndo,omitempty"`
+	UndoText   string      `json:"undoText,omitempty"`
 }
 
 // ViewFor builds the view of the participant holding token. An unknown token
@@ -113,11 +117,10 @@ func (g *Game) ViewFor(token string) View {
 	}
 
 	v := View{
-		ID:         g.ID,
-		Phase:      g.Phase,
-		You:        g.youView(token, player, seat),
-		Spectators: len(g.Spectators),
-		Config:     g.Config,
+		ID:     g.ID,
+		Phase:  g.Phase,
+		You:    g.youView(token, player, seat),
+		Config: g.Config,
 	}
 	// Clients expect lists, never null: start from empty, non-nil slices.
 	v.Config.Modulars = append([]string{}, g.Config.Modulars...)
@@ -136,6 +139,18 @@ func (g *Game) ViewFor(token string) View {
 		}
 	}
 	return v
+}
+
+// OnlineSpectators counts the spectators whose token is in online, the
+// tokens with an open connection. Players are never counted.
+func (g *Game) OnlineSpectators(online map[string]bool) int {
+	count := 0
+	for _, s := range g.Spectators {
+		if online[s.Token] {
+			count++
+		}
+	}
+	return count
 }
 
 func (g *Game) youView(token string, player *Player, seat int) YouView {

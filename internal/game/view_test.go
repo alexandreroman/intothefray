@@ -345,8 +345,8 @@ func TestViewIdentity(t *testing.T) {
 	if unknown.You.Role != "" || unknown.Table.Private != nil || len(unknown.Table.Hand) != 0 || unknown.CanUndo {
 		t.Errorf("unknown viewer = %+v", unknown.You)
 	}
-	if host.Spectators != 1 || len(host.Players) != 2 {
-		t.Errorf("spectators = %d, players = %d", host.Spectators, len(host.Players))
+	if host.Spectators != 0 || len(host.Players) != 2 {
+		t.Errorf("spectators = %d, players = %d; want 0, filled by the server, and 2", host.Spectators, len(host.Players))
 	}
 	p := host.Players[1]
 	if p.Name != "Bob" || !p.Ready || p.Area != "p1" || p.HeroName != "Spider-Man" || p.DeckName != "Spidey" || p.Hero == "" {
@@ -354,6 +354,33 @@ func TestViewIdentity(t *testing.T) {
 	}
 	if want := f.g.Players[1].Deck.HeroImage; want == "" || p.HeroImage != want {
 		t.Errorf("player hero image = %q, want %q", p.HeroImage, want)
+	}
+}
+
+func TestOnlineSpectators(t *testing.T) {
+	g := lobbyOfFour(t)
+	for _, token := range []string{"e", "f", "g"} {
+		if _, err := g.Join(token, "Spectator "+token); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	tests := []struct {
+		name   string
+		online map[string]bool
+		want   int
+	}{
+		{"nobody online", nil, 0},
+		{"players only", map[string]bool{"h": true, "b": true}, 0},
+		{"some spectators", map[string]bool{"h": true, "e": true, "g": true}, 2},
+		{"unknown tokens", map[string]bool{"e": true, "stranger": true}, 1},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := g.OnlineSpectators(tt.online); got != tt.want {
+				t.Errorf("OnlineSpectators = %d, want %d", got, tt.want)
+			}
+		})
 	}
 }
 

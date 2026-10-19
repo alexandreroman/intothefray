@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand/v2"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -28,6 +29,14 @@ const (
 	eventsPattern = "game:*:events"
 	eventsSuffix  = ":events"
 	gamePrefix    = "game:"
+	// onlinePrefix starts the keys of the online connections. It is not
+	// gamePrefix: a game id comes from the request path, and no id must
+	// name another game's set of connections.
+	onlinePrefix = "online:"
+	// connectionSeparator joins the id and the token of a connection in the
+	// set. The id comes first: it is generated without the separator, whereas
+	// nothing bounds what a token holds.
+	connectionSeparator = ":"
 )
 
 var (
@@ -45,6 +54,14 @@ type Event struct {
 	// connection: the events published meanwhile are lost, so the reader
 	// must reload the games it follows. GameID and Payload are then empty.
 	Resync bool
+}
+
+// Connection is one open connection to a game, on any instance. ID tells
+// apart the connections of a token, such as two tabs of the same viewer; it
+// must not contain a colon.
+type Connection struct {
+	Token string
+	ID    string
 }
 
 // record is the JSON value stored under a game key.
@@ -178,6 +195,66 @@ func (s *Store) Publish(ctx context.Context, id string, payload []byte) error {
 	return nil
 }
 
+// KeepOnline records the connections as open until now+lease, and drops the
+// connections of the game whose lease has passed, such as those of an
+// instance that stopped without closing them. The whole set expires after
+// lease without a call. conns must not be empty. It returns how many
+// connections were dropped.
+func (s *Store) KeepOnline(
+	ctx context.Context, gameID string, conns []Connection, now time.Time, lease time.Duration,
+) (int64, error) {
+	key := onlineKey(gameID)
+	// The score of a connection is the end of its lease, in Unix milliseconds.
+	deadline := float64(now.Add(lease).UnixMilli())
+	members := make([]redis.Z, 0, len(conns))
+	for _, c := range conns {
+		members = append(members, redis.Z{Score: deadline, Member: connectionMember(c)})
+	}
+
+	var dropped *redis.IntCmd
+	_, err := s.rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+		// Added first, so that a lease of conns that just passed is renewed
+		// rather than counted as dropped.
+		pipe.ZAdd(ctx, key, members...)
+		dropped = pipe.ZRemRangeByScore(ctx, key, "-inf", strconv.FormatInt(now.UnixMilli(), 10))
+		pipe.PExpire(ctx, key, lease)
+		return nil
+	})
+	if err != nil {
+		return 0, fmt.Errorf("keep connections of game %s online: %w", gameID, err)
+	}
+	return dropped.Val(), nil
+}
+
+// SetOffline forgets a connection that closed.
+func (s *Store) SetOffline(ctx context.Context, gameID string, c Connection) error {
+	if err := s.rdb.ZRem(ctx, onlineKey(gameID), connectionMember(c)).Err(); err != nil {
+		return fmt.Errorf("set connection of game %s offline: %w", gameID, err)
+	}
+	return nil
+}
+
+// Online returns the tokens of the game with at least one connection whose
+// lease has not passed at now. Leases that passed count as closed even before
+// KeepOnline drops them.
+func (s *Store) Online(ctx context.Context, gameID string, now time.Time) (map[string]bool, error) {
+	members, err := s.rdb.ZRangeArgs(ctx, redis.ZRangeArgs{
+		Key:     onlineKey(gameID),
+		Start:   "(" + strconv.FormatInt(now.UnixMilli(), 10),
+		Stop:    "+inf",
+		ByScore: true,
+	}).Result()
+	if err != nil {
+		return nil, fmt.Errorf("read online connections of game %s: %w", gameID, err)
+	}
+	tokens := make(map[string]bool, len(members))
+	for _, member := range members {
+		_, token, _ := strings.Cut(member, connectionSeparator)
+		tokens[token] = true
+	}
+	return tokens, nil
+}
+
 // Subscribe receives the events of every game. The returned function stops
 // the subscription and closes the channel; the channel also closes when ctx
 // ends, releasing the Redis connection. Events are handed to the reader one
@@ -280,6 +357,14 @@ func (s *Store) ttlFor(phase game.Phase) time.Duration {
 
 func gameKey(id string) string {
 	return gamePrefix + id
+}
+
+func onlineKey(id string) string {
+	return onlinePrefix + id
+}
+
+func connectionMember(c Connection) string {
+	return c.ID + connectionSeparator + c.Token
 }
 
 func eventsChannel(id string) string {

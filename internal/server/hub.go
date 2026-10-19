@@ -19,6 +19,13 @@ const (
 	// touchInterval is how often the games with a viewer on this instance
 	// get their expiry reset.
 	touchInterval = 10 * time.Minute
+	// onlineInterval is how often the connections of this instance get their
+	// lease renewed, and their viewers the count of connected spectators.
+	onlineInterval = 30 * time.Second
+	// leaseRounds is how many online intervals a lease lasts: a connection
+	// counts as open that long without a renewal, so that one late round
+	// drops nobody.
+	leaseRounds = 3
 	// storeCallTimeout bounds each store call of the background work: the
 	// event loop handles the events of every game one at a time.
 	storeCallTimeout = 2 * time.Second
@@ -29,7 +36,8 @@ const (
 var errSubscriptionEnded = errors.New("game event subscription ended")
 
 // hub keeps the connections of this instance, grouped by game, and sends
-// them the new versions of their game and the presence of the other viewers.
+// them the new versions of their game, the count of connected spectators and
+// the presence of the other viewers.
 type hub struct {
 	mu sync.Mutex
 	// closed is set once the server shuts down: no connection is accepted
@@ -99,10 +107,11 @@ func (h *hub) remove(c *conn) {
 }
 
 // broadcast sends version of g to every local connection of the game, each
-// with the view of its own token.
-func (h *hub) broadcast(g *game.Game, version int64) {
+// with the view of its own token, and spectators as the count of connected
+// spectators (see conn.sendView).
+func (h *hub) broadcast(g *game.Game, version int64, spectators int) {
 	for _, c := range h.recipients(g.ID, version) {
-		c.sendView(g, version)
+		c.sendView(g, version, spectators)
 	}
 }
 
@@ -128,6 +137,46 @@ func (h *hub) needs(gameID string, version int64) bool {
 
 	local := h.games[gameID]
 	return local != nil && version > local.version
+}
+
+// watched reports whether the game has local connections.
+func (h *hub) watched(gameID string) bool {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	return h.games[gameID] != nil
+}
+
+// connections returns the local connections of every game, as the store
+// records them.
+func (h *hub) connections() map[string][]store.Connection {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	byGame := make(map[string][]store.Connection, len(h.games))
+	for id, local := range h.games {
+		for c := range local.conns {
+			byGame[id] = append(byGame[id], c.online())
+		}
+	}
+	return byGame
+}
+
+// registered reports whether connection is still among the local connections
+// of the game.
+func (h *hub) registered(gameID string, connection store.Connection) bool {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	local := h.games[gameID]
+	if local == nil {
+		return false
+	}
+	for c := range local.conns {
+		if c.online() == connection {
+			return true
+		}
+	}
+	return false
 }
 
 // relay sends a presence message to the local connections of a game but
@@ -184,13 +233,14 @@ func (s *Server) Run(ctx context.Context) error {
 	}
 	defer func() { _ = closeEvents() }()
 
-	// The touch rounds run apart from the event loop: their store calls must
-	// not hold up the updates and presence of the games.
-	touchCtx, stopTouching := context.WithCancel(ctx)
-	var touching sync.WaitGroup
-	touching.Go(func() { s.touchLoop(touchCtx) })
-	defer touching.Wait()
-	defer stopTouching()
+	// The touch and lease rounds run apart from the event loop: their store
+	// calls must not hold up the updates and presence of the games.
+	roundsCtx, stopRounds := context.WithCancel(ctx)
+	var rounds sync.WaitGroup
+	rounds.Go(func() { every(roundsCtx, s.touchInterval, s.touchLocalGames) })
+	rounds.Go(func() { every(roundsCtx, s.onlineInterval, s.renewOnline) })
+	defer rounds.Wait()
+	defer stopRounds()
 
 	for {
 		select {
@@ -208,9 +258,9 @@ func (s *Server) Run(ctx context.Context) error {
 	}
 }
 
-// touchLoop runs a touch round every touchInterval until ctx ends.
-func (s *Server) touchLoop(ctx context.Context) {
-	ticker := time.NewTicker(s.touchInterval)
+// every runs round every interval until ctx ends.
+func every(ctx context.Context, interval time.Duration, round func(context.Context)) {
+	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
 	for {
@@ -218,7 +268,7 @@ func (s *Server) touchLoop(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			s.touchLocalGames(ctx)
+			round(ctx)
 		}
 	}
 }
@@ -242,6 +292,8 @@ func (s *Server) handleEvent(ctx context.Context, ev store.Event) {
 		s.relayUpdate(ctx, ev)
 	case eventPresence:
 		s.relayPresence(ev)
+	case eventOnline:
+		s.relayOnline(ctx, ev.GameID)
 	default:
 		s.deps.Logger.Warn("unknown game event", "game_id", ev.GameID, "kind", head.Kind)
 	}
@@ -259,17 +311,22 @@ func (s *Server) relayUpdate(ctx context.Context, ev store.Event) {
 	if !s.hub.needs(ev.GameID, updated.Version) {
 		return
 	}
-
-	ctx, cancel := context.WithTimeout(ctx, storeCallTimeout)
-	defer cancel()
 	// The stored game may be newer than the event: sending it is fine, the
 	// connections skip the versions they already have.
-	g, version, err := s.deps.Store.Load(ctx, ev.GameID)
-	if err != nil {
+	if err := s.sendStoredGame(ctx, ev.GameID); err != nil {
 		s.deps.Logger.Warn("load updated game", "game_id", ev.GameID, "error", err)
+	}
+}
+
+// relayOnline sends the local viewers of a game the new count of connected
+// spectators, after a viewer connected or disconnected on any instance.
+func (s *Server) relayOnline(ctx context.Context, gameID string) {
+	if !s.hub.watched(gameID) {
 		return
 	}
-	s.hub.broadcast(g, version)
+	if err := s.sendStoredGame(ctx, gameID); err != nil {
+		s.deps.Logger.Warn("load game to count its spectators", "game_id", gameID, "error", err)
+	}
 }
 
 // resyncLocalGames sends the stored version of every game with local
@@ -277,16 +334,37 @@ func (s *Server) relayUpdate(ctx context.Context, ev store.Event) {
 // updates published in the meantime never reached this instance.
 func (s *Server) resyncLocalGames(ctx context.Context) {
 	for _, id := range s.hub.gameIDs() {
-		loadCtx, cancel := context.WithTimeout(ctx, storeCallTimeout)
-		g, version, err := s.deps.Store.Load(loadCtx, id)
-		cancel()
-		if err != nil {
+		if err := s.sendStoredGame(ctx, id); err != nil {
 			s.deps.Logger.Warn("load game to resync", "game_id", id, "error", err)
-			continue
 		}
-		// Connections skip the version when they already have it.
-		s.hub.broadcast(g, version)
 	}
+}
+
+// sendStoredGame sends the stored version of a game to its local viewers,
+// with the current count of connected spectators. Connections skip it when
+// they already have this version and count.
+func (s *Server) sendStoredGame(ctx context.Context, gameID string) error {
+	ctx, cancel := context.WithTimeout(ctx, storeCallTimeout)
+	defer cancel()
+
+	g, version, err := s.deps.Store.Load(ctx, gameID)
+	if err != nil {
+		return err
+	}
+	s.hub.broadcast(g, version, s.onlineSpectators(ctx, g))
+	return nil
+}
+
+// onlineSpectators counts the spectators of g connected to any instance. When
+// the connections cannot be read, it returns keepSpectators: a failure never
+// holds back a view, which then shows the last count sent.
+func (s *Server) onlineSpectators(ctx context.Context, g *game.Game) int {
+	online, err := s.deps.Store.Online(ctx, g.ID, time.Now())
+	if err != nil {
+		s.deps.Logger.Warn("load online connections", "game_id", g.ID, "error", err)
+		return keepSpectators
+	}
+	return g.OnlineSpectators(online)
 }
 
 // relayPresence sends a viewer's presence to the other local viewers of the
@@ -320,5 +398,64 @@ func (s *Server) touchLocalGames(ctx context.Context) {
 		if err != nil {
 			s.deps.Logger.Warn("touch game", "game_id", id, "error", err)
 		}
+	}
+}
+
+// renewOnline renews the leases of the local connections, then sends their
+// viewers the current count of connected spectators. The count leaves out the
+// connections whose lease passed, such as those of an instance that stopped
+// without closing them, and corrects a count that a broadcast read just
+// before a viewer connected or disconnected.
+func (s *Server) renewOnline(ctx context.Context) {
+	for id, conns := range s.hub.connections() {
+		s.keepOnline(ctx, id, conns)
+		s.forgetClosed(ctx, id, conns)
+		if err := s.sendStoredGame(ctx, id); err != nil {
+			s.deps.Logger.Warn("load game to count its spectators", "game_id", id, "error", err)
+		}
+	}
+}
+
+// keepOnline records conns, local connections to a game, as open for another
+// lease. A failure is only logged: the next round records them again, before
+// the leases pass.
+func (s *Server) keepOnline(ctx context.Context, gameID string, conns []store.Connection) {
+	ctx, cancel := context.WithTimeout(ctx, storeCallTimeout)
+	defer cancel()
+
+	lease := leaseRounds * s.onlineInterval
+	dropped, err := s.deps.Store.KeepOnline(ctx, gameID, conns, time.Now(), lease)
+	if err != nil {
+		s.deps.Logger.Warn("keep connections online", "game_id", gameID, "error", err)
+		return
+	}
+	if dropped > 0 {
+		s.deps.Logger.Info("dropped connections whose lease passed", "game_id", gameID, "count", dropped)
+	}
+}
+
+// forgetClosed sets offline those of conns, just renewed, that closed since
+// the round listed them: their own setOffline may have run before the renewal
+// and been undone by it. A connection leaves the hub before it sets itself
+// offline, so one that closed too late to be seen here sets itself offline
+// after the renewal.
+func (s *Server) forgetClosed(ctx context.Context, gameID string, conns []store.Connection) {
+	forgotten := false
+	for _, connection := range conns {
+		if s.hub.registered(gameID, connection) {
+			continue
+		}
+		storeCtx, cancel := context.WithTimeout(ctx, storeCallTimeout)
+		err := s.deps.Store.SetOffline(storeCtx, gameID, connection)
+		cancel()
+		if err != nil {
+			// Its lease passes in time: the count corrects itself then.
+			s.deps.Logger.Warn("set closed connection offline", "game_id", gameID, "error", err)
+			continue
+		}
+		forgotten = true
+	}
+	if forgotten {
+		s.publishOnline(ctx, gameID)
 	}
 }

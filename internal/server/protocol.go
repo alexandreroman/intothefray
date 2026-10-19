@@ -131,12 +131,21 @@ const (
 	eventUpdated = "updated"
 	// eventPresence carries a viewer's presence to the other viewers.
 	eventPresence = "presence"
+	// eventOnline is published after a viewer connects or disconnects.
+	eventOnline = "online"
 )
 
 // updatedEvent is published on a game's channel after the game changes.
 type updatedEvent struct {
 	Kind    string `json:"kind"`
 	Version int64  `json:"version"`
+}
+
+// onlineEvent is published on a game's channel after a viewer connects or
+// disconnects, so that every instance sends its viewers the new count of
+// connected spectators.
+type onlineEvent struct {
+	Kind string `json:"kind"`
 }
 
 // presencePoint is a spot of the table: where a cursor is, or what a ping
