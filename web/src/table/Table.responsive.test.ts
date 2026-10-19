@@ -49,14 +49,14 @@ function handCard(id: string): TableCard {
   return { id, face: 0, back: 'player', owner: 0, zone: 'hand', x: 0, y: 0, z: 0 };
 }
 
-/** A face-down card of Sam's in play: hovered, it is previewed (a hand card is not). */
+/** A face-up card of Sam's in play: hovered, it is previewed (a hand card or a back is not). */
 const IN_PLAY: TableCard = {
   id: 't1',
+  code: '01001',
   face: 0,
   back: 'player',
   owner: 0,
   zone: 'table',
-  faceDown: true,
   x: 300,
   y: 0,
   z: 1,
@@ -143,9 +143,6 @@ describe('Table on a narrow screen', () => {
     const preview = peek(container);
     expect(preview).not.toBeNull();
     expect(within(preview as HTMLElement).getByLabelText('Card preview')).toBeTruthy();
-    expect(
-      within(preview as HTMLElement).getByRole('img', { name: 'Player card back' }),
-    ).toBeTruthy();
   });
 
   it('wide layout keeps the history column, the preview floating over the table', async () => {

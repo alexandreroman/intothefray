@@ -15,7 +15,6 @@
     pile,
     top,
     face = null,
-    foreign = false,
     barWhenEmpty = false,
   }: {
     pile: PileView;
@@ -23,8 +22,6 @@
     top?: TableCard;
     /** The catalog face of the top card, null while unknown. */
     face?: PackFace | null;
-    /** Another player's pile. */
-    foreign?: boolean;
     /** Empty, it still has a bar: the buttons opening its owner's out-of-play piles. */
     barWhenEmpty?: boolean;
   } = $props();
@@ -49,14 +46,8 @@
   const locked = $derived(interaction.isLocked(element));
   const hovered = $derived(interaction.isHovered(element));
 
-  /**
-   * The preview shows the top card of a pile that lists its cards. A deck
-   * shows nothing new, so the preview keeps the card seen before, unless the
-   * deck is another player's.
-   */
-  const previewChange = $derived<PreviewChange>(
-    shownTop ? 'show' : foreign || empty ? 'clear' : 'keep',
-  );
+  /** The preview shows the top card of a pile that lists its cards; a deck, which shows its back, has none. */
+  const previewChange = $derived<PreviewChange>(shownTop ? 'show' : 'clear');
 
   function onEnter(event: PointerEvent): void {
     if (inert) {

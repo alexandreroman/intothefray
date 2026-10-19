@@ -32,7 +32,6 @@
     owners,
     topOf,
     faceOf,
-    foreign,
     barWhenEmpty,
     width,
     height,
@@ -48,8 +47,6 @@
     topOf: (pile: Pile) => TableCard | undefined;
     /** The catalog face a card shows, null while unknown or hidden. */
     faceOf: (card: TableCard | undefined) => PackFace | null;
-    /** Whether a pile is another player's. */
-    foreign: (pile: Pile) => boolean;
     /** Whether a pile still has a bar when it is empty. */
     barWhenEmpty: (pile: Pile) => boolean;
     /** The surface size, in table units. */
@@ -86,13 +83,7 @@
   {/each}
   {#each piles as pile (pile.id)}
     {@const top = topOf(pile)}
-    <PileView
-      {pile}
-      {top}
-      face={faceOf(top)}
-      foreign={foreign(pile)}
-      barWhenEmpty={barWhenEmpty(pile)}
-    />
+    <PileView {pile} {top} face={faceOf(top)} barWhenEmpty={barWhenEmpty(pile)} />
   {/each}
   {#each cards as card (card.id)}
     <CardView {card} face={faceOf(card)} />

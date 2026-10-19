@@ -1,19 +1,18 @@
 <!--
-  The large picture of the hovered card: its face, or its back when hidden.
+  The large picture of the hovered card's face (a card back has none).
   Without a card, the frame is empty and says how to fill it. Shown over the
-  table, at its top right corner.
+  table, in a corner of the play area.
 -->
 <script lang="ts" module>
-  import type { Back } from '../lib/types';
-
-  /** What the preview frame shows. */
-  export type Preview =
-    | { kind: 'face'; images: string[]; name: string; landscape: boolean }
-    | { kind: 'back'; back: Back };
+  /** The face the preview frame shows. */
+  export interface Preview {
+    images: string[];
+    name: string;
+    landscape: boolean;
+  }
 </script>
 
 <script lang="ts">
-  import CardBack from './CardBack.svelte';
   import CardFace from './CardFace.svelte';
 
   let {
@@ -29,10 +28,6 @@
 <div class="frame" class:empty={!preview} class:snug aria-label="Card preview" role="figure">
   {#if !preview}
     <div class="hint">Hover a card<br />to see it here</div>
-  {:else if preview.kind === 'back'}
-    <div class="art">
-      <CardBack back={preview.back} />
-    </div>
   {:else}
     <div class="art" class:land={preview.landscape}>
       <CardFace images={preview.images} name={preview.name} landscape={preview.landscape} />

@@ -690,13 +690,13 @@ describe('ActionBar', () => {
 });
 
 describe('pile preview', () => {
-  it('a deck keeps the preview; a pile listing its cards shows its top', async () => {
+  it('a deck, which shows its back, has no preview; a pile listing its cards shows its top', async () => {
     await renderTable();
 
     await fireEvent.pointerEnter(placed('two'));
     expect(within(preview()).getByRole('img', { name: 'Peter Parker' })).toBeTruthy();
     await fireEvent.pointerEnter(placed('deck:p0'));
-    expect(within(preview()).getByRole('img', { name: 'Peter Parker' })).toBeTruthy();
+    expect(noPreview()).toBe(true);
 
     await fireEvent.pointerEnter(placed('disc:p0'));
     expect(within(preview()).getByRole('img', { name: 'Spider-Man' })).toBeTruthy();

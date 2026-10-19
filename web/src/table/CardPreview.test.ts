@@ -3,7 +3,7 @@ import CardPreview from './CardPreview.svelte';
 
 describe('CardPreview', () => {
   it('takes the shape of the card when snug', () => {
-    const face = { kind: 'face' as const, images: [], name: 'The Break-In!', landscape: true };
+    const face = { images: [], name: 'The Break-In!', landscape: true };
     render(CardPreview, { preview: face, snug: true });
     expect(screen.getByLabelText('Card preview').classList).toContain('snug');
   });
@@ -17,7 +17,7 @@ describe('CardPreview', () => {
   });
 
   it('previews a face, adapting to landscape', async () => {
-    const face = { kind: 'face' as const, images: ['scheme.png'], name: 'The Break-In!' };
+    const face = { images: ['scheme.png'], name: 'The Break-In!' };
     const { rerender } = render(CardPreview, { preview: { ...face, landscape: false } });
 
     const frame = screen.getByLabelText('Card preview');
@@ -30,15 +30,5 @@ describe('CardPreview', () => {
     await rerender({ preview: { ...face, landscape: true } });
     expect(frame.querySelector('.art')?.classList).toContain('land');
     expect(screen.getByRole('img', { name: 'The Break-In!' }).classList).toContain('land');
-  });
-
-  it('previews a card back', () => {
-    localStorage.setItem('itf-theme', 'minimal');
-    try {
-      render(CardPreview, { preview: { kind: 'back', back: 'encounter' } });
-      expect(screen.getByRole('img', { name: 'Encounter card back' })).toBeTruthy();
-    } finally {
-      localStorage.clear();
-    }
   });
 });

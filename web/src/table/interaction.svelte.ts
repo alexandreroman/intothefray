@@ -60,7 +60,7 @@ export interface DropOn {
 }
 
 /** What hovering an element does to the side preview. */
-export type PreviewChange = 'show' | 'keep' | 'clear';
+export type PreviewChange = 'show' | 'clear';
 
 /**
  * What the viewer points at on the table, shared by the table, the hand, the
@@ -71,7 +71,7 @@ export type PreviewChange = 'show' | 'keep' | 'clear';
 class TableInteraction {
   /** What the action bar and the keys act on. */
   hovered = $state.raw<TableElement | null>(null);
-  /** What the side preview shows: hovering a deck keeps the previous one. */
+  /** The element previewed: the preview shows its face, and nothing for a card back. */
   previewed = $state.raw<TableElement | null>(null);
   /** The cards of the hovered history line, ringed on the table. */
   highlighted = $state.raw<ReadonlySet<string>>(new Set());

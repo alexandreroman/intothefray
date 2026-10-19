@@ -39,7 +39,7 @@
   import CardBox from './CardBox.svelte';
   import DragLayer from './DragLayer.svelte';
   import Flights from './Flights.svelte';
-  import { isHidden, pileBack } from './face';
+  import { isHidden } from './face';
   import Hand from './Hand.svelte';
   import { interaction } from './interaction.svelte';
   import { handleKey } from './keys';
@@ -262,26 +262,23 @@
 
   const firstPlayer = $derived(shown(view.table?.firstPlayer ? [view.table.firstPlayer] : [])[0]);
 
+  /** The face the preview shows; none for a card back, which tells nothing more on the table. */
   function previewOf(previewed: TableElement | null): Preview | null {
     if (previewed?.kind === 'pile') {
       const pile = piles.find((p) => p.id === previewed.id);
-      if (!pile || pile.count === 0) {
-        return null;
-      }
-      const top = topOf(pile);
-      return top ? previewOfCard(top) : { kind: 'back', back: pileBack(pile.kind) };
+      const top = pile && pile.count > 0 ? topOf(pile) : undefined;
+      return top ? previewOfCard(top) : null;
     }
     const card = previewed ? cardsById.get(previewed.id) : undefined;
     return card ? previewOfCard(card) : null;
   }
 
-  function previewOfCard(card: TableCard): Preview {
+  function previewOfCard(card: TableCard): Preview | null {
     if (isHidden(card)) {
-      return { kind: 'back', back: card.back };
+      return null;
     }
     const face = faceOf(card);
     return {
-      kind: 'face',
       images: face?.images ?? [],
       name: face?.name ?? '',
       landscape: face?.size === 'land' || face?.size === 'dland',
@@ -488,11 +485,6 @@
   $effect(() => () => motion.stop());
 
   // ---- The action bar ----
-
-  /** Another player's pile: hovering it clears the preview rather than keeping it. */
-  function isForeign(pile: PileView): boolean {
-    return pile.owner >= 0 && `p${pile.owner}` !== ownArea;
-  }
 
   /** Whether an empty pile still has a bar: one opening its owner's out-of-play piles. */
   function hasBarWhenEmpty(pile: PileView): boolean {
@@ -1039,7 +1031,6 @@
         {owners}
         {topOf}
         {faceOf}
-        foreign={isForeign}
         barWhenEmpty={hasBarWhenEmpty}
         width={surface.w}
         height={surface.h}
@@ -1197,7 +1188,7 @@
     {#key focusCorner}
       <div
         class="peek {focusCorner}"
-        class:land={preview.kind === 'face' && preview.landscape}
+        class:land={preview.landscape}
         class:moved={focusMoved}
         style:margin={focusMargin(focusCorner)}
         bind:offsetWidth={focusWidth}

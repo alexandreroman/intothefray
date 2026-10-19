@@ -562,10 +562,12 @@ describe('Table', () => {
     expect(noPreview()).toBe(true);
   });
 
-  it('previews the back of a face-down card; a deck keeps it, an empty pile clears it', async () => {
-    localStorage.setItem('itf-theme', 'minimal');
+  it('shows no preview for a card back: a face-down card, a deck; nor for an empty pile', async () => {
     const view = makeView({
-      cards: [card('f', { code: '01001', faceDown: true, back: 'player' })],
+      cards: [
+        card('f', { code: '01001', faceDown: true, back: 'player' }),
+        card('up', { code: '01001', x: 200 }),
+      ],
       piles: [
         pile('enc', { kind: 'encounter', x: 500 }),
         pile('x1', { kind: 'discard', owner: 1, x: 720, count: 0 }),
@@ -574,14 +576,15 @@ describe('Table', () => {
     const { container } = render(Table, { session: fakeSession(), view });
     const table = surface();
 
-    await fireEvent.pointerEnter(table.querySelector('.card:not(.pile)') as HTMLElement);
-    expect(within(preview()).getByRole('img', { name: 'Player card back' })).toBeTruthy();
+    await fireEvent.pointerEnter(table.querySelector('.card[data-id="f"]') as HTMLElement);
+    expect(noPreview()).toBe(true);
 
-    // A deck shows nothing new: the preview keeps the card seen before.
+    // A face-up card is previewed; a deck then clears it rather than show its back.
+    await fireEvent.pointerEnter(table.querySelector('.card[data-id="up"]') as HTMLElement);
+    expect(noPreview()).toBe(false);
     await fireEvent.pointerEnter(table.querySelector('.pile') as HTMLElement);
-    expect(within(preview()).getByRole('img', { name: 'Player card back' })).toBeTruthy();
+    expect(noPreview()).toBe(true);
 
-    // An empty pile shows nothing.
     await fireEvent.pointerEnter(container.querySelector('.pile.empty') as HTMLElement);
     expect(noPreview()).toBe(true);
   });
