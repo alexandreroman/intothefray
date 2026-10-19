@@ -6,24 +6,29 @@ solo or with up to three friends. It is a pure sandbox: cards move
 the way they would on a real table, and the app never applies the
 game's rules.
 
-> **Work in progress.** The backend runs: the game API, the
-> WebSocket endpoint and the Redis store. The browser frontend comes
-> next, so the features below are the target, not what you can play
-> today.
-
 ## Features
+
+Everything below works today, except where noted.
 
 - **Play in the browser** — no install, desktop or touch screen
 - **Invite by link** — friends join as players until the game
   starts, then as spectators
 - **No account** — a free pseudonym, stored in your browser only
 - **Bring your deck** — load a deck from a marvelcdb.com URL
+- **Automated setup** — pick a scenario, a difficulty and the
+  modular sets: villain, main scheme and decks are laid out for you
 - **Discoverable actions** — every action one or two clicks away,
-  and you always see what the other players just did
+  and you always see what the other players just did: history,
+  live cursors, pings, arrows and animated moves
+- **Undo** — take back your own last actions
+- **Keyboard shortcuts** — press `?` at the table for the full sheet
+- **Themes** — official, minimal or green felt, per viewer
 - **Fair play** — each player receives only what they may see
   (no peeking at hands, deck order or face-down cards)
 - **The whole card range** — expansions are added as data files,
-  card images load from their public sources
+  card images load from their public sources. *Partly there:* the
+  player cards of every pack are in, the scenarios of the Core Set
+  (Rhino, Klaw, Ultron) only so far
 
 ## Prerequisites
 
@@ -72,6 +77,10 @@ make app-down   # stop and remove the containerised stack
 
 `make dev` and `make check` need the frontend dependencies: run
 `make web-install` once on a fresh clone first.
+
+`make dev` runs Redis in a container, so it needs a running
+container engine: Docker, or Podman with its Docker-compatible
+`docker` command (or pass `COMPOSE="podman compose"` to `make`).
 
 `make dev` and `make app-up` both bind port 8080: stop one before
 starting the other.
