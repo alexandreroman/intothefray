@@ -242,6 +242,7 @@ export type ActionKind =
   | 'look' // open a private view of the top `n` cards of `pile`
   | 'search' // open a private view of the whole `pile`
   | 'closeView' // close the view; `where: 'shuffle'` also shuffles the pile
+  | 'group' // several cards moved at once: `actions`, all of one kind
   | 'undo';
 
 /**
@@ -268,6 +269,7 @@ export interface Action {
   where?: 'top' | 'bottom' | 'shuffle';
   stage?: string;
   cards?: string[]; // new order, for reorderTop and handOrder
+  actions?: Action[]; // one per card of a group: move, toHand, toDeck, discard or toPile
 }
 
 // ---- Live session (internal/server/protocol.go) ----

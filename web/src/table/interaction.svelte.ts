@@ -1,5 +1,8 @@
 import { modal } from '../components/modal.svelte';
+import type { CardView } from '../lib/types';
 import type { TableElement } from './actions';
+import type { Rect } from './drag';
+import { isFree } from './selection';
 
 /** How long the bar and the preview stay after the pointer leaves their element. */
 export const LINGER_MS = 100;
@@ -127,6 +130,11 @@ class TableInteraction {
   handGap = $state<number | null>(null);
   /** The last drop, while it waits for the server. */
   landing = $state.raw<Landing | null>(null);
+
+  /** The table cards the rubber band selected: pressing one of them drags them all. */
+  group = $state.raw<ReadonlySet<string>>(new Set());
+  /** The rubber band being drawn, on the screen in CSS pixels. */
+  band = $state.raw<Rect | null>(null);
 
   #pointer = { x: NaN, y: NaN };
   // Where the pointer was when the table was last redrawn.
@@ -495,8 +503,36 @@ class TableInteraction {
     this.arrowDrag = false;
   }
 
-  /** Escape closes the open dropdown, or cancels the arrow, or releases the selection. */
+  /** The table cards the rubber band selected, replacing the previous ones. */
+  setGroup(ids: ReadonlySet<string>): void {
+    this.group = ids;
+  }
+
+  /** No table card is selected any more. */
+  clearGroup(): void {
+    this.group = new Set();
+  }
+
+  /**
+   * A new view: the selected cards that left the table, or went onto a pile,
+   * drop out of the group. The same set stays when none did, so that nothing
+   * redraws.
+   */
+  pruneGroup(cards: readonly CardView[]): void {
+    const free = new Set(cards.filter(isFree).map((card) => card.id));
+    const kept = [...this.group].filter((id) => free.has(id));
+    if (kept.length !== this.group.size) {
+      this.group = new Set(kept);
+    }
+  }
+
+  /**
+   * Escape clears the group and the band, and closes the open dropdown, or
+   * cancels the arrow, or releases the selection.
+   */
   escape(): void {
+    this.clearGroup();
+    this.band = null;
     if (this.menu !== null) {
       this.menu = null;
     } else if (this.arrowFrom !== null) {
@@ -511,6 +547,8 @@ class TableInteraction {
     this.release();
     this.letGo();
     this.endLanding();
+    this.clearGroup();
+    this.band = null;
     this.#swallowClick = false;
     this.highlighted = new Set();
     this.liftedByOthers = new Set();
