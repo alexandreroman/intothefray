@@ -6,9 +6,8 @@ import type { View } from '../lib/types';
 vi.mock('../lib/session.svelte', () => ({ GameSession: vi.fn() }));
 // The table loads the card catalog: keep the tests off the network.
 vi.mock('../lib/catalog', () => ({
-  loadAllCards: vi.fn(() => Promise.resolve()),
+  loadGameCards: vi.fn(() => Promise.resolve()),
   knownCard: vi.fn(() => null),
-  cardByCode: vi.fn(() => Promise.resolve(null)),
 }));
 
 const sessionMock = vi.mocked(GameSession);

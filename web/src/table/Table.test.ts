@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
 import Table from './Table.svelte';
 import { interaction, LINGER_MS } from './interaction.svelte';
-import { cardByCode, knownCard, loadAllCards, type CardInfo } from '../lib/catalog';
+import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
 import type {
   Area,
   CardView as TableCard,
@@ -13,9 +13,8 @@ import type {
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
-  cardByCode: vi.fn(),
   knownCard: vi.fn(),
-  loadAllCards: vi.fn(),
+  loadGameCards: vi.fn(),
 }));
 
 const FIRST_PLAYER_TOKEN =
@@ -35,7 +34,7 @@ function infoOf(code: string): CardInfo | null {
     return null;
   }
   const full: PackFace = { name: '', type: '', size: 'std', images: [`${code}.png`], ...face };
-  return { card: { code, faces: [full], back: 'player', quantity: 1 }, face: 0, pack: 'core' };
+  return { card: { code, faces: [full], back: 'player', quantity: 1 }, face: 0 };
 }
 
 function card(id: string, extra: Partial<TableCard>): TableCard {
@@ -128,17 +127,15 @@ function zoomLabel(): HTMLElement {
 
 beforeEach(() => {
   localStorage.clear();
-  vi.mocked(loadAllCards).mockResolvedValue();
+  vi.mocked(loadGameCards).mockResolvedValue();
   vi.mocked(knownCard).mockImplementation(infoOf);
-  vi.mocked(cardByCode).mockImplementation((code) => Promise.resolve(infoOf(code)));
 });
 
 afterEach(() => {
   vi.useRealTimers();
   interaction.reset();
-  vi.mocked(loadAllCards).mockReset();
+  vi.mocked(loadGameCards).mockReset();
   vi.mocked(knownCard).mockReset();
-  vi.mocked(cardByCode).mockReset();
 });
 
 describe('Table', () => {
@@ -159,10 +156,10 @@ describe('Table', () => {
     expect(count(other, '.surface > .pile')).toBe(1);
   });
 
-  it('loads the catalog once for every zone', async () => {
+  it('loads the cards of its game once for every zone', async () => {
     render(Table, { session: fakeSession(), view: makeView() });
     await screen.findByRole('region', { name: /Rhino/ });
-    expect(loadAllCards).toHaveBeenCalledOnce();
+    expect(loadGameCards).toHaveBeenCalledExactlyOnceWith('g1');
   });
 
   it('zone header text', async () => {
@@ -198,7 +195,7 @@ describe('Table', () => {
   });
 
   it('sizes cards as std until the catalog is loaded', () => {
-    vi.mocked(loadAllCards).mockReturnValue(new Promise(() => {}));
+    vi.mocked(loadGameCards).mockReturnValue(new Promise(() => {}));
     const view = makeView({
       cards: [card('g', { code: '01010', area: 'villain', x: 0, y: 300 })],
       piles: [],
@@ -213,7 +210,7 @@ describe('Table', () => {
   });
 
   it('shows a non-blocking error when the catalog fails to load', async () => {
-    vi.mocked(loadAllCards).mockRejectedValue(new Error('offline'));
+    vi.mocked(loadGameCards).mockRejectedValue(new Error('offline'));
     render(Table, { session: fakeSession(), view: makeView() });
 
     expect((await screen.findByRole('alert')).textContent).toContain(
@@ -223,7 +220,7 @@ describe('Table', () => {
   });
 
   it('after a failed load, every card is a std placeholder, as its zone is sized', async () => {
-    vi.mocked(loadAllCards).mockRejectedValue(new Error('offline'));
+    vi.mocked(loadGameCards).mockRejectedValue(new Error('offline'));
     const view = makeView({
       cards: [card('g', { code: '01010', area: 'villain', x: 0, y: 300 })],
       piles: [],
@@ -237,7 +234,6 @@ describe('Table', () => {
     await Promise.resolve();
     expect(surface.querySelector<HTMLElement>('.card')?.style.height).toBe('140px');
     expect(within(surface).queryByRole('img', { name: 'Giant form' })).toBeNull();
-    expect(cardByCode).not.toHaveBeenCalled();
   });
 
   it('dragging a separator resizes the zone above, snapped and never below its minimum', async () => {
@@ -654,7 +650,7 @@ describe('Table', () => {
 
   it('does not keep the heights measured before the catalog is loaded', async () => {
     let loaded = () => {};
-    vi.mocked(loadAllCards).mockReturnValue(new Promise<void>((resolve) => (loaded = resolve)));
+    vi.mocked(loadGameCards).mockReturnValue(new Promise<void>((resolve) => (loaded = resolve)));
     // The main scheme is landscape (100 high), but counts as std (140) until its size is known.
     const view = makeView({
       cards: [card('s', { code: '01097', area: 'villain', x: 0, y: 300 })],

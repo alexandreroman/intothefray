@@ -1,14 +1,13 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
 import Table from './Table.svelte';
 import { interaction } from './interaction.svelte';
-import { cardByCode, knownCard, loadAllCards, type CardInfo } from '../lib/catalog';
+import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
 import type { CardView as TableCard, PackFace, PileView, PresenceState, View } from '../lib/types';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
-  cardByCode: vi.fn(),
   knownCard: vi.fn(),
-  loadAllCards: vi.fn(),
+  loadGameCards: vi.fn(),
 }));
 
 // The catalog of the fixture: code -> faces.
@@ -30,7 +29,7 @@ function infoOf(code: string): CardInfo | null {
     images: [`${code}.png`],
     ...face,
   }));
-  return { card: { code, faces: full, back: 'player', quantity: 1 }, face: 0, pack: 'core' };
+  return { card: { code, faces: full, back: 'player', quantity: 1 }, face: 0 };
 }
 
 function card(id: string, extra: Partial<TableCard> = {}): TableCard {
@@ -155,17 +154,15 @@ async function renderTable(view = makeView()) {
 }
 
 beforeEach(() => {
-  vi.mocked(loadAllCards).mockResolvedValue();
+  vi.mocked(loadGameCards).mockResolvedValue();
   vi.mocked(knownCard).mockImplementation(infoOf);
-  vi.mocked(cardByCode).mockImplementation((code) => Promise.resolve(infoOf(code)));
 });
 
 afterEach(() => {
   vi.useRealTimers();
   vi.restoreAllMocks();
-  vi.mocked(loadAllCards).mockReset();
+  vi.mocked(loadGameCards).mockReset();
   vi.mocked(knownCard).mockReset();
-  vi.mocked(cardByCode).mockReset();
   interaction.reset();
 });
 
@@ -450,7 +447,7 @@ describe('ActionBar', () => {
 
   it('shows Flip on a card with two faces once the catalog is loaded', async () => {
     let loaded: () => void = () => {};
-    vi.mocked(loadAllCards).mockReturnValue(new Promise<void>((resolve) => (loaded = resolve)));
+    vi.mocked(loadGameCards).mockReturnValue(new Promise<void>((resolve) => (loaded = resolve)));
     // Before the load, the catalog knows nothing.
     vi.mocked(knownCard).mockReturnValue(null);
     render(Table, { session: fakeSession(), view: makeView() });

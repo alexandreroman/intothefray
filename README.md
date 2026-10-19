@@ -212,6 +212,13 @@ graph TD
     B -->|card images| I[marvelcdb / Cerebro images]
 ```
 
+The server embeds every card pack. The frontend publishes only the
+pack index (`packs/<lang>/index.json`), which the lobby reads to
+pick a scenario. Once the table is set up, the client downloads the
+game's card pool from `GET /api/games/{id}/cards`: the definitions
+of the cards in that game only, gzipped and cached by the browser
+(`ETag`, immutable).
+
 | Path                | Description                                    |
 | ------------------- | ---------------------------------------------- |
 | `cmd/intothefray/`  | Server entry point (HTTP, health check)        |

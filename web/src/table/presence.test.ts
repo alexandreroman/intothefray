@@ -1,15 +1,14 @@
 import { fireEvent, render } from '@testing-library/svelte';
 import Table from './Table.svelte';
 import { interaction } from './interaction.svelte';
-import { cardByCode, knownCard, loadAllCards, type CardInfo } from '../lib/catalog';
+import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
 import { GameSession } from '../lib/session.svelte';
 import type { Area, Arrow, CardView as TableCard, PackFace, View } from '../lib/types';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
-  cardByCode: vi.fn(),
   knownCard: vi.fn(),
-  loadAllCards: vi.fn(),
+  loadGameCards: vi.fn(),
 }));
 
 const FACES: Record<string, Partial<PackFace>> = {
@@ -23,7 +22,7 @@ function infoOf(code: string): CardInfo | null {
     return null;
   }
   const full: PackFace = { name: '', type: '', size: 'std', images: [`${code}.png`], ...face };
-  return { card: { code, faces: [full], back: 'player', quantity: 1 }, face: 0, pack: 'core' };
+  return { card: { code, faces: [full], back: 'player', quantity: 1 }, face: 0 };
 }
 
 function card(id: string, extra: Partial<TableCard> = {}): TableCard {
@@ -242,9 +241,8 @@ beforeEach(() => {
   localStorage.clear();
   scrolled = {};
   zoom = 1;
-  vi.mocked(loadAllCards).mockResolvedValue();
+  vi.mocked(loadGameCards).mockResolvedValue();
   vi.mocked(knownCard).mockImplementation(infoOf);
-  vi.mocked(cardByCode).mockImplementation((code) => Promise.resolve(infoOf(code)));
 });
 
 afterEach(() => {

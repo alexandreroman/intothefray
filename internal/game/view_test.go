@@ -352,6 +352,9 @@ func TestViewIdentity(t *testing.T) {
 	if p.Name != "Bob" || !p.Ready || p.Area != "p1" || p.HeroName != "Spider-Man" || p.DeckName != "Spidey" || p.Hero == "" {
 		t.Errorf("player view = %+v", p)
 	}
+	if want := f.g.Players[1].Deck.HeroImage; want == "" || p.HeroImage != want {
+		t.Errorf("player hero image = %q, want %q", p.HeroImage, want)
+	}
 }
 
 func TestLobbyView(t *testing.T) {

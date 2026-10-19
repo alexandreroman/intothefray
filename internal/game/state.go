@@ -141,6 +141,18 @@ func (t *Table) Clone() *Table {
 	return &clone
 }
 
+// CardCodes returns the distinct canonical codes of the table's cards,
+// sorted. No action creates a card, so the set is fixed once the table is
+// set up.
+func (t *Table) CardCodes() []string {
+	codes := make([]string, 0, len(t.Cards))
+	for _, c := range t.Cards {
+		codes = append(codes, c.Code)
+	}
+	slices.Sort(codes)
+	return slices.Compact(codes)
+}
+
 func (c *Card) clone() *Card {
 	clone := *c
 	clone.Tokens = maps.Clone(c.Tokens)

@@ -3,7 +3,7 @@ import { tick } from 'svelte';
 import Table from './Table.svelte';
 import { interaction } from './interaction.svelte';
 import { motion } from './motion.svelte';
-import { knownCard, loadAllCards, type CardInfo } from '../lib/catalog';
+import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
 import type {
   CardView as TableCard,
   LogView,
@@ -16,12 +16,12 @@ import type {
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
   knownCard: vi.fn(),
-  loadAllCards: vi.fn(),
+  loadGameCards: vi.fn(),
 }));
 
 function infoOf(code: string): CardInfo {
   const face = { name: 'Spider-Man', type: 'hero', size: 'std' as const, images: [`${code}.png`] };
-  return { card: { code, faces: [face], back: 'player', quantity: 1 }, face: 0, pack: 'core' };
+  return { card: { code, faces: [face], back: 'player', quantity: 1 }, face: 0 };
 }
 
 function card(id: string, extra: Partial<TableCard>): TableCard {
@@ -161,7 +161,7 @@ let originals: {
 
 beforeEach(() => {
   localStorage.clear();
-  vi.mocked(loadAllCards).mockResolvedValue();
+  vi.mocked(loadGameCards).mockResolvedValue();
   vi.mocked(knownCard).mockImplementation(infoOf);
   originals = {
     animate: Element.prototype.animate,

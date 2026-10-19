@@ -300,6 +300,58 @@ func TestSetDeckStoresDeck(t *testing.T) {
 	}
 }
 
+func TestSetDeckFillsHeroImage(t *testing.T) {
+	cat := newCatalog(t)
+	spiderMan, _, err := cat.Card(spiderManIdentity)
+	if err != nil {
+		t.Fatal(err)
+	}
+	heroFaceImage := spiderMan.Faces[0].Images[0]
+
+	tests := []struct {
+		name string
+		deck DeckChoice
+		want string
+	}{
+		{"canonical code", DeckChoice{Hero: "01001"}, heroFaceImage},
+		// The alter ego face code still gives the hero face.
+		{"alter ego alias", DeckChoice{Hero: "01001b"}, heroFaceImage},
+		{
+			"client value overridden",
+			DeckChoice{Hero: spiderManIdentity, HeroImage: "https://evil.example/x.png"},
+			heroFaceImage,
+		},
+		{"client value without hero cleared", DeckChoice{HeroImage: "https://evil.example/x.png"}, ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := lobbyOfFour(t)
+			if err := g.SetDeck("b", tt.deck, cat); err != nil {
+				t.Fatal(err)
+			}
+			if got := g.Players[1].Deck.HeroImage; got != tt.want {
+				t.Errorf("HeroImage = %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestHeroImageFallsBackToFirstFace(t *testing.T) {
+	cat := newCatalog(t)
+	set, _ := cat.Set("standard")
+	card, _, err := cat.Card(set.Cards[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if card.Faces[0].Type == faceTypeHero {
+		t.Fatalf("card %s has a hero face", card.Code)
+	}
+
+	if got, want := heroImage(cat, card.Code), card.Faces[0].Images[0]; got != want {
+		t.Errorf("heroImage(%s) = %q, want %q", card.Code, got, want)
+	}
+}
+
 func TestJoinAfterStartIsSpectator(t *testing.T) {
 	g := mustNewGame(t, "g1", "h", "Host", testNow)
 	g.Phase = PhasePlaying

@@ -76,7 +76,7 @@
       {/if}
     {:else}
       <div class="loaded">
-        <HeroThumb code={me.hero} name={me.heroName} large />
+        <HeroThumb image={me.heroImage} name={me.heroName} large />
         <div class="info">
           <b>{me.heroName}</b>
           <!-- The view carries no card count for a deck, so none is shown. -->
