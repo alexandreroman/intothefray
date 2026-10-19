@@ -32,3 +32,4 @@
 - [Optional Casper support](references/project_casper_optional.md) — Casper wiring only in .casper.json and scripts/casper.sh; build files stay generic
 - [Caddy as the local web server](references/project_caddy_entry_point.md) — Caddy serves web/dist from disk, single local entry point
 - [mise pins the frontend toolchain](references/project_mise_versions.md) — root mise.toml is the only node/pnpm version source
+- [Random player name](references/project_player_name.md) — no name prompt; random "Adjective Noun" name stored in itf-name
