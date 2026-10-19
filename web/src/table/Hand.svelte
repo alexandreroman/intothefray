@@ -4,7 +4,7 @@
   behind it dims.
 -->
 <script lang="ts">
-  import { tick } from 'svelte';
+  import { tick, type Snippet } from 'svelte';
   import { modal } from '../components/modal.svelte';
   import type { CardView as TableCard, PackFace } from '../lib/types';
   import CardBack from './CardBack.svelte';
@@ -19,6 +19,7 @@
     faceOf,
     narrow = false,
     open = $bindable(false),
+    switcher,
   }: {
     /** The hand, in its order. */
     cards: TableCard[];
@@ -28,6 +29,8 @@
     narrow?: boolean;
     /** Whether the hand is raised. */
     open?: boolean;
+    /** The hand switcher of a player with several decks, on top of the hand. */
+    switcher?: Snippet;
   } = $props();
 
   const cardSize = $derived(narrow ? HAND_CARD_NARROW : HAND_CARD);
@@ -69,6 +72,7 @@
     }
   });
   let list = $state<HTMLElement>();
+  let bar = $state<HTMLElement>();
 
   // The band the pointer opens the hand in: the cards' area stretched down to
   // the bottom of the window. Open, it is wider, so the pointer that raised
@@ -110,6 +114,11 @@
       .map((card) => card.getBoundingClientRect());
     if (boxes.length === 0) {
       return;
+    }
+    // The switcher on top of the hand belongs to it: the hand stays up while the pointer is on it.
+    const barBox = bar?.getBoundingClientRect();
+    if (barBox && barBox.width > 0) {
+      boxes.push(barBox);
     }
     const margin = open ? OPEN_MARGIN : RESTING_MARGIN;
     const left = Math.min(...boxes.map((box) => box.left)) - margin;
@@ -168,6 +177,12 @@
 <svelte:window onpointermove={followPointer} />
 
 <div class="veil" class:open></div>
+
+{#if switcher}
+  <div class="handbar" class:open style:--card-h="{cardSize.h}px" bind:this={bar}>
+    {@render switcher()}
+  </div>
+{/if}
 
 <ul
   class="hand"
@@ -280,6 +295,28 @@
   /* A table card would go back to it. */
   .hand.drop {
     background: linear-gradient(to top, #123349f0 0%, #123349a0 60%, transparent 100%);
+  }
+
+  /*
+    The switcher rides on top of the hand: lifted by the hand's height, it moves as the hand does,
+    about the hand's bottom edge.
+  */
+  .handbar {
+    grid-area: table;
+    align-self: end;
+    justify-self: center;
+    position: relative;
+    z-index: 20;
+    margin-bottom: calc(26px + var(--card-h) + 18px);
+    pointer-events: none;
+    transform: translateY(140px) scale(0.82);
+    transform-origin: 50% calc(100% + 44px + var(--card-h));
+    transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .handbar.open {
+    transform: none;
+    z-index: 2600;
   }
 
   /* Placed around the middle of the hand, below its top padding: --x is the card's middle. */

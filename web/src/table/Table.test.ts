@@ -120,25 +120,21 @@ function makeView(extra: { cards?: TableCard[]; piles?: PileView[] } = {}): View
   return {
     id: 'g1',
     phase: 'playing',
-    you: { role: 'player', name: 'Sam', color: 1, host: false, area: 'p1' },
+    you: { role: 'player', name: 'Sam', color: 1, host: false, areas: ['p1'] },
     players: [
       {
         name: 'Alex',
         color: 0,
         host: true,
-        area: 'p0',
-        heroName: 'Spider-Man',
         ready: true,
-        handCount: 6,
+        decks: [{ area: 'p0', heroName: 'Spider-Man', ready: true, handCount: 6 }],
       },
       {
         name: 'Sam',
         color: 1,
         host: false,
-        area: 'p1',
-        heroName: 'Ant-Man',
         ready: true,
-        handCount: 5,
+        decks: [{ area: 'p1', heroName: 'Ant-Man', ready: true, handCount: 5 }],
       },
     ],
     spectators: 0,
@@ -628,7 +624,7 @@ describe('Table', () => {
   it("shows the viewer's hand in order; spectators have none", async () => {
     const view = makeView();
     view.table?.cards.push(card('h2', { code: '01094', owner: 1, zone: 'hand' }));
-    view.table = { ...view.table!, hand: ['h2', 'h'] };
+    view.table = { ...view.table!, hands: { p1: ['h2', 'h'] } };
     const player = render(Table, { session: fakeSession(), view });
 
     const hand = screen.getByRole('list', { name: 'Your hand' });
@@ -648,7 +644,7 @@ describe('Table', () => {
 
   it("hovering a hand card shows no preview, and clears a table card's", async () => {
     const view = makeView();
-    view.table = { ...view.table!, hand: ['h'] };
+    view.table = { ...view.table!, hands: { p1: ['h'] } };
     render(Table, { session: fakeSession(), view });
     const hand = screen.getByRole('list', { name: 'Your hand' });
     const inHand = await within(hand).findByRole('img', { name: 'Spider-Man' });
@@ -666,7 +662,7 @@ describe('Table', () => {
     render(Table, { session, view });
 
     await fireEvent.click(screen.getByRole('button', { name: 'Undo last action' }));
-    expect(session.act).toHaveBeenCalledWith({ kind: 'undo' });
+    expect(session.act).toHaveBeenCalledWith({ kind: 'undo' }, 1);
   });
 
   it('shows the side panel, which holds the history only', () => {
@@ -697,7 +693,7 @@ describe('Table', () => {
     const expand = screen.getByRole('button', { name: 'Expand history' });
     await waitFor(() => expect(document.activeElement).toBe(expand));
     await fireEvent.click(within(side).getByRole('button', { name: 'Undo last action' }));
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'undo' });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'undo' }, 1);
     unmount();
 
     // The next table opens collapsed.
@@ -764,7 +760,7 @@ describe('Table', () => {
     });
     render(Table, { session, view: tired });
     await fireEvent.click(screen.getByRole('button', { name: 'Ready all cards' }));
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'readyAll' });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'readyAll' }, 1);
     document.body.replaceChildren();
 
     render(Table, {
@@ -973,9 +969,8 @@ describe('Table view modes', () => {
       name: 'Kim',
       color: 2,
       host: false,
-      area: 'p2',
       ready: true,
-      handCount: 0,
+      decks: [{ area: 'p2', ready: true, handCount: 0 }],
     });
     view.table!.piles.push(pile('d2', { owner: 2, x: 0, y: 1020 }));
     render(Table, { session: fakeSession(), view });
@@ -1002,9 +997,8 @@ describe('Table view modes', () => {
       name: 'Kim',
       color: 2,
       host: false,
-      area: 'p2',
       ready: true,
-      handCount: 0,
+      decks: [{ area: 'p2', ready: true, handCount: 0 }],
     });
     view.table!.piles.push(pile('d2', { owner: 2, x: 0, y: 1020 }));
     render(Table, { session: fakeSession(), view });
@@ -1073,11 +1067,195 @@ describe('Table view modes', () => {
     await fireEvent.pointerUp(window, { clientX: 500, clientY: 450 });
 
     // Its corner drawn at 460, 410: 460, 740 on the table.
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({
-      kind: 'move',
-      card: 'b',
-      x: 460,
-      y: 740,
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      {
+        kind: 'move',
+        card: 'b',
+        x: 460,
+        y: 740,
+      },
+      1,
+    );
+  });
+});
+
+describe('several decks', () => {
+  /**
+   * Alex (colour 0) plays two decks: Spider-Man (p0) and Ant-Man (p1); Sam
+   * (colour 1) one, She-Hulk (p2). The viewer is Alex, whose hands hold a
+   * Spider-Man card (p0) and a Rhino (p1).
+   */
+  function makeTwoDeckView(): View {
+    const view = makeView({
+      cards: [
+        card('v', { code: '01094', back: 'villain', x: 360, y: 30 }),
+        card('s', { code: '01097', back: 'encounter', x: 520, y: 30 }),
+        card('a', { code: '01001', owner: 0, x: 360, y: 360 }),
+        card('b', { code: '01001', owner: 1, x: 360, y: 690 }),
+        card('c', { code: '01001', owner: 2, x: 360, y: 1020 }),
+        card('h0', { code: '01001', owner: 0, zone: 'hand' }),
+        card('h1', { code: '01094', owner: 1, zone: 'hand' }),
+      ],
+      piles: [
+        pile('enc', { kind: 'encounter', x: 0, y: 30 }),
+        pile('d0', { owner: 0, x: 0, y: 360 }),
+        pile('d1', { owner: 1, x: 0, y: 690 }),
+        pile('d2', { owner: 2, x: 0, y: 1020 }),
+      ],
     });
+    view.you = { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0', 'p1'] };
+    view.players = [
+      {
+        name: 'Alex',
+        color: 0,
+        host: true,
+        ready: true,
+        decks: [
+          { area: 'p0', heroName: 'Spider-Man', ready: true, handCount: 1 },
+          { area: 'p1', heroName: 'Ant-Man', ready: true, handCount: 1 },
+        ],
+      },
+      {
+        name: 'Sam',
+        color: 1,
+        host: false,
+        ready: true,
+        decks: [{ area: 'p2', heroName: 'She-Hulk', ready: true, handCount: 4 }],
+      },
+    ];
+    view.table = { ...view.table!, hands: { p0: ['h0'], p1: ['h1'] } };
+    return view;
+  }
+
+  function hand(): HTMLElement {
+    return screen.getByRole('list', { name: 'Your hand' });
+  }
+
+  function handNames(): (string | null)[] {
+    return within(hand())
+      .queryAllByRole('img')
+      .map((image) => image.getAttribute('alt'));
+  }
+
+  function switcher(): HTMLElement {
+    return screen.getByRole('group', { name: 'Hand shown' });
+  }
+
+  function pressedDeck(): string | undefined {
+    const pressed = within(switcher())
+      .getAllByRole('button')
+      .find((button) => button.getAttribute('aria-pressed') === 'true');
+    return pressed?.querySelector('.hero')?.textContent?.trim();
+  }
+
+  it('hand shows selected deck', async () => {
+    render(Table, { session: fakeSession(), view: makeTwoDeckView() });
+    await within(hand()).findByRole('img', { name: 'Spider-Man' });
+
+    expect(handNames()).toEqual(['Spider-Man']);
+    expect(pressedDeck()).toBe('Spider-Man');
+  });
+
+  it('switcher click selects', async () => {
+    render(Table, { session: fakeSession(), view: makeTwoDeckView() });
+    await within(hand()).findByRole('img', { name: 'Spider-Man' });
+
+    await fireEvent.click(within(switcher()).getByRole('button', { name: /Ant-Man/ }));
+    expect(pressedDeck()).toBe('Ant-Man');
+    expect(handNames()).toEqual(['Rhino']);
+  });
+
+  it('switcher hidden with one deck', async () => {
+    render(Table, { session: fakeSession(), view: makeView() });
+    await catalogLoaded();
+
+    expect(screen.queryByRole('group', { name: 'Hand shown' })).toBeNull();
+  });
+
+  it('Q selects next deck', async () => {
+    render(Table, { session: fakeSession(), view: makeTwoDeckView() });
+    await within(hand()).findByRole('img', { name: 'Spider-Man' });
+
+    await fireEvent.keyDown(window, { key: 'q' });
+    expect(pressedDeck()).toBe('Ant-Man');
+    expect(handNames()).toEqual(['Rhino']);
+    // Round the viewer's decks.
+    await fireEvent.keyDown(window, { key: 'q' });
+    expect(pressedDeck()).toBe('Spider-Man');
+  });
+
+  it('action sends credited seat', async () => {
+    const session = fakeSession();
+    render(Table, { session, view: makeTwoDeckView() });
+    await catalogLoaded();
+
+    // Spider-Man (seat 0) is selected; the card belongs to Ant-Man, Alex's seat 1.
+    await fireEvent.pointerEnter(surface().querySelector<HTMLElement>('.card[data-id="b"]')!);
+    const bar = screen.getByRole('toolbar', { name: 'Actions' });
+    await fireEvent.click(within(bar).getByRole('button', { name: 'Exhaust' }));
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'exhaust', card: 'b' }, 1);
+  });
+
+  it('credits an action on a shared card to the selected deck', async () => {
+    const session = fakeSession();
+    render(Table, { session, view: makeTwoDeckView() });
+    await within(hand()).findByRole('img', { name: 'Spider-Man' });
+    await fireEvent.click(within(switcher()).getByRole('button', { name: /Ant-Man/ }));
+
+    await fireEvent.pointerEnter(surface().querySelector<HTMLElement>('.card[data-id="v"]')!);
+    const bar = screen.getByRole('toolbar', { name: 'Actions' });
+    await fireEvent.click(within(bar).getByRole('button', { name: 'Exhaust' }));
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'exhaust', card: 'v' }, 1);
+  });
+
+  it('keeps the selected deck across new views', async () => {
+    const result = render(Table, { session: fakeSession(), view: makeTwoDeckView() });
+    await within(hand()).findByRole('img', { name: 'Spider-Man' });
+    await fireEvent.click(within(switcher()).getByRole('button', { name: /Ant-Man/ }));
+
+    await result.rerender({ session: fakeSession(), view: makeTwoDeckView() });
+    expect(pressedDeck()).toBe('Ant-Man');
+    expect(handNames()).toEqual(['Rhino']);
+  });
+
+  it('frame label two decks', async () => {
+    render(Table, { session: fakeSession(), view: makeTwoDeckView() });
+    await catalogLoaded();
+
+    const frames = ownerBoxes().map((box) => box.querySelector('.owner')?.textContent);
+    expect(frames).toEqual(['Villain', 'Alex · Spider-Man', 'Alex · Ant-Man', 'Sam']);
+    // Each deck its own hand count; one player, one colour.
+    expect(ownerBoxes().map((box) => box.dataset.tip)).toEqual([
+      undefined,
+      '1 card in hand',
+      '1 card in hand',
+      '4 cards in hand',
+    ]);
+    expect(ownerBoxes().map((box) => box.style.getPropertyValue('--owner'))).toEqual([
+      'var(--spark)',
+      'var(--p1)',
+      'var(--p1)',
+      'var(--p2)',
+    ]);
+  });
+
+  it('names each deck in the hand switcher with its hand count', async () => {
+    render(Table, { session: fakeSession(), view: makeTwoDeckView() });
+    await catalogLoaded();
+
+    const labels = within(switcher())
+      .getAllByRole('button')
+      .map((button) => button.getAttribute('aria-label'));
+    expect(labels).toEqual(['Spider-Man: 1 card in hand', 'Ant-Man: 1 card in hand']);
+  });
+
+  it('shows a spectator no hand and no switcher', async () => {
+    const view = makeTwoDeckView();
+    view.you = { role: 'spectator', name: 'Kim', color: -1, host: false };
+    render(Table, { session: fakeSession(), view });
+    await catalogLoaded();
+
+    expect(screen.queryByRole('list', { name: 'Your hand' })).toBeNull();
+    expect(screen.queryByRole('group', { name: 'Hand shown' })).toBeNull();
   });
 });

@@ -64,10 +64,22 @@ function makeView(
   return {
     id: 'g1',
     phase: 'playing',
-    you: { role: 'player', name: 'Sam', color: 1, host: false, area: 'p1' },
+    you: { role: 'player', name: 'Sam', color: 1, host: false, areas: ['p1'] },
     players: [
-      { name: 'Alex', color: 0, host: true, area: 'p0', ready: true, handCount: 5 },
-      { name: 'Sam', color: 1, host: false, area: 'p1', ready: true, handCount: 5 },
+      {
+        name: 'Alex',
+        color: 0,
+        host: true,
+        ready: true,
+        decks: [{ area: 'p0', ready: true, handCount: 5 }],
+      },
+      {
+        name: 'Sam',
+        color: 1,
+        host: false,
+        ready: true,
+        decks: [{ area: 'p1', ready: true, handCount: 5 }],
+      },
     ],
     spectators: 0,
     config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },

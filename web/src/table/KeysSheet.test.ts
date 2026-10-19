@@ -135,6 +135,7 @@ describe('KeysSheet', () => {
         [
           'Undo your last action: Z',
           'Ready all cards: ⇧ Space',
+          'Next deck: Q',
           'Zoom in / out: +−',
           'Zoom back to 100%: 0',
           'Zoom around the mouse: Ctrl + wheel',
@@ -257,6 +258,6 @@ describe('the sheet on the table', () => {
     expect(sheet()).toBeNull();
     await fireEvent.pointerEnter(mine(), { clientX: 1 });
     await press('e');
-    expect(session.act).toHaveBeenCalledWith({ kind: 'exhaust', card: 'mine' });
+    expect(session.act).toHaveBeenCalledWith({ kind: 'exhaust', card: 'mine' }, 0);
   });
 });

@@ -69,16 +69,14 @@ function makeView(): View {
   return {
     id: 'g1',
     phase: 'playing',
-    you: { role: 'player', name: 'Sam', color: 0, host: true, area: 'p0' },
+    you: { role: 'player', name: 'Sam', color: 0, host: true, areas: ['p0'] },
     players: [
       {
         name: 'Sam',
         color: 0,
         host: true,
-        area: 'p0',
-        heroName: 'Spider-Man',
         ready: true,
-        handCount: hand.length,
+        decks: [{ area: 'p0', heroName: 'Spider-Man', ready: true, handCount: hand.length }],
       },
     ],
     spectators: 0,
@@ -87,7 +85,7 @@ function makeView(): View {
       cards: [...hand, IN_PLAY],
       piles: [],
       stages: [],
-      hand: hand.map((card) => card.id),
+      hands: { p0: hand.map((card) => card.id) },
       firstPlayer: { x: 860, y: 40 },
     },
     log: [],
@@ -185,7 +183,7 @@ describe('Table on a narrow screen', () => {
     expect(undo.getAttribute('aria-disabled')).toBe('false');
     expect(undo.dataset.tip).toBe('Undo last action');
     await fireEvent.click(undo);
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'undo' });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'undo' }, 0);
   });
 
   it('narrow layout ignores a collapsed history: no strip, the floating Undo', () => {

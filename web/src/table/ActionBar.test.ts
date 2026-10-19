@@ -69,25 +69,21 @@ function makeView(extra: { cards?: TableCard[]; piles?: PileView[] } = {}): View
   return {
     id: 'g1',
     phase: 'playing',
-    you: { role: 'player', name: 'Alex', color: 0, host: true, area: 'p0' },
+    you: { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0'] },
     players: [
       {
         name: 'Alex',
         color: 0,
         host: true,
-        area: 'p0',
-        heroName: 'Spider-Man',
         ready: true,
-        handCount: 1,
+        decks: [{ area: 'p0', heroName: 'Spider-Man', ready: true, handCount: 1 }],
       },
       {
         name: 'Sam',
         color: 1,
         host: false,
-        area: 'p1',
-        heroName: 'Ant-Man',
         ready: true,
-        handCount: 0,
+        decks: [{ area: 'p1', heroName: 'Ant-Man', ready: true, handCount: 0 }],
       },
     ],
     spectators: 0,
@@ -95,7 +91,7 @@ function makeView(extra: { cards?: TableCard[]; piles?: PileView[] } = {}): View
     table: {
       cards,
       piles,
-      hand: ['h'],
+      hands: { p0: ['h'] },
       stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
       firstPlayer: { x: 860, y: 40 },
     },
@@ -262,7 +258,7 @@ describe('ActionBar', () => {
     await fireEvent.pointerEnter(placed('mine'));
 
     await fireEvent.click(within(bar()!).getByRole('button', { name: 'Exhaust' }));
-    expect(session.act).toHaveBeenCalledWith({ kind: 'exhaust', card: 'mine' });
+    expect(session.act).toHaveBeenCalledWith({ kind: 'exhaust', card: 'mine' }, 0);
   });
 
   it('look at top asks count then sends look', async () => {
@@ -286,7 +282,7 @@ describe('ActionBar', () => {
 
     await fireEvent.click(within(dialog).getByRole('button', { name: 'One more' }));
     await fireEvent.click(within(dialog).getByRole('button', { name: 'Look' }));
-    expect(session.act).toHaveBeenCalledWith({ kind: 'look', pile: 'deck:p0', n: 6 });
+    expect(session.act).toHaveBeenCalledWith({ kind: 'look', pile: 'deck:p0', n: 6 }, 0);
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
@@ -309,7 +305,7 @@ describe('ActionBar', () => {
     await fireEvent.click(within(dialog).getByRole('button', { name: 'One more' }));
     expect(value.getAttribute('aria-valuenow')).toBe('3');
     await fireEvent.click(within(dialog).getByRole('button', { name: 'Look' }));
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'look', pile: 'enc', n: 3 });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'look', pile: 'enc', n: 3 }, 0);
   });
 
   it('the count question closes when its pile empties or goes', async () => {
@@ -518,7 +514,7 @@ describe('ActionBar', () => {
     await fireEvent.click(within(bar()!).getByRole('button', { name: 'Move to' }));
 
     await fireEvent.click(screen.getByRole('menuitem', { name: 'Bottom of deck' }));
-    expect(session.act).toHaveBeenCalledWith({ kind: 'toDeck', card: 'mine', where: 'bottom' });
+    expect(session.act).toHaveBeenCalledWith({ kind: 'toDeck', card: 'mine', where: 'bottom' }, 0);
   });
 
   it('a dropdown removed from under the pointer does not keep the bar', async () => {
@@ -552,7 +548,7 @@ describe('ActionBar', () => {
     expect(bar()?.textContent).toContain('Click the card to point at');
 
     await fireEvent.pointerDown(placed('v'));
-    expect(session.act).toHaveBeenCalledWith({ kind: 'arrowAdd', card: 'mine', target: 'v' });
+    expect(session.act).toHaveBeenCalledWith({ kind: 'arrowAdd', card: 'mine', target: 'v' }, 0);
     expect(interaction.arrowFrom).toBeNull();
   });
 
@@ -612,7 +608,7 @@ describe('ActionBar', () => {
 
     await fireEvent.pointerDown(placed('v'), { pointerType: 'touch' });
     await fireEvent.click(placed('v'));
-    expect(session.act).toHaveBeenCalledWith({ kind: 'arrowAdd', card: 'mine', target: 'v' });
+    expect(session.act).toHaveBeenCalledWith({ kind: 'arrowAdd', card: 'mine', target: 'v' }, 0);
     expect(interaction.locked).toBe(false);
 
     // The next tap selects as usual.
@@ -791,12 +787,15 @@ describe('tokens and statuses', () => {
 
     await fireEvent.click(addButton());
     await fireEvent.click(screen.getByRole('menuitem', { name: /^Damage/ }));
-    expect(session.act).toHaveBeenCalledWith({
-      kind: 'token',
-      card: 'mine',
-      name: 'dmg',
-      delta: 1,
-    });
+    expect(session.act).toHaveBeenCalledWith(
+      {
+        kind: 'token',
+        card: 'mine',
+        name: 'dmg',
+        delta: 1,
+      },
+      0,
+    );
   });
 
   it('a status choice adds one', async () => {
@@ -805,12 +804,15 @@ describe('tokens and statuses', () => {
 
     await fireEvent.click(addButton());
     await fireEvent.click(screen.getByRole('menuitem', { name: /^Tough/ }));
-    expect(session.act).toHaveBeenCalledWith({
-      kind: 'status',
-      card: 'mine',
-      name: 'tough',
-      delta: 1,
-    });
+    expect(session.act).toHaveBeenCalledWith(
+      {
+        kind: 'status',
+        card: 'mine',
+        name: 'tough',
+        delta: 1,
+      },
+      0,
+    );
   });
 
   it('pill minus sends delta -1', async () => {
@@ -822,20 +824,26 @@ describe('tokens and statuses', () => {
     const shown = pill()!;
     expect(shown.textContent).toContain('2');
     await fireEvent.click(within(shown).getByRole('button', { name: 'Remove 1' }));
-    expect(session.act).toHaveBeenCalledWith({
-      kind: 'token',
-      card: 'mine',
-      name: 'dmg',
-      delta: -1,
-    });
+    expect(session.act).toHaveBeenCalledWith(
+      {
+        kind: 'token',
+        card: 'mine',
+        name: 'dmg',
+        delta: -1,
+      },
+      0,
+    );
 
     await fireEvent.click(within(shown).getByRole('button', { name: 'Add 1' }));
-    expect(session.act).toHaveBeenLastCalledWith({
-      kind: 'token',
-      card: 'mine',
-      name: 'dmg',
-      delta: 1,
-    });
+    expect(session.act).toHaveBeenLastCalledWith(
+      {
+        kind: 'token',
+        card: 'mine',
+        name: 'dmg',
+        delta: 1,
+      },
+      0,
+    );
   });
 
   it('a status pill sends status actions', async () => {
@@ -844,12 +852,15 @@ describe('tokens and statuses', () => {
     await fireEvent.pointerEnter(counter('mine', 'status:stunned'));
 
     await fireEvent.click(within(pill()!).getByRole('button', { name: 'Add 1' }));
-    expect(session.act).toHaveBeenCalledWith({
-      kind: 'status',
-      card: 'mine',
-      name: 'stunned',
-      delta: 1,
-    });
+    expect(session.act).toHaveBeenCalledWith(
+      {
+        kind: 'status',
+        card: 'mine',
+        name: 'stunned',
+        delta: 1,
+      },
+      0,
+    );
   });
 
   it('the pill follows its token through redraws and hides at zero', async () => {

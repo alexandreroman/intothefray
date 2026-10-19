@@ -161,7 +161,7 @@ describe('keys on the table', () => {
     await fireEvent.pointerEnter(placed('mine'));
 
     await press('e');
-    expect(session.act).toHaveBeenCalledWith({ kind: 'exhaust', card: 'mine' });
+    expect(session.act).toHaveBeenCalledWith({ kind: 'exhaust', card: 'mine' }, 0);
   });
 
   it('Shift + Space readies all cards, wherever the pointer is', async () => {
@@ -173,7 +173,7 @@ describe('keys on the table', () => {
     expect(await press(' ', { shiftKey: true, repeat: true })).toBe(false);
     expect(session.act).not.toHaveBeenCalled();
     expect(await press(' ', { shiftKey: true })).toBe(false);
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'readyAll' });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'readyAll' }, 0);
     // Shift + E is not it.
     await press('E', { shiftKey: true });
     expect(session.act).toHaveBeenCalledOnce();
@@ -204,7 +204,7 @@ describe('keys on the table', () => {
     await fireEvent.pointerEnter(placed('mine'));
     // Caps Lock: an upper-case key without Shift.
     await press('E');
-    expect(session.act).toHaveBeenCalledWith({ kind: 'exhaust', card: 'mine' });
+    expect(session.act).toHaveBeenCalledWith({ kind: 'exhaust', card: 'mine' }, 0);
   });
 
   it('shift+D removes damage', async () => {
@@ -212,12 +212,15 @@ describe('keys on the table', () => {
     await fireEvent.pointerEnter(placed('mine'));
 
     await press('D', { shiftKey: true });
-    expect(session.act).toHaveBeenCalledWith({
-      kind: 'token',
-      card: 'mine',
-      name: 'dmg',
-      delta: -1,
-    });
+    expect(session.act).toHaveBeenCalledWith(
+      {
+        kind: 'token',
+        card: 'mine',
+        name: 'dmg',
+        delta: -1,
+      },
+      0,
+    );
   });
 
   it('D adds damage; Shift takes nothing from a card that has none', async () => {
@@ -225,12 +228,15 @@ describe('keys on the table', () => {
     await fireEvent.pointerEnter(placed('mine'));
 
     await press('d');
-    expect(session.act).toHaveBeenCalledWith({
-      kind: 'token',
-      card: 'mine',
-      name: 'dmg',
-      delta: 1,
-    });
+    expect(session.act).toHaveBeenCalledWith(
+      {
+        kind: 'token',
+        card: 'mine',
+        name: 'dmg',
+        delta: 1,
+      },
+      0,
+    );
     session.act.mockClear();
 
     await press('S', { shiftKey: true });
@@ -250,23 +256,26 @@ describe('keys on the table', () => {
     await fireEvent.pointerEnter(placed('mine'));
 
     await press('g');
-    expect(session.act).toHaveBeenCalledWith({
-      kind: 'status',
-      card: 'mine',
-      name: 'tough',
-      delta: 1,
-    });
+    expect(session.act).toHaveBeenCalledWith(
+      {
+        kind: 'status',
+        card: 'mine',
+        name: 'tough',
+        delta: 1,
+      },
+      0,
+    );
   });
 
   it('menu items answer to their keys', async () => {
     const { session } = await renderTable();
     await fireEvent.pointerEnter(placed('mine'));
     await press('h');
-    expect(session.act).toHaveBeenCalledWith({ kind: 'toHand', card: 'mine' });
+    expect(session.act).toHaveBeenCalledWith({ kind: 'toHand', card: 'mine' }, 0);
 
     await fireEvent.pointerEnter(placed('deck:p0'));
     await press('u');
-    expect(session.act).toHaveBeenCalledWith({ kind: 'shuffle', pile: 'deck:p0' });
+    expect(session.act).toHaveBeenCalledWith({ kind: 'shuffle', pile: 'deck:p0' }, 0);
 
     await press('l');
     expect(screen.getByRole('dialog', { name: 'Look at the top cards' })).toBeTruthy();
@@ -319,7 +328,7 @@ describe('keys on the table', () => {
     await press('Z', { shiftKey: true });
     expect(session.act).not.toHaveBeenCalled();
     await press('z');
-    expect(session.act).toHaveBeenCalledWith({ kind: 'undo' });
+    expect(session.act).toHaveBeenCalledWith({ kind: 'undo' }, 0);
   });
 
   it('keys ignored in inputs', async () => {
@@ -409,19 +418,25 @@ describe('held keys', () => {
     expect(session.act).not.toHaveBeenCalled();
 
     await press('d', { repeat: true });
-    expect(session.act).toHaveBeenLastCalledWith({
-      kind: 'token',
-      card: 'mine',
-      name: 'dmg',
-      delta: 1,
-    });
+    expect(session.act).toHaveBeenLastCalledWith(
+      {
+        kind: 'token',
+        card: 'mine',
+        name: 'dmg',
+        delta: 1,
+      },
+      0,
+    );
     await press('D', { shiftKey: true, repeat: true });
-    expect(session.act).toHaveBeenLastCalledWith({
-      kind: 'token',
-      card: 'mine',
-      name: 'dmg',
-      delta: -1,
-    });
+    expect(session.act).toHaveBeenLastCalledWith(
+      {
+        kind: 'token',
+        card: 'mine',
+        name: 'dmg',
+        delta: -1,
+      },
+      0,
+    );
     expect(session.act).toHaveBeenCalledTimes(2);
 
     await press('+', { repeat: true });
@@ -459,7 +474,7 @@ describe('keys during a drag', () => {
     await press('+');
     expect(zoomLabel()).toBe('110%');
     await press('z');
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'undo' });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'undo' }, 0);
   });
 
   it('nor do the keys of a dragged hand card', async () => {
@@ -508,7 +523,7 @@ describe('keys on a hand card', () => {
     await fireEvent.pointerEnter(inHand('h'));
 
     await press('p');
-    expect(session.act).toHaveBeenCalledWith({ kind: 'play', card: 'h', x: 1200, y: 0 });
+    expect(session.act).toHaveBeenCalledWith({ kind: 'play', card: 'h', x: 1200, y: 0 }, 0);
   });
 
   it('Backspace discards a hand card', async () => {
@@ -516,7 +531,7 @@ describe('keys on a hand card', () => {
     await fireEvent.pointerEnter(inHand('h'));
 
     await press('Backspace');
-    expect(session.act).toHaveBeenCalledWith({ kind: 'discard', card: 'h' });
+    expect(session.act).toHaveBeenCalledWith({ kind: 'discard', card: 'h' }, 0);
   });
 
   it('Backspace discards a table card; X does nothing any more', async () => {
@@ -526,7 +541,7 @@ describe('keys on a hand card', () => {
     await press('x');
     expect(session.act).not.toHaveBeenCalled();
     await press('Backspace');
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'discard', card: 'mine' });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'discard', card: 'mine' }, 0);
   });
 
   it('Backspace never goes back in history, and is left to the fields', async () => {

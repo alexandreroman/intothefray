@@ -94,10 +94,22 @@ function makeView(extra: { private?: PrivateView; cards?: TableCard[] } = {}): V
   return {
     id: 'g1',
     phase: 'playing',
-    you: { role: 'player', name: 'Alex', color: 0, host: true, area: 'p0' },
+    you: { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0'] },
     players: [
-      { name: 'Alex', color: 0, host: true, area: 'p0', ready: true, handCount: 0 },
-      { name: 'Sam', color: 1, host: false, area: 'p1', ready: true, handCount: 0 },
+      {
+        name: 'Alex',
+        color: 0,
+        host: true,
+        ready: true,
+        decks: [{ area: 'p0', ready: true, handCount: 0 }],
+      },
+      {
+        name: 'Sam',
+        color: 1,
+        host: false,
+        ready: true,
+        decks: [{ area: 'p1', ready: true, handCount: 0 }],
+      },
     ],
     spectators: 0,
     config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
@@ -108,7 +120,7 @@ function makeView(extra: { private?: PrivateView; cards?: TableCard[] } = {}): V
         pile('enc', { kind: 'encounter', x: 500, count: 20 }),
         pile('vic', { kind: 'victory', x: 700, count: 1, cards: ['q1'] }),
       ],
-      hand: [],
+      hands: { p0: [] },
       stages: [
         { key: 'villain', label: 'Villain', current: 'v', cards: ['v', 'v2'] },
         { key: 'main', label: 'Main scheme', current: 's', cards: ['s'] },
@@ -284,12 +296,31 @@ describe('CardBox', () => {
     expect(boxSource).toMatch(/const MIN_TILE = 220;/);
   });
 
+  it("names the deck's hero in the title of a player with two decks", async () => {
+    const view = makeView({ private: SEARCH });
+    view.you = { ...view.you, areas: ['p0', 'p1'] };
+    view.players = [
+      {
+        ...view.players[0]!,
+        decks: [
+          { area: 'p0', heroName: 'Spider-Man', ready: true, handCount: 0 },
+          { area: 'p1', heroName: 'Ant-Man', ready: true, handCount: 0 },
+        ],
+      },
+    ];
+    await renderTable(view);
+
+    expect(screen.getByRole('dialog', { name: 'Search Your Spider-Man deck (3 cards)' })).toBe(
+      box(),
+    );
+  });
+
   it('look box titles the top count and closes with Close', async () => {
     const { session } = await renderTable(makeView({ private: LOOK }));
 
     expect(screen.getByRole('dialog', { name: 'Top 3 of Your deck' })).toBeTruthy();
     await fireEvent.click(within(box()).getByRole('button', { name: 'Close' }));
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'closeView' });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'closeView' }, 0);
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
@@ -307,11 +338,14 @@ describe('CardBox', () => {
     expect(tile('c1').classList.contains('lifting')).toBe(true);
 
     await fireEvent.pointerUp(window, { clientX: 400, clientY: 150 });
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({
-      kind: 'reorderTop',
-      pile: 'deck:p0',
-      cards: ['c2', 'c3', 'c1'],
-    });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      {
+        kind: 'reorderTop',
+        pile: 'deck:p0',
+        cards: ['c2', 'c3', 'c1'],
+      },
+      0,
+    );
     expect(document.querySelector('.tile-ghost')).toBeNull();
     // The new order stays while the server answers.
     expect(tileNames()).toEqual(['Swinging Web Kick', 'Backflip', 'Web-Shooter']);
@@ -328,11 +362,14 @@ describe('CardBox', () => {
     await rerender(makeView({ private: { ...LOOK, cards: ['c1', 'c2'] } }));
     await fireEvent.pointerUp(window, { clientX: 400, clientY: 150 });
 
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({
-      kind: 'reorderTop',
-      pile: 'deck:p0',
-      cards: ['c2', 'c1'],
-    });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      {
+        kind: 'reorderTop',
+        pile: 'deck:p0',
+        cards: ['c2', 'c1'],
+      },
+      0,
+    );
   });
 
   it('search tiles cannot be reordered', async () => {
@@ -352,7 +389,7 @@ describe('CardBox', () => {
     const { session, rerender } = await renderTable(makeView({ private: SEARCH }));
 
     await fireEvent.click(within(box()).getByRole('button', { name: 'Shuffle & close' }));
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'closeView', where: 'shuffle' });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'closeView', where: 'shuffle' }, 0);
     expect(screen.queryByRole('dialog')).toBeNull();
 
     // The server closes the view; a new search opens a new box.
@@ -361,7 +398,7 @@ describe('CardBox', () => {
     session.act.mockClear();
     expect(box()).toBeTruthy();
     await fireEvent.click(within(box()).getByRole('button', { name: 'Close without shuffling' }));
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'closeView' });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'closeView' }, 0);
   });
 
   it('keeps the box open when the socket is down and a close is not sent', async () => {
@@ -370,7 +407,7 @@ describe('CardBox', () => {
 
     await fireEvent.click(within(box()).getByRole('button', { name: 'Shuffle & close' }));
 
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'closeView', where: 'shuffle' });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'closeView', where: 'shuffle' }, 0);
     expect(box()).toBeTruthy();
   });
 
@@ -392,7 +429,7 @@ describe('CardBox', () => {
     const { session } = await renderTable(makeView({ private: SEARCH }));
 
     await fireEvent.keyDown(window, { key: 'Escape' });
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'closeView' });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'closeView' }, 0);
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
@@ -416,12 +453,15 @@ describe('CardBox', () => {
     expect(session.act).not.toHaveBeenCalled();
 
     await pick('v2:0');
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({
-      kind: 'chooseStage',
-      stage: 'villain',
-      card: 'v2',
-      face: 0,
-    });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      {
+        kind: 'chooseStage',
+        stage: 'villain',
+        card: 'v2',
+        face: 0,
+      },
+      0,
+    );
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
@@ -434,12 +474,15 @@ describe('CardBox', () => {
 
     expect(tileNames()).toEqual(['The Break-In! (1A)', 'The Break-In! (1B)']);
     await pick('s:1');
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({
-      kind: 'chooseStage',
-      stage: 'main',
-      card: 's',
-      face: 1,
-    });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      {
+        kind: 'chooseStage',
+        stage: 'main',
+        card: 's',
+        face: 1,
+      },
+      0,
+    );
   });
 
   it('box updates when a card leaves', async () => {
@@ -487,13 +530,16 @@ describe('CardBox', () => {
     expect(names).toEqual(['Draw', 'Play', 'Discard', 'Put at the bottom of the deck']);
 
     await fireEvent.click(within(bar).getByRole('button', { name: 'Play' }));
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({
-      kind: 'play',
-      card: 'c1',
-      // The first free slot of Alex's row from 760, past the deck at 600 (keys.ts).
-      x: 980,
-      y: 0,
-    });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      {
+        kind: 'play',
+        card: 'c1',
+        // The first free slot of Alex's row from 760, past the deck at 600 (keys.ts).
+        x: 980,
+        y: 0,
+      },
+      0,
+    );
     expect(tileBar()).toBeNull();
   });
 
@@ -510,7 +556,7 @@ describe('CardBox', () => {
     await fireEvent.click(
       within(box()).getByRole('button', { name: 'Shuffle into the encounter deck' }),
     );
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'shuffleIn', pile: 'saside' });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'shuffleIn', pile: 'saside' }, 0);
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
@@ -661,7 +707,7 @@ describe('tileActions', () => {
     if (!found || !from) {
       throw new Error(`no ${id} in ${pileId}`);
     }
-    return tileActions(found, from, { view, seat: 0, sizeOf: () => 'std' });
+    return tileActions(found, from, { view, selected: 0, sizeOf: () => 'std' });
   }
 
   it('an out-of-play encounter card goes back to the encounter deck', () => {
