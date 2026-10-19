@@ -3,7 +3,7 @@ import Table from './Table.svelte';
 import { interaction } from './interaction.svelte';
 import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
 import { GameSession } from '../lib/session.svelte';
-import type { Area, Arrow, CardView as TableCard, PackFace, View } from '../lib/types';
+import type { Arrow, CardView as TableCard, PackFace, View } from '../lib/types';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -33,7 +33,6 @@ function card(id: string, extra: Partial<TableCard> = {}): TableCard {
     back: 'player',
     owner: 0,
     zone: 'table',
-    area: 'p0',
     x: 0,
     y: 0,
     z: 1,
@@ -41,15 +40,16 @@ function card(id: string, extra: Partial<TableCard> = {}): TableCard {
   };
 }
 
+// The villain's row at the top, then Alex's, then Sam's, 300 apart.
 const CARDS = [
-  card('mine'),
-  card('v', { code: '01094', owner: -1, back: 'villain', area: 'villain', x: 300 }),
-  card('sam', { owner: 1, area: 'p1', x: 200 }),
-  card('h', { zone: 'hand', area: undefined }),
+  card('mine', { y: 300 }),
+  card('v', { code: '01094', owner: -1, back: 'villain', x: 300 }),
+  card('sam', { owner: 1, x: 200, y: 600 }),
+  card('h', { zone: 'hand' }),
 ];
 
 /**
- * Alex (colour 0, area p0) and Sam (colour 1, area p1) against Rhino. The
+ * Alex (colour 0, seat p0) and Sam (colour 1, seat p1) against Rhino. The
  * viewer is Alex, or a spectator.
  */
 function makeView(extra: { spectator?: boolean; arrows?: Arrow[] } = {}): View {
@@ -70,7 +70,7 @@ function makeView(extra: { spectator?: boolean; arrows?: Arrow[] } = {}): View {
       piles: [],
       hand: extra.spectator ? undefined : ['h'],
       stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
-      firstPlayer: { area: 'p0', x: 860, y: 40 },
+      firstPlayer: { x: 860, y: 40 },
       arrows: extra.arrows,
     },
     log: [],
@@ -124,42 +124,25 @@ function domRect(left: number, top: number, width: number, height: number): DOMR
 }
 
 // The screen: the table starts 40 px below the top of the window, under the top
-// bar, and the presence layer covers it exactly. The zones lie one under the
-// other, 300 px tall; each scroller is as wide as the table, its surface 20 px
-// in and 40 px down from the top of the zone. Positions inside a surface are
+// bar, and the presence layer covers it exactly. The surface lies 20 px in and
+// 40 px down from the table's top until it is scrolled. Positions inside it are
 // table units times the zoom.
 const TABLE_TOP = 40;
-const ZONE_TOP: Record<string, number> = { villain: 40, p0: 340, p1: 640 };
-const SURFACE = { left: 20, top: 40 };
+const SURFACE = { left: 20, top: TABLE_TOP + 40 };
 
-/** How far each zone is scrolled to the left, in screen pixels. */
-let scrolled: Record<string, number> = {};
+/** How far the table is scrolled, in screen pixels. */
+let scrolled = { x: 0, y: 0 };
 let zoom = 1;
-
-function zoneOf(element: Element): Area | undefined {
-  return element.closest<HTMLElement>('.zsec')?.dataset.area as Area | undefined;
-}
 
 function layOut(): void {
   vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (this: Element) {
     if (this.classList.contains('tablewrap') || this.classList.contains('presence')) {
       return domRect(0, TABLE_TOP, 1000, 860);
     }
-    const area = zoneOf(this);
-    const zoneTop = area ? ZONE_TOP[area] : undefined;
-    if (area === undefined || zoneTop === undefined) {
-      return domRect(0, 0, 0, 0);
-    }
-    const surfaceLeft = SURFACE.left - (scrolled[area] ?? 0);
-    const surfaceTop = zoneTop + SURFACE.top;
-    if (this.classList.contains('zsec')) {
-      return domRect(0, zoneTop, 1000, 300);
-    }
-    if (this.classList.contains('zscroll')) {
-      return domRect(0, zoneTop + 30, 1000, 270);
-    }
+    const surfaceLeft = SURFACE.left - scrolled.x;
+    const surfaceTop = SURFACE.top - scrolled.y;
     if (this.classList.contains('surface')) {
-      return domRect(surfaceLeft, surfaceTop, 1200 * zoom, 240 * zoom);
+      return domRect(surfaceLeft, surfaceTop, 1200 * zoom, 1200 * zoom);
     }
     const id = (this as HTMLElement).dataset.id;
     const placed = CARDS.find((c) => c.id === id && c.zone === 'table');
@@ -208,12 +191,12 @@ async function nextFrame(): Promise<void> {
   await vi.advanceTimersByTimeAsync(16);
 }
 
-function surfaceOf(area: Area): HTMLElement {
-  const surface = document.querySelector<HTMLElement>(`.zsec[data-area="${area}"] .surface`);
-  if (!surface) {
-    throw new Error(`no surface for ${area}`);
+function surface(): HTMLElement {
+  const element = document.querySelector<HTMLElement>('.tablewrap .surface');
+  if (!element) {
+    throw new Error('no surface');
   }
-  return surface;
+  return element;
 }
 
 function placed(id: string): HTMLElement {
@@ -239,7 +222,7 @@ function rings(): HTMLElement[] {
 beforeEach(() => {
   vi.useFakeTimers();
   localStorage.clear();
-  scrolled = {};
+  scrolled = { x: 0, y: 0 };
   zoom = 1;
   vi.mocked(loadGameCards).mockResolvedValue();
   vi.mocked(knownCard).mockImplementation(infoOf);
@@ -256,27 +239,24 @@ describe("the viewer's own presence", () => {
     zoom = 2;
     const { sent } = await renderTable();
 
-    // Alex's zone: its surface starts at (20, 380) on the screen, at zoom 2.
+    // The surface starts at (20, 80) on the screen, at zoom 2.
     await fireEvent.pointerMove(window, { clientX: 220, clientY: 480 });
     await fireEvent.pointerMove(window, { clientX: 223, clientY: 481 });
     await fireEvent.pointerMove(window, { clientX: 225, clientY: 482 });
-    expect(sent()).toEqual([{ cursor: { area: 'p0', x: 100, y: 50 } }]);
+    expect(sent()).toEqual([{ cursor: { x: 100, y: 200 } }]);
 
     // The latest position follows at the end of the 50 ms window, in whole units.
     await vi.advanceTimersByTimeAsync(50);
-    expect(sent()).toEqual([
-      { cursor: { area: 'p0', x: 100, y: 50 } },
-      { cursor: { area: 'p0', x: 103, y: 51 } },
-    ]);
+    expect(sent()).toEqual([{ cursor: { x: 100, y: 200 } }, { cursor: { x: 103, y: 201 } }]);
   });
 
-  it('counts a spot between two zones in the zone above', async () => {
+  it('counts the scroll of the table', async () => {
     const { sent } = await renderTable();
+    scrolled = { x: 100, y: 300 };
 
-    // Below the villain's zone (40 to 340), above Alex's header.
     await fireEvent.pointerMove(window, { clientX: 120, clientY: 330 });
 
-    expect(sent()).toEqual([{ cursor: { area: 'villain', x: 100, y: 250 } }]);
+    expect(sent()).toEqual([{ cursor: { x: 200, y: 550 } }]);
   });
 
   it('sends nothing outside the table', async () => {
@@ -306,14 +286,14 @@ describe("the viewer's own presence", () => {
       makeView({ arrows: [{ from: 'mine', to: 'v', seat: 0 }] }),
     );
 
-    await fireEvent.pointerDown(surfaceOf('p0'), {
+    await fireEvent.pointerDown(surface(), {
       clientX: 220,
       clientY: 480,
       altKey: true,
       button: 0,
     });
 
-    expect(sent()).toEqual([{ ping: { area: 'p0', x: 200, y: 100 } }]);
+    expect(sent()).toEqual([{ ping: { x: 200, y: 400 } }]);
     // Nothing else: the press neither selects nor clears the viewer's arrows.
     expect(socket.sent.filter((message) => message.type === 'action')).toEqual([]);
 
@@ -334,7 +314,7 @@ describe("the viewer's own presence", () => {
   it('spectator sends no ping', async () => {
     const { sent } = await renderTable(makeView({ spectator: true }));
 
-    await fireEvent.pointerDown(surfaceOf('p0'), {
+    await fireEvent.pointerDown(surface(), {
       clientX: 220,
       clientY: 480,
       altKey: true,
@@ -354,9 +334,9 @@ describe("the viewer's own presence", () => {
     await fireEvent.pointerDown(placed('mine'), { clientX: 30, clientY: 400, button: 0 });
     await fireEvent.pointerMove(window, { clientX: 530, clientY: 400, buttons: 1 });
     await vi.advanceTimersByTimeAsync(50);
-    // The card's corner, grabbed 10 px in and 20 px down, in Alex's zone.
+    // The card's corner, grabbed 10 px in and 20 px down.
     expect(sent()).toContainEqual(
-      expect.objectContaining({ drag: { cards: ['mine'], area: 'p0', x: 500, y: 0 } }),
+      expect.objectContaining({ drag: { cards: ['mine'], x: 500, y: 300 } }),
     );
 
     await fireEvent.pointerUp(window, { clientX: 530, clientY: 400 });
@@ -369,7 +349,7 @@ describe("other players' presence", () => {
   it('remote cursor drawn with name and colour', async () => {
     const { receive } = await renderTable();
 
-    receive({ color: 1, name: 'Sam', cursor: { area: 'p1', x: 100, y: 50 } });
+    receive({ color: 1, name: 'Sam', cursor: { x: 100, y: 650 } });
     await nextFrame();
 
     const [cursor] = cursors();
@@ -377,23 +357,23 @@ describe("other players' presence", () => {
     expect(cursor!.textContent).toBe('Sam');
     expect(cursor!.querySelector('path')!.style.fill).toBe('var(--p2)');
     expect(cursor!.querySelector('span')!.style.background).toBe('var(--p2)');
-    // Sam's surface starts at (20, 680) on the screen, the layer 40 px down.
+    // The surface starts at (20, 80) on the screen, the layer 40 px down.
     expect(cursor!.style.transform).toBe('translate(120px, 690px)');
   });
 
-  it('follows a zone scrolled under the cursor, held at its edge when out of view', async () => {
+  it('follows the table scrolled under the cursor, held at its edge when out of view', async () => {
     const { receive } = await renderTable();
-    receive({ color: 1, name: 'Sam', cursor: { area: 'p1', x: 100, y: 50 } });
+    receive({ color: 1, name: 'Sam', cursor: { x: 100, y: 650 } });
     await nextFrame();
 
-    scrolled = { p1: 50 };
-    await fireEvent.scroll(document.querySelector('.zsec[data-area="p1"] .zscroll')!);
+    scrolled = { x: 50, y: 100 };
+    await fireEvent.scroll(document.querySelector('.tablewrap')!);
     await nextFrame();
-    expect(cursors()[0]!.style.transform).toBe('translate(70px, 690px)');
+    expect(cursors()[0]!.style.transform).toBe('translate(70px, 590px)');
 
     // Scrolled past it: the cursor waits at the left edge, its label pointing that way.
-    scrolled = { p1: 200 };
-    await fireEvent.scroll(document.querySelector('.zsec[data-area="p1"] .zscroll')!);
+    scrolled = { x: 200, y: 0 };
+    await fireEvent.scroll(document.querySelector('.tablewrap')!);
     await nextFrame();
     expect(cursors()[0]!.style.transform).toBe('translate(4px, 690px)');
     expect(cursors()[0]!.textContent).toBe('Sam ←');
@@ -402,7 +382,7 @@ describe("other players' presence", () => {
 
   it('stale cursor hidden after 10 s', async () => {
     const { receive } = await renderTable();
-    receive({ color: 1, name: 'Sam', cursor: { area: 'p1', x: 100, y: 50 } });
+    receive({ color: 1, name: 'Sam', cursor: { x: 100, y: 650 } });
     await nextFrame();
     expect(cursors()).toHaveLength(1);
 
@@ -412,7 +392,7 @@ describe("other players' presence", () => {
     expect(cursors()).toEqual([]);
 
     // It comes back with the next move.
-    receive({ color: 1, name: 'Sam', cursor: { area: 'p1', x: 110, y: 50 } });
+    receive({ color: 1, name: 'Sam', cursor: { x: 110, y: 650 } });
     await nextFrame();
     expect(cursors()).toHaveLength(1);
   });
@@ -427,7 +407,7 @@ describe("other players' presence", () => {
     });
 
     for (let x = 0; x < 200; x++) {
-      receive({ color: 1, name: 'Sam', cursor: { area: 'p1', x, y: 50 } });
+      receive({ color: 1, name: 'Sam', cursor: { x, y: 650 } });
       await Promise.resolve();
     }
 
@@ -446,7 +426,7 @@ describe("other players' presence", () => {
     const [ring] = rings();
     expect(ring).toBeDefined();
     expect(ring!.style.getPropertyValue('--c')).toBe('var(--p2)');
-    // Rhino lies at x 300 of the villain's surface: (320, 80) on the screen.
+    // Rhino lies at x 300 of the surface: (320, 80) on the screen.
     expect([ring!.style.left, ring!.style.top, ring!.style.width, ring!.style.height]).toEqual([
       '320px',
       '40px',
@@ -462,14 +442,14 @@ describe("other players' presence", () => {
   it('shows the ping of another player for 1.2 s', async () => {
     const { receive } = await renderTable();
 
-    receive({ color: 1, name: 'Sam', ping: { area: 'villain', x: 100, y: 50 } });
+    receive({ color: 1, name: 'Sam', ping: { x: 100, y: 50 } });
     await nextFrame();
     expect(pings().length).toBeGreaterThan(0);
     expect(pings()[0]!.style.getPropertyValue('--c')).toBe('var(--p2)');
     expect([pings()[0]!.style.left, pings()[0]!.style.top]).toEqual(['120px', '90px']);
 
     // A later message without a ping does not ping again.
-    receive({ color: 1, name: 'Sam', cursor: { area: 'p1', x: 100, y: 50 } });
+    receive({ color: 1, name: 'Sam', cursor: { x: 100, y: 650 } });
     await vi.advanceTimersByTimeAsync(1100);
     expect(pings().length).toBeGreaterThan(0);
     await vi.advanceTimersByTimeAsync(150);
@@ -479,11 +459,11 @@ describe("other players' presence", () => {
   it("draws another player's drag where it is, until it ends", async () => {
     const { receive } = await renderTable();
 
-    receive({ color: 1, name: 'Sam', drag: { cards: ['sam'], area: 'p0', x: 500, y: 20 } });
+    receive({ color: 1, name: 'Sam', drag: { cards: ['sam'], x: 500, y: 320 } });
     await nextFrame();
     const ghost = document.querySelector<HTMLElement>('.presence .card[data-id="sam"]');
     expect(ghost).not.toBeNull();
-    // In table units of the layer: Alex's surface lies at (20, 340) in it.
+    // In table units of the layer: the surface lies at (20, 40) in it.
     expect([ghost!.style.left, ghost!.style.top]).toEqual(['520px', '360px']);
 
     receive({ color: 1, name: 'Sam', drag: null });
@@ -496,9 +476,9 @@ describe("other players' presence", () => {
     receive({
       color: 1,
       name: 'Sam',
-      cursor: { area: 'p1', x: 100, y: 50 },
+      cursor: { x: 100, y: 650 },
       preview: 'v',
-      drag: { cards: ['sam'], area: 'p0', x: 500, y: 20 },
+      drag: { cards: ['sam'], x: 500, y: 320 },
     });
     await nextFrame();
 
@@ -522,10 +502,10 @@ describe("other players' presence", () => {
     receive({
       color: 1,
       name: 'Sam',
-      cursor: { area: 'p9"] .x', x: 10, y: 10 },
+      cursor: { x: '10"] .x', y: 10 },
       preview: 'v"], .card[data-id="',
-      ping: { area: 'nowhere"]', x: 1, y: 1 },
-      drag: { cards: ['a"]', 'a"]', 'v'], area: 'p0', x: 0, y: 0 },
+      ping: { x: 1, y: null },
+      drag: { cards: ['a"]', 'a"]', 'v'], x: 0, y: 0 },
     });
     await nextFrame();
 
@@ -538,8 +518,8 @@ describe("other players' presence", () => {
     );
     expect(ids).toEqual(['a"]', 'v']);
 
-    // A drag in an area the view does not know is not drawn.
-    receive({ color: 1, name: 'Sam', drag: { cards: ['v'], area: 'p7"]', x: 0, y: 0 } });
+    // A drag at a spot given in no numbers is not drawn.
+    receive({ color: 1, name: 'Sam', drag: { cards: ['v'], x: 'far', y: 0 } });
     await nextFrame();
     expect(document.querySelector('.presence .card')).toBeNull();
   });
@@ -548,7 +528,7 @@ describe("other players' presence", () => {
     const { receive } = await renderTable();
 
     // A card from Sam's hand, which Alex does not know.
-    receive({ color: 1, name: 'Sam', drag: { cards: ['secret'], area: 'p1', x: 0, y: 0 } });
+    receive({ color: 1, name: 'Sam', drag: { cards: ['secret'], x: 0, y: 600 } });
     await nextFrame();
 
     const ghost = document.querySelector<HTMLElement>('.presence .card[data-id="secret"]');

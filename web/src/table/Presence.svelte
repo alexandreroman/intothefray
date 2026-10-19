@@ -5,13 +5,12 @@
   about the viewer's drags. Spectators send nothing, as no player draws them
   (ruling P5c-R2: the server refuses their pings and drags).
 
-  Spots travel as table units of a zone (screen.ts). Messages can come in
+  Spots travel as table units of the surface (screen.ts). Messages can come in
   floods: the session keeps only the latest state of each player, and the
   layer draws them all in one pass per animation frame.
 -->
 <script lang="ts">
   import type {
-    Area,
     CardView as TableCard,
     PackFace,
     PresenceDrag,
@@ -24,7 +23,6 @@
   import { contains } from './drag';
   import { pileBack } from './face';
   import { interaction } from './interaction.svelte';
-  import { zoneOrder } from './layout';
   import { scrollerRect, surfaceRect, toScreen, toTable } from './screen';
 
   let {
@@ -41,11 +39,11 @@
     presence: ReadonlyMap<number, PresenceState>;
     /** Sends the viewer's own presence; the session throttles it. */
     send: (fields: PresenceFields) => void;
-    /** The page: the zones and their cards are measured there. */
+    /** The page: the surface and its cards are measured there. */
     root: HTMLElement | undefined;
     zoom: number;
     faceOf: (card: TableCard | undefined) => PackFace | null;
-    /** What moves the cards on the screen without a new view (the zone heights): redrawn on change. */
+    /** What moves the cards on the screen without a new view (the surface size): redrawn on change. */
     layout: unknown;
   } = $props();
 
@@ -58,7 +56,7 @@
   const LOST_MS = 60_000;
   /** How long a ping's rings expand. */
   const PING_MS = 1200;
-  // The prototype's room at a zone's edges for a cursor scrolled out of view.
+  // The prototype's room at the table's edges for a cursor scrolled out of view.
   const EDGE_IN = 8;
   const RIGHT_EDGE_ROOM = 70;
   const LEFT_EDGE_ROOM = 4;
@@ -67,7 +65,7 @@
   interface Placed {
     x: number;
     y: number;
-    /** An arrow towards a cursor held at the zone's edge, when its spot is scrolled out of view. */
+    /** An arrow towards a cursor held at the table's edge, when its spot is scrolled out of view. */
     side: '' | ' ←' | ' →';
   }
 
@@ -106,26 +104,16 @@
 
   // ---- The viewer's own presence ----
 
-  /**
-   * The spot of the table under a point of the screen: in the zone that
-   * starts last above it, so that a spot between two zones belongs to the one
-   * above. Null outside the table.
-   */
+  /** The spot of the table under a point of the screen. Null outside the table. */
   function spotAt(at: { x: number; y: number }): PresencePoint | null {
-    const table = root?.querySelector('.tablewrap')?.getBoundingClientRect();
-    if (!root || !table || !contains(table, at)) {
-      return null;
-    }
-    const sections = [...root.querySelectorAll<HTMLElement>('.zsec[data-area]')];
-    const above = sections.filter((section) => section.getBoundingClientRect().top <= at.y);
-    const area = (above.at(-1) ?? sections[0])?.dataset.area as Area | undefined;
-    const surface = area ? surfaceRect(root, area) : undefined;
-    if (!area || !surface) {
+    const table = scrollerRect(root);
+    const surface = surfaceRect(root);
+    if (!table || !surface || !contains(table, at)) {
       return null;
     }
     // The server takes whole table units only.
     const point = toTable(at, surface, zoom);
-    return { area, x: Math.round(point.x), y: Math.round(point.y) };
+    return { x: Math.round(point.x), y: Math.round(point.y) };
   }
 
   function onPointerMove(event: PointerEvent): void {
@@ -186,9 +174,10 @@
     schedule();
   });
 
-  // Relayed messages come from other clients: only the areas and cards the view knows are drawn.
-  function isKnownArea(area: string): area is Area {
-    return zoneOrder(view).some((known) => known === area);
+  // Relayed messages come from other clients: only spots given in numbers are drawn, and only the
+  // cards the view knows are ringed.
+  function isSpot(spot: PresencePoint): boolean {
+    return Number.isFinite(spot.x) && Number.isFinite(spot.y);
   }
 
   function isKnownElement(id: string): boolean {
@@ -199,14 +188,11 @@
     );
   }
 
-  /** Where a spot of the table shows, held within its zone's scroller as in the prototype. */
+  /** Where a spot of the table shows, held within the table's width as in the prototype. */
   function place(spot: PresencePoint, origin: DOMRect): Placed | null {
-    if (!isKnownArea(spot.area)) {
-      return null;
-    }
-    const surface = surfaceRect(root, spot.area);
-    const scroller = scrollerRect(root, spot.area);
-    if (!surface || !scroller) {
+    const surface = surfaceRect(root);
+    const scroller = scrollerRect(root);
+    if (!surface || !scroller || !isSpot(spot)) {
       return null;
     }
     const at = toScreen(spot, surface, zoom);
@@ -264,8 +250,8 @@
    * tucked under the first keeping their offsets.
    */
   function ghostsOf(drag: PresenceDrag, origin: DOMRect): TableCard[] {
-    const surface = isKnownArea(drag.area) ? surfaceRect(root, drag.area) : undefined;
-    if (!surface) {
+    const surface = surfaceRect(root);
+    if (!surface || !isSpot(drag)) {
       return [];
     }
     const corner = toScreen(drag, surface, zoom);
@@ -343,7 +329,7 @@
     }
   }
 
-  // A new view, a zoom or resized zones move the cards under the spots.
+  // A new view, a zoom or a resized surface move the cards under the spots.
   $effect(() => {
     void view;
     void zoom;
@@ -351,7 +337,7 @@
     schedule();
   });
 
-  // Scrolling a zone or the table, in the capture phase: scroll events do not bubble.
+  // Scrolling the table, in the capture phase: scroll events do not bubble.
   $effect(() => {
     const page = root;
     if (!page) {
@@ -485,7 +471,7 @@
     box-shadow: 0 2px 6px #0007;
   }
 
-  /* Held at the zone's edge: its spot is scrolled out of view. */
+  /* Held at the table's edge: its spot is scrolled out of view. */
   .rcursor.off svg {
     opacity: 0.35;
   }

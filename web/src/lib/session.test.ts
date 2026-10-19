@@ -538,7 +538,7 @@ describe('GameSession', () => {
         type: 'presence',
         color: 1,
         name: 'Bo',
-        cursor: { area: 'villain', x: 1, y: 2 },
+        cursor: { x: 1, y: 2 },
       });
       vi.setSystemTime(1_500);
       lastSocket().receive({ type: 'presence', color: 1, name: 'Bo', preview: 'c1' });
@@ -546,7 +546,7 @@ describe('GameSession', () => {
       expect(session.presence.get(1)).toEqual({
         color: 1,
         name: 'Bo',
-        cursor: { area: 'villain', x: 1, y: 2 },
+        cursor: { x: 1, y: 2 },
         preview: 'c1',
         at: 1_500,
       });
@@ -560,13 +560,13 @@ describe('GameSession', () => {
         type: 'presence',
         color: 1,
         name: 'Bo',
-        ping: { area: 'p1', x: 5, y: 6 },
+        ping: { x: 5, y: 6 },
       });
       vi.setSystemTime(1_200);
       lastSocket().receive({ type: 'presence', color: 1, name: 'Bo', preview: 'c1' });
 
       expect(session.presence.get(1)).toMatchObject({
-        ping: { area: 'p1', x: 5, y: 6 },
+        ping: { x: 5, y: 6 },
         pingAt: 1_000,
         at: 1_200,
       });
@@ -610,18 +610,18 @@ describe('GameSession', () => {
       lastSocket().open();
       const presenceSent = () => lastSocket().sent.filter((m) => m.type === 'presence');
 
-      session.sendPresence({ cursor: { area: 'p0', x: 1, y: 1 } });
-      session.sendPresence({ cursor: { area: 'p0', x: 2, y: 2 } });
-      session.sendPresence({ cursor: { area: 'p0', x: 3, y: 3 } });
-      session.sendPresence({ ping: { area: 'p0', x: 9, y: 9 } });
+      session.sendPresence({ cursor: { x: 1, y: 1 } });
+      session.sendPresence({ cursor: { x: 2, y: 2 } });
+      session.sendPresence({ cursor: { x: 3, y: 3 } });
+      session.sendPresence({ ping: { x: 9, y: 9 } });
       expect(presenceSent()).toHaveLength(1);
 
       vi.advanceTimersByTime(50);
       expect(presenceSent()).toHaveLength(2);
       expect(presenceSent()[1]).toEqual({
         type: 'presence',
-        cursor: { area: 'p0', x: 3, y: 3 },
-        ping: { area: 'p0', x: 9, y: 9 },
+        cursor: { x: 3, y: 3 },
+        ping: { x: 9, y: 9 },
       });
 
       // Nothing pending: the window closes and the next message goes out at once.

@@ -13,7 +13,6 @@ function tableCard(extra: Partial<TableCard> = {}): TableCard {
     back: 'player',
     owner: 0,
     zone: 'table',
-    area: 'p0',
     x: 120,
     y: 40,
     z: 7,

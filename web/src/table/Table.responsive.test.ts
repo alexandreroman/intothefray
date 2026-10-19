@@ -72,7 +72,7 @@ function makeView(): View {
       piles: [],
       stages: [],
       hand: hand.map((card) => card.id),
-      firstPlayer: { area: 'p0', x: 860, y: 40 },
+      firstPlayer: { x: 860, y: 40 },
     },
     log: [],
   };

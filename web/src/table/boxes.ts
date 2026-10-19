@@ -87,7 +87,7 @@ export function isDeck(pile: PileView): boolean {
 /**
  * The actions of a card in a pile box, in bar order (the prototype's
  * renderDeckView): Draw from the own deck or discard pile, Play to the first
- * free slot of the viewer's area, Discard, Put at the bottom of the deck, and
+ * free slot of the viewer's row, Discard, Put at the bottom of the deck, and
  * Shuffle into its deck for the out-of-play piles. Another player's deck or
  * set-aside cards cannot be touched.
  */
@@ -139,8 +139,7 @@ export function tileActions(card: CardView, pile: PileView, context: TileContext
 }
 
 function playAction(card: CardView, context: TileContext): Action {
-  const area = `p${context.seat}` as const;
   const table = context.view.table;
-  const { x, y } = freeSlot(table?.cards ?? [], table?.piles ?? [], area, context.sizeOf);
-  return { kind: 'play', card: card.id, area, x, y };
+  const { x, y } = freeSlot(table?.cards ?? [], table?.piles ?? [], context.seat, context.sizeOf);
+  return { kind: 'play', card: card.id, x, y };
 }

@@ -1,7 +1,7 @@
 <!--
   Drag and drop (spec 5.4). A press on a table card, a pile, a hand card or
   the first player token becomes a drag after 4 px: what is dragged is drawn
-  here, over the whole page at the table's zoom, outside the zone surfaces,
+  here, over the whole page at the table's zoom, outside the table's surface,
   so that new views redrawing the table leave it alone. The drop targets are
   measured on the screen and drag.ts decides what the drop sends. Once
   dropped, it stays drawn where it landed until the server answers.
@@ -10,7 +10,6 @@
   import { untrack } from 'svelte';
   import type {
     Action,
-    Area,
     CardView as TableCard,
     PackFace,
     PresenceDrag,
@@ -24,13 +23,13 @@
   import FirstPlayerToken from './FirstPlayerToken.svelte';
   import {
     contains,
+    dealRecipient,
     DRAG_THRESHOLD,
     dropAction,
     dropTarget,
     goesToHand,
     handBand,
     insertIndex,
-    intersect,
     pileTargets,
     sourceOf,
     stackOf,
@@ -40,7 +39,7 @@
     type PileDrop,
     type Point,
     type Rect,
-    type ZoneRect,
+    type TableRect,
   } from './drag';
   import { isHidden } from './face';
   import { interaction, type DropOn, type Held } from './interaction.svelte';
@@ -59,7 +58,7 @@
   }: {
     view: View;
     zoom: number;
-    /** The page the table is drawn in: the zones, the piles and the hand are measured there. */
+    /** The page the table is drawn in: the surface, the piles and the hand are measured there. */
     root: HTMLElement | undefined;
     faceOf: (card: TableCard | undefined) => PackFace | null;
     sizeOf: (card: TableCard) => Size;
@@ -210,7 +209,7 @@
   function grabOf(from: DragSource, pressedAt: Point): Point {
     if (from.kind === 'card') {
       const card = cardsById.get(from.card);
-      const surface = surfaceRect(root, from.area);
+      const surface = surfaceRect(root);
       if (card && surface) {
         const box = boxOf(from);
         const corner = toScreen(card, surface, zoom);
@@ -270,7 +269,7 @@
 
   /** Where a drop at the point leaves the dragged card's corner: on its grid spot when the action places it. */
   function landingCorner(from: DragSource, action: Action, at: Point): Point {
-    const surface = action.area ? surfaceRect(root, action.area) : undefined;
+    const surface = surfaceRect(root);
     if (!surface || action.x === undefined || action.y === undefined) {
       return cornerOf(from, at);
     }
@@ -279,15 +278,6 @@
 
   function placedRect(selector: string, id: string): DOMRect | undefined {
     return root?.querySelector(`.surface ${selector}[data-id="${id}"]`)?.getBoundingClientRect();
-  }
-
-  /** The zones, each where it shows within the table. */
-  function zonesOnScreen(page: HTMLElement, table: Rect): ZoneRect[] {
-    return [...page.querySelectorAll<HTMLElement>('.zsec[data-area]')].map((section) => ({
-      kind: 'zone',
-      area: section.dataset.area as Area,
-      rect: intersect(section.getBoundingClientRect(), table),
-    }));
   }
 
   /** Everything the dragged thing can be dropped on, measured on the screen. */
@@ -313,33 +303,28 @@
       );
       targets.push({ kind: 'toHand', rect: handBand(hand, table, window.innerHeight) });
     }
-    const zones = zonesOnScreen(root, table);
-    targets.push(...zones);
-    // The token lies anywhere in a zone, over cards and piles alike.
-    if (from.kind === 'firstPlayer') {
+    const whole: TableRect = { kind: 'table', rect: table };
+    targets.push(whole);
+    // The token lies anywhere on the table, over cards and piles alike.
+    if (from.kind === 'firstPlayer' || !contains(table, at)) {
       return targets;
     }
 
-    // Only the zone under the pointer takes the drop: its piles and cards are the only ones measured.
-    const under = zones.find((zone) => contains(zone.rect, at));
-    if (!under) {
-      return targets;
-    }
+    // Out-of-play piles are not drawn: they cannot be measured, and take no drop.
     for (const target of pileTargets(from, view)) {
-      const pile = view.table?.piles.find((p) => p.id === target.pile);
-      const rect = pile?.area === under.area ? placedRect('.pile', target.pile) : undefined;
-      if (pile && rect) {
-        targets.push({ kind: 'pile', ...target, area: pile.area, rect });
+      const rect = placedRect('.pile', target.pile);
+      if (rect) {
+        targets.push({ kind: 'pile', ...target, rect });
       }
     }
     const lifted = interaction.dragging?.lifted ?? [];
     for (const card of cards) {
-      if (card.zone !== 'table' || card.area !== under.area || lifted.includes(card.id)) {
+      if (card.zone !== 'table' || lifted.includes(card.id)) {
         continue;
       }
       const rect = placedRect('.card:not(.pile)', card.id);
       if (rect) {
-        targets.push({ kind: 'card', card: card.id, area: under.area, z: card.z, rect });
+        targets.push({ kind: 'card', card: card.id, z: card.z, rect });
       }
     }
     return targets;
@@ -352,13 +337,12 @@
     if (!target || !own) {
       return null;
     }
-    // A reorder of the hand happens in the viewer's own area; it needs no spot.
-    const area = 'area' in target ? target.area : own;
-    const surface = surfaceRect(root, area);
-    const spot = surface
-      ? { area, ...toTable(cornerOf(from, at), surface, zoom) }
-      : { area, x: 0, y: 0 };
-    return { target, action: dropAction(from, target, spot) };
+    const surface = surfaceRect(root);
+    const spot = surface ? toTable(cornerOf(from, at), surface, zoom) : { x: 0, y: 0 };
+    // An encounter card goes to the player whose row the pointer is in.
+    const pointed = surface ? toTable(at, surface, zoom) : { x: 0, y: 0 };
+    const dealTo = dealRecipient(view.table?.piles ?? [], pointed.y, own);
+    return { target, action: dropAction(from, target, spot, dealTo) };
   }
 
   /** Outlines and labels what the drop would land on, and opens the gap in the hand. */
@@ -461,7 +445,7 @@
     }
   }
 
-  /** Tells the other players where the drag is; it shows to them only while it is over a zone. */
+  /** Tells the other players where the drag is; it shows to them only while it is over the table. */
   function tellOthers(from: DragSource, at: Point): void {
     const drag = presenceOf(from, at);
     if (drag === null && !told) {
@@ -495,7 +479,7 @@
 
   /**
    * What the other players see of the drag: the cards it carries and their
-   * corner, in table units of the zone under the pointer. Not the first player
+   * corner, in table units, while it is over the table. Not the first player
    * token, which carries no card, nor a hand card over the hand, which is the
    * viewer's own business.
    */
@@ -504,16 +488,14 @@
     if (!root || !table || from.kind === 'firstPlayer' || overHand) {
       return null;
     }
-    const under = zonesOnScreen(root, table).find((zone) => contains(zone.rect, at));
-    const surface = under ? surfaceRect(root, under.area) : undefined;
-    if (!under || !surface) {
+    const surface = surfaceRect(root);
+    if (!contains(table, at) || !surface) {
       return null;
     }
     const cards = cardsShown(from);
     const corner = toTable(cornerOf(from, at), surface, zoom);
     return {
       cards: cards.slice(0, MAX_DRAG_CARDS),
-      area: under.area,
       x: Math.round(corner.x),
       y: Math.round(corner.y),
     };

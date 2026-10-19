@@ -75,7 +75,7 @@
 </div>
 
 <style>
-  /* Bottom right of the table column: never over a zone's piles. */
+  /* Bottom right of the table column: never over the piles, which start at the left. */
   .zoomctl {
     grid-area: table;
     align-self: end;

@@ -1,4 +1,4 @@
-import type { Area, CardView, PileKind, PileView, Size, View } from '../lib/types';
+import type { CardView, PileKind, PileView, Size } from '../lib/types';
 
 export type { Size };
 
@@ -12,21 +12,23 @@ export interface Box {
   rotated: boolean;
 }
 
+// Table cards are 40 % larger than the hand's and the preview's.
 const SIZES: Record<Size, { w: number; h: number }> = {
-  std: { w: 100, h: 140 },
-  land: { w: 140, h: 100 },
-  dstd: { w: 140, h: 200 },
-  dland: { w: 200, h: 140 },
+  std: { w: 140, h: 196 },
+  land: { w: 196, h: 140 },
+  dstd: { w: 196, h: 280 },
+  dland: { w: 280, h: 196 },
 };
 
 const PORTRAIT_CARD = SIZES.std;
 const PILE_BOX = PORTRAIT_CARD;
-const ZONE_BOTTOM_MARGIN = 20;
-const ZONE_MIN_HEIGHT = PORTRAIT_CARD.h + 60;
+
+// Free room past the rightmost and the lowest item of the table, so that a card can always be
+// dropped beyond them. The bottom room also keeps the last row clear of the floating hand.
+const FREE_ROOM_RIGHT = 200;
+const FREE_ROOM_BOTTOM = 300;
 
 const OUT_OF_PLAY_KINDS: readonly PileKind[] = ['victory', 'aside'];
-// Free room past the rightmost item of a zone.
-const ZONE_FREE_ROOM = 140;
 
 const FAN_RADIUS = 900;
 const FAN_MAX_STEP_DEG = 5;
@@ -54,30 +56,15 @@ export function cardBox(size: Size, opts: { faceDown?: boolean; onPile?: boolean
   return { w, h, rotated: false };
 }
 
-/** Areas from top to bottom: villain, the viewer's own area, then the other players by seat. */
-export function zoneOrder(view: View): Area[] {
-  const own = view.you.role === 'player' ? view.you.area : undefined;
-  const areas: Area[] = ['villain'];
-  if (own) {
-    areas.push(own);
-  }
-  for (const player of view.players) {
-    if (player.area && player.area !== own) {
-      areas.push(player.area);
-    }
-  }
-  return areas;
-}
-
 /**
- * A victory display or set-aside pile. The server sets them in the rail at
- * the left of their zone, after the deck and the discard pile.
+ * A victory display or set-aside pile. They are not drawn on the table: the
+ * action bar of their owner's deck and discard pile opens them.
  */
 export function isOutOfPlay(pile: PileView): boolean {
   return OUT_OF_PLAY_KINDS.includes(pile.kind);
 }
 
-/** Where a card or a pile lies in its zone, in table units. */
+/** Where a card or a pile lies on the table, in table units. */
 export interface Footprint {
   id: string;
   x: number;
@@ -112,140 +99,79 @@ export function visualBox(item: Footprint): { left: number; right: number; botto
   };
 }
 
-/** The table cards of one area, then its piles, with the room each takes. */
+/** The cards lying on the table, then the piles drawn there, with the room each takes. */
 export function footprints(
   cards: CardView[],
   piles: PileView[],
-  area: Area,
   sizeOf: (c: CardView) => Size,
 ): Footprint[] {
   const onTable = cards
-    .filter((c) => c.zone === 'table' && c.area === area)
+    .filter((c) => c.zone === 'table')
     .map((c) => {
       const { w, h } = cardBox(sizeOf(c), { faceDown: c.faceDown, onPile: !!c.onPile });
       return { id: c.id, x: c.x, y: c.y, w, h, exhausted: c.exhausted };
     });
   const stacked = piles
-    .filter((p) => p.area === area)
+    .filter((p) => !isOutOfPlay(p))
     .map((p) => ({ id: p.id, x: p.x, y: p.y, ...PILE_BOX }));
   return [...onTable, ...stacked];
 }
 
-// Less than this much of an item showing at the edge counts as hidden.
-const EDGE_SLACK = 10;
-
 /**
- * What lies out of view on each side of a zone scrolled to show table units
- * `left` to `right`, each side ordered from left to right.
+ * The size of the table's surface, in table units: at least what shows of it
+ * (`visible`), and always free room past its rightmost and its lowest item.
  */
-export function hiddenAside(
-  items: Footprint[],
-  left: number,
-  right: number,
-): { left: Footprint[]; right: Footprint[] } {
-  const byX = [...items].sort((a, b) => a.x - b.x);
-  return {
-    left: byX.filter((item) => visualBox(item).right <= left + EDGE_SLACK),
-    right: byX.filter((item) => visualBox(item).left >= right - EDGE_SLACK),
-  };
-}
-
-interface Extent {
-  right: number;
-  bottom: number;
-}
-
-/** The right and bottom edges of what lies on the table of one area, piles included. */
-function extentOf(
+export function surfaceSize(
   cards: CardView[],
   piles: PileView[],
-  area: Area,
   sizeOf: (c: CardView) => Size,
-): Extent {
-  const boxes = footprints(cards, piles, area, sizeOf).map(visualBox);
+  visible: { w: number; h: number },
+): { w: number; h: number } {
+  const boxes = footprints(cards, piles, sizeOf).map(visualBox);
   // Rounded up: a turned card's box ends between two units.
+  const right = Math.ceil(Math.max(0, ...boxes.map((box) => box.right)));
+  const bottom = Math.ceil(Math.max(0, ...boxes.map((box) => box.bottom)));
   return {
-    right: Math.ceil(Math.max(0, ...boxes.map((box) => box.right))),
-    bottom: Math.ceil(Math.max(0, ...boxes.map((box) => box.bottom))),
+    w: Math.max(visible.w, right + FREE_ROOM_RIGHT),
+    h: Math.max(visible.h, bottom + FREE_ROOM_BOTTOM),
   };
 }
 
-/** Height a zone needs: its lowest bottom plus a margin, and never under one card row plus 60. */
-export function zoneMinHeight(
-  cards: CardView[],
-  piles: PileView[],
-  area: Area,
-  sizeOf: (c: CardView) => Size,
-): number {
-  const { bottom } = extentOf(cards, piles, area, sizeOf);
-  return Math.max(bottom + ZONE_BOTTOM_MARGIN, ZONE_MIN_HEIGHT);
+/** The frame drawn around an owner's deck and discard pile, in table units. */
+export interface OwnerFrame {
+  /** The seat of the player, or -1 for the villain (the encounter deck and its discard pile). */
+  owner: number;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
 }
 
-/** At most this many zones share the visible height; more zones scroll. */
-export const ZONE_SPLIT_MAX = 3;
+// Room between the piles and their frame: the count pill under a pile stays inside. The
+// owner's name lies above the frame, in the 30 units the server leaves above the piles (setup.go).
+const FRAME_PADDING = 10;
 
-/** What one zone's height is made from, in table units. */
-export interface ZoneSizing {
-  /** What its cards need: see zoneMinHeight. */
-  min: number;
-  /** The tallest its cards made it since it was last resized by hand. */
-  grown?: number;
-  /** The height chosen with the separator under it. */
-  chosen?: number;
-}
+const HOME_KINDS: readonly PileKind[] = ['deck', 'discard', 'encounter', 'encounterDiscard'];
 
 /**
- * The height each of `count` zones gets by default out of `available`, in
- * whole table units: ZONE_SPLIT_MAX zones share it at most. 0 when nothing is
- * available.
+ * A frame around each owner's deck and discard pile (the encounter deck and
+ * its discard pile for the villain), from where the piles lie, in the order
+ * the owners first appear.
  */
-export function zoneShare(count: number, available: number): number {
-  if (count <= 0) {
-    return 0;
+export function ownerFrames(piles: PileView[]): OwnerFrame[] {
+  const byOwner = new Map<number, PileView[]>();
+  for (const pile of piles) {
+    if (HOME_KINDS.includes(pile.kind)) {
+      byOwner.set(pile.owner, [...(byOwner.get(pile.owner) ?? []), pile]);
+    }
   }
-  return Math.max(0, Math.floor(available / Math.min(count, ZONE_SPLIT_MAX)));
-}
-
-/**
- * Heights of the zones from top to bottom, in table units, sharing the
- * `available` height. Each zone takes its chosen height, or else an equal
- * share (ZONE_SPLIT_MAX zones share at most), and the last one takes what the
- * others leave: up to ZONE_SPLIT_MAX zones always fill the available height.
- * Past that, the last one gets at least a share too. No zone is ever shorter
- * than its minimum or than what it grew to. With nothing available (not
- * measured yet), a zone without a chosen height fits its cards.
- */
-export function zoneHeights(zones: ZoneSizing[], available: number): number[] {
-  const last = zones.at(-1);
-  if (!last) {
-    return [];
-  }
-  const share = zoneShare(zones.length, available);
-  const heights = zones
-    .slice(0, -1)
-    .map((zone) => Math.max(zone.min, zone.grown ?? 0, zone.chosen ?? share));
-  const taken = heights.reduce((sum, height) => sum + height, 0);
-  // Rounded up: a fraction of a unit short would leave a strip under the last zone.
-  const rest = Math.ceil(available - taken);
-  // No separator lies under the last zone: it has no chosen height.
-  const atLeast = zones.length > ZONE_SPLIT_MAX ? share : 0;
-  heights.push(Math.max(last.min, last.grown ?? 0, rest, atLeast));
-  return heights;
-}
-
-/**
- * Width of a zone, as the prototype has it: at least the visible width (in
- * table units), and always room for 140 more past its rightmost item.
- */
-export function zoneWidth(
-  cards: CardView[],
-  piles: PileView[],
-  area: Area,
-  sizeOf: (c: CardView) => Size,
-  visibleWidth: number = 0,
-): number {
-  const { right } = extentOf(cards, piles, area, sizeOf);
-  return Math.max(visibleWidth, right + ZONE_FREE_ROOM);
+  return [...byOwner].map(([owner, own]) => {
+    const left = Math.min(...own.map((p) => p.x)) - FRAME_PADDING;
+    const top = Math.min(...own.map((p) => p.y)) - FRAME_PADDING;
+    const right = Math.max(...own.map((p) => p.x + PILE_BOX.w)) + FRAME_PADDING;
+    const bottom = Math.max(...own.map((p) => p.y + PILE_BOX.h)) + FRAME_PADDING;
+    return { owner, x: left, y: top, w: right - left, h: bottom - top };
+  });
 }
 
 export interface FanSlot {

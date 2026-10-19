@@ -4,7 +4,6 @@ import { interaction } from './interaction.svelte';
 import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
 import type {
   Action,
-  Area,
   CardView as TableCard,
   PackFace,
   PresenceState,
@@ -41,7 +40,6 @@ function card(id: string, extra: Partial<TableCard> = {}): TableCard {
     back: 'player',
     owner: 0,
     zone: 'table',
-    area: 'p0',
     x: 0,
     y: 0,
     z: 1,
@@ -50,30 +48,32 @@ function card(id: string, extra: Partial<TableCard> = {}): TableCard {
 }
 
 function pile(id: string, extra: Partial<PileView>): PileView {
-  return { id, kind: 'deck', owner: -1, area: 'villain', x: 0, y: 0, count: 30, ...extra };
+  return { id, kind: 'deck', owner: -1, x: 0, y: 0, count: 30, ...extra };
 }
 
+// The villain's row at the top, Alex's 300 below it.
 const CARDS = [
-  card('mine', { tokens: { dmg: 2 } }),
-  card('other', { x: 400 }),
-  card('v', { code: '01094', owner: -1, back: 'villain', area: 'villain', x: 300 }),
-  card('h1', { zone: 'hand', area: undefined }),
-  card('h2', { zone: 'hand', area: undefined }),
-  card('h3', { zone: 'hand', area: undefined }),
+  card('mine', { y: 300, tokens: { dmg: 2 } }),
+  card('other', { x: 400, y: 300 }),
+  card('v', { code: '01094', owner: -1, back: 'villain', x: 300 }),
+  card('h1', { zone: 'hand' }),
+  card('h2', { zone: 'hand' }),
+  card('h3', { zone: 'hand' }),
 ];
 
 const PILES = [
   pile('enc', { kind: 'encounter', x: 0, count: 20 }),
-  pile('deck:p0', { owner: 0, area: 'p0', x: 600 }),
-  pile('disc:p0', { kind: 'discard', owner: 0, area: 'p0', x: 720, count: 0, cards: [] }),
+  pile('deck:p0', { owner: 0, x: 600, y: 300 }),
+  pile('disc:p0', { kind: 'discard', owner: 0, x: 760, y: 300, count: 0, cards: [] }),
 ];
 
 // The cards that can lie in Alex's discard pile: two Spider-Man, then a Rhino.
 const DISCARD_CODES: Record<string, string> = { d1: '01001', d2: '01094' };
 
 /**
- * Alex (p0) with Rhino, alone or with Sam (p1); `discarded` lists his discard
- * pile, bottom to top, and `firstPlayer` is the area the token lies in.
+ * Alex (p0) with Rhino, alone or with Sam (p1), whose row is 300 below
+ * Alex's; `discarded` lists Alex's discard pile, bottom to top, and
+ * `firstPlayerY` is the height the token lies at.
  */
 function makeView(
   extra: {
@@ -81,16 +81,17 @@ function makeView(
     spectator?: boolean;
     discarded?: string[];
     withSam?: boolean;
-    firstPlayer?: Area;
+    firstPlayerY?: number;
   } = {},
 ): View {
   const discarded = extra.discarded ?? [];
   const piles = PILES.map((p) =>
     p.id === 'disc:p0' ? { ...p, count: discarded.length, cards: discarded } : p,
   );
-  const inPile = discarded.map((id) =>
-    card(id, { code: DISCARD_CODES[id], zone: 'pile', area: undefined }),
-  );
+  if (extra.withSam) {
+    piles.push(pile('deck:p1', { owner: 1, x: 600, y: 600 }));
+  }
+  const inPile = discarded.map((id) => card(id, { code: DISCARD_CODES[id], zone: 'pile' }));
   return {
     id: 'g1',
     phase: 'playing',
@@ -118,7 +119,7 @@ function makeView(
       piles,
       hand: ['h1', 'h2', 'h3'],
       stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
-      firstPlayer: { area: extra.firstPlayer ?? 'p0', x: 860, y: 40 },
+      firstPlayer: { x: 860, y: extra.firstPlayerY ?? 340 },
     },
     log: [],
   };
@@ -150,42 +151,31 @@ function domRect(left: number, top: number, width: number, height: number): DOMR
   } as DOMRect;
 }
 
-// The screen, at zoom 1: the villain's zone on top, Alex's below, each surface
-// 20 px in from the left and 40 px below the top of its zone; the hand at the
-// bottom, its three cards side by side.
-const ZONE_TOP: Record<string, number> = { villain: 0, p0: 300, p1: 600 };
+// The screen, at zoom 1: the surface 20 px in from the left and 40 px down
+// from the top; the hand at the bottom, its three cards side by side.
 const SURFACE = { left: 20, top: 40 };
 const HAND_TOP = 700;
-
-function zoneOf(element: Element): Area | undefined {
-  return element.closest<HTMLElement>('.zsec')?.dataset.area as Area | undefined;
-}
 
 /** Lays the table out on the screen; `view` gives the table cards and piles their place. */
 function layOut(view: () => View, zoom: number): void {
   vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (this: Element) {
-    const area = zoneOf(this);
-    const zoneTop = area ? ZONE_TOP[area] : undefined;
     if (this.classList.contains('tablewrap')) {
       return domRect(0, 0, 1000, 900);
     }
-    if (this.classList.contains('zsec') && zoneTop !== undefined) {
-      return domRect(0, zoneTop, 1000, 300);
-    }
-    if (this.classList.contains('surface') && zoneTop !== undefined) {
-      return domRect(SURFACE.left, zoneTop + SURFACE.top, 960 * zoom, 240 * zoom);
+    if (this.classList.contains('surface')) {
+      return domRect(SURFACE.left, SURFACE.top, 1200 * zoom, 1200 * zoom);
     }
     const token = view().table?.firstPlayer;
     if (this.closest('.surface') && this.classList.contains('fptoken') && token) {
       return domRect(
         SURFACE.left + token.x * zoom,
-        ZONE_TOP[token.area]! + SURFACE.top + token.y * zoom,
+        SURFACE.top + token.y * zoom,
         84 * zoom,
         70 * zoom,
       );
     }
     const id = (this as HTMLElement).dataset.id;
-    if (this.closest('.surface') && id && zoneTop !== undefined) {
+    if (this.closest('.surface') && id) {
       const table = view().table;
       const placed =
         table?.cards.find((c) => c.id === id && c.zone === 'table') ??
@@ -193,9 +183,9 @@ function layOut(view: () => View, zoom: number): void {
       if (placed) {
         return domRect(
           SURFACE.left + placed.x * zoom,
-          zoneTop + SURFACE.top + placed.y * zoom,
-          100 * zoom,
+          SURFACE.top + placed.y * zoom,
           140 * zoom,
+          196 * zoom,
         );
       }
     }
@@ -291,46 +281,31 @@ describe('dragging a table card', () => {
     expect(placed('mine').classList).toContain('lifted');
 
     await release(254, 452);
-    // Its corner at 224, 392 on the screen: 204, 52 on Alex's table.
+    // Its corner at 224, 392 on the screen: 204, 352 on the table.
     expect(session.act).toHaveBeenCalledExactlyOnceWith({
       kind: 'move',
       card: 'mine',
-      area: 'p0',
       x: 200,
-      y: 50,
+      y: 350,
     });
   });
 
   it('counts the move in table units at another zoom', async () => {
     localStorage.setItem('itf-zoom', '2');
     const { session } = await renderTable();
-    // "mine" is drawn 200 by 280 at 20, 340: held 60 px in from its left edge, 120 down.
-    await press(placed('mine'), 80, 460);
+    // "mine" is drawn 280 by 392 at 20, 640: held 60 px in from its left edge, 120 down.
+    await press(placed('mine'), 80, 760);
     await moveTo(480, 560);
     expect(ghosts().map((g) => g.dataset.id)).toEqual(['mine']);
 
     await release(480, 560);
-    // Its corner at 420, 440 on the screen: 400, 100 px into the surface, 200, 50 units.
+    // Its corner at 420, 440 on the screen: 400, 400 px into the surface, 200, 200 units.
     expect(session.act).toHaveBeenCalledExactlyOnceWith({
       kind: 'move',
       card: 'mine',
-      area: 'p0',
       x: 200,
-      y: 50,
+      y: 200,
     });
-  });
-
-  it('measures only the cards and piles of the zone under the pointer', async () => {
-    await renderTable();
-    await press(placed('mine'), 50, 400);
-    const measure = vi.mocked(Element.prototype.getBoundingClientRect);
-    measure.mockClear();
-    await moveTo(254, 452);
-
-    const measured = measure.mock.contexts as Element[];
-    expect(measured).not.toContain(placed('v'));
-    expect(measured).not.toContain(placed('enc'));
-    expect(measured).toContain(placed('other'));
   });
 
   it('drag survives a new view', async () => {
@@ -347,9 +322,8 @@ describe('dragging a table card', () => {
     expect(session.act).toHaveBeenCalledExactlyOnceWith({
       kind: 'move',
       card: 'mine',
-      area: 'p0',
       x: 200,
-      y: 50,
+      y: 350,
     });
   });
 
@@ -393,8 +367,8 @@ describe('dragging a table card', () => {
   it('shows the label of the pile it would go to, and sends that', async () => {
     const { session } = await renderTable();
     await press(placed('mine'), 50, 400);
-    // Next to the discard pile, at 740, 340: within its 20 px margin.
-    await moveTo(735, 400);
+    // Next to the discard pile, at 780, 340: within its 20 px margin, nearer than the deck.
+    await moveTo(775, 400);
     expect(placed('disc:p0').classList).toContain('drop-pile');
     expect(screen.getByText('Discard')).toBeTruthy();
 
@@ -428,20 +402,20 @@ describe('dragging a table card', () => {
   });
 
   it("is not taken by the hand when it is another player's card or an encounter card", async () => {
-    const theirs = card('theirs', { owner: 1, x: 200 });
+    const theirs = card('theirs', { owner: 1, x: 200, y: 300 });
     const { session } = await renderTable(makeView({ cards: [...CARDS, theirs] }));
     await press(placed('theirs'), 250, 400);
     await moveTo(450, 740);
     expect(document.querySelector('.hand')?.classList).not.toContain('drop');
     expect(screen.queryByText('Hand')).toBeNull();
-    await release(450, 740);
+    await release(450, 950);
 
     // The villain's card lies at 320, 40 on the screen.
     await press(placed('v'), 350, 100);
     await moveTo(450, 740);
     expect(screen.queryByText('Hand')).toBeNull();
-    await release(450, 740);
-    // Dropped outside every zone: nothing moves.
+    await release(450, 950);
+    // Dropped below the table: nothing moves.
     expect(session.act).not.toHaveBeenCalled();
   });
 
@@ -535,8 +509,8 @@ describe('dragging a table card', () => {
 describe('dragging from a pile', () => {
   it('plays the top card of a discard pile under the card it is dropped on', async () => {
     const { session } = await renderTable(makeView({ discarded: ['d1'] }));
-    // The discard pile lies at 740, 340 on the screen.
-    await press(placed('disc:p0'), 790, 410);
+    // The discard pile lies at 780, 340 on the screen.
+    await press(placed('disc:p0'), 830, 410);
     await moveTo(470, 420);
     expect(screen.getByText('Under Spider-Man')).toBeTruthy();
 
@@ -550,7 +524,7 @@ describe('dragging from a pile', () => {
 
   it('keeps the card it took when another card is put on the pile meanwhile', async () => {
     const { session, rerender } = await renderTable(makeView({ discarded: ['d1'] }));
-    await press(placed('disc:p0'), 790, 410);
+    await press(placed('disc:p0'), 830, 410);
     await moveTo(300, 450);
 
     // Another player discards the Rhino onto it.
@@ -562,18 +536,18 @@ describe('dragging from a pile', () => {
     expect(pileView.querySelector('.count')?.textContent).toBe('1');
 
     await release(300, 450);
+    // Held by its middle: its corner at 230, 352 on the screen, 210, 312 on the table.
     expect(session.act).toHaveBeenCalledExactlyOnceWith({
       kind: 'play',
       card: 'd1',
-      area: 'p0',
-      x: 230,
-      y: 40,
+      x: 210,
+      y: 310,
     });
   });
 
   it('is cancelled when the card it took leaves the pile meanwhile', async () => {
     const { session, rerender } = await renderTable(makeView({ discarded: ['d1'] }));
-    await press(placed('disc:p0'), 790, 410);
+    await press(placed('disc:p0'), 830, 410);
     await moveTo(300, 450);
 
     await rerender(makeView({ discarded: [] }));
@@ -584,37 +558,52 @@ describe('dragging from a pile', () => {
 
   it('deals the encounter card where it lands, even over a card', async () => {
     const { session } = await renderTable();
-    await press(placed('enc'), 50, 100);
+    await press(placed('enc'), 70, 100);
     await moveTo(470, 420);
     // It is not tucked: no outline, no label.
     expect(placed('other').classList).not.toContain('drop-target');
     expect(screen.queryByText(/^Under/)).toBeNull();
 
     await release(470, 420);
-    // Held by its middle: its corner at 420, 350 on the screen, 400, 10 on Alex's table.
+    // Held by its middle: its corner at 400, 322 on the screen, 380, 282 on the table, in Alex's
+    // row, which starts 30 above his deck (at 300).
     expect(session.act).toHaveBeenCalledExactlyOnceWith({
       kind: 'deal',
       area: 'p0',
-      x: 400,
-      y: 10,
+      x: 380,
+      y: 280,
     });
+  });
+
+  it('deals to the player whose row it lands in, or to the viewer in the villain row', async () => {
+    const { session } = await renderTable(makeView({ withSam: true }));
+    // Sam's deck lies at 600 on the table: his row starts at 570, 610 on the screen.
+    await press(placed('enc'), 70, 100);
+    await moveTo(300, 700);
+    await release(300, 700);
+    expect(session.act).toHaveBeenLastCalledWith({ kind: 'deal', area: 'p1', x: 210, y: 560 });
+
+    await press(placed('enc'), 70, 100);
+    await moveTo(600, 200);
+    await release(600, 200);
+    expect(session.act).toHaveBeenLastCalledWith({ kind: 'deal', area: 'p0', x: 510, y: 60 });
   });
 
   it('deals the top card of the encounter deck face down where it lands', async () => {
     const { session } = await renderTable();
-    await press(placed('enc'), 50, 100);
+    await press(placed('enc'), 70, 100);
     await moveTo(300, 450);
     // A face-down encounter card, centred on the pointer.
     const [ghost] = ghosts();
     expect(ghost?.querySelector('[alt="Encounter card back"]')).not.toBeNull();
 
     await release(300, 450);
-    // Its corner at 250, 380 on the screen: 230, 40 on Alex's table.
+    // Its corner at 230, 352 on the screen: 210, 312 on the table.
     expect(session.act).toHaveBeenCalledExactlyOnceWith({
       kind: 'deal',
       area: 'p0',
-      x: 230,
-      y: 40,
+      x: 210,
+      y: 310,
     });
   });
 });
@@ -629,14 +618,13 @@ describe('dragging a hand card', () => {
     expect(document.querySelector('.hand .hcard[data-id="h2"]')).toBeNull();
 
     await release(300, 450);
-    // Held 60 px in from its left edge and 80 down, out of 132 by 185: at table size its corner
-    // lands at 254.5, 389.5 on the screen, 234.5, 49.5 on Alex's table.
+    // Held 60 px in from its left edge and 80 down, out of 132 by 185: at table size (140 by 196)
+    // its corner lands at 236.4, 365.2 on the screen, 216.4, 325.2 on the table.
     expect(session.act).toHaveBeenCalledExactlyOnceWith({
       kind: 'play',
       card: 'h2',
-      area: 'p0',
-      x: 230,
-      y: 50,
+      x: 220,
+      y: 330,
     });
   });
 
@@ -679,9 +667,9 @@ describe('dragging a hand card', () => {
   it('can be dropped on a pile', async () => {
     const { session } = await renderTable();
     await press(handCard('h3'), 650, 780);
-    await moveTo(770, 400);
+    await moveTo(800, 400);
     expect(screen.getByText('Discard')).toBeTruthy();
-    await release(770, 400);
+    await release(800, 400);
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'discard', card: 'h3' });
   });
 });
@@ -697,18 +685,18 @@ describe('telling the other players about the drag', () => {
       .map((fields) => fields.drag);
   }
 
-  it('tells where it is over a zone, and null once when it leaves them all', async () => {
+  it('tells where it is over the table, and null once when it leaves it', async () => {
     const { session } = await renderTable();
     await press(placed('mine'), 50, 400);
     await moveTo(254, 452);
-    // Its corner at 224, 392 on the screen: 204, 52 on Alex's table, not snapped.
-    expect(dragsSent(session)).toEqual([{ cards: ['mine'], area: 'p0', x: 204, y: 52 }]);
+    // Its corner at 224, 392 on the screen: 204, 352 on the table, not snapped.
+    expect(dragsSent(session)).toEqual([{ cards: ['mine'], x: 204, y: 352 }]);
 
-    // Below Alex's zone, above the hand: in no zone.
-    await moveTo(500, 650);
-    await moveTo(510, 660);
-    await release(510, 660);
-    expect(dragsSent(session)).toEqual([{ cards: ['mine'], area: 'p0', x: 204, y: 52 }, null]);
+    // Below the table.
+    await moveTo(500, 950);
+    await moveTo(510, 960);
+    await release(510, 960);
+    expect(dragsSent(session)).toEqual([{ cards: ['mine'], x: 204, y: 352 }, null]);
   });
 
   it('ends with null when it is dropped', async () => {
@@ -726,26 +714,22 @@ describe('telling the other players about the drag', () => {
     expect(dragsSent(session)).toEqual([]);
 
     await moveTo(300, 450);
-    expect(dragsSent(session)).toEqual([
-      expect.objectContaining({ cards: ['hidden-0'], area: 'p0' }),
-    ]);
+    expect(dragsSent(session)).toEqual([expect.objectContaining({ cards: ['hidden-0'] })]);
     expect(JSON.stringify(dragsSent(session))).not.toContain('h1');
   });
 
   it('keeps the real id of a card from a public pile', async () => {
     const { session } = await renderTable(makeView({ discarded: ['d1'] }));
-    await press(placed('disc:p0'), 770, 400);
+    await press(placed('disc:p0'), 830, 410);
     await moveTo(300, 450);
-    expect(dragsSent(session)).toEqual([expect.objectContaining({ cards: ['d1'], area: 'p0' })]);
+    expect(dragsSent(session)).toEqual([expect.objectContaining({ cards: ['d1'] })]);
   });
 
   it("carries the encounter deck's pile id for its unknown top card", async () => {
     const { session } = await renderTable();
-    await press(placed('enc'), 50, 100);
+    await press(placed('enc'), 70, 100);
     await moveTo(300, 150);
-    expect(dragsSent(session)).toEqual([
-      expect.objectContaining({ cards: ['enc'], area: 'villain' }),
-    ]);
+    expect(dragsSent(session)).toEqual([expect.objectContaining({ cards: ['enc'] })]);
   });
 
   it('carries 50 cards at most', async () => {
@@ -769,17 +753,17 @@ describe('telling the other players about the drag', () => {
 });
 
 describe('a drop waiting for the server', () => {
-  /** Drags "mine" so that its corner lands at 204, 52 on Alex's table, and lets go. */
+  /** Drags "mine" so that its corner lands at 204, 352 on the table, and lets go. */
   async function dropMine() {
     await press(placed('mine'), 50, 400);
     await moveTo(254, 452);
     await release(254, 452);
   }
 
-  /** The table once the server took the move of "mine" to 200, 50. */
+  /** The table once the server took the move of "mine" to 200, 350. */
   function moved(): View {
     return makeView({
-      cards: CARDS.map((c) => (c.id === 'mine' ? { ...c, x: 200, y: 50 } : c)),
+      cards: CARDS.map((c) => (c.id === 'mine' ? { ...c, x: 200, y: 350 } : c)),
     });
   }
 
@@ -792,7 +776,7 @@ describe('a drop waiting for the server', () => {
   it('keeps a moved card on its grid spot until the next view', async () => {
     const { rerender } = await renderTable();
     await dropMine();
-    // Where the move puts it: 200, 50 on Alex's table, 220, 390 on the screen.
+    // Where the move puts it: 200, 350 on the table, 220, 390 on the screen.
     const [ghost] = ghosts();
     expect(ghosts().map((g) => g.dataset.id)).toEqual(['mine']);
     expect(ghost?.style.left).toBe('220px');
@@ -844,22 +828,20 @@ describe('a drop waiting for the server', () => {
     await press(handCard('h2'), 500, 780);
     await moveTo(300, 450);
     await release(300, 450);
-    // Played at 230, 50 on Alex's table: 250, 390 on the screen.
+    // Played at 220, 330 on the table: 240, 370 on the screen.
     const [ghost] = ghosts();
     expect(ghosts().map((g) => g.dataset.id)).toEqual(['h2']);
-    expect(ghost?.style.left).toBe('250px');
-    expect(ghost?.style.top).toBe('390px');
+    expect(ghost?.style.left).toBe('240px');
+    expect(ghost?.style.top).toBe('370px');
     expect(handOrder()).toEqual(['h1', 'h3']);
 
     const played = makeView({
-      cards: CARDS.map((c) =>
-        c.id === 'h2' ? { ...c, zone: 'table', area: 'p0', x: 230, y: 50 } : c,
-      ),
+      cards: CARDS.map((c) => (c.id === 'h2' ? { ...c, zone: 'table', x: 220, y: 330 } : c)),
     });
     played.table!.hand = ['h1', 'h3'];
     await rerender(played);
     expect(ghosts()).toEqual([]);
-    expect(placed('h2').style.left).toBe('230px');
+    expect(placed('h2').style.left).toBe('220px');
   });
 
   it('keeps the new order of a reordered hand', async () => {
@@ -887,30 +869,30 @@ describe('a drop waiting for the server', () => {
 
   it('keeps the card taken from a pile out of it', async () => {
     const { rerender } = await renderTable(makeView({ discarded: ['d1'] }));
-    await press(placed('disc:p0'), 790, 410);
+    await press(placed('disc:p0'), 830, 410);
     await moveTo(300, 450);
     await release(300, 450);
     expect(ghosts().map((g) => g.dataset.id)).toEqual(['d1']);
     expect(placed('disc:p0').classList).toContain('empty');
 
     const view = makeView();
-    view.table!.cards.push(card('d1', { x: 230, y: 40 }));
+    view.table!.cards.push(card('d1', { x: 210, y: 310 }));
     await rerender(view);
     expect(ghosts()).toEqual([]);
-    expect(placed('d1').style.left).toBe('230px');
+    expect(placed('d1').style.left).toBe('210px');
   });
 
   it('deals the encounter card face down where it lands, the deck one card lower', async () => {
     await renderTable();
-    await press(placed('enc'), 50, 100);
+    await press(placed('enc'), 70, 100);
     await moveTo(300, 450);
     await release(300, 450);
-    // Dealt at 230, 40 on Alex's table: 250, 380 on the screen.
+    // Dealt at 210, 310 on the table: 230, 350 on the screen.
     expect(ghosts()).toHaveLength(1);
     const [ghost] = ghosts();
     expect(ghost?.querySelector('[alt="Encounter card back"]')).not.toBeNull();
-    expect(ghost?.style.left).toBe('250px');
-    expect(ghost?.style.top).toBe('380px');
+    expect(ghost?.style.left).toBe('230px');
+    expect(ghost?.style.top).toBe('350px');
     expect(placed('enc').querySelector('.count')?.textContent).toBe('19');
   });
 });
@@ -924,7 +906,7 @@ describe('dragging the first player token', () => {
     return document.querySelector<HTMLElement>('.draglayer .fptoken');
   }
 
-  it("moves it to another player's zone, snapped to the grid", async () => {
+  it("moves it to another player's row, snapped to the grid", async () => {
     const { session, rerender } = await renderTable(makeView({ withSam: true }));
     // The token lies at 880, 380 on the screen: it is held 20 px in from its corner.
     await press(token()!, 900, 400);
@@ -933,19 +915,15 @@ describe('dragging the first player token', () => {
     expect(tokenGhost()).not.toBeNull();
 
     await release(204, 703);
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({
-      kind: 'firstPlayer',
-      area: 'p1',
-      x: 160,
-      y: 40,
-    });
+    // Its corner at 184, 683 on the screen: 164, 643 on the table.
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'firstPlayer', x: 160, y: 640 });
     // It waits where it was dropped until the next view.
     expect(token()).toBeNull();
     expect(tokenGhost()).not.toBeNull();
 
-    await rerender(makeView({ withSam: true, firstPlayer: 'p1' }));
+    await rerender(makeView({ withSam: true, firstPlayerY: 640 }));
     expect(tokenGhost()).toBeNull();
-    expect(document.querySelector('.zsec[data-area="p1"] .fptoken')).not.toBeNull();
+    expect(token()?.style.top).toBe('640px');
   });
 
   it('sends nothing when put back where it was', async () => {

@@ -77,7 +77,11 @@ export type Role = 'player' | 'spectator';
 export type Zone = 'table' | 'hand' | 'pile' | 'stage';
 export type PileKind = 'deck' | 'discard' | 'encounter' | 'encounterDiscard' | 'victory' | 'aside';
 
-/** "villain", or "p0".."p3" for the player seated at that index. */
+/**
+ * "villain", or "p0".."p3" for the player seated at that index. It names a
+ * seat (whose hand, whose view), never a place on the table: the table is
+ * one surface.
+ */
 export type Area = 'villain' | `p${number}`;
 
 export interface CardView {
@@ -88,7 +92,6 @@ export interface CardView {
   back: Back;
   owner: number; // seat, -1 for no owner
   zone: Zone;
-  area?: Area;
   x: number;
   y: number;
   z: number;
@@ -104,7 +107,6 @@ export interface PileView {
   id: string;
   kind: PileKind;
   owner: number;
-  area: Area;
   x: number;
   y: number;
   count: number;
@@ -154,8 +156,8 @@ export interface Arrow {
   seat: number;
 }
 
+/** A spot of the table, in table units. */
 export interface Point {
-  area: Area;
   x: number;
   y: number;
 }
@@ -240,7 +242,7 @@ export interface Action {
   card?: string;
   target?: string; // card id (attach, arrow, play under it) or pile id
   pile?: string;
-  area?: Area;
+  area?: Area; // whose hand (draw, handOrder), or who is dealt a card (deal)
   x?: number;
   y?: number;
   n?: number;
@@ -254,17 +256,15 @@ export interface Action {
 
 // ---- Live session (internal/server/protocol.go) ----
 
-/** A spot of the table: where a cursor is, or what a ping points at. */
+/** A spot of the table, in table units: where a cursor is, or what a ping points at. */
 export interface PresencePoint {
-  area: Area;
   x: number;
   y: number;
 }
 
-/** A drag in progress: the cards dragged and where they are. */
+/** A drag in progress: the cards dragged and where their corner is, in table units. */
 export interface PresenceDrag {
   cards: string[];
-  area: Area;
   x: number;
   y: number;
 }

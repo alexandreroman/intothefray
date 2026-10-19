@@ -23,7 +23,6 @@ const MINE: TableCard = {
   back: 'player',
   owner: 0,
   zone: 'table',
-  area: 'p0',
   x: 280,
   y: 0,
   z: 1,
@@ -42,7 +41,7 @@ function makeView(): View {
       cards: [MINE],
       piles: [],
       stages: [],
-      firstPlayer: { area: 'p0', x: 860, y: 40 },
+      firstPlayer: { x: 860, y: 40 },
     },
     log: [],
   };

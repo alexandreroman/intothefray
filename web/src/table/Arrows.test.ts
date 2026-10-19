@@ -4,7 +4,6 @@ import { interaction } from './interaction.svelte';
 import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
 import type {
   Action,
-  Area,
   Arrow,
   CardView as TableCard,
   PackFace,
@@ -41,7 +40,6 @@ function card(id: string, extra: Partial<TableCard> = {}): TableCard {
     back: 'player',
     owner: 0,
     zone: 'table',
-    area: 'p0',
     x: 0,
     y: 0,
     z: 1,
@@ -49,16 +47,17 @@ function card(id: string, extra: Partial<TableCard> = {}): TableCard {
   };
 }
 
+// The villain's row at the top, then Alex's, then Sam's, 300 apart.
 const CARDS = [
-  card('mine'),
-  card('other', { x: 400 }),
-  card('v', { code: '01094', owner: -1, back: 'villain', area: 'villain', x: 300 }),
-  card('sam', { owner: 1, area: 'p1' }),
-  card('h', { zone: 'hand', area: undefined }),
+  card('mine', { y: 300 }),
+  card('other', { x: 400, y: 300 }),
+  card('v', { code: '01094', owner: -1, back: 'villain', x: 300 }),
+  card('sam', { owner: 1, y: 600 }),
+  card('h', { zone: 'hand' }),
 ];
 
 /**
- * Alex (seat 0, area p0) and Sam (seat 1, area p1) against Rhino. Their
+ * Alex (seat 0, p0) and Sam (seat 1, p1) against Rhino. Their
  * colours are not their seats: Alex is colour 2 (--p3), Sam colour 0 (--p1).
  * The viewer is Alex, or a spectator.
  */
@@ -82,7 +81,7 @@ function makeView(
       piles: [],
       hand: extra.spectator ? undefined : ['h'],
       stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
-      firstPlayer: { area: 'p0', x: 860, y: 40 },
+      firstPlayer: { x: 860, y: 40 },
       arrows: extra.arrows,
     },
     log: [],
@@ -114,28 +113,20 @@ function domRect(left: number, top: number, width: number, height: number): DOMR
   } as DOMRect;
 }
 
-// The screen, at zoom 1: the zones one under the other, 300 px tall, each
-// scroller as wide as the table and its surface 20 px in, 40 px down. The
-// arrows layer starts 10 px below the top of the screen.
-const ZONE_TOP: Record<string, number> = { villain: 0, p0: 300, p1: 600 };
+// The screen, at zoom 1: the table's scroller fills it, the surface 20 px in and 40 px down
+// until it is scrolled. The arrows layer starts 10 px below the top of the screen.
 const SURFACE = { left: 20, top: 40 };
 const LAYER_TOP = 10;
 // Wherever the pointer is, a dragged card's ghost lies there on the screen.
 const GHOST = { left: 800, top: 600 };
 const GHOST_MIDDLE = [850, 660];
 
-/** How far each zone is scrolled to the left, in screen pixels. */
-let scrolled: Record<string, number> = {};
-
-function zoneOf(element: Element): Area | undefined {
-  return element.closest<HTMLElement>('.zsec')?.dataset.area as Area | undefined;
-}
+/** How far the table is scrolled, in screen pixels. */
+let scrolled = { x: 0, y: 0 };
 
 /** Lays the table out on the screen; `view` gives the table cards their place. */
 function layOut(view: () => View): void {
   vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (this: Element) {
-    const area = zoneOf(this);
-    const zoneTop = area ? ZONE_TOP[area] : undefined;
     if (this.classList.contains('tablewrap')) {
       return domRect(0, 0, 1000, 900);
     }
@@ -145,19 +136,10 @@ function layOut(view: () => View): void {
     if (this.closest('.draglayer') && this.classList.contains('card')) {
       return domRect(GHOST.left, GHOST.top, 100, 140);
     }
-    if (area === undefined || zoneTop === undefined) {
-      return domRect(0, 0, 0, 0);
-    }
-    const surfaceLeft = SURFACE.left - (scrolled[area] ?? 0);
-    const surfaceTop = zoneTop + SURFACE.top;
-    if (this.classList.contains('zsec')) {
-      return domRect(0, zoneTop, 1000, 300);
-    }
-    if (this.classList.contains('zscroll')) {
-      return domRect(0, zoneTop + 30, 1000, 270);
-    }
+    const surfaceLeft = SURFACE.left - scrolled.x;
+    const surfaceTop = SURFACE.top - scrolled.y;
     if (this.classList.contains('surface')) {
-      return domRect(surfaceLeft, surfaceTop, 1200, 240);
+      return domRect(surfaceLeft, surfaceTop, 1200, 1200);
     }
     const id = (this as HTMLElement).dataset.id;
     const placed = view().table?.cards.find((c) => c.id === id && c.zone === 'table');
@@ -192,12 +174,16 @@ function placed(id: string): HTMLElement {
   return element;
 }
 
-function surfaceOf(area: Area): HTMLElement {
-  const surface = document.querySelector<HTMLElement>(`.zsec[data-area="${area}"] .surface`);
-  if (!surface) {
-    throw new Error(`no surface for ${area}`);
+function surface(): HTMLElement {
+  const element = document.querySelector<HTMLElement>('.tablewrap .surface');
+  if (!element) {
+    throw new Error('no surface');
   }
-  return surface;
+  return element;
+}
+
+function scroller(): HTMLElement {
+  return document.querySelector<HTMLElement>('.tablewrap')!;
 }
 
 /** The arrows drawn between cards, the rubber band left out. */
@@ -230,7 +216,7 @@ function pointAt(id: string | null): void {
 
 beforeEach(() => {
   localStorage.clear();
-  scrolled = {};
+  scrolled = { x: 0, y: 0 };
   vi.mocked(loadGameCards).mockResolvedValue();
   vi.mocked(knownCard).mockImplementation(infoOf);
 });
@@ -285,19 +271,13 @@ describe('arrows', () => {
     expect(shafts()).toHaveLength(0);
   });
 
-  it('follows a zone scrolled under it, sticking to the zone edge', async () => {
+  it('follows the table scrolled under it, both ways', async () => {
     await renderTable(makeView({ arrows: [{ from: 'mine', to: 'v', seat: 0 }] }));
     expect(startOf(shafts()[0]!)).toEqual([70, 400]);
 
-    const scroller = document.querySelector('.zsec[data-area="p0"] .zscroll')!;
-    scrolled = { p0: 30 };
-    await fireEvent.scroll(scroller);
-    await waitFor(() => expect(startOf(shafts()[0]!)).toEqual([40, 400]));
-
-    // Scrolled out of view: the arrow starts at the zone's left edge, 12 px in.
-    scrolled = { p0: 300 };
-    await fireEvent.scroll(scroller);
-    await waitFor(() => expect(startOf(shafts()[0]!)).toEqual([12, 400]));
+    scrolled = { x: 30, y: 100 };
+    await fireEvent.scroll(scroller());
+    await waitFor(() => expect(startOf(shafts()[0]!)).toEqual([40, 300]));
   });
 
   it('goes back to its card when a drag of that card ends without a new view', async () => {
@@ -310,7 +290,7 @@ describe('arrows', () => {
     await fireEvent.pointerMove(window, { clientX: 310, clientY: 460, buttons: 1 });
     await waitFor(() => expect(startOf(shafts()[0]!)).toEqual(GHOST_MIDDLE));
 
-    // Let go outside every zone: nothing is sent, no view comes, the card is back in its place.
+    // Let go outside the table: nothing is sent, no view comes, the card is back in its place.
     await fireEvent.pointerUp(window, { clientX: 500, clientY: 950 });
     await waitFor(() => expect(startOf(shafts()[0]!)).toEqual([70, 400]));
   });
@@ -390,7 +370,7 @@ describe('a click on an empty spot', () => {
     await fireEvent.click(placed('other'));
     expect(interaction.locked).toBe(true);
 
-    await fireEvent.pointerDown(surfaceOf('villain'), { pointerType: 'touch' });
+    await fireEvent.pointerDown(surface(), { pointerType: 'touch' });
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'arrowClear' });
     expect(interaction.locked).toBe(false);
   });
@@ -399,25 +379,36 @@ describe('a click on an empty spot', () => {
     const { session } = await renderTable(
       makeView({ arrows: [{ from: 'mine', to: 'v', seat: 0 }] }),
     );
-    await fireEvent.pointerDown(surfaceOf('villain'), { button: 2 });
-    await fireEvent.pointerDown(surfaceOf('villain'), { button: 1 });
+    await fireEvent.pointerDown(surface(), { button: 2 });
+    await fireEvent.pointerDown(surface(), { button: 1 });
 
     expect(session.act).not.toHaveBeenCalled();
   });
 
-  it("does not clear them from a zone's scrollbar", async () => {
+  it("does not clear them from the table's scrollbars", async () => {
     const { session } = await renderTable(
       makeView({ arrows: [{ from: 'mine', to: 'v', seat: 0 }] }),
     );
-    // Alex's scroller spans 330-600 on the screen; its scrollbar takes the bottom 16 px.
-    const scroller = document.querySelector<HTMLElement>('.zsec[data-area="p0"] .zscroll')!;
-    Object.defineProperty(scroller, 'clientHeight', { value: 254 });
+    // The scroller spans 1000 × 900 on the screen; its scrollbars take 16 px at the bottom and the
+    // right.
+    Object.defineProperty(scroller(), 'clientHeight', { value: 884 });
+    Object.defineProperty(scroller(), 'clientWidth', { value: 984 });
 
-    await fireEvent.pointerDown(scroller, { clientX: 500, clientY: 590 });
+    await fireEvent.pointerDown(scroller(), { clientX: 500, clientY: 890 });
+    await fireEvent.pointerDown(scroller(), { clientX: 990, clientY: 500 });
     expect(session.act).not.toHaveBeenCalled();
 
-    // Above the scrollbar, the scroller is an empty spot like any other.
-    await fireEvent.pointerDown(scroller, { clientX: 500, clientY: 570 });
+    // Inside the scrollbars, the scroller is an empty spot like any other.
+    await fireEvent.pointerDown(scroller(), { clientX: 500, clientY: 870 });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'arrowClear' });
+  });
+
+  it("clears them from the frame around an owner's piles", async () => {
+    const view = makeView({ arrows: [{ from: 'mine', to: 'v', seat: 0 }] });
+    view.table!.piles = [{ id: 'deck:p0', kind: 'deck', owner: 0, x: 0, y: 330, count: 30 }];
+    const { session } = await renderTable(view);
+
+    await fireEvent.pointerDown(document.querySelector<HTMLElement>('.ownerbox .owner')!);
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'arrowClear' });
   });
 
@@ -425,7 +416,7 @@ describe('a click on an empty spot', () => {
     const { session } = await renderTable(
       makeView({ arrows: [{ from: 'sam', to: 'v', seat: 1 }] }),
     );
-    await fireEvent.pointerDown(surfaceOf('villain'));
+    await fireEvent.pointerDown(surface());
 
     expect(session.act).not.toHaveBeenCalled();
   });
@@ -436,7 +427,7 @@ describe('a click on an empty spot', () => {
     );
     await fireEvent.pointerEnter(placed('mine'), { clientX: 50, clientY: 400 });
     await fireEvent.keyDown(window, { key: 'a' });
-    await fireEvent.pointerDown(surfaceOf('villain'));
+    await fireEvent.pointerDown(surface());
 
     expect(interaction.arrowFrom).toBeNull();
     expect(session.act).not.toHaveBeenCalled();
@@ -446,7 +437,7 @@ describe('a click on an empty spot', () => {
     const { session } = await renderTable(
       makeView({ spectator: true, arrows: [{ from: 'mine', to: 'v', seat: 0 }] }),
     );
-    await fireEvent.pointerDown(surfaceOf('villain'));
+    await fireEvent.pointerDown(surface());
 
     expect(session.act).not.toHaveBeenCalled();
   });

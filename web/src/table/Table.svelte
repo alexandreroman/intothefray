@@ -1,8 +1,7 @@
 <!--
-  The table page: the top bar, the table column (a vertical stack of zones,
-  each scrolling horizontally on its own) and the side column (preview and
-  history). On a narrow screen there is no side column: the preview shows
-  over the table.
+  The table page: the top bar, the table column (one surface for everyone,
+  scrolling both ways) and the side column (preview and history). On a
+  narrow screen there is no side column: the preview shows over the table.
 -->
 <script lang="ts">
   import { tick, untrack } from 'svelte';
@@ -13,7 +12,6 @@
   import type { GameSession } from '../lib/session.svelte';
   import type {
     Action,
-    Area,
     CardView as TableCard,
     Index,
     LobbyConfig,
@@ -44,13 +42,13 @@
   import { interaction } from './interaction.svelte';
   import { handleKey } from './keys';
   import KeysSheet from './KeysSheet.svelte';
-  import { zoneHeights, zoneMinHeight, zoneOrder, zoneShare } from './layout';
+  import { isOutOfPlay, ownerFrames, surfaceSize } from './layout';
   import { motion } from './motion.svelte';
   import Presence from './Presence.svelte';
   import TokenPill from './TokenPill.svelte';
   import CardPreview, { type Preview } from './CardPreview.svelte';
   import SidePanel from './SidePanel.svelte';
-  import Zone, { type Heading, type ResizeAbove } from './Zone.svelte';
+  import Surface, { type OwnerBox } from './Surface.svelte';
   import ZoomControl from './ZoomControl.svelte';
   import { clampZoom, saveZoom, storedZoom, ZOOM_MAX, ZOOM_MIN } from './zoom';
 
@@ -140,149 +138,42 @@
     return topId === undefined ? undefined : cardsById.get(topId);
   }
 
-  function villainHeading(): Heading {
-    const stage = view.table?.stages.find((s) => s.key === 'villain');
-    const face = faceOf(stage ? cardsById.get(stage.current) : undefined);
-    const details = face ? [face.name] : [];
-    if (face?.stage) {
-      details.push(`stage ${face.stage}`);
-    }
-    return { name: 'Villain', details };
-  }
+  /** The frames around each owner's deck and discard pile, named after their owner. */
+  const owners = $derived(
+    ownerFrames(piles).map((frame): OwnerBox => {
+      if (frame.owner === -1) {
+        return { frame, name: 'Villain', color: 'var(--spark)' };
+      }
+      const player = view.players[frame.owner];
+      if (!player) {
+        return { frame, name: `Player ${frame.owner + 1}`, color: 'var(--muted)' };
+      }
+      const inHand = `${player.handCount} ${player.handCount === 1 ? 'card' : 'cards'} in hand`;
+      return { frame, name: player.name, color: `var(--p${player.color + 1})`, tip: inHand };
+    }),
+  );
 
-  function playerHeading(area: Area): Heading {
-    const player = view.players.find((p) => p.area === area);
-    if (!player) {
-      return { name: area, details: [] };
-    }
-    const cardsInHand = `${player.handCount} ${player.handCount === 1 ? 'card' : 'cards'} in hand`;
-    const details: string[] = [];
-    if (player.heroName) {
-      details.push(player.heroName);
-    }
-    if (area === ownArea) {
-      details.push('you');
-    }
-    details.push(cardsInHand);
-    return { name: player.name, details, color: `var(--p${player.color + 1})` };
-  }
-
-  // The zone heights follow it, so it is declared before them.
+  // The surface size follows it, so it is declared before it.
   let zoom = $state(storedZoom());
 
-  // Heights chosen with the separators, kept for the session only. Only the
-  // villain's zone and the viewer's own can be resized; until then, and for
-  // the other players' zones, a zone takes its share of the visible height.
-  let chosenHeights = $state<Partial<Record<Area, number>>>({});
-  // A resizable zone only grows on its own: once its cards made it taller, it
-  // stays that tall when they move back up, until it is resized by hand. Kept
-  // apart from the chosen heights: a zone at its share still follows the
-  // visible height.
-  let grownHeights = $state<Partial<Record<Area, number>>>({});
+  // The scroller pads the surface, so that glows, tilted cards and outlines near an edge show.
+  const SCROLL_PADDING = 24;
 
-  const resizable = (area: Area) => area === 'villain' || area === ownArea;
-
-  // The table's visible size, in px; its width only matters to the zone chrome (see below).
-  let visibleHeight = $state(0);
+  // The table's visible size, in px.
   let visibleWidth = $state(0);
-  // What the zones take of the visible height besides their surfaces, in px.
-  let zoneChrome = $state(0);
-  // In table units: the surfaces are zoomed, the chrome around them is not. 0 until measured.
-  const availableHeight = $derived(visibleHeight > 0 ? (visibleHeight - zoneChrome) / zoom : 0);
+  let visibleHeight = $state(0);
 
-  const zones = $derived.by(() => {
-    const placed = zoneOrder(view).map((area) => ({
-      area,
-      heading: area === 'villain' ? villainHeading() : playerHeading(area),
-      cards: cards.filter((card) => card.zone === 'table' && card.area === area),
-      piles: piles.filter((pile) => pile.area === area),
-      min: zoneMinHeight(cards, piles, area, sizeOf),
-    }));
-    const heights = zoneHeights(
-      placed.map((zone) => ({
-        min: zone.min,
-        grown: grownHeights[zone.area],
-        chosen: chosenHeights[zone.area],
-      })),
-      availableHeight,
-    );
-    return placed.map((zone, i) => ({ ...zone, height: heights[i] ?? zone.min }));
-  });
+  // Out-of-play piles are not drawn: the bars of their owner's deck and discard pile open them.
+  const tablePiles = $derived(piles.filter((pile) => !isOutOfPlay(pile)));
+  const tableCards = $derived(cards.filter((card) => card.zone === 'table'));
 
-  type ZoneData = (typeof zones)[number];
-
-  // A zone grows only when its cards make it taller than it would be without
-  // them: its chosen height, or else its share (a zone at its share has not
-  // grown, and keeps following the visible height). Not while the catalog loads:
-  // every card counts as std until then, which can be taller than its real
-  // size. That also covers the first render, before the table is measured.
-  $effect.pre(() => {
-    if (catalog === 'loading') {
-      return;
-    }
-    const share = zoneShare(zones.length, availableHeight);
-    for (const zone of zones) {
-      const without = Math.max(chosenHeights[zone.area] ?? share, grownHeights[zone.area] ?? 0);
-      if (resizable(zone.area) && zone.min > without) {
-        grownHeights[zone.area] = zone.min;
-      }
-    }
-  });
-
-  /**
-   * The zone chrome: headers, separators and the horizontal scrollbar of a
-   * zone that overflows, in whole px. Measured rather than taken from Zone's
-   * styles, as the scrollbars come and go and their size depends on the
-   * platform. It runs to the bottom of the last section, which is the bottom
-   * of its scroller: the scroller's 24 px negative margin collapses outside
-   * the section. So the scrollbar of the last zone stays in view, and the
-   * room under its surface matches the room at its sides.
-   */
-  function measureZoneChrome(): number {
-    const sections = [...(wrap?.querySelectorAll<HTMLElement>('.zsec') ?? [])];
-    const first = sections.at(0);
-    const last = sections.at(-1);
-    if (!first || !last) {
-      return 0;
-    }
-    const stack = last.getBoundingClientRect().bottom - first.getBoundingClientRect().top;
-    let surfaces = 0;
-    for (const section of sections) {
-      surfaces += section.querySelector('.surface')?.getBoundingClientRect().height ?? 0;
-    }
-    // Rounded: the zoomed surfaces can end between two pixels.
-    return Math.round(stack - surfaces);
-  }
-
-  // Measured again whenever the zones or the visible size change. The chrome
-  // does not depend on the surfaces' heights, so the measure that follows the
-  // heights it gave finds the same value and stops there.
-  $effect(() => {
-    void [zones, zoom, visibleWidth, visibleHeight];
-    const measured = measureZoneChrome();
-    // Past 1 px only: at some zooms the surfaces end between two pixels, and
-    // the rounded measure can swing by one from a pass to the next.
-    if (Math.abs(measured - zoneChrome) > 1) {
-      zoneChrome = measured;
-    }
-  });
-
-  function resizeAbove(above: ZoneData | undefined): ResizeAbove | undefined {
-    if (!above || !resizable(above.area)) {
-      return undefined;
-    }
-    return {
-      title: `Drag to resize ${above.area === 'villain' ? "the villain's" : 'your'} zone`,
-      height: above.height,
-      min: above.min,
-      onresize: (height) => {
-        // Never under the zone's minimum (Zone sees to it), so what its cards grew it to no
-        // longer counts. Only the last zone gives or takes the difference.
-        chosenHeights[above.area] = height;
-        delete grownHeights[above.area];
-      },
-    };
-  }
+  // In table units: at least what shows, rounded down so that an empty table never scrolls.
+  const surface = $derived(
+    surfaceSize(tableCards, tablePiles, sizeOf, {
+      w: Math.max(0, Math.floor((visibleWidth - 2 * SCROLL_PADDING) / zoom)),
+      h: Math.max(0, Math.floor((visibleHeight - 2 * SCROLL_PADDING) / zoom)),
+    }),
+  );
 
   const firstPlayer = $derived(view.table?.firstPlayer);
 
@@ -353,6 +244,16 @@
   /** Another player's pile: hovering it clears the preview rather than keeping it. */
   function isForeign(pile: PileView): boolean {
     return pile.owner >= 0 && `p${pile.owner}` !== ownArea;
+  }
+
+  /** Whether an empty pile still has a bar: one opening its owner's out-of-play piles. */
+  function hasBarWhenEmpty(pile: PileView): boolean {
+    const role = view.you.role;
+    if (role === undefined) {
+      return false;
+    }
+    const items = actionsFor({ kind: 'pile', id: pile.id }, view, { area: ownArea, role });
+    return Array.isArray(items) && items.length > 0;
   }
 
   /** Whether the element is still where it was hovered: on the table, or in the hand. */
@@ -487,16 +388,16 @@
     if ('ask' in result) {
       asking = result.ask;
     } else if ('local' in result) {
-      runLocal(result.local, element);
+      runLocal(result, element);
     } else {
       send(result);
     }
   }
 
   function runLocal(local: LocalAction, element: TableElement): void {
-    switch (local) {
+    switch (local.local) {
       case 'browseBox':
-        localBox = { kind: 'browse', pile: element.id };
+        localBox = { kind: 'browse', pile: local.pile };
         return;
       case 'stageBox': {
         const stage = view.table?.stages.find((s) => s.current === element.id);
@@ -604,26 +505,24 @@
     }
   }
 
-  /**
-   * A press on a zone's horizontal scrollbar: on the scroller, below its
-   * content (the event's offsetY past its clientHeight).
-   */
+  /** A press on one of the table's scrollbars: on the scroller, past its content. */
   function onScrollbar(event: PointerEvent, target: HTMLElement): boolean {
-    if (!target.classList.contains('zscroll')) {
+    if (target !== wrap) {
       return false;
     }
-    const offsetY = event.clientY - target.getBoundingClientRect().top - target.clientTop;
-    return offsetY > target.clientHeight;
+    const box = target.getBoundingClientRect();
+    const offsetX = event.clientX - box.left - target.clientLeft;
+    const offsetY = event.clientY - box.top - target.clientTop;
+    return offsetX > target.clientWidth || offsetY > target.clientHeight;
   }
 
-  /** An empty spot: the table itself, a zone's surface or scroller, or its header. */
+  /** An empty spot: the table itself, its surface, or the frame around an owner's piles. */
   function isEmptySpot(target: HTMLElement): boolean {
     return (
       target === wrap ||
       target.classList.contains('table') ||
       target.classList.contains('surface') ||
-      target.classList.contains('zscroll') ||
-      target.closest('.zh') !== null
+      target.closest('.ownerbox') !== null
     );
   }
 
@@ -670,7 +569,7 @@
     }
     if (isEmptySpot(target)) {
       interaction.release();
-      // Ruling P5c-R7: not with another button, nor while scrolling a zone with its scrollbar.
+      // Ruling P5c-R7: not with another button, nor while scrolling the table with its scrollbars.
       if (event.button === 0 && !onScrollbar(event, target)) {
         clearOwnArrows();
       }
@@ -731,13 +630,11 @@
   let app = $state<HTMLElement>();
   let presenceLayer = $state<ReturnType<typeof Presence>>();
 
-  // A new view, a zoom or a resized zone moves the elements under a pointer at
-  // rest: the ones it lands on are not hovered by the viewer.
+  // A new view or a zoom moves the elements under a pointer at rest: the ones
+  // it lands on are not hovered by the viewer.
   $effect.pre(() => {
     void view;
     void zoom;
-    // The zone heights: they follow the visible height, the separators and the cards.
-    void zones;
     interaction.redrawn();
   });
 
@@ -756,24 +653,16 @@
     const y = pointY ?? box.top + box.height / 2;
     const scale = next / zoom;
 
-    // What lies under the point now: per zone horizontally, and in the whole table vertically.
-    const scrollers = [...wrap.querySelectorAll<HTMLElement>('.zscroll')].map((scroller) => ({
-      scroller,
-      under: scroller.scrollLeft + x - scroller.getBoundingClientRect().left,
-    }));
-    const underY = wrap.scrollTop + y - box.top;
+    // What lies under the point now, in zoomed px of the surface (past the scroller's padding).
+    const underX = wrap.scrollLeft + x - box.left - SCROLL_PADDING;
+    const underY = wrap.scrollTop + y - box.top - SCROLL_PADDING;
 
     zoom = next;
     saveZoom(next);
     await tick();
 
-    for (const { scroller, under } of scrollers) {
-      scroller.scrollLeft = Math.max(
-        0,
-        under * scale - (x - scroller.getBoundingClientRect().left),
-      );
-    }
-    wrap.scrollTop = underY * scale - (y - box.top);
+    wrap.scrollLeft = Math.max(0, SCROLL_PADDING + underX * scale - (x - box.left));
+    wrap.scrollTop = Math.max(0, SCROLL_PADDING + underY * scale - (y - box.top));
   }
 
   // The wheel can zoom finer than the 10 % steps: it keeps its own target so
@@ -840,26 +729,21 @@
     onpointerdowncapture={onTablePointerDown}
   >
     <div class="table">
-      {#each zones as zone, i (zone.area)}
-        <Zone
-          area={zone.area}
-          heading={zone.heading}
-          cards={zone.cards}
-          piles={zone.piles}
-          {topOf}
-          {faceOf}
-          {sizeOf}
-          foreign={isForeign}
-          height={zone.height}
-          {zoom}
-          first={i === 0}
-          firstPlayer={firstPlayer?.area === zone.area ? firstPlayer : undefined}
-          tokenMovable={view.you.role === 'player'}
-          above={resizeAbove(zones[i - 1])}
-        />
-      {/each}
+      <Surface
+        cards={tableCards}
+        piles={tablePiles}
+        {owners}
+        {topOf}
+        {faceOf}
+        foreign={isForeign}
+        barWhenEmpty={hasBarWhenEmpty}
+        width={surface.w}
+        height={surface.h}
+        {firstPlayer}
+        tokenMovable={view.you.role === 'player'}
+      />
       <!-- The arrows follow the cards while they move. -->
-      <Arrows {view} root={app} layout={[zoom, zones, motion.frame]} />
+      <Arrows {view} root={app} layout={[zoom, surface, motion.frame]} />
     </div>
   </div>
 
@@ -871,7 +755,7 @@
     root={app}
     {zoom}
     {faceOf}
-    layout={zones}
+    layout={surface}
   />
 
   {#if catalog === 'failed'}
@@ -1016,8 +900,9 @@
 
   .tablewrap {
     grid-area: table;
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #2c3654 transparent;
     position: relative;
     z-index: 0;
     isolation: isolate;
@@ -1025,10 +910,11 @@
     min-width: 0;
   }
 
-  /* Room at the bottom to scroll the last zone above the floating hand. */
+  /* As wide and tall as the surface, which the padding keeps off the scroller's edges. */
   .table {
-    padding: 0 20px 220px;
     position: relative;
+    width: max-content;
+    padding: 24px;
   }
 
   /*

@@ -3,13 +3,12 @@
 // pile, and piles that were shuffled. Pure: the table plays the list
 // (motion.svelte.ts).
 
-import type { Area, CardView, LogView, PileView, TableView, View, Zone } from '../lib/types';
+import type { CardView, LogView, PileView, TableView, View, Zone } from '../lib/types';
 import { stackOf } from './drag';
 
 /** Where a card lies in a view: its zone, and its spot when it is on the table. */
 export interface Box {
   zone: Zone;
-  area?: Area;
   x: number;
   y: number;
 }
@@ -100,7 +99,7 @@ function isPlaced(card: CardView): boolean {
 }
 
 function boxOf(card: CardView): Box {
-  return { zone: card.zone, area: card.area, x: card.x, y: card.y };
+  return { zone: card.zone, x: card.x, y: card.y };
 }
 
 /** A card that went somewhere else on the table or the hand, or onto a pile that shows its cards. */
@@ -109,8 +108,7 @@ function travelOf(was: CardView, card: CardView, table: TableView): Anim | null 
     return null;
   }
   if (isPlaced(card)) {
-    const moved =
-      was.zone !== card.zone || was.area !== card.area || was.x !== card.x || was.y !== card.y;
+    const moved = was.zone !== card.zone || was.x !== card.x || was.y !== card.y;
     return moved ? { kind: 'move', id: card.id, from: boxOf(was), to: boxOf(card) } : null;
   }
   const pile = table.piles.find((p) => p.cards?.includes(card.id));

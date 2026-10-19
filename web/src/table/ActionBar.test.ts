@@ -40,7 +40,6 @@ function card(id: string, extra: Partial<TableCard> = {}): TableCard {
     back: 'player',
     owner: 0,
     zone: 'table',
-    area: 'p0',
     x: 0,
     y: 0,
     z: 1,
@@ -49,7 +48,7 @@ function card(id: string, extra: Partial<TableCard> = {}): TableCard {
 }
 
 function pile(id: string, extra: Partial<PileView>): PileView {
-  return { id, kind: 'deck', owner: -1, area: 'villain', x: 0, y: 0, count: 30, ...extra };
+  return { id, kind: 'deck', owner: -1, x: 0, y: 0, count: 30, ...extra };
 }
 
 /** Rhino with Alex (p0, the viewer) and Sam (p1). */
@@ -57,15 +56,15 @@ function makeView(extra: { cards?: TableCard[]; piles?: PileView[] } = {}): View
   const cards = extra.cards ?? [
     card('mine', { x: 0 }),
     card('two', { code: '01002', x: 200 }),
-    card('v', { code: '01094', owner: -1, back: 'villain', area: 'villain' }),
-    card('theirs', { owner: 1, area: 'p1' }),
-    card('h', { zone: 'hand', area: undefined }),
+    card('v', { code: '01094', owner: -1, back: 'villain' }),
+    card('theirs', { owner: 1 }),
+    card('h', { zone: 'hand' }),
   ];
   const piles = extra.piles ?? [
-    pile('deck:p0', { owner: 0, area: 'p0', x: 600 }),
-    pile('deck:p1', { owner: 1, area: 'p1', x: 600 }),
+    pile('deck:p0', { owner: 0, x: 600 }),
+    pile('deck:p1', { owner: 1, x: 600 }),
     pile('enc', { kind: 'encounter', x: 500, count: 20 }),
-    pile('disc:p0', { kind: 'discard', owner: 0, area: 'p0', x: 720, count: 1, cards: ['mine'] }),
+    pile('disc:p0', { kind: 'discard', owner: 0, x: 720, count: 1, cards: ['mine'] }),
   ];
   return {
     id: 'g1',
@@ -98,7 +97,7 @@ function makeView(extra: { cards?: TableCard[]; piles?: PileView[] } = {}): View
       piles,
       hand: ['h'],
       stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
-      firstPlayer: { area: 'p0', x: 860, y: 40 },
+      firstPlayer: { x: 860, y: 40 },
     },
     log: [],
   };
@@ -147,9 +146,7 @@ async function renderTable(view = makeView()) {
   const session = fakeSession();
   const result = render(Table, { session, view });
   // The catalog loads asynchronously: wait for the faces to show.
-  await within(screen.getByRole('region', { name: /^Villain/ })).findByRole('img', {
-    name: 'Rhino',
-  });
+  await screen.findByRole('img', { name: 'Rhino' });
   return { session, ...result };
 }
 
@@ -342,9 +339,7 @@ describe('ActionBar', () => {
   it('a disabled button shows its tooltip and sends nothing', async () => {
     const view = makeView();
     // A card revealed on the encounter deck: Reveal waits until it is moved.
-    view.table!.cards.push(
-      card('rev', { owner: -1, back: 'encounter', area: 'villain', x: 500, onPile: 'enc' }),
-    );
+    view.table!.cards.push(card('rev', { owner: -1, back: 'encounter', x: 500, onPile: 'enc' }));
     const { session } = await renderTable(view);
     vi.useFakeTimers();
     await fireEvent.pointerEnter(placed('enc'));
@@ -466,20 +461,6 @@ describe('ActionBar', () => {
     expect(interaction.hovered).toBeNull();
 
     await fireEvent.pointerEnter(placed('mine'), { clientX: 41, clientY: 60 });
-    expect(interaction.hovered).toEqual({ kind: 'card', id: 'mine' });
-  });
-
-  it('ignores the pointerenter a separator drag fires under a resting pointer', async () => {
-    await renderTable();
-    const handle = screen.getByTitle("Drag to resize the villain's zone");
-
-    await fireEvent.pointerDown(handle, { clientX: 40, clientY: 100 });
-    await fireEvent.pointerMove(window, { clientX: 40, clientY: 160 });
-    await fireEvent.pointerUp(window, { clientX: 40, clientY: 160 });
-    await fireEvent.pointerEnter(placed('mine'), { clientX: 40, clientY: 160 });
-    expect(interaction.hovered).toBeNull();
-
-    await fireEvent.pointerEnter(placed('mine'), { clientX: 40, clientY: 161 });
     expect(interaction.hovered).toEqual({ kind: 'card', id: 'mine' });
   });
 
@@ -680,8 +661,8 @@ describe('ActionBar', () => {
     await fireEvent.click(hcard);
     expect(interaction.isLocked({ kind: 'hand', id: 'h' })).toBe(true);
 
-    // The hand lets taps through (pointer-events: none): around its cards, they land on the zone.
-    const scroller = placed('mine').closest<HTMLElement>('.zscroll')!;
+    // The hand lets taps through (pointer-events: none): around its cards, they land on the table.
+    const scroller = placed('mine').closest<HTMLElement>('.tablewrap')!;
     await fireEvent.pointerDown(scroller, { pointerType: 'touch' });
     expect(interaction.locked).toBe(false);
     expect(interaction.hovered).toBeNull();
@@ -725,8 +706,8 @@ describe('pile preview', () => {
 
 describe('tokens and statuses', () => {
   const others = [
-    card('v', { code: '01094', owner: -1, back: 'villain', area: 'villain' }),
-    card('theirs', { owner: 1, area: 'p1' }),
+    card('v', { code: '01094', owner: -1, back: 'villain' }),
+    card('theirs', { owner: 1 }),
   ];
 
   function viewWithCounters(tokens = { dmg: 2 }, status: Record<string, number> = { stunned: 1 }) {

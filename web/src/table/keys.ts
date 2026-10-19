@@ -4,21 +4,20 @@
 // bar, get their own keys here.
 
 import { modal } from '../components/modal.svelte';
-import type { Action, Area, CardView, PileView, Size, View } from '../lib/types';
-import type { ActionItem } from './actions';
+import type { Action, CardView, PileView, Size, View } from '../lib/types';
+import { seatOf, type ActionItem } from './actions';
 import { interaction } from './interaction.svelte';
 import { footprints, visualBox } from './layout';
 import { ZOOM_STEP } from './zoom';
 
-// The prototype's free slot (ruling P5b-R5): from x 520, where the identity
-// lies past the rail of every area (deck, discard and out-of-play piles: see
-// internal/game/setup.go), in 140 steps, a 100-wide card with 20 free on each
-// side, on the top row (140 high).
-const SLOT_FIRST_X = 520;
-const SLOT_STEP = 140;
-const SLOT_CARD_WIDTH = 100;
-const SLOT_MARGIN = 20;
-const TOP_ROW_HEIGHT = 140;
+// The free slot of a player's row (ruling P5b-R5): from x 760, where the
+// cards in play start past the deck, the discard pile, the identity and the
+// main scheme (internal/game/setup.go), in 220 steps, a 140-wide card with 40
+// free on each side, as high as a portrait card.
+const SLOT_FIRST_X = 760;
+const SLOT_STEP = 220;
+const SLOT_CARD = { w: 140, h: 196 };
+const SLOT_MARGIN = 40;
 
 /** What the keys need from the table. */
 export interface KeyTable {
@@ -191,17 +190,17 @@ function removeOne(adds: Action, table: KeyTable): boolean {
   return true;
 }
 
-/** P plays a card of the hand to the first free slot of the viewer's area, X discards it. */
+/** P plays a card of the hand to the first free slot of the viewer's row, X discards it. */
 function handKey(key: string, id: string, table: KeyTable): boolean {
   switch (key) {
     case 'p': {
-      const area = table.view.you.area;
-      if (!area || !table.view.table) {
+      const seat = table.view.you.area ? seatOf(table.view.you.area) : null;
+      if (seat === null || !table.view.table) {
         return false;
       }
       const { cards, piles } = table.view.table;
-      const { x, y } = freeSlot(cards, piles, area, table.sizeOf);
-      table.act({ kind: 'play', card: id, area, x, y });
+      const { x, y } = freeSlot(cards, piles, seat, table.sizeOf);
+      table.act({ kind: 'play', card: id, x, y });
       return true;
     }
     case 'x':
@@ -213,26 +212,30 @@ function handKey(key: string, id: string, table: KeyTable): boolean {
 }
 
 /**
- * The prototype's free slot for a card played from the hand: the first spot
- * of the top row of an area, from x 520 in steps of 140, where a 100-wide
- * card keeps 20 free on each side. The area's table cards and piles are in
- * the way.
+ * The free slot for a card played from the hand: the first spot of the
+ * player's row, from x 760 in steps of 220, where a 140-wide card keeps 40
+ * free on each side. The row is the height of the player's deck (the top of
+ * the table without one). Every table card and pile reaching into the row is
+ * in the way.
  */
 export function freeSlot(
   cards: CardView[],
   piles: PileView[],
-  area: Area,
+  seat: number,
   sizeOf: (card: CardView) => Size,
 ): { x: number; y: number } {
-  const items = footprints(cards, piles, area, sizeOf).filter((item) => item.y < TOP_ROW_HEIGHT);
+  const deck = piles.find((pile) => pile.kind === 'deck' && pile.owner === seat);
+  const y = deck?.y ?? 0;
+  const items = footprints(cards, piles, sizeOf).filter(
+    (item) => item.y < y + SLOT_CARD.h && visualBox(item).bottom > y,
+  );
   // Ends: every item is passed after a finite number of steps.
   for (let x = SLOT_FIRST_X; ; x += SLOT_STEP) {
     const blocked = items.some(
-      (item) =>
-        item.x < x + SLOT_CARD_WIDTH + SLOT_MARGIN && visualBox(item).right > x - SLOT_MARGIN,
+      (item) => item.x < x + SLOT_CARD.w + SLOT_MARGIN && visualBox(item).right > x - SLOT_MARGIN,
     );
     if (!blocked) {
-      return { x, y: 0 };
+      return { x, y };
     }
   }
 }

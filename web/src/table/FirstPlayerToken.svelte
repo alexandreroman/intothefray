@@ -1,6 +1,6 @@
 <!--
   The first player token (spec 5.8): the theme's image, or a drawn stand-in
-  without one, placed in table units. It lies in its zone, or in the drag
+  without one, placed in table units. It lies on the table, or in the drag
   layer while it is dragged or waits for the server after a drop.
 -->
 <script lang="ts">

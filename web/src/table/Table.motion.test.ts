@@ -40,8 +40,8 @@ function card(id: string, extra: Partial<TableCard>): TableCard {
 }
 
 const PILES: PileView[] = [
-  { id: 'deck:p1', kind: 'deck', owner: 1, area: 'p1', x: 600, y: 0, count: 30 },
-  { id: 'disc:p0', kind: 'discard', owner: 0, area: 'p0', x: 720, y: 0, count: 0, cards: [] },
+  { id: 'deck:p1', kind: 'deck', owner: 1, x: 600, y: 0, count: 30 },
+  { id: 'disc:p0', kind: 'discard', owner: 0, x: 720, y: 0, count: 0, cards: [] },
 ];
 
 const START: LogView = {
@@ -74,7 +74,7 @@ function makeView(
       cards,
       piles: extra.piles ?? PILES,
       stages: extra.stages ?? [],
-      firstPlayer: { area: 'p0', x: 860, y: 40 },
+      firstPlayer: { x: 860, y: 40 },
     },
     log: extra.log ?? [START],
   };
@@ -122,13 +122,10 @@ function runningOn(element: Element): FakeAnimation[] {
 }
 
 /**
- * jsdom lays nothing out: elements are placed from their own left and top,
- * each zone 300 px below the one above. A card moving (FLIP) shows half-way.
+ * jsdom lays nothing out: elements are placed from their own left and top.
+ * A card moving (FLIP) shows half-way.
  */
 function fakeRect(this: HTMLElement): DOMRect {
-  const zones = [...document.querySelectorAll('.zsec')];
-  const zone = this.closest('.zsec');
-  const zoneTop = zone ? zones.indexOf(zone) * 300 : 0;
   const offset = { x: 0, y: 0 };
   for (const animation of runningOn(this)) {
     const translate = animation.keyframes[0]?.translate;
@@ -139,7 +136,7 @@ function fakeRect(this: HTMLElement): DOMRect {
     }
   }
   const left = (Number.parseFloat(this.style.left) || 0) + offset.x;
-  const top = zoneTop + (Number.parseFloat(this.style.top) || 0) + offset.y;
+  const top = (Number.parseFloat(this.style.top) || 0) + offset.y;
   const width = Number.parseFloat(this.style.width) || 0;
   const height = Number.parseFloat(this.style.height) || 0;
   return {
@@ -202,11 +199,11 @@ describe('Table animations', () => {
     const session = fakeSession();
     const { rerender } = render(Table, {
       session,
-      view: makeView([card('a', { area: 'p0', x: 0 })]),
+      view: makeView([card('a', { x: 0 })]),
     });
     await settle();
 
-    await rerender({ session, view: makeView([card('a', { area: 'p0', x: 200, y: 20 })]) });
+    await rerender({ session, view: makeView([card('a', { x: 200, y: 20 })]) });
     await waitFor(() => expect(animationsOf('.surface .card[data-id="a"]')).toHaveLength(1));
     const [[keyframes, options]] = animationsOf('.surface .card[data-id="a"]') as [
       [Keyframe[], KeyframeAnimationOptions],
@@ -220,12 +217,12 @@ describe('Table animations', () => {
     const session = fakeSession();
     const { rerender } = render(Table, {
       session,
-      view: makeView([card('a', { area: 'p0', x: 0 })]),
+      view: makeView([card('a', { x: 0 })]),
     });
     await settle();
     const before = motion.frame;
 
-    await rerender({ session, view: makeView([card('a', { area: 'p0', x: 200 })]) });
+    await rerender({ session, view: makeView([card('a', { x: 200 })]) });
     await waitFor(() => expect(motion.frame).toBeGreaterThan(before + 1));
   });
 
@@ -243,11 +240,11 @@ describe('Table animations', () => {
       const session = fakeSession();
       const { rerender } = render(Table, {
         session,
-        view: makeView([card('a', { area: 'p0', x: 0 })]),
+        view: makeView([card('a', { x: 0 })]),
       });
       await settle();
 
-      const next = makeView([card('a', { area: 'p0', x: 200, exhausted: true })], {
+      const next = makeView([card('a', { x: 200, exhausted: true })], {
         log: [START, line('exhausted Spider-Man')],
       });
       await rerender({ session, view: next });
@@ -265,7 +262,7 @@ describe('Table animations', () => {
     const session = fakeSession();
     const { rerender } = render(Table, {
       session,
-      view: makeView([card('b', { owner: 1, area: 'p1', x: 0 })]),
+      view: makeView([card('b', { owner: 1, x: 0 })]),
     });
     await settle();
     interaction.land({
@@ -276,17 +273,17 @@ describe('Table animations', () => {
       handOrder: null,
     });
 
-    await rerender({ session, view: makeView([card('b', { owner: 1, area: 'p1', x: 300 })]) });
+    await rerender({ session, view: makeView([card('b', { owner: 1, x: 300 })]) });
     await settle();
     expect(animationsOf('.surface .card[data-id="b"]')).toEqual([]);
   });
 
   it('a token change glows in the colour of the player who made it', async () => {
     const session = fakeSession();
-    const { rerender } = render(Table, { session, view: makeView([card('a', { area: 'p0' })]) });
+    const { rerender } = render(Table, { session, view: makeView([card('a', {})]) });
     await settle();
 
-    const next = makeView([card('a', { area: 'p0', tokens: { dmg: 1 } })], {
+    const next = makeView([card('a', { tokens: { dmg: 1 } })], {
       log: [START, line('added 1 damage to Spider-Man')],
     });
     await rerender({ session, view: next });
@@ -320,7 +317,7 @@ describe('Table animations', () => {
     const session = fakeSession();
     const { rerender, container } = render(Table, {
       session,
-      view: makeView([card('a', { area: 'p0', x: 40 })]),
+      view: makeView([card('a', { x: 40 })]),
     });
     await settle();
 
@@ -337,7 +334,7 @@ describe('Table animations', () => {
     expect(animationsOf('.fly')).toHaveLength(1);
   });
   it('an animation waiting for the redraw does not play after a stop', async () => {
-    const view = makeView([card('a', { area: 'p0', x: 0 })]);
+    const view = makeView([card('a', { x: 0 })]);
     const { container } = render(Table, { session: fakeSession(), view });
     await settle();
 
@@ -358,11 +355,11 @@ describe('Table animations', () => {
     const session = fakeSession(2500);
     const { rerender } = render(Table, {
       session,
-      view: makeView([card('a', { area: 'p0', x: 0 })]),
+      view: makeView([card('a', { x: 0 })]),
     });
     await settle();
 
-    await rerender({ session, view: makeView([card('a', { area: 'p0', x: 200 })]) });
+    await rerender({ session, view: makeView([card('a', { x: 200 })]) });
     await settle();
     expect(animate).not.toHaveBeenCalled();
   });
@@ -375,20 +372,14 @@ describe('Table animations', () => {
     const { rerender } = render(Table, {
       session,
       view: makeView(
-        [
-          card('v1', { owner: -1, area: 'villain', x: 200 }),
-          card('v2', { owner: -1, zone: 'stage' }),
-        ],
+        [card('v1', { owner: -1, x: 200 }), card('v2', { owner: -1, zone: 'stage' })],
         { stages: stage('v1') },
       ),
     });
     await settle();
 
     const next = makeView(
-      [
-        card('v1', { owner: -1, zone: 'stage' }),
-        card('v2', { owner: -1, area: 'villain', x: 200 }),
-      ],
+      [card('v1', { owner: -1, zone: 'stage' }), card('v2', { owner: -1, x: 200 })],
       { stages: stage('v2'), log: [START, line('replaced the villain Rhino with Rhino')] },
     );
     await rerender({ session, view: next });
@@ -418,14 +409,14 @@ describe('Table animations', () => {
       const stages: Stage[] = [{ key: 'villain', label: 'Villain', current: 'v1', cards: ['v1'] }];
       const { rerender } = render(Table, {
         session,
-        view: makeView([card('v1', { owner: -1, area: 'villain', exhausted: true })], { stages }),
+        view: makeView([card('v1', { owner: -1, exhausted: true })], { stages }),
       });
       await settle();
 
-      const next = makeView(
-        [card('v1', { owner: -1, area: 'villain', exhausted: true, face: 1 })],
-        { stages, log: [START, line('turned the villain to Rhino (stage II)')] },
-      );
+      const next = makeView([card('v1', { owner: -1, exhausted: true, face: 1 })], {
+        stages,
+        log: [START, line('turned the villain to Rhino (stage II)')],
+      });
       await rerender({ session, view: next });
       await waitFor(() => expect(animationsOf('.surface .card[data-id="v1"]')).toHaveLength(2));
       const [[keyframes]] = animationsOf('.surface .card[data-id="v1"]') as [
@@ -443,8 +434,8 @@ describe('Table animations', () => {
   it('a glow plays on through an unrelated view', async () => {
     const session = fakeSession();
     const cards = (tokens: number, bX: number) => [
-      card('a', { area: 'p0', tokens: { dmg: tokens } }),
-      card('b', { area: 'p0', x: bX, y: 160 }),
+      card('a', { tokens: { dmg: tokens } }),
+      card('b', { x: bX, y: 160 }),
     ];
     const { rerender, container } = render(Table, { session, view: makeView(cards(0, 300)) });
     await settle();
@@ -463,7 +454,7 @@ describe('Table animations', () => {
     const session = fakeSession();
     const { rerender, container } = render(Table, {
       session,
-      view: makeView([card('a', { area: 'p0', x: 40 })]),
+      view: makeView([card('a', { x: 40 })]),
     });
     await settle();
     const discard = { ...PILES[1]!, count: 1, cards: ['a'] };
@@ -492,16 +483,16 @@ describe('Table animations', () => {
     const session = fakeSession();
     const { rerender, container } = render(Table, {
       session,
-      view: makeView([card('a', { area: 'p0', x: 0 })]),
+      view: makeView([card('a', { x: 0 })]),
     });
     await settle();
-    await rerender({ session, view: makeView([card('a', { area: 'p0', x: 200 })]) });
+    await rerender({ session, view: makeView([card('a', { x: 200 })]) });
     const cardA = container.querySelector('.surface .card[data-id="a"]')!;
     await waitFor(() => expect(runningOn(cardA)).toHaveLength(1));
     const first = runningOn(cardA)[0]!;
 
     // Half-way, it shows at x 100: from there to 300.
-    await rerender({ session, view: makeView([card('a', { area: 'p0', x: 300 })]) });
+    await rerender({ session, view: makeView([card('a', { x: 300 })]) });
     await waitFor(() => expect(first.cancelled).toBe(true));
     await waitFor(() => expect(runningOn(cardA)).toHaveLength(1));
     expect(runningOn(cardA)[0]?.keyframes[0]).toMatchObject({ translate: '-200px 0px' });

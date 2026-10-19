@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/svelte';
+import { fireEvent, render, screen } from '@testing-library/svelte';
 import Table from './Table.svelte';
 import { interaction } from './interaction.svelte';
 import { freeSlot } from './keys';
@@ -49,7 +49,6 @@ function card(id: string, extra: Partial<TableCard> = {}): TableCard {
     back: 'player',
     owner: 0,
     zone: 'table',
-    area: 'p0',
     x: 0,
     y: 0,
     z: 1,
@@ -58,7 +57,7 @@ function card(id: string, extra: Partial<TableCard> = {}): TableCard {
 }
 
 function pile(id: string, extra: Partial<PileView>): PileView {
-  return { id, kind: 'deck', owner: -1, area: 'villain', x: 0, y: 0, count: 30, ...extra };
+  return { id, kind: 'deck', owner: -1, x: 0, y: 0, count: 30, ...extra };
 }
 
 /** Rhino with Alex (p0, the viewer) alone. */
@@ -66,8 +65,8 @@ function makeView(extra: Partial<View> & { cards?: TableCard[] } = {}): View {
   const { cards: extraCards, ...rest } = extra;
   const cards = extraCards ?? [
     card('mine', { x: 280, tokens: { dmg: 2 } }),
-    card('v', { code: '01094', owner: -1, back: 'villain', area: 'villain' }),
-    card('h', { zone: 'hand', area: undefined }),
+    card('v', { code: '01094', owner: -1, back: 'villain' }),
+    card('h', { zone: 'hand' }),
   ];
   return {
     id: 'g1',
@@ -89,12 +88,12 @@ function makeView(extra: Partial<View> & { cards?: TableCard[] } = {}): View {
     table: {
       cards,
       piles: [
-        pile('deck:p0', { owner: 0, area: 'p0', x: 0 }),
+        pile('deck:p0', { owner: 0, x: 0 }),
         pile('enc', { kind: 'encounter', x: 500, count: 20 }),
       ],
       hand: ['h'],
       stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
-      firstPlayer: { area: 'p0', x: 860, y: 40 },
+      firstPlayer: { x: 860, y: 40 },
     },
     log: [],
     ...rest,
@@ -132,9 +131,7 @@ async function renderTable(view = makeView()) {
   const session = fakeSession();
   const result = render(Table, { session, view });
   // The catalog loads asynchronously: wait for the faces to show.
-  await within(screen.getByRole('region', { name: /^Villain/ })).findByRole('img', {
-    name: 'Rhino',
-  });
+  await screen.findByRole('img', { name: 'Rhino' });
   return { session, ...result };
 }
 
@@ -263,10 +260,10 @@ describe('keys on the table', () => {
   it('disabled items do nothing, nor do the items of a disabled dropdown', async () => {
     const cards = [
       // The villain card is tucked under 'host': Discard and Move to (and its Hand) are disabled.
-      card('v', { code: '01094', owner: -1, back: 'villain', area: 'villain', parent: 'host' }),
-      card('host', { area: 'villain', x: 200 }),
+      card('v', { code: '01094', owner: -1, back: 'villain', parent: 'host' }),
+      card('host', { x: 200 }),
       // Reveal is disabled while a card is revealed on the encounter deck.
-      card('shown', { owner: -1, area: 'villain', x: 500, onPile: 'enc' }),
+      card('shown', { owner: -1, x: 500, onPile: 'enc' }),
     ];
     const { session } = await renderTable(makeView({ cards }));
 
@@ -462,26 +459,20 @@ describe('Escape', () => {
 describe('keys on a hand card', () => {
   it('P plays to a free slot', async () => {
     const cards = [
-      card('v', { code: '01094', owner: -1, back: 'villain', area: 'villain' }),
-      // 520–620 takes the slot at 520; a double-size card at 630–770 the one at 660.
-      card('a', { x: 520 }),
-      card('b', { code: '01010', x: 630 }),
-      // Below the top row, or in another area: not in the way.
-      card('low', { x: 800, y: 140 }),
-      card('there', { area: 'villain', x: 800 }),
-      card('h', { zone: 'hand', area: undefined }),
+      card('v', { code: '01094', owner: -1, back: 'villain' }),
+      // 760–900 takes the slot at 760; a double-size card at 960–1156 the one at 980.
+      card('a', { x: 760 }),
+      card('b', { code: '01010', x: 960 }),
+      // Below the viewer's row, or in another row: not in the way.
+      card('low', { x: 1200, y: 200 }),
+      card('there', { x: 1200, y: 330 }),
+      card('h', { zone: 'hand' }),
     ];
     const { session } = await renderTable(makeView({ cards }));
     await fireEvent.pointerEnter(inHand('h'));
 
     await press('p');
-    expect(session.act).toHaveBeenCalledWith({
-      kind: 'play',
-      card: 'h',
-      area: 'p0',
-      x: 800,
-      y: 0,
-    });
+    expect(session.act).toHaveBeenCalledWith({ kind: 'play', card: 'h', x: 1200, y: 0 });
   });
 
   it('X discards a hand card', async () => {
@@ -504,57 +495,59 @@ describe('keys on a hand card', () => {
 
 describe('freeSlot', () => {
   const sizeOf = (c: TableCard): Size => (c.code === '01010' ? 'dstd' : 'std');
-  // The rail of the villain area, the widest: deck, discard, victory display, scenario set-aside.
-  const rail = [
-    pile('enc', { kind: 'encounter', x: 0 }),
-    pile('encd', { kind: 'encounterDiscard', x: 120 }),
-    pile('vic', { kind: 'victory', x: 240 }),
-    pile('saside', { kind: 'aside', x: 360 }),
+  // Alex's row, as the setup lays it out: deck, discard, identity at 360.
+  const row = [
+    pile('deck:p0', { owner: 0, x: 0, y: 360 }),
+    pile('disc:p0', { kind: 'discard', owner: 0, x: 160, y: 360 }),
   ];
+  const identity = card('id', { x: 360, y: 360 });
 
-  it('starts at 520, past the rail', () => {
-    expect(freeSlot([], rail, 'villain', sizeOf)).toEqual({ x: 520, y: 0 });
-    const aside = pile('aside:p0', { kind: 'aside', owner: 0, area: 'p0', x: 240 });
-    expect(freeSlot([], [aside], 'p0', sizeOf)).toEqual({ x: 520, y: 0 });
+  it("starts at 760 on the viewer's row, the height of their deck", () => {
+    expect(freeSlot([identity], row, 0, sizeOf)).toEqual({ x: 760, y: 360 });
   });
 
-  it('skips the identity or the villain, which lie at 520', () => {
-    const villain = card('v', { code: '01094', owner: -1, area: 'villain', x: 520, y: 20 });
-    expect(freeSlot([villain], rail, 'villain', sizeOf)).toEqual({ x: 660, y: 0 });
+  it('starts at the top of the table without a deck', () => {
+    expect(freeSlot([], [], 0, sizeOf)).toEqual({ x: 760, y: 0 });
   });
 
-  it('steps by 140, keeping 20 free on each side of a 100-wide card', () => {
-    // 520 needs 500–640 free: a card from 630 is in the way, and its right edge (730) blocks 660.
-    expect(freeSlot([card('a', { x: 630 })], [], 'p0', sizeOf)).toEqual({ x: 800, y: 0 });
-    // A card from 640 leaves 520 free; one ending at 640 leaves 660 free.
-    expect(freeSlot([card('a', { x: 640 })], [], 'p0', sizeOf)).toEqual({ x: 520, y: 0 });
-    expect(freeSlot([card('a', { x: 540 })], [], 'p0', sizeOf)).toEqual({ x: 660, y: 0 });
+  it('steps by 220, keeping 40 free on each side of a 140-wide card', () => {
+    // 760 needs 720–940 free: a card from 930 is in the way, and its right edge (1070) blocks 980.
+    expect(freeSlot([card('a', { x: 930, y: 360 })], row, 0, sizeOf)).toEqual({ x: 1200, y: 360 });
+    // A card from 940 leaves 760 free; one ending at 940 leaves 980 free.
+    expect(freeSlot([card('a', { x: 940, y: 360 })], row, 0, sizeOf)).toEqual({ x: 760, y: 360 });
+    expect(freeSlot([card('a', { x: 800, y: 360 })], row, 0, sizeOf)).toEqual({ x: 980, y: 360 });
   });
 
   it('counts the visible width of a card: double size, face down, tilted when exhausted', () => {
-    // Double size, 140 wide: 540–680 blocks 660.
-    expect(freeSlot([card('a', { code: '01010', x: 540 })], [], 'p0', sizeOf)).toEqual({
-      x: 800,
-      y: 0,
+    // Double size, 196 wide: 760–956 blocks 980.
+    const double = card('a', { code: '01010', x: 760, y: 360 });
+    expect(freeSlot([double], row, 0, sizeOf)).toEqual({ x: 1200, y: 360 });
+    // Face down, it is 140 wide again.
+    const faceDown = card('a', { code: '01010', faceDown: true, x: 760, y: 360 });
+    expect(freeSlot([faceDown], row, 0, sizeOf)).toEqual({ x: 980, y: 360 });
+    // Exhausted, it turns 15°: its bounding box reaches past 940.
+    const exhausted = card('a', { x: 800, y: 360, exhausted: true });
+    expect(freeSlot([exhausted], row, 0, sizeOf)).toEqual({ x: 1200, y: 360 });
+  });
+
+  it('a pile is in the way, but not an out-of-play pile, which is not drawn', () => {
+    const inPlay = pile('deck:p1', { owner: 1, x: 780, y: 360 });
+    expect(freeSlot([], [...row, inPlay], 0, sizeOf)).toEqual({ x: 980, y: 360 });
+    const aside = pile('aside:p0', { kind: 'aside', owner: 0, x: 780, y: 360 });
+    expect(freeSlot([], [...row, aside], 0, sizeOf)).toEqual({ x: 760, y: 360 });
+  });
+
+  it("only what reaches into the viewer's row counts", () => {
+    const cards = [
+      card('above', { x: 760, y: 160 }),
+      card('reaching', { x: 980, y: 170 }),
+      card('below', { x: 1200, y: 560 }),
+    ];
+    // "above" ends at 356, "reaching" at 366: only the second one is in the way.
+    expect(freeSlot(cards, row, 0, sizeOf)).toEqual({ x: 760, y: 360 });
+    expect(freeSlot([...cards, card('a', { x: 760, y: 400 })], row, 0, sizeOf)).toEqual({
+      x: 1200,
+      y: 360,
     });
-    // Face down, it is 100 wide again.
-    const faceDown = card('a', { code: '01010', faceDown: true, x: 540 });
-    expect(freeSlot([faceDown], [], 'p0', sizeOf)).toEqual({ x: 660, y: 0 });
-    // Exhausted, it turns 15°: its bounding box reaches past 640.
-    const exhausted = card('a', { x: 540, exhausted: true });
-    expect(freeSlot([exhausted], [], 'p0', sizeOf)).toEqual({ x: 800, y: 0 });
-  });
-
-  it('a pile is in the way, in play or out of play', () => {
-    const inPlay = pile('deck:p0', { owner: 0, area: 'p0', x: 540 });
-    expect(freeSlot([], [inPlay], 'p0', sizeOf)).toEqual({ x: 660, y: 0 });
-    const aside = pile('aside:p0', { kind: 'aside', owner: 0, area: 'p0', x: 540 });
-    expect(freeSlot([], [aside], 'p0', sizeOf)).toEqual({ x: 660, y: 0 });
-  });
-
-  it('only the top row of the area counts', () => {
-    const cards = [card('low', { x: 520, y: 140 }), card('there', { area: 'p1', x: 520 })];
-    const piles = [pile('deck:p1', { owner: 1, area: 'p1', x: 520 })];
-    expect(freeSlot(cards, piles, 'p0', sizeOf)).toEqual({ x: 520, y: 0 });
   });
 });

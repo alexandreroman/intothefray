@@ -4,7 +4,6 @@ import Table from './Table.svelte';
 import { interaction, LINGER_MS } from './interaction.svelte';
 import { knownCard, loadGameCards, loadIndex, type CardInfo } from '../lib/catalog';
 import type {
-  Area,
   CardView as TableCard,
   Index,
   PackFace,
@@ -84,7 +83,7 @@ function card(id: string, extra: Partial<TableCard>): TableCard {
 }
 
 function pile(id: string, extra: Partial<PileView>): PileView {
-  return { id, kind: 'deck', owner: -1, area: 'villain', x: 0, y: 0, count: 3, ...extra };
+  return { id, kind: 'deck', owner: -1, x: 0, y: 0, count: 3, ...extra };
 }
 
 function fakeSession() {
@@ -98,20 +97,24 @@ function fakeSession() {
   };
 }
 
-/** Rhino with two players; the viewer is Sam, seated second (area p1). */
+/**
+ * Rhino with two players; the viewer is Sam, seated second (p1). As the setup
+ * lays them out: the villain's row at the top, Alex's row 330 below it, then
+ * Sam's, each starting with its deck and discard pile.
+ */
 function makeView(extra: { cards?: TableCard[]; piles?: PileView[] } = {}): View {
   const cards = extra.cards ?? [
-    card('v', { code: '01094', back: 'villain', area: 'villain', x: 10, y: 0 }),
-    card('s', { code: '01097', back: 'encounter', area: 'villain', x: 130, y: 0 }),
-    card('a', { code: '01001', owner: 0, area: 'p0', x: 0, y: 0 }),
-    card('b', { code: '01001', owner: 1, area: 'p1', x: 0, y: 0 }),
+    card('v', { code: '01094', back: 'villain', x: 360, y: 30 }),
+    card('s', { code: '01097', back: 'encounter', x: 520, y: 30 }),
+    card('a', { code: '01001', owner: 0, x: 360, y: 360 }),
+    card('b', { code: '01001', owner: 1, x: 360, y: 690 }),
     card('h', { code: '01001', owner: 1, zone: 'hand', x: 0, y: 0 }),
   ];
   const piles = extra.piles ?? [
-    pile('enc', { kind: 'encounter', area: 'villain', x: 500 }),
-    pile('d0', { owner: 0, area: 'p0', x: 600 }),
-    pile('d1', { owner: 1, area: 'p1', x: 600 }),
-    pile('x1', { kind: 'discard', owner: 1, area: 'p1', x: 720, count: 0 }),
+    pile('enc', { kind: 'encounter', x: 0, y: 30 }),
+    pile('d0', { owner: 0, x: 0, y: 360 }),
+    pile('d1', { owner: 1, x: 0, y: 690 }),
+    pile('x1', { kind: 'discard', owner: 1, x: 160, y: 690, count: 0 }),
   ];
   return {
     id: 'g1',
@@ -143,26 +146,28 @@ function makeView(extra: { cards?: TableCard[]; piles?: PileView[] } = {}): View
       cards,
       piles,
       stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
-      firstPlayer: { area: 'p0', x: 860, y: 40 },
+      firstPlayer: { x: 860, y: 40 },
     },
     log: [],
   };
 }
 
-function surfaceOf(name: RegExp): HTMLElement {
-  const surface = screen.getByRole('region', { name }).querySelector<HTMLElement>('.surface');
-  if (!surface) {
-    throw new Error(`no surface in ${String(name)}`);
+function surface(): HTMLElement {
+  const element = document.querySelector<HTMLElement>('.tablewrap .surface');
+  if (!element) {
+    throw new Error('no surface');
   }
-  return surface;
+  return element;
 }
 
-/** Where a pile of a zone lies, found by its id. */
-function pileLeft(zone: RegExp, id: string): string | undefined {
-  const region = screen.getByRole('region', { name: zone });
-  return region.querySelector<HTMLElement>(`.pile[data-id="${id}"]`)?.style.left;
+/** Waits for the catalog: the villain shows its face. */
+async function catalogLoaded(): Promise<void> {
+  await within(surface()).findByRole('img', { name: 'Rhino' });
 }
 
+function ownerBoxes(): HTMLElement[] {
+  return [...document.querySelectorAll<HTMLElement>('.surface .ownerbox')];
+}
 function zoomLabel(): HTMLElement {
   return screen.getByRole('button', { name: 'Back to 100%' });
 }
@@ -182,81 +187,125 @@ afterEach(() => {
   vi.mocked(loadIndex).mockReset();
 });
 
+beforeEach(() => {
+  localStorage.clear();
+  vi.mocked(loadGameCards).mockResolvedValue();
+  vi.mocked(knownCard).mockImplementation(infoOf);
+  vi.mocked(loadIndex).mockResolvedValue(INDEX);
+});
+
+afterEach(() => {
+  vi.useRealTimers();
+  interaction.reset();
+  vi.mocked(loadGameCards).mockReset();
+  vi.mocked(knownCard).mockReset();
+  vi.mocked(loadIndex).mockReset();
+});
 describe('Table', () => {
-  it('renders a zone per area in order', async () => {
+  it('draws every table card and pile on one surface; the hand is not on the table', async () => {
     render(Table, { session: fakeSession(), view: makeView() });
+    await catalogLoaded();
 
-    const zones = await screen.findAllByRole('region');
-    expect(zones.map((z) => z.getAttribute('data-area'))).toEqual(['villain', 'p1', 'p0']);
-
-    // Table cards and piles of each area, in that area's zone only; the hand is not on the table.
-    const count = (zone: HTMLElement, selector: string) => zone.querySelectorAll(selector).length;
-    const [villain, own, other] = zones as [HTMLElement, HTMLElement, HTMLElement];
-    expect(count(villain, '.surface > .card:not(.pile)')).toBe(2);
-    expect(count(villain, '.surface > .pile')).toBe(1);
-    expect(count(own, '.surface > .card:not(.pile)')).toBe(1);
-    expect(count(own, '.surface > .pile')).toBe(2);
-    expect(count(other, '.surface > .card:not(.pile)')).toBe(1);
-    expect(count(other, '.surface > .pile')).toBe(1);
+    expect(document.querySelectorAll('.tablewrap .surface')).toHaveLength(1);
+    const ids = (selector: string) =>
+      [...surface().querySelectorAll<HTMLElement>(selector)].map((element) => element.dataset.id);
+    expect(ids(':scope > .card:not(.pile)')).toEqual(['v', 's', 'a', 'b']);
+    expect(ids(':scope > .pile')).toEqual(['enc', 'd0', 'd1', 'x1']);
+    expect(surface().querySelector('[data-id="b"]')?.getAttribute('style')).toContain('top: 690px');
   });
 
-  it('loads the cards of its game once for every zone', async () => {
+  it('loads the cards of its game once', async () => {
     render(Table, { session: fakeSession(), view: makeView() });
-    await screen.findByRole('region', { name: /Rhino/ });
+    await catalogLoaded();
     expect(loadGameCards).toHaveBeenCalledExactlyOnceWith('g1');
   });
 
-  it('zone header text', async () => {
+  it("frames each owner's deck and discard pile, named after them, their hand count as tip", async () => {
     render(Table, { session: fakeSession(), view: makeView() });
+    await catalogLoaded();
 
-    // The villain's zone is named in a caption box.
-    const villain = await screen.findByRole('region', { name: 'Villain Rhino · stage I' });
-    expect(within(villain).getByText('Villain').classList).toContain('caption');
-
-    // A player's zone has their seat colour, and the viewer's own says so.
-    const own = screen.getByRole('region', { name: 'Sam · Ant-Man · you · 5 cards in hand' });
-    expect(own.getAttribute('style')).toContain('--seat: var(--p2)');
-    expect(own.querySelector('.seat')).not.toBeNull();
-    expect(
-      within(own).getByText('· Ant-Man · you · 5 cards in hand', { exact: false }),
-    ).toBeTruthy();
-
-    const other = screen.getByRole('region', { name: 'Alex · Spider-Man · 6 cards in hand' });
-    expect(other.getAttribute('style')).toContain('--seat: var(--p1)');
-    expect(within(other).queryByText('Villain')).toBeNull();
+    const boxes = ownerBoxes();
+    expect(boxes.map((box) => box.textContent?.trim())).toEqual(['Villain', 'Alex', 'Sam']);
+    expect(boxes.map((box) => box.style.getPropertyValue('--owner'))).toEqual([
+      'var(--spark)',
+      'var(--p1)',
+      'var(--p2)',
+    ]);
+    expect(boxes.map((box) => box.dataset.tip)).toEqual([
+      undefined,
+      '6 cards in hand',
+      '5 cards in hand',
+    ]);
+    // Around Sam's deck (0, 690) and discard pile (160, 690), 10 units off their edges.
+    const sam = boxes[2]!;
+    expect([sam.style.left, sam.style.top, sam.style.width, sam.style.height]).toEqual([
+      '-10px',
+      '680px',
+      '320px',
+      '216px',
+    ]);
   });
 
-  it('zone height grows with a low card', async () => {
+  it('draws no out-of-play pile on the table', async () => {
+    const view = makeView();
+    view.table?.piles.push(
+      pile('vic', { kind: 'victory', x: 0, y: 30, count: 2, cards: ['q1', 'q2'] }),
+      pile('saside', { kind: 'aside', x: 0, y: 30, count: 0 }),
+      pile('aside:p1', { kind: 'aside', owner: 1, x: 0, y: 690, count: 0 }),
+    );
+    render(Table, { session: fakeSession(), view });
+    await catalogLoaded();
+
+    for (const id of ['vic', 'saside', 'aside:p1']) {
+      expect(surface().querySelector(`[data-id="${id}"]`)).toBeNull();
+    }
+  });
+
+  it('leaves room past the rightmost and the lowest card', async () => {
     const view = makeView({
-      cards: [
-        card('v', { code: '01094', back: 'villain', area: 'villain', x: 10, y: 0 }),
-        // A double-size card (200 high) whose top is at 300: 300 + 200 + 20.
-        card('g', { code: '01010', area: 'villain', x: 200, y: 300 }),
-      ],
+      // A double-size card, 196 by 280, at 200, 300.
+      cards: [card('g', { code: '01010', x: 200, y: 300 })],
       piles: [],
     });
     render(Table, { session: fakeSession(), view });
 
+    // 200 + 196 + 200 wide, 300 + 280 + 300 tall.
     await waitFor(() => {
-      expect(surfaceOf(/^Villain/).style.height).toBe('520px');
+      expect(surface().style.width).toBe('596px');
     });
-    // An empty zone keeps one card row plus 60.
-    expect(surfaceOf(/^Alex/).style.height).toBe('200px');
+    expect(surface().style.height).toBe('880px');
   });
 
   it('sizes cards as std until the catalog is loaded', () => {
     vi.mocked(loadGameCards).mockReturnValue(new Promise(() => {}));
     const view = makeView({
-      cards: [card('g', { code: '01010', area: 'villain', x: 0, y: 300 })],
+      cards: [card('g', { code: '01010', x: 0, y: 300 })],
       piles: [],
     });
     render(Table, { session: fakeSession(), view });
 
-    // 300 + 140 + 20, and the card itself gets the std box.
-    expect(surfaceOf(/^Villain/).style.height).toBe('460px');
-    const placed = surfaceOf(/^Villain/).querySelector<HTMLElement>('.card');
-    expect(placed?.style.height).toBe('140px');
+    // 300 + 196 + 300, and the card itself gets the std box.
+    expect(surface().style.height).toBe('796px');
+    expect(surface().querySelector<HTMLElement>('.card')?.style.height).toBe('196px');
     expect(knownCard).not.toHaveBeenCalled();
+  });
+
+  it('does not keep the size measured before the catalog is loaded', async () => {
+    let loaded = () => {};
+    vi.mocked(loadGameCards).mockReturnValue(new Promise<void>((resolve) => (loaded = resolve)));
+    // The main scheme is landscape (140 high), but counts as std (196) until its size is known.
+    const view = makeView({
+      cards: [card('s', { code: '01097', x: 0, y: 300 })],
+      piles: [],
+    });
+    render(Table, { session: fakeSession(), view });
+    expect(surface().style.height).toBe('796px');
+
+    loaded();
+    // 300 + 140 + 300.
+    await waitFor(() => {
+      expect(surface().style.height).toBe('740px');
+    });
   });
 
   it('shows a non-blocking error when the catalog fails to load', async () => {
@@ -266,55 +315,23 @@ describe('Table', () => {
     expect((await screen.findByRole('alert')).textContent).toContain(
       'Card data could not be loaded',
     );
-    expect(screen.getAllByRole('region')).toHaveLength(3);
+    expect(surface().querySelectorAll('.card:not(.pile)')).toHaveLength(4);
   });
 
-  it('after a failed load, every card is a std placeholder, as its zone is sized', async () => {
+  it('after a failed load, every card is a std placeholder, as the surface is sized', async () => {
     vi.mocked(loadGameCards).mockRejectedValue(new Error('offline'));
     const view = makeView({
-      cards: [card('g', { code: '01010', area: 'villain', x: 0, y: 300 })],
+      cards: [card('g', { code: '01010', x: 0, y: 300 })],
       piles: [],
     });
     render(Table, { session: fakeSession(), view });
     await screen.findByRole('alert');
 
-    const surface = surfaceOf(/^Villain/);
-    // 300 + 140 + 20: the zone counts the card as std, and the card is drawn std.
-    expect(surface.style.height).toBe('460px');
+    // 300 + 196 + 300: the surface counts the card as std, and the card is drawn std.
+    expect(surface().style.height).toBe('796px');
     await Promise.resolve();
-    expect(surface.querySelector<HTMLElement>('.card')?.style.height).toBe('140px');
-    expect(within(surface).queryByRole('img', { name: 'Giant form' })).toBeNull();
-  });
-
-  it('dragging a separator resizes the zone above, snapped and never below its minimum', async () => {
-    render(Table, { session: fakeSession(), view: makeView() });
-    const handle = await screen.findByTitle("Drag to resize the villain's zone");
-
-    await fireEvent.pointerDown(handle, { clientY: 100 });
-    await fireEvent.pointerMove(window, { clientY: 157 });
-    expect(surfaceOf(/^Villain/).style.height).toBe('260px');
-
-    await fireEvent.pointerMove(window, { clientY: -500 });
-    expect(surfaceOf(/^Villain/).style.height).toBe('200px');
-
-    await fireEvent.pointerUp(window);
-    await fireEvent.pointerMove(window, { clientY: 400 });
-    expect(surfaceOf(/^Villain/).style.height).toBe('200px');
-
-    // Mine can be resized too; another player's zone follows its cards.
-    expect(screen.getByTitle('Drag to resize your zone')).toBeTruthy();
-    expect(screen.getAllByTitle(/^Drag to resize/)).toHaveLength(2);
-  });
-
-  it('a separator drag counts the pointer move in table units at any zoom', async () => {
-    localStorage.setItem('itf-zoom', '2');
-    render(Table, { session: fakeSession(), view: makeView() });
-    const handle = await screen.findByTitle("Drag to resize the villain's zone");
-
-    await fireEvent.pointerDown(handle, { clientY: 100 });
-    await fireEvent.pointerMove(window, { clientY: 157 });
-    // 57 px at 200 % are 28.5 units: 228.5, snapped to 230.
-    expect(surfaceOf(/^Villain/).style.height).toBe('230px');
+    expect(surface().querySelector<HTMLElement>('.card')?.style.height).toBe('196px');
+    expect(within(surface()).queryByRole('img', { name: 'Giant form' })).toBeNull();
   });
 
   it('zoom buttons clamp to 50–200 and persist', async () => {
@@ -383,84 +400,7 @@ describe('Table', () => {
     expect(kbds).toEqual(['−', '0', '+']);
   });
 
-  it("keeps the out-of-play piles where the server sets them, in each zone's rail", async () => {
-    const view = makeView();
-    view.table?.piles.push(
-      pile('vic', { kind: 'victory', area: 'villain', x: 240, y: 20, count: 0 }),
-      pile('aside', { kind: 'aside', area: 'villain', x: 360, y: 20, count: 0 }),
-      pile('aside1', { kind: 'aside', owner: 1, area: 'p1', x: 240, y: 20, count: 0 }),
-    );
-    // Each zone scroller shows 1200 table units at 100 %, past its 24 px padding on each side.
-    // The zoom is pinned: prefs keep earlier tests' zoom in memory.
-    localStorage.setItem('itf-zoom', '1');
-    const width = vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(1248);
-    try {
-      render(Table, { session: fakeSession(), view });
-      await screen.findByRole('region', { name: /Rhino/ });
-
-      expect(surfaceOf(/^Villain/).style.width).toBe('1200px');
-      expect(pileLeft(/^Villain/, 'vic')).toBe('240px');
-      expect(pileLeft(/^Villain/, 'aside')).toBe('360px');
-      expect(pileLeft(/^Sam/, 'aside1')).toBe('240px');
-      expect(pileLeft(/^Villain/, 'enc')).toBe('500px');
-    } finally {
-      width.mockRestore();
-    }
-  });
-
-  it('widens a zone past its rightmost pile, out-of-play ones included', async () => {
-    const view = makeView();
-    view.table?.piles.push(pile('aside', { kind: 'aside', area: 'villain', x: 800, count: 0 }));
-    render(Table, { session: fakeSession(), view });
-    await screen.findByRole('region', { name: /Rhino/ });
-
-    // The set-aside pile ends at 900: 900 + 140.
-    expect(surfaceOf(/^Villain/).style.width).toBe('1040px');
-    expect(pileLeft(/^Villain/, 'aside')).toBe('800px');
-  });
-
-  it('chips count what is scrolled out of a zone, and scroll to it', async () => {
-    localStorage.setItem('itf-zoom', '1');
-    // Each zone scroller shows 200 table units.
-    const width = vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(248);
-    try {
-      render(Table, { session: fakeSession(), view: makeView() });
-      const villain = await screen.findByRole('region', { name: /Rhino/ });
-      const scroller = villain.querySelector<HTMLElement>('.zscroll');
-      if (!scroller) {
-        throw new Error('no scroller');
-      }
-      const scrollTo = vi.fn();
-      scroller.scrollTo = scrollTo;
-
-      // At the start, the encounter deck (x 500) is out of view on the right.
-      expect(within(villain).queryByRole('button', { name: /on the left/ })).toBeNull();
-      const right = within(villain).getByRole('button', { name: '1 more on the right' });
-      expect(right.textContent?.trim()).toBe('1 →');
-      await fireEvent.click(right);
-      expect(scrollTo).toHaveBeenLastCalledWith({ left: 484, behavior: 'smooth' });
-
-      // Scrolled to 600 px: Rhino and the main scheme are out on the left.
-      Object.defineProperty(scroller, 'scrollLeft', { value: 600, configurable: true });
-      await fireEvent.scroll(scroller);
-      const left = within(villain).getByRole('button', { name: '2 more on the left' });
-      expect(left.textContent?.trim()).toBe('← 2');
-      expect(within(villain).queryByRole('button', { name: /on the right/ })).toBeNull();
-      // Back to the nearest one, the main scheme at 130.
-      await fireEvent.click(left);
-      expect(scrollTo).toHaveBeenLastCalledWith({ left: 114, behavior: 'smooth' });
-    } finally {
-      width.mockRestore();
-    }
-  });
-
-  it('shows no chip before the zone is measured', async () => {
-    render(Table, { session: fakeSession(), view: makeView() });
-    const villain = await screen.findByRole('region', { name: /Rhino/ });
-    expect(within(villain).queryByRole('button', { name: /more on the/ })).toBeNull();
-  });
-
-  it('places the first player token in its zone', async () => {
+  it('places the first player token on the table', async () => {
     render(Table, { session: fakeSession(), view: makeView() });
 
     const token = await screen.findByRole('img', { name: 'First player' });
@@ -468,7 +408,7 @@ describe('Table', () => {
     const placed = token.closest<HTMLElement>('.fptoken');
     expect(placed?.style.left).toBe('860px');
     expect(placed?.style.top).toBe('40px');
-    expect(surfaceOf(/^Alex/).contains(token)).toBe(true);
+    expect(surface().contains(token)).toBe(true);
   });
 
   it('draws the first player token with the minimal theme', () => {
@@ -482,20 +422,18 @@ describe('Table', () => {
   it('shows the top card of a pile that lists its cards', async () => {
     const view = makeView({
       cards: [card('t', { code: '01001', zone: 'pile', x: 0, y: 0 })],
-      piles: [pile('x0', { kind: 'discard', owner: 0, area: 'p0', count: 1, cards: ['t'] })],
+      piles: [pile('x0', { kind: 'discard', owner: 0, count: 1, cards: ['t'] })],
     });
     render(Table, { session: fakeSession(), view });
 
-    const top = await within(screen.getByRole('region', { name: /^Alex/ })).findByRole('img', {
-      name: 'Spider-Man',
-    });
+    const top = await within(surface()).findByRole('img', { name: 'Spider-Man' });
     expect(top.getAttribute('src')).toBe('01001.png');
   });
 
   it('hovering a card previews it; leaving it clears the preview after a linger', async () => {
     const { container } = render(Table, { session: fakeSession(), view: makeView() });
     const preview = screen.getByLabelText('Card preview');
-    const villain = await screen.findByRole('region', { name: /Rhino/ });
+    const villain = surface();
     const rhino = await within(villain).findByRole('img', { name: 'Rhino' });
 
     await fireEvent.pointerEnter(rhino.closest('.card') as HTMLElement);
@@ -520,21 +458,21 @@ describe('Table', () => {
   it('previews the back of a face-down card; a deck keeps it, an empty pile clears it', async () => {
     localStorage.setItem('itf-theme', 'minimal');
     const view = makeView({
-      cards: [card('f', { code: '01001', faceDown: true, back: 'player', area: 'villain' })],
+      cards: [card('f', { code: '01001', faceDown: true, back: 'player' })],
       piles: [
-        pile('enc', { kind: 'encounter', area: 'villain', x: 500 }),
-        pile('x1', { kind: 'discard', owner: 1, area: 'p1', x: 720, count: 0 }),
+        pile('enc', { kind: 'encounter', x: 500 }),
+        pile('x1', { kind: 'discard', owner: 1, x: 720, count: 0 }),
       ],
     });
     const { container } = render(Table, { session: fakeSession(), view });
     const preview = screen.getByLabelText('Card preview');
-    const surface = surfaceOf(/^Villain/);
+    const table = surface();
 
-    await fireEvent.pointerEnter(surface.querySelector('.card:not(.pile)') as HTMLElement);
+    await fireEvent.pointerEnter(table.querySelector('.card:not(.pile)') as HTMLElement);
     expect(within(preview).getByRole('img', { name: 'Player card back' })).toBeTruthy();
 
     // A deck shows nothing new: the preview keeps the card seen before.
-    await fireEvent.pointerEnter(surface.querySelector('.pile') as HTMLElement);
+    await fireEvent.pointerEnter(table.querySelector('.pile') as HTMLElement);
     expect(within(preview).getByRole('img', { name: 'Player card back' })).toBeTruthy();
 
     // An empty pile shows nothing.
@@ -548,7 +486,7 @@ describe('Table', () => {
       { who: 'Sam', color: 1, text: 'exhausted Rhino', at: new Date().toISOString(), cards: ['v'] },
     ];
     render(Table, { session: fakeSession(), view });
-    const villain = await screen.findByRole('region', { name: /Rhino/ });
+    const villain = surface();
     const rhino = await within(villain).findByRole('img', { name: 'Rhino' });
     const placed = rhino.closest('.card') as HTMLElement;
     expect(placed.classList).not.toContain('highlighted');
@@ -634,7 +572,7 @@ describe('Table', () => {
   it('shows no crumb when the pack index cannot be loaded', async () => {
     vi.mocked(loadIndex).mockRejectedValue(new Error('offline'));
     const { container } = render(Table, { session: fakeSession(), view: makeView() });
-    await screen.findByRole('region', { name: /Rhino/ });
+    await catalogLoaded();
     expect(container.querySelector('header .crumbs')).toBeNull();
   });
 
@@ -665,96 +603,30 @@ describe('Table', () => {
     expect(session.lobby).toHaveBeenCalledExactlyOnceWith('end');
     expect(screen.queryByRole('alertdialog')).toBeNull();
   });
-
-  it('the villain and own zones only grow on their own; other zones fit both ways', async () => {
-    const low = (id: string, area: Area) => card(id, { code: '01001', area, x: 200, y: 300 });
-    const high = (id: string, area: Area) => card(id, { code: '01001', area, x: 200, y: 0 });
-    const viewWith = (cards: TableCard[]) => makeView({ cards, piles: [] });
-
-    const { rerender } = render(Table, {
-      session: fakeSession(),
-      view: viewWith([low('v', 'villain'), low('b', 'p1'), low('a', 'p0')]),
-    });
-    // 300 + 140 + 20 in every zone.
-    await waitFor(() => {
-      expect(surfaceOf(/^Villain/).style.height).toBe('460px');
-    });
-    expect(surfaceOf(/^Sam/).style.height).toBe('460px');
-    expect(surfaceOf(/^Alex/).style.height).toBe('460px');
-
-    await rerender({
-      session: fakeSession(),
-      view: viewWith([high('v', 'villain'), high('b', 'p1'), high('a', 'p0')]),
-    });
-    expect(surfaceOf(/^Villain/).style.height).toBe('460px');
-    expect(surfaceOf(/^Sam/).style.height).toBe('460px');
-    expect(surfaceOf(/^Alex/).style.height).toBe('200px');
-
-    // A grown zone can still be shrunk by hand, down to its cards.
-    const handle = screen.getByTitle("Drag to resize the villain's zone");
-    await fireEvent.pointerDown(handle, { clientY: 400 });
-    await fireEvent.pointerMove(window, { clientY: 0 });
-    await fireEvent.pointerUp(window);
-    expect(surfaceOf(/^Villain/).style.height).toBe('200px');
-  });
-
-  it('does not keep the heights measured before the catalog is loaded', async () => {
-    let loaded = () => {};
-    vi.mocked(loadGameCards).mockReturnValue(new Promise<void>((resolve) => (loaded = resolve)));
-    // The main scheme is landscape (100 high), but counts as std (140) until its size is known.
-    const view = makeView({
-      cards: [card('s', { code: '01097', area: 'villain', x: 0, y: 300 })],
-      piles: [],
-    });
-    render(Table, { session: fakeSession(), view });
-    expect(surfaceOf(/^Villain/).style.height).toBe('460px');
-
-    loaded();
-    // 300 + 100 + 20.
-    await waitFor(() => {
-      expect(surfaceOf(/^Villain/).style.height).toBe('420px');
-    });
-  });
-
-  it('a separator drag captures the pointer, keeping the resize cursor', async () => {
-    render(Table, { session: fakeSession(), view: makeView() });
-    const handle = await screen.findByTitle("Drag to resize the villain's zone");
-    const capture = vi.fn();
-    handle.setPointerCapture = capture;
-
-    await fireEvent.pointerDown(handle, { clientY: 100, pointerId: 7 });
-    expect(capture).toHaveBeenCalledWith(7);
-  });
 });
 
-describe('Table zone heights', () => {
-  // The table shows 1590 px (until a test resizes it), and the zone headers and separators take
-  // 90 of them.
-  const VISIBLE = 1590;
-  const CHROME = 90;
+describe('Table surface size', () => {
+  // The table shows 1248 by 948 px, 1200 by 900 past the scroller's 24 px padding.
+  let visible = { w: 1248, h: 948 };
 
-  let visible = VISIBLE;
-
-  /** Lays the table out as a browser would, as far as the zone heights go. */
-  function stubLayout(): void {
-    visible = VISIBLE;
+  beforeEach(() => {
+    visible = { w: 1248, h: 948 };
+    localStorage.setItem('itf-zoom', '1');
+    vi.spyOn(Element.prototype, 'clientWidth', 'get').mockImplementation(function (this: Element) {
+      return this.classList.contains('tablewrap') ? visible.w : 0;
+    });
     vi.spyOn(Element.prototype, 'clientHeight', 'get').mockImplementation(function (this: Element) {
-      return this.classList.contains('tablewrap') ? visible : 0;
+      return this.classList.contains('tablewrap') ? visible.h : 0;
     });
-    // From the top of the first zone to the bottom of the last; the surfaces count for nothing.
-    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
-      this: Element,
-    ) {
-      const height = this.classList.contains('zsec') ? CHROME : 0;
-      return { x: 0, y: 0, top: 0, left: 0, right: 0, bottom: height, width: 0, height } as DOMRect;
-    });
-  }
+  });
 
-  const heights = () => [/^Villain/, /^Sam/, /^Alex/].map((name) => surfaceOf(name).style.height);
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
 
-  /** Resizes the window: the table shows `height` px. */
-  function resizeTable(container: HTMLElement, height: number): Promise<void> {
-    visible = height;
+  /** Resizes the window: the table shows `w` by `h` px. */
+  function resizeTable(container: HTMLElement, w: number, h: number): Promise<void> {
+    visible = { w, h };
     const wrap = container.querySelector('.tablewrap');
     if (!wrap) {
       throw new Error('no table');
@@ -763,99 +635,46 @@ describe('Table zone heights', () => {
     return tick();
   }
 
-  beforeEach(stubLayout);
-
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
-  it('splits the visible height in thirds for two players', async () => {
-    render(Table, { session: fakeSession(), view: makeView() });
-
+  it('fills what shows of the table, in table units at the zoom', async () => {
+    // One card, from 800 to 940: the surface needs 1140 units of width.
+    const view = makeView({ cards: [card('v', { code: '01094', x: 800, y: 0 })], piles: [] });
+    const { container } = render(Table, { session: fakeSession(), view });
     await waitFor(() => {
-      expect(heights()).toEqual(['500px', '500px', '500px']);
+      expect([surface().style.width, surface().style.height]).toEqual(['1200px', '900px']);
     });
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Zoom out' }));
+    // 1200 by 900 px at 90 % are 1333.3 by 1000 units, rounded down.
+    expect([surface().style.width, surface().style.height]).toEqual(['1333px', '1000px']);
+
+    await resizeTable(container, 648, 1848);
+    // 600 by 1800 px at 90 % are 666.7 by 2000 units: the card needs more width.
+    expect([surface().style.width, surface().style.height]).toEqual(['1140px', '2000px']);
   });
 
-  it('follows the zoom, the last zone taking the rounding', async () => {
-    render(Table, { session: fakeSession(), view: makeView() });
-    await waitFor(() => {
-      expect(heights()).toEqual(['500px', '500px', '500px']);
-    });
-
-    await fireEvent.click(screen.getByRole('button', { name: 'Zoom in' }));
-    // 1500 px at 110 % are 1363.6 units: 454 each, and the last one gets the rest, rounded up.
-    expect(heights()).toEqual(['454px', '454px', '456px']);
-  });
-
-  it('gives a zone taller than its share what it needs, from the last one', async () => {
-    const view = makeView({
-      cards: [card('g', { code: '01010', area: 'villain', x: 200, y: 400 })],
-      piles: [],
-    });
-    render(Table, { session: fakeSession(), view });
-
-    // 400 + 200 + 20 for the villain's zone.
-    await waitFor(() => {
-      expect(heights()).toEqual(['620px', '500px', '380px']);
-    });
-  });
-
-  it('a resized zone only changes the last one', async () => {
-    render(Table, { session: fakeSession(), view: makeView() });
-    const handle = await screen.findByTitle("Drag to resize the villain's zone");
-    await waitFor(() => {
-      expect(heights()).toEqual(['500px', '500px', '500px']);
-    });
-
-    await fireEvent.pointerDown(handle, { clientY: 100 });
-    await fireEvent.pointerMove(window, { clientY: 200 });
-    await fireEvent.pointerUp(window);
-    expect(heights()).toEqual(['600px', '500px', '400px']);
-  });
-
-  it('follows the visible height when the window is resized', async () => {
+  it('zooms around the pointer, keeping the table spot under it in place', async () => {
     const { container } = render(Table, { session: fakeSession(), view: makeView() });
+    const wrap = container.querySelector<HTMLElement>('.tablewrap')!;
+    vi.spyOn(wrap, 'getBoundingClientRect').mockReturnValue({
+      left: 0,
+      top: 0,
+      right: 1000,
+      bottom: 800,
+      width: 1000,
+      height: 800,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    });
+    Object.defineProperty(wrap, 'scrollLeft', { value: 100, writable: true });
+    Object.defineProperty(wrap, 'scrollTop', { value: 50, writable: true });
+
+    // The pointer at 524, 424: 600, 450 px into the surface, past the scroller's padding.
+    await fireEvent.wheel(wrap, { deltaY: -20, ctrlKey: true, clientX: 524, clientY: 424 });
+    expect(zoomLabel().textContent).toBe('120%');
+    // At 120 %, that spot is 720, 540 px into the surface: still under the pointer.
     await waitFor(() => {
-      expect(heights()).toEqual(['500px', '500px', '500px']);
+      expect([wrap.scrollLeft, wrap.scrollTop]).toEqual([220, 140]);
     });
-
-    await resizeTable(container, 1290);
-    expect(heights()).toEqual(['400px', '400px', '400px']);
-  });
-
-  it('a zone its cards kept under its share follows the share once they move up', async () => {
-    // 300 + 140 + 20: under the 500 share.
-    const low = card('v', { code: '01001', area: 'villain', x: 200, y: 300 });
-    const high = card('v', { code: '01001', area: 'villain', x: 200, y: 0 });
-    const { container, rerender } = render(Table, {
-      session: fakeSession(),
-      view: makeView({ cards: [low], piles: [] }),
-    });
-    await waitFor(() => {
-      expect(heights()).toEqual(['500px', '500px', '500px']);
-    });
-
-    await rerender({ session: fakeSession(), view: makeView({ cards: [high], piles: [] }) });
-    await resizeTable(container, 990);
-    expect(heights()).toEqual(['300px', '300px', '300px']);
-  });
-
-  it('a zone its cards took past its share stays that tall once they move up', async () => {
-    // 500 + 140 + 20: past the 500 share.
-    const low = card('v', { code: '01001', area: 'villain', x: 200, y: 500 });
-    const high = card('v', { code: '01001', area: 'villain', x: 200, y: 0 });
-    const { container, rerender } = render(Table, {
-      session: fakeSession(),
-      view: makeView({ cards: [low], piles: [] }),
-    });
-    await waitFor(() => {
-      expect(heights()).toEqual(['660px', '500px', '340px']);
-    });
-
-    await rerender({ session: fakeSession(), view: makeView({ cards: [high], piles: [] }) });
-    expect(heights()).toEqual(['660px', '500px', '340px']);
-    await resizeTable(container, 990);
-    expect(heights()).toEqual(['660px', '300px', '200px']);
   });
 });

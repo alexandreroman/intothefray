@@ -19,7 +19,7 @@ const playingView = {
   you: { role: 'spectator', color: -1, host: false },
   players: [],
   spectators: 2,
-  table: { cards: [], piles: [], stages: [], firstPlayer: { area: 'villain', x: 0, y: 0 } },
+  table: { cards: [], piles: [], stages: [], firstPlayer: { x: 0, y: 0 } },
   log: [],
 } as unknown as View;
 
@@ -107,7 +107,7 @@ describe('Game', () => {
     mockSession({ view: playingView });
     render(Game, { id: 'x' });
 
-    expect(screen.getByRole('region', { name: /^Villain/ })).toBeTruthy();
+    expect(document.querySelector('.tablewrap .surface')).toBeTruthy();
     expect(screen.getByRole('img', { name: '2 spectators' })).toBeTruthy();
   });
 

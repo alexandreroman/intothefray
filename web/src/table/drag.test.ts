@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { CardView, PileView, View } from '../lib/types';
 import {
+  dealRecipient,
   dropAction,
   dropTarget,
   goesToHand,
@@ -27,7 +28,6 @@ function card(id: string, extra: Partial<CardView> = {}): CardView {
     back: 'player',
     owner: 0,
     zone: 'table',
-    area: 'p0',
     x: 0,
     y: 0,
     z: 1,
@@ -36,7 +36,7 @@ function card(id: string, extra: Partial<CardView> = {}): CardView {
 }
 
 function pile(id: string, extra: Partial<PileView> = {}): PileView {
-  return { id, kind: 'deck', owner: -1, area: 'villain', x: 0, y: 0, count: 10, ...extra };
+  return { id, kind: 'deck', owner: -1, x: 0, y: 0, count: 10, ...extra };
 }
 
 /** Alex (p0) is the viewer; Sam sits at p1. */
@@ -57,15 +57,18 @@ function makeView(
       piles: extra.piles ?? [],
       hand: ['h1', 'h2', 'h3'],
       stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
-      firstPlayer: { area: 'p0', x: 0, y: 0 },
+      firstPlayer: { x: 0, y: 0 },
     },
     log: [],
   };
 }
 
-const ZONE: DropRect = { kind: 'zone', area: 'p0', rect: rect(0, 300, 1000, 300) };
+const TABLE: DropRect = { kind: 'table', rect: rect(0, 300, 1000, 300) };
 
-const TABLE_CARD: DragSource = { kind: 'card', card: 'c', area: 'p0', x: 100, y: 40 };
+// Who an encounter card dealt goes to: dealRecipient picks the player.
+const DEAL_TO = 'p1';
+
+const TABLE_CARD: DragSource = { kind: 'card', card: 'c', x: 100, y: 40 };
 
 describe('snap', () => {
   it('rounds to the 10-unit grid', () => {
@@ -79,7 +82,6 @@ describe('dropTarget', () => {
   const pileRect: DropRect = {
     kind: 'pile',
     pile: 'disc:p0',
-    area: 'p0',
     drop: 'discard',
     label: 'Discard',
     rect: rect(120, 300, 100, 140),
@@ -87,20 +89,18 @@ describe('dropTarget', () => {
   const low: DropRect = {
     kind: 'card',
     card: 'low',
-    area: 'p0',
     z: 1,
     rect: rect(100, 300, 300, 200),
   };
   const high: DropRect = {
     kind: 'card',
     card: 'high',
-    area: 'p0',
     z: 5,
     rect: rect(250, 300, 100, 140),
   };
 
   it('dropTarget prefers piles', () => {
-    const targets = [ZONE, low, high, pileRect];
+    const targets = [TABLE, low, high, pileRect];
     // On the pile and on a card: the pile wins.
     expect(dropTarget({ x: 150, y: 350 }, targets)).toBe(pileRect);
     // 20 px around the pile count as on it.
@@ -108,35 +108,34 @@ describe('dropTarget', () => {
     // Past the margin: the topmost card under the point.
     expect(dropTarget({ x: 300, y: 350 }, targets)).toBe(high);
     expect(dropTarget({ x: 380, y: 480 }, targets)).toBe(low);
-    // Nothing else there: the zone itself.
-    expect(dropTarget({ x: 700, y: 550 }, targets)).toBe(ZONE);
+    // Nothing else there: the table itself.
+    expect(dropTarget({ x: 700, y: 550 }, targets)).toBe(TABLE);
   });
 
-  it('finds nothing outside every zone, and ignores what lies outside the zone under the point', () => {
+  it('finds nothing outside the table, whatever lies there', () => {
     const scrolledOut: DropRect = { ...high, rect: rect(250, 0, 100, 140) };
-    expect(dropTarget({ x: 300, y: 50 }, [ZONE, scrolledOut])).toBeNull();
+    expect(dropTarget({ x: 300, y: 50 }, [TABLE, scrolledOut])).toBeNull();
     expect(dropTarget({ x: 300, y: 50 }, [scrolledOut])).toBeNull();
   });
 
   it('puts the hand before everything else', () => {
     const hand: DropRect = { kind: 'hand', index: 2, rect: rect(0, 500, 1000, 300) };
-    expect(dropTarget({ x: 150, y: 520 }, [ZONE, low, hand])).toBe(hand);
+    expect(dropTarget({ x: 150, y: 520 }, [TABLE, low, hand])).toBe(hand);
     const toHand: DropRect = { kind: 'toHand', rect: rect(0, 500, 1000, 300) };
-    expect(dropTarget({ x: 150, y: 520 }, [ZONE, low, toHand])).toBe(toHand);
+    expect(dropTarget({ x: 150, y: 520 }, [TABLE, low, toHand])).toBe(toHand);
   });
 });
 
 describe('dropAction', () => {
   it('dropAction move snaps', () => {
-    expect(dropAction(TABLE_CARD, ZONE, { area: 'p1', x: 123, y: 47 })).toEqual({
+    expect(dropAction(TABLE_CARD, TABLE, { x: 123, y: 47 }, DEAL_TO)).toEqual({
       kind: 'move',
       card: 'c',
-      area: 'p1',
       x: 120,
       y: 50,
     });
     // Never off the top or left edge.
-    expect(dropAction(TABLE_CARD, ZONE, { area: 'p0', x: -12, y: -30 })).toMatchObject({
+    expect(dropAction(TABLE_CARD, TABLE, { x: -12, y: -30 }, DEAL_TO)).toMatchObject({
       x: 0,
       y: 0,
     });
@@ -146,11 +145,10 @@ describe('dropAction', () => {
     const target: DropRect = {
       kind: 'card',
       card: 'hero',
-      area: 'p0',
       z: 3,
       rect: rect(0, 0, 1, 1),
     };
-    expect(dropAction(TABLE_CARD, target, { area: 'p0', x: 0, y: 0 })).toEqual({
+    expect(dropAction(TABLE_CARD, target, { x: 0, y: 0 }, DEAL_TO)).toEqual({
       kind: 'attach',
       card: 'c',
       target: 'hero',
@@ -161,18 +159,17 @@ describe('dropAction', () => {
     const deck: DropRect = {
       kind: 'pile',
       pile: 'deck:p0',
-      area: 'p0',
       drop: 'top',
       label: 'Top of deck',
       rect: rect(0, 0, 1, 1),
     };
-    expect(dropAction(TABLE_CARD, deck, { area: 'p0', x: 0, y: 0 })).toEqual({
+    expect(dropAction(TABLE_CARD, deck, { x: 0, y: 0 }, DEAL_TO)).toEqual({
       kind: 'toDeck',
       card: 'c',
       where: 'top',
     });
     const hand: DragSource = { kind: 'hand', card: 'h1', hand: ['h1'], area: 'p0' };
-    expect(dropAction(hand, deck, { area: 'p0', x: 0, y: 0 })).toEqual({
+    expect(dropAction(hand, deck, { x: 0, y: 0 }, DEAL_TO)).toEqual({
       kind: 'toDeck',
       card: 'h1',
       where: 'top',
@@ -183,23 +180,22 @@ describe('dropAction', () => {
     const on = (pileId: string, drop: 'discard' | 'pile'): DropRect => ({
       kind: 'pile',
       pile: pileId,
-      area: 'villain',
       drop,
       label: '',
       rect: rect(0, 0, 1, 1),
     });
-    const at = { area: 'p0' as const, x: 0, y: 0 };
-    expect(dropAction(TABLE_CARD, on('disc:p0', 'discard'), at)).toEqual({
+    const at = { x: 0, y: 0 };
+    expect(dropAction(TABLE_CARD, on('disc:p0', 'discard'), at, DEAL_TO)).toEqual({
       kind: 'discard',
       card: 'c',
     });
-    expect(dropAction(TABLE_CARD, on('vic', 'pile'), at)).toEqual({
+    expect(dropAction(TABLE_CARD, on('vic', 'pile'), at, DEAL_TO)).toEqual({
       kind: 'toPile',
       card: 'c',
       target: 'vic',
     });
     const fromPile: DragSource = { kind: 'pile', pile: 'disc:p0', card: 'top' };
-    expect(dropAction(fromPile, on('aside:p0', 'pile'), at)).toEqual({
+    expect(dropAction(fromPile, on('aside:p0', 'pile'), at, DEAL_TO)).toEqual({
       kind: 'toPile',
       card: 'top',
       target: 'aside:p0',
@@ -208,26 +204,25 @@ describe('dropAction', () => {
 
   it('encounter deck drag deals face down', () => {
     const encounter: DragSource = { kind: 'encounter', pile: 'enc' };
-    expect(dropAction(encounter, ZONE, { area: 'p1', x: 204, y: 96 })).toEqual({
+    expect(dropAction(encounter, TABLE, { x: 204, y: 96 }, DEAL_TO)).toEqual({
       kind: 'deal',
       area: 'p1',
       x: 200,
       y: 100,
     });
     // On a card it is still dealt where it lands; on the encounter discard, its top is discarded.
-    const onCard: DropRect = { kind: 'card', card: 'x', area: 'p1', z: 1, rect: rect(0, 0, 1, 1) };
-    expect(dropAction(encounter, onCard, { area: 'p1', x: 0, y: 0 })).toMatchObject({
+    const onCard: DropRect = { kind: 'card', card: 'x', z: 1, rect: rect(0, 0, 1, 1) };
+    expect(dropAction(encounter, onCard, { x: 0, y: 0 }, DEAL_TO)).toMatchObject({
       kind: 'deal',
     });
     const discard: DropRect = {
       kind: 'pile',
       pile: 'encd',
-      area: 'villain',
       drop: 'discard',
       label: 'Discard',
       rect: rect(0, 0, 1, 1),
     };
-    expect(dropAction(encounter, discard, { area: 'villain', x: 0, y: 0 })).toEqual({
+    expect(dropAction(encounter, discard, { x: 0, y: 0 }, DEAL_TO)).toEqual({
       kind: 'discardTop',
       pile: 'enc',
       n: 1,
@@ -236,18 +231,16 @@ describe('dropAction', () => {
 
   it('plays a hand card or the top card of a pile where it lands', () => {
     const hand: DragSource = { kind: 'hand', card: 'h2', hand: ['h1', 'h2'], area: 'p0' };
-    expect(dropAction(hand, ZONE, { area: 'villain', x: 311, y: 9 })).toEqual({
+    expect(dropAction(hand, TABLE, { x: 311, y: 9 }, DEAL_TO)).toEqual({
       kind: 'play',
       card: 'h2',
-      area: 'villain',
       x: 310,
       y: 10,
     });
     const fromPile: DragSource = { kind: 'pile', pile: 'encd', card: 'top' };
-    expect(dropAction(fromPile, ZONE, { area: 'p0', x: 40, y: 60 })).toEqual({
+    expect(dropAction(fromPile, TABLE, { x: 40, y: 60 }, DEAL_TO)).toEqual({
       kind: 'play',
       card: 'top',
-      area: 'p0',
       x: 40,
       y: 60,
     });
@@ -257,37 +250,44 @@ describe('dropAction', () => {
     const onCard: DropRect = {
       kind: 'card',
       card: 'hero',
-      area: 'p0',
       z: 3,
       rect: rect(0, 0, 1, 1),
     };
-    const at = { area: 'p0' as const, x: 300, y: 300 };
+    const at = { x: 300, y: 300 };
     const hand: DragSource = { kind: 'hand', card: 'h2', hand: ['h1', 'h2'], area: 'p0' };
-    expect(dropAction(hand, onCard, at)).toEqual({ kind: 'play', card: 'h2', target: 'hero' });
+    expect(dropAction(hand, onCard, at, DEAL_TO)).toEqual({
+      kind: 'play',
+      card: 'h2',
+      target: 'hero',
+    });
     const fromPile: DragSource = { kind: 'pile', pile: 'encd', card: 'top' };
-    expect(dropAction(fromPile, onCard, at)).toEqual({ kind: 'play', card: 'top', target: 'hero' });
+    expect(dropAction(fromPile, onCard, at, DEAL_TO)).toEqual({
+      kind: 'play',
+      card: 'top',
+      target: 'hero',
+    });
   });
 
   it('reorders the hand, the dragged card slotting in among the others', () => {
     const hand: DragSource = { kind: 'hand', card: 'h1', hand: ['h1', 'h2', 'h3'], area: 'p0' };
     const slot = (index: number): DropRect => ({ kind: 'hand', index, rect: rect(0, 0, 1, 1) });
-    expect(dropAction(hand, slot(2), { area: 'p0', x: 0, y: 0 })).toEqual({
+    expect(dropAction(hand, slot(2), { x: 0, y: 0 }, DEAL_TO)).toEqual({
       kind: 'handOrder',
       area: 'p0',
       cards: ['h2', 'h3', 'h1'],
     });
-    expect(dropAction(hand, slot(1), { area: 'p0', x: 0, y: 0 })).toEqual({
+    expect(dropAction(hand, slot(1), { x: 0, y: 0 }, DEAL_TO)).toEqual({
       kind: 'handOrder',
       area: 'p0',
       cards: ['h2', 'h1', 'h3'],
     });
     // A table card is not slotted in among the hand cards.
-    expect(dropAction(TABLE_CARD, slot(0), { area: 'p0', x: 0, y: 0 })).toBeNull();
+    expect(dropAction(TABLE_CARD, slot(0), { x: 0, y: 0 }, DEAL_TO)).toBeNull();
   });
 
   it('takes a table card back to the hand', () => {
     const toHand: DropRect = { kind: 'toHand', rect: rect(0, 0, 1, 1) };
-    expect(dropAction(TABLE_CARD, toHand, { area: 'p0', x: 0, y: 0 })).toEqual({
+    expect(dropAction(TABLE_CARD, toHand, { x: 0, y: 0 }, DEAL_TO)).toEqual({
       kind: 'toHand',
       card: 'c',
     });
@@ -295,56 +295,78 @@ describe('dropAction', () => {
 
   it('drop at origin sends nothing', () => {
     // Where it lay.
-    expect(dropAction(TABLE_CARD, ZONE, { area: 'p0', x: 102, y: 38 })).toBeNull();
+    expect(dropAction(TABLE_CARD, TABLE, { x: 102, y: 38 }, DEAL_TO)).toBeNull();
     // Nowhere.
-    expect(dropAction(TABLE_CARD, null, { area: 'p0', x: 300, y: 300 })).toBeNull();
+    expect(dropAction(TABLE_CARD, null, { x: 300, y: 300 }, DEAL_TO)).toBeNull();
     // Back in its place in the hand.
     const hand: DragSource = { kind: 'hand', card: 'h2', hand: ['h1', 'h2', 'h3'], area: 'p0' };
     expect(
-      dropAction(hand, { kind: 'hand', index: 1, rect: rect(0, 0, 1, 1) }, ZONE_AT),
+      dropAction(hand, { kind: 'hand', index: 1, rect: rect(0, 0, 1, 1) }, AT_ORIGIN, DEAL_TO),
     ).toBeNull();
     // Back on the pile it was taken from.
     const discard: DropRect = {
       kind: 'pile',
       pile: 'encd',
-      area: 'villain',
       drop: 'discard',
       label: 'Discard',
       rect: rect(0, 0, 1, 1),
     };
-    expect(dropAction({ kind: 'pile', pile: 'encd', card: 'top' }, discard, ZONE_AT)).toBeNull();
+    expect(
+      dropAction({ kind: 'pile', pile: 'encd', card: 'top' }, discard, AT_ORIGIN, DEAL_TO),
+    ).toBeNull();
     // A revealed card put back on the deck it was revealed from.
     const revealed: DragSource = { ...TABLE_CARD, onPile: 'enc' };
     const encounter: DropRect = { ...discard, pile: 'enc', drop: 'top', label: 'Top of deck' };
-    expect(dropAction(revealed, encounter, ZONE_AT)).toBeNull();
+    expect(dropAction(revealed, encounter, AT_ORIGIN, DEAL_TO)).toBeNull();
   });
 
   it('moves a revealed card off its pile', () => {
     const revealed: DragSource = { ...TABLE_CARD, onPile: 'enc' };
-    expect(dropAction(revealed, ZONE, { area: 'villain', x: 300, y: 0 })).toEqual({
+    expect(dropAction(revealed, TABLE, { x: 300, y: 0 }, DEAL_TO)).toEqual({
       kind: 'move',
       card: 'c',
-      area: 'villain',
       x: 300,
       y: 0,
     });
   });
 });
 
-const ZONE_AT = { area: 'p0' as const, x: 0, y: 0 };
+const AT_ORIGIN = { x: 0, y: 0 };
+
+describe('dealRecipient', () => {
+  // The setup's rows: the villain's from 0, then one per seat every 330, the deck 30 below its top.
+  const piles = [
+    pile('enc', { kind: 'encounter', y: 30 }),
+    pile('deck:p0', { owner: 0, y: 360 }),
+    pile('disc:p0', { kind: 'discard', owner: 0, x: 160, y: 360 }),
+    pile('deck:p1', { owner: 1, y: 690 }),
+  ];
+
+  it('deals to the player whose row the spot is in', () => {
+    expect(dealRecipient(piles, 330, 'p1')).toBe('p0');
+    expect(dealRecipient(piles, 659, 'p1')).toBe('p0');
+    expect(dealRecipient(piles, 660, 'p0')).toBe('p1');
+    expect(dealRecipient(piles, 5000, 'p0')).toBe('p1');
+  });
+
+  it("deals to the viewer above every player's row, or without any deck", () => {
+    expect(dealRecipient(piles, 100, 'p1')).toBe('p1');
+    expect(dealRecipient([], 500, 'p0')).toBe('p0');
+  });
+});
 
 describe('sourceOf', () => {
   const view = makeView({
     cards: [
       card('c', { x: 30, y: 40, onPile: 'enc' }),
-      card('h1', { zone: 'hand', area: undefined }),
+      card('h1', { zone: 'hand' }),
       card('top', { zone: 'pile' }),
     ],
     piles: [
       pile('enc', { kind: 'encounter', count: 12 }),
       pile('encd', { kind: 'encounterDiscard', count: 1, cards: ['top'] }),
-      pile('deck:p0', { owner: 0, area: 'p0' }),
-      pile('aside:p1', { kind: 'aside', owner: 1, area: 'p1', count: 1, cards: ['top'] }),
+      pile('deck:p0', { owner: 0 }),
+      pile('aside:p1', { kind: 'aside', owner: 1, count: 1, cards: ['top'] }),
       pile('vic', { kind: 'victory', count: 0, cards: [] }),
     ],
   });
@@ -353,7 +375,6 @@ describe('sourceOf', () => {
     expect(sourceOf({ kind: 'card', id: 'c' }, view)).toEqual({
       kind: 'card',
       card: 'c',
-      area: 'p0',
       x: 30,
       y: 40,
       onPile: 'enc',
@@ -403,29 +424,25 @@ describe('pileTargets', () => {
   const piles = [
     pile('enc', { kind: 'encounter' }),
     pile('encd', { kind: 'encounterDiscard' }),
-    pile('deck:p0', { owner: 0, area: 'p0' }),
-    pile('disc:p0', { kind: 'discard', owner: 0, area: 'p0' }),
-    pile('deck:p1', { owner: 1, area: 'p1' }),
-    pile('disc:p1', { kind: 'discard', owner: 1, area: 'p1' }),
+    pile('deck:p0', { owner: 0 }),
+    pile('disc:p0', { kind: 'discard', owner: 0 }),
+    pile('deck:p1', { owner: 1 }),
+    pile('disc:p1', { kind: 'discard', owner: 1 }),
     pile('vic', { kind: 'victory' }),
     pile('saside', { kind: 'aside' }),
-    pile('aside:p0', { kind: 'aside', owner: 0, area: 'p0' }),
+    pile('aside:p0', { kind: 'aside', owner: 0 }),
   ];
   const cards = [
     card('mine'),
-    card('theirs', { owner: 1, area: 'p1' }),
-    card('minion', { owner: -1, back: 'encounter', area: 'villain' }),
-    card('v', { owner: -1, back: 'villain', area: 'villain', parent: 'over' }),
-    card('over', { owner: -1, area: 'villain' }),
-    card('under', { owner: -1, back: 'encounter', area: 'villain', parent: 'v' }),
+    card('theirs', { owner: 1 }),
+    card('minion', { owner: -1, back: 'encounter' }),
+    card('v', { owner: -1, back: 'villain', parent: 'over' }),
+    card('over', { owner: -1 }),
+    card('under', { owner: -1, back: 'encounter', parent: 'v' }),
   ];
   const view = makeView({ cards, piles });
   const of = (id: string) =>
-    pileTargets({ kind: 'card', card: id, area: 'p0', x: 0, y: 0 }, view).map((t) => [
-      t.pile,
-      t.drop,
-      t.label,
-    ]);
+    pileTargets({ kind: 'card', card: id, x: 0, y: 0 }, view).map((t) => [t.pile, t.drop, t.label]);
 
   it("offers a card its owner's deck and discard pile, the victory display and a set-aside pile", () => {
     expect(of('mine')).toEqual([
@@ -469,16 +486,15 @@ describe('goesToHand', () => {
       card('mine'),
       card('theirs', { owner: 1 }),
       card('enc', { owner: -1, back: 'encounter' }),
-      card('h1', { zone: 'hand', area: undefined }),
+      card('h1', { zone: 'hand' }),
     ],
-    piles: [pile('disc:p0', { kind: 'discard', owner: 0, area: 'p0', cards: ['d1'], count: 1 })],
+    piles: [pile('disc:p0', { kind: 'discard', owner: 0, cards: ['d1'], count: 1 })],
   });
 
   it("takes the viewer's own table cards only, as Move to ▾ Hand", () => {
     const tableCard = (id: string): DragSource => ({
       kind: 'card',
       card: id,
-      area: 'p0',
       x: 0,
       y: 0,
     });
@@ -538,12 +554,11 @@ describe('the hand', () => {
 });
 
 describe('the first player token', () => {
-  const token: DragSource = { kind: 'firstPlayer', area: 'p0', x: 860, y: 40 };
-  const card: DropRect = { kind: 'card', card: 'c', area: 'p1', z: 1, rect: rect(0, 0, 1, 1) };
+  const token: DragSource = { kind: 'firstPlayer', x: 860, y: 40 };
+  const card: DropRect = { kind: 'card', card: 'c', z: 1, rect: rect(0, 0, 1, 1) };
   const discard: DropRect = {
     kind: 'pile',
     pile: 'disc:p1',
-    area: 'p1',
     drop: 'discard',
     label: 'Discard',
     rect: rect(0, 0, 1, 1),
@@ -552,7 +567,6 @@ describe('the first player token', () => {
   it('is taken by a player from where it lies, never by a spectator', () => {
     expect(sourceOf({ kind: 'firstPlayer' }, makeView())).toEqual({
       kind: 'firstPlayer',
-      area: 'p0',
       x: 0,
       y: 0,
     });
@@ -560,19 +574,19 @@ describe('the first player token', () => {
   });
 
   it('goes where it lands, snapped, even over a card or a pile', () => {
-    const at = { area: 'p1' as const, x: 164, y: 43 };
-    const moved = { kind: 'firstPlayer', area: 'p1', x: 160, y: 40 };
+    const at = { x: 164, y: 43 };
+    const moved = { kind: 'firstPlayer', x: 160, y: 40 };
 
-    expect(dropAction(token, { kind: 'zone', area: 'p1', rect: rect(0, 0, 1, 1) }, at)).toEqual(
+    expect(dropAction(token, { kind: 'table', rect: rect(0, 0, 1, 1) }, at, DEAL_TO)).toEqual(
       moved,
     );
-    expect(dropAction(token, card, at)).toEqual(moved);
-    expect(dropAction(token, discard, at)).toEqual(moved);
+    expect(dropAction(token, card, at, DEAL_TO)).toEqual(moved);
+    expect(dropAction(token, discard, at, DEAL_TO)).toEqual(moved);
   });
 
   it('sends nothing when put back where it was, and goes to no pile or hand', () => {
-    const zone: DropRect = { kind: 'zone', area: 'p0', rect: rect(0, 0, 1, 1) };
-    expect(dropAction(token, zone, { area: 'p0', x: 858, y: 42 })).toBeNull();
+    const table: DropRect = { kind: 'table', rect: rect(0, 0, 1, 1) };
+    expect(dropAction(token, table, { x: 858, y: 42 }, DEAL_TO)).toBeNull();
     expect(pileTargets(token, makeView())).toEqual([]);
     expect(goesToHand(token, makeView())).toBe(false);
   });

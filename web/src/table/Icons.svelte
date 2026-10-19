@@ -4,7 +4,16 @@
 -->
 <script lang="ts" module>
   export type IconName =
-    'exhaust' | 'flip' | 'discard' | 'stage-pick' | 'bottom' | 'shuffle' | 'token' | 'move';
+    | 'exhaust'
+    | 'flip'
+    | 'discard'
+    | 'stage-pick'
+    | 'bottom'
+    | 'shuffle'
+    | 'token'
+    | 'move'
+    | 'trophy'
+    | 'hourglass';
 </script>
 
 <script lang="ts">
@@ -61,6 +70,18 @@
     <rect x="2.5" y="5" width="9" height="13" rx="1.5" fill="currentColor" fill-opacity=".18" />
     <path d="M9 11.5h12" />
     <path d="M17.5 8 21 11.5 17.5 15" />
+  {:else if name === 'trophy'}
+    <!-- A cup on a stand: the victory display. -->
+    <path d="M8 4h8v5a4 4 0 0 1-8 0V4z" fill="currentColor" fill-opacity=".18" />
+    <path d="M8 6H5a2 2 0 0 0 2 4h1" />
+    <path d="M16 6h3a2 2 0 0 1-2 4h-1" />
+    <path d="M12 13v4" />
+    <path d="M8 20h8" />
+    <path d="M10 17h4" />
+  {:else if name === 'hourglass'}
+    <!-- An hourglass: set-aside cards wait to come into play later. -->
+    <path d="M6 3h12M6 21h12" />
+    <path d="M7 3c0 5 10 5 10 9s-10 4-10 9M17 3c0 5-10 5-10 9" />
   {:else}
     <!-- Shuffle: two crossing arrows. -->
     <path d="M3 7h3.5c3 0 4.5 10 8 10H20" />
