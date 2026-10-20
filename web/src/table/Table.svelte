@@ -581,9 +581,24 @@
           rehoverUnderPointer();
           await motion.settled();
           rehoverUnderPointer();
+          // The hand cards slide to their new slots, and the hand rises or lowers, with CSS
+          // transitions, which motion does not wait for. The browser's enter at their end is
+          // ignored (a redraw's), so the card that slid under the pointer is hovered here.
+          await handSettled();
+          // A newer view hovers, once settled, what it put there itself.
+          if (drawnView === next) {
+            rehoverUnderPointer();
+          }
         });
     });
   });
+
+  /** Resolves once the transitions playing in the hand have ended, or were cancelled. */
+  async function handSettled(): Promise<void> {
+    // Some environments (tests) have no Web Animations: nothing plays there.
+    const playing = app?.querySelector('.hand')?.getAnimations?.({ subtree: true }) ?? [];
+    await Promise.allSettled(playing.map((animation) => animation.finished));
+  }
 
   /**
    * Hovers what a new view put under a pointer at rest, whoever acted (spec

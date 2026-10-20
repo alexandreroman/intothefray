@@ -1,4 +1,4 @@
-import { render, waitFor } from '@testing-library/svelte';
+import { fireEvent, render, waitFor } from '@testing-library/svelte';
 import { tick } from 'svelte';
 import { SvelteMap } from 'svelte/reactivity';
 import Table from './Table.svelte';
@@ -6,6 +6,7 @@ import { interaction } from './interaction.svelte';
 import { motion } from './motion.svelte';
 import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
 import type {
+  Area,
   CardView as TableCard,
   LogView,
   PileView,
@@ -60,8 +61,17 @@ function line(text: string, extra: Partial<LogView> = {}): LogView {
 /** Alex (colour 0, seat 0) and the viewer Sam (colour 1, seat 1). */
 function makeView(
   cards: TableCard[],
-  extra: { piles?: PileView[]; log?: LogView[]; stages?: Stage[]; firstPlayer?: Point } = {},
+  extra: {
+    piles?: PileView[];
+    log?: LogView[];
+    stages?: Stage[];
+    firstPlayer?: Point;
+    hands?: Partial<Record<Area, string[]>>;
+    /** How many cards Alex and Sam hold. */
+    handCounts?: [number, number];
+  } = {},
 ): View {
+  const [alexHand, samHand] = extra.handCounts ?? [5, 5];
   return {
     id: 'g1',
     phase: 'playing',
@@ -72,14 +82,14 @@ function makeView(
         color: 0,
         host: true,
         ready: true,
-        decks: [{ area: 'p0', ready: true, handCount: 5 }],
+        decks: [{ area: 'p0', ready: true, handCount: alexHand }],
       },
       {
         name: 'Sam',
         color: 1,
         host: false,
         ready: true,
-        decks: [{ area: 'p1', ready: true, handCount: 5 }],
+        decks: [{ area: 'p1', ready: true, handCount: samHand }],
       },
     ],
     spectators: 0,
@@ -89,6 +99,7 @@ function makeView(
       piles: extra.piles ?? PILES,
       stages: extra.stages ?? [],
       firstPlayer: extra.firstPlayer ?? { x: 860, y: 40 },
+      ...(extra.hands && { hands: extra.hands }),
     },
     log: extra.log ?? [START],
   };
@@ -105,18 +116,25 @@ function fakeSession(viewGap = 0) {
   };
 }
 
-/** A Web Animation as the stub below starts it: it never ends unless cancelled. */
+/** A Web Animation as the stub below starts it: it never ends unless cancelled, or finished by a test. */
 interface FakeAnimation {
   element: Element;
   keyframes: Keyframe[];
   cancel: ReturnType<typeof vi.fn>;
   cancelled: boolean;
-  finished: Promise<never>;
+  finish: () => void;
+  finished: Promise<void>;
+  /** Its keyframes changed while it plays. */
+  effect: { setKeyframes: ReturnType<typeof vi.fn> };
 }
 
 let started: FakeAnimation[] = [];
 
 const animate = vi.fn(function (this: Element, keyframes: Keyframe[]) {
+  let finish = () => {};
+  const finished = new Promise<void>((resolve) => {
+    finish = resolve;
+  });
   const animation: FakeAnimation = {
     element: this,
     keyframes,
@@ -124,7 +142,13 @@ const animate = vi.fn(function (this: Element, keyframes: Keyframe[]) {
     cancel: vi.fn(() => {
       animation.cancelled = true;
     }),
-    finished: new Promise<never>(() => {}),
+    finish,
+    finished,
+    effect: {
+      setKeyframes: vi.fn((frames: Keyframe[]) => {
+        animation.keyframes = frames;
+      }),
+    },
   };
   started.push(animation);
   return animation;
@@ -206,6 +230,24 @@ function animationsOf(selector: string): [Keyframe[], KeyframeAnimationOptions][
 async function settle(): Promise<void> {
   await tick();
   await tick();
+}
+
+/** Runs a test as with the system setting to reduce motion. */
+async function withReducedMotion(run: () => Promise<void>): Promise<void> {
+  const matchMedia = window.matchMedia;
+  window.matchMedia = (query: string): MediaQueryList =>
+    Object.assign(new EventTarget(), {
+      media: query,
+      matches: query.includes('reduced-motion'),
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+    });
+  try {
+    await run();
+  } finally {
+    window.matchMedia = matchMedia;
+  }
 }
 
 describe('Table animations', () => {
@@ -352,16 +394,7 @@ describe('Table animations', () => {
   });
 
   it('with reduced motion, cards jump to their place and only the glow plays', async () => {
-    const matchMedia = window.matchMedia;
-    window.matchMedia = (query: string): MediaQueryList =>
-      Object.assign(new EventTarget(), {
-        media: query,
-        matches: query.includes('reduced-motion'),
-        onchange: null,
-        addListener: () => {},
-        removeListener: () => {},
-      });
-    try {
+    await withReducedMotion(async () => {
       const session = fakeSession();
       const { rerender } = render(Table, {
         session,
@@ -378,9 +411,7 @@ describe('Table animations', () => {
         [Keyframe[], KeyframeAnimationOptions],
       ];
       expect(options.pseudoElement).toBe('::after');
-    } finally {
-      window.matchMedia = matchMedia;
-    }
+    });
   });
 
   it("the viewer's own drop does not move again", async () => {
@@ -458,6 +489,265 @@ describe('Table animations', () => {
     expect(pile?.classList).toContain('empty');
     expect(animationsOf('.fly')).toHaveLength(1);
   });
+  describe('draws', () => {
+    // Sam, the viewer, draws from their deck: it holds 29 cards from now on.
+    const drawnDeck = PILES.map((pile) => (pile.id === 'deck:p1' ? { ...pile, count: 29 } : pile));
+    const drew = [START, line('drew 1 card', { who: 'Sam', color: 1 })];
+    const drawn = (extra: Partial<TableCard> = {}) =>
+      card('d', { owner: 1, zone: 'hand', ...extra });
+    const handCard = (container: HTMLElement) =>
+      container.querySelector<HTMLElement>('.hand .hcard[data-id="d"]');
+
+    async function drawOne(): Promise<HTMLElement> {
+      const session = fakeSession();
+      const { rerender, container } = render(Table, {
+        session,
+        view: makeView([], { hands: { p1: [] } }),
+      });
+      await settle();
+      await rerender({
+        session,
+        view: makeView([drawn()], { piles: drawnDeck, hands: { p1: ['d'] }, log: drew }),
+      });
+      return container;
+    }
+
+    it('a card drawn from the deck flies in on its back, hidden in the hand until it lands', async () => {
+      const container = await drawOne();
+      await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
+      expect(handCard(container)?.classList).toContain('arriving');
+
+      // It turns over in the last part of the way: edge-on, its back gives way to its face.
+      const [[keyframes, options]] = animationsOf('.fly') as [
+        [Keyframe[], KeyframeAnimationOptions],
+      ];
+      expect(keyframes.map((frame) => frame.offset)).toEqual([0, 0.6, 0.8, 1]);
+      expect(String(keyframes[2]?.transform)).toContain('rotateY(90deg)');
+      expect(options.duration).toBe(380);
+      expect(animationsOf('.fly [data-side="back"]')).toHaveLength(1);
+
+      const fly = container.querySelector('.fly');
+      started.find((animation) => animation.element === fly)?.finish();
+      await waitFor(() => expect(container.querySelector('.fly')).toBeNull());
+      expect(handCard(container)?.classList).not.toContain('arriving');
+    });
+
+    it('a copy heads for where its slot is now, as the hand moves under it', async () => {
+      const container = await drawOne();
+      await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
+      const fly = container.querySelector('.fly');
+      const flight = started.find((animation) => animation.element === fly)!;
+      const endOf = () => {
+        const [, x = '', y = ''] =
+          /translate\((-?[\d.]+)px, (-?[\d.]+)px\)/.exec(
+            String(flight.keyframes.at(-1)?.transform),
+          ) ?? [];
+        return { x: Number(x), y: Number(y) };
+      };
+      const before = endOf();
+
+      // The hand rises, or its fan is laid out again: the slot is now 200 px right, 100 px up.
+      const slot = handCard(container)!.querySelector<HTMLElement>('.hit')!;
+      slot.style.left = '200px';
+      slot.style.top = '-100px';
+      await waitFor(() => expect(endOf()).toEqual({ x: before.x + 200, y: before.y - 100 }));
+    });
+
+    it('a discard flying meanwhile does not hold up the end of the other animations', async () => {
+      const session = fakeSession();
+      const { rerender, container } = render(Table, {
+        session,
+        view: makeView([card('a', { x: 40 })]),
+      });
+      await settle();
+      const discard = { ...PILES[1]!, count: 1, cards: ['a'] };
+      await rerender({
+        session,
+        view: makeView([card('a', { zone: 'pile' })], { piles: [PILES[0]!, discard] }),
+      });
+      await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
+
+      const timeout = new Promise((resolve) => setTimeout(() => resolve('waiting'), 50));
+      expect(await Promise.race([motion.settled().then(() => 'settled'), timeout])).toBe('settled');
+    });
+
+    it('a card taken from a discard pile shows its face all the way', async () => {
+      const session = fakeSession();
+      const discard = (cards: string[]) => ({ ...PILES[1]!, count: cards.length, cards });
+      const { rerender, container } = render(Table, {
+        session,
+        view: makeView([card('d', { zone: 'pile' })], {
+          piles: [PILES[0]!, discard(['d'])],
+          hands: { p1: [] },
+        }),
+      });
+      await settle();
+
+      await rerender({
+        session,
+        view: makeView([drawn()], { piles: [PILES[0]!, discard([])], hands: { p1: ['d'] } }),
+      });
+      await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
+      expect(container.querySelector('.fly [data-side="back"]')).toBeNull();
+      const [[keyframes]] = animationsOf('.fly') as [[Keyframe[], KeyframeAnimationOptions]];
+      expect(keyframes).toHaveLength(2);
+      expect(String(keyframes[1]?.transform)).toContain('rotateY(0deg)');
+    });
+
+    it('a stop shows the drawn card at once', async () => {
+      const container = await drawOne();
+      await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
+
+      motion.stop();
+      await settle();
+      expect(container.querySelector('.fly')).toBeNull();
+      expect(handCard(container)?.classList).not.toContain('arriving');
+    });
+
+    it('a flight ends when its card leaves the hand', async () => {
+      const session = fakeSession();
+      const { rerender, container } = render(Table, {
+        session,
+        view: makeView([], { hands: { p1: [] } }),
+      });
+      await settle();
+      await rerender({
+        session,
+        view: makeView([drawn()], { piles: drawnDeck, hands: { p1: ['d'] }, log: drew }),
+      });
+      await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
+
+      // Played at once, before its copy lands.
+      await rerender({
+        session,
+        view: makeView([card('d', { owner: 1, x: 300 })], { piles: drawnDeck, hands: { p1: [] } }),
+      });
+      await waitFor(() => expect(container.querySelector('.fly')).toBeNull());
+    });
+
+    it("another player's draw leaves their deck, out of sight", async () => {
+      const session = fakeSession();
+      const alexDeck = (count: number): PileView => ({
+        id: 'deck:p0',
+        kind: 'deck',
+        owner: 0,
+        x: 480,
+        y: 0,
+        count,
+      });
+      const { rerender, container } = render(Table, {
+        session,
+        view: makeView([], { piles: [...PILES, alexDeck(30)] }),
+      });
+      await settle();
+
+      await rerender({
+        session,
+        view: makeView([], { piles: [...PILES, alexDeck(29)], handCounts: [6, 5] }),
+      });
+      await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
+      const [[keyframes, options]] = animationsOf('.fly') as [
+        [Keyframe[], KeyframeAnimationOptions],
+      ];
+      expect(keyframes.at(-1)).toMatchObject({ opacity: 0 });
+      expect(String(keyframes.at(-1)?.transform)).toContain('40px');
+      expect(options.duration).toBe(380);
+      expect(container.querySelector('.fly')?.getAttribute('style')).toContain('left: 480px');
+    });
+
+    it("another player's two quick draws both leave their deck", async () => {
+      const session = fakeSession();
+      const alexDeck = (count: number): PileView => ({
+        id: 'deck:p0',
+        kind: 'deck',
+        owner: 0,
+        x: 480,
+        y: 0,
+        count,
+      });
+      const { rerender, container } = render(Table, {
+        session,
+        view: makeView([], { piles: [...PILES, alexDeck(30)] }),
+      });
+      await settle();
+
+      await rerender({
+        session,
+        view: makeView([], { piles: [...PILES, alexDeck(29)], handCounts: [6, 5] }),
+      });
+      await waitFor(() => expect(container.querySelectorAll('.fly')).toHaveLength(1));
+      // The second comes before the first copy is gone: both play on.
+      await rerender({
+        session,
+        view: makeView([], { piles: [...PILES, alexDeck(28)], handCounts: [7, 5] }),
+      });
+      await waitFor(() => expect(container.querySelectorAll('.fly')).toHaveLength(2));
+      expect(started.filter((animation) => animation.element.matches('.fly'))).toHaveLength(2);
+      expect(
+        started.filter((animation) => animation.element.matches('.fly') && animation.cancelled),
+      ).toEqual([]);
+    });
+
+    it("another player's draw right after their shuffle lets the riffle play on", async () => {
+      const session = fakeSession();
+      const { rerender, container } = render(Table, { session, view: makeView([]) });
+      await settle();
+      const shuffled = [START, line('shuffled their deck')];
+      const deck = PILES[0]!;
+      const alexPiles = (count: number): PileView[] => [
+        { ...deck, id: 'deck:p0', owner: 0, x: 480, count },
+        PILES[1]!,
+      ];
+      await rerender({ session, view: makeView([], { piles: alexPiles(30), log: shuffled }) });
+      const pile = () => container.querySelector('.surface .pile[data-id="deck:p0"]')!;
+      await waitFor(() => expect(runningOn(pile())).toHaveLength(1));
+      const riffle = started.filter((animation) => animation.element.parentElement === pile());
+      expect(riffle).toHaveLength(6);
+
+      await rerender({
+        session,
+        view: makeView([], { piles: alexPiles(29), log: shuffled, handCounts: [6, 5] }),
+      });
+      await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
+      expect(runningOn(pile())).toHaveLength(1);
+      expect(riffle.filter((animation) => animation.cancelled)).toEqual([]);
+    });
+
+    it("a card drawn into the viewer's other deck, whose hand is not shown, leaves its pile", async () => {
+      // Sam plays two decks: p1, whose hand shows, and p2, which draws.
+      const twoDecks = (cards: TableCard[], hand: string[], count: number): View => {
+        const base = makeView(cards, {
+          piles: [...PILES, { id: 'deck:p2', kind: 'deck', owner: 2, x: 480, y: 0, count }],
+          hands: { p1: [], p2: hand },
+        });
+        base.you = { ...base.you, areas: ['p1', 'p2'] };
+        base.players[1]!.decks.push({ area: 'p2', ready: true, handCount: hand.length });
+        return base;
+      };
+      const session = fakeSession();
+      const { rerender, container } = render(Table, { session, view: twoDecks([], [], 30) });
+      await settle();
+
+      await rerender({
+        session,
+        view: twoDecks([card('d', { owner: 2, zone: 'hand' })], ['d'], 29),
+      });
+      await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
+      const [[keyframes]] = animationsOf('.fly') as [[Keyframe[], KeyframeAnimationOptions]];
+      expect(keyframes.at(-1)).toMatchObject({ opacity: 0 });
+      expect(motion.drawing.size).toBe(0);
+    });
+
+    it('with reduced motion, a drawn card shows in the hand at once', async () => {
+      await withReducedMotion(async () => {
+        const container = await drawOne();
+        await settle();
+        expect(container.querySelector('.fly')).toBeNull();
+        expect(handCard(container)?.classList).not.toContain('arriving');
+      });
+    });
+  });
+
   it('an animation waiting for the redraw does not play after a stop', async () => {
     const view = makeView([card('a', { x: 0 })]);
     const { container } = render(Table, { session: fakeSession(), view });
@@ -680,5 +970,59 @@ describe('Table animations', () => {
     await waitFor(() => expect(first.cancelled).toBe(true));
     await waitFor(() => expect(runningOn(cardA)).toHaveLength(1));
     expect(runningOn(cardA)[0]?.keyframes[0]).toMatchObject({ translate: '-200px 0px' });
+  });
+});
+
+describe('the hover under a pointer at rest', () => {
+  it('goes to the hand card that slid under the pointer, once its slide has ended', async () => {
+    const session = fakeSession();
+    const inHand = (id: string) => card(id, { owner: 1, zone: 'hand' });
+    const { rerender, container } = render(Table, {
+      session,
+      view: makeView([inHand('a'), inHand('b')], { hands: { p1: ['a', 'b'] } }),
+    });
+    await settle();
+    const hcard = (id: string) =>
+      container.querySelector<HTMLElement>(`.hand .hcard[data-id="${id}"]`)!;
+    await fireEvent.pointerMove(window, { clientX: 40, clientY: 500 });
+    await fireEvent.pointerEnter(hcard('a'), { clientX: 40, clientY: 500 });
+    expect(interaction.hovered).toEqual({ kind: 'hand', id: 'a' });
+
+    // B slides into A's slot with a CSS transition, which motion does not play: it is under the
+    // pointer only once there.
+    let slid = false;
+    let endSlide = () => {};
+    const slide = {
+      finished: new Promise<void>((resolve) => {
+        endSlide = () => {
+          slid = true;
+          resolve();
+        };
+      }),
+    };
+    const hand = container.querySelector<HTMLElement>('.hand')!;
+    hand.getAnimations = (() => (slid ? [] : [slide])) as unknown as typeof hand.getAnimations;
+    const underPointer = vi
+      .spyOn(document, 'elementFromPoint')
+      .mockImplementation(() => (slid ? hcard('b').querySelector('.hit') : null));
+
+    try {
+      // Sam plays A.
+      await rerender({
+        session,
+        view: makeView([card('a', { owner: 1, x: 300 }), inHand('b')], { hands: { p1: ['b'] } }),
+      });
+      await settle();
+      for (const animation of started) {
+        animation.finish();
+      }
+      await settle();
+      expect(interaction.hovered).toBeNull();
+
+      endSlide();
+      await waitFor(() => expect(interaction.hovered).toEqual({ kind: 'hand', id: 'b' }));
+    } finally {
+      underPointer.mockRestore();
+    }
   });
 });

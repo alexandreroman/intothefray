@@ -98,7 +98,7 @@
       open = false;
       return;
     }
-    const cardsShown = [...(list?.querySelectorAll('.hcard') ?? [])];
+    const cardsShown = [...(list?.querySelectorAll<HTMLElement>('.hcard') ?? [])];
     if (cardsShown.length === 0) {
       open = false;
       return;
@@ -118,7 +118,12 @@
     open = at.x >= left && at.x <= right && at.y >= top;
   }
 
-  function isMoving(card: Element): boolean {
+  function isMoving(card: HTMLElement): boolean {
+    // A drawn card waits hidden in its slot while its copy flies in from the pile.
+    const id = card.dataset.id;
+    if (id !== undefined && motion.drawing.has(id)) {
+      return true;
+    }
     // Some environments (tests) have no Web Animations: nothing moves there.
     return card.getAnimations?.().some((animation) => animation.playState === 'running') ?? false;
   }
@@ -137,6 +142,8 @@
 
   $effect(() => {
     void shown;
+    // A drawn card shows once its copy has landed: the band takes it in from then on.
+    void motion.drawing.size;
     let stale = false;
     void tick()
       .then(() => motion.settled())
@@ -202,6 +209,7 @@
         class="hcard"
         data-id={card.id}
         class:locked={interaction.isLocked({ kind: 'hand', id: card.id })}
+        class:arriving={motion.drawing.has(card.id)}
         style:--x="{slot?.x ?? 0}px"
         style:--rot="{slot?.angle ?? 0}deg"
         style:--ty="{slot?.y ?? 0}px"
@@ -298,6 +306,11 @@
     -webkit-user-select: none;
     /* The other cards slide aside when a dragged card comes back over the hand. */
     transition: left 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  /* A drawn card shows once its copy, flying in from its pile, lands (Flights.svelte). */
+  .hcard.arriving {
+    visibility: hidden;
   }
 
   /* Where a dragged card would slot back in. */
