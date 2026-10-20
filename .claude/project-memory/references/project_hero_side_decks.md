@@ -13,11 +13,11 @@ pack whose set code prefixes the set code, in the printed order of the
 cards. Setup shuffles them and places them after the hero's discard, with
 a minimum gap before the identity. Only Doctor Strange's Invocation deck
 has its own discard pile. The Invocation and Sense decks show their top
-card faceup to everyone; the others lie facedown. The Labor, Gift and
-Sense decks have a back of their own (`back` in `side`): every card of
-the set gets that classic back
-(player for Labor and Sense, encounter for Gift), captioned at the bottom
-with the deck's name, since no source hosts an image of the printed one.
+card faceup to everyone; the others lie facedown. The Labor, Gift, Sense
+and Weather decks have a back of their own (`back` in `side`): every card
+of the set gets that classic back (player for Labor, Sense and Weather,
+encounter for Gift), captioned at the bottom with the deck's name, since
+no source hosts an image of the printed one.
 A side
 card with no side discard is never discarded: Discard is not offered, and
 when it is tucked under a card that leaves the table it goes to the bottom
