@@ -1,14 +1,16 @@
 name: Pages
 
+# The infra repository dispatches backend-deployed once the backend of a commit
+# is live, so the frontend never goes out ahead of its API.
 on:
-  push:
-    branches: [main]
+  repository_dispatch:
+    types: [backend-deployed]
   workflow_dispatch:
 
 permissions:
   contents: read
 
-# One deployment at a time; a newer push supersedes a queued one.
+# One deployment at a time; a newer deployment supersedes a queued one.
 concurrency:
   group: pages
   cancel-in-progress: false
@@ -24,6 +26,8 @@ jobs:
       # The full checkout is needed: the web build copies ../packs/dist.
       - uses: actions/checkout@v7
         with:
+          # The dispatched commit, else the ref of the manual run.
+          ref: ${{ github.event.client_payload.sha || github.sha }}
           persist-credentials: false
 
       # Installs node and pnpm as pinned in the root mise.toml, and caches them.

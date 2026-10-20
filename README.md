@@ -254,41 +254,70 @@ host port of the compose stack from `REDIS_PORT` (default `6379`).
 
 ## Continuous integration
 
-The `CI` workflow runs on every pull request and every push to `main`,
-in three jobs:
+The `CI` workflow runs on every pull request and every push to `main`.
+Three jobs check every run:
 
 - `go`: build, `go vet`, tests with the race detector, golangci-lint;
 - `web`: svelte-check, ESLint and Prettier, Vitest, production build;
 - `docker`: image build (not pushed), validation of `compose.yaml` and
   of the Caddyfile.
 
-It runs the same checks as `make check` and `make build`. It does not
+They run the same checks as `make check` and `make build`. They do not
 regenerate `packs/dist`: the generator needs marvelcdb, Cerebro and
 mc4db over the network, so the committed files are used as they are.
 
+A fourth job, `publish`, runs on a push to `main` only, once the other
+three have passed: it pushes the image to GHCR, tagged with the commit
+SHA and `main`, then asks the infra repository to deploy it (see
+Deployment).
+
 ## Deployment
 
-The frontend is published to GitHub Pages by the `Pages` workflow
-on every push to `main`. In the repository settings:
+The frontend is served by GitHub Pages at `https://intothefray.xyz`, the
+backend by a VPS behind Cloudflare at `https://api.intothefray.xyz`. A
+push to `main` deploys both, backend first:
 
-- set the Pages source to GitHub Actions;
-- set the `API_URL` variable to the public URL of the backend (the
-  workflow passes it to the build as `VITE_API_URL`).
+1. the `CI` workflow pushes the image to GHCR as
+   `ghcr.io/alexandreroman/intothefray`, tagged with the commit SHA and
+   `main`;
+2. it sends a `deploy-app` dispatch to the private
+   `alexandreroman/intothefray-infra` repository, which deploys that
+   image on the VPS;
+3. on success, the infra repository sends a `backend-deployed` dispatch
+   back to this repository;
+4. the `Pages` workflow builds that same commit and publishes the
+   frontend.
 
-The backend must accept the Pages origin: add it to
-`ALLOWED_ORIGINS`, written `scheme://host` with no path, for example
-`https://alexandreroman.github.io`.
+The frontend therefore never goes live before its backend. The `Pages`
+workflow can also be run by hand (`workflow_dispatch`) to republish the
+frontend.
 
-The backend sends its responses uncompressed: put it behind a proxy
-or CDN that compresses them (Cloudflare or equivalent), as Caddy does
-locally.
+The site is at the root of its custom domain, so its base path is `/`.
+The workflow still reads the base path from `actions/configure-pages`.
+Pages has no rewrite rules, so the workflow copies `index.html` to
+`404.html`: a deep link such as `/g/<id>` gets the app, which then
+reads the path.
 
-The workflow builds the app under the site's base path, as reported
-by `actions/configure-pages`: `/<repo>/` for a project site, `/` at
-the domain root (custom domain or user/organisation site). Pages has
-no rewrite rules, so the workflow copies `index.html` to `404.html`:
-a deep link such as `/<repo>/g/<id>` gets the app, which then reads
-the path.
+In the repository settings:
+
+- set the Pages source to GitHub Actions, with the custom domain
+  `intothefray.xyz`;
+- set the `API_URL` variable to `https://api.intothefray.xyz` (the
+  workflow passes it to the build as `VITE_API_URL`, and fails if it is
+  unset);
+- set the `INFRA_DISPATCH_TOKEN` secret to a fine-grained personal
+  access token with access to the `intothefray-infra` repository only,
+  and the repository permission Contents: read and write (needed by the
+  dispatches API). Without it, CI logs a warning and skips the
+  deployment.
+
+After the first publish, make the `intothefray` package public in its
+GHCR package settings (Package settings, Danger Zone, Change
+visibility), so that the VPS pulls the image without credentials.
+
+The backend accepts the frontend origin through `ALLOWED_ORIGINS`, set
+to `https://intothefray.xyz`. It sends its responses uncompressed:
+Cloudflare compresses them, as Caddy does locally.
 
 ## Architecture
 
