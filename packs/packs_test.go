@@ -318,10 +318,10 @@ func TestEmbeddedHeroSetup(t *testing.T) {
 			}},
 			{"36001", []sideDeck{{"storm_weather_deck", pack.SideDeck{Label: "Weather"}}}},
 			{"59001", []sideDeck{
-				{"hercules_labor_deck", pack.SideDeck{Label: "Labor", OwnBack: true}},
-				{"hercules_gift_deck", pack.SideDeck{Label: "Gift", OwnBack: true}},
+				{"hercules_labor_deck", pack.SideDeck{Label: "Labor", Back: pack.BackPlayer}},
+				{"hercules_gift_deck", pack.SideDeck{Label: "Gift", Back: pack.BackEncounter}},
 			}},
-			{"60001", []sideDeck{{"daredevil_sense_deck", pack.SideDeck{Label: "Sense", OwnBack: true}}}},
+			{"60001", []sideDeck{{"daredevil_sense_deck", pack.SideDeck{Label: "Sense", Back: pack.BackPlayer}}}},
 		}
 		for _, tt := range tests {
 			var wantCodes []string
@@ -339,14 +339,15 @@ func TestEmbeddedHeroSetup(t *testing.T) {
 
 	t.Run("side deck backs", func(t *testing.T) {
 		// Protect Humanity (59004) comes with an encounter back from the
-		// sources: in a face-down Labor deck it would stand out.
+		// sources: in a face-down Labor deck of player backs it would stand
+		// out.
 		for _, set := range sets {
 			if set.Side == nil {
 				continue
 			}
 			want := pack.BackPlayer
-			if set.Side.OwnBack {
-				want = pack.BackSide
+			if set.Side.Back != "" {
+				want = set.Side.Back
 			}
 			for _, code := range set.Cards {
 				if backs[code] != want {

@@ -70,7 +70,7 @@
         }
       ],
       "set": "hercules_labor_deck",
-      "back": "side",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -94,7 +94,7 @@
         }
       ],
       "set": "hercules_labor_deck",
-      "back": "side",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -118,7 +118,7 @@
         }
       ],
       "set": "hercules_labor_deck",
-      "back": "side",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -142,7 +142,7 @@
         }
       ],
       "set": "hercules_gift_deck",
-      "back": "side",
+      "back": "encounter",
       "quantity": 1
     },
     {
@@ -166,7 +166,7 @@
         }
       ],
       "set": "hercules_gift_deck",
-      "back": "side",
+      "back": "encounter",
       "quantity": 1
     },
     {
@@ -190,7 +190,7 @@
         }
       ],
       "set": "hercules_gift_deck",
-      "back": "side",
+      "back": "encounter",
       "quantity": 1
     },
     {
@@ -944,7 +944,7 @@
       ],
       "side": {
         "label": "Gift",
-        "ownBack": true
+        "back": "encounter"
       }
     },
     {
@@ -958,7 +958,7 @@
       ],
       "side": {
         "label": "Labor",
-        "ownBack": true
+        "back": "player"
       }
     },
     {

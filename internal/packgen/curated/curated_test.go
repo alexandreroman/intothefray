@@ -130,6 +130,11 @@ func TestLoadRejectsInvalidSets(t *testing.T) {
 			`set "storm_weather_deck": side deck has no label`,
 		},
 		{"unknown side field", `{"storm_weather_deck":{"side":{"label":"Weather","faceUp":true}}}`, `unknown field "faceUp"`},
+		{
+			"side deck with an unknown back",
+			`{"hercules_labor_deck":{"side":{"label":"Labor","back":"side"}}}`,
+			`set "hercules_labor_deck": side deck has an unknown back "side"`,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

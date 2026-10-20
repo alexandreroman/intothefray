@@ -118,9 +118,9 @@ type Pile struct {
 	Label string `json:"label,omitempty"`
 	// TopFaceUp shows the top card of a side deck to everyone.
 	TopFaceUp bool `json:"topFaceUp,omitempty"`
-	// OwnBack tells that the cards of a side deck share a back of their own
-	// (pack.BackSide), which the client draws from the deck's label.
-	OwnBack bool `json:"ownBack,omitempty"`
+	// Back is the printed back the cards of a side deck share, which the
+	// client captions with the deck's label; empty when they keep their own.
+	Back pack.Back `json:"back,omitempty"`
 }
 
 // Stage is a scheme or villain stage track.

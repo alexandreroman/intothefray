@@ -586,19 +586,21 @@ func TestDeckListSideCardsStayInTheirSideDeck(t *testing.T) {
 	}
 }
 
-func TestOwnBackSideDecks(t *testing.T) {
+func TestSideDeckSharedBacks(t *testing.T) {
 	f := heroGame(t, heroDeck(t, newCatalog(t), herculesIdentity, "Hercules"))
 	table := f.g.Table
+	wantBacks := map[string]pack.Back{"Labor": pack.BackPlayer, "Gift": pack.BackEncounter}
 
 	var labor *Pile
 	for i := range 2 {
 		pile := table.Piles[sideDeckID(0, i)]
-		if !pile.OwnBack {
-			t.Errorf("%s deck = %+v, want its own back", pile.Label, pile)
+		want := wantBacks[pile.Label]
+		if pile.Back != want {
+			t.Errorf("%s deck back = %q, want %q", pile.Label, pile.Back, want)
 		}
 		for _, id := range pile.Cards {
-			if c := table.Cards[id]; c.Back != pack.BackSide {
-				t.Errorf("%s card %s has back %q, want %q", pile.Label, c.Code, c.Back, pack.BackSide)
+			if c := table.Cards[id]; c.Back != want {
+				t.Errorf("%s card %s has back %q, want %q", pile.Label, c.Code, c.Back, want)
 			}
 		}
 		if pile.Label == "Labor" {
@@ -611,8 +613,8 @@ func TestOwnBackSideDecks(t *testing.T) {
 			continue
 		}
 		sideDecks++
-		if !pv.OwnBack {
-			t.Errorf("a spectator sees %s without its own back", pv.ID)
+		if pv.Back != wantBacks[pv.Label] {
+			t.Errorf("a spectator sees %s with back %q, want %q", pv.ID, pv.Back, wantBacks[pv.Label])
 		}
 	}
 	if sideDecks != 2 {
@@ -623,14 +625,14 @@ func TestOwnBackSideDecks(t *testing.T) {
 	id := topCards(labor, 1)[0]
 	f.mustDo(t, "h", Action{Kind: ActPlay, Pile: labor.ID, X: 800, Y: 500}, at(1))
 	f.mustDo(t, "h", Action{Kind: ActToPile, Card: id, Target: PileVictory}, at(2))
-	if c := table.Cards[id]; c.Pile != PileVictory || c.Back != pack.BackSide {
-		t.Errorf("Labor card = %+v, want on the victory display with its side back", c)
+	if c := table.Cards[id]; c.Pile != PileVictory || c.Back != pack.BackPlayer {
+		t.Errorf("Labor card = %+v, want on the victory display with a player back", c)
 	}
 	checkIntegrity(t, table)
 
-	// The Invocation deck keeps the player back.
+	// The Invocation deck has no shared back: its cards keep their own.
 	strange := sideDeckFixture(t)
-	if pile := strange.g.Table.Piles[invocationDeck]; pile.OwnBack {
-		t.Errorf("Invocation deck = %+v, want the player back", pile)
+	if pile := strange.g.Table.Piles[invocationDeck]; pile.Back != "" {
+		t.Errorf("Invocation deck = %+v, want no shared back", pile)
 	}
 }

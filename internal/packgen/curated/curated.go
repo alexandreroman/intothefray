@@ -100,8 +100,8 @@ func Load(dir string) (Curated, error) {
 }
 
 // checkSetDefs rejects the in-play cards listed under an unknown difficulty,
-// which setup would silently ignore, and the side decks without a label,
-// which the table could not name.
+// which setup would silently ignore, the side decks without a label, which
+// the table could not name, and the side decks with an unknown back.
 func checkSetDefs(defs map[string]SetDef) error {
 	for _, code := range slices.Sorted(maps.Keys(defs)) {
 		def := defs[code]
@@ -113,8 +113,22 @@ func checkSetDefs(defs map[string]SetDef) error {
 		if def.Side != nil && def.Side.Label == "" {
 			return fmt.Errorf("set %q: side deck has no label", code)
 		}
+		if def.Side != nil && !validSideBack(def.Side.Back) {
+			return fmt.Errorf("set %q: side deck has an unknown back %q", code, def.Side.Back)
+		}
 	}
 	return nil
+}
+
+// validSideBack reports whether back may be the shared back of a side deck:
+// none, or one of the printed backs.
+func validSideBack(back pack.Back) bool {
+	switch back {
+	case "", pack.BackPlayer, pack.BackEncounter, pack.BackVillain:
+		return true
+	default:
+		return false
+	}
 }
 
 func readStrict(path string, v any) error {

@@ -39,16 +39,16 @@ type CardView struct {
 // public piles, and holds only the top card of a side deck whose top card is
 // face up.
 type PileView struct {
-	ID        string   `json:"id"`
-	Kind      PileKind `json:"kind"`
-	Owner     int      `json:"owner"`
-	X         int      `json:"x"`
-	Y         int      `json:"y"`
-	Count     int      `json:"count"`
-	Cards     []string `json:"cards,omitempty"` // bottom → top
-	Label     string   `json:"label,omitempty"` // see Pile.Label
-	TopFaceUp bool     `json:"topFaceUp,omitempty"`
-	OwnBack   bool     `json:"ownBack,omitempty"` // see Pile.OwnBack
+	ID        string    `json:"id"`
+	Kind      PileKind  `json:"kind"`
+	Owner     int       `json:"owner"`
+	X         int       `json:"x"`
+	Y         int       `json:"y"`
+	Count     int       `json:"count"`
+	Cards     []string  `json:"cards,omitempty"` // bottom → top
+	Label     string    `json:"label,omitempty"` // see Pile.Label
+	TopFaceUp bool      `json:"topFaceUp,omitempty"`
+	Back      pack.Back `json:"back,omitempty"` // see Pile.Back
 }
 
 // PlayerView is what everybody may know about a player.
@@ -348,7 +348,7 @@ func (p *Pile) shows(id string) bool {
 func (p *Pile) viewOf() PileView {
 	return PileView{
 		ID: p.ID, Kind: p.Kind, Owner: p.Owner, X: p.X, Y: p.Y, Count: len(p.Cards),
-		Cards: p.shownCards(), Label: p.Label, TopFaceUp: p.TopFaceUp, OwnBack: p.OwnBack,
+		Cards: p.shownCards(), Label: p.Label, TopFaceUp: p.TopFaceUp, Back: p.Back,
 	}
 }
 

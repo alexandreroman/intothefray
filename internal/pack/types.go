@@ -21,9 +21,6 @@ const (
 	BackPlayer    Back = "player"
 	BackEncounter Back = "encounter"
 	BackVillain   Back = "villain"
-	// BackSide is the back of the side decks printed with their own back,
-	// such as Hercules' Labor deck, which no card image shows.
-	BackSide Back = "side"
 )
 
 // Difficulty selects the scenario setup variant.
@@ -100,7 +97,10 @@ type SideDeck struct {
 	Label     string `json:"label"`               // "Invocation": "Invocation deck"
 	TopFaceUp bool   `json:"topFaceUp,omitempty"` // top card faceup for everyone
 	Discard   bool   `json:"discard,omitempty"`   // has its own discard pile
-	OwnBack   bool   `json:"ownBack,omitempty"`   // its cards share a back of their own (BackSide)
+	// Back is the printed back all the set's cards share, captioned with the
+	// deck's label, as Hercules' Labor deck has; empty for a side deck whose
+	// cards keep their own backs.
+	Back Back `json:"back,omitempty"`
 }
 
 // Hero links a hero identity card to its set, obligation, nemesis and side

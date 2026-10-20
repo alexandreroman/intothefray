@@ -535,7 +535,7 @@ func (b *tableBuilder) addSidePiles(seat int, hero pack.Hero) (int, error) {
 		deck := b.table.addPile(sideDeckID(seat, i), KindSideDeck, seat, identityX+sidePileStepX*count, y)
 		deck.Label = set.Side.Label
 		deck.TopFaceUp = set.Side.TopFaceUp
-		deck.OwnBack = set.Side.OwnBack
+		deck.Back = set.Side.Back
 		count++
 		if set.Side.Discard {
 			discard := b.table.addPile(sideDiscardID(seat, i), KindSideDiscard, seat, identityX+sidePileStepX*count, y)
