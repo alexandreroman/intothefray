@@ -1,5 +1,6 @@
-// Command packgen regenerates the card-pack files from marvelcdb and Cerebro,
-// with the French names of fr.marvelcdb and the French images of mc4db.
+// Command packgen regenerates the card-pack files from marvelcdb, completed
+// with the official mc4db cards it lacks, and Cerebro, with the French names of
+// fr.marvelcdb and the French images of mc4db.
 package main
 
 import (
@@ -21,6 +22,7 @@ import (
 	"github.com/alexandreroman/intothefray/internal/packgen/images"
 	"github.com/alexandreroman/intothefray/internal/packgen/marvelcdb"
 	"github.com/alexandreroman/intothefray/internal/packgen/mc4db"
+	"github.com/alexandreroman/intothefray/internal/packgen/report"
 	"github.com/alexandreroman/intothefray/internal/packgen/write"
 )
 
@@ -114,6 +116,9 @@ func fetchInputs(ctx context.Context, opts options) (build.Inputs, error) {
 	if in.MC4DB, err = mc4db.FetchCards(ctx, client); err != nil {
 		return in, err
 	}
+	if in.MC4DBPacks, err = mc4db.FetchPacks(ctx, client); err != nil {
+		return in, err
+	}
 	if in.CB, err = cerebro.FetchCards(ctx, client); err != nil {
 		return in, err
 	}
@@ -146,6 +151,7 @@ func printReport(w io.Writer, result build.Result) {
 			_, _ = fmt.Fprintf(w, "unsupported scenario %s (%s)\n", scenario.ID, scenario.Pack)
 		}
 	}
+	printFallback(w, result.Fallback)
 	for _, coverage := range result.Coverage {
 		_, _ = fmt.Fprintln(w, coverage)
 		if len(coverage.PacksWithoutImages) > 0 {
@@ -154,5 +160,24 @@ func printReport(w io.Writer, result build.Result) {
 	}
 	for _, entry := range result.Report {
 		_, _ = fmt.Fprintf(w, "unsupported %s %q (%s): %s\n", entry.Code, entry.Name, entry.Pack, entry.Reason)
+	}
+}
+
+// printFallback prints one line per source and pack with the records taken
+// from that source, e.g. "from mc4db (fne): 2 records: 60065, 60066". The
+// entries are sorted by source, pack and code.
+func printFallback(w io.Writer, entries []report.Fallback) {
+	for len(entries) > 0 {
+		first := entries[0]
+		var codes []string
+		for _, entry := range entries {
+			if entry.Source != first.Source || entry.Pack != first.Pack {
+				break
+			}
+			codes = append(codes, entry.Code)
+		}
+		_, _ = fmt.Fprintf(w, "from %s (%s): %d records: %s\n",
+			first.Source, first.Pack, len(codes), strings.Join(codes, ", "))
+		entries = entries[len(codes):]
 	}
 }

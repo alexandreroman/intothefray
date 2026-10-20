@@ -1276,6 +1276,72 @@
       "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57040.jpg",
       "supported": false,
       "recommended": []
+    },
+    {
+      "id": "kingpin",
+      "name": "Kingpin",
+      "pack": "fne",
+      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60159A.jpg",
+      "supported": true,
+      "recommended": [
+        "tombstone",
+        "tracksuit_mafia"
+      ]
+    },
+    {
+      "id": "art_museum_heist",
+      "name": "Art Museum Heist",
+      "pack": "fne",
+      "image": "",
+      "supported": false,
+      "recommended": [
+        "cops",
+        "the_owl"
+      ]
+    },
+    {
+      "id": "protection_racket",
+      "name": "Protection Racket",
+      "pack": "fne",
+      "image": "",
+      "supported": false,
+      "recommended": [
+        "disasters",
+        "tracksuit_mafia"
+      ]
+    },
+    {
+      "id": "stop_the_presses",
+      "name": "Stop The Presses!",
+      "pack": "fne",
+      "image": "",
+      "supported": false,
+      "recommended": [
+        "tombstone",
+        "tracksuit_mafia"
+      ]
+    },
+    {
+      "id": "the_getaway",
+      "name": "The Getaway",
+      "pack": "fne",
+      "image": "",
+      "supported": false,
+      "recommended": [
+        "cops",
+        "drive"
+      ]
+    },
+    {
+      "id": "the_raft_breakout",
+      "name": "The Raft Breakout",
+      "pack": "fne",
+      "image": "",
+      "supported": false,
+      "recommended": [
+        "the_owl",
+        "tombstone"
+      ]
     }
   ],
   "sets": [
@@ -2720,6 +2786,42 @@
       "code": "all_versus_all",
       "name": "All Versus All",
       "pack": "hercules",
+      "kind": "modular"
+    },
+    {
+      "code": "cops",
+      "name": "Cops",
+      "pack": "fne",
+      "kind": "modular"
+    },
+    {
+      "code": "disasters",
+      "name": "Disasters",
+      "pack": "fne",
+      "kind": "modular"
+    },
+    {
+      "code": "drive",
+      "name": "Drive",
+      "pack": "fne",
+      "kind": "modular"
+    },
+    {
+      "code": "the_owl",
+      "name": "The Owl",
+      "pack": "fne",
+      "kind": "modular"
+    },
+    {
+      "code": "tombstone",
+      "name": "Tombstone",
+      "pack": "fne",
+      "kind": "modular"
+    },
+    {
+      "code": "tracksuit_mafia",
+      "name": "Tracksuit Mafia",
+      "pack": "fne",
       "kind": "modular"
     },
     {

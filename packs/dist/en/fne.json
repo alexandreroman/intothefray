@@ -1485,9 +1485,4218 @@
       "set": "echo_nemesis",
       "back": "encounter",
       "quantity": 1
+    },
+    {
+      "code": "60065",
+      "faces": [
+        {
+          "name": "Bullseye",
+          "type": "villain",
+          "stage": "I",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60065.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60065.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60065.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "bullseye",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "60066",
+      "faces": [
+        {
+          "name": "Bullseye",
+          "type": "villain",
+          "stage": "II",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60066.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60066.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60066.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "bullseye",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "60067",
+      "faces": [
+        {
+          "name": "Bullseye",
+          "type": "villain",
+          "stage": "III",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60067.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60067.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60067.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "bullseye",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "60068",
+      "faces": [
+        {
+          "name": "Adamantium-Laced Spine",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60068A.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60068a.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60068a.webp"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Damaged Spine",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60068B.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60068b.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60068b.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "bullseye",
+      "back": "encounter",
+      "quantity": 1,
+      "aliases": [
+        "60068a",
+        "60068b"
+      ]
+    },
+    {
+      "code": "60069",
+      "faces": [
+        {
+          "name": "Raise The Stakes",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60069.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60069.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60069.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "bullseye",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60070",
+      "faces": [
+        {
+          "name": "Deadly Sai",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60070.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60070.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60070.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "bullseye",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60071",
+      "faces": [
+        {
+          "name": "Incessant Pursuit",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60071.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60071.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60071.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "bullseye",
+      "back": "encounter",
+      "quantity": 3
+    },
+    {
+      "code": "60072",
+      "faces": [
+        {
+          "name": "Lady Bullseye",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60072.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60072.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60072.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "bullseye",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60073",
+      "faces": [
+        {
+          "name": "Deranged Bloodlust",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60073.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60073.webp"
+          ],
+          "startingThreat": {
+            "value": 4,
+            "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60073.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "bullseye",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60074",
+      "faces": [
+        {
+          "name": "Everything Is A Weapon",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60074.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60074.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60074.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "bullseye",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60075",
+      "faces": [
+        {
+          "name": "Unerring Desire",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60075.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60075.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60075.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "bullseye",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "60076",
+      "faces": [
+        {
+          "name": "Electro",
+          "type": "villain",
+          "stage": "I",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60076.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60076.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60076.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "electro",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "60077",
+      "faces": [
+        {
+          "name": "Electro",
+          "type": "villain",
+          "stage": "II",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60077.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60077.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60077.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "electro",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "60078",
+      "faces": [
+        {
+          "name": "Electro",
+          "type": "villain",
+          "stage": "III",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60078.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60078.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60078.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "electro",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "60079",
+      "faces": [
+        {
+          "name": "Electric Charge",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60079.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60079.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60079.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "electro",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60080",
+      "faces": [
+        {
+          "name": "Drained Of Power",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60080.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60080.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60080.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "electro",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60081",
+      "faces": [
+        {
+          "name": "Whiplash",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60081.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60081.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60081.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "electro",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60082",
+      "faces": [
+        {
+          "name": "Charging Up",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60082.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60082.webp"
+          ],
+          "startingThreat": {
+            "value": 6,
+            "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60082.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "electro",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "60083",
+      "faces": [
+        {
+          "name": "Chain Lightning",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60083.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60083.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60083.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "electro",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "60084",
+      "faces": [
+        {
+          "name": "Energy Overload",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60084.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60084.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60084.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "electro",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "60085",
+      "faces": [
+        {
+          "name": "Shocking Revelation",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60085.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60085.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60085.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "electro",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "60086",
+      "faces": [
+        {
+          "name": "Hammerhead",
+          "type": "villain",
+          "stage": "I",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60086.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60086.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60086.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "hammerhead",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "60087",
+      "faces": [
+        {
+          "name": "Hammerhead",
+          "type": "villain",
+          "stage": "II",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60087.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60087.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60087.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "hammerhead",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "60088",
+      "faces": [
+        {
+          "name": "Hammerhead",
+          "type": "villain",
+          "stage": "III",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60088.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60088.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60088.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "hammerhead",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "60089",
+      "faces": [
+        {
+          "name": "Energy Gatling Gun",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60089.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60089.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60089.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "hammerhead",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60090",
+      "faces": [
+        {
+          "name": "Hardheaded",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60090.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60090.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60090.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "hammerhead",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60091",
+      "faces": [
+        {
+          "name": "Chameleon",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60091.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60091.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60091.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "hammerhead",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60092",
+      "faces": [
+        {
+          "name": "Maggia Enforcers",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60092.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60092.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60092.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "hammerhead",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "60093",
+      "faces": [
+        {
+          "name": "Maggia Underboss",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60093.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60093.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60093.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "hammerhead",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "60094",
+      "faces": [
+        {
+          "name": "Consolidate Power",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60094.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60094.webp"
+          ],
+          "startingThreat": {
+            "value": 6,
+            "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60094.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "hammerhead",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60095",
+      "faces": [
+        {
+          "name": "Power Struggle",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60095.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60095.webp"
+          ],
+          "startingThreat": {
+            "value": 5,
+            "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60095.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "hammerhead",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60096",
+      "faces": [
+        {
+          "name": "\"head First!\"",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60096.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60096.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60096.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "hammerhead",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "60097",
+      "faces": [
+        {
+          "name": "Purple Man",
+          "type": "villain",
+          "stage": "I",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60097.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60097.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60097.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "purple_man",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "60098",
+      "faces": [
+        {
+          "name": "Purple Man",
+          "type": "villain",
+          "stage": "II",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60098.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60098.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60098.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "purple_man",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "60099",
+      "faces": [
+        {
+          "name": "Purple Man",
+          "type": "villain",
+          "stage": "III",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60099.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60099.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60099.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "purple_man",
+      "back": "villain",
+      "quantity": 1
+    },
+    {
+      "code": "60100",
+      "faces": [
+        {
+          "name": "Converted",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60100.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60100.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60100.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "purple_man",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60101",
+      "faces": [
+        {
+          "name": "Firefighter",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60101.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60101.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60101.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "purple_man",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "60102",
+      "faces": [
+        {
+          "name": "Judge",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60102.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60102.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60102.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "purple_man",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60103",
+      "faces": [
+        {
+          "name": "Security Guard",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60103.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60103.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60103.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "purple_man",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60104",
+      "faces": [
+        {
+          "name": "Skater Punk",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60104.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60104.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60104.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "purple_man",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60105",
+      "faces": [
+        {
+          "name": "\"fight.\"",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60105.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60105.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60105.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "purple_man",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60106",
+      "faces": [
+        {
+          "name": "\"protect.\"",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60106.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60106.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60106.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "purple_man",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60107",
+      "faces": [
+        {
+          "name": "\"serve.\"",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60107.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60107.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60107.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "purple_man",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60108",
+      "faces": [
+        {
+          "name": "Power Of Suggestion",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60108.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60108.webp"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60108.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "purple_man",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60109",
+      "faces": [
+        {
+          "name": "Sway The Masses",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60109.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60109.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60109.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "purple_man",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "60110",
+      "faces": [
+        {
+          "name": "Typhoid Mary",
+          "type": "villain",
+          "stage": "A",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60110A.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60110a.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60110a.webp"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Bloody Mary",
+          "type": "villain",
+          "stage": "A",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60110B.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60110b.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60110b.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "typhoid_mary",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "60110a",
+        "60110b"
+      ]
+    },
+    {
+      "code": "60111",
+      "faces": [
+        {
+          "name": "Typhoid Mary",
+          "type": "villain",
+          "stage": "B",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60111A.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60111a.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60111a.webp"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Bloody Mary",
+          "type": "villain",
+          "stage": "B",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60111B.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60111b.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60111b.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "typhoid_mary",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "60111a",
+        "60111b"
+      ]
+    },
+    {
+      "code": "60112",
+      "faces": [
+        {
+          "name": "Disturbed Psyche",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60112.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60112.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60112.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "typhoid_mary",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60113",
+      "faces": [
+        {
+          "name": "Establish Trust",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60113A.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60113a.webp"
+          ],
+          "startingThreat": {
+            "value": 8,
+            "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60113a.webp"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Mary Walker",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60113B.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60113b.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60113b.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "typhoid_mary",
+      "back": "encounter",
+      "quantity": 1,
+      "aliases": [
+        "60113a",
+        "60113b"
+      ]
+    },
+    {
+      "code": "60114",
+      "faces": [
+        {
+          "name": "Telekinesis",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60114.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60114.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60114.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "typhoid_mary",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60115",
+      "faces": [
+        {
+          "name": "Psionic Slash",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60115.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60115.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60115.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "typhoid_mary",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "60116",
+      "faces": [
+        {
+          "name": "Psi Nova",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60116.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60116.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60116.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "typhoid_mary",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60117",
+      "faces": [
+        {
+          "name": "Assembled Armor",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60117.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60117.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60117.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "typhoid_mary",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60118",
+      "faces": [
+        {
+          "name": "Hail Of Blades",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60118.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60118.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60118.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "typhoid_mary",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "60119",
+      "faces": [
+        {
+          "name": "Scavenged Bulwark",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60119.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60119.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60119.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "typhoid_mary",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60120",
+      "faces": [
+        {
+          "name": "Hand Lookout",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60120.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60120.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60120.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "typhoid_mary",
+      "back": "encounter",
+      "quantity": 3
+    },
+    {
+      "code": "60121",
+      "faces": [
+        {
+          "name": "Art Museum Heist",
+          "type": "main_scheme",
+          "stage": "1A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60121A.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60121a.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60121a.webp"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Art Museum Heist",
+          "type": "main_scheme",
+          "stage": "1B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60121B.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60121b.webp"
+          ],
+          "startingThreat": {
+            "value": 1,
+            "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60121b.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "art_museum_heist",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "60121a",
+        "60121b"
+      ]
+    },
+    {
+      "code": "60122",
+      "faces": [
+        {
+          "name": "Impossible Object",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60122.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60122.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60122.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "art_museum_heist",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60123",
+      "faces": [
+        {
+          "name": "Inspiring Pottery",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60123.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60123.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60123.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "art_museum_heist",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60124",
+      "faces": [
+        {
+          "name": "Replica Shield",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60124.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60124.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60124.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "art_museum_heist",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60125",
+      "faces": [
+        {
+          "name": "Stunning Landscape",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60125.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60125.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60125.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "art_museum_heist",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60126",
+      "faces": [
+        {
+          "name": "Art Thief",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60126.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60126.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60126.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "art_museum_heist",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "60127",
+      "faces": [
+        {
+          "name": "Tug Of War",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60127.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60127.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60127.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "art_museum_heist",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "60128",
+      "faces": [
+        {
+          "name": "The Getaway",
+          "type": "main_scheme",
+          "stage": "1A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60128A.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60128a.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60128a.webp"
+              ]
+            }
+          }
+        },
+        {
+          "name": "The Getaway",
+          "type": "main_scheme",
+          "stage": "1B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60128B.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60128b.webp"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60128b.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "the_getaway",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "60128a",
+        "60128b"
+      ]
+    },
+    {
+      "code": "60129",
+      "faces": [
+        {
+          "name": "Out Front",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60129A.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60129a.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60129a.webp"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Alongside",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60129B.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60129b.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60129b.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "the_getaway",
+      "back": "encounter",
+      "quantity": 1,
+      "aliases": [
+        "60129a",
+        "60129b"
+      ]
+    },
+    {
+      "code": "60130",
+      "faces": [
+        {
+          "name": "Escort Vehicle",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60130.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60130.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60130.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "the_getaway",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60131",
+      "faces": [
+        {
+          "name": "Jackknifed Tanker Truck",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60131.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60131.webp"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60131.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "the_getaway",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60132",
+      "faces": [
+        {
+          "name": "Burning Rubber",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60132.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60132.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60132.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "the_getaway",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "60133",
+      "faces": [
+        {
+          "name": "Pedestrians",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60133.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60133.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60133.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "the_getaway",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "60134",
+      "faces": [
+        {
+          "name": "Protection Racket",
+          "type": "main_scheme",
+          "stage": "1A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60134A.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60134a.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60134a.webp"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Battle In The Bodega",
+          "type": "main_scheme",
+          "stage": "1B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60134B.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60134b.webp"
+          ],
+          "startingThreat": {
+            "value": 0,
+            "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60134b.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "protection_racket",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "60134a",
+        "60134b"
+      ]
+    },
+    {
+      "code": "60135",
+      "faces": [
+        {
+          "name": "Protection Racket",
+          "type": "main_scheme",
+          "stage": "1A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60135A.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60135a.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60135a.webp"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Bull In A China Shop",
+          "type": "main_scheme",
+          "stage": "1B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60135B.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60135b.webp"
+          ],
+          "startingThreat": {
+            "value": 0,
+            "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60135b.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "protection_racket",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "60135a",
+        "60135b"
+      ]
+    },
+    {
+      "code": "60136",
+      "faces": [
+        {
+          "name": "Protection Racket",
+          "type": "main_scheme",
+          "stage": "1A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60136A.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60136a.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60136a.webp"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Hung Out To Dry",
+          "type": "main_scheme",
+          "stage": "1B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60136B.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60136b.webp"
+          ],
+          "startingThreat": {
+            "value": 0,
+            "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60136b.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "protection_racket",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "60136a",
+        "60136b"
+      ]
+    },
+    {
+      "code": "60137",
+      "faces": [
+        {
+          "name": "Protection Racket",
+          "type": "main_scheme",
+          "stage": "1A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60137A.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60137a.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60137a.webp"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Pawn Shop Showdown",
+          "type": "main_scheme",
+          "stage": "1B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60137B.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60137b.webp"
+          ],
+          "startingThreat": {
+            "value": 0,
+            "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60137b.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "protection_racket",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "60137a",
+        "60137b"
+      ]
+    },
+    {
+      "code": "60138",
+      "faces": [
+        {
+          "name": "Protection Racket",
+          "type": "main_scheme",
+          "stage": "1A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60138A.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60138a.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60138a.webp"
+              ]
+            }
+          }
+        },
+        {
+          "name": "A Slice Of The Pizza Dough",
+          "type": "main_scheme",
+          "stage": "1B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60138B.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60138b.webp"
+          ],
+          "startingThreat": {
+            "value": 0,
+            "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60138b.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "protection_racket",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "60138a",
+        "60138b"
+      ]
+    },
+    {
+      "code": "60139",
+      "faces": [
+        {
+          "name": "Shop Proprietor",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60139.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60139.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60139.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "protection_racket",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60140",
+      "faces": [
+        {
+          "name": "Man-Bull",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60140.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60140.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60140.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "protection_racket",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60141",
+      "faces": [
+        {
+          "name": "Change Of Venue",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60141.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60141.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60141.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "protection_racket",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "60142",
+      "faces": [
+        {
+          "name": "The Raft Breakout",
+          "type": "main_scheme",
+          "stage": "1A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60142A.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60142a.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60142a.webp"
+              ]
+            }
+          }
+        },
+        {
+          "name": "The Raft Breakout",
+          "type": "main_scheme",
+          "stage": "1B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60142B.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60142b.webp"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60142b.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "the_raft_breakout",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "60142a",
+        "60142b"
+      ]
+    },
+    {
+      "code": "60143",
+      "faces": [
+        {
+          "name": "Master Key",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60143.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60143.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60143.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "the_raft_breakout",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60144",
+      "faces": [
+        {
+          "name": "Absorbing Man",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60144.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60144.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60144.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "the_raft_breakout",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60145",
+      "faces": [
+        {
+          "name": "Baron Zemo",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60145.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60145.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60145.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "the_raft_breakout",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60146",
+      "faces": [
+        {
+          "name": "Drang",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60146.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60146.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60146.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "the_raft_breakout",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60147",
+      "faces": [
+        {
+          "name": "Mysterio",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60147.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60147.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60147.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "the_raft_breakout",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60148",
+      "faces": [
+        {
+          "name": "Proxima Midnight",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60148.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60148.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60148.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "the_raft_breakout",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60149",
+      "faces": [
+        {
+          "name": "Rhino",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60149.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60149.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60149.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "the_raft_breakout",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60150",
+      "faces": [
+        {
+          "name": "Imprisoned",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60150.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60150.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60150.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "the_raft_breakout",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60151",
+      "faces": [
+        {
+          "name": "Stop The Presses!",
+          "type": "main_scheme",
+          "stage": "1A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60151A.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60151a.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60151a.webp"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Stop The Presses!",
+          "type": "main_scheme",
+          "stage": "1B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60151B.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60151b.webp"
+          ],
+          "startingThreat": {
+            "value": 1,
+            "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60151b.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "stop_the_presses",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "60151a",
+        "60151b"
+      ]
+    },
+    {
+      "code": "60152",
+      "faces": [
+        {
+          "name": "Daily Bugle",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60152.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60152.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60152.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "stop_the_presses",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60153",
+      "faces": [
+        {
+          "name": "Ben Urich",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60153.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60153.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60153.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "stop_the_presses",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60154",
+      "faces": [
+        {
+          "name": "Betty Brant",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60154.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60154.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60154.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "stop_the_presses",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60155",
+      "faces": [
+        {
+          "name": "J. Jonah Jameson",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60155.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60155.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60155.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "stop_the_presses",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60156",
+      "faces": [
+        {
+          "name": "Robbie Robertson",
+          "type": "support",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60156.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60156.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60156.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "stop_the_presses",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60157",
+      "faces": [
+        {
+          "name": "Exclusive Interview",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60157.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60157.webp"
+          ],
+          "startingThreat": {
+            "value": 6,
+            "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60157.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "stop_the_presses",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60158",
+      "faces": [
+        {
+          "name": "Breaking News",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60158.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60158.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60158.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "stop_the_presses",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "60159",
+      "faces": [
+        {
+          "name": "Kingpin",
+          "type": "villain",
+          "stage": "A1",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60159A.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60159a.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60159a.webp"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Kingpin",
+          "type": "villain",
+          "stage": "A2",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60159B.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60159b.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60159b.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "kingpin",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "60159a",
+        "60159b"
+      ]
+    },
+    {
+      "code": "60160",
+      "faces": [
+        {
+          "name": "Kingpin",
+          "type": "villain",
+          "stage": "B1",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60160A.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60160a.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60160a.webp"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Kingpin",
+          "type": "villain",
+          "stage": "B2",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60160B.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60160b.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60160b.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "kingpin",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "60160a",
+        "60160b"
+      ]
+    },
+    {
+      "code": "60161",
+      "faces": [
+        {
+          "name": "The King's Gambit",
+          "type": "main_scheme",
+          "stage": "1A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60161A.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60161a.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60161a.webp"
+              ]
+            }
+          }
+        },
+        {
+          "name": "The King's Gambit",
+          "type": "main_scheme",
+          "stage": "1B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60161B.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60161b.webp"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60161b.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "kingpin",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "60161a",
+        "60161b"
+      ]
+    },
+    {
+      "code": "60162",
+      "faces": [
+        {
+          "name": "Endgame",
+          "type": "main_scheme",
+          "stage": "2A",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60162A.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60162a.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60162a.webp"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Endgame",
+          "type": "main_scheme",
+          "stage": "2B",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60162B.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60162b.webp"
+          ],
+          "startingThreat": {
+            "value": 0,
+            "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60162b.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "kingpin",
+      "back": "villain",
+      "quantity": 1,
+      "aliases": [
+        "60162a",
+        "60162b"
+      ]
+    },
+    {
+      "code": "60163",
+      "faces": [
+        {
+          "name": "Public Support",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60163A.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60163a.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60163a.webp"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Public Support",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60163B.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60163b.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60163b.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "kingpin",
+      "back": "encounter",
+      "quantity": 1,
+      "aliases": [
+        "60163a",
+        "60163b"
+      ]
+    },
+    {
+      "code": "60164",
+      "faces": [
+        {
+          "name": "Bear Hug",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60164.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60164.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60164.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "kingpin",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60165",
+      "faces": [
+        {
+          "name": "James Wesley",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60165.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60165.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60165.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "kingpin",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60166",
+      "faces": [
+        {
+          "name": "Kingpin's Cane",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60166.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60166.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60166.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "kingpin",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60167",
+      "faces": [
+        {
+          "name": "Mountain Of Muscle",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60167.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60167.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60167.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "kingpin",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60168",
+      "faces": [
+        {
+          "name": "Vanessa Fisk",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60168.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60168.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60168.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "kingpin",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60169",
+      "faces": [
+        {
+          "name": "Black Cat",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60169.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60169.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60169.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "kingpin",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60170",
+      "faces": [
+        {
+          "name": "Diamondback",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60170.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60170.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60170.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "kingpin",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60171",
+      "faces": [
+        {
+          "name": "Spot",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60171.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60171.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60171.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "kingpin",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60172",
+      "faces": [
+        {
+          "name": "Stilt-Man",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60172.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60172.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60172.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "kingpin",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60173",
+      "faces": [
+        {
+          "name": "Kingpin's Influence",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60173.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60173.webp"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60173.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "kingpin",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60174",
+      "faces": [
+        {
+          "name": "Organized Crime",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60174.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60174.webp"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60174.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "kingpin",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60175",
+      "faces": [
+        {
+          "name": "Bag Of Tricks",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60175.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60175.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60175.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "kingpin",
+      "back": "encounter",
+      "quantity": 3
+    },
+    {
+      "code": "60176",
+      "faces": [
+        {
+          "name": "Unrelenting Hate",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60176.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60176.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60176.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "kingpin",
+      "back": "encounter",
+      "quantity": 3
+    },
+    {
+      "code": "60177",
+      "faces": [
+        {
+          "name": "Mystic Incursion",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60177.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60177.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60177.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "disasters",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60178",
+      "faces": [
+        {
+          "name": "Sinking Ferry",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60178.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60178.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60178.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "disasters",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60179",
+      "faces": [
+        {
+          "name": "Towering Inferno",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60179.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60179.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60179.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "disasters",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60180",
+      "faces": [
+        {
+          "name": "Collapsing Bridge",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60180.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60180.webp"
+          ],
+          "startingThreat": {
+            "value": 1,
+            "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60180.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "disasters",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60181",
+      "faces": [
+        {
+          "name": "Bystanders In Peril",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60181.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60181.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60181.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "disasters",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60182",
+      "faces": [
+        {
+          "name": "Cop",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60182.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60182.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60182.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "cops",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "60183",
+      "faces": [
+        {
+          "name": "Crooked Cop",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60183.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60183.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60183.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "cops",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60184",
+      "faces": [
+        {
+          "name": "Wanted",
+          "type": "obligation",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60184.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60184.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60184.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "cops",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60185",
+      "faces": [
+        {
+          "name": "Police Cordon",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60185.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60185.webp"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60185.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "cops",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60186",
+      "faces": [
+        {
+          "name": "Sports Car",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60186.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60186.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60186.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "drive",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60187",
+      "faces": [
+        {
+          "name": "Motorcycle",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60187.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60187.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60187.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "drive",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60188",
+      "faces": [
+        {
+          "name": "Utility Van",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60188.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60188.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60188.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "drive",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60189",
+      "faces": [
+        {
+          "name": "Traffic Jam",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60189.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60189.webp"
+          ],
+          "startingThreat": {
+            "value": 2,
+            "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60189.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "drive",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60190",
+      "faces": [
+        {
+          "name": "Carjacking",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60190.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60190.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60190.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "drive",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60191",
+      "faces": [
+        {
+          "name": "Flight Serum",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60191.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60191.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60191.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "the_owl",
+      "back": "encounter",
+      "quantity": 2
+    },
+    {
+      "code": "60192",
+      "faces": [
+        {
+          "name": "Mister Fish",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60192.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60192.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60192.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "the_owl",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60193",
+      "faces": [
+        {
+          "name": "The Owl",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60193.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60193.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60193.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "the_owl",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60194",
+      "faces": [
+        {
+          "name": "Swoop Down",
+          "type": "treachery",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60194.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60194.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60194.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "the_owl",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60195",
+      "faces": [
+        {
+          "name": "Cold As Ice",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60195.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60195.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60195.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "tombstone",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60196",
+      "faces": [
+        {
+          "name": "Hard As Marble",
+          "type": "attachment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60196.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60196.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60196.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "tombstone",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60197",
+      "faces": [
+        {
+          "name": "Beetle",
+          "type": "minion",
+          "stage": "5",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60197.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60197.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60197.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "tombstone",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60198",
+      "faces": [
+        {
+          "name": "Tombstone",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60198.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60198.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60198.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "tombstone",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60199",
+      "faces": [
+        {
+          "name": "Hit List",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60199.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60199.webp"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60199.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "tombstone",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60200",
+      "faces": [
+        {
+          "name": "Ivan Banionis",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60200.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60200.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60200.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "tracksuit_mafia",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60201",
+      "faces": [
+        {
+          "name": "The Clown",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60201.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60201.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60201.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "tracksuit_mafia",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60202",
+      "faces": [
+        {
+          "name": "Tracksuit Mafioso",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60202.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60202.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60202.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "tracksuit_mafia",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60203",
+      "faces": [
+        {
+          "name": "Tracksuit Bro",
+          "type": "minion",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60203.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60203.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60203.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "tracksuit_mafia",
+      "back": "encounter",
+      "quantity": 3
+    },
+    {
+      "code": "60204",
+      "faces": [
+        {
+          "name": "Tracksuit Mafia",
+          "type": "side_scheme",
+          "size": "land",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60204.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60204.webp"
+          ],
+          "startingThreat": {
+            "value": 3,
+            "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60204.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "tracksuit_mafia",
+      "back": "encounter",
+      "quantity": 1
+    },
+    {
+      "code": "60205",
+      "faces": [
+        {
+          "name": "Art Museum Heist",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60205A.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60205a.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60205a.webp"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Art Museum Heist",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60205B.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60205b.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60205b.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "campaign",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "60205a",
+        "60205b"
+      ]
+    },
+    {
+      "code": "60206",
+      "faces": [
+        {
+          "name": "The Getaway",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60206A.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60206a.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60206a.webp"
+              ]
+            }
+          }
+        },
+        {
+          "name": "The Getaway",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60206B.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60206b.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60206b.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "campaign",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "60206a",
+        "60206b"
+      ]
+    },
+    {
+      "code": "60207",
+      "faces": [
+        {
+          "name": "Protection Racket",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60207A.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60207a.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60207a.webp"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Protection Racket",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60207B.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60207b.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60207b.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "campaign",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "60207a",
+        "60207b"
+      ]
+    },
+    {
+      "code": "60208",
+      "faces": [
+        {
+          "name": "The Raft Breakout",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60208A.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60208a.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60208a.webp"
+              ]
+            }
+          }
+        },
+        {
+          "name": "The Raft Breakout",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60208B.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60208b.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60208b.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "campaign",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "60208a",
+        "60208b"
+      ]
+    },
+    {
+      "code": "60209",
+      "faces": [
+        {
+          "name": "Stop The Presses!",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60209A.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60209a.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60209a.webp"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Stop The Presses!",
+          "type": "environment",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60209B.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60209b.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60209b.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "campaign",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "60209a",
+        "60209b"
+      ]
+    },
+    {
+      "code": "60210",
+      "faces": [
+        {
+          "name": "Typhoid Mary",
+          "subname": "Mary Walker",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60210A.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60210a.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60210a.webp"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Bloody Mary",
+          "subname": "Mary Walker",
+          "type": "ally",
+          "size": "std",
+          "images": [
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60210B.jpg",
+            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60210b.webp"
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60210b.webp"
+              ]
+            }
+          }
+        }
+      ],
+      "set": "campaign",
+      "back": "player",
+      "quantity": 1,
+      "aliases": [
+        "60210a",
+        "60210b"
+      ]
     }
   ],
   "sets": [
+    {
+      "code": "art_museum_heist",
+      "name": "Art Museum Heist",
+      "kind": "villain",
+      "cards": [
+        "60121",
+        "60122",
+        "60123",
+        "60124",
+        "60125",
+        "60126",
+        "60127"
+      ]
+    },
+    {
+      "code": "bullseye",
+      "name": "Bullseye",
+      "kind": "underling",
+      "cards": [
+        "60065",
+        "60066",
+        "60067",
+        "60068",
+        "60069",
+        "60070",
+        "60071",
+        "60072",
+        "60073",
+        "60074",
+        "60075"
+      ]
+    },
+    {
+      "code": "campaign",
+      "name": "Campaign",
+      "kind": "campaign",
+      "cards": [
+        "60205",
+        "60206",
+        "60207",
+        "60208",
+        "60209",
+        "60210"
+      ]
+    },
+    {
+      "code": "cops",
+      "name": "Cops",
+      "kind": "modular",
+      "cards": [
+        "60182",
+        "60183",
+        "60184",
+        "60185"
+      ]
+    },
     {
       "code": "daredevil",
       "name": "Daredevil",
@@ -1538,6 +5747,30 @@
       }
     },
     {
+      "code": "disasters",
+      "name": "Disasters",
+      "kind": "modular",
+      "cards": [
+        "60177",
+        "60178",
+        "60179",
+        "60180",
+        "60181"
+      ]
+    },
+    {
+      "code": "drive",
+      "name": "Drive",
+      "kind": "modular",
+      "cards": [
+        "60186",
+        "60187",
+        "60188",
+        "60189",
+        "60190"
+      ]
+    },
+    {
       "code": "echo",
       "name": "Echo",
       "kind": "hero",
@@ -1567,6 +5800,198 @@
         "60063",
         "60064"
       ]
+    },
+    {
+      "code": "electro",
+      "name": "Electro",
+      "kind": "underling",
+      "cards": [
+        "60076",
+        "60077",
+        "60078",
+        "60079",
+        "60080",
+        "60081",
+        "60082",
+        "60083",
+        "60084",
+        "60085"
+      ]
+    },
+    {
+      "code": "hammerhead",
+      "name": "Hammerhead",
+      "kind": "underling",
+      "cards": [
+        "60086",
+        "60087",
+        "60088",
+        "60089",
+        "60090",
+        "60091",
+        "60092",
+        "60093",
+        "60094",
+        "60095",
+        "60096"
+      ]
+    },
+    {
+      "code": "kingpin",
+      "name": "Kingpin",
+      "kind": "villain",
+      "cards": [
+        "60159",
+        "60160",
+        "60161",
+        "60162",
+        "60163",
+        "60164",
+        "60165",
+        "60166",
+        "60167",
+        "60168",
+        "60169",
+        "60170",
+        "60171",
+        "60172",
+        "60173",
+        "60174",
+        "60175",
+        "60176"
+      ]
+    },
+    {
+      "code": "protection_racket",
+      "name": "Protection Racket",
+      "kind": "villain",
+      "cards": [
+        "60134",
+        "60135",
+        "60136",
+        "60137",
+        "60138",
+        "60139",
+        "60140",
+        "60141"
+      ]
+    },
+    {
+      "code": "purple_man",
+      "name": "Purple Man",
+      "kind": "underling",
+      "cards": [
+        "60097",
+        "60098",
+        "60099",
+        "60100",
+        "60101",
+        "60102",
+        "60103",
+        "60104",
+        "60105",
+        "60106",
+        "60107",
+        "60108",
+        "60109"
+      ]
+    },
+    {
+      "code": "stop_the_presses",
+      "name": "Stop The Presses!",
+      "kind": "villain",
+      "cards": [
+        "60151",
+        "60152",
+        "60153",
+        "60154",
+        "60155",
+        "60156",
+        "60157",
+        "60158"
+      ]
+    },
+    {
+      "code": "the_getaway",
+      "name": "The Getaway",
+      "kind": "villain",
+      "cards": [
+        "60128",
+        "60129",
+        "60130",
+        "60131",
+        "60132",
+        "60133"
+      ]
+    },
+    {
+      "code": "the_owl",
+      "name": "The Owl",
+      "kind": "modular",
+      "cards": [
+        "60191",
+        "60192",
+        "60193",
+        "60194"
+      ]
+    },
+    {
+      "code": "the_raft_breakout",
+      "name": "The Raft Breakout",
+      "kind": "villain",
+      "cards": [
+        "60142",
+        "60143",
+        "60144",
+        "60145",
+        "60146",
+        "60147",
+        "60148",
+        "60149",
+        "60150"
+      ]
+    },
+    {
+      "code": "tombstone",
+      "name": "Tombstone",
+      "kind": "modular",
+      "cards": [
+        "60195",
+        "60196",
+        "60197",
+        "60198",
+        "60199"
+      ]
+    },
+    {
+      "code": "tracksuit_mafia",
+      "name": "Tracksuit Mafia",
+      "kind": "modular",
+      "cards": [
+        "60200",
+        "60201",
+        "60202",
+        "60203",
+        "60204"
+      ]
+    },
+    {
+      "code": "typhoid_mary",
+      "name": "Typhoid Mary",
+      "kind": "underling",
+      "cards": [
+        "60110",
+        "60111",
+        "60112",
+        "60113",
+        "60114",
+        "60115",
+        "60116",
+        "60117",
+        "60118",
+        "60119",
+        "60120"
+      ]
     }
   ],
   "heroes": [
@@ -1584,6 +6009,74 @@
       "set": "echo",
       "obligation": "60060",
       "nemesis": "echo_nemesis"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "kingpin",
+      "name": "Kingpin",
+      "pack": "fne",
+      "villainSet": "kingpin",
+      "piles": [
+        {
+          "key": "villain",
+          "label": "Villain",
+          "cards": [
+            "60159",
+            "60160"
+          ]
+        },
+        {
+          "key": "scheme",
+          "label": "Main scheme",
+          "cards": [
+            "60161",
+            "60162"
+          ]
+        }
+      ],
+      "start": {
+        "expert": {
+          "top": {
+            "scheme": {
+              "card": "60161",
+              "face": 1
+            },
+            "villain": {
+              "card": "60160",
+              "face": 0
+            }
+          },
+          "inPlay": [
+            {
+              "card": "60163",
+              "face": 0
+            }
+          ]
+        },
+        "standard": {
+          "top": {
+            "scheme": {
+              "card": "60161",
+              "face": 1
+            },
+            "villain": {
+              "card": "60159",
+              "face": 0
+            }
+          },
+          "inPlay": [
+            {
+              "card": "60163",
+              "face": 0
+            }
+          ]
+        }
+      },
+      "recommended": [
+        "tombstone",
+        "tracksuit_mafia"
+      ]
     }
   ]
 }

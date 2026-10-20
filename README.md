@@ -195,6 +195,26 @@ tried before the English ones). Pack, scenario and set entries of the
 index carry a localized name the same way. The generator's report
 includes the French coverage.
 
+marvelcdb is the primary card source. Where it lists a pack only in part
+(such as Fear No Evil, whose encounter cards it lacks), the generator
+completes it from mc4db, which shares marvelcdb's schema:
+
+- only official mc4db cards are taken (pack creator `FFG`);
+- the rule applies per base code (the five digits without the face
+  letter): the mc4db records of a card are added, all of them, only when
+  marvelcdb has no record of that base code, so a card's faces never mix
+  sources;
+- mc4db codes are mapped to marvelcdb ones: a pack goes to the marvelcdb
+  pack of the same code, else of the same name
+  (`fear_no_evil_by_ffg` is `fne`), and set codes drop `_by_ffg`
+  (`daredevil_by_ffg_nemesis` is `daredevil_nemesis`); a pack marvelcdb
+  lacks is added under its mc4db code without `_by_ffg`;
+- the images of an added card are its Cerebro image, then its mc4db scan.
+
+The report lists the records taken from mc4db, per pack. Cerebro is not
+a card-list source: it holds no official card that both marvelcdb and
+mc4db lack.
+
 ## Configuration
 
 | Variable          | Description      | Default                    |

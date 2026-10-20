@@ -26,11 +26,14 @@ type Inputs struct {
 	CBSets  []cerebro.Set
 	Curated curated.Curated
 	// FrenchMC and FrenchMCPacks are the French marvelcdb records, for the
-	// French names. MC4DB lists the image paths of mc4db; without it, no French
-	// image is looked for.
+	// French names.
 	FrenchMC      []marvelcdb.Card
 	FrenchMCPacks []marvelcdb.Pack
-	MC4DB         []mc4db.Card
+	// MC4DB lists the image paths of mc4db; without it, no French image is
+	// looked for. With MC4DBPacks, it also completes MC and MCPacks with the
+	// official cards marvelcdb lacks (see withFallback).
+	MC4DB      []mc4db.Card
+	MC4DBPacks []mc4db.Pack
 	// Alive maps each image URL to its liveness; a missing URL counts as dead.
 	Alive map[string]bool
 }
@@ -41,6 +44,9 @@ type Result struct {
 	// Index.Lang is left empty: the writer sets it.
 	Index  pack.Index
 	Report []report.Unsupported
+	// Fallback lists the records taken from mc4db, sorted by source, pack and
+	// code.
+	Fallback []report.Fallback
 	// Coverage counts the localized faces, one entry per language.
 	Coverage []report.Coverage
 }
@@ -49,6 +55,7 @@ type Result struct {
 // card, localized images included, i.e. the URLs whose liveness Build expects
 // in Inputs.Alive.
 func ImageURLs(in Inputs) []string {
+	in.MC, in.MCPacks, _ = withFallback(in.MC, in.MCPacks, in.MC4DB, in.MC4DBPacks)
 	cards, _ := BuildCards(in.MC, in.CB, in.Curated.Cards)
 	localizeCards(cards, faceCodesOf(in.MC), frenchSourcesOf(in))
 
@@ -70,6 +77,9 @@ func ImageURLs(in Inputs) []string {
 // Build derives the packs and the index from the sources. Content that
 // cannot be displayed is left out and listed in the report.
 func Build(in Inputs) (Result, error) {
+	// Every step below sees the merged records, as ImageURLs does.
+	var fallback []report.Fallback
+	in.MC, in.MCPacks, fallback = withFallback(in.MC, in.MCPacks, in.MC4DB, in.MC4DBPacks)
 	if err := checkCerebroOverrides(in.Curated.Cards, in.CB); err != nil {
 		return Result{}, err
 	}
@@ -116,6 +126,7 @@ func Build(in Inputs) (Result, error) {
 		Packs:    packs,
 		Index:    index,
 		Report:   problems,
+		Fallback: fallback,
 		Coverage: []report.Coverage{frenchCoverage(packs)},
 	}, nil
 }
