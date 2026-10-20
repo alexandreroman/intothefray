@@ -72,6 +72,17 @@ export interface ContextMenuAt {
 export type PreviewChange = 'show' | 'clear';
 
 /**
+ * Whether a contextmenu event comes from a touch: a long touch fires one on
+ * Android, and only a tap opens a context menu on touch. The event's own
+ * pointerType tells where the browser sets it (a PointerEvent, in Chrome);
+ * elsewhere, the kind of pointer of the press that began it does.
+ */
+export function isTouchContextMenu(event: MouseEvent, pressType: string): boolean {
+  const eventType = event instanceof PointerEvent ? event.pointerType : '';
+  return (eventType || pressType) === 'touch';
+}
+
+/**
  * What the viewer points at on the table, shared by the table, the hand, the
  * context menu and the side panel. Ids rather than faces, so the preview and
  * the menu follow their element through redraws (a flip, a pile's new top
@@ -187,6 +198,11 @@ class TableInteraction {
     this.#pointerType = event.pointerType || 'mouse';
     this.#swallowClick = false;
     this.#menuAtPress = this.contextMenu?.element ?? null;
+  }
+
+  /** Whether a touch fired that contextmenu event, which then opens no context menu. */
+  isTouchContextMenu(event: MouseEvent): boolean {
+    return isTouchContextMenu(event, this.#pointerType);
   }
 
   /**
@@ -476,8 +492,8 @@ class TableInteraction {
   /**
    * Opens the context menu of a table card or pile at that point of the
    * screen: the element becomes the hovered one, without a tap selection, and
-   * the token pill goes. The press that opened it (a right click, Ctrl + click
-   * on macOS, a long touch on Android) does not become a drag.
+   * the token pill goes. The press that opened it (a right click, or Ctrl +
+   * click on macOS) does not become a drag.
    */
   openContextMenu(element: TableElement, at: { x: number; y: number }): void {
     if (modal.open || this.dragging !== null) {

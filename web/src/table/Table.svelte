@@ -871,12 +871,16 @@
   }
 
   /**
-   * A right click, a Ctrl + click on macOS or a long touch on Android, anywhere
-   * on the table: never the browser's menu there, and the element's own on a
-   * card or a pile, as a click opens it.
+   * A right click or a Ctrl + click on macOS, anywhere on the table: never the
+   * browser's menu there, and the element's own on a card or a pile, as a
+   * click opens it. On touch, a tap opens it: the contextmenu event a long
+   * touch fires (Android) opens nothing.
    */
   function onTableContextMenu(event: MouseEvent): void {
     event.preventDefault();
+    if (interaction.isTouchContextMenu(event)) {
+      return;
+    }
     const element = contextElementOf(event.target);
     if (element) {
       openContextMenu(element, { x: event.clientX, y: event.clientY });
@@ -1772,7 +1776,7 @@
   */
   .tablewrap {
     grid-area: table;
-    /* A long touch never opens the system's callout (iOS): a tap opens the context menu. */
+    /* An image held down opens no callout of the system on iOS (save, copy, share). */
     -webkit-touch-callout: none;
     overflow: auto;
     scrollbar-width: thin;

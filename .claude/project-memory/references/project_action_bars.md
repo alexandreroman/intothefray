@@ -8,8 +8,8 @@ type: project
 
 - Table cards in play, piles and box tiles have no floating action bar.
   A click (no drag) or a right click opens their **action menu** at the
-  pointer; a tap on touch. Hover only rings, previews and targets keys;
-  a hovered token shows its −/+ pill.
+  pointer; a tap on touch (a long press opens nothing). Hover only
+  rings, previews and targets keys; a hovered token shows its −/+ pill.
 - The menu's title is an eyebrow in the owner's colour (card type and
   stage, or the pile's owner) above the card name, or the pile kind with
   its count pill.

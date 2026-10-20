@@ -606,6 +606,49 @@ describe('CardBox', () => {
     expect(screen.getByRole('menu', { name: 'Web-Shooter, Your deck · #1' })).toBeTruthy();
   });
 
+  it('opens nothing, nor the native menu, on the contextmenu a long touch fires on a tile', async () => {
+    await renderTable(makeView({ private: SEARCH }));
+    const image = tile('c1').querySelector<HTMLElement>('.img') as HTMLElement;
+
+    // The press that began it was a touch.
+    await fireEvent.pointerDown(image, {
+      button: 0,
+      clientX: 50,
+      clientY: 60,
+      pointerType: 'touch',
+    });
+    const afterTouch = createEvent.contextMenu(image, { clientX: 50, clientY: 60 });
+    await fireEvent(image, afterTouch);
+    await fireEvent.pointerUp(image, { button: 0, clientX: 50, clientY: 60, pointerType: 'touch' });
+    expect(afterTouch.defaultPrevented).toBe(true);
+    expect(contextMenu()).toBeNull();
+
+    // The event says it itself, as Chrome's does.
+    await fireEvent.pointerDown(image, { button: 2, clientX: 50, clientY: 60 });
+    const touch = new PointerEvent('contextmenu', {
+      bubbles: true,
+      cancelable: true,
+      clientX: 50,
+      clientY: 60,
+      pointerType: 'touch',
+    });
+    await fireEvent(image, touch);
+    expect(touch.defaultPrevented).toBe(true);
+    expect(contextMenu()).toBeNull();
+
+    // A mouse right click still opens it.
+    await fireEvent.pointerDown(image, {
+      button: 2,
+      clientX: 50,
+      clientY: 60,
+      pointerType: 'mouse',
+    });
+    const rightClick = createEvent.contextMenu(image, { clientX: 50, clientY: 60 });
+    await fireEvent(image, rightClick);
+    expect(rightClick.defaultPrevented).toBe(true);
+    expect(screen.getByRole('menu', { name: 'Web-Shooter, Your deck · #1' })).toBe(contextMenu());
+  });
+
   it('a second click on the tile closes its menu; a click on another tile opens that one', async () => {
     await renderTable(makeView({ private: SEARCH }));
     await clickTile('c1');

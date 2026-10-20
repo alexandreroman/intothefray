@@ -27,7 +27,7 @@
   import ContextMenu from './ContextMenu.svelte';
   import { tileEntries, type ContextHeader } from './contextItems';
   import type { Point } from './drag';
-  import { LANDING_MS } from './interaction.svelte';
+  import { isTouchContextMenu, LANDING_MS } from './interaction.svelte';
   import { isOutOfPlay } from './layout';
   import { ownerLook, ownSeats, seatPlayer } from './seats';
 
@@ -236,6 +236,8 @@
   let menuAtPress: string | null = null;
   // The press that ended a reorder: its click is no click on a tile.
   let dragEnded = false;
+  // The kind of pointer of the current press: a long touch's contextmenu opens no menu.
+  let pressType = 'mouse';
 
   // Found again in every redraw: the menu goes with its card, or with its last action.
   const menuTile = $derived.by(() => {
@@ -251,9 +253,10 @@
   });
 
   /** Before the open menu sees the press, in the capture phase of the window. */
-  function onWindowPointerDown(): void {
+  function onWindowPointerDown(event: PointerEvent): void {
     menuAtPress = tileMenu?.key ?? null;
     dragEnded = false;
+    pressType = event.pointerType || 'mouse';
   }
 
   /**
@@ -268,9 +271,15 @@
     openTileMenu(tile, { x: event.clientX, y: event.clientY });
   }
 
-  /** A right click opens the menu too, and never the browser's own. */
+  /**
+   * A right click opens the menu too, and never the browser's own. On touch, a
+   * tap opens it: the contextmenu event a long touch fires (Android) opens nothing.
+   */
   function rightClickTile(tile: Tile, event: MouseEvent): void {
     event.preventDefault();
+    if (isTouchContextMenu(event, pressType)) {
+      return;
+    }
     openTileMenu(tile, { x: event.clientX, y: event.clientY });
   }
 

@@ -528,6 +528,62 @@ describe('opening the context menu with a click', () => {
     expect(interaction.hovered).toEqual({ kind: 'card', id: 'v' });
   });
 
+  it('opens nothing, nor the native menu, on the contextmenu a long touch fires', async () => {
+    await renderTable();
+
+    // The press that began it was a touch.
+    await fireEvent.pointerDown(placed('v'), {
+      button: 0,
+      clientX: 320,
+      clientY: 140,
+      pointerType: 'touch',
+    });
+    const afterTouch = createEvent.contextMenu(placed('v'), { clientX: 320, clientY: 140 });
+    await fireEvent(placed('v'), afterTouch);
+    await fireEvent.pointerUp(placed('v'), {
+      button: 0,
+      clientX: 320,
+      clientY: 140,
+      pointerType: 'touch',
+    });
+    expect(afterTouch.defaultPrevented).toBe(true);
+    expect(contextMenu()).toBeNull();
+
+    // The event says it itself, as Chrome's does.
+    await fireEvent.pointerDown(placed('v'), { button: 2, clientX: 320, clientY: 140 });
+    const touch = new PointerEvent('contextmenu', {
+      bubbles: true,
+      cancelable: true,
+      clientX: 320,
+      clientY: 140,
+      pointerType: 'touch',
+    });
+    await fireEvent(placed('v'), touch);
+    expect(touch.defaultPrevented).toBe(true);
+    expect(contextMenu()).toBeNull();
+
+    // A mouse right click still opens it.
+    expect((await rightClick(placed('v'), 320, 140)).defaultPrevented).toBe(true);
+    expect(screen.getByRole('menu', { name: 'Rhino, Villain, stage I' })).toBe(contextMenu());
+  });
+
+  it("opens on macOS's Ctrl + click, a mouse contextmenu", async () => {
+    await renderTable();
+
+    await fireEvent.pointerDown(placed('v'), { button: 0, ctrlKey: true, pointerType: 'mouse' });
+    const event = new PointerEvent('contextmenu', {
+      bubbles: true,
+      cancelable: true,
+      ctrlKey: true,
+      clientX: 320,
+      clientY: 140,
+      pointerType: 'mouse',
+    });
+    await fireEvent(placed('v'), event);
+    expect(event.defaultPrevented).toBe(true);
+    expect(screen.getByRole('menu', { name: 'Rhino, Villain, stage I' })).toBe(contextMenu());
+  });
+
   it('opens nothing with the click that ends a drag', async () => {
     await renderTable();
 
