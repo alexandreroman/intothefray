@@ -150,6 +150,23 @@ func discardPileID(c *Card) string {
 	return "disc:" + string(PlayerArea(c.Owner))
 }
 
+// tuckedDestination returns the pile a card tucked under a card leaving the
+// table goes to: its discard pile, on top. A side deck card whose side deck
+// has no discard pile goes to the bottom of its side deck instead (bottom is
+// then true), as Daredevil's Sense cards do, so that it never keeps its host
+// on the table. ok is false when there is no such pile.
+func (t *Table) tuckedDestination(c *Card) (pile *Pile, bottom, ok bool) {
+	if pile, ok := t.Piles[discardPileID(c)]; ok {
+		return pile, false, true
+	}
+	if isSideDeckID(c.Home) {
+		if home, ok := t.Piles[c.Home]; ok {
+			return home, true, true
+		}
+	}
+	return nil, false, false
+}
+
 // descendants returns every card tucked under id, directly or not, from the
 // lowest Z to the highest.
 func (t *Table) descendants(id string) []*Card {
@@ -185,7 +202,7 @@ func (t *Table) checkLeave(c *Card) error {
 			if err := t.checkNotStageCurrent(child); err != nil {
 				return err
 			}
-			if _, ok := t.Piles[discardPileID(child)]; !ok {
+			if _, _, ok := t.tuckedDestination(child); !ok {
 				return invalid("no discard pile for card %q", child.ID)
 			}
 		}
@@ -226,14 +243,22 @@ func handOf(t *Table, id string) Area {
 }
 
 // leave takes c out of its current place and resets it. Cards tucked under
-// it are discarded. checkLeave must have succeeded first.
+// it are discarded (see tuckedDestination). checkLeave must have succeeded
+// first.
 func (t *Table) leave(c *Card) {
 	switch c.Zone {
 	case ZoneTable:
 		for _, child := range t.descendants(c.ID) {
 			t.removeArrows(child.ID)
 			resetCard(child)
-			t.pushOnPile(t.Piles[discardPileID(child)], child)
+			pile, bottom, _ := t.tuckedDestination(child)
+			if bottom {
+				pile.Cards = slices.Insert(pile.Cards, 0, child.ID)
+				child.Zone = ZonePile
+				child.Pile = pile.ID
+			} else {
+				t.pushOnPile(pile, child)
+			}
 		}
 		t.removeArrows(c.ID)
 	case ZoneHand:

@@ -477,3 +477,53 @@ func TestSideDeckViews(t *testing.T) {
 		}
 	}
 }
+
+// tuckedSenseFixture returns a game of Daredevil alone (p0, Sense deck
+// "side:p0:0" without a discard pile) and a Sense card drawn into his hand.
+func tuckedSenseFixture(t *testing.T) (f *doFixture, sense string) {
+	t.Helper()
+	f = heroGame(t, heroDeck(t, newCatalog(t), daredevilIdentity, "Daredevil"))
+	return f, drawSide(t, f, "h", "side:p0:0", 1)
+}
+
+func TestTuckedSideCardWithoutDiscardGoesUnderItsDeck(t *testing.T) {
+	f, sense := tuckedSenseFixture(t)
+	f.mustDo(t, "h", Action{Kind: ActReveal}, at(2))
+	enemy := f.g.Table.revealed()[0].ID
+	f.mustDo(t, "h", Action{Kind: ActPlay, Card: sense, Target: enemy}, at(3))
+
+	f.mustDo(t, "h", Action{Kind: ActDiscard, Card: enemy}, at(4))
+
+	if c := f.g.Table.Cards[enemy]; c.Pile != PileEncounterDiscard {
+		t.Errorf("enemy in %q, want %s", c.Pile, PileEncounterDiscard)
+	}
+	if bottom := f.g.Table.Piles["side:p0:0"].Cards[0]; bottom != sense {
+		t.Errorf("bottom of the Sense deck = %s, want %s", bottom, sense)
+	}
+	checkIntegrity(t, f.g.Table)
+	checkHistory(t, f.g)
+	checkReplay(t, f)
+}
+
+func TestTuckedSideCardWithoutDiscardGoesUnderItsDeckInAGroup(t *testing.T) {
+	f, sense := tuckedSenseFixture(t)
+	hosts := topCards(f.g.Table.Piles["deck:p0"], 2)
+	f.mustDo(t, "h", Action{Kind: ActPlay, Pile: "deck:p0", X: 800, Y: 500}, at(2))
+	f.mustDo(t, "h", Action{Kind: ActPlay, Pile: "deck:p0", X: 1000, Y: 500}, at(3))
+	f.mustDo(t, "h", Action{Kind: ActPlay, Card: sense, Target: hosts[1]}, at(4))
+
+	f.mustDo(t, "h", Action{Kind: ActGroup, Actions: []Action{
+		{Kind: ActDiscard, Card: hosts[0]},
+		{Kind: ActDiscard, Card: hosts[1]},
+	}}, at(5))
+
+	if got := f.g.Table.Piles["disc:p0"].Cards; !slices.Equal(got, hosts) {
+		t.Errorf("discard pile = %v, want %v", got, hosts)
+	}
+	if bottom := f.g.Table.Piles["side:p0:0"].Cards[0]; bottom != sense {
+		t.Errorf("bottom of the Sense deck = %s, want %s", bottom, sense)
+	}
+	checkIntegrity(t, f.g.Table)
+	checkHistory(t, f.g)
+	checkReplay(t, f)
+}
