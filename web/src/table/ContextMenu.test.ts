@@ -436,7 +436,15 @@ describe('the context menu', () => {
     await rightClick(placed('deck:p0'));
     const menu = screen.getByRole('menu', { name: 'Your deck, 34 cards' });
 
-    expect(labels(menu)).toEqual(['Draw 1', 'Draw X', 'Top X', 'Search', 'Discard X', 'Shuffle']);
+    expect(labels(menu)).toEqual([
+      'Draw 1',
+      'Draw X',
+      'Top X',
+      'Search',
+      'Discard 1',
+      'Discard X',
+      'Shuffle',
+    ]);
     expect(menuItem(menu, 'Draw 1').classList).toContain('default');
     await fireEvent.click(menuItem(menu, 'Draw 1'));
     expect(session.act).toHaveBeenCalledWith({ kind: 'draw', n: 1 }, 0);
@@ -968,7 +976,7 @@ describe('what the menu runs', () => {
     // Its top card shows face up on the pile, which opens the pile's menu.
     await click(within(placed('side:p0:0')).getByRole('img', { name: 'Black Cat' }));
     const menu = screen.getByRole('menu', { name: 'Your Invocation deck, 4 cards' });
-    // Without a discard pile of its own, it has no Discard X.
+    // Without a discard pile of its own, it has neither Discard 1 nor Discard X.
     expect(labels(menu)).toEqual(['Draw 1', 'Draw X', 'Top X', 'Search', 'Shuffle']);
     await fireEvent.click(menuItem(menu, 'Draw 1'));
     expect(session.act).toHaveBeenCalledWith({ kind: 'draw', n: 1, pile: 'side:p0:0' }, 0);
@@ -1002,7 +1010,14 @@ describe('what the menu runs', () => {
     const { session } = await renderTable(view);
 
     await click(placed('enc'));
-    expect(labels(contextMenu()!)).toEqual(['Reveal', 'Top X', 'Search', 'Discard X', 'Shuffle']);
+    expect(labels(contextMenu()!)).toEqual([
+      'Reveal',
+      'Top X',
+      'Search',
+      'Discard 1',
+      'Discard X',
+      'Shuffle',
+    ]);
     const reveal = menuItem(contextMenu()!, 'Reveal');
     expect(reveal.getAttribute('aria-disabled')).toBe('true');
     expect(reveal.dataset.tip).toBe('Spider-Man is already revealed on this deck: move it first');
