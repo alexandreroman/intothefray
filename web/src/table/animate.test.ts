@@ -439,6 +439,74 @@ describe('diffViews', () => {
     });
   });
 
+  describe('a card put at the bottom of a deck', () => {
+    const alex = { who: 'Alex', color: 0 };
+    const sense = (count: number): PileView =>
+      pile('side:p0:1', {
+        kind: 'sideDeck',
+        x: 520,
+        count,
+        label: 'Sense',
+        topFaceUp: true,
+        cards: ['s1'],
+      });
+    const top = card('s1', { code: '60002', zone: 'pile', home: 'side:p0:1' });
+    const radar = card('radar', { code: '60003', x: 800, home: 'side:p0:1' });
+    const bottomOf = (count: number, text: string, cards: CardView[] = [top]) =>
+      view({ cards, piles: [pile('deck:p0'), sense(count)], log: [OLD_LINE, line(text, alex)] });
+    const prev = view({ cards: [top, radar], piles: [pile('deck:p0'), sense(4)] });
+
+    it('slips under a side deck showing its top card, which does not turn', () => {
+      const next = bottomOf(5, 'put Radar Sense at the bottom of their Sense deck');
+
+      expect(diffViews(prev, next)).toEqual([{ kind: 'under', id: 'radar', toPile: 'side:p0:1' }]);
+    });
+
+    it("slips under the viewer's own drop too, from where it was dropped", () => {
+      const next = bottomOf(5, 'put Radar Sense at the bottom of their Sense deck');
+
+      expect(diffViews(prev, next, droppedCard('radar'))).toEqual([
+        { kind: 'under', id: 'radar', toPile: 'side:p0:1' },
+      ]);
+    });
+
+    it('slips under a deck, from the table or the hand, alone or in a group', () => {
+      const mine = card('m', { code: '01001', x: 300 });
+      const held = card('h', { code: '01002', zone: 'hand' });
+      const before = view({ cards: [mine, held], piles: [pile('deck:p0', { count: 10 })] });
+      const after = view({
+        piles: [pile('deck:p0', { count: 12 })],
+        log: [OLD_LINE, line('put 2 cards at the bottom of their deck', alex)],
+      });
+
+      expect(diffViews(before, after)).toEqual([
+        { kind: 'under', id: 'm', toPile: 'deck:p0' },
+        { kind: 'under', id: 'h', toPile: 'deck:p0' },
+      ]);
+    });
+
+    it('does not slip under for a card put on top, nor for an undone line', () => {
+      expect(diffViews(prev, bottomOf(5, 'put Radar Sense on top of their Sense deck'))).toEqual(
+        [],
+      );
+      const undone = view({
+        cards: [top],
+        piles: [pile('deck:p0'), sense(5)],
+        log: [
+          OLD_LINE,
+          line('put Radar Sense at the bottom of their Sense deck', { ...alex, undone: true }),
+        ],
+      });
+      expect(diffViews(prev, undone)).toEqual([]);
+    });
+
+    it('does not slip under on a view that comes too long after the last', () => {
+      const next = bottomOf(5, 'put Radar Sense at the bottom of their Sense deck');
+
+      expect(diffViews(prev, next, undefined, MAX_APART_MS + 1)).toEqual([]);
+    });
+  });
+
   it('shuffle of a side deck or its discard pile names the pile after its label', () => {
     const piles = [
       pile('deck:p0'),

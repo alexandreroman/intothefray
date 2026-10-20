@@ -29,6 +29,9 @@ const PILE_BOUNCE_MS = 700;
 const FLY_MS = 420;
 const FLY_STAGGER_MS = 70;
 const FLY_EASING = 'cubic-bezier(.3, .7, .2, 1)';
+/** A card put at the bottom of a pile flies just below it, then slips under it. */
+const UNDER_MS = 640;
+const UNDER_LANDS_AT = 0.6;
 /**
  * A copy of a drawn card flies from its pile to its slot in the hand. Out of a
  * hidden pile it turns over on the way in: edge-on from its back, then flat
@@ -64,6 +67,8 @@ interface PileFlight extends FlightBase {
   /** The card as it was before it left. */
   card: CardView;
   to: Measured;
+  /** Put at the bottom of the pile: it lands just below it, then slips under it. */
+  under: boolean;
 }
 
 /** A copy of a drawn card on its way from its pile to its slot in the hand. */
@@ -95,6 +100,8 @@ const tableCard = (id: string) => `.surface .card:not(.pile)[data-id="${CSS.esca
 const handCard = (id: string) => `.hand .hcard[data-id="${CSS.escape(id)}"]`;
 /** A card another player drags, or has just let go of (Presence.svelte). */
 const remoteGhost = (id: string) => `.presence .card.ghost[data-id="${CSS.escape(id)}"]`;
+/** The viewer's own drop, lying where it landed until the view shows it (DragLayer.svelte). */
+const ownGhost = (id: string) => `.draglayer .card.ghost.landed[data-id="${CSS.escape(id)}"]`;
 const tablePile = (id: string) => `.surface .pile[data-id="${CSS.escape(id)}"]`;
 const tableToken = '.surface .fptoken';
 /** The first player token another player drags, or has just let go of (Presence.svelte). */
@@ -242,6 +249,27 @@ const DRAW_AWAY_FRAMES: Keyframe[] = [
   { transform: `translate(0, ${DRAW_AWAY_DROP_PX}px) scale(${DRAW_AWAY_SCALE})`, opacity: 0 },
 ];
 
+/**
+ * A card slipping under its pile: it flies to just below the pile, then slides
+ * up into it, only its part past the pile's bottom edge showing, as if the
+ * pile lay over it. The clip is in the copy's own box, before its scale.
+ */
+function underFrames(flight: PileFlight): Keyframe[] {
+  const dx = flight.to.cx - flight.from.cx;
+  const dy = flight.to.cy - flight.from.cy;
+  const scale = flight.from.w ? flight.to.w / flight.from.w : 1;
+  return [
+    { transform: 'translate(0, 0) scale(1)', clipPath: 'inset(0% 0 0 0)' },
+    {
+      transform: `translate(${dx}px, ${dy + flight.to.h}px) scale(${scale})`,
+      clipPath: 'inset(0% 0 0 0)',
+      offset: UNDER_LANDS_AT,
+      easing: 'ease-in-out',
+    },
+    { transform: `translate(${dx}px, ${dy}px) scale(${scale})`, clipPath: 'inset(100% 0 0 0)' },
+  ];
+}
+
 function toPileFrames(flight: PileFlight): Keyframe[] {
   const dx = flight.to.cx - flight.from.cx;
   const dy = flight.to.cy - flight.from.cy;
@@ -277,6 +305,10 @@ function flightEnds(flight: Flight, touched: Set<Subject>, after: TableView | un
   const piles = after?.piles ?? [];
   switch (flight.kind) {
     case 'toPile':
+      // A card put under a pile is not listed there: the pile must only still be there.
+      if (flight.under) {
+        return touched.has(cardSubject(flight.card.id)) || !piles.some((p) => p.id === flight.pile);
+      }
       return (
         touched.has(cardSubject(flight.card.id)) ||
         !piles.some((pile) => pile.id === flight.pile && pile.cards?.includes(flight.card.id))
@@ -342,10 +374,12 @@ class TableMotion {
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
     const before = new Map<string, Measured>();
     for (const anim of shown) {
-      if (anim.kind === 'move' || anim.kind === 'fly') {
-        // Another player's drop goes from where their ghost lies, not from the spot it was taken from.
+      if (anim.kind === 'move' || anim.kind === 'fly' || anim.kind === 'under') {
+        // Another player's drop goes from where their ghost lies, not from the spot it was taken
+        // from; so does the viewer's own drop slipping under a pile, which lies where it landed.
         const element =
           root?.querySelector<HTMLElement>(remoteGhost(anim.id)) ??
+          (anim.kind === 'under' ? root?.querySelector<HTMLElement>(ownGhost(anim.id)) : null) ??
           root?.querySelector<HTMLElement>(`${tableCard(anim.id)}, ${handCard(anim.id)}`);
         if (element) {
           before.set(anim.id, measure(element, zoom));
@@ -441,6 +475,13 @@ class TableMotion {
         case 'reveal':
           this.#reveal(root, anim.pile);
           break;
+        case 'under': {
+          const flight = this.#flight(root, anim.id, anim.toPile, before, cardsBefore, true);
+          if (flight) {
+            flights.push(flight);
+          }
+          break;
+        }
         case 'fly': {
           const flight = this.#flight(root, anim.id, anim.toPile, before, cardsBefore);
           if (flight) {
@@ -486,11 +527,12 @@ class TableMotion {
     const timing = { delay: flight.delay, easing: FLY_EASING, fill: 'both' } as const;
     const animations: (Animation | null)[] = [];
     switch (flight.kind) {
-      case 'toPile':
-        animations.push(
-          this.#run(element, toPileFrames(flight), { ...timing, duration: FLY_MS }, null),
-        );
+      case 'toPile': {
+        const frames = flight.under ? underFrames(flight) : toPileFrames(flight);
+        const duration = flight.under ? UNDER_MS : FLY_MS;
+        animations.push(this.#run(element, frames, { ...timing, duration }, null));
         break;
+      }
       case 'draw': {
         const toSlot = this.#run(
           element,
@@ -851,6 +893,7 @@ class TableMotion {
     pileId: string,
     before: ReadonlyMap<string, Measured>,
     cardsBefore: ReadonlyMap<string, CardView>,
+    under = false,
   ): PileFlight | null {
     const from = before.get(id);
     const card = cardsBefore.get(id);
@@ -866,6 +909,7 @@ class TableMotion {
       pile: pileId,
       from,
       to: { cx: to.left + to.width / 2, cy: to.top + to.height / 2, w: to.width, h: to.height },
+      under,
       delay: 0,
     };
   }

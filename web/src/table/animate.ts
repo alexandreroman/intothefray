@@ -13,7 +13,7 @@ import type {
   View,
   Zone,
 } from '../lib/types';
-import { sideLabel } from './actions';
+import { homeDeckOf, sideLabel } from './actions';
 import { stackOf } from './drag';
 import { isHidden } from './face';
 import type { Landing } from './interaction.svelte';
@@ -36,6 +36,8 @@ export type Anim =
   /** A side deck showing its top card turns a new one face up on it (revealedTops). */
   | { kind: 'reveal'; pile: string }
   | { kind: 'fly'; id: string; toPile: string }
+  /** Put at the bottom of a deck that does not show it: it flies there and slips under (slidUnder). */
+  | { kind: 'under'; id: string; toPile: string }
   /**
    * Drawn into one of the viewer's hands out of a pile: face up all along when
    * the pile showed it, else coming out of the pile on its back.
@@ -62,6 +64,9 @@ export type OwnDrop = Pick<Landing, 'element' | 'card' | 'lifted'>;
 export const MAX_APART_MS = 2000;
 
 const SHUFFLED = 'shuffled ';
+// "put Web-Shooter at the bottom of their deck", "put 3 cards at the bottom of the encounter deck".
+const PUT = 'put ';
+const AT_THE_BOTTOM = ' at the bottom of ';
 
 /**
  * The animations that take the table from prev to next. ownDrop is what the
@@ -132,6 +137,7 @@ export function diffViews(prev: View, next: View, ownDrop?: OwnDrop, apart = 0):
   for (const pile of shuffledPiles(lines, next, after.piles)) {
     anims.push({ kind: 'shuffle', pile });
   }
+  anims.push(...slidUnder(lines, next, before, after));
   for (const pile of revealedTops(before, after, dropped)) {
     anims.push({ kind: 'reveal', pile });
   }
@@ -412,19 +418,67 @@ function shuffledPiles(lines: LogView[], view: View, piles: PileView[]): string[
     if (line.undone || !line.text.startsWith(SHUFFLED)) {
       continue;
     }
-    const writer = view.players.find((player) => player.color === line.color);
-    let best: { pile: string; name: string } | null = null;
-    for (const pile of piles) {
-      const name = narratedName(pile, writer, view);
-      if (line.text.endsWith(` ${name}`) && (!best || name.length > best.name.length)) {
-        best = { pile: pile.id, name };
-      }
-    }
-    if (best) {
-      shuffled.add(best.pile);
+    const pile = lastNamedPile(line, view, piles);
+    if (pile !== null) {
+      shuffled.add(pile);
     }
   }
   return [...shuffled];
+}
+
+/**
+ * The cards just put at the bottom of a deck that does not list them: a new
+ * line says "put … at the bottom of" that deck (one card, or a group), and
+ * cards of the table or the viewer's hand whose home it is left the view as
+ * it grew. A deck that lists the card (a side deck showing its only card)
+ * shows it flying there instead (travelOf). The viewer's own drop slips under
+ * too, from where it was dropped.
+ */
+function slidUnder(lines: LogView[], view: View, before: TableView, after: TableView): Anim[] {
+  const decks = new Set<string>();
+  for (const line of lines) {
+    if (line.undone || !line.text.startsWith(PUT) || !line.text.includes(AT_THE_BOTTOM)) {
+      continue;
+    }
+    const pile = lastNamedPile(line, view, after.piles);
+    if (pile !== null) {
+      decks.add(pile);
+    }
+  }
+  if (decks.size === 0) {
+    return [];
+  }
+  const listed = new Set(after.cards.map((card) => card.id));
+  const grew = (id: string) => {
+    const was = before.piles.find((pile) => pile.id === id);
+    const now = after.piles.find((pile) => pile.id === id);
+    return was !== undefined && now !== undefined && now.count > was.count;
+  };
+  const anims: Anim[] = [];
+  for (const was of before.cards) {
+    const home = homeDeckOf(was);
+    if (isPlaced(was) && !listed.has(was.id) && decks.has(home) && grew(home)) {
+      anims.push({ kind: 'under', id: was.id, toPile: home });
+    }
+  }
+  return anims;
+}
+
+/**
+ * The pile a history line names last, as the line's writer says it: "shuffled
+ * their deck", "put X at the bottom of the encounter deck". The longest name
+ * wins ("Big Sam's deck" over "Sam's deck"); null when the line names none.
+ */
+function lastNamedPile(line: LogView, view: View, piles: PileView[]): string | null {
+  const writer = view.players.find((player) => player.color === line.color);
+  let best: { pile: string; name: string } | null = null;
+  for (const pile of piles) {
+    const name = narratedName(pile, writer, view);
+    if (line.text.endsWith(` ${name}`) && (!best || name.length > best.name.length)) {
+      best = { pile: pile.id, name };
+    }
+  }
+  return best?.pile ?? null;
 }
 
 const SHARED_PILE_NAMES: Record<string, string> = {
