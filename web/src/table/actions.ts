@@ -8,6 +8,7 @@ import type { Lang } from '../lib/lang';
 import { localizedFace } from '../lib/localize';
 import { isOutOfPlay } from './layout';
 import { seatOf, seatPlayer } from './seats';
+import { groupUnits } from './selection';
 import type { Action, Area, CardView, PileView, Role, Stage, TableView, View } from '../lib/types';
 
 /**
@@ -126,13 +127,15 @@ interface Context {
  * Returns the actions the viewer may take on el, or the text to show instead
  * when the element belongs to someone else. Hand cards (their keys are
  * handled by keys.ts), empty piles and elements no longer on the table get
- * nothing. Spectators only look: see spectatorActions.
+ * nothing. Spectators only look: see spectatorActions. On a card of the
+ * selected group, Discard and Move to take the whole group (spec 2).
  */
 export function actionsFor(
   el: TableElement,
   view: View,
   you: { areas?: readonly Area[]; role: Role },
   lang: Lang,
+  group?: ReadonlySet<string>,
 ): ActionItem[] | { text: string } {
   if (!view.table) {
     return [];
@@ -149,7 +152,10 @@ export function actionsFor(
   switch (el.kind) {
     case 'card': {
       const card = context.table.cards.find((c) => c.id === el.id);
-      return card?.zone === 'table' ? cardActions(card, context) : [];
+      if (card?.zone !== 'table') {
+        return [];
+      }
+      return cardActions(card, context, groupUnitsOf(card, group, context.table));
     }
     case 'pile': {
       const pile = context.table.piles.find((p) => p.id === el.id);
@@ -195,7 +201,27 @@ function spectatorActions(el: TableElement, table: TableView): ActionItem[] {
 
 // ---- Cards in play ----
 
-function cardActions(card: CardView, context: Context): ActionItem[] {
+/**
+ * The units Discard and Move to take when the card is one of the selected
+ * group: its units (groupUnits), when there are two or more. Null otherwise:
+ * the card's own items.
+ */
+function groupUnitsOf(
+  card: CardView,
+  group: ReadonlySet<string> | undefined,
+  table: TableView,
+): CardView[] | null {
+  if (!group?.has(card.id)) {
+    return null;
+  }
+  const units = groupUnits(group, table.cards).flatMap((id) => {
+    const unit = table.cards.find((c) => c.id === id);
+    return unit ? [unit] : [];
+  });
+  return units.length >= 2 ? units : null;
+}
+
+function cardActions(card: CardView, context: Context, units: CardView[] | null): ActionItem[] {
   const items: ActionItem[] = [exhaustItem(card)];
   const shownByStage = context.table.stages.some((stage) => stage.current === card.id);
   if (shownByStage) {
@@ -204,7 +230,7 @@ function cardActions(card: CardView, context: Context): ActionItem[] {
     items.push(flipItem(card));
   }
   items.push(counterMenu(card, 'token'), counterMenu(card, 'status'));
-  items.push(...leaveItems(card, context));
+  items.push(...(units ? groupLeaveItems(units, context) : leaveItems(card, context)));
   return items;
 }
 
@@ -345,6 +371,116 @@ function isInStackOf(id: string, root: string, table: TableView): boolean {
   return false;
 }
 
+/**
+ * Discard and Move to for a selected group: one group action over every unit,
+ * as a group drop sends (selection.ts, groupAction). An entry shows only when
+ * every unit could take it alone, and none shuffles: the server refuses to
+ * shuffle a group (resolveGroup). Disabled while a unit is, or holds, a card
+ * that stays on the table.
+ */
+function groupLeaveItems(units: readonly CardView[], context: Context): ActionItem[] {
+  const discard: ActionItem = {
+    id: 'discard',
+    label: `Discard ${units.length} cards`,
+    key: 'X',
+    altKeys: ['Backspace'],
+    group: GROUP_LEAVE,
+    run: () => groupOf(units, (unit) => ({ kind: 'discard', card: unit.id })),
+  };
+  const moveTo: ActionItem = {
+    id: 'moveTo',
+    label: 'Move to',
+    group: GROUP_LEAVE,
+    menu: groupMoveMenu(units, context),
+  };
+
+  const discardable = units.every((unit) => discardPileOf(unit, context.table.piles) !== null);
+  const items = discardable ? [discard, moveTo] : [moveTo];
+  for (const unit of units) {
+    const reason = staysOnTable(unit, context.table);
+    if (reason) {
+      return items.map((item) => ({ ...item, disabled: true, reason }));
+    }
+  }
+  return items;
+}
+
+function groupMoveMenu(units: readonly CardView[], context: Context): ActionItem[] {
+  const menu: ActionItem[] = [];
+
+  if (units.every((unit) => context.seats.includes(unit.owner))) {
+    menu.push({
+      id: 'hand',
+      label: 'Hand',
+      key: 'H',
+      group: 0,
+      run: () => groupOf(units, (unit) => ({ kind: 'toHand', card: unit.id })),
+    });
+  }
+  // Each unit returns to its own home deck: the viewer's, or the encounter deck.
+  const homes = units.map((unit) =>
+    context.table.piles.find((pile) => pile.id === homeDeckOf(unit)),
+  );
+  const toDecks = units.every((unit, i) => {
+    const own = context.seats.includes(unit.owner);
+    return (own || unit.owner === -1) && homes[i] !== undefined;
+  });
+  if (toDecks) {
+    const first = homes[0];
+    const shared = first && homes.every((home) => home?.id === first.id);
+    const deck = shared ? deckName(first) : 'decks';
+    menu.push(
+      {
+        id: 'deckTop',
+        label: `Top of ${deck}`,
+        group: 0,
+        run: () => groupOf(units, (unit) => toDeck(unit, 'top')),
+      },
+      {
+        id: 'deckBottom',
+        label: `Bottom of ${deck}`,
+        key: 'B',
+        group: 0,
+        run: () => groupOf(units, (unit) => toDeck(unit, 'bottom')),
+      },
+    );
+  }
+
+  const outOfPlay: ActionItem[] = [];
+  if (hasPile(context.table, 'vic')) {
+    outOfPlay.push({
+      id: 'victory',
+      label: 'Victory display',
+      group: 0,
+      run: () => groupOf(units, (unit) => toPile(unit, 'vic')),
+    });
+  }
+  const asides = units.every((unit) => hasPile(context.table, asidePileOf(unit, context.seats)));
+  if (asides) {
+    outOfPlay.push({
+      id: 'aside',
+      label: 'Set aside',
+      group: 0,
+      run: () => groupOf(units, (unit) => toPile(unit, asidePileOf(unit, context.seats))),
+    });
+  }
+
+  if (menu.length > 0 && outOfPlay.length > 0) {
+    menu.push(SEPARATOR);
+  }
+  return [...menu, ...outOfPlay];
+}
+
+/** One group action: the action each unit would send alone, in unit order. */
+function groupOf(units: readonly CardView[], actionOf: (unit: CardView) => Action): Action {
+  return { kind: 'group', actions: units.map(actionOf) };
+}
+
+/** How Move to names a deck: "deck", or a side deck's "Sense deck". */
+function deckName(home: PileView): string {
+  return home.kind === 'sideDeck' ? `${sideLabel(home)} deck` : 'deck';
+}
+
 function moveMenu(card: CardView, context: Context): ActionItem[] {
   const own = context.seats.includes(card.owner);
   const menu: ActionItem[] = [];
@@ -364,7 +500,7 @@ function moveMenu(card: CardView, context: Context): ActionItem[] {
   const encounter = card.owner === -1;
   const home = context.table.piles.find((pile) => pile.id === homeDeckOf(card));
   if ((own || encounter) && home) {
-    const deck = home.kind === 'sideDeck' ? `${sideLabel(home)} deck` : 'deck';
+    const deck = deckName(home);
     menu.push(
       { id: 'deckTop', label: `Top of ${deck}`, group: 0, run: () => toDeck(card, 'top') },
       {

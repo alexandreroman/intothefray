@@ -1648,3 +1648,44 @@ describe('several decks', () => {
     expect(screen.queryByRole('radiogroup')).toBeNull();
   });
 });
+
+describe('a selected group', () => {
+  /** Sam's two cards on the table, both selected. */
+  async function renderGroup() {
+    const view = makeView();
+    view.table!.cards.push(card('b2', { code: '01001', owner: 1, x: 520, y: 830, z: 2 }));
+    const session = fakeSession();
+    render(Table, { session, view });
+    await catalogLoaded();
+    interaction.setGroup(new Set(['b', 'b2']));
+    return session;
+  }
+
+  const placed = (id: string) => surface().querySelector<HTMLElement>(`.card[data-id="${id}"]`)!;
+
+  const GROUP_DISCARD = {
+    kind: 'group',
+    actions: [
+      { kind: 'discard', card: 'b' },
+      { kind: 'discard', card: 'b2' },
+    ],
+  };
+
+  it('menu Discard on a selected card discards the whole selection', async () => {
+    const session = await renderGroup();
+    await fireEvent.click(placed('b'));
+    await choose('Discard 2 cards');
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(GROUP_DISCARD, 1);
+  });
+
+  it('X over a selected card sends one group action, E still exhausts the one card', async () => {
+    const session = await renderGroup();
+    await fireEvent.pointerEnter(placed('b2'));
+    await fireEvent.keyDown(window, { key: 'x' });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(GROUP_DISCARD, 1);
+
+    session.act.mockClear();
+    await fireEvent.keyDown(window, { key: 'e' });
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'exhaust', card: 'b2' }, 1);
+  });
+});

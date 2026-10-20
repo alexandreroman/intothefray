@@ -846,7 +846,7 @@
     if (!hovered || role === undefined) {
       return [];
     }
-    return actionsFor(hovered, view, { areas: view.you.areas, role }, lang);
+    return actionsFor(hovered, view, { areas: view.you.areas, role }, lang, interaction.group);
   });
 
   // ---- The arrow mode's hint ----
@@ -933,7 +933,13 @@
     if (role === undefined || element.kind === 'hand') {
       return null;
     }
-    const items = actionsFor(element, view, { areas: view.you.areas, role }, lang);
+    const items = actionsFor(
+      element,
+      view,
+      { areas: view.you.areas, role },
+      lang,
+      interaction.group,
+    );
     if (!Array.isArray(items)) {
       return { entries: [], note: items.text };
     }
