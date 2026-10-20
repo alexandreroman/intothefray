@@ -650,9 +650,22 @@ func TestSideDeckSharedBacks(t *testing.T) {
 	}
 	checkIntegrity(t, table)
 
-	// The Invocation deck has no shared back: its cards keep their own.
+	// The face-up Invocation deck has a shared back too, its discard pile
+	// none, and its top card still shows to everyone.
 	strange := sideDeckFixture(t)
-	if pile := strange.g.Table.Piles[invocationDeck]; pile.Back != "" {
-		t.Errorf("Invocation deck = %+v, want no shared back", pile)
+	invocation := strange.g.Table.Piles[invocationDeck]
+	top := topCards(invocation, 1)[0]
+	for _, pv := range strange.g.ViewFor("nobody").Table.Piles {
+		switch {
+		case pv.ID == invocationDeck && (pv.Back != pack.BackPlayer || !slices.Equal(pv.Cards, []string{top})):
+			t.Errorf("a spectator sees the Invocation deck as %+v, want a player back and its top card", pv)
+		case pv.ID == invocationDiscard && pv.Back != "":
+			t.Errorf("a spectator sees the Invocation discard pile as %+v, want no back", pv)
+		}
+	}
+	for _, cv := range strange.g.ViewFor("nobody").Table.Cards {
+		if cv.ID == top && (cv.Code == "" || cv.Back != pack.BackPlayer) {
+			t.Errorf("a spectator sees the Invocation top card as %+v, want its code and a player back", cv)
+		}
 	}
 }

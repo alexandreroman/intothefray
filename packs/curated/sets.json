@@ -12,7 +12,7 @@
     }
   },
   "standard_pvp": {"unlisted": true},
-  "doctor_strange_invocation_deck": {"side": {"label": "Invocation", "topFaceUp": true, "discard": true}},
+  "doctor_strange_invocation_deck": {"side": {"label": "Invocation", "topFaceUp": true, "discard": true, "back": "player"}},
   "storm_weather_deck": {"side": {"label": "Weather", "back": "player"}},
   "daredevil_sense_deck": {"side": {"label": "Sense", "topFaceUp": true, "back": "player"}},
   "hercules_labor_deck": {"side": {"label": "Labor", "back": "player"}},

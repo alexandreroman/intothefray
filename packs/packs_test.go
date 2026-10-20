@@ -336,7 +336,9 @@ func TestEmbeddedHeroSetup(t *testing.T) {
 			want     []sideDeck // in printed order
 		}{
 			{"09001", []sideDeck{
-				{"doctor_strange_invocation_deck", pack.SideDeck{Label: "Invocation", TopFaceUp: true, Discard: true}},
+				{"doctor_strange_invocation_deck", pack.SideDeck{
+					Label: "Invocation", TopFaceUp: true, Discard: true, Back: pack.BackPlayer,
+				}},
 			}},
 			{"36001", []sideDeck{{"storm_weather_deck", pack.SideDeck{Label: "Weather", Back: pack.BackPlayer}}}},
 			{"59001", []sideDeck{

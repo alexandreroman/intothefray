@@ -888,7 +888,8 @@
       "side": {
         "label": "Invocation",
         "topFaceUp": true,
-        "discard": true
+        "discard": true,
+        "back": "player"
       }
     },
     {
