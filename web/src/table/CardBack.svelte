@@ -88,13 +88,17 @@
     position: relative;
   }
 
-  /* A dark strip with white capitals: readable on every back image and on the drawn backs. */
+  /* White capitals on a dark label: readable on every back image and on the drawn backs. */
   .caption {
     position: absolute;
-    left: 0;
-    right: 0;
+    left: 50%;
     bottom: 9%;
-    padding: 4px 0;
+    transform: translateX(-50%);
+    /* As wide as the label, never past the card's edges. */
+    max-width: calc(100% - 16px);
+    box-sizing: border-box;
+    padding: 4px 8px;
+    border-radius: 4px;
     background: #000000b8;
     color: #fff;
     font-weight: 800;
