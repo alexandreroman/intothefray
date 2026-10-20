@@ -897,6 +897,42 @@ describe("dragging the top card of the viewer's deck", () => {
     );
   });
 
+  it('plays the top card of a side deck tucked under the card it is dropped on', async () => {
+    const view = makeView();
+    view.table!.cards.push(card('sense', { code: '01001', zone: 'pile', home: 'side:p0:0' }));
+    view.table!.piles.push(
+      pile('side:p0:0', {
+        kind: 'sideDeck',
+        owner: 0,
+        x: 920,
+        y: 300,
+        count: 5,
+        label: 'Sense',
+        topFaceUp: true,
+        cards: ['sense'],
+      }),
+    );
+    const { session } = await renderTable(view);
+    await press(placed('side:p0:0'), 1010, 410);
+    // Over "other", at 420, 340 on the screen.
+    await moveTo(470, 420);
+    expect(placed('other').classList).toContain('drop-target');
+    expect(screen.getByText('Under Spider-Man')).toBeTruthy();
+
+    await release(470, 420);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      {
+        kind: 'play',
+        pile: 'side:p0:0',
+        target: 'other',
+        x: expect.any(Number),
+        y: expect.any(Number),
+        placed: true,
+      },
+      0,
+    );
+  });
+
   it("shows the own back of a side deck's unknown top card while it is dragged", async () => {
     const view = makeView();
     view.table!.piles.push(

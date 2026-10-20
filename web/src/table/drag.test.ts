@@ -871,6 +871,20 @@ describe('side decks', () => {
     expect(of({ kind: 'deck', pile: 'side:p0:1' })).toEqual([]);
   });
 
+  it('plays the top card of a side deck tucked under the card it is dropped on, in one action', () => {
+    const onCard: DropRect = { kind: 'card', card: 'x', z: 1, rect: rect(0, 0, 1, 1) };
+    for (const deck of ['side:p0:0', 'side:p0:1']) {
+      expect(dropAction({ kind: 'deck', pile: deck }, onCard, { x: 44, y: 62 }, DEAL_TO)).toEqual({
+        kind: 'play',
+        pile: deck,
+        target: 'x',
+        x: 40,
+        y: 60,
+        placed: true,
+      });
+    }
+  });
+
   it("returns a side discard pile's top card to its side deck", () => {
     expect(of({ kind: 'pile', pile: 'sided:p0:0', card: 'inv-used' })).toEqual([
       ['side:p0:0', 'top', 'Top of Invocation deck'],

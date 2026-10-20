@@ -215,9 +215,16 @@ function onCard(
     case 'pile':
       // Played and tucked in one action: one undo step.
       return { kind: 'play', card: drag.card, target: card, x, y, placed: true };
-    case 'encounter':
     case 'deck':
-      // Put where it lands, over that card: dealt face down (spec 5.5), or played face up.
+      // A side deck's top card is played and tucked as a hand card is: the server plays the
+      // deck's top card, which the client may not know.
+      if (isSideDeckId(drag.pile)) {
+        return { kind: 'play', pile: drag.pile, target: card, x, y, placed: true };
+      }
+      // A deck's top card is played face up where it lands, over that card.
+      return place(drag, at, dealTo, rows);
+    case 'encounter':
+      // Dealt face down where it lands, over that card (spec 5.5).
       return place(drag, at, dealTo, rows);
   }
 }
