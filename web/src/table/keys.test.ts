@@ -281,6 +281,38 @@ describe('keys on the table', () => {
     expect(screen.getByRole('dialog', { name: 'Look at the top cards' })).toBeTruthy();
   });
 
+  it('W draws 1 from the own deck; Shift + W asks how many with Draw…', async () => {
+    const { session } = await renderTable();
+    await fireEvent.pointerEnter(placed('deck:p0'));
+
+    await press('w');
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'draw', n: 1 }, 0);
+    expect(screen.queryByRole('dialog')).toBeNull();
+
+    // Shift gives an upper-case key.
+    await press('W', { shiftKey: true });
+    expect(screen.getByRole('dialog', { name: 'Draw cards' })).toBeTruthy();
+    expect(session.act).toHaveBeenCalledOnce();
+  });
+
+  it('Shift + W does not repeat while held', async () => {
+    await renderTable();
+    await fireEvent.pointerEnter(placed('deck:p0'));
+
+    await press('W', { shiftKey: true, repeat: true });
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('Shift + W does nothing on what is not the own deck', async () => {
+    const { session } = await renderTable();
+    for (const id of ['mine', 'enc']) {
+      await fireEvent.pointerEnter(placed(id));
+      await press('W', { shiftKey: true });
+    }
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(session.act).not.toHaveBeenCalled();
+  });
+
   it('A starts an arrow from the hovered card', async () => {
     await renderTable();
     await fireEvent.pointerEnter(placed('mine'));

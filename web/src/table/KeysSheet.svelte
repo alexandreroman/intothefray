@@ -76,6 +76,7 @@
         { what: 'Stunned', keys: ['S'] },
         { what: 'Confused', keys: ['C'] },
         { what: 'Tough', keys: ['G'] },
+        { what: 'Locked', keys: ['L'] },
       ],
     ],
     [
@@ -89,6 +90,7 @@
       'Deck under the mouse',
       [
         { what: 'Draw 1', keys: ['W'] },
+        { what: 'Draw several cards', keys: ['⇧ W'] },
         { what: 'Reveal (encounter deck)', keys: ['R'] },
         { what: 'Look at the top cards', keys: ['L'] },
         { what: 'Search', keys: ['K'] },

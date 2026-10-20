@@ -183,32 +183,33 @@ function playerKey(event: KeyboardEvent, table: KeyTable): boolean {
   if (!Array.isArray(table.items)) {
     return false;
   }
-  const item = findItem(table.items, key);
-  if (!item) {
-    return false;
+  const item = findItem(table.items, key, event.shiftKey);
+  if (item) {
+    if (event.repeat && counterAction(item) === null) {
+      return false;
+    }
+    table.run(item);
+    return true;
   }
-  const adds = counterAction(item);
-  if (event.shiftKey) {
-    // Shift goes with the token and status keys only.
-    return adds !== null && removeOne(adds, table);
-  }
-  if (event.repeat && adds === null) {
-    return false;
-  }
-  table.run(item);
-  return true;
+  // Without an item of its own (Draw… is Shift + W), Shift + a token or status key takes one off.
+  const plain = event.shiftKey ? findItem(table.items, key, false) : undefined;
+  const adds = plain ? counterAction(plain) : null;
+  return adds !== null && removeOne(adds, table);
 }
 
-/** The enabled item with that key, in the bar or in one of its enabled dropdowns. */
-function findItem(items: ActionItem[], key: string): ActionItem | undefined {
+/**
+ * The enabled item with that key, in the bar or in one of its enabled
+ * dropdowns, taken with Shift or not as the item says.
+ */
+function findItem(items: ActionItem[], key: string, shift: boolean): ActionItem | undefined {
   for (const item of items) {
     if (item.disabled) {
       continue;
     }
-    if (item.key?.toLowerCase() === key) {
+    if (item.key?.toLowerCase() === key && (item.shift ?? false) === shift) {
       return item;
     }
-    const inMenu = item.menu ? findItem(item.menu, key) : undefined;
+    const inMenu = item.menu ? findItem(item.menu, key, shift) : undefined;
     if (inMenu) {
       return inMenu;
     }

@@ -281,7 +281,7 @@
           class:on={item.pressed}
           aria-label={item.tip ?? item.label}
           data-tip={item.tip ?? item.label}
-          data-kbd={item.key && keyLabel(item.key)}
+          data-kbd={keyLabel(item)}
           aria-disabled={item.disabled}
           onclick={() => runItem(item.id)}
         >
@@ -292,7 +292,7 @@
           class="btn-ghost"
           type="button"
           data-tip={item.tip ?? item.label}
-          data-kbd={item.key && keyLabel(item.key)}
+          data-kbd={keyLabel(item)}
           aria-disabled={item.disabled}
           onclick={() => runItem(item.id)}>{item.label}</button
         >
@@ -347,7 +347,7 @@
         disabled={choice.disabled}
         title={choice.tip}
         onclick={() => runItem(choice.id, menuId)}
-        ><span>{choice.label}</span>{#if choice.key}<kbd>{keyLabel(choice.key)}</kbd>{/if}</button
+        ><span>{choice.label}</span>{#if choice.key}<kbd>{keyLabel(choice)}</kbd>{/if}</button
       >
     {/if}
   {/each}

@@ -13,6 +13,7 @@
     | 'shuffle'
     | 'token'
     | 'move'
+    | 'more'
     | 'trophy'
     | 'hourglass';
 </script>
@@ -90,6 +91,13 @@
     <rect x="2.5" y="5" width="9" height="13" rx="1.5" fill="currentColor" fill-opacity=".18" />
     <path d="M9 11.5h12" />
     <path d="M17.5 8 21 11.5 17.5 15" />
+  {:else if name === 'more'}
+    <!-- Three dots in a row: more actions. -->
+    <g fill="currentColor">
+      <circle cx="5" cy="12" r="1" />
+      <circle cx="12" cy="12" r="1" />
+      <circle cx="19" cy="12" r="1" />
+    </g>
   {:else if name === 'trophy'}
     <!-- A cup on a stand: the victory display. -->
     <path d="M8 4h8v5a4 4 0 0 1-8 0V4z" fill="currentColor" fill-opacity=".18" />

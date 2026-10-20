@@ -36,9 +36,16 @@ export type LocalAction =
   /** The cards of a public pile: the hovered one, or one of its owner's out-of-play piles. */
   | { local: 'browseBox'; pile: string };
 
-/** How a key shows in a tooltip, a menu or the shortcuts sheet: Backspace as its ⌫ glyph. */
-export function keyLabel(key: string): string {
-  return key === 'Backspace' ? '⌫' : key;
+/**
+ * How an item's key shows in a tooltip or a menu: Backspace as its ⌫ glyph, a
+ * key taken with Shift after ⇧ (⇧W). Undefined for an item without a key.
+ */
+export function keyLabel(item: Pick<ActionItem, 'key' | 'shift'>): string | undefined {
+  if (item.key === undefined) {
+    return undefined;
+  }
+  const key = item.key === 'Backspace' ? '⌫' : item.key;
+  return item.shift ? `⇧${key}` : key;
 }
 
 export interface ActionItem {
@@ -47,6 +54,8 @@ export interface ActionItem {
   label: string;
   icon?: IconName;
   key?: string;
+  /** The key is taken with Shift: Draw… is Shift + W, while W alone is Draw 1. */
+  shift?: true;
   disabled?: boolean;
   tip?: string;
   /** Drawn pressed: Ready on an exhausted card. */
@@ -69,9 +78,13 @@ const GROUP_TURN = 0;
 const GROUP_MARK = 1;
 const GROUP_LEAVE = 2;
 
-// Groups of a pile: what it does itself, then the buttons opening its owner's out-of-play piles.
-const GROUP_PILE = 0;
-const GROUP_OUT_OF_PLAY = 1;
+// Groups of a pile, in bar order: its main action (Draw, Reveal), the ways to
+// look at its cards, the rarer actions, then the buttons opening its owner's
+// out-of-play piles, always last.
+const GROUP_MAIN = 0;
+const GROUP_LOOK = 1;
+const GROUP_MORE = 2;
+const GROUP_OUT_OF_PLAY = 3;
 
 const SEPARATOR: ActionItem = { id: 'sep', label: '-', group: 0 };
 
@@ -464,6 +477,11 @@ function hasPile(table: TableView, id: string): boolean {
 
 // ---- Piles ----
 
+/**
+ * Every bar has the same order, a separator between the groups: the main
+ * action, the ways to look at the cards, the rarer actions (the ⋯ dropdown of
+ * a deck), then the owner's out-of-play piles.
+ */
 function pileActions(pile: PileView, context: Context): ActionItem[] | { text: string } {
   // Shared piles have no owner (-1).
   const own = pile.owner === -1 || context.seats.includes(pile.owner);
@@ -480,8 +498,10 @@ function pileActions(pile: PileView, context: Context): ActionItem[] | { text: s
       }
       return [
         drawOneItem(),
-        lookMenu(pile, 'your deck'),
-        deckMenu(pile, 'your deck', { draw: true, discardTop: true }),
+        drawCountItem(pile),
+        lookTopItem(pile, 'your deck'),
+        searchItem(pile),
+        moreMenu(pile, 'your deck', true),
         ...outOfPlay,
       ];
     case 'sideDeck': {
@@ -495,21 +515,24 @@ function pileActions(pile: PileView, context: Context): ActionItem[] | { text: s
       const discardTop = hasPile(context.table, deckDiscardOf(pile.id));
       return [
         drawOneItem(pile),
-        lookMenu(pile, pileName),
-        deckMenu(pile, pileName, { draw: true, discardTop }),
+        drawCountItem(pile),
+        lookTopItem(pile, pileName),
+        searchItem(pile),
+        moreMenu(pile, pileName, discardTop),
       ];
     }
     case 'encounter':
       return [
         revealItem(pile, context),
-        lookMenu(pile, 'the encounter deck'),
-        deckMenu(pile, 'the encounter deck', { draw: false, discardTop: true }),
+        lookTopItem(pile, 'the encounter deck'),
+        searchItem(pile),
+        moreMenu(pile, 'the encounter deck', true),
         ...outOfPlay,
       ];
     case 'discard':
     case 'encounterDiscard':
     case 'sideDiscard':
-      // Anyone may search a discard pile; only its owner shuffles it back.
+      // Anyone may search a discard pile; only its owner shuffles it into its deck.
       return own
         ? [searchItem(pile), shuffleBackItem(pile), ...outOfPlay]
         : [searchItem(pile), ...outOfPlay];
@@ -585,7 +608,7 @@ function drawOneItem(sideDeck?: PileView): ActionItem {
     label: 'Draw 1',
     key: 'W',
     tip: 'Draw 1',
-    group: 0,
+    group: GROUP_MAIN,
     run: () => drawAction(1, sideDeck),
   };
 }
@@ -594,13 +617,39 @@ function drawAction(n: number, sideDeck?: PileView): Action {
   return sideDeck ? { kind: 'draw', n, pile: sideDeck.id } : { kind: 'draw', n };
 }
 
+/**
+ * Draw… asks how many cards: Shift + W, beside Draw 1's W. As Draw 1, it sends
+ * the pile only for a side deck.
+ */
+function drawCountItem(pile: PileView): ActionItem {
+  const sideDeck = pile.kind === 'sideDeck' ? pile : undefined;
+  return {
+    id: 'drawN',
+    label: 'Draw…',
+    key: 'W',
+    shift: true,
+    tip: 'Draw…',
+    group: GROUP_MAIN,
+    run: () => ({
+      ask: {
+        title: 'Draw cards',
+        question: 'How many cards do you draw?',
+        pile: pile.id,
+        max: countLimit(pile),
+        ok: 'Draw',
+        make: (n) => drawAction(n, sideDeck),
+      },
+    }),
+  };
+}
+
 function revealItem(pile: PileView, context: Context): ActionItem {
   const reveal: ActionItem = {
     id: 'reveal',
     label: 'Reveal',
     key: 'R',
     tip: 'Reveal',
-    group: 0,
+    group: GROUP_MAIN,
     run: () => ({ kind: 'reveal' }),
   };
   const shown = context.table.cards.find((c) => c.zone === 'table' && c.onPile === pile.id);
@@ -619,13 +668,14 @@ function cardName(card: CardView, lang: Lang): string {
   return face ? localizedFace(face, lang).name : 'A card';
 }
 
-/** Look ▾: Look at top… and Search…; pileName is how the questions name the pile. */
-function lookMenu(pile: PileView, pileName: string): ActionItem {
-  const lookTop: ActionItem = {
+/** Look at top… asks how many cards; pileName is how the question names the pile. */
+function lookTopItem(pile: PileView, pileName: string): ActionItem {
+  return {
     id: 'lookTop',
     label: 'Look at top…',
     key: 'L',
-    group: 0,
+    tip: 'Look at top…',
+    group: GROUP_LOOK,
     run: () => ({
       ask: {
         title: 'Look at the top cards',
@@ -637,45 +687,23 @@ function lookMenu(pile: PileView, pileName: string): ActionItem {
       },
     }),
   };
-  return { id: 'look', label: 'Look', tip: 'Look', group: 0, menu: [lookTop, searchItem(pile)] };
 }
 
-/** Deck ▾: Draw… (own decks only), Discard top… (decks with a discard pile), then Shuffle. */
-function deckMenu(
-  pile: PileView,
-  pileName: string,
-  offers: { draw: boolean; discardTop: boolean },
-): ActionItem {
-  const menu: ActionItem[] = [];
-  const sideDeck = pile.kind === 'sideDeck' ? pile : undefined;
-  if (offers.draw) {
-    menu.push({
-      id: 'drawN',
-      label: 'Draw…',
-      group: 0,
-      run: () => ({
-        ask: {
-          title: 'Draw cards',
-          question: 'How many cards do you draw?',
-          pile: pile.id,
-          max: countLimit(pile),
-          ok: 'Draw',
-          make: (n) => drawAction(n, sideDeck),
-        },
-      }),
-    });
-  }
-  if (offers.discardTop) {
-    menu.push(discardTopItem(pile, pileName), SEPARATOR);
-  }
-  menu.push({
+/**
+ * The ⋯ dropdown of a deck, for what is done less often: Discard top… (decks
+ * with a discard pile), then Shuffle. pileName is how the question names the pile.
+ */
+function moreMenu(pile: PileView, pileName: string, withDiscardTop: boolean): ActionItem {
+  const shuffle: ActionItem = {
     id: 'shuffle',
     label: 'Shuffle',
     key: 'U',
     group: 0,
     run: () => ({ kind: 'shuffle', pile: pile.id }),
-  });
-  return { id: 'deck', label: 'Deck', tip: 'Deck', group: 0, menu };
+  };
+  const menu = withDiscardTop ? [discardTopItem(pile, pileName), SEPARATOR, shuffle] : [shuffle];
+  const label = 'More actions';
+  return { id: 'more', label, icon: 'more', tip: label, group: GROUP_MORE, menu };
 }
 
 function discardTopItem(pile: PileView, pileName: string): ActionItem {
@@ -707,17 +735,18 @@ function searchItem(pile: PileView): ActionItem {
     label: 'Search…',
     key: 'K',
     tip: 'Search…',
-    group: 0,
+    group: GROUP_LOOK,
     run: () => ({ kind: 'search', pile: pile.id }),
   };
 }
 
+/** A button rather than a dropdown item: the only rarer action of a discard pile. */
 function shuffleBackItem(pile: PileView): ActionItem {
   return {
     id: 'shuffleBack',
-    label: 'Shuffle back',
+    label: 'Shuffle into deck',
     tip: 'Shuffle this discard pile back into its deck',
-    group: 0,
+    group: GROUP_MORE,
     run: () => ({ kind: 'shuffleBack', pile: pile.id }),
   };
 }
@@ -729,7 +758,7 @@ function browseItem(pile: PileView): ActionItem {
     label: 'Browse…',
     key: 'K',
     tip: 'Browse…',
-    group: GROUP_PILE,
+    group: GROUP_LOOK,
     run: () => ({ local: 'browseBox', pile: pile.id }),
   };
 }

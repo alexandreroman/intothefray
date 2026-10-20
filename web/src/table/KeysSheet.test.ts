@@ -117,13 +117,22 @@ describe('KeysSheet', () => {
       ],
       [
         'Tokens (Shift removes)',
-        ['Damage: D', 'Threat: T', 'Counter: N', 'Stunned: S', 'Confused: C', 'Tough: G'],
+        [
+          'Damage: D',
+          'Threat: T',
+          'Counter: N',
+          'Stunned: S',
+          'Confused: C',
+          'Tough: G',
+          'Locked: L',
+        ],
       ],
       ['Card in your hand', ['Play: P', 'Discard: ⌫']],
       [
         'Deck under the mouse',
         [
           'Draw 1: W',
+          'Draw several cards: ⇧ W',
           'Reveal (encounter deck): R',
           'Look at the top cards: L',
           'Search: K',

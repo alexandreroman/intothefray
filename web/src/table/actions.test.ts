@@ -1,4 +1,4 @@
-import { actionsFor, type ActionItem, type TableElement } from './actions';
+import { actionsFor, keyLabel, type ActionItem, type TableElement } from './actions';
 import { knownCard, type CardInfo } from '../lib/catalog';
 import type { Action, Area, CardView, PackFace, PileView, Role, View } from '../lib/types';
 
@@ -387,38 +387,16 @@ describe('actionsFor', () => {
   it('own deck items', () => {
     const items = itemsFor({ kind: 'pile', id: 'deck:p0' });
 
-    expect(groups(items)).toEqual([['draw1', 'look', 'deck'], ['aside']]);
+    expect(groups(items)).toEqual([['draw1', 'drawN'], ['lookTop', 'search'], ['more'], ['aside']]);
     const draw = item(items, 'draw1');
     expect(draw).toMatchObject({ label: 'Draw 1', key: 'W', tip: 'Draw 1' });
+    expect(draw.shift).toBeUndefined();
     expect(actionOf(draw)).toEqual({ kind: 'draw', n: 1 });
 
-    const look = menuOf(items, 'look');
-    expect(look.map((it) => [it.id, it.label, it.key])).toEqual([
-      ['lookTop', 'Look at top…', 'L'],
-      ['search', 'Search…', 'K'],
-    ]);
-    const lookTop = item(look, 'lookTop').run?.();
-    if (!lookTop || !('ask' in lookTop)) {
-      throw new Error('Look at top… must ask how many cards');
-    }
-    expect(lookTop.ask).toMatchObject({
-      title: 'Look at the top cards',
-      question: 'How many cards from the top of your deck?',
-      pile: 'deck:p0',
-      max: 30,
-      ok: 'Look',
-    });
-    expect(lookTop.ask.make(4)).toEqual({ kind: 'look', pile: 'deck:p0', n: 4 });
-    expect(actionOf(item(look, 'search'))).toEqual({ kind: 'search', pile: 'deck:p0' });
-
-    const deck = menuOf(items, 'deck');
-    expect(deck.map((it) => [it.id, it.label, it.key])).toEqual([
-      ['drawN', 'Draw…', undefined],
-      ['discardTop', 'Discard top…', undefined],
-      ['sep', '-', undefined],
-      ['shuffle', 'Shuffle', 'U'],
-    ]);
-    const drawN = item(deck, 'drawN').run?.();
+    // Draw… is a button of its own, taken with Shift + W.
+    const drawNItem = item(items, 'drawN');
+    expect(drawNItem).toMatchObject({ label: 'Draw…', key: 'W', shift: true, tip: 'Draw…' });
+    const drawN = drawNItem.run?.();
     if (!drawN || !('ask' in drawN)) {
       throw new Error('Draw… must ask how many cards');
     }
@@ -430,7 +408,36 @@ describe('actionsFor', () => {
       ok: 'Draw',
     });
     expect(drawN.ask.make(3)).toEqual({ kind: 'draw', n: 3 });
-    const discardTop = item(deck, 'discardTop').run?.();
+
+    expect(item(items, 'lookTop')).toMatchObject({ label: 'Look at top…', key: 'L' });
+    const lookTop = item(items, 'lookTop').run?.();
+    if (!lookTop || !('ask' in lookTop)) {
+      throw new Error('Look at top… must ask how many cards');
+    }
+    expect(lookTop.ask).toMatchObject({
+      title: 'Look at the top cards',
+      question: 'How many cards from the top of your deck?',
+      pile: 'deck:p0',
+      max: 30,
+      ok: 'Look',
+    });
+    expect(lookTop.ask.make(4)).toEqual({ kind: 'look', pile: 'deck:p0', n: 4 });
+    expect(item(items, 'search')).toMatchObject({ label: 'Search…', key: 'K' });
+    expect(actionOf(item(items, 'search'))).toEqual({ kind: 'search', pile: 'deck:p0' });
+
+    // The ⋯ dropdown: an icon, named More actions.
+    expect(item(items, 'more')).toMatchObject({
+      label: 'More actions',
+      icon: 'more',
+      tip: 'More actions',
+    });
+    const more = menuOf(items, 'more');
+    expect(more.map((it) => [it.id, it.label, it.key])).toEqual([
+      ['discardTop', 'Discard top…', undefined],
+      ['sep', '-', undefined],
+      ['shuffle', 'Shuffle', 'U'],
+    ]);
+    const discardTop = item(more, 'discardTop').run?.();
     if (!discardTop || !('ask' in discardTop)) {
       throw new Error('Discard top… must ask how many cards');
     }
@@ -442,15 +449,12 @@ describe('actionsFor', () => {
       ok: 'Discard',
     });
     expect(discardTop.ask.make(2)).toEqual({ kind: 'discardTop', pile: 'deck:p0', n: 2 });
-    expect(actionOf(item(deck, 'shuffle'))).toEqual({ kind: 'shuffle', pile: 'deck:p0' });
+    expect(actionOf(item(more, 'shuffle'))).toEqual({ kind: 'shuffle', pile: 'deck:p0' });
   });
 
   it('a count is never asked beyond what the server accepts', () => {
     const view = makeView({ piles: [pile('deck:p0', { owner: 0, count: 120 })] });
-    const lookTop = item(
-      menuOf(itemsFor({ kind: 'pile', id: 'deck:p0' }, view), 'look'),
-      'lookTop',
-    ).run?.();
+    const lookTop = item(itemsFor({ kind: 'pile', id: 'deck:p0' }, view), 'lookTop').run?.();
 
     expect(lookTop && 'ask' in lookTop && lookTop.ask.max).toBe(99);
   });
@@ -459,25 +463,27 @@ describe('actionsFor', () => {
     const items = itemsFor({ kind: 'pile', id: 'enc' });
 
     expect(groups(items)).toEqual([
-      ['reveal', 'look', 'deck'],
+      ['reveal'],
+      ['lookTop', 'search'],
+      ['more'],
       ['victory', 'aside'],
     ]);
     const reveal = item(items, 'reveal');
     expect(reveal).toMatchObject({ label: 'Reveal', key: 'R', tip: 'Reveal' });
     expect(reveal.disabled).toBeFalsy();
     expect(actionOf(reveal)).toEqual({ kind: 'reveal' });
-    expect(menuOf(items, 'look').map((it) => it.id)).toEqual(['lookTop', 'search']);
-    const lookTop = item(menuOf(items, 'look'), 'lookTop').run?.();
+    const lookTop = item(items, 'lookTop').run?.();
     expect(lookTop && 'ask' in lookTop && lookTop.ask.question).toBe(
       'How many cards from the top of the encounter deck?',
     );
-    const deck = menuOf(items, 'deck');
-    expect(deck.map((it) => it.id)).toEqual(['discardTop', 'sep', 'shuffle']);
-    const discardTop = item(deck, 'discardTop').run?.();
+    expect(actionOf(item(items, 'search'))).toEqual({ kind: 'search', pile: 'enc' });
+    const more = menuOf(items, 'more');
+    expect(more.map((it) => it.id)).toEqual(['discardTop', 'sep', 'shuffle']);
+    const discardTop = item(more, 'discardTop').run?.();
     expect(discardTop && 'ask' in discardTop && discardTop.ask.question).toBe(
       'How many cards from the top of the encounter deck go to the discard pile?',
     );
-    expect(actionOf(item(deck, 'shuffle'))).toEqual({ kind: 'shuffle', pile: 'enc' });
+    expect(actionOf(item(more, 'shuffle'))).toEqual({ kind: 'shuffle', pile: 'enc' });
   });
 
   it('encounter reveal disabled while revealed', () => {
@@ -509,18 +515,19 @@ describe('actionsFor', () => {
   it('discard pile items', () => {
     const items = itemsFor({ kind: 'pile', id: 'disc:p0' });
 
-    expect(groups(items)).toEqual([['search', 'shuffleBack'], ['aside']]);
+    expect(groups(items)).toEqual([['search'], ['shuffleBack'], ['aside']]);
     const search = item(items, 'search');
     expect(search).toMatchObject({ label: 'Search…', key: 'K', tip: 'Search…' });
     expect(actionOf(search)).toEqual({ kind: 'search', pile: 'disc:p0' });
     const back = item(items, 'shuffleBack');
     expect(back).toMatchObject({
-      label: 'Shuffle back',
+      label: 'Shuffle into deck',
       tip: 'Shuffle this discard pile back into its deck',
     });
     expect(actionOf(back)).toEqual({ kind: 'shuffleBack', pile: 'disc:p0' });
     expect(groups(itemsFor({ kind: 'pile', id: 'encd' }))).toEqual([
-      ['search', 'shuffleBack'],
+      ['search'],
+      ['shuffleBack'],
       ['victory', 'aside'],
     ]);
   });
@@ -581,7 +588,7 @@ describe('actionsFor', () => {
     });
     const items = itemsFor({ kind: 'pile', id: 'enc' }, view);
 
-    expect(groups(items)).toEqual([['reveal', 'look', 'deck'], ['victory']]);
+    expect(groups(items)).toEqual([['reveal'], ['lookTop', 'search'], ['more'], ['victory']]);
     expect(item(items, 'victory')).toMatchObject({
       label: 'Victory display (0)',
       tip: 'Victory display (0): empty',
@@ -695,7 +702,7 @@ describe('a player with two decks', () => {
   it('own deck actions for second seat', () => {
     const view = twoDeckView();
     const deck = itemsFor({ kind: 'pile', id: 'deck:p1' }, view, TWO_DECKS);
-    expect(groups(deck)).toEqual([['draw1', 'look', 'deck'], ['aside']]);
+    expect(groups(deck)).toEqual([['draw1', 'drawN'], ['lookTop', 'search'], ['more'], ['aside']]);
 
     const move = menuOf(itemsFor({ kind: 'card', id: 'second' }, view, TWO_DECKS), 'moveTo');
     expect(move.map((it) => it.id)).toEqual([
@@ -764,29 +771,29 @@ describe('side decks', () => {
   const view = () => makeView({ cards: sideCards, piles: sidePiles });
   const pileItems = (id: string) => itemsFor({ kind: 'pile', id }, view());
 
-  it('own side deck items: Draw 1 from it, Look, and Deck with Discard top… when it has a discard pile', () => {
+  it('own side deck items: Draw 1 and Draw… from it, Look at top…, Search…, and More with Discard top… when it has a discard pile', () => {
     const items = pileItems('side:p0:0');
     // No out-of-play buttons: those are on the deck and the discard pile.
-    expect(groups(items)).toEqual([['draw1', 'look', 'deck']]);
+    expect(groups(items)).toEqual([['draw1', 'drawN'], ['lookTop', 'search'], ['more']]);
     expect(actionOf(item(items, 'draw1'))).toEqual({ kind: 'draw', n: 1, pile: 'side:p0:0' });
-
-    const lookTop = item(menuOf(items, 'look'), 'lookTop').run?.();
-    expect(lookTop && 'ask' in lookTop && lookTop.ask.question).toBe(
-      'How many cards from the top of your Invocation deck?',
-    );
-    expect(actionOf(item(menuOf(items, 'look'), 'search'))).toEqual({
-      kind: 'search',
-      pile: 'side:p0:0',
-    });
-
-    const deck = menuOf(items, 'deck');
-    expect(deck.map((it) => it.id)).toEqual(['drawN', 'discardTop', 'sep', 'shuffle']);
-    const drawN = item(deck, 'drawN').run?.();
+    const drawN = item(items, 'drawN').run?.();
     expect(drawN && 'ask' in drawN && drawN.ask.make(2)).toEqual({
       kind: 'draw',
       n: 2,
       pile: 'side:p0:0',
     });
+
+    const lookTop = item(items, 'lookTop').run?.();
+    expect(lookTop && 'ask' in lookTop && lookTop.ask.question).toBe(
+      'How many cards from the top of your Invocation deck?',
+    );
+    expect(actionOf(item(items, 'search'))).toEqual({
+      kind: 'search',
+      pile: 'side:p0:0',
+    });
+
+    const deck = menuOf(items, 'more');
+    expect(deck.map((it) => it.id)).toEqual(['discardTop', 'sep', 'shuffle']);
     const discardTop = item(deck, 'discardTop').run?.();
     expect(discardTop && 'ask' in discardTop && discardTop.ask.make(1)).toEqual({
       kind: 'discardTop',
@@ -797,8 +804,8 @@ describe('side decks', () => {
   });
 
   it('a side deck without a discard pile has no Discard top…', () => {
-    const deck = menuOf(pileItems('side:p0:1'), 'deck');
-    expect(deck.map((it) => it.id)).toEqual(['drawN', 'shuffle']);
+    const deck = menuOf(pileItems('side:p0:1'), 'more');
+    expect(deck.map((it) => it.id)).toEqual(['shuffle']);
   });
 
   it("another player's side deck belongs to them", () => {
@@ -808,7 +815,7 @@ describe('side decks', () => {
   });
 
   it('a side discard pile is searched by anyone, shuffled back by its owner', () => {
-    expect(groups(pileItems('sided:p0:0'))).toEqual([['search', 'shuffleBack']]);
+    expect(groups(pileItems('sided:p0:0'))).toEqual([['search'], ['shuffleBack']]);
     expect(actionOf(item(pileItems('sided:p0:0'), 'shuffleBack'))).toEqual({
       kind: 'shuffleBack',
       pile: 'sided:p0:0',
@@ -851,5 +858,14 @@ describe('side decks', () => {
     const items = itemsFor({ kind: 'card', id: 'sense' }, view());
     expect(items.map((it) => it.id)).not.toContain('discard');
     expect(item(items, 'moveTo').menu?.map((it) => it.label)).toContain('Bottom of Sense deck');
+  });
+});
+
+describe('keyLabel', () => {
+  it('shows Backspace as its glyph, a Shift key after ⇧, and nothing without a key', () => {
+    expect(keyLabel({ key: 'E' })).toBe('E');
+    expect(keyLabel({ key: 'Backspace' })).toBe('⌫');
+    expect(keyLabel({ key: 'W', shift: true })).toBe('⇧W');
+    expect(keyLabel({})).toBeUndefined();
   });
 });
