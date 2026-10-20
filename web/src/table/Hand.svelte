@@ -1,24 +1,33 @@
 <!--
   The viewer's hand, fanned on an arc at the bottom of the table. At rest it
   sits low and veiled; it rises when the pointer comes near it, and the table
-  behind it dims.
+  behind it dims. Touch has no hover: a tap raises the hand and pins it up
+  until a tap on the table, Escape or a swipe down lowers it.
 -->
 <script lang="ts">
-  import { tick } from 'svelte';
+  import { tick, untrack } from 'svelte';
   import { modal } from '../components/modal.svelte';
   import type { CardView as TableCard, PackFace } from '../lib/types';
   import CardBack from './CardBack.svelte';
   import CardFace from './CardFace.svelte';
   import { isHidden } from './face';
   import { interaction } from './interaction.svelte';
-  import { cardBox, fanPositions, HAND_CARD, HAND_CARD_NARROW } from './layout';
+  import {
+    cardBox,
+    fanPositions,
+    HAND_CARD,
+    HAND_PADDING,
+    HAND_REST_DROP,
+    HAND_REST_SCALE,
+  } from './layout';
   import { motion } from './motion.svelte';
 
   let {
     cards,
     faceOf,
     captionOf = () => undefined,
-    narrow = false,
+    cardSize = HAND_CARD,
+    restDrop = HAND_REST_DROP,
     open = $bindable(false),
   }: {
     /** The hand, in its order. */
@@ -27,13 +36,13 @@
     faceOf: (card: TableCard) => PackFace | null;
     /** The caption of a card's back (backCaption): its side deck's label, if any. */
     captionOf?: (card: TableCard) => string | undefined;
-    /** A narrow screen, where the cards are smaller. */
-    narrow?: boolean;
+    /** The size of a card, in px: smaller on a narrow or a small screen (Table.svelte). */
+    cardSize?: { w: number; h: number };
+    /** How far the resting hand drops below its raised place, in px. */
+    restDrop?: number;
     /** Whether the hand is raised. */
     open?: boolean;
   } = $props();
-
-  const cardSize = $derived(narrow ? HAND_CARD_NARROW : HAND_CARD);
 
   /** The cards in the given order, then any the order does not know (drawn meanwhile). */
   function inOrder(order: readonly string[]): TableCard[] {
@@ -82,6 +91,16 @@
   // Where the pointer was last seen, drags included.
   let pointer: { x: number; y: number } | null = null;
 
+  // The last press was a finger's. A finger has no hover to follow: the band is a mouse's or a
+  // pen's, and a tap pins the hand up instead.
+  let touch = false;
+  // A tap raised the hand: it stays up wherever the finger goes, until a tap on the table, Escape,
+  // a swipe down, a drop away from the hand or a dialog lowers it.
+  let pinned = $state(false);
+  // A finger pressed on a card of the pinned hand: moved far enough down, it lowers the hand.
+  let swipe: { pointerId: number; y: number } | null = null;
+  const SWIPE_DOWN = 40;
+
   /**
    * Decided from the pointer position rather than :hover: as the hand rises,
    * its cards move away from a pointer resting at the bottom of the screen,
@@ -89,10 +108,111 @@
    */
   function followPointer(event: PointerEvent): void {
     pointer = { x: event.clientX, y: event.clientY };
+    if (event.pointerType === 'touch') {
+      followSwipe(event);
+      return;
+    }
+    // A mouse or a pen takes over from the finger that pinned the hand.
+    pinned = false;
     if (!interaction.dragging) {
       followBand(pointer);
     }
   }
+
+  /**
+   * A finger pushing a card of the pinned hand down, which DragLayer lets go
+   * of rather than drag (isDownward): far enough, it lowers the hand. While
+   * the press is still held, it is a drag, or not told apart from one yet.
+   */
+  function followSwipe(event: PointerEvent): void {
+    if (swipe === null || event.pointerId !== swipe.pointerId || interaction.held !== null) {
+      return;
+    }
+    if (event.clientY - swipe.y >= SWIPE_DOWN) {
+      swipe = null;
+      lower();
+    }
+  }
+
+  /** In the capture phase, so that the press is seen before what it lands on acts on it. */
+  function onPress(event: PointerEvent): void {
+    touch = event.pointerType === 'touch';
+    const target = event.target as Element;
+    const onCard = list?.contains(target) ?? false;
+    swipe = touch && pinned && onCard ? { pointerId: event.pointerId, y: event.clientY } : null;
+    // A tap on the table (an empty spot, a card, a pile) lowers the hand, and goes on to do what it
+    // does there: one tap leaves the hand for the table. Elsewhere (the player selector, the zoom),
+    // the hand stays up.
+    if (pinned && target.closest('.tablewrap') !== null) {
+      lower();
+    }
+  }
+
+  function onRelease(): void {
+    swipe = null;
+  }
+
+  function onKey(event: KeyboardEvent): void {
+    if (event.key === 'Escape' && pinned) {
+      lower();
+    }
+  }
+
+  /**
+   * A tap on a card; a mouse click does nothing here, hovering is enough.
+   * The first tap only raises the hand: the fan spreads out as it rises, and
+   * the card under the finger at rest is seldom the one wanted. In the raised
+   * hand, a tap selects a card, another one moves the selection, and a tap on
+   * the selected card lets go of it.
+   */
+  function tapped(id: string): void {
+    if (!touch || modal.open) {
+      return;
+    }
+    const wasOpen = open;
+    pinned = true;
+    open = true;
+    if (!wasOpen) {
+      return;
+    }
+    const element = { kind: 'hand', id } as const;
+    if (interaction.isLocked(element)) {
+      interaction.release();
+    } else {
+      interaction.select(element);
+    }
+  }
+
+  /** Lowers the hand; its selected card, if any, goes down with it. */
+  function lower(): void {
+    pinned = false;
+    open = false;
+    if (interaction.locked && interaction.hovered?.kind === 'hand') {
+      interaction.release();
+    }
+  }
+
+  // A dialog freezes the table: the pinned hand goes down under its backdrop.
+  $effect(() => {
+    if (modal.open && pinned) {
+      untrack(lower);
+    }
+  });
+
+  // Another hand shown (Q, the player selector) keeps the pinned hand up, to read that one too: a
+  // hand with no card left goes down, and the selection of a card no longer shown goes.
+  $effect(() => {
+    if (pinned && cards.length === 0) {
+      untrack(lower);
+    }
+  });
+  $effect(() => {
+    const hovered = interaction.hovered;
+    const shownIds = new Set(cards.map((card) => card.id));
+    if (interaction.locked && hovered?.kind === 'hand' && !shownIds.has(hovered.id)) {
+      untrack(() => interaction.release());
+    }
+  });
 
   /** Opens the hand while the pointer is in its band, and lowers it once it is out. */
   function followBand(at: { x: number; y: number }): void {
@@ -137,11 +257,26 @@
   let wasDragging = false;
   $effect(() => {
     const dragging = interaction.dragging !== null;
-    if (wasDragging && !dragging && pointer) {
-      followBand(pointer);
+    if (wasDragging && !dragging) {
+      untrack(dropped);
     }
     wasDragging = dragging;
   });
+
+  /**
+   * A drag is over. A finger that drops a card back in the pinned hand (a
+   * reorder) keeps it up, the drag having left it raised over the hand;
+   * dropped anywhere else, the finger is on the table and the hand lowers.
+   */
+  function dropped(): void {
+    if (!touch) {
+      if (pointer) {
+        followBand(pointer);
+      }
+    } else if (!(pinned && open)) {
+      lower();
+    }
+  }
 
   $effect(() => {
     void shown;
@@ -151,7 +286,7 @@
     void tick()
       .then(() => motion.settled())
       .then(() => {
-        if (!stale && pointer && !interaction.dragging) {
+        if (!stale && pointer && !touch && !interaction.dragging) {
           followBand(pointer);
         }
       });
@@ -163,9 +298,10 @@
   // The window has no pointerleave of its own: the root element gets it.
   $effect(() => {
     const root = document.documentElement;
-    // A drag keeps the hand as the drag has it, even off the window.
-    const close = () => {
-      if (!interaction.dragging) {
+    // A drag keeps the hand as the drag has it, even off the window. A lifted finger leaves the
+    // window too: the hand it pinned stays up.
+    const close = (event: PointerEvent) => {
+      if (!interaction.dragging && event.pointerType !== 'touch') {
         pointer = null;
         open = false;
       }
@@ -175,17 +311,28 @@
   });
 </script>
 
-<svelte:window onpointermove={followPointer} />
+<svelte:window
+  onpointermove={followPointer}
+  onpointerdowncapture={onPress}
+  onpointerup={onRelease}
+  onpointercancel={onRelease}
+  onkeydown={onKey}
+/>
 
 <div class="veil" class:open></div>
 
 <ul
   class="hand"
   class:open
+  class:pinned
   class:drop={dropTarget}
   aria-label="Your hand"
   style:--card-w="{cardSize.w}px"
   style:--card-h="{cardSize.h}px"
+  style:--rest-drop="{restDrop}px"
+  style:--rest-scale={HAND_REST_SCALE}
+  style:--pad-top="{HAND_PADDING.top}px"
+  style:--pad-bottom="{HAND_PADDING.bottom}px"
   bind:this={list}
   bind:clientWidth={width}
 >
@@ -204,8 +351,8 @@
     {:else}
       {@const face = faceOf(card)}
       <!--
-      Only a touch tap selects (there is no hover on touch): keyboard users act on hand cards with
-      their keys instead.
+      Only a touch tap raises the hand and selects (there is no hover on touch): keyboard users act
+      on hand cards with their keys instead.
     -->
       <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
       <li
@@ -219,7 +366,7 @@
         onpointerenter={(event) => interaction.enter({ kind: 'hand', id: card.id }, event)}
         onpointerleave={() => interaction.leave()}
         onpointerdown={(event) => interaction.press({ kind: 'hand', id: card.id }, event)}
-        onclick={() => interaction.select({ kind: 'hand', id: card.id })}
+        onclick={() => tapped(card.id)}
       >
         <!-- What the pointer hovers: the card at rest, which the pop does not move. -->
         <div class="hit"></div>
@@ -269,15 +416,15 @@
       Border box: the padding around one card. The prototype's min-heights (218 px, 180 px on a
       narrow screen) are below this, so its hand grows to the same height around its card row.
     */
-    min-height: calc(26px + var(--card-h) + 18px);
+    min-height: calc(var(--pad-top) + var(--card-h) + var(--pad-bottom));
     margin: 0;
-    padding: 26px 18px 18px;
+    padding: var(--pad-top) 18px var(--pad-bottom);
     list-style: none;
     overflow: visible;
     pointer-events: none;
     background: linear-gradient(to top, #07090fe6 0%, #07090fa0 55%, transparent 100%);
     /* Low enough that only the top part of the cards shows. */
-    transform: translateY(140px) scale(0.82);
+    transform: translateY(var(--rest-drop)) scale(var(--rest-scale));
     transform-origin: 50% 100%;
     transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
@@ -296,7 +443,7 @@
   /* Placed around the middle of the hand, below its top padding: --x is the card's middle. */
   .hcard {
     position: absolute;
-    top: 26px;
+    top: var(--pad-top);
     left: calc(50% + var(--x));
     width: var(--card-w);
     height: var(--card-h);
@@ -328,8 +475,11 @@
     filter: none;
   }
 
-  /* A card selected by a tap stays up like a hovered one. */
-  .hcard:hover,
+  /*
+    A card selected by a tap stays up like a hovered one. The hand a tap pinned pops its selected
+    card only: a finger leaves a sticky :hover on the last card it tapped, deselected or not.
+  */
+  .hand:not(.pinned) .hcard:hover,
   .hcard.locked {
     z-index: 60;
   }
@@ -359,7 +509,7 @@
   }
 
   /* The hovered card pops up larger, keeping its tilt on the arc. */
-  .hcard:hover .fan,
+  .hand:not(.pinned) .hcard:hover .fan,
   .hcard.locked .fan {
     transform: translateY(calc(var(--ty) - 31px)) rotate(var(--rot)) scale(1.2);
   }

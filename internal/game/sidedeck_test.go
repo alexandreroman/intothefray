@@ -230,10 +230,11 @@ func TestSetupSetAsideHeroCards(t *testing.T) {
 // Hashes of the JSON form of setup tables of heroes without side decks or
 // set-aside cards, recorded before side decks existed: those setups must
 // draw the same random numbers and so give the same tables and card ids.
-// They change only with the card data of the heroes and scenario they use.
+// They change only with the card data of the heroes and scenario they use,
+// or with the fields of a card (the identity mark).
 const (
-	spiderManSetupHash = "ce7ff1fd9610a360dbf0fd8273777efa30b33cfb1c2912e050c44fbf7c190047"
-	threeDeckSetupHash = "a74bf965c24c836b6ae33a39c1834137caba1b5be058d4c07e7a8fb85fa08f9f"
+	spiderManSetupHash = "73b104022eb9eeeb2b4ec3ec2f771729d75c3990213320b34b474c347f89d4fe"
+	threeDeckSetupHash = "152f3dcfbc8b0fda86be836ffae7d0e72dba46f0586b920c659b1efd1c3795bf"
 )
 
 func TestSetupWithoutSideDecksIsUnchanged(t *testing.T) {

@@ -9,7 +9,7 @@ import {
   homeDeckOf,
   isSideDeckId,
   sideLabel,
-  stageHeldBy,
+  staysOnTable,
 } from './actions';
 import type { Pressable } from './interaction.svelte';
 import { GRID, TABLE_LIMIT } from './layout';
@@ -382,16 +382,21 @@ export function sourceOf(element: Pressable, view: View, taken?: string): DragSo
 /**
  * The hand that takes the dragged card, or null when no hand does: a table
  * card of one of the viewer's own decks goes to that deck's hand, as Move to
- * ▾ Hand has it (ruling P5b-R10), and the top card of one of their decks is
- * drawn into that deck's hand. The prototype takes it from anywhere over the fan.
+ * ▾ Hand has it (ruling P5b-R10), unless it stays on the table, and the top
+ * card of one of their decks is drawn into that deck's hand. The prototype
+ * takes it from anywhere over the fan.
  */
 export function handAreaOf(drag: DragSource, view: View): Area | null {
   const table = view.table;
   let owner: number | undefined;
   if (drag.kind === 'deck') {
     owner = table?.piles.find((p) => p.id === drag.pile)?.owner;
-  } else if (drag.kind === 'card') {
-    owner = table?.cards.find((c) => c.id === drag.card)?.owner;
+  } else if (drag.kind === 'card' && table) {
+    const card = table.cards.find((c) => c.id === drag.card);
+    if (!card || staysOnTable(card, table)) {
+      return null;
+    }
+    owner = card.owner;
   }
   if (owner === undefined || !ownSeats(view).includes(owner)) {
     return null;
@@ -409,9 +414,9 @@ export interface PileTarget {
 /**
  * The piles a dragged card can go to, as its Move to ▾ menu has them: its
  * home deck, on top or under it (the viewer's own cards and encounter cards
- * only), and its discard pile, when it has one. The top card of one of the
- * viewer's decks goes to that deck's discard pile, the encounter deck's to the
- * encounter discard pile.
+ * only), and its discard pile, when it has one; none when it stays on the
+ * table. The top card of one of the viewer's decks goes to that deck's discard
+ * pile, the encounter deck's to the encounter discard pile.
  */
 export function pileTargets(drag: DragSource, view: View): PileTarget[] {
   const table = view.table;
@@ -437,8 +442,7 @@ export function pileTargets(drag: DragSource, view: View): PileTarget[] {
   }
 
   const card = table.cards.find((c) => c.id === drag.card);
-  // Mirrors checkNotStageCurrent: the card a stage shows stays on the table.
-  if (!card || stageHeldBy(card, table)) {
+  if (!card || staysOnTable(card, table)) {
     return [];
   }
   const targets: PileTarget[] = [];
@@ -512,6 +516,16 @@ export function handBand(cards: Rect[], table: Rect, windowBottom: number): Rect
     right: Math.max(...cards.map((r) => r.right)) + HAND_SIDE_ROOM,
     bottom: windowBottom,
   };
+}
+
+/**
+ * Whether a press went down, within 45° of straight down, as it passed the
+ * drag threshold. A finger pushing a hand card down swipes the hand away
+ * rather than dragging the card (Hand.svelte): the table, where cards are
+ * played, lies above the hand, and a reorder goes sideways.
+ */
+export function isDownward(from: Point, to: Point): boolean {
+  return to.y - from.y > Math.abs(to.x - from.x);
 }
 
 /** Where a card dragged at x slots in among the other hand cards, given their middles. */

@@ -1,8 +1,9 @@
-import { fireEvent, render, screen, within } from '@testing-library/svelte';
+import { createEvent, fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
+import { tick } from 'svelte';
 import Table from './Table.svelte';
 import boxSource from './CardBox.svelte?raw';
 import { compareCardNumbers, pileLabel, tileActions, type TileAction } from './boxes';
-import { interaction } from './interaction.svelte';
+import { interaction, LONG_PRESS_MS } from './interaction.svelte';
 import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
 import type {
   CardView as TableCard,
@@ -167,6 +168,15 @@ function placed(id: string): HTMLElement {
   return element;
 }
 
+/** The chip opening an out-of-play pile, on its owner's frame (-1: the villain's). */
+function chip(owner: number, name: string): HTMLElement {
+  const chips = document.querySelector<HTMLElement>(`.surface .chips[data-owner="${owner}"]`);
+  if (!chips) {
+    throw new Error(`no chips on the frame of ${owner}`);
+  }
+  return within(chips).getByRole('button', { name });
+}
+
 function box(): HTMLElement {
   return screen.getByRole('dialog');
 }
@@ -211,12 +221,45 @@ function tileNames(): string[] {
     .map((item) => item.getAttribute('aria-label') ?? '');
 }
 
-function tileBar(): HTMLElement | null {
-  return screen.queryByRole('toolbar', { name: 'Card actions' });
+/** The context menu open, over the box or on the table. */
+function contextMenu(): HTMLElement | null {
+  return document.querySelector<HTMLElement>('.table-menu.context');
 }
 
-function tableBar(): HTMLElement | null {
-  return screen.queryByRole('toolbar', { name: 'Actions' });
+/** Clicks a tile's card as a mouse does, at that point of the screen. */
+async function clickTile(id: string, x = 120, y = 160): Promise<void> {
+  const image = tile(id).querySelector<HTMLElement>('.img') as HTMLElement;
+  await fireEvent.pointerDown(image, { clientX: x, clientY: y, button: 0 });
+  await fireEvent.pointerUp(image, { clientX: x, clientY: y, button: 0 });
+  await fireEvent.click(image, { clientX: x, clientY: y });
+}
+
+/** Clicks a card or pile of the table, as a mouse does. */
+async function clickPlaced(id: string): Promise<void> {
+  await fireEvent.pointerDown(placed(id), { button: 0 });
+  await fireEvent.pointerUp(placed(id), { button: 0 });
+  await fireEvent.click(placed(id));
+}
+
+/** The labels of the open menu's items, without their keys. */
+function menuLabels(): string[] {
+  const menu = contextMenu();
+  if (!menu) {
+    throw new Error('no menu');
+  }
+  return within(menu)
+    .getAllByRole('menuitem')
+    .map((item) => item.querySelector('span')?.textContent ?? '');
+}
+
+function menuItem(label: string): HTMLElement {
+  const found = within(contextMenu()!)
+    .getAllByRole('menuitem')
+    .find((item) => item.querySelector('span')?.textContent === label);
+  if (!found) {
+    throw new Error(`no item ${label}`);
+  }
+  return found;
 }
 
 const SEARCH: PrivateView = { pile: 'deck:p0', mode: 'search', cards: DECK_TOP };
@@ -291,9 +334,18 @@ describe('CardBox', () => {
     // Wide enough for five 220 px columns, never wider than the window.
     expect(box().style.width).toBe('min(1200px, 100%)');
     const grid = /\n {2}\.mgrid \{([^}]*)\}/.exec(boxSource)?.[1] ?? '';
-    expect(grid).toMatch(/grid-template-columns: repeat\(auto-fill, minmax\(220px, 1fr\)\);/);
+    expect(grid).toMatch(/--min-tile: 220px;/);
+    expect(grid).toMatch(
+      /grid-template-columns: repeat\(auto-fill, minmax\(var\(--min-tile\), 1fr\)\);/,
+    );
     expect(grid).toMatch(/overflow-y: auto;/);
     expect(boxSource).toMatch(/const MIN_TILE = 220;/);
+  });
+
+  it('shows two columns of tiles on a phone', () => {
+    const phone = /@media \(max-width: 600px\) \{\s*\.mgrid \{([^}]*)\}/.exec(boxSource)?.[1];
+    // 2 × 130 px and the 14 px gap fit in a 390 px window's box, its grid's padding taken off.
+    expect(phone).toMatch(/--min-tile: 130px;/);
   });
 
   it("names the deck's hero in the title of a player with two decks", async () => {
@@ -414,12 +466,9 @@ describe('CardBox', () => {
   it('keeps a tile when its action is not sent', async () => {
     const { session } = await renderTable(makeView({ private: SEARCH }));
     session.act.mockReturnValue(null as never);
-    await fireEvent.pointerEnter(tile('c1'));
+    await clickTile('c1');
 
-    const bar = tileBar() as HTMLElement;
-    await fireEvent.click(
-      within(bar).getByRole('button', { name: 'Put at the bottom of the deck' }),
-    );
+    await fireEvent.click(menuItem('Put at the bottom of the deck'));
 
     expect(session.act).toHaveBeenCalledOnce();
     expect(tile('c1')).toBeTruthy();
@@ -435,12 +484,12 @@ describe('CardBox', () => {
 
   it('stage box marks the face on the table and sends chooseStage', async () => {
     const { session } = await renderTable();
-    await fireEvent.pointerEnter(placed('v'));
-    await fireEvent.click(screen.getByRole('button', { name: 'Choose the villain card to show' }));
+    await clickPlaced('v');
+    await fireEvent.click(menuItem('Change card…'));
 
     expect(screen.getByRole('dialog', { name: 'Villain: choose the card to show' })).toBeTruthy();
-    // Opening a box lets go of the table: its bar goes.
-    expect(tableBar()).toBeNull();
+    // Opening a box lets go of the table: its menu goes.
+    expect(contextMenu()).toBeNull();
     expect(interaction.hovered).toBeNull();
     expect(tileNames()).toEqual(['Rhino (stage I)', 'Rhino (stage II)']);
     const shown = tile('v:0');
@@ -467,10 +516,8 @@ describe('CardBox', () => {
 
   it('stage box lists every face of the main scheme', async () => {
     const { session } = await renderTable();
-    await fireEvent.pointerEnter(placed('s'));
-    await fireEvent.click(
-      screen.getByRole('button', { name: 'Choose the main scheme card to show' }),
-    );
+    await clickPlaced('s');
+    await fireEvent.click(menuItem('Change card…'));
 
     expect(tileNames()).toEqual(['The Break-In! (1A)', 'The Break-In! (1B)']);
     await pick('s:1');
@@ -487,49 +534,171 @@ describe('CardBox', () => {
 
   it('box updates when a card leaves', async () => {
     const { rerender } = await renderTable(makeView({ private: SEARCH }));
-    await fireEvent.pointerEnter(tile('c2'));
-    expect(tileBar()).not.toBeNull();
+    await clickTile('c2');
+    expect(contextMenu()).not.toBeNull();
 
-    // Another action takes the hovered card away: its tile and its bar go.
+    // Another action takes the card away: its tile and its menu go.
     const cards = makeView().table?.cards ?? [];
     const drawn = cards.map((c) => (c.id === 'c2' ? { ...c, zone: 'hand' as const } : c));
     await rerender(makeView({ cards: drawn, private: { ...SEARCH, cards: ['c1', 'c3'] } }));
     expect(tileNames()).toEqual(['Web-Shooter', 'Backflip']);
     expect(screen.getByRole('dialog', { name: 'Search Your deck (2 cards)' })).toBeTruthy();
-    expect(tileBar()).toBeNull();
+    expect(contextMenu()).toBeNull();
 
     await rerender(makeView({ private: { ...SEARCH, cards: [] } }));
     expect(within(box()).getByText('Nothing left here.')).toBeTruthy();
   });
 
-  it('a tile sliding under a resting pointer gets no bar', async () => {
+  it('rings the hovered tile, not one sliding under a resting pointer', async () => {
     const { rerender } = await renderTable(makeView({ private: SEARCH }));
     await fireEvent.pointerMove(window, { clientX: 100, clientY: 100 });
     await fireEvent.pointerEnter(tile('c2'), { clientX: 100, clientY: 100 });
-    expect(tileBar()).not.toBeNull();
+    expect(tile('c2').classList).toContain('hovered');
+    await fireEvent.pointerLeave(tile('c2'));
+    expect(tile('c2').classList).not.toContain('hovered');
+    await fireEvent.pointerEnter(tile('c2'), { clientX: 100, clientY: 100 });
 
     // Another player draws it: the next card takes its place under the pointer.
     await rerender(makeView({ private: { ...SEARCH, cards: ['c1', 'c3'] } }));
     await fireEvent.pointerEnter(tile('c3'), { clientX: 100, clientY: 100 });
-    expect(tileBar()).toBeNull();
+    expect(tile('c3').classList).not.toContain('hovered');
 
     // A real move hovers it.
     await fireEvent.pointerMove(window, { clientX: 101, clientY: 100 });
     await fireEvent.pointerEnter(tile('c3'), { clientX: 101, clientY: 100 });
-    expect(tileBar()).not.toBeNull();
+    expect(tile('c3').classList).toContain('hovered');
   });
 
-  it('tile bar plays a card to the first free slot', async () => {
+  it("opens a tile's menu at the pointer on a click, headed with its pile and place", async () => {
+    await renderTable(makeView({ private: SEARCH }));
+    await clickTile('c3', 140, 210);
+
+    const menu = screen.getByRole('menu', { name: 'Backflip, Your deck · #3' });
+    expect(menu).toBe(contextMenu());
+    // Inside the box's dialog, so that it shows over it.
+    expect(box().contains(menu)).toBe(true);
+    expect(menu.style.left).toBe('140px');
+    expect(menu.style.top).toBe('210px');
+    // The pile as the box title names it and the place, in the owner's colour, over the card's name.
+    const title = menu.querySelector<HTMLElement>('.title')!;
+    expect(title.querySelector('.eyebrow')?.textContent).toBe('Your deck · #3');
+    expect(title.querySelector('.name')?.textContent).toBe('Backflip');
+    expect(title.style.getPropertyValue('--owner')).toBe('var(--p1)');
+    // What takes the card, then what sends it away; Play is the default.
+    expect(menuLabels()).toEqual(['Draw', 'Play', 'Discard', 'Put at the bottom of the deck']);
+    expect(menu.querySelectorAll('.msep')).toHaveLength(1);
+    expect(menuItem('Play').classList).toContain('default');
+    expect(menuItem('Draw').classList).not.toContain('default');
+    // The tile stays ringed while its menu is open.
+    expect(tile('c3').classList).toContain('hovered');
+  });
+
+  it("heads an out-of-play tile's menu with its pile only, in the villain's colour", async () => {
+    await renderTable();
+    await fireEvent.click(chip(-1, 'Victory display (1)'));
+    await clickTile('q1');
+
+    const title = contextMenu()!.querySelector<HTMLElement>('.title')!;
+    expect(title.querySelector('.eyebrow')?.textContent).toBe('Victory display');
+    expect(title.querySelector('.name')?.textContent).toBe('Hard to Keep Down');
+    expect(title.style.getPropertyValue('--owner')).toBe('var(--villain)');
+  });
+
+  it("opens a tile's menu on a right click too, never the browser's", async () => {
+    await renderTable(makeView({ private: SEARCH }));
+    const image = tile('c1').querySelector<HTMLElement>('.img') as HTMLElement;
+
+    await fireEvent.pointerDown(image, { button: 2 });
+    const event = createEvent.contextMenu(image, { clientX: 50, clientY: 60 });
+    await fireEvent(image, event);
+    expect(event.defaultPrevented).toBe(true);
+    expect(screen.getByRole('menu', { name: 'Web-Shooter, Your deck · #1' })).toBeTruthy();
+  });
+
+  it('opens nothing, nor the native menu, on the contextmenu a long touch fires on a tile', async () => {
+    await renderTable(makeView({ private: SEARCH }));
+    const image = tile('c1').querySelector<HTMLElement>('.img') as HTMLElement;
+
+    // The press that began it was a touch.
+    await fireEvent.pointerDown(image, {
+      button: 0,
+      clientX: 50,
+      clientY: 60,
+      pointerType: 'touch',
+    });
+    const afterTouch = createEvent.contextMenu(image, { clientX: 50, clientY: 60 });
+    await fireEvent(image, afterTouch);
+    await fireEvent.pointerUp(image, { button: 0, clientX: 50, clientY: 60, pointerType: 'touch' });
+    expect(afterTouch.defaultPrevented).toBe(true);
+    expect(contextMenu()).toBeNull();
+
+    // The event says it itself, as Chrome's does.
+    await fireEvent.pointerDown(image, { button: 2, clientX: 50, clientY: 60 });
+    const touch = new PointerEvent('contextmenu', {
+      bubbles: true,
+      cancelable: true,
+      clientX: 50,
+      clientY: 60,
+      pointerType: 'touch',
+    });
+    await fireEvent(image, touch);
+    expect(touch.defaultPrevented).toBe(true);
+    expect(contextMenu()).toBeNull();
+
+    // A mouse right click still opens it.
+    await fireEvent.pointerDown(image, {
+      button: 2,
+      clientX: 50,
+      clientY: 60,
+      pointerType: 'mouse',
+    });
+    const rightClick = createEvent.contextMenu(image, { clientX: 50, clientY: 60 });
+    await fireEvent(image, rightClick);
+    expect(rightClick.defaultPrevented).toBe(true);
+    expect(screen.getByRole('menu', { name: 'Web-Shooter, Your deck · #1' })).toBe(contextMenu());
+  });
+
+  it('opens nothing on the click iOS fires after a long touch press on a tile; a short tap opens it', async () => {
+    await renderTable(makeView({ private: SEARCH }));
+    const image = tile('c1').querySelector<HTMLElement>('.img') as HTMLElement;
+    // A press held that long, in ms: the events' time stamps (jsdom's Date.now) say how long.
+    const touchFor = async (ms: number): Promise<void> => {
+      const now = vi.spyOn(Date, 'now').mockReturnValue(10_000);
+      const touch = { button: 0, clientX: 50, clientY: 60, pointerType: 'touch' };
+      await fireEvent.pointerDown(image, touch);
+      now.mockReturnValue(10_000 + ms);
+      await fireEvent.pointerUp(image, touch);
+      await fireEvent.click(image, { clientX: 50, clientY: 60 });
+      now.mockRestore();
+    };
+
+    await touchFor(LONG_PRESS_MS + 100);
+    expect(contextMenu()).toBeNull();
+
+    await touchFor(200);
+    expect(screen.getByRole('menu', { name: 'Web-Shooter, Your deck · #1' })).toBe(contextMenu());
+  });
+
+  it('a second click on the tile closes its menu; a click on another tile opens that one', async () => {
+    await renderTable(makeView({ private: SEARCH }));
+    await clickTile('c1');
+    expect(contextMenu()).not.toBeNull();
+
+    await clickTile('c1');
+    expect(contextMenu()).toBeNull();
+
+    await clickTile('c1');
+    await clickTile('c2');
+    expect(screen.getByRole('menu', { name: 'Swinging Web Kick, Your deck · #2' })).toBe(
+      contextMenu(),
+    );
+  });
+
+  it('plays a card to the first free slot from its menu, then closes it', async () => {
     const { session } = await renderTable(makeView({ private: SEARCH }));
-    await fireEvent.pointerEnter(tile('c1'));
+    await clickTile('c1');
 
-    const bar = tileBar() as HTMLElement;
-    const names = within(bar)
-      .getAllByRole('button')
-      .map((button) => button.getAttribute('aria-label') ?? button.textContent);
-    expect(names).toEqual(['Draw', 'Play', 'Discard', 'Put at the bottom of the deck']);
-
-    await fireEvent.click(within(bar).getByRole('button', { name: 'Play' }));
+    await fireEvent.click(menuItem('Play'));
     expect(session.act).toHaveBeenCalledExactlyOnceWith(
       {
         kind: 'play',
@@ -540,7 +709,126 @@ describe('CardBox', () => {
       },
       0,
     );
-    expect(tileBar()).toBeNull();
+    expect(contextMenu()).toBeNull();
+    // The box stays open.
+    expect(box()).toBeTruthy();
+  });
+
+  it('draws, discards or puts a card at the bottom of the deck from its menu', async () => {
+    const { session } = await renderTable(makeView({ private: SEARCH }));
+
+    await clickTile('c1');
+    await fireEvent.click(menuItem('Draw'));
+    expect(session.act).toHaveBeenLastCalledWith({ kind: 'toHand', card: 'c1' }, 0);
+
+    await clickTile('c2');
+    await fireEvent.click(menuItem('Discard'));
+    expect(session.act).toHaveBeenLastCalledWith({ kind: 'discard', card: 'c2' }, 0);
+
+    await clickTile('c3');
+    await fireEvent.click(menuItem('Put at the bottom of the deck'));
+    expect(session.act).toHaveBeenLastCalledWith(
+      { kind: 'toDeck', card: 'c3', where: 'bottom' },
+      0,
+    );
+    // Put at the bottom, it leaves the box, though it stays in the pile.
+    expect(tileNames()).not.toContain('Backflip');
+  });
+
+  it('shuffles an out-of-play card into its deck from its menu', async () => {
+    const { session } = await renderTable();
+    await fireEvent.click(chip(-1, 'Victory display (1)'));
+    await clickTile('q1');
+
+    expect(menuLabels()).toEqual([
+      'Play',
+      'Discard',
+      'Put at the bottom of the deck',
+      'Shuffle into its deck',
+    ]);
+    await fireEvent.click(menuItem('Shuffle into its deck'));
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      { kind: 'toDeck', card: 'q1', where: 'shuffle' },
+      0,
+    );
+  });
+
+  it('closes the tile menu with Escape first, then the box', async () => {
+    const { session } = await renderTable(makeView({ private: SEARCH }));
+    await clickTile('c1');
+    const menu = contextMenu()!;
+    expect(document.activeElement).toBe(menu);
+
+    await fireEvent.keyDown(menu, { key: 'Escape' });
+    expect(contextMenu()).toBeNull();
+    expect(box()).toBeTruthy();
+    expect(session.act).not.toHaveBeenCalled();
+
+    await fireEvent.keyDown(window, { key: 'Escape' });
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'closeView' }, 0);
+  });
+
+  it('takes the focus into the tile menu only once it shows: a hidden menu cannot have it', async () => {
+    // Browsers refuse the focus to an element under visibility: hidden, as the menu is until placed.
+    const focusedWhilePlaced: boolean[] = [];
+    const focus = HTMLElement.prototype.focus;
+    vi.spyOn(HTMLElement.prototype, 'focus').mockImplementation(function (
+      this: HTMLElement,
+      options?: FocusOptions,
+    ) {
+      if (this.classList.contains('table-menu')) {
+        focusedWhilePlaced.push(this.classList.contains('placed'));
+      }
+      focus.call(this, options);
+    });
+    await renderTable(makeView({ private: SEARCH }));
+    await clickTile('c1');
+
+    await waitFor(() => expect(document.activeElement).toBe(contextMenu()));
+    expect(focusedWhilePlaced).toEqual([true]);
+  });
+
+  it('closes the tile menu with Escape first wherever the focus is, then the box', async () => {
+    const { session } = await renderTable(makeView({ private: SEARCH }));
+    await clickTile('c1');
+    // The focus left in the box itself, as a press on a tile leaves it there.
+    box().focus();
+
+    // A real key: dispatched on the focused element, bubbling up to the window.
+    const escape = () =>
+      document.activeElement!.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }),
+      );
+    escape();
+    await tick();
+    expect(contextMenu()).toBeNull();
+    expect(box()).toBeTruthy();
+    expect(tileNames()).toHaveLength(3);
+    expect(session.act).not.toHaveBeenCalled();
+
+    escape();
+    await tick();
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'closeView' }, 0);
+  });
+
+  it('opens no menu with the click that ends a reorder of the top cards', async () => {
+    const { session } = await renderTable(makeView({ private: LOOK }));
+    layOutTiles();
+
+    // Web-Shooter is dragged to the end, then back over its own slot, and let go there.
+    const image = tile('c1').querySelector<HTMLElement>('.img') as HTMLElement;
+    await fireEvent.pointerDown(image, { clientX: 60, clientY: 150, button: 0 });
+    await fireEvent.pointerMove(window, { clientX: 400, clientY: 150, buttons: 1 });
+    await fireEvent.pointerUp(window, { clientX: 400, clientY: 150 });
+    await fireEvent.click(tile('c1').querySelector<HTMLElement>('.img') as HTMLElement);
+    expect(session.act).toHaveBeenCalledOnce();
+    expect(contextMenu()).toBeNull();
+
+    // A plain click on a tile of the box opens its menu.
+    await clickTile('c2', 160, 150);
+    expect(contextMenu()).not.toBeNull();
   });
 
   it("shuffles the scenario's set-aside cards into the encounter deck from their box", async () => {
@@ -550,8 +838,7 @@ describe('CardBox', () => {
       pile('aside:p1', { kind: 'aside', owner: 1, count: 1, cards: ['q1'] }),
     );
     const { session } = await renderTable(view);
-    await fireEvent.pointerEnter(placed('enc'));
-    await fireEvent.click(screen.getByRole('button', { name: 'Set-aside cards (1)' }));
+    await fireEvent.click(chip(-1, 'Set-aside cards (1)'));
 
     await fireEvent.click(
       within(box()).getByRole('button', { name: 'Shuffle into the encounter deck' }),
@@ -568,29 +855,59 @@ describe('CardBox', () => {
       pile('saside', { kind: 'aside', count: 1, cards: ['q1'] }),
     );
     const player = await renderTable(view);
-    await fireEvent.pointerEnter(placed('deck:p1'));
-    await fireEvent.click(screen.getByRole('button', { name: 'Set-aside cards (1)' }));
+    await fireEvent.click(chip(1, 'Set-aside cards (1)'));
     expect(within(box()).queryByRole('button', { name: /^Shuffle into/ })).toBeNull();
     player.unmount();
 
     await renderTable(asSpectator(view));
-    await fireEvent.pointerEnter(placed('enc'));
-    await fireEvent.click(screen.getByRole('button', { name: 'Set-aside cards (1)' }));
+    await fireEvent.click(chip(-1, 'Set-aside cards (1)'));
     expect(within(box()).queryByRole('button', { name: /^Shuffle into/ })).toBeNull();
   });
 
   it('browse lists a public pile without the server', async () => {
     const { session } = await renderTable();
-    // The victory display is not drawn on the table: the encounter deck's bar opens it.
+    // The victory display is not drawn on the table: a chip on the villain's frame opens it.
     expect(document.querySelector('.surface [data-id="vic"]')).toBeNull();
-    await fireEvent.pointerEnter(placed('enc'));
-    await fireEvent.click(screen.getByRole('button', { name: 'Victory display (1)' }));
+    await fireEvent.click(chip(-1, 'Victory display (1)'));
 
     expect(screen.getByRole('dialog', { name: 'Victory display' })).toBeTruthy();
     expect(tileNames()).toEqual(['Hard to Keep Down']);
     await fireEvent.click(within(box()).getByRole('button', { name: 'Close' }));
     expect(session.act).not.toHaveBeenCalled();
     expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('gives the focus back to a clicked chip without a focus ring', async () => {
+    await renderTable();
+    const victory = chip(-1, 'Victory display (1)');
+    const focus = vi.spyOn(victory, 'focus');
+
+    // A mouse press focuses the button it clicks; jsdom does not.
+    await fireEvent.pointerDown(victory);
+    victory.focus();
+    await fireEvent.click(victory, { detail: 1 });
+    expect(document.activeElement).not.toBe(victory);
+    await fireEvent.click(within(box()).getByRole('button', { name: 'Close' }));
+
+    expect(document.activeElement).toBe(victory);
+    expect(focus).toHaveBeenLastCalledWith({ focusVisible: false });
+  });
+
+  it('gives the focus back to a chip pressed from the keyboard, ring and all', async () => {
+    await renderTable();
+    const victory = chip(-1, 'Victory display (1)');
+    victory.focus();
+    const focus = vi.spyOn(victory, 'focus');
+
+    // Enter on a button clicks it.
+    await fireEvent.keyDown(victory, { key: 'Enter' });
+    await fireEvent.click(victory, { detail: 0 });
+    expect(document.activeElement).not.toBe(victory);
+    await fireEvent.keyDown(window, { key: 'Escape' });
+
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(document.activeElement).toBe(victory);
+    expect(focus).toHaveBeenLastCalledWith();
   });
 
   it('out-of-play piles list their cards by card number, with no place badge', async () => {
@@ -602,8 +919,7 @@ describe('CardBox', () => {
     await renderTable(view);
 
     for (const name of ['Victory display (3)', 'Set-aside cards (3)']) {
-      await fireEvent.pointerEnter(placed('enc'));
-      await fireEvent.click(screen.getByRole('button', { name }));
+      await fireEvent.click(chip(-1, name));
       expect(tileNames()).toEqual(['Web-Shooter', 'Swinging Web Kick', 'Hard to Keep Down']);
       expect(tileBadges()).toEqual([]);
       await fireEvent.click(within(box()).getByRole('button', { name: 'Close' }));
@@ -618,8 +934,8 @@ describe('CardBox', () => {
     // Players search a discard pile through the server; spectators browse it.
     await renderTable(asSpectator(view));
 
-    await fireEvent.pointerEnter(placed('disc:p0'));
-    await fireEvent.click(screen.getByRole('button', { name: 'Browse…' }));
+    await clickPlaced('disc:p0');
+    await fireEvent.click(menuItem('Browse…'));
     expect(tileNames()).toEqual(['Web-Shooter', 'Hard to Keep Down', 'Swinging Web Kick']);
     expect(tileBadges()).toEqual(['#1', '#2', '#3']);
   });
@@ -635,15 +951,13 @@ describe('CardBox', () => {
     ];
     await renderTable(view);
 
-    await fireEvent.pointerEnter(placed('v'));
-    await fireEvent.click(screen.getByRole('button', { name: 'Choose the villain card to show' }));
+    await clickPlaced('v');
+    await fireEvent.click(menuItem('Change card…'));
     expect(tileNames()).toEqual(['Rhino (stage I)', 'Rhino (stage II)']);
     await fireEvent.click(within(box()).getByRole('button', { name: 'Close' }));
 
-    await fireEvent.pointerEnter(placed('s'));
-    await fireEvent.click(
-      screen.getByRole('button', { name: 'Choose the main scheme card to show' }),
-    );
+    await clickPlaced('s');
+    await fireEvent.click(menuItem('Change card…'));
     expect(tileNames()).toEqual([
       'The Break-In! (1A)',
       'The Break-In! (1B)',
@@ -652,19 +966,14 @@ describe('CardBox', () => {
     ]);
   });
 
-  it('an empty encounter deck still opens the victory display', async () => {
+  it('an empty encounter deck has no menu: its frame still opens the victory display', async () => {
     const view = makeView();
     view.table!.piles = view.table!.piles.map((p) => (p.id === 'enc' ? { ...p, count: 0 } : p));
     await renderTable(view);
 
-    await fireEvent.pointerEnter(placed('enc'));
-    const bar = tableBar() as HTMLElement;
-    expect(
-      within(bar)
-        .getAllByRole('button')
-        .map((b) => b.getAttribute('aria-label')),
-    ).toEqual(['Victory display (1)']);
-    await fireEvent.click(within(bar).getByRole('button', { name: 'Victory display (1)' }));
+    await clickPlaced('enc');
+    expect(contextMenu()).toBeNull();
+    await fireEvent.click(chip(-1, 'Victory display (1)'));
     expect(screen.getByRole('dialog', { name: 'Victory display' })).toBeTruthy();
   });
 
@@ -672,22 +981,19 @@ describe('CardBox', () => {
     const { session } = await renderTable(asSpectator(makeView()));
 
     await fireEvent.pointerEnter(placed('deck:p0'));
-    expect(tableBar()).toBeNull();
+    await clickPlaced('deck:p0');
+    expect(contextMenu()).toBeNull();
     await fireEvent.keyDown(window, { key: 'l' });
     await fireEvent.keyDown(window, { key: 'k' });
     expect(screen.queryByRole('dialog')).toBeNull();
 
-    // The encounter deck opens the victory display, read-only: no tile actions.
-    await fireEvent.pointerEnter(placed('enc'));
-    const bar = tableBar() as HTMLElement;
-    expect(
-      within(bar)
-        .getAllByRole('button')
-        .map((b) => b.getAttribute('aria-label')),
-    ).toEqual(['Victory display (1)']);
-    await fireEvent.click(within(bar).getByRole('button', { name: 'Victory display (1)' }));
-    await fireEvent.pointerEnter(tile('q1'));
-    expect(tileBar()).toBeNull();
+    // The encounter deck has no menu; the villain's frame opens the victory display, read-only:
+    // no tile actions.
+    await clickPlaced('enc');
+    expect(contextMenu()).toBeNull();
+    await fireEvent.click(chip(-1, 'Victory display (1)'));
+    await clickTile('q1');
+    expect(contextMenu()).toBeNull();
     await fireEvent.click(within(box()).getByRole('button', { name: 'Close' }));
     expect(session.act).not.toHaveBeenCalled();
   });
@@ -695,10 +1001,10 @@ describe('CardBox', () => {
   it('spectator gets no stage button on the villain nor the main scheme', async () => {
     await renderTable(asSpectator(makeView()));
 
-    await fireEvent.pointerEnter(placed('v'));
-    expect(tableBar()).toBeNull();
-    await fireEvent.pointerEnter(placed('s'));
-    expect(tableBar()).toBeNull();
+    await clickPlaced('v');
+    expect(contextMenu()).toBeNull();
+    await clickPlaced('s');
+    expect(contextMenu()).toBeNull();
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 });

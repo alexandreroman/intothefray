@@ -39,14 +39,16 @@
 - [Card image preload](references/project_image_preload.md) — browser-native: low-priority Image per pool face, no custom queue
 - [No compression in the backend](references/project_no_backend_compression.md) — Go sends HTTP/WS uncompressed; Caddy/CDN compress
 - [Visual identity](references/project_visual_identity.md) — Ink & Signal: Archivo, ink palette, split-card logo, full wordmark in bars
-- [Table layout](references/project_table_layout.md) — one surface in rows, owner frames, out-of-play via pile bars
+- [Table layout](references/project_table_layout.md) — one surface in rows, owner frames, out-of-play via owner frame chips
 - [Provider-neutral UI copy](references/project_provider_neutral_copy.md) — UI says "deck link", names no deck provider
 - [Top bar alignment](references/project_top_bar_alignment.md) — bar edges follow each screen's content column; table: icons 8px from window edge
 - [Several decks per player](references/project_multi_deck.md) — 1 to 4 deck slots per player, 4 in all; seat = deck; credited seat
 - [Truncated text shows a tooltip](references/project_truncated_text.md) — ellipsis text gets a full-text tooltip via use:overflowTip
 - [Animated switches and card art](references/project_switches_card_art.md) — switches slide via selectionIndicator; thumbnails use CardArt
-- [Spectators have no stage button](references/project_spectator_stage.md) — no action on villain/main scheme cards for spectators
+- [Spectators cannot change the stage card](references/project_spectator_stage.md) — no action on villain/main scheme cards for spectators
 - [CI scope](references/project_ci_scope.md) — ci.yml checks Go, web, Docker; pages.yml standalone; no packs sync, no Dependabot
 - [Moving several cards as a group](references/project_group_moves.md) — rubber band selection; a group only moves; one atomic group action
 - [Localized card names and images](references/project_localized_cards.md) — localized overrides per face and index entry; Options language, English default
 - [Fear No Evil scenarios](references/project_fear_no_evil_scenarios.md) — Kingpin curated; chosen-Underling scenarios unsupported
+- [Action menu organisation](references/project_action_bars.md) — click opens the action menu; hand plays by drag and keys; out-of-play chips
+- [Identity card stays on the table](references/project_identity_stays.md) — identity never leaves the table, like a stage card

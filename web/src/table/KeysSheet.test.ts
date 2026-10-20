@@ -111,19 +111,30 @@ describe('KeysSheet', () => {
           'Exhaust / ready: E',
           'Flip: F',
           'Draw an arrow to another card: A',
-          'Discard: ⌫',
+          'Discard: X⌫',
           'Back to hand: H',
+          'Bottom of the deck: B',
+          'Change the villain or scheme card: V',
         ],
       ],
       [
         'Tokens (Shift removes)',
-        ['Damage: D', 'Threat: T', 'Counter: N', 'Stunned: S', 'Confused: C', 'Tough: G'],
+        [
+          'Damage: D',
+          'Threat: T',
+          'Counter: N',
+          'Stunned: S',
+          'Confused: C',
+          'Tough: G',
+          'Locked: L',
+        ],
       ],
-      ['Card in your hand', ['Play: P', 'Discard: ⌫']],
+      ['Card in your hand', ['Play: P', 'Discard: X⌫']],
       [
         'Deck under the mouse',
         [
           'Draw 1: W',
+          'Draw several cards: ⇧ W',
           'Reveal (encounter deck): R',
           'Look at the top cards: L',
           'Search: K',
@@ -145,6 +156,7 @@ describe('KeysSheet', () => {
       [
         'Mouse',
         [
+          'All the actions of a card or pile: click or right click',
           'Ping a spot: Alt + click',
           'Arrow from a card to another: Shift + drag',
           'Select cards: drag on an empty spot',

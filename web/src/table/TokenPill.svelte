@@ -1,6 +1,7 @@
 <!--
   The small "− value +" pill above a hovered token or status. It stays while
-  the pointer is on it, like the action bar.
+  the pointer is on it, and so does the hover of its card. Tapped (touch), it
+  stays until a press lands outside it and its token.
 -->
 <script lang="ts">
   import { onDestroy } from 'svelte';
@@ -58,6 +59,17 @@
     event.preventDefault();
   }
 
+  /** A press outside the pill and its token lets go of the pill a tap pinned. */
+  function onDocumentPointerDown(event: PointerEvent): void {
+    if (!interaction.counterPinned || !(event.target instanceof Node)) {
+      return;
+    }
+    if (pill?.contains(event.target) || anchor()?.contains(event.target)) {
+      return;
+    }
+    interaction.unpinCounter();
+  }
+
   // Gone with its token, the pill is no longer under the pointer.
   onDestroy(() => {
     interaction.onPill = false;
@@ -65,6 +77,7 @@
 </script>
 
 <svelte:window onscrollcapture={place} onresize={place} />
+<svelte:document onpointerdowncapture={onDocumentPointerDown} />
 
 <div
   class="tokpill"
@@ -129,6 +142,27 @@
     line-height: 22px;
     border-radius: 999px;
     color: var(--text);
+  }
+
+  /*
+    A finger needs 44 px: on touch, each button gets an invisible hit area 44 px a side, over the
+    value beside it. It rises from the button's bottom, away from the token and the card under the
+    pill, which keep their own taps.
+  */
+  @media (pointer: coarse) {
+    button {
+      position: relative;
+    }
+
+    button::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      width: max(100%, 44px);
+      height: max(100%, 44px);
+      translate: -50% 0;
+    }
   }
 
   .value {

@@ -67,7 +67,7 @@ export function cardBox(size: Size, opts: { faceDown?: boolean; onPile?: boolean
 
 /**
  * A victory display or set-aside pile. They are not drawn on the table: the
- * action bar of their owner's deck and discard pile opens them.
+ * chips on their owner's frame open them (outOfPlayChips).
  */
 export function isOutOfPlay(pile: PileView): boolean {
   return OUT_OF_PLAY_KINDS.includes(pile.kind);
@@ -148,6 +148,22 @@ export function surfaceSize(
   };
 }
 
+/**
+ * How far right the table's content reaches, in table units: its cards and
+ * piles, and the frames around the owners' piles. The surface starts at 0,
+ * so this is the width the fit zoom brings into view.
+ */
+export function contentWidth(
+  cards: CardView[],
+  piles: PileView[],
+  sizeOf: (c: CardView) => Size,
+): number {
+  const items = footprints(cards, piles, sizeOf).map((item) => visualBox(item).right);
+  const frames = ownerFrames(piles).map((frame) => frame.x + frame.w);
+  // Rounded up: a turned card's box ends between two units.
+  return Math.ceil(Math.max(0, ...items, ...frames));
+}
+
 /** One axis of the surface: the items' end, the length that shows, and the free room past them. */
 function axisSize(end: number, visible: number, freeRoom: number): number {
   if (end <= visible) {
@@ -166,8 +182,10 @@ export interface OwnerFrame {
   h: number;
 }
 
-// Room between the piles and their frame: the count pill under a pile stays inside. The
-// owner's name lies above the frame, in the 30 units the server leaves above the piles (setup.go).
+// Room between the piles and their frame: the count pill under a pile stays inside. The owner's
+// name line lies from 30 to 8 units above the frame (Surface.svelte): 10 units past the 30 the
+// server leaves above the piles (setup.go), into the empty bottom of the row above, or into the
+// scroller's padding for the villain's frame.
 const FRAME_PADDING = 10;
 
 const HOME_KINDS: readonly PileKind[] = [
@@ -200,6 +218,35 @@ export function ownerFrames(piles: PileView[]): OwnerFrame[] {
   });
 }
 
+/** An out-of-play pile, as the chip on its owner's frame shows it. */
+export interface OutOfPlayChip {
+  /** The pile the chip opens. */
+  pile: string;
+  kind: 'victory' | 'aside';
+  /** What the pile is: "Victory display", "Set-aside cards". */
+  label: string;
+  count: number;
+}
+
+/**
+ * The chips of an owner's frame, for the out-of-play piles the table has:
+ * the victory display then the scenario's set-aside cards on the villain's
+ * frame (owner -1), a player's own set-aside cards on theirs. The pile ids are
+ * the server's (internal/game/state.go).
+ */
+export function outOfPlayChips(owner: number, piles: readonly PileView[]): OutOfPlayChip[] {
+  const victory = { pile: 'vic', kind: 'victory', label: 'Victory display' } as const;
+  const setAside = { kind: 'aside', label: 'Set-aside cards' } as const;
+  const wanted =
+    owner === -1
+      ? [victory, { ...setAside, pile: 'saside' }]
+      : [{ ...setAside, pile: `aside:p${owner}` }];
+  return wanted.flatMap((chip) => {
+    const pile = piles.find((p) => p.id === chip.pile);
+    return pile ? [{ ...chip, count: pile.count }] : [];
+  });
+}
+
 export interface FanSlot {
   x: number;
   y: number;
@@ -214,6 +261,52 @@ export const HAND_CARD = { w: 185, h: 259 } as const;
 
 /** A card in the hand on a narrow screen (900 px wide or less). */
 export const HAND_CARD_NARROW = { w: 140, h: 196 } as const;
+
+// A small screen's hand card (a phone, either way up): a quarter of the window's width, within
+// these bounds. 151 px is the desktop card as the resting hand shows it (185 px at 82 %).
+const SMALL_HAND_CARD_MIN_W = 64;
+const SMALL_HAND_CARD_MAX_W = 151;
+const SMALL_HAND_CARD_SHARE = 0.25;
+const HAND_CARD_RATIO = HAND_CARD.h / HAND_CARD.w;
+
+/** The hand's padding above and below its cards, in px: Hand.svelte draws it. */
+export const HAND_PADDING = { top: 26, bottom: 18 } as const;
+const HAND_PADDING_Y = HAND_PADDING.top + HAND_PADDING.bottom;
+
+/** The resting hand is drawn at this scale, from its bottom edge: Hand.svelte draws it. */
+export const HAND_REST_SCALE = 0.82;
+
+/** How far the resting hand drops below its raised place, in px, but on a small screen. */
+export const HAND_REST_DROP = 140;
+
+/**
+ * A hand card on a small screen (600 px wide or less, or 500 px tall or
+ * less), in px: a quarter of the window's width, between 64 and 151 px wide,
+ * and never so tall that the raised hand takes more than half the window's
+ * height (a phone held sideways).
+ */
+export function smallHandCard(window: { w: number; h: number }): { w: number; h: number } {
+  const fromWidth = window.w * SMALL_HAND_CARD_SHARE;
+  const fromHeight = (window.h / 2 - HAND_PADDING_Y) / HAND_CARD_RATIO;
+  const w = Math.floor(
+    Math.max(SMALL_HAND_CARD_MIN_W, Math.min(SMALL_HAND_CARD_MAX_W, fromWidth, fromHeight)),
+  );
+  return { w, h: Math.round(w * HAND_CARD_RATIO) };
+}
+
+/**
+ * How far a small screen's resting hand drops, in px: the share of its card
+ * height that HAND_REST_DROP is of the desktop card's, so that as much of
+ * each card shows.
+ */
+export function smallHandDrop(cardHeight: number): number {
+  return Math.round((cardHeight * HAND_REST_DROP) / HAND_CARD.h);
+}
+
+/** The height of the resting hand that shows above the window's bottom edge, in px. */
+export function restingStrip(cardHeight: number, drop: number): number {
+  return Math.max(0, Math.round(HAND_REST_SCALE * (HAND_PADDING_Y + cardHeight) - drop));
+}
 
 const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
 

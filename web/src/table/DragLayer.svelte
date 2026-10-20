@@ -1,8 +1,9 @@
 <!--
   Drag and drop (spec 5.4). A press on a table card, a pile, a hand card or
-  the first player token becomes a drag after 4 px: what is dragged is drawn
-  here, over the whole page at the table's zoom, outside the table's surface,
-  so that new views redrawing the table leave it alone. The drop targets are
+  the first player token becomes a drag after 4 px (a finger pushing a hand
+  card down swipes the hand away instead): what is dragged is drawn here,
+  over the whole page at the table's zoom, outside the table's surface, so
+  that new views redrawing the table leave it alone. The drop targets are
   measured on the screen and drag.ts decides what the drop sends. Once
   dropped, it stays drawn where it landed until the server answers.
 -->
@@ -31,6 +32,7 @@
     handAreaOf,
     handBand,
     insertIndex,
+    isDownward,
     pileDropRect,
     pileTargets,
     sourceOf,
@@ -223,6 +225,13 @@
       if (Math.hypot(at.x - pressed.start.x, at.y - pressed.start.y) < DRAG_THRESHOLD) {
         return;
       }
+      if (isHandSwipe(pressed, event, at)) {
+        // Not a drag: the hand follows the finger down (Hand.svelte). The tap the release
+        // would make on the card is no tap either.
+        interaction.letGo();
+        interaction.swallowNextClick();
+        return;
+      }
       const from = sourceOf(pressed.element, view);
       if (!from) {
         // Not draggable, or a spectator: the press stays a press.
@@ -236,6 +245,15 @@
     if (source) {
       tellOthers(source, at);
     }
+  }
+
+  /** A finger pushing a hand card down: a swipe that lowers the hand, not a drag of the card. */
+  function isHandSwipe(pressed: Held, event: PointerEvent, at: Point): boolean {
+    return (
+      pressed.element.kind === 'hand' &&
+      event.pointerType === 'touch' &&
+      isDownward(pressed.start, at)
+    );
   }
 
   function start(from: DragSource, pressedAt: Point): void {
@@ -524,7 +542,7 @@
       return;
     }
     if (!pressed.moved) {
-      // A tap or a click: the click selects.
+      // A tap or a click, not a drag: its click opens the action menu, or selects a hand card on touch.
       interaction.letGo();
       return;
     }

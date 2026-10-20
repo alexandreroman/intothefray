@@ -9,7 +9,7 @@
 -->
 <script lang="ts">
   import { onDestroy, onMount, type Snippet } from 'svelte';
-  import { openModal } from './modal.svelte';
+  import { lastPressByPointer, openModal } from './modal.svelte';
 
   let {
     title,
@@ -50,10 +50,21 @@
   // is shown must see it open.
   onDestroy(openModal());
 
-  // The focus goes back where it was when the dialog closes.
+  // The focus goes back where it was when the dialog closes. A dialog opened by
+  // the pointer gives it back without a focus ring: browsers would draw one on
+  // the button that opened it once a text field of the box (the card boxes'
+  // name filter) has had the focus. Opened from the keyboard, the ring shows
+  // where the focus lands, as the browser decides.
   const focusedBefore =
     document.activeElement instanceof HTMLElement ? document.activeElement : null;
-  onDestroy(() => focusedBefore?.focus());
+  const openedByPointer = lastPressByPointer();
+  onDestroy(() => {
+    if (openedByPointer) {
+      focusedBefore?.focus({ focusVisible: false });
+    } else {
+      focusedBefore?.focus();
+    }
+  });
 
   onMount(() => {
     // The content may have focused one of its own elements already (autofocus).

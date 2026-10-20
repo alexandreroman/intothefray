@@ -27,6 +27,15 @@ export function setPref(key: string, value: string): void {
   }
 }
 
+export function removePref(key: string): void {
+  memory.delete(key);
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // Storage is unavailable: only the in-memory copy was there.
+  }
+}
+
 /** Forgets the in-memory copies, so that each test starts with no preference. Test-only. */
 export function clearPrefMemory(): void {
   memory.clear();

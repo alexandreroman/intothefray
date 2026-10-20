@@ -1,7 +1,7 @@
 // The table's keyboard shortcuts (spec 5.10). One keydown listener on the
-// window acts on the element under the pointer, with the items its action bar
-// offers; the arrow, which has no button, and the hand cards, which have no
-// bar, get their own keys here.
+// window acts on the element under the pointer, or on the one whose context
+// menu is open, with the items its menu lists; the arrow, which is no item of
+// that list, and the hand cards, which have no menu, get their own keys here.
 
 import { modal } from '../components/modal.svelte';
 import type { Action, CardView, PileView, Size, View } from '../lib/types';
@@ -29,11 +29,11 @@ const HERO_STEPS: Record<string, -1 | 1> = {
 /** What the keys need from the table. */
 export interface KeyTable {
   view: View;
-  /** The actions of the hovered element, as its bar offers them. */
+  /** The actions of the hovered element, as its context menu lists them. */
   items: ActionItem[] | { text: string };
   zoom: number;
   setZoom: (zoom: number) => void;
-  /** Runs a bar item, as a click on it would. */
+  /** Runs an action item, as choosing it in the context menu would. */
   run: (item: ActionItem) => void;
   act: (action: Action) => void;
   /** Whether the table has a card that Ready all would ready. */
@@ -57,7 +57,7 @@ export function handleKey(event: KeyboardEvent, table: KeyTable): void {
   if (event.defaultPrevented) {
     return;
   }
-  // Outside a field, Backspace discards: it never takes the browser back in its history.
+  // Outside a field, Backspace discards (as X does): it never takes the browser back in its history.
   if (event.key === 'Backspace' && !isTyping(event.target)) {
     event.preventDefault();
   }
@@ -183,37 +183,45 @@ function playerKey(event: KeyboardEvent, table: KeyTable): boolean {
   if (!Array.isArray(table.items)) {
     return false;
   }
-  const item = findItem(table.items, key);
-  if (!item) {
-    return false;
+  const item = findItem(table.items, key, event.shiftKey);
+  if (item) {
+    if (event.repeat && counterAction(item) === null) {
+      return false;
+    }
+    table.run(item);
+    return true;
   }
-  const adds = counterAction(item);
-  if (event.shiftKey) {
-    // Shift goes with the token and status keys only.
-    return adds !== null && removeOne(adds, table);
-  }
-  if (event.repeat && adds === null) {
-    return false;
-  }
-  table.run(item);
-  return true;
+  // Without an item of its own (Draw X is Shift + W), Shift + a token or status key takes one off.
+  const plain = event.shiftKey ? findItem(table.items, key, false) : undefined;
+  const adds = plain ? counterAction(plain) : null;
+  return adds !== null && removeOne(adds, table);
 }
 
-/** The enabled item with that key, in the bar or in one of its enabled dropdowns. */
-function findItem(items: ActionItem[], key: string): ActionItem | undefined {
+/**
+ * The enabled item with that key, its main key or one of its alternatives, in
+ * the list or in one of its enabled submenus, taken with Shift or not as the
+ * item says.
+ */
+function findItem(items: ActionItem[], key: string, shift: boolean): ActionItem | undefined {
   for (const item of items) {
     if (item.disabled) {
       continue;
     }
-    if (item.key?.toLowerCase() === key) {
+    if (answersTo(item, key) && (item.shift ?? false) === shift) {
       return item;
     }
-    const inMenu = item.menu ? findItem(item.menu, key) : undefined;
+    const inMenu = item.menu ? findItem(item.menu, key, shift) : undefined;
     if (inMenu) {
       return inMenu;
     }
   }
   return undefined;
+}
+
+/** Whether the item runs on that key (lower case): its main key or one of its alternatives. */
+function answersTo(item: ActionItem, key: string): boolean {
+  const keys = [item.key, ...(item.altKeys ?? [])];
+  return keys.some((itemKey) => itemKey?.toLowerCase() === key);
 }
 
 /** The action of a token or status item, which adds one; null for any other item. */
@@ -239,7 +247,10 @@ function removeOne(adds: Action, table: KeyTable): boolean {
   return true;
 }
 
-/** P plays a card of the hand to the first free slot of its deck's row, Backspace discards it. */
+/**
+ * P plays a card of the hand to the first free slot of its deck's row, X or
+ * Backspace discards it, as they discard a card in play.
+ */
 function handKey(key: string, id: string, table: KeyTable): boolean {
   switch (key) {
     case 'p': {
@@ -252,6 +263,7 @@ function handKey(key: string, id: string, table: KeyTable): boolean {
       table.act({ kind: 'play', card: id, x, y });
       return true;
     }
+    case 'x':
     case 'backspace': {
       // A side deck's card without a discard pile has nowhere to be discarded to.
       const card = table.view.table?.cards.find((c) => c.id === id);

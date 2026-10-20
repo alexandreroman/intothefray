@@ -7,6 +7,7 @@ import {
   handAreaOf,
   handBand,
   insertIndex,
+  isDownward,
   pileDropRect,
   pileTargets,
   snap,
@@ -367,6 +368,18 @@ describe('dropAction', () => {
 
 const AT_ORIGIN = { x: 0, y: 0 };
 
+describe('isDownward', () => {
+  it('is true within 45 degrees of straight down only', () => {
+    const from = { x: 100, y: 100 };
+    expect(isDownward(from, { x: 100, y: 104 })).toBe(true);
+    expect(isDownward(from, { x: 97, y: 104 })).toBe(true);
+    // Sideways (a reorder), up (to the table), or right on the diagonal.
+    expect(isDownward(from, { x: 104, y: 101 })).toBe(false);
+    expect(isDownward(from, { x: 100, y: 96 })).toBe(false);
+    expect(isDownward(from, { x: 103, y: 103 })).toBe(false);
+  });
+});
+
 describe('dealRecipient', () => {
   // The setup's rows: the villain's from 0, then one per seat every 330, the deck 30 below its top.
   const piles = [
@@ -513,6 +526,23 @@ describe('pileTargets', () => {
     expect(of('under')).toHaveLength(3);
   });
 
+  it('offers nothing for an identity card, or a card it is tucked under', () => {
+    const withIdentity = makeView({
+      cards: [
+        card('host'),
+        card('hero', { identity: true, parent: 'host' }),
+        card('up', { parent: 'hero' }),
+      ],
+      piles,
+    });
+    const targetsOf = (id: string) =>
+      pileTargets({ kind: 'card', card: id, x: 0, y: 0 }, withIdentity);
+    expect(targetsOf('hero')).toEqual([]);
+    expect(targetsOf('host')).toEqual([]);
+    // What is tucked under it can go: the top and the bottom of its deck, or its discard pile.
+    expect(targetsOf('up').map((t) => t.drop)).toEqual(['top', 'bottom', 'discard']);
+  });
+
   it('offers the encounter deck its discard pile only', () => {
     const targets = pileTargets({ kind: 'encounter', pile: 'enc' }, view);
     expect(targets.map((t) => t.pile)).toEqual(['encd']);
@@ -540,6 +570,20 @@ describe('handAreaOf', () => {
     expect(handAreaOf(tableCard('mine'), view)).toBe('p0');
     expect(handAreaOf(tableCard('theirs'), view)).toBeNull();
     expect(handAreaOf(tableCard('enc'), view)).toBeNull();
+  });
+
+  it('takes no identity card, nor a card it is tucked under', () => {
+    const withIdentity = makeView({
+      cards: [
+        card('host'),
+        card('hero', { identity: true, parent: 'host' }),
+        card('up', { parent: 'hero' }),
+      ],
+    });
+    const tableCard = (id: string): DragSource => ({ kind: 'card', card: id, x: 0, y: 0 });
+    expect(handAreaOf(tableCard('hero'), withIdentity)).toBeNull();
+    expect(handAreaOf(tableCard('host'), withIdentity)).toBeNull();
+    expect(handAreaOf(tableCard('up'), withIdentity)).toBe('p0');
   });
 
   it('takes nothing from the hand or a pile, nor from a spectator', () => {

@@ -2,7 +2,8 @@
   The table page: the top bar, the table column (one surface for everyone,
   scrolling both ways) and the side column (history), which collapses to a
   slim strip. The preview of the hovered card floats over the table's bottom
-  right corner. On a narrow screen there is no side column.
+  right corner; touch mode previews nothing (touch.ts). On a narrow screen
+  there is no side column.
 -->
 <script lang="ts">
   import { tick, untrack } from 'svelte';
@@ -29,7 +30,6 @@
     Size,
     View,
   } from '../lib/types';
-  import ActionBar from './ActionBar.svelte';
   import { diffViews, MAX_APART_MS } from './animate';
   import {
     actionsFor,
@@ -40,19 +40,40 @@
     type LocalAction,
     type TableElement,
   } from './actions';
+  import ArrowHint from './ArrowHint.svelte';
   import Arrows from './Arrows.svelte';
   import AskCount from './AskCount.svelte';
   import type { LocalBox, ShownBox } from './boxes';
   import CardBox from './CardBox.svelte';
+  import ContextMenu from './ContextMenu.svelte';
+  import {
+    cardHeader,
+    contextItems,
+    pileHeader,
+    type ContextEntry,
+    type ContextHeader,
+  } from './contextItems';
   import DragLayer from './DragLayer.svelte';
   import { DRAG_THRESHOLD, intersect, sourceOf, type Point, type Rect } from './drag';
   import Flights from './Flights.svelte';
   import { backCaption, isHidden } from './face';
   import Hand from './Hand.svelte';
-  import { interaction } from './interaction.svelte';
+  import { interaction, type PreviewChange } from './interaction.svelte';
   import { handleKey } from './keys';
   import KeysSheet from './KeysSheet.svelte';
-  import { isOutOfPlay, ownerFrames, surfaceSize } from './layout';
+  import {
+    contentWidth,
+    HAND_CARD,
+    HAND_CARD_NARROW,
+    HAND_REST_DROP,
+    isOutOfPlay,
+    outOfPlayChips,
+    ownerFrames,
+    restingStrip,
+    smallHandCard,
+    smallHandDrop,
+    surfaceSize,
+  } from './layout';
   import {
     ALL_ROWS,
     focusRows,
@@ -67,6 +88,7 @@
   import {
     creditedSeat,
     creditedSeatAmong,
+    ownerLook,
     ownSeats,
     seatColor,
     seatFullLabel,
@@ -87,8 +109,18 @@
   } from './focus';
   import SidePanel from './SidePanel.svelte';
   import Surface, { type OwnerBox } from './Surface.svelte';
+  import { TOUCH_MODE_QUERY } from './touch';
   import ZoomControl from './ZoomControl.svelte';
-  import { clampZoom, saveZoom, storedZoom, ZOOM_MAX, ZOOM_MIN } from './zoom';
+  import {
+    clampZoom,
+    fitZoom,
+    forgetZoom,
+    saveZoom,
+    storedZoom,
+    ZOOM_MAX,
+    ZOOM_MIN,
+    ZOOM_MIN_SMALL,
+  } from './zoom';
 
   let {
     session,
@@ -243,6 +275,11 @@
     return topId === undefined ? undefined : cardsById.get(topId);
   }
 
+  /** What pointing at a pile does to the preview: it shows its top card, and a deck's back clears it. */
+  function previewOfPile(pile: PileView): PreviewChange {
+    return topOf(pile) ? 'show' : 'clear';
+  }
+
   // ---- What the surface shows ----
 
   // "All", or the villain's row and one player's row under it (rows.ts).
@@ -371,36 +408,91 @@
     });
   }
 
-  // Out-of-play piles are not drawn: the bars of their owner's deck and discard pile open them.
+  // Out-of-play piles are not drawn: the chips on their owner's frame open them.
   const tablePiles = $derived(shown(piles.filter((pile) => !isOutOfPlay(pile))));
   const tableCards = $derived(shown(cards.filter((card) => card.zone === 'table')));
 
   /** The frames around each owner's deck and discard pile, named after their owner. */
   const owners = $derived(
     ownerFrames(tablePiles).map((frame): OwnerBox => {
-      if (frame.owner === -1) {
-        return { frame, name: 'Villain', color: 'var(--villain)' };
-      }
-      const color = seatColor(view, frame.owner);
+      const outOfPlay = outOfPlayChips(frame.owner, piles);
+      const { name, color } = ownerLook(view, frame.owner);
+      // Only a seated deck has a hand: neither the villain nor an empty seat.
       const deck = deckAt(frame.owner);
-      if (color === null || !deck) {
-        return { frame, name: `Player ${frame.owner + 1}`, color: 'var(--muted)' };
+      if (!deck) {
+        return { frame, name, color, outOfPlay };
       }
       const inHand = `${deck.handCount} ${deck.handCount === 1 ? 'card' : 'cards'} in hand`;
-      const name = seatFullLabel(view, frame.owner);
-      return { frame, name, color: `var(--p${color + 1})`, tip: inHand };
+      return { frame, name, color, tip: inHand, outOfPlay };
     }),
   );
 
-  // The surface size follows it, so it is declared before it.
-  let zoom = $state(storedZoom());
+  // ---- The screen ----
+
+  // The breakpoints of the @media rules below. On a narrow screen the side
+  // column goes: the history is not shown.
+  const narrow = new MediaQuery('max-width: 900px');
+  // A phone held upright: the table zooms further out, and fits its width until the viewer zooms.
+  const phone = new MediaQuery('max-width: 600px');
+  // A phone either way up: the hand's cards follow the window, and the controls at the bottom right
+  // gather in one bar above the resting hand.
+  const small = new MediaQuery('(max-width: 600px), (max-height: 500px)');
+  const touchMode = new MediaQuery(TOUCH_MODE_QUERY);
+
+  // The window's size, in px: a small screen's hand cards follow it.
+  let windowWidth = $state(window.innerWidth);
+  let windowHeight = $state(window.innerHeight);
+
+  // The interaction state is shared: it previews nothing in touch mode.
+  $effect.pre(() => {
+    interaction.setTouchMode(touchMode.current);
+  });
+
+  // ---- The zoom ----
+
+  // The zoom the viewer chose (buttons, keys, Ctrl + wheel), remembered; null until then, or since
+  // the % label went back to the fit on a phone: the table then shows the screen's default zoom.
+  let chosenZoom = $state(storedZoom());
+  const zoomMin = $derived(phone.current ? ZOOM_MIN_SMALL : ZOOM_MIN);
 
   // The scroller pads the surface, so that glows, tilted cards and outlines near an edge show.
   const SCROLL_PADDING = 24;
+  // Kept free for a vertical scrollbar when fitting. Measured with the scrollbar or without, the
+  // fit would make the scrollbar come and go, and the fit with it.
+  const SCROLLBAR_ROOM = 12;
 
   // The table's visible size, in px.
   let visibleWidth = $state(0);
   let visibleHeight = $state(0);
+  // The scroller's width, its scrollbar included, in px.
+  let scrollerWidth = $state(0);
+
+  // The zoom that fits the content's width into the scroller, as they are now.
+  const contentFit = $derived(
+    fitZoom(
+      contentWidth(tableCards, tablePiles, sizeOf),
+      scrollerWidth - 2 * SCROLL_PADDING - SCROLLBAR_ROOM,
+      zoomMin,
+    ),
+  );
+  // The fit holds still while the action menu is open, which any zoom change closes
+  // (ContextMenu.svelte), and while a card or a pile is pressed or dragged, which a zoom would move
+  // from under the finger: a card another player moves meanwhile changes the content's width.
+  const fitHeld = $derived(interaction.contextMenu !== null || interaction.held !== null);
+  // The fit the table uses: the content's, caught up once nothing holds it. Not a derived, which
+  // could not keep its value while held.
+  let fittedZoom = $state(untrack(() => contentFit));
+  $effect.pre(() => {
+    if (!fitHeld) {
+      fittedZoom = contentFit;
+    }
+  });
+  // Until the viewer chooses a zoom: a phone fits the content's width, as a row would not show
+  // across it at 100 %; a wider screen shows 100 % and scrolls. Live: a resize or a turn across
+  // 600 px switches between the two.
+  const defaultZoom = $derived(phone.current ? fittedZoom : 1);
+  // The surface size follows it, so it is declared before it.
+  const zoom = $derived(chosenZoom === null ? defaultZoom : clampZoom(chosenZoom, zoomMin));
 
   // In table units: at least what shows, rounded down so that an empty table never scrolls.
   const surface = $derived(
@@ -467,12 +559,40 @@
 
   const drawnPreview = $derived(preview ?? fading);
 
+  // ---- The hand and the controls at the bottom ----
+
+  // The hand's cards: smaller on a narrow screen, and following the window on a small one, where
+  // the resting hand drops by as much of them as elsewhere.
+  const handCard = $derived.by(() => {
+    if (small.current) {
+      return smallHandCard({ w: windowWidth, h: windowHeight });
+    }
+    return narrow.current ? HAND_CARD_NARROW : HAND_CARD;
+  });
+  const handDrop = $derived(small.current ? smallHandDrop(handCard.h) : HAND_REST_DROP);
+
+  // The room between the resting hand's strip and the controls above it on a small screen, in px.
+  const ABOVE_HAND = 8;
+
+  /**
+   * The room under the controls at the bottom of the table (the zoom control,
+   * the narrow Undo, the player selector), in px. On a small screen they sit
+   * above the resting hand, which would cover them otherwise.
+   */
+  const controlsBottom = $derived(
+    small.current && handCards !== undefined
+      ? restingStrip(handCard.h, handDrop) + ABOVE_HAND
+      : TABLE_EDGE_BOTTOM,
+  );
+
   // ---- The Focus panel's corner ----
 
   // Bottom right, unless that hides the whole hovered element (focus.ts).
   let focusCorner = $state<Corner>(HOME);
   // The height of the controls at the bottom right (the zoom control, the narrow Undo): the panel sits above them.
   let cornerHeight = $state(0);
+  // What the panel at home clears: those controls, and how much higher than --edge-bottom they sit.
+  const homeControls = $derived(cornerHeight + controlsBottom - TABLE_EDGE_BOTTOM);
   // The controls' box at the bottom right: the keyboard shortcuts sheet lines up on its right edge.
   let cornerBox = $state<HTMLElement>();
   // The panel's size, kept from the last time it showed; a portrait card's until then.
@@ -515,7 +635,7 @@
       area: focusArea,
       size: { w: focusWidth, h: focusHeight },
       hovered: focusHovered,
-      controls: cornerHeight,
+      controls: homeControls,
       // The player selector at the bottom left.
       taken: pickerShown ? ['bottom-left'] : [],
     });
@@ -525,7 +645,7 @@
   /** The panel's margins in its corner: off the play area's edges, and above the controls at home. */
   function focusMargin(corner: Corner): string {
     const top = corner.startsWith('top') ? FOCUS_MARGINS.top : 0;
-    const bottom = bottomRoom(corner, cornerHeight);
+    const bottom = bottomRoom(corner, homeControls);
     const left = corner.endsWith('left') ? FOCUS_MARGINS.side : 0;
     const right = corner.endsWith('right') ? FOCUS_MARGINS.side : 0;
     return `${top}px ${right}px ${bottom}px ${left}px`;
@@ -542,7 +662,7 @@
       focusWidth,
       focusHeight,
       pickerShown,
-      cornerHeight,
+      homeControls,
     ];
     untrack(measureFocus);
   });
@@ -612,7 +732,7 @@
   /**
    * Hovers what a new view put under a pointer at rest, whoever acted (spec
    * 5.8): the card or hand card there, or nothing once the hovered card went
-   * from under it. The ring, the bar and the preview follow.
+   * from under it. The ring, the preview and the keys follow.
    */
   function rehoverUnderPointer(): void {
     const { x, y } = interaction.pointer;
@@ -641,10 +761,10 @@
   }
 
   /**
-   * A pile keeps its own hover, which an empty pile without a bar does not
-   * have. A pile a card was dropped on was never entered, the pointer passing
-   * over it during the drag: it is hovered now, its bar showing, as entering
-   * it would (PileView: a deck that shows its back clears the preview).
+   * A pile keeps its own hover, which an empty, inert pile does not have. A
+   * pile a card was dropped on was never entered, the pointer passing over it
+   * during the drag: it is hovered now, the keys acting on it, as entering it
+   * would (PileView: a deck that shows its back clears the preview).
    */
   function rehoverPile(element: HTMLElement): void {
     const id = element.dataset.id;
@@ -656,7 +776,7 @@
     if (hovered?.kind === 'pile' && hovered.id === pile.id) {
       return;
     }
-    interaction.rehover({ kind: 'pile', id: pile.id }, topOf(pile) ? 'show' : 'clear');
+    interaction.rehover({ kind: 'pile', id: pile.id }, previewOfPile(pile));
   }
 
   /**
@@ -675,18 +795,7 @@
 
   $effect(() => () => motion.stop());
 
-  // ---- The action bar ----
-
-  /** Whether an empty pile still has a bar: one opening its owner's out-of-play piles. */
-  function hasBarWhenEmpty(pile: PileView): boolean {
-    const role = view.you.role;
-    if (role === undefined) {
-      return false;
-    }
-    const you = { areas: view.you.areas, role };
-    const items = actionsFor({ kind: 'pile', id: pile.id }, view, you, lang);
-    return Array.isArray(items) && items.length > 0;
-  }
+  // ---- The hovered element ----
 
   /** Whether the element is still where it was hovered: on the table, or in the hand. */
   function isPresent(element: TableElement): boolean {
@@ -700,7 +809,7 @@
     }
   }
 
-  // An element that left the table takes its bar (and its arrow mode) with it.
+  // An element that left the table takes its hover, its context menu and its arrow mode with it.
   $effect(() => {
     const hovered = interaction.hovered;
     if (hovered && !isPresent(hovered)) {
@@ -712,9 +821,10 @@
     }
   });
 
-  const barItems = $derived.by((): ActionItem[] | { text: string } => {
+  /** The actions of the hovered element, which its keys run (keys.ts). */
+  const hoveredItems = $derived.by((): ActionItem[] | { text: string } => {
     // actionsFor reads the catalog's plain Map (are there several faces to
-    // flip?): reading the catalog state here recomputes the bar once it loads.
+    // flip?): reading the catalog state here recomputes the items once it loads.
     void catalog;
     const hovered = interaction.hovered;
     const role = view.you.role;
@@ -724,35 +834,25 @@
     return actionsFor(hovered, view, { areas: view.you.areas, role }, lang);
   });
 
+  // ---- The arrow mode's hint ----
+
+  // A touch screen has no Esc key, and taps rather than clicks.
   const ARROW_HINT = 'Click the card to point at — Esc or a click on an empty spot to cancel.';
+  const ARROW_HINT_TOUCH = 'Tap the card to point at — tap an empty spot to cancel.';
 
-  // Never for a hand card: its cards are dragged, or played with their keys.
-  // In arrow mode, the hint stays until the arrow is drawn or cancelled,
-  // whatever the pointer hovers meanwhile.
-  const barShown = $derived.by(() => {
-    if (interaction.dragging || interaction.band) {
-      return false;
-    }
-    if (interaction.arrowFrom !== null) {
-      return true;
-    }
-    const hovered = interaction.hovered;
-    if (!hovered || hovered.kind === 'hand') {
-      return false;
-    }
-    return !Array.isArray(barItems) || barItems.length > 0;
-  });
+  // Above the card the arrow starts from, until the arrow is drawn or cancelled, whatever the
+  // pointer hovers meanwhile; not while a Shift + drag draws it, which shows where it goes.
+  const arrowHintShown = $derived(interaction.arrowFrom !== null && !interaction.arrowDrag);
 
-  /** What the bar sits on: the card an arrow starts from, or else the hovered element. */
-  function anchorOf(): HTMLElement | null {
+  /** The card the arrow starts from, on the table. */
+  function arrowSource(): HTMLElement | null {
     const from = interaction.arrowFrom;
-    const element: TableElement | null =
-      from !== null ? { kind: 'card', id: from } : interaction.hovered;
-    if (!element || !wrap) {
+    if (from === null || !wrap) {
       return null;
     }
-    const selector = element.kind === 'pile' ? '.pile' : '.card:not(.pile)';
-    return wrap.querySelector<HTMLElement>(`.surface ${selector}[data-id="${element.id}"]`);
+    return wrap.querySelector<HTMLElement>(
+      `.surface .card:not(.pile)[data-id="${CSS.escape(from)}"]`,
+    );
   }
 
   // ---- The token pill ----
@@ -773,10 +873,15 @@
     return value > 0 ? { target, value } : null;
   });
 
-  // A pill that went away must not come back when the token does.
+  // A pill that went away must not come back when the token does. A tapped one held its card's
+  // hover, which lingers out with it; a mouse still on the card keeps it.
   $effect(() => {
     if (interaction.counter && !counterShown) {
-      interaction.hideCounter();
+      if (interaction.counterPinned) {
+        interaction.unpinCounter();
+      } else {
+        interaction.hideCounter();
+      }
     }
   });
 
@@ -799,6 +904,141 @@
     }
   }
 
+  // ---- The context menu ----
+
+  /**
+   * What the context menu of a table card or pile shows: every action of the
+   * element, or why it has none for the viewer ("Belongs to Sam: …"). Nothing
+   * for a hand card, nor for an element without either (a card, to a spectator).
+   */
+  type ContextContent = { entries: ContextEntry[]; note?: string };
+
+  function contextContentOf(element: TableElement): ContextContent | null {
+    const role = view.you.role;
+    if (role === undefined || element.kind === 'hand') {
+      return null;
+    }
+    const items = actionsFor(element, view, { areas: view.you.areas, role }, lang);
+    if (!Array.isArray(items)) {
+      return { entries: [], note: items.text };
+    }
+    const entries = contextItems(element, items);
+    return entries.length > 0 ? { entries } : null;
+  }
+
+  // From the current view: a redraw updates the entries ("Damage (7)").
+  const contextContent = $derived.by((): ContextContent | null => {
+    // As for the hovered items: actionsFor reads the catalog's plain Map.
+    void catalog;
+    const open = interaction.contextMenu;
+    return open ? contextContentOf(open.element) : null;
+  });
+
+  /** The header of the menu: what the card or pile is, whose it is; none once it is gone. */
+  const contextHeader = $derived.by((): ContextHeader | null => {
+    const element = interaction.contextMenu?.element;
+    if (element?.kind === 'pile') {
+      const pile = piles.find((p) => p.id === element.id);
+      return pile ? pileHeader(pile, view) : null;
+    }
+    const card = element ? cardsById.get(element.id) : undefined;
+    return card ? cardHeader(card, faceOf(card), view) : null;
+  });
+
+  // A redraw that leaves its element without actions (an emptied pile, a card gone) closes it.
+  $effect(() => {
+    if (interaction.contextMenu && contextContent === null) {
+      untrack(() => interaction.closeContextMenu());
+    }
+  });
+
+  /** The table card or pile an element of the surface belongs to, if any: what a context menu is for. */
+  function contextElementOf(target: EventTarget | null): TableElement | null {
+    if (!(target instanceof Element)) {
+      return null;
+    }
+    const hit = target.closest<HTMLElement>('.surface .card:not(.ghost)[data-id]');
+    const id = hit?.dataset.id;
+    if (!hit || id === undefined) {
+      return null;
+    }
+    return { kind: hit.classList.contains('pile') ? 'pile' : 'card', id };
+  }
+
+  /**
+   * Opens the element's context menu at that point, unless it has nothing to
+   * show. It previews the element as entering it would (PileView: a deck that
+   * shows its back clears the preview).
+   */
+  function openContextMenu(element: TableElement, at: Point): void {
+    if (contextContentOf(element) === null) {
+      return;
+    }
+    const pile = element.kind === 'pile' ? piles.find((p) => p.id === element.id) : undefined;
+    interaction.openContextMenu(element, at, pile ? previewOfPile(pile) : 'show');
+  }
+
+  /**
+   * A click on a card in play or a pile, with the main button or a finger,
+   * opens its context menu at the pointer; a click on the element whose menu
+   * that press closed leaves it closed, and so does the click iOS fires after
+   * a long press, which opens nothing. The click that ends a drag, a rubber
+   * band or an arrow never gets here (interaction.swallowNextClick). Alt +
+   * click pings the spot, and Ctrl + click is macOS's right click, which
+   * onTableContextMenu handles. A token or a status has its − / + pill
+   * instead, which hovering it shows, or tapping it on touch.
+   */
+  function onTableClick(event: MouseEvent): void {
+    if (event.altKey || event.ctrlKey || interaction.isLongTouchClick(event)) {
+      return;
+    }
+    if (event.target instanceof Element && event.target.closest('.surface [data-counter]')) {
+      return;
+    }
+    const element = contextElementOf(event.target);
+    if (element && !interaction.closedByPress(element)) {
+      openContextMenu(element, { x: event.clientX, y: event.clientY });
+    }
+  }
+
+  /**
+   * A right click or a Ctrl + click on macOS on a card or a pile opens its
+   * menu, as a click does (the screen prevents the browser's own:
+   * preventNativeMenu). On touch, a tap opens it: the contextmenu event a long
+   * touch fires (Android) opens nothing.
+   */
+  function onTableContextMenu(event: MouseEvent): void {
+    if (interaction.isTouchContextMenu(event)) {
+      return;
+    }
+    const element = contextElementOf(event.target);
+    if (element) {
+      openContextMenu(element, { x: event.clientX, y: event.clientY });
+    }
+  }
+
+  /**
+   * Never the browser's menu on the table screen, from a right click or a long touch: on the table,
+   * the hand, the token pill or the bottom bars, it would offer to save or copy a card image. On the
+   * window, as the table screen is the whole page while it shows; the table's own handler, which
+   * opens the action menu on a card or a pile, sees the event first. A text field keeps the browser's
+   * menu, to paste in.
+   */
+  function preventNativeMenu(event: MouseEvent): void {
+    const target = event.target;
+    if (target instanceof Element && target.closest('input, textarea, [contenteditable]')) {
+      return;
+    }
+    event.preventDefault();
+  }
+
+  /** A chosen entry runs on the menu's element, once the menu is closed. */
+  function runContextItem(item: ActionItem): void {
+    const element = interaction.contextMenu?.element ?? null;
+    interaction.closeContextMenu();
+    runItem(item, element);
+  }
+
   /** The "How many cards?" question being asked, if any. */
   let asking = $state<CountQuestion | null>(null);
 
@@ -814,8 +1054,8 @@
     }
   });
 
-  function runItem(item: ActionItem): void {
-    const element = interaction.hovered;
+  /** Runs an action item on its element: the hovered one (a key), or the context menu's. */
+  function runItem(item: ActionItem, element: TableElement | null = interaction.hovered): void {
     if (!item.run || item.disabled || !element) {
       return;
     }
@@ -832,7 +1072,7 @@
   function runLocal(local: LocalAction, element: TableElement): void {
     switch (local.local) {
       case 'browseBox':
-        localBox = { kind: 'browse', pile: local.pile };
+        openBrowseBox(local.pile);
         return;
       case 'stageBox': {
         const stage = view.table?.stages.find((s) => s.current === element.id);
@@ -841,7 +1081,15 @@
         }
         return;
       }
+      case 'arrow':
+        interaction.startArrow(local.card);
+        return;
     }
+  }
+
+  /** Browse needs no server: the box lists the cards of a public pile, spectators' too. */
+  function openBrowseBox(pile: string): void {
+    localBox = { kind: 'browse', pile };
   }
 
   function answer(n: number): void {
@@ -928,8 +1176,8 @@
   });
 
   // A dialog (a card box, the count question, the shortcuts sheet, a
-  // confirmation) freezes the table under its backdrop: its bar, preview,
-  // selection and any press or drag under way go.
+  // confirmation) freezes the table under its backdrop: its context menu,
+  // preview, selection and any press or drag under way go.
   $effect(() => {
     if (modal.open) {
       untrack(() => {
@@ -994,8 +1242,8 @@
       act({ kind: 'arrowAdd', card: from, target: to }, { kind: 'card', id: from });
     }
     interaction.endArrow();
-    // On touch, the tap goes on to the card as a click, which would select it;
-    // a Shift + drag released on its own card would click it.
+    // The press that picks the target goes on to the card as a click, which would open its
+    // context menu; so would a Shift + drag released on its own card.
     interaction.swallowNextClick();
   }
 
@@ -1012,6 +1260,11 @@
       event.preventDefault();
       event.stopPropagation();
       endArrowAt(tableCardOf(target));
+      return;
+    }
+    // The chips of an owner's frame are buttons of their own: a press on one is neither a ping
+    // nor an empty spot, which would let go of the selection and could start a rubber band.
+    if (target.closest('.surface .chip')) {
       return;
     }
     // Alt + click pings the spot (spec 5.8); spectators cannot ping.
@@ -1142,7 +1395,7 @@
     if (band !== null) {
       interaction.setGroup(new Set(cardsInBand(band, freeCardBoxes())));
     }
-    // The click that ends the band is no click on an empty spot: the arrows and a tap selection stay.
+    // The click that ends the band is no click on an empty spot or a card: the arrows stay, no menu opens.
     interaction.swallowNextClick();
   }
 
@@ -1170,7 +1423,7 @@
   function onKeydown(event: KeyboardEvent): void {
     handleKey(event, {
       view,
-      items: barItems,
+      items: hoveredItems,
       zoom,
       setZoom: zoomWithButtons,
       run: runItem,
@@ -1204,10 +1457,6 @@
   function undo(): void {
     act({ kind: 'undo' });
   }
-
-  // The breakpoint of the @media rules below. On a narrow screen the side
-  // column goes: the history is not shown.
-  const narrow = new MediaQuery('max-width: 900px');
 
   // Remembered per viewer: the table takes the width the history leaves.
   const HISTORY_COLLAPSED_KEY = 'itf-history-collapsed';
@@ -1244,21 +1493,24 @@
    * identities stay in view.
    */
   async function setZoom(wanted: number, pointX?: number, pointY?: number): Promise<void> {
-    const next = clampZoom(wanted);
-    if (next === zoom || !wrap) {
+    const from = zoom;
+    const next = clampZoom(wanted, zoomMin);
+    // The viewer chose it, even when it does not change: the table no longer fits its width.
+    chosenZoom = next;
+    saveZoom(next);
+    if (next === from || !wrap) {
       return;
     }
     const box = wrap.getBoundingClientRect();
     const x = pointX ?? box.left;
     const y = pointY ?? box.top + box.height / 2;
-    const scale = next / zoom;
+    const scale = next / from;
 
-    // What lies under the point now, in zoomed px of the surface (past the scroller's padding).
+    // What lies under the point now, in zoomed px of the surface (past the scroller's padding):
+    // the page is not redrawn before the tick.
     const underX = wrap.scrollLeft + x - box.left - SCROLL_PADDING;
     const underY = wrap.scrollTop + y - box.top - SCROLL_PADDING;
 
-    zoom = next;
-    saveZoom(next);
     await tick();
 
     wrap.scrollLeft = Math.max(0, SCROLL_PADDING + underX * scale - (x - box.left));
@@ -1274,13 +1526,20 @@
     void setZoom(wanted);
   }
 
+  /** Back to the zoom that fits the table's width, which follows the window and the table again. */
+  function fitToWidth(): void {
+    wheelTarget = null;
+    chosenZoom = null;
+    forgetZoom();
+  }
+
   function onWheel(event: WheelEvent): void {
     if (!(event.ctrlKey || event.metaKey)) {
       return;
     }
     event.preventDefault();
     const from = wheelTarget ?? zoom;
-    wheelTarget = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, from * Math.exp(-event.deltaY * 0.01)));
+    wheelTarget = Math.min(ZOOM_MAX, Math.max(zoomMin, from * Math.exp(-event.deltaY * 0.01)));
     void setZoom(wheelTarget, event.clientX, event.clientY);
   }
 
@@ -1356,7 +1615,10 @@
   onpointerup={onPointerUp}
   onpointercancel={onPointerCancel}
   onkeydown={onKeydown}
+  oncontextmenu={preventNativeMenu}
   onresize={measureFocus}
+  bind:innerWidth={windowWidth}
+  bind:innerHeight={windowHeight}
 />
 
 <!-- The zoom is set on the whole page, so a layer outside the table (a drag ghost) can follow it. -->
@@ -1366,10 +1628,13 @@
   class:dragging={interaction.dragging !== null}
   class:history-collapsed={historyCollapsed && !narrow.current}
   class:banding={interaction.band !== null}
+  class:compact={small.current}
+  class:touch={touchMode.current}
   style:--z={zoom}
   style:--you="var(--p{view.you.color + 1})"
   style:--edge="{TABLE_EDGE}px"
   style:--edge-bottom="{TABLE_EDGE_BOTTOM}px"
+  style:--controls-bottom="{controlsBottom}px"
   bind:this={app}
 >
   <div class="top">
@@ -1391,7 +1656,10 @@
     bind:this={wrap}
     bind:clientHeight={visibleHeight}
     bind:clientWidth={visibleWidth}
+    bind:offsetWidth={scrollerWidth}
     onpointerdowncapture={onTablePointerDown}
+    onclick={onTableClick}
+    oncontextmenu={onTableContextMenu}
     onscroll={measureFocus}
   >
     <div class="table">
@@ -1401,7 +1669,7 @@
         {owners}
         {topOf}
         {faceOf}
-        barWhenEmpty={hasBarWhenEmpty}
+        onbrowse={openBrowseBox}
         width={surface.w}
         height={surface.h}
         {firstPlayer}
@@ -1449,9 +1717,15 @@
 
   <!--
     The bottom right corner of the table. Touch screens have no Z key: without the side column,
-    Undo floats there, left of the zoom control.
+    Undo floats there, left of the zoom control. On a small screen, both share one bar above the
+    resting hand.
   -->
-  <div class="corner" bind:this={cornerBox} bind:clientHeight={cornerHeight}>
+  <div
+    class="corner"
+    class:compact={small.current}
+    bind:this={cornerBox}
+    bind:clientHeight={cornerHeight}
+  >
     {#if narrow.current}
       <div class="undo">
         <!-- aria-disabled rather than disabled, so that the tooltip saying why still shows. -->
@@ -1481,11 +1755,19 @@
           </svg>
         </button>
       </div>
+      {#if small.current}
+        <span class="sep" aria-hidden="true"></span>
+      {/if}
     {/if}
+    <!--
+      Touch mode has no keyboard: no shortcuts button. The % label goes back to a phone's fit,
+      or to 100 % on a wider screen.
+    -->
     <ZoomControl
       {zoom}
       onzoom={zoomWithButtons}
-      onkeys={toggleKeySheet}
+      onfit={phone.current ? fitToWidth : undefined}
+      onkeys={touchMode.current ? undefined : toggleKeySheet}
       keysShown={keySheetShown}
       bind:keysButton
     />
@@ -1506,7 +1788,14 @@
   {/if}
 
   {#if handCards}
-    <Hand cards={handCards} {faceOf} {captionOf} narrow={narrow.current} bind:open={handRaised} />
+    <Hand
+      cards={handCards}
+      {faceOf}
+      {captionOf}
+      cardSize={handCard}
+      restDrop={handDrop}
+      bind:open={handRaised}
+    />
   {/if}
 
   <Flights {faceOf} {captionOf} />
@@ -1525,15 +1814,30 @@
     lastError={session.lastError}
   />
 
-  {#if barShown && wrap}
-    <ActionBar
-      anchor={anchorOf}
-      items={barItems}
-      hint={interaction.arrowFrom !== null ? ARROW_HINT : undefined}
+  {#if arrowHintShown && wrap}
+    <ArrowHint
+      anchor={arrowSource}
+      text={touchMode.current ? ARROW_HINT_TOUCH : ARROW_HINT}
       bounds={wrap}
       {zoom}
-      onrun={runItem}
+      version={view}
     />
+  {/if}
+
+  {#if interaction.contextMenu && contextHeader && contextContent && wrap}
+    <!-- Created afresh for each opening: the focus it gives back is the one before that opening. -->
+    {#key interaction.contextMenu}
+      <ContextMenu
+        header={contextHeader}
+        entries={contextContent.entries}
+        note={contextContent.note}
+        at={interaction.contextMenu.at}
+        bounds={wrap}
+        {zoom}
+        onrun={runContextItem}
+        onclose={() => interaction.closeContextMenu()}
+      />
+    {/key}
   {/if}
 
   {#if counterShown}
@@ -1638,6 +1942,18 @@
       'top top'
       'table side';
     transition: grid-template-columns 0.2s ease;
+    /* Something held down opens no callout of the system on iOS (save, copy, share an image). */
+    -webkit-touch-callout: none;
+  }
+
+  /* A text field keeps its callout, to paste in. */
+  .app :global(:is(input, textarea, [contenteditable])) {
+    -webkit-touch-callout: default;
+  }
+
+  /* A finger needs taller targets in the bars at the bottom. */
+  .app.touch {
+    --bar-button: 44px;
   }
 
   /* The history collapsed to a strip: the table takes the rest. */
@@ -1674,10 +1990,9 @@
 
   /*
     Rings drawn around the cut card, for cards and piles alike (the cut would clip them on the
-    image): the ring of a tap selection, the white ring of the cards of the hovered history line,
+    image): the white ring of the hovered element and of the cards of the hovered history line,
     and the drop outlines.
   */
-  .table :global(.card.locked)::before,
   .table :global(.card.hovered)::before,
   .table :global(.card.highlighted)::before,
   .table :global(.card.drop-target)::before,
@@ -1690,14 +2005,7 @@
     z-index: 1;
   }
 
-  /* The selection glows in the signal blue: a ring, then a soft halo. */
-  .table :global(.card.locked)::before {
-    box-shadow:
-      0 0 0 2px var(--sel),
-      0 0 0 7px #49c6ff38;
-  }
-
-  /* The hovered card or pile, whose bar shows, has the same white ring as the prototype's. */
+  /* The hovered card or pile, or the one whose context menu is open, has the prototype's white ring. */
   .table :global(.card.hovered)::before,
   .table :global(.card.highlighted)::before {
     box-shadow:
@@ -1720,7 +2028,7 @@
       0 0 22px 6px color-mix(in srgb, var(--c) 22%, transparent);
   }
 
-  /* A card the rubber band selected: the tap selection's ring and halo, in the viewer's colour. */
+  /* A card the rubber band selected: a ring and a halo, in the viewer's colour. */
   .table :global(.card > .sring) {
     position: absolute;
     inset: 1%;
@@ -1819,6 +2127,15 @@
     box-shadow: 0 6px 16px #0008;
   }
 
+  /*
+    On a small screen, above the bar at the bottom right (--controls-bottom, then that bar: its
+    buttons, its 4 px padding and 1 px border both ways, and 8 px between): on a phone, the two
+    would meet.
+  */
+  .app.compact .seatpick {
+    margin-bottom: calc(var(--controls-bottom) + var(--bar-button) + 18px);
+  }
+
   .seatpick .step {
     height: var(--bar-button);
     padding: 0 8px;
@@ -1872,6 +2189,36 @@
     display: flex;
     align-items: center;
     gap: 8px;
+  }
+
+  /*
+    A small screen: Undo and the zoom control share one bar, above the resting hand's strip
+    (--controls-bottom), so that neither covers the hand.
+  */
+  .corner.compact {
+    margin-bottom: var(--controls-bottom);
+    gap: 2px;
+    padding: 4px;
+    background: #141a28eb;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    box-shadow: 0 6px 16px #0008;
+  }
+
+  .corner.compact .undo,
+  .corner.compact :global(.zoomctl) {
+    padding: 0;
+    background: none;
+    border: none;
+    box-shadow: none;
+  }
+
+  /* As the zoom control's own separator. */
+  .corner .sep {
+    width: 1px;
+    height: 20px;
+    margin: 0 2px;
+    background: var(--line-strong);
   }
 
   .undo {

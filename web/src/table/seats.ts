@@ -120,3 +120,26 @@ export function seatHero(view: View, seat: number): string {
   }
   return found.deck.heroName ?? '';
 }
+
+/** How an owner reads and shows: its name and the CSS colour of its frame and name. */
+export interface OwnerLook {
+  /** "Villain", the seat's full label ("Sam · Ant-Man"), or "Player 3" for an empty seat. */
+  name: string;
+  /** The seat's colour, the villain's for the encounter (owner -1), muted for an empty seat. */
+  color: string;
+}
+
+/**
+ * How the owner of a card or pile (a seat, -1 for the encounter) reads and
+ * shows, as its owner frame on the table names and colours it.
+ */
+export function ownerLook(view: View, owner: number): OwnerLook {
+  if (owner === -1) {
+    return { name: 'Villain', color: 'var(--villain)' };
+  }
+  const color = seatColor(view, owner);
+  if (color === null) {
+    return { name: `Player ${owner + 1}`, color: 'var(--muted)' };
+  }
+  return { name: seatFullLabel(view, owner), color: `var(--p${color + 1})` };
+}

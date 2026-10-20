@@ -4,6 +4,7 @@ import Table from './Table.svelte';
 import { interaction, LINGER_MS } from './interaction.svelte';
 import { knownCard, loadGameCards, loadIndex, type CardInfo } from '../lib/catalog';
 import { setLang } from '../lib/lang';
+import surfaceSource from './Surface.svelte?raw';
 import { cutShort } from '../lib/overflowTip.testing';
 import { clearPrefMemory } from '../lib/prefs';
 import type {
@@ -159,6 +160,18 @@ function surface(): HTMLElement {
   return element;
 }
 
+/** Chooses the item of that label in the open context menu, on the table or over a box. */
+async function choose(label: string): Promise<void> {
+  const menu = document.querySelector<HTMLElement>('.table-menu.context');
+  const item = [...(menu?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? [])].find(
+    (candidate) => candidate.querySelector('span')?.textContent === label,
+  );
+  if (!item) {
+    throw new Error(`no menu item ${label}`);
+  }
+  await fireEvent.click(item);
+}
+
 /** Waits for the catalog: the villain shows its face. */
 async function catalogLoaded(): Promise<void> {
   await within(surface()).findByRole('img', { name: 'Rhino' });
@@ -173,6 +186,43 @@ function shownIds(): string[] {
 
 function ownerBoxes(): HTMLElement[] {
   return [...document.querySelectorAll<HTMLElement>('.surface .ownerbox')];
+}
+
+/** The chips of an owner's frame (-1: the villain's), by their accessible names. */
+function chipNames(owner: number): string[] {
+  const chips = document.querySelectorAll<HTMLElement>(
+    `.surface .chips[data-owner="${owner}"] button`,
+  );
+  return [...chips].map((chip) => chip.getAttribute('aria-label') ?? '');
+}
+
+function chip(pile: string): HTMLElement {
+  const element = document.querySelector<HTMLElement>(`.surface .chip[data-pile="${pile}"]`);
+  if (!element) {
+    throw new Error(`no chip for ${pile}`);
+  }
+  return element;
+}
+
+/** Rhino's table with out-of-play piles: two cards in the victory display, the scenario's set-aside cards empty. */
+function withOutOfPlay(view: View): View {
+  const inPile = (id: string, owner: number) => card(id, { code: '01001', owner, zone: 'pile' });
+  view.table!.cards.push(inPile('q1', -1), inPile('q2', -1), inPile('q3', 0));
+  view.table!.cards.push(inPile('q4', 1), inPile('q5', 1), inPile('q6', 1));
+  view.table!.piles.push(
+    pile('vic', { kind: 'victory', x: 0, y: 30, count: 2, cards: ['q1', 'q2'] }),
+    pile('saside', { kind: 'aside', x: 0, y: 30, count: 0, cards: [] }),
+    pile('aside:p0', { kind: 'aside', owner: 0, x: 0, y: 500, count: 1, cards: ['q3'] }),
+    pile('aside:p1', {
+      kind: 'aside',
+      owner: 1,
+      x: 0,
+      y: 830,
+      count: 3,
+      cards: ['q4', 'q5', 'q6'],
+    }),
+  );
+  return view;
 }
 function zoomLabel(): HTMLElement {
   return screen.getByRole('button', { name: 'Back to 100%' });
@@ -295,6 +345,76 @@ describe('Table', () => {
     for (const id of ['vic', 'saside', 'aside:p1']) {
       expect(surface().querySelector(`[data-id="${id}"]`)).toBeNull();
     }
+  });
+
+  it("opens each owner's out-of-play piles from chips on their frame, with their counts", async () => {
+    render(Table, { session: fakeSession(), view: withOutOfPlay(makeView()) });
+    await catalogLoaded();
+
+    // The villain's frame: the victory display, then the scenario's set-aside cards.
+    expect(chipNames(-1)).toEqual(['Victory display (2)', 'Set-aside cards (0): empty']);
+    // Each player's frame: their own set-aside cards.
+    expect(chipNames(0)).toEqual(['Set-aside cards (1)']);
+    expect(chipNames(1)).toEqual(['Set-aside cards (3)']);
+    expect(chip('vic').dataset.tip).toBe('Victory display (2)');
+    expect(chip('vic').textContent?.trim()).toBe('2');
+    expect(chip('vic').getAttribute('aria-disabled')).toBe('false');
+    // The name leaves room for its frame's chips.
+    expect(ownerBoxes().map((box) => box.style.getPropertyValue('--chips'))).toEqual([
+      '2',
+      '1',
+      '1',
+    ]);
+
+    await fireEvent.click(chip('vic'));
+    const box = screen.getByRole('dialog', { name: 'Victory display' });
+    expect(within(box).getAllByRole('listitem')).toHaveLength(2);
+  });
+
+  it('shows no chip for an out-of-play pile the table does not have', async () => {
+    render(Table, { session: fakeSession(), view: makeView() });
+    await catalogLoaded();
+
+    expect(document.querySelector('.surface .chips')).toBeNull();
+    expect(ownerBoxes().map((box) => box.style.getPropertyValue('--chips'))).toEqual([
+      '0',
+      '0',
+      '0',
+    ]);
+  });
+
+  it('an empty out-of-play pile has a dimmed chip that opens nothing', async () => {
+    render(Table, { session: fakeSession(), view: withOutOfPlay(makeView()) });
+    await catalogLoaded();
+
+    const empty = chip('saside');
+    expect(empty.getAttribute('aria-disabled')).toBe('true');
+    expect(empty.dataset.tip).toBe('Set-aside cards (0): empty');
+    await fireEvent.click(empty);
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('gives each chip a hit area of 44 screen px on a touch screen, whatever the zoom', () => {
+    const coarse = /@media \(pointer: coarse\) \{[\s\S]*?\.chip::before \{([^}]*)\}/.exec(
+      surfaceSource,
+    )?.[1];
+    // 44px in table units, which the surface's zoom turns back into 44 screen px.
+    expect(coarse).toMatch(/--hit: calc\(44px \/ var\(--z, 1\)\);/);
+    expect(coarse).toMatch(/width: max\(100%, var\(--hit\)\);/);
+    expect(coarse).toMatch(/height: max\(100%, var\(--hit\)\);/);
+    // Invisible, and under the chips' faces.
+    expect(coarse).not.toMatch(/background|border/);
+    expect(coarse).toMatch(/z-index: -1;/);
+  });
+
+  it('a spectator opens the out-of-play piles from their chips too', async () => {
+    const view = withOutOfPlay(makeView());
+    view.you = { role: 'spectator', name: 'Kim', color: -1, host: false };
+    render(Table, { session: fakeSession(), view });
+    await catalogLoaded();
+
+    await fireEvent.click(chip('aside:p1'));
+    expect(screen.getByRole('dialog', { name: "Sam's set-aside cards" })).toBeTruthy();
   });
 
   it('leaves room past the rightmost and the lowest card', async () => {
@@ -587,7 +707,7 @@ describe('Table', () => {
     }
   });
 
-  it('rings the hovered card or pile, not a tap selection, which has its own ring', async () => {
+  it('rings the hovered card or pile, and keeps the ring of the one whose menu is open', async () => {
     render(Table, { session: fakeSession(), view: makeView() });
     await catalogLoaded();
     const rhino = surface().querySelector<HTMLElement>('.card[data-id="v"]')!;
@@ -599,10 +719,12 @@ describe('Table', () => {
     expect(deck.classList).toContain('hovered');
     expect(rhino.classList).not.toContain('hovered');
 
+    // A tap opens the villain's menu: its ring stays while the finger, or the pointer, goes on.
     await fireEvent.pointerDown(rhino, { pointerType: 'touch' });
     await fireEvent.click(rhino);
-    expect(rhino.classList).toContain('locked');
-    expect(rhino.classList).not.toContain('hovered');
+    await fireEvent.pointerEnter(deck);
+    expect(rhino.classList).toContain('hovered');
+    expect(deck.classList).not.toContain('hovered');
   });
 
   it('hovering a card previews it; leaving it clears the preview after a linger', async () => {
@@ -899,17 +1021,17 @@ describe('Table', () => {
     expect(screen.queryByRole('button', { name: 'Ready all cards' })).toBeNull();
   });
 
-  it('grabs what the viewer can drag, points at the piles that only have a bar', async () => {
+  it('grabs what the viewer can drag, points at the piles that only have a menu', async () => {
     const { unmount } = render(Table, { session: fakeSession(), view: makeView() });
     const at = (id: string) => surface().querySelector<HTMLElement>(`.card[data-id="${id}"]`)!;
     // Sam (p1): every table card, their own deck and the encounter deck.
     for (const id of ['a', 'b', 'v', 'd1', 'enc']) {
       expect(at(id).classList, id).toContain('grab');
     }
-    // Alex's deck is private: it has a bar, nothing to drag.
+    // Alex's deck is private: it has a menu, nothing to drag.
     expect(at('d0').classList).not.toContain('grab');
     expect(at('d0').classList).not.toContain('inert');
-    // An empty discard pile without a bar is not even pointed at.
+    // An empty pile has no menu: it is not even pointed at.
     expect(at('x1').classList).toContain('inert');
     unmount();
 
@@ -1421,9 +1543,8 @@ describe('several decks', () => {
     await catalogLoaded();
 
     // Spider-Man (seat 0) is selected; the card belongs to Ant-Man, Alex's seat 1.
-    await fireEvent.pointerEnter(surface().querySelector<HTMLElement>('.card[data-id="b"]')!);
-    const bar = screen.getByRole('toolbar', { name: 'Actions' });
-    await fireEvent.click(within(bar).getByRole('button', { name: 'Exhaust' }));
+    await fireEvent.click(surface().querySelector<HTMLElement>('.card[data-id="b"]')!);
+    await choose('Exhaust');
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'exhaust', card: 'b' }, 1);
   });
 
@@ -1433,9 +1554,8 @@ describe('several decks', () => {
     await within(hand()).findByRole('img', { name: 'Spider-Man' });
     await fireEvent.keyDown(window, { key: 'q' });
 
-    await fireEvent.pointerEnter(surface().querySelector<HTMLElement>('.card[data-id="v"]')!);
-    const bar = screen.getByRole('toolbar', { name: 'Actions' });
-    await fireEvent.click(within(bar).getByRole('button', { name: 'Exhaust' }));
+    await fireEvent.click(surface().querySelector<HTMLElement>('.card[data-id="v"]')!);
+    await choose('Exhaust');
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'exhaust', card: 'v' }, 1);
   });
 
@@ -1447,9 +1567,8 @@ describe('several decks', () => {
     await fireEvent.click(within(picker()).getByRole('radio', { name: 'Alex · Ant-Man' }));
     await fireEvent.click(within(picker()).getByRole('radio', { name: 'Sam · She-Hulk' }));
 
-    await fireEvent.pointerEnter(surface().querySelector<HTMLElement>('.card[data-id="s"]')!);
-    const bar = screen.getByRole('toolbar', { name: 'Actions' });
-    await fireEvent.click(within(bar).getByRole('button', { name: 'Exhaust' }));
+    await fireEvent.click(surface().querySelector<HTMLElement>('.card[data-id="s"]')!);
+    await choose('Exhaust');
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'exhaust', card: 's' }, 1);
   });
 
@@ -1464,9 +1583,8 @@ describe('several decks', () => {
 
     // Spider-Man (seat 0) is selected; the card belongs to Ant-Man, Alex's seat 1.
     const box = screen.getByRole('dialog');
-    await fireEvent.pointerEnter(box.querySelector<HTMLElement>('.tile[data-id="x"]')!);
-    const bar = screen.getByRole('toolbar', { name: 'Card actions' });
-    await fireEvent.click(within(bar).getByRole('button', { name: 'Discard' }));
+    await fireEvent.click(box.querySelector<HTMLElement>('.tile[data-id="x"] .img')!);
+    await choose('Discard');
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'discard', card: 'x' }, 1);
   });
 

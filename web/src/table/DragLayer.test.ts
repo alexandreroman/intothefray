@@ -231,7 +231,7 @@ async function renderTable(view: View = makeView()) {
   let current = view;
   layOut(() => current, zoom);
   const result = render(Table, { session, view });
-  // The bar needs the catalog.
+  // The actions need the catalog.
   await Promise.resolve();
   return {
     session,
@@ -604,17 +604,15 @@ describe('dragging a table card', () => {
     expect(session.act).not.toHaveBeenCalled();
   });
 
-  it('hides the action bar and the token pill while dragging', async () => {
+  it('hides the token pill while dragging', async () => {
     await renderTable();
     await fireEvent.pointerEnter(placed('mine'));
     const token = placed('mine').querySelector<HTMLElement>('[data-counter="token:dmg"]');
     await fireEvent.pointerEnter(token as HTMLElement);
-    await waitFor(() => expect(document.querySelector('.actionbar')).not.toBeNull());
-    expect(document.querySelector('.tokpill')).not.toBeNull();
+    await waitFor(() => expect(document.querySelector('.tokpill')).not.toBeNull());
 
     await press(placed('mine'), 50, 400);
     await moveTo(150, 420);
-    expect(document.querySelector('.actionbar')).toBeNull();
     expect(document.querySelector('.tokpill')).toBeNull();
   });
 
@@ -666,19 +664,21 @@ describe('dragging a table card', () => {
     expect(screen.getByRole('button', { name: 'Back to 100%' }).textContent).toBe('120%');
   });
 
-  it('does not select the card with the tap that ends a touch drag', async () => {
+  it('opens no menu with the click or the tap that ends a drag', async () => {
     await renderTable();
-    await press(placed('mine'), 50, 400, 'touch');
-    await moveTo(254, 452);
-    await release(254, 452);
-    await fireEvent.click(placed('mine'));
-    expect(interaction.locked).toBe(false);
+    for (const pointerType of ['mouse', 'touch'] as const) {
+      await press(placed('mine'), 50, 400, pointerType);
+      await moveTo(254, 452);
+      await release(254, 452);
+      await fireEvent.click(placed('mine'));
+      expect(interaction.contextMenu).toBeNull();
+    }
 
-    // A plain tap still selects.
+    // A plain tap opens it.
     await press(placed('mine'), 50, 400, 'touch');
     await release(50, 400);
     await fireEvent.click(placed('mine'));
-    expect(interaction.locked).toBe(true);
+    expect(interaction.contextMenu?.element).toEqual({ kind: 'card', id: 'mine' });
   });
 });
 
@@ -1046,6 +1046,179 @@ describe('dragging a hand card', () => {
   });
 });
 
+describe('the hand on touch', () => {
+  const finger = { pointerType: 'touch' };
+
+  function hand(): HTMLElement {
+    return screen.getByRole('list', { name: 'Your hand' });
+  }
+
+  function isOpen(): boolean {
+    return hand().classList.contains('open');
+  }
+
+  async function touchDown(element: HTMLElement, x: number, y: number) {
+    await fireEvent.pointerDown(element, { ...finger, clientX: x, clientY: y });
+  }
+
+  async function touchMove(x: number, y: number) {
+    await fireEvent.pointerMove(window, { ...finger, clientX: x, clientY: y, buttons: 1 });
+  }
+
+  /** The finger lifts: it lets go, then leaves the window, as a lifted finger does. */
+  async function touchUp(x: number, y: number) {
+    await fireEvent.pointerUp(window, { ...finger, clientX: x, clientY: y });
+    await fireEvent.pointerLeave(document.documentElement, finger);
+  }
+
+  /** A tap on an element: a press, the lift, then the click it makes. */
+  async function tap(element: HTMLElement, x: number, y: number) {
+    await touchDown(element, x, y);
+    await fireEvent.pointerUp(element, { ...finger, clientX: x, clientY: y });
+    await fireEvent.click(element, { clientX: x, clientY: y });
+    await fireEvent.pointerLeave(document.documentElement, finger);
+  }
+
+  /** Raises the hand with a tap on one of its resting cards. */
+  async function raise() {
+    await tap(handCard('h2'), 500, 780);
+    expect(isOpen()).toBe(true);
+  }
+
+  it('a tap on the resting hand raises it and keeps it up once the finger lifts', async () => {
+    await renderTable();
+    expect(isOpen()).toBe(false);
+
+    await tap(handCard('h2'), 500, 780);
+    expect(isOpen()).toBe(true);
+    expect(document.querySelector('.veil')?.classList).toContain('open');
+    // The first tap only raises the hand: no card is selected yet.
+    expect(interaction.locked).toBe(false);
+
+    // A finger moving elsewhere has no band to leave.
+    await fireEvent.pointerMove(window, { ...finger, clientX: 50, clientY: 50 });
+    expect(isOpen()).toBe(true);
+  });
+
+  it('a tap selects a card of the raised hand, another moves it, a tap on it lets go', async () => {
+    await renderTable();
+    await raise();
+
+    await tap(handCard('h2'), 500, 780);
+    expect(handCard('h2').classList).toContain('locked');
+    expect(interaction.hovered).toEqual({ kind: 'hand', id: 'h2' });
+    // The raised hand shows the card large enough: no side preview.
+    expect(interaction.previewed).toBeNull();
+
+    await tap(handCard('h3'), 650, 780);
+    expect(handCard('h3').classList).toContain('locked');
+    expect(handCard('h2').classList).not.toContain('locked');
+
+    await tap(handCard('h3'), 650, 780);
+    expect(handCard('h3').classList).not.toContain('locked');
+    expect(interaction.locked).toBe(false);
+    expect(isOpen()).toBe(true);
+  });
+
+  it('a tap on the table lowers it and does what it does there', async () => {
+    await renderTable();
+    await raise();
+    await tap(handCard('h2'), 500, 780);
+
+    await tap(placed('mine'), 50, 400);
+    expect(isOpen()).toBe(false);
+    expect(handCard('h2').classList).not.toContain('locked');
+    // The card's menu opens as well.
+    expect(interaction.contextMenu?.element).toEqual({ kind: 'card', id: 'mine' });
+  });
+
+  it('Escape lowers it', async () => {
+    await renderTable();
+    await raise();
+
+    await fireEvent.keyDown(window, { key: 'Escape' });
+    expect(isOpen()).toBe(false);
+  });
+
+  it('a swipe down lowers it, dragging no card', async () => {
+    const { session } = await renderTable();
+    await raise();
+
+    await touchDown(handCard('h2'), 500, 760);
+    await touchMove(501, 766);
+    expect(ghosts()).toEqual([]);
+    expect(isOpen()).toBe(true);
+    // 40 px below the press.
+    await touchMove(503, 800);
+    expect(isOpen()).toBe(false);
+
+    await touchUp(503, 800);
+    // The click the lift makes on the card is no tap that would raise the hand again.
+    await fireEvent.click(handCard('h2'));
+    expect(isOpen()).toBe(false);
+    expect(session.act).not.toHaveBeenCalled();
+  });
+
+  it('a card dragged to the table is played, and the hand lowers', async () => {
+    const { session } = await renderTable();
+    await raise();
+
+    await touchDown(handCard('h2'), 500, 780);
+    await touchMove(500, 770);
+    await touchMove(300, 450);
+    expect(ghosts().map((g) => g.dataset.id)).toEqual(['h2']);
+
+    await touchUp(300, 450);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ kind: 'play', card: 'h2' }),
+      0,
+    );
+    expect(isOpen()).toBe(false);
+  });
+
+  it('a reorder keeps it raised', async () => {
+    const { session } = await renderTable();
+    await raise();
+
+    await touchDown(handCard('h1'), 350, 780);
+    await touchMove(700, 760);
+    await touchUp(700, 760);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      { kind: 'handOrder', area: 'p0', cards: ['h2', 'h3', 'h1'] },
+      0,
+    );
+    expect(isOpen()).toBe(true);
+  });
+
+  it('another hand shown keeps it raised', async () => {
+    const view = makeView({ cards: [...CARDS, card('h4', { owner: 1, zone: 'hand' })] });
+    view.you = { ...view.you, areas: ['p0', 'p1'] };
+    view.players[0]!.decks = [
+      { area: 'p0', heroName: 'Spider-Man', ready: true, handCount: 3 },
+      { area: 'p1', heroName: 'Ant-Man', ready: true, handCount: 1 },
+    ];
+    view.table = { ...view.table!, hands: { p0: ['h1', 'h2', 'h3'], p1: ['h4'] } };
+    await renderTable(view);
+    await raise();
+    await tap(handCard('h2'), 500, 780);
+
+    await fireEvent.keyDown(window, { key: 'q' });
+    expect(document.querySelector('.hand .hcard[data-id="h4"]')).not.toBeNull();
+    expect(isOpen()).toBe(true);
+    // The selected card is no longer shown: its selection goes.
+    expect(interaction.locked).toBe(false);
+  });
+
+  it('a mouse takes over from the finger, following its band again', async () => {
+    await renderTable();
+    await raise();
+
+    // Far above the cards, at 700.
+    await fireEvent.pointerMove(window, { clientX: 500, clientY: 300 });
+    expect(isOpen()).toBe(false);
+  });
+});
+
 describe('telling the other players about the drag', () => {
   type Fields = { drag?: unknown };
 
@@ -1395,7 +1568,7 @@ describe('the card under a still pointer after the viewer acts', () => {
     expect(session.act).toHaveBeenLastCalledWith({ kind: 'flip', card: 'dealt' }, 0);
   });
 
-  it('hovers the discard pile a card was dropped on, so that its bar shows', async () => {
+  it('hovers the discard pile a card was dropped on, so that the keys act on it', async () => {
     hitTestFrom();
     const { session, rerender } = await renderTable();
     await press(placed('mine'), 50, 400);
@@ -1447,7 +1620,8 @@ describe('the card under a still pointer after the viewer acts', () => {
 
     await rerender(invocation(true));
     await waitFor(() => expect(interaction.hovered).toEqual({ kind: 'pile', id: 'sided:p0:0' }));
-    expect(screen.getByRole('toolbar', { name: 'Actions' })).toBeTruthy();
+    await fireEvent.keyDown(window, { key: 'k' });
+    expect(session.act).toHaveBeenLastCalledWith({ kind: 'search', pile: 'sided:p0:0' }, 0);
   });
 
   it("hovers what another player's action puts under the pointer, and drops what it takes away", async () => {
@@ -1471,12 +1645,11 @@ describe('the card under a still pointer after the viewer acts', () => {
     await waitFor(() => expect(interaction.hovered).toBeNull());
   });
 
-  it('keeps the hover while the pointer is on the action bar, whatever the view moves', async () => {
+  it('keeps the hover while the context menu is open, whatever the view moves', async () => {
     hitTestFrom();
     const { rerender } = await renderTable();
     await moveTo(300, 450, 0);
-    interaction.hovered = { kind: 'card', id: 'mine' };
-    interaction.enterBar();
+    interaction.openContextMenu({ kind: 'card', id: 'mine' }, { x: 300, y: 450 });
 
     await rerender(makeView({ cards: CARDS.map((c) => (c.id === 'mine' ? { ...c, x: 700 } : c)) }));
     await new Promise((resolve) => setTimeout(resolve, 0));

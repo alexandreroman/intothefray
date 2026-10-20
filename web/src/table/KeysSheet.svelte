@@ -63,8 +63,10 @@
         { what: 'Exhaust / ready', keys: ['E'] },
         { what: 'Flip', keys: ['F'] },
         { what: 'Draw an arrow to another card', keys: ['A'] },
-        { what: 'Discard', keys: ['⌫'] },
+        { what: 'Discard', keys: ['X', '⌫'] },
         { what: 'Back to hand', keys: ['H'] },
+        { what: 'Bottom of the deck', keys: ['B'] },
+        { what: 'Change the villain or scheme card', keys: ['V'] },
       ],
     ],
     [
@@ -76,19 +78,21 @@
         { what: 'Stunned', keys: ['S'] },
         { what: 'Confused', keys: ['C'] },
         { what: 'Tough', keys: ['G'] },
+        { what: 'Locked', keys: ['L'] },
       ],
     ],
     [
       'Card in your hand',
       [
         { what: 'Play', keys: ['P'] },
-        { what: 'Discard', keys: ['⌫'] },
+        { what: 'Discard', keys: ['X', '⌫'] },
       ],
     ],
     [
       'Deck under the mouse',
       [
         { what: 'Draw 1', keys: ['W'] },
+        { what: 'Draw several cards', keys: ['⇧ W'] },
         { what: 'Reveal (encounter deck)', keys: ['R'] },
         { what: 'Look at the top cards', keys: ['L'] },
         { what: 'Search', keys: ['K'] },
@@ -112,6 +116,7 @@
     [
       'Mouse',
       [
+        { what: 'All the actions of a card or pile', keys: [], with: 'click or right click' },
         { what: 'Ping a spot', keys: ['Alt'], with: 'click' },
         { what: 'Arrow from a card to another', keys: ['Shift'], with: 'drag' },
         { what: 'Select cards', keys: [], with: 'drag on an empty spot' },

@@ -28,6 +28,7 @@ type CardView struct {
 	Tokens    map[string]int `json:"tokens,omitempty"`
 	Status    map[string]int `json:"status,omitempty"`
 	Stage     string         `json:"stage,omitempty"` // stage key, for stage cards
+	Identity  bool           `json:"identity,omitempty"`
 	// Home is the side deck a side deck card returns to, sent whatever its
 	// face: as at a real table, everyone sees which deck a card came from,
 	// which tells only that it is a side card, not which one. It is left out
@@ -361,6 +362,7 @@ func (c *Card) viewOf(stageKey string) CardView {
 		Owner: c.Owner, Zone: c.Zone, X: c.X, Y: c.Y, Z: c.Z,
 		Parent: c.Parent, OnPile: c.OnPile, Exhausted: c.Exhausted,
 		Tokens: maps.Clone(c.Tokens), Status: maps.Clone(c.Status), Stage: stageKey,
+		Identity: c.Identity,
 	}
 	if c.FaceDown && c.Zone == ZoneTable {
 		cv.Code = ""

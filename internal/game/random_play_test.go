@@ -345,9 +345,7 @@ type recordedGame struct {
 // TestReplayRecordedGame replays a stored two-player Rhino game and compares
 // the table it ends with to the golden one, byte for byte. Run with -record
 // to record the game again from random play (its golden file is then the live
-// table), and with -update to rewrite the golden file from the replay. The
-// recording predates plays under a card: its last event, one such play, was
-// appended to it from a replay of the earlier events.
+// table), and with -update to rewrite the golden file from the replay.
 func TestReplayRecordedGame(t *testing.T) {
 	recording := filepath.Join("testdata", "replays", "rhino-2p.json")
 	golden := filepath.Join("testdata", "replays", "rhino-2p.table.golden.json")
@@ -377,12 +375,13 @@ func TestReplayRecordedGame(t *testing.T) {
 }
 
 // recordRandomGame plays a random Rhino game and stores its setup and events
-// at recording, and its live table at golden. Seed 13 gives a varied game:
-// bursts, replaced moves, dropped events, looks and most action kinds.
+// at recording, and its live table at golden. Seed 193 gives a varied game:
+// bursts, replaced moves, dropped events, looks, plays under a card and most
+// action kinds.
 func recordRandomGame(t *testing.T, recording, golden string) {
 	t.Helper()
 	f := newDoFixture(t)
-	play := newRandomPlay(f, 13)
+	play := newRandomPlay(f, 193)
 	for range 120 {
 		play.step()
 	}

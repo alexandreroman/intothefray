@@ -4,7 +4,7 @@ import tableSource from './Table.svelte?raw';
 import arrowsSource from './Arrows.svelte?raw';
 import dragSource from './DragLayer.svelte?raw';
 import flightsSource from './Flights.svelte?raw';
-import barSource from './ActionBar.svelte?raw';
+import hintSource from './ArrowHint.svelte?raw';
 import pillSource from './TokenPill.svelte?raw';
 import handSource from './Hand.svelte?raw';
 import dialogSource from '../components/Dialog.svelte?raw';
@@ -175,7 +175,7 @@ async function renderTable(view: View = makeView()) {
   let current = view;
   layOut(() => current);
   const result = render(Table, { session, view });
-  // The bar needs the catalog.
+  // The actions need the catalog.
   await Promise.resolve();
   return {
     session,
@@ -366,7 +366,7 @@ describe('arrows', () => {
     // Raised: over the flights and the drag ghosts, under the controls and the dialogs.
     expect(raised).toBeGreaterThan(zOf(flightsSource, '.fly'));
     expect(raised).toBeGreaterThan(zOf(dragSource, '.draglayer'));
-    expect(raised).toBeLessThan(zOf(barSource, '.actionbar'));
+    expect(raised).toBeLessThan(zOf(hintSource, '.arrowhint'));
     expect(raised).toBeLessThan(zOf(pillSource, '.tokpill'));
     expect(raised).toBeLessThan(zOf(dialogSource, '.backdrop'));
     // The scroller does not trap the arrows in a stacking context of its own.
@@ -444,13 +444,13 @@ describe('a click on an empty spot', () => {
     const { session } = await renderTable(
       makeView({ arrows: [{ from: 'mine', to: 'v', seat: 0 }] }),
     );
-    // A touch tap selected a card: the same tap on an empty spot releases it too.
+    // A touch tap opened a card's menu: the same tap on an empty spot closes it too.
     await fireEvent.pointerDown(placed('other'), { pointerType: 'touch' });
     await fireEvent.click(placed('other'));
-    expect(interaction.locked).toBe(true);
+    expect(interaction.contextMenu).not.toBeNull();
 
     await fireEvent.pointerDown(surface(), { pointerType: 'touch' });
-    expect(interaction.locked).toBe(false);
+    expect(interaction.contextMenu).toBeNull();
     // Ruling P5c-R7: once let go, as the press did not become a rubber band.
     expect(session.act).not.toHaveBeenCalled();
     await fireEvent.pointerUp(window, { pointerType: 'touch' });

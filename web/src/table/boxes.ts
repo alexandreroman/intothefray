@@ -14,7 +14,6 @@ import type {
   View,
 } from '../lib/types';
 import { discardPileOf, homeDeckOf, sideLabel, type TableElement } from './actions';
-import type { IconName } from './Icons.svelte';
 import { freeSlot } from './keys';
 import { creditedSeatAmong, ownSeats, seatPlayer } from './seats';
 
@@ -36,12 +35,19 @@ export function stageFaceName(face: PackFace | undefined, index: number): string
   if (!face) {
     return `Face ${index + 1}`;
   }
+  const stage = stageLabel(face);
+  return stage ? `${face.name} (${stage})` : face.name;
+}
+
+/**
+ * How a stage card's face names its stage: a main scheme by its own number
+ * ("1A"), any other stage card as "stage I". Undefined for a face without a stage.
+ */
+export function stageLabel(face: PackFace): string | undefined {
   if (!face.stage) {
-    return face.name;
+    return undefined;
   }
-  return face.type === 'main_scheme'
-    ? `${face.name} (${face.stage})`
-    : `${face.name} (stage ${face.stage})`;
+  return face.type === 'main_scheme' ? face.stage : `stage ${face.stage}`;
 }
 
 /**
@@ -73,14 +79,12 @@ function compareText(a: string, b: string): number {
   return 0;
 }
 
-/** An action of a tile's floating bar. */
+/** An action of a tile, which its context menu lists (contextItems.ts). */
 export interface TileAction {
   /** 'draw', 'play', 'discard', 'bottom' or 'shuffle'. */
   id: string;
   label: string;
-  /** Drawn as an icon button, its label in the tooltip. */
-  icon?: IconName;
-  /** Built when clicked: Play looks for the first free slot then. */
+  /** Built when chosen: Play looks for the first free slot then. */
   run: () => Action;
 }
 
@@ -145,7 +149,7 @@ export function isDeck(pile: PileView): boolean {
 const PLAYER_PILES: readonly PileKind[] = ['deck', 'discard', 'sideDeck', 'sideDiscard'];
 
 /**
- * The actions of a card in a pile box, in bar order (the prototype's
+ * The actions of a card in a pile box, in menu order (the prototype's
  * renderDeckView): Draw from an own deck or discard pile (side ones too), Play to the first
  * free slot of the credited deck's row (creditedSeat), Discard, Put at the
  * bottom of the deck, and Shuffle into its deck for the out-of-play and
@@ -175,7 +179,6 @@ export function tileActions(card: CardView, pile: PileView, context: TileContext
     actions.push({
       id: 'discard',
       label: 'Discard',
-      icon: 'discard',
       run: () => ({ kind: 'discard', card: card.id }),
     });
   }
@@ -189,7 +192,6 @@ export function tileActions(card: CardView, pile: PileView, context: TileContext
     actions.push({
       id: 'bottom',
       label: 'Put at the bottom of the deck',
-      icon: 'bottom',
       run: () => ({ kind: 'toDeck', card: card.id, where: 'bottom' }),
     });
   }
@@ -197,7 +199,6 @@ export function tileActions(card: CardView, pile: PileView, context: TileContext
     actions.push({
       id: 'shuffle',
       label: 'Shuffle into its deck',
-      icon: 'shuffle',
       run: () => ({ kind: 'toDeck', card: card.id, where: 'shuffle' }),
     });
   }

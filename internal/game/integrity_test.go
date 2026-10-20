@@ -148,11 +148,12 @@ func TestIntegrityAfterActions(t *testing.T) {
 	f.mustDo(t, "h", Action{Kind: ActAttach, Card: played, Target: identity}, at(4))
 	f.mustDo(t, "b", Action{Kind: ActReveal}, at(5))
 	revealed := f.g.Table.revealed()[0].ID
-	f.mustDo(t, "b", Action{Kind: ActArrowAdd, Card: revealed, Target: identity}, at(6))
+	f.mustDo(t, "b", Action{Kind: ActArrowAdd, Card: revealed, Target: played}, at(6))
 	f.mustDo(t, "h", Action{Kind: ActChooseStage, Stage: villain.Key, Card: villain.Cards[1]}, at(7))
 	f.mustDo(t, "h", Action{Kind: ActFlip, Card: scheme.Current}, at(8))
 	f.mustDo(t, "b", Action{Kind: ActDeal, Area: "p1", X: 400, Y: 200}, at(9))
-	f.mustDo(t, "h", Action{Kind: ActDiscard, Card: identity}, at(10))
+	// The identity stays on the table: the card tucked under it goes, with its arrow.
+	f.mustDo(t, "h", Action{Kind: ActDiscard, Card: played}, at(10))
 	f.mustDo(t, "b", Action{Kind: ActDiscardTop, Pile: PileEncounter, N: 2}, at(11))
 	f.mustDo(t, "b", Action{Kind: ActShuffleBack, Pile: PileEncounterDiscard}, at(12))
 	f.mustDo(t, "h", Action{Kind: ActSearch, Pile: "deck:p0"}, at(13))

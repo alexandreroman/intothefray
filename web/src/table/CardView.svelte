@@ -55,7 +55,6 @@
   const cornerThreat = $derived(scheme && hasToken('thr'));
   const statuses = $derived(STATUSES.filter(([k]) => (card.status?.[k] ?? 0) > 0));
   const element = $derived({ kind: 'card', id: card.id } as const);
-  const locked = $derived(interaction.isLocked(element));
   // A ghost is a copy: only the card on the table shows that it is hovered.
   const hovered = $derived(!ghost && interaction.isHovered(element));
   // While dragged, the card on the table makes way for its ghost.
@@ -84,7 +83,8 @@
 
 <!--
   z-index comes from the server and can be negative: the surface must isolate its stacking.
-  The pointer feeds the side preview and the action bar: no role to announce.
+  The pointer feeds the side preview, the keys and the context menu (a click, Table.svelte): no role
+  to announce.
 -->
 <div
   class="card"
@@ -92,7 +92,6 @@
   data-id={card.id}
   class:exhausted={card.exhausted}
   class:highlighted={interaction.highlighted.has(card.id)}
-  class:locked
   class:hovered
   class:land={landscape}
   class:scheme
@@ -110,7 +109,6 @@
   onpointerenter={(event) => interaction.enter(element, event)}
   onpointerleave={() => interaction.leave()}
   onpointerdown={(event) => interaction.press(element, event)}
-  onclick={() => interaction.select(element)}
 >
   {#if hidden}
     <CardBack back={card.back} {caption} />

@@ -191,6 +191,7 @@ describe('groupPileTargets', () => {
     card('b'),
     card('theirs', { owner: 1 }),
     card('minion', { owner: -1, back: 'encounter' }),
+    card('hero', { identity: true }),
   ];
   const view = makeView(cards, piles);
   const of = (units: string[]) => groupPileTargets(units, view).map((t) => [t.pile, t.drop]);
@@ -212,6 +213,10 @@ describe('groupPileTargets', () => {
 
   it('offers nothing when a unit is no longer on the table', () => {
     expect(of(['a', 'gone'])).toEqual([]);
+  });
+
+  it('offers nothing when a unit is an identity card, which stays on the table', () => {
+    expect(of(['a', 'hero'])).toEqual([]);
   });
 });
 

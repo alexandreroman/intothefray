@@ -36,6 +36,17 @@ describe('TokenPill', () => {
     expect(pill.classList).toContain('placed');
   });
 
+  it('gives − and + a hit area of 44 px a side on a touch screen', () => {
+    const coarse = /@media \(pointer: coarse\) \{[\s\S]*?button::before \{([^}]*)\}/.exec(
+      pillSource,
+    )?.[1];
+    expect(coarse).toMatch(/width: max\(100%, 44px\);/);
+    expect(coarse).toMatch(/height: max\(100%, 44px\);/);
+    // Invisible, and rising from the button: the token under the pill keeps its own taps.
+    expect(coarse).not.toMatch(/background|border/);
+    expect(coarse).toMatch(/bottom: 0;/);
+  });
+
   it('never starts a text selection, however quickly − and + are clicked', async () => {
     renderPill();
     for (const name of ['Remove 1', 'Add 1']) {

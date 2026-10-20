@@ -53,6 +53,15 @@ type Card struct {
 	Exhausted bool           `json:"exhausted,omitempty"`
 	Tokens    map[string]int `json:"tokens,omitempty"` // "dmg", "thr", "gen"
 	Status    map[string]int `json:"status,omitempty"` // "stunned", "confused", "tough"
+	// Identity marks a player's hero or alter-ego card, set at setup: it never
+	// leaves the table (see checkStaysOnTable). A version of the identity
+	// takes the mark over when it is played (see takeOverIdentity).
+	Identity bool `json:"identity,omitempty"`
+	// IdentityVersion marks another version of a player's identity, such as
+	// Ironheart's set-aside versions: played onto the table, it becomes its
+	// owner's identity. Setup marks the set-aside identity cards; an identity
+	// replaced by a version becomes one in turn.
+	IdentityVersion bool `json:"identityVersion,omitempty"`
 }
 
 // PileKind tells what a pile is used for.
