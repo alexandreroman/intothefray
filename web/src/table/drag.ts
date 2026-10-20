@@ -8,7 +8,7 @@ import {
   discardPileOf,
   homeDeckOf,
   isSideDeckId,
-  sideDeckName,
+  sideLabel,
   stageHeldBy,
 } from './actions';
 import type { Pressable } from './interaction.svelte';
@@ -438,7 +438,7 @@ export function pileTargets(drag: DragSource, view: View): PileTarget[] {
   // A deck is private to its owner: the viewer's own cards and encounter cards only.
   const home = table.piles.find((p) => p.id === homeDeckOf(card));
   if (home && (seats.includes(card.owner) || card.owner === -1)) {
-    const deck = home.kind === 'sideDeck' ? sideDeckName(home) : 'deck';
+    const deck = home.kind === 'sideDeck' ? `${sideLabel(home)} deck` : 'deck';
     targets.push(
       { pile: home.id, drop: 'top', label: `Top of ${deck}` },
       { pile: home.id, drop: 'bottom', label: `Bottom of ${deck}` },

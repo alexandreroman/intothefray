@@ -13,6 +13,7 @@ import type {
   View,
   Zone,
 } from '../lib/types';
+import { sideLabel } from './actions';
 import { stackOf } from './drag';
 import { isHidden } from './face';
 import type { Landing } from './interaction.svelte';
@@ -408,7 +409,7 @@ const PILE_NOUNS: Partial<Record<PileView['kind'], string>> = {
 
 /** What the history calls a pile of a player: "deck", "Invocation deck", "Invocation discard pile". */
 function pileNoun(pile: PileView): string {
-  const label = pile.label ?? 'side';
+  const label = sideLabel(pile);
   switch (pile.kind) {
     case 'sideDeck':
       return `${label} deck`;

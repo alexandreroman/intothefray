@@ -353,7 +353,7 @@ function moveMenu(card: CardView, context: Context): ActionItem[] {
   const encounter = card.owner === -1;
   const home = context.table.piles.find((pile) => pile.id === homeDeckOf(card));
   if ((own || encounter) && home) {
-    const deck = home.kind === 'sideDeck' ? sideDeckName(home) : 'deck';
+    const deck = home.kind === 'sideDeck' ? `${sideLabel(home)} deck` : 'deck';
     menu.push(
       { id: 'deckTop', label: `Top of ${deck}`, group: 0, run: () => toDeck(card, 'top') },
       {
@@ -440,9 +440,9 @@ export function isSideDeckId(pile: string): boolean {
   return pile.startsWith(SIDE_DECK_PREFIX);
 }
 
-/** How the bar names a side deck: "Invocation deck". */
-export function sideDeckName(pile: PileView): string {
-  return `${pile.label ?? 'side'} deck`;
+/** The name of a side deck and of its discard pile: "Invocation", as in "Invocation deck". */
+export function sideLabel(pile: PileView): string {
+  return pile.label ?? 'side';
 }
 
 /** The set-aside pile for a card: its deck's own for the viewer's cards, the scenario's for any other. */
@@ -490,7 +490,7 @@ function pileActions(pile: PileView, context: Context): ActionItem[] | { text: s
         const name = seatPlayer(context.view, pile.owner)?.name ?? 'another player';
         return { text: `Belongs to ${name}: only they can use it.` };
       }
-      const pileName = `your ${sideDeckName(pile)}`;
+      const pileName = `your ${sideLabel(pile)} deck`;
       // Only a side deck with its own discard pile discards from the top.
       const discardTop = hasPile(context.table, deckDiscardOf(pile.id));
       return [

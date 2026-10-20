@@ -13,7 +13,7 @@ import type {
   Stage,
   View,
 } from '../lib/types';
-import { discardPileOf, homeDeckOf, type TableElement } from './actions';
+import { discardPileOf, homeDeckOf, sideLabel, type TableElement } from './actions';
 import type { IconName } from './Icons.svelte';
 import { freeSlot } from './keys';
 import { creditedSeatAmong, ownSeats, seatPlayer } from './seats';
@@ -109,9 +109,9 @@ export function pileLabel(pile: PileView, view: View): string {
     case 'discard':
       return `${ownerOf(pile, view)} discard`;
     case 'sideDeck':
-      return `${ownerOf(pile, view)} ${pile.label ?? 'side'} deck`;
+      return `${ownerOf(pile, view)} ${sideLabel(pile)} deck`;
     case 'sideDiscard':
-      return `${ownerOf(pile, view)} ${pile.label ?? 'side'} discard`;
+      return `${ownerOf(pile, view)} ${sideLabel(pile)} discard`;
     case 'aside':
       // The scenario's own set-aside cards belong to nobody.
       return pile.owner === -1 ? 'Set-aside cards' : `${ownerOf(pile, view)} set-aside cards`;
