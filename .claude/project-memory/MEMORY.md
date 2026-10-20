@@ -52,3 +52,4 @@
 - [Fear No Evil scenarios](references/project_fear_no_evil_scenarios.md) — Kingpin curated; chosen-Underling scenarios unsupported
 - [Action menu organisation](references/project_action_bars.md) — click opens the action menu; hand plays by drag and keys; out-of-play chips
 - [Identity card stays on the table](references/project_identity_stays.md) — identity never leaves the table, like a stage card
+- [Compact top bar hides on scroll](references/project_top_bar_auto_hide.md) — ≤600px: bar slides away on scroll down, back on scroll up or focus

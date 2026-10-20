@@ -89,6 +89,7 @@
     border-radius: 999px;
     color: var(--muted);
     font-size: 13px;
-    z-index: 5;
+    /* Over the top bar, which may float over the page (100), under the dialogs (5600). */
+    z-index: 200;
   }
 </style>

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/svelte';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
 import { tick } from 'svelte';
 import Table from './Table.svelte';
 import { FOCUS_MARGINS, TABLE_EDGE, TABLE_EDGE_BOTTOM } from './focus';
@@ -12,6 +12,7 @@ import {
   HAND_REST_SCALE,
   restingStrip,
 } from './layout';
+import { TOP_BAR_HEIGHT } from '../lib/autoHide.svelte';
 import { knownCard, loadGameCards, loadIndex } from '../lib/catalog';
 import type { CardView as TableCard, PileView, PresenceState, View } from '../lib/types';
 import tableSource from './Table.svelte?raw';
@@ -904,5 +905,131 @@ describe('Table menus on a phone', () => {
     const label = /\n {2}\.table-menu button > span:first-child \{([^}]*)\}/.exec(menuSource)?.[1];
     expect(label).toMatch(/text-overflow: ellipsis;/);
     expect(label).toMatch(/min-width: 0;/);
+  });
+});
+
+describe('Table under a compact top bar', () => {
+  /** Gives the play area's scroller a content of that height, scrolled to that offset. */
+  function scrollTable(wrap: HTMLElement, offset: number): Promise<boolean> {
+    Object.defineProperties(wrap, {
+      scrollHeight: { value: 3000, configurable: true },
+      clientHeight: { value: 600, configurable: true },
+      scrollTop: { value: offset, configurable: true },
+    });
+    return fireEvent.scroll(wrap);
+  }
+
+  it('floats the bar over the play area, which keeps room for it while it shows', async () => {
+    mockScreen(PHONE);
+    const { container } = render(Table, { session: fakeSession(), view: makeView() });
+    const app = container.querySelector<HTMLElement>('.app')!;
+    const wrap = container.querySelector<HTMLElement>('.tablewrap')!;
+    expect(app.classList).toContain('bar-over');
+    expect(app.style.getPropertyValue('--bar-start')).toBe(`${TOP_BAR_HEIGHT}px`);
+    expect(app.style.getPropertyValue('--bar-room')).toBe(`${TOP_BAR_HEIGHT}px`);
+
+    await scrollTable(wrap, 400);
+    expect(container.querySelector('header')?.classList).toContain('hidden');
+    expect(app.style.getPropertyValue('--bar-room')).toBe('0px');
+    // The start of the table keeps its room: hiding the bar moves nothing.
+    expect(app.style.getPropertyValue('--bar-start')).toBe(`${TOP_BAR_HEIGHT}px`);
+
+    await scrollTable(wrap, 300);
+    expect(container.querySelector('header')?.classList).not.toContain('hidden');
+    expect(app.style.getPropertyValue('--bar-room')).toBe(`${TOP_BAR_HEIGHT}px`);
+  });
+
+  it('keeps an empty table from scrolling under the bar', () => {
+    vi.spyOn(Element.prototype, 'clientHeight', 'get').mockReturnValue(2000);
+    const surfaceHeight = () =>
+      parseFloat(document.querySelector<HTMLElement>('.surface')!.style.height);
+
+    mockScreen(WIDE);
+    const { unmount } = render(Table, { session: fakeSession(), view: makeView() });
+    const wide = surfaceHeight();
+    unmount();
+
+    mockScreen(PHONE);
+    render(Table, { session: fakeSession(), view: makeView() });
+    expect(surfaceHeight()).toBe(wide - TOP_BAR_HEIGHT);
+  });
+
+  it('keeps the preview in a top corner clear of the bar while it shows', async () => {
+    // With a mouse: touch mode previews nothing.
+    mockScreen(SMALL_WINDOW);
+    const { container } = render(Table, { session: fakeSession(), view: makeView() });
+    // A 320 x 450 preview would hide the whole hovered card in both bottom corners, at home above
+    // the controls the small screen raises over the resting hand: it goes up.
+    vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(320);
+    vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(450);
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: Element,
+    ) {
+      if (this.classList.contains('tablewrap')) {
+        return DOMRect.fromRect({ x: 0, y: 0, width: 400, height: 900 });
+      }
+      if (this.matches('.card[data-id="t1"]')) {
+        return DOMRect.fromRect({ x: 100, y: 500, width: 200, height: 200 });
+      }
+      return DOMRect.fromRect();
+    });
+
+    await fireEvent.pointerEnter(cardInPlay());
+    const panel = peek(container)!;
+    expect(panel.classList).toContain('top-left');
+    expect(panel.style.margin.split(' ')[0]).toBe(`${FOCUS_MARGINS.top + TOP_BAR_HEIGHT}px`);
+  });
+
+  it('unhides the bar when the window widens past the compact screen', async () => {
+    const lists = mockScreen(PHONE);
+    const { container } = render(Table, { session: fakeSession(), view: makeView() });
+    const app = container.querySelector<HTMLElement>('.app')!;
+    await scrollTable(container.querySelector<HTMLElement>('.tablewrap')!, 400);
+    expect(container.querySelector('header')?.classList).toContain('hidden');
+
+    await resizeScreen(lists, WIDE);
+    expect(container.querySelector('header')?.classList).not.toContain('hidden');
+
+    // Back on a phone, the bar shows until the table scrolls down again.
+    await resizeScreen(lists, PHONE);
+    expect(container.querySelector('header')?.classList).not.toContain('hidden');
+    expect(app.style.getPropertyValue('--bar-room')).toBe(`${TOP_BAR_HEIGHT}px`);
+  });
+
+  it('zooms around the pointer past the room the bar keeps at the top', async () => {
+    mockScreen(PHONE);
+    const { container } = render(Table, { session: fakeSession(), view: makeView() });
+    const wrap = container.querySelector<HTMLElement>('.tablewrap')!;
+    vi.spyOn(wrap, 'getBoundingClientRect').mockReturnValue(
+      DOMRect.fromRect({ x: 0, y: 0, width: 390, height: 800 }),
+    );
+    Object.defineProperty(wrap, 'scrollLeft', { value: 0, writable: true });
+    Object.defineProperty(wrap, 'scrollTop', { value: 50, writable: true });
+
+    // The pointer at 24, 430: 400 px down the surface, past the 24 px padding and the bar's room.
+    await fireEvent.wheel(wrap, { deltaY: -20, ctrlKey: true, clientX: 24, clientY: 430 });
+    // At 120 %, that spot is 480 px down the surface: still under the pointer.
+    await waitFor(() => {
+      expect(wrap.scrollTop).toBe(24 + TOP_BAR_HEIGHT + 480 - 430);
+    });
+  });
+
+  it('leaves the bar in its own row on a tablet, without the history column', () => {
+    mockScreen(NARROW);
+    const { container } = render(Table, { session: fakeSession(), view: makeView() });
+    const app = container.querySelector<HTMLElement>('.app')!;
+    expect(app.classList).not.toContain('bar-over');
+    expect(app.style.getPropertyValue('--bar-start')).toBe('0px');
+    expect(app.style.getPropertyValue('--bar-room')).toBe('0px');
+    expect(sidePanel()).toBeNull();
+  });
+
+  it('leaves the bar in its own row on a larger screen', () => {
+    mockScreen(WIDE);
+    const { container } = render(Table, { session: fakeSession(), view: makeView() });
+    const app = container.querySelector<HTMLElement>('.app')!;
+    expect(app.classList).not.toContain('bar-over');
+    expect(app.style.getPropertyValue('--bar-start')).toBe('0px');
+    expect(app.style.getPropertyValue('--bar-room')).toBe('0px');
   });
 });

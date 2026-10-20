@@ -12,6 +12,7 @@
   import { MediaQuery } from 'svelte/reactivity';
   import Tooltip from '../components/Tooltip.svelte';
   import TopBar from '../components/TopBar.svelte';
+  import { COMPACT_QUERY, TOP_BAR_HEIGHT } from '../lib/autoHide.svelte';
   import { gameCards, knownCard, loadGameCards, loadIndex } from '../lib/catalog';
   import { storedLang } from '../lib/lang';
   import { localizedFace, localizedName } from '../lib/localize';
@@ -461,6 +462,15 @@
   // fit would make the scrollbar come and go, and the fit with it.
   const SCROLLBAR_ROOM = 12;
 
+  // On a compact screen the top bar floats over the play area, and slides away as the table
+  // scrolls down (TopBar): the table starts below it, and what floats at the top of the play area
+  // keeps clear of it while it shows.
+  const compact = new MediaQuery(COMPACT_QUERY);
+  let barHidden = $state(false);
+  // The room the bar keeps at the start of the table, and over the top of the play area, in px.
+  const barStart = $derived(compact.current ? TOP_BAR_HEIGHT : 0);
+  const barRoom = $derived(compact.current && !barHidden ? TOP_BAR_HEIGHT : 0);
+
   // The table's visible size, in px.
   let visibleWidth = $state(0);
   let visibleHeight = $state(0);
@@ -498,7 +508,7 @@
   const surface = $derived(
     surfaceSize(tableCards, tablePiles, sizeOf, {
       w: Math.max(0, Math.floor((visibleWidth - 2 * SCROLL_PADDING) / zoom)),
-      h: Math.max(0, Math.floor((visibleHeight - 2 * SCROLL_PADDING) / zoom)),
+      h: Math.max(0, Math.floor((visibleHeight - 2 * SCROLL_PADDING - barStart) / zoom)),
     }),
   );
 
@@ -599,8 +609,8 @@
   let focusWidth = $state(320);
   let focusHeight = $state(450);
   // The play area and the hovered element on the screen, measured when they may have moved
-  // (hover, scroll, zoom, resize).
-  let focusArea: DOMRect | null = null;
+  // (hover, scroll, zoom, resize, the bar sliding).
+  let focusArea: Rect | null = null;
   let focusHovered: DOMRect | null = null;
 
   /** The hovered card or pile, on the screen. A hovered hand card has no preview to place. */
@@ -620,7 +630,11 @@
     if (!preview) {
       return;
     }
-    focusArea = wrap?.getBoundingClientRect() ?? null;
+    // The part under the top bar, while it floats over the play area, does not show.
+    const area = wrap?.getBoundingClientRect();
+    focusArea = area
+      ? { left: area.left, top: area.top + barRoom, right: area.right, bottom: area.bottom }
+      : null;
     focusHovered = hoveredRect();
     placeFocus();
   }
@@ -642,9 +656,9 @@
     focusCorner = next;
   }
 
-  /** The panel's margins in its corner: off the play area's edges, and above the controls at home. */
+  /** The panel's margins in its corner: off the play area's edges and the top bar, and above the controls at home. */
   function focusMargin(corner: Corner): string {
-    const top = corner.startsWith('top') ? FOCUS_MARGINS.top : 0;
+    const top = corner.startsWith('top') ? FOCUS_MARGINS.top + barRoom : 0;
     const bottom = bottomRoom(corner, homeControls);
     const left = corner.endsWith('left') ? FOCUS_MARGINS.side : 0;
     const right = corner.endsWith('right') ? FOCUS_MARGINS.side : 0;
@@ -663,6 +677,7 @@
       focusHeight,
       pickerShown,
       homeControls,
+      barRoom,
     ];
     untrack(measureFocus);
   });
@@ -1506,15 +1521,17 @@
     const y = pointY ?? box.top + box.height / 2;
     const scale = next / from;
 
-    // What lies under the point now, in zoomed px of the surface (past the scroller's padding):
-    // the page is not redrawn before the tick.
+    // What lies under the point now, in zoomed px of the surface (past the scroller's padding,
+    // which keeps the top bar's room at the top on a compact screen): the page is not redrawn
+    // before the tick.
+    const paddingTop = SCROLL_PADDING + barStart;
     const underX = wrap.scrollLeft + x - box.left - SCROLL_PADDING;
-    const underY = wrap.scrollTop + y - box.top - SCROLL_PADDING;
+    const underY = wrap.scrollTop + y - box.top - paddingTop;
 
     await tick();
 
     wrap.scrollLeft = Math.max(0, SCROLL_PADDING + underX * scale - (x - box.left));
-    wrap.scrollTop = Math.max(0, SCROLL_PADDING + underY * scale - (y - box.top));
+    wrap.scrollTop = Math.max(0, paddingTop + underY * scale - (y - box.top));
   }
 
   // The wheel can zoom finer than the 10 % steps: it keeps its own target so
@@ -1627,6 +1644,7 @@
   class:arrowing={interaction.arrowFrom !== null}
   class:dragging={interaction.dragging !== null}
   class:history-collapsed={historyCollapsed && !narrow.current}
+  class:bar-over={compact.current}
   class:banding={interaction.band !== null}
   class:compact={small.current}
   class:touch={touchMode.current}
@@ -1635,6 +1653,8 @@
   style:--edge="{TABLE_EDGE}px"
   style:--edge-bottom="{TABLE_EDGE_BOTTOM}px"
   style:--controls-bottom="{controlsBottom}px"
+  style:--bar-start="{barStart}px"
+  style:--bar-room="{barRoom}px"
   bind:this={app}
 >
   <div class="top">
@@ -1647,6 +1667,8 @@
       readyAll={own.length > 0
         ? { disabled: !canReadyAll, run: () => act({ kind: 'readyAll' }) }
         : undefined}
+      scroller={wrap}
+      bind:hidden={barHidden}
     />
   </div>
 
@@ -1981,11 +2003,14 @@
     min-width: 0;
   }
 
-  /* As wide and tall as the surface, which the padding keeps off the scroller's edges. */
+  /*
+    As wide and tall as the surface, which the padding keeps off the scroller's edges, and off the
+    top bar floating over it (--bar-start).
+  */
   .table {
     position: relative;
     width: max-content;
-    padding: 24px var(--content-gutter);
+    padding: calc(24px + var(--bar-start)) var(--content-gutter) 24px;
   }
 
   /*
@@ -2097,12 +2122,14 @@
     min-height: 0;
   }
 
+  /* Under the top bar floating over the table (--bar-room), following it as it slides. */
   .notice {
     grid-area: table;
     align-self: start;
     justify-self: center;
     z-index: 40;
-    margin: 8px 0 0;
+    margin: calc(8px + var(--bar-room)) 0 0;
+    transition: margin-top 0.2s ease;
     padding: 4px 14px;
     background: var(--panel-2);
     border: 1px solid var(--accent);
@@ -2256,6 +2283,21 @@
   }
 
   /*
+    On a compact screen the top bar floats over the top of the play area, which takes the whole
+    window: sliding away, it shows the table under it, and nothing else moves.
+  */
+  .app.bar-over {
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'table';
+  }
+
+  .app.bar-over .top {
+    grid-area: table;
+    align-self: start;
+  }
+
+  /*
     The preview, at the bottom right of the table above the zoom control, still while the table
     scrolls under it. As the zoom control: over the table, under the other players' presence
     (2500), the veil and the raised hand (2600). Never so tall that it leaves the table; the
@@ -2278,6 +2320,8 @@
     border-radius: 14px;
     box-shadow: 0 14px 36px #000000a6;
     pointer-events: none;
+    /* In a top corner, it follows the top bar as it slides (focusMargin). */
+    transition: margin-top 0.2s ease;
   }
 
   /* A landscape card: 420 px wide. */
@@ -2321,6 +2365,11 @@
     .peek,
     .peek.leaving {
       animation: none;
+    }
+
+    .peek,
+    .notice {
+      transition: none;
     }
 
     .app {
