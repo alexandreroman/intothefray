@@ -1,6 +1,6 @@
 <script lang="ts">
   import { isLang, LANGS, setLang, storedLang } from '../lib/lang';
-  import { randomName, savePlayerName } from '../lib/names';
+  import { cleanName, MAX_NAME_LENGTH, randomName, savePlayerName, stripEmoji } from '../lib/names';
   import { getPref, setPref } from '../lib/prefs';
   import { go } from '../lib/router.svelte';
   import { selectionIndicator } from '../lib/selectionIndicator';
@@ -17,11 +17,13 @@
     { key: 'felt', label: 'Green felt', bg: '#0e2419', dot: '#1b3a2a', back: true },
   ];
 
-  let name = $state(getPref('itf-name') ?? '');
+  let name = $state(cleanName(getPref('itf-name') ?? ''));
   let theme = $state(storedTheme());
   let lang = $state(storedLang());
 
   function onNameInput(): void {
+    // Not trimmed here, so that a space can be typed between two words.
+    name = stripEmoji(name);
     savePlayerName(name);
   }
 
@@ -71,7 +73,7 @@
         <input
           type="text"
           id="name"
-          maxlength="24"
+          maxlength={MAX_NAME_LENGTH}
           placeholder="e.g. Alex"
           bind:value={name}
           oninput={onNameInput}

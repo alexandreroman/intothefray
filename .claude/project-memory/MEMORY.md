@@ -32,7 +32,7 @@
 - [Optional Casper support](references/project_casper_optional.md) — Casper wiring only in .casper.json and scripts/casper.sh; APP_INSTANCE names the tab
 - [Caddy as the local web server](references/project_caddy_entry_point.md) — Caddy serves web/dist from disk, single local entry point
 - [mise pins the frontend toolchain](references/project_mise_versions.md) — root mise.toml is the only node/pnpm version source
-- [Random player name](references/project_player_name.md) — no name prompt; random "Adjective Noun" name stored in itf-name
+- [Random player name](references/project_player_name.md) — no name prompt; random "Adjective Noun" name in itf-name; 16 chars, no emoji
 - [Standard and Expert set setup](references/project_set_setup.md) — Setup-keyword set cards start in play via sets.json; Standard PvP unlisted
 - [Per-game card pool](references/project_card_pool.md) — table loads GET /api/games/{id}/cards; SPA ships pack index only
 - [Card image preload](references/project_image_preload.md) — browser-native: low-priority Image per pool face, no custom queue
