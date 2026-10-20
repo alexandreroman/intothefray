@@ -116,8 +116,7 @@ jobs:
           mkdir -p web/dist
           docker compose run --rm --no-deps -T web caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
 
-  # Publishes the image only once every check of the commit has passed, then
-  # hands it over to the infra repository, which deploys it.
+  # Publishes the image only once every check of the commit has passed.
   publish:
     needs: [go, web, docker]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -151,6 +150,23 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+  # The frontend goes out once its image exists. A called workflow gets no more
+  # permissions than its caller grants, so this covers its build and deploy jobs.
+  pages:
+    needs: publish
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/pages.yml
+
+  deploy-backend:
+    needs: pages
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
       # GITHUB_TOKEN cannot dispatch to another repository, hence a fine-grained
       # PAT scoped to intothefray-infra. Without it (a fork), the step only warns.
       - name: Trigger the backend deployment

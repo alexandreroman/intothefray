@@ -266,29 +266,30 @@ They run the same checks as `make check` and `make build`. They do not
 regenerate `packs/dist`: the generator needs marvelcdb, Cerebro and
 mc4db over the network, so the committed files are used as they are.
 
-A fourth job, `publish`, runs on a push to `main` only, once the other
-three have passed: it pushes the image to GHCR, tagged with the commit
-SHA and `main`, then asks the infra repository to deploy it (see
-Deployment).
+On a push to `main` only, once those three have passed, three more jobs
+run in turn (see Deployment):
+
+- `publish`: pushes the image to GHCR, tagged with the commit SHA and
+  `main`;
+- `pages`: calls the `Pages` workflow;
+- `deploy-backend`: asks the infra repository to deploy the image.
 
 ## Deployment
 
 The frontend is served by GitHub Pages at `https://intothefray.xyz`, the
 backend by a VPS behind Cloudflare at `https://api.intothefray.xyz`. A
-push to `main` deploys both, backend first:
+push to `main` deploys both:
 
 1. the `CI` workflow pushes the image to GHCR as
    `ghcr.io/alexandreroman/intothefray`, tagged with the commit SHA and
    `main`;
-2. it sends a `deploy-app` dispatch to the private
+2. it runs the `Pages` workflow, which builds that same commit and
+   publishes the frontend;
+3. it sends a `deploy-app` dispatch to the private
    `alexandreroman/intothefray-infra` repository, which deploys that
-   image on the VPS;
-3. on success, the infra repository sends a `backend-deployed` dispatch
-   back to this repository;
-4. the `Pages` workflow builds that same commit and publishes the
-   frontend.
+   image on the VPS.
 
-The frontend therefore never goes live before its backend. The `Pages`
+The frontend can be live a few minutes before its backend. The `Pages`
 workflow can also be run by hand (`workflow_dispatch`) to republish the
 frontend.
 
@@ -309,7 +310,7 @@ In the repository settings:
   access token with access to the `intothefray-infra` repository only,
   and the repository permission Contents: read and write (needed by the
   dispatches API). Without it, CI logs a warning and skips the
-  deployment.
+  backend deployment.
 
 After the first publish, make the `intothefray` package public in its
 GHCR package settings (Package settings, Danger Zone, Change
