@@ -490,16 +490,23 @@ func (b *tableBuilder) setupPlayer(seat int, deck *DeckChoice) error {
 		}
 	}
 
-	setAside, err := b.setAsideCodes(hero)
+	// Set-aside and side deck cards are created apart (see setupSideCards),
+	// even when the deck list names them.
+	apart, err := b.setAsideCodes(hero)
 	if err != nil {
 		return err
 	}
+	sideCodes, err := b.sideDeckCodes(hero)
+	if err != nil {
+		return err
+	}
+	apart = append(apart, sideCodes...)
 	for _, entry := range deck.Cards {
 		code, err := b.canonical(entry.Code)
 		if err != nil {
 			return err
 		}
-		if code == identity.Code || slices.Contains(setAside, code) {
+		if code == identity.Code || slices.Contains(apart, code) {
 			continue
 		}
 		for range entry.Qty {
@@ -552,6 +559,25 @@ func (b *tableBuilder) setAsideCodes(hero pack.Hero) ([]string, error) {
 			return nil, err
 		}
 		codes = append(codes, canonical)
+	}
+	return codes, nil
+}
+
+// sideDeckCodes returns the canonical codes of the cards of hero's side decks.
+func (b *tableBuilder) sideDeckCodes(hero pack.Hero) ([]string, error) {
+	var codes []string
+	for _, setCode := range hero.SideDecks {
+		set, ok := b.cat.Set(setCode)
+		if !ok {
+			return nil, fmt.Errorf("%w: unknown set %q", ErrInvalid, setCode)
+		}
+		for _, code := range set.Cards {
+			canonical, err := b.canonical(code)
+			if err != nil {
+				return nil, err
+			}
+			codes = append(codes, canonical)
+		}
 	}
 	return codes, nil
 }

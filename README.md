@@ -24,7 +24,11 @@ Everything below works today, except where noted.
   key picks the hand shown. An action is credited to the deck of the
   card or pile you touch, else to the selected deck
 - **Automated setup** — pick a scenario, a difficulty and the
-  modular sets: villain, main scheme and decks are laid out for you
+  modular sets: villain, main scheme and decks are laid out for you,
+  with each hero's side decks (Doctor Strange's Invocation deck and
+  its discard pile, Daredevil's Sense deck...) shuffled beside the
+  identity, and the cards a hero sets aside (Valkyrie's Death-Glow,
+  Iceman's Frostbite...) on its set-aside pile
 - **Discoverable actions** — every action one or two clicks away,
   and you always see what the other players just did: history,
   live cursors, pings, arrows and animated moves

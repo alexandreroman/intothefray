@@ -467,7 +467,7 @@ func resolveToDeck(t *Table, who actor, a Action, rng *rand.Rand) (Action, error
 	switch a.Where {
 	case whereTop, whereBottom:
 	case whereShuffle:
-		a.Renames, a.Cards = reidentify(t, append(without(deck.Cards, c.ID), c.ID), rng)
+		a.Renames, a.Cards = reidentify(t, t.shuffledIntoDeck(c, deck), rng)
 	default:
 		return a, invalid("unknown position %q", a.Where)
 	}

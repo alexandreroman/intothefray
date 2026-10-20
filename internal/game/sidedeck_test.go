@@ -105,8 +105,9 @@ func TestSetupSideDecks(t *testing.T) {
 		invocation.Label != "Invocation" || !invocation.TopFaceUp || invocation.X != 360 || invocation.Y != rowY0 {
 		t.Fatalf("Invocation deck = %+v, want p0's face-up side deck at (360, %d)", invocation, rowY0)
 	}
-	if got, want := codesOf(table, invocation.Cards), []string{"09032", "09033", "09034", "09035", "09036"}; !slices.Equal(got, want) {
-		t.Errorf("Invocation deck = %v, want %v", got, want)
+	invocationCodes := []string{"09032", "09033", "09034", "09035", "09036"}
+	if got := codesOf(table, invocation.Cards); !slices.Equal(got, invocationCodes) {
+		t.Errorf("Invocation deck = %v, want %v", got, invocationCodes)
 	}
 	for _, id := range invocation.Cards {
 		if c := table.Cards[id]; c.Owner != 0 || c.Home != invocationDeck || c.Zone != ZonePile {
@@ -240,8 +241,16 @@ func TestSetupWithoutSideDecksIsUnchanged(t *testing.T) {
 		table func(*testing.T) *Table
 		want  string
 	}{
-		{"two Spider-Man players", func(t *testing.T) *Table { return startedGame(t, rhinoConfig()).Table }, spiderManSetupHash},
-		{"three decks", func(t *testing.T) *Table { return twoDeckGame(t).Table }, threeDeckSetupHash},
+		{
+			"two Spider-Man players",
+			func(t *testing.T) *Table { return startedGame(t, rhinoConfig()).Table },
+			spiderManSetupHash,
+		},
+		{
+			"three decks",
+			func(t *testing.T) *Table { return twoDeckGame(t).Table },
+			threeDeckSetupHash,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -468,12 +477,18 @@ func TestSideDeckViews(t *testing.T) {
 		t.Errorf("deck card in hand has home %q, want none", got)
 	}
 
-	// A face-down side card on the table hides its home with its code.
+	// A face-down side card on the table hides its home with its code, but
+	// from its owner, who needs it to move the card.
 	f.mustDo(t, "b", Action{Kind: ActPlay, Card: sense, X: 800, Y: 830}, at(3))
 	f.g.Table.Cards[sense].FaceDown = true
 	for _, cv := range f.g.ViewFor("h").Table.Cards {
 		if cv.ID == sense && (cv.Code != "" || cv.Home != "") {
-			t.Errorf("face-down Sense card = %+v, want neither code nor home", cv)
+			t.Errorf("Host sees the face-down Sense card as %+v, want neither code nor home", cv)
+		}
+	}
+	for _, cv := range f.g.ViewFor("b").Table.Cards {
+		if cv.ID == sense && (cv.Code != "" || cv.Home != senseDeck) {
+			t.Errorf("Bob sees his face-down Sense card as %+v, want its home only", cv)
 		}
 	}
 }
@@ -526,4 +541,49 @@ func TestTuckedSideCardWithoutDiscardGoesUnderItsDeckInAGroup(t *testing.T) {
 	checkIntegrity(t, f.g.Table)
 	checkHistory(t, f.g)
 	checkReplay(t, f)
+}
+
+func TestShuffleIntoSideDeckTakesTheTuckedSideCards(t *testing.T) {
+	for _, where := range []string{whereTop, whereBottom, whereShuffle} {
+		t.Run(where, func(t *testing.T) {
+			f, host := tuckedSenseFixture(t)
+			tucked := drawSide(t, f, "h", "side:p0:0", 2)
+			f.mustDo(t, "h", Action{Kind: ActPlay, Card: host, X: 800, Y: 500}, at(3))
+			f.mustDo(t, "h", Action{Kind: ActPlay, Card: tucked, Target: host}, at(4))
+
+			f.mustDo(t, "h", Action{Kind: ActToDeck, Card: host, Where: where}, at(5))
+
+			deck := f.g.Table.Piles["side:p0:0"]
+			if len(deck.Cards) != 5 {
+				t.Fatalf("Sense deck holds %d cards, want 5", len(deck.Cards))
+			}
+			// The tucked card goes under the deck first, then its host.
+			bottom, top := deck.Cards[0], deck.Cards[len(deck.Cards)-1]
+			switch where {
+			case whereTop:
+				if bottom != tucked || top != host {
+					t.Errorf("Sense deck = %v, want %s at the bottom and %s on top", deck.Cards, tucked, host)
+				}
+			case whereBottom:
+				if got := deck.Cards[:2]; !slices.Equal(got, []string{host, tucked}) {
+					t.Errorf("Sense deck = %v, want it to start with [%s %s]", deck.Cards, host, tucked)
+				}
+			}
+			checkIntegrity(t, f.g.Table)
+			checkHistory(t, f.g)
+			checkReplay(t, f)
+		})
+	}
+}
+
+func TestDeckListSideCardsStayInTheirSideDeck(t *testing.T) {
+	cat := newCatalog(t)
+	f := heroGame(t, heroDeck(t, cat, doctorStrangeIdentity, "Doctor Strange", DeckEntry{Code: "09032", Qty: 1}))
+	table := f.g.Table
+	if slices.Contains(codesOf(table, table.Piles["deck:p0"].Cards), "09032") {
+		t.Error("an Invocation card is in the deck")
+	}
+	if got := len(table.Piles[invocationDeck].Cards); got != 5 {
+		t.Errorf("Invocation deck holds %d cards, want 5", got)
+	}
 }

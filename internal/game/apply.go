@@ -167,6 +167,21 @@ func (t *Table) tuckedDestination(c *Card) (pile *Pile, bottom, ok bool) {
 	return nil, false, false
 }
 
+// shuffledIntoDeck returns the cards a shuffle of c into deck, its home,
+// gathers: the cards of deck, the cards tucked under c that leaving the table
+// sends to deck (see tuckedDestination), then c.
+func (t *Table) shuffledIntoDeck(c *Card, deck *Pile) []string {
+	cards := without(deck.Cards, c.ID)
+	if c.Zone == ZoneTable {
+		for _, child := range t.descendants(c.ID) {
+			if pile, _, ok := t.tuckedDestination(child); ok && pile == deck {
+				cards = append(cards, child.ID)
+			}
+		}
+	}
+	return append(cards, c.ID)
+}
+
 // descendants returns every card tucked under id, directly or not, from the
 // lowest Z to the highest.
 func (t *Table) descendants(id string) []*Card {
@@ -399,8 +414,7 @@ func applyToDeck(t *Table, a Action) error {
 	case whereTop, whereBottom:
 	case whereShuffle:
 		// The caller resolved the shuffle: Cards is the whole new pile.
-		expected := append(without(deck.Cards, c.ID), c.ID)
-		if err := checkRenames(t, a, expected); err != nil {
+		if err := checkRenames(t, a, t.shuffledIntoDeck(c, deck)); err != nil {
 			return err
 		}
 		newOrder = cardList(a.Cards)

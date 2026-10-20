@@ -30,7 +30,8 @@ type CardView struct {
 	Stage     string         `json:"stage,omitempty"` // stage key, for stage cards
 	// Home is the side deck a side deck card returns to. It is left out for
 	// every other card, whose home the client infers, and for a card whose
-	// code the viewer cannot see.
+	// code the viewer cannot see, unless the viewer owns it: the owner of a
+	// face-down side card still needs its home to move it.
 	Home string `json:"home,omitempty"`
 }
 
@@ -288,7 +289,7 @@ func (t *Table) viewFor(seats []int, home int) *TableView {
 
 	for id := range listed {
 		if c, ok := t.Cards[id]; ok {
-			tv.Cards = append(tv.Cards, c.viewOf(stageKeys[id]))
+			tv.Cards = append(tv.Cards, c.viewOf(stageKeys[id], slices.Contains(seats, c.Owner)))
 		}
 	}
 	slices.SortFunc(tv.Cards, func(a, b CardView) int { return cmp.Compare(a.ID, b.ID) })
@@ -350,10 +351,10 @@ func (p *Pile) viewOf() PileView {
 	}
 }
 
-// viewOf converts a card the viewer may see. Only the identity of a face-down
-// table card is hidden: cards in hands and piles are listed only to viewers
-// who may read them.
-func (c *Card) viewOf(stageKey string) CardView {
+// viewOf converts a card the viewer may see; owned tells that the card is one
+// of the viewer's. Only the identity of a face-down table card is hidden:
+// cards in hands and piles are listed only to viewers who may read them.
+func (c *Card) viewOf(stageKey string, owned bool) CardView {
 	cv := CardView{
 		ID: c.ID, Code: c.Code, Face: c.Face, FaceDown: c.FaceDown, Back: c.Back,
 		Owner: c.Owner, Zone: c.Zone, X: c.X, Y: c.Y, Z: c.Z,
@@ -363,7 +364,7 @@ func (c *Card) viewOf(stageKey string) CardView {
 	if c.FaceDown && c.Zone == ZoneTable {
 		cv.Code = ""
 	}
-	if cv.Code != "" && isSideDeckID(c.Home) {
+	if (cv.Code != "" || owned) && isSideDeckID(c.Home) {
 		cv.Home = c.Home
 	}
 	return cv
