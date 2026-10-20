@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { isLang, LANGS, setLang, storedLang } from '../lib/lang';
   import { randomName, savePlayerName } from '../lib/names';
   import { getPref, setPref } from '../lib/prefs';
   import { go } from '../lib/router.svelte';
@@ -18,6 +19,7 @@
 
   let name = $state(getPref('itf-name') ?? '');
   let theme = $state(storedTheme());
+  let lang = $state(storedLang());
 
   function onNameInput(): void {
     savePlayerName(name);
@@ -32,6 +34,13 @@
     theme = next;
     setPref('itf-theme', next);
     applyTheme(next);
+  }
+
+  function chooseLang(next: string): void {
+    if (isLang(next)) {
+      lang = next;
+      setLang(next);
+    }
   }
 </script>
 
@@ -133,10 +142,14 @@
     <div class="row">
       <div class="about">
         <label for="lang">Language</label>
-        <p>Cards and interface.</p>
+        <p>Card names and images. The interface stays in English.</p>
       </div>
       <div class="control">
-        <select id="lang"><option>English</option></select>
+        <select id="lang" value={lang} onchange={(e) => chooseLang(e.currentTarget.value)}>
+          {#each LANGS as option (option.code)}
+            <option value={option.code} lang={option.code}>{option.label}</option>
+          {/each}
+        </select>
       </div>
     </div>
   </main>

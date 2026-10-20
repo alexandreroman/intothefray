@@ -14,7 +14,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/18001A.jpg",
             "https://marvelcdb.com/bundles/cards/18001a.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gam/18001a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Gamora",
@@ -24,7 +31,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/18001B.jpg",
             "https://marvelcdb.com/bundles/cards/18001b.png"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gam/18001b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "gam",
@@ -45,7 +59,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/18002.jpg",
             "https://marvelcdb.com/bundles/cards/18002.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gam/18002.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "gam",
@@ -62,7 +83,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/18003.jpg",
             "https://marvelcdb.com/bundles/cards/18003.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Mouvement Acrobatique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gam/18003.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "gam",
@@ -79,7 +108,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/18004.jpg",
             "https://marvelcdb.com/bundles/cards/18004.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Contre Croisé",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gam/18004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "gam",
@@ -96,7 +133,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/18005.jpg",
             "https://marvelcdb.com/bundles/cards/18005.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Imposer son Rythme",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gam/18005.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "gam",
@@ -113,7 +158,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/18006.jpg",
             "https://marvelcdb.com/bundles/cards/18006.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Coup Décisif",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gam/18006.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "gam",
@@ -130,7 +183,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/18007.jpg",
             "https://marvelcdb.com/bundles/cards/18007.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Bond en Avant",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gam/18007.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "gam",
@@ -147,7 +208,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/18008.jpg",
             "https://marvelcdb.com/bundles/cards/18008.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Salle de Sport",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gam/18008.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "gam",
@@ -164,7 +233,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/18009.jpg",
             "https://marvelcdb.com/bundles/cards/18009.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Instinct Affûté",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gam/18009.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "gam",
@@ -181,7 +258,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/18010.jpg",
             "https://marvelcdb.com/bundles/cards/18010.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Epée de Gamora",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gam/18010.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "gam",
@@ -199,7 +284,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/18011.jpg",
             "https://marvelcdb.com/bundles/cards/18011.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gam/18011.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -218,7 +310,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/18012.jpg",
             "https://marvelcdb.com/bundles/cards/18012.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Cogner",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gam/18012.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -237,7 +337,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/18013.jpg",
             "https://marvelcdb.com/bundles/cards/18013.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Plan d'Attaque",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gam/18013.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -253,7 +361,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/18015.jpg",
             "https://marvelcdb.com/bundles/cards/18015.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Premier Coup",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gam/18015.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -269,7 +385,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/18016.jpg",
             "https://marvelcdb.com/bundles/cards/18016.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Retenir l'Ennemi",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gam/18016.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -285,7 +409,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/18018.jpg",
             "https://marvelcdb.com/bundles/cards/18018.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Déicide",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gam/18018.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -301,7 +433,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/18019.jpg",
             "https://marvelcdb.com/bundles/cards/18019.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gam/18019.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -317,7 +456,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/18020.jpg",
             "https://marvelcdb.com/bundles/cards/18020.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Frappe et Court",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gam/18020.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -336,7 +483,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/18024.jpg",
             "https://marvelcdb.com/bundles/cards/18024.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Destinée Inaccomplie",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gam/18024.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "gam",
@@ -357,6 +512,14 @@
           "startingThreat": {
             "value": 4,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Rivalité Entre Sœurs",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gam/18025.webp"
+              ]
+            }
           }
         }
       ],
@@ -374,7 +537,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/18026.jpg",
             "https://marvelcdb.com/bundles/cards/18026.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gam/18026.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "gam_nemesis",
@@ -391,7 +561,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/18027.jpg",
             "https://marvelcdb.com/bundles/cards/18027.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Dans le Pétrin",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gam/18027.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "gam_nemesis",
@@ -408,7 +586,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/18028.jpg",
             "https://marvelcdb.com/bundles/cards/18028.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Prise au Piège",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gam/18028.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "gam_nemesis",
@@ -425,7 +611,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/18029.jpg",
             "https://marvelcdb.com/bundles/cards/18029.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Tournant Décisif",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gam/18029.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -441,7 +635,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/18030.jpg",
             "https://marvelcdb.com/bundles/cards/18030.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Implant de Communication",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gam/18030.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -457,7 +659,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/18031.jpg",
             "https://marvelcdb.com/bundles/cards/18031.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Véritable Courage",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gam/18031.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",

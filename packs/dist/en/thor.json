@@ -14,7 +14,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06001A.jpg",
             "https://marvelcdb.com/bundles/cards/06001a.png"
           ],
-          "handSize": 4
+          "handSize": 4,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/thor/06001a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Odinson",
@@ -24,7 +31,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06001B.jpg",
             "https://marvelcdb.com/bundles/cards/06001b.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/thor/06001b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "thor",
@@ -45,7 +59,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06002.jpg",
             "https://marvelcdb.com/bundles/cards/06002.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Dame Sif",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/thor/06002.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "thor",
@@ -62,7 +84,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06003.jpg",
             "https://marvelcdb.com/bundles/cards/06003.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Défenseur des Neuf Royaumes",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/thor/06003.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "thor",
@@ -79,7 +109,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06004.jpg",
             "https://marvelcdb.com/bundles/cards/06004.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Pour Asgard !",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/thor/06004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "thor",
@@ -96,7 +134,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06005.jpg",
             "https://marvelcdb.com/bundles/cards/06005.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Lancer de Marteau",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/thor/06005.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "thor",
@@ -113,7 +159,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06006.jpg",
             "https://marvelcdb.com/bundles/cards/06006.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Frappe Foudroyante",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/thor/06006.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "thor",
@@ -130,7 +184,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06007.jpg",
             "https://marvelcdb.com/bundles/cards/06007.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/thor/06007.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "thor",
@@ -147,7 +208,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06008.jpg",
             "https://marvelcdb.com/bundles/cards/06008.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Dieu du Tonnerre",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/thor/06008.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "thor",
@@ -164,7 +233,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06009.jpg",
             "https://marvelcdb.com/bundles/cards/06009.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/thor/06009.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "thor",
@@ -181,7 +257,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06010.jpg",
             "https://marvelcdb.com/bundles/cards/06010.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Casque de Thor",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/thor/06010.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "thor",
@@ -198,7 +282,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06011.jpg",
             "https://marvelcdb.com/bundles/cards/06011.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Hercule",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/thor/06011.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -214,7 +306,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06012.jpg",
             "https://marvelcdb.com/bundles/cards/06012.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/thor/06012.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -230,7 +329,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06014.jpg",
             "https://marvelcdb.com/bundles/cards/06014.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Viens par Ici !",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/thor/06014.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -246,7 +353,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06015.jpg",
             "https://marvelcdb.com/bundles/cards/06015.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Coup avec Élan",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/thor/06015.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -265,7 +380,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06017.jpg",
             "https://marvelcdb.com/bundles/cards/06017.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Hall des Héros",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/thor/06017.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -284,7 +407,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06018.jpg",
             "https://marvelcdb.com/bundles/cards/06018.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Fureur au combat",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/thor/06018.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -303,7 +434,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06019.jpg",
             "https://marvelcdb.com/bundles/cards/06019.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/thor/06019.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -319,7 +457,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06020.jpg",
             "https://marvelcdb.com/bundles/cards/06020.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/thor/06020.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -335,7 +480,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06021.jpg",
             "https://marvelcdb.com/bundles/cards/06021.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Invulnérabilité",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/thor/06021.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -351,7 +504,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06026.jpg",
             "https://marvelcdb.com/bundles/cards/06026.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Colère d'Odin",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/thor/06026.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "thor",
@@ -372,6 +533,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Querelle Familiale",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/thor/06027.webp"
+              ]
+            }
           }
         }
       ],
@@ -389,7 +558,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06028.jpg",
             "https://marvelcdb.com/bundles/cards/06028.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/thor/06028.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "thor_nemesis",
@@ -406,7 +582,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06029.jpg",
             "https://marvelcdb.com/bundles/cards/06029.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Géant de Glace",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/thor/06029.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "thor_nemesis",
@@ -423,7 +607,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06030.jpg",
             "https://marvelcdb.com/bundles/cards/06030.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Filou",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/thor/06030.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "thor_nemesis",
@@ -440,7 +632,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06031.jpg",
             "https://marvelcdb.com/bundles/cards/06031.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Sous Surveillance",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/thor/06031.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -459,7 +659,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06032.jpg",
             "https://marvelcdb.com/bundles/cards/06032.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Travail d'équipe",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/thor/06032.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -479,7 +687,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06033.jpg",
             "https://marvelcdb.com/bundles/cards/06033.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Second Souffle",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/thor/06033.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -495,7 +711,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/06034.jpg",
             "https://marvelcdb.com/bundles/cards/06034.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Constitution améliorée",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/thor/06034.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",

@@ -14,7 +14,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11001.jpg",
             "https://marvelcdb.com/bundles/cards/11001.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Kang (Le Conquérant)",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11001.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "kang",
@@ -32,7 +40,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11002.jpg",
             "https://marvelcdb.com/bundles/cards/11002.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11002.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "kang",
@@ -50,7 +65,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11003.jpg",
             "https://marvelcdb.com/bundles/cards/11003.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11003.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "kang",
@@ -68,7 +90,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11004.jpg",
             "https://marvelcdb.com/bundles/cards/11004.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "kang",
@@ -86,7 +115,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11005.jpg",
             "https://marvelcdb.com/bundles/cards/11005.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Kang (Le Centurion Écarlate)",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11005.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "kang",
@@ -104,7 +141,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11006.jpg",
             "https://marvelcdb.com/bundles/cards/11006.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Kang (Le Conquérant)",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11006.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "kang",
@@ -122,7 +167,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11007A.jpg",
             "https://marvelcdb.com/bundles/cards/11007a.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "L'Arrivée de Kang",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11007a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Kang's Arrival",
@@ -135,6 +188,14 @@
           "startingThreat": {
             "value": 0,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "L'Arrivée de Kang",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11007b.webp"
+              ]
+            }
           }
         }
       ],
@@ -157,7 +218,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11008A.jpg",
             "https://marvelcdb.com/bundles/cards/11008a.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Maître du Temps",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11008a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "The Master of Time",
@@ -166,7 +235,15 @@
           "size": "land",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11008B.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Maître du Temps",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11008b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "kang",
@@ -188,7 +265,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11009A.jpg",
             "https://marvelcdb.com/bundles/cards/11009a.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Chronopolis",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11009a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "The Chronopolis",
@@ -201,6 +286,14 @@
           "startingThreat": {
             "value": 0,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Chronopolis",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11009b.webp"
+              ]
+            }
           }
         }
       ],
@@ -223,7 +316,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11010A.jpg",
             "https://marvelcdb.com/bundles/cards/11010a.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Destin Inéluctable",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11010a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Inexorable Fate",
@@ -237,6 +338,14 @@
           "startingThreat": {
             "value": 1,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Destin Inéluctable",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11010b.webp"
+              ]
+            }
           }
         }
       ],
@@ -259,7 +368,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11011A.jpg",
             "https://marvelcdb.com/bundles/cards/11011a.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Royaume de Rama-Tut",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11011a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "The Realm of Rama-Tut",
@@ -273,6 +390,14 @@
           "startingThreat": {
             "value": 1,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Le Royaume de Rama-Tut",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11011b.webp"
+              ]
+            }
           }
         }
       ],
@@ -295,7 +420,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11012A.jpg",
             "https://marvelcdb.com/bundles/cards/11012a.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "La Guerre Présent-Futur",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11012a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "The Present Future War",
@@ -309,6 +442,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "La Guerre Présent-Futur",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11012b.webp"
+              ]
+            }
           }
         }
       ],
@@ -331,7 +472,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11013A.jpg",
             "https://marvelcdb.com/bundles/cards/11013a.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "La Colère de Kang",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11013a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Kang's Wrath",
@@ -345,6 +494,14 @@
           "startingThreat": {
             "value": 0,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "La Colère de Kang",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11013b.webp"
+              ]
+            }
           }
         }
       ],
@@ -366,7 +523,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11014.jpg",
             "https://marvelcdb.com/bundles/cards/11014.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Bouclier Temporel",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11014.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "kang",
@@ -383,7 +548,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11015.jpg",
             "https://marvelcdb.com/bundles/cards/11015.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Arme Futuriste",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11015.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "kang",
@@ -400,7 +573,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11016.jpg",
             "https://marvelcdb.com/bundles/cards/11016.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Figé dans le Temps",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11016.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "kang",
@@ -417,7 +598,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11017.jpg",
             "https://marvelcdb.com/bundles/cards/11017.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11017.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "kang",
@@ -434,7 +622,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11018.jpg",
             "https://marvelcdb.com/bundles/cards/11018.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Affaibli",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11018.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "kang",
@@ -451,7 +647,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11019.jpg",
             "https://marvelcdb.com/bundles/cards/11019.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Souvenir Dérobés",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11019.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "kang",
@@ -468,7 +672,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11020.jpg",
             "https://marvelcdb.com/bundles/cards/11020.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Réduit à l'Impuissance",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11020.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "kang",
@@ -485,7 +697,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11021.jpg",
             "https://marvelcdb.com/bundles/cards/11021.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Facéties Temporelles",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11021.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "kang",
@@ -506,6 +726,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Flux Temporel Perverti",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11022.webp"
+              ]
+            }
           }
         }
       ],
@@ -527,6 +755,14 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Empire de Kang",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11023.webp"
+              ]
+            }
           }
         }
       ],
@@ -548,6 +784,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Cloués au Sol",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11024.webp"
+              ]
+            }
           }
         }
       ],
@@ -569,6 +813,14 @@
           "startingThreat": {
             "value": 4,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Dévastation",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11025.webp"
+              ]
+            }
           }
         }
       ],
@@ -586,7 +838,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11026.jpg",
             "https://marvelcdb.com/bundles/cards/11026.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Rayon Énergétique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11026.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "kang",
@@ -603,7 +863,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11027.jpg",
             "https://marvelcdb.com/bundles/cards/11027.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Flux Temporel Manipulé",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11027.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "kang",
@@ -620,7 +888,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11028.jpg",
             "https://marvelcdb.com/bundles/cards/11028.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Maîtrise du Voyage Temporel",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11028.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "kang",
@@ -637,7 +913,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11029.jpg",
             "https://marvelcdb.com/bundles/cards/11029.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Machinations du Passé",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11029.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "kang",
@@ -654,7 +938,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11030.jpg",
             "https://marvelcdb.com/bundles/cards/11030.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11030.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "temporal",
@@ -671,7 +962,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11031.jpg",
             "https://marvelcdb.com/bundles/cards/11031.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Soldat Chitauri",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11031.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "temporal",
@@ -688,7 +987,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11032.jpg",
             "https://marvelcdb.com/bundles/cards/11032.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Tyrannosaure Rex",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11032.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "temporal",
@@ -709,6 +1016,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Portail Temporel",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11033.webp"
+              ]
+            }
           }
         }
       ],
@@ -727,7 +1042,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11034.jpg",
             "https://marvelcdb.com/bundles/cards/11034.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Kang (Le Conquérant)",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11034.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "exp_kang",
@@ -745,7 +1068,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11035.jpg",
             "https://marvelcdb.com/bundles/cards/11035.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11035.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "exp_kang",
@@ -763,7 +1093,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11036.jpg",
             "https://marvelcdb.com/bundles/cards/11036.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11036.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "exp_kang",
@@ -781,7 +1118,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11037.jpg",
             "https://marvelcdb.com/bundles/cards/11037.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11037.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "exp_kang",
@@ -799,7 +1143,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11038.jpg",
             "https://marvelcdb.com/bundles/cards/11038.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Kang (Le Centurion Écarlate)",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11038.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "exp_kang",
@@ -817,7 +1169,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11039.jpg",
             "https://marvelcdb.com/bundles/cards/11039.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Kang (Le Conquérant)",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11039.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "exp_kang",
@@ -834,7 +1194,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11040.jpg",
             "https://marvelcdb.com/bundles/cards/11040.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Apocryphe",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11040.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "anachronauts",
@@ -851,7 +1219,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11041.jpg",
             "https://marvelcdb.com/bundles/cards/11041.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11041.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "anachronauts",
@@ -868,7 +1243,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11042.jpg",
             "https://marvelcdb.com/bundles/cards/11042.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11042.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "anachronauts",
@@ -885,7 +1267,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11043.jpg",
             "https://marvelcdb.com/bundles/cards/11043.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11043.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "anachronauts",
@@ -902,7 +1291,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11044.jpg",
             "https://marvelcdb.com/bundles/cards/11044.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11044.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "anachronauts",
@@ -923,6 +1319,14 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Les Anachronautes",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11045.webp"
+              ]
+            }
           }
         }
       ],
@@ -940,7 +1344,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11046.jpg",
             "https://marvelcdb.com/bundles/cards/11046.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "L'Élu de Kang",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11046.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "anachronauts",
@@ -957,7 +1369,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11047.jpg",
             "https://marvelcdb.com/bundles/cards/11047.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Kang (Le Maître du Temps)",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11047.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "mot",
@@ -974,7 +1394,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11048.jpg",
             "https://marvelcdb.com/bundles/cards/11048.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Soldat Chrono-Déplacé",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11048.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "mot",
@@ -991,7 +1419,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11049.jpg",
             "https://marvelcdb.com/bundles/cards/11049.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Peur de Kang",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11049.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "mot",
@@ -1012,6 +1448,14 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Lueur des Sphères Séculaires",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11050.webp"
+              ]
+            }
           }
         }
       ],
@@ -1029,7 +1473,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11051.jpg",
             "https://marvelcdb.com/bundles/cards/11051.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Antique Rancune",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11051.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "mot",

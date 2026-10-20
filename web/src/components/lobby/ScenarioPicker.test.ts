@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import ScenarioPicker from './ScenarioPicker.svelte';
+import { setLang } from '../../lib/lang';
 import type { Index, LobbyConfig, View, YouView } from '../../lib/types';
 
 const index: Index = {
@@ -151,5 +152,49 @@ describe('ScenarioPicker recommended sets hint', () => {
     expect(container.querySelector('.modulars .hint')).toBeNull();
     expect(screen.queryByText(/^Recommended:/)).toBeNull();
     expect(screen.getByText('Bomb Scare')).toBeTruthy();
+  });
+});
+
+describe('ScenarioPicker in French', () => {
+  const french: Index = {
+    ...index,
+    packs: index.packs.map((p) => ({ ...p, localized: { fr: { name: 'Boîte de base' } } })),
+    scenarios: index.scenarios.map((s) =>
+      s.id === 'rhino' ? { ...s, localized: { fr: { name: 'Le Rhinocéros' } } } : s,
+    ),
+    sets: index.sets.map((s) =>
+      s.code === 'bomb_scare' ? { ...s, localized: { fr: { name: 'Alerte à la bombe' } } } : s,
+    ),
+  };
+
+  afterEach(() => {
+    localStorage.clear();
+  });
+
+  function renderFrench(config: LobbyConfig) {
+    setLang('fr');
+    return render(ScenarioPicker, { view: viewOf(config), index: french, onconfigure: vi.fn() });
+  }
+
+  it('shows the pack, scenario and set names in French, else in English', () => {
+    renderFrench(rhino);
+
+    expect(screen.getByText('Boîte de base')).toBeTruthy();
+    expect(screen.getByText('Le Rhinocéros')).toBeTruthy();
+    expect(screen.getByText('Klaw')).toBeTruthy();
+    expect(screen.getByText('Alerte à la bombe')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Remove Alerte à la bombe' })).toBeTruthy();
+    expect(screen.queryByText('Core Set')).toBeNull();
+  });
+
+  it('filters on the French names', async () => {
+    renderFrench(rhino);
+
+    await fireEvent.input(screen.getByLabelText('Filter by scenario or pack'), {
+      target: { value: 'rhinocéros' },
+    });
+
+    expect(screen.getByText('Le Rhinocéros')).toBeTruthy();
+    expect(screen.queryByText('Klaw')).toBeNull();
   });
 });

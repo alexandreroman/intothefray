@@ -14,7 +14,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58001A.jpg",
             "https://marvelcdb.com/bundles/cards/58001a.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58001a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Simon Williams",
@@ -24,7 +31,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58001B.jpg",
             "https://marvelcdb.com/bundles/cards/58001b.png"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58001b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wonder_man",
@@ -45,7 +59,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58002.jpg",
             "https://marvelcdb.com/bundles/cards/58002.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58002.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wonder_man",
@@ -62,7 +83,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58003.jpg",
             "https://marvelcdb.com/bundles/cards/58003.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58003.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wonder_man",
@@ -79,7 +107,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58004.jpg",
             "https://marvelcdb.com/bundles/cards/58004.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wonder_man",
@@ -96,7 +131,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58005.jpg",
             "https://marvelcdb.com/bundles/cards/58005.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58005.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wonder_man",
@@ -113,7 +155,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58006.jpg",
             "https://marvelcdb.com/bundles/cards/58006.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58006.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wonder_man",
@@ -130,7 +179,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58007.jpg",
             "https://marvelcdb.com/bundles/cards/58007.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58007.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wonder_man",
@@ -147,7 +203,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58008.jpg",
             "https://marvelcdb.com/bundles/cards/58008.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58008.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wonder_man",
@@ -164,7 +227,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58009.jpg",
             "https://marvelcdb.com/bundles/cards/58009.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58009.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wonder_man",
@@ -181,7 +251,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58010.jpg",
             "https://marvelcdb.com/bundles/cards/58010.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58010.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wonder_man",
@@ -198,7 +275,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58011.jpg",
             "https://marvelcdb.com/bundles/cards/58011.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58011.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wonder_man",
@@ -216,7 +300,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58012.jpg",
             "https://marvelcdb.com/bundles/cards/58012.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58012.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -233,7 +324,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58013.jpg",
             "https://marvelcdb.com/bundles/cards/58013.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58013.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -250,7 +348,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58014.jpg",
             "https://marvelcdb.com/bundles/cards/58014.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58014.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -267,7 +372,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58015.jpg",
             "https://marvelcdb.com/bundles/cards/58015.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58015.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -283,7 +395,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58016.jpg",
             "https://marvelcdb.com/bundles/cards/58016.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58016.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -299,7 +418,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58018.jpg",
             "https://marvelcdb.com/bundles/cards/58018.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58018.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -315,7 +441,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58019.jpg",
             "https://marvelcdb.com/bundles/cards/58019.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58019.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -331,7 +464,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58020.jpg",
             "https://marvelcdb.com/bundles/cards/58020.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58020.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -347,7 +487,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58021.jpg",
             "https://marvelcdb.com/bundles/cards/58021.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58021.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -364,7 +511,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58022.jpg",
             "https://marvelcdb.com/bundles/cards/58022.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58022.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -380,7 +534,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58024.jpg",
             "https://marvelcdb.com/bundles/cards/58024.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58024.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -396,7 +557,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58025.jpg",
             "https://marvelcdb.com/bundles/cards/58025.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58025.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wonder_man",
@@ -413,7 +581,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58026.jpg",
             "https://marvelcdb.com/bundles/cards/58026.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58026.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wonder_man_nemesis",
@@ -434,6 +609,13 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58027.webp"
+              ]
+            }
           }
         }
       ],
@@ -451,7 +633,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58028.jpg",
             "https://marvelcdb.com/bundles/cards/58028.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58028.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wonder_man_nemesis",
@@ -468,7 +657,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58029.jpg",
             "https://marvelcdb.com/bundles/cards/58029.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58029.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wonder_man_nemesis",
@@ -485,7 +681,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58030.jpg",
             "https://marvelcdb.com/bundles/cards/58030.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58030.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -501,7 +704,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58031.jpg",
             "https://marvelcdb.com/bundles/cards/58031.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58031.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -517,7 +727,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58032.jpg",
             "https://marvelcdb.com/bundles/cards/58032.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58032.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -533,7 +750,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58033.jpg",
             "https://marvelcdb.com/bundles/cards/58033.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58033.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -549,7 +773,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58034.jpg",
             "https://marvelcdb.com/bundles/cards/58034.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58034.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",

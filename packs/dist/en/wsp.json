@@ -14,7 +14,15 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13001A.jpg",
             "https://marvelcdb.com/bundles/cards/13001a.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "name": "La Guêpe",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wsp/13001a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Nadia Van Dyne",
@@ -24,7 +32,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13001B.jpg",
             "https://marvelcdb.com/bundles/cards/13001b.png"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wsp/13001b.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Wasp",
@@ -34,7 +49,15 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13001C.jpg",
             "https://marvelcdb.com/bundles/cards/13001c.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "name": "La Guêpe",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wsp/13001c.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wsp",
@@ -57,7 +80,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13002.jpg",
             "https://marvelcdb.com/bundles/cards/13002.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wsp/13002.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wsp",
@@ -74,7 +104,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13003.jpg",
             "https://marvelcdb.com/bundles/cards/13003.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Aide Géante",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wsp/13003.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wsp",
@@ -91,7 +129,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13004.jpg",
             "https://marvelcdb.com/bundles/cards/13004.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Frappe Localisée",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wsp/13004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wsp",
@@ -108,7 +154,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13005.jpg",
             "https://marvelcdb.com/bundles/cards/13005.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Croissance Rapide",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wsp/13005.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wsp",
@@ -125,7 +179,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13006.jpg",
             "https://marvelcdb.com/bundles/cards/13006.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "La Piqûre de la Guêpe",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wsp/13006.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wsp",
@@ -141,7 +203,15 @@
           "size": "std",
           "images": [
             "https://marvelcdb.com/bundles/cards/13007.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Particules Pym",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wsp/13007.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wsp",
@@ -158,7 +228,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13008.jpg",
             "https://marvelcdb.com/bundles/cards/13008.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Entraînement de la Chambre Rouge",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wsp/13008.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wsp",
@@ -175,7 +253,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13009.jpg",
             "https://marvelcdb.com/bundles/cards/13009.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Ailes Biosynthétiques",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wsp/13009.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wsp",
@@ -192,7 +278,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13010.jpg",
             "https://marvelcdb.com/bundles/cards/13010.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Casque de la Guêpe",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wsp/13010.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wsp",
@@ -210,7 +304,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13011.jpg",
             "https://marvelcdb.com/bundles/cards/13011.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wsp/13011.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -227,7 +328,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13012.jpg",
             "https://marvelcdb.com/bundles/cards/13012.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "La Guêpe",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wsp/13012.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -243,7 +352,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13013.jpg",
             "https://marvelcdb.com/bundles/cards/13013.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Au Cœur de la Mêlée",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wsp/13013.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -262,7 +379,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13014.jpg",
             "https://marvelcdb.com/bundles/cards/13014.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Attaque Surprise",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wsp/13014.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -278,7 +403,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13016.jpg",
             "https://marvelcdb.com/bundles/cards/13016.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Camp d'Entraînement",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wsp/13016.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -294,7 +427,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13017.jpg",
             "https://marvelcdb.com/bundles/cards/13017.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Tendre une Embuscade",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wsp/13017.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -310,7 +451,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13018.jpg",
             "https://marvelcdb.com/bundles/cards/13018.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wsp/13018.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -327,7 +475,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13019.jpg",
             "https://marvelcdb.com/bundles/cards/13019.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wsp/13019.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -343,7 +498,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13024.jpg",
             "https://marvelcdb.com/bundles/cards/13024.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Pouvoir en Chacun de Nous",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wsp/13024.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -362,7 +525,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13026.jpg",
             "https://marvelcdb.com/bundles/cards/13026.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Rêves Rouges",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wsp/13026.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wsp",
@@ -383,6 +554,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Les Ordres de Mère",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wsp/13027.webp"
+              ]
+            }
           }
         }
       ],
@@ -400,7 +579,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13028.jpg",
             "https://marvelcdb.com/bundles/cards/13028.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Scarabée",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wsp/13028.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wsp_nemesis",
@@ -417,7 +604,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13029.jpg",
             "https://marvelcdb.com/bundles/cards/13029.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Armure MK IV du Scarabée",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wsp/13029.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wsp_nemesis",
@@ -434,7 +629,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13030.jpg",
             "https://marvelcdb.com/bundles/cards/13030.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "La Folie du Scarabée",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wsp/13030.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wsp_nemesis",
@@ -451,7 +654,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13031.jpg",
             "https://marvelcdb.com/bundles/cards/13031.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Intervention en Cours",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wsp/13031.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -467,7 +678,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13032.jpg",
             "https://marvelcdb.com/bundles/cards/13032.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Tous pour Un",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wsp/13032.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -483,7 +702,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13033.jpg",
             "https://marvelcdb.com/bundles/cards/13033.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Obstination",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wsp/13033.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -502,7 +729,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/13034.jpg",
             "https://marvelcdb.com/bundles/cards/13034.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Remise en Forme",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wsp/13034.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",

@@ -1,4 +1,5 @@
-// Command packgen regenerates the card-pack files from marvelcdb and Cerebro.
+// Command packgen regenerates the card-pack files from marvelcdb and Cerebro,
+// with the French names of fr.marvelcdb and the French images of mc4db.
 package main
 
 import (
@@ -11,6 +12,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strings"
 
 	"github.com/alexandreroman/intothefray/internal/packgen/build"
 	"github.com/alexandreroman/intothefray/internal/packgen/cerebro"
@@ -18,8 +20,13 @@ import (
 	"github.com/alexandreroman/intothefray/internal/packgen/fetch"
 	"github.com/alexandreroman/intothefray/internal/packgen/images"
 	"github.com/alexandreroman/intothefray/internal/packgen/marvelcdb"
+	"github.com/alexandreroman/intothefray/internal/packgen/mc4db"
 	"github.com/alexandreroman/intothefray/internal/packgen/write"
 )
+
+// userAgent identifies the generator to the source and image hosts, which may
+// throttle anonymous clients.
+const userAgent = "intothefray-packgen (+https://github.com/alexandreroman/intothefray)"
 
 type options struct {
 	out        string
@@ -63,7 +70,7 @@ func run(ctx context.Context, logger *slog.Logger, opts options) error {
 
 	urls := build.ImageURLs(inputs)
 	logger.Info("checking images", "urls", len(urls))
-	checker := &images.Checker{CachePath: filepath.Join(opts.cache, "images.json")}
+	checker := &images.Checker{CachePath: filepath.Join(opts.cache, "images.json"), UserAgent: userAgent}
 	// Nothing is written when some checks stay inconclusive: dropping their
 	// cards would silently shrink the packs.
 	inputs.Alive, err = checker.Check(ctx, urls)
@@ -88,14 +95,23 @@ func run(ctx context.Context, logger *slog.Logger, opts options) error {
 }
 
 func fetchInputs(ctx context.Context, opts options) (build.Inputs, error) {
-	client := &fetch.Client{CacheDir: opts.cache, Refresh: opts.refresh}
+	client := &fetch.Client{CacheDir: opts.cache, Refresh: opts.refresh, UserAgent: userAgent}
 
 	var in build.Inputs
 	var err error
-	if in.MC, err = marvelcdb.FetchCards(ctx, client); err != nil {
+	if in.MC, err = marvelcdb.FetchCards(ctx, client, marvelcdb.BaseURL); err != nil {
 		return in, err
 	}
-	if in.MCPacks, err = marvelcdb.FetchPacks(ctx, client); err != nil {
+	if in.MCPacks, err = marvelcdb.FetchPacks(ctx, client, marvelcdb.BaseURL); err != nil {
+		return in, err
+	}
+	if in.FrenchMC, err = marvelcdb.FetchCards(ctx, client, marvelcdb.FrenchBaseURL); err != nil {
+		return in, err
+	}
+	if in.FrenchMCPacks, err = marvelcdb.FetchPacks(ctx, client, marvelcdb.FrenchBaseURL); err != nil {
+		return in, err
+	}
+	if in.MC4DB, err = mc4db.FetchCards(ctx, client); err != nil {
 		return in, err
 	}
 	if in.CB, err = cerebro.FetchCards(ctx, client); err != nil {
@@ -128,6 +144,12 @@ func printReport(w io.Writer, result build.Result) {
 	for _, scenario := range result.Index.Scenarios {
 		if !scenario.Supported {
 			_, _ = fmt.Fprintf(w, "unsupported scenario %s (%s)\n", scenario.ID, scenario.Pack)
+		}
+	}
+	for _, coverage := range result.Coverage {
+		_, _ = fmt.Fprintln(w, coverage)
+		if len(coverage.PacksWithoutImages) > 0 {
+			_, _ = fmt.Fprintf(w, "%s: no image in packs %s\n", coverage.Lang, strings.Join(coverage.PacksWithoutImages, ", "))
 		}
 	}
 	for _, entry := range result.Report {

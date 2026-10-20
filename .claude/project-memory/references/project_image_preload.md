@@ -8,8 +8,9 @@ type: project
 
 - Once the pool is loaded (see [[project_card_pool]]), the table creates
   an `Image` with `fetchPriority = 'low'` for the first URL of every face
-  of every pool card. Nothing else: the browser handles concurrency,
-  priorities and caching. No progress indicator.
+  of every pool card, in the viewer's card language (localized images
+  first, see [[project_localized_cards]]). Nothing else: the browser
+  handles concurrency, priorities and caching. No progress indicator.
 - Nothing is preloaded when `navigator.connection.saveData` is on.
   Leaving the table clears the `src` of the images still loading.
 - The image hosts send no `Cache-Control` (Cerebro R2 and marvelcdb: only

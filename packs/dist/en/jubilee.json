@@ -14,7 +14,15 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47001A.jpg",
             "https://marvelcdb.com/bundles/cards/47001a.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "name": "Jubilé",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jubilee/47001a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Jubilation Lee",
@@ -24,7 +32,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47001B.jpg",
             "https://marvelcdb.com/bundles/cards/47001b.png"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jubilee/47001b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "jubilee",
@@ -46,7 +61,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47002.jpg",
             "https://marvelcdb.com/bundles/cards/47002.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jubilee/47002.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "jubilee",
@@ -67,6 +89,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Lèche Vitrine",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jubilee/47003.webp"
+              ]
+            }
           }
         }
       ],
@@ -84,7 +114,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47004.jpg",
             "https://marvelcdb.com/bundles/cards/47004.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Manteau de Jubilé",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jubilee/47004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "jubilee",
@@ -101,7 +139,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47005.jpg",
             "https://marvelcdb.com/bundles/cards/47005.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Lunettes de Soleil de Jubilé",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jubilee/47005.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "jubilee",
@@ -118,7 +164,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47006.jpg",
             "https://marvelcdb.com/bundles/cards/47006.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Lumière Aveuglante",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jubilee/47006.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "jubilee",
@@ -134,7 +188,15 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47007A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Feux d'Artifices",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jubilee/47007a.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "jubilee",
@@ -150,7 +212,15 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47007B.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Feux d'Artifices",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jubilee/47007b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "jubilee",
@@ -166,7 +236,15 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47007C.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Feux d'Artifices",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jubilee/47007c.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "jubilee",
@@ -182,7 +260,15 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47008A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Éclair Lumineux",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jubilee/47008a.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "jubilee",
@@ -198,7 +284,15 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47008B.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Éclair Lumineux",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jubilee/47008b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "jubilee",
@@ -214,7 +308,15 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47008C.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Éclair Lumineux",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jubilee/47008c.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "jubilee",
@@ -231,7 +333,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47009.jpg",
             "https://marvelcdb.com/bundles/cards/47009.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Bouquet Final",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jubilee/47009.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "jubilee",
@@ -247,7 +357,15 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47010A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Énergie Plasmoïde",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jubilee/47010a.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "jubilee",
@@ -263,7 +381,15 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47010B.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Énergie Plasmoïde",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jubilee/47010b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "jubilee",
@@ -279,7 +405,15 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47010C.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Énergie Plasmoïde",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jubilee/47010c.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "jubilee",
@@ -297,7 +431,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47011.jpg",
             "https://marvelcdb.com/bundles/cards/47011.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jubilee/47011.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -314,7 +455,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47012.jpg",
             "https://marvelcdb.com/bundles/cards/47012.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jubilee/47012.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -330,7 +478,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47013.jpg",
             "https://marvelcdb.com/bundles/cards/47013.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Déguisement",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jubilee/47013.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -346,7 +502,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47014.jpg",
             "https://marvelcdb.com/bundles/cards/47014.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Assaillir",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jubilee/47014.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -362,7 +526,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47015.jpg",
             "https://marvelcdb.com/bundles/cards/47015.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Trois Coups d'Avance",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jubilee/47015.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -382,6 +554,14 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Génération X",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jubilee/47016.webp"
+              ]
+            }
           }
         }
       ],
@@ -399,7 +579,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47018.jpg",
             "https://marvelcdb.com/bundles/cards/47018.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jubilee/47018.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -415,7 +602,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47019.jpg",
             "https://marvelcdb.com/bundles/cards/47019.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Téléphone Portable",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jubilee/47019.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -431,7 +626,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47021.jpg",
             "https://marvelcdb.com/bundles/cards/47021.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Talents Multiples",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jubilee/47021.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -447,7 +650,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47022.jpg",
             "https://marvelcdb.com/bundles/cards/47022.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Duo Improbable",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jubilee/47022.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -463,7 +674,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47023.jpg",
             "https://marvelcdb.com/bundles/cards/47023.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Privée de Sortie",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jubilee/47023.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "jubilee",
@@ -480,7 +699,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47024.jpg",
             "https://marvelcdb.com/bundles/cards/47024.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jubilee/47024.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "jubilee_nemesis",
@@ -501,6 +727,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Des Enfants Turbulents",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jubilee/47025.webp"
+              ]
+            }
           }
         }
       ],
@@ -518,7 +752,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47026.jpg",
             "https://marvelcdb.com/bundles/cards/47026.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Armure de Combat",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jubilee/47026.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "jubilee_nemesis",
@@ -535,7 +777,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47027.jpg",
             "https://marvelcdb.com/bundles/cards/47027.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Enfant \"Perdu\"",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jubilee/47027.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "jubilee_nemesis",
@@ -552,7 +802,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47028.jpg",
             "https://marvelcdb.com/bundles/cards/47028.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Méli-Mélo de Mutants",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jubilee/47028.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -568,7 +826,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47029.jpg",
             "https://marvelcdb.com/bundles/cards/47029.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Protéger et Servir",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jubilee/47029.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -584,7 +850,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47030.jpg",
             "https://marvelcdb.com/bundles/cards/47030.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jubilee/47030.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "arcade",
@@ -605,6 +878,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Bienvenue à Cauchemar Land",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jubilee/47031.webp"
+              ]
+            }
           }
         }
       ],
@@ -626,6 +907,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Parc d'Attraction d'Arcade",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jubilee/47032.webp"
+              ]
+            }
           }
         }
       ],
@@ -647,6 +936,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Galerie des Glaces",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jubilee/47033.webp"
+              ]
+            }
           }
         }
       ],
@@ -664,7 +961,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/47034.jpg",
             "https://marvelcdb.com/bundles/cards/47034.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Piège Élaboré",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jubilee/47034.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "arcade",

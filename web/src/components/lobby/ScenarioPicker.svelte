@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { storedLang } from '../../lib/lang';
+  import { localizedName } from '../../lib/localize';
   import { overflowTip } from '../../lib/overflowTip';
   import CardArt from '../CardArt.svelte';
   import Segmented from '../Segmented.svelte';
@@ -18,6 +20,9 @@
     { value: 'expert', label: 'Expert' },
   ];
 
+  // Pack, scenario and set names in the language chosen in Options, a separate route: read once.
+  const lang = storedLang();
+
   let filter = $state('');
   let menuOpen = $state(false);
 
@@ -33,8 +38,8 @@
     config.scenario === '' || difficulty !== 'expert' ? DEFAULT_EXPERT : config.expert,
   );
 
-  const packNames = $derived(new Map(index.packs.map((p) => [p.code, p.name])));
-  const setNames = $derived(new Map(index.sets.map((s) => [s.code, s.name])));
+  const packNames = $derived(new Map(index.packs.map((p) => [p.code, localizedName(p, lang)])));
+  const setNames = $derived(new Map(index.sets.map((s) => [s.code, localizedName(s, lang)])));
   const standardSets = $derived(index.sets.filter((s) => s.kind === 'standard'));
   const expertSets = $derived(index.sets.filter((s) => s.kind === 'expert'));
   // "None" is always a choice, so even a single set gets a dropdown.
@@ -65,7 +70,7 @@
       return true;
     }
     return (
-      scenario.name.toLowerCase().includes(query) ||
+      localizedName(scenario, lang).toLowerCase().includes(query) ||
       packName(scenario.pack).toLowerCase().includes(query)
     );
   }
@@ -197,7 +202,7 @@
     >
       {#each groups as group (group.pack.code)}
         <div class="pack">
-          <div class="pkname">{group.pack.name}</div>
+          <div class="pkname">{localizedName(group.pack, lang)}</div>
           <div class="vgrid">
             {#each group.scenarios as scenario (scenario.id)}
               {@const selected = scenario.id === config.scenario}
@@ -222,7 +227,7 @@
                 {#if !scenario.supported}
                   <span class="soon">Not supported yet</span>
                 {/if}
-                <span class="nm" use:overflowTip>{scenario.name}</span>
+                <span class="nm" use:overflowTip>{localizedName(scenario, lang)}</span>
               </button>
             {/each}
           </div>
@@ -257,7 +262,7 @@
                 >
                   <option value="">None</option>
                   {#each standardSets as set (set.code)}
-                    <option value={set.code}>{set.name}</option>
+                    <option value={set.code}>{localizedName(set, lang)}</option>
                   {/each}
                 </select>
               </label>
@@ -271,7 +276,7 @@
                 >
                   <option value="">None</option>
                   {#each expertSets as set (set.code)}
-                    <option value={set.code}>{set.name}</option>
+                    <option value={set.code}>{localizedName(set, lang)}</option>
                   {/each}
                 </select>
               </label>
@@ -312,7 +317,7 @@
                 <div class="menu">
                   {#each addableModulars as set (set.code)}
                     <button class="btn-ghost" onclick={() => addModular(set.code)}>
-                      {set.name}
+                      {localizedName(set, lang)}
                       {#if recommended.includes(set.code)}
                         <span class="rec">★ recommended</span>
                       {/if}

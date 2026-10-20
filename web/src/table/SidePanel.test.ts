@@ -48,6 +48,33 @@ describe('SidePanel', () => {
     expect(within(oldest).getAllByText('14:01')[0]?.classList).toContain('t');
   });
 
+  it('names a card in the viewer language, else as the server wrote it', () => {
+    const rhino = { card: '01094', face: 0 };
+    const unknown = { card: '99999', face: 0 };
+    render(SidePanel, {
+      log: [
+        line({
+          text: 'flipped Rhino (stage II) and Bomb Scare',
+          parts: [
+            { text: 'flipped ' },
+            { text: 'Rhino', card: true, ref: rhino },
+            { text: ' (stage II) and ' },
+            { text: 'Bomb Scare', card: true, ref: unknown },
+          ],
+        }),
+      ],
+      onundo: () => {},
+      nameOf: (ref) => (ref.card === '01094' ? 'Rhino FR' : undefined),
+    });
+
+    const text = historyLines()[0]?.querySelector('.txt');
+    expect(text?.textContent).toBe('Alex flipped Rhino FR (stage II) and Bomb Scare');
+    expect([...(text?.querySelectorAll('b.card') ?? [])].map((b) => b.textContent)).toEqual([
+      'Rhino FR',
+      'Bomb Scare',
+    ]);
+  });
+
   it('leaves system lines uncoloured', () => {
     render(SidePanel, {
       log: [line({ who: 'Table', color: -1, text: 'shuffled' })],

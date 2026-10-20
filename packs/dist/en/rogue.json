@@ -14,7 +14,15 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38001A.jpg",
             "https://marvelcdb.com/bundles/cards/38001a.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "name": "Malicia",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/rogue/38001a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Anna Marie",
@@ -24,7 +32,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38001B.jpg",
             "https://marvelcdb.com/bundles/cards/38001b.png"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/rogue/38001b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "rogue",
@@ -45,7 +60,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38002.jpg",
             "https://marvelcdb.com/bundles/cards/38002.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Touché",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/rogue/38002.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "rogue",
@@ -63,7 +86,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38003.jpg",
             "https://marvelcdb.com/bundles/cards/38003.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/rogue/38003.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "rogue",
@@ -80,7 +110,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38004.jpg",
             "https://marvelcdb.com/bundles/cards/38004.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Veste de Malicia",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/rogue/38004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "rogue",
@@ -97,7 +135,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38005.jpg",
             "https://marvelcdb.com/bundles/cards/38005.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Les Grands Moyens",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/rogue/38005.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "rogue",
@@ -114,7 +160,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38006.jpg",
             "https://marvelcdb.com/bundles/cards/38006.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Croix du Sud",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/rogue/38006.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "rogue",
@@ -131,7 +185,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38007.jpg",
             "https://marvelcdb.com/bundles/cards/38007.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Transfert d'Énergie",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/rogue/38007.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "rogue",
@@ -148,7 +210,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38008.jpg",
             "https://marvelcdb.com/bundles/cards/38008.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Belle à l'Épreuve des Balles",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/rogue/38008.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "rogue",
@@ -165,7 +235,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38009.jpg",
             "https://marvelcdb.com/bundles/cards/38009.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Super Adaptation",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/rogue/38009.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "rogue",
@@ -183,7 +261,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38010.jpg",
             "https://marvelcdb.com/bundles/cards/38010.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Iceberg",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/rogue/38010.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -200,7 +286,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38011.jpg",
             "https://marvelcdb.com/bundles/cards/38011.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "subname": "Xi'an Coy Mahn",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/rogue/38011.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -217,7 +311,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38012.jpg",
             "https://marvelcdb.com/bundles/cards/38012.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/rogue/38012.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -233,7 +334,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38014.jpg",
             "https://marvelcdb.com/bundles/cards/38014.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Compétences de Judoka",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/rogue/38014.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -249,7 +358,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38016.jpg",
             "https://marvelcdb.com/bundles/cards/38016.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Pas Aujourd'hui !",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/rogue/38016.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -268,7 +385,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38018.jpg",
             "https://marvelcdb.com/bundles/cards/38018.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/rogue/38018.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -287,7 +411,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38019.jpg",
             "https://marvelcdb.com/bundles/cards/38019.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Gène X",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/rogue/38019.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -306,7 +438,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38024.jpg",
             "https://marvelcdb.com/bundles/cards/38024.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Toucher Mortel",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/rogue/38024.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "rogue",
@@ -323,7 +463,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38025.jpg",
             "https://marvelcdb.com/bundles/cards/38025.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/rogue/38025.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "rogue_nemesis",
@@ -344,6 +491,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "L'Influence de Mystique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/rogue/38026.webp"
+              ]
+            }
           }
         }
       ],
@@ -361,7 +516,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38027.jpg",
             "https://marvelcdb.com/bundles/cards/38027.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Induite en erreur",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/rogue/38027.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "rogue_nemesis",
@@ -378,7 +541,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38028.jpg",
             "https://marvelcdb.com/bundles/cards/38028.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Laboratoire Médical",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/rogue/38028.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -394,7 +565,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38029.jpg",
             "https://marvelcdb.com/bundles/cards/38029.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/rogue/38029.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "reavers",
@@ -411,7 +589,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38030.jpg",
             "https://marvelcdb.com/bundles/cards/38030.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/rogue/38030.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "reavers",
@@ -428,7 +613,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38031.jpg",
             "https://marvelcdb.com/bundles/cards/38031.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Bronebreaker",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/rogue/38031.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "reavers",
@@ -445,7 +638,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38032.jpg",
             "https://marvelcdb.com/bundles/cards/38032.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/rogue/38032.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "reavers",
@@ -462,7 +662,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38033.jpg",
             "https://marvelcdb.com/bundles/cards/38033.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/rogue/38033.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "reavers",
@@ -483,6 +690,14 @@
           "startingThreat": {
             "value": 5,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Les Reavers",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/rogue/38034.webp"
+              ]
+            }
           }
         }
       ],
@@ -500,7 +715,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38035.jpg",
             "https://marvelcdb.com/bundles/cards/38035.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Améliorations Cybernétiques",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/rogue/38035.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "reavers",

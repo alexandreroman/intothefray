@@ -6,19 +6,34 @@
       "code": "core",
       "name": "Core Set",
       "file": "core.json",
-      "position": 1
+      "position": 1,
+      "localized": {
+        "fr": {
+          "name": "Boîte de base"
+        }
+      }
     },
     {
       "code": "gob",
       "name": "The Green Goblin",
       "file": "gob.json",
-      "position": 2
+      "position": 2,
+      "localized": {
+        "fr": {
+          "name": "Le Bouffon vert"
+        }
+      }
     },
     {
       "code": "twc",
       "name": "The Wrecking Crew",
       "file": "twc.json",
-      "position": 3
+      "position": 3,
+      "localized": {
+        "fr": {
+          "name": "Les Démolisseurs"
+        }
+      }
     },
     {
       "code": "cap",
@@ -30,7 +45,12 @@
       "code": "msm",
       "name": "Ms. Marvel",
       "file": "msm.json",
-      "position": 5
+      "position": 5,
+      "localized": {
+        "fr": {
+          "name": "Miss Marvel"
+        }
+      }
     },
     {
       "code": "thor",
@@ -48,7 +68,12 @@
       "code": "drs",
       "name": "Doctor Strange",
       "file": "drs.json",
-      "position": 8
+      "position": 8,
+      "localized": {
+        "fr": {
+          "name": "Docteur Strange"
+        }
+      }
     },
     {
       "code": "hlk",
@@ -60,13 +85,23 @@
       "code": "trors",
       "name": "The Rise of Red Skull",
       "file": "trors.json",
-      "position": 10
+      "position": 10,
+      "localized": {
+        "fr": {
+          "name": "L'Avènement de Crâne Rouge"
+        }
+      }
     },
     {
       "code": "toafk",
       "name": "The Once and Future Kang",
       "file": "toafk.json",
-      "position": 11
+      "position": 11,
+      "localized": {
+        "fr": {
+          "name": "Kang le Conquérant"
+        }
+      }
     },
     {
       "code": "ant",
@@ -78,25 +113,45 @@
       "code": "wsp",
       "name": "Wasp",
       "file": "wsp.json",
-      "position": 13
+      "position": 13,
+      "localized": {
+        "fr": {
+          "name": "La Guêpe"
+        }
+      }
     },
     {
       "code": "qsv",
       "name": "Quicksilver",
       "file": "qsv.json",
-      "position": 14
+      "position": 14,
+      "localized": {
+        "fr": {
+          "name": "Vif-Argent"
+        }
+      }
     },
     {
       "code": "scw",
       "name": "Scarlet Witch",
       "file": "scw.json",
-      "position": 15
+      "position": 15,
+      "localized": {
+        "fr": {
+          "name": "La Sorcière Rouge"
+        }
+      }
     },
     {
       "code": "gmw",
       "name": "The Galaxy's Most Wanted",
       "file": "gmw.json",
-      "position": 16
+      "position": 16,
+      "localized": {
+        "fr": {
+          "name": "Convoitise Galactique"
+        }
+      }
     },
     {
       "code": "stld",
@@ -126,7 +181,12 @@
       "code": "mts",
       "name": "The Mad Titan's Shadow",
       "file": "mts.json",
-      "position": 21
+      "position": 21,
+      "localized": {
+        "fr": {
+          "name": "L'Ombre du Titan Fou"
+        }
+      }
     },
     {
       "code": "nebu",
@@ -162,7 +222,12 @@
       "code": "sm",
       "name": "Sinister Motives",
       "file": "sm.json",
-      "position": 27
+      "position": 27,
+      "localized": {
+        "fr": {
+          "name": "Sinistres Motivations"
+        }
+      }
     },
     {
       "code": "nova",
@@ -180,7 +245,12 @@
       "code": "spiderham",
       "name": "Spider-Ham",
       "file": "spiderham.json",
-      "position": 30
+      "position": 30,
+      "localized": {
+        "fr": {
+          "name": "Spider-Cochon"
+        }
+      }
     },
     {
       "code": "spdr",
@@ -192,19 +262,34 @@
       "code": "mut_gen",
       "name": "Mutant Genesis",
       "file": "mut_gen.json",
-      "position": 32
+      "position": 32,
+      "localized": {
+        "fr": {
+          "name": "La Genèse des Mutants"
+        }
+      }
     },
     {
       "code": "cyclops",
       "name": "Cyclops",
       "file": "cyclops.json",
-      "position": 33
+      "position": 33,
+      "localized": {
+        "fr": {
+          "name": "Cyclope"
+        }
+      }
     },
     {
       "code": "phoenix",
       "name": "Phoenix",
       "file": "phoenix.json",
-      "position": 34
+      "position": 34,
+      "localized": {
+        "fr": {
+          "name": "Phénix"
+        }
+      }
     },
     {
       "code": "wolv",
@@ -216,7 +301,12 @@
       "code": "storm",
       "name": "Storm",
       "file": "storm.json",
-      "position": 36
+      "position": 36,
+      "localized": {
+        "fr": {
+          "name": "Tornade"
+        }
+      }
     },
     {
       "code": "gambit",
@@ -228,13 +318,23 @@
       "code": "rogue",
       "name": "Rogue",
       "file": "rogue.json",
-      "position": 38
+      "position": 38,
+      "localized": {
+        "fr": {
+          "name": "Malicia"
+        }
+      }
     },
     {
       "code": "mojo",
       "name": "Mojo Mania",
       "file": "mojo.json",
-      "position": 39
+      "position": 39,
+      "localized": {
+        "fr": {
+          "name": "MojoMania"
+        }
+      }
     },
     {
       "code": "next_evol",
@@ -270,25 +370,45 @@
       "code": "aoa",
       "name": "Age of Apocalypse",
       "file": "aoa.json",
-      "position": 45
+      "position": 45,
+      "localized": {
+        "fr": {
+          "name": "L'Ère d'Apocalypse"
+        }
+      }
     },
     {
       "code": "iceman",
       "name": "Iceman",
       "file": "iceman.json",
-      "position": 46
+      "position": 46,
+      "localized": {
+        "fr": {
+          "name": "Iceberg"
+        }
+      }
     },
     {
       "code": "jubilee",
       "name": "Jubilee",
       "file": "jubilee.json",
-      "position": 47
+      "position": 47,
+      "localized": {
+        "fr": {
+          "name": "Jubilé"
+        }
+      }
     },
     {
       "code": "ncrawler",
       "name": "Nightcrawler",
       "file": "ncrawler.json",
-      "position": 48
+      "position": 48,
+      "localized": {
+        "fr": {
+          "name": "Diablo"
+        }
+      }
     },
     {
       "code": "magneto",
@@ -378,7 +498,12 @@
       "code": "ron",
       "name": "Ronan Modular Set",
       "file": "ron.json",
-      "position": 900
+      "position": 900,
+      "localized": {
+        "fr": {
+          "name": "Set Modulaire Ronan"
+        }
+      }
     }
   ],
   "scenarios": [
@@ -420,7 +545,12 @@
       "supported": false,
       "recommended": [
         "goblin_gimmicks"
-      ]
+      ],
+      "localized": {
+        "fr": {
+          "name": "Entreprise à Risques"
+        }
+      }
     },
     {
       "id": "mutagen_formula",
@@ -430,7 +560,12 @@
       "supported": false,
       "recommended": [
         "goblin_gimmicks"
-      ]
+      ],
+      "localized": {
+        "fr": {
+          "name": "Formule Mutagène"
+        }
+      }
     },
     {
       "id": "wrecker",
@@ -438,7 +573,12 @@
       "pack": "twc",
       "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07002.jpg",
       "supported": false,
-      "recommended": []
+      "recommended": [],
+      "localized": {
+        "fr": {
+          "name": "Le Démolisseur"
+        }
+      }
     },
     {
       "id": "thunderball",
@@ -446,7 +586,12 @@
       "pack": "twc",
       "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07017.jpg",
       "supported": false,
-      "recommended": []
+      "recommended": [],
+      "localized": {
+        "fr": {
+          "name": "Le Boulet"
+        }
+      }
     },
     {
       "id": "piledriver",
@@ -454,7 +599,12 @@
       "pack": "twc",
       "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07032.jpg",
       "supported": false,
-      "recommended": []
+      "recommended": [],
+      "localized": {
+        "fr": {
+          "name": "Le Compresseur"
+        }
+      }
     },
     {
       "id": "bulldozer",
@@ -462,7 +612,12 @@
       "pack": "twc",
       "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07046.jpg",
       "supported": false,
-      "recommended": []
+      "recommended": [],
+      "localized": {
+        "fr": {
+          "name": "Le Bulldozer"
+        }
+      }
     },
     {
       "id": "wrecking_crew",
@@ -470,7 +625,12 @@
       "pack": "twc",
       "image": "",
       "supported": false,
-      "recommended": []
+      "recommended": [],
+      "localized": {
+        "fr": {
+          "name": "Les Démolisseurs"
+        }
+      }
     },
     {
       "id": "crossbones",
@@ -492,7 +652,12 @@
       "supported": false,
       "recommended": [
         "hydra_patrol"
-      ]
+      ],
+      "localized": {
+        "fr": {
+          "name": "L'Homme Absorbant"
+        }
+      }
     },
     {
       "id": "taskmaster",
@@ -523,7 +688,12 @@
       "recommended": [
         "hydra_assault",
         "hydra_patrol"
-      ]
+      ],
+      "localized": {
+        "fr": {
+          "name": "Crâne Rouge"
+        }
+      }
     },
     {
       "id": "kang",
@@ -543,7 +713,12 @@
       "supported": false,
       "recommended": [
         "band_of_badoon"
-      ]
+      ],
+      "localized": {
+        "fr": {
+          "name": "La Confrérie des Badoon"
+        }
+      }
     },
     {
       "id": "infiltrate_the_museum",
@@ -583,7 +758,12 @@
       "supported": false,
       "recommended": [
         "kree_militant"
-      ]
+      ],
+      "localized": {
+        "fr": {
+          "name": "Ronan"
+        }
+      }
     },
     {
       "id": "ebony_maw",
@@ -594,7 +774,12 @@
       "recommended": [
         "armies_of_titan",
         "black_order"
-      ]
+      ],
+      "localized": {
+        "fr": {
+          "name": "Mâchoire d'Ébène"
+        }
+      }
     },
     {
       "id": "tower_defense",
@@ -604,7 +789,12 @@
       "supported": false,
       "recommended": [
         "armies_of_titan"
-      ]
+      ],
+      "localized": {
+        "fr": {
+          "name": "Défense de la Tour"
+        }
+      }
     },
     {
       "id": "thanos",
@@ -655,7 +845,12 @@
       "supported": false,
       "recommended": [
         "down_to_earth"
-      ]
+      ],
+      "localized": {
+        "fr": {
+          "name": "L'Homme-Sable"
+        }
+      }
     },
     {
       "id": "venom",
@@ -683,7 +878,12 @@
       "pack": "sm",
       "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/27094.jpg",
       "supported": false,
-      "recommended": []
+      "recommended": [],
+      "localized": {
+        "fr": {
+          "name": "Les Sinistres Six"
+        }
+      }
     },
     {
       "id": "venom_goblin",
@@ -693,7 +893,12 @@
       "supported": false,
       "recommended": [
         "goblin_gear"
-      ]
+      ],
+      "localized": {
+        "fr": {
+          "name": "Le Bouffon Venom"
+        }
+      }
     },
     {
       "id": "sabretooth",
@@ -704,7 +909,12 @@
       "recommended": [
         "brotherhood",
         "mystique"
-      ]
+      ],
+      "localized": {
+        "fr": {
+          "name": "Dents-de-Sabre"
+        }
+      }
     },
     {
       "id": "project_wideawake",
@@ -714,7 +924,12 @@
       "supported": false,
       "recommended": [
         "sentinels"
-      ]
+      ],
+      "localized": {
+        "fr": {
+          "name": "Projet Wideawake"
+        }
+      }
     },
     {
       "id": "master_mold",
@@ -724,7 +939,12 @@
       "supported": false,
       "recommended": [
         "zero_tolerance"
-      ]
+      ],
+      "localized": {
+        "fr": {
+          "name": "Moule Initial"
+        }
+      }
     },
     {
       "id": "mansion_attack",
@@ -734,7 +954,12 @@
       "supported": false,
       "recommended": [
         "mystique"
-      ]
+      ],
+      "localized": {
+        "fr": {
+          "name": "L'Attaque du Manoir"
+        }
+      }
     },
     {
       "id": "magneto_villain",
@@ -744,7 +969,12 @@
       "supported": false,
       "recommended": [
         "acolytes"
-      ]
+      ],
+      "localized": {
+        "fr": {
+          "name": "Magnéto"
+        }
+      }
     },
     {
       "id": "magog",
@@ -752,7 +982,12 @@
       "pack": "mojo",
       "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39001A.jpg",
       "supported": false,
-      "recommended": []
+      "recommended": [],
+      "localized": {
+        "fr": {
+          "name": "MaGog"
+        }
+      }
     },
     {
       "id": "spiral",
@@ -760,7 +995,12 @@
       "pack": "mojo",
       "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39012A.jpg",
       "supported": false,
-      "recommended": []
+      "recommended": [],
+      "localized": {
+        "fr": {
+          "name": "Spirale"
+        }
+      }
     },
     {
       "id": "mojo",
@@ -776,7 +1016,12 @@
       "pack": "next_evol",
       "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/40070A.jpg",
       "supported": false,
-      "recommended": []
+      "recommended": [],
+      "localized": {
+        "fr": {
+          "name": "Maraudeurs"
+        }
+      }
     },
     {
       "id": "juggernaut",
@@ -786,7 +1031,12 @@
       "supported": false,
       "recommended": [
         "black_tom_cassidy"
-      ]
+      ],
+      "localized": {
+        "fr": {
+          "name": "Le Fléau"
+        }
+      }
     },
     {
       "id": "mister_sinister",
@@ -796,7 +1046,12 @@
       "supported": false,
       "recommended": [
         "nasty_boys"
-      ]
+      ],
+      "localized": {
+        "fr": {
+          "name": "Mister Sinistre"
+        }
+      }
     },
     {
       "id": "stryfe",
@@ -818,7 +1073,12 @@
       "recommended": [
         "military_grade",
         "mutant_slayers"
-      ]
+      ],
+      "localized": {
+        "fr": {
+          "name": "Le Siège des Morlocks"
+        }
+      }
     },
     {
       "id": "on_the_run",
@@ -829,7 +1089,12 @@
       "recommended": [
         "military_grade",
         "nasty_boys"
-      ]
+      ],
+      "localized": {
+        "fr": {
+          "name": "En Fuite"
+        }
+      }
     },
     {
       "id": "unus",
@@ -851,7 +1116,12 @@
       "recommended": [
         "dystopian_nightmare",
         "hounds"
-      ]
+      ],
+      "localized": {
+        "fr": {
+          "name": "Quatre Cavaliers"
+        }
+      }
     },
     {
       "id": "apocalypse",
@@ -872,7 +1142,12 @@
       "supported": false,
       "recommended": [
         "dystopian_nightmare"
-      ]
+      ],
+      "localized": {
+        "fr": {
+          "name": "Le Fauve Noir"
+        }
+      }
     },
     {
       "id": "en_sabah_nur",
@@ -1008,7 +1283,12 @@
       "code": "bomb_scare",
       "name": "Bomb Scare",
       "pack": "core",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Alerte à la Bombe"
+        }
+      }
     },
     {
       "code": "expert",
@@ -1020,13 +1300,23 @@
       "code": "legions_of_hydra",
       "name": "Legions of Hydra",
       "pack": "core",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Légions d'Hydra"
+        }
+      }
     },
     {
       "code": "masters_of_evil",
       "name": "Masters of Evil",
       "pack": "core",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Maîtres du Mal"
+        }
+      }
     },
     {
       "code": "standard",
@@ -1038,223 +1328,408 @@
       "code": "the_doomsday_chair",
       "name": "The Doomsday Chair",
       "pack": "core",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Le Siège de l'Apocalypse"
+        }
+      }
     },
     {
       "code": "under_attack",
       "name": "Under Attack",
       "pack": "core",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Civils Attaqués"
+        }
+      }
     },
     {
       "code": "a_mess_of_things",
       "name": "A Mess of Things",
       "pack": "gob",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Un Immense Gâchis"
+        }
+      }
     },
     {
       "code": "goblin_gimmicks",
       "name": "Goblin Gimmicks",
       "pack": "gob",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Gadgets du Bouffon"
+        }
+      }
     },
     {
       "code": "power_drain",
       "name": "Power Drain",
       "pack": "gob",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Absorption Électrique"
+        }
+      }
     },
     {
       "code": "running_interference",
       "name": "Running Interference",
       "pack": "gob",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Ingérence en Cours"
+        }
+      }
     },
     {
       "code": "expcamp",
       "name": "Expert Campaign",
       "pack": "trors",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Set Campagne Experte"
+        }
+      }
     },
     {
       "code": "exper_weapon",
       "name": "Experimental Weapons",
       "pack": "trors",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Armes Expérimentales"
+        }
+      }
     },
     {
       "code": "hydra_assault",
       "name": "Hydra Assault",
       "pack": "trors",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Offensive d'Hydra"
+        }
+      }
     },
     {
       "code": "hydra_camp",
       "name": "Hydra Campaign",
       "pack": "trors",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Campagne Hydra"
+        }
+      }
     },
     {
       "code": "hydra_patrol",
       "name": "Hydra Patrol",
       "pack": "trors",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Patrouille d'Hydra"
+        }
+      }
     },
     {
       "code": "weap_master",
       "name": "Weapon Master",
       "pack": "trors",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Maîtrise des Armes"
+        }
+      }
     },
     {
       "code": "anachronauts",
       "name": "Anachronauts",
       "pack": "toafk",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Les Anachronautes"
+        }
+      }
     },
     {
       "code": "exp_kang",
       "name": "Expert Kang",
       "pack": "toafk",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Kang Expert"
+        }
+      }
     },
     {
       "code": "mot",
       "name": "Master of Time",
       "pack": "toafk",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Le Maître du Temps"
+        }
+      }
     },
     {
       "code": "temporal",
       "name": "Temporal",
       "pack": "toafk",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Temporel"
+        }
+      }
     },
     {
       "code": "badoon_headhunter",
       "name": "Badoon Headhunter",
       "pack": "gmw",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Traqueur Badoon"
+        }
+      }
     },
     {
       "code": "band_of_badoon",
       "name": "Band of Badoon",
       "pack": "gmw",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Troupe de Badoon"
+        }
+      }
     },
     {
       "code": "challenge",
       "name": "Challenge",
       "pack": "gmw",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Défi"
+        }
+      }
     },
     {
       "code": "galactic_artifacts",
       "name": "Galactic Artifacts",
       "pack": "gmw",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Artefacts Galactiques"
+        }
+      }
     },
     {
       "code": "kree_militant",
       "name": "Kree Militants",
       "pack": "gmw",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Milices Kree"
+        }
+      }
     },
     {
       "code": "menagerie_medley",
       "name": "Menagerie Medley",
       "pack": "gmw",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Créatures de la Ménagerie"
+        }
+      }
     },
     {
       "code": "power_stone",
       "name": "Power Stone",
       "pack": "gmw",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Pierre du Pouvoir"
+        }
+      }
     },
     {
       "code": "ship_command",
       "name": "Ship Command",
       "pack": "gmw",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Contrôles du Vaisseau"
+        }
+      }
     },
     {
       "code": "space_pirates",
       "name": "Space Pirates",
       "pack": "gmw",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Pirates de l'Espace"
+        }
+      }
     },
     {
       "code": "the_market",
       "name": "The Market",
       "pack": "gmw",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Le Marché"
+        }
+      }
     },
     {
       "code": "armies_of_titan",
       "name": "Armies of Titan",
       "pack": "mts",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Armées du Titan"
+        }
+      }
     },
     {
       "code": "black_order",
       "name": "Black Order",
       "pack": "mts",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "L'Ordre Noir"
+        }
+      }
     },
     {
       "code": "children_of_thanos",
       "name": "Children of Thanos",
       "pack": "mts",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Enfants de Thanos"
+        }
+      }
     },
     {
       "code": "enchantress",
       "name": "Enchantress",
       "pack": "mts",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "L'Enchanteresse"
+        }
+      }
     },
     {
       "code": "frost_giants",
       "name": "Frost Giants",
       "pack": "mts",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Géants de Glace"
+        }
+      }
     },
     {
       "code": "infinity_gauntlet",
       "name": "Infinity Gauntlet",
       "pack": "mts",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Gant de l'Infini"
+        }
+      }
     },
     {
       "code": "legions_of_hel",
       "name": "Legions of Hel",
       "pack": "mts",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Légions de Hel"
+        }
+      }
     },
     {
       "code": "mts_campaign",
       "name": "The Mad Titan's Shadow Campaign",
       "pack": "mts",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Campage L'Ombre du Titan Fou"
+        }
+      }
     },
     {
       "code": "beasty_boys",
       "name": "Beasty Boys",
       "pack": "hood",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Hommes-Bêtes"
+        }
+      }
     },
     {
       "code": "brothers_grimm",
       "name": "Brothers Grimm",
       "pack": "hood",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Les Frères Grimm"
+        }
+      }
     },
     {
       "code": "crossfire_crew",
       "name": "Crossfire's Crew",
       "pack": "hood",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Gang de Crossfire"
+        }
+      }
     },
     {
       "code": "expert_ii",
@@ -1272,13 +1747,23 @@
       "code": "ransacked_armory",
       "name": "Ransacked Armory",
       "pack": "hood",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Armurerie Pillée"
+        }
+      }
     },
     {
       "code": "sinister_syndicate",
       "name": "Sinister Syndicate",
       "pack": "hood",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Sinistre Syndicat"
+        }
+      }
     },
     {
       "code": "standard_ii",
@@ -1290,103 +1775,188 @@
       "code": "state_of_emergency",
       "name": "State of Emergency",
       "pack": "hood",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "État d'Urgence"
+        }
+      }
     },
     {
       "code": "streets_of_mayhem",
       "name": "Streets of Mayhem",
       "pack": "hood",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Rues Malfamées"
+        }
+      }
     },
     {
       "code": "wrecking_crew_modular",
       "name": "Wrecking Crew",
       "pack": "hood",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Les Démolisseurs"
+        }
+      }
     },
     {
       "code": "bad_publicity",
       "name": "Bad Publicity",
       "pack": "sm",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Diffamation"
+        }
+      }
     },
     {
       "code": "city_in_chaos",
       "name": "City in Chaos",
       "pack": "sm",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Chaos dans la Ville"
+        }
+      }
     },
     {
       "code": "community_service",
       "name": "Community Service",
       "pack": "sm",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Intérêt Général"
+        }
+      }
     },
     {
       "code": "down_to_earth",
       "name": "Down to Earth",
       "pack": "sm",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Les Pieds sur Terre"
+        }
+      }
     },
     {
       "code": "goblin_gear",
       "name": "Goblin Gear",
       "pack": "sm",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Équipement du Bouffon"
+        }
+      }
     },
     {
       "code": "guerrilla_tactics",
       "name": "Guerrilla Tactics",
       "pack": "sm",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Tactiques de Guérilla"
+        }
+      }
     },
     {
       "code": "osborn_tech",
       "name": "Osborn Tech",
       "pack": "sm",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Technologie Osborn"
+        }
+      }
     },
     {
       "code": "personal_nightmare",
       "name": "Personal Nightmare",
       "pack": "sm",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Cauchemar Personnel"
+        }
+      }
     },
     {
       "code": "shield_tech",
       "name": "Shield Tech",
       "pack": "sm",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Techno du SHIELD"
+        }
+      }
     },
     {
       "code": "sinister_assault",
       "name": "Sinister Assault",
       "pack": "sm",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Assaut Sinistre"
+        }
+      }
     },
     {
       "code": "snitches_get_stitches",
       "name": "Snitches get Stitches",
       "pack": "sm",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Mort au Mouchard"
+        }
+      }
     },
     {
       "code": "symbiotic_strength",
       "name": "Symbiotic Strength",
       "pack": "sm",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Force Symbiotique"
+        }
+      }
     },
     {
       "code": "whispers_of_paranoia",
       "name": "Whispers of Paranoia",
       "pack": "sm",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Murmures de Paranoïa"
+        }
+      }
     },
     {
       "code": "armadillo",
       "name": "Armadillo",
       "pack": "nova",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Le Tatou"
+        }
+      }
     },
     {
       "code": "zzzax",
@@ -1398,13 +1968,23 @@
       "code": "inheritors",
       "name": "The Inheritors",
       "pack": "spiderham",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Les Héritiers"
+        }
+      }
     },
     {
       "code": "ironspider_sinister",
       "name": "Iron Spider's Sinister Six",
       "pack": "spdr",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Les Sinistres Six d'Iron Spider"
+        }
+      }
     },
     {
       "code": "acolytes",
@@ -1416,37 +1996,67 @@
       "code": "brawler",
       "name": "Brawler",
       "pack": "mut_gen",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Bagarreur"
+        }
+      }
     },
     {
       "code": "brotherhood",
       "name": "Brotherhood",
       "pack": "mut_gen",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Confrérie"
+        }
+      }
     },
     {
       "code": "commander",
       "name": "Commander",
       "pack": "mut_gen",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Commandeur"
+        }
+      }
     },
     {
       "code": "defender",
       "name": "Defender",
       "pack": "mut_gen",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Défenseur"
+        }
+      }
     },
     {
       "code": "future_past",
       "name": "Future Past",
       "pack": "mut_gen",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Avenir Passé"
+        }
+      }
     },
     {
       "code": "mut_gen_campaign",
       "name": "Mutant Genesis Campaign",
       "pack": "mut_gen",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Campagne La Genèse des Mutants"
+        }
+      }
     },
     {
       "code": "mystique",
@@ -1458,19 +2068,34 @@
       "code": "peacekeeper",
       "name": "Peacekeeper",
       "pack": "mut_gen",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Pacificateur"
+        }
+      }
     },
     {
       "code": "sentinels",
       "name": "Sentinels",
       "pack": "mut_gen",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Sentinelles"
+        }
+      }
     },
     {
       "code": "zero_tolerance",
       "name": "Zero Tolerance",
       "pack": "mut_gen",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Tolérance Zéro"
+        }
+      }
     },
     {
       "code": "deathstrike",
@@ -1482,7 +2107,12 @@
       "code": "shadow_king",
       "name": "Shadow King",
       "pack": "storm",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Le Roi d'Ombre"
+        }
+      }
     },
     {
       "code": "exodus",
@@ -1512,7 +2142,12 @@
       "code": "horror",
       "name": "Horror",
       "pack": "mojo",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Horreur"
+        }
+      }
     },
     {
       "code": "longshot",
@@ -1524,7 +2159,12 @@
       "code": "sci-fi",
       "name": "Sci-Fi",
       "pack": "mojo",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Science-Fiction"
+        }
+      }
     },
     {
       "code": "sitcom",
@@ -1548,13 +2188,23 @@
       "code": "extreme_measures",
       "name": "Extreme Measures",
       "pack": "next_evol",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Mesures Extrêmes"
+        }
+      }
     },
     {
       "code": "flight",
       "name": "Flight",
       "pack": "next_evol",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Vol"
+        }
+      }
     },
     {
       "code": "hope_summers",
@@ -1566,43 +2216,78 @@
       "code": "military_grade",
       "name": "Military Grade",
       "pack": "next_evol",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Équipement Militaire"
+        }
+      }
     },
     {
       "code": "mutant_insurrection",
       "name": "Mutant Insurrection",
       "pack": "next_evol",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Insurrection de Mutants"
+        }
+      }
     },
     {
       "code": "mutant_slayers",
       "name": "Mutant Slayers",
       "pack": "next_evol",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Tueurs de Mutants"
+        }
+      }
     },
     {
       "code": "nasty_boys",
       "name": "Nasty Boys",
       "pack": "next_evol",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Mauvais Garçons"
+        }
+      }
     },
     {
       "code": "next_evol_campaign",
       "name": "Next Evolution Campaign",
       "pack": "next_evol",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Campagne Next Evolution"
+        }
+      }
     },
     {
       "code": "super_strength",
       "name": "Super Strength",
       "pack": "next_evol",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Super Force"
+        }
+      }
     },
     {
       "code": "telepathy",
       "name": "Telepathy",
       "pack": "next_evol",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Télépathie"
+        }
+      }
     },
     {
       "code": "dreadpool",
@@ -1614,7 +2299,12 @@
       "code": "age_of_apocalypse",
       "name": "Age of Apocalypse",
       "pack": "aoa",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Ère d'Apocalypse"
+        }
+      }
     },
     {
       "code": "aoa_basic_campaign",
@@ -1626,7 +2316,12 @@
       "code": "aoa_campaign",
       "name": "Campaign",
       "pack": "aoa",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Campagne"
+        }
+      }
     },
     {
       "code": "aoa_mission",
@@ -1638,13 +2333,23 @@
       "code": "blue_moon",
       "name": "Blue Moon",
       "pack": "aoa",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Lune Bleue"
+        }
+      }
     },
     {
       "code": "celestial_tech",
       "name": "Celestial Tech",
       "pack": "aoa",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Technologie Céleste"
+        }
+      }
     },
     {
       "code": "clan_akkaba",
@@ -1662,43 +2367,78 @@
       "code": "dystopian_nightmare",
       "name": "Dystopian Nightmare",
       "pack": "aoa",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Cauchemar Dystopique"
+        }
+      }
     },
     {
       "code": "genosha",
       "name": "Genosha",
       "pack": "aoa",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Génosha"
+        }
+      }
     },
     {
       "code": "hounds",
       "name": "Hounds",
       "pack": "aoa",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Chiens de Chasse"
+        }
+      }
     },
     {
       "code": "infinites",
       "name": "Infinites",
       "pack": "aoa",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Infinis"
+        }
+      }
     },
     {
       "code": "overseer",
       "name": "Overseer",
       "pack": "aoa",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Hiérarque"
+        }
+      }
     },
     {
       "code": "prelates",
       "name": "Prelates",
       "pack": "aoa",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Prélats"
+        }
+      }
     },
     {
       "code": "savage_land",
       "name": "Savage Land",
       "pack": "aoa",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Terre Sauvage"
+        }
+      }
     },
     {
       "code": "standard_iii",
@@ -1986,7 +2726,12 @@
       "code": "kree_fanatic",
       "name": "Kree Fanatic",
       "pack": "ron",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Fanatique Kree"
+        }
+      }
     }
   ]
 }

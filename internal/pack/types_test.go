@@ -22,6 +22,12 @@ func TestPackFileRoundTrip(t *testing.T) {
 					Size:           SizeLand,
 					Images:         []string{"https://marvelcdb.com/bundles/cards/01097.png"},
 					StartingThreat: &Threat{Value: 0, PerPlayer: false},
+					Localized: map[string]Localized{
+						"fr": {
+							Name:   "Le Rhino",
+							Images: []string{"https://mc4db.merlindumesnil.net/bundles/cards/FR/core/01097.webp"},
+						},
+					},
 				},
 				{
 					Name:   "Rhino",
@@ -56,11 +62,17 @@ func TestPackFileRoundTrip(t *testing.T) {
 		`"size":"land"`,
 		// A set without curated setup data keeps its original shape.
 		`{"code":"rhino","name":"Rhino","kind":"villain","cards":["01097"]}`,
+		// Empty overrides, such as the subname here, are left out.
+		`"localized":{"fr":{"name":"Le Rhino","images":["https://mc4db.merlindumesnil.net/bundles/cards/FR/core/01097.webp"]}}`,
 	}
 	for _, fragment := range fragments {
 		if !strings.Contains(string(data), fragment) {
 			t.Errorf("JSON %s does not contain %s", data, fragment)
 		}
+	}
+	// Only the first face carries overrides: the second one emits no localized key.
+	if count := strings.Count(string(data), `"localized"`); count != 1 {
+		t.Errorf("JSON %s has %d localized keys, want 1", data, count)
 	}
 
 	var got PackFile
@@ -69,5 +81,74 @@ func TestPackFileRoundTrip(t *testing.T) {
 	}
 	if !reflect.DeepEqual(want, got) {
 		t.Errorf("round trip mismatch:\nwant %+v\ngot  %+v", want, got)
+	}
+}
+
+func TestIndexRoundTrip(t *testing.T) {
+	french := map[string]Localized{"fr": {Name: "Boîte de base"}}
+	want := Index{
+		Version: 1,
+		Lang:    "en",
+		Packs: []PackRef{
+			{Code: "core", Name: "Core Set", File: "core.json", Position: 1, Localized: french},
+			{Code: "gob", Name: "Green Goblin", File: "gob.json", Position: 2},
+		},
+		Scenarios: []ScenarioRef{{
+			ID: "rhino", Name: "Rhino", Pack: "core", Image: "https://example.com/rhino.png",
+			Supported: true, Recommended: []string{"bomb_scare"},
+			Localized: map[string]Localized{"fr": {Name: "Le Rhino"}},
+		}},
+		Sets: []SetRef{{
+			Code: "bomb_scare", Name: "Bomb Scare", Pack: "core", Kind: "modular",
+			Localized: map[string]Localized{"fr": {Name: "Alerte à la bombe"}},
+		}},
+	}
+
+	data, err := json.Marshal(want)
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+
+	fragments := []string{
+		`"position":1,"localized":{"fr":{"name":"Boîte de base"}}`,
+		`"localized":{"fr":{"name":"Le Rhino"}}`,
+		`"localized":{"fr":{"name":"Alerte à la bombe"}}`,
+		// An entry without overrides emits no localized key.
+		`"position":2}`,
+	}
+	for _, fragment := range fragments {
+		if !strings.Contains(string(data), fragment) {
+			t.Errorf("JSON %s does not contain %s", data, fragment)
+		}
+	}
+
+	var got Index
+	if err := json.Unmarshal(data, &got); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if !reflect.DeepEqual(want, got) {
+		t.Errorf("round trip mismatch:\nwant %+v\ngot  %+v", want, got)
+	}
+}
+
+func TestLocalizedIsZero(t *testing.T) {
+	tests := []struct {
+		name      string
+		localized Localized
+		want      bool
+	}{
+		{"empty", Localized{}, true},
+		{"empty images", Localized{Images: []string{}}, true},
+		{"name", Localized{Name: "Le Rhino"}, false},
+		{"subname", Localized{Subname: "Bruce Banner"}, false},
+		{"images", Localized{Images: []string{"https://example.com/01097.webp"}}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			if got := tt.localized.IsZero(); got != tt.want {
+				t.Errorf("IsZero() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }

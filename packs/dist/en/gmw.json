@@ -14,7 +14,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16001A.jpg",
             "https://marvelcdb.com/bundles/cards/16001a.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16001a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Groot",
@@ -24,7 +31,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16001B.jpg",
             "https://marvelcdb.com/bundles/cards/16001b.png"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16001b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "groot",
@@ -45,7 +59,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16002.jpg",
             "https://marvelcdb.com/bundles/cards/16002.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Fructification",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16002.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "groot",
@@ -62,7 +84,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16003.jpg",
             "https://marvelcdb.com/bundles/cards/16003.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "\"Je s'Appelle Groot\"",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16003.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "groot",
@@ -79,7 +109,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16004.jpg",
             "https://marvelcdb.com/bundles/cards/16004.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "\"JE. S'APPELLE. GROOT !\"",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "groot",
@@ -96,7 +134,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16005.jpg",
             "https://marvelcdb.com/bundles/cards/16005.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Coup de Racine",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16005.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "groot",
@@ -113,7 +159,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16006.jpg",
             "https://marvelcdb.com/bundles/cards/16006.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "\"On s'appelle Groot\"",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16006.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "groot",
@@ -130,7 +184,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16007.jpg",
             "https://marvelcdb.com/bundles/cards/16007.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Sol Fertile",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16007.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "groot",
@@ -147,7 +209,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16008.jpg",
             "https://marvelcdb.com/bundles/cards/16008.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Branches Enchevêtrées",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16008.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "groot",
@@ -164,7 +234,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16009.jpg",
             "https://marvelcdb.com/bundles/cards/16009.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Branches Déchaînées",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16009.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "groot",
@@ -181,7 +259,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16010.jpg",
             "https://marvelcdb.com/bundles/cards/16010.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Bouclier de Branches",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16010.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "groot",
@@ -198,7 +284,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16011.jpg",
             "https://marvelcdb.com/bundles/cards/16011.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Branches Épineuses",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16011.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "groot",
@@ -216,7 +310,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16012.jpg",
             "https://marvelcdb.com/bundles/cards/16012.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16012.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -232,7 +333,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16014.jpg",
             "https://marvelcdb.com/bundles/cards/16014.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Prêt à en Découdre",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16014.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -248,7 +357,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16016.jpg",
             "https://marvelcdb.com/bundles/cards/16016.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Impavide",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16016.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -264,7 +381,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16017.jpg",
             "https://marvelcdb.com/bundles/cards/16017.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Difficile à Ignorer",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16017.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -280,7 +405,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16019.jpg",
             "https://marvelcdb.com/bundles/cards/16019.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16019.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -296,7 +428,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16020.jpg",
             "https://marvelcdb.com/bundles/cards/16020.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Faune et Flore",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16020.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -315,7 +455,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16024.jpg",
             "https://marvelcdb.com/bundles/cards/16024.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Intense Concentration",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16024.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -334,7 +482,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16025.jpg",
             "https://marvelcdb.com/bundles/cards/16025.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Flétrissement",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16025.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "groot",
@@ -355,6 +511,14 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Blasier Infernal",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16026.webp"
+              ]
+            }
           }
         }
       ],
@@ -372,7 +536,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16027.jpg",
             "https://marvelcdb.com/bundles/cards/16027.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16027.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "groot_nemesis",
@@ -389,7 +560,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16028.jpg",
             "https://marvelcdb.com/bundles/cards/16028.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Attiser les Flammes",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16028.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "groot_nemesis",
@@ -407,7 +586,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16029A.jpg",
             "https://marvelcdb.com/bundles/cards/16029a.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16029a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Rocket Raccoon",
@@ -417,7 +603,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16029B.jpg",
             "https://marvelcdb.com/bundles/cards/16029b.png"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16029b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "rocket",
@@ -438,7 +631,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16030.jpg",
             "https://marvelcdb.com/bundles/cards/16030.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "J'ai un Plan",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16030.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "rocket",
@@ -455,7 +656,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16031.jpg",
             "https://marvelcdb.com/bundles/cards/16031.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Recharger",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16031.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "rocket",
@@ -472,7 +681,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16032.jpg",
             "https://marvelcdb.com/bundles/cards/16032.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16032.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "rocket",
@@ -489,7 +705,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16033.jpg",
             "https://marvelcdb.com/bundles/cards/16033.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Récup'",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16033.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "rocket",
@@ -506,7 +730,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16034.jpg",
             "https://marvelcdb.com/bundles/cards/16034.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Batteries",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16034.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "rocket",
@@ -523,7 +755,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16035.jpg",
             "https://marvelcdb.com/bundles/cards/16035.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Squelette Cybernétique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16035.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "rocket",
@@ -540,7 +780,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16036.jpg",
             "https://marvelcdb.com/bundles/cards/16036.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Canon à Particules",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16036.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "rocket",
@@ -557,7 +805,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16037.jpg",
             "https://marvelcdb.com/bundles/cards/16037.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Lance-Roquettes",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16037.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "rocket",
@@ -574,7 +830,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16038.jpg",
             "https://marvelcdb.com/bundles/cards/16038.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Pistolet de Rocket",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16038.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "rocket",
@@ -591,7 +855,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16039.jpg",
             "https://marvelcdb.com/bundles/cards/16039.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Bottes à Propulsion",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16039.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "rocket",
@@ -608,7 +880,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16040.jpg",
             "https://marvelcdb.com/bundles/cards/16040.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16040.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -624,7 +903,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16043.jpg",
             "https://marvelcdb.com/bundles/cards/16043.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Chercher les Ennuis",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16043.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -643,7 +930,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16045.jpg",
             "https://marvelcdb.com/bundles/cards/16045.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Jusqu'au-Boutisme",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16045.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -659,7 +954,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16046.jpg",
             "https://marvelcdb.com/bundles/cards/16046.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Canon Portatif",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16046.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -675,7 +978,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16047.jpg",
             "https://marvelcdb.com/bundles/cards/16047.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16047.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -691,7 +1001,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16052.jpg",
             "https://marvelcdb.com/bundles/cards/16052.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Bottes Propulsées",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16052.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -707,7 +1025,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16053.jpg",
             "https://marvelcdb.com/bundles/cards/16053.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Panique sur le Demi-Monde",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16053.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "rocket",
@@ -728,6 +1054,13 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16054.webp"
+              ]
+            }
           }
         }
       ],
@@ -745,7 +1078,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16055.jpg",
             "https://marvelcdb.com/bundles/cards/16055.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16055.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "rocket_nemesis",
@@ -762,7 +1102,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16056.jpg",
             "https://marvelcdb.com/bundles/cards/16056.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Bazooka de Blackjack",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16056.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "rocket_nemesis",
@@ -779,7 +1127,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16057.jpg",
             "https://marvelcdb.com/bundles/cards/16057.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Invasion Planétaire",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16057.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "rocket_nemesis",
@@ -797,7 +1153,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16058.jpg",
             "https://marvelcdb.com/bundles/cards/16058.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16058.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "brotherhood_of_badoon",
@@ -815,7 +1178,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16059.jpg",
             "https://marvelcdb.com/bundles/cards/16059.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16059.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "brotherhood_of_badoon",
@@ -833,7 +1203,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16060.jpg",
             "https://marvelcdb.com/bundles/cards/16060.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16060.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "brotherhood_of_badoon",
@@ -855,6 +1232,14 @@
           "startingThreat": {
             "value": 0,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Invasion Terrestre",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16061a.webp"
+              ]
+            }
           }
         },
         {
@@ -869,6 +1254,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Invasion Terrestre",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16061b.webp"
+              ]
+            }
           }
         }
       ],
@@ -895,6 +1288,14 @@
           "startingThreat": {
             "value": 0,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Protéger la Planète",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16062a.webp"
+              ]
+            }
           }
         },
         {
@@ -909,6 +1310,14 @@
           "startingThreat": {
             "value": 4,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Protéger la Planète",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16062b.webp"
+              ]
+            }
           }
         }
       ],
@@ -930,7 +1339,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16063.jpg",
             "https://marvelcdb.com/bundles/cards/16063.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Vaisseau Badoon",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16063.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "brotherhood_of_badoon",
@@ -947,7 +1364,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16064.jpg",
             "https://marvelcdb.com/bundles/cards/16064.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Lance de Drang",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16064.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "brotherhood_of_badoon",
@@ -964,7 +1389,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16065.jpg",
             "https://marvelcdb.com/bundles/cards/16065.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Ingénieur Badoon",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16065.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "brotherhood_of_badoon",
@@ -985,6 +1418,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Blocus",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16066.webp"
+              ]
+            }
           }
         }
       ],
@@ -1006,6 +1447,14 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Bombardement",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16067.webp"
+              ]
+            }
           }
         }
       ],
@@ -1027,6 +1476,14 @@
           "startingThreat": {
             "value": 1,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Flotte Surpuisante",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16068.webp"
+              ]
+            }
           }
         }
       ],
@@ -1048,6 +1505,14 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Positionement Spatial",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16069.webp"
+              ]
+            }
           }
         }
       ],
@@ -1066,7 +1531,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16070.jpg",
             "https://marvelcdb.com/bundles/cards/16070.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Collectionneur",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16070.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "infiltrate_the_museum",
@@ -1084,7 +1557,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16071.jpg",
             "https://marvelcdb.com/bundles/cards/16071.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Collectionneur",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16071.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "infiltrate_the_museum",
@@ -1102,7 +1583,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16072.jpg",
             "https://marvelcdb.com/bundles/cards/16072.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Collectionneur",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16072.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "infiltrate_the_museum",
@@ -1124,6 +1613,14 @@
           "startingThreat": {
             "value": 0,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "La Grande Collection",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16073a.webp"
+              ]
+            }
           }
         },
         {
@@ -1138,6 +1635,14 @@
           "startingThreat": {
             "value": 4,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "La Grande Collection",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16073b.webp"
+              ]
+            }
           }
         }
       ],
@@ -1159,7 +1664,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16074.jpg",
             "https://marvelcdb.com/bundles/cards/16074.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Projection Holographique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16074.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "infiltrate_the_museum",
@@ -1176,7 +1689,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16075.jpg",
             "https://marvelcdb.com/bundles/cards/16075.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Monark Starstalker",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16075.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "infiltrate_the_museum",
@@ -1193,7 +1714,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16076.jpg",
             "https://marvelcdb.com/bundles/cards/16076.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Simple Boîte",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16076.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "infiltrate_the_museum",
@@ -1210,7 +1739,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16077.jpg",
             "https://marvelcdb.com/bundles/cards/16077.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Contempler le Cosmos",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16077.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "infiltrate_the_museum",
@@ -1227,7 +1764,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16078.jpg",
             "https://marvelcdb.com/bundles/cards/16078.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Attendez un Instant",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16078.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "infiltrate_the_museum",
@@ -1243,7 +1788,15 @@
           "size": "std",
           "images": [
             "https://marvelcdb.com/bundles/cards/16079.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Pris par Surprise",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16079.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "infiltrate_the_museum",
@@ -1261,7 +1814,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16080A.jpg",
             "https://marvelcdb.com/bundles/cards/16080a.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Collectionneur",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16080a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Collector",
@@ -1271,7 +1832,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16080B.jpg",
             "https://marvelcdb.com/bundles/cards/16080b.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Collectionneur",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16080b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "escape_the_museum",
@@ -1293,7 +1862,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16081A.jpg",
             "https://marvelcdb.com/bundles/cards/16081a.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Collectionneur",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16081a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Collector",
@@ -1303,7 +1880,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16081B.jpg",
             "https://marvelcdb.com/bundles/cards/16081b.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Collectionneur",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16081b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "escape_the_museum",
@@ -1329,6 +1914,14 @@
           "startingThreat": {
             "value": 0,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Retrouver le Milano",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16082a.webp"
+              ]
+            }
           }
         },
         {
@@ -1343,6 +1936,14 @@
           "startingThreat": {
             "value": 7,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Retrouver le Milano",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16082b.webp"
+              ]
+            }
           }
         }
       ],
@@ -1369,6 +1970,14 @@
           "startingThreat": {
             "value": 0,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Perdus dans le Musée",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16083a.webp"
+              ]
+            }
           }
         },
         {
@@ -1383,6 +1992,14 @@
           "startingThreat": {
             "value": 11,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Perdus dans le Musée",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16083b.webp"
+              ]
+            }
           }
         }
       ],
@@ -1409,6 +2026,14 @@
           "startingThreat": {
             "value": 0,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "La Grande Évasion",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16084a.webp"
+              ]
+            }
           }
         },
         {
@@ -1423,6 +2048,14 @@
           "startingThreat": {
             "value": 8,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "La Grande Évasion",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16084b.webp"
+              ]
+            }
           }
         }
       ],
@@ -1444,7 +2077,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16085A.jpg",
             "https://marvelcdb.com/bundles/cards/16085a.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Labyrinthe de Rayonnages",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16085a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Museum Ship",
@@ -1453,7 +2094,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16085B.jpg",
             "https://marvelcdb.com/bundles/cards/16085b.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Vaisseau Musée",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16085b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "escape_the_museum",
@@ -1474,7 +2123,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16086.jpg",
             "https://marvelcdb.com/bundles/cards/16086.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "\"Je Vous Tiens!\"",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16086.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "escape_the_museum",
@@ -1491,7 +2148,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16087.jpg",
             "https://marvelcdb.com/bundles/cards/16087.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Géométrie Impossible",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16087.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "escape_the_museum",
@@ -1509,7 +2174,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16088.jpg",
             "https://marvelcdb.com/bundles/cards/16088.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16088.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nebula",
@@ -1527,7 +2199,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16089.jpg",
             "https://marvelcdb.com/bundles/cards/16089.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16089.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nebula",
@@ -1545,7 +2224,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16090.jpg",
             "https://marvelcdb.com/bundles/cards/16090.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16090.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nebula",
@@ -1567,6 +2253,14 @@
           "startingThreat": {
             "value": 0,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "L'Art de la Fuite",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16091a.webp"
+              ]
+            }
           }
         },
         {
@@ -1581,6 +2275,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "L'Art de la Fuite",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16091b.webp"
+              ]
+            }
           }
         }
       ],
@@ -1607,6 +2309,14 @@
           "startingThreat": {
             "value": 0,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Mode Distorsion Activé",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16092a.webp"
+              ]
+            }
           }
         },
         {
@@ -1621,6 +2331,14 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Mode Distorsion Activé",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16092b.webp"
+              ]
+            }
           }
         }
       ],
@@ -1642,7 +2360,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16093.jpg",
             "https://marvelcdb.com/bundles/cards/16093.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Vaisseau de Nebula",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16093.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nebula",
@@ -1659,7 +2385,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16094.jpg",
             "https://marvelcdb.com/bundles/cards/16094.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Ambition Dévorante",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16094.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nebula",
@@ -1676,7 +2410,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16095.jpg",
             "https://marvelcdb.com/bundles/cards/16095.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Manœuvre d'Évasion",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16095.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nebula",
@@ -1693,7 +2435,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16096.jpg",
             "https://marvelcdb.com/bundles/cards/16096.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Obstination Inflexible",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16096.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nebula",
@@ -1710,7 +2460,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16097.jpg",
             "https://marvelcdb.com/bundles/cards/16097.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Maniement Expert des Armes",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16097.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nebula",
@@ -1727,7 +2485,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16098.jpg",
             "https://marvelcdb.com/bundles/cards/16098.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Posture de Combat Élancée",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16098.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nebula",
@@ -1748,6 +2514,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Intentions Meurtrières",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16099.webp"
+              ]
+            }
           }
         }
       ],
@@ -1765,7 +2539,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16100.jpg",
             "https://marvelcdb.com/bundles/cards/16100.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Tonneau",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16100.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nebula",
@@ -1782,7 +2564,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16101.jpg",
             "https://marvelcdb.com/bundles/cards/16101.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Prête au Combat",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16101.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nebula",
@@ -1799,7 +2589,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16102.jpg",
             "https://marvelcdb.com/bundles/cards/16102.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Impitoyable",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16102.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nebula",
@@ -1817,7 +2615,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16103.jpg",
             "https://marvelcdb.com/bundles/cards/16103.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Ronan l'Accusateur",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16103.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ronan",
@@ -1835,7 +2641,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16104.jpg",
             "https://marvelcdb.com/bundles/cards/16104.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Ronan l'Accusateur",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16104.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ronan",
@@ -1853,7 +2667,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16105.jpg",
             "https://marvelcdb.com/bundles/cards/16105.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Ronan l'Accusateur",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16105.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ronan",
@@ -1875,6 +2697,14 @@
           "startingThreat": {
             "value": 0,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Interception Imminente",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16106a.webp"
+              ]
+            }
           }
         },
         {
@@ -1889,6 +2719,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Interception Imminente",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16106b.webp"
+              ]
+            }
           }
         }
       ],
@@ -1915,6 +2753,14 @@
           "startingThreat": {
             "value": 0,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "\"Je Reprends ce qui m'Appartient\"",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16107a.webp"
+              ]
+            }
           }
         },
         {
@@ -1929,6 +2775,14 @@
           "startingThreat": {
             "value": 1,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "\"Je Reprends ce qui m'Appartient\"",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16107b.webp"
+              ]
+            }
           }
         }
       ],
@@ -1950,7 +2804,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16108.jpg",
             "https://marvelcdb.com/bundles/cards/16108.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Vaisseau Amiral Kree",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16108.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ronan",
@@ -1967,7 +2829,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16109.jpg",
             "https://marvelcdb.com/bundles/cards/16109.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Arme Universelle",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16109.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ronan",
@@ -1984,7 +2854,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16110.jpg",
             "https://marvelcdb.com/bundles/cards/16110.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Fanatisme",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16110.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ronan",
@@ -2005,6 +2883,14 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Courant Coupé",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16111.webp"
+              ]
+            }
           }
         }
       ],
@@ -2026,6 +2912,14 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Pris en Tenaille",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16112.webp"
+              ]
+            }
           }
         }
       ],
@@ -2047,6 +2941,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Grand Tacticien",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16113.webp"
+              ]
+            }
           }
         }
       ],
@@ -2064,7 +2966,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16114.jpg",
             "https://marvelcdb.com/bundles/cards/16114.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Fureur Obsessionnelle",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16114.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ronan",
@@ -2081,7 +2991,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16115.jpg",
             "https://marvelcdb.com/bundles/cards/16115.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Physiologie Kree",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16115.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ronan",
@@ -2098,7 +3016,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16116.jpg",
             "https://marvelcdb.com/bundles/cards/16116.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "\"Je Vous Accuse !\"",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16116.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ronan",
@@ -2115,7 +3041,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16117.jpg",
             "https://marvelcdb.com/bundles/cards/16117.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Assassin Badoon",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16117.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "band_of_badoon",
@@ -2132,7 +3066,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16118.jpg",
             "https://marvelcdb.com/bundles/cards/16118.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Fantassin Badoon",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16118.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "band_of_badoon",
@@ -2149,7 +3091,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16119.jpg",
             "https://marvelcdb.com/bundles/cards/16119.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Lieutenant Badoon",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16119.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "band_of_badoon",
@@ -2166,7 +3116,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16120.jpg",
             "https://marvelcdb.com/bundles/cards/16120.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Sentinelle Badoon",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16120.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "band_of_badoon",
@@ -2183,7 +3141,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16121.jpg",
             "https://marvelcdb.com/bundles/cards/16121.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Seigneur de Guerre Badoon",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16121.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "band_of_badoon",
@@ -2200,7 +3166,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16122.jpg",
             "https://marvelcdb.com/bundles/cards/16122.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Cape d'Hercule",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16122.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "galactic_artifacts",
@@ -2217,7 +3191,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16123.jpg",
             "https://marvelcdb.com/bundles/cards/16123.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Potion d'Obédience",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16123.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "galactic_artifacts",
@@ -2234,7 +3216,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16124.jpg",
             "https://marvelcdb.com/bundles/cards/16124.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Veste du Beyonder",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16124.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "galactic_artifacts",
@@ -2251,7 +3241,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16125.jpg",
             "https://marvelcdb.com/bundles/cards/16125.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Poison",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16125.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "galactic_artifacts",
@@ -2268,7 +3266,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16126.jpg",
             "https://marvelcdb.com/bundles/cards/16126.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Bâton de Puissance Vandarien",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16126.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "galactic_artifacts",
@@ -2289,6 +3295,14 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Œuf de Monarque Hujahdarien",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16127.webp"
+              ]
+            }
           }
         }
       ],
@@ -2310,6 +3324,14 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Théière Magique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16128.webp"
+              ]
+            }
           }
         }
       ],
@@ -2331,6 +3353,14 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Pierre Philosophale",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16129.webp"
+              ]
+            }
           }
         }
       ],
@@ -2352,6 +3382,14 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Boule de Cristal",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16130.webp"
+              ]
+            }
           }
         }
       ],
@@ -2369,7 +3407,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16131.jpg",
             "https://marvelcdb.com/bundles/cards/16131.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Armure de Combat Kree",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16131.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "kree_militant",
@@ -2386,7 +3432,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16132.jpg",
             "https://marvelcdb.com/bundles/cards/16132.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Commando Kree",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16132.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "kree_militant",
@@ -2403,7 +3457,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16133.jpg",
             "https://marvelcdb.com/bundles/cards/16133.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Lieutenant Kree",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16133.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "kree_militant",
@@ -2420,7 +3482,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16134.jpg",
             "https://marvelcdb.com/bundles/cards/16134.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Bleusaille Kree",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16134.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "kree_militant",
@@ -2437,7 +3507,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16135.jpg",
             "https://marvelcdb.com/bundles/cards/16135.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Fantôme Psionique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16135.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "menagerie_medley",
@@ -2454,7 +3532,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16136.jpg",
             "https://marvelcdb.com/bundles/cards/16136.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Serviteur Mécanique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16136.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "menagerie_medley",
@@ -2471,7 +3557,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16137.jpg",
             "https://marvelcdb.com/bundles/cards/16137.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Requin Stellaire",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16137.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "menagerie_medley",
@@ -2488,7 +3582,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16138.jpg",
             "https://marvelcdb.com/bundles/cards/16138.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Capitaine Pirate",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16138.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "space_pirates",
@@ -2505,7 +3607,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16139.jpg",
             "https://marvelcdb.com/bundles/cards/16139.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Flibustier",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16139.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "space_pirates",
@@ -2526,6 +3636,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Sonnez l'Alerte",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16140.webp"
+              ]
+            }
           }
         }
       ],
@@ -2543,7 +3661,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16141.jpg",
             "https://marvelcdb.com/bundles/cards/16141.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Code d'Honneur des Voleurs",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16141.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "space_pirates",
@@ -2560,7 +3686,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16142.jpg",
             "https://marvelcdb.com/bundles/cards/16142.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16142.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ship_command",
@@ -2577,7 +3710,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16143.jpg",
             "https://marvelcdb.com/bundles/cards/16143.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Vaisseau Rebelle",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16143.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ship_command",
@@ -2598,6 +3739,14 @@
           "startingThreat": {
             "value": 1,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Canonnade",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16144.webp"
+              ]
+            }
           }
         }
       ],
@@ -2615,7 +3764,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16145.jpg",
             "https://marvelcdb.com/bundles/cards/16145.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Angle Mort",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16145.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ship_command",
@@ -2632,7 +3789,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16146.jpg",
             "https://marvelcdb.com/bundles/cards/16146.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Coque Perforée",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16146.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ship_command",
@@ -2649,7 +3814,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16147.jpg",
             "https://marvelcdb.com/bundles/cards/16147.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Perte d'Énergie",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16147.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ship_command",
@@ -2666,7 +3839,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16148.jpg",
             "https://marvelcdb.com/bundles/cards/16148.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Livraison Spéciale",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16148.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ship_command",
@@ -2683,7 +3864,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16149.jpg",
             "https://marvelcdb.com/bundles/cards/16149.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Pierre du Pouvoir",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16149.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "power_stone",
@@ -2700,7 +3889,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16150.jpg",
             "https://marvelcdb.com/bundles/cards/16150.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Échange d'Idées",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16150.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "the_market",
@@ -2717,7 +3914,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16151.jpg",
             "https://marvelcdb.com/bundles/cards/16151.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Par Tous les Moyens",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16151.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "the_market",
@@ -2734,7 +3939,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16152.jpg",
             "https://marvelcdb.com/bundles/cards/16152.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Plan de Rechange",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16152.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "the_market",
@@ -2751,7 +3964,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16153.jpg",
             "https://marvelcdb.com/bundles/cards/16153.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Au Mépris du Danger",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16153.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "the_market",
@@ -2768,7 +3989,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16154.jpg",
             "https://marvelcdb.com/bundles/cards/16154.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Calculer les Probabilités",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16154.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "the_market",
@@ -2785,7 +4014,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16155.jpg",
             "https://marvelcdb.com/bundles/cards/16155.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Solution Créative",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16155.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "the_market",
@@ -2802,7 +4039,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16156.jpg",
             "https://marvelcdb.com/bundles/cards/16156.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Être aux Prises",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16156.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "the_market",
@@ -2819,7 +4064,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16157.jpg",
             "https://marvelcdb.com/bundles/cards/16157.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Improviser",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16157.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "the_market",
@@ -2836,7 +4089,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16158.jpg",
             "https://marvelcdb.com/bundles/cards/16158.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Évité de Justesse",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16158.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "the_market",
@@ -2853,7 +4114,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16159.jpg",
             "https://marvelcdb.com/bundles/cards/16159.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Braver le Danger",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16159.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "the_market",
@@ -2870,7 +4139,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16160.jpg",
             "https://marvelcdb.com/bundles/cards/16160.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Prendre des Risques",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16160.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "the_market",
@@ -2887,7 +4164,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16161.jpg",
             "https://marvelcdb.com/bundles/cards/16161.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Combattre sur leur Terrain",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16161.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "the_market",
@@ -2904,7 +4189,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16162.jpg",
             "https://marvelcdb.com/bundles/cards/16162.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Plaques de Protection",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16162.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "the_market",
@@ -2921,7 +4214,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16163.jpg",
             "https://marvelcdb.com/bundles/cards/16163.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Canon Lourd",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16163.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "the_market",
@@ -2938,7 +4239,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16164.jpg",
             "https://marvelcdb.com/bundles/cards/16164.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Hyper Propulseurs",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16164.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "the_market",
@@ -2955,7 +4264,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16165.jpg",
             "https://marvelcdb.com/bundles/cards/16165.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Cœur du Réacteur",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16165.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "the_market",
@@ -2972,7 +4289,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16166.jpg",
             "https://marvelcdb.com/bundles/cards/16166.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Résolution Ardente",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16166.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "the_market",
@@ -2989,7 +4314,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16167.jpg",
             "https://marvelcdb.com/bundles/cards/16167.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Se Ruer",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16167.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "the_market",
@@ -3006,7 +4339,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16168.jpg",
             "https://marvelcdb.com/bundles/cards/16168.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Sauvegarde",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16168.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "the_market",
@@ -3023,7 +4364,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16169.jpg",
             "https://marvelcdb.com/bundles/cards/16169.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Valeur Sûre",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16169.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "the_market",
@@ -3040,7 +4389,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16170.jpg",
             "https://marvelcdb.com/bundles/cards/16170.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Soute",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16170.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "the_market",
@@ -3057,7 +4414,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16171.jpg",
             "https://marvelcdb.com/bundles/cards/16171.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Laser Monté",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16171.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "the_market",
@@ -3074,7 +4439,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16172.jpg",
             "https://marvelcdb.com/bundles/cards/16172.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Manche de Pilotage",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16172.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "the_market",
@@ -3091,7 +4464,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16173.jpg",
             "https://marvelcdb.com/bundles/cards/16173.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Écran de Ciblage",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16173.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "the_market",
@@ -3108,7 +4489,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16174.jpg",
             "https://marvelcdb.com/bundles/cards/16174.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Stratégie Globale",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16174.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "the_market",
@@ -3125,7 +4514,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16175.jpg",
             "https://marvelcdb.com/bundles/cards/16175.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Déchaînement de Puisssance",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16175.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "the_market",
@@ -3142,7 +4539,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16176.jpg",
             "https://marvelcdb.com/bundles/cards/16176.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Efficacité Prouvée",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16176.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "the_market",
@@ -3159,7 +4564,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16177.jpg",
             "https://marvelcdb.com/bundles/cards/16177.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Triple Menace",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16177.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "the_market",
@@ -3180,6 +4593,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Attaque Surprise des Badoon",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16178a.webp"
+              ]
+            }
           }
         },
         {
@@ -3193,6 +4614,14 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Attaque Surprise des Badoon",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16178b.webp"
+              ]
+            }
           }
         }
       ],
@@ -3218,6 +4647,14 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Gallerie des Merveilles",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16179a.webp"
+              ]
+            }
           }
         },
         {
@@ -3231,6 +4668,14 @@
           "startingThreat": {
             "value": 4,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Gallerie des Merveilles",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16179b.webp"
+              ]
+            }
           }
         }
       ],
@@ -3256,6 +4701,14 @@
           "startingThreat": {
             "value": 4,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "\"Il n'y a Aucune Issue\"",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16180a.webp"
+              ]
+            }
           }
         },
         {
@@ -3269,6 +4722,14 @@
           "startingThreat": {
             "value": 5,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "\"Il n'y a Aucune Issue\"",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16180b.webp"
+              ]
+            }
           }
         }
       ],
@@ -3294,6 +4755,14 @@
           "startingThreat": {
             "value": 5,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Tactiques de Guérilla",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16181a.webp"
+              ]
+            }
           }
         },
         {
@@ -3307,6 +4776,14 @@
           "startingThreat": {
             "value": 6,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Tactiques de Guérilla",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16181b.webp"
+              ]
+            }
           }
         }
       ],
@@ -3332,6 +4809,14 @@
           "startingThreat": {
             "value": 6,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "supériorité Kree",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16182a.webp"
+              ]
+            }
           }
         },
         {
@@ -3345,6 +4830,14 @@
           "startingThreat": {
             "value": 7,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Supériorité Kree",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16182b.webp"
+              ]
+            }
           }
         }
       ],
@@ -3366,7 +4859,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16183.jpg",
             "https://marvelcdb.com/bundles/cards/16183.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Traqueur Badoon",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16183.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "badoon_headhunter",
@@ -3383,7 +4884,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16184.jpg",
             "https://marvelcdb.com/bundles/cards/16184.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "En Chasse",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16184.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "badoon_headhunter",
@@ -3400,7 +4909,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16185.jpg",
             "https://marvelcdb.com/bundles/cards/16185.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Infraction à la Loi",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16185.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "badoon_headhunter",
@@ -3417,7 +4934,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16186.jpg",
             "https://marvelcdb.com/bundles/cards/16186.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Gros Bras du Traqueur",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16186.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "badoon_headhunter",
@@ -3438,6 +4963,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Retrouver les Fugitifs",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gmw/16187.webp"
+              ]
+            }
           }
         }
       ],

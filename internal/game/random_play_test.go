@@ -211,6 +211,7 @@ func TestRandomPlayKeepsTheHistoryRight(t *testing.T) {
 							play.step()
 							checkIntegrity(t, f.g.Table)
 							checkHistory(t, f.g)
+							checkPartRefs(t, f.cat, f.g.Log)
 							if seed < replayedSeeds {
 								checkReplay(t, f)
 							}

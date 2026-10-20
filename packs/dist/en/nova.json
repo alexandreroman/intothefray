@@ -14,7 +14,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28001A.jpg",
             "https://marvelcdb.com/bundles/cards/28001a.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nova/28001a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Sam Alexander",
@@ -24,7 +31,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28001B.jpg",
             "https://marvelcdb.com/bundles/cards/28001b.png"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nova/28001b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nova",
@@ -46,7 +60,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28002.jpg",
             "https://marvelcdb.com/bundles/cards/28002.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Miss Marvel",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nova/28002.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nova",
@@ -63,7 +85,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28003.jpg",
             "https://marvelcdb.com/bundles/cards/28003.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Projection de Champ de force",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nova/28003.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nova",
@@ -80,7 +110,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28004.jpg",
             "https://marvelcdb.com/bundles/cards/28004.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Vol Supersonique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nova/28004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nova",
@@ -97,7 +135,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28005.jpg",
             "https://marvelcdb.com/bundles/cards/28005.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Tirer dans le Tas",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nova/28005.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nova",
@@ -114,7 +160,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28006.jpg",
             "https://marvelcdb.com/bundles/cards/28006.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Déchaînement de Force Nova",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nova/28006.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nova",
@@ -131,7 +185,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28007.jpg",
             "https://marvelcdb.com/bundles/cards/28007.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Connexion au Worldmind",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nova/28007.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nova",
@@ -148,7 +210,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28008.jpg",
             "https://marvelcdb.com/bundles/cards/28008.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nova/28008.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nova",
@@ -165,7 +234,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28009.jpg",
             "https://marvelcdb.com/bundles/cards/28009.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Casque de Supernova",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nova/28009.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nova",
@@ -183,7 +260,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28010.jpg",
             "https://marvelcdb.com/bundles/cards/28010.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "La Sauterelle",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nova/28010.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -199,7 +284,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28012.jpg",
             "https://marvelcdb.com/bundles/cards/28012.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Assaut Aérien",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nova/28012.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -215,7 +308,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28013.jpg",
             "https://marvelcdb.com/bundles/cards/28013.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Pas de Quartier",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nova/28013.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -231,7 +332,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28014.jpg",
             "https://marvelcdb.com/bundles/cards/28014.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Chacun son Tour",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nova/28014.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -250,7 +359,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28016.jpg",
             "https://marvelcdb.com/bundles/cards/28016.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Fluidité de Mouvement",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nova/28016.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -266,7 +383,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28017.jpg",
             "https://marvelcdb.com/bundles/cards/28017.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Technique Éprouvée",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nova/28017.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -283,7 +408,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28018.jpg",
             "https://marvelcdb.com/bundles/cards/28018.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "subname": "Lunela Lafayette",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nova/28018.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -299,7 +432,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28019.jpg",
             "https://marvelcdb.com/bundles/cards/28019.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Héros du Quotidien",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nova/28019.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -315,7 +456,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28020.jpg",
             "https://marvelcdb.com/bundles/cards/28020.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Bunker Mobile des Champions",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nova/28020.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -331,7 +480,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28021.jpg",
             "https://marvelcdb.com/bundles/cards/28021.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Poids du Monde",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nova/28021.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nova",
@@ -352,6 +509,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "\"Apporter la Guerre!\"",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nova/28022.webp"
+              ]
+            }
           }
         }
       ],
@@ -369,7 +534,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28023.jpg",
             "https://marvelcdb.com/bundles/cards/28023.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Guerroyeur",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nova/28023.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nova_nemesis",
@@ -386,7 +559,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28024.jpg",
             "https://marvelcdb.com/bundles/cards/28024.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Guerroyer",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nova/28024.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nova_nemesis",
@@ -403,7 +584,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28025.jpg",
             "https://marvelcdb.com/bundles/cards/28025.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "\"La Guerre est là\"",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nova/28025.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nova_nemesis",
@@ -420,7 +609,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28026.jpg",
             "https://marvelcdb.com/bundles/cards/28026.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Lacet et Roulis",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nova/28026.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -436,7 +633,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28027.jpg",
             "https://marvelcdb.com/bundles/cards/28027.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Prendre de la Hauteur",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nova/28027.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -456,6 +661,14 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Attaque Blindée",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nova/28028.webp"
+              ]
+            }
           }
         }
       ],
@@ -473,7 +686,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28029.jpg",
             "https://marvelcdb.com/bundles/cards/28029.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Tatou",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nova/28029.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "armadillo",
@@ -490,7 +711,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28030.jpg",
             "https://marvelcdb.com/bundles/cards/28030.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Roulé-Boulé",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nova/28030.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "armadillo",
@@ -507,7 +736,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28031.jpg",
             "https://marvelcdb.com/bundles/cards/28031.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Tenace et Teigneux",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nova/28031.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "armadillo",
@@ -524,7 +761,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/28032.jpg",
             "https://marvelcdb.com/bundles/cards/28032.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Endurci",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nova/28032.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "armadillo",

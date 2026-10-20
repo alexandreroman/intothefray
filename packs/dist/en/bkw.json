@@ -14,7 +14,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08001A.jpg",
             "https://marvelcdb.com/bundles/cards/08001a.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/bkw/08001a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Natasha Romanoff",
@@ -24,7 +31,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08001B.jpg",
             "https://marvelcdb.com/bundles/cards/08001b.png"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/bkw/08001b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "black_widow",
@@ -46,7 +60,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08002.jpg",
             "https://marvelcdb.com/bundles/cards/08002.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Soldat de l'Hiver",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/bkw/08002.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "black_widow",
@@ -63,7 +85,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08003.jpg",
             "https://marvelcdb.com/bundles/cards/08003.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Opération Secrète",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/bkw/08003.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "black_widow",
@@ -80,7 +110,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08004.jpg",
             "https://marvelcdb.com/bundles/cards/08004.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Danse de la Mort",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/bkw/08004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "black_widow",
@@ -97,7 +135,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08005.jpg",
             "https://marvelcdb.com/bundles/cards/08005.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Refuge #29",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/bkw/08005.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "black_widow",
@@ -114,7 +160,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08006.jpg",
             "https://marvelcdb.com/bundles/cards/08006.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Attaque Acrobatique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/bkw/08006.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "black_widow",
@@ -131,7 +185,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08007.jpg",
             "https://marvelcdb.com/bundles/cards/08007.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Bracelet de Black Widow",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/bkw/08007.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "black_widow",
@@ -148,7 +210,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08008.jpg",
             "https://marvelcdb.com/bundles/cards/08008.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Grappin",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/bkw/08008.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "black_widow",
@@ -165,7 +235,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08009.jpg",
             "https://marvelcdb.com/bundles/cards/08009.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Costume Synthétique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/bkw/08009.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "black_widow",
@@ -182,7 +260,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08010.jpg",
             "https://marvelcdb.com/bundles/cards/08010.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Morsure de la Veuve",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/bkw/08010.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "black_widow",
@@ -199,7 +285,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08011.jpg",
             "https://marvelcdb.com/bundles/cards/08011.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/bkw/08011.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -219,7 +312,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08012.jpg",
             "https://marvelcdb.com/bundles/cards/08012.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/bkw/08012.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -238,7 +338,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08013.jpg",
             "https://marvelcdb.com/bundles/cards/08013.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Frappe furtive",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/bkw/08013.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -257,7 +365,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08017.jpg",
             "https://marvelcdb.com/bundles/cards/08017.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Contre-Espionnage",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/bkw/08017.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -273,7 +389,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08018.jpg",
             "https://marvelcdb.com/bundles/cards/08018.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Technique d'Espion",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/bkw/08018.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -289,7 +413,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08023.jpg",
             "https://marvelcdb.com/bundles/cards/08023.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Quinporteur",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/bkw/08023.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -310,7 +442,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08024.jpg",
             "https://marvelcdb.com/bundles/cards/08024.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Cible Verrouillée",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/bkw/08024.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -326,7 +466,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08025.jpg",
             "https://marvelcdb.com/bundles/cards/08025.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Désaveu Officiel",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/bkw/08025.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "black_widow",
@@ -343,7 +491,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08026.jpg",
             "https://marvelcdb.com/bundles/cards/08026.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/bkw/08026.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "black_widow_nemesis",
@@ -364,6 +519,14 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Tueur à Louer",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/bkw/08027.webp"
+              ]
+            }
           }
         }
       ],
@@ -380,7 +543,15 @@
           "size": "std",
           "images": [
             "https://marvelcdb.com/bundles/cards/08028.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Mercenaire d'Hydra",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/bkw/08028.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "black_widow_nemesis",
@@ -397,7 +568,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08029.jpg",
             "https://marvelcdb.com/bundles/cards/08029.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Tir Mortel",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/bkw/08029.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "black_widow_nemesis",
@@ -414,7 +593,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08030.jpg",
             "https://marvelcdb.com/bundles/cards/08030.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Contre-Attaque",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/bkw/08030.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -430,7 +617,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08031.jpg",
             "https://marvelcdb.com/bundles/cards/08031.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Réponse Immédiate",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/bkw/08031.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -446,7 +641,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08032.jpg",
             "https://marvelcdb.com/bundles/cards/08032.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Posture Défensive",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/bkw/08032.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -462,7 +665,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/08033.jpg",
             "https://marvelcdb.com/bundles/cards/08033.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Espionnage",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/bkw/08033.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",

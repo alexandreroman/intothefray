@@ -12,6 +12,8 @@
   import Tooltip from '../components/Tooltip.svelte';
   import TopBar from '../components/TopBar.svelte';
   import { gameCards, knownCard, loadGameCards, loadIndex } from '../lib/catalog';
+  import { storedLang } from '../lib/lang';
+  import { localizedFace, localizedName } from '../lib/localize';
   import { getPref, setPref } from '../lib/prefs';
   import { selectionIndicator } from '../lib/selectionIndicator';
   import type { GameSession } from '../lib/session.svelte';
@@ -19,6 +21,7 @@
     Action,
     CardView as TableCard,
     DeckView,
+    FaceRef,
     Index,
     LobbyConfig,
     PackFace,
@@ -98,6 +101,9 @@
     view: View;
   } = $props();
 
+  // Card names and images in the language chosen in Options, a separate route: read once.
+  const lang = storedLang();
+
   // P5a-R2: the cards of the game are loaded once, then card sizes are looked up synchronously.
   // The table belongs to one game: its id never changes while it is shown.
   let catalog = $state<'loading' | 'ready' | 'failed'>('loading');
@@ -117,7 +123,7 @@
     }
     const preloads: HTMLImageElement[] = [];
     for (const face of gameCards().flatMap((card) => card.faces)) {
-      const url = face.images[0];
+      const url = localizedFace(face, lang).images[0];
       if (url === undefined) {
         continue;
       }
@@ -133,19 +139,31 @@
     };
   });
 
+  /** The face a card shows, in the viewer's language; none while hidden or while the catalog loads. */
   function faceOf(card: TableCard | undefined): PackFace | null {
     if (catalog !== 'ready' || !card?.code || isHidden(card)) {
       return null;
     }
-    return knownCard(card.code)?.card.faces[card.face] ?? null;
+    const face = knownCard(card.code)?.card.faces[card.face];
+    return face ? localizedFace(face, lang) : null;
   }
 
-  /** Every face of a card, as the stage choice lists them; none while the catalog loads. */
+  /** Every face of a card, as the stage choice lists them, in the viewer's language; none while the catalog loads. */
   function facesOf(card: TableCard): PackFace[] {
     if (catalog !== 'ready' || !card.code) {
       return [];
     }
-    return knownCard(card.code)?.card.faces ?? [];
+    const faces = knownCard(card.code)?.card.faces ?? [];
+    return faces.map((face) => localizedFace(face, lang));
+  }
+
+  /** The name of the face a history line names, in the viewer's language; none while unknown. */
+  function historyName(ref: FaceRef): string | undefined {
+    if (catalog !== 'ready') {
+      return undefined;
+    }
+    const face = knownCard(ref.card)?.card.faces[ref.face];
+    return face ? localizedFace(face, lang).name : undefined;
   }
 
   function sizeOf(card: TableCard): Size {
@@ -166,10 +184,11 @@
     if (!names || !scenario) {
       return [];
     }
-    const modulars = config.modulars.map(
-      (code) => names.sets.find((set) => set.code === code)?.name ?? code,
-    );
-    return [scenario.name, ...modulars];
+    const modulars = config.modulars.map((code) => {
+      const set = names.sets.find((s) => s.code === code);
+      return set ? localizedName(set, lang) : code;
+    });
+    return [localizedName(scenario, lang), ...modulars];
   }
 
   const crumbs = $derived(crumbsOf(view.config, index));
@@ -620,7 +639,8 @@
     if (role === undefined) {
       return false;
     }
-    const items = actionsFor({ kind: 'pile', id: pile.id }, view, { areas: view.you.areas, role });
+    const you = { areas: view.you.areas, role };
+    const items = actionsFor({ kind: 'pile', id: pile.id }, view, you, lang);
     return Array.isArray(items) && items.length > 0;
   }
 
@@ -657,7 +677,7 @@
     if (!hovered || role === undefined) {
       return [];
     }
-    return actionsFor(hovered, view, { areas: view.you.areas, role });
+    return actionsFor(hovered, view, { areas: view.you.areas, role }, lang);
   });
 
   const ARROW_HINT = 'Click the card to point at — Esc or a click on an empty spot to cancel.';
@@ -1520,6 +1540,7 @@
         collapsed={historyCollapsed}
         ontoggle={toggleHistory}
         controls="history-panel"
+        nameOf={historyName}
       />
     </aside>
   {/if}

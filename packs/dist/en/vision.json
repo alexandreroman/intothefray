@@ -14,7 +14,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26001A.jpg",
             "https://marvelcdb.com/bundles/cards/26001a.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vision/26001a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Vision",
@@ -24,7 +31,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26001B.jpg",
             "https://marvelcdb.com/bundles/cards/26001b.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vision/26001b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "vision",
@@ -61,7 +75,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26003.jpg",
             "https://marvelcdb.com/bundles/cards/26003.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vision/26003.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "vision",
@@ -78,7 +99,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26004.jpg",
             "https://marvelcdb.com/bundles/cards/26004.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vision/26004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "vision",
@@ -95,7 +123,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26005.jpg",
             "https://marvelcdb.com/bundles/cards/26005.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Gemme Solaire",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vision/26005.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "vision",
@@ -112,7 +148,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26006.jpg",
             "https://marvelcdb.com/bundles/cards/26006.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Cape de Vision",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vision/26006.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "vision",
@@ -129,7 +173,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26007.jpg",
             "https://marvelcdb.com/bundles/cards/26007.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Contrôle de la Densité",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vision/26007.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "vision",
@@ -146,7 +198,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26008.jpg",
             "https://marvelcdb.com/bundles/cards/26008.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Faisceau Solaire",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vision/26008.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "vision",
@@ -163,7 +223,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26009.jpg",
             "https://marvelcdb.com/bundles/cards/26009.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Frappe Hyperdense",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vision/26009.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "vision",
@@ -180,7 +248,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26010.jpg",
             "https://marvelcdb.com/bundles/cards/26010.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Passer au travers",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vision/26010.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "vision",
@@ -197,7 +273,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26011.jpg",
             "https://marvelcdb.com/bundles/cards/26011.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Disruption de Phase",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vision/26011.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "vision",
@@ -214,7 +298,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26012.jpg",
             "https://marvelcdb.com/bundles/cards/26012.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Augmentation de Masse",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vision/26012.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "vision",
@@ -231,7 +323,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26013.jpg",
             "https://marvelcdb.com/bundles/cards/26013.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Jocaste",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vision/26013.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -248,7 +348,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26014.jpg",
             "https://marvelcdb.com/bundles/cards/26014.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vision/26014.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -264,7 +371,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26015.jpg",
             "https://marvelcdb.com/bundles/cards/26015.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vision/26015.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -280,7 +394,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26016.jpg",
             "https://marvelcdb.com/bundles/cards/26016.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Aussi Fluide que l'Eau",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vision/26016.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -296,7 +418,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26018.jpg",
             "https://marvelcdb.com/bundles/cards/26018.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Défiance",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vision/26018.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -313,7 +443,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26022.jpg",
             "https://marvelcdb.com/bundles/cards/26022.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vision/26022.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -329,7 +466,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26024.jpg",
             "https://marvelcdb.com/bundles/cards/26024.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Réinitialisation",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vision/26024.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -345,7 +490,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26028.jpg",
             "https://marvelcdb.com/bundles/cards/26028.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Programme Corrompu",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vision/26028.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "vision",
@@ -362,7 +515,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26029.jpg",
             "https://marvelcdb.com/bundles/cards/26029.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vision/26029.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "vision_nemesis",
@@ -383,6 +543,14 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Ultron Déchaîné",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vision/26030.webp"
+              ]
+            }
           }
         }
       ],
@@ -399,7 +567,15 @@
           "size": "std",
           "images": [
             "https://marvelcdb.com/bundles/cards/26031.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Drones d'Ultron",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vision/26031.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "vision_nemesis",
@@ -416,7 +592,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26032.jpg",
             "https://marvelcdb.com/bundles/cards/26032.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Androïde Implacable",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vision/26032.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "vision_nemesis",
@@ -433,7 +617,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26033.jpg",
             "https://marvelcdb.com/bundles/cards/26033.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Entraînements aux Assauts",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vision/26033.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -449,7 +641,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26034.jpg",
             "https://marvelcdb.com/bundles/cards/26034.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Rencontre Fortuite",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vision/26034.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -468,7 +668,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26035.jpg",
             "https://marvelcdb.com/bundles/cards/26035.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Unir Nos Forces",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vision/26035.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -484,7 +692,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/26036.jpg",
             "https://marvelcdb.com/bundles/cards/26036.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Méditation",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vision/26036.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",

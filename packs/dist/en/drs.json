@@ -14,7 +14,15 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09001A.jpg",
             "https://marvelcdb.com/bundles/cards/09001a.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "name": "Docteur Strange",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/drs/09001a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Stephen Strange",
@@ -24,7 +32,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09001B.jpg",
             "https://marvelcdb.com/bundles/cards/09001b.png"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/drs/09001b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "doctor_strange",
@@ -45,7 +60,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09002.jpg",
             "https://marvelcdb.com/bundles/cards/09002.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/drs/09002.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "doctor_strange",
@@ -62,7 +84,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09003.jpg",
             "https://marvelcdb.com/bundles/cards/09003.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Projection Astrale",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/drs/09003.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "doctor_strange",
@@ -79,7 +109,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09004.jpg",
             "https://marvelcdb.com/bundles/cards/09004.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Rayon Magique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/drs/09004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "doctor_strange",
@@ -96,7 +134,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09005.jpg",
             "https://marvelcdb.com/bundles/cards/09005.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Maître des Arts Mystiques",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/drs/09005.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "doctor_strange",
@@ -113,7 +159,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09006.jpg",
             "https://marvelcdb.com/bundles/cards/09006.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Etudes Mystiques",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/drs/09006.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "doctor_strange",
@@ -130,7 +184,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09007.jpg",
             "https://marvelcdb.com/bundles/cards/09007.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Sortilège de protection",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/drs/09007.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "doctor_strange",
@@ -147,7 +209,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09008.jpg",
             "https://marvelcdb.com/bundles/cards/09008.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Saint des saints",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/drs/09008.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "doctor_strange",
@@ -164,7 +234,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09009.jpg",
             "https://marvelcdb.com/bundles/cards/09009.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Cape de Lévitation",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/drs/09009.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "doctor_strange",
@@ -181,7 +259,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09010.jpg",
             "https://marvelcdb.com/bundles/cards/09010.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Renforcements Magiques",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/drs/09010.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "doctor_strange",
@@ -198,7 +284,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09011.jpg",
             "https://marvelcdb.com/bundles/cards/09011.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "L'Œil d'Agamotto",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/drs/09011.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "doctor_strange",
@@ -216,7 +310,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09012.jpg",
             "https://marvelcdb.com/bundles/cards/09012.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Frère Vaudou",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/drs/09012.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -235,7 +337,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09013.jpg",
             "https://marvelcdb.com/bundles/cards/09013.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Cléa",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/drs/09013.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -252,7 +362,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09014.jpg",
             "https://marvelcdb.com/bundles/cards/09014.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/drs/09014.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -268,7 +385,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09015.jpg",
             "https://marvelcdb.com/bundles/cards/09015.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Défense désespérée",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/drs/09015.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -287,7 +412,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09016.jpg",
             "https://marvelcdb.com/bundles/cards/09016.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Coupé en plein élan",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/drs/09016.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -303,7 +436,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09019.jpg",
             "https://marvelcdb.com/bundles/cards/09019.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "L'Infirmière de nuit",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/drs/09019.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -322,7 +463,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09020.jpg",
             "https://marvelcdb.com/bundles/cards/09020.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Imperturbable",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/drs/09020.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -341,7 +490,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09021.jpg",
             "https://marvelcdb.com/bundles/cards/09021.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Alerte",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/drs/09021.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -357,7 +514,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09026.jpg",
             "https://marvelcdb.com/bundles/cards/09026.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Sorcier Suprême",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/drs/09026.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -373,7 +538,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09027.jpg",
             "https://marvelcdb.com/bundles/cards/09027.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Séquelle physique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/drs/09027.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "doctor_strange",
@@ -390,7 +563,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09028.jpg",
             "https://marvelcdb.com/bundles/cards/09028.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/drs/09028.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "doctor_strange_nemesis",
@@ -411,6 +591,14 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Ouvrir la Dimension Noire",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/drs/09029.webp"
+              ]
+            }
           }
         }
       ],
@@ -428,7 +616,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09030.jpg",
             "https://marvelcdb.com/bundles/cards/09030.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Contre-Sort",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/drs/09030.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "doctor_strange_nemesis",
@@ -445,7 +641,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09031.jpg",
             "https://marvelcdb.com/bundles/cards/09031.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Extraction de pensées",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/drs/09031.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "doctor_strange_nemesis",
@@ -462,7 +666,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09032.jpg",
             "https://marvelcdb.com/bundles/cards/09032.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Bandes Écarlates de Cyttorak",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/drs/09032.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "doctor_strange_invocation_deck",
@@ -479,7 +691,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09033.jpg",
             "https://marvelcdb.com/bundles/cards/09033.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Images d'Ikonn",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/drs/09033.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "doctor_strange_invocation_deck",
@@ -496,7 +716,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09034.jpg",
             "https://marvelcdb.com/bundles/cards/09034.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Sept Anneaux de Raggadorr",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/drs/09034.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "doctor_strange_invocation_deck",
@@ -513,7 +741,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09035.jpg",
             "https://marvelcdb.com/bundles/cards/09035.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Vapeurs de Valtorr",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/drs/09035.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "doctor_strange_invocation_deck",
@@ -530,7 +766,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09036.jpg",
             "https://marvelcdb.com/bundles/cards/09036.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Vents de Watoomb",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/drs/09036.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "doctor_strange_invocation_deck",
@@ -547,7 +791,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09037.jpg",
             "https://marvelcdb.com/bundles/cards/09037.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Frappe précise",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/drs/09037.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -563,7 +815,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09038.jpg",
             "https://marvelcdb.com/bundles/cards/09038.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Neutralisé !",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/drs/09038.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -580,7 +840,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/09039.jpg",
             "https://marvelcdb.com/bundles/cards/09039.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/drs/09039.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",

@@ -96,3 +96,21 @@ func TestJSONDoesNotCacheInvalidBody(t *testing.T) {
 		t.Errorf("cache dir has %d entries, want none", len(entries))
 	}
 }
+
+func TestJSONSendsUserAgent(t *testing.T) {
+	var agent atomic.Value
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		agent.Store(r.UserAgent())
+		_, _ = w.Write([]byte(`{}`))
+	}))
+	t.Cleanup(server.Close)
+	client := &Client{HTTP: server.Client(), CacheDir: t.TempDir(), UserAgent: "packgen-test"}
+
+	var v any
+	if err := client.JSON(context.Background(), server.URL+"/cards", &v); err != nil {
+		t.Fatal(err)
+	}
+	if got := agent.Load(); got != "packgen-test" {
+		t.Errorf("User-Agent = %v, want packgen-test", got)
+	}
+}

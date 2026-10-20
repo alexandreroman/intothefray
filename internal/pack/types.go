@@ -48,6 +48,22 @@ type Face struct {
 	Images         []string `json:"images"` // tried in order
 	HandSize       int      `json:"handSize,omitempty"`
 	StartingThreat *Threat  `json:"startingThreat,omitempty"`
+	// Localized holds the overrides of the face per language code, e.g. "fr".
+	Localized map[string]Localized `json:"localized,omitempty"`
+}
+
+// Localized holds the overrides of a face or an index entry in one language;
+// empty fields fall back to English. Index entries only use Name.
+type Localized struct {
+	Name    string   `json:"name,omitempty"`
+	Subname string   `json:"subname,omitempty"`
+	Images  []string `json:"images,omitempty"` // tried before the English images
+}
+
+// IsZero reports whether the override has nothing to override, so it would
+// only add an empty entry to the JSON.
+func (l Localized) IsZero() bool {
+	return l.Name == "" && l.Subname == "" && len(l.Images) == 0
 }
 
 // Card is a physical card with one or more faces.
@@ -133,6 +149,8 @@ type PackRef struct {
 	Name     string `json:"name"`
 	File     string `json:"file"`
 	Position int    `json:"position"`
+	// Localized holds the overrides of the entry per language code, e.g. "fr".
+	Localized map[string]Localized `json:"localized,omitempty"`
 }
 
 // ScenarioRef is an index entry describing a scenario of the whole range.
@@ -143,6 +161,8 @@ type ScenarioRef struct {
 	Image       string   `json:"image"`
 	Supported   bool     `json:"supported"`
 	Recommended []string `json:"recommended"`
+	// Localized holds the overrides of the entry per language code, e.g. "fr".
+	Localized map[string]Localized `json:"localized,omitempty"`
 }
 
 // SetRef is an index entry describing a set the lobby can offer.
@@ -151,6 +171,8 @@ type SetRef struct {
 	Name string `json:"name"`
 	Pack string `json:"pack"`
 	Kind string `json:"kind"`
+	// Localized holds the overrides of the entry per language code, e.g. "fr".
+	Localized map[string]Localized `json:"localized,omitempty"`
 }
 
 // Index lists every pack, scenario and set available for a language.

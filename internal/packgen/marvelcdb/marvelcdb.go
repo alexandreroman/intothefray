@@ -8,7 +8,12 @@ import (
 	"github.com/alexandreroman/intothefray/internal/packgen/fetch"
 )
 
-const baseURL = "https://marvelcdb.com"
+// Base URLs of the marvelcdb sites. A localized site serves the same records,
+// with the names in its language.
+const (
+	BaseURL       = "https://marvelcdb.com"
+	FrenchBaseURL = "https://fr.marvelcdb.com"
+)
 
 // Card holds the marvelcdb card fields used by the pack build.
 type Card struct {
@@ -38,18 +43,9 @@ type Pack struct {
 	Position int    `json:"position"`
 }
 
-// FetchCards returns the encounter cards of every pack.
-func FetchCards(ctx context.Context, c *fetch.Client) ([]Card, error) {
-	return fetchCards(ctx, c, baseURL)
-}
-
-// FetchPacks returns every pack.
-func FetchPacks(ctx context.Context, c *fetch.Client) ([]Pack, error) {
-	return fetchPacks(ctx, c, baseURL)
-}
-
-// The base URL is a parameter so tests can target a local server.
-func fetchCards(ctx context.Context, c *fetch.Client, base string) ([]Card, error) {
+// FetchCards returns the encounter cards of every pack from the marvelcdb site
+// at base, e.g. BaseURL, or FrenchBaseURL for the French names.
+func FetchCards(ctx context.Context, c *fetch.Client, base string) ([]Card, error) {
 	var cards []Card
 	if err := c.JSON(ctx, base+"/api/public/cards/?encounter=1", &cards); err != nil {
 		return nil, fmt.Errorf("fetch marvelcdb cards: %w", err)
@@ -57,7 +53,8 @@ func fetchCards(ctx context.Context, c *fetch.Client, base string) ([]Card, erro
 	return cards, nil
 }
 
-func fetchPacks(ctx context.Context, c *fetch.Client, base string) ([]Pack, error) {
+// FetchPacks returns every pack from the marvelcdb site at base.
+func FetchPacks(ctx context.Context, c *fetch.Client, base string) ([]Pack, error) {
 	var packs []Pack
 	if err := c.JSON(ctx, base+"/api/public/packs/", &packs); err != nil {
 		return nil, fmt.Errorf("fetch marvelcdb packs: %w", err)

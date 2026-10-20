@@ -99,10 +99,13 @@ type LogEntry struct {
 
 // LogPart is a piece of a history line: plain text, or the printed name of a
 // card. Only the narrator flags card names, so text a player typed, such as
-// their name, never passes for one.
+// their name, never passes for one. A card name refers to the face it names,
+// so a client can show that name in the viewer's language; Text stays the
+// English name.
 type LogPart struct {
-	Text string `json:"text"`
-	Card bool   `json:"card,omitempty"`
+	Text string        `json:"text"`
+	Card bool          `json:"card,omitempty"`
+	Ref  *pack.FaceRef `json:"ref,omitempty"`
 }
 
 // phrase returns the line in parts, a single plain part when it names no

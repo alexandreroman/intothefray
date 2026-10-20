@@ -14,7 +14,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29001A.jpg",
             "https://marvelcdb.com/bundles/cards/29001a.png"
           ],
-          "handSize": 4
+          "handSize": 4,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ironheart/29001a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Riri Williams",
@@ -24,7 +31,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29001B.jpg",
             "https://marvelcdb.com/bundles/cards/29001b.png"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ironheart/29001b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ironheart",
@@ -45,7 +59,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29002A.jpg"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ironheart/29002a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Riri Williams",
@@ -54,7 +75,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29002B.jpg"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ironheart/29002b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ironheart",
@@ -75,7 +103,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29003A.jpg"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ironheart/29003a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Riri Williams",
@@ -84,7 +119,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29003B.jpg"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ironheart/29003b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ironheart",
@@ -106,7 +148,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29004.jpg",
             "https://marvelcdb.com/bundles/cards/29004.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ironheart/29004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ironheart",
@@ -123,7 +172,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29005.jpg",
             "https://marvelcdb.com/bundles/cards/29005.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Survoler",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ironheart/29005.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ironheart",
@@ -140,7 +197,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29006.jpg",
             "https://marvelcdb.com/bundles/cards/29006.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Faisceau Photonique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ironheart/29006.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ironheart",
@@ -157,7 +222,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29007.jpg",
             "https://marvelcdb.com/bundles/cards/29007.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Nouvelles Améliorations",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ironheart/29007.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ironheart",
@@ -174,7 +247,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29008.jpg",
             "https://marvelcdb.com/bundles/cards/29008.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Balayage de Secteur",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ironheart/29008.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ironheart",
@@ -191,7 +272,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29009.jpg",
             "https://marvelcdb.com/bundles/cards/29009.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Éclair de Génie",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ironheart/29009.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ironheart",
@@ -208,7 +297,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29010.jpg",
             "https://marvelcdb.com/bundles/cards/29010.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ironheart/29010.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ironheart",
@@ -225,7 +321,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29011.jpg",
             "https://marvelcdb.com/bundles/cards/29011.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "I.A. de Tony Stark",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ironheart/29011.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ironheart",
@@ -242,7 +346,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29012.jpg",
             "https://marvelcdb.com/bundles/cards/29012.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Phaseurs Photoniques",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ironheart/29012.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ironheart",
@@ -259,7 +371,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29013.jpg",
             "https://marvelcdb.com/bundles/cards/29013.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Fusées de Propulsion",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ironheart/29013.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ironheart",
@@ -277,7 +397,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29014.jpg",
             "https://marvelcdb.com/bundles/cards/29014.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Septième Ciel",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ironheart/29014.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -297,7 +425,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29015.jpg",
             "https://marvelcdb.com/bundles/cards/29015.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Faucon",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ironheart/29015.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -314,7 +450,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29016.jpg",
             "https://marvelcdb.com/bundles/cards/29016.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ironheart/29016.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -330,7 +473,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29017.jpg",
             "https://marvelcdb.com/bundles/cards/29017.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Sortir le Grand Jeu",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ironheart/29017.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -346,7 +497,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29018.jpg",
             "https://marvelcdb.com/bundles/cards/29018.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Aller de l'Avant",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ironheart/29018.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -362,7 +521,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29020.jpg",
             "https://marvelcdb.com/bundles/cards/29020.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Département R\u0026D",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ironheart/29020.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -379,7 +546,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29023.jpg",
             "https://marvelcdb.com/bundles/cards/29023.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ironheart/29023.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -395,7 +569,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29024.jpg",
             "https://marvelcdb.com/bundles/cards/29024.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ironheart/29024.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -411,7 +592,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29025.jpg",
             "https://marvelcdb.com/bundles/cards/29025.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "\"Allez les Champions!\"",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ironheart/29025.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -427,7 +616,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29027.jpg",
             "https://marvelcdb.com/bundles/cards/29027.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Inventivité",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ironheart/29027.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -443,7 +640,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29028.jpg",
             "https://marvelcdb.com/bundles/cards/29028.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Léger Contretemps",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ironheart/29028.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ironheart",
@@ -464,6 +669,14 @@
           "startingThreat": {
             "value": 4,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Diriger par la Force",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ironheart/29029.webp"
+              ]
+            }
           }
         }
       ],
@@ -481,7 +694,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29030.jpg",
             "https://marvelcdb.com/bundles/cards/29030.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ironheart/29030.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ironheart_nemesis",
@@ -498,7 +718,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29031.jpg",
             "https://marvelcdb.com/bundles/cards/29031.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Technologie Cyborg",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ironheart/29031.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ironheart_nemesis",
@@ -515,7 +743,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29032.jpg",
             "https://marvelcdb.com/bundles/cards/29032.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Représailles Politiques",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ironheart/29032.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ironheart_nemesis",
@@ -533,7 +769,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29033.jpg",
             "https://marvelcdb.com/bundles/cards/29033.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ironheart/29033.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -550,7 +793,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29034.jpg",
             "https://marvelcdb.com/bundles/cards/29034.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "La Guêpe",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ironheart/29034.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -567,7 +818,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29035.jpg",
             "https://marvelcdb.com/bundles/cards/29035.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ironheart/29035.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -587,6 +845,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Boucle de Rétroaction",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ironheart/29036.webp"
+              ]
+            }
           }
         }
       ],
@@ -604,7 +870,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29037.jpg",
             "https://marvelcdb.com/bundles/cards/29037.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ironheart/29037.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "zzzax",
@@ -621,7 +894,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29038.jpg",
             "https://marvelcdb.com/bundles/cards/29038.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Survoltage",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ironheart/29038.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "zzzax",
@@ -638,7 +919,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29039.jpg",
             "https://marvelcdb.com/bundles/cards/29039.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Pression Statique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ironheart/29039.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "zzzax",
@@ -655,7 +944,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/29040.jpg",
             "https://marvelcdb.com/bundles/cards/29040.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Zzzap !",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ironheart/29040.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "zzzax",

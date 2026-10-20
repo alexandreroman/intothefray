@@ -14,7 +14,15 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30001A.jpg",
             "https://marvelcdb.com/bundles/cards/30001a.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "name": "Spider-Cochon",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spiderham/30001a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Peter Porker",
@@ -24,7 +32,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30001B.jpg",
             "https://marvelcdb.com/bundles/cards/30001b.png"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spiderham/30001b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "spiderham",
@@ -46,7 +61,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30002.jpg",
             "https://marvelcdb.com/bundles/cards/30002.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Captain Américhat",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spiderham/30002.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "spiderham",
@@ -63,7 +86,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30003.jpg",
             "https://marvelcdb.com/bundles/cards/30003.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Jouer un Tour de Cochon",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spiderham/30003.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "spiderham",
@@ -80,7 +111,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30004.jpg",
             "https://marvelcdb.com/bundles/cards/30004.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Du Lard ou du Cochon ?",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spiderham/30004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "spiderham",
@@ -97,7 +136,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30005.jpg",
             "https://marvelcdb.com/bundles/cards/30005.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "\"Même Pas en Rêve !\"",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spiderham/30005.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "spiderham",
@@ -114,7 +161,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30006.jpg",
             "https://marvelcdb.com/bundles/cards/30006.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Une Vraie Tête de Lard",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spiderham/30006.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "spiderham",
@@ -131,7 +186,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30007.jpg",
             "https://marvelcdb.com/bundles/cards/30007.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Coup de Porc en Balancier",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spiderham/30007.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "spiderham",
@@ -148,7 +211,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30008.jpg",
             "https://marvelcdb.com/bundles/cards/30008.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Daily Beagle",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spiderham/30008.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "spiderham",
@@ -165,7 +236,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30009.jpg",
             "https://marvelcdb.com/bundles/cards/30009.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Logique de Cartoon",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spiderham/30009.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "spiderham",
@@ -182,7 +261,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30010.jpg",
             "https://marvelcdb.com/bundles/cards/30010.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Gros Marteau en Bois",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spiderham/30010.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "spiderham",
@@ -199,7 +286,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30011.jpg",
             "https://marvelcdb.com/bundles/cards/30011.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Toile Organique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spiderham/30011.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "spiderham",
@@ -217,7 +312,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30012.jpg",
             "https://marvelcdb.com/bundles/cards/30012.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spiderham/30012.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -234,7 +336,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30013.jpg",
             "https://marvelcdb.com/bundles/cards/30013.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spiderham/30013.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -250,7 +359,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30014.jpg",
             "https://marvelcdb.com/bundles/cards/30014.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Équilibrer les Chances",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spiderham/30014.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -269,7 +386,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30019.jpg",
             "https://marvelcdb.com/bundles/cards/30019.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Observation Attentive",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spiderham/30019.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -289,7 +414,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30020.jpg",
             "https://marvelcdb.com/bundles/cards/30020.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spiderham/30020.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -306,7 +438,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30021.jpg",
             "https://marvelcdb.com/bundles/cards/30021.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spiderham/30021.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -322,7 +461,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30024.jpg",
             "https://marvelcdb.com/bundles/cards/30024.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "\"J'ai Envie d'un Hot Dog !\"",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spiderham/30024.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "spiderham",
@@ -343,6 +490,14 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Piège Malfaisant",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spiderham/30025.webp"
+              ]
+            }
           }
         }
       ],
@@ -360,7 +515,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30026.jpg",
             "https://marvelcdb.com/bundles/cards/30026.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Dindon Vert",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spiderham/30026.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "spiderham_nemesis",
@@ -377,7 +540,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30027.jpg",
             "https://marvelcdb.com/bundles/cards/30027.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Planeur du Dindon",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spiderham/30027.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "spiderham_nemesis",
@@ -394,7 +565,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30028.jpg",
             "https://marvelcdb.com/bundles/cards/30028.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "\"Tiens, Mange-Ça !\"",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spiderham/30028.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "spiderham_nemesis",
@@ -411,7 +590,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30029.jpg",
             "https://marvelcdb.com/bundles/cards/30029.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Guerrier de la Grande Toile",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spiderham/30029.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -431,6 +618,14 @@
           "startingThreat": {
             "value": 6,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Traquer les Totems d'Araignée",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spiderham/30030.webp"
+              ]
+            }
           }
         }
       ],
@@ -448,7 +643,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30031.jpg",
             "https://marvelcdb.com/bundles/cards/30031.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spiderham/30031.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "inheritors",
@@ -465,7 +667,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30032.jpg",
             "https://marvelcdb.com/bundles/cards/30032.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spiderham/30032.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "inheritors",
@@ -482,7 +691,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30033.jpg",
             "https://marvelcdb.com/bundles/cards/30033.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spiderham/30033.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "inheritors",
@@ -499,7 +715,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30034.jpg",
             "https://marvelcdb.com/bundles/cards/30034.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spiderham/30034.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "inheritors",
@@ -516,7 +739,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30035.jpg",
             "https://marvelcdb.com/bundles/cards/30035.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spiderham/30035.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "inheritors",
@@ -533,7 +763,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30036.jpg",
             "https://marvelcdb.com/bundles/cards/30036.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spiderham/30036.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "inheritors",
@@ -550,7 +787,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30037.jpg",
             "https://marvelcdb.com/bundles/cards/30037.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spiderham/30037.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "inheritors",
@@ -567,7 +811,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/30038.jpg",
             "https://marvelcdb.com/bundles/cards/30038.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spiderham/30038.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "inheritors",

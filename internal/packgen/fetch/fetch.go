@@ -22,6 +22,8 @@ type Client struct {
 	CacheDir string
 	// Refresh ignores existing cache files and downloads again.
 	Refresh bool
+	// UserAgent identifies the requests; Go's default is sent when empty.
+	UserAgent string
 }
 
 // JSON decodes the JSON document served at url into v. The raw response is
@@ -82,6 +84,9 @@ func (c *Client) download(ctx context.Context, url string) ([]byte, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("build request for %s: %w", url, err)
+	}
+	if c.UserAgent != "" {
+		req.Header.Set("User-Agent", c.UserAgent)
 	}
 
 	httpClient := c.HTTP

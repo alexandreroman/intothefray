@@ -5,7 +5,7 @@
 -->
 <script lang="ts">
   import { tick } from 'svelte';
-  import type { LogView } from '../lib/types';
+  import type { FaceRef, LogPart, LogView } from '../lib/types';
   import { mergedLines } from './animate';
   import { interaction } from './interaction.svelte';
 
@@ -16,6 +16,7 @@
     collapsed = false,
     ontoggle,
     controls,
+    nameOf,
   }: {
     /** Oldest first, as the server sends it. */
     log: LogView[];
@@ -27,6 +28,8 @@
     ontoggle?: () => void;
     /** The id of the element that collapses (aria-controls). */
     controls?: string;
+    /** The name of a face in the viewer's language; without it, or when unknown, the English text shows. */
+    nameOf?: (ref: FaceRef) => string | undefined;
   } = $props();
 
   const UNDO_TIP = 'Undo last action';
@@ -73,10 +76,18 @@
     return parts.filter((part) => part.text !== '');
   }
 
+  /** The text of a piece: a card name it refers to is shown in the viewer's language. */
+  function textOf(piece: LogPart): string {
+    if (piece.card !== true || piece.ref === undefined) {
+      return piece.text;
+    }
+    return nameOf?.(piece.ref) ?? piece.text;
+  }
+
   /** Splits a line into its card names and its bracketed details. */
   function partsOf(entry: LogView): Part[] {
     const pieces = entry.parts ?? [{ text: entry.text }];
-    return pieces.flatMap((piece) => splitAsides(piece.text, piece.card === true));
+    return pieces.flatMap((piece) => splitAsides(textOf(piece), piece.card === true));
   }
 
   /** The player colour; system lines (colour -1) keep the text colour. */

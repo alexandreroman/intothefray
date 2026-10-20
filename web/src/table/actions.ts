@@ -4,6 +4,8 @@
 // still checks everything.
 
 import { knownCard } from '../lib/catalog';
+import type { Lang } from '../lib/lang';
+import { localizedFace } from '../lib/localize';
 import type { IconName } from './Icons.svelte';
 import { isOutOfPlay } from './layout';
 import { seatOf, seatPlayer } from './seats';
@@ -97,11 +99,12 @@ export function counterName(kind: 'token' | 'status', name: string): string {
   return (counters.find((counter) => counter.name === name)?.label ?? name).toLowerCase();
 }
 
-/** What every builder needs to know: the table and the viewer's own seats. */
+/** What every builder needs to know: the table, the viewer's own seats and the language of card names. */
 interface Context {
   view: View;
   table: TableView;
   seats: number[];
+  lang: Lang;
 }
 
 /**
@@ -115,6 +118,7 @@ export function actionsFor(
   el: TableElement,
   view: View,
   you: { areas?: readonly Area[]; role: Role },
+  lang: Lang,
 ): ActionItem[] | { text: string } {
   if (!view.table) {
     return [];
@@ -126,7 +130,7 @@ export function actionsFor(
   if (seats.length === 0) {
     return [];
   }
-  const context: Context = { view, table: view.table, seats };
+  const context: Context = { view, table: view.table, seats, lang };
 
   switch (el.kind) {
     case 'card': {
@@ -431,7 +435,7 @@ function pileActions(pile: PileView, context: Context): ActionItem[] | { text: s
       ];
     case 'encounter':
       return [
-        revealItem(pile, context.table),
+        revealItem(pile, context),
         lookMenu(pile, 'the encounter deck'),
         deckMenu(pile, 'the encounter deck', false),
         ...outOfPlay,
@@ -516,7 +520,7 @@ function drawOneItem(): ActionItem {
   };
 }
 
-function revealItem(pile: PileView, table: TableView): ActionItem {
+function revealItem(pile: PileView, context: Context): ActionItem {
   const reveal: ActionItem = {
     id: 'reveal',
     label: 'Reveal',
@@ -525,20 +529,20 @@ function revealItem(pile: PileView, table: TableView): ActionItem {
     group: 0,
     run: () => ({ kind: 'reveal' }),
   };
-  const shown = table.cards.find((c) => c.zone === 'table' && c.onPile === pile.id);
+  const shown = context.table.cards.find((c) => c.zone === 'table' && c.onPile === pile.id);
   if (!shown) {
     return reveal;
   }
   return {
     ...reveal,
     disabled: true,
-    tip: `${cardName(shown)} is already revealed on this deck: move it first`,
+    tip: `${cardName(shown, context.lang)} is already revealed on this deck: move it first`,
   };
 }
 
-function cardName(card: CardView): string {
+function cardName(card: CardView, lang: Lang): string {
   const face = card.code ? knownCard(card.code)?.card.faces[card.face] : undefined;
-  return face?.name ?? 'A card';
+  return face ? localizedFace(face, lang).name : 'A card';
 }
 
 /** Look ▾: Look at top… and Search…; pileName is how the questions name the pile. */

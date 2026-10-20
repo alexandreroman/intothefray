@@ -22,6 +22,14 @@ export interface PackFace {
   images: string[];
   handSize?: number;
   startingThreat?: Threat;
+  localized?: Record<string, PackLocalized>; // by language code, e.g. "fr"
+}
+
+/** The overrides of a face or an index entry in one language; absent fields fall back to English. */
+export interface PackLocalized {
+  name?: string;
+  subname?: string;
+  images?: string[]; // tried before the English images
 }
 
 export interface PackCard {
@@ -38,6 +46,7 @@ export interface PackRef {
   name: string;
   file: string;
   position: number;
+  localized?: Record<string, PackLocalized>; // name only, by language code
 }
 
 export interface ScenarioRef {
@@ -47,6 +56,7 @@ export interface ScenarioRef {
   image: string;
   supported: boolean;
   recommended: string[];
+  localized?: Record<string, PackLocalized>; // name only, by language code
 }
 
 export interface SetRef {
@@ -54,6 +64,7 @@ export interface SetRef {
   name: string;
   pack: string;
   kind: string;
+  localized?: Record<string, PackLocalized>; // name only, by language code
 }
 
 export interface Index {
@@ -131,10 +142,21 @@ export interface PlayerView {
   decks: DeckView[];
 }
 
-/** A piece of a history line: plain text, or the printed name of a card. */
+/** Points at one face of a card: its canonical code and face index. */
+export interface FaceRef {
+  card: string;
+  face: number;
+}
+
+/**
+ * A piece of a history line: plain text, or the printed name of a card. A card
+ * name refers to the face it names, so it can be shown in the viewer's
+ * language; `text` is the English name.
+ */
 export interface LogPart {
   text: string;
   card?: boolean;
+  ref?: FaceRef;
 }
 
 export interface LogView {

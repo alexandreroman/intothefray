@@ -14,7 +14,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03001A.jpg",
             "https://marvelcdb.com/bundles/cards/03001a.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cap/03001a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Steve Rogers",
@@ -24,7 +31,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03001B.jpg",
             "https://marvelcdb.com/bundles/cards/03001b.png"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cap/03001b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "captain_america",
@@ -46,7 +60,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03002.jpg",
             "https://marvelcdb.com/bundles/cards/03002.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cap/03002.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "captain_america",
@@ -63,7 +84,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03003.jpg",
             "https://marvelcdb.com/bundles/cards/03003.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Détermination sans faille",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cap/03003.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "captain_america",
@@ -80,7 +109,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03004.jpg",
             "https://marvelcdb.com/bundles/cards/03004.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Frappe héroïque",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cap/03004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "captain_america",
@@ -97,7 +134,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03005.jpg",
             "https://marvelcdb.com/bundles/cards/03005.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Parade au bouclier",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cap/03005.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "captain_america",
@@ -114,7 +159,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03006.jpg",
             "https://marvelcdb.com/bundles/cards/03006.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Lancer de bouclier",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cap/03006.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "captain_america",
@@ -131,7 +184,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03007.jpg",
             "https://marvelcdb.com/bundles/cards/03007.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Appartement de Steve",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cap/03007.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "captain_america",
@@ -148,7 +209,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03008.jpg",
             "https://marvelcdb.com/bundles/cards/03008.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Casque de Captain America",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cap/03008.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "captain_america",
@@ -165,7 +234,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03009.jpg",
             "https://marvelcdb.com/bundles/cards/03009.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Bouclier de Captain America",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cap/03009.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "captain_america",
@@ -182,7 +259,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03010.jpg",
             "https://marvelcdb.com/bundles/cards/03010.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Sérum de Super-soldat",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cap/03010.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "captain_america",
@@ -200,7 +285,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03011.jpg",
             "https://marvelcdb.com/bundles/cards/03011.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Faucon",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cap/03011.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -220,7 +313,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03013.jpg",
             "https://marvelcdb.com/bundles/cards/03013.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cap/03013.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -237,7 +337,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03014.jpg",
             "https://marvelcdb.com/bundles/cards/03014.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cap/03014.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -253,7 +360,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03015.jpg",
             "https://marvelcdb.com/bundles/cards/03015.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Avengers, rassemblement",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cap/03015.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -269,7 +384,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03017.jpg",
             "https://marvelcdb.com/bundles/cards/03017.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "La Force du Nombre",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cap/03017.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -285,7 +408,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03019.jpg",
             "https://marvelcdb.com/bundles/cards/03019.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cap/03019.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -301,7 +431,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03024.jpg",
             "https://marvelcdb.com/bundles/cards/03024.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Tour des Avengers",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cap/03024.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -321,7 +459,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03025.jpg",
             "https://marvelcdb.com/bundles/cards/03025.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Membre Honoraire des Avengers",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cap/03025.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -337,7 +483,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03026.jpg",
             "https://marvelcdb.com/bundles/cards/03026.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Homme d'une Autre Époque",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cap/03026.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "captain_america",
@@ -358,6 +512,14 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Commando Armé",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cap/03027.webp"
+              ]
+            }
           }
         }
       ],
@@ -375,7 +537,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03028.jpg",
             "https://marvelcdb.com/bundles/cards/03028.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cap/03028.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "captain_america_nemesis",
@@ -391,7 +560,15 @@
           "size": "std",
           "images": [
             "https://marvelcdb.com/bundles/cards/03029.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Soldat d'Hydra",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cap/03029.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "captain_america_nemesis",
@@ -408,7 +585,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03030.jpg",
             "https://marvelcdb.com/bundles/cards/03030.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Hail Hydra !",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cap/03030.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "captain_america_nemesis",
@@ -425,7 +610,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03031.jpg",
             "https://marvelcdb.com/bundles/cards/03031.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Enragé",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cap/03031.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -441,7 +634,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03032.jpg",
             "https://marvelcdb.com/bundles/cards/03032.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Pris en Filature",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cap/03032.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -460,7 +661,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03033.jpg",
             "https://marvelcdb.com/bundles/cards/03033.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Defense experte",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cap/03033.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -476,7 +685,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/03034.jpg",
             "https://marvelcdb.com/bundles/cards/03034.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Vigilance Accrue",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cap/03034.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",

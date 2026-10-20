@@ -35,6 +35,10 @@ Everything below works today, except where noted.
 - **Undo** — take back your own last actions, across all your decks
 - **Keyboard shortcuts** — press `?` at the table for the full sheet
 - **Themes** — official, minimal or green felt, per viewer
+- **French cards** — in Options, Language set to Français shows the
+  French card names and images (table, history, lobby names) where
+  they exist, and the English ones otherwise; the interface stays in
+  English
 - **Fair play** — each player receives only what they may see
   (no peeking at hands, deck order or face-down cards)
 - **The whole card range** — expansions are added as data files,
@@ -156,13 +160,23 @@ still sets `VITE_API_URL` or `ALLOWED_ORIGINS`, re-run
 `scripts/casper.sh setup`: a stale file breaks the container flow
 (`casper run`) and makes the dev flow bypass Caddy.
 
-`make packs` downloads the card data from marvelcdb and Cerebro
-(cached in `packs/.cache`), merges the hand-written files of
-`packs/curated/`, and writes the result to `packs/dist/`. Commit the
-regenerated files with the change that caused them. The curated files are
-the scenarios (`scenarios/`), card overrides (`cards.json`) and set data
-(`sets.json`: the cards a set starts in play at each difficulty, and the
-sets the lobby leaves out).
+`make packs` downloads the card data from marvelcdb and Cerebro, the
+French names from fr.marvelcdb.com and the French image paths from
+[mc4db](https://mc4db.merlindumesnil.net) (all cached in
+`packs/.cache`), keeps only the image URLs that answer, merges the
+hand-written files of `packs/curated/`, and writes the result to
+`packs/dist/`. Commit the regenerated files with the change that caused
+them. The answers to image checks are cached in `packs/.cache/images.json`
+for good: delete it to pick up images published since, such as new French
+scans. The curated files are the scenarios (`scenarios/`), card overrides
+(`cards.json`) and set data (`sets.json`: the cards a set starts in play
+at each difficulty, and the sets the lobby leaves out).
+
+A face keeps its English name and images, and its `localized` map holds
+the overrides of other languages (`localized.fr`: name, subname, images
+tried before the English ones). Pack, scenario and set entries of the
+index carry a localized name the same way. The generator's report
+includes the French coverage.
 
 ## Configuration
 
@@ -201,8 +215,8 @@ in three jobs:
   of the Caddyfile.
 
 It runs the same checks as `make check` and `make build`. It does not
-regenerate `packs/dist`: the generator needs marvelcdb and Cerebro
-over the network, so the committed files are used as they are.
+regenerate `packs/dist`: the generator needs marvelcdb, Cerebro and
+mc4db over the network, so the committed files are used as they are.
 
 ## Deployment
 
@@ -239,7 +253,7 @@ graph TD
     B -->|WebSocket + REST| S[Go server instances]
     S --> R[(Redis: game state, connection leases, pub/sub)]
     S -->|decks| M[marvelcdb.com API]
-    B -->|card images| I[marvelcdb / Cerebro images]
+    B -->|card images| I[marvelcdb / Cerebro / mc4db images]
 ```
 
 The server embeds every card pack. The frontend publishes only the

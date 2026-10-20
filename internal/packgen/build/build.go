@@ -12,6 +12,7 @@ import (
 	"github.com/alexandreroman/intothefray/internal/packgen/curated"
 	"github.com/alexandreroman/intothefray/internal/packgen/images"
 	"github.com/alexandreroman/intothefray/internal/packgen/marvelcdb"
+	"github.com/alexandreroman/intothefray/internal/packgen/mc4db"
 	"github.com/alexandreroman/intothefray/internal/packgen/report"
 )
 
@@ -24,6 +25,12 @@ type Inputs struct {
 	CB      []cerebro.Card
 	CBSets  []cerebro.Set
 	Curated curated.Curated
+	// FrenchMC and FrenchMCPacks are the French marvelcdb records, for the
+	// French names. MC4DB lists the image paths of mc4db; without it, no French
+	// image is looked for.
+	FrenchMC      []marvelcdb.Card
+	FrenchMCPacks []marvelcdb.Pack
+	MC4DB         []mc4db.Card
 	// Alive maps each image URL to its liveness; a missing URL counts as dead.
 	Alive map[string]bool
 }
@@ -34,18 +41,25 @@ type Result struct {
 	// Index.Lang is left empty: the writer sets it.
 	Index  pack.Index
 	Report []report.Unsupported
+	// Coverage counts the localized faces, one entry per language.
+	Coverage []report.Coverage
 }
 
 // ImageURLs returns the sorted, distinct image URLs of every face of every
-// card, i.e. the URLs whose liveness Build expects in Inputs.Alive.
+// card, localized images included, i.e. the URLs whose liveness Build expects
+// in Inputs.Alive.
 func ImageURLs(in Inputs) []string {
 	cards, _ := BuildCards(in.MC, in.CB, in.Curated.Cards)
+	localizeCards(cards, faceCodesOf(in.MC), frenchSourcesOf(in))
 
 	var urls []string
 	for _, packCards := range cards {
 		for _, card := range packCards {
 			for _, face := range card.Faces {
 				urls = append(urls, face.Images...)
+				for _, override := range face.Localized {
+					urls = append(urls, override.Images...)
+				}
 			}
 		}
 	}
@@ -56,7 +70,10 @@ func ImageURLs(in Inputs) []string {
 // Build derives the packs and the index from the sources. Content that
 // cannot be displayed is left out and listed in the report.
 func Build(in Inputs) (Result, error) {
+	fr := frenchSourcesOf(in)
+	faceCodes := faceCodesOf(in.MC)
 	cards, problems := BuildCards(in.MC, in.CB, in.Curated.Cards)
+	localizeCards(cards, faceCodes, fr)
 	cards, dropped := dropDeadImages(cards, in.Alive)
 	problems = append(problems, dropped...)
 
@@ -83,10 +100,13 @@ func Build(in Inputs) (Result, error) {
 	for _, packFile := range packs {
 		positions[packFile.Code] = packFile.Position
 	}
+	index := buildIndex(packs, refs, positions)
+	localizeIndex(&index, in.Curated.Scenarios, fr)
 	return Result{
-		Packs:  packs,
-		Index:  buildIndex(packs, refs, positions),
-		Report: problems,
+		Packs:    packs,
+		Index:    index,
+		Report:   problems,
+		Coverage: []report.Coverage{frenchCoverage(packs)},
 	}, nil
 }
 

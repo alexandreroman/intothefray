@@ -14,7 +14,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61001A.jpg",
             "https://marvelcdb.com/bundles/cards/61001a.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61001a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Jessica Jones",
@@ -24,7 +31,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61001B.jpg",
             "https://marvelcdb.com/bundles/cards/61001b.png"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61001b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "jessica_jones",
@@ -44,7 +58,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61002.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61002.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "jessica_jones",
@@ -60,7 +81,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61003.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61003.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "jessica_jones",
@@ -76,7 +104,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61004.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "jessica_jones",
@@ -92,7 +127,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61005.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61005.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "jessica_jones",
@@ -108,7 +150,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61006.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61006.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "jessica_jones",
@@ -128,6 +177,13 @@
           "startingThreat": {
             "value": 6,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61007.webp"
+              ]
+            }
           }
         }
       ],
@@ -144,7 +200,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61008.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61008.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "jessica_jones",
@@ -160,7 +223,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61009.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61009.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "jessica_jones",
@@ -176,7 +246,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61010.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61010.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "jessica_jones",
@@ -192,7 +269,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61011.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61011.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "jessica_jones",
@@ -208,7 +292,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61012.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61012.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "jessica_jones",
@@ -224,7 +315,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61013.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61013.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "jessica_jones",
@@ -240,7 +338,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61014.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61014.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "jessica_jones",
@@ -257,7 +362,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61015.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61015.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -273,7 +385,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61016.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61016.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -289,7 +408,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61017.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61017.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -304,7 +430,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61019.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61019.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -323,6 +456,13 @@
           "startingThreat": {
             "value": 4,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61020.webp"
+              ]
+            }
           }
         }
       ],
@@ -338,7 +478,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61023.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61023.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -353,7 +500,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61024.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61024.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -369,7 +523,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61025.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61025.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -384,7 +545,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61026.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61026.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -399,7 +567,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61027.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61027.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -421,6 +596,13 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61028.webp"
+              ]
+            }
           }
         }
       ],
@@ -440,6 +622,13 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61029.webp"
+              ]
+            }
           }
         }
       ],
@@ -455,7 +644,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61030.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61030.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "jessica_jones",
@@ -471,7 +667,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61031.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61031.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "jessica_jones_nemesis",
@@ -491,6 +694,13 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61032.webp"
+              ]
+            }
           }
         }
       ],
@@ -507,7 +717,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61033A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61033a.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "jessica_jones_nemesis",
@@ -523,7 +740,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61033B.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61033b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "jessica_jones_nemesis",
@@ -539,7 +763,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61033C.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61033c.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "jessica_jones_nemesis",
@@ -555,7 +786,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61034.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61034.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -570,7 +808,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61035.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61035.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -585,7 +830,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61036.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61036.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -600,7 +852,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61037.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61037.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -616,7 +875,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61038.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61038.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -635,6 +901,13 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61039.webp"
+              ]
+            }
           }
         }
       ],
@@ -650,7 +923,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/61040.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/jessica_jones_by_ffg/61040.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",

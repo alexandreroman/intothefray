@@ -14,7 +14,15 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14001A.jpg",
             "https://marvelcdb.com/bundles/cards/14001a.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "name": "Vif-Argent",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/qsv/14001a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Pietro Maximoff",
@@ -23,7 +31,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14001B.jpg"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/qsv/14001b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "qsv",
@@ -45,7 +60,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14002.jpg",
             "https://marvelcdb.com/bundles/cards/14002.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "La Sorcière Rouge",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/qsv/14002.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "qsv",
@@ -62,7 +85,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14003.jpg",
             "https://marvelcdb.com/bundles/cards/14003.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Toujours en Mouvement",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/qsv/14003.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "qsv",
@@ -79,7 +110,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14004.jpg",
             "https://marvelcdb.com/bundles/cards/14004.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Double Action",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/qsv/14004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "qsv",
@@ -96,7 +135,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14005.jpg",
             "https://marvelcdb.com/bundles/cards/14005.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Vitesse Maximale",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/qsv/14005.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "qsv",
@@ -113,7 +160,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14006.jpg",
             "https://marvelcdb.com/bundles/cards/14006.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Cyclone de Vitesse",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/qsv/14006.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "qsv",
@@ -130,7 +185,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14007.jpg",
             "https://marvelcdb.com/bundles/cards/14007.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Industries Serval",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/qsv/14007.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "qsv",
@@ -147,7 +210,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14008.jpg",
             "https://marvelcdb.com/bundles/cards/14008.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Réflexes Accrus",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/qsv/14008.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "qsv",
@@ -164,7 +235,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14009.jpg",
             "https://marvelcdb.com/bundles/cards/14009.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Résistance au Frottement",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/qsv/14009.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "qsv",
@@ -181,7 +260,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14010.jpg",
             "https://marvelcdb.com/bundles/cards/14010.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/qsv/14010.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "qsv",
@@ -198,7 +284,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14011.jpg",
             "https://marvelcdb.com/bundles/cards/14011.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Muscles Renforcés",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/qsv/14011.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "qsv",
@@ -215,7 +309,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14012.jpg",
             "https://marvelcdb.com/bundles/cards/14012.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "L'Homme-Multiple",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/qsv/14012.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -231,7 +333,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14013.jpg",
             "https://marvelcdb.com/bundles/cards/14013.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/qsv/14013.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -247,7 +356,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14014.jpg",
             "https://marvelcdb.com/bundles/cards/14014.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Ne Jamais Reculer",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/qsv/14014.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -263,7 +380,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14015.jpg",
             "https://marvelcdb.com/bundles/cards/14015.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Pas de Côté",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/qsv/14015.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -282,7 +407,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14017.jpg",
             "https://marvelcdb.com/bundles/cards/14017.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Nerfs d'Acier",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/qsv/14017.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -298,7 +431,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14018.jpg",
             "https://marvelcdb.com/bundles/cards/14018.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Ordre et Chaos",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/qsv/14018.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -317,7 +458,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14022.jpg",
             "https://marvelcdb.com/bundles/cards/14022.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Poussée d'Adrénaline",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/qsv/14022.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -333,7 +482,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14023.jpg",
             "https://marvelcdb.com/bundles/cards/14023.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Devoir Civique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/qsv/14023.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -349,7 +506,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14024.jpg",
             "https://marvelcdb.com/bundles/cards/14024.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Besoin de Vitesse",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/qsv/14024.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "qsv",
@@ -370,6 +535,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Extortion Cataclysmique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/qsv/14025.webp"
+              ]
+            }
           }
         }
       ],
@@ -387,7 +560,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14026.jpg",
             "https://marvelcdb.com/bundles/cards/14026.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/qsv/14026.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "qsv_nemesis",
@@ -404,7 +584,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14027.jpg",
             "https://marvelcdb.com/bundles/cards/14027.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Résistance aux Vibrations",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/qsv/14027.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "qsv_nemesis",
@@ -421,7 +609,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14028.jpg",
             "https://marvelcdb.com/bundles/cards/14028.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Tremblement de Terre",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/qsv/14028.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "qsv_nemesis",
@@ -438,7 +634,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14029.jpg",
             "https://marvelcdb.com/bundles/cards/14029.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Force Brute",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/qsv/14029.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -454,7 +658,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14030.jpg",
             "https://marvelcdb.com/bundles/cards/14030.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Sens de la Justice",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/qsv/14030.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -470,7 +682,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14031.jpg",
             "https://marvelcdb.com/bundles/cards/14031.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Nous Sommes Unis",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/qsv/14031.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -486,7 +706,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/14032.jpg",
             "https://marvelcdb.com/bundles/cards/14032.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Passer à Tabac",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/qsv/14032.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",

@@ -14,7 +14,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02001A.jpg",
             "https://marvelcdb.com/bundles/cards/02001a.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02001a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Green Goblin",
@@ -24,7 +31,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02001B.jpg",
             "https://marvelcdb.com/bundles/cards/02001b.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Bouffon Vert",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02001b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "risky_business",
@@ -46,7 +61,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02002A.jpg",
             "https://marvelcdb.com/bundles/cards/02002a.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02002a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Green Goblin",
@@ -56,7 +78,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02002B.jpg",
             "https://marvelcdb.com/bundles/cards/02002b.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Bouffon Vert",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02002b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "risky_business",
@@ -78,7 +108,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02003A.jpg",
             "https://marvelcdb.com/bundles/cards/02003a.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02003a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Green Goblin",
@@ -88,7 +125,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02003B.jpg",
             "https://marvelcdb.com/bundles/cards/02003b.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Bouffon Vert",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02003b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "risky_business",
@@ -110,7 +155,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02004A.jpg",
             "https://marvelcdb.com/bundles/cards/02004a.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Prise de Contrôle Hostile",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02004a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Hostile Takeover",
@@ -124,6 +177,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Prise de Contrôle Hostile",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02004b.webp"
+              ]
+            }
           }
         }
       ],
@@ -146,7 +207,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02005A.jpg",
             "https://marvelcdb.com/bundles/cards/02005a.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Acquisition d'Entreprise",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02005a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Corporate Acquisition",
@@ -160,6 +229,14 @@
           "startingThreat": {
             "value": 1,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Acquisition d'Entreprise",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02005b.webp"
+              ]
+            }
           }
         }
       ],
@@ -181,7 +258,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02006A.jpg",
             "https://marvelcdb.com/bundles/cards/02006a.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Entreprise Criminelle",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02006a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "State of Madness",
@@ -190,7 +275,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02006B.jpg",
             "https://marvelcdb.com/bundles/cards/02006b.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Accès de Folie",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02006b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "risky_business",
@@ -211,7 +304,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02007.jpg",
             "https://marvelcdb.com/bundles/cards/02007.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Homme de Main",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02007.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "risky_business",
@@ -228,7 +329,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02008.jpg",
             "https://marvelcdb.com/bundles/cards/02008.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Agent de Sécurité Privé",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02008.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "risky_business",
@@ -249,6 +358,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Effondrement d'un Pont",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02009.webp"
+              ]
+            }
           }
         }
       ],
@@ -270,6 +387,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Production d'Oscorp",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02010.webp"
+              ]
+            }
           }
         }
       ],
@@ -291,6 +416,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Pot-de-Vin",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02011.webp"
+              ]
+            }
           }
         }
       ],
@@ -308,7 +441,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02012.jpg",
             "https://marvelcdb.com/bundles/cards/02012.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Une Journée Bien Remplie",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02012.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "risky_business",
@@ -325,7 +466,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02013.jpg",
             "https://marvelcdb.com/bundles/cards/02013.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Génie Dément",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02013.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "risky_business",
@@ -343,7 +492,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02014.jpg",
             "https://marvelcdb.com/bundles/cards/02014.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Bouffon Vert",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02014.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "mutagen_formula",
@@ -361,7 +518,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02015.jpg",
             "https://marvelcdb.com/bundles/cards/02015.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Bouffon Vert",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02015.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "mutagen_formula",
@@ -379,7 +544,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02016.jpg",
             "https://marvelcdb.com/bundles/cards/02016.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Bouffon Vert",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02016.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "mutagen_formula",
@@ -397,7 +570,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02017A.jpg",
             "https://marvelcdb.com/bundles/cards/02017a.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Répandre le Mutagène",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02017a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Unleashing the Mutagen",
@@ -411,6 +592,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Répandre le Mutagène",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02017b.webp"
+              ]
+            }
           }
         }
       ],
@@ -433,7 +622,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02018A.jpg",
             "https://marvelcdb.com/bundles/cards/02018a.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Nuage Mutagène",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02018a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Mutagen Cloud",
@@ -447,6 +644,14 @@
           "startingThreat": {
             "value": 4,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Nuage Mutagène",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02018b.webp"
+              ]
+            }
           }
         }
       ],
@@ -468,7 +673,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02019.jpg",
             "https://marvelcdb.com/bundles/cards/02019.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Planeur du Bouffon",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02019.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "mutagen_formula",
@@ -485,7 +698,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02020.jpg",
             "https://marvelcdb.com/bundles/cards/02020.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Hystérie",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02020.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "mutagen_formula",
@@ -502,7 +723,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02021.jpg",
             "https://marvelcdb.com/bundles/cards/02021.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Bombes Citrouilles",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02021.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "mutagen_formula",
@@ -519,7 +748,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02022.jpg",
             "https://marvelcdb.com/bundles/cards/02022.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Chevalier-Bouffon",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02022.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "mutagen_formula",
@@ -536,7 +773,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02023.jpg",
             "https://marvelcdb.com/bundles/cards/02023.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Soldat Bouffon",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02023.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "mutagen_formula",
@@ -553,7 +798,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02024.jpg",
             "https://marvelcdb.com/bundles/cards/02024.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Esclave Bouffon",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02024.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "mutagen_formula",
@@ -570,7 +823,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02025.jpg",
             "https://marvelcdb.com/bundles/cards/02025.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Monstre",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02025.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "mutagen_formula",
@@ -591,6 +852,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Renforts du Bouffon",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02026.webp"
+              ]
+            }
           }
         }
       ],
@@ -612,6 +881,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "La Nation Bouffon",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02027.webp"
+              ]
+            }
           }
         }
       ],
@@ -633,6 +910,14 @@
           "startingThreat": {
             "value": 1,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Débordement",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02028.webp"
+              ]
+            }
           }
         }
       ],
@@ -650,7 +935,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02029.jpg",
             "https://marvelcdb.com/bundles/cards/02029.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "La Mort Vient d'en-Haut",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02029.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "mutagen_formula",
@@ -667,7 +960,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02030.jpg",
             "https://marvelcdb.com/bundles/cards/02030.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Je Te Vois",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02030.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "mutagen_formula",
@@ -684,7 +985,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02031.jpg",
             "https://marvelcdb.com/bundles/cards/02031.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Excès de Confiance",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02031.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "mutagen_formula",
@@ -701,7 +1010,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02032.jpg",
             "https://marvelcdb.com/bundles/cards/02032.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Ambitions Maléfiques",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02032.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "mutagen_formula",
@@ -717,7 +1034,15 @@
           "size": "std",
           "images": [
             "https://marvelcdb.com/bundles/cards/02033.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Planeur du Bouffon",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02033.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "goblin_gimmicks",
@@ -733,7 +1058,15 @@
           "size": "std",
           "images": [
             "https://marvelcdb.com/bundles/cards/02034.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Bombes Citrouilles",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02034.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "goblin_gimmicks",
@@ -750,7 +1083,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02035.jpg",
             "https://marvelcdb.com/bundles/cards/02035.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02035.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "goblin_gimmicks",
@@ -767,7 +1107,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02036.jpg",
             "https://marvelcdb.com/bundles/cards/02036.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Guérison Régénératrice",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02036.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "goblin_gimmicks",
@@ -788,6 +1136,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Un Immense Gâchis",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02037.webp"
+              ]
+            }
           }
         }
       ],
@@ -805,7 +1161,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02038.jpg",
             "https://marvelcdb.com/bundles/cards/02038.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02038.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "a_mess_of_things",
@@ -821,7 +1184,15 @@
           "size": "std",
           "images": [
             "https://marvelcdb.com/bundles/cards/02039.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Se Liguer",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02039.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "a_mess_of_things",
@@ -838,7 +1209,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02040.jpg",
             "https://marvelcdb.com/bundles/cards/02040.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Coup de Queue",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02040.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "a_mess_of_things",
@@ -859,6 +1238,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Absorption Électrique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02041.webp"
+              ]
+            }
           }
         }
       ],
@@ -876,7 +1263,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02042.jpg",
             "https://marvelcdb.com/bundles/cards/02042.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02042.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "power_drain",
@@ -893,7 +1287,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02043.jpg",
             "https://marvelcdb.com/bundles/cards/02043.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Impulsion Électromagnétique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02043.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "power_drain",
@@ -910,7 +1312,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02044.jpg",
             "https://marvelcdb.com/bundles/cards/02044.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Éclair",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02044.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "power_drain",
@@ -927,7 +1337,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02045.jpg",
             "https://marvelcdb.com/bundles/cards/02045.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Thérapie de Choc",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02045.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "power_drain",
@@ -948,6 +1366,14 @@
           "startingThreat": {
             "value": 1,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Ingérence en Cours",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02046.webp"
+              ]
+            }
           }
         }
       ],
@@ -965,7 +1391,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02047.jpg",
             "https://marvelcdb.com/bundles/cards/02047.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02047.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "running_interference",
@@ -982,7 +1415,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02048.jpg",
             "https://marvelcdb.com/bundles/cards/02048.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Ligoté",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02048.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "running_interference",
@@ -999,7 +1440,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02049.jpg",
             "https://marvelcdb.com/bundles/cards/02049.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Couverture Médiatique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gob/02049.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "running_interference",

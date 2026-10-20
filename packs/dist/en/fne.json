@@ -14,7 +14,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60001A.jpg",
             "https://marvelcdb.com/bundles/cards/60001a.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60001a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Matt Murdock",
@@ -24,7 +31,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60001B.jpg",
             "https://marvelcdb.com/bundles/cards/60001b.png"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60001b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "daredevil",
@@ -45,7 +59,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60002.jpg",
             "https://marvelcdb.com/bundles/cards/60002.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60002.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "daredevil_sense_deck",
@@ -62,7 +83,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60003.jpg",
             "https://marvelcdb.com/bundles/cards/60003.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60003.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "daredevil_sense_deck",
@@ -79,7 +107,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60004.jpg",
             "https://marvelcdb.com/bundles/cards/60004.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "daredevil_sense_deck",
@@ -96,7 +131,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60005.jpg",
             "https://marvelcdb.com/bundles/cards/60005.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60005.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "daredevil_sense_deck",
@@ -113,7 +155,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60006.jpg",
             "https://marvelcdb.com/bundles/cards/60006.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60006.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "daredevil_sense_deck",
@@ -131,7 +180,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60007.jpg",
             "https://marvelcdb.com/bundles/cards/60007.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60007.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "daredevil",
@@ -148,7 +204,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60008.jpg",
             "https://marvelcdb.com/bundles/cards/60008.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60008.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "daredevil",
@@ -165,7 +228,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60009.jpg",
             "https://marvelcdb.com/bundles/cards/60009.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60009.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "daredevil",
@@ -182,7 +252,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60010.jpg",
             "https://marvelcdb.com/bundles/cards/60010.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60010.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "daredevil",
@@ -199,7 +276,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60011.jpg",
             "https://marvelcdb.com/bundles/cards/60011.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60011.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "daredevil",
@@ -220,6 +304,13 @@
           "startingThreat": {
             "value": 4,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60012.webp"
+              ]
+            }
           }
         }
       ],
@@ -237,7 +328,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60013.jpg",
             "https://marvelcdb.com/bundles/cards/60013.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60013.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "daredevil",
@@ -254,7 +352,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60014.jpg",
             "https://marvelcdb.com/bundles/cards/60014.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60014.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "daredevil",
@@ -271,7 +376,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60015.jpg",
             "https://marvelcdb.com/bundles/cards/60015.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60015.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "daredevil",
@@ -288,7 +400,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60016.jpg",
             "https://marvelcdb.com/bundles/cards/60016.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60016.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "daredevil",
@@ -305,7 +424,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60017.jpg",
             "https://marvelcdb.com/bundles/cards/60017.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60017.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "daredevil",
@@ -322,7 +448,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60018.jpg",
             "https://marvelcdb.com/bundles/cards/60018.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60018.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "daredevil",
@@ -340,7 +473,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60019.jpg",
             "https://marvelcdb.com/bundles/cards/60019.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60019.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -357,7 +497,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60020.jpg",
             "https://marvelcdb.com/bundles/cards/60020.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60020.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -374,7 +521,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60021.jpg",
             "https://marvelcdb.com/bundles/cards/60021.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60021.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -391,7 +545,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60022.jpg",
             "https://marvelcdb.com/bundles/cards/60022.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60022.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -407,7 +568,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60023.jpg",
             "https://marvelcdb.com/bundles/cards/60023.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60023.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -427,6 +595,13 @@
           "startingThreat": {
             "value": 4,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60024.webp"
+              ]
+            }
           }
         }
       ],
@@ -443,7 +618,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60026.jpg",
             "https://marvelcdb.com/bundles/cards/60026.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60026.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -459,7 +641,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60027.jpg",
             "https://marvelcdb.com/bundles/cards/60027.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60027.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -475,7 +664,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60028.jpg",
             "https://marvelcdb.com/bundles/cards/60028.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60028.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -491,7 +687,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60029.jpg",
             "https://marvelcdb.com/bundles/cards/60029.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60029.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -507,7 +710,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60030.jpg",
             "https://marvelcdb.com/bundles/cards/60030.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60030.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -523,7 +733,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60031.jpg",
             "https://marvelcdb.com/bundles/cards/60031.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60031.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -539,7 +756,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60032.jpg",
             "https://marvelcdb.com/bundles/cards/60032.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60032.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "daredevil",
@@ -556,7 +780,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60033.jpg",
             "https://marvelcdb.com/bundles/cards/60033.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60033.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "daredevil_nemesis",
@@ -577,6 +808,13 @@
           "startingThreat": {
             "value": 5,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60034.webp"
+              ]
+            }
           }
         }
       ],
@@ -594,7 +832,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60035.jpg",
             "https://marvelcdb.com/bundles/cards/60035.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60035.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "daredevil_nemesis",
@@ -611,7 +856,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60036.jpg",
             "https://marvelcdb.com/bundles/cards/60036.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60036.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "daredevil_nemesis",
@@ -629,7 +881,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60037A.jpg",
             "https://marvelcdb.com/bundles/cards/60037a.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60037a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Maya Lopez",
@@ -639,7 +898,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60037B.jpg",
             "https://marvelcdb.com/bundles/cards/60037b.png"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60037b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "echo",
@@ -660,7 +926,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60038.jpg",
             "https://marvelcdb.com/bundles/cards/60038.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60038.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -677,7 +950,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60039.jpg",
             "https://marvelcdb.com/bundles/cards/60039.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60039.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "echo",
@@ -693,7 +973,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60040A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60040a.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "echo",
@@ -709,7 +996,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60040B.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60040b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "echo",
@@ -725,7 +1019,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60040C.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60040c.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "echo",
@@ -742,7 +1043,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60041.jpg",
             "https://marvelcdb.com/bundles/cards/60041.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60041.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "echo",
@@ -759,7 +1067,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60042.jpg",
             "https://marvelcdb.com/bundles/cards/60042.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60042.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "echo",
@@ -776,7 +1091,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60043.jpg",
             "https://marvelcdb.com/bundles/cards/60043.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60043.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "echo",
@@ -793,7 +1115,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60044.jpg",
             "https://marvelcdb.com/bundles/cards/60044.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60044.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "echo",
@@ -810,7 +1139,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60045.jpg",
             "https://marvelcdb.com/bundles/cards/60045.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60045.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "echo",
@@ -827,7 +1163,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60046.jpg",
             "https://marvelcdb.com/bundles/cards/60046.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60046.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "echo",
@@ -844,7 +1187,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60047.jpg",
             "https://marvelcdb.com/bundles/cards/60047.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60047.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "echo",
@@ -861,7 +1211,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60048.jpg",
             "https://marvelcdb.com/bundles/cards/60048.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60048.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -877,7 +1234,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60049.jpg",
             "https://marvelcdb.com/bundles/cards/60049.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60049.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -893,7 +1257,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60050.jpg",
             "https://marvelcdb.com/bundles/cards/60050.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60050.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -909,7 +1280,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60052.jpg",
             "https://marvelcdb.com/bundles/cards/60052.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60052.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -925,7 +1303,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60053.jpg",
             "https://marvelcdb.com/bundles/cards/60053.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60053.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -941,7 +1326,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60054.jpg",
             "https://marvelcdb.com/bundles/cards/60054.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60054.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -957,7 +1349,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60055.jpg",
             "https://marvelcdb.com/bundles/cards/60055.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60055.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -973,7 +1372,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60060.jpg",
             "https://marvelcdb.com/bundles/cards/60060.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60060.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "echo",
@@ -990,7 +1396,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60061.jpg",
             "https://marvelcdb.com/bundles/cards/60061.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60061.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "echo_nemesis",
@@ -1011,6 +1424,13 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60062.webp"
+              ]
+            }
           }
         }
       ],
@@ -1028,7 +1448,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60063.jpg",
             "https://marvelcdb.com/bundles/cards/60063.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60063.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "echo_nemesis",
@@ -1045,7 +1472,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60064.jpg",
             "https://marvelcdb.com/bundles/cards/60064.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60064.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "echo_nemesis",

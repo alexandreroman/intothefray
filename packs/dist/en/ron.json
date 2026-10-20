@@ -12,7 +12,15 @@
           "size": "std",
           "images": [
             "https://marvelcdb.com/bundles/cards/90001.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Ronan l'Accusateur",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ron/90001.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "kree_fanatic",
@@ -32,6 +40,14 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Juge, Juré et Bourreau",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ron/90002.webp"
+              ]
+            }
           }
         }
       ],
@@ -48,7 +64,15 @@
           "size": "std",
           "images": [
             "https://marvelcdb.com/bundles/cards/90003.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "L'Accusé",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ron/90003.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "kree_fanatic",
@@ -64,7 +88,15 @@
           "size": "std",
           "images": [
             "https://marvelcdb.com/bundles/cards/90004.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Rendre son Jugement",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ron/90004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "kree_fanatic",
@@ -80,7 +112,15 @@
           "size": "std",
           "images": [
             "https://marvelcdb.com/bundles/cards/90005.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "\"Vous Osez me Défier ?\"",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ron/90005.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "kree_fanatic",

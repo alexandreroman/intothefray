@@ -14,7 +14,15 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31001A.jpg",
             "https://marvelcdb.com/bundles/cards/31001a.png"
           ],
-          "handSize": 3
+          "handSize": 3,
+          "localized": {
+            "fr": {
+              "name": "Armure SP//dr",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spdr/31001a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "SP//dr Suit",
@@ -23,7 +31,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31001B.jpg",
             "https://marvelcdb.com/bundles/cards/31001b.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Armure SP//dr",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spdr/31001b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "spdr",
@@ -45,7 +61,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31002A.jpg",
             "https://marvelcdb.com/bundles/cards/31002a.png"
           ],
-          "handSize": 4
+          "handSize": 4,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spdr/31002a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "SP//dr",
@@ -54,7 +77,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31002B.jpg",
             "https://marvelcdb.com/bundles/cards/31002b.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spdr/31002b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "spdr",
@@ -76,7 +106,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31003.jpg",
             "https://marvelcdb.com/bundles/cards/31003.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spdr/31003.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "spdr",
@@ -93,7 +130,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31004.jpg",
             "https://marvelcdb.com/bundles/cards/31004.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Systèmes Opérationnels !",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spdr/31004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "spdr",
@@ -110,7 +155,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31005.jpg",
             "https://marvelcdb.com/bundles/cards/31005.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Déploiement Rapide",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spdr/31005.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "spdr",
@@ -127,7 +180,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31006.jpg",
             "https://marvelcdb.com/bundles/cards/31006.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Piège de Toile",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spdr/31006.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "spdr",
@@ -144,7 +205,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31007.jpg",
             "https://marvelcdb.com/bundles/cards/31007.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Tante May \u0026 Oncle Ben",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spdr/31007.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "spdr",
@@ -161,7 +230,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31008.jpg",
             "https://marvelcdb.com/bundles/cards/31008.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Protocole d'Éjection",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spdr/31008.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "spdr",
@@ -178,7 +255,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31009.jpg",
             "https://marvelcdb.com/bundles/cards/31009.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "QG du SP//dr",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spdr/31009.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "spdr",
@@ -195,7 +280,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31010.jpg",
             "https://marvelcdb.com/bundles/cards/31010.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Araignée Hôte",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spdr/31010.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "spdr",
@@ -212,7 +305,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31011.jpg",
             "https://marvelcdb.com/bundles/cards/31011.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Lien Psychique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spdr/31011.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "spdr",
@@ -229,7 +330,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31012.jpg",
             "https://marvelcdb.com/bundles/cards/31012.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Alliage de Métal-Rapide",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spdr/31012.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "spdr",
@@ -246,7 +355,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31013.jpg",
             "https://marvelcdb.com/bundles/cards/31013.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Compresseur de Toile Liquide",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spdr/31013.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "spdr",
@@ -263,7 +380,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31014.jpg",
             "https://marvelcdb.com/bundles/cards/31014.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spdr/31014.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -279,7 +403,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31015.jpg",
             "https://marvelcdb.com/bundles/cards/31015.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spdr/31015.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -295,7 +426,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31016.jpg",
             "https://marvelcdb.com/bundles/cards/31016.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Réexploiter",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spdr/31016.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -311,7 +450,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31017.jpg",
             "https://marvelcdb.com/bundles/cards/31017.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spdr/31017.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -327,7 +473,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31019.jpg",
             "https://marvelcdb.com/bundles/cards/31019.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Générateur de Champ de Force",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spdr/31019.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -343,7 +497,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31020.jpg",
             "https://marvelcdb.com/bundles/cards/31020.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Spider-Signal",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spdr/31020.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -360,7 +522,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31021.jpg",
             "https://marvelcdb.com/bundles/cards/31021.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Spider-Cochon",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spdr/31021.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -377,7 +547,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31022.jpg",
             "https://marvelcdb.com/bundles/cards/31022.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spdr/31022.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -393,7 +570,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31023.jpg",
             "https://marvelcdb.com/bundles/cards/31023.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Vigueur Inépuisable",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spdr/31023.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -412,7 +597,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31024.jpg",
             "https://marvelcdb.com/bundles/cards/31024.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Indéfectible",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spdr/31024.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -428,7 +621,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31025.jpg",
             "https://marvelcdb.com/bundles/cards/31025.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Fardeau Héréditaire",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spdr/31025.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "spdr",
@@ -449,6 +650,14 @@
           "startingThreat": {
             "value": 4,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Attaque de Monstre Géant",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spdr/31026.webp"
+              ]
+            }
           }
         }
       ],
@@ -466,7 +675,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31027.jpg",
             "https://marvelcdb.com/bundles/cards/31027.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spdr/31027.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "spdr_nemesis",
@@ -483,7 +699,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31028.jpg",
             "https://marvelcdb.com/bundles/cards/31028.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Drain d'Énergie",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spdr/31028.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "spdr_nemesis",
@@ -500,7 +724,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31029.jpg",
             "https://marvelcdb.com/bundles/cards/31029.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Objectif Clair",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spdr/31029.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -520,6 +752,14 @@
           "startingThreat": {
             "value": 4,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Braquage d'Envergure",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spdr/31030.webp"
+              ]
+            }
           }
         }
       ],
@@ -537,7 +777,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31031.jpg",
             "https://marvelcdb.com/bundles/cards/31031.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spdr/31031.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ironspider_sinister",
@@ -554,7 +801,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31032.jpg",
             "https://marvelcdb.com/bundles/cards/31032.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spdr/31032.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ironspider_sinister",
@@ -571,7 +825,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31033.jpg",
             "https://marvelcdb.com/bundles/cards/31033.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Super Bouffon",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spdr/31033.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ironspider_sinister",
@@ -588,7 +850,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31034.jpg",
             "https://marvelcdb.com/bundles/cards/31034.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spdr/31034.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ironspider_sinister",
@@ -605,7 +874,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31035.jpg",
             "https://marvelcdb.com/bundles/cards/31035.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "L'Homme-Sable",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spdr/31035.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ironspider_sinister",
@@ -622,7 +899,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31036.jpg",
             "https://marvelcdb.com/bundles/cards/31036.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "La Tâche",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spdr/31036.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ironspider_sinister",
@@ -639,7 +924,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/31037.jpg",
             "https://marvelcdb.com/bundles/cards/31037.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Renfort Criminel",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/spdr/31037.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ironspider_sinister",

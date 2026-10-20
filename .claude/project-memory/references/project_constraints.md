@@ -9,7 +9,7 @@ type: project
 - Anti-cheat: the server sends each viewer only what they may see (no
   other hands, deck order, face-down cards).
 - Card images are never stored or proxied; the browser loads them from
-  marvelcdb / Cerebro URLs.
+  marvelcdb / Cerebro / mc4db URLs.
 - No accounts and no long-term persistence; a game with nobody connected
   expires after 24 hours; only the host can "End game".
 - Card packs are additive data files; scenarios need a hand-curated file

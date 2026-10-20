@@ -14,7 +14,15 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34001A.jpg",
             "https://marvelcdb.com/bundles/cards/34001a.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "name": "Phénix",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/phoenix/34001a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Jean Grey",
@@ -24,7 +32,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34001B.jpg",
             "https://marvelcdb.com/bundles/cards/34001b.png"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/phoenix/34001b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "phoenix",
@@ -45,7 +60,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34002A.jpg",
             "https://marvelcdb.com/bundles/cards/34002a.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Force Phénix",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/phoenix/34002a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Phoenix Force",
@@ -54,7 +77,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34002B.jpg",
             "https://marvelcdb.com/bundles/cards/34002b.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Force Phénix",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/phoenix/34002b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "phoenix",
@@ -76,7 +107,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34003.jpg",
             "https://marvelcdb.com/bundles/cards/34003.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Cyclope",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/phoenix/34003.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "phoenix",
@@ -93,7 +132,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34004.jpg",
             "https://marvelcdb.com/bundles/cards/34004.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "La Chambre Blanche",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/phoenix/34004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "phoenix",
@@ -110,7 +157,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34005.jpg",
             "https://marvelcdb.com/bundles/cards/34005.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Costume de Phénix",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/phoenix/34005.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "phoenix",
@@ -127,7 +182,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34006.jpg",
             "https://marvelcdb.com/bundles/cards/34006.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Renaître de ses Cendres",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/phoenix/34006.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "phoenix",
@@ -144,7 +207,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34007.jpg",
             "https://marvelcdb.com/bundles/cards/34007.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Bouclier Télékinetique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/phoenix/34007.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "phoenix",
@@ -161,7 +232,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34008.jpg",
             "https://marvelcdb.com/bundles/cards/34008.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Paralysie Mentale",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/phoenix/34008.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "phoenix",
@@ -178,7 +257,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34009.jpg",
             "https://marvelcdb.com/bundles/cards/34009.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Contrôle de l'Esprit",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/phoenix/34009.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "phoenix",
@@ -195,7 +282,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34010.jpg",
             "https://marvelcdb.com/bundles/cards/34010.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Attaque Télékinetique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/phoenix/34010.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "phoenix",
@@ -212,7 +307,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34011.jpg",
             "https://marvelcdb.com/bundles/cards/34011.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Déflagration Psychique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/phoenix/34011.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "phoenix",
@@ -229,7 +332,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34012.jpg",
             "https://marvelcdb.com/bundles/cards/34012.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Tromperie Télépathique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/phoenix/34012.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "phoenix",
@@ -246,7 +357,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34013.jpg",
             "https://marvelcdb.com/bundles/cards/34013.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "L'Oiseau de Feu Phénix",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/phoenix/34013.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "phoenix",
@@ -264,7 +383,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34014.jpg",
             "https://marvelcdb.com/bundles/cards/34014.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Hurleur",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/phoenix/34014.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -281,7 +408,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34015.jpg",
             "https://marvelcdb.com/bundles/cards/34015.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/phoenix/34015.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -297,7 +431,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34016.jpg",
             "https://marvelcdb.com/bundles/cards/34016.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Entraînement aux Missions",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/phoenix/34016.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -313,7 +455,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34017.jpg",
             "https://marvelcdb.com/bundles/cards/34017.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Manipulation Psychique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/phoenix/34017.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -329,7 +479,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34018.jpg",
             "https://marvelcdb.com/bundles/cards/34018.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Pacificateurs Mutants",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/phoenix/34018.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -345,7 +503,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34020.jpg",
             "https://marvelcdb.com/bundles/cards/34020.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "La Passion de la Justice",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/phoenix/34020.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -365,7 +531,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34021.jpg",
             "https://marvelcdb.com/bundles/cards/34021.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Tornade",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/phoenix/34021.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -381,7 +555,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34022.jpg",
             "https://marvelcdb.com/bundles/cards/34022.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Cérébro",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/phoenix/34022.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -397,7 +579,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34028.jpg",
             "https://marvelcdb.com/bundles/cards/34028.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Colère Dévorante",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/phoenix/34028.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "phoenix",
@@ -414,7 +604,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34029.jpg",
             "https://marvelcdb.com/bundles/cards/34029.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Phénix Noir",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/phoenix/34029.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "phoenix_nemesis",
@@ -435,6 +633,14 @@
           "startingThreat": {
             "value": 6,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Réduire le Monde en Cendres",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/phoenix/34030.webp"
+              ]
+            }
           }
         }
       ],
@@ -452,7 +658,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34031.jpg",
             "https://marvelcdb.com/bundles/cards/34031.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Rage Brûlante",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/phoenix/34031.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "phoenix_nemesis",
@@ -469,7 +683,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34032.jpg",
             "https://marvelcdb.com/bundles/cards/34032.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Assaut Psychique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/phoenix/34032.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -485,7 +707,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34033.jpg",
             "https://marvelcdb.com/bundles/cards/34033.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Déflexion Psychique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/phoenix/34033.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -501,7 +731,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34034.jpg",
             "https://marvelcdb.com/bundles/cards/34034.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Émulation Psychique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/phoenix/34034.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -517,7 +755,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/34035.jpg",
             "https://marvelcdb.com/bundles/cards/34035.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Sœurs d'Âme",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/phoenix/34035.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",

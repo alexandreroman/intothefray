@@ -1,0 +1,50 @@
+// Package mc4db is a client for the mc4db public API, a marvelcdb fork that
+// hosts scans of the printed cards in several languages.
+package mc4db
+
+import (
+	"context"
+	"fmt"
+	"strings"
+
+	"github.com/alexandreroman/intothefray/internal/packgen/fetch"
+)
+
+// BaseURL is the mc4db site. It is a small shared host: the packs link to its
+// images and never copy them.
+const BaseURL = "https://mc4db.merlindumesnil.net"
+
+// Card holds the mc4db card fields used by the pack build. The image paths are
+// those of the English scans, e.g. "/bundles/cards/EN/core/01004.webp"; the
+// API ignores the locale.
+type Card struct {
+	Code         string `json:"code"`
+	ImageSrc     string `json:"imagesrc"`
+	BackImageSrc string `json:"backimagesrc"` // set for some double-sided cards stored under one code
+}
+
+// FetchCards returns the cards of every pack, encounter cards included.
+func FetchCards(ctx context.Context, c *fetch.Client) ([]Card, error) {
+	return fetchCards(ctx, c, BaseURL)
+}
+
+// The base URL is a parameter so tests can target a local server.
+func fetchCards(ctx context.Context, c *fetch.Client, base string) ([]Card, error) {
+	var cards []Card
+	if err := c.JSON(ctx, base+"/api/public/cards/?encounter=1", &cards); err != nil {
+		return nil, fmt.Errorf("fetch mc4db cards: %w", err)
+	}
+	return cards, nil
+}
+
+// FrenchImageURL turns the path of an English scan into the URL of the French
+// scan, which mc4db stores under FR instead of EN.
+func FrenchImageURL(path string) string {
+	return BaseURL + strings.Replace(path, "/EN/", "/FR/", 1)
+}
+
+// DirectFrenchImageURL is where mc4db stores the French scan of a card it does
+// not list, when it has one.
+func DirectFrenchImageURL(packCode, code string) string {
+	return BaseURL + "/bundles/cards/FR/" + packCode + "/" + code + ".webp"
+}

@@ -14,7 +14,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35001A.jpg",
             "https://marvelcdb.com/bundles/cards/35001a.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wolv/35001a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Logan",
@@ -24,7 +31,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35001B.jpg",
             "https://marvelcdb.com/bundles/cards/35001b.png"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wolv/35001b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wolverine",
@@ -45,7 +59,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35002.jpg",
             "https://marvelcdb.com/bundles/cards/35002.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Griffes de Wolverine",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wolv/35002.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wolverine",
@@ -63,7 +85,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35003.jpg",
             "https://marvelcdb.com/bundles/cards/35003.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Jubilé",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wolv/35003.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wolverine",
@@ -80,7 +110,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35004.jpg",
             "https://marvelcdb.com/bundles/cards/35004.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Squelette en Adamantium",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wolv/35004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wolverine",
@@ -97,7 +135,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35005.jpg",
             "https://marvelcdb.com/bundles/cards/35005.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Folie Destructrice",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wolv/35005.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wolverine",
@@ -114,7 +160,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35006.jpg",
             "https://marvelcdb.com/bundles/cards/35006.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "\"Ça Va Mieux\"",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wolv/35006.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wolverine",
@@ -131,7 +185,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35007.jpg",
             "https://marvelcdb.com/bundles/cards/35007.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Cabane de Logan",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wolv/35007.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wolverine",
@@ -148,7 +210,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35008.jpg",
             "https://marvelcdb.com/bundles/cards/35008.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Déferlement Berserk",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wolv/35008.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wolverine",
@@ -165,7 +235,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35009.jpg",
             "https://marvelcdb.com/bundles/cards/35009.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Hacher Menu",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wolv/35009.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wolverine",
@@ -182,7 +260,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35010.jpg",
             "https://marvelcdb.com/bundles/cards/35010.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Attaque Plongeante",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wolv/35010.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wolverine",
@@ -199,7 +285,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35011.jpg",
             "https://marvelcdb.com/bundles/cards/35011.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Suivre à l'Odeur",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wolv/35011.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wolverine",
@@ -216,7 +310,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35012.jpg",
             "https://marvelcdb.com/bundles/cards/35012.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Regénération",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wolv/35012.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wolverine",
@@ -234,7 +336,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35013.jpg",
             "https://marvelcdb.com/bundles/cards/35013.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wolv/35013.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -251,7 +360,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35014.jpg",
             "https://marvelcdb.com/bundles/cards/35014.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Feu du Soleil",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wolv/35014.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -267,7 +384,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35016.jpg",
             "https://marvelcdb.com/bundles/cards/35016.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Compétences Guerrières",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wolv/35016.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -283,7 +408,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35017.jpg",
             "https://marvelcdb.com/bundles/cards/35017.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Hors de Mon Chemin !",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wolv/35017.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -299,7 +432,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35018.jpg",
             "https://marvelcdb.com/bundles/cards/35018.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Frappe Chirurgicale",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wolv/35018.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -315,7 +456,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35022.jpg",
             "https://marvelcdb.com/bundles/cards/35022.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Arme X",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wolv/35022.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -331,7 +480,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35023.jpg",
             "https://marvelcdb.com/bundles/cards/35023.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Vise la Tête !",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wolv/35023.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -347,7 +504,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35027.jpg",
             "https://marvelcdb.com/bundles/cards/35027.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Démons du Passé",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wolv/35027.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wolverine",
@@ -364,7 +529,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35028.jpg",
             "https://marvelcdb.com/bundles/cards/35028.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Oméga Red",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wolv/35028.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wolverine_nemesis",
@@ -385,6 +558,14 @@
           "startingThreat": {
             "value": 5,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Le Synthétiseur de Carbonadium",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wolv/35029.webp"
+              ]
+            }
           }
         }
       ],
@@ -402,7 +583,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35030.jpg",
             "https://marvelcdb.com/bundles/cards/35030.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Facteur de Mort",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wolv/35030.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wolverine_nemesis",
@@ -419,7 +608,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35031.jpg",
             "https://marvelcdb.com/bundles/cards/35031.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Coup de Tentacule",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wolv/35031.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "wolverine_nemesis",
@@ -436,7 +633,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35032.jpg",
             "https://marvelcdb.com/bundles/cards/35032.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Centre de Commandement",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wolv/35032.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -452,7 +657,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35033.jpg",
             "https://marvelcdb.com/bundles/cards/35033.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wolv/35033.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -468,7 +680,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35034.jpg",
             "https://marvelcdb.com/bundles/cards/35034.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wolv/35034.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "deathstrike",
@@ -489,6 +708,14 @@
           "startingThreat": {
             "value": 5,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "En Quête de Vengeance",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wolv/35035.webp"
+              ]
+            }
           }
         }
       ],
@@ -506,7 +733,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35036.jpg",
             "https://marvelcdb.com/bundles/cards/35036.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Améliorations en Adamantium",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wolv/35036.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "deathstrike",
@@ -523,7 +758,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/35037.jpg",
             "https://marvelcdb.com/bundles/cards/35037.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Bain de Sang",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wolv/35037.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "deathstrike",
