@@ -36,8 +36,11 @@ export type Anim =
   /** The first player token moved to another spot of the table. */
   | { kind: 'firstPlayer'; from: Point; to: Point };
 
-/** The viewer's own drop waiting for the view that shows it (interaction.landing). */
-export type OwnDrop = Pick<Landing, 'element' | 'card'>;
+/**
+ * The viewer's own drop waiting for the view that shows it (interaction.landing):
+ * the card it moved, and every table or hand card that moved with it (a group's).
+ */
+export type OwnDrop = Pick<Landing, 'element' | 'card' | 'lifted'>;
 
 /**
  * Views further apart than this are not animated: after a reconnection, the
@@ -50,7 +53,7 @@ const SHUFFLED = 'shuffled ';
 /**
  * The animations that take the table from prev to next. ownDrop is what the
  * viewer has just dropped: it already lies where it went, a card with its
- * stack. apart is how long the viewer went without a live view between the
+ * stack, and the other cards of a group with it. apart is how long the viewer went without a live view between the
  * two, in ms (GameSession.viewGap).
  */
 export function diffViews(prev: View, next: View, ownDrop?: OwnDrop, apart = 0): Anim[] {
@@ -61,7 +64,13 @@ export function diffViews(prev: View, next: View, ownDrop?: OwnDrop, apart = 0):
   }
 
   const droppedCard = ownDrop?.card;
-  const dropped = new Set(droppedCard ? stackOf(droppedCard, after.cards) : []);
+  const dropped = new Set(ownDrop?.lifted);
+  if (droppedCard) {
+    // Not always lifted: a card played from a pile, or a hand reordered, lifts nothing.
+    for (const id of stackOf(droppedCard, after.cards)) {
+      dropped.add(id);
+    }
+  }
   const previous = new Map(before.cards.map((card) => [card.id, card]));
   const lines = changedLines(prev.log, next.log);
   // The glow takes the colour of whoever wrote the latest line; system lines have none.
