@@ -17,6 +17,8 @@ type: project
     ⋯ Discard X, Shuffle (U);
   - encounter deck: Reveal (R) │ Top X, Search │ ⋯;
   - discard pile: Search │ Shuffle into deck.
+- The card bar has no quick token button: tokens and statuses are added
+  from the token menu, the keys (D, T, N…) and the token's − / + pill.
 - Hand cards have no floating bar: they are played or discarded by
   dragging, P and Backspace. A bar on the fanned hand is unreadable and
   of little use.
