@@ -6,9 +6,11 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
+	"reflect"
 	"slices"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -130,6 +132,26 @@ func TestCheckRetriesTransientAnswers(t *testing.T) {
 	}
 }
 
+func TestCheckSendsUserAgent(t *testing.T) {
+	var agent atomic.Value
+	srv := httptest.NewServer(http.HandlerFunc(func(_ http.ResponseWriter, r *http.Request) {
+		agent.Store(r.UserAgent())
+	}))
+	t.Cleanup(srv.Close)
+	checker := &Checker{HTTP: srv.Client(), UserAgent: "packgen-test"}
+
+	got, err := checker.Check(context.Background(), []string{srv.URL + "/a.jpg"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !got[srv.URL+"/a.jpg"] {
+		t.Errorf("result = %v, want the URL alive", got)
+	}
+	if ua := agent.Load(); ua != "packgen-test" {
+		t.Errorf("User-Agent = %v, want packgen-test", ua)
+	}
+}
+
 func TestDropDeadImages(t *testing.T) {
 	face := func(name string, images ...string) pack.Face { return pack.Face{Name: name, Images: images} }
 	cards := []pack.Card{
@@ -153,5 +175,45 @@ func TestDropDeadImages(t *testing.T) {
 	}
 	if len(cards[0].Faces[0].Images) != 2 {
 		t.Errorf("input card was modified")
+	}
+}
+
+func TestDropDeadFiltersLocalizedImages(t *testing.T) {
+	cards := []pack.Card{
+		{Code: "01", Faces: []pack.Face{{
+			Name:   "Kept with a French name",
+			Images: []string{"ok"},
+			Localized: map[string]pack.Localized{
+				"fr": {Name: "Gardée", Images: []string{"fr-gone", "fr-ok"}},
+				"de": {Images: []string{"de-gone"}},
+			},
+		}}},
+		{Code: "02", Faces: []pack.Face{{
+			Name:      "Kept without localized data",
+			Images:    []string{"ok"},
+			Localized: map[string]pack.Localized{"fr": {Images: []string{"fr-gone"}}},
+		}}},
+		{Code: "03", Faces: []pack.Face{{
+			Name:      "Dropped despite a French image",
+			Images:    []string{"gone"},
+			Localized: map[string]pack.Localized{"fr": {Images: []string{"fr-ok"}}},
+		}}},
+	}
+	alive := map[string]bool{"ok": true, "fr-ok": true}
+
+	kept, dropped := DropDead(cards, alive)
+
+	if len(kept) != 2 || len(dropped) != 1 || dropped[0].Code != "03" {
+		t.Fatalf("kept = %+v, dropped = %+v, want 01 and 02 kept, 03 dropped", kept, dropped)
+	}
+	want := map[string]pack.Localized{"fr": {Name: "Gardée", Images: []string{"fr-ok"}}}
+	if got := kept[0].Faces[0].Localized; !reflect.DeepEqual(got, want) {
+		t.Errorf("localized = %+v, want %+v", got, want)
+	}
+	if got := kept[1].Faces[0].Localized; got != nil {
+		t.Errorf("localized = %+v, want nil", got)
+	}
+	if got := cards[0].Faces[0].Localized; len(got) != 2 || len(got["fr"].Images) != 2 {
+		t.Errorf("input localized data was modified: %+v", got)
 	}
 }

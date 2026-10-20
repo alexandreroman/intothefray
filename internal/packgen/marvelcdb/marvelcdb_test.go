@@ -57,7 +57,7 @@ func TestFetchUsesEndpoints(t *testing.T) {
 	t.Cleanup(server.Close)
 	client := &fetch.Client{HTTP: server.Client(), CacheDir: t.TempDir()}
 
-	cards, err := fetchCards(context.Background(), client, server.URL)
+	cards, err := FetchCards(context.Background(), client, server.URL)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -65,7 +65,7 @@ func TestFetchUsesEndpoints(t *testing.T) {
 		t.Errorf("cards = %+v", cards)
 	}
 
-	packs, err := fetchPacks(context.Background(), client, server.URL)
+	packs, err := FetchPacks(context.Background(), client, server.URL)
 	if err != nil {
 		t.Fatal(err)
 	}

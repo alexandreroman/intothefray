@@ -39,6 +39,9 @@ type Checker struct {
 	CachePath string
 	// Concurrency bounds parallel requests; 16 when zero.
 	Concurrency int
+	// UserAgent identifies the requests; Go's default is sent when empty.
+	// Some hosts, such as mc4db, throttle Go's default with 429 answers.
+	UserAgent string
 
 	baseBackoff time.Duration // delay unit between attempts; tests shrink it
 }
@@ -166,6 +169,9 @@ func (c *Checker) probe(ctx context.Context, url string) (v verdict, retryAfter 
 	if err != nil {
 		return verdictInconclusive, 0
 	}
+	if c.UserAgent != "" {
+		req.Header.Set("User-Agent", c.UserAgent)
+	}
 	resp, err := c.httpClient().Do(req)
 	if err != nil {
 		return verdictInconclusive, 0
@@ -250,9 +256,11 @@ func (c *Checker) saveCache(cache map[string]bool) error {
 	return nil
 }
 
-// DropDead removes the URLs that are not alive from every face. A card with a
-// face left without any image is dropped and reported. A URL missing from
-// alive counts as dead. The input cards are not modified.
+// DropDead removes the URLs that are not alive from every face, localized
+// images included. A card with a face left without any English image is
+// dropped and reported; localized data never drops a card, since the English
+// images are the fallback. A localized entry left empty is removed. A URL
+// missing from alive counts as dead. The input cards are not modified.
 func DropDead(cards []pack.Card, alive map[string]bool) (kept []pack.Card, dropped []report.Unsupported) {
 	for _, card := range cards {
 		filtered, ok := withLiveImages(card, alive)
@@ -279,9 +287,28 @@ func withLiveImages(card pack.Card, alive map[string]bool) (filtered pack.Card, 
 		if len(face.Images) == 0 {
 			return pack.Card{}, false
 		}
+		face.Localized = liveLocalized(face.Localized, alive)
 		filtered.Faces[i] = face
 	}
 	return filtered, true
+}
+
+// liveLocalized returns a new map of the overrides keeping only live images.
+// An override left empty is removed, and nil is returned when none remains, so
+// no empty entry is ever written.
+func liveLocalized(overrides map[string]pack.Localized, alive map[string]bool) map[string]pack.Localized {
+	var live map[string]pack.Localized
+	for lang, override := range overrides {
+		override.Images = liveOnly(override.Images, alive)
+		if override.Name == "" && override.Subname == "" && len(override.Images) == 0 {
+			continue
+		}
+		if live == nil {
+			live = make(map[string]pack.Localized, len(overrides))
+		}
+		live[lang] = override
+	}
+	return live
 }
 
 func liveOnly(urls []string, alive map[string]bool) []string {
