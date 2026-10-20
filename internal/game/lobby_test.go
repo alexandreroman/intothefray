@@ -70,8 +70,17 @@ func TestJoinNormalizesName(t *testing.T) {
 	if _, err := g.Join("b", "  "+strings.Repeat("é", 30)+"  "); err != nil {
 		t.Fatal(err)
 	}
-	if got := g.Players[1].Name; got != strings.Repeat("é", 24) {
-		t.Errorf("name = %q, want 24 runes", got)
+	if got := g.Players[1].Name; got != strings.Repeat("é", maxNameRunes) {
+		t.Errorf("name = %q, want %d runes", got, maxNameRunes)
+	}
+
+	// Multi-byte runes count once each, so a name of exactly maxNameRunes runes is kept whole.
+	whole := strings.Repeat("ü", maxNameRunes)
+	if _, err := g.Join("c", whole); err != nil {
+		t.Fatal(err)
+	}
+	if got := g.Players[2].Name; got != whole {
+		t.Errorf("name = %q, want %q kept whole", got, whole)
 	}
 }
 

@@ -1,4 +1,12 @@
-import { ADJECTIVES, NOUNS, playerName, randomName, savePlayerName } from './names';
+import {
+  ADJECTIVES,
+  cutName,
+  MAX_NAME_LENGTH,
+  NOUNS,
+  playerName,
+  randomName,
+  savePlayerName,
+} from './names';
 import { getPref, setPref } from './prefs';
 
 afterEach(() => {
@@ -22,10 +30,11 @@ describe('randomName', () => {
   });
 
   it('only builds names the server keeps whole', () => {
+    expect(MAX_NAME_LENGTH).toBe(16);
     for (const adjective of ADJECTIVES) {
       for (const noun of NOUNS) {
         const name = `${adjective} ${noun}`;
-        expect(name.length).toBeLessThanOrEqual(24);
+        expect(name.length).toBeLessThanOrEqual(MAX_NAME_LENGTH);
         expect(name).toMatch(/^[\x20-\x7e]+$/);
       }
     }
@@ -51,6 +60,11 @@ describe('playerName', () => {
     expect(getPref('itf-name')).toBe(name);
   });
 
+  it('cuts a stored name longer than the limit', () => {
+    setPref('itf-name', 'Abcdefghijklmnopqrstuvwxyz');
+    expect(playerName()).toBe('Abcdefghijklmnop');
+  });
+
   it('returns the same name on a second call', () => {
     expect(playerName()).toBe(playerName());
   });
@@ -61,5 +75,21 @@ describe('savePlayerName', () => {
     savePlayerName('  Alex ');
     expect(getPref('itf-name')).toBe('Alex');
     expect(playerName()).toBe('Alex');
+  });
+
+  it('stores the name cut to the limit', () => {
+    savePlayerName('Abcdefghijklmnopqrstuvwxyz');
+    expect(getPref('itf-name')).toBe('Abcdefghijklmnop');
+  });
+});
+
+describe('cutName', () => {
+  it('counts code points, not UTF-16 units', () => {
+    expect(cutName('é'.repeat(20))).toBe('é'.repeat(16));
+    expect(Array.from(cutName('🦸'.repeat(20)))).toEqual(Array(16).fill('🦸'));
+  });
+
+  it('drops the spaces left at the cut', () => {
+    expect(cutName('  Abcdefghijklmno pqr')).toBe('Abcdefghijklmno');
   });
 });

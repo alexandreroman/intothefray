@@ -11,7 +11,7 @@ import (
 
 const (
 	maxSeats     = 4 // deck slots across all players, so heroes at the table
-	maxNameRunes = 24
+	maxNameRunes = 16
 	maxCopies    = 20 // copies of one card in a deck
 
 	standardVersionI = "standard"

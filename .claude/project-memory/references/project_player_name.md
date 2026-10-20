@@ -12,9 +12,15 @@ the name stored in the browser (`itf-name`); when none is stored, a random
 `itf-name` and reused next time. The player changes it in Options
 (decided 2026-10-19).
 
+A player name holds at most 16 characters (code points): the server cuts
+it to `maxNameRunes` in `internal/game/lobby.go`, the source of truth, and
+the web app mirrors it with `MAX_NAME_LENGTH` in `web/src/lib/names.ts`
+(input `maxlength`, name cut when stored and when read back).
+
 **Why:** typing a name before playing is friction a sandbox table does not
 need.
 
 **How to apply:** get the name through `playerName()` in
-`web/src/lib/names.ts`; keep every generated name within the server's
-24-rune limit (`maxNameRunes`) and free of Marvel character names.
+`web/src/lib/names.ts`; keep every generated name within 16 characters
+(adjectives up to 7 letters, nouns up to 8) and free of Marvel character
+names.

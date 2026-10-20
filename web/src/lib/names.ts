@@ -2,8 +2,11 @@ import { getPref, setPref } from './prefs';
 
 const NAME_KEY = 'itf-name';
 
-// Generic heroic words only, no character names. The longest pair must fit in the
-// 24 runes the server keeps from a player name (maxNameRunes in internal/game/lobby.go).
+/** Longest player name, in code points. Mirrors maxNameRunes in internal/game/lobby.go. */
+export const MAX_NAME_LENGTH = 16;
+
+// Generic heroic words only, no character names. The longest pair must fit in
+// MAX_NAME_LENGTH, so adjectives have at most 7 letters and nouns at most 8.
 export const ADJECTIVES: readonly string[] = [
   'Atomic',
   'Blazing',
@@ -13,9 +16,7 @@ export const ADJECTIVES: readonly string[] = [
   'Cosmic',
   'Crimson',
   'Daring',
-  'Electric',
   'Emerald',
-  'Fearless',
   'Fierce',
   'Gallant',
   'Gentle',
@@ -33,13 +34,11 @@ export const ADJECTIVES: readonly string[] = [
   'Shadow',
   'Silent',
   'Silver',
-  'Stalwart',
   'Steady',
   'Stellar',
   'Swift',
   'Thunder',
   'Valiant',
-  'Vigilant',
   'Wild',
 ];
 
@@ -63,7 +62,6 @@ export const NOUNS: readonly string[] = [
   'Meteor',
   'Paladin',
   'Panther',
-  'Protector',
   'Ranger',
   'Raven',
   'Rider',
@@ -95,9 +93,17 @@ export function randomName(random: () => number = Math.random): string {
   return `${pick(ADJECTIVES, random)} ${pick(NOUNS, random)}`;
 }
 
-/** Stores the player name, trimmed, for the next games. */
+/**
+ * Trims a player name and cuts it to MAX_NAME_LENGTH code points, as the server does,
+ * so that a character outside the Basic Multilingual Plane is never split in half.
+ */
+export function cutName(name: string): string {
+  return Array.from(name.trim()).slice(0, MAX_NAME_LENGTH).join('').trimEnd();
+}
+
+/** Stores the player name, trimmed and cut, for the next games. */
 export function savePlayerName(name: string): void {
-  setPref(NAME_KEY, name.trim());
+  setPref(NAME_KEY, cutName(name));
 }
 
 /**
@@ -105,7 +111,8 @@ export function savePlayerName(name: string): void {
  * so that the player keeps it next time and can change it in the options.
  */
 export function playerName(): string {
-  const stored = getPref(NAME_KEY)?.trim();
+  // A name stored under an older, longer limit is cut on read.
+  const stored = cutName(getPref(NAME_KEY) ?? '');
   if (stored) {
     return stored;
   }

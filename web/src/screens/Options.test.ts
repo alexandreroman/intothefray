@@ -11,11 +11,17 @@ describe('Options', () => {
   it('stores the name as you type', async () => {
     render(Options);
     const input = screen.getByLabelText('Your name');
-    expect((input as HTMLInputElement).maxLength).toBe(24);
+    expect((input as HTMLInputElement).maxLength).toBe(16);
 
     await fireEvent.input(input, { target: { value: 'Alex' } });
 
     expect(getPref('itf-name')).toBe('Alex');
+  });
+
+  it('shows a stored name longer than the limit cut', () => {
+    setPref('itf-name', 'Abcdefghijklmnopqrstuvwxyz');
+    render(Options);
+    expect(screen.getByLabelText<HTMLInputElement>('Your name').value).toBe('Abcdefghijklmnop');
   });
 
   it('picks and stores a new random name with the dice', async () => {
