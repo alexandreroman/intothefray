@@ -76,9 +76,25 @@ func apply(t *Table, a Action) error {
 		return applyArrowAdd(t, a)
 	case ActArrowClear:
 		return applyArrowClear(t, a)
+	case ActGroup:
+		return applyGroup(t, a)
 	default:
 		return fmt.Errorf("%w: unknown action kind %q", ErrInvalid, a.Kind)
 	}
+}
+
+// applyGroup performs the sub-actions of a group in order. They run on a
+// copy of t, swapped in once all of them succeed, so that a failing one
+// leaves t untouched.
+func applyGroup(t *Table, a Action) error {
+	next := t.Clone()
+	for _, sub := range a.Actions {
+		if err := apply(next, sub); err != nil {
+			return err
+		}
+	}
+	*t = *next
+	return nil
 }
 
 func invalid(format string, args ...any) error {

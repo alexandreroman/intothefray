@@ -48,6 +48,7 @@
   import { ALL_ROWS, type RowMap } from './rows';
   import { surfaceRect, toScreen, toTable } from './screen';
   import { ownSeats, seatOf, seatPlayer } from './seats';
+  import { groupAction, groupPileTargets, groupUnits } from './selection';
 
   let {
     view,
@@ -99,6 +100,11 @@
   let pointer = $state<Point | null>(null);
   /** The other players were told of the drag: they must be told of its end. */
   let told = false;
+  /**
+   * The selected cards a group drag moves, each with its stack (selection.ts),
+   * 2 at least; empty when one card or stack is dragged.
+   */
+  let units: readonly string[] = [];
   /** Where the pointer holds the dragged card, as fractions of its width and height. */
   let grab: Point = { x: 0.5, y: 0.5 };
   /** The size of a hand card as it was grabbed, on the screen. */
@@ -178,6 +184,21 @@
     });
   });
 
+  // Pressing anything but a selected card lets go of the selection: what it
+  // drags then is that alone.
+  $effect(() => {
+    const pressed = interaction.held;
+    if (pressed && !pressed.moved) {
+      untrack(() => {
+        const element = pressed.element;
+        const inGroup = element.kind === 'card' && interaction.group.has(element.id);
+        if (!inGroup && interaction.group.size > 0) {
+          interaction.clearGroup();
+        }
+      });
+    }
+  });
+
   $effect(() => {
     const refused = lastError?.id;
     if (refused !== undefined) {
@@ -217,13 +238,39 @@
 
   function start(from: DragSource, pressedAt: Point): void {
     grab = grabOf(from, pressedAt);
+    units = from.kind === 'card' ? groupOf(from.card) : [];
     let lifted: string[] = [];
     if (from.kind === 'card') {
-      lifted = stackOf(from.card, cards);
+      lifted = units.length > 0 ? groupLifted(from.card, units) : stackOf(from.card, cards);
     } else if (from.kind === 'hand') {
       lifted = [from.card];
     }
     interaction.lift(movedCard(from), lifted);
+  }
+
+  /** The units of the selection when pressing that card drags it all: a selected card, 2 units at least. */
+  function groupOf(card: string): string[] {
+    if (!interaction.group.has(card)) {
+      return [];
+    }
+    const found = groupUnits(interaction.group, cards);
+    return found.length > 1 ? found : [];
+  }
+
+  /**
+   * The cards a group drag lifts: the pressed card's stack first, whose
+   * corner the other players are told, then the other units' stacks.
+   */
+  function groupLifted(lead: string, others: readonly string[]): string[] {
+    const lifted = stackOf(lead, cards);
+    for (const unit of others) {
+      for (const id of stackOf(unit, cards)) {
+        if (!lifted.includes(id)) {
+          lifted.push(id);
+        }
+      }
+    }
+    return lifted;
   }
 
   /** Where the press holds the card, so that it stays under the pointer the same way. */
@@ -303,11 +350,27 @@
   /** Where a drop at the point leaves the dragged card's corner: on its grid spot when the action places it. */
   function landingCorner(from: DragSource, action: Action, at: Point): Point {
     const surface = surfaceRect(root);
-    if (!surface || action.x === undefined || action.y === undefined) {
+    const spot = spotOf(from, action);
+    if (!surface || !spot) {
       return cornerOf(from, at);
     }
     // A placed card always lands in a shown row; the spot under the pointer covers any other case.
-    return onScreen({ x: action.x, y: action.y }, surface) ?? cornerOf(from, at);
+    return onScreen(spot, surface) ?? cornerOf(from, at);
+  }
+
+  /** Where the action places the dragged card on the table, in table units; null when it does not. */
+  function spotOf(from: DragSource, action: Action): Point | null {
+    if (action.kind !== 'group') {
+      return action.x === undefined || action.y === undefined ? null : { x: action.x, y: action.y };
+    }
+    // A group of moves moves every card by the same offset: its first move tells it.
+    const first = action.actions?.[0];
+    const moved = first?.card === undefined ? undefined : cardsById.get(first.card);
+    const lead = from.kind === 'card' ? cardsById.get(from.card) : undefined;
+    if (first?.x === undefined || first.y === undefined || !moved || !lead) {
+      return null;
+    }
+    return { x: lead.x + first.x - moved.x, y: lead.y + first.y - moved.y };
   }
 
   function placedRect(selector: string, id: string): DOMRect | undefined {
@@ -331,7 +394,7 @@
         index: insertIndex(middles, at.x),
         rect: handBand(others, table, window.innerHeight),
       });
-    } else if (handAreaOf(from, view)) {
+    } else if (goesToHand(from)) {
       const hand = [...root.querySelectorAll<HTMLElement>('.hand .hcard')].map((element) =>
         element.getBoundingClientRect(),
       );
@@ -345,12 +408,14 @@
     }
 
     // Out-of-play piles are not drawn: they cannot be measured, and take no drop.
-    for (const target of pileTargets(from, view)) {
+    const piles = units.length > 0 ? groupPileTargets(units, view) : pileTargets(from, view);
+    for (const target of piles) {
       const rect = placedRect('.pile', target.pile);
       if (rect) {
         targets.push({ kind: 'pile', ...target, rect });
       }
     }
+    // The dragged cards, a group's included, are never dropped on.
     const lifted = interaction.dragging?.lifted ?? [];
     for (const card of cards) {
       if (card.zone !== 'table' || lifted.includes(card.id)) {
@@ -362,6 +427,20 @@
       }
     }
     return targets;
+  }
+
+  /**
+   * Whether a drop on the hand takes what is dragged: each card of a group
+   * goes to its owner's hand, which must be one of the viewer's.
+   */
+  function goesToHand(from: DragSource): boolean {
+    if (units.length === 0) {
+      return handAreaOf(from, view) !== null;
+    }
+    return units.every((id) => {
+      const unit = sourceOf({ kind: 'card', id }, view);
+      return unit !== null && handAreaOf(unit, view) !== null;
+    });
   }
 
   /** What a drop at the pointer lands on, and the action it sends, null when nothing. */
@@ -376,7 +455,19 @@
     // An encounter card goes to the player whose row the pointer is in.
     const pointed = surface ? onTable(at, surface) : { x: 0, y: 0 };
     const dealTo = dealRecipient(view.table?.piles ?? [], pointed.y, `p${selected}`);
-    return { target, action: dropAction(from, target, spot, dealTo, rowMap) };
+    const single = dropAction(from, target, spot, dealTo, rowMap);
+    return { target, action: grouped(from, single) };
+  }
+
+  /**
+   * The action a drop sends: during a group drag, the action of the pressed
+   * card alone made the whole group's (a drop over a card tucks nothing).
+   */
+  function grouped(from: DragSource, single: Action | null): Action | null {
+    if (single === null || units.length === 0 || from.kind !== 'card') {
+      return single;
+    }
+    return groupAction(units, from.card, single, cards);
   }
 
   /** Outlines and labels what the drop would land on, and opens the gap in the hand. */
@@ -464,7 +555,7 @@
     const corner = landingCorner(from, action, at);
     landed = {
       action: sent,
-      ghosts: reorder ? [] : ghostsAt(from, corner),
+      ghosts: reorder ? [] : ghostsAt(from, corner, pressed.lifted),
       token: from.kind === 'firstPlayer' ? { x: corner.x / zoom, y: corner.y / zoom } : null,
       view,
     };
@@ -486,6 +577,7 @@
   /** The drag is over: dropped, or cancelled. */
   function end(): void {
     interaction.letGo();
+    units = [];
     pointer = null;
     hint = null;
     if (told) {
@@ -553,9 +645,10 @@
 
   /**
    * The cards drawn at table size for the dragged card's corner at that point
-   * of the screen, in table units of the zoomed layer.
+   * of the screen, in table units of the zoomed layer; `lifted` are the table
+   * cards that move with a table card.
    */
-  function ghostsAt(from: DragSource, corner: Point): TableCard[] {
+  function ghostsAt(from: DragSource, corner: Point, lifted: readonly string[]): TableCard[] {
     const x = corner.x / zoom;
     const y = corner.y / zoom;
     if (from.kind === 'firstPlayer') {
@@ -574,15 +667,17 @@
     if (from.kind !== 'card') {
       return [{ ...card, zone: 'table', x, y, onPile: undefined, parent: undefined }];
     }
-    // The cards tucked under it keep their offsets.
-    return stackOf(card.id, cards).flatMap((id) => {
+    // The cards tucked under it, and the rest of a group, keep their offsets.
+    return lifted.flatMap((id) => {
       const k = cardsById.get(id);
       return k ? [{ ...k, x: x + k.x - card.x, y: y + k.y - card.y }] : [];
     });
   }
 
   /** The cards drawn under the pointer. */
-  const ghosts = $derived(pointer && source ? ghostsAt(source, cornerOf(source, pointer)) : []);
+  const ghosts = $derived(
+    pointer && source && held ? ghostsAt(source, cornerOf(source, pointer), held.lifted) : [],
+  );
 
   /** The first player token under the pointer, its corner in table units of the layer. */
   const tokenGhost = $derived.by(() => {

@@ -142,7 +142,15 @@ describe('KeysSheet', () => {
           'This sheet: ?',
         ],
       ],
-      ['Mouse', ['Ping a spot: Alt + click', 'Arrow from a card to another: Shift + drag']],
+      [
+        'Mouse',
+        [
+          'Ping a spot: Alt + click',
+          'Arrow from a card to another: Shift + drag',
+          'Select cards: drag on an empty spot',
+          'Move the selection: drag a selected card',
+        ],
+      ],
     ]);
     // Each key is a kbd.
     expect(within(sheet()!).getAllByText('E')[0]?.tagName).toBe('KBD');

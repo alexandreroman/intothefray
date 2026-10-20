@@ -40,6 +40,8 @@ const (
 	ActFirstPlayer Kind = "firstPlayer"
 	ActArrowAdd    Kind = "arrowAdd"
 	ActArrowClear  Kind = "arrowClear"
+
+	ActGroup Kind = "group"
 )
 
 // Action is one resolved player action. Which fields matter depends on Kind;
@@ -76,6 +78,9 @@ type Action struct {
 	// instead of toggling whatever the card shows there.
 	Exhausted *bool `json:"exhausted,omitempty"`
 	FaceDown  *bool `json:"faceDown,omitempty"`
+	// Actions are the sub-actions of a group, all of one kind, performed in
+	// order as a single action: several cards moved at once.
+	Actions []Action `json:"actions,omitempty"`
 }
 
 // Limits applied to client-provided numbers.
@@ -189,9 +194,72 @@ func resolve(g *Game, who actor, a Action, rng *rand.Rand) (Action, error) {
 		return resolveShuffleBack(t, who, a, rng)
 	case ActShuffleIn:
 		return resolveShuffleIn(t, who, a, rng)
+	case ActGroup:
+		return resolveGroup(g, who, a, rng)
 	default:
 		return Action{}, invalid("unknown action kind %q", a.Kind)
 	}
+}
+
+// groupableKinds are the kinds a group may hold: the ways a card leaves its
+// place by a drag, none of which shuffles.
+var groupableKinds = map[Kind]bool{
+	ActMove:    true,
+	ActToHand:  true,
+	ActToDeck:  true,
+	ActDiscard: true,
+	ActToPile:  true,
+}
+
+// resolveGroup checks a group: 2 to maxCount sub-actions of one groupable
+// kind and one place, each on its own card, none tucked under another's. Every sub-action
+// is resolved for who against the table as it stands, and the first error
+// rejects the whole group.
+func resolveGroup(g *Game, who actor, a Action, rng *rand.Rand) (Action, error) {
+	if len(a.Actions) < 2 || len(a.Actions) > maxCount {
+		return a, invalid("a group holds 2 to %d actions, not %d", maxCount, len(a.Actions))
+	}
+	kind := a.Actions[0].Kind
+	if !groupableKinds[kind] {
+		return a, invalid("%q actions cannot be grouped", kind)
+	}
+
+	t := g.Table
+	cards := map[string]bool{}
+	for _, sub := range a.Actions {
+		if sub.Kind != kind {
+			return a, invalid("a group mixes %q and %q actions", kind, sub.Kind)
+		}
+		if sub.Kind == ActToDeck && sub.Where == whereShuffle {
+			return a, invalid("a group cannot shuffle cards into their decks")
+		}
+		// The group's line names one place for all its cards.
+		if sub.Where != a.Actions[0].Where {
+			return a, invalid("a group mixes %q and %q places", a.Actions[0].Where, sub.Where)
+		}
+		if sub.Card == "" || cards[sub.Card] {
+			return a, invalid("each action of a group needs a card of its own")
+		}
+		cards[sub.Card] = true
+	}
+	for _, sub := range a.Actions {
+		for _, child := range t.descendants(sub.Card) {
+			if cards[child.ID] {
+				return a, invalid("card %q is tucked under %q, which comes along", child.ID, sub.Card)
+			}
+		}
+	}
+
+	resolved := make([]Action, 0, len(a.Actions))
+	for _, sub := range a.Actions {
+		r, err := resolve(g, who, sub, rng)
+		if err != nil {
+			return a, err
+		}
+		resolved = append(resolved, r)
+	}
+	a.Actions = resolved
+	return a, nil
 }
 
 // seatedArea reports whether area names a seat at this table.

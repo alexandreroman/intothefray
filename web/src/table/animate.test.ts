@@ -25,7 +25,7 @@ function line(text: string, extra: Partial<LogView> = {}): LogView {
 
 /** The viewer's drop of a table card, waiting for the view that shows it. */
 function droppedCard(id: string): OwnDrop {
-  return { element: { kind: 'card', id }, card: id };
+  return { element: { kind: 'card', id }, card: id, lifted: [id] };
 }
 
 const OLD_LINE = line('started the game', { who: 'Alex', color: 0, at: '2026-10-19T14:00:00Z' });
@@ -210,7 +210,11 @@ describe('diffViews', () => {
     expect(diffViews(prev, played)).toEqual([{ kind: 'flip', id: 'fromDeck' }]);
     // The viewer's own play from the deck turns over too, as it lands.
     expect(
-      diffViews(prev, played, { element: { kind: 'pile', id: 'deck:p0' }, card: 'fromDeck' }),
+      diffViews(prev, played, {
+        element: { kind: 'pile', id: 'deck:p0' },
+        card: 'fromDeck',
+        lifted: [],
+      }),
     ).toEqual([{ kind: 'flip', id: 'fromDeck' }]);
     expect(diffViews(view({ piles: [encounter(20)] }), revealed)).toEqual([
       { kind: 'flip', id: 'fromEncounter' },
@@ -395,6 +399,29 @@ describe('diffViews', () => {
     expect(diffViews(prev, next, droppedCard('a'))).toEqual([]);
   });
 
+  it('own group drop is not animated, while a card moved by another player still travels', () => {
+    const prev = view({
+      cards: [card('a', { x: 0 }), card('b', { x: 100 }), card('c', { x: 500 })],
+    });
+    const next = view({
+      cards: [card('a', { x: 300 }), card('b', { x: 400 }), card('c', { x: 700 })],
+    });
+    const groupDrop: OwnDrop = {
+      element: { kind: 'card', id: 'a' },
+      card: 'a',
+      lifted: ['a', 'b'],
+    };
+
+    expect(diffViews(prev, next, groupDrop)).toEqual([
+      {
+        kind: 'move',
+        id: 'c',
+        from: { zone: 'table', x: 500, y: 0 },
+        to: { zone: 'table', x: 700, y: 0 },
+      },
+    ]);
+  });
+
   it('own drop onto a pile does not fly', () => {
     const prev = view({ cards: [card('a', { x: 40 })] });
     const next = view({
@@ -419,7 +446,9 @@ describe('diffViews', () => {
     const prev = view({ firstPlayer: { x: 520, y: 500 } });
     const next = view({ firstPlayer: { x: 160, y: 900 } });
 
-    expect(diffViews(prev, next, { element: { kind: 'firstPlayer' }, card: null })).toEqual([]);
+    expect(
+      diffViews(prev, next, { element: { kind: 'firstPlayer' }, card: null, lifted: [] }),
+    ).toEqual([]);
   });
 
   it('views more than 2 s apart yield nothing', () => {
