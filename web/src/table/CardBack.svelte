@@ -97,7 +97,8 @@
     /* As wide as the label, never past the card's edges. */
     max-width: calc(100% - 16px);
     box-sizing: border-box;
-    padding: 4px 8px;
+    /* A little more room after the label than before it. */
+    padding: 4px 11px 4px 8px;
     border-radius: 4px;
     background: #000000b8;
     color: #fff;
