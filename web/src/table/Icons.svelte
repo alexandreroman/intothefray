@@ -47,9 +47,15 @@
     <path d="M8 20h8" />
     <path d="M10 17h4" />
   {:else}
-    <!-- An hourglass: set-aside cards wait to come into play later. -->
+    <!-- An hourglass, its sand run down: set-aside cards wait to come into play later. -->
+    <path
+      d="M11 12C11 15.5 7 16.5 7 21h10c0-4.5-4-5.5-4-9z"
+      fill="currentColor"
+      fill-opacity=".18"
+      stroke="none"
+    />
     <path d="M6 3h12M6 21h12" />
-    <path d="M7 3c0 5 10 5 10 9s-10 4-10 9M17 3c0 5-10 5-10 9" />
+    <path d="M7 3C7 7.5 11 8.5 11 12S7 16.5 7 21M17 3c0 4.5-4 5.5-4 9s4 4.5 4 9" />
   {/if}
 </svg>
 
