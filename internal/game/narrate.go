@@ -105,9 +105,10 @@ func words(s string) phrase {
 	return phrase{{Text: s}}
 }
 
-// cardName is the printed name of a card.
-func cardName(s string) phrase {
-	return phrase{{Text: s, Card: true}}
+// cardName is the printed name of the face ref points at. The reference lets
+// a client show the name in the viewer's language; the text stays English.
+func cardName(name string, ref pack.FaceRef) phrase {
+	return phrase{{Text: name, Card: true, Ref: &ref}}
 }
 
 // join puts pieces one after the other, merging the plain parts that follow
@@ -482,39 +483,41 @@ func (n narrator) visibleCards(ids ...string) []string {
 // faceName returns the printed name of the face c shows. Callers make sure c
 // is visible.
 func (n narrator) faceName(c *Card) phrase {
-	face, ok := n.face(c)
+	face, ref, ok := n.face(c)
 	if !ok {
 		return words(hiddenCard)
 	}
-	return cardName(face.Name)
+	return cardName(face.Name, ref)
 }
 
 // stageName returns the name of the face c shows with its stage, if any:
 // "Rhino (stage II)" for a villain, "The Break-In! (1A)" for a main scheme.
 // Only the name is flagged as a card name.
 func (n narrator) stageName(c *Card) phrase {
-	face, ok := n.face(c)
+	face, ref, ok := n.face(c)
 	if !ok {
 		return words(hiddenCard)
 	}
+	name := cardName(face.Name, ref)
 	switch {
 	case face.Stage == "":
-		return cardName(face.Name)
+		return name
 	case face.Type == faceTypeMainScheme:
-		return join(cardName(face.Name), words(" ("+face.Stage+")"))
+		return join(name, words(" ("+face.Stage+")"))
 	default:
-		return join(cardName(face.Name), words(" (stage "+face.Stage+")"))
+		return join(name, words(" (stage "+face.Stage+")"))
 	}
 }
 
-// face returns the catalog face c shows. Every card comes from the catalog at
-// setup, so a miss means a mismatched catalog; the card is then left unnamed.
-func (n narrator) face(c *Card) (pack.Face, bool) {
+// face returns the catalog face c shows, with a reference to it under the
+// canonical code of its card. Every card comes from the catalog at setup, so a
+// miss means a mismatched catalog; the card is then left unnamed.
+func (n narrator) face(c *Card) (pack.Face, pack.FaceRef, bool) {
 	def, _, err := n.cat.Card(c.Code)
 	if err != nil || c.Face < 0 || c.Face >= len(def.Faces) {
-		return pack.Face{}, false
+		return pack.Face{}, pack.FaceRef{}, false
 	}
-	return def.Faces[c.Face], true
+	return def.Faces[c.Face], pack.FaceRef{Card: def.Code, Face: c.Face}, true
 }
 
 // visible reports whether everyone at the table can see the face of card id

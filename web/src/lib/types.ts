@@ -142,10 +142,21 @@ export interface PlayerView {
   decks: DeckView[];
 }
 
-/** A piece of a history line: plain text, or the printed name of a card. */
+/** Points at one face of a card: its canonical code and face index. */
+export interface FaceRef {
+  card: string;
+  face: number;
+}
+
+/**
+ * A piece of a history line: plain text, or the printed name of a card. A card
+ * name refers to the face it names, so it can be shown in the viewer's
+ * language; `text` is the English name.
+ */
 export interface LogPart {
   text: string;
   card?: boolean;
+  ref?: FaceRef;
 }
 
 export interface LogView {
