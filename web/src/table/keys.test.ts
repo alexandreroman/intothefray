@@ -281,7 +281,7 @@ describe('keys on the table', () => {
     expect(screen.getByRole('dialog', { name: 'Look at the top cards' })).toBeTruthy();
   });
 
-  it('W draws 1 from the own deck; Shift + W asks how many with Draw…', async () => {
+  it('W draws 1 from the own deck; Shift + W asks how many with Draw X', async () => {
     const { session } = await renderTable();
     await fireEvent.pointerEnter(placed('deck:p0'));
 

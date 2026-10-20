@@ -10,12 +10,13 @@ type: project
   look, then leave (discard, move), then a "More actions" ⋯ dropdown.
   The first button is the element's default action.
 - Cards in play use icon buttons, piles use words; box tiles count as
-  cards.
+  cards. Pile labels stay short (Draw X, Top X, Discard X, Search);
+  the tooltip says the rest.
 - Pile bars:
-  - own deck: Draw 1 (W), Draw… (⇧W) │ Look at top… (L), Search… (K) │
-    ⋯ Discard top…, Shuffle (U);
-  - encounter deck: Reveal (R) │ Look at top…, Search… │ ⋯;
-  - discard pile: Search… │ Shuffle into deck.
+  - own deck: Draw 1 (W), Draw X (⇧W) │ Top X (L), Search (K) │
+    ⋯ Discard X, Shuffle (U);
+  - encounter deck: Reveal (R) │ Top X, Search │ ⋯;
+  - discard pile: Search │ Shuffle into deck.
 - Hand cards have no floating bar: they are played or discarded by
   dragging, P and Backspace. A bar on the fanned hand is unreadable and
   of little use.
@@ -28,7 +29,7 @@ type: project
 
 **Why:** UX review of 2026-10-20 against DragnCards and OCTGN: the bars
 mixed icons and words, moved the same action between elements and hid
-frequent actions (Draw…, out-of-play piles) in generic menus.
+frequent actions (Draw X, out-of-play piles) in generic menus.
 
 **How to apply:** the plan, its eight steps and the mockups are in
 `docs/superpowers/specs/2026-10-20-action-bars-ux-review.md` (local,

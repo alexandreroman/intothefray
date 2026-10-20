@@ -191,7 +191,7 @@ function playerKey(event: KeyboardEvent, table: KeyTable): boolean {
     table.run(item);
     return true;
   }
-  // Without an item of its own (Draw… is Shift + W), Shift + a token or status key takes one off.
+  // Without an item of its own (Draw X is Shift + W), Shift + a token or status key takes one off.
   const plain = event.shiftKey ? findItem(table.items, key, false) : undefined;
   const adds = plain ? counterAction(plain) : null;
   return adds !== null && removeOne(adds, table);

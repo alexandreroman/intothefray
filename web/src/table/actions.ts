@@ -54,7 +54,7 @@ export interface ActionItem {
   label: string;
   icon?: IconName;
   key?: string;
-  /** The key is taken with Shift: Draw… is Shift + W, while W alone is Draw 1. */
+  /** The key is taken with Shift: Draw X is Shift + W, while W alone is Draw 1. */
   shift?: true;
   disabled?: boolean;
   tip?: string;
@@ -618,17 +618,17 @@ function drawAction(n: number, sideDeck?: PileView): Action {
 }
 
 /**
- * Draw… asks how many cards: Shift + W, beside Draw 1's W. As Draw 1, it sends
+ * Draw X asks how many cards: Shift + W, beside Draw 1's W. As Draw 1, it sends
  * the pile only for a side deck.
  */
 function drawCountItem(pile: PileView): ActionItem {
   const sideDeck = pile.kind === 'sideDeck' ? pile : undefined;
   return {
     id: 'drawN',
-    label: 'Draw…',
+    label: 'Draw X',
     key: 'W',
     shift: true,
-    tip: 'Draw…',
+    tip: 'Draw X cards',
     group: GROUP_MAIN,
     run: () => ({
       ask: {
@@ -668,13 +668,13 @@ function cardName(card: CardView, lang: Lang): string {
   return face ? localizedFace(face, lang).name : 'A card';
 }
 
-/** Look at top… asks how many cards; pileName is how the question names the pile. */
+/** Top X asks how many cards to look at; pileName is how the question names the pile. */
 function lookTopItem(pile: PileView, pileName: string): ActionItem {
   return {
     id: 'lookTop',
-    label: 'Look at top…',
+    label: 'Top X',
     key: 'L',
-    tip: 'Look at top…',
+    tip: 'Look at the top X cards',
     group: GROUP_LOOK,
     run: () => ({
       ask: {
@@ -690,7 +690,7 @@ function lookTopItem(pile: PileView, pileName: string): ActionItem {
 }
 
 /**
- * The ⋯ dropdown of a deck, for what is done less often: Discard top… (decks
+ * The ⋯ dropdown of a deck, for what is done less often: Discard X (decks
  * with a discard pile), then Shuffle. pileName is how the question names the pile.
  */
 function moreMenu(pile: PileView, pileName: string, withDiscardTop: boolean): ActionItem {
@@ -709,7 +709,8 @@ function moreMenu(pile: PileView, pileName: string, withDiscardTop: boolean): Ac
 function discardTopItem(pile: PileView, pileName: string): ActionItem {
   return {
     id: 'discardTop',
-    label: 'Discard top…',
+    label: 'Discard X',
+    tip: 'Discard the top X cards',
     group: 0,
     run: () => ({
       ask: {
@@ -728,13 +729,13 @@ function countLimit(pile: PileView): number {
   return Math.min(pile.count, MAX_COUNT);
 }
 
-/** Search… opens a private view: the server sends the cards, which the box shows. */
+/** Search opens a private view: the server sends the cards, which the box shows. */
 function searchItem(pile: PileView): ActionItem {
   return {
     id: 'search',
-    label: 'Search…',
+    label: 'Search',
     key: 'K',
-    tip: 'Search…',
+    tip: 'Search this pile',
     group: GROUP_LOOK,
     run: () => ({ kind: 'search', pile: pile.id }),
   };

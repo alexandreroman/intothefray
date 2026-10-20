@@ -280,14 +280,16 @@ describe('ActionBar', () => {
     await renderTable();
     await fireEvent.pointerEnter(placed('deck:p0'));
 
-    expect(barButtons()).toEqual(['Draw 1', 'Draw…', 'Look at top…', 'Search…', 'More actions']);
-    // Groups are separated: Draw 1, Draw… | Look at top…, Search… | More actions.
+    expect(barButtons()).toEqual(['Draw 1', 'Draw X', 'Top X', 'Search', 'More actions']);
+    // Groups are separated: Draw 1, Draw X | Top X, Search | More actions.
     expect(bar()?.querySelectorAll('.sep')).toHaveLength(2);
-    const lookTop = within(bar()!).getByRole('button', { name: 'Look at top…' });
+    const lookTop = within(bar()!).getByRole('button', { name: 'Top X' });
     expect(lookTop.previousElementSibling?.classList.contains('sep')).toBe(true);
-    // Draw… is taken with Shift: its tooltip says so.
+    // Draw X is taken with Shift: its tooltip says so.
     expect(within(bar()!).getByRole('button', { name: 'Draw 1' }).dataset.kbd).toBe('W');
-    expect(within(bar()!).getByRole('button', { name: 'Draw…' }).dataset.kbd).toBe('⇧W');
+    const drawN = within(bar()!).getByRole('button', { name: 'Draw X' });
+    expect(drawN.dataset.tip).toBe('Draw X cards');
+    expect(drawN.dataset.kbd).toBe('⇧W');
 
     // An icon dropdown, without a caret or a text.
     const more = within(bar()!).getByRole('button', { name: 'More actions' });
@@ -303,15 +305,15 @@ describe('ActionBar', () => {
       within(menu)
         .getAllByRole('menuitem')
         .map((choice) => choice.textContent),
-    ).toEqual(['Discard top…', 'ShuffleU']);
+    ).toEqual(['Discard X', 'ShuffleU']);
     expect(menu.querySelectorAll('.msep')).toHaveLength(1);
   });
 
-  it('Draw… asks how many cards, then draws them', async () => {
+  it('Draw X asks how many cards, then draws them', async () => {
     const { session } = await renderTable();
     await fireEvent.pointerEnter(placed('deck:p0'));
 
-    await fireEvent.click(within(bar()!).getByRole('button', { name: 'Draw…' }));
+    await fireEvent.click(within(bar()!).getByRole('button', { name: 'Draw X' }));
     const dialog = screen.getByRole('dialog', { name: 'Draw cards' });
     expect(dialog.textContent).toContain('How many cards do you draw?');
     expect(session.act).not.toHaveBeenCalled();
@@ -324,7 +326,8 @@ describe('ActionBar', () => {
     const { session } = await renderTable();
     await fireEvent.pointerEnter(placed('deck:p0'));
 
-    const lookTop = within(bar()!).getByRole('button', { name: 'Look at top…' });
+    const lookTop = within(bar()!).getByRole('button', { name: 'Top X' });
+    expect(lookTop.dataset.tip).toBe('Look at the top X cards');
     expect(lookTop.dataset.kbd).toBe('L');
     await fireEvent.click(lookTop);
     const dialog = screen.getByRole('dialog', { name: 'Look at the top cards' });
@@ -343,15 +346,15 @@ describe('ActionBar', () => {
     await renderTable();
     await fireEvent.pointerEnter(placed('enc'));
 
-    expect(barButtons()).toEqual(['Reveal', 'Look at top…', 'Search…', 'More actions']);
+    expect(barButtons()).toEqual(['Reveal', 'Top X', 'Search', 'More actions']);
     expect(bar()?.querySelectorAll('.sep')).toHaveLength(2);
   });
 
-  it('an own discard pile: Search…, then Shuffle into deck', async () => {
+  it('an own discard pile: Search, then Shuffle into deck', async () => {
     const { session } = await renderTable();
     await fireEvent.pointerEnter(placed('disc:p0'));
 
-    expect(barButtons()).toEqual(['Search…', 'Shuffle into deck']);
+    expect(barButtons()).toEqual(['Search', 'Shuffle into deck']);
     expect(bar()?.querySelectorAll('.sep')).toHaveLength(1);
     await fireEvent.click(within(bar()!).getByRole('button', { name: 'Shuffle into deck' }));
     expect(session.act).toHaveBeenCalledWith({ kind: 'shuffleBack', pile: 'disc:p0' }, 0);
@@ -360,7 +363,7 @@ describe('ActionBar', () => {
   it('the count question follows its pile while it is open', async () => {
     const { session, rerender } = await renderTable();
     await fireEvent.pointerEnter(placed('enc'));
-    await fireEvent.click(within(bar()!).getByRole('button', { name: 'Look at top…' }));
+    await fireEvent.click(within(bar()!).getByRole('button', { name: 'Top X' }));
     const dialog = screen.getByRole('dialog', { name: 'Look at the top cards' });
     const value = within(dialog).getByRole('spinbutton', { name: 'Number of cards' });
     expect(value.getAttribute('aria-valuenow')).toBe('5');
@@ -383,7 +386,7 @@ describe('ActionBar', () => {
     const ask = async () => {
       await fireEvent.pointerEnter(placed('enc'));
       await fireEvent.click(within(bar()!).getByRole('button', { name: 'More actions' }));
-      await fireEvent.click(screen.getByRole('menuitem', { name: /Discard top…/ }));
+      await fireEvent.click(screen.getByRole('menuitem', { name: /Discard X/ }));
       expect(screen.getByRole('dialog', { name: 'Discard from the top' })).toBeTruthy();
     };
     const piles = makeView().table!.piles;
