@@ -12,14 +12,15 @@
   import CardFace from './CardFace.svelte';
   import { isHidden } from './face';
   import { interaction } from './interaction.svelte';
-  import { cardBox, fanPositions, HAND_CARD, HAND_CARD_NARROW } from './layout';
+  import { cardBox, fanPositions, HAND_CARD, HAND_REST_DROP } from './layout';
   import { motion } from './motion.svelte';
 
   let {
     cards,
     faceOf,
     captionOf = () => undefined,
-    narrow = false,
+    cardSize = HAND_CARD,
+    restDrop = HAND_REST_DROP,
     open = $bindable(false),
   }: {
     /** The hand, in its order. */
@@ -28,13 +29,13 @@
     faceOf: (card: TableCard) => PackFace | null;
     /** The caption of a card's back (backCaption): its side deck's label, if any. */
     captionOf?: (card: TableCard) => string | undefined;
-    /** A narrow screen, where the cards are smaller. */
-    narrow?: boolean;
+    /** The size of a card, in px: smaller on a narrow or a small screen (Table.svelte). */
+    cardSize?: { w: number; h: number };
+    /** How far the resting hand drops below its raised place, in px. */
+    restDrop?: number;
     /** Whether the hand is raised. */
     open?: boolean;
   } = $props();
-
-  const cardSize = $derived(narrow ? HAND_CARD_NARROW : HAND_CARD);
 
   /** The cards in the given order, then any the order does not know (drawn meanwhile). */
   function inOrder(order: readonly string[]): TableCard[] {
@@ -321,6 +322,7 @@
   aria-label="Your hand"
   style:--card-w="{cardSize.w}px"
   style:--card-h="{cardSize.h}px"
+  style:--rest-drop="{restDrop}px"
   bind:this={list}
   bind:clientWidth={width}
 >
@@ -411,8 +413,8 @@
     overflow: visible;
     pointer-events: none;
     background: linear-gradient(to top, #07090fe6 0%, #07090fa0 55%, transparent 100%);
-    /* Low enough that only the top part of the cards shows. */
-    transform: translateY(140px) scale(0.82);
+    /* Low enough that only the top part of the cards shows (layout.ts: HAND_REST_SCALE). */
+    transform: translateY(var(--rest-drop)) scale(0.82);
     transform-origin: 50% 100%;
     transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
   }

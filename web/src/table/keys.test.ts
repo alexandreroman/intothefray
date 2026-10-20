@@ -138,7 +138,7 @@ function press(key: string, extra: Partial<KeyboardEventInit> = {}) {
 }
 
 function zoomLabel(): string | null {
-  return screen.getByRole('button', { name: 'Back to 100%' }).textContent?.trim() ?? null;
+  return screen.getByRole('button', { name: 'Fit to width' }).textContent?.trim() ?? null;
 }
 
 beforeEach(() => {

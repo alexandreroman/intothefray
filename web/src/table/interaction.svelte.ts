@@ -93,6 +93,8 @@ class TableInteraction {
   hovered = $state.raw<TableElement | null>(null);
   /** The element previewed: the preview shows its face, and nothing for a card back. */
   previewed = $state.raw<TableElement | null>(null);
+  /** Touch mode (touch.ts): nothing is ever previewed. The table keeps it in step with the screen. */
+  touchMode = $state(false);
   /** The cards of the hovered history line, ringed on the table. */
   highlighted = $state.raw<ReadonlySet<string>>(new Set());
   /**
@@ -527,7 +529,8 @@ class TableInteraction {
    * screen: the element becomes the hovered and the previewed one, without a
    * tap selection, and the token pill goes. Previewed too, since the press
    * may come while another element's menu held the hover and the preview: a
-   * tap (touch) shows its card in the preview as well as its menu. The press
+   * tap shows its card in the preview as well as its menu, but in touch mode,
+   * which previews nothing. The press
    * that opened it (a right click, or Ctrl + click on macOS) does not become
    * a drag.
    */
@@ -617,9 +620,18 @@ class TableInteraction {
     }
   }
 
+  /** Enters or leaves touch mode; entering it drops the preview shown, if any. */
+  setTouchMode(on: boolean): void {
+    this.touchMode = on;
+    if (on) {
+      this.previewed = null;
+    }
+  }
+
   /** Forgets everything: a previous game's state must not show in the next one. */
   reset(): void {
     this.release();
+    this.touchMode = false;
     this.letGo();
     this.endLanding();
     this.clearGroup();
@@ -637,9 +649,9 @@ class TableInteraction {
     this.#pointerType = 'mouse';
   }
 
-  /** A hand card is never previewed: the raised hand shows it large enough. */
+  /** A hand card is never previewed: the raised hand shows it large enough. Nothing is, in touch mode. */
   #changePreview(element: TableElement, preview: PreviewChange): void {
-    if (preview === 'clear' || element.kind === 'hand') {
+    if (preview === 'clear' || element.kind === 'hand' || this.touchMode) {
       this.previewed = null;
     } else if (preview === 'show') {
       this.previewed = element;

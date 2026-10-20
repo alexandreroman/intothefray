@@ -115,9 +115,10 @@
         aria-label="{owner.name}: out-of-play piles"
         data-owner={owner.frame.owner}
         style:--owner={owner.color}
+        style:--chips={owner.outOfPlay.length}
+        style:--frame-w="{owner.frame.w}px"
         style:left="{owner.frame.x}px"
         style:top="{owner.frame.y}px"
-        style:width="{owner.frame.w}px"
       >
         {#each owner.outOfPlay as chip (chip.pile)}
           <button
@@ -165,10 +166,22 @@
 
 <style>
   .surface {
+    /*
+      The unit of the name lines above the frames (the owners' names and the chips): a table unit,
+      or more once the zoom would bring the chips' 12-unit text under 11 screen px. Counter-scaled
+      so, a line looks as it does at a zoom of 11/12 (92 %), however far the table zooms out.
+    */
+    --lu: max(1px, 11px / 12 / var(--z, 1));
     /* A chip is at most this wide with a two-digit count: the name leaves room for the chips. */
-    --chip-width: 46px;
-    --chip-gap: 4px;
+    --chip-width: calc(46 * var(--lu));
+    --chip-gap: calc(4 * var(--lu));
     --chip-room: calc(var(--chip-width) + var(--chip-gap));
+    /*
+      The room a name keeps, about "Villain": far out, a frame is too narrow for its chips and its
+      name, and the line goes on past the frame's right edge (.chips), over the empty band above the
+      row's cards.
+    */
+    --name-min: calc(56 * var(--lu));
     position: relative;
     isolation: isolate;
     zoom: var(--z, 1);
@@ -187,19 +200,19 @@
 
   /*
     The owner's name, in the room above the frame, clear of it and of the chips at its right: its
-    line, 14 units high, lies from 26 to 12 units above the frame, centred on the chips. The offset
-    runs from inside the frame's 2-unit border, hence 14 and not 12.
+    line, 14 units high, lies from 26 to 12 units above the frame, centred on the chips (in --lu,
+    as all of the name line). The offset runs from inside the frame's 2-unit border, hence the 2px.
   */
   .owner {
     position: absolute;
     left: 4px;
-    bottom: calc(100% + 14px);
-    max-width: calc(100% - 8px - var(--chips) * var(--chip-room));
+    bottom: calc(100% + 2px + 12 * var(--lu));
+    max-width: max(calc(100% - 8 * var(--lu) - var(--chips) * var(--chip-room)), var(--name-min));
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 13px;
-    line-height: 14px;
+    font-size: calc(13 * var(--lu));
+    line-height: calc(14 * var(--lu));
     font-weight: 700;
     color: var(--owner);
   }
@@ -208,33 +221,39 @@
     The name line of a frame: the chips sit at its right end, centred on the name, 19 units above
     the frame, so from 30 to 8 units above it. The 8 units of clear space keep the line apart from
     the frame's border; more would push the villain's line, whose frame lies 20 units under the
-    surface's top, past the scroller's 24px padding at the largest zoom (2). Above every card,
-    whose z-index the server raises with each move.
+    surface's top, past the scroller's 24px padding at the largest zoom (2). Counter-scaled far
+    out, the line takes 30 × 11/12 ≈ 27.5 screen px, which the padding and those 20 units still
+    hold at 30 %. As wide as the frame, or wider when the chips and --name-min need it. Above
+    every card, whose z-index the server raises with each move.
   */
   .chips {
     position: absolute;
     z-index: 100000;
-    height: 22px;
-    margin-top: -30px;
+    width: max(
+      var(--frame-w),
+      calc(var(--chips) * var(--chip-room) + var(--name-min) + 8 * var(--lu))
+    );
+    height: calc(22 * var(--lu));
+    margin-top: calc(-30 * var(--lu));
     display: flex;
     justify-content: flex-end;
     gap: var(--chip-gap);
-    /* As wide as the frame: the room left of the chips stays the name's, an empty spot. */
+    /* The room left of the chips stays the name's, an empty spot. */
     pointer-events: none;
   }
 
   .chip {
     display: inline-flex;
     align-items: center;
-    gap: 3px;
-    height: 22px;
+    gap: calc(3 * var(--lu));
+    height: 100%;
     min-width: var(--chip-width);
-    padding: 0 7px 0 5px;
+    padding: 0 calc(7 * var(--lu)) 0 calc(5 * var(--lu));
     border: 1px solid color-mix(in srgb, var(--owner) 45%, var(--line-strong));
-    border-radius: 11px;
+    border-radius: calc(11 * var(--lu));
     background: var(--panel-2);
     color: var(--muted);
-    font-size: 12px;
+    font-size: calc(12 * var(--lu));
     line-height: 1;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
@@ -245,9 +264,9 @@
     A finger needs 44 px, whatever the zoom: on touch, an invisible hit area around each chip, 44
     screen px a side (44px / --z in table units, which the surface's zoom brings back to 44px).
     Under the chips (z-index -1 in their stacking context), so that a chip keeps all of its face
-    where the hit area of its neighbour reaches it. It goes at most 18 units below the chip, over
-    the 8 units of clear space above the frame and the frame's 10 units of padding (layout.ts),
-    never over the piles: the rest goes above, into the empty bottom of the row above.
+    where the hit area of its neighbour reaches it. It goes below the chip at most over the clear
+    space above the frame (8 --lu) and the frame's 10 units of padding (layout.ts), never over the
+    piles: the rest goes above, into the empty bottom of the row above.
   */
   @media (pointer: coarse) {
     .chip {
@@ -260,7 +279,7 @@
       position: absolute;
       z-index: -1;
       left: 50%;
-      bottom: calc(-1 * min(18px, max(0px, (var(--hit) - 100%) / 2)));
+      bottom: calc(-1 * min(8 * var(--lu) + 10px, max(0px, (var(--hit) - 100%) / 2)));
       width: max(100%, var(--hit));
       height: max(100%, var(--hit));
       translate: -50% 0;
@@ -268,8 +287,8 @@
   }
 
   .chip :global(svg) {
-    width: 14px;
-    height: 14px;
+    width: calc(14 * var(--lu));
+    height: calc(14 * var(--lu));
   }
 
   .chip .n {

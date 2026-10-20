@@ -334,9 +334,18 @@ describe('CardBox', () => {
     // Wide enough for five 220 px columns, never wider than the window.
     expect(box().style.width).toBe('min(1200px, 100%)');
     const grid = /\n {2}\.mgrid \{([^}]*)\}/.exec(boxSource)?.[1] ?? '';
-    expect(grid).toMatch(/grid-template-columns: repeat\(auto-fill, minmax\(220px, 1fr\)\);/);
+    expect(grid).toMatch(/--min-tile: 220px;/);
+    expect(grid).toMatch(
+      /grid-template-columns: repeat\(auto-fill, minmax\(var\(--min-tile\), 1fr\)\);/,
+    );
     expect(grid).toMatch(/overflow-y: auto;/);
     expect(boxSource).toMatch(/const MIN_TILE = 220;/);
+  });
+
+  it('shows two columns of tiles on a phone', () => {
+    const phone = /@media \(max-width: 600px\) \{\s*\.mgrid \{([^}]*)\}/.exec(boxSource)?.[1];
+    // 2 × 130 px and the 14 px gap fit in a 390 px window's box, its grid's padding taken off.
+    expect(phone).toMatch(/--min-tile: 130px;/);
   });
 
   it("names the deck's hero in the title of a player with two decks", async () => {

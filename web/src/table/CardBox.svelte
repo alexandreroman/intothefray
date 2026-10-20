@@ -61,7 +61,8 @@
   const EDGE_SCROLL = 40;
   const SCROLL_STEP = 12;
   // Tiles are at least this wide, about the preview's card, which does not show while a box is
-  // open: the cards are read in the box. A card is 1.4 times as high as wide.
+  // open: the cards are read in the box. A card is 1.4 times as high as wide. The stylesheet's
+  // --min-tile says it (narrower on a phone), this when it is not read.
   const MIN_TILE = 220;
   const CARD_RATIO = 1.4;
   // Never wider than the window: the box keeps inside it, its grid scrolls.
@@ -338,7 +339,8 @@
     if (inner <= 0) {
       return;
     }
-    const columns = Math.max(1, Math.floor((inner + gap) / (MIN_TILE + gap)));
+    const minTile = parseFloat(style.getPropertyValue('--min-tile')) || MIN_TILE;
+    const columns = Math.max(1, Math.floor((inner + gap) / (minTile + gap)));
     const columnWidth = (inner - gap * (columns - 1)) / columns;
     gridHeight = Math.min(
       2 * columnWidth * CARD_RATIO + gap + padY,
@@ -751,16 +753,25 @@
   }
 
   .mgrid {
+    /* A tile's least width (MIN_TILE). */
+    --min-tile: 220px;
     position: relative;
     display: grid;
-    /* As wide as MIN_TILE at least; the columns fill the row. */
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    /* As wide as --min-tile at least; the columns fill the row. */
+    grid-template-columns: repeat(auto-fill, minmax(var(--min-tile), 1fr));
     align-content: start;
     gap: 14px;
     margin: 0;
     padding: 14px 16px;
     overflow-y: auto;
     list-style: none;
+  }
+
+  /* On a phone, two columns of tiles rather than one card per row. */
+  @media (max-width: 600px) {
+    .mgrid {
+      --min-tile: 130px;
+    }
   }
 
   /* An empty box shows its message in the middle. */

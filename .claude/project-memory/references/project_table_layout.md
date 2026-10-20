@@ -32,6 +32,15 @@ type: project
 - Cards and piles act through their action menu (see "Action menu
   organisation").
 
+- Small screens: while the viewer has not chosen a zoom (`itf-zoom`),
+  the zoom fits the content width (never above 100%; minimum 30% at
+  ≤ 600 px wide, else 50%); the % button goes back to the fit. Owner
+  names and chips keep ≥ 11 px text at any zoom. At ≤ 600 px wide or
+  ≤ 500 px tall, Undo and the zoom control form one bar at the bottom
+  right above the resting hand, and hand cards are sized from the window.
+- Touch mode (no hover, coarse pointer) shows no card preview and no
+  keyboard-shortcuts button; bar buttons are 44 px.
+
 **Why:** decided with the user on 2026-10-19: players add cards as they
 play, so fixed things sit on the left and play grows right; zones and
 their splits added complexity without value.

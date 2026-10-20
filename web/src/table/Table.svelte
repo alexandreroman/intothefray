@@ -2,7 +2,8 @@
   The table page: the top bar, the table column (one surface for everyone,
   scrolling both ways) and the side column (history), which collapses to a
   slim strip. The preview of the hovered card floats over the table's bottom
-  right corner. On a narrow screen there is no side column.
+  right corner; touch mode previews nothing (touch.ts). On a narrow screen
+  there is no side column.
 -->
 <script lang="ts">
   import { tick, untrack } from 'svelte';
@@ -60,7 +61,19 @@
   import { interaction, type PreviewChange } from './interaction.svelte';
   import { handleKey } from './keys';
   import KeysSheet from './KeysSheet.svelte';
-  import { isOutOfPlay, outOfPlayChips, ownerFrames, surfaceSize } from './layout';
+  import {
+    contentWidth,
+    HAND_CARD,
+    HAND_CARD_NARROW,
+    HAND_REST_DROP,
+    isOutOfPlay,
+    outOfPlayChips,
+    ownerFrames,
+    restingStrip,
+    smallHandCard,
+    smallHandDrop,
+    surfaceSize,
+  } from './layout';
   import {
     ALL_ROWS,
     focusRows,
@@ -96,8 +109,18 @@
   } from './focus';
   import SidePanel from './SidePanel.svelte';
   import Surface, { type OwnerBox } from './Surface.svelte';
+  import { TOUCH_MODE_QUERY } from './touch';
   import ZoomControl from './ZoomControl.svelte';
-  import { clampZoom, saveZoom, storedZoom, ZOOM_MAX, ZOOM_MIN } from './zoom';
+  import {
+    clampZoom,
+    fitZoom,
+    forgetZoom,
+    saveZoom,
+    storedZoom,
+    ZOOM_MAX,
+    ZOOM_MIN,
+    ZOOM_MIN_SMALL,
+  } from './zoom';
 
   let {
     session,
@@ -404,15 +427,55 @@
     }),
   );
 
-  // The surface size follows it, so it is declared before it.
-  let zoom = $state(storedZoom());
+  // ---- The screen ----
+
+  // The breakpoints of the @media rules below. On a narrow screen the side
+  // column goes: the history is not shown.
+  const narrow = new MediaQuery('max-width: 900px');
+  // A phone held upright: the table zooms further out.
+  const phone = new MediaQuery('max-width: 600px');
+  // A phone either way up: the hand's cards follow the window, and the controls at the bottom right
+  // gather in one bar above the resting hand.
+  const small = new MediaQuery('(max-width: 600px), (max-height: 500px)');
+  const touchMode = new MediaQuery(TOUCH_MODE_QUERY);
+
+  // The window's size, in px: a small screen's hand cards follow it.
+  let windowWidth = $state(window.innerWidth);
+  let windowHeight = $state(window.innerHeight);
+
+  // The interaction state is shared: it previews nothing in touch mode.
+  $effect.pre(() => {
+    interaction.setTouchMode(touchMode.current);
+  });
+
+  // ---- The zoom ----
+
+  // The zoom the viewer chose (buttons, keys, Ctrl + wheel), remembered; null until then, or since
+  // the % label went back to the fit: the table then fits its content's width (fitZoom).
+  let chosenZoom = $state(storedZoom());
+  const zoomMin = $derived(phone.current ? ZOOM_MIN_SMALL : ZOOM_MIN);
 
   // The scroller pads the surface, so that glows, tilted cards and outlines near an edge show.
   const SCROLL_PADDING = 24;
+  // Kept free for a vertical scrollbar when fitting. Measured with the scrollbar or without, the
+  // fit would make the scrollbar come and go, and the fit with it.
+  const SCROLLBAR_ROOM = 12;
 
   // The table's visible size, in px.
   let visibleWidth = $state(0);
   let visibleHeight = $state(0);
+  // The scroller's width, its scrollbar included, in px.
+  let scrollerWidth = $state(0);
+
+  const fittedZoom = $derived(
+    fitZoom(
+      contentWidth(tableCards, tablePiles, sizeOf),
+      scrollerWidth - 2 * SCROLL_PADDING - SCROLLBAR_ROOM,
+      zoomMin,
+    ),
+  );
+  // The surface size follows it, so it is declared before it.
+  const zoom = $derived(chosenZoom === null ? fittedZoom : clampZoom(chosenZoom, zoomMin));
 
   // In table units: at least what shows, rounded down so that an empty table never scrolls.
   const surface = $derived(
@@ -479,12 +542,40 @@
 
   const drawnPreview = $derived(preview ?? fading);
 
+  // ---- The hand and the controls at the bottom ----
+
+  // The hand's cards: smaller on a narrow screen, and following the window on a small one, where
+  // the resting hand drops by as much of them as elsewhere.
+  const handCard = $derived.by(() => {
+    if (small.current) {
+      return smallHandCard({ w: windowWidth, h: windowHeight });
+    }
+    return narrow.current ? HAND_CARD_NARROW : HAND_CARD;
+  });
+  const handDrop = $derived(small.current ? smallHandDrop(handCard.h) : HAND_REST_DROP);
+
+  // The room between the resting hand's strip and the controls above it on a small screen, in px.
+  const ABOVE_HAND = 8;
+
+  /**
+   * The room under the controls at the bottom of the table (the zoom control,
+   * the narrow Undo, the player selector), in px. On a small screen they sit
+   * above the resting hand, which would cover them otherwise.
+   */
+  const controlsBottom = $derived(
+    small.current && handCards !== undefined
+      ? restingStrip(handCard.h, handDrop) + ABOVE_HAND
+      : TABLE_EDGE_BOTTOM,
+  );
+
   // ---- The Focus panel's corner ----
 
   // Bottom right, unless that hides the whole hovered element (focus.ts).
   let focusCorner = $state<Corner>(HOME);
   // The height of the controls at the bottom right (the zoom control, the narrow Undo): the panel sits above them.
   let cornerHeight = $state(0);
+  // What the panel at home clears: those controls, and how much higher than --edge-bottom they sit.
+  const homeControls = $derived(cornerHeight + controlsBottom - TABLE_EDGE_BOTTOM);
   // The controls' box at the bottom right: the keyboard shortcuts sheet lines up on its right edge.
   let cornerBox = $state<HTMLElement>();
   // The panel's size, kept from the last time it showed; a portrait card's until then.
@@ -527,7 +618,7 @@
       area: focusArea,
       size: { w: focusWidth, h: focusHeight },
       hovered: focusHovered,
-      controls: cornerHeight,
+      controls: homeControls,
       // The player selector at the bottom left.
       taken: pickerShown ? ['bottom-left'] : [],
     });
@@ -537,7 +628,7 @@
   /** The panel's margins in its corner: off the play area's edges, and above the controls at home. */
   function focusMargin(corner: Corner): string {
     const top = corner.startsWith('top') ? FOCUS_MARGINS.top : 0;
-    const bottom = bottomRoom(corner, cornerHeight);
+    const bottom = bottomRoom(corner, homeControls);
     const left = corner.endsWith('left') ? FOCUS_MARGINS.side : 0;
     const right = corner.endsWith('right') ? FOCUS_MARGINS.side : 0;
     return `${top}px ${right}px ${bottom}px ${left}px`;
@@ -554,7 +645,7 @@
       focusWidth,
       focusHeight,
       pickerShown,
-      cornerHeight,
+      homeControls,
     ];
     untrack(measureFocus);
   });
@@ -1333,10 +1424,6 @@
     act({ kind: 'undo' });
   }
 
-  // The breakpoint of the @media rules below. On a narrow screen the side
-  // column goes: the history is not shown.
-  const narrow = new MediaQuery('max-width: 900px');
-
   // Remembered per viewer: the table takes the width the history leaves.
   const HISTORY_COLLAPSED_KEY = 'itf-history-collapsed';
   let historyCollapsed = $state(getPref(HISTORY_COLLAPSED_KEY) === '1');
@@ -1372,21 +1459,24 @@
    * identities stay in view.
    */
   async function setZoom(wanted: number, pointX?: number, pointY?: number): Promise<void> {
-    const next = clampZoom(wanted);
-    if (next === zoom || !wrap) {
+    const from = zoom;
+    const next = clampZoom(wanted, zoomMin);
+    // The viewer chose it, even when it does not change: the table no longer fits its width.
+    chosenZoom = next;
+    saveZoom(next);
+    if (next === from || !wrap) {
       return;
     }
     const box = wrap.getBoundingClientRect();
     const x = pointX ?? box.left;
     const y = pointY ?? box.top + box.height / 2;
-    const scale = next / zoom;
+    const scale = next / from;
 
-    // What lies under the point now, in zoomed px of the surface (past the scroller's padding).
+    // What lies under the point now, in zoomed px of the surface (past the scroller's padding):
+    // the page is not redrawn before the tick.
     const underX = wrap.scrollLeft + x - box.left - SCROLL_PADDING;
     const underY = wrap.scrollTop + y - box.top - SCROLL_PADDING;
 
-    zoom = next;
-    saveZoom(next);
     await tick();
 
     wrap.scrollLeft = Math.max(0, SCROLL_PADDING + underX * scale - (x - box.left));
@@ -1402,13 +1492,20 @@
     void setZoom(wanted);
   }
 
+  /** Back to the zoom that fits the table's width, which follows the window and the table again. */
+  function fitToWidth(): void {
+    wheelTarget = null;
+    chosenZoom = null;
+    forgetZoom();
+  }
+
   function onWheel(event: WheelEvent): void {
     if (!(event.ctrlKey || event.metaKey)) {
       return;
     }
     event.preventDefault();
     const from = wheelTarget ?? zoom;
-    wheelTarget = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, from * Math.exp(-event.deltaY * 0.01)));
+    wheelTarget = Math.min(ZOOM_MAX, Math.max(zoomMin, from * Math.exp(-event.deltaY * 0.01)));
     void setZoom(wheelTarget, event.clientX, event.clientY);
   }
 
@@ -1485,6 +1582,8 @@
   onpointercancel={onPointerCancel}
   onkeydown={onKeydown}
   onresize={measureFocus}
+  bind:innerWidth={windowWidth}
+  bind:innerHeight={windowHeight}
 />
 
 <!-- The zoom is set on the whole page, so a layer outside the table (a drag ghost) can follow it. -->
@@ -1494,10 +1593,13 @@
   class:dragging={interaction.dragging !== null}
   class:history-collapsed={historyCollapsed && !narrow.current}
   class:banding={interaction.band !== null}
+  class:compact={small.current}
+  class:touch={touchMode.current}
   style:--z={zoom}
   style:--you="var(--p{view.you.color + 1})"
   style:--edge="{TABLE_EDGE}px"
   style:--edge-bottom="{TABLE_EDGE_BOTTOM}px"
+  style:--controls-bottom="{controlsBottom}px"
   bind:this={app}
 >
   <div class="top">
@@ -1519,6 +1621,7 @@
     bind:this={wrap}
     bind:clientHeight={visibleHeight}
     bind:clientWidth={visibleWidth}
+    bind:offsetWidth={scrollerWidth}
     onpointerdowncapture={onTablePointerDown}
     onclick={onTableClick}
     oncontextmenu={onTableContextMenu}
@@ -1579,9 +1682,15 @@
 
   <!--
     The bottom right corner of the table. Touch screens have no Z key: without the side column,
-    Undo floats there, left of the zoom control.
+    Undo floats there, left of the zoom control. On a small screen, both share one bar above the
+    resting hand.
   -->
-  <div class="corner" bind:this={cornerBox} bind:clientHeight={cornerHeight}>
+  <div
+    class="corner"
+    class:compact={small.current}
+    bind:this={cornerBox}
+    bind:clientHeight={cornerHeight}
+  >
     {#if narrow.current}
       <div class="undo">
         <!-- aria-disabled rather than disabled, so that the tooltip saying why still shows. -->
@@ -1611,11 +1720,16 @@
           </svg>
         </button>
       </div>
+      {#if small.current}
+        <span class="sep" aria-hidden="true"></span>
+      {/if}
     {/if}
+    <!-- Touch mode has no keyboard: no shortcuts button. -->
     <ZoomControl
       {zoom}
       onzoom={zoomWithButtons}
-      onkeys={toggleKeySheet}
+      onfit={fitToWidth}
+      onkeys={touchMode.current ? undefined : toggleKeySheet}
       keysShown={keySheetShown}
       bind:keysButton
     />
@@ -1636,7 +1750,14 @@
   {/if}
 
   {#if handCards}
-    <Hand cards={handCards} {faceOf} {captionOf} narrow={narrow.current} bind:open={handRaised} />
+    <Hand
+      cards={handCards}
+      {faceOf}
+      {captionOf}
+      cardSize={handCard}
+      restDrop={handDrop}
+      bind:open={handRaised}
+    />
   {/if}
 
   <Flights {faceOf} {captionOf} />
@@ -1777,6 +1898,11 @@
       'top top'
       'table side';
     transition: grid-template-columns 0.2s ease;
+  }
+
+  /* A finger needs taller targets in the bars at the bottom. */
+  .app.touch {
+    --bar-button: 44px;
   }
 
   /* The history collapsed to a strip: the table takes the rest. */
@@ -1952,6 +2078,15 @@
     box-shadow: 0 6px 16px #0008;
   }
 
+  /*
+    On a small screen, above the bar at the bottom right (--controls-bottom, then that bar: its
+    buttons, its 4 px padding and 1 px border both ways, and 8 px between): on a phone, the two
+    would meet.
+  */
+  .app.compact .seatpick {
+    margin-bottom: calc(var(--controls-bottom) + var(--bar-button) + 18px);
+  }
+
   .seatpick .step {
     height: var(--bar-button);
     padding: 0 8px;
@@ -2005,6 +2140,36 @@
     display: flex;
     align-items: center;
     gap: 8px;
+  }
+
+  /*
+    A small screen: Undo and the zoom control share one bar, above the resting hand's strip
+    (--controls-bottom), so that neither covers the hand.
+  */
+  .corner.compact {
+    margin-bottom: var(--controls-bottom);
+    gap: 2px;
+    padding: 4px;
+    background: #141a28eb;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    box-shadow: 0 6px 16px #0008;
+  }
+
+  .corner.compact .undo,
+  .corner.compact :global(.zoomctl) {
+    padding: 0;
+    background: none;
+    border: none;
+    box-shadow: none;
+  }
+
+  /* As the zoom control's own separator. */
+  .corner .sep {
+    width: 1px;
+    height: 20px;
+    margin: 0 2px;
+    background: var(--line-strong);
   }
 
   .undo {

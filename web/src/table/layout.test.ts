@@ -2,11 +2,17 @@ import { describe, expect, it } from 'vitest';
 import type { CardView, PileView } from '../lib/types';
 import {
   cardBox,
+  contentWidth,
   fanPositions,
   footprints,
+  HAND_CARD,
+  HAND_REST_DROP,
   isOutOfPlay,
   outOfPlayChips,
   ownerFrames,
+  restingStrip,
+  smallHandCard,
+  smallHandDrop,
   surfaceSize,
   visualBox,
   type Size,
@@ -322,5 +328,62 @@ describe('fanPositions', () => {
 
   it('returns nothing for no card', () => {
     expect(fanPositions(0, 900)).toEqual([]);
+  });
+});
+
+describe('contentWidth', () => {
+  const std = (): Size => 'std';
+
+  it('reaches the right edge of the last card, pile or frame', () => {
+    const cards = [card({ id: 'a', x: 300 }), card({ id: 'b', x: 1500 })];
+    expect(contentWidth(cards, [], std)).toBe(1640);
+    // A frame reaches 10 units past its piles.
+    expect(contentWidth([], [pile({ id: 'd', kind: 'deck', x: 160 })], std)).toBe(310);
+  });
+
+  it('leaves out the out-of-play piles and the cards off the table, and is 0 for an empty table', () => {
+    const away = [card({ id: 'h', x: 3000, zone: 'hand' })];
+    const aside = [pile({ id: 'aside:p0', kind: 'aside', x: 3000 })];
+    expect(contentWidth(away, aside, std)).toBe(0);
+  });
+
+  it('takes in the turned box of an exhausted card', () => {
+    const turned = contentWidth([card({ x: 0, exhausted: true })], [], std);
+    expect(turned).toBe(
+      Math.ceil(visualBox({ id: 'c', x: 0, y: 0, w: 140, h: 196, exhausted: true }).right),
+    );
+    expect(turned).toBeGreaterThan(140);
+  });
+});
+
+describe("a small screen's hand", () => {
+  it('takes a quarter of the window width, within 64 and 151 px', () => {
+    expect(smallHandCard({ w: 390, h: 844 })).toEqual({ w: 97, h: 136 });
+    expect(smallHandCard({ w: 200, h: 844 })).toEqual({ w: 64, h: 90 });
+    expect(smallHandCard({ w: 600, h: 1200 })).toEqual({ w: 150, h: 210 });
+    expect(smallHandCard({ w: 800, h: 1200 }).w).toBe(151);
+  });
+
+  it('never raises over half the window height, its padding included', () => {
+    for (const window of [
+      { w: 844, h: 390 },
+      { w: 667, h: 375 },
+      { w: 1200, h: 480 },
+    ]) {
+      const { h } = smallHandCard(window);
+      expect(h + 44).toBeLessThanOrEqual(window.h / 2);
+    }
+  });
+
+  it('drops at rest by the share of its cards the desktop hand does', () => {
+    expect(smallHandDrop(HAND_CARD.h)).toBe(HAND_REST_DROP);
+    expect(smallHandDrop(136)).toBe(74);
+  });
+
+  it('shows a strip of the resting hand: its padding and cards, scaled, less the drop', () => {
+    // The desktop hand: 82 % of 26 + 259 + 18 px, 140 px of it under the bottom.
+    expect(restingStrip(HAND_CARD.h, HAND_REST_DROP)).toBe(108);
+    expect(restingStrip(136, 74)).toBe(74);
+    expect(restingStrip(10, 500)).toBe(0);
   });
 });

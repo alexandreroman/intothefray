@@ -148,6 +148,22 @@ export function surfaceSize(
   };
 }
 
+/**
+ * How far right the table's content reaches, in table units: its cards and
+ * piles, and the frames around the owners' piles. The surface starts at 0,
+ * so this is the width the fit zoom brings into view.
+ */
+export function contentWidth(
+  cards: CardView[],
+  piles: PileView[],
+  sizeOf: (c: CardView) => Size,
+): number {
+  const items = footprints(cards, piles, sizeOf).map((item) => visualBox(item).right);
+  const frames = ownerFrames(piles).map((frame) => frame.x + frame.w);
+  // Rounded up: a turned card's box ends between two units.
+  return Math.ceil(Math.max(0, ...items, ...frames));
+}
+
 /** One axis of the surface: the items' end, the length that shows, and the free room past them. */
 function axisSize(end: number, visible: number, freeRoom: number): number {
   if (end <= visible) {
@@ -245,6 +261,51 @@ export const HAND_CARD = { w: 185, h: 259 } as const;
 
 /** A card in the hand on a narrow screen (900 px wide or less). */
 export const HAND_CARD_NARROW = { w: 140, h: 196 } as const;
+
+// A small screen's hand card (a phone, either way up): a quarter of the window's width, within
+// these bounds. 151 px is the desktop card as the resting hand shows it (185 px at 82 %).
+const SMALL_HAND_CARD_MIN_W = 64;
+const SMALL_HAND_CARD_MAX_W = 151;
+const SMALL_HAND_CARD_SHARE = 0.25;
+const HAND_CARD_RATIO = HAND_CARD.h / HAND_CARD.w;
+
+/** The hand's padding above and below its cards, in px (Hand.svelte). */
+const HAND_PADDING_Y = 26 + 18;
+
+/** The resting hand is drawn at this scale, from its bottom edge (Hand.svelte). */
+export const HAND_REST_SCALE = 0.82;
+
+/** How far the resting hand drops below its raised place, in px, but on a small screen. */
+export const HAND_REST_DROP = 140;
+
+/**
+ * A hand card on a small screen (600 px wide or less, or 500 px tall or
+ * less), in px: a quarter of the window's width, between 64 and 151 px wide,
+ * and never so tall that the raised hand takes more than half the window's
+ * height (a phone held sideways).
+ */
+export function smallHandCard(window: { w: number; h: number }): { w: number; h: number } {
+  const fromWidth = window.w * SMALL_HAND_CARD_SHARE;
+  const fromHeight = (window.h / 2 - HAND_PADDING_Y) / HAND_CARD_RATIO;
+  const w = Math.floor(
+    Math.max(SMALL_HAND_CARD_MIN_W, Math.min(SMALL_HAND_CARD_MAX_W, fromWidth, fromHeight)),
+  );
+  return { w, h: Math.round(w * HAND_CARD_RATIO) };
+}
+
+/**
+ * How far a small screen's resting hand drops, in px: the share of its card
+ * height that HAND_REST_DROP is of the desktop card's, so that as much of
+ * each card shows.
+ */
+export function smallHandDrop(cardHeight: number): number {
+  return Math.round((cardHeight * HAND_REST_DROP) / HAND_CARD.h);
+}
+
+/** The height of the resting hand that shows above the window's bottom edge, in px. */
+export function restingStrip(cardHeight: number, drop: number): number {
+  return Math.max(0, Math.round(HAND_REST_SCALE * (HAND_PADDING_Y + cardHeight) - drop));
+}
 
 const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
 

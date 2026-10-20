@@ -1,4 +1,4 @@
-import { clearPrefMemory, getPref, getToken, setPref, setToken } from './prefs';
+import { clearPrefMemory, getPref, getToken, removePref, setPref, setToken } from './prefs';
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -20,6 +20,9 @@ describe('prefs', () => {
       setItem: () => {
         throw new Error('denied');
       },
+      removeItem: () => {
+        throw new Error('denied');
+      },
     };
     vi.stubGlobal('localStorage', broken);
 
@@ -29,6 +32,15 @@ describe('prefs', () => {
     expect(() => setToken('mem-game', 'tok')).not.toThrow();
     expect(getPref('itf-memory')).toBe('Alex');
     expect(getToken('mem-game')).toBe('tok');
+    expect(() => removePref('itf-memory')).not.toThrow();
+    expect(getPref('itf-memory')).toBeNull();
+  });
+
+  it('removes a preference, from the storage and the memory', () => {
+    setPref('itf-zoom', '1.5');
+    removePref('itf-zoom');
+    expect(getPref('itf-zoom')).toBeNull();
+    expect(localStorage.getItem('itf-zoom')).toBeNull();
   });
 
   it('stores tokens per game', () => {

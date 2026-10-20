@@ -433,6 +433,8 @@
     flex-direction: column;
     overflow-y: auto;
     min-width: 180px;
+    /* Never wider than a phone's window, MENU_EDGE kept on each side: a long label is cut short. */
+    max-width: calc(100vw - 16px);
     padding: 5px;
     border: 1px solid var(--line-strong);
     border-radius: 12px;
@@ -468,6 +470,18 @@
     font-size: 13px;
     font-weight: 600;
     text-align: left;
+  }
+
+  /* Cut short with an ellipsis, rather than pushing its key out of the menu. */
+  .table-menu button > span:first-child {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .table-menu button > :not(:first-child) {
+    flex: none;
   }
 
   /* A finger needs a taller target than a mouse. */

@@ -3,6 +3,7 @@
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import Table from './Table.svelte';
 import { interaction, LINGER_MS } from './interaction.svelte';
+import { TOUCH_MODE_QUERY } from './touch';
 import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
 import type { CardView as TableCard, PackFace, PileView, PresenceState, View } from '../lib/types';
 
@@ -161,6 +162,20 @@ async function tap(...entered: HTMLElement[]): Promise<void> {
   }
 }
 
+/** Puts the screen in touch mode (touch.ts), before the table is drawn: only its query matches. */
+function inTouchMode(): void {
+  vi.spyOn(window, 'matchMedia').mockImplementation(
+    (query) =>
+      Object.assign(new EventTarget(), {
+        media: query,
+        matches: query === TOUCH_MODE_QUERY,
+        onchange: null,
+        addListener: () => {},
+        removeListener: () => {},
+      }) as unknown as MediaQueryList,
+  );
+}
+
 beforeEach(() => {
   vi.mocked(loadGameCards).mockResolvedValue();
   vi.mocked(knownCard).mockImplementation(infoOf);
@@ -269,7 +284,8 @@ describe('hovering the table', () => {
 });
 
 describe('a tap on touch', () => {
-  it('previews a card in play and opens its menu, both staying once the finger lifts', async () => {
+  it("in touch mode, opens a card's menu, which stays once the finger lifts, and previews nothing", async () => {
+    inTouchMode();
     await renderTable();
     vi.useFakeTimers();
     await tap(placed('two'));
@@ -277,12 +293,33 @@ describe('a tap on touch', () => {
 
     expect(interaction.contextMenu?.element).toEqual({ kind: 'card', id: 'two' });
     expect(contextMenu()).not.toBeNull();
-    expect(within(preview()).getByRole('img', { name: 'Peter Parker' })).toBeTruthy();
+    expect(interaction.previewed).toBeNull();
+    expect(noPreview()).toBe(true);
+
+    // The next card tapped takes the menu, still with no preview.
+    await tap(placed('mine'));
+    expect(interaction.contextMenu?.element).toEqual({ kind: 'card', id: 'mine' });
+    expect(interaction.previewed).toBeNull();
+    expect(noPreview()).toBe(true);
   });
 
-  it('moves the preview to the next card tapped while a menu is open, with the menu', async () => {
+  it('in touch mode, opens the menus of piles and previews nothing', async () => {
+    inTouchMode();
+    await renderTable();
+    await tap(placed('disc:p0'));
+    expect(interaction.contextMenu?.element).toEqual({ kind: 'pile', id: 'disc:p0' });
+    expect(interaction.previewed).toBeNull();
+    expect(noPreview()).toBe(true);
+
+    await tap(placed('deck:p0'));
+    expect(interaction.contextMenu?.element).toEqual({ kind: 'pile', id: 'deck:p0' });
+    expect(noPreview()).toBe(true);
+  });
+
+  it('on a screen that hovers (a touch laptop), moves the preview with the menu to the next card tapped', async () => {
     await renderTable();
     await tap(placed('two'));
+    expect(within(preview()).getByRole('img', { name: 'Peter Parker' })).toBeTruthy();
 
     // The open menu holds the hover: entering the next card changes nothing until its tap opens it.
     await tap(placed('mine'));
@@ -290,10 +327,9 @@ describe('a tap on touch', () => {
     expect(within(preview()).getByRole('img', { name: 'Spider-Man' })).toBeTruthy();
   });
 
-  it("previews a pile's top card, and no deck's back, as its menu opens", async () => {
+  it("on a screen that hovers, previews a pile's top card, and no deck's back, as its menu opens", async () => {
     await renderTable();
     await tap(placed('disc:p0'));
-    expect(interaction.contextMenu?.element).toEqual({ kind: 'pile', id: 'disc:p0' });
     expect(within(preview()).getByRole('img', { name: 'Spider-Man' })).toBeTruthy();
 
     await tap(placed('deck:p0'));
@@ -465,19 +501,23 @@ describe('tokens and statuses', () => {
   });
 
   it('a tap on a token shows the pill, opens no menu, and the pill stays once the finger lifts', async () => {
+    inTouchMode();
     await renderTable(viewWithCounters());
     vi.useFakeTimers();
     await tap(placed('mine'), counter('mine', 'token:dmg'));
     await vi.advanceTimersByTimeAsync(1000);
 
     expect(pill()?.textContent).toContain('2');
+    expect(interaction.counterPinned).toBe(true);
     expect(contextMenu()).toBeNull();
-    // Its card stays hovered and previewed with it, touch having no hover to keep them.
+    // Its card stays hovered with it, touch having no hover to keep it; touch mode previews nothing.
     expect(interaction.hovered).toEqual({ kind: 'card', id: 'mine' });
-    expect(within(preview()).getByRole('img', { name: 'Spider-Man' })).toBeTruthy();
+    expect(interaction.previewed).toBeNull();
+    expect(noPreview()).toBe(true);
   });
 
   it('a tapped pill stays through taps on − and +, and moves to the next token tapped', async () => {
+    inTouchMode();
     const { session } = await renderTable(viewWithCounters());
     vi.useFakeTimers();
     await tap(placed('mine'), counter('mine', 'token:dmg'));
@@ -497,6 +537,7 @@ describe('tokens and statuses', () => {
   });
 
   it('a tapped pill goes with a tap elsewhere, and its card with it', async () => {
+    inTouchMode();
     await renderTable(viewWithCounters());
     vi.useFakeTimers();
     await tap(placed('mine'), counter('mine', 'token:dmg'));
@@ -508,7 +549,7 @@ describe('tokens and statuses', () => {
     await fireEvent.keyDown(window, { key: 'Escape' });
 
     await tap(placed('mine'), counter('mine', 'token:dmg'));
-    // Outside the table: the card's hover and preview linger out with the pill.
+    // Outside the table: the card's hover lingers out with the pill.
     await tap(screen.getByRole('button', { name: 'Zoom in' }));
     expect(pill()).toBeNull();
     await vi.advanceTimersByTimeAsync(LINGER_MS);
@@ -517,6 +558,7 @@ describe('tokens and statuses', () => {
   });
 
   it('a tapped pill goes with its token, and its card lingers out with it', async () => {
+    inTouchMode();
     const { rerender } = await renderTable(viewWithCounters());
     vi.useFakeTimers();
     await tap(placed('mine'), counter('mine', 'token:dmg'));
@@ -529,6 +571,7 @@ describe('tokens and statuses', () => {
   });
 
   it('Escape lets go of a tapped pill', async () => {
+    inTouchMode();
     await renderTable(viewWithCounters());
     await tap(placed('mine'), counter('mine', 'token:dmg'));
 
