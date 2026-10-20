@@ -165,9 +165,7 @@ const KINDS: Kind[] = [
     name: 'the stage choice box',
     open: async () => {
       await hover(placed('v'));
-      await fireEvent.click(
-        within(bar()!).getByRole('button', { name: 'Choose the villain card to show' }),
-      );
+      await fireEvent.click(within(bar()!).getByRole('button', { name: 'Change card…' }));
     },
     close: 'Close',
   },

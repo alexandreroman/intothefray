@@ -316,15 +316,13 @@ describe('actionsFor', () => {
     expect(groups(items)).toEqual([['exhaust', 'stage'], ['counters'], ['discard', 'moveTo']]);
     const stage = item(items, 'stage');
     expect(stage).toMatchObject({
-      label: 'Choose the main scheme card to show',
-      tip: 'Choose the main scheme card to show',
+      label: 'Change card…',
+      tip: 'Change card…',
       icon: 'stage-pick',
     });
     expect(stage.key).toBeUndefined();
     expect(stage.run?.()).toEqual({ local: 'stageBox' });
-    expect(item(itemsFor({ kind: 'card', id: 'v' }), 'stage').label).toBe(
-      'Choose the villain card to show',
-    );
+    expect(item(itemsFor({ kind: 'card', id: 'v' }), 'stage').label).toBe('Change card…');
   });
 
   it('a stage top card cannot leave the table', () => {

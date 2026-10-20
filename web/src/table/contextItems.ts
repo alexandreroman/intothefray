@@ -5,9 +5,10 @@
 // ContextMenu.svelte draws it.
 
 import type { CardView, PackFace, PileView, View } from '../lib/types';
-import { arrowItem, type ActionItem, type TableElement } from './actions';
-import { pileLabel, stageFaceName } from './boxes';
+import { arrowItem, sideLabel, type ActionItem, type TableElement } from './actions';
+import { pileLabel, stageLabel } from './boxes';
 import { isHidden } from './face';
+import { ownerLook } from './seats';
 
 /** An entry that runs its item when chosen. */
 export interface ContextAction {
@@ -134,19 +135,118 @@ function action(item: ActionItem): ContextAction {
 // ---- The header ----
 
 /**
- * The header of a card's menu: its name in the viewer's language, a stage
- * card's with its stage ("Rhino (stage I)", "The Break-In! (1A)"), as the
- * stage choice and the history name it. `face` is the face it shows, as the
- * table draws it; null while it is unknown.
+ * The header of a menu: an eyebrow saying what the element is (a card's type
+ * and stage) or whose it is (a pile's owner), in its owner's colour, over its
+ * name; a pile's card count beside it.
  */
-export function cardTitle(card: CardView, face: PackFace | null): string {
-  if (isHidden(card)) {
-    return 'Face-down card';
-  }
-  return face ? stageFaceName(face, card.face) : 'Card';
+export interface ContextHeader {
+  /** "Villain · Stage I", "Ally", "Face down"; a pile's owner: "Villain", "Alex · Black Panther". */
+  eyebrow: string;
+  /** The card's name without its stage, or the pile's kind: "Rhino", "Deck", "Encounter discard". */
+  name: string;
+  /** A pile's number of cards. */
+  count?: number;
+  /** CSS colour of the eyebrow: the owner's seat colour, the villain's for the encounter. */
+  color: string;
+  /** The menu's accessible name, the header in one line: "Rhino, Villain, stage I", "Your deck, 34 cards". */
+  label: string;
 }
 
-/** The header of a pile's menu: its name from the viewer's side and its count, "Your deck (34)". */
-export function pileTitle(pile: PileView, view: View): string {
-  return `${pileLabel(pile, view)} (${pile.count})`;
+/** How the eyebrow names the card types; any other type is spelt from its code (typeLabel). */
+const TYPE_LABELS: Record<string, string> = {
+  villain: 'Villain',
+  main_scheme: 'Main scheme',
+  side_scheme: 'Side scheme',
+  minion: 'Minion',
+  hero: 'Hero',
+  alter_ego: 'Alter ego',
+  ally: 'Ally',
+  upgrade: 'Upgrade',
+  support: 'Support',
+  event: 'Event',
+  resource: 'Resource',
+  treachery: 'Treachery',
+  attachment: 'Attachment',
+  environment: 'Environment',
+  obligation: 'Obligation',
+};
+
+/** How the header names a pile's kind: the pile's owner is in the eyebrow. */
+const PILE_NAMES: Record<Exclude<PileView['kind'], 'sideDeck' | 'sideDiscard'>, string> = {
+  deck: 'Deck',
+  discard: 'Discard',
+  encounter: 'Encounter deck',
+  encounterDiscard: 'Encounter discard',
+  victory: 'Victory display',
+  aside: 'Set-aside cards',
+};
+
+/** How the header names a pile: a side pile after its side deck, "Invocation deck". */
+function pileName(pile: PileView): string {
+  switch (pile.kind) {
+    case 'sideDeck':
+      return `${sideLabel(pile)} deck`;
+    case 'sideDiscard':
+      return `${sideLabel(pile)} discard`;
+    default:
+      return PILE_NAMES[pile.kind];
+  }
+}
+
+/**
+ * The header of a card's menu, in its owner's colour: its type and stage over
+ * its name in the viewer's language ("Villain · Stage I" over "Rhino"), as the
+ * stage choice words the stage. `face` is the face it shows, as the table
+ * draws it; null while it is unknown, or hidden.
+ */
+export function cardHeader(card: CardView, face: PackFace | null, view: View): ContextHeader {
+  const color = ownerLook(view, card.owner).color;
+  if (isHidden(card)) {
+    return { eyebrow: 'Face down', name: 'Face-down card', color, label: 'Face-down card' };
+  }
+  if (!face) {
+    return { eyebrow: 'Card', name: 'Unknown card', color, label: 'Unknown card' };
+  }
+  const type = typeLabel(face.type);
+  const stage = stageLabel(face);
+  if (!stage) {
+    return { eyebrow: type, name: face.name, color, label: `${face.name}, ${type}` };
+  }
+  return {
+    eyebrow: `${type} · ${capitalize(stage)}`,
+    name: face.name,
+    color,
+    label: `${face.name}, ${type}, ${stage}`,
+  };
+}
+
+/**
+ * The header of a pile's menu, in its owner's colour: its owner as their
+ * frame names them over its kind and its count ("Villain" over "Encounter
+ * deck (29)"); named from the viewer's side for screen readers ("Your deck, 34 cards").
+ */
+export function pileHeader(pile: PileView, view: View): ContextHeader {
+  const owner = ownerLook(view, pile.owner);
+  const cards = pile.count === 1 ? 'card' : 'cards';
+  return {
+    eyebrow: owner.name,
+    name: pileName(pile),
+    count: pile.count,
+    color: owner.color,
+    label: `${pileLabel(pile, view)}, ${pile.count} ${cards}`,
+  };
+}
+
+/** A card type as the eyebrow says it: "Main scheme"; an unknown one from its code, "Player side scheme". */
+function typeLabel(type: string): string {
+  const known = TYPE_LABELS[type];
+  if (known) {
+    return known;
+  }
+  const spelt = capitalize(type.replaceAll('_', ' '));
+  return spelt === '' ? 'Card' : spelt;
+}
+
+function capitalize(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
 }

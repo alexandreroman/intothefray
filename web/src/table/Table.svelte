@@ -45,7 +45,13 @@
   import type { LocalBox, ShownBox } from './boxes';
   import CardBox from './CardBox.svelte';
   import ContextMenu from './ContextMenu.svelte';
-  import { cardTitle, contextItems, pileTitle, type ContextEntry } from './contextItems';
+  import {
+    cardHeader,
+    contextItems,
+    pileHeader,
+    type ContextEntry,
+    type ContextHeader,
+  } from './contextItems';
   import DragLayer from './DragLayer.svelte';
   import { DRAG_THRESHOLD, intersect, sourceOf, type Point, type Rect } from './drag';
   import Flights from './Flights.svelte';
@@ -70,6 +76,7 @@
   import {
     creditedSeat,
     creditedSeatAmong,
+    ownerLook,
     ownSeats,
     seatColor,
     seatFullLabel,
@@ -382,17 +389,14 @@
   const owners = $derived(
     ownerFrames(tablePiles).map((frame): OwnerBox => {
       const outOfPlay = outOfPlayChips(frame.owner, piles);
-      if (frame.owner === -1) {
-        return { frame, name: 'Villain', color: 'var(--villain)', outOfPlay };
-      }
-      const color = seatColor(view, frame.owner);
+      const { name, color } = ownerLook(view, frame.owner);
+      // Only a seated deck has a hand: neither the villain nor an empty seat.
       const deck = deckAt(frame.owner);
-      if (color === null || !deck) {
-        return { frame, name: `Player ${frame.owner + 1}`, color: 'var(--muted)', outOfPlay };
+      if (!deck) {
+        return { frame, name, color, outOfPlay };
       }
       const inHand = `${deck.handCount} ${deck.handCount === 1 ? 'card' : 'cards'} in hand`;
-      const name = seatFullLabel(view, frame.owner);
-      return { frame, name, color: `var(--p${color + 1})`, tip: inHand, outOfPlay };
+      return { frame, name, color, tip: inHand, outOfPlay };
     }),
   );
 
@@ -812,15 +816,15 @@
     return open ? contextEntriesOf(open.element) : [];
   });
 
-  /** The header of the menu: the card's name as the table shows it, or the pile's with its count. */
-  const contextTitle = $derived.by(() => {
+  /** The header of the menu: what the card or pile is, whose it is; none once it is gone. */
+  const contextHeader = $derived.by((): ContextHeader | null => {
     const element = interaction.contextMenu?.element;
     if (element?.kind === 'pile') {
       const pile = piles.find((p) => p.id === element.id);
-      return pile ? pileTitle(pile, view) : '';
+      return pile ? pileHeader(pile, view) : null;
     }
     const card = element ? cardsById.get(element.id) : undefined;
-    return card ? cardTitle(card, faceOf(card)) : '';
+    return card ? cardHeader(card, faceOf(card), view) : null;
   });
 
   // A redraw that leaves its element without actions (an emptied pile, a card gone) closes it.
@@ -1644,11 +1648,11 @@
     />
   {/if}
 
-  {#if interaction.contextMenu && contextEntries.length > 0 && wrap}
+  {#if interaction.contextMenu && contextHeader && contextEntries.length > 0 && wrap}
     <!-- Created afresh for each opening: the focus it gives back is the one before that opening. -->
     {#key interaction.contextMenu}
       <ContextMenu
-        title={contextTitle}
+        header={contextHeader}
         entries={contextEntries}
         at={interaction.contextMenu.at}
         bounds={wrap}

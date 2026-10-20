@@ -17,6 +17,7 @@
   import type {
     ContextAction,
     ContextEntry,
+    ContextHeader,
     ContextSeparator,
     ContextSubmenu,
   } from './contextItems';
@@ -25,7 +26,7 @@
   import './menu.css';
 
   let {
-    title,
+    header,
     entries,
     at,
     bounds,
@@ -33,8 +34,8 @@
     onrun,
     onclose,
   }: {
-    /** The element's name, as the header shows it and the menu is named. */
-    title: string;
+    /** What the element is and whose, as the header shows it; the menu is named by its label. */
+    header: ContextHeader;
     entries: ContextEntry[];
     /** The point of the screen it opens at. */
     at: { x: number; y: number };
@@ -321,7 +322,7 @@
   class="table-menu context"
   class:placed={place !== null}
   role="menu"
-  aria-label={title}
+  aria-label={header.label}
   tabindex="-1"
   bind:this={menu}
   style:left="{place?.left ?? 0}px"
@@ -331,7 +332,13 @@
   oncontextmenu={(event) => event.preventDefault()}
 >
   <!-- The menu is named by its header, which is not read a second time. -->
-  <div class="title" aria-hidden="true" use:overflowTip>{title}</div>
+  <div class="title" aria-hidden="true" style:--owner={header.color}>
+    <div class="eyebrow" use:overflowTip>{header.eyebrow}</div>
+    <div class="nameline">
+      <span class="name" use:overflowTip>{header.name}</span>
+      {#if header.count !== undefined}<span class="count">{header.count}</span>{/if}
+    </div>
+  </div>
   {#each entries as entry, i (keyOf(entry, i))}
     {#if entry.kind === 'separator'}
       {@render separator()}
@@ -398,18 +405,60 @@
     }
   }
 
-  /* The element's name: not a choice. */
+  /* What the element is, and whose: not a choice. Lined up with the items' labels. */
   .title {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
     max-width: 280px;
-    padding: 7px 11px 8px;
+    padding: 6px 11px 9px;
     margin-bottom: 4px;
     border-bottom: 1px solid var(--line-strong);
-    color: var(--muted);
-    font-size: 12px;
-    font-weight: 700;
+  }
+
+  .eyebrow,
+  .name {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  /* A caps label, as the dropdowns' section headings, in the owner's colour: their frame's. */
+  .eyebrow {
+    color: var(--owner);
+    font-stretch: 75%;
+    font-weight: 800;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .nameline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .name {
+    flex: 1 1 auto;
+    min-width: 0;
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  /* A pile's count: a small pill, its digits lined up as they change. */
+  .count {
+    flex: none;
+    padding: 0 7px;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    background: var(--panel);
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 18px;
   }
 
   /* The default action, which the element's first bar button runs. */

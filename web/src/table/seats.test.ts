@@ -1,6 +1,7 @@
 import {
   creditedSeat,
   creditedSeatAmong,
+  ownerLook,
   ownSeats,
   seatColor,
   seatFullLabel,
@@ -149,5 +150,19 @@ describe('seatFullLabel', () => {
 
   it('is empty for an unknown seat', () => {
     expect(seatFullLabel(makeView(), 3)).toBe('');
+  });
+});
+
+describe('ownerLook', () => {
+  it('names and colours a seat after its player, as its owner frame', () => {
+    expect(ownerLook(makeView(), 2)).toEqual({ name: 'Sam · She-Hulk', color: 'var(--p2)' });
+  });
+
+  it('is the villain for the encounter', () => {
+    expect(ownerLook(makeView(), -1)).toEqual({ name: 'Villain', color: 'var(--villain)' });
+  });
+
+  it('is a muted player number for a seat nobody sits at', () => {
+    expect(ownerLook(makeView(), 3)).toEqual({ name: 'Player 4', color: 'var(--muted)' });
   });
 });

@@ -202,9 +202,9 @@ function spectatorActions(el: TableElement, table: TableView): ActionItem[] {
 
 function cardActions(card: CardView, context: Context): ActionItem[] {
   const items: ActionItem[] = [exhaustItem(card)];
-  const shownBy = context.table.stages.find((stage) => stage.current === card.id);
-  if (shownBy) {
-    items.push(stageItem(shownBy));
+  const shownByStage = context.table.stages.some((stage) => stage.current === card.id);
+  if (shownByStage) {
+    items.push(stageItem());
   } else if (canFlip(card)) {
     items.push(flipItem(card));
   }
@@ -231,14 +231,16 @@ function exhaustItem(card: CardView): ActionItem {
   };
 }
 
-/** The card a stage shows has no Flip: its card choice lists every face instead. */
-function stageItem(stage: Stage): ActionItem {
-  const label = `Choose the ${stage.label.toLowerCase()} card to show`;
+/**
+ * The card a stage shows has no Flip: its card choice lists every face instead. One short
+ * label for the villain and the main scheme alike: the box it opens names its stage.
+ */
+function stageItem(): ActionItem {
   return {
     id: 'stage',
-    label,
+    label: 'Change card…',
     icon: 'stage-pick',
-    tip: label,
+    tip: 'Change card…',
     group: GROUP_TURN,
     run: () => ({ local: 'stageBox' }),
   };

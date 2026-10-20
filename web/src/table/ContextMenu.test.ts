@@ -13,8 +13,9 @@ vi.mock('../lib/catalog', async (importOriginal) => ({
 
 // The catalog of the fixture: code -> faces.
 const FACES: Record<string, Partial<PackFace>[]> = {
-  '01001': [{ name: 'Spider-Man' }],
-  '01094': [{ name: 'Rhino', stage: 'I' }],
+  '01001': [{ name: 'Spider-Man', type: 'hero' }],
+  '01094': [{ name: 'Rhino', type: 'villain', stage: 'I' }],
+  '01099': [{ name: 'Black Cat', type: 'ally' }],
 };
 
 function infoOf(code: string): CardInfo | null {
@@ -85,6 +86,7 @@ function makeView(extra: { cards?: TableCard[] } = {}): View {
       piles: [
         pile('deck:p0', { owner: 0, x: 600, count: 34 }),
         pile('deck:p1', { owner: 1, x: 600, y: 300 }),
+        pile('enc', { kind: 'encounter', x: 900, count: 29 }),
       ],
       hands: { p0: ['h'] },
       stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
@@ -180,6 +182,26 @@ function menuItem(menu: HTMLElement, label: string): HTMLElement {
   return found;
 }
 
+/** What the menu's header shows: its eyebrow, its name, a pile's count, and their colour. */
+function headerOf(menu: HTMLElement): {
+  eyebrow?: string;
+  name?: string;
+  count?: string;
+  color: string;
+} {
+  const title = menu.querySelector<HTMLElement>('.title');
+  if (!title) {
+    throw new Error('no header');
+  }
+  const count = title.querySelector('.count')?.textContent;
+  return {
+    eyebrow: title.querySelector('.eyebrow')?.textContent ?? undefined,
+    name: title.querySelector('.name')?.textContent ?? undefined,
+    ...(count === undefined ? {} : { count }),
+    color: title.style.getPropertyValue('--owner'),
+  };
+}
+
 function bar(): HTMLElement | null {
   return screen.queryByRole('toolbar', { name: 'Actions' });
 }
@@ -206,11 +228,11 @@ describe('the context menu', () => {
     const event = await rightClick(placed('mine'));
     expect(event.defaultPrevented).toBe(true);
 
-    const menu = screen.getByRole('menu', { name: 'Spider-Man' });
+    const menu = screen.getByRole('menu', { name: 'Spider-Man, Hero' });
     expect(menu.style.left).toBe('120px');
     expect(menu.style.top).toBe('80px');
-    // The header names the card, and is no choice.
-    expect(menu.querySelector('.title')?.textContent).toBe('Spider-Man');
+    // The header says what the card is and names it, in its owner's colour; it is no choice.
+    expect(headerOf(menu)).toEqual({ eyebrow: 'Hero', name: 'Spider-Man', color: 'var(--p1)' });
     expect(labels(menu)).toEqual([
       'Exhaust',
       'Add a token',
@@ -303,7 +325,7 @@ describe('the context menu', () => {
   it('greys out what the villain cannot do, and does nothing with it', async () => {
     const { session } = await renderTable();
     await rightClick(placed('v'));
-    const menu = screen.getByRole('menu', { name: 'Rhino (stage I)' });
+    const menu = screen.getByRole('menu', { name: 'Rhino, Villain, stage I' });
 
     const discard = menuItem(menu, 'Discard');
     expect(discard.getAttribute('aria-disabled')).toBe('true');
@@ -321,12 +343,69 @@ describe('the context menu', () => {
   it('names a pile with its count, and runs its default action', async () => {
     const { session } = await renderTable();
     await rightClick(placed('deck:p0'));
-    const menu = screen.getByRole('menu', { name: 'Your deck (34)' });
+    const menu = screen.getByRole('menu', { name: 'Your deck, 34 cards' });
 
     expect(labels(menu)).toEqual(['Draw 1', 'Draw X', 'Top X', 'Search', 'Discard X', 'Shuffle']);
     expect(menuItem(menu, 'Draw 1').classList).toContain('default');
     await fireEvent.click(menuItem(menu, 'Draw 1'));
     expect(session.act).toHaveBeenCalledWith({ kind: 'draw', n: 1 }, 0);
+  });
+
+  it("heads a villain card with its type and stage, in the villain's colour", async () => {
+    await renderTable();
+    await rightClick(placed('v'));
+
+    expect(headerOf(contextMenu()!)).toEqual({
+      eyebrow: 'Villain · Stage I',
+      name: 'Rhino',
+      color: 'var(--villain)',
+    });
+  });
+
+  it("heads a player's ally and a face-down card in the owner's seat colour", async () => {
+    const cards = [
+      card('v', { code: '01094', owner: -1, back: 'villain', x: 300 }),
+      card('cat', { code: '01099', x: 0 }),
+      card('down', { code: undefined, faceDown: true, x: 150 }),
+    ];
+    await renderTable(makeView({ cards }));
+
+    await rightClick(placed('cat'));
+    expect(screen.getByRole('menu', { name: 'Black Cat, Ally' })).toBe(contextMenu());
+    expect(headerOf(contextMenu()!)).toEqual({
+      eyebrow: 'Ally',
+      name: 'Black Cat',
+      color: 'var(--p1)',
+    });
+    await fireEvent.keyDown(contextMenu()!, { key: 'Escape' });
+
+    await rightClick(placed('down'));
+    expect(headerOf(screen.getByRole('menu', { name: 'Face-down card' }))).toEqual({
+      eyebrow: 'Face down',
+      name: 'Face-down card',
+      color: 'var(--p1)',
+    });
+  });
+
+  it("heads a pile with its owner, its kind and a count pill, in the owner's colour", async () => {
+    await renderTable();
+    await rightClick(placed('deck:p0'));
+    expect(headerOf(contextMenu()!)).toEqual({
+      eyebrow: 'Alex · Spider-Man',
+      name: 'Deck',
+      count: '34',
+      color: 'var(--p1)',
+    });
+    await fireEvent.keyDown(contextMenu()!, { key: 'Escape' });
+
+    await rightClick(placed('enc'));
+    const menu = screen.getByRole('menu', { name: 'Encounter deck, 29 cards' });
+    expect(headerOf(menu)).toEqual({
+      eyebrow: 'Villain',
+      name: 'Encounter deck',
+      count: '29',
+      color: 'var(--villain)',
+    });
   });
 
   it('starts an arrow from the card', async () => {
@@ -393,7 +472,7 @@ describe('the context menu', () => {
 
     await fireEvent.pointerDown(mine, { pointerType: 'touch', clientX: 40, clientY: 90 });
     await vi.advanceTimersByTimeAsync(LONG_PRESS_MS);
-    const menu = screen.getByRole('menu', { name: 'Spider-Man' });
+    const menu = screen.getByRole('menu', { name: 'Spider-Man, Hero' });
     expect(menu.style.left).toBe('40px');
     expect(menu.style.top).toBe('90px');
     // The press is over: moving the finger drags nothing, lifting it taps nothing.

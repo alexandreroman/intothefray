@@ -20,6 +20,11 @@
   border-radius: 12px;
   background: var(--panel-2);
   box-shadow: 0 14px 34px #0009;
+  /* A panel of choices, not of text: the hand all over it (headers, separators, padding), and
+     no text cursor or selection. A disabled item keeps the arrow of a disabled button. */
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 /* Cut short, its items keep their height: it scrolls rather than squeezing them. */

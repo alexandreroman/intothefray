@@ -790,9 +790,7 @@ describe('ActionBar', () => {
     const { session } = await renderTable();
     await fireEvent.pointerEnter(placed('v'));
 
-    await fireEvent.click(
-      within(bar()!).getByRole('button', { name: 'Choose the villain card to show' }),
-    );
+    await fireEvent.click(within(bar()!).getByRole('button', { name: 'Change card…' }));
     expect(screen.getByRole('dialog', { name: 'Villain: choose the card to show' })).toBeTruthy();
     expect(session.act).not.toHaveBeenCalled();
   });

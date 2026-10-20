@@ -36,12 +36,19 @@ export function stageFaceName(face: PackFace | undefined, index: number): string
   if (!face) {
     return `Face ${index + 1}`;
   }
+  const stage = stageLabel(face);
+  return stage ? `${face.name} (${stage})` : face.name;
+}
+
+/**
+ * How a stage card's face names its stage: a main scheme by its own number
+ * ("1A"), any other stage card as "stage I". Undefined for a face without a stage.
+ */
+export function stageLabel(face: PackFace): string | undefined {
   if (!face.stage) {
-    return face.name;
+    return undefined;
   }
-  return face.type === 'main_scheme'
-    ? `${face.name} (${face.stage})`
-    : `${face.name} (stage ${face.stage})`;
+  return face.type === 'main_scheme' ? face.stage : `stage ${face.stage}`;
 }
 
 /**

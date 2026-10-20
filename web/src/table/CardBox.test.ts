@@ -445,7 +445,7 @@ describe('CardBox', () => {
   it('stage box marks the face on the table and sends chooseStage', async () => {
     const { session } = await renderTable();
     await fireEvent.pointerEnter(placed('v'));
-    await fireEvent.click(screen.getByRole('button', { name: 'Choose the villain card to show' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Change card…' }));
 
     expect(screen.getByRole('dialog', { name: 'Villain: choose the card to show' })).toBeTruthy();
     // Opening a box lets go of the table: its bar goes.
@@ -477,9 +477,7 @@ describe('CardBox', () => {
   it('stage box lists every face of the main scheme', async () => {
     const { session } = await renderTable();
     await fireEvent.pointerEnter(placed('s'));
-    await fireEvent.click(
-      screen.getByRole('button', { name: 'Choose the main scheme card to show' }),
-    );
+    await fireEvent.click(screen.getByRole('button', { name: 'Change card…' }));
 
     expect(tileNames()).toEqual(['The Break-In! (1A)', 'The Break-In! (1B)']);
     await pick('s:1');
@@ -673,14 +671,12 @@ describe('CardBox', () => {
     await renderTable(view);
 
     await fireEvent.pointerEnter(placed('v'));
-    await fireEvent.click(screen.getByRole('button', { name: 'Choose the villain card to show' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Change card…' }));
     expect(tileNames()).toEqual(['Rhino (stage I)', 'Rhino (stage II)']);
     await fireEvent.click(within(box()).getByRole('button', { name: 'Close' }));
 
     await fireEvent.pointerEnter(placed('s'));
-    await fireEvent.click(
-      screen.getByRole('button', { name: 'Choose the main scheme card to show' }),
-    );
+    await fireEvent.click(screen.getByRole('button', { name: 'Change card…' }));
     expect(tileNames()).toEqual([
       'The Break-In! (1A)',
       'The Break-In! (1B)',

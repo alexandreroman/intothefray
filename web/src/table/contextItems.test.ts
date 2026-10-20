@@ -1,5 +1,5 @@
 import { actionsFor, keyLabel, type ActionItem, type TableElement } from './actions';
-import { cardTitle, contextItems, pileTitle, type ContextEntry } from './contextItems';
+import { cardHeader, contextItems, pileHeader, type ContextEntry } from './contextItems';
 import { knownCard, type CardInfo } from '../lib/catalog';
 import type { Area, CardView, PackFace, PileView, Role, View } from '../lib/types';
 
@@ -11,7 +11,10 @@ vi.mock('../lib/catalog', async (importOriginal) => ({
 // The catalog of the fixture: code -> faces.
 const FACES: Record<string, Partial<PackFace>[]> = {
   '01001': [{ name: 'Spider-Man' }],
-  '01094': [{ name: 'Rhino', stage: 'I' }],
+  '01094': [{ name: 'Rhino', type: 'villain', stage: 'I' }],
+  '01096': [{ name: 'Defensive Network', type: 'player_side_scheme' }],
+  '01098': [{ name: 'Peter Parker', type: 'alter_ego' }],
+  '01099': [{ name: 'Black Cat', type: 'ally' }],
   '01097': [{ name: 'The Break-In!', type: 'main_scheme', stage: '1A', size: 'land' }],
 };
 
@@ -215,7 +218,7 @@ describe('contextItems', () => {
 
     expect(texts(entries)).toEqual([
       '*Exhaust [E]',
-      'Choose the villain card to show',
+      'Change card…',
       '---',
       'Add a token ▸',
       'Add a status ▸',
@@ -284,31 +287,82 @@ describe('contextItems', () => {
   });
 });
 
-describe('cardTitle and pileTitle', () => {
-  it('names a card as the table shows it, a stage card with its stage', () => {
-    const view = makeView();
-    const named = (id: string) => {
-      const found = view.table!.cards.find((c) => c.id === id)!;
-      const face = knownCard(found.code ?? '')?.card.faces[found.face] ?? null;
-      return cardTitle(found, face);
-    };
+describe('cardHeader and pileHeader', () => {
+  /** The header of a card, with the face the table would show for it. */
+  function headerOf(found: CardView, view = makeView()) {
+    const face = found.code ? (infoOf(found.code)?.card.faces[found.face] ?? null) : null;
+    return cardHeader(found, face, view);
+  }
 
-    expect(named('mine')).toBe('Spider-Man');
-    expect(named('v')).toBe('Rhino (stage I)');
-    expect(named('s')).toBe('The Break-In! (1A)');
-    expect(named('down')).toBe('Face-down card');
+  it("gives a villain card its type and stage, in the villain's colour", () => {
+    expect(headerOf(card('v', { code: '01094', owner: -1, back: 'villain' }))).toEqual({
+      eyebrow: 'Villain · Stage I',
+      name: 'Rhino',
+      color: 'var(--villain)',
+      label: 'Rhino, Villain, stage I',
+    });
   });
 
-  it('names a pile from the viewer side, with its count', () => {
+  it("names a main scheme's stage by its number", () => {
+    const header = headerOf(card('s', { code: '01097', owner: -1, back: 'encounter' }));
+    expect(header.eyebrow).toBe('Main scheme · 1A');
+    expect(header.name).toBe('The Break-In!');
+    expect(header.label).toBe('The Break-In!, Main scheme, 1A');
+  });
+
+  it("gives a player's card its type, in its owner's seat colour", () => {
+    // Sam sits at p1 with colour 1, Alex at p0 with colour 0.
+    expect(headerOf(card('cat', { code: '01099', owner: 1 }))).toEqual({
+      eyebrow: 'Ally',
+      name: 'Black Cat',
+      color: 'var(--p2)',
+      label: 'Black Cat, Ally',
+    });
+    const identity = headerOf(card('me', { code: '01098', owner: 0, identity: true }));
+    expect(identity.eyebrow).toBe('Alter ego');
+    expect(identity.color).toBe('var(--p1)');
+  });
+
+  it('spells an unknown type from its code', () => {
+    expect(headerOf(card('p', { code: '01096' })).eyebrow).toBe('Player side scheme');
+  });
+
+  it('names a face-down card, in its owner colour', () => {
+    expect(headerOf(card('down', { code: undefined, faceDown: true }))).toEqual({
+      eyebrow: 'Face down',
+      name: 'Face-down card',
+      color: 'var(--p1)',
+      label: 'Face-down card',
+    });
+  });
+
+  it("names a pile by its owner and its kind, with its count, in the owner's colour", () => {
     const view = makeView();
-    const titled = (id: string) =>
-      pileTitle(
+    const headerOfPile = (id: string) =>
+      pileHeader(
         view.table!.piles.find((p) => p.id === id)!,
         view,
       );
 
-    expect(titled('deck:p0')).toBe('Your deck (34)');
-    expect(titled('enc')).toBe('Encounter deck (29)');
-    expect(titled('disc:p1')).toBe("Sam's discard (3)");
+    expect(headerOfPile('deck:p0')).toEqual({
+      eyebrow: 'Alex',
+      name: 'Deck',
+      count: 34,
+      color: 'var(--p1)',
+      label: 'Your deck, 34 cards',
+    });
+    expect(headerOfPile('enc')).toEqual({
+      eyebrow: 'Villain',
+      name: 'Encounter deck',
+      count: 29,
+      color: 'var(--villain)',
+      label: 'Encounter deck, 29 cards',
+    });
+    expect(headerOfPile('disc:p1')).toMatchObject({
+      eyebrow: 'Sam',
+      name: 'Discard',
+      color: 'var(--p2)',
+    });
+    expect(headerOfPile('encd').label).toBe('Encounter discard, 1 card');
   });
 });
