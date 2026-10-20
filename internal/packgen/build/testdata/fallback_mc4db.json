@@ -256,5 +256,39 @@
   "quantity": 1,
   "imagesrc": "/bundles/cards/EN/mighty_thor_by_rainy/99001.webp",
   "backimagesrc": ""
+ },
+ {
+  "code": "06098",
+  "name": "Other Thor Card",
+  "type_code": "treachery",
+  "faction_code": "encounter",
+  "pack_code": "thor_by_ffg",
+  "pack_creator": "FFG",
+  "card_set_code": "thor_modular_by_ffg",
+  "card_set_name": "Thor Modular",
+  "card_set_type_name_code": "modular",
+  "stage": null,
+  "linked_to_code": null,
+  "duplicate_of_code": null,
+  "quantity": 1,
+  "imagesrc": "/bundles/cards/EN/thor_by_ffg/06098.webp",
+  "backimagesrc": ""
+ },
+ {
+  "code": "63001",
+  "name": "Two-Faced Card",
+  "type_code": "environment",
+  "faction_code": "encounter",
+  "pack_code": "fear_no_evil_by_ffg",
+  "pack_creator": "FFG",
+  "card_set_code": "kingpin_by_ffg",
+  "card_set_name": "Kingpin",
+  "card_set_type_name_code": "villain",
+  "stage": null,
+  "linked_to_code": null,
+  "duplicate_of_code": null,
+  "quantity": 1,
+  "imagesrc": "/bundles/cards/EN/fear_no_evil_by_ffg/63001.webp",
+  "backimagesrc": "/bundles/cards/EN/fear_no_evil_by_ffg/63001b.webp"
  }
 ]

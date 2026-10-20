@@ -22,22 +22,27 @@ const (
 )
 
 // withFallback completes the marvelcdb records and packs with the official
-// mc4db records of the cards marvelcdb lacks, and lists the records it adds,
-// sorted by source, pack and code. Its arguments are left unchanged.
+// mc4db records of the cards marvelcdb lacks. It lists the records it adds,
+// sorted by source, pack and code, and the candidates it cannot add, sorted by
+// code. Its arguments are left unchanged.
 //
 // A card's faces never mix sources: the mc4db records of a base code are all
 // added, and only when marvelcdb has no record of that base code. An added
-// record goes to the marvelcdb pack of the same code, else of the same name;
-// a pack marvelcdb lacks is added from the mc4db pack list, its code without
-// the official tag. A record whose pack is in neither source is left out. Set
-// codes lose the official tag too, and image paths stay relative to the mc4db
-// host.
+// record goes to the marvelcdb pack of the same code, else of the same name,
+// else of the same code without the official tag; any other pack is added from
+// the mc4db pack list, its code without the official tag. A record whose pack
+// is in neither source is left out. Set codes lose the official tag too, and
+// image paths stay relative to the mc4db host.
+//
+// A record that holds both faces of a card under one code (it has a back
+// image) is left out and reported: the marvelcdb schema has one image per
+// record, so its back would be lost.
 func withFallback(
 	mc []marvelcdb.Card,
 	mcPacks []marvelcdb.Pack,
 	mc4dbCards []mc4db.Card,
 	mc4dbPacks []mc4db.Pack,
-) (cards []marvelcdb.Card, packs []marvelcdb.Pack, added []report.Fallback) {
+) (cards []marvelcdb.Card, packs []marvelcdb.Pack, added []report.Fallback, unsupported []report.Unsupported) {
 	knownBases := make(map[string]bool, len(mc))
 	for _, card := range mc {
 		knownBases[baseCode(card.Code)] = true
@@ -51,6 +56,15 @@ func withFallback(
 		}
 		packCode, found := mapper.packCodeOf(card.PackCode)
 		if !found {
+			continue
+		}
+		if card.BackImageSrc != "" {
+			unsupported = append(unsupported, report.Unsupported{
+				Code:   card.Code,
+				Name:   card.Name,
+				Pack:   packCode,
+				Reason: "mc4db record holds both faces under one code",
+			})
 			continue
 		}
 
@@ -70,7 +84,8 @@ func withFallback(
 	slices.SortFunc(added, func(a, b report.Fallback) int {
 		return cmp.Or(cmp.Compare(a.Source, b.Source), cmp.Compare(a.Pack, b.Pack), cmp.Compare(a.Code, b.Code))
 	})
-	return cards, mapper.packs, added
+	slices.SortFunc(unsupported, func(a, b report.Unsupported) int { return cmp.Compare(a.Code, b.Code) })
+	return cards, mapper.packs, added, unsupported
 }
 
 // packMapper maps mc4db pack codes to marvelcdb pack codes, adding to its
@@ -104,7 +119,8 @@ func (m *packMapper) add(mcPack marvelcdb.Pack) {
 }
 
 // packCodeOf returns the marvelcdb pack code of an mc4db pack, false when
-// neither source lists the pack.
+// neither source lists the pack. A pack is looked up by code, then by name,
+// then by code without the official tag, and added only when all three fail.
 func (m *packMapper) packCodeOf(mc4dbCode string) (string, bool) {
 	if m.codes[mc4dbCode] {
 		return mc4dbCode, true
@@ -118,11 +134,13 @@ func (m *packMapper) packCodeOf(mc4dbCode string) (string, bool) {
 	if code, found := m.byName[strings.ToLower(source.Name)]; found {
 		return code, true
 	}
-	added := marvelcdb.Pack{
-		Code:     strings.ReplaceAll(mc4dbCode, officialTag, ""),
-		Name:     source.Name,
-		Position: source.Position,
+	// The same pack under another name, e.g. thor_by_ffg named "Thor Hero
+	// Pack" for marvelcdb's thor: adding it would make two packs of one code.
+	code := strings.ReplaceAll(mc4dbCode, officialTag, "")
+	if m.codes[code] {
+		return code, true
 	}
+	added := marvelcdb.Pack{Code: code, Name: source.Name, Position: source.Position}
 	m.add(added)
 	return added.Code, true
 }

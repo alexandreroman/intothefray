@@ -30,6 +30,7 @@ func fallbackInputs(t *testing.T) Inputs {
 		MC4DB: readJSON[mc4db.Card](t, "testdata/fallback_mc4db.json"),
 		MC4DBPacks: []mc4db.Pack{
 			{Code: "thor", Name: "Thor", Position: 6, Creator: "FFG"},
+			{Code: "thor_by_ffg", Name: "Thor Hero Pack", Position: 6, Creator: "FFG"},
 			{Code: "fear_no_evil_by_ffg", Name: "Fear No Evil", Position: 60, Creator: "FFG"},
 			{Code: "next_box_by_ffg", Name: "Next Box", Position: 61, Creator: "FFG"},
 			{Code: "mighty_thor_by_rainy", Name: "Mighty Thor", Position: 2021, Creator: "Rainy"},
@@ -39,7 +40,7 @@ func fallbackInputs(t *testing.T) Inputs {
 
 func TestWithFallbackAddsMissingRecords(t *testing.T) {
 	in := fallbackInputs(t)
-	cards, _, _ := withFallback(in.MC, in.MCPacks, in.MC4DB, in.MC4DBPacks)
+	cards, _, _, _ := withFallback(in.MC, in.MCPacks, in.MC4DB, in.MC4DBPacks)
 	added := make(map[string]marvelcdb.Card)
 	for _, card := range cards[len(in.MC):] {
 		added[card.Code] = card
@@ -55,7 +56,9 @@ func TestWithFallbackAddsMissingRecords(t *testing.T) {
 		{"other face of a missing card", "60159b", "fne", "kingpin"},
 		{"nemesis set", "60030", "fne", "daredevil_nemesis"},
 		{"pack mapped by code", "06099", "thor", "thor_modular"},
+		{"pack mapped by code without the official tag", "06098", "thor", "thor_modular"},
 		{"pack missing from marvelcdb", "61001", "next_box", "next_villain"},
+		{"both faces under one code", "63001", "", ""},
 		{"other face of a base code marvelcdb has", "60001b", "", ""},
 		{"fan-made card in an official pack", "06035a", "", ""},
 		{"fan-made pack", "99001", "", ""},
@@ -88,7 +91,7 @@ func TestWithFallbackPacksAndReport(t *testing.T) {
 	in := fallbackInputs(t)
 	mcPacks := slices.Clone(in.MCPacks)
 
-	_, packs, added := withFallback(in.MC, in.MCPacks, in.MC4DB, in.MC4DBPacks)
+	_, packs, added, unsupported := withFallback(in.MC, in.MCPacks, in.MC4DB, in.MC4DBPacks)
 
 	wantPacks := append(slices.Clone(mcPacks), marvelcdb.Pack{Code: "next_box", Name: "Next Box", Position: 61})
 	if !reflect.DeepEqual(packs, wantPacks) {
@@ -111,10 +114,18 @@ func TestWithFallbackPacksAndReport(t *testing.T) {
 		fallback("fne", "60163b", "Public Support"),
 		fallback("fne", "60164", "Bear Hug"),
 		fallback("next_box", "61001", "Next Villain"),
+		fallback("thor", "06098", "Other Thor Card"),
 		fallback("thor", "06099", "Lost Thor Card"),
 	}
 	if !reflect.DeepEqual(added, wantAdded) {
 		t.Errorf("got report %+v, want %+v", added, wantAdded)
+	}
+
+	wantUnsupported := []report.Unsupported{{
+		Code: "63001", Name: "Two-Faced Card", Pack: "fne", Reason: "mc4db record holds both faces under one code",
+	}}
+	if !reflect.DeepEqual(unsupported, wantUnsupported) {
+		t.Errorf("got unsupported %+v, want %+v", unsupported, wantUnsupported)
 	}
 }
 
@@ -206,5 +217,8 @@ func TestBuildSupportsScenarioOverFallbackSet(t *testing.T) {
 	}
 	if len(result.Fallback) == 0 {
 		t.Error("got no fallback entry")
+	}
+	if !slices.ContainsFunc(result.Report, func(entry report.Unsupported) bool { return entry.Code == "63001" }) {
+		t.Errorf("report %+v lacks the two-faced mc4db record 63001", result.Report)
 	}
 }

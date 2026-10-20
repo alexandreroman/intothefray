@@ -55,7 +55,7 @@ type Result struct {
 // card, localized images included, i.e. the URLs whose liveness Build expects
 // in Inputs.Alive.
 func ImageURLs(in Inputs) []string {
-	in.MC, in.MCPacks, _ = withFallback(in.MC, in.MCPacks, in.MC4DB, in.MC4DBPacks)
+	in.MC, in.MCPacks, _, _ = withFallback(in.MC, in.MCPacks, in.MC4DB, in.MC4DBPacks)
 	cards, _ := BuildCards(in.MC, in.CB, in.Curated.Cards)
 	localizeCards(cards, faceCodesOf(in.MC), frenchSourcesOf(in))
 
@@ -79,13 +79,15 @@ func ImageURLs(in Inputs) []string {
 func Build(in Inputs) (Result, error) {
 	// Every step below sees the merged records, as ImageURLs does.
 	var fallback []report.Fallback
-	in.MC, in.MCPacks, fallback = withFallback(in.MC, in.MCPacks, in.MC4DB, in.MC4DBPacks)
+	var fallbackProblems []report.Unsupported
+	in.MC, in.MCPacks, fallback, fallbackProblems = withFallback(in.MC, in.MCPacks, in.MC4DB, in.MC4DBPacks)
 	if err := checkCerebroOverrides(in.Curated.Cards, in.CB); err != nil {
 		return Result{}, err
 	}
 	fr := frenchSourcesOf(in)
 	faceCodes := faceCodesOf(in.MC)
 	cards, problems := BuildCards(in.MC, in.CB, in.Curated.Cards)
+	problems = append(problems, fallbackProblems...)
 	localizeCards(cards, faceCodes, fr)
 	cards, dropped := dropDeadImages(cards, in.Alive)
 	problems = append(problems, dropped...)
