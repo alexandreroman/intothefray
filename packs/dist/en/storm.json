@@ -848,7 +848,8 @@
         "36005"
       ],
       "side": {
-        "label": "Weather"
+        "label": "Weather",
+        "back": "player"
       }
     }
   ],

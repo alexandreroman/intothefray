@@ -316,7 +316,7 @@ func TestEmbeddedHeroSetup(t *testing.T) {
 			{"09001", []sideDeck{
 				{"doctor_strange_invocation_deck", pack.SideDeck{Label: "Invocation", TopFaceUp: true, Discard: true}},
 			}},
-			{"36001", []sideDeck{{"storm_weather_deck", pack.SideDeck{Label: "Weather"}}}},
+			{"36001", []sideDeck{{"storm_weather_deck", pack.SideDeck{Label: "Weather", Back: pack.BackPlayer}}}},
 			{"59001", []sideDeck{
 				{"hercules_labor_deck", pack.SideDeck{Label: "Labor", Back: pack.BackPlayer}},
 				{"hercules_gift_deck", pack.SideDeck{Label: "Gift", Back: pack.BackEncounter}},
