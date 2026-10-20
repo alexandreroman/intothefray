@@ -16,7 +16,8 @@ type: project
   and the first release covers the Core Set plus a few packs, the rest
   listed as "not supported yet".
 - Lost seats (lost token) and host transfer are not handled in v1.
-- Backend hosting is undecided; the backend stays portable.
+- The backend runs on an OVH VPS at `api.intothefray.xyz` (see
+  `project_deployment.md`); it stays portable.
 
 **Why:** decided during the design (2026-10-18).
 
