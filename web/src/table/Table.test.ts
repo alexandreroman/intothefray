@@ -174,6 +174,43 @@ function shownIds(): string[] {
 function ownerBoxes(): HTMLElement[] {
   return [...document.querySelectorAll<HTMLElement>('.surface .ownerbox')];
 }
+
+/** The chips of an owner's frame (-1: the villain's), by their accessible names. */
+function chipNames(owner: number): string[] {
+  const chips = document.querySelectorAll<HTMLElement>(
+    `.surface .chips[data-owner="${owner}"] button`,
+  );
+  return [...chips].map((chip) => chip.getAttribute('aria-label') ?? '');
+}
+
+function chip(pile: string): HTMLElement {
+  const element = document.querySelector<HTMLElement>(`.surface .chip[data-pile="${pile}"]`);
+  if (!element) {
+    throw new Error(`no chip for ${pile}`);
+  }
+  return element;
+}
+
+/** Rhino's table with out-of-play piles: two cards in the victory display, the scenario's set-aside cards empty. */
+function withOutOfPlay(view: View): View {
+  const inPile = (id: string, owner: number) => card(id, { code: '01001', owner, zone: 'pile' });
+  view.table!.cards.push(inPile('q1', -1), inPile('q2', -1), inPile('q3', 0));
+  view.table!.cards.push(inPile('q4', 1), inPile('q5', 1), inPile('q6', 1));
+  view.table!.piles.push(
+    pile('vic', { kind: 'victory', x: 0, y: 30, count: 2, cards: ['q1', 'q2'] }),
+    pile('saside', { kind: 'aside', x: 0, y: 30, count: 0, cards: [] }),
+    pile('aside:p0', { kind: 'aside', owner: 0, x: 0, y: 500, count: 1, cards: ['q3'] }),
+    pile('aside:p1', {
+      kind: 'aside',
+      owner: 1,
+      x: 0,
+      y: 830,
+      count: 3,
+      cards: ['q4', 'q5', 'q6'],
+    }),
+  );
+  return view;
+}
 function zoomLabel(): HTMLElement {
   return screen.getByRole('button', { name: 'Back to 100%' });
 }
@@ -295,6 +332,63 @@ describe('Table', () => {
     for (const id of ['vic', 'saside', 'aside:p1']) {
       expect(surface().querySelector(`[data-id="${id}"]`)).toBeNull();
     }
+  });
+
+  it("opens each owner's out-of-play piles from chips on their frame, with their counts", async () => {
+    render(Table, { session: fakeSession(), view: withOutOfPlay(makeView()) });
+    await catalogLoaded();
+
+    // The villain's frame: the victory display, then the scenario's set-aside cards.
+    expect(chipNames(-1)).toEqual(['Victory display (2)', 'Set-aside cards (0): empty']);
+    // Each player's frame: their own set-aside cards.
+    expect(chipNames(0)).toEqual(['Set-aside cards (1)']);
+    expect(chipNames(1)).toEqual(['Set-aside cards (3)']);
+    expect(chip('vic').dataset.tip).toBe('Victory display (2)');
+    expect(chip('vic').textContent?.trim()).toBe('2');
+    expect(chip('vic').getAttribute('aria-disabled')).toBe('false');
+    // The name leaves room for its frame's chips.
+    expect(ownerBoxes().map((box) => box.style.getPropertyValue('--chips'))).toEqual([
+      '2',
+      '1',
+      '1',
+    ]);
+
+    await fireEvent.click(chip('vic'));
+    const box = screen.getByRole('dialog', { name: 'Victory display' });
+    expect(within(box).getAllByRole('listitem')).toHaveLength(2);
+  });
+
+  it('shows no chip for an out-of-play pile the table does not have', async () => {
+    render(Table, { session: fakeSession(), view: makeView() });
+    await catalogLoaded();
+
+    expect(document.querySelector('.surface .chips')).toBeNull();
+    expect(ownerBoxes().map((box) => box.style.getPropertyValue('--chips'))).toEqual([
+      '0',
+      '0',
+      '0',
+    ]);
+  });
+
+  it('an empty out-of-play pile has a dimmed chip that opens nothing', async () => {
+    render(Table, { session: fakeSession(), view: withOutOfPlay(makeView()) });
+    await catalogLoaded();
+
+    const empty = chip('saside');
+    expect(empty.getAttribute('aria-disabled')).toBe('true');
+    expect(empty.dataset.tip).toBe('Set-aside cards (0): empty');
+    await fireEvent.click(empty);
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('a spectator opens the out-of-play piles from their chips too', async () => {
+    const view = withOutOfPlay(makeView());
+    view.you = { role: 'spectator', name: 'Kim', color: -1, host: false };
+    render(Table, { session: fakeSession(), view });
+    await catalogLoaded();
+
+    await fireEvent.click(chip('aside:p1'));
+    expect(screen.getByRole('dialog', { name: "Sam's set-aside cards" })).toBeTruthy();
   });
 
   it('leaves room past the rightmost and the lowest card', async () => {
@@ -909,7 +1003,7 @@ describe('Table', () => {
     // Alex's deck is private: it has a bar, nothing to drag.
     expect(at('d0').classList).not.toContain('grab');
     expect(at('d0').classList).not.toContain('inert');
-    // An empty discard pile without a bar is not even pointed at.
+    // An empty pile has no bar: it is not even pointed at.
     expect(at('x1').classList).toContain('inert');
     unmount();
 

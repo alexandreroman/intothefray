@@ -52,7 +52,7 @@
   import { interaction } from './interaction.svelte';
   import { handleKey } from './keys';
   import KeysSheet from './KeysSheet.svelte';
-  import { isOutOfPlay, ownerFrames, surfaceSize } from './layout';
+  import { isOutOfPlay, outOfPlayChips, ownerFrames, surfaceSize } from './layout';
   import {
     ALL_ROWS,
     focusRows,
@@ -371,24 +371,25 @@
     });
   }
 
-  // Out-of-play piles are not drawn: the bars of their owner's deck and discard pile open them.
+  // Out-of-play piles are not drawn: the chips on their owner's frame open them.
   const tablePiles = $derived(shown(piles.filter((pile) => !isOutOfPlay(pile))));
   const tableCards = $derived(shown(cards.filter((card) => card.zone === 'table')));
 
   /** The frames around each owner's deck and discard pile, named after their owner. */
   const owners = $derived(
     ownerFrames(tablePiles).map((frame): OwnerBox => {
+      const outOfPlay = outOfPlayChips(frame.owner, piles);
       if (frame.owner === -1) {
-        return { frame, name: 'Villain', color: 'var(--villain)' };
+        return { frame, name: 'Villain', color: 'var(--villain)', outOfPlay };
       }
       const color = seatColor(view, frame.owner);
       const deck = deckAt(frame.owner);
       if (color === null || !deck) {
-        return { frame, name: `Player ${frame.owner + 1}`, color: 'var(--muted)' };
+        return { frame, name: `Player ${frame.owner + 1}`, color: 'var(--muted)', outOfPlay };
       }
       const inHand = `${deck.handCount} ${deck.handCount === 1 ? 'card' : 'cards'} in hand`;
       const name = seatFullLabel(view, frame.owner);
-      return { frame, name, color: `var(--p${color + 1})`, tip: inHand };
+      return { frame, name, color: `var(--p${color + 1})`, tip: inHand, outOfPlay };
     }),
   );
 
@@ -677,17 +678,6 @@
 
   // ---- The action bar ----
 
-  /** Whether an empty pile still has a bar: one opening its owner's out-of-play piles. */
-  function hasBarWhenEmpty(pile: PileView): boolean {
-    const role = view.you.role;
-    if (role === undefined) {
-      return false;
-    }
-    const you = { areas: view.you.areas, role };
-    const items = actionsFor({ kind: 'pile', id: pile.id }, view, you, lang);
-    return Array.isArray(items) && items.length > 0;
-  }
-
   /** Whether the element is still where it was hovered: on the table, or in the hand. */
   function isPresent(element: TableElement): boolean {
     switch (element.kind) {
@@ -832,7 +822,7 @@
   function runLocal(local: LocalAction, element: TableElement): void {
     switch (local.local) {
       case 'browseBox':
-        localBox = { kind: 'browse', pile: local.pile };
+        openBrowseBox(local.pile);
         return;
       case 'stageBox': {
         const stage = view.table?.stages.find((s) => s.current === element.id);
@@ -842,6 +832,11 @@
         return;
       }
     }
+  }
+
+  /** Browse needs no server: the box lists the cards of a public pile, spectators' too. */
+  function openBrowseBox(pile: string): void {
+    localBox = { kind: 'browse', pile };
   }
 
   function answer(n: number): void {
@@ -1012,6 +1007,11 @@
       event.preventDefault();
       event.stopPropagation();
       endArrowAt(tableCardOf(target));
+      return;
+    }
+    // The chips of an owner's frame are buttons of their own: a press on one is neither a ping
+    // nor an empty spot, which would let go of the selection and could start a rubber band.
+    if (target.closest('.surface .chip')) {
       return;
     }
     // Alt + click pings the spot (spec 5.8); spectators cannot ping.
@@ -1401,7 +1401,7 @@
         {owners}
         {topOf}
         {faceOf}
-        barWhenEmpty={hasBarWhenEmpty}
+        onbrowse={openBrowseBox}
         width={surface.w}
         height={surface.h}
         {firstPlayer}

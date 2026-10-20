@@ -26,8 +26,8 @@ type: project
   chips (icon and count) at the right of the owner frame's name line:
   the villain frame shows the victory display and the scenario's
   set-aside cards, a player frame that player's set-aside cards. A chip
-  opens the Browse box. This is step 8 of the plan, not built yet: until
-  then the deck and discard bars open them.
+  opens the Browse box; an empty one is dimmed and inert. Pile bars hold
+  only their own pile's actions.
 
 **Why:** UX review of 2026-10-20 against DragnCards and OCTGN: the bars
 mixed icons and words, moved the same action between elements and hid

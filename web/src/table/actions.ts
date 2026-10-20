@@ -33,7 +33,7 @@ export interface CountQuestion {
 export type LocalAction =
   /** The card choice of the stage the hovered card shows. */
   | { local: 'stageBox' }
-  /** The cards of a public pile: the hovered one, or one of its owner's out-of-play piles. */
+  /** The cards of a public pile: the hovered one. */
   | { local: 'browseBox'; pile: string };
 
 /**
@@ -79,12 +79,10 @@ const GROUP_MARK = 1;
 const GROUP_LEAVE = 2;
 
 // Groups of a pile, in bar order: its main action (Draw, Reveal), the ways to
-// look at its cards, the rarer actions, then the buttons opening its owner's
-// out-of-play piles, always last.
+// look at its cards, then the rarer actions.
 const GROUP_MAIN = 0;
 const GROUP_LOOK = 1;
 const GROUP_MORE = 2;
-const GROUP_OUT_OF_PLAY = 3;
 
 const SEPARATOR: ActionItem = { id: 'sep', label: '-', group: 0 };
 
@@ -123,9 +121,8 @@ interface Context {
 /**
  * Returns the actions the viewer may take on el, or the text to show instead
  * when the element belongs to someone else. Hand cards (their keys are
- * handled by keys.ts) and elements no longer on the table get nothing; an
- * empty pile only the buttons opening its owner's out-of-play piles.
- * Spectators only look: see spectatorActions.
+ * handled by keys.ts), empty piles and elements no longer on the table get
+ * nothing. Spectators only look: see spectatorActions.
  */
 export function actionsFor(
   el: TableElement,
@@ -152,11 +149,11 @@ export function actionsFor(
     }
     case 'pile': {
       const pile = context.table.piles.find((p) => p.id === el.id);
-      if (!pile) {
+      // An empty pile is inert: nothing to draw, look at or search.
+      if (!pile || pile.count === 0) {
         return [];
       }
-      // An empty deck or discard pile still opens its owner's out-of-play piles.
-      return pile.count > 0 ? pileActions(pile, context) : outOfPlayItems(pile, context.table);
+      return pileActions(pile, context);
     }
     case 'hand':
       return [];
@@ -173,26 +170,19 @@ function spectatorActions(el: TableElement, table: TableView): ActionItem[] {
       return [];
     case 'pile': {
       const pile = table.piles.find((p) => p.id === el.id);
-      if (!pile) {
+      // Not drawn on the table, the out-of-play piles open from the chips on their owner's frame.
+      if (!pile || pile.count === 0 || isOutOfPlay(pile)) {
         return [];
-      }
-      // Not drawn on the table: their box opens from their owner's deck or discard pile.
-      if (isOutOfPlay(pile)) {
-        return [];
-      }
-      if (pile.count === 0) {
-        return outOfPlayItems(pile, table);
       }
       // The server lists the cards of the public piles only.
-      const items: ActionItem[] = [];
       // A side deck showing its top card lists that card alone: it is not browsed.
-      if (pile.cards !== undefined && pile.kind !== 'sideDeck') {
-        // No key: spectators get no game keys (P5b-R6).
-        const browse = browseItem(pile);
-        delete browse.key;
-        items.push(browse);
+      if (pile.cards === undefined || pile.kind === 'sideDeck') {
+        return [];
       }
-      return [...items, ...outOfPlayItems(pile, table)];
+      // No key: spectators get no game keys (P5b-R6).
+      const browse = browseItem(pile);
+      delete browse.key;
+      return [browse];
     }
     case 'hand':
       return [];
@@ -495,20 +485,15 @@ function hasPile(table: TableView, id: string): boolean {
 
 /**
  * Every bar has the same order, a separator between the groups: the main
- * action, the ways to look at the cards, the rarer actions (the ⋯ dropdown of
- * a deck), then the owner's out-of-play piles.
+ * action, the ways to look at the cards, then the rarer actions (the ⋯
+ * dropdown of a deck).
  */
 function pileActions(pile: PileView, context: Context): ActionItem[] | { text: string } {
   // Shared piles have no owner (-1).
   const own = pile.owner === -1 || context.seats.includes(pile.owner);
-  const outOfPlay = outOfPlayItems(pile, context.table);
   switch (pile.kind) {
     case 'deck':
       if (!own) {
-        // Only its owner may touch it: what is left are their out-of-play piles.
-        if (outOfPlay.length > 0) {
-          return outOfPlay;
-        }
         const name = seatPlayer(context.view, pile.owner)?.name ?? 'another player';
         return { text: `Belongs to ${name}: only they can use it.` };
       }
@@ -518,10 +503,9 @@ function pileActions(pile: PileView, context: Context): ActionItem[] | { text: s
         lookTopItem(pile, 'your deck'),
         searchItem(pile),
         moreMenu(pile, 'your deck', true),
-        ...outOfPlay,
       ];
     case 'sideDeck': {
-      // Private to its owner, like a deck; it opens no out-of-play pile.
+      // Private to its owner, like a deck.
       if (!own) {
         const name = seatPlayer(context.view, pile.owner)?.name ?? 'another player';
         return { text: `Belongs to ${name}: only they can use it.` };
@@ -543,75 +527,17 @@ function pileActions(pile: PileView, context: Context): ActionItem[] | { text: s
         lookTopItem(pile, 'the encounter deck'),
         searchItem(pile),
         moreMenu(pile, 'the encounter deck', true),
-        ...outOfPlay,
       ];
     case 'discard':
     case 'encounterDiscard':
     case 'sideDiscard':
       // Anyone may search a discard pile; only its owner shuffles it into its deck.
-      return own
-        ? [searchItem(pile), shuffleBackItem(pile), ...outOfPlay]
-        : [searchItem(pile), ...outOfPlay];
+      return own ? [searchItem(pile), shuffleBackItem(pile)] : [searchItem(pile)];
     case 'victory':
     case 'aside':
-      // Not drawn on the table: their box opens from their owner's deck or discard pile.
+      // Not drawn on the table: the chips on their owner's frame open their box.
       return [];
   }
-}
-
-/**
- * The out-of-play piles are not drawn on the table: the bar of a deck or a
- * discard pile opens its owner's, each button saying how many cards it holds.
- * The encounter piles open the victory display and the scenario's set-aside
- * cards, a player's piles that player's set-aside cards.
- */
-function outOfPlayItems(pile: PileView, table: TableView): ActionItem[] {
-  switch (pile.kind) {
-    case 'encounter':
-    case 'encounterDiscard':
-      return [
-        outOfPlayItem(table, 'vic', 'victory', 'Victory display', 'trophy'),
-        outOfPlayItem(table, 'saside', 'aside', 'Set-aside cards', 'hourglass'),
-      ].filter((item) => item !== null);
-    case 'deck':
-    case 'discard': {
-      const aside = outOfPlayItem(
-        table,
-        `aside:p${pile.owner}`,
-        'aside',
-        'Set-aside cards',
-        'hourglass',
-      );
-      return aside ? [aside] : [];
-    }
-    default:
-      return [];
-  }
-}
-
-/** The button opening an out-of-play pile, disabled while it is empty; null without that pile. */
-function outOfPlayItem(
-  table: TableView,
-  pileId: string,
-  id: string,
-  name: string,
-  icon: IconName,
-): ActionItem | null {
-  const pile = table.piles.find((p) => p.id === pileId);
-  if (!pile) {
-    return null;
-  }
-  const label = `${name} (${pile.count})`;
-  const empty = pile.count === 0;
-  return {
-    id,
-    label,
-    icon,
-    tip: empty ? `${label}: empty` : label,
-    disabled: empty,
-    group: GROUP_OUT_OF_PLAY,
-    run: () => ({ local: 'browseBox', pile: pile.id }),
-  };
 }
 
 /**

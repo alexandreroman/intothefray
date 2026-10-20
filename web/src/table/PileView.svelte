@@ -15,7 +15,6 @@
     pile,
     top,
     face = null,
-    barWhenEmpty = false,
     draggable = false,
   }: {
     pile: PileView;
@@ -23,8 +22,6 @@
     top?: TableCard;
     /** The catalog face of the top card, null while unknown. */
     face?: PackFace | null;
-    /** Empty, it still has a bar: the buttons opening its owner's out-of-play piles. */
-    barWhenEmpty?: boolean;
     /** The viewer can drag from it (sourceOf): the pointer grabs it; else it only has a bar. */
     draggable?: boolean;
   } = $props();
@@ -35,9 +32,8 @@
   // with the cards still flying to it.
   const arriving = $derived((pile.cards ?? []).filter((id) => motion.flying.has(id)).length);
   const count = $derived(pile.count - interaction.takenFrom(pile.id).length - arriving);
+  // An empty pile has no bar: it is inert, like an empty spot.
   const empty = $derived(count === 0);
-  // An empty pile without a bar is like an empty spot.
-  const inert = $derived(empty && !barWhenEmpty);
   const targeted = $derived(
     interaction.dropOn?.kind === 'pile' && interaction.dropOn.id === pile.id,
   );
@@ -55,7 +51,7 @@
   const previewChange = $derived<PreviewChange>(shownTop ? 'show' : 'clear');
 
   function onEnter(event: PointerEvent): void {
-    if (inert) {
+    if (empty) {
       interaction.enterNothing(event);
     } else {
       interaction.enter(element, event, previewChange);
@@ -63,7 +59,7 @@
   }
 
   function onTap(): void {
-    if (!inert) {
+    if (!empty) {
       interaction.select(element, previewChange);
     }
   }
@@ -75,7 +71,7 @@
   role="presentation"
   data-id={pile.id}
   class:empty
-  class:inert
+  class:inert={empty}
   class:grab={draggable}
   class:highlighted
   class:locked

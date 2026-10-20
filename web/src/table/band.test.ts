@@ -392,3 +392,55 @@ describe('the rubber band', () => {
     );
   });
 });
+
+describe('the chips of an owner frame', () => {
+  // The encounter deck frames the villain's piles, whose victory display has a chip.
+  const PILES: PileView[] = [
+    { id: 'enc', kind: 'encounter', owner: -1, x: 600, y: 0, count: 20 },
+    { id: 'vic', kind: 'victory', owner: -1, x: 0, y: 0, count: 1, cards: [] },
+  ];
+
+  function victoryChip(): HTMLElement {
+    const chip = document.querySelector<HTMLElement>('.surface .chip[data-pile="vic"]');
+    if (!chip) {
+      throw new Error('no victory display chip');
+    }
+    return chip;
+  }
+
+  async function pressChip(extra: Partial<PointerEventInit> = {}) {
+    await fireEvent.pointerDown(victoryChip(), {
+      clientX: 700,
+      clientY: 30,
+      button: 0,
+      pointerType: 'mouse',
+      ...extra,
+    });
+  }
+
+  it('a press on a chip is no empty spot: no band, the selection, the hover and the arrows stay', async () => {
+    const { session } = await renderTable(makeView({ piles: PILES, arrows: [OWN_ARROW] }));
+    interaction.setGroup(new Set(['mine']));
+    await fireEvent.pointerEnter(placed('other'), { clientX: 450, clientY: 400 });
+
+    await pressChip();
+    await moveTo(450, 500);
+    expect(interaction.band).toBeNull();
+    expect(drawnBand()).toBeNull();
+    await letGo(450, 500);
+
+    expect([...interaction.group]).toEqual(['mine']);
+    expect(interaction.hovered).toEqual({ kind: 'card', id: 'other' });
+    expect(session.act).not.toHaveBeenCalled();
+  });
+
+  it('Alt + click on a chip pings nothing', async () => {
+    const { session } = await renderTable(makeView({ piles: PILES }));
+
+    await pressChip({ altKey: true });
+
+    expect(session.sendPresence).not.toHaveBeenCalledWith(
+      expect.objectContaining({ ping: expect.anything() }),
+    );
+  });
+});

@@ -1,12 +1,13 @@
 <!--
   The table's one surface, where every card and pile lies, in table units:
-  the dot grid, a framed box around each owner's deck and discard pile, the
-  piles, the cards and the first player token. The table scrolls it both
-  ways and zooms it as a whole.
+  the dot grid, a framed box around each owner's deck and discard pile, with
+  the chips opening that owner's out-of-play piles, the piles, the cards and
+  the first player token. The table scrolls it both ways and zooms it as a
+  whole.
 -->
 <script lang="ts" module>
   import type { TableElement } from './actions';
-  import type { OwnerFrame } from './layout';
+  import type { OutOfPlayChip, OwnerFrame } from './layout';
 
   /** The frame around an owner's deck and discard pile, with the name above it. */
   export interface OwnerBox {
@@ -17,6 +18,8 @@
     color: string;
     /** The tooltip: how many cards the player holds. */
     tip?: string;
+    /** The owner's out-of-play piles, as chips at the right of the name line. */
+    outOfPlay: OutOfPlayChip[];
   }
 </script>
 
@@ -25,6 +28,7 @@
   import CardView from './CardView.svelte';
   import { backCaption } from './face';
   import FirstPlayerToken from './FirstPlayerToken.svelte';
+  import Icons from './Icons.svelte';
   import { overflowTip } from '../lib/overflowTip';
   import { interaction } from './interaction.svelte';
   import PileView from './PileView.svelte';
@@ -35,7 +39,7 @@
     owners,
     topOf,
     faceOf,
-    barWhenEmpty,
+    onbrowse,
     width,
     height,
     firstPlayer,
@@ -51,8 +55,8 @@
     topOf: (pile: Pile) => TableCard | undefined;
     /** The catalog face a card shows, null while unknown or hidden. */
     faceOf: (card: TableCard | undefined) => PackFace | null;
-    /** Whether a pile still has a bar when it is empty. */
-    barWhenEmpty: (pile: Pile) => boolean;
+    /** Opens the Browse box of an out-of-play pile, from its chip. */
+    onbrowse: (pile: string) => void;
     /** The surface size, in table units. */
     width: number;
     height: number;
@@ -65,6 +69,19 @@
   } = $props();
 
   const TOKEN_TIP = 'First player: drag it to the next player';
+
+  /** What a chip says, in its tooltip and to screen readers: "Victory display (1)". */
+  function chipTip(chip: OutOfPlayChip): string {
+    const label = `${chip.label} (${chip.count})`;
+    return chip.count === 0 ? `${label}: empty` : label;
+  }
+
+  /** An empty pile has nothing to browse: its chip is aria-disabled, so that its tooltip shows. */
+  function openChip(chip: OutOfPlayChip): void {
+    if (chip.count > 0) {
+      onbrowse(chip.pile);
+    }
+  }
 </script>
 
 <!-- Card z-indexes come from the server and can be negative: the surface isolates them. -->
@@ -75,6 +92,7 @@
       data-owner={owner.frame.owner}
       data-tip={owner.tip}
       style:--owner={owner.color}
+      style:--chips={owner.outOfPlay.length}
       style:left="{owner.frame.x}px"
       style:top="{owner.frame.y}px"
       style:width="{owner.frame.w}px"
@@ -86,16 +104,41 @@
         <span class="sr-only">: {owner.tip}</span>
       {/if}
     </div>
+    {#if owner.outOfPlay.length > 0}
+      <!--
+        Out of the frame, which lies under the piles and the cards, so that the chips stay above
+        anything dropped over the name line; a press on them is no press on an empty spot.
+      -->
+      <div
+        class="chips"
+        role="group"
+        aria-label="{owner.name}: out-of-play piles"
+        data-owner={owner.frame.owner}
+        style:--owner={owner.color}
+        style:left="{owner.frame.x}px"
+        style:top="{owner.frame.y}px"
+        style:width="{owner.frame.w}px"
+      >
+        {#each owner.outOfPlay as chip (chip.pile)}
+          <button
+            type="button"
+            class="chip"
+            data-pile={chip.pile}
+            data-tip={chipTip(chip)}
+            aria-label={chipTip(chip)}
+            aria-disabled={chip.count === 0}
+            onclick={() => openChip(chip)}
+          >
+            <Icons name={chip.kind === 'victory' ? 'trophy' : 'hourglass'} />
+            <span class="n">{chip.count}</span>
+          </button>
+        {/each}
+      </div>
+    {/if}
   {/each}
   {#each piles as pile (pile.id)}
     {@const top = topOf(pile)}
-    <PileView
-      {pile}
-      {top}
-      face={faceOf(top)}
-      barWhenEmpty={barWhenEmpty(pile)}
-      draggable={canDrag({ kind: 'pile', id: pile.id })}
-    />
+    <PileView {pile} {top} face={faceOf(top)} draggable={canDrag({ kind: 'pile', id: pile.id })} />
   {/each}
   {#each cards as card (card.id)}
     <CardView
@@ -122,6 +165,10 @@
 
 <style>
   .surface {
+    /* A chip is at most this wide with a two-digit count: the name leaves room for the chips. */
+    --chip-width: 46px;
+    --chip-gap: 4px;
+    --chip-room: calc(var(--chip-width) + var(--chip-gap));
     position: relative;
     isolation: isolate;
     zoom: var(--z, 1);
@@ -138,12 +185,12 @@
     background: color-mix(in srgb, var(--owner) 6%, transparent);
   }
 
-  /* The owner's name, in the room above the frame, clear of it. */
+  /* The owner's name, in the room above the frame, clear of it and of the chips at its right. */
   .owner {
     position: absolute;
     left: 4px;
     bottom: calc(100% + 6px);
-    max-width: calc(100% - 8px);
+    max-width: calc(100% - 8px - var(--chips) * var(--chip-room));
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -151,6 +198,56 @@
     line-height: 14px;
     font-weight: 700;
     color: var(--owner);
+  }
+
+  /*
+    The name line of a frame: the chips sit at its right end, centred on the name, 13 units above
+    the frame, so from 24 to 2 units above it. Above every card, whose z-index the server raises
+    with each move.
+  */
+  .chips {
+    position: absolute;
+    z-index: 100000;
+    height: 22px;
+    margin-top: -24px;
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--chip-gap);
+    /* As wide as the frame: the room left of the chips stays the name's, an empty spot. */
+    pointer-events: none;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    height: 22px;
+    min-width: var(--chip-width);
+    padding: 0 7px 0 5px;
+    border: 1px solid color-mix(in srgb, var(--owner) 45%, var(--line-strong));
+    border-radius: 11px;
+    background: var(--panel-2);
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    pointer-events: auto;
+  }
+
+  .chip :global(svg) {
+    width: 14px;
+    height: 14px;
+  }
+
+  .chip .n {
+    color: var(--text);
+  }
+
+  .chip:hover:not([aria-disabled='true']) {
+    background: var(--hover);
+    border-color: var(--owner);
+    color: var(--text);
   }
 
   .sr-only {

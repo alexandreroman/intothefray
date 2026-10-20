@@ -5,6 +5,7 @@ import {
   fanPositions,
   footprints,
   isOutOfPlay,
+  outOfPlayChips,
   ownerFrames,
   surfaceSize,
   visualBox,
@@ -203,6 +204,37 @@ describe('ownerFrames', () => {
       pile({ id: 'sided:p0:0', kind: 'sideDiscard', owner: 0, x: 520, y: 360 }),
     ];
     expect(ownerFrames(piles)).toEqual([{ owner: 0, x: -10, y: 350, w: 680, h: 216 }]);
+  });
+});
+
+describe('outOfPlayChips', () => {
+  const piles = [
+    pile({ id: 'enc', kind: 'encounter', owner: -1 }),
+    pile({ id: 'saside', kind: 'aside', owner: -1, count: 5 }),
+    pile({ id: 'vic', kind: 'victory', owner: -1, count: 0 }),
+    pile({ id: 'deck:p0', kind: 'deck', owner: 0 }),
+    pile({ id: 'aside:p0', kind: 'aside', owner: 0, count: 2 }),
+    pile({ id: 'aside:p1', kind: 'aside', owner: 1, count: 1 }),
+  ];
+
+  it("gives the villain the victory display, then the scenario's set-aside cards", () => {
+    expect(outOfPlayChips(-1, piles)).toEqual([
+      { pile: 'vic', kind: 'victory', label: 'Victory display', count: 0 },
+      { pile: 'saside', kind: 'aside', label: 'Set-aside cards', count: 5 },
+    ]);
+  });
+
+  it("gives a player their own set-aside cards, and nobody else's", () => {
+    expect(outOfPlayChips(0, piles)).toEqual([
+      { pile: 'aside:p0', kind: 'aside', label: 'Set-aside cards', count: 2 },
+    ]);
+  });
+
+  it('leaves out the piles the table does not have', () => {
+    expect(outOfPlayChips(2, piles)).toEqual([]);
+    expect(outOfPlayChips(-1, [pile({ id: 'vic', kind: 'victory', owner: -1 })])).toEqual([
+      { pile: 'vic', kind: 'victory', label: 'Victory display', count: 10 },
+    ]);
   });
 });
 

@@ -167,6 +167,15 @@ function placed(id: string): HTMLElement {
   return element;
 }
 
+/** The chip opening an out-of-play pile, on its owner's frame (-1: the villain's). */
+function chip(owner: number, name: string): HTMLElement {
+  const chips = document.querySelector<HTMLElement>(`.surface .chips[data-owner="${owner}"]`);
+  if (!chips) {
+    throw new Error(`no chips on the frame of ${owner}`);
+  }
+  return within(chips).getByRole('button', { name });
+}
+
 function box(): HTMLElement {
   return screen.getByRole('dialog');
 }
@@ -550,8 +559,7 @@ describe('CardBox', () => {
       pile('aside:p1', { kind: 'aside', owner: 1, count: 1, cards: ['q1'] }),
     );
     const { session } = await renderTable(view);
-    await fireEvent.pointerEnter(placed('enc'));
-    await fireEvent.click(screen.getByRole('button', { name: 'Set-aside cards (1)' }));
+    await fireEvent.click(chip(-1, 'Set-aside cards (1)'));
 
     await fireEvent.click(
       within(box()).getByRole('button', { name: 'Shuffle into the encounter deck' }),
@@ -568,23 +576,20 @@ describe('CardBox', () => {
       pile('saside', { kind: 'aside', count: 1, cards: ['q1'] }),
     );
     const player = await renderTable(view);
-    await fireEvent.pointerEnter(placed('deck:p1'));
-    await fireEvent.click(screen.getByRole('button', { name: 'Set-aside cards (1)' }));
+    await fireEvent.click(chip(1, 'Set-aside cards (1)'));
     expect(within(box()).queryByRole('button', { name: /^Shuffle into/ })).toBeNull();
     player.unmount();
 
     await renderTable(asSpectator(view));
-    await fireEvent.pointerEnter(placed('enc'));
-    await fireEvent.click(screen.getByRole('button', { name: 'Set-aside cards (1)' }));
+    await fireEvent.click(chip(-1, 'Set-aside cards (1)'));
     expect(within(box()).queryByRole('button', { name: /^Shuffle into/ })).toBeNull();
   });
 
   it('browse lists a public pile without the server', async () => {
     const { session } = await renderTable();
-    // The victory display is not drawn on the table: the encounter deck's bar opens it.
+    // The victory display is not drawn on the table: a chip on the villain's frame opens it.
     expect(document.querySelector('.surface [data-id="vic"]')).toBeNull();
-    await fireEvent.pointerEnter(placed('enc'));
-    await fireEvent.click(screen.getByRole('button', { name: 'Victory display (1)' }));
+    await fireEvent.click(chip(-1, 'Victory display (1)'));
 
     expect(screen.getByRole('dialog', { name: 'Victory display' })).toBeTruthy();
     expect(tileNames()).toEqual(['Hard to Keep Down']);
@@ -602,8 +607,7 @@ describe('CardBox', () => {
     await renderTable(view);
 
     for (const name of ['Victory display (3)', 'Set-aside cards (3)']) {
-      await fireEvent.pointerEnter(placed('enc'));
-      await fireEvent.click(screen.getByRole('button', { name }));
+      await fireEvent.click(chip(-1, name));
       expect(tileNames()).toEqual(['Web-Shooter', 'Swinging Web Kick', 'Hard to Keep Down']);
       expect(tileBadges()).toEqual([]);
       await fireEvent.click(within(box()).getByRole('button', { name: 'Close' }));
@@ -652,19 +656,14 @@ describe('CardBox', () => {
     ]);
   });
 
-  it('an empty encounter deck still opens the victory display', async () => {
+  it('an empty encounter deck has no bar: its frame still opens the victory display', async () => {
     const view = makeView();
     view.table!.piles = view.table!.piles.map((p) => (p.id === 'enc' ? { ...p, count: 0 } : p));
     await renderTable(view);
 
     await fireEvent.pointerEnter(placed('enc'));
-    const bar = tableBar() as HTMLElement;
-    expect(
-      within(bar)
-        .getAllByRole('button')
-        .map((b) => b.getAttribute('aria-label')),
-    ).toEqual(['Victory display (1)']);
-    await fireEvent.click(within(bar).getByRole('button', { name: 'Victory display (1)' }));
+    expect(tableBar()).toBeNull();
+    await fireEvent.click(chip(-1, 'Victory display (1)'));
     expect(screen.getByRole('dialog', { name: 'Victory display' })).toBeTruthy();
   });
 
@@ -677,15 +676,11 @@ describe('CardBox', () => {
     await fireEvent.keyDown(window, { key: 'k' });
     expect(screen.queryByRole('dialog')).toBeNull();
 
-    // The encounter deck opens the victory display, read-only: no tile actions.
+    // The encounter deck has no bar; the villain's frame opens the victory display, read-only:
+    // no tile actions.
     await fireEvent.pointerEnter(placed('enc'));
-    const bar = tableBar() as HTMLElement;
-    expect(
-      within(bar)
-        .getAllByRole('button')
-        .map((b) => b.getAttribute('aria-label')),
-    ).toEqual(['Victory display (1)']);
-    await fireEvent.click(within(bar).getByRole('button', { name: 'Victory display (1)' }));
+    expect(tableBar()).toBeNull();
+    await fireEvent.click(chip(-1, 'Victory display (1)'));
     await fireEvent.pointerEnter(tile('q1'));
     expect(tileBar()).toBeNull();
     await fireEvent.click(within(box()).getByRole('button', { name: 'Close' }));

@@ -67,7 +67,7 @@ export function cardBox(size: Size, opts: { faceDown?: boolean; onPile?: boolean
 
 /**
  * A victory display or set-aside pile. They are not drawn on the table: the
- * action bar of their owner's deck and discard pile opens them.
+ * chips on their owner's frame open them (outOfPlayChips).
  */
 export function isOutOfPlay(pile: PileView): boolean {
   return OUT_OF_PLAY_KINDS.includes(pile.kind);
@@ -197,6 +197,35 @@ export function ownerFrames(piles: PileView[]): OwnerFrame[] {
     const right = Math.max(...own.map((p) => p.x + PILE_BOX.w)) + FRAME_PADDING;
     const bottom = Math.max(...own.map((p) => p.y + PILE_BOX.h)) + FRAME_PADDING;
     return { owner, x: left, y: top, w: right - left, h: bottom - top };
+  });
+}
+
+/** An out-of-play pile, as the chip on its owner's frame shows it. */
+export interface OutOfPlayChip {
+  /** The pile the chip opens. */
+  pile: string;
+  kind: 'victory' | 'aside';
+  /** What the pile is: "Victory display", "Set-aside cards". */
+  label: string;
+  count: number;
+}
+
+/**
+ * The chips of an owner's frame, for the out-of-play piles the table has:
+ * the victory display then the scenario's set-aside cards on the villain's
+ * frame (owner -1), a player's own set-aside cards on theirs. The pile ids are
+ * the server's (internal/game/state.go).
+ */
+export function outOfPlayChips(owner: number, piles: readonly PileView[]): OutOfPlayChip[] {
+  const victory = { pile: 'vic', kind: 'victory', label: 'Victory display' } as const;
+  const setAside = { kind: 'aside', label: 'Set-aside cards' } as const;
+  const wanted =
+    owner === -1
+      ? [victory, { ...setAside, pile: 'saside' }]
+      : [{ ...setAside, pile: `aside:p${owner}` }];
+  return wanted.flatMap((chip) => {
+    const pile = piles.find((p) => p.id === chip.pile);
+    return pile ? [{ ...chip, count: pile.count }] : [];
   });
 }
 
