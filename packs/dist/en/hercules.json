@@ -14,7 +14,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59001A.jpg",
             "https://marvelcdb.com/bundles/cards/59001a.png"
           ],
-          "handSize": 4
+          "handSize": 4,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/hercules/59001a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Hercules",
@@ -24,7 +31,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59001B.jpg",
             "https://marvelcdb.com/bundles/cards/59001b.png"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/hercules/59001b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "hercules",
@@ -45,7 +59,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59002.jpg",
             "https://marvelcdb.com/bundles/cards/59002.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/hercules/59002.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "hercules_labor_deck",
@@ -62,7 +83,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59003.jpg",
             "https://marvelcdb.com/bundles/cards/59003.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/hercules/59003.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "hercules_labor_deck",
@@ -79,7 +107,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59004.jpg",
             "https://marvelcdb.com/bundles/cards/59004.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/hercules/59004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "hercules_labor_deck",
@@ -96,7 +131,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59005.jpg",
             "https://marvelcdb.com/bundles/cards/59005.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/hercules/59005.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "hercules_gift_deck",
@@ -113,7 +155,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59006.jpg",
             "https://marvelcdb.com/bundles/cards/59006.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/hercules/59006.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "hercules_gift_deck",
@@ -130,7 +179,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59007.jpg",
             "https://marvelcdb.com/bundles/cards/59007.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/hercules/59007.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "hercules_gift_deck",
@@ -147,7 +203,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59008.jpg",
             "https://marvelcdb.com/bundles/cards/59008.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/hercules/59008.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "hercules",
@@ -164,7 +227,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59009.jpg",
             "https://marvelcdb.com/bundles/cards/59009.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/hercules/59009.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "hercules",
@@ -181,7 +251,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59010.jpg",
             "https://marvelcdb.com/bundles/cards/59010.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/hercules/59010.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "hercules",
@@ -198,7 +275,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59011.jpg",
             "https://marvelcdb.com/bundles/cards/59011.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/hercules/59011.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "hercules",
@@ -215,7 +299,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59012.jpg",
             "https://marvelcdb.com/bundles/cards/59012.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/hercules/59012.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "hercules",
@@ -232,7 +323,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59013.jpg",
             "https://marvelcdb.com/bundles/cards/59013.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/hercules/59013.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "hercules",
@@ -249,7 +347,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59014.jpg",
             "https://marvelcdb.com/bundles/cards/59014.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/hercules/59014.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "hercules",
@@ -266,7 +371,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59015.jpg",
             "https://marvelcdb.com/bundles/cards/59015.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/hercules/59015.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "hercules",
@@ -283,7 +395,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59016.jpg",
             "https://marvelcdb.com/bundles/cards/59016.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/hercules/59016.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "hercules",
@@ -300,7 +419,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59017.jpg",
             "https://marvelcdb.com/bundles/cards/59017.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/hercules/59017.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "hercules",
@@ -318,7 +444,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59018.jpg",
             "https://marvelcdb.com/bundles/cards/59018.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/hercules/59018.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -335,7 +468,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59019.jpg",
             "https://marvelcdb.com/bundles/cards/59019.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/hercules/59019.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -352,7 +492,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59020.jpg",
             "https://marvelcdb.com/bundles/cards/59020.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/hercules/59020.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -368,7 +515,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59023.jpg",
             "https://marvelcdb.com/bundles/cards/59023.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/hercules/59023.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -384,7 +538,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59024.jpg",
             "https://marvelcdb.com/bundles/cards/59024.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/hercules/59024.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -400,7 +561,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59025.jpg",
             "https://marvelcdb.com/bundles/cards/59025.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/hercules/59025.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -416,7 +584,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59026.jpg",
             "https://marvelcdb.com/bundles/cards/59026.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/hercules/59026.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -436,6 +611,13 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/hercules/59028.webp"
+              ]
+            }
           }
         }
       ],
@@ -452,7 +634,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59035.jpg",
             "https://marvelcdb.com/bundles/cards/59035.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/hercules/59035.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "hercules",
@@ -469,7 +658,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59036.jpg",
             "https://marvelcdb.com/bundles/cards/59036.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/hercules/59036.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "hercules_nemesis",
@@ -486,7 +682,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59037.jpg",
             "https://marvelcdb.com/bundles/cards/59037.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/hercules/59037.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "hercules_nemesis",
@@ -507,6 +710,13 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/hercules/59038.webp"
+              ]
+            }
           }
         }
       ],
@@ -524,7 +734,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59039.jpg",
             "https://marvelcdb.com/bundles/cards/59039.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/hercules/59039.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "hercules_nemesis",
@@ -541,7 +758,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59040.jpg",
             "https://marvelcdb.com/bundles/cards/59040.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/hercules/59040.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "hercules_nemesis",
@@ -562,6 +786,13 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/hercules/59041.webp"
+              ]
+            }
           }
         }
       ],
@@ -579,7 +810,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59042.jpg",
             "https://marvelcdb.com/bundles/cards/59042.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/hercules/59042.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "all_versus_all",
@@ -596,7 +834,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59043.jpg",
             "https://marvelcdb.com/bundles/cards/59043.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/hercules/59043.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "all_versus_all",
@@ -613,7 +858,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/59044.jpg",
             "https://marvelcdb.com/bundles/cards/59044.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/hercules/59044.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "all_versus_all",
@@ -634,6 +886,13 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/hercules/59045.webp"
+              ]
+            }
           }
         }
       ],

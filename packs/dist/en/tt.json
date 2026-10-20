@@ -14,7 +14,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55001.jpg",
             "https://marvelcdb.com/bundles/cards/55001.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55001.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "enchantress_villain",
@@ -32,7 +39,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55002.jpg",
             "https://marvelcdb.com/bundles/cards/55002.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55002.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "enchantress_villain",
@@ -50,7 +64,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55003.jpg",
             "https://marvelcdb.com/bundles/cards/55003.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55003.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "enchantress_villain",
@@ -67,7 +88,14 @@
           "size": "land",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55004A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55004a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Prime Real Estate",
@@ -80,6 +108,13 @@
           "startingThreat": {
             "value": 1,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55004b.webp"
+              ]
+            }
           }
         }
       ],
@@ -101,7 +136,14 @@
           "size": "land",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55005A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55005a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Sovereign Sorceress",
@@ -114,6 +156,13 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55005b.webp"
+              ]
+            }
           }
         }
       ],
@@ -139,6 +188,13 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55006.webp"
+              ]
+            }
           }
         }
       ],
@@ -155,7 +211,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55007A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55007a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Trance of Envy",
@@ -163,7 +226,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55007B.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55007b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "enchantress_villain",
@@ -183,7 +253,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55008A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55008a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Trance of Greed",
@@ -191,7 +268,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55008B.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55008b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "enchantress_villain",
@@ -211,7 +295,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55009A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55009a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Trance of Pride",
@@ -219,7 +310,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55009B.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55009b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "enchantress_villain",
@@ -239,7 +337,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55010A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55010a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Trance of Sloth",
@@ -247,7 +352,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55010B.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55010b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "enchantress_villain",
@@ -267,7 +379,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55011A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55011a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Trance of Wrath",
@@ -275,7 +394,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55011B.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55011b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "enchantress_villain",
@@ -296,7 +422,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55012.jpg",
             "https://marvelcdb.com/bundles/cards/55012.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55012.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "enchantress_villain",
@@ -313,7 +446,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55013.jpg",
             "https://marvelcdb.com/bundles/cards/55013.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55013.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "enchantress_villain",
@@ -330,7 +470,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55014.jpg",
             "https://marvelcdb.com/bundles/cards/55014.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55014.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "enchantress_villain",
@@ -346,7 +493,14 @@
           "size": "std",
           "images": [
             "https://marvelcdb.com/bundles/cards/55015.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55015.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "enchantress_villain",
@@ -363,7 +517,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55016.jpg",
             "https://marvelcdb.com/bundles/cards/55016.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55016.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "enchantress_villain",
@@ -380,7 +541,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55017.jpg",
             "https://marvelcdb.com/bundles/cards/55017.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55017.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "enchantress_villain",
@@ -397,7 +565,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55018.jpg",
             "https://marvelcdb.com/bundles/cards/55018.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55018.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "enchantress_villain",
@@ -414,7 +589,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55019.jpg",
             "https://marvelcdb.com/bundles/cards/55019.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55019.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "enchantress_villain",
@@ -431,7 +613,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55020.jpg",
             "https://marvelcdb.com/bundles/cards/55020.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55020.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "enchantress_villain",
@@ -452,6 +641,13 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55021.webp"
+              ]
+            }
           }
         }
       ],
@@ -473,6 +669,13 @@
           "startingThreat": {
             "value": 4,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55022.webp"
+              ]
+            }
           }
         }
       ],
@@ -490,7 +693,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55023.jpg",
             "https://marvelcdb.com/bundles/cards/55023.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55023.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "enchantress_villain",
@@ -507,7 +717,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55024.jpg",
             "https://marvelcdb.com/bundles/cards/55024.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55024.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "enchantress_villain",
@@ -524,7 +741,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55025.jpg",
             "https://marvelcdb.com/bundles/cards/55025.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55025.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "enchantress_villain",
@@ -541,7 +765,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55026.jpg",
             "https://marvelcdb.com/bundles/cards/55026.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55026.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "enchantress_villain",
@@ -558,7 +789,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55027A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55027a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Loki, God of Lies",
@@ -567,7 +805,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55027B.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55027b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "god_of_lies",
@@ -588,7 +833,14 @@
           "size": "land",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55028A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55028a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Worlds Collide",
@@ -597,7 +849,14 @@
           "size": "land",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55028B.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55028b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "god_of_lies",
@@ -618,7 +877,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55029A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55029a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Fading Figment",
@@ -627,7 +893,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55029B.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55029b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "god_of_lies",
@@ -648,7 +921,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55030A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55030a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Fading Figment",
@@ -657,7 +937,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55030B.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55030b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "god_of_lies",
@@ -678,7 +965,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55031A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55031a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Fading Figment",
@@ -687,7 +981,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55031B.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55031b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "god_of_lies",
@@ -708,7 +1009,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55032A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55032a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Fading Figment",
@@ -717,7 +1025,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55032B.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55032b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "god_of_lies",
@@ -738,7 +1053,14 @@
           "size": "land",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55033A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55033a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Mischief and Mayhem",
@@ -751,6 +1073,13 @@
           "startingThreat": {
             "value": 0,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55033b.webp"
+              ]
+            }
           }
         }
       ],
@@ -771,7 +1100,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55034A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55034a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Total Focus",
@@ -779,7 +1115,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55034B.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55034b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "god_of_lies",
@@ -800,7 +1143,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55035.jpg",
             "https://marvelcdb.com/bundles/cards/55035.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55035.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "god_of_lies",
@@ -817,7 +1167,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55036.jpg",
             "https://marvelcdb.com/bundles/cards/55036.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55036.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "god_of_lies",
@@ -834,7 +1191,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55037.jpg",
             "https://marvelcdb.com/bundles/cards/55037.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55037.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "god_of_lies",
@@ -851,7 +1215,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55038.jpg",
             "https://marvelcdb.com/bundles/cards/55038.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55038.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "god_of_lies",
@@ -868,7 +1239,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55039.jpg",
             "https://marvelcdb.com/bundles/cards/55039.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55039.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "god_of_lies",
@@ -885,7 +1263,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55040.jpg",
             "https://marvelcdb.com/bundles/cards/55040.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55040.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "god_of_lies",
@@ -902,7 +1287,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55041.jpg",
             "https://marvelcdb.com/bundles/cards/55041.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55041.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "god_of_lies",
@@ -919,7 +1311,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55042.jpg",
             "https://marvelcdb.com/bundles/cards/55042.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55042.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "god_of_lies",
@@ -936,7 +1335,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55043.jpg",
             "https://marvelcdb.com/bundles/cards/55043.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55043.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "god_of_lies",
@@ -953,7 +1359,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55044.jpg",
             "https://marvelcdb.com/bundles/cards/55044.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55044.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "god_of_lies",
@@ -974,6 +1387,13 @@
           "startingThreat": {
             "value": 4,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55045.webp"
+              ]
+            }
           }
         }
       ],
@@ -995,6 +1415,13 @@
           "startingThreat": {
             "value": 7,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55046.webp"
+              ]
+            }
           }
         }
       ],
@@ -1016,6 +1443,13 @@
           "startingThreat": {
             "value": 5,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55047.webp"
+              ]
+            }
           }
         }
       ],
@@ -1037,6 +1471,13 @@
           "startingThreat": {
             "value": 6,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55048.webp"
+              ]
+            }
           }
         }
       ],
@@ -1054,7 +1495,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55049.jpg",
             "https://marvelcdb.com/bundles/cards/55049.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55049.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "god_of_lies",
@@ -1071,7 +1519,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55050.jpg",
             "https://marvelcdb.com/bundles/cards/55050.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55050.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "god_of_lies",
@@ -1088,7 +1543,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55051.jpg",
             "https://marvelcdb.com/bundles/cards/55051.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55051.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "god_of_lies",
@@ -1105,7 +1567,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55052.jpg",
             "https://marvelcdb.com/bundles/cards/55052.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55052.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "god_of_lies",
@@ -1122,7 +1591,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55053.jpg",
             "https://marvelcdb.com/bundles/cards/55053.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55053.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "god_of_lies",
@@ -1139,7 +1615,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55054.jpg",
             "https://marvelcdb.com/bundles/cards/55054.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55054.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "god_of_lies",
@@ -1156,7 +1639,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55055.jpg",
             "https://marvelcdb.com/bundles/cards/55055.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55055.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "god_of_lies",
@@ -1173,7 +1663,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55056.jpg",
             "https://marvelcdb.com/bundles/cards/55056.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55056.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "trickster_magic",
@@ -1190,7 +1687,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55057.jpg",
             "https://marvelcdb.com/bundles/cards/55057.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55057.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "trickster_magic",
@@ -1207,7 +1711,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55058.jpg",
             "https://marvelcdb.com/bundles/cards/55058.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55058.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "trickster_magic",
@@ -1224,7 +1735,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55059.jpg",
             "https://marvelcdb.com/bundles/cards/55059.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55059.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "trickster_magic",
@@ -1245,6 +1763,13 @@
           "startingThreat": {
             "value": 4,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55060.webp"
+              ]
+            }
           }
         }
       ],
@@ -1266,6 +1791,13 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55061.webp"
+              ]
+            }
           }
         }
       ],
@@ -1283,7 +1815,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55062.jpg",
             "https://marvelcdb.com/bundles/cards/55062.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55062.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "trickster_magic",
@@ -1301,7 +1840,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55063.jpg",
             "https://marvelcdb.com/bundles/cards/55063.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55063.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "trickster_magic",
@@ -1319,7 +1865,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55064.jpg",
             "https://marvelcdb.com/bundles/cards/55064.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55064.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "trickster_magic",
@@ -1337,7 +1890,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55065.jpg",
             "https://marvelcdb.com/bundles/cards/55065.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55065.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "trickster_magic",
@@ -1354,7 +1914,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55066.jpg",
             "https://marvelcdb.com/bundles/cards/55066.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55066.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "trickster_magic",

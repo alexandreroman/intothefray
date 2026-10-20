@@ -14,7 +14,15 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36001A.jpg",
             "https://marvelcdb.com/bundles/cards/36001a.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "name": "Tornade",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/storm/36001a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Ororo Munroe",
@@ -24,7 +32,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36001B.jpg",
             "https://marvelcdb.com/bundles/cards/36001b.png"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/storm/36001b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "storm",
@@ -45,7 +60,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36002.jpg",
             "https://marvelcdb.com/bundles/cards/36002.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Ciel Dégagé",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/storm/36002.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "storm_weather_deck",
@@ -62,7 +85,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36003.jpg",
             "https://marvelcdb.com/bundles/cards/36003.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Ouragan",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/storm/36003.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "storm_weather_deck",
@@ -79,7 +110,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36004.jpg",
             "https://marvelcdb.com/bundles/cards/36004.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Orage",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/storm/36004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "storm_weather_deck",
@@ -96,7 +135,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36005.jpg",
             "https://marvelcdb.com/bundles/cards/36005.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/storm/36005.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "storm_weather_deck",
@@ -113,7 +159,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36006.jpg",
             "https://marvelcdb.com/bundles/cards/36006.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Diadème de Tornade",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/storm/36006.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "storm",
@@ -130,7 +184,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36007.jpg",
             "https://marvelcdb.com/bundles/cards/36007.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Cape de Tornade",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/storm/36007.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "storm",
@@ -147,7 +209,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36008.jpg",
             "https://marvelcdb.com/bundles/cards/36008.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Jardin d'Ororo",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/storm/36008.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "storm",
@@ -164,7 +234,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36009.jpg",
             "https://marvelcdb.com/bundles/cards/36009.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Déesse des Intempéries",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/storm/36009.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "storm",
@@ -181,7 +259,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36010.jpg",
             "https://marvelcdb.com/bundles/cards/36010.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Pluie Torrentielle",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/storm/36010.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "storm",
@@ -198,7 +284,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36011.jpg",
             "https://marvelcdb.com/bundles/cards/36011.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Éclair",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/storm/36011.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "storm",
@@ -215,7 +309,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36012.jpg",
             "https://marvelcdb.com/bundles/cards/36012.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Figé dans la Glace",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/storm/36012.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "storm",
@@ -232,7 +334,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36013.jpg",
             "https://marvelcdb.com/bundles/cards/36013.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Violente Bourrasque",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/storm/36013.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "storm",
@@ -250,7 +360,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36014.jpg",
             "https://marvelcdb.com/bundles/cards/36014.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/storm/36014.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -267,7 +384,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36015.jpg",
             "https://marvelcdb.com/bundles/cards/36015.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/storm/36015.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -284,7 +408,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36016.jpg",
             "https://marvelcdb.com/bundles/cards/36016.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/storm/36016.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -301,7 +432,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36017.jpg",
             "https://marvelcdb.com/bundles/cards/36017.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/storm/36017.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -317,7 +455,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36018.jpg",
             "https://marvelcdb.com/bundles/cards/36018.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Incroyables X-Men",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/storm/36018.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -333,7 +479,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36019.jpg",
             "https://marvelcdb.com/bundles/cards/36019.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Compétences de Leader",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/storm/36019.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -349,7 +503,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36020.jpg",
             "https://marvelcdb.com/bundles/cards/36020.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "\"À moi, mes X-Men !\"",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/storm/36020.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -365,7 +527,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36022.jpg",
             "https://marvelcdb.com/bundles/cards/36022.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/storm/36022.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -381,7 +550,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36030.jpg",
             "https://marvelcdb.com/bundles/cards/36030.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Claustrophobie",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/storm/36030.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "storm",
@@ -398,7 +575,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36031.jpg",
             "https://marvelcdb.com/bundles/cards/36031.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/storm/36031.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "storm_nemesis",
@@ -419,6 +603,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Cheffe des Morlocks",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/storm/36032.webp"
+              ]
+            }
           }
         }
       ],
@@ -436,7 +628,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36033.jpg",
             "https://marvelcdb.com/bundles/cards/36033.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Cran d'Arrêt",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/storm/36033.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "storm_nemesis",
@@ -453,7 +653,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36034.jpg",
             "https://marvelcdb.com/bundles/cards/36034.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Combat au Couteau",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/storm/36034.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "storm_nemesis",
@@ -470,7 +678,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36035.jpg",
             "https://marvelcdb.com/bundles/cards/36035.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Hangar",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/storm/36035.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -486,7 +702,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36036.jpg",
             "https://marvelcdb.com/bundles/cards/36036.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Roi d'Ombre",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/storm/36036.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "shadow_king",
@@ -507,6 +731,14 @@
           "startingThreat": {
             "value": 6,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Seigneur du Plan Astral",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/storm/36037.webp"
+              ]
+            }
           }
         }
       ],
@@ -524,7 +756,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36038.jpg",
             "https://marvelcdb.com/bundles/cards/36038.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Possédé",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/storm/36038.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "shadow_king",
@@ -541,7 +781,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36039.jpg",
             "https://marvelcdb.com/bundles/cards/36039.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Attaque Astrale",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/storm/36039.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "shadow_king",

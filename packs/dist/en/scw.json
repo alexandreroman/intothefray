@@ -14,7 +14,15 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15001A.jpg",
             "https://marvelcdb.com/bundles/cards/15001a.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "name": "La Sorcière Rouge",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/scw/15001a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Wanda Maximoff",
@@ -24,7 +32,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15001B.jpg",
             "https://marvelcdb.com/bundles/cards/15001b.png"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/scw/15001b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "scw",
@@ -46,7 +61,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15002.jpg",
             "https://marvelcdb.com/bundles/cards/15002.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Vif-Argent",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/scw/15002.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "scw",
@@ -63,7 +86,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15003.jpg",
             "https://marvelcdb.com/bundles/cards/15003.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Magie du Chaos",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/scw/15003.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "scw",
@@ -80,7 +111,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15004.jpg",
             "https://marvelcdb.com/bundles/cards/15004.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Sphère Hex",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/scw/15004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "scw",
@@ -97,7 +136,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15005.jpg",
             "https://marvelcdb.com/bundles/cards/15005.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Désintégration Moléculaire",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/scw/15005.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "scw",
@@ -114,7 +161,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15006.jpg",
             "https://marvelcdb.com/bundles/cards/15006.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Distorsion de la Réalité",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/scw/15006.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "scw",
@@ -131,7 +186,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15007.jpg",
             "https://marvelcdb.com/bundles/cards/15007.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/scw/15007.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "scw",
@@ -148,7 +210,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15008.jpg",
             "https://marvelcdb.com/bundles/cards/15008.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Bouclier Magique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/scw/15008.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "scw",
@@ -165,7 +235,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15009.jpg",
             "https://marvelcdb.com/bundles/cards/15009.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Tiare de la Sorcière Rouge",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/scw/15009.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "scw",
@@ -183,7 +261,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15010.jpg",
             "https://marvelcdb.com/bundles/cards/15010.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/scw/15010.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -200,7 +285,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15011.jpg",
             "https://marvelcdb.com/bundles/cards/15011.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/scw/15011.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -216,7 +308,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15012.jpg",
             "https://marvelcdb.com/bundles/cards/15012.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Danger Écarté",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/scw/15012.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -232,7 +332,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15013.jpg",
             "https://marvelcdb.com/bundles/cards/15013.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Multitâche",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/scw/15013.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -248,7 +356,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15014.jpg",
             "https://marvelcdb.com/bundles/cards/15014.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Représailles Immédiates",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/scw/15014.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -267,7 +383,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15015.jpg",
             "https://marvelcdb.com/bundles/cards/15015.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Renverser la Situation",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/scw/15015.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -283,7 +407,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15019.jpg",
             "https://marvelcdb.com/bundles/cards/15019.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Méditation Spirituelle",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/scw/15019.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -302,7 +434,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15023.jpg",
             "https://marvelcdb.com/bundles/cards/15023.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Santé Mentale Précaire",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/scw/15023.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "scw",
@@ -323,6 +463,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "La Prochaine Évolution",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/scw/15024.webp"
+              ]
+            }
           }
         }
       ],
@@ -340,7 +488,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15025.jpg",
             "https://marvelcdb.com/bundles/cards/15025.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/scw/15025.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "scw_nemesis",
@@ -357,7 +512,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15026.jpg",
             "https://marvelcdb.com/bundles/cards/15026.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Suspension Magique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/scw/15026.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "scw_nemesis",
@@ -374,7 +537,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15027.jpg",
             "https://marvelcdb.com/bundles/cards/15027.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Manipulation du Chaos",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/scw/15027.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "scw_nemesis",
@@ -391,7 +562,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15028.jpg",
             "https://marvelcdb.com/bundles/cards/15028.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Rudoyer",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/scw/15028.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -407,7 +586,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15029.jpg",
             "https://marvelcdb.com/bundles/cards/15029.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Derniers Retranchements",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/scw/15029.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -423,7 +610,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15030.jpg",
             "https://marvelcdb.com/bundles/cards/15030.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Servir d'Appât",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/scw/15030.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -443,7 +638,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/15031.jpg",
             "https://marvelcdb.com/bundles/cards/15031.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Récupération",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/scw/15031.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",

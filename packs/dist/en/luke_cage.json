@@ -14,7 +14,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62001A.jpg",
             "https://marvelcdb.com/bundles/cards/62001a.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62001a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Luke Cage",
@@ -24,7 +31,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62001B.jpg",
             "https://marvelcdb.com/bundles/cards/62001b.png"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62001b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "luke_cage",
@@ -44,7 +58,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62002.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62002.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "luke_cage",
@@ -60,7 +81,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62003.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62003.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "luke_cage",
@@ -76,7 +104,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62004.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "luke_cage",
@@ -92,7 +127,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62005.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62005.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "luke_cage",
@@ -108,7 +150,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62006.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62006.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "luke_cage",
@@ -124,7 +173,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62007.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62007.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "luke_cage",
@@ -140,7 +196,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62008.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62008.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "luke_cage",
@@ -156,7 +219,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62009.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62009.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "luke_cage",
@@ -172,7 +242,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62010.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62010.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "luke_cage",
@@ -188,7 +265,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62011.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62011.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "luke_cage",
@@ -205,7 +289,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62012.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62012.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -220,7 +311,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62013.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62013.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -236,7 +334,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62014.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62014.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -251,7 +356,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62015.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62015.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -266,7 +378,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62018.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62018.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -281,7 +400,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62019.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62019.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -297,7 +423,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62020.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62020.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -313,7 +446,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62021.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62021.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -328,7 +468,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62022.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62022.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -343,7 +490,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62023.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62023.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -358,7 +512,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62028.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62028.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "luke_cage",
@@ -374,7 +535,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62029.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62029.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "luke_cage_nemesis",
@@ -394,6 +562,13 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62030.webp"
+              ]
+            }
           }
         }
       ],
@@ -410,7 +585,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62031.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62031.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "luke_cage_nemesis",
@@ -426,7 +608,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62032.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62032.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "luke_cage_nemesis",
@@ -442,7 +631,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62033.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62033.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "luke_cage_nemesis",
@@ -458,7 +654,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62034.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62034.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -473,7 +676,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62035.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62035.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -488,7 +698,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62036.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62036.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -503,7 +720,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62037.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62037.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",

@@ -14,7 +14,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25001A.jpg",
             "https://marvelcdb.com/bundles/cards/25001a.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/valk/25001a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Brunnhilde",
@@ -24,7 +31,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25001B.jpg",
             "https://marvelcdb.com/bundles/cards/25001b.png"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/valk/25001b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "valk",
@@ -45,7 +59,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25002.jpg",
             "https://marvelcdb.com/bundles/cards/25002.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Aura de la Mort",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/valk/25002.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "valk",
@@ -62,7 +84,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25003.jpg",
             "https://marvelcdb.com/bundles/cards/25003.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/valk/25003.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "valk",
@@ -79,7 +108,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25004.jpg",
             "https://marvelcdb.com/bundles/cards/25004.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/valk/25004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "valk",
@@ -96,7 +132,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25005.jpg",
             "https://marvelcdb.com/bundles/cards/25005.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Lance de Valkyrie",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/valk/25005.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "valk",
@@ -113,7 +157,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25006.jpg",
             "https://marvelcdb.com/bundles/cards/25006.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/valk/25006.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "valk",
@@ -130,7 +181,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25007.jpg",
             "https://marvelcdb.com/bundles/cards/25007.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/valk/25007.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "valk",
@@ -147,7 +205,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25008.jpg",
             "https://marvelcdb.com/bundles/cards/25008.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "La Chevauchée des Valkyries",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/valk/25008.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "valk",
@@ -164,7 +230,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25009.jpg",
             "https://marvelcdb.com/bundles/cards/25009.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Visiter le Valhalla",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/valk/25009.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "valk",
@@ -181,7 +255,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25010.jpg",
             "https://marvelcdb.com/bundles/cards/25010.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Cella qui Choisit les Morts",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/valk/25010.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "valk",
@@ -198,7 +280,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25011.jpg",
             "https://marvelcdb.com/bundles/cards/25011.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Guerrière Protectrice",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/valk/25011.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "valk",
@@ -215,7 +305,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25012.jpg",
             "https://marvelcdb.com/bundles/cards/25012.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "\"En Garde !\"",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/valk/25012.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "valk",
@@ -233,7 +331,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25013.jpg",
             "https://marvelcdb.com/bundles/cards/25013.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/valk/25013.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -250,7 +355,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25014.jpg",
             "https://marvelcdb.com/bundles/cards/25014.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/valk/25014.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -266,7 +378,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25018.jpg",
             "https://marvelcdb.com/bundles/cards/25018.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Frappe Véloce",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/valk/25018.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -282,7 +402,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25019.jpg",
             "https://marvelcdb.com/bundles/cards/25019.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Écraser le Problème",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/valk/25019.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -298,7 +426,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25020.jpg",
             "https://marvelcdb.com/bundles/cards/25020.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "La Meilleure Défense...",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/valk/25020.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -314,7 +450,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25023.jpg",
             "https://marvelcdb.com/bundles/cards/25023.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Bifrost",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/valk/25023.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -330,7 +474,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25024.jpg",
             "https://marvelcdb.com/bundles/cards/25024.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Vigueur Divine",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/valk/25024.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -346,7 +498,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25028.jpg",
             "https://marvelcdb.com/bundles/cards/25028.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Perturbations dans l'Autre Monde",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/valk/25028.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "valk",
@@ -362,7 +522,15 @@
           "size": "std",
           "images": [
             "https://marvelcdb.com/bundles/cards/25029.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "L'Enchanteresse",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/valk/25029.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "valk_nemesis",
@@ -383,6 +551,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Puissants Enchantements",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/valk/25030.webp"
+              ]
+            }
           }
         }
       ],
@@ -399,7 +575,15 @@
           "size": "std",
           "images": [
             "https://marvelcdb.com/bundles/cards/25031.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Ensorcelé",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/valk/25031.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "valk_nemesis",
@@ -415,7 +599,15 @@
           "size": "std",
           "images": [
             "https://marvelcdb.com/bundles/cards/25032.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Séduit",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/valk/25032.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "valk_nemesis",
@@ -432,7 +624,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25033.jpg",
             "https://marvelcdb.com/bundles/cards/25033.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Solutionneurs de Problèmes",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/valk/25033.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -448,7 +648,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25034.jpg",
             "https://marvelcdb.com/bundles/cards/25034.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Entraînement au Commandement",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/valk/25034.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -464,7 +672,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25035.jpg",
             "https://marvelcdb.com/bundles/cards/25035.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/valk/25035.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -480,7 +695,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/25036.jpg",
             "https://marvelcdb.com/bundles/cards/25036.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Alliance Cosmique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/valk/25036.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",

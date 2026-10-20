@@ -14,7 +14,15 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48001A.jpg",
             "https://marvelcdb.com/bundles/cards/48001a.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "name": "Diablo",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48001a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Kurt Wagner",
@@ -24,7 +32,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48001B.jpg",
             "https://marvelcdb.com/bundles/cards/48001b.png"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48001b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nightcrawler",
@@ -46,7 +61,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48002.jpg",
             "https://marvelcdb.com/bundles/cards/48002.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48002.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nightcrawler",
@@ -63,7 +85,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48003.jpg",
             "https://marvelcdb.com/bundles/cards/48003.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Chapelle de Kurt",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48003.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nightcrawler",
@@ -80,7 +110,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48004.jpg",
             "https://marvelcdb.com/bundles/cards/48004.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Sabres de Kurt",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nightcrawler",
@@ -97,7 +135,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48005.jpg",
             "https://marvelcdb.com/bundles/cards/48005.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Queue Préhensible",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48005.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nightcrawler",
@@ -114,7 +160,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48006.jpg",
             "https://marvelcdb.com/bundles/cards/48006.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48006.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nightcrawler",
@@ -131,7 +184,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48007.jpg",
             "https://marvelcdb.com/bundles/cards/48007.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Gnon et Téléportation",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48007.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nightcrawler",
@@ -148,7 +209,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48008.jpg",
             "https://marvelcdb.com/bundles/cards/48008.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Téléporté, Lâché",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48008.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nightcrawler",
@@ -165,7 +234,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48009.jpg",
             "https://marvelcdb.com/bundles/cards/48009.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "En Éclaireur",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48009.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nightcrawler",
@@ -182,7 +259,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48010.jpg",
             "https://marvelcdb.com/bundles/cards/48010.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Fuite Téléportée",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48010.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nightcrawler",
@@ -199,7 +284,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48011.jpg",
             "https://marvelcdb.com/bundles/cards/48011.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Taïaut !",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48011.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nightcrawler",
@@ -217,7 +310,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48012.jpg",
             "https://marvelcdb.com/bundles/cards/48012.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Malicia",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48012.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -234,7 +335,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48013.jpg",
             "https://marvelcdb.com/bundles/cards/48013.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Véga",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48013.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -250,7 +359,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48014.jpg",
             "https://marvelcdb.com/bundles/cards/48014.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Revers de Fortune",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48014.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -266,7 +383,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48015.jpg",
             "https://marvelcdb.com/bundles/cards/48015.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Sous mon Contrôle",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48015.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -282,7 +407,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48016.jpg",
             "https://marvelcdb.com/bundles/cards/48016.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "\"Viens Par Là, Mon Pote !\"",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48016.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -298,7 +431,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48018.jpg",
             "https://marvelcdb.com/bundles/cards/48018.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48018.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -318,6 +458,14 @@
           "startingThreat": {
             "value": 5,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Étonnants X-Men",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48020.webp"
+              ]
+            }
           }
         }
       ],
@@ -335,7 +483,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48021.jpg",
             "https://marvelcdb.com/bundles/cards/48021.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "subname": "Rémy Lebeau",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48021.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -351,7 +507,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48026.jpg",
             "https://marvelcdb.com/bundles/cards/48026.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Perdre la Foi",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48026.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nightcrawler",
@@ -368,7 +532,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48027.jpg",
             "https://marvelcdb.com/bundles/cards/48027.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48027.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nightcrawler_nemesis",
@@ -389,6 +560,14 @@
           "startingThreat": {
             "value": 5,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Dimension Brimstone",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48028.webp"
+              ]
+            }
           }
         }
       ],
@@ -406,7 +585,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48029.jpg",
             "https://marvelcdb.com/bundles/cards/48029.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Épée d'Azazel",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48029.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nightcrawler_nemesis",
@@ -423,7 +610,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48030.jpg",
             "https://marvelcdb.com/bundles/cards/48030.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Frappe de Brimstone",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48030.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nightcrawler_nemesis",
@@ -440,7 +635,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48031.jpg",
             "https://marvelcdb.com/bundles/cards/48031.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Forces Combinées",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48031.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -456,7 +659,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48032.jpg",
             "https://marvelcdb.com/bundles/cards/48032.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Diplomatie au Bout du Fusil",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48032.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -476,6 +687,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Le Crazy Gang",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48033.webp"
+              ]
+            }
           }
         }
       ],
@@ -493,7 +712,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48034.jpg",
             "https://marvelcdb.com/bundles/cards/48034.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "La Reine de Cœur",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48034.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "crazy_gang",
@@ -510,7 +737,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48035.jpg",
             "https://marvelcdb.com/bundles/cards/48035.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Clown",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48035.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "crazy_gang",
@@ -527,7 +762,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48036.jpg",
             "https://marvelcdb.com/bundles/cards/48036.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "L'Exécuteur",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48036.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "crazy_gang",
@@ -544,7 +787,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48037.jpg",
             "https://marvelcdb.com/bundles/cards/48037.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48037.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "crazy_gang",
@@ -561,7 +811,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48038.jpg",
             "https://marvelcdb.com/bundles/cards/48038.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "\"Qu'on lui coupe la tête !\"",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48038.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "crazy_gang",

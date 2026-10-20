@@ -14,7 +14,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52001A.jpg",
             "https://marvelcdb.com/bundles/cards/52001a.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/silk/52001a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Cindy Moon",
@@ -24,7 +31,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52001B.jpg",
             "https://marvelcdb.com/bundles/cards/52001b.png"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/silk/52001b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "silk",
@@ -45,7 +59,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52002.jpg",
             "https://marvelcdb.com/bundles/cards/52002.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/silk/52002.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "silk",
@@ -62,7 +83,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52003.jpg",
             "https://marvelcdb.com/bundles/cards/52003.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/silk/52003.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "silk",
@@ -79,7 +107,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52004.jpg",
             "https://marvelcdb.com/bundles/cards/52004.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/silk/52004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "silk",
@@ -100,6 +135,13 @@
           "startingThreat": {
             "value": 4,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/silk/52005.webp"
+              ]
+            }
           }
         }
       ],
@@ -117,7 +159,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52006.jpg",
             "https://marvelcdb.com/bundles/cards/52006.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/silk/52006.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "silk",
@@ -134,7 +183,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52007.jpg",
             "https://marvelcdb.com/bundles/cards/52007.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/silk/52007.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "silk",
@@ -151,7 +207,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52008.jpg",
             "https://marvelcdb.com/bundles/cards/52008.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/silk/52008.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "silk",
@@ -168,7 +231,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52009.jpg",
             "https://marvelcdb.com/bundles/cards/52009.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/silk/52009.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "silk",
@@ -185,7 +255,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52010.jpg",
             "https://marvelcdb.com/bundles/cards/52010.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/silk/52010.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "silk",
@@ -202,7 +279,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52011.jpg",
             "https://marvelcdb.com/bundles/cards/52011.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/silk/52011.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "silk",
@@ -219,7 +303,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52012.jpg",
             "https://marvelcdb.com/bundles/cards/52012.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/silk/52012.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "silk",
@@ -237,7 +328,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52013.jpg",
             "https://marvelcdb.com/bundles/cards/52013.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/silk/52013.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -254,7 +352,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52014.jpg",
             "https://marvelcdb.com/bundles/cards/52014.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/silk/52014.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -270,7 +375,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52016.jpg",
             "https://marvelcdb.com/bundles/cards/52016.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/silk/52016.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -286,7 +398,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52017.jpg",
             "https://marvelcdb.com/bundles/cards/52017.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/silk/52017.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -302,7 +421,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52018.jpg",
             "https://marvelcdb.com/bundles/cards/52018.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/silk/52018.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -318,7 +444,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52019.jpg",
             "https://marvelcdb.com/bundles/cards/52019.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/silk/52019.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -334,7 +467,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52020.jpg",
             "https://marvelcdb.com/bundles/cards/52020.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/silk/52020.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -351,7 +491,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52021.jpg",
             "https://marvelcdb.com/bundles/cards/52021.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/silk/52021.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -367,7 +514,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52024.jpg",
             "https://marvelcdb.com/bundles/cards/52024.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/silk/52024.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -383,7 +537,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52028.jpg",
             "https://marvelcdb.com/bundles/cards/52028.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/silk/52028.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "silk",
@@ -400,7 +561,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52029.jpg",
             "https://marvelcdb.com/bundles/cards/52029.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/silk/52029.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "silk_nemesis",
@@ -421,6 +589,13 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/silk/52030.webp"
+              ]
+            }
           }
         }
       ],
@@ -438,7 +613,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52031.jpg",
             "https://marvelcdb.com/bundles/cards/52031.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/silk/52031.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "silk_nemesis",
@@ -456,7 +638,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52032.jpg",
             "https://marvelcdb.com/bundles/cards/52032.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/silk/52032.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -473,7 +662,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52033.jpg",
             "https://marvelcdb.com/bundles/cards/52033.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/silk/52033.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -489,7 +685,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52034.jpg",
             "https://marvelcdb.com/bundles/cards/52034.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/silk/52034.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -505,7 +708,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52035.jpg",
             "https://marvelcdb.com/bundles/cards/52035.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/silk/52035.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "growing_strong",
@@ -526,6 +736,13 @@
           "startingThreat": {
             "value": 5,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/silk/52036.webp"
+              ]
+            }
           }
         }
       ],
@@ -543,7 +760,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52037.jpg",
             "https://marvelcdb.com/bundles/cards/52037.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/silk/52037.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "growing_strong",
@@ -560,7 +784,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/52038.jpg",
             "https://marvelcdb.com/bundles/cards/52038.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/silk/52038.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "growing_strong",

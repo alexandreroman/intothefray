@@ -14,7 +14,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50001A.jpg",
             "https://marvelcdb.com/bundles/cards/50001a.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50001a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Maria Hill",
@@ -24,7 +31,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50001B.jpg",
             "https://marvelcdb.com/bundles/cards/50001b.png"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50001b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "maria_hill",
@@ -45,7 +59,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50002.jpg",
             "https://marvelcdb.com/bundles/cards/50002.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50002.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "maria_hill",
@@ -62,7 +83,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50003.jpg",
             "https://marvelcdb.com/bundles/cards/50003.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Avis de Recherche",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50003.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "maria_hill",
@@ -79,7 +108,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50004.jpg",
             "https://marvelcdb.com/bundles/cards/50004.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Intervention Éclair",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "maria_hill",
@@ -96,7 +133,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50005.jpg",
             "https://marvelcdb.com/bundles/cards/50005.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Renforts",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50005.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "maria_hill",
@@ -113,7 +158,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50006.jpg",
             "https://marvelcdb.com/bundles/cards/50006.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Un Choix Difficile",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50006.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "maria_hill",
@@ -130,7 +183,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50007.jpg",
             "https://marvelcdb.com/bundles/cards/50007.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Financement Spécial",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50007.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "maria_hill",
@@ -147,7 +208,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50008.jpg",
             "https://marvelcdb.com/bundles/cards/50008.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Équipe de Soutien",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50008.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "maria_hill",
@@ -164,7 +233,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50009.jpg",
             "https://marvelcdb.com/bundles/cards/50009.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "L'Iliade",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50009.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "maria_hill",
@@ -181,7 +258,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50010.jpg",
             "https://marvelcdb.com/bundles/cards/50010.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Simulacre de Vie Modélisé",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50010.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "maria_hill",
@@ -198,7 +283,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50011.jpg",
             "https://marvelcdb.com/bundles/cards/50011.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Directrice du S.H.I.E.L.D.",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50011.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "maria_hill",
@@ -215,7 +308,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50012.jpg",
             "https://marvelcdb.com/bundles/cards/50012.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50012.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -232,7 +332,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50013.jpg",
             "https://marvelcdb.com/bundles/cards/50013.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50013.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -248,7 +355,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50014.jpg",
             "https://marvelcdb.com/bundles/cards/50014.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Soutien Organisationnel",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50014.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -264,7 +379,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50015.jpg",
             "https://marvelcdb.com/bundles/cards/50015.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Agents du S.H.I.E.L.D.",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50015.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -280,7 +403,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50017.jpg",
             "https://marvelcdb.com/bundles/cards/50017.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Circé",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50017.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -296,7 +427,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50018.jpg",
             "https://marvelcdb.com/bundles/cards/50018.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Bellérophon",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50018.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -312,7 +451,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50019.jpg",
             "https://marvelcdb.com/bundles/cards/50019.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Douglass",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50019.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -328,7 +475,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50020.jpg",
             "https://marvelcdb.com/bundles/cards/50020.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Périclès",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50020.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -344,7 +499,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50022.jpg",
             "https://marvelcdb.com/bundles/cards/50022.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50022.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -360,7 +522,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50023.jpg",
             "https://marvelcdb.com/bundles/cards/50023.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50023.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -376,7 +545,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50024.jpg",
             "https://marvelcdb.com/bundles/cards/50024.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Super Espions",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50024.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -392,7 +569,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50028.jpg",
             "https://marvelcdb.com/bundles/cards/50028.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Organization de Façade",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50028.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -408,7 +593,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50029.jpg",
             "https://marvelcdb.com/bundles/cards/50029.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50029.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "maria_hill",
@@ -425,7 +617,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50030.jpg",
             "https://marvelcdb.com/bundles/cards/50030.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50030.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "maria_hill_nemesis",
@@ -446,6 +645,13 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50031.webp"
+              ]
+            }
           }
         }
       ],
@@ -463,7 +669,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50032.jpg",
             "https://marvelcdb.com/bundles/cards/50032.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50032.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "maria_hill_nemesis",
@@ -480,7 +693,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50033.jpg",
             "https://marvelcdb.com/bundles/cards/50033.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50033.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "maria_hill_nemesis",
@@ -498,7 +718,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50034A.jpg",
             "https://marvelcdb.com/bundles/cards/50034a.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50034a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Nick Fury",
@@ -508,7 +735,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50034B.jpg",
             "https://marvelcdb.com/bundles/cards/50034b.png"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50034b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nick_fury",
@@ -528,7 +762,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50035A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50035a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Stealth",
@@ -536,7 +777,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50035B.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50035b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nick_fury",
@@ -557,7 +805,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50036.jpg",
             "https://marvelcdb.com/bundles/cards/50036.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50036.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nick_fury",
@@ -574,7 +829,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50037.jpg",
             "https://marvelcdb.com/bundles/cards/50037.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50037.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nick_fury",
@@ -591,7 +853,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50038.jpg",
             "https://marvelcdb.com/bundles/cards/50038.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50038.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nick_fury",
@@ -608,7 +877,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50039.jpg",
             "https://marvelcdb.com/bundles/cards/50039.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50039.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nick_fury",
@@ -625,7 +901,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50040.jpg",
             "https://marvelcdb.com/bundles/cards/50040.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50040.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nick_fury",
@@ -642,7 +925,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50041.jpg",
             "https://marvelcdb.com/bundles/cards/50041.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50041.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nick_fury",
@@ -659,7 +949,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50042.jpg",
             "https://marvelcdb.com/bundles/cards/50042.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50042.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nick_fury",
@@ -676,7 +973,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50043.jpg",
             "https://marvelcdb.com/bundles/cards/50043.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50043.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nick_fury",
@@ -693,7 +997,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50044.jpg",
             "https://marvelcdb.com/bundles/cards/50044.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50044.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nick_fury",
@@ -710,7 +1021,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50045.jpg",
             "https://marvelcdb.com/bundles/cards/50045.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50045.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nick_fury",
@@ -727,7 +1045,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50046.jpg",
             "https://marvelcdb.com/bundles/cards/50046.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50046.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nick_fury",
@@ -744,7 +1069,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50050.jpg",
             "https://marvelcdb.com/bundles/cards/50050.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50050.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -760,7 +1092,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50051.jpg",
             "https://marvelcdb.com/bundles/cards/50051.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50051.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -776,7 +1115,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50052.jpg",
             "https://marvelcdb.com/bundles/cards/50052.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50052.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -792,7 +1138,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50054.jpg",
             "https://marvelcdb.com/bundles/cards/50054.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50054.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -811,7 +1164,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50055.jpg",
             "https://marvelcdb.com/bundles/cards/50055.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50055.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -827,7 +1187,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50056.jpg",
             "https://marvelcdb.com/bundles/cards/50056.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50056.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -843,7 +1210,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50058.jpg",
             "https://marvelcdb.com/bundles/cards/50058.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50058.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -859,7 +1233,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50059.jpg",
             "https://marvelcdb.com/bundles/cards/50059.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50059.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nick_fury",
@@ -876,7 +1257,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50060.jpg",
             "https://marvelcdb.com/bundles/cards/50060.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50060.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nick_fury_nemesis",
@@ -897,6 +1285,13 @@
           "startingThreat": {
             "value": 5,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50061.webp"
+              ]
+            }
           }
         }
       ],
@@ -914,7 +1309,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50062.jpg",
             "https://marvelcdb.com/bundles/cards/50062.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50062.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nick_fury_nemesis",
@@ -931,7 +1333,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50063.jpg",
             "https://marvelcdb.com/bundles/cards/50063.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50063.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nick_fury_nemesis",
@@ -949,7 +1358,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50064.jpg",
             "https://marvelcdb.com/bundles/cards/50064.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50064.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "black_widow_villain",
@@ -967,7 +1383,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50065.jpg",
             "https://marvelcdb.com/bundles/cards/50065.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50065.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "black_widow_villain",
@@ -985,7 +1408,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50066.jpg",
             "https://marvelcdb.com/bundles/cards/50066.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50066.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "black_widow_villain",
@@ -1002,7 +1432,14 @@
           "size": "land",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50067A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50067a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "The Widow's Web",
@@ -1015,6 +1452,13 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50067b.webp"
+              ]
+            }
           }
         }
       ],
@@ -1036,7 +1480,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50068.jpg",
             "https://marvelcdb.com/bundles/cards/50068.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50068.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "black_widow_villain",
@@ -1053,7 +1504,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50069.jpg",
             "https://marvelcdb.com/bundles/cards/50069.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50069.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "black_widow_villain",
@@ -1070,7 +1528,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50070.jpg",
             "https://marvelcdb.com/bundles/cards/50070.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50070.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "black_widow_villain",
@@ -1087,7 +1552,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50071.jpg",
             "https://marvelcdb.com/bundles/cards/50071.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50071.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "black_widow_villain",
@@ -1104,7 +1576,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50072.jpg",
             "https://marvelcdb.com/bundles/cards/50072.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50072.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "black_widow_villain",
@@ -1121,7 +1600,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50073.jpg",
             "https://marvelcdb.com/bundles/cards/50073.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50073.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "black_widow_villain",
@@ -1142,6 +1628,13 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50074.webp"
+              ]
+            }
           }
         }
       ],
@@ -1163,6 +1656,13 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50075.webp"
+              ]
+            }
           }
         }
       ],
@@ -1180,7 +1680,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50076.jpg",
             "https://marvelcdb.com/bundles/cards/50076.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50076.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "black_widow_villain",
@@ -1197,7 +1704,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50077.jpg",
             "https://marvelcdb.com/bundles/cards/50077.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50077.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "black_widow_villain",
@@ -1214,7 +1728,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50078.jpg",
             "https://marvelcdb.com/bundles/cards/50078.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50078.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "black_widow_villain",
@@ -1231,7 +1752,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50079.jpg",
             "https://marvelcdb.com/bundles/cards/50079.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50079.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "black_widow_villain",
@@ -1248,7 +1776,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50080.jpg",
             "https://marvelcdb.com/bundles/cards/50080.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50080.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "a.i.m._abduction",
@@ -1269,6 +1804,13 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50081.webp"
+              ]
+            }
           }
         }
       ],
@@ -1286,7 +1828,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50082.jpg",
             "https://marvelcdb.com/bundles/cards/50082.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50082.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "a.i.m._abduction",
@@ -1303,7 +1852,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50083.jpg",
             "https://marvelcdb.com/bundles/cards/50083.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50083.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "a.i.m._science",
@@ -1320,7 +1876,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50084.jpg",
             "https://marvelcdb.com/bundles/cards/50084.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50084.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "a.i.m._science",
@@ -1341,6 +1904,13 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50085.webp"
+              ]
+            }
           }
         }
       ],
@@ -1358,7 +1928,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50086A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50086a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Batroc",
@@ -1367,7 +1944,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50086B.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50086b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "batroc",
@@ -1388,7 +1972,14 @@
           "size": "land",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50087A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50087a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Infiltrate A.I.M. Island Embassy",
@@ -1401,6 +1992,13 @@
           "startingThreat": {
             "value": 6,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50087b.webp"
+              ]
+            }
           }
         }
       ],
@@ -1422,7 +2020,14 @@
           "size": "land",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50088A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50088a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Locate Missing Person",
@@ -1435,6 +2040,13 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50088b.webp"
+              ]
+            }
           }
         }
       ],
@@ -1456,7 +2068,14 @@
           "size": "land",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50089A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50089a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Extract Captives",
@@ -1469,6 +2088,13 @@
           "startingThreat": {
             "value": 12,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50089b.webp"
+              ]
+            }
           }
         }
       ],
@@ -1489,7 +2115,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50090A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50090a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Alert Level",
@@ -1497,7 +2130,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50090B.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50090b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "batroc",
@@ -1518,7 +2158,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50091.jpg",
             "https://marvelcdb.com/bundles/cards/50091.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50091.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "batroc",
@@ -1535,7 +2182,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50092.jpg",
             "https://marvelcdb.com/bundles/cards/50092.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50092.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "batroc",
@@ -1552,7 +2206,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50093.jpg",
             "https://marvelcdb.com/bundles/cards/50093.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50093.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "batroc",
@@ -1569,7 +2230,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50094.jpg",
             "https://marvelcdb.com/bundles/cards/50094.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50094.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "batroc",
@@ -1590,6 +2258,13 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50095.webp"
+              ]
+            }
           }
         }
       ],
@@ -1607,7 +2282,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50096.jpg",
             "https://marvelcdb.com/bundles/cards/50096.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50096.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "batroc",
@@ -1624,7 +2306,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50097.jpg",
             "https://marvelcdb.com/bundles/cards/50097.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50097.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "batroc",
@@ -1641,7 +2330,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50098.jpg",
             "https://marvelcdb.com/bundles/cards/50098.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50098.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "batrocs_brigade",
@@ -1658,7 +2354,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50099.jpg",
             "https://marvelcdb.com/bundles/cards/50099.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50099.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "batrocs_brigade",
@@ -1675,7 +2378,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50100.jpg",
             "https://marvelcdb.com/bundles/cards/50100.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50100.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "batrocs_brigade",
@@ -1696,6 +2406,13 @@
           "startingThreat": {
             "value": 6,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50101.webp"
+              ]
+            }
           }
         }
       ],
@@ -1713,7 +2430,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50102.jpg",
             "https://marvelcdb.com/bundles/cards/50102.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50102.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "batrocs_brigade",
@@ -1730,7 +2454,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50103A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50103a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "M.O.D.O.K.",
@@ -1739,7 +2470,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50103B.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50103b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "m.o.d.o.k.",
@@ -1760,7 +2498,14 @@
           "size": "land",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50104A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50104a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Upgrading Adaptoids",
@@ -1773,6 +2518,13 @@
           "startingThreat": {
             "value": 1,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50104b.webp"
+              ]
+            }
           }
         }
       ],
@@ -1793,7 +2545,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50105A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50105a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Flying Inhuman",
@@ -1801,7 +2560,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50105B.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50105b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "m.o.d.o.k.",
@@ -1821,7 +2587,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50106A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50106a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Psionic Inhuman",
@@ -1829,7 +2602,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50106B.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50106b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "m.o.d.o.k.",
@@ -1849,7 +2629,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50107A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50107a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Sarah Garza",
@@ -1857,7 +2644,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50107B.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50107b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "m.o.d.o.k.",
@@ -1877,7 +2671,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50108A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50108a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Strong Inhuman",
@@ -1885,7 +2686,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50108B.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50108b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "m.o.d.o.k.",
@@ -1906,7 +2714,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50109.jpg",
             "https://marvelcdb.com/bundles/cards/50109.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50109.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "m.o.d.o.k.",
@@ -1923,7 +2738,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50110.jpg",
             "https://marvelcdb.com/bundles/cards/50110.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50110.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "m.o.d.o.k.",
@@ -1940,7 +2762,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50111.jpg",
             "https://marvelcdb.com/bundles/cards/50111.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50111.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "m.o.d.o.k.",
@@ -1957,7 +2786,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50112.jpg",
             "https://marvelcdb.com/bundles/cards/50112.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50112.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "m.o.d.o.k.",
@@ -1974,7 +2810,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50113.jpg",
             "https://marvelcdb.com/bundles/cards/50113.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50113.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "m.o.d.o.k.",
@@ -1991,7 +2834,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50114.jpg",
             "https://marvelcdb.com/bundles/cards/50114.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50114.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "m.o.d.o.k.",
@@ -2008,7 +2858,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50115.jpg",
             "https://marvelcdb.com/bundles/cards/50115.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50115.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "m.o.d.o.k.",
@@ -2025,7 +2882,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50116.jpg",
             "https://marvelcdb.com/bundles/cards/50116.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50116.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "m.o.d.o.k.",
@@ -2042,7 +2906,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50117.jpg",
             "https://marvelcdb.com/bundles/cards/50117.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50117.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "m.o.d.o.k.",
@@ -2059,7 +2930,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50118.jpg",
             "https://marvelcdb.com/bundles/cards/50118.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50118.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "m.o.d.o.k.",
@@ -2076,7 +2954,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50119.jpg",
             "https://marvelcdb.com/bundles/cards/50119.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50119.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "m.o.d.o.k.",
@@ -2093,7 +2978,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50120.jpg",
             "https://marvelcdb.com/bundles/cards/50120.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50120.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "m.o.d.o.k.",
@@ -2114,6 +3006,13 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50121.webp"
+              ]
+            }
           }
         }
       ],
@@ -2135,6 +3034,13 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50122.webp"
+              ]
+            }
           }
         }
       ],
@@ -2152,7 +3058,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50123.jpg",
             "https://marvelcdb.com/bundles/cards/50123.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50123.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "m.o.d.o.k.",
@@ -2169,7 +3082,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50124.jpg",
             "https://marvelcdb.com/bundles/cards/50124.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50124.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "m.o.d.o.k.",
@@ -2186,7 +3106,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50125.jpg",
             "https://marvelcdb.com/bundles/cards/50125.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50125.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "scientist_supreme",
@@ -2203,7 +3130,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50126.jpg",
             "https://marvelcdb.com/bundles/cards/50126.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50126.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "scientist_supreme",
@@ -2224,6 +3158,13 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50127.webp"
+              ]
+            }
           }
         }
       ],
@@ -2241,7 +3182,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50128.jpg",
             "https://marvelcdb.com/bundles/cards/50128.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50128.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "scientist_supreme",
@@ -2258,7 +3206,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50129A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50129a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Citizen V",
@@ -2267,7 +3222,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50129B.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50129b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "thunderbolts",
@@ -2288,7 +3250,14 @@
           "size": "land",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50130A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50130a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Apprehending Rogue Agents",
@@ -2301,6 +3270,13 @@
           "startingThreat": {
             "value": 1,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50130b.webp"
+              ]
+            }
           }
         }
       ],
@@ -2321,7 +3297,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50131A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50131a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Thunderbolt Backup",
@@ -2329,7 +3312,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50131B.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50131b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "thunderbolts",
@@ -2350,7 +3340,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50132.jpg",
             "https://marvelcdb.com/bundles/cards/50132.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50132.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "thunderbolts",
@@ -2367,7 +3364,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50133.jpg",
             "https://marvelcdb.com/bundles/cards/50133.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50133.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "thunderbolts",
@@ -2384,7 +3388,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50134.jpg",
             "https://marvelcdb.com/bundles/cards/50134.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50134.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "thunderbolts",
@@ -2405,6 +3416,13 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50135.webp"
+              ]
+            }
           }
         }
       ],
@@ -2426,6 +3444,13 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50136.webp"
+              ]
+            }
           }
         }
       ],
@@ -2443,7 +3468,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50137.jpg",
             "https://marvelcdb.com/bundles/cards/50137.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50137.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "thunderbolts",
@@ -2460,7 +3492,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50138.jpg",
             "https://marvelcdb.com/bundles/cards/50138.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50138.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "thunderbolts",
@@ -2477,7 +3516,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50139.jpg",
             "https://marvelcdb.com/bundles/cards/50139.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50139.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "gravitational_pull",
@@ -2498,6 +3544,13 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50140.webp"
+              ]
+            }
           }
         }
       ],
@@ -2515,7 +3568,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50141.jpg",
             "https://marvelcdb.com/bundles/cards/50141.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50141.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "gravitational_pull",
@@ -2532,7 +3592,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50142.jpg",
             "https://marvelcdb.com/bundles/cards/50142.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50142.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "gravitational_pull",
@@ -2549,7 +3616,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50143.jpg",
             "https://marvelcdb.com/bundles/cards/50143.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50143.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "hard_sound",
@@ -2566,7 +3640,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50144.jpg",
             "https://marvelcdb.com/bundles/cards/50144.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50144.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "hard_sound",
@@ -2583,7 +3664,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50145.jpg",
             "https://marvelcdb.com/bundles/cards/50145.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50145.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "hard_sound",
@@ -2604,6 +3692,13 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50146.webp"
+              ]
+            }
           }
         }
       ],
@@ -2621,7 +3716,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50147.jpg",
             "https://marvelcdb.com/bundles/cards/50147.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50147.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "hard_sound",
@@ -2638,7 +3740,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50148.jpg",
             "https://marvelcdb.com/bundles/cards/50148.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50148.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "pale_little_spider",
@@ -2655,7 +3764,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50149.jpg",
             "https://marvelcdb.com/bundles/cards/50149.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50149.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "pale_little_spider",
@@ -2676,6 +3792,13 @@
           "startingThreat": {
             "value": 4,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50150.webp"
+              ]
+            }
           }
         }
       ],
@@ -2693,7 +3816,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50151.jpg",
             "https://marvelcdb.com/bundles/cards/50151.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50151.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "pale_little_spider",
@@ -2710,7 +3840,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50152.jpg",
             "https://marvelcdb.com/bundles/cards/50152.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50152.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "power_of_the_atom",
@@ -2727,7 +3864,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50153.jpg",
             "https://marvelcdb.com/bundles/cards/50153.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50153.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "power_of_the_atom",
@@ -2748,6 +3892,13 @@
           "startingThreat": {
             "value": 5,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50154.webp"
+              ]
+            }
           }
         }
       ],
@@ -2765,7 +3916,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50155.jpg",
             "https://marvelcdb.com/bundles/cards/50155.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50155.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "power_of_the_atom",
@@ -2782,7 +3940,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50156.jpg",
             "https://marvelcdb.com/bundles/cards/50156.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50156.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "supersonic",
@@ -2799,7 +3964,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50157.jpg",
             "https://marvelcdb.com/bundles/cards/50157.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50157.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "supersonic",
@@ -2816,7 +3988,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50158.jpg",
             "https://marvelcdb.com/bundles/cards/50158.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50158.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "supersonic",
@@ -2837,6 +4016,13 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50159.webp"
+              ]
+            }
           }
         }
       ],
@@ -2854,7 +4040,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50160.jpg",
             "https://marvelcdb.com/bundles/cards/50160.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50160.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "supersonic",
@@ -2871,7 +4064,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50161.jpg",
             "https://marvelcdb.com/bundles/cards/50161.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50161.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "the_leaper",
@@ -2892,6 +4092,13 @@
           "startingThreat": {
             "value": 5,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50162.webp"
+              ]
+            }
           }
         }
       ],
@@ -2909,7 +4116,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50163.jpg",
             "https://marvelcdb.com/bundles/cards/50163.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50163.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "the_leaper",
@@ -2926,7 +4140,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50164.jpg",
             "https://marvelcdb.com/bundles/cards/50164.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50164.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "the_leaper",
@@ -2943,7 +4164,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50165A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50165a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Baron Zemo",
@@ -2952,7 +4180,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50165B.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50165b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "baron_zemo",
@@ -2973,7 +4208,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50166A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50166a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Baron Zemo",
@@ -2982,7 +4224,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50166B.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50166b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "baron_zemo",
@@ -3003,7 +4252,14 @@
           "size": "land",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50167A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50167a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Zemo's Manipulations",
@@ -3016,6 +4272,13 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50167b.webp"
+              ]
+            }
           }
         }
       ],
@@ -3037,7 +4300,14 @@
           "size": "land",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50168A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50168a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "The Accusation",
@@ -3046,7 +4316,14 @@
           "size": "land",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50168B.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50168b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "baron_zemo",
@@ -3067,7 +4344,14 @@
           "size": "land",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50169A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50169a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Fighting Zemo",
@@ -3080,6 +4364,13 @@
           "startingThreat": {
             "value": 0,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50169b.webp"
+              ]
+            }
           }
         }
       ],
@@ -3101,7 +4392,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50170.jpg",
             "https://marvelcdb.com/bundles/cards/50170.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50170.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "baron_zemo",
@@ -3118,7 +4416,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50171.jpg",
             "https://marvelcdb.com/bundles/cards/50171.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50171.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "baron_zemo",
@@ -3135,7 +4440,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50172.jpg",
             "https://marvelcdb.com/bundles/cards/50172.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50172.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "baron_zemo",
@@ -3156,6 +4468,13 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50173.webp"
+              ]
+            }
           }
         }
       ],
@@ -3177,6 +4496,13 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50174.webp"
+              ]
+            }
           }
         }
       ],
@@ -3194,7 +4520,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50175.jpg",
             "https://marvelcdb.com/bundles/cards/50175.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50175.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "baron_zemo",
@@ -3211,7 +4544,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50176.jpg",
             "https://marvelcdb.com/bundles/cards/50176.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50176.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "baron_zemo",
@@ -3228,7 +4568,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50177.jpg",
             "https://marvelcdb.com/bundles/cards/50177.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50177.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "baron_zemo",
@@ -3245,7 +4592,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50178.jpg",
             "https://marvelcdb.com/bundles/cards/50178.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50178.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "s.h.i.e.l.d.",
@@ -3262,7 +4616,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50179.jpg",
             "https://marvelcdb.com/bundles/cards/50179.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50179.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "s.h.i.e.l.d.",
@@ -3283,6 +4644,13 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50180.webp"
+              ]
+            }
           }
         }
       ],
@@ -3299,7 +4667,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50181A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50181a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Medical Officer's Aid",
@@ -3307,7 +4682,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50181B.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50181b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "s.h.i.e.l.d._executive_board",
@@ -3327,7 +4709,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50182A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50182a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Surveillance Officer's Aid",
@@ -3335,7 +4724,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50182B.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50182b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "s.h.i.e.l.d._executive_board",
@@ -3355,7 +4751,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50183A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50183a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Tactical Officer's Aid",
@@ -3363,7 +4766,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50183B.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50183b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "s.h.i.e.l.d._executive_board",
@@ -3415,7 +4825,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50184C.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50184c.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "s.h.i.e.l.d._executive_board",
@@ -3432,7 +4849,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50185.jpg",
             "https://marvelcdb.com/bundles/cards/50185.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50185.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "executive_board_evidence",
@@ -3449,7 +4873,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50186.jpg",
             "https://marvelcdb.com/bundles/cards/50186.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50186.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "executive_board_evidence",
@@ -3466,7 +4897,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50187.jpg",
             "https://marvelcdb.com/bundles/cards/50187.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50187.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "executive_board_evidence",
@@ -3483,7 +4921,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50188.jpg",
             "https://marvelcdb.com/bundles/cards/50188.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50188.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "executive_board_evidence",
@@ -3500,7 +4945,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50189.jpg",
             "https://marvelcdb.com/bundles/cards/50189.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50189.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "executive_board_evidence",
@@ -3517,7 +4969,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50190.jpg",
             "https://marvelcdb.com/bundles/cards/50190.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50190.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "executive_board_evidence",
@@ -3534,7 +4993,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50191.jpg",
             "https://marvelcdb.com/bundles/cards/50191.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50191.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "executive_board_evidence",
@@ -3551,7 +5017,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50192.jpg",
             "https://marvelcdb.com/bundles/cards/50192.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50192.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "executive_board_evidence",
@@ -3568,7 +5041,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50193.jpg",
             "https://marvelcdb.com/bundles/cards/50193.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/aos/50193.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "executive_board_evidence",

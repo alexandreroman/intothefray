@@ -14,7 +14,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12001A.jpg",
             "https://marvelcdb.com/bundles/cards/12001a.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ant/12001a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Scott Lang",
@@ -24,7 +31,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12001B.jpg",
             "https://marvelcdb.com/bundles/cards/12001b.png"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ant/12001b.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Ant-Man",
@@ -34,7 +48,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12001C.jpg",
             "https://marvelcdb.com/bundles/cards/12001c.png"
           ],
-          "handSize": 4
+          "handSize": 4,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ant/12001c.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ant",
@@ -57,7 +78,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12002.jpg",
             "https://marvelcdb.com/bundles/cards/12002.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "La Guêpe",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ant/12002.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ant",
@@ -74,7 +103,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12003.jpg",
             "https://marvelcdb.com/bundles/cards/12003.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Un Pas de Géant",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ant/12003.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ant",
@@ -91,7 +128,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12004.jpg",
             "https://marvelcdb.com/bundles/cards/12004.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Esprit de Ruche",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ant/12004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ant",
@@ -108,7 +153,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12005.jpg",
             "https://marvelcdb.com/bundles/cards/12005.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Changer de Taille",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ant/12005.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ant",
@@ -125,7 +178,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12006.jpg",
             "https://marvelcdb.com/bundles/cards/12006.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Particules Pym",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ant/12006.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ant",
@@ -142,7 +203,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12007.jpg",
             "https://marvelcdb.com/bundles/cards/12007.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Armée de Fourmis",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ant/12007.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ant",
@@ -159,7 +228,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12008.jpg",
             "https://marvelcdb.com/bundles/cards/12008.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Casque d'Ant-Man",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ant/12008.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ant",
@@ -176,7 +253,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12009.jpg",
             "https://marvelcdb.com/bundles/cards/12009.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Force de Géant",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ant/12009.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ant",
@@ -193,7 +278,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12010.jpg",
             "https://marvelcdb.com/bundles/cards/12010.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Gantelets de Poignet",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ant/12010.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ant",
@@ -211,7 +304,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12011.jpg",
             "https://marvelcdb.com/bundles/cards/12011.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ant/12011.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -227,7 +327,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12012.jpg",
             "https://marvelcdb.com/bundles/cards/12012.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ant/12012.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -243,7 +350,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12013.jpg",
             "https://marvelcdb.com/bundles/cards/12013.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ant/12013.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -260,7 +374,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12014.jpg",
             "https://marvelcdb.com/bundles/cards/12014.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ant/12014.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -276,7 +397,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12015.jpg",
             "https://marvelcdb.com/bundles/cards/12015.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Appel à l'Aide",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ant/12015.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -292,7 +421,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12016.jpg",
             "https://marvelcdb.com/bundles/cards/12016.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Cran",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ant/12016.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -311,7 +448,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12017.jpg",
             "https://marvelcdb.com/bundles/cards/12017.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Gants de Pouvoir",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ant/12017.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -327,7 +472,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12018.jpg",
             "https://marvelcdb.com/bundles/cards/12018.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Costume Renforcé",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ant/12018.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -343,7 +496,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12020.jpg",
             "https://marvelcdb.com/bundles/cards/12020.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Tactique d'Essaim",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ant/12020.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -362,7 +523,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12024.jpg",
             "https://marvelcdb.com/bundles/cards/12024.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Exercice de Cohésion d'Équipe",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ant/12024.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -382,7 +551,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12025.jpg",
             "https://marvelcdb.com/bundles/cards/12025.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Veiller sur Cassie",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ant/12025.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ant",
@@ -403,6 +580,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Vol de Technologie",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ant/12026.webp"
+              ]
+            }
           }
         }
       ],
@@ -420,7 +605,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12027.jpg",
             "https://marvelcdb.com/bundles/cards/12027.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Frelon",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ant/12027.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ant_nemesis",
@@ -437,7 +630,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12028.jpg",
             "https://marvelcdb.com/bundles/cards/12028.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Augmentation de Taille",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ant/12028.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ant_nemesis",
@@ -454,7 +655,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12029.jpg",
             "https://marvelcdb.com/bundles/cards/12029.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Plan du Frelon",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ant/12029.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ant_nemesis",
@@ -471,7 +680,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12030.jpg",
             "https://marvelcdb.com/bundles/cards/12030.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Instant de Triomphe",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ant/12030.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -490,7 +707,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12031.jpg",
             "https://marvelcdb.com/bundles/cards/12031.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Faire Respecter la Loi",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ant/12031.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -509,7 +734,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12032.jpg",
             "https://marvelcdb.com/bundles/cards/12032.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Rassembler son Courage",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ant/12032.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -525,7 +758,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/12033.jpg",
             "https://marvelcdb.com/bundles/cards/12033.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Évaluer la Situation",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ant/12033.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",

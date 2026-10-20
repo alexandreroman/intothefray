@@ -14,7 +14,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42001A.jpg",
             "https://marvelcdb.com/bundles/cards/42001a.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/angel/42001a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Warren Worthington III",
@@ -24,7 +31,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42001B.jpg",
             "https://marvelcdb.com/bundles/cards/42001b.png"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/angel/42001b.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Archangel",
@@ -34,7 +48,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42001C.jpg",
             "https://marvelcdb.com/bundles/cards/42001c.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/angel/42001c.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "angel",
@@ -57,7 +78,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42002.jpg",
             "https://marvelcdb.com/bundles/cards/42002.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/angel/42002.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "angel",
@@ -74,7 +102,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42003.jpg",
             "https://marvelcdb.com/bundles/cards/42003.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Plumage Adaptatif",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/angel/42003.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "angel",
@@ -91,7 +127,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42004.jpg",
             "https://marvelcdb.com/bundles/cards/42004.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Agilité Aérienne",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/angel/42004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "angel",
@@ -108,7 +152,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42005.jpg",
             "https://marvelcdb.com/bundles/cards/42005.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Métamorphose",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/angel/42005.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "angel",
@@ -125,7 +177,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42006.jpg",
             "https://marvelcdb.com/bundles/cards/42006.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Vol Naturel",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/angel/42006.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "angel",
@@ -142,7 +202,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42007.jpg",
             "https://marvelcdb.com/bundles/cards/42007.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Rasoirs Plongeants",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/angel/42007.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "angel",
@@ -159,7 +227,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42008.jpg",
             "https://marvelcdb.com/bundles/cards/42008.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Comme un Oiseau",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/angel/42008.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "angel",
@@ -176,7 +252,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42009.jpg",
             "https://marvelcdb.com/bundles/cards/42009.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/angel/42009.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "angel",
@@ -193,7 +276,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42010.jpg",
             "https://marvelcdb.com/bundles/cards/42010.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Ailes Techno-Organiques",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/angel/42010.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "angel",
@@ -211,7 +302,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42011.jpg",
             "https://marvelcdb.com/bundles/cards/42011.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/angel/42011.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -228,7 +326,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42012.jpg",
             "https://marvelcdb.com/bundles/cards/42012.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Cyrène",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/angel/42012.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -245,7 +351,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42013.jpg",
             "https://marvelcdb.com/bundles/cards/42013.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/angel/42013.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -261,7 +374,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42014.jpg",
             "https://marvelcdb.com/bundles/cards/42014.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Intervention Aérienne",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/angel/42014.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -277,7 +398,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42016.jpg",
             "https://marvelcdb.com/bundles/cards/42016.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Moquerie",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/angel/42016.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -300,6 +429,14 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Assistance Médicale",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/angel/42017.webp"
+              ]
+            }
           }
         }
       ],
@@ -316,7 +453,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42018.jpg",
             "https://marvelcdb.com/bundles/cards/42018.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "L'Aire d'Angel",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/angel/42018.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -332,7 +477,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42019.jpg",
             "https://marvelcdb.com/bundles/cards/42019.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Stratégie de Confinement",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/angel/42019.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -349,7 +502,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42020.jpg",
             "https://marvelcdb.com/bundles/cards/42020.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Rocket",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/angel/42020.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -365,7 +526,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42022.jpg",
             "https://marvelcdb.com/bundles/cards/42022.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Pouvoir du Vol",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/angel/42022.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -384,7 +553,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42023.jpg",
             "https://marvelcdb.com/bundles/cards/42023.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Acrobaties de Haute Voltige",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/angel/42023.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -400,7 +577,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42024.jpg",
             "https://marvelcdb.com/bundles/cards/42024.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Influence Apocalyptique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/angel/42024.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "angel",
@@ -417,7 +602,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42025.jpg",
             "https://marvelcdb.com/bundles/cards/42025.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Harpon",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/angel/42025.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "angel_nemesis",
@@ -438,6 +631,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Est-ce Que ça Mord ?",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/angel/42026.webp"
+              ]
+            }
           }
         }
       ],
@@ -455,7 +656,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42027.jpg",
             "https://marvelcdb.com/bundles/cards/42027.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Harpon de Harpon",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/angel/42027.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "angel_nemesis",
@@ -472,7 +681,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42028.jpg",
             "https://marvelcdb.com/bundles/cards/42028.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Harponnage",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/angel/42028.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "angel_nemesis",
@@ -489,7 +706,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42029.jpg",
             "https://marvelcdb.com/bundles/cards/42029.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Bombes Larguées",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/angel/42029.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -508,7 +733,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42030.jpg",
             "https://marvelcdb.com/bundles/cards/42030.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Des Yeux dans le Ciel",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/angel/42030.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -524,7 +757,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42031.jpg",
             "https://marvelcdb.com/bundles/cards/42031.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Formation de Vol",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/angel/42031.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -540,7 +781,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/42032.jpg",
             "https://marvelcdb.com/bundles/cards/42032.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Recrue de la X-Force",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/angel/42032.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",

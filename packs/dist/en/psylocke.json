@@ -14,7 +14,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41001A.jpg",
             "https://marvelcdb.com/bundles/cards/41001a.png"
           ],
-          "handSize": 4
+          "handSize": 4,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41001a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Betsy Braddock",
@@ -24,7 +31,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41001B.jpg",
             "https://marvelcdb.com/bundles/cards/41001b.png"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41001b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "psylocke",
@@ -44,7 +58,15 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41002A.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Psi-Couteau",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41002a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Psi-Katana",
@@ -52,7 +74,14 @@
           "size": "std",
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41002B.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41002b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "psylocke",
@@ -74,7 +103,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41003.jpg",
             "https://marvelcdb.com/bundles/cards/41003.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41003.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "psylocke",
@@ -91,7 +127,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41004.jpg",
             "https://marvelcdb.com/bundles/cards/41004.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Lames en Rafales",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "psylocke",
@@ -108,7 +152,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41005.jpg",
             "https://marvelcdb.com/bundles/cards/41005.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Détection Mentale",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41005.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "psylocke",
@@ -125,7 +177,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41006.jpg",
             "https://marvelcdb.com/bundles/cards/41006.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Redirection Psionique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41006.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "psylocke",
@@ -142,7 +202,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41007.jpg",
             "https://marvelcdb.com/bundles/cards/41007.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Suggestion Télépathique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41007.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "psylocke",
@@ -159,7 +227,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41008.jpg",
             "https://marvelcdb.com/bundles/cards/41008.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Entraînement Rigoureux",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41008.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "psylocke",
@@ -176,7 +252,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41009.jpg",
             "https://marvelcdb.com/bundles/cards/41009.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Entraînement aux Arts Martiaux",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41009.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "psylocke",
@@ -193,7 +277,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41010.jpg",
             "https://marvelcdb.com/bundles/cards/41010.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Entraînement Psionique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41010.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "psylocke",
@@ -210,7 +302,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41011.jpg",
             "https://marvelcdb.com/bundles/cards/41011.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Entraînement aux Armes",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41011.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "psylocke",
@@ -228,7 +328,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41012.jpg",
             "https://marvelcdb.com/bundles/cards/41012.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41012.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -245,7 +352,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41013.jpg",
             "https://marvelcdb.com/bundles/cards/41013.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41013.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -261,7 +375,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41015.jpg",
             "https://marvelcdb.com/bundles/cards/41015.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Dans la Tête",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41015.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -281,6 +403,14 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Tendre un Piège",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41016.webp"
+              ]
+            }
           }
         }
       ],
@@ -300,7 +430,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41017.jpg",
             "https://marvelcdb.com/bundles/cards/41017.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Vole Comme un Papillon",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41017.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -316,7 +454,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41018.jpg",
             "https://marvelcdb.com/bundles/cards/41018.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41018.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -332,7 +477,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41019.jpg",
             "https://marvelcdb.com/bundles/cards/41019.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Concentrer ses Forces",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41019.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -348,7 +501,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41020.jpg",
             "https://marvelcdb.com/bundles/cards/41020.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Deux Cœurs s'Envolent",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41020.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -367,7 +528,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41022.jpg",
             "https://marvelcdb.com/bundles/cards/41022.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41022.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -386,7 +554,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41023.jpg",
             "https://marvelcdb.com/bundles/cards/41023.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41023.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -405,7 +580,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41024.jpg",
             "https://marvelcdb.com/bundles/cards/41024.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Télépathie",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41024.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -421,7 +604,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41025.jpg",
             "https://marvelcdb.com/bundles/cards/41025.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Changement de Corps",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41025.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "psylocke",
@@ -438,7 +629,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41026.jpg",
             "https://marvelcdb.com/bundles/cards/41026.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41026.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "psylocke_nemesis",
@@ -459,6 +657,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Pillage Interdimensionnel",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41027.webp"
+              ]
+            }
           }
         }
       ],
@@ -476,7 +682,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41028.jpg",
             "https://marvelcdb.com/bundles/cards/41028.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Illusion Psionique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41028.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "psylocke_nemesis",
@@ -493,7 +707,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41029.jpg",
             "https://marvelcdb.com/bundles/cards/41029.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Dragon Télékinétique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41029.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "psylocke_nemesis",
@@ -510,7 +732,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41030.jpg",
             "https://marvelcdb.com/bundles/cards/41030.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Attaque au Psi-Arc",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41030.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -527,7 +757,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41031.jpg",
             "https://marvelcdb.com/bundles/cards/41031.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41031.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -543,7 +780,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41032.jpg",
             "https://marvelcdb.com/bundles/cards/41032.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Attaque au Psi-Fléau",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41032.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -559,7 +804,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41033.jpg",
             "https://marvelcdb.com/bundles/cards/41033.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Télékinésie",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41033.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",

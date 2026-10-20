@@ -14,7 +14,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49001A.jpg",
             "https://marvelcdb.com/bundles/cards/49001a.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/magneto/49001a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Erik Lehnsherr",
@@ -24,7 +31,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49001B.jpg",
             "https://marvelcdb.com/bundles/cards/49001b.png"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/magneto/49001b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "magneto",
@@ -45,7 +59,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49002.jpg",
             "https://marvelcdb.com/bundles/cards/49002.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/magneto/49002.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "magneto",
@@ -62,7 +83,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49003.jpg",
             "https://marvelcdb.com/bundles/cards/49003.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/magneto/49003.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "magneto",
@@ -79,7 +107,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49004.jpg",
             "https://marvelcdb.com/bundles/cards/49004.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/magneto/49004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "magneto",
@@ -96,7 +131,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49005.jpg",
             "https://marvelcdb.com/bundles/cards/49005.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/magneto/49005.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "magneto",
@@ -113,7 +155,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49006.jpg",
             "https://marvelcdb.com/bundles/cards/49006.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/magneto/49006.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "magneto",
@@ -130,7 +179,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49007.jpg",
             "https://marvelcdb.com/bundles/cards/49007.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/magneto/49007.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "magneto",
@@ -147,7 +203,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49008.jpg",
             "https://marvelcdb.com/bundles/cards/49008.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/magneto/49008.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "magneto",
@@ -164,7 +227,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49009.jpg",
             "https://marvelcdb.com/bundles/cards/49009.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/magneto/49009.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "magneto",
@@ -181,7 +251,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49010.jpg",
             "https://marvelcdb.com/bundles/cards/49010.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/magneto/49010.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "magneto",
@@ -198,7 +275,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49011.jpg",
             "https://marvelcdb.com/bundles/cards/49011.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/magneto/49011.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "magneto",
@@ -216,7 +300,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49012.jpg",
             "https://marvelcdb.com/bundles/cards/49012.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/magneto/49012.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -233,7 +324,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49013.jpg",
             "https://marvelcdb.com/bundles/cards/49013.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/magneto/49013.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -250,7 +348,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49014.jpg",
             "https://marvelcdb.com/bundles/cards/49014.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/magneto/49014.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -267,7 +372,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49015.jpg",
             "https://marvelcdb.com/bundles/cards/49015.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/magneto/49015.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -283,7 +395,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49016.jpg",
             "https://marvelcdb.com/bundles/cards/49016.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/magneto/49016.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -299,7 +418,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49017.jpg",
             "https://marvelcdb.com/bundles/cards/49017.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/magneto/49017.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -315,7 +441,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49018.jpg",
             "https://marvelcdb.com/bundles/cards/49018.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/magneto/49018.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -331,7 +464,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49019.jpg",
             "https://marvelcdb.com/bundles/cards/49019.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/magneto/49019.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -351,6 +491,13 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/magneto/49020.webp"
+              ]
+            }
           }
         }
       ],
@@ -368,7 +515,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49021.jpg",
             "https://marvelcdb.com/bundles/cards/49021.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/magneto/49021.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -384,7 +538,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49022.jpg",
             "https://marvelcdb.com/bundles/cards/49022.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/magneto/49022.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -400,7 +561,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49027.jpg",
             "https://marvelcdb.com/bundles/cards/49027.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/magneto/49027.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "magneto",
@@ -417,7 +585,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49028.jpg",
             "https://marvelcdb.com/bundles/cards/49028.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/magneto/49028.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "magneto_nemesis",
@@ -438,6 +613,13 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/magneto/49029.webp"
+              ]
+            }
           }
         }
       ],
@@ -455,7 +637,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49030.jpg",
             "https://marvelcdb.com/bundles/cards/49030.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/magneto/49030.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "magneto_nemesis",
@@ -472,7 +661,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49031.jpg",
             "https://marvelcdb.com/bundles/cards/49031.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/magneto/49031.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "magneto_nemesis",
@@ -489,7 +685,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49032.jpg",
             "https://marvelcdb.com/bundles/cards/49032.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/magneto/49032.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "magneto_nemesis",
@@ -507,7 +710,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49033.jpg",
             "https://marvelcdb.com/bundles/cards/49033.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/magneto/49033.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -524,7 +734,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49034.jpg",
             "https://marvelcdb.com/bundles/cards/49034.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/magneto/49034.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -541,7 +758,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49035.jpg",
             "https://marvelcdb.com/bundles/cards/49035.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/magneto/49035.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -558,7 +782,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49036.jpg",
             "https://marvelcdb.com/bundles/cards/49036.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/magneto/49036.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -574,7 +805,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49037.jpg",
             "https://marvelcdb.com/bundles/cards/49037.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/magneto/49037.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -590,7 +828,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49038.jpg",
             "https://marvelcdb.com/bundles/cards/49038.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/magneto/49038.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "hellfire",
@@ -607,7 +852,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49039.jpg",
             "https://marvelcdb.com/bundles/cards/49039.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/magneto/49039.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "hellfire",
@@ -623,7 +875,14 @@
           "size": "std",
           "images": [
             "https://marvelcdb.com/bundles/cards/49040.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/magneto/49040.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "hellfire",
@@ -644,6 +903,13 @@
           "startingThreat": {
             "value": 4,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/magneto/49041.webp"
+              ]
+            }
           }
         }
       ],
@@ -661,7 +927,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/49042.jpg",
             "https://marvelcdb.com/bundles/cards/49042.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/magneto/49042.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "hellfire",

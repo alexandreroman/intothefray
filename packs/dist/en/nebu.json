@@ -14,7 +14,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22001A.jpg",
             "https://marvelcdb.com/bundles/cards/22001a.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nebu/22001a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Nebula",
@@ -24,7 +31,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22001B.jpg",
             "https://marvelcdb.com/bundles/cards/22001b.png"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nebu/22001b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nebu",
@@ -45,7 +59,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22002.jpg",
             "https://marvelcdb.com/bundles/cards/22002.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nebu/22002.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nebu",
@@ -62,7 +83,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22003.jpg",
             "https://marvelcdb.com/bundles/cards/22003.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Vaisseau de Nebula",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nebu/22003.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nebu",
@@ -79,7 +108,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22004.jpg",
             "https://marvelcdb.com/bundles/cards/22004.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Ambition dévorante",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nebu/22004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nebu",
@@ -96,7 +133,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22005.jpg",
             "https://marvelcdb.com/bundles/cards/22005.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Manœuvre d'Évasion",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nebu/22005.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nebu",
@@ -113,7 +158,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22006.jpg",
             "https://marvelcdb.com/bundles/cards/22006.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Obstination Inflexible",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nebu/22006.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nebu",
@@ -130,7 +183,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22007.jpg",
             "https://marvelcdb.com/bundles/cards/22007.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Experte en Armement",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nebu/22007.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nebu",
@@ -147,7 +208,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22008.jpg",
             "https://marvelcdb.com/bundles/cards/22008.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Posture de Combat Élancée",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nebu/22008.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nebu",
@@ -164,7 +233,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22009.jpg",
             "https://marvelcdb.com/bundles/cards/22009.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Prête au Combat",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nebu/22009.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nebu",
@@ -181,7 +258,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22010.jpg",
             "https://marvelcdb.com/bundles/cards/22010.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Intentions Meurtrières",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nebu/22010.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nebu",
@@ -198,7 +283,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22011.jpg",
             "https://marvelcdb.com/bundles/cards/22011.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nebu/22011.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -215,7 +307,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22012.jpg",
             "https://marvelcdb.com/bundles/cards/22012.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nebu/22012.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -232,7 +331,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22013.jpg",
             "https://marvelcdb.com/bundles/cards/22013.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nebu/22013.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -248,7 +354,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22014.jpg",
             "https://marvelcdb.com/bundles/cards/22014.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Justice Rendue",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nebu/22014.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -264,7 +378,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22015.jpg",
             "https://marvelcdb.com/bundles/cards/22015.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "D'une Manière ou d'une Autre",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nebu/22015.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -283,7 +405,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22018.jpg",
             "https://marvelcdb.com/bundles/cards/22018.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "La Tête Plutôt que les Muscles",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nebu/22018.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -299,7 +429,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22022.jpg",
             "https://marvelcdb.com/bundles/cards/22022.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Filles de Thanos",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nebu/22022.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -315,7 +453,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22027.jpg",
             "https://marvelcdb.com/bundles/cards/22027.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Complexe d'Infériorité",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nebu/22027.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nebu",
@@ -332,7 +478,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22028.jpg",
             "https://marvelcdb.com/bundles/cards/22028.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nebu/22028.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nebu_nemesis",
@@ -353,6 +506,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Instinct de Préservation",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nebu/22029.webp"
+              ]
+            }
           }
         }
       ],
@@ -370,7 +531,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22030.jpg",
             "https://marvelcdb.com/bundles/cards/22030.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Arme Léthale",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nebu/22030.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nebu_nemesis",
@@ -387,7 +556,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22031.jpg",
             "https://marvelcdb.com/bundles/cards/22031.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Rivales Depuis Toujours",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nebu/22031.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "nebu_nemesis",
@@ -404,7 +581,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22032.jpg",
             "https://marvelcdb.com/bundles/cards/22032.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Lance Énergétique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nebu/22032.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -420,7 +605,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22033.jpg",
             "https://marvelcdb.com/bundles/cards/22033.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Gardiens de la Galaxie",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nebu/22033.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -436,7 +629,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22034.jpg",
             "https://marvelcdb.com/bundles/cards/22034.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Entraînement Défensif",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nebu/22034.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -452,7 +653,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/22035.jpg",
             "https://marvelcdb.com/bundles/cards/22035.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Membre Honoraire des Gardiens",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/nebu/22035.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",

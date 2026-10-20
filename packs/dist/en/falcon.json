@@ -14,7 +14,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53001A.jpg",
             "https://marvelcdb.com/bundles/cards/53001a.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/falcon/53001a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Sam Wilson",
@@ -24,7 +31,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53001B.jpg",
             "https://marvelcdb.com/bundles/cards/53001b.png"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/falcon/53001b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "falcon",
@@ -45,7 +59,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53002.jpg",
             "https://marvelcdb.com/bundles/cards/53002.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/falcon/53002.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "falcon",
@@ -62,7 +83,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53003.jpg",
             "https://marvelcdb.com/bundles/cards/53003.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/falcon/53003.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "falcon",
@@ -79,7 +107,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53004.jpg",
             "https://marvelcdb.com/bundles/cards/53004.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/falcon/53004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "falcon",
@@ -96,7 +131,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53005.jpg",
             "https://marvelcdb.com/bundles/cards/53005.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/falcon/53005.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "falcon",
@@ -113,7 +155,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53006.jpg",
             "https://marvelcdb.com/bundles/cards/53006.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/falcon/53006.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "falcon",
@@ -130,7 +179,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53007.jpg",
             "https://marvelcdb.com/bundles/cards/53007.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/falcon/53007.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "falcon",
@@ -147,7 +203,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53008.jpg",
             "https://marvelcdb.com/bundles/cards/53008.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/falcon/53008.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "falcon",
@@ -164,7 +227,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53009.jpg",
             "https://marvelcdb.com/bundles/cards/53009.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/falcon/53009.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "falcon",
@@ -181,7 +251,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53010.jpg",
             "https://marvelcdb.com/bundles/cards/53010.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/falcon/53010.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "falcon",
@@ -198,7 +275,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53011.jpg",
             "https://marvelcdb.com/bundles/cards/53011.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/falcon/53011.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "falcon",
@@ -215,7 +299,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53012.jpg",
             "https://marvelcdb.com/bundles/cards/53012.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/falcon/53012.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "falcon",
@@ -232,7 +323,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53013.jpg",
             "https://marvelcdb.com/bundles/cards/53013.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/falcon/53013.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "falcon",
@@ -249,7 +347,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53015.jpg",
             "https://marvelcdb.com/bundles/cards/53015.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/falcon/53015.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -265,7 +370,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53017.jpg",
             "https://marvelcdb.com/bundles/cards/53017.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/falcon/53017.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -282,7 +394,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53018.jpg",
             "https://marvelcdb.com/bundles/cards/53018.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/falcon/53018.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -298,7 +417,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53019.jpg",
             "https://marvelcdb.com/bundles/cards/53019.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/falcon/53019.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -314,7 +440,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53020.jpg",
             "https://marvelcdb.com/bundles/cards/53020.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/falcon/53020.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -330,7 +463,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53021.jpg",
             "https://marvelcdb.com/bundles/cards/53021.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/falcon/53021.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -346,7 +486,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53023.jpg",
             "https://marvelcdb.com/bundles/cards/53023.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/falcon/53023.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -362,7 +509,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53024.jpg",
             "https://marvelcdb.com/bundles/cards/53024.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/falcon/53024.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -378,7 +532,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53029.jpg",
             "https://marvelcdb.com/bundles/cards/53029.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/falcon/53029.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "falcon",
@@ -395,7 +556,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53030.jpg",
             "https://marvelcdb.com/bundles/cards/53030.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/falcon/53030.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "falcon_nemesis",
@@ -416,6 +584,13 @@
           "startingThreat": {
             "value": 6,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/falcon/53031.webp"
+              ]
+            }
           }
         }
       ],
@@ -433,7 +608,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53032.jpg",
             "https://marvelcdb.com/bundles/cards/53032.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/falcon/53032.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "falcon_nemesis",
@@ -450,7 +632,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53033.jpg",
             "https://marvelcdb.com/bundles/cards/53033.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/falcon/53033.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "falcon_nemesis",
@@ -467,7 +656,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53034.jpg",
             "https://marvelcdb.com/bundles/cards/53034.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/falcon/53034.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -484,7 +680,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53035.jpg",
             "https://marvelcdb.com/bundles/cards/53035.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/falcon/53035.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -500,7 +703,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53036.jpg",
             "https://marvelcdb.com/bundles/cards/53036.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/falcon/53036.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -516,7 +726,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53037.jpg",
             "https://marvelcdb.com/bundles/cards/53037.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/falcon/53037.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -532,7 +749,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53038.jpg",
             "https://marvelcdb.com/bundles/cards/53038.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/falcon/53038.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "techno",
@@ -549,7 +773,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53039.jpg",
             "https://marvelcdb.com/bundles/cards/53039.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/falcon/53039.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "techno",
@@ -566,7 +797,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53040.jpg",
             "https://marvelcdb.com/bundles/cards/53040.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/falcon/53040.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "techno",
@@ -587,6 +825,13 @@
           "startingThreat": {
             "value": 4,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/falcon/53041.webp"
+              ]
+            }
           }
         }
       ],
@@ -604,7 +849,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/53042.jpg",
             "https://marvelcdb.com/bundles/cards/53042.jpg"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/falcon/53042.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "techno",

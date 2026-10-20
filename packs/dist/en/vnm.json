@@ -14,7 +14,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20001A.jpg",
             "https://marvelcdb.com/bundles/cards/20001a.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vnm/20001a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Flash Thompson",
@@ -24,7 +31,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20001B.jpg",
             "https://marvelcdb.com/bundles/cards/20001b.png"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vnm/20001b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "vnm",
@@ -45,7 +59,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20002.jpg",
             "https://marvelcdb.com/bundles/cards/20002.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Derrière les Lignes Ennemies",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vnm/20002.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "vnm",
@@ -62,7 +84,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20003.jpg",
             "https://marvelcdb.com/bundles/cards/20003.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Tentacules Agrippants",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vnm/20003.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "vnm",
@@ -79,7 +109,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20004.jpg",
             "https://marvelcdb.com/bundles/cards/20004.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Paré à Tirer",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vnm/20004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "vnm",
@@ -96,7 +134,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20005.jpg",
             "https://marvelcdb.com/bundles/cards/20005.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Courir et Tirer",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vnm/20005.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "vnm",
@@ -113,7 +159,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20006.jpg",
             "https://marvelcdb.com/bundles/cards/20006.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Attaque Sauvage",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vnm/20006.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "vnm",
@@ -130,7 +184,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20007.jpg",
             "https://marvelcdb.com/bundles/cards/20007.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Projet Renaissance 2.0",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vnm/20007.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "vnm",
@@ -147,7 +209,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20008.jpg",
             "https://marvelcdb.com/bundles/cards/20008.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Multi-Flingue",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vnm/20008.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "vnm",
@@ -164,7 +234,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20009.jpg",
             "https://marvelcdb.com/bundles/cards/20009.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Sens d'Araignée",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vnm/20009.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "vnm",
@@ -181,7 +259,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20010.jpg",
             "https://marvelcdb.com/bundles/cards/20010.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Pistolet de Venom",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vnm/20010.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "vnm",
@@ -199,7 +285,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20011.jpg",
             "https://marvelcdb.com/bundles/cards/20011.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vnm/20011.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -215,7 +308,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20012.jpg",
             "https://marvelcdb.com/bundles/cards/20012.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Effrayer l'Ennemi",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vnm/20012.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -231,7 +332,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20013.jpg",
             "https://marvelcdb.com/bundles/cards/20013.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Soigner son Entrée",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vnm/20013.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -250,7 +359,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20015.jpg",
             "https://marvelcdb.com/bundles/cards/20015.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Fusil Sonique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vnm/20015.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -270,7 +387,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20016.jpg",
             "https://marvelcdb.com/bundles/cards/20016.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vnm/20016.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -286,7 +410,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20021.jpg",
             "https://marvelcdb.com/bundles/cards/20021.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Ceinturon",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vnm/20021.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -302,7 +434,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20022.jpg",
             "https://marvelcdb.com/bundles/cards/20022.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Pistolet à Plasma",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vnm/20022.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -318,7 +458,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20023.jpg",
             "https://marvelcdb.com/bundles/cards/20023.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Lutter pour le Contrôle",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vnm/20023.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "vnm",
@@ -339,6 +487,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Frénésie Klyntar",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vnm/20024.webp"
+              ]
+            }
           }
         }
       ],
@@ -356,7 +512,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20025.jpg",
             "https://marvelcdb.com/bundles/cards/20025.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Symbiote Enragé",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vnm/20025.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "vnm_nemesis",
@@ -373,7 +537,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20026.jpg",
             "https://marvelcdb.com/bundles/cards/20026.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vnm/20026.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -389,7 +560,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20027.jpg",
             "https://marvelcdb.com/bundles/cards/20027.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "\"Bienvenue à Bord\"",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vnm/20027.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -405,7 +584,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20028.jpg",
             "https://marvelcdb.com/bundles/cards/20028.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Se Ressaisir",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vnm/20028.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -421,7 +608,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/20029.jpg",
             "https://marvelcdb.com/bundles/cards/20029.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Quartiers de l'Équipage",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/vnm/20029.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",

@@ -14,7 +14,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44001A.jpg",
             "https://marvelcdb.com/bundles/cards/44001a.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44001a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Wade Wilson",
@@ -24,7 +31,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44001B.jpg",
             "https://marvelcdb.com/bundles/cards/44001b.png"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44001b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "deadpool",
@@ -46,7 +60,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44002.jpg",
             "https://marvelcdb.com/bundles/cards/44002.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44002.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "deadpool",
@@ -63,7 +84,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44003.jpg",
             "https://marvelcdb.com/bundles/cards/44003.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Personnalité Épuisante",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44003.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "deadpool",
@@ -80,7 +109,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44004.jpg",
             "https://marvelcdb.com/bundles/cards/44004.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Effort Maximum",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "deadpool",
@@ -97,7 +134,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44005.jpg",
             "https://marvelcdb.com/bundles/cards/44005.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Méta-Connaissance",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44005.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "deadpool",
@@ -114,7 +159,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44006.jpg",
             "https://marvelcdb.com/bundles/cards/44006.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "\"Youhou !\"",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44006.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "deadpool",
@@ -131,7 +184,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44007.jpg",
             "https://marvelcdb.com/bundles/cards/44007.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44007.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "deadpool",
@@ -148,7 +208,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44008.jpg",
             "https://marvelcdb.com/bundles/cards/44008.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Camion de Chimichangas",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44008.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "deadpool",
@@ -165,7 +233,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44009.jpg",
             "https://marvelcdb.com/bundles/cards/44009.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Plein le Râtelier",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44009.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "deadpool",
@@ -182,7 +258,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44010.jpg",
             "https://marvelcdb.com/bundles/cards/44010.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Katana de Deadpool",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44010.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "deadpool",
@@ -199,7 +283,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44011.jpg",
             "https://marvelcdb.com/bundles/cards/44011.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Je n'en ai Pas Fini Avec Toi...",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44011.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "deadpool",
@@ -216,7 +308,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44012.jpg",
             "https://marvelcdb.com/bundles/cards/44012.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Cette Carte Brûle Vraiment",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44012.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "deadpool",
@@ -234,7 +334,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44013.jpg",
             "https://marvelcdb.com/bundles/cards/44013.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44013.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -251,7 +358,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44014.jpg",
             "https://marvelcdb.com/bundles/cards/44014.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44014.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -268,7 +382,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44015.jpg",
             "https://marvelcdb.com/bundles/cards/44015.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44015.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -285,7 +406,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44016.jpg",
             "https://marvelcdb.com/bundles/cards/44016.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44016.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -301,7 +429,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44017.jpg",
             "https://marvelcdb.com/bundles/cards/44017.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Juste une Égratignure",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44017.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -317,7 +453,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44018.jpg",
             "https://marvelcdb.com/bundles/cards/44018.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Coup'Tif",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44018.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -333,7 +477,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44019.jpg",
             "https://marvelcdb.com/bundles/cards/44019.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "LA Bombe",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44019.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -349,7 +501,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44020.jpg",
             "https://marvelcdb.com/bundles/cards/44020.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Défonce-Toi",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44020.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -365,7 +525,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44021.jpg",
             "https://marvelcdb.com/bundles/cards/44021.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "\"Je m'en Occupe\"",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44021.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -381,7 +549,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44022.jpg",
             "https://marvelcdb.com/bundles/cards/44022.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Rien à Carrer",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44022.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -397,7 +573,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44023.jpg",
             "https://marvelcdb.com/bundles/cards/44023.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Inspecteur 'Pool",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44023.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -417,6 +601,14 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Vivre Dangeureusement",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44024.webp"
+              ]
+            }
           }
         }
       ],
@@ -433,7 +625,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44025.jpg",
             "https://marvelcdb.com/bundles/cards/44025.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "C'est Moi le Plus Fort",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44025.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -449,7 +649,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44026.jpg",
             "https://marvelcdb.com/bundles/cards/44026.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "C'est Moi la Plus Sage",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44026.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -465,7 +673,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44027.jpg",
             "https://marvelcdb.com/bundles/cards/44027.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "C'est Moi qui Commande",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44027.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -481,7 +697,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44028.jpg",
             "https://marvelcdb.com/bundles/cards/44028.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "À la Dure",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44028.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -497,7 +721,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44029.jpg",
             "https://marvelcdb.com/bundles/cards/44029.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Facteur de Guérison",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44029.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -513,7 +745,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44030.jpg",
             "https://marvelcdb.com/bundles/cards/44030.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Accroche-Toi-à-ton-Slip",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44030.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -529,7 +769,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44032.jpg",
             "https://marvelcdb.com/bundles/cards/44032.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Mercenaire Provocateur",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44032.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "deadpool",
@@ -546,7 +794,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44033.jpg",
             "https://marvelcdb.com/bundles/cards/44033.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44033.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "deadpool_nemesis",
@@ -567,6 +822,14 @@
           "startingThreat": {
             "value": 6,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Intervention Involontaire",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44034.webp"
+              ]
+            }
           }
         }
       ],
@@ -584,7 +847,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44035.jpg",
             "https://marvelcdb.com/bundles/cards/44035.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44035.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "deadpool_nemesis",
@@ -601,7 +871,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44036.jpg",
             "https://marvelcdb.com/bundles/cards/44036.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Soldat Altéré",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44036.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "deadpool_nemesis",
@@ -618,7 +896,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44037.jpg",
             "https://marvelcdb.com/bundles/cards/44037.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Des Deadpools à Gogo",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44037.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "dreadpool",
@@ -635,7 +921,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44038.jpg",
             "https://marvelcdb.com/bundles/cards/44038.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44038.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "dreadpool",
@@ -656,6 +949,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Semer la Terreur",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44039.webp"
+              ]
+            }
           }
         }
       ],
@@ -673,7 +974,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44040.jpg",
             "https://marvelcdb.com/bundles/cards/44040.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Rayon AntiRégénération",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44040.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "dreadpool",
@@ -690,7 +999,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44041.jpg",
             "https://marvelcdb.com/bundles/cards/44041.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "'Poolisation",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44041.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "dreadpool",
@@ -707,7 +1024,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44042.jpg",
             "https://marvelcdb.com/bundles/cards/44042.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Tendances Métacidaires",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44042.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "dreadpool",
@@ -725,7 +1050,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44043.jpg",
             "https://marvelcdb.com/bundles/cards/44043.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Bob, Agent d'Hydra",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44043.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -742,7 +1075,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44044.jpg",
             "https://marvelcdb.com/bundles/cards/44044.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44044.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -758,7 +1098,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44045.jpg",
             "https://marvelcdb.com/bundles/cards/44045.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44045.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -774,7 +1121,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44046.jpg",
             "https://marvelcdb.com/bundles/cards/44046.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Une Petite Pause",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44046.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -790,7 +1145,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44047.jpg",
             "https://marvelcdb.com/bundles/cards/44047.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Reste Bien devant Moi !",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44047.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -806,7 +1169,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44048.jpg",
             "https://marvelcdb.com/bundles/cards/44048.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44048.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -822,7 +1192,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44049.jpg",
             "https://marvelcdb.com/bundles/cards/44049.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Vaisseau du Deadpool Corps",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44049.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -838,7 +1216,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44050.jpg",
             "https://marvelcdb.com/bundles/cards/44050.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Pour les Besoins du Scénar",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44050.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -854,7 +1240,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44051.jpg",
             "https://marvelcdb.com/bundles/cards/44051.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Débarquement",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44051.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -870,7 +1264,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44052.jpg",
             "https://marvelcdb.com/bundles/cards/44052.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44052.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -886,7 +1287,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44053.jpg",
             "https://marvelcdb.com/bundles/cards/44053.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Bingo",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44053.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -902,7 +1311,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44054.jpg",
             "https://marvelcdb.com/bundles/cards/44054.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Diversion",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44054.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -918,7 +1335,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44055.jpg",
             "https://marvelcdb.com/bundles/cards/44055.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Sabres Lasers",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44055.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -934,7 +1359,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44056.jpg",
             "https://marvelcdb.com/bundles/cards/44056.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Pierre, Feuille, Ciseaux",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44056.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -950,7 +1383,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44057.jpg",
             "https://marvelcdb.com/bundles/cards/44057.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Morpion",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44057.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -966,7 +1407,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/44058.jpg",
             "https://marvelcdb.com/bundles/cards/44058.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Bataille",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/deadpool/44058.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",

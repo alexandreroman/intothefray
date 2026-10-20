@@ -14,7 +14,15 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05001A.jpg",
             "https://marvelcdb.com/bundles/cards/05001a.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "name": "Miss Marvel",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/msm/05001a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Kamala Khan",
@@ -24,7 +32,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05001B.jpg",
             "https://marvelcdb.com/bundles/cards/05001b.png"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/msm/05001b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ms_marvel",
@@ -45,7 +60,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05002.jpg",
             "https://marvelcdb.com/bundles/cards/05002.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Dague Rouge",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/msm/05002.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ms_marvel",
@@ -62,7 +85,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05003.jpg",
             "https://marvelcdb.com/bundles/cards/05003.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Mains démesurées",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/msm/05003.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ms_marvel",
@@ -79,7 +110,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05004.jpg",
             "https://marvelcdb.com/bundles/cards/05004.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Se Faufiler",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/msm/05004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ms_marvel",
@@ -96,7 +135,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05005.jpg",
             "https://marvelcdb.com/bundles/cards/05005.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Marge de Manœuvre",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/msm/05005.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ms_marvel",
@@ -113,7 +160,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05006.jpg",
             "https://marvelcdb.com/bundles/cards/05006.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/msm/05006.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ms_marvel",
@@ -130,7 +184,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05007.jpg",
             "https://marvelcdb.com/bundles/cards/05007.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/msm/05007.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ms_marvel",
@@ -147,7 +208,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05008.jpg",
             "https://marvelcdb.com/bundles/cards/05008.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/msm/05008.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ms_marvel",
@@ -164,7 +232,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05009.jpg",
             "https://marvelcdb.com/bundles/cards/05009.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Costume en Polymère Biocinétique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/msm/05009.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ms_marvel",
@@ -181,7 +257,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05010.jpg",
             "https://marvelcdb.com/bundles/cards/05010.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Amplification !",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/msm/05010.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ms_marvel",
@@ -198,7 +282,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05011.jpg",
             "https://marvelcdb.com/bundles/cards/05011.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Réduction",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/msm/05011.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ms_marvel",
@@ -216,7 +308,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05012.jpg",
             "https://marvelcdb.com/bundles/cards/05012.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/msm/05012.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -232,7 +331,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05014.jpg",
             "https://marvelcdb.com/bundles/cards/05014.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Coup Préventif",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/msm/05014.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -251,7 +358,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05015.jpg",
             "https://marvelcdb.com/bundles/cards/05015.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Plaquage",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/msm/05015.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -270,7 +385,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05017.jpg",
             "https://marvelcdb.com/bundles/cards/05017.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Barrière énergétique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/msm/05017.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -289,7 +412,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05018.jpg",
             "https://marvelcdb.com/bundles/cards/05018.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Gueule d'or",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/msm/05018.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -305,7 +436,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05023.jpg",
             "https://marvelcdb.com/bundles/cards/05023.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/msm/05023.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -325,7 +463,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05024.jpg",
             "https://marvelcdb.com/bundles/cards/05024.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Réflexes Améliorés",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/msm/05024.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -344,7 +490,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05025.jpg",
             "https://marvelcdb.com/bundles/cards/05025.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Rentrer avant l'Aube",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/msm/05025.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ms_marvel",
@@ -365,6 +519,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Generation Y ?\"",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/msm/05026.webp"
+              ]
+            }
           }
         }
       ],
@@ -382,7 +544,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05027.jpg",
             "https://marvelcdb.com/bundles/cards/05027.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Thomas Édison",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/msm/05027.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ms_marvel_nemesis",
@@ -399,7 +569,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05028.jpg",
             "https://marvelcdb.com/bundles/cards/05028.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Robot Géant d'Édison",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/msm/05028.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ms_marvel_nemesis",
@@ -416,7 +594,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05029.jpg",
             "https://marvelcdb.com/bundles/cards/05029.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Moisson",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/msm/05029.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "ms_marvel_nemesis",
@@ -433,7 +619,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05030.jpg",
             "https://marvelcdb.com/bundles/cards/05030.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Mêlée",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/msm/05030.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -449,7 +643,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05031.jpg",
             "https://marvelcdb.com/bundles/cards/05031.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Coup Étourdissant",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/msm/05031.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -468,7 +670,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05032.jpg",
             "https://marvelcdb.com/bundles/cards/05032.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Soutien Moral",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/msm/05032.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -487,7 +697,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/05033.jpg",
             "https://marvelcdb.com/bundles/cards/05033.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Temps mort",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/msm/05033.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",

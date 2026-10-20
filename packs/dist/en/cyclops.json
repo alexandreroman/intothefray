@@ -14,7 +14,15 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33001A.jpg",
             "https://marvelcdb.com/bundles/cards/33001a.png"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "name": "Cyclope",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cyclops/33001a.webp"
+              ]
+            }
+          }
         },
         {
           "name": "Scott Summers",
@@ -24,7 +32,14 @@
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33001B.jpg",
             "https://marvelcdb.com/bundles/cards/33001b.png"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cyclops/33001b.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "cyclops",
@@ -46,7 +61,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33002.jpg",
             "https://marvelcdb.com/bundles/cards/33002.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Phénix",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cyclops/33002.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "cyclops",
@@ -63,7 +86,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33003.jpg",
             "https://marvelcdb.com/bundles/cards/33003.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Visière en Quartz-Rubis",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cyclops/33003.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "cyclops",
@@ -80,7 +111,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33004.jpg",
             "https://marvelcdb.com/bundles/cards/33004.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Commandant des Opérations",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cyclops/33004.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "cyclops",
@@ -97,7 +136,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33005.jpg",
             "https://marvelcdb.com/bundles/cards/33005.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Exploiter une Faiblesse",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cyclops/33005.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "cyclops",
@@ -114,7 +161,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33006.jpg",
             "https://marvelcdb.com/bundles/cards/33006.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Entraîné à Défendre",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cyclops/33006.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "cyclops",
@@ -131,7 +186,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33007.jpg",
             "https://marvelcdb.com/bundles/cards/33007.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Cible Prioritaire",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cyclops/33007.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "cyclops",
@@ -148,7 +211,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33008.jpg",
             "https://marvelcdb.com/bundles/cards/33008.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Puissance Maximale",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cyclops/33008.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "cyclops",
@@ -165,7 +236,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33009.jpg",
             "https://marvelcdb.com/bundles/cards/33009.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Rayon en Ricochet",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cyclops/33009.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "cyclops",
@@ -182,7 +261,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33010.jpg",
             "https://marvelcdb.com/bundles/cards/33010.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Brillant Tacticien",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cyclops/33010.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "cyclops",
@@ -200,7 +287,16 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33011.jpg",
             "https://marvelcdb.com/bundles/cards/33011.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Fauve",
+              "subname": "Hank Mccoy",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cyclops/33011.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -217,7 +313,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33012.jpg",
             "https://marvelcdb.com/bundles/cards/33012.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cyclops/33012.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -234,7 +337,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33013.jpg",
             "https://marvelcdb.com/bundles/cards/33013.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cyclops/33013.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -251,7 +361,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33014.jpg",
             "https://marvelcdb.com/bundles/cards/33014.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cyclops/33014.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -267,7 +384,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33015.jpg",
             "https://marvelcdb.com/bundles/cards/33015.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Entraînement dans la Salle des Dangers",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cyclops/33015.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -283,7 +408,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33016.jpg",
             "https://marvelcdb.com/bundles/cards/33016.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Attaque Coordonnée",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cyclops/33016.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -299,7 +432,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33018.jpg",
             "https://marvelcdb.com/bundles/cards/33018.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Commandement d'Élite",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cyclops/33018.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -319,7 +460,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33019.jpg",
             "https://marvelcdb.com/bundles/cards/33019.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cyclops/33019.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -335,7 +483,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33020.jpg",
             "https://marvelcdb.com/bundles/cards/33020.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cyclops/33020.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -354,7 +509,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33021.jpg",
             "https://marvelcdb.com/bundles/cards/33021.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Salle des Dangers",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cyclops/33021.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -370,7 +533,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33022.jpg",
             "https://marvelcdb.com/bundles/cards/33022.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "L'Heure du Match",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cyclops/33022.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -386,7 +557,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33023.jpg",
             "https://marvelcdb.com/bundles/cards/33023.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Entente Psychique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cyclops/33023.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -405,7 +584,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33027.jpg",
             "https://marvelcdb.com/bundles/cards/33027.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Perte de Visière",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cyclops/33027.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "cyclops",
@@ -422,7 +609,14 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33028.jpg",
             "https://marvelcdb.com/bundles/cards/33028.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cyclops/33028.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "cyclops_nemesis",
@@ -443,6 +637,14 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Manipulation Génétique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cyclops/33029.webp"
+              ]
+            }
           }
         }
       ],
@@ -460,7 +662,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33030.jpg",
             "https://marvelcdb.com/bundles/cards/33030.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Thérapie Génique",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cyclops/33030.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "cyclops_nemesis",
@@ -477,7 +687,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33031.jpg",
             "https://marvelcdb.com/bundles/cards/33031.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Force Étourdissante",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cyclops/33031.webp"
+              ]
+            }
+          }
         }
       ],
       "set": "cyclops_nemesis",
@@ -494,7 +712,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33032.jpg",
             "https://marvelcdb.com/bundles/cards/33032.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Cible À Abattre",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cyclops/33032.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -510,7 +736,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33033.jpg",
             "https://marvelcdb.com/bundles/cards/33033.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Embrouiller l'Esprit",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cyclops/33033.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -526,7 +760,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33034.jpg",
             "https://marvelcdb.com/bundles/cards/33034.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Cloué au Sol",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cyclops/33034.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -542,7 +784,15 @@
           "images": [
             "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/33035.jpg",
             "https://marvelcdb.com/bundles/cards/33035.png"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Membre Honoraire des X-Men",
+              "images": [
+                "https://mc4db.merlindumesnil.net/bundles/cards/FR/cyclops/33035.webp"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
