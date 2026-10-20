@@ -906,15 +906,17 @@ describe("dragging the top card of the viewer's deck", () => {
         x: 920,
         y: 300,
         count: 3,
-        label: 'Labor',
-        ownBack: true,
+        label: 'Gift',
+        back: 'encounter',
       }),
     );
     await renderTable(view);
     await press(placed('side:p0:0'), 1010, 410);
     await moveTo(300, 450);
     const [ghost] = ghosts();
-    expect(ghost?.querySelector('[aria-label="Labor card back"]')?.textContent).toBe('LABOR');
+    const back = ghost?.querySelector('[aria-label="Gift card back"]');
+    expect(back?.querySelector('img')?.getAttribute('src')).toContain('EncounterBack.jpg');
+    expect(back?.querySelector('.caption')?.textContent).toBe('GIFT');
     await release(300, 450);
   });
 

@@ -43,7 +43,7 @@
     type Rect,
     type TableRect,
   } from './drag';
-  import { isHidden, pileBack, sideBackName } from './face';
+  import { backCaption, isHidden, pileBack } from './face';
   import { interaction, type DropOn, type Held, type Pressable } from './interaction.svelte';
   import { cardBox, FIRST_PLAYER_BOX, HAND_CARD, type Box } from './layout';
   import { ALL_ROWS, type RowMap } from './rows';
@@ -748,7 +748,7 @@
       style:height="{handGhost.height}px"
     >
       {#if isHidden(handGhost.card)}
-        <CardBack back={handGhost.card.back} side={sideBackName(handGhost.card, tablePiles)} />
+        <CardBack back={handGhost.card.back} caption={backCaption(handGhost.card, tablePiles)} />
       {:else}
         <CardFace
           images={face?.images ?? []}
@@ -759,14 +759,14 @@
     </div>
   {:else}
     {#each ghosts as ghost (ghost.id)}
-      <CardView card={ghost} face={faceOf(ghost)} side={sideBackName(ghost, tablePiles)} ghost />
+      <CardView card={ghost} face={faceOf(ghost)} caption={backCaption(ghost, tablePiles)} ghost />
     {/each}
   {/if}
   {#each landedGhosts as ghost (ghost.id)}
     <CardView
       card={ghost}
       face={faceOf(ghost)}
-      side={sideBackName(ghost, tablePiles)}
+      caption={backCaption(ghost, tablePiles)}
       ghost
       landed
     />

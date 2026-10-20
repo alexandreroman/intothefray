@@ -25,12 +25,6 @@ describe('table theme assets', () => {
     expect(firstPlayerUrl('minimal')).toBeNull();
   });
 
-  it('has no image for the own back of a side deck, in any theme', () => {
-    for (const theme of ['official', 'minimal', 'felt'] as const) {
-      expect(backUrl('side', theme)).toBeNull();
-    }
-  });
-
   it('defaults to the stored theme', () => {
     expect(backUrl('player')).toBe(CEREBRO + 'HeroBack.jpg');
     localStorage.setItem('itf-theme', 'minimal');

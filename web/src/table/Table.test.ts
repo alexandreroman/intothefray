@@ -491,13 +491,13 @@ describe('Table', () => {
     expect(sense?.querySelector('img')?.getAttribute('alt')).toBe('Player card back');
   });
 
-  it("draws a side deck's own back on its pile and on its face-down cards, with its label", async () => {
+  it("captions a side deck's own back on its pile and on its face-down cards", async () => {
     const view = makeView({
       cards: [
         card('v', { code: '01094', back: 'villain', x: 360, y: 30 }),
-        card('l', { owner: 1, back: 'side', home: 'side:p1:0', faceDown: true, x: 700, y: 830 }),
-        // Its deck is not on the table: its name is unknown.
-        card('g', { owner: 1, back: 'side', home: 'side:p1:9', faceDown: true, x: 900, y: 830 }),
+        card('l', { owner: 1, home: 'side:p1:0', faceDown: true, x: 700, y: 830 }),
+        // Its deck is not on the table: its back has no caption.
+        card('g', { owner: 1, home: 'side:p1:9', faceDown: true, x: 900, y: 830 }),
       ],
       piles: [
         pile('side:p1:0', {
@@ -507,7 +507,7 @@ describe('Table', () => {
           y: 830,
           count: 2,
           label: 'Labor',
-          ownBack: true,
+          back: 'player',
         }),
       ],
     });
@@ -518,8 +518,12 @@ describe('Table', () => {
       'side:p1:0',
       'l',
     ]);
-    expect(backs.map((back) => back.textContent)).toEqual(['LABOR', 'LABOR']);
-    expect(within(surface()).getByRole('img', { name: 'Side card back' }).textContent).toBe('?');
+    expect(backs.map((back) => back.querySelector('.caption')?.textContent)).toEqual([
+      'LABOR',
+      'LABOR',
+    ]);
+    const plain = within(surface()).getByRole('img', { name: 'Player card back' });
+    expect(plain.closest<HTMLElement>('[data-id]')?.dataset.id).toBe('g');
   });
 
   it('moves the Focus panel to a corner clear of the hovered card', async () => {

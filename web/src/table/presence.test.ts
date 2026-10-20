@@ -614,7 +614,7 @@ describe("other players' presence", () => {
       y: 600,
       count: 3,
       label: 'Labor',
-      ownBack: true,
+      back: 'player',
     };
     view.table!.piles = [...view.table!.piles, labor];
     const { receive } = await renderTable(view);
@@ -623,7 +623,8 @@ describe("other players' presence", () => {
     receive({ color: 1, name: 'Sam', drag: { cards: ['side:p1:0'], x: 500, y: 320 } });
     await nextFrame();
     const ghost = document.querySelector<HTMLElement>('.presence .card[data-id="side:p1:0"]');
-    expect(ghost?.querySelector('[aria-label="Labor card back"]')?.textContent).toBe('LABOR');
+    const back = ghost?.querySelector('[aria-label="Labor card back"]');
+    expect(back?.querySelector('.caption')?.textContent).toBe('LABOR');
   });
 
   it('keeps the preview ring and the drag ghost after the cursor goes, for 60 s at most', async () => {

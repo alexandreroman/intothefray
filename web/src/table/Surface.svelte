@@ -23,7 +23,7 @@
 <script lang="ts">
   import type { PackFace, CardView as TableCard, PileView as Pile } from '../lib/types';
   import CardView from './CardView.svelte';
-  import { sideBackName } from './face';
+  import { backCaption } from './face';
   import FirstPlayerToken from './FirstPlayerToken.svelte';
   import { overflowTip } from '../lib/overflowTip';
   import { interaction } from './interaction.svelte';
@@ -101,7 +101,7 @@
     <CardView
       {card}
       face={faceOf(card)}
-      side={sideBackName(card, piles)}
+      caption={backCaption(card, piles)}
       draggable={canDrag({ kind: 'card', id: card.id })}
     />
   {/each}
