@@ -463,9 +463,10 @@ func TestSetupPlayers(t *testing.T) {
 		}
 	}
 
+	// The two Spider-Man cards, and only them, are marked as identities.
 	var identities []*Card
 	for _, c := range table.Cards {
-		if c.Code == "01001" {
+		if c.Identity {
 			identities = append(identities, c)
 		}
 	}
@@ -474,7 +475,8 @@ func TestSetupPlayers(t *testing.T) {
 	}
 	for _, identity := range identities {
 		rowY := 500 + 330*identity.Owner
-		if identity.Face != 1 || identity.Zone != ZoneTable || identity.X != 360 || identity.Y != rowY ||
+		if identity.Code != "01001" || identity.Face != 1 || identity.Zone != ZoneTable ||
+			identity.X != 360 || identity.Y != rowY ||
 			identity.Home != "deck:"+string(PlayerArea(identity.Owner)) {
 			t.Errorf("identity = %+v, want alter ego on the table at (360, %d)", identity, rowY)
 		}

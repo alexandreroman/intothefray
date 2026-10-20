@@ -333,6 +333,20 @@ describe('dragging a group of cards', () => {
     expect(session.act).not.toHaveBeenCalled();
   });
 
+  it('offers neither the hand nor a pile when the group holds an identity card', async () => {
+    const cards = CARDS.map((c) => (c.id === 'other' ? { ...c, identity: true } : c));
+    const { session } = await renderTable(makeView(cards), ['mine', 'other']);
+    await press(placed('mine'), 50, 400);
+    await moveTo(450, 740);
+    expect(document.querySelector('.hand')?.classList).not.toContain('drop');
+    await moveTo(775, 400);
+    expect(placed('disc:p0').classList).not.toContain('drop-pile');
+
+    // Dropped below the table: nothing moves.
+    await release(450, 950);
+    expect(session.act).not.toHaveBeenCalled();
+  });
+
   it('puts every card back when the server refuses the group', async () => {
     const { refuse } = await renderTable(makeView(), ['mine', 'other']);
     await press(placed('mine'), 50, 400);

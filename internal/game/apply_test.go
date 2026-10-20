@@ -4,6 +4,7 @@ import (
 	"errors"
 	"reflect"
 	"slices"
+	"strings"
 	"testing"
 )
 
@@ -992,6 +993,95 @@ func TestStageCurrentCardStaysOnTheTable(t *testing.T) {
 			}
 			if !reflect.DeepEqual(before, table) {
 				t.Error("the refused action changed the table")
+			}
+		})
+	}
+}
+
+// newIdentityTable is newTestTable with the ally c1, which carries the
+// upgrade c2, standing for seat 0's identity.
+func newIdentityTable() *Table {
+	table := newTestTable()
+	table.Cards["c1"].Identity = true
+	return table
+}
+
+func TestIdentityCardStaysOnTheTable(t *testing.T) {
+	tests := []struct {
+		name string
+		// prepare changes the table before the refused action.
+		prepare func(t *testing.T, table *Table)
+		a       Action
+	}{
+		{"discard", nil, Action{Kind: ActDiscard, Card: "c1"}},
+		{"to hand", nil, Action{Kind: ActToHand, Card: "c1"}},
+		{"to deck top", nil, Action{Kind: ActToDeck, Card: "c1", Where: whereTop}},
+		{"to deck bottom", nil, Action{Kind: ActToDeck, Card: "c1", Where: whereBottom}},
+		{
+			"shuffled into deck",
+			nil,
+			shuffleTo(Action{Kind: ActToDeck, Card: "c1", Where: whereShuffle}, "c4", "c5", "c6", "c1"),
+		},
+		{"to victory", nil, Action{Kind: ActToPile, Card: "c1", Target: PileVictory}},
+		{"set aside", nil, Action{Kind: ActToPile, Card: "c1", Target: "aside:p0"}},
+		{"in a group", nil, group(Action{Kind: ActDiscard, Card: "c7"}, Action{Kind: ActDiscard, Card: "c1"})},
+		{
+			"discard the card it is attached to",
+			func(t *testing.T, table *Table) {
+				mustApply(t, table, Action{Kind: ActAttach, Card: "c1", Target: "c7"})
+			},
+			Action{Kind: ActDiscard, Card: "c7"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			table := newIdentityTable()
+			if tt.prepare != nil {
+				tt.prepare(t, table)
+			}
+			before := table.Clone()
+
+			err := apply(table, tt.a)
+
+			if !errors.Is(err, ErrInvalid) || !strings.Contains(err.Error(), "the identity card stays on the table") {
+				t.Errorf("err = %v, want the identity card to stay on the table", err)
+			}
+			if !reflect.DeepEqual(before, table) {
+				t.Error("the refused action changed the table")
+			}
+		})
+	}
+}
+
+func TestIdentityCardIsPlayedOnTheTable(t *testing.T) {
+	tests := []struct {
+		name string
+		a    Action
+	}{
+		{"move", Action{Kind: ActMove, Card: "c1", X: 300, Y: 300}},
+		{"exhaust", Action{Kind: ActExhaust, Card: "c1", Exhausted: new(false)}},
+		{"flip", Action{Kind: ActFlip, Card: "c1", Face: 0, FaceDown: new(false)}},
+		{"token", Action{Kind: ActToken, Card: "c1", Name: "dmg", Delta: 1}},
+		{"status", Action{Kind: ActStatus, Card: "c1", Name: "tough", Delta: 1}},
+		{"arrow", Action{Kind: ActArrowAdd, Card: "c7", Target: "c1", Seat: 1}},
+		{"ready all", Action{Kind: ActReadyAll, Cards: []string{"c1"}}},
+		{"play under it", Action{Kind: ActPlay, Card: "c3", Target: "c1"}},
+		{"attach under it", Action{Kind: ActAttach, Card: "c7", Target: "c1"}},
+		{"attach it under another card", Action{Kind: ActAttach, Card: "c1", Target: "c7"}},
+		{"discard what is tucked under it", Action{Kind: ActDiscard, Card: "c2"}},
+		{
+			"move as a group",
+			group(Action{Kind: ActMove, Card: "c1", X: 300, Y: 300}, Action{Kind: ActMove, Card: "c7", X: 500, Y: 300}),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			table := newIdentityTable()
+
+			mustApply(t, table, tt.a)
+
+			if c1 := table.Cards["c1"]; c1.Zone != ZoneTable || !c1.Identity {
+				t.Errorf("c1 = %+v, want the identity on the table", c1)
 			}
 		})
 	}

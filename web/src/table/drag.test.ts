@@ -513,6 +513,23 @@ describe('pileTargets', () => {
     expect(of('under')).toHaveLength(3);
   });
 
+  it('offers nothing for an identity card, or a card it is tucked under', () => {
+    const withIdentity = makeView({
+      cards: [
+        card('host'),
+        card('hero', { identity: true, parent: 'host' }),
+        card('up', { parent: 'hero' }),
+      ],
+      piles,
+    });
+    const targetsOf = (id: string) =>
+      pileTargets({ kind: 'card', card: id, x: 0, y: 0 }, withIdentity);
+    expect(targetsOf('hero')).toEqual([]);
+    expect(targetsOf('host')).toEqual([]);
+    // What is tucked under it can go: the top and the bottom of its deck, or its discard pile.
+    expect(targetsOf('up').map((t) => t.drop)).toEqual(['top', 'bottom', 'discard']);
+  });
+
   it('offers the encounter deck its discard pile only', () => {
     const targets = pileTargets({ kind: 'encounter', pile: 'enc' }, view);
     expect(targets.map((t) => t.pile)).toEqual(['encd']);
@@ -540,6 +557,20 @@ describe('handAreaOf', () => {
     expect(handAreaOf(tableCard('mine'), view)).toBe('p0');
     expect(handAreaOf(tableCard('theirs'), view)).toBeNull();
     expect(handAreaOf(tableCard('enc'), view)).toBeNull();
+  });
+
+  it('takes no identity card, nor a card it is tucked under', () => {
+    const withIdentity = makeView({
+      cards: [
+        card('host'),
+        card('hero', { identity: true, parent: 'host' }),
+        card('up', { parent: 'hero' }),
+      ],
+    });
+    const tableCard = (id: string): DragSource => ({ kind: 'card', card: id, x: 0, y: 0 });
+    expect(handAreaOf(tableCard('hero'), withIdentity)).toBeNull();
+    expect(handAreaOf(tableCard('host'), withIdentity)).toBeNull();
+    expect(handAreaOf(tableCard('up'), withIdentity)).toBe('p0');
   });
 
   it('takes nothing from the hand or a pile, nor from a spectator', () => {

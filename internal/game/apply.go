@@ -210,11 +210,11 @@ func (t *Table) descendants(id string) []*Card {
 func (t *Table) checkLeave(c *Card) error {
 	switch c.Zone {
 	case ZoneTable:
-		if err := t.checkNotStageCurrent(c); err != nil {
+		if err := t.checkStaysOnTable(c); err != nil {
 			return err
 		}
 		for _, child := range t.descendants(c.ID) {
-			if err := t.checkNotStageCurrent(child); err != nil {
+			if err := t.checkStaysOnTable(child); err != nil {
 				return err
 			}
 			if _, _, ok := t.tuckedDestination(child); !ok {
@@ -234,6 +234,16 @@ func (t *Table) checkLeave(c *Card) error {
 		return invalid("card %q cannot move from zone %q", c.ID, c.Zone)
 	}
 	return nil
+}
+
+// checkStaysOnTable refuses to take away a card that never leaves the table:
+// a player's identity, or the card a stage shows. It may still move on the
+// table, change state and have cards tucked under it.
+func (t *Table) checkStaysOnTable(c *Card) error {
+	if c.Identity {
+		return invalid("the identity card stays on the table")
+	}
+	return t.checkNotStageCurrent(c)
 }
 
 // checkNotStageCurrent refuses to take away the card a stage shows: the stage

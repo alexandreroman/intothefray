@@ -335,6 +335,38 @@ describe('actionsFor', () => {
     expect(item(items, 'moveTo')).toMatchObject({ disabled: true, tip });
   });
 
+  it('an identity card cannot leave the table', () => {
+    const view = makeView({ cards: [card('mine', { identity: true })] });
+    const items = itemsFor({ kind: 'card', id: 'mine' }, view);
+    const tip = 'The identity card stays on the table';
+
+    expect(item(items, 'discard')).toMatchObject({ disabled: true, tip });
+    expect(item(items, 'moveTo')).toMatchObject({ disabled: true, tip });
+    // It is still played on the table.
+    expect(item(items, 'exhaust').disabled).toBeFalsy();
+  });
+
+  it('a card holding an identity card cannot leave the table, a card tucked under one can', () => {
+    const view = makeView({
+      cards: [
+        card('host'),
+        card('mine', { identity: true, parent: 'host' }),
+        card('tucked', { parent: 'mine' }),
+      ],
+    });
+    const host = itemsFor({ kind: 'card', id: 'host' }, view);
+    const tucked = itemsFor({ kind: 'card', id: 'tucked' }, view);
+
+    expect(item(host, 'discard')).toMatchObject({
+      disabled: true,
+      tip: 'The identity card stays on the table',
+    });
+    expect(item(host, 'moveTo').disabled).toBe(true);
+    expect(item(tucked, 'discard')).toMatchObject({ tip: 'Discard' });
+    expect(item(tucked, 'discard').disabled).toBeFalsy();
+    expect(item(tucked, 'moveTo').disabled).toBeFalsy();
+  });
+
   it('a card holding a stage top card cannot leave the table either', () => {
     const view = makeView({
       cards: [

@@ -325,6 +325,23 @@ func TestStageCardsAreListedWithTheirKey(t *testing.T) {
 	}
 }
 
+func TestIdentityCardsAreListedAsSuch(t *testing.T) {
+	f := newViewFixture(t)
+	view := f.g.ViewFor(specToken)
+	listed := 0
+	for _, c := range view.Table.Cards {
+		if want := f.g.Table.Cards[c.ID].Identity; c.Identity != want {
+			t.Errorf("card %s: identity = %t, want %t", c.ID, c.Identity, want)
+		}
+		if c.Identity {
+			listed++
+		}
+	}
+	if listed == 0 {
+		t.Error("no identity card is listed")
+	}
+}
+
 func TestViewIdentity(t *testing.T) {
 	f := newViewFixture(t)
 

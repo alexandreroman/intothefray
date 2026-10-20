@@ -351,6 +351,22 @@ describe('keys on the table', () => {
     expect(session.act).not.toHaveBeenCalled();
   });
 
+  it('Backspace and H do nothing on an identity card, which stays on the table', async () => {
+    const cards = [
+      card('hero', { x: 200, identity: true }),
+      card('v', { code: '01094', owner: -1, back: 'villain' }),
+    ];
+    const { session } = await renderTable(makeView({ cards }));
+
+    await fireEvent.pointerEnter(placed('hero'));
+    await press('Backspace');
+    await press('h');
+    expect(session.act).not.toHaveBeenCalled();
+    // It is still played on the table.
+    await press('e');
+    expect(session.act).toHaveBeenCalledOnce();
+  });
+
   it('Z sends undo', async () => {
     const { session, rerender } = await renderTable(makeView({ canUndo: false }));
     await press('z');

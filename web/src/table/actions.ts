@@ -297,8 +297,8 @@ function counterItems(
 }
 
 /**
- * Discard and Move to, disabled while the card holds what a stage shows. A
- * card of a side deck without a discard pile has no Discard.
+ * Discard and Move to, disabled while the card is, or holds, one that stays on
+ * the table. A card of a side deck without a discard pile has no Discard.
  */
 function leaveItems(card: CardView, context: Context): ActionItem[] {
   const discard: ActionItem = {
@@ -320,17 +320,33 @@ function leaveItems(card: CardView, context: Context): ActionItem[] {
   };
 
   const items = discardPileOf(card, context.table.piles) === null ? [moveTo] : [discard, moveTo];
-  const held = stageHeldBy(card, context.table);
-  if (held) {
-    // Mirrors checkNotStageCurrent: the server refuses to take that card away.
-    const tip = `The ${held.label.toLowerCase()} card stays on the table: choose another card to show`;
+  const tip = staysOnTable(card, context.table);
+  if (tip) {
     return items.map((item) => ({ ...item, disabled: true, tip }));
   }
   return items;
 }
 
+/**
+ * Why the card cannot leave the table, or undefined when it can: it is, or
+ * holds tucked under it, the card a stage shows or a player's identity. It
+ * mirrors checkStaysOnTable, which refuses to take such a card away, so that
+ * the bar, the keys and the drag share one rule.
+ */
+export function staysOnTable(card: CardView, table: TableView): string | undefined {
+  const held = stageHeldBy(card, table);
+  if (held) {
+    return `The ${held.label.toLowerCase()} card stays on the table: choose another card to show`;
+  }
+  const holdsIdentity = table.cards.some((c) => c.identity && isInStackOf(c.id, card.id, table));
+  if (holdsIdentity) {
+    return 'The identity card stays on the table';
+  }
+  return undefined;
+}
+
 /** The stage whose shown card is this card or one tucked under it, if any. */
-export function stageHeldBy(card: CardView, table: TableView): Stage | undefined {
+function stageHeldBy(card: CardView, table: TableView): Stage | undefined {
   return table.stages.find((stage) => isInStackOf(stage.current, card.id, table));
 }
 

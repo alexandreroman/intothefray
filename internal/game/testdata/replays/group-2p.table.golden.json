@@ -1082,7 +1082,8 @@
       "zone": "table",
       "x": 360,
       "y": 500,
-      "z": 2
+      "z": 2,
+      "identity": true
     },
     "cx3a7hfr7": {
       "id": "cx3a7hfr7",
@@ -1165,7 +1166,8 @@
       "zone": "table",
       "x": 360,
       "y": 830,
-      "z": 3
+      "z": 3,
+      "identity": true
     }
   },
   "piles": {

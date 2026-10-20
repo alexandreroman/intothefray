@@ -121,6 +121,7 @@ export interface CardView {
   tokens?: Record<string, number>;
   status?: Record<string, number>;
   stage?: string;
+  identity?: boolean; // a player's hero or alter-ego card: it never leaves the table
   /**
    * The pile id of a card whose home is a side deck: sent with its code, and
    * always for a card of a side deck with its own back, which names that deck.

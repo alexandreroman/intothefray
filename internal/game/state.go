@@ -53,6 +53,9 @@ type Card struct {
 	Exhausted bool           `json:"exhausted,omitempty"`
 	Tokens    map[string]int `json:"tokens,omitempty"` // "dmg", "thr", "gen"
 	Status    map[string]int `json:"status,omitempty"` // "stunned", "confused", "tough"
+	// Identity marks a player's hero or alter-ego card, set at setup: it never
+	// leaves the table (see checkStaysOnTable).
+	Identity bool `json:"identity,omitempty"`
 }
 
 // PileKind tells what a pile is used for.

@@ -471,6 +471,7 @@ func (b *tableBuilder) setupPlayer(seat int, deck *DeckChoice) error {
 	if err != nil {
 		return err
 	}
+	identity.Identity = true
 	hero, ok := b.cat.HeroByIdentity(deck.Hero)
 	if !ok {
 		return fmt.Errorf("%w: %s is not a hero identity", ErrInvalid, deck.Hero)
