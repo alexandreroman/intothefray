@@ -31,6 +31,7 @@
     handAreaOf,
     handBand,
     insertIndex,
+    pileDropRect,
     pileTargets,
     sourceOf,
     stackOf,
@@ -121,7 +122,7 @@
   const HIDDEN_CARD = 'hidden-0';
 
   // The prototype's arrows in front of the labels.
-  const PILE_GLYPHS: Record<PileDrop, string> = { top: '↑', discard: '✕', pile: '→' };
+  const PILE_GLYPHS: Record<PileDrop, string> = { top: '↑', bottom: '↓', discard: '✕', pile: '→' };
   const TUCK_GLYPH = '↓';
   const HAND_GLYPH = '↓';
 
@@ -316,7 +317,8 @@
       return { ...FIRST_PLAYER_BOX, rotated: false };
     }
     if (from.kind === 'encounter' || from.kind === 'deck') {
-      return cardBox('std', { faceDown: true });
+      const shown = from.kind === 'deck' ? shownDeckTop(from.pile) : undefined;
+      return shown ? cardBox(sizeOf(shown), {}) : cardBox('std', { faceDown: true });
     }
     const card = cardsById.get(from.card);
     if (!card) {
@@ -412,7 +414,8 @@
     for (const target of piles) {
       const rect = placedRect('.pile', target.pile);
       if (rect) {
-        targets.push({ kind: 'pile', ...target, rect });
+        // A deck takes a card on top in its upper half, under it in its lower half.
+        targets.push({ kind: 'pile', ...target, rect: pileDropRect(rect, target.drop) });
       }
     }
     // The dragged cards, a group's included, are never dropped on.
@@ -658,20 +661,33 @@
       return [{ ...ENCOUNTER_TOP, x, y }];
     }
     if (from.kind === 'deck') {
-      return [{ ...DECK_TOP, x, y }];
+      const shown = shownDeckTop(from.pile);
+      return shown ? [asPlayed(shown, x, y)] : [{ ...DECK_TOP, x, y }];
     }
     const card = cardsById.get(from.card);
     if (!card) {
       return [];
     }
     if (from.kind !== 'card') {
-      return [{ ...card, zone: 'table', x, y, onPile: undefined, parent: undefined }];
+      return [asPlayed(card, x, y)];
     }
     // The cards tucked under it, and the rest of a group, keep their offsets.
     return lifted.flatMap((id) => {
       const k = cardsById.get(id);
       return k ? [{ ...k, x: x + k.x - card.x, y: y + k.y - card.y }] : [];
     });
+  }
+
+  /** A card from the hand or a pile, drawn as it would lie on the table. */
+  function asPlayed(card: TableCard, x: number, y: number): TableCard {
+    return { ...card, zone: 'table', x, y, onPile: undefined, parent: undefined };
+  }
+
+  /** The top card a side deck shows to everyone (topFaceUp), which its drag shows too. */
+  function shownDeckTop(pileId: string): TableCard | undefined {
+    const pile = view.table?.piles.find((p) => p.id === pileId);
+    const top = pile?.topFaceUp ? pile.cards?.at(-1) : undefined;
+    return top === undefined ? undefined : cardsById.get(top);
   }
 
   /** The cards drawn under the pointer. */

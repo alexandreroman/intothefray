@@ -459,6 +459,24 @@ describe('dragging a table card', () => {
     );
   });
 
+  it('goes under the deck when dropped on its lower half', async () => {
+    const { session } = await renderTable();
+    await press(placed('mine'), 50, 400);
+    // The deck lies from 340 to 536 on the screen: its lower half starts at 438.
+    await moveTo(660, 500);
+    expect(placed('deck:p0').classList).toContain('drop-pile');
+    expect(screen.getByText('Bottom of deck')).toBeTruthy();
+    await moveTo(660, 420);
+    expect(screen.getByText('Top of deck')).toBeTruthy();
+
+    await moveTo(660, 500);
+    await release(660, 500);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      { kind: 'toDeck', card: 'mine', where: 'bottom' },
+      0,
+    );
+  });
+
   it('goes back to the hand when dropped over it', async () => {
     const { session } = await renderTable();
     await press(placed('mine'), 50, 400);
@@ -846,6 +864,37 @@ describe("dragging the top card of the viewer's deck", () => {
     expect(screen.getByText('Discard')).toBeTruthy();
     await release(850, 400);
     expect(session.act).toHaveBeenLastCalledWith({ kind: 'discardTop', pile: 'deck:p0', n: 1 }, 0);
+  });
+
+  it('plays the top card of a side deck that shows it, its face shown while dragged', async () => {
+    const view = makeView();
+    view.table!.cards.push(card('inv', { code: '01094', zone: 'pile', home: 'side:p0:0' }));
+    view.table!.piles.push(
+      pile('side:p0:0', {
+        kind: 'sideDeck',
+        owner: 0,
+        x: 920,
+        y: 300,
+        count: 5,
+        label: 'Invocation',
+        topFaceUp: true,
+        cards: ['inv'],
+      }),
+    );
+    const { session } = await renderTable(view);
+    // The side deck lies at 940, 340 on the screen.
+    await press(placed('side:p0:0'), 1010, 410);
+    await moveTo(300, 450);
+    const [ghost] = ghosts();
+    expect(ghost?.querySelector('[alt="Rhino"]')).not.toBeNull();
+    // Taken off the deck: the next card is unknown.
+    expect(placed('side:p0:0').querySelector('[alt="Player card back"]')).not.toBeNull();
+
+    await release(300, 450);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      { kind: 'play', pile: 'side:p0:0', x: 210, y: 310 },
+      0,
+    );
   });
 
   it("cannot be dragged from another player's deck", async () => {

@@ -198,6 +198,7 @@ describe('groupPileTargets', () => {
   it('offers the targets every unit has', () => {
     expect(of(['a', 'b'])).toEqual([
       ['deck:p0', 'top'],
+      ['deck:p0', 'bottom'],
       ['disc:p0', 'discard'],
     ]);
   });

@@ -406,6 +406,19 @@ const PILE_NOUNS: Partial<Record<PileView['kind'], string>> = {
   aside: 'set-aside cards',
 };
 
+/** What the history calls a pile of a player: "deck", "Invocation deck", "Invocation discard pile". */
+function pileNoun(pile: PileView): string {
+  const label = pile.label ?? 'side';
+  switch (pile.kind) {
+    case 'sideDeck':
+      return `${label} deck`;
+    case 'sideDiscard':
+      return `${label} discard pile`;
+    default:
+      return PILE_NOUNS[pile.kind] ?? 'pile';
+  }
+}
+
 /**
  * A pile's name in the history, written by the writer (Game.pileName in
  * narrate.go): the piles of any of the writer's seats are "their" piles, and
@@ -417,7 +430,7 @@ function narratedName(pile: PileView, writer: PlayerView | undefined, view: View
   if (shared) {
     return shared;
   }
-  let noun = PILE_NOUNS[pile.kind] ?? 'pile';
+  let noun = pileNoun(pile);
   const hero = seatHero(view, pile.owner);
   if (hero) {
     noun = `${hero} ${noun}`;

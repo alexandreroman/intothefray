@@ -722,3 +722,134 @@ describe('a player with two decks', () => {
     expect(move.map((it) => it.id)).toEqual([]);
   });
 });
+
+describe('side decks', () => {
+  // Alex (p0) has an Invocation deck with its discard pile and a Sense deck without one; Sam (p1)
+  // has an Invocation deck.
+  const sidePiles = [
+    pile('deck:p0', { owner: 0, count: 30 }),
+    pile('disc:p0', { kind: 'discard', owner: 0, count: 0, cards: [] }),
+    pile('aside:p0', { kind: 'aside', owner: 0, count: 1, cards: ['z'] }),
+    pile('side:p0:0', {
+      kind: 'sideDeck',
+      owner: 0,
+      count: 4,
+      label: 'Invocation',
+      topFaceUp: true,
+      cards: ['inv-top'],
+    }),
+    pile('sided:p0:0', {
+      kind: 'sideDiscard',
+      owner: 0,
+      count: 1,
+      label: 'Invocation',
+      cards: ['u'],
+    }),
+    pile('side:p0:1', { kind: 'sideDeck', owner: 0, count: 5, label: 'Sense' }),
+    pile('side:p1:0', { kind: 'sideDeck', owner: 1, count: 5, label: 'Invocation' }),
+    pile('sided:p1:0', {
+      kind: 'sideDiscard',
+      owner: 1,
+      count: 1,
+      label: 'Invocation',
+      cards: ['w'],
+    }),
+    pile('vic', { kind: 'victory', count: 0, cards: [] }),
+  ];
+  const sideCards = [
+    card('inv', { home: 'side:p0:0' }),
+    card('sense', { home: 'side:p0:1' }),
+    card('inv-top', { zone: 'pile', home: 'side:p0:0' }),
+  ];
+  const view = () => makeView({ cards: sideCards, piles: sidePiles });
+  const pileItems = (id: string) => itemsFor({ kind: 'pile', id }, view());
+
+  it('own side deck items: Draw 1 from it, Look, and Deck with Discard top… when it has a discard pile', () => {
+    const items = pileItems('side:p0:0');
+    // No out-of-play buttons: those are on the deck and the discard pile.
+    expect(groups(items)).toEqual([['draw1', 'look', 'deck']]);
+    expect(actionOf(item(items, 'draw1'))).toEqual({ kind: 'draw', n: 1, pile: 'side:p0:0' });
+
+    const lookTop = item(menuOf(items, 'look'), 'lookTop').run?.();
+    expect(lookTop && 'ask' in lookTop && lookTop.ask.question).toBe(
+      'How many cards from the top of your Invocation deck?',
+    );
+    expect(actionOf(item(menuOf(items, 'look'), 'search'))).toEqual({
+      kind: 'search',
+      pile: 'side:p0:0',
+    });
+
+    const deck = menuOf(items, 'deck');
+    expect(deck.map((it) => it.id)).toEqual(['drawN', 'discardTop', 'sep', 'shuffle']);
+    const drawN = item(deck, 'drawN').run?.();
+    expect(drawN && 'ask' in drawN && drawN.ask.make(2)).toEqual({
+      kind: 'draw',
+      n: 2,
+      pile: 'side:p0:0',
+    });
+    const discardTop = item(deck, 'discardTop').run?.();
+    expect(discardTop && 'ask' in discardTop && discardTop.ask.make(1)).toEqual({
+      kind: 'discardTop',
+      pile: 'side:p0:0',
+      n: 1,
+    });
+    expect(actionOf(item(deck, 'shuffle'))).toEqual({ kind: 'shuffle', pile: 'side:p0:0' });
+  });
+
+  it('a side deck without a discard pile has no Discard top…', () => {
+    const deck = menuOf(pileItems('side:p0:1'), 'deck');
+    expect(deck.map((it) => it.id)).toEqual(['drawN', 'shuffle']);
+  });
+
+  it("another player's side deck belongs to them", () => {
+    expect(actionsFor({ kind: 'pile', id: 'side:p1:0' }, view(), ALEX)).toEqual({
+      text: 'Belongs to Sam: only they can use it.',
+    });
+  });
+
+  it('a side discard pile is searched by anyone, shuffled back by its owner', () => {
+    expect(groups(pileItems('sided:p0:0'))).toEqual([['search', 'shuffleBack']]);
+    expect(actionOf(item(pileItems('sided:p0:0'), 'shuffleBack'))).toEqual({
+      kind: 'shuffleBack',
+      pile: 'sided:p0:0',
+    });
+    expect(groups(pileItems('sided:p1:0'))).toEqual([['search']]);
+  });
+
+  it('a spectator browses a side discard pile, never the top card a side deck shows', () => {
+    const watching = view();
+    watching.you = { role: 'spectator', name: 'Kim', color: -1, host: false };
+    const spectator: { role: Role } = { role: 'spectator' };
+    const ids = (id: string) =>
+      itemsFor({ kind: 'pile', id }, watching, spectator).map((it) => it.id);
+    expect(ids('side:p0:0')).toEqual([]);
+    expect(ids('sided:p0:0')).toEqual(['browse']);
+  });
+
+  it('a side card goes back to its side deck, named after it', () => {
+    const items = itemsFor({ kind: 'card', id: 'inv' }, view());
+    const moveTo = menuOf(items, 'moveTo');
+    expect(moveTo.map((it) => [it.id, it.label])).toEqual([
+      ['hand', 'Hand'],
+      ['deckTop', 'Top of Invocation deck'],
+      ['deckBottom', 'Bottom of Invocation deck'],
+      ['deckShuffle', 'Shuffle into Invocation deck'],
+      ['sep', '-'],
+      ['victory', 'Victory display'],
+      ['aside', 'Set aside'],
+    ]);
+    // The server follows the card's home: the action names no pile.
+    expect(actionOf(item(moveTo, 'deckBottom'))).toEqual({
+      kind: 'toDeck',
+      card: 'inv',
+      where: 'bottom',
+    });
+    expect(actionOf(item(items, 'discard'))).toEqual({ kind: 'discard', card: 'inv' });
+  });
+
+  it('a card of a side deck without a discard pile cannot be discarded', () => {
+    const items = itemsFor({ kind: 'card', id: 'sense' }, view());
+    expect(items.map((it) => it.id)).not.toContain('discard');
+    expect(item(items, 'moveTo').menu?.map((it) => it.label)).toContain('Bottom of Sense deck');
+  });
+});

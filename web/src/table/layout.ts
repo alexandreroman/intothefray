@@ -170,12 +170,19 @@ export interface OwnerFrame {
 // owner's name lies above the frame, in the 30 units the server leaves above the piles (setup.go).
 const FRAME_PADDING = 10;
 
-const HOME_KINDS: readonly PileKind[] = ['deck', 'discard', 'encounter', 'encounterDiscard'];
+const HOME_KINDS: readonly PileKind[] = [
+  'deck',
+  'discard',
+  'sideDeck',
+  'sideDiscard',
+  'encounter',
+  'encounterDiscard',
+];
 
 /**
- * A frame around each owner's deck and discard pile (the encounter deck and
- * its discard pile for the villain), from where the piles lie, in the order
- * the owners first appear.
+ * A frame around each owner's deck and discard pile, with their side decks
+ * and side discard piles (the encounter deck and its discard pile for the
+ * villain), from where the piles lie, in the order the owners first appear.
  */
 export function ownerFrames(piles: PileView[]): OwnerFrame[] {
   const byOwner = new Map<number, PileView[]>();

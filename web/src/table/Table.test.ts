@@ -466,6 +466,31 @@ describe('Table', () => {
     expect(top.getAttribute('src')).toBe('01001.png');
   });
 
+  it('shows the top card of a side deck that shows it, and the back of one that does not', async () => {
+    const view = makeView({
+      cards: [card('i', { code: '01001', owner: 1, zone: 'pile', home: 'side:p1:0' })],
+      piles: [
+        pile('side:p1:0', {
+          kind: 'sideDeck',
+          owner: 1,
+          x: 360,
+          y: 830,
+          count: 5,
+          label: 'Invocation',
+          topFaceUp: true,
+          cards: ['i'],
+        }),
+        pile('side:p1:1', { kind: 'sideDeck', owner: 1, x: 520, y: 830, count: 5, label: 'Sense' }),
+      ],
+    });
+    render(Table, { session: fakeSession(), view });
+
+    const top = await within(surface()).findByRole('img', { name: 'Spider-Man' });
+    expect(top.closest<HTMLElement>('.pile')?.dataset.id).toBe('side:p1:0');
+    const sense = surface().querySelector('.pile[data-id="side:p1:1"]');
+    expect(sense?.querySelector('img')?.getAttribute('alt')).toBe('Player card back');
+  });
+
   it('moves the Focus panel to a corner clear of the hovered card', async () => {
     const rect = (left: number, top: number, width: number, height: number) =>
       ({ left, top, width, height, right: left + width, bottom: top + height }) as DOMRect;

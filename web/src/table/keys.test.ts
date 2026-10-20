@@ -534,6 +534,22 @@ describe('keys on a hand card', () => {
     expect(session.act).toHaveBeenCalledWith({ kind: 'discard', card: 'h' }, 0);
   });
 
+  it('Backspace leaves a card of a side deck without a discard pile in the hand', async () => {
+    const view = makeView({
+      cards: [
+        card('v', { code: '01094', owner: -1, back: 'villain' }),
+        card('sense', { zone: 'hand', home: 'side:p0:0' }),
+      ],
+    });
+    view.table!.hands = { p0: ['sense'] };
+    view.table!.piles.push(pile('side:p0:0', { kind: 'sideDeck', owner: 0, label: 'Sense' }));
+    const { session } = await renderTable(view);
+    await fireEvent.pointerEnter(inHand('sense'));
+
+    await press('Backspace');
+    expect(session.act).not.toHaveBeenCalled();
+  });
+
   it('Backspace discards a table card; X does nothing any more', async () => {
     const { session } = await renderTable();
     await fireEvent.pointerEnter(placed('mine'));

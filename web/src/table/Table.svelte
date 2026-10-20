@@ -228,6 +228,10 @@
     // While a card taken from a pile is dragged or waits for the server, the pile shows its top card
     // without it; so it does while a card flies to it.
     const taken = interaction.takenFrom(pile.id);
+    // A side deck lists its top card alone: once that card is taken, the next one is unknown.
+    if (pile.topFaceUp && taken.includes(null)) {
+      return undefined;
+    }
     const topId = (pile.cards ?? [])
       .filter((id) => !taken.includes(id) && !motion.flying.has(id))
       .at(-1);

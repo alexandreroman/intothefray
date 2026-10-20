@@ -370,6 +370,32 @@ describe('diffViews', () => {
     ).toEqual([{ kind: 'shuffle', pile: 'deck:p1' }]);
   });
 
+  it('shuffle of a side deck or its discard pile names the pile after its label', () => {
+    const piles = [
+      pile('deck:p0'),
+      pile('side:p0:0', { kind: 'sideDeck', x: 360, count: 4, label: 'Invocation' }),
+      pile('sided:p0:0', { kind: 'sideDiscard', x: 520, count: 1, label: 'Invocation' }),
+      pile('side:p1:0', { kind: 'sideDeck', owner: 1, x: 360, count: 5, label: 'Invocation' }),
+    ];
+    const alex = { who: 'Alex', color: 0 };
+    const prev = view({ piles });
+    const shuffled = (text: string, extra: Partial<LogView> = {}) =>
+      diffViews(prev, view({ piles, log: [OLD_LINE, line(text, extra)] }));
+
+    expect(shuffled('shuffled their Invocation deck', alex)).toEqual([
+      { kind: 'shuffle', pile: 'side:p0:0' },
+    ]);
+    expect(shuffled("shuffled Alex's Invocation deck")).toEqual([
+      { kind: 'shuffle', pile: 'side:p0:0' },
+    ]);
+    expect(shuffled('shuffled their Invocation deck')).toEqual([
+      { kind: 'shuffle', pile: 'side:p1:0' },
+    ]);
+    expect(
+      shuffled('shuffled their Invocation discard pile into their Invocation deck', alex),
+    ).toEqual([{ kind: 'shuffle', pile: 'side:p0:0' }]);
+  });
+
   it('an undone shuffle does not shuffle again', () => {
     const prev = view({ log: [OLD_LINE, line('shuffled their deck')] });
     const next = view({
