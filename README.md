@@ -138,6 +138,9 @@ In a Casper worktree workspace, the setup hook of `.casper.json`
 | Server  | `CASPER_PORT + 1` |
 | Redis   | `CASPER_PORT + 2` |
 
+It also sets `APP_INSTANCE` to the worktree's branch, so the browser
+tab of the workspace reads `Into The Fray (<branch>)`.
+
 Two commands start the stack, both with the ports of `.env.casper` and
 both listing the workspace URLs in the Casper info panel:
 
@@ -152,11 +155,11 @@ both listing the workspace URLs in the Casper info panel:
 
 Run stops its stack and both clear the panel when the command ends.
 They bind the same server port, so run one at a time. Several workspaces can
-run at the same time, each with its own compose project. A `PORT` set in
-`.env` or `.env.local` overrides `.env.casper`.
+run at the same time, each with its own compose project. A `PORT` or an
+`APP_INSTANCE` set in `.env` or `.env.local` overrides `.env.casper`.
 
-`.env.casper` holds only the ports. In a worktree whose `.env.casper`
-still sets `VITE_API_URL` or `ALLOWED_ORIGINS`, re-run
+`.env.casper` holds only the ports and the instance name. In a worktree
+whose `.env.casper` still sets `VITE_API_URL` or `ALLOWED_ORIGINS`, re-run
 `scripts/casper.sh setup`: a stale file breaks the container flow
 (`casper run`) and makes the dev flow bypass Caddy.
 
@@ -197,6 +200,14 @@ GitHub Pages.
 The frontend calls the API with same-origin URLs. `VITE_API_URL` is
 only needed at build time for a cross-origin deployment (see
 Deployment).
+
+`APP_INSTANCE` is an optional instance name, also read at build time
+(such as `dev` or a branch name): when set, the browser tab title reads
+`Into The Fray (<name>)`, which tells apart the instances of several
+versions. Production and GitHub Pages builds leave it unset. Set it in
+`.env` or `.env.local`; `.env.local` is only loaded for the development
+targets such as `make dev`, so `make web-build` and `make app-up` read it
+from `.env`.
 
 `make` loads `.env` when it exists, and `.env.local` for the
 development targets.
