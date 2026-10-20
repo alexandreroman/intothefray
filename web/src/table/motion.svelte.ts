@@ -5,9 +5,9 @@
 
 import { tick } from 'svelte';
 import { SvelteSet } from 'svelte/reactivity';
-import type { Back, CardView, TableView } from '../lib/types';
+import type { Back, CardView, PileView, TableView } from '../lib/types';
 import type { Anim } from './animate';
-import { pileBack } from './face';
+import { pileBack, pileCaption } from './face';
 
 /** A card moving to its new place (FLIP). */
 const MOVE_MS = 250;
@@ -85,6 +85,8 @@ interface AwayFlight extends FlightBase {
   card: CardView | undefined;
   /** The back it shows otherwise. */
   back: Back;
+  /** The caption of that back: the label of a side deck with its own back. */
+  caption: string | undefined;
 }
 
 type Flight = PileFlight | DrawFlight | AwayFlight;
@@ -413,9 +415,7 @@ class TableMotion {
 
     const cardsBefore = new Map((tables.before?.cards ?? []).map((card) => [card.id, card]));
     const cardsAfter = new Map((tables.after?.cards ?? []).map((card) => [card.id, card]));
-    const backs = new Map(
-      (tables.before?.piles ?? []).map((pile) => [pile.id, pileBack(pile.kind)]),
-    );
+    const pileViews = new Map((tables.before?.piles ?? []).map((pile) => [pile.id, pile]));
     const flights: Flight[] = [];
     for (const anim of shown) {
       switch (anim.kind) {
@@ -449,7 +449,7 @@ class TableMotion {
         case 'draw': {
           const from = pilesBefore.get(anim.fromPile);
           const card = cardsAfter.get(anim.id);
-          const flight = from && card ? this.#drawFlight(root, anim, from, card, backs) : null;
+          const flight = from && card ? this.#drawFlight(root, anim, from, card, pileViews) : null;
           if (flight) {
             flights.push(flight);
           }
@@ -462,7 +462,7 @@ class TableMotion {
           const from = pilesBefore.get(anim.pile);
           if (from) {
             const card = anim.card === undefined ? undefined : cardsBefore.get(anim.card);
-            flights.push(this.#awayFlight(anim.pile, from, card, backs));
+            flights.push(this.#awayFlight(anim.pile, from, card, pileViews));
           }
           break;
         }
@@ -856,11 +856,11 @@ class TableMotion {
     anim: Extract<Anim, { kind: 'draw' }>,
     from: Measured,
     card: CardView,
-    backs: ReadonlyMap<string, Back>,
+    piles: ReadonlyMap<string, PileView>,
   ): Flight {
     const element = root.querySelector<HTMLElement>(handCard(anim.id));
     if (!element) {
-      return this.#awayFlight(anim.fromPile, from, anim.faceUp ? card : undefined, backs);
+      return this.#awayFlight(anim.fromPile, from, anim.faceUp ? card : undefined, piles);
     }
     const { slot, angle } = measureSlot(element);
     return {
@@ -880,13 +880,15 @@ class TableMotion {
     pile: string,
     from: Measured,
     card: CardView | undefined,
-    backs: ReadonlyMap<string, Back>,
+    piles: ReadonlyMap<string, PileView>,
   ): AwayFlight {
+    const view = piles.get(pile);
     return {
       kind: 'drawAway',
       key: ++this.#nextKey,
       card,
-      back: backs.get(pile) ?? 'player',
+      back: view ? pileBack(view) : 'player',
+      caption: view ? pileCaption(view) : undefined,
       pile,
       from,
       delay: 0,

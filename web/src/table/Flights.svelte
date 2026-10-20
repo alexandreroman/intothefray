@@ -66,7 +66,8 @@
     {:else if flight.card && !isHidden(flight.card)}
       {@render portrait(flight.card)}
     {:else}
-      <CardBack back={flight.card?.back ?? flight.back} caption={flight.card ? captionOf(flight.card) : undefined} />
+      {@const caption = flight.card ? captionOf(flight.card) : flight.caption}
+      <CardBack back={flight.card?.back ?? flight.back} {caption} />
     {/if}
   </div>
 {/each}
