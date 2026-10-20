@@ -166,7 +166,10 @@ const KINDS: Kind[] = [
     open: async () => {
       await hover(placed('v'));
       await fireEvent.click(placed('v'));
-      await fireEvent.click(within(contextMenu()!).getByRole('menuitem', { name: 'Change card…' }));
+      // The item's name ends with its key, V.
+      await fireEvent.click(
+        within(contextMenu()!).getByRole('menuitem', { name: /^Change card…/ }),
+      );
     },
     close: 'Close',
   },

@@ -24,6 +24,9 @@ type: project
   Discard X, Shuffle; discard pile Search │ Shuffle into deck. Labels
   stay short; tooltips say the rest. The stage choice reads "Change
   card…".
+- Card keys beside the menu: E exhaust, F flip, X discard (Backspace
+  too), H hand, B bottom of deck, V change card (villain / main scheme),
+  A arrow; C stays Confused.
 - Another player's deck shows "Belongs to …" in its menu instead of
   entries. A click on a selected card opens that card's menu and keeps
   the group selection.

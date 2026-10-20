@@ -111,8 +111,10 @@ describe('KeysSheet', () => {
           'Exhaust / ready: E',
           'Flip: F',
           'Draw an arrow to another card: A',
-          'Discard: ⌫',
+          'Discard: X⌫',
           'Back to hand: H',
+          'Bottom of the deck: B',
+          'Change the villain or scheme card: V',
         ],
       ],
       [
@@ -127,7 +129,7 @@ describe('KeysSheet', () => {
           'Locked: L',
         ],
       ],
-      ['Card in your hand', ['Play: P', 'Discard: ⌫']],
+      ['Card in your hand', ['Play: P', 'Discard: X⌫']],
       [
         'Deck under the mouse',
         [

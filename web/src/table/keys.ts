@@ -57,7 +57,7 @@ export function handleKey(event: KeyboardEvent, table: KeyTable): void {
   if (event.defaultPrevented) {
     return;
   }
-  // Outside a field, Backspace discards: it never takes the browser back in its history.
+  // Outside a field, Backspace discards (as X does): it never takes the browser back in its history.
   if (event.key === 'Backspace' && !isTyping(event.target)) {
     event.preventDefault();
   }
@@ -198,15 +198,16 @@ function playerKey(event: KeyboardEvent, table: KeyTable): boolean {
 }
 
 /**
- * The enabled item with that key, in the list or in one of its enabled
- * submenus, taken with Shift or not as the item says.
+ * The enabled item with that key, its main key or one of its alternatives, in
+ * the list or in one of its enabled submenus, taken with Shift or not as the
+ * item says.
  */
 function findItem(items: ActionItem[], key: string, shift: boolean): ActionItem | undefined {
   for (const item of items) {
     if (item.disabled) {
       continue;
     }
-    if (item.key?.toLowerCase() === key && (item.shift ?? false) === shift) {
+    if (answersTo(item, key) && (item.shift ?? false) === shift) {
       return item;
     }
     const inMenu = item.menu ? findItem(item.menu, key, shift) : undefined;
@@ -215,6 +216,12 @@ function findItem(items: ActionItem[], key: string, shift: boolean): ActionItem 
     }
   }
   return undefined;
+}
+
+/** Whether the item runs on that key (lower case): its main key or one of its alternatives. */
+function answersTo(item: ActionItem, key: string): boolean {
+  const keys = [item.key, ...(item.altKeys ?? [])];
+  return keys.some((itemKey) => itemKey?.toLowerCase() === key);
 }
 
 /** The action of a token or status item, which adds one; null for any other item. */
@@ -240,7 +247,10 @@ function removeOne(adds: Action, table: KeyTable): boolean {
   return true;
 }
 
-/** P plays a card of the hand to the first free slot of its deck's row, Backspace discards it. */
+/**
+ * P plays a card of the hand to the first free slot of its deck's row, X or
+ * Backspace discards it, as they discard a card in play.
+ */
 function handKey(key: string, id: string, table: KeyTable): boolean {
   switch (key) {
     case 'p': {
@@ -253,6 +263,7 @@ function handKey(key: string, id: string, table: KeyTable): boolean {
       table.act({ kind: 'play', card: id, x, y });
       return true;
     }
+    case 'x':
     case 'backspace': {
       // A side deck's card without a discard pile has nowhere to be discarded to.
       const card = table.view.table?.cards.find((c) => c.id === id);

@@ -265,7 +265,7 @@ describe('the context menu', () => {
     expect(menu.querySelectorAll('.msep')).toHaveLength(3);
     // The default action is in bold; each item shows its key; a submenu row its arrow.
     expect(menuItem(menu, 'Exhaust').classList).toContain('default');
-    expect(menuItem(menu, 'Discard').querySelector('kbd')?.textContent).toBe('⌫');
+    expect(menuItem(menu, 'Discard').querySelector('kbd')?.textContent).toBe('X');
     const tokens = menuItem(menu, 'Add a token');
     expect(tokens.getAttribute('aria-haspopup')).toBe('menu');
     expect(tokens.getAttribute('aria-expanded')).toBe('false');

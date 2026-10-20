@@ -63,8 +63,10 @@
         { what: 'Exhaust / ready', keys: ['E'] },
         { what: 'Flip', keys: ['F'] },
         { what: 'Draw an arrow to another card', keys: ['A'] },
-        { what: 'Discard', keys: ['⌫'] },
+        { what: 'Discard', keys: ['X', '⌫'] },
         { what: 'Back to hand', keys: ['H'] },
+        { what: 'Bottom of the deck', keys: ['B'] },
+        { what: 'Change the villain or scheme card', keys: ['V'] },
       ],
     ],
     [
@@ -83,7 +85,7 @@
       'Card in your hand',
       [
         { what: 'Play', keys: ['P'] },
-        { what: 'Discard', keys: ['⌫'] },
+        { what: 'Discard', keys: ['X', '⌫'] },
       ],
     ],
     [

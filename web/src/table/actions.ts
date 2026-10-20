@@ -38,15 +38,15 @@ export type LocalAction =
   | { local: 'arrow'; card: string };
 
 /**
- * How an item's key shows in a tooltip or a menu: Backspace as its ⌫ glyph, a
- * key taken with Shift after ⇧ (⇧W). Undefined for an item without a key.
+ * How an item's key shows in a tooltip or a menu: a key taken with Shift after
+ * ⇧ (⇧W). Only the main key shows, not its alternatives. Undefined for an item
+ * without a key.
  */
 export function keyLabel(item: Pick<ActionItem, 'key' | 'shift'>): string | undefined {
   if (item.key === undefined) {
     return undefined;
   }
-  const key = item.key === 'Backspace' ? '⌫' : item.key;
-  return item.shift ? `⇧${key}` : key;
+  return item.shift ? `⇧${item.key}` : item.key;
 }
 
 export interface ActionItem {
@@ -54,6 +54,8 @@ export interface ActionItem {
   id: string;
   label: string;
   key?: string;
+  /** Other keys that run the item too, never shown: Backspace discards as X does. */
+  altKeys?: string[];
   /** The key is taken with Shift: Draw X is Shift + W, while W alone is Draw 1. */
   shift?: true;
   disabled?: boolean;
@@ -233,6 +235,7 @@ function stageItem(): ActionItem {
   return {
     id: 'stage',
     label: 'Change card…',
+    key: 'V',
     tip: 'Change card…',
     group: GROUP_TURN,
     run: () => ({ local: 'stageBox' }),
@@ -298,7 +301,8 @@ function leaveItems(card: CardView, context: Context): ActionItem[] {
   const discard: ActionItem = {
     id: 'discard',
     label: 'Discard',
-    key: 'Backspace',
+    key: 'X',
+    altKeys: ['Backspace'],
     tip: 'Discard',
     group: GROUP_LEAVE,
     run: () => ({ kind: 'discard', card: card.id }),
@@ -380,6 +384,7 @@ function moveMenu(card: CardView, context: Context): ActionItem[] {
       {
         id: 'deckBottom',
         label: `Bottom of ${deck}`,
+        key: 'B',
         group: 0,
         run: () => toDeck(card, 'bottom'),
       },

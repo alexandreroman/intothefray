@@ -351,7 +351,7 @@ describe('keys on the table', () => {
     expect(session.act).not.toHaveBeenCalled();
   });
 
-  it('Backspace and H do nothing on an identity card, which stays on the table', async () => {
+  it('X, Backspace, H and B do nothing on an identity card, which stays on the table', async () => {
     const cards = [
       card('hero', { x: 200, identity: true }),
       card('v', { code: '01094', owner: -1, back: 'villain' }),
@@ -359,12 +359,101 @@ describe('keys on the table', () => {
     const { session } = await renderTable(makeView({ cards }));
 
     await fireEvent.pointerEnter(placed('hero'));
+    await press('x');
     await press('Backspace');
     await press('h');
+    await press('b');
     expect(session.act).not.toHaveBeenCalled();
     // It is still played on the table.
     await press('e');
     expect(session.act).toHaveBeenCalledOnce();
+  });
+
+  it('X, Backspace and B do nothing on the villain card, which stays on the table', async () => {
+    const { session } = await renderTable();
+
+    await fireEvent.pointerEnter(placed('v'));
+    await press('x');
+    await press('Backspace');
+    await press('b');
+    expect(session.act).not.toHaveBeenCalled();
+  });
+
+  it('B sends a card in play to the bottom of its deck', async () => {
+    const { session } = await renderTable();
+    await fireEvent.pointerEnter(placed('mine'));
+
+    await press('b');
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      { kind: 'toDeck', card: 'mine', where: 'bottom' },
+      0,
+    );
+  });
+
+  it('B sends a side card to the bottom of its side deck; X and Backspace leave it without a discard pile', async () => {
+    const cards = [
+      card('v', { code: '01094', owner: -1, back: 'villain' }),
+      card('sense', { x: 200, home: 'side:p0:0' }),
+    ];
+    const view = makeView({ cards });
+    view.table!.piles.push(pile('side:p0:0', { kind: 'sideDeck', owner: 0, label: 'Sense' }));
+    const { session } = await renderTable(view);
+    await fireEvent.pointerEnter(placed('sense'));
+
+    await press('x');
+    await press('Backspace');
+    expect(session.act).not.toHaveBeenCalled();
+    await press('b');
+    // The server follows the card's home: the action names no pile.
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      { kind: 'toDeck', card: 'sense', where: 'bottom' },
+      0,
+    );
+  });
+
+  it('B does nothing on an encounter card without an encounter deck to go back to', async () => {
+    const cards = [
+      card('v', { code: '01094', owner: -1, back: 'villain' }),
+      card('enemy', { owner: -1, back: 'encounter', x: 200 }),
+    ];
+    const view = makeView({ cards });
+    view.table!.piles = view.table!.piles.filter((p) => p.id !== 'enc');
+    const { session } = await renderTable(view);
+
+    await fireEvent.pointerEnter(placed('enemy'));
+    await press('b');
+    expect(session.act).not.toHaveBeenCalled();
+  });
+
+  it('V opens the card choice of the villain card, and does nothing elsewhere', async () => {
+    const stageBox = () =>
+      screen.queryByRole('dialog', { name: 'Villain: choose the card to show' });
+    const { session } = await renderTable();
+
+    await fireEvent.pointerEnter(placed('mine'));
+    await press('v');
+    expect(stageBox()).toBeNull();
+
+    await fireEvent.pointerEnter(placed('v'));
+    await press('v');
+    expect(stageBox()).toBeTruthy();
+    expect(session.act).not.toHaveBeenCalled();
+  });
+
+  it('Shift + X, B or V does nothing', async () => {
+    const stageBox = () =>
+      screen.queryByRole('dialog', { name: 'Villain: choose the card to show' });
+    const { session } = await renderTable();
+
+    await fireEvent.pointerEnter(placed('mine'));
+    await press('X', { shiftKey: true });
+    await press('B', { shiftKey: true });
+    await fireEvent.pointerEnter(placed('v'));
+    await press('V', { shiftKey: true });
+    await fireEvent.pointerEnter(inHand('h'));
+    await press('X', { shiftKey: true });
+    expect(session.act).not.toHaveBeenCalled();
+    expect(stageBox()).toBeNull();
   });
 
   it('Z sends undo', async () => {
@@ -574,15 +663,18 @@ describe('keys on a hand card', () => {
     expect(session.act).toHaveBeenCalledWith({ kind: 'play', card: 'h', x: 1200, y: 0 }, 0);
   });
 
-  it('Backspace discards a hand card', async () => {
+  it('X and Backspace discard a hand card', async () => {
     const { session } = await renderTable();
     await fireEvent.pointerEnter(inHand('h'));
 
+    await press('x');
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'discard', card: 'h' }, 0);
     await press('Backspace');
-    expect(session.act).toHaveBeenCalledWith({ kind: 'discard', card: 'h' }, 0);
+    expect(session.act).toHaveBeenCalledTimes(2);
+    expect(session.act).toHaveBeenLastCalledWith({ kind: 'discard', card: 'h' }, 0);
   });
 
-  it('Backspace leaves a card of a side deck without a discard pile in the hand', async () => {
+  it('X and Backspace leave a card of a side deck without a discard pile in the hand', async () => {
     const view = makeView({
       cards: [
         card('v', { code: '01094', owner: -1, back: 'villain' }),
@@ -594,18 +686,20 @@ describe('keys on a hand card', () => {
     const { session } = await renderTable(view);
     await fireEvent.pointerEnter(inHand('sense'));
 
+    await press('x');
     await press('Backspace');
     expect(session.act).not.toHaveBeenCalled();
   });
 
-  it('Backspace discards a table card; X does nothing any more', async () => {
+  it('X and Backspace discard a table card', async () => {
     const { session } = await renderTable();
     await fireEvent.pointerEnter(placed('mine'));
 
     await press('x');
-    expect(session.act).not.toHaveBeenCalled();
-    await press('Backspace');
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'discard', card: 'mine' }, 0);
+    await press('Backspace');
+    expect(session.act).toHaveBeenCalledTimes(2);
+    expect(session.act).toHaveBeenLastCalledWith({ kind: 'discard', card: 'mine' }, 0);
   });
 
   it('Backspace never goes back in history, and is left to the fields', async () => {

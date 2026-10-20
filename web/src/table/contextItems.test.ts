@@ -195,7 +195,7 @@ describe('contextItems', () => {
       'Add a token ▸',
       'Add a status ▸',
       '---',
-      'Discard [⌫]',
+      'Discard [X]',
       'Move to ▸',
       '---',
       'Draw an arrow [A]',
@@ -215,7 +215,7 @@ describe('contextItems', () => {
     expect(texts(submenu(entries, 'Move to').entries)).toEqual([
       'Hand [H]',
       'Top of deck',
-      'Bottom of deck',
+      'Bottom of deck [B]',
       'Shuffle into deck',
       '---',
       'Victory display',
@@ -238,12 +238,12 @@ describe('contextItems', () => {
 
     expect(texts(entries)).toEqual([
       '*Exhaust [E]',
-      'Change card…',
+      'Change card… [V]',
       '---',
       'Add a token ▸',
       'Add a status ▸',
       '---',
-      'Discard [⌫] (off)',
+      'Discard [X] (off)',
       'Move to ▸ (off)',
       '---',
       'Draw an arrow [A]',
@@ -327,13 +327,13 @@ describe('contextItems', () => {
     expect(texts(submenu(invocation, 'Move to').entries)).toEqual([
       'Hand [H]',
       'Top of Invocation deck',
-      'Bottom of Invocation deck',
+      'Bottom of Invocation deck [B]',
       'Shuffle into Invocation deck',
       '---',
       'Victory display',
       'Set aside',
     ]);
-    expect(texts(invocation)).toContain('Discard [⌫]');
+    expect(texts(invocation)).toContain('Discard [X]');
 
     expect(texts(entriesFor({ kind: 'card', id: 'sense' }))).toEqual([
       '*Exhaust [E]',

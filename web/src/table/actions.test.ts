@@ -179,7 +179,8 @@ describe('actionsFor', () => {
     const discard = item(items, 'discard');
     expect(discard).toMatchObject({
       label: 'Discard',
-      key: 'Backspace',
+      key: 'X',
+      altKeys: ['Backspace'],
       tip: 'Discard',
     });
     expect(actionOf(discard)).toEqual({ kind: 'discard', card: 'mine' });
@@ -234,6 +235,7 @@ describe('actionsFor', () => {
       'Set aside',
     ]);
     expect(item(move, 'hand').key).toBe('H');
+    expect(item(move, 'deckBottom').key).toBe('B');
     expect(actionOf(item(move, 'hand'))).toEqual({ kind: 'toHand', card: 'mine' });
     expect(actionOf(item(move, 'deckTop'))).toEqual({ kind: 'toDeck', card: 'mine', where: 'top' });
     expect(actionOf(item(move, 'deckBottom'))).toEqual({
@@ -313,9 +315,9 @@ describe('actionsFor', () => {
     const stage = item(items, 'stage');
     expect(stage).toMatchObject({
       label: 'Change card…',
+      key: 'V',
       tip: 'Change card…',
     });
-    expect(stage.key).toBeUndefined();
     expect(stage.run?.()).toEqual({ local: 'stageBox' });
     expect(item(itemsFor({ kind: 'card', id: 'v' }), 'stage').label).toBe('Change card…');
   });
@@ -850,9 +852,10 @@ describe('side decks', () => {
 });
 
 describe('keyLabel', () => {
-  it('shows Backspace as its glyph, a Shift key after ⇧, and nothing without a key', () => {
+  it('shows the main key, a Shift key after ⇧, and nothing without a key', () => {
     expect(keyLabel({ key: 'E' })).toBe('E');
-    expect(keyLabel({ key: 'Backspace' })).toBe('⌫');
+    // Discard runs on Backspace too, yet shows its main key only.
+    expect(keyLabel(item(itemsFor({ kind: 'card', id: 'mine' }), 'discard'))).toBe('X');
     expect(keyLabel({ key: 'W', shift: true })).toBe('⇧W');
     expect(keyLabel({})).toBeUndefined();
   });
