@@ -12,9 +12,12 @@ faceup, own discard). The generator links each one to the hero of the same
 pack whose set code prefixes the set code, in the printed order of the
 cards. Setup shuffles them facedown between the hero's discard and
 identity. Only Doctor Strange's Invocation deck has its own discard pile
-and a faceup top card. A side card with no side discard is never
-discarded: Discard is not offered, and when it is tucked under a card that
-leaves the table it goes to the bottom of its side deck. A card dropped on
+and a faceup top card. The Labor, Gift and Sense decks have their own card
+back (`ownBack`): every card of the set gets back `side`, drawn with the
+deck's name in every theme, since no source hosts an image of it. A side
+card with no side discard is never discarded: Discard is not offered, and
+when it is tucked under a card that leaves the table it goes to the bottom
+of its side deck. A card dropped on
 the lower half of its home deck goes to the bottom. The cards a hero set
 lists in `setAside` (Iceman's Frostbite, Valkyrie's Death-Glow, Rogue's
 Touched, Ironheart's other versions) go to the player's set-aside pile.
