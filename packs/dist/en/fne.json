@@ -1533,6 +1533,7 @@
       ],
       "side": {
         "label": "Sense",
+        "topFaceUp": true,
         "back": "player"
       }
     },

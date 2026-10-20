@@ -321,7 +321,7 @@ func TestEmbeddedHeroSetup(t *testing.T) {
 				{"hercules_labor_deck", pack.SideDeck{Label: "Labor", Back: pack.BackPlayer}},
 				{"hercules_gift_deck", pack.SideDeck{Label: "Gift", Back: pack.BackEncounter}},
 			}},
-			{"60001", []sideDeck{{"daredevil_sense_deck", pack.SideDeck{Label: "Sense", Back: pack.BackPlayer}}}},
+			{"60001", []sideDeck{{"daredevil_sense_deck", pack.SideDeck{Label: "Sense", TopFaceUp: true, Back: pack.BackPlayer}}}},
 		}
 		for _, tt := range tests {
 			var wantCodes []string

@@ -129,8 +129,8 @@ func TestSetupSideDecks(t *testing.T) {
 
 	sense := table.Piles[senseDeck]
 	if sense == nil || sense.Kind != KindSideDeck || sense.Owner != 1 || sense.Label != "Sense" ||
-		sense.TopFaceUp || len(sense.Cards) != 5 || sense.X != 320 || sense.Y != rowY1 {
-		t.Errorf("Sense deck = %+v, want p1's face-down side deck of 5 at (320, %d)", sense, rowY1)
+		!sense.TopFaceUp || len(sense.Cards) != 5 || sense.X != 320 || sense.Y != rowY1 {
+		t.Errorf("Sense deck = %+v, want p1's face-up side deck of 5 at (320, %d)", sense, rowY1)
 	}
 	if _, ok := table.Piles["sided:p1:0"]; ok {
 		t.Error("the Sense deck has a discard pile")
@@ -426,7 +426,8 @@ func TestSideDeckViews(t *testing.T) {
 	table := f.g.Table
 	invocationTop := topCards(table.Piles[invocationDeck], 1)[0]
 	invocationUnder := table.Piles[invocationDeck].Cards[0]
-	senseCard := table.Piles[senseDeck].Cards[0]
+	senseTop := topCards(table.Piles[senseDeck], 1)[0]
+	senseUnder := table.Piles[senseDeck].Cards[0]
 
 	for _, token := range []string{"h", "b", "nobody"} {
 		tv := f.g.ViewFor(token).Table
@@ -455,11 +456,12 @@ func TestSideDeckViews(t *testing.T) {
 			t.Errorf("%s sees the Invocation discard as %+v", token, discard)
 		}
 		sense := piles[senseDeck]
-		if sense.Count != 5 || len(sense.Cards) != 0 || sense.Label != "Sense" || sense.TopFaceUp {
-			t.Errorf("%s sees the Sense deck as %+v, want its count only", token, sense)
+		if sense.Count != 5 || !slices.Equal(sense.Cards, []string{senseTop}) || sense.Label != "Sense" ||
+			!sense.TopFaceUp {
+			t.Errorf("%s sees the Sense deck as %+v, want 5 cards, its top one shown", token, sense)
 		}
-		if _, ok := cards[senseCard]; ok {
-			t.Errorf("%s sees a card of the Sense deck", token)
+		if _, ok := cards[senseUnder]; ok {
+			t.Errorf("%s sees a card under the Sense top card", token)
 		}
 	}
 
@@ -583,6 +585,24 @@ func TestDeckListSideCardsStayInTheirSideDeck(t *testing.T) {
 	}
 	if got := len(table.Piles[invocationDeck].Cards); got != 5 {
 		t.Errorf("Invocation deck holds %d cards, want 5", got)
+	}
+}
+
+func TestFaceDownSideDeckShowsItsCountOnly(t *testing.T) {
+	f := heroGame(t, heroDeck(t, newCatalog(t), herculesIdentity, "Hercules"))
+	pile := f.g.Table.Piles[sideDeckID(0, 0)]
+	for _, token := range []string{"h", "nobody"} {
+		tv := f.g.ViewFor(token).Table
+		for _, pv := range tv.Piles {
+			if pv.ID == pile.ID && (pv.Count != 3 || len(pv.Cards) != 0 || pv.TopFaceUp) {
+				t.Errorf("%s sees the %s deck as %+v, want its count only", token, pile.Label, pv)
+			}
+		}
+		for _, cv := range tv.Cards {
+			if slices.Contains(pile.Cards, cv.ID) {
+				t.Errorf("%s sees card %s of the %s deck", token, cv.ID, pile.Label)
+			}
+		}
 	}
 }
 
