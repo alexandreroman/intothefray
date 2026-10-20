@@ -17,6 +17,7 @@
   let {
     cards,
     faceOf,
+    captionOf = () => undefined,
     narrow = false,
     open = $bindable(false),
   }: {
@@ -24,6 +25,8 @@
     cards: TableCard[];
     /** The catalog face a card shows, null while unknown. */
     faceOf: (card: TableCard) => PackFace | null;
+    /** The caption of a card's back (backCaption): its side deck's label, if any. */
+    captionOf?: (card: TableCard) => string | undefined;
     /** A narrow screen, where the cards are smaller. */
     narrow?: boolean;
     /** Whether the hand is raised. */
@@ -222,7 +225,7 @@
         <div class="hit"></div>
         <div class="fan">
           {#if isHidden(card)}
-            <CardBack back={card.back} />
+            <CardBack back={card.back} caption={captionOf(card)} />
           {:else}
             <!-- A landscape card is turned a quarter to fit the portrait slot. -->
             <CardFace

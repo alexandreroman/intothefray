@@ -194,6 +194,16 @@ describe('ownerFrames', () => {
     ];
     expect(ownerFrames(piles)).toEqual([{ owner: 1, x: -10, y: 680, w: 160, h: 216 }]);
   });
+
+  it('frames the side decks and their discard piles with the deck and discard pile', () => {
+    const piles = [
+      pile({ id: 'deck:p0', kind: 'deck', owner: 0, x: 0, y: 360 }),
+      pile({ id: 'disc:p0', kind: 'discard', owner: 0, x: 160, y: 360 }),
+      pile({ id: 'side:p0:0', kind: 'sideDeck', owner: 0, x: 360, y: 360, label: 'Invocation' }),
+      pile({ id: 'sided:p0:0', kind: 'sideDiscard', owner: 0, x: 520, y: 360 }),
+    ];
+    expect(ownerFrames(piles)).toEqual([{ owner: 0, x: -10, y: 350, w: 680, h: 216 }]);
+  });
 });
 
 describe('fanPositions', () => {

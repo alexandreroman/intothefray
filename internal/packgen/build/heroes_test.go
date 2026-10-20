@@ -126,3 +126,78 @@ func TestBuildHeroesUsesCanonicalCodes(t *testing.T) {
 		t.Errorf("got heroes %+v, want %+v", heroes["gamma"], want)
 	}
 }
+
+func TestLinkSideDecksAddsSetsToTheirHeroInPrintedOrder(t *testing.T) {
+	invocation := &pack.SideDeck{Label: "Invocation"}
+	heroes := map[string][]pack.Hero{
+		"drs":  {{Identity: "09001", Set: "doctor_strange"}},
+		"core": {{Identity: "01001", Set: "spider_man"}},
+	}
+	sets := map[string][]pack.Set{
+		"drs": {
+			{Code: "doctor_strange", Kind: "hero", Cards: []string{"09001"}},
+			// Set code order differs from the printed order of the cards.
+			{Code: "doctor_strange_a_deck", Kind: "hero_special", Cards: []string{"09040", "09041"}, Side: invocation},
+			{Code: "doctor_strange_b_deck", Kind: "hero_special", Cards: []string{"09033", "09032"}, Side: invocation},
+			{Code: "doctor_strange_nemesis", Kind: "nemesis", Cards: []string{"09028"}},
+		},
+		"core": {{Code: "spider_man", Kind: "hero"}},
+	}
+
+	if err := linkSideDecks(heroes, sets); err != nil {
+		t.Fatal(err)
+	}
+
+	want := []string{"doctor_strange_b_deck", "doctor_strange_a_deck"}
+	if got := heroes["drs"][0].SideDecks; !slices.Equal(got, want) {
+		t.Errorf("got side decks %v, want %v", got, want)
+	}
+	if got := heroes["core"][0].SideDecks; got != nil {
+		t.Errorf("got side decks %v for Spider-Man, want none", got)
+	}
+}
+
+func TestLinkSideDecksRejectsUnmatchedSets(t *testing.T) {
+	side := &pack.SideDeck{Label: "Invocation"}
+	tests := []struct {
+		name   string
+		heroes map[string][]pack.Hero
+		want   string
+	}{
+		{
+			"no hero",
+			map[string][]pack.Hero{},
+			"side deck doctor_strange_invocation_deck matches no hero of pack drs",
+		},
+		{
+			"hero of another pack",
+			map[string][]pack.Hero{"core": {{Identity: "01001", Set: "doctor_strange"}}},
+			"side deck doctor_strange_invocation_deck matches no hero of pack drs",
+		},
+		{
+			"prefix without separator",
+			map[string][]pack.Hero{"drs": {{Identity: "09001", Set: "doctor_strange_in"}}},
+			"side deck doctor_strange_invocation_deck matches no hero of pack drs",
+		},
+		{
+			"several heroes",
+			map[string][]pack.Hero{"drs": {
+				{Identity: "09001", Set: "doctor_strange"},
+				{Identity: "09002", Set: "doctor"},
+			}},
+			"side deck doctor_strange_invocation_deck matches several heroes of pack drs: 09001, 09002",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			sets := map[string][]pack.Set{
+				"drs": {{Code: "doctor_strange_invocation_deck", Kind: "hero_special", Side: side}},
+			}
+
+			err := linkSideDecks(tt.heroes, sets)
+			if err == nil || err.Error() != tt.want {
+				t.Fatalf("got error %v, want %q", err, tt.want)
+			}
+		})
+	}
+}

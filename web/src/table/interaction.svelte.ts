@@ -166,7 +166,7 @@ class TableInteraction {
    * the pill holds the hover: the bar must not jump from under the pointer
    * (spec 5.8).
    */
-  rehover(element: TableElement | null): void {
+  rehover(element: TableElement | null, preview: PreviewChange = 'show'): void {
     if (
       modal.open ||
       this.dragging ||
@@ -187,7 +187,7 @@ class TableInteraction {
     }
     this.#cancelHide();
     this.hovered = element;
-    this.#changePreview(element, 'show');
+    this.#changePreview(element, preview);
   }
 
   /** Remembers the kind of the last pointer pressed: only a touch tap selects. */

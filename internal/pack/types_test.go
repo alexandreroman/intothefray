@@ -49,6 +49,19 @@ func TestPackFileRoundTrip(t *testing.T) {
 				InPlay: map[Difficulty][]FaceRef{Standard: {{Card: "24049", Face: 0}}, Expert: {{Card: "24049", Face: 1}}},
 			},
 			{Code: "standard_pvp", Name: "Standard PVP", Kind: "standard", Cards: []string{}, Unlisted: true},
+			{Code: "valk", Name: "Valkyrie", Kind: "hero", Cards: []string{"25001", "25002"}, SetAside: []string{"25002"}},
+			{
+				Code: "doctor_strange_invocation_deck", Name: "Invocation", Kind: "hero_special", Cards: []string{"09032"},
+				Side: &SideDeck{Label: "Invocation", TopFaceUp: true, Discard: true},
+			},
+			{
+				Code: "storm_weather_deck", Name: "Weather", Kind: "hero_special", Cards: []string{"36002"},
+				Side: &SideDeck{Label: "Weather"},
+			},
+		},
+		Heroes: []Hero{
+			{Identity: "09001", Set: "doctor_strange", SideDecks: []string{"doctor_strange_invocation_deck"}},
+			{Identity: "25001", Set: "valk"},
 		},
 	}
 
@@ -64,6 +77,11 @@ func TestPackFileRoundTrip(t *testing.T) {
 		`{"code":"rhino","name":"Rhino","kind":"villain","cards":["01097"]}`,
 		// Empty overrides, such as the subname here, are left out.
 		`"localized":{"fr":{"name":"Le Rhino","images":["https://mc4db.merlindumesnil.net/bundles/cards/FR/core/01097.webp"]}}`,
+		`"side":{"label":"Weather"}`,
+		`"setAside":["25002"]`,
+		`"sideDecks":["doctor_strange_invocation_deck"]`,
+		// A hero without side decks keeps its original shape.
+		`{"identity":"25001","set":"valk"}`,
 	}
 	for _, fragment := range fragments {
 		if !strings.Contains(string(data), fragment) {

@@ -136,12 +136,50 @@ func validArea(a Area) bool {
 	return false
 }
 
-// discardPileID returns the id of the pile where c is discarded.
+// discardPileID returns the id of the pile where c is discarded: the discard
+// pile of its side deck for a side deck card, which may not exist, or else the
+// discard pile of its owner.
 func discardPileID(c *Card) string {
+	if isSideDeckID(c.Home) {
+		discardID, _ := discardPileOf(c.Home)
+		return discardID
+	}
 	if c.Owner == NoOwner {
 		return PileEncounterDiscard
 	}
 	return "disc:" + string(PlayerArea(c.Owner))
+}
+
+// tuckedDestination returns the pile a card tucked under a card leaving the
+// table goes to: its discard pile, on top. A side deck card whose side deck
+// has no discard pile goes to the bottom of its side deck instead (bottom is
+// then true), as Daredevil's Sense cards do, so that it never keeps its host
+// on the table. ok is false when there is no such pile.
+func (t *Table) tuckedDestination(c *Card) (pile *Pile, bottom, ok bool) {
+	if pile, ok := t.Piles[discardPileID(c)]; ok {
+		return pile, false, true
+	}
+	if isSideDeckID(c.Home) {
+		if home, ok := t.Piles[c.Home]; ok {
+			return home, true, true
+		}
+	}
+	return nil, false, false
+}
+
+// shuffledIntoDeck returns the cards a shuffle of c into deck, its home,
+// gathers: the cards of deck, the cards tucked under c that leaving the table
+// sends to deck (see tuckedDestination), then c.
+func (t *Table) shuffledIntoDeck(c *Card, deck *Pile) []string {
+	cards := without(deck.Cards, c.ID)
+	if c.Zone == ZoneTable {
+		for _, child := range t.descendants(c.ID) {
+			if pile, _, ok := t.tuckedDestination(child); ok && pile == deck {
+				cards = append(cards, child.ID)
+			}
+		}
+	}
+	return append(cards, c.ID)
 }
 
 // descendants returns every card tucked under id, directly or not, from the
@@ -179,7 +217,7 @@ func (t *Table) checkLeave(c *Card) error {
 			if err := t.checkNotStageCurrent(child); err != nil {
 				return err
 			}
-			if _, ok := t.Piles[discardPileID(child)]; !ok {
+			if _, _, ok := t.tuckedDestination(child); !ok {
 				return invalid("no discard pile for card %q", child.ID)
 			}
 		}
@@ -220,14 +258,22 @@ func handOf(t *Table, id string) Area {
 }
 
 // leave takes c out of its current place and resets it. Cards tucked under
-// it are discarded. checkLeave must have succeeded first.
+// it are discarded (see tuckedDestination). checkLeave must have succeeded
+// first.
 func (t *Table) leave(c *Card) {
 	switch c.Zone {
 	case ZoneTable:
 		for _, child := range t.descendants(c.ID) {
 			t.removeArrows(child.ID)
 			resetCard(child)
-			t.pushOnPile(t.Piles[discardPileID(child)], child)
+			pile, bottom, _ := t.tuckedDestination(child)
+			if bottom {
+				pile.Cards = slices.Insert(pile.Cards, 0, child.ID)
+				child.Zone = ZonePile
+				child.Pile = pile.ID
+			} else {
+				t.pushOnPile(pile, child)
+			}
 		}
 		t.removeArrows(c.ID)
 	case ZoneHand:
@@ -368,8 +414,7 @@ func applyToDeck(t *Table, a Action) error {
 	case whereTop, whereBottom:
 	case whereShuffle:
 		// The caller resolved the shuffle: Cards is the whole new pile.
-		expected := append(without(deck.Cards, c.ID), c.ID)
-		if err := checkRenames(t, a, expected); err != nil {
+		if err := checkRenames(t, a, t.shuffledIntoDeck(c, deck)); err != nil {
 			return err
 		}
 		newOrder = cardList(a.Cards)
@@ -451,7 +496,8 @@ func applyToPile(t *Table, a Action) error {
 }
 
 // isPlainTargetPile reports whether id is a pile cards can be sent to by hand:
-// the victory display or a set-aside pile.
+// the victory display or a set-aside pile. No deck or discard pile is one, so
+// a side deck card never lands in a regular deck or discard pile this way.
 func isPlainTargetPile(id string) bool {
 	return id == PileVictory || id == PileScenarioAside || strings.HasPrefix(id, "aside:")
 }
@@ -703,14 +749,23 @@ func (t *Table) placeOnTable(c *Card, x, y int) {
 
 // applyDraw moves the recorded cards from the deck to the hand, in the recorded
 // order. Resolve records the top cards, but an undo may have put other cards
-// above them since: they are taken wherever they are in the deck.
+// above them since: they are taken wherever they are in the deck. The deck is
+// the one a.Pile names, or the deck of the hand's seat when it names none, as
+// in the draws recorded before a draw could name its deck.
 func applyDraw(t *Table, a Action) error {
 	if !validArea(a.Area) {
 		return invalid("area %q has no hand", a.Area)
 	}
-	deck, err := t.pile("deck:" + string(a.Area))
+	deckID := "deck:" + string(a.Area)
+	if a.Pile != "" {
+		deckID = a.Pile
+	}
+	deck, err := t.pile(deckID)
 	if err != nil {
 		return err
+	}
+	if deck.Owner == NoOwner || PlayerArea(deck.Owner) != a.Area {
+		return invalid("cards of pile %q do not go to hand %q", deck.ID, a.Area)
 	}
 	if err := checkInPile(deck, a.Cards); err != nil {
 		return err
@@ -828,16 +883,23 @@ func deckOfDiscard(discardID string) (string, bool) {
 	if owner, ok := strings.CutPrefix(discardID, "disc:"); ok {
 		return "deck:" + owner, true
 	}
+	if side, ok := strings.CutPrefix(discardID, sideDiscardPrefix); ok {
+		return sideDeckPrefix + side, true
+	}
 	return "", false
 }
 
-// discardPileOf returns the id of the discard pile of a deck pile.
+// discardPileOf returns the id of the discard pile of a deck pile. A side
+// deck may have no discard pile: the id it returns then names no pile.
 func discardPileOf(deckID string) (string, bool) {
 	if deckID == PileEncounter {
 		return PileEncounterDiscard, true
 	}
 	if owner, ok := strings.CutPrefix(deckID, "deck:"); ok {
 		return "disc:" + owner, true
+	}
+	if side, ok := strings.CutPrefix(deckID, sideDeckPrefix); ok {
+		return sideDiscardPrefix + side, true
 	}
 	return "", false
 }

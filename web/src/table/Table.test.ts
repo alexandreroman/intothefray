@@ -466,6 +466,66 @@ describe('Table', () => {
     expect(top.getAttribute('src')).toBe('01001.png');
   });
 
+  it('shows the top card of a side deck that shows it, and the back of one that does not', async () => {
+    const view = makeView({
+      cards: [card('i', { code: '01001', owner: 1, zone: 'pile', home: 'side:p1:0' })],
+      piles: [
+        pile('side:p1:0', {
+          kind: 'sideDeck',
+          owner: 1,
+          x: 360,
+          y: 830,
+          count: 5,
+          label: 'Invocation',
+          topFaceUp: true,
+          cards: ['i'],
+        }),
+        pile('side:p1:1', { kind: 'sideDeck', owner: 1, x: 520, y: 830, count: 5, label: 'Sense' }),
+      ],
+    });
+    render(Table, { session: fakeSession(), view });
+
+    const top = await within(surface()).findByRole('img', { name: 'Spider-Man' });
+    expect(top.closest<HTMLElement>('.pile')?.dataset.id).toBe('side:p1:0');
+    const sense = surface().querySelector('.pile[data-id="side:p1:1"]');
+    expect(sense?.querySelector('img')?.getAttribute('alt')).toBe('Player card back');
+  });
+
+  it("captions a side deck's own back on its pile and on its face-down cards", async () => {
+    const view = makeView({
+      cards: [
+        card('v', { code: '01094', back: 'villain', x: 360, y: 30 }),
+        card('l', { owner: 1, home: 'side:p1:0', faceDown: true, x: 700, y: 830 }),
+        // Its deck is not on the table: its back has no caption.
+        card('g', { owner: 1, home: 'side:p1:9', faceDown: true, x: 900, y: 830 }),
+      ],
+      piles: [
+        pile('side:p1:0', {
+          kind: 'sideDeck',
+          owner: 1,
+          x: 360,
+          y: 830,
+          count: 2,
+          label: 'Labor',
+          back: 'player',
+        }),
+      ],
+    });
+    render(Table, { session: fakeSession(), view });
+
+    const backs = await within(surface()).findAllByRole('img', { name: 'Labor card back' });
+    expect(backs.map((back) => back.closest<HTMLElement>('[data-id]')?.dataset.id)).toEqual([
+      'side:p1:0',
+      'l',
+    ]);
+    expect(backs.map((back) => back.querySelector('.caption')?.textContent)).toEqual([
+      'LABOR',
+      'LABOR',
+    ]);
+    const plain = within(surface()).getByRole('img', { name: 'Player card back' });
+    expect(plain.closest<HTMLElement>('[data-id]')?.dataset.id).toBe('g');
+  });
+
   it('moves the Focus panel to a corner clear of the hovered card', async () => {
     const rect = (left: number, top: number, width: number, height: number) =>
       ({ left, top, width, height, right: left + width, bottom: top + height }) as DOMRect;

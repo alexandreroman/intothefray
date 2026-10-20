@@ -46,8 +46,8 @@ make web-build    # production build into web/dist/
   build, images, curated, report, write)
 - `packs/` — `curated/` hand-written scenarios, card overrides and set
   data (`sets.json`: cards a set starts in play, sets kept out of the
-  lobby), `dist/` generated JSON (committed, never edited by hand), and the
-  `embed` package that loads it
+  lobby, hero side decks, cards a hero sets aside), `dist/` generated JSON
+  (committed, never edited by hand), and the `embed` package that loads it
 - `web/` — Svelte 5 + Vite SPA (standalone pnpm project; screens, lib,
   components, table: the table with its rendering, interactions,
   boxes, presence and animations)

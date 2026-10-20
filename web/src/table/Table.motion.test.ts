@@ -489,6 +489,29 @@ describe('Table animations', () => {
     expect(pile?.classList).toContain('empty');
     expect(animationsOf('.fly')).toHaveLength(1);
   });
+  it('a card put at the bottom of a deck flies below it, then slips under it', async () => {
+    const session = fakeSession();
+    const deck = (count: number): PileView => ({ ...PILES[0]!, count });
+    const { rerender, container } = render(Table, {
+      session,
+      view: makeView([card('b', { owner: 1, x: 40 })], { piles: [deck(30), PILES[1]!] }),
+    });
+    await settle();
+
+    await rerender({
+      session,
+      view: makeView([], {
+        piles: [deck(31), PILES[1]!],
+        log: [START, line('put Spider-Man at the bottom of their deck', { who: 'Sam', color: 1 })],
+      }),
+    });
+    await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
+    const [[keyframes]] = animationsOf('.fly') as [[Keyframe[], KeyframeAnimationOptions]];
+    // Hidden at the end: under the deck, which lies over it.
+    expect(keyframes.at(-1)?.clipPath).toBe('inset(100% 0 0 0)');
+    expect(keyframes.at(1)?.clipPath).toBe('inset(0% 0 0 0)');
+  });
+
   describe('draws', () => {
     // Sam, the viewer, draws from their deck: it holds 29 cards from now on.
     const drawnDeck = PILES.map((pile) => (pile.id === 'deck:p1' ? { ...pile, count: 29 } : pile));
@@ -653,6 +676,68 @@ describe('Table animations', () => {
       expect(String(keyframes.at(-1)?.transform)).toContain('40px');
       expect(options.duration).toBe(380);
       expect(container.querySelector('.fly')?.getAttribute('style')).toContain('left: 480px');
+    });
+
+    it('a card drawn from a side deck flies in from it on the captioned back', async () => {
+      const session = fakeSession();
+      const labor = (count: number): PileView => ({
+        id: 'side:p1:0',
+        kind: 'sideDeck',
+        owner: 1,
+        x: 480,
+        y: 0,
+        count,
+        label: 'Labor',
+        back: 'player',
+      });
+      const { rerender, container } = render(Table, {
+        session,
+        view: makeView([], { piles: [...PILES, labor(3)], hands: { p1: [] } }),
+      });
+      await settle();
+
+      await rerender({
+        session,
+        view: makeView([drawn({ home: 'side:p1:0' })], {
+          piles: [...PILES, labor(2)],
+          hands: { p1: ['d'] },
+          log: [START, line('drew 1 card from their Labor deck', { who: 'Sam', color: 1 })],
+        }),
+      });
+      await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
+      const fly = container.querySelector('.fly');
+      expect(fly?.getAttribute('style')).toContain('left: 480px');
+      expect(
+        fly?.querySelector('[data-side="back"] [aria-label="Labor card back"]'),
+      ).not.toBeNull();
+    });
+
+    it("another player's draw from a side deck leaves it on the captioned back", async () => {
+      const session = fakeSession();
+      const gift = (count: number): PileView => ({
+        id: 'side:p0:0',
+        kind: 'sideDeck',
+        owner: 0,
+        x: 480,
+        y: 0,
+        count,
+        label: 'Gift',
+        back: 'encounter',
+      });
+      const { rerender, container } = render(Table, {
+        session,
+        view: makeView([], { piles: [...PILES, gift(3)] }),
+      });
+      await settle();
+
+      await rerender({
+        session,
+        view: makeView([], { piles: [...PILES, gift(2)], handCounts: [6, 5] }),
+      });
+      await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
+      const fly = container.querySelector('.fly');
+      expect(fly?.getAttribute('style')).toContain('left: 480px');
+      expect(fly?.querySelector('[aria-label="Gift card back"]')).not.toBeNull();
     });
 
     it("another player's two quick draws both leave their deck", async () => {

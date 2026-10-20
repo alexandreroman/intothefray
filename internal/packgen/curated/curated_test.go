@@ -32,6 +32,9 @@ func TestLoad(t *testing.T) {
 	if got := loaded.Cards["01097a"].Size; got != pack.SizeLand {
 		t.Errorf("got override size %q, want %q", got, pack.SizeLand)
 	}
+	if got := loaded.Cards["01001a"].Cerebro; got != "01001B" {
+		t.Errorf("got override Cerebro image %q, want 01001B", got)
+	}
 
 	wantSets := map[string]SetDef{
 		"standard_ii": {InPlay: map[pack.Difficulty][]pack.FaceRef{
@@ -39,6 +42,11 @@ func TestLoad(t *testing.T) {
 			pack.Expert:   {{Card: "24049", Face: 1}},
 		}},
 		"standard_pvp": {Unlisted: true},
+		"doctor_strange_invocation_deck": {
+			Side: &pack.SideDeck{Label: "Invocation", TopFaceUp: true, Discard: true},
+		},
+		"storm_weather_deck": {Side: &pack.SideDeck{Label: "Weather"}},
+		"valk":               {SetAside: []string{"25002"}},
 	}
 	if !reflect.DeepEqual(loaded.Sets, wantSets) {
 		t.Errorf("got sets %+v, want %+v", loaded.Sets, wantSets)
@@ -119,6 +127,17 @@ func TestLoadRejectsInvalidSets(t *testing.T) {
 	}{
 		{"unknown difficulty", `{"standard_ii":{"inPlay":{"heroic":[{"card":"24049","face":0}]}}}`, `unknown difficulty "heroic"`},
 		{"unknown field", `{"standard_pvp":{"hidden":true}}`, `unknown field "hidden"`},
+		{
+			"side deck without label",
+			`{"storm_weather_deck":{"side":{"discard":true}}}`,
+			`set "storm_weather_deck": side deck has no label`,
+		},
+		{"unknown side field", `{"storm_weather_deck":{"side":{"label":"Weather","faceUp":true}}}`, `unknown field "faceUp"`},
+		{
+			"side deck with an unknown back",
+			`{"hercules_labor_deck":{"side":{"label":"Labor","back":"side"}}}`,
+			`set "hercules_labor_deck": side deck has an unknown back "side"`,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

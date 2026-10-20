@@ -11,5 +11,14 @@
       "expert": [{"card": "45075", "face": 0}]
     }
   },
-  "standard_pvp": {"unlisted": true}
+  "standard_pvp": {"unlisted": true},
+  "doctor_strange_invocation_deck": {"side": {"label": "Invocation", "topFaceUp": true, "discard": true, "back": "player"}},
+  "storm_weather_deck": {"side": {"label": "Weather", "back": "player"}},
+  "daredevil_sense_deck": {"side": {"label": "Sense", "topFaceUp": true, "back": "player"}},
+  "hercules_labor_deck": {"side": {"label": "Labor", "back": "player"}},
+  "hercules_gift_deck": {"side": {"label": "Gift", "back": "encounter"}},
+  "iceman": {"setAside": ["46002"]},
+  "valk": {"setAside": ["25002"]},
+  "rogue": {"setAside": ["38002"]},
+  "ironheart": {"setAside": ["29002", "29003"]}
 }

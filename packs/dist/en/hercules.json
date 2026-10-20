@@ -118,7 +118,7 @@
         }
       ],
       "set": "hercules_labor_deck",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -142,7 +142,7 @@
         }
       ],
       "set": "hercules_gift_deck",
-      "back": "player",
+      "back": "encounter",
       "quantity": 1
     },
     {
@@ -166,7 +166,7 @@
         }
       ],
       "set": "hercules_gift_deck",
-      "back": "player",
+      "back": "encounter",
       "quantity": 1
     },
     {
@@ -190,7 +190,7 @@
         }
       ],
       "set": "hercules_gift_deck",
-      "back": "player",
+      "back": "encounter",
       "quantity": 1
     },
     {
@@ -941,7 +941,11 @@
         "59005",
         "59006",
         "59007"
-      ]
+      ],
+      "side": {
+        "label": "Gift",
+        "back": "encounter"
+      }
     },
     {
       "code": "hercules_labor_deck",
@@ -951,7 +955,11 @@
         "59002",
         "59003",
         "59004"
-      ]
+      ],
+      "side": {
+        "label": "Labor",
+        "back": "player"
+      }
     },
     {
       "code": "hercules_nemesis",
@@ -971,7 +979,11 @@
       "identity": "59001",
       "set": "hercules",
       "obligation": "59035",
-      "nemesis": "hercules_nemesis"
+      "nemesis": "hercules_nemesis",
+      "sideDecks": [
+        "hercules_labor_deck",
+        "hercules_gift_deck"
+      ]
     }
   ]
 }

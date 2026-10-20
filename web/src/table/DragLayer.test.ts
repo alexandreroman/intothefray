@@ -459,6 +459,24 @@ describe('dragging a table card', () => {
     );
   });
 
+  it('goes under the deck when dropped on its lower half', async () => {
+    const { session } = await renderTable();
+    await press(placed('mine'), 50, 400);
+    // The deck lies from 340 to 536 on the screen: its lower half starts at 438.
+    await moveTo(660, 500);
+    expect(placed('deck:p0').classList).toContain('drop-pile');
+    expect(screen.getByText('Bottom of deck')).toBeTruthy();
+    await moveTo(660, 420);
+    expect(screen.getByText('Top of deck')).toBeTruthy();
+
+    await moveTo(660, 500);
+    await release(660, 500);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      { kind: 'toDeck', card: 'mine', where: 'bottom' },
+      0,
+    );
+  });
+
   it('goes back to the hand when dropped over it', async () => {
     const { session } = await renderTable();
     await press(placed('mine'), 50, 400);
@@ -846,6 +864,96 @@ describe("dragging the top card of the viewer's deck", () => {
     expect(screen.getByText('Discard')).toBeTruthy();
     await release(850, 400);
     expect(session.act).toHaveBeenLastCalledWith({ kind: 'discardTop', pile: 'deck:p0', n: 1 }, 0);
+  });
+
+  it('plays the top card of a side deck that shows it, its face shown while dragged', async () => {
+    const view = makeView();
+    view.table!.cards.push(card('inv', { code: '01094', zone: 'pile', home: 'side:p0:0' }));
+    view.table!.piles.push(
+      pile('side:p0:0', {
+        kind: 'sideDeck',
+        owner: 0,
+        x: 920,
+        y: 300,
+        count: 5,
+        label: 'Invocation',
+        topFaceUp: true,
+        cards: ['inv'],
+      }),
+    );
+    const { session } = await renderTable(view);
+    // The side deck lies at 940, 340 on the screen.
+    await press(placed('side:p0:0'), 1010, 410);
+    await moveTo(300, 450);
+    const [ghost] = ghosts();
+    expect(ghost?.querySelector('[alt="Rhino"]')).not.toBeNull();
+    // Taken off the deck: the next card is unknown.
+    expect(placed('side:p0:0').querySelector('[alt="Player card back"]')).not.toBeNull();
+
+    await release(300, 450);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      { kind: 'play', pile: 'side:p0:0', x: 210, y: 310 },
+      0,
+    );
+  });
+
+  it('plays the top card of a side deck tucked under the card it is dropped on', async () => {
+    const view = makeView();
+    view.table!.cards.push(card('sense', { code: '01001', zone: 'pile', home: 'side:p0:0' }));
+    view.table!.piles.push(
+      pile('side:p0:0', {
+        kind: 'sideDeck',
+        owner: 0,
+        x: 920,
+        y: 300,
+        count: 5,
+        label: 'Sense',
+        topFaceUp: true,
+        cards: ['sense'],
+      }),
+    );
+    const { session } = await renderTable(view);
+    await press(placed('side:p0:0'), 1010, 410);
+    // Over "other", at 420, 340 on the screen.
+    await moveTo(470, 420);
+    expect(placed('other').classList).toContain('drop-target');
+    expect(screen.getByText('Under Spider-Man')).toBeTruthy();
+
+    await release(470, 420);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      {
+        kind: 'play',
+        pile: 'side:p0:0',
+        target: 'other',
+        x: expect.any(Number),
+        y: expect.any(Number),
+        placed: true,
+      },
+      0,
+    );
+  });
+
+  it("shows the own back of a side deck's unknown top card while it is dragged", async () => {
+    const view = makeView();
+    view.table!.piles.push(
+      pile('side:p0:0', {
+        kind: 'sideDeck',
+        owner: 0,
+        x: 920,
+        y: 300,
+        count: 3,
+        label: 'Gift',
+        back: 'encounter',
+      }),
+    );
+    await renderTable(view);
+    await press(placed('side:p0:0'), 1010, 410);
+    await moveTo(300, 450);
+    const [ghost] = ghosts();
+    const back = ghost?.querySelector('[aria-label="Gift card back"]');
+    expect(back?.querySelector('img')?.getAttribute('src')).toContain('EncounterBack.jpg');
+    expect(back?.querySelector('.caption')?.textContent).toBe('GIFT');
+    await release(300, 450);
   });
 
   it("cannot be dragged from another player's deck", async () => {
@@ -1285,6 +1393,61 @@ describe('the card under a still pointer after the viewer acts', () => {
     await fireEvent.keyDown(window, { key: 'f' });
     expect(session.act).toHaveBeenCalledTimes(3);
     expect(session.act).toHaveBeenLastCalledWith({ kind: 'flip', card: 'dealt' }, 0);
+  });
+
+  it('hovers the discard pile a card was dropped on, so that its bar shows', async () => {
+    hitTestFrom();
+    const { session, rerender } = await renderTable();
+    await press(placed('mine'), 50, 400);
+    await moveTo(830, 400);
+    await release(830, 400);
+    expect(session.act).toHaveBeenLastCalledWith({ kind: 'discard', card: 'mine' }, 0);
+
+    // The server puts it on the discard pile, under the pointer, which has not moved.
+    const others = CARDS.filter((c) => c.id !== 'mine');
+    await rerender(makeView({ cards: others, discarded: ['d1'] }));
+    await waitFor(() => expect(interaction.hovered).toEqual({ kind: 'pile', id: 'disc:p0' }));
+  });
+
+  it("hovers a side deck's discard pile a card was dropped on", async () => {
+    hitTestFrom();
+    /** Alex's Invocation deck and its discard pile, the Invocation card on the table or discarded. */
+    const invocation = (discarded: boolean): View => {
+      const inv = discarded
+        ? card('inv', { zone: 'pile', home: 'side:p0:0' })
+        : card('inv', { x: 200, y: 300, home: 'side:p0:0' });
+      const view = makeView({ cards: [...CARDS, inv] });
+      view.table!.piles.push(
+        pile('side:p0:0', {
+          kind: 'sideDeck',
+          owner: 0,
+          x: 920,
+          y: 300,
+          count: 3,
+          label: 'Invocation',
+        }),
+        pile('sided:p0:0', {
+          kind: 'sideDiscard',
+          owner: 0,
+          x: 920,
+          y: 600,
+          count: discarded ? 1 : 0,
+          label: 'Invocation',
+          cards: discarded ? ['inv'] : [],
+        }),
+      );
+      return view;
+    };
+    const { session, rerender } = await renderTable(invocation(false));
+    // The side discard pile lies at 940, 640 on the screen.
+    await press(placed('inv'), 270, 400);
+    await moveTo(1000, 700);
+    await release(1000, 700);
+    expect(session.act).toHaveBeenLastCalledWith({ kind: 'discard', card: 'inv' }, 0);
+
+    await rerender(invocation(true));
+    await waitFor(() => expect(interaction.hovered).toEqual({ kind: 'pile', id: 'sided:p0:0' }));
+    expect(screen.getByRole('toolbar', { name: 'Actions' })).toBeTruthy();
   });
 
   it("hovers what another player's action puts under the pointer, and drops what it takes away", async () => {

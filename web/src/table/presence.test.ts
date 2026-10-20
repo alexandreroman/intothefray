@@ -604,6 +604,29 @@ describe("other players' presence", () => {
     expect(document.querySelector('.presence .card')).toBeNull();
   });
 
+  it('draws the own back of a side deck whose unknown top card another player drags', async () => {
+    const view = makeView();
+    const labor: PileView = {
+      id: 'side:p1:0',
+      kind: 'sideDeck',
+      owner: 1,
+      x: 360,
+      y: 600,
+      count: 3,
+      label: 'Labor',
+      back: 'player',
+    };
+    view.table!.piles = [...view.table!.piles, labor];
+    const { receive } = await renderTable(view);
+
+    // The deck's top card is not known: the drag carries the deck.
+    receive({ color: 1, name: 'Sam', drag: { cards: ['side:p1:0'], x: 500, y: 320 } });
+    await nextFrame();
+    const ghost = document.querySelector<HTMLElement>('.presence .card[data-id="side:p1:0"]');
+    const back = ghost?.querySelector('[aria-label="Labor card back"]');
+    expect(back?.querySelector('.caption')?.textContent).toBe('LABOR');
+  });
+
   it('keeps the preview ring and the drag ghost after the cursor goes, for 60 s at most', async () => {
     const { receive } = await renderTable();
     receive({

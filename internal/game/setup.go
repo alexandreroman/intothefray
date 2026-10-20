@@ -3,6 +3,7 @@ package game
 import (
 	"fmt"
 	"math/rand/v2"
+	"slices"
 	"strings"
 	"time"
 
@@ -15,7 +16,12 @@ import (
 // high, then one row of rowHeight per seat (one deck, see seats.go), in seat order. Every row starts with its deck
 // and its discard pile, then the villain or the identity; the villain's row
 // goes on with the main scheme, the first player's row with the first player
-// token, and cards in play are added to the right. Things sit rowContentY
+// token, and cards in play are added to the right. A hero with side decks
+// lays them out after its discard pile, each followed by its own discard pile
+// if it has one, sidePileStepX apart as the deck and the discard pile are.
+// The identity then lies pileZoneGap after the end of the last pile, the
+// first player token in the first player's row keeping its distance to it:
+// without side piles, they sit at identityX and firstPlayerX. Things sit rowContentY
 // below the top of their row, leaving room for the client's owner label
 // above the piles. Out-of-play piles (victory display, set-aside cards) keep
 // a position for the model, on the deck, but the client never draws them.
@@ -30,15 +36,23 @@ const (
 	rowHeight        = 330
 	rowContentY      = 30
 
+	// portraitWidth is the width of a portrait card, and so of a pile.
+	portraitWidth = 140
+	// pileZoneGap is the room between the last pile of a row and the
+	// cards in play after it.
+	pileZoneGap = 60
+
 	deckX        = 0
 	discardX     = 160
 	outOfPlayX   = 0
-	identityX    = 360
+	identityX    = discardX + portraitWidth + pileZoneGap
 	villainX     = 360
 	mainSchemeX  = 520
 	firstPlayerX = 520
 	inPlayStartX = 760
 	inPlayStepX  = 220
+
+	sidePileStepX = 160
 )
 
 // villainRow is the row of the villain; a seat's row is playerRow.
@@ -104,6 +118,16 @@ func (g *Game) Start(hostToken string, cat *pack.Catalog, seed uint64, now time.
 		}
 	}
 	b.shuffle(PileEncounter)
+	// Side decks and set-aside hero cards come last, so that a game without
+	// them draws the same random numbers as before they existed: its table
+	// and card ids stay the same for the same seed.
+	for i, p := range g.Players {
+		for slot, seat := range g.seatsOf(i) {
+			if err := b.setupSideCards(seat, p.Decks[slot]); err != nil {
+				return fmt.Errorf("%s: %w", p.Name, err)
+			}
+		}
+	}
 
 	host := g.player(hostToken)
 	modulars, err := setNames(cat, g.Config.Modulars)
@@ -162,8 +186,10 @@ func newEmptyTable(seatCount int) *Table {
 	return t
 }
 
-func (t *Table) addPile(id string, kind PileKind, owner int, x, y int) {
-	t.Piles[id] = &Pile{ID: id, Kind: kind, Owner: owner, X: x, Y: y, Cards: []string{}}
+func (t *Table) addPile(id string, kind PileKind, owner int, x, y int) *Pile {
+	pile := &Pile{ID: id, Kind: kind, Owner: owner, X: x, Y: y, Cards: []string{}}
+	t.Piles[id] = pile
+	return pile
 }
 
 // tableBuilder creates the cards of a new table.
@@ -211,6 +237,13 @@ func (b *tableBuilder) placeOnTable(c *Card, face int, x, y int) {
 // addSetToPile creates every copy of every card of a set, owned by nobody,
 // and puts them on pileID. Cards whose canonical code is in skip are left out.
 func (b *tableBuilder) addSetToPile(setCode, pileID string, skip map[string]bool) error {
+	return b.addSetCards(setCode, NoOwner, PileEncounter, pileID, skip)
+}
+
+// addSetCards creates every copy of every card of a set, with the given owner
+// and home, and puts them on pileID. Cards whose canonical code is in skip are
+// left out.
+func (b *tableBuilder) addSetCards(setCode string, owner int, home, pileID string, skip map[string]bool) error {
 	set, ok := b.cat.Set(setCode)
 	if !ok {
 		return fmt.Errorf("%w: unknown set %q", ErrInvalid, setCode)
@@ -224,7 +257,7 @@ func (b *tableBuilder) addSetToPile(setCode, pileID string, skip map[string]bool
 			continue
 		}
 		for range def.Quantity {
-			c, _, err := b.newEncounterCard(def.Code)
+			c, _, err := b.newCard(def.Code, owner, home)
 			if err != nil {
 				return err
 			}
@@ -424,8 +457,9 @@ func (b *tableBuilder) placeFace(c *Card, def pack.Card, face, x, y int) error {
 	return nil
 }
 
-// setupPlayer creates the identity, the nemesis cards, the obligation and the
-// shuffled deck of one seat.
+// setupPlayer creates the identity, the nemesis cards, the obligation, the
+// empty side piles and the shuffled deck of one seat. The cards of the side
+// piles and the set-aside cards come later (see setupSideCards).
 func (b *tableBuilder) setupPlayer(seat int, deck *DeckChoice) error {
 	if deck.Hero == "" {
 		return fmt.Errorf("%w: the deck has no hero", ErrInvalid)
@@ -437,12 +471,22 @@ func (b *tableBuilder) setupPlayer(seat int, deck *DeckChoice) error {
 	if err != nil {
 		return err
 	}
-	b.placeOnTable(identity, alterEgoFace(identityDef), identityX, rowY(playerRow(seat)))
-
 	hero, ok := b.cat.HeroByIdentity(deck.Hero)
 	if !ok {
 		return fmt.Errorf("%w: %s is not a hero identity", ErrInvalid, deck.Hero)
 	}
+	sidePiles, err := b.addSidePiles(seat, hero)
+	if err != nil {
+		return err
+	}
+	// The identity follows the last pile: the discard pile (index 1) or the
+	// last side pile.
+	x := pileX(1+sidePiles) + portraitWidth + pileZoneGap
+	b.placeOnTable(identity, alterEgoFace(identityDef), x, rowY(playerRow(seat)))
+	if seat == 0 {
+		b.table.FirstPlayer.X = x + firstPlayerX - identityX
+	}
+
 	if hero.Obligation != "" {
 		c, _, err := b.newEncounterCard(hero.Obligation)
 		if err != nil {
@@ -456,12 +500,23 @@ func (b *tableBuilder) setupPlayer(seat int, deck *DeckChoice) error {
 		}
 	}
 
+	// Set-aside and side deck cards are created apart (see setupSideCards),
+	// even when the deck list names them.
+	apart, err := b.setAsideCodes(hero)
+	if err != nil {
+		return err
+	}
+	sideCodes, err := b.sideDeckCodes(hero)
+	if err != nil {
+		return err
+	}
+	apart = append(apart, sideCodes...)
 	for _, entry := range deck.Cards {
 		code, err := b.canonical(entry.Code)
 		if err != nil {
 			return err
 		}
-		if code == identity.Code {
+		if code == identity.Code || slices.Contains(apart, code) {
 			continue
 		}
 		for range entry.Qty {
@@ -473,6 +528,113 @@ func (b *tableBuilder) setupPlayer(seat int, deck *DeckChoice) error {
 		}
 	}
 	b.shuffle(deckID)
+	return nil
+}
+
+// pileX returns the x of the pile at index i of a player's row: 0 for the
+// deck, 1 for the discard pile, then the side piles.
+func pileX(i int) int {
+	return deckX + sidePileStepX*i
+}
+
+// addSidePiles creates the empty side decks of seat's hero, each followed by
+// its discard pile when it has one, from left to right after the discard
+// pile. It returns the number of piles it created.
+func (b *tableBuilder) addSidePiles(seat int, hero pack.Hero) (int, error) {
+	y := rowY(playerRow(seat))
+	count := 0
+	for i, setCode := range hero.SideDecks {
+		set, ok := b.cat.Set(setCode)
+		if !ok || set.Side == nil {
+			return 0, fmt.Errorf("%w: %q is not a side deck", ErrInvalid, setCode)
+		}
+		// Side piles come after the deck and the discard pile.
+		deck := b.table.addPile(sideDeckID(seat, i), KindSideDeck, seat, pileX(2+count), y)
+		deck.Label = set.Side.Label
+		deck.TopFaceUp = set.Side.TopFaceUp
+		deck.Back = set.Side.Back
+		count++
+		if set.Side.Discard {
+			discard := b.table.addPile(sideDiscardID(seat, i), KindSideDiscard, seat, pileX(2+count), y)
+			discard.Label = set.Side.Label
+			count++
+		}
+	}
+	return count, nil
+}
+
+// setAsideCodes returns the canonical codes of the cards hero's set puts
+// aside at setup, in their listed order.
+func (b *tableBuilder) setAsideCodes(hero pack.Hero) ([]string, error) {
+	set, ok := b.cat.Set(hero.Set)
+	if !ok {
+		return nil, nil
+	}
+	codes := make([]string, 0, len(set.SetAside))
+	for _, code := range set.SetAside {
+		canonical, err := b.canonical(code)
+		if err != nil {
+			return nil, err
+		}
+		codes = append(codes, canonical)
+	}
+	return codes, nil
+}
+
+// sideDeckCodes returns the canonical codes of the cards of hero's side decks.
+func (b *tableBuilder) sideDeckCodes(hero pack.Hero) ([]string, error) {
+	var codes []string
+	for _, setCode := range hero.SideDecks {
+		set, ok := b.cat.Set(setCode)
+		if !ok {
+			return nil, fmt.Errorf("%w: unknown set %q", ErrInvalid, setCode)
+		}
+		for _, code := range set.Cards {
+			canonical, err := b.canonical(code)
+			if err != nil {
+				return nil, err
+			}
+			codes = append(codes, canonical)
+		}
+	}
+	return codes, nil
+}
+
+// setupSideCards creates the cards of seat's side decks, owned by the seat
+// and at home in their side deck, and shuffles each deck. It then puts the
+// cards the hero's set sets aside on seat's set-aside pile, every catalog
+// copy of them, at home in seat's deck.
+func (b *tableBuilder) setupSideCards(seat int, deck *DeckChoice) error {
+	hero, ok := b.cat.HeroByIdentity(deck.Hero)
+	if !ok {
+		return fmt.Errorf("%w: %s is not a hero identity", ErrInvalid, deck.Hero)
+	}
+	for i, setCode := range hero.SideDecks {
+		pileID := sideDeckID(seat, i)
+		if err := b.addSetCards(setCode, seat, pileID, pileID, nil); err != nil {
+			return err
+		}
+		b.shuffle(pileID)
+	}
+
+	area := string(PlayerArea(seat))
+	setAside, err := b.setAsideCodes(hero)
+	if err != nil {
+		return err
+	}
+	for _, code := range setAside {
+		def, _, err := b.cat.Card(code)
+		if err != nil {
+			return fmt.Errorf("%w: %w", ErrInvalid, err)
+		}
+		for range def.Quantity {
+			c, _, err := b.newCard(code, seat, "deck:"+area)
+			if err != nil {
+				return err
+			}
+			b.pushToPile("aside:"+area, c)
+		}
+	}
 	return nil
 }
 

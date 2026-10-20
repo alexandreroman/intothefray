@@ -28,6 +28,15 @@ type: reference
 - mc4db answers 429 to Go's default User-Agent; the generator sends
   `intothefray-packgen (+https://github.com/alexandreroman/intothefray)`.
 - Cerebro has no French images.
+- Cerebro swaps the A/B images of some identities (Groot, Rocket and the
+  X-Men wave: Colossus, Shadowcat, Cyclops, Phoenix, Wolverine, Storm,
+  Gambit, Rogue): its `XXXXXA.jpg` shows the alter-ego. `cerebro`
+  overrides in `packs/curated/cards.json` give each face the right image
+  id; marvelcdb and mc4db images are in the right order.
+- Cerebro stores some landscape cards (hero side schemes, Bomb Scare, The
+  Hood's main schemes) as portrait images, the card turned a quarter turn
+  counter-clockwise. `CardFace.svelte` detects a portrait image in a
+  landscape slot on load and turns it a quarter turn clockwise.
 
 **Why:** Cerebro is preferred for multi-face scheme and villain images
 (some marvelcdb faces are swapped, e.g. `01097b.png` shows 1A); mc4db is

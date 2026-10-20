@@ -3,8 +3,17 @@
 // tile. As in actions.ts, the client mirrors the server's permissions
 // (internal/game/action.go) only to hide what would be refused.
 
-import type { Action, CardView, PackFace, PileView, Size, Stage, View } from '../lib/types';
-import { homeDeckOf, type TableElement } from './actions';
+import type {
+  Action,
+  CardView,
+  PackFace,
+  PileKind,
+  PileView,
+  Size,
+  Stage,
+  View,
+} from '../lib/types';
+import { discardPileOf, homeDeckOf, sideLabel, type TableElement } from './actions';
 import type { IconName } from './Icons.svelte';
 import { freeSlot } from './keys';
 import { creditedSeatAmong, ownSeats, seatPlayer } from './seats';
@@ -83,7 +92,10 @@ export interface TileContext {
   sizeOf: (card: CardView) => Size;
 }
 
-/** The name of a pile from the viewer's side, as the box titles say it: "Your deck", "Sam's discard". */
+/**
+ * The name of a pile from the viewer's side, as the box titles say it: "Your
+ * deck", "Sam's discard", "Your Invocation deck", "Sam's Invocation discard".
+ */
 export function pileLabel(pile: PileView, view: View): string {
   switch (pile.kind) {
     case 'encounter':
@@ -96,6 +108,10 @@ export function pileLabel(pile: PileView, view: View): string {
       return `${ownerOf(pile, view)} deck`;
     case 'discard':
       return `${ownerOf(pile, view)} discard`;
+    case 'sideDeck':
+      return `${ownerOf(pile, view)} ${sideLabel(pile)} deck`;
+    case 'sideDiscard':
+      return `${ownerOf(pile, view)} ${sideLabel(pile)} discard`;
     case 'aside':
       // The scenario's own set-aside cards belong to nobody.
       return pile.owner === -1 ? 'Set-aside cards' : `${ownerOf(pile, view)} set-aside cards`;
@@ -122,34 +138,40 @@ export function canShuffleIn(pile: PileView, seats: readonly number[]): boolean 
 
 /** Whether the pile is a deck the boxes search with a choice to shuffle on closing. */
 export function isDeck(pile: PileView): boolean {
-  return pile.kind === 'deck' || pile.kind === 'encounter';
+  return pile.kind === 'deck' || pile.kind === 'encounter' || pile.kind === 'sideDeck';
 }
+
+/** A player's decks and discard piles, whose cards their owner draws from a box. */
+const PLAYER_PILES: readonly PileKind[] = ['deck', 'discard', 'sideDeck', 'sideDiscard'];
 
 /**
  * The actions of a card in a pile box, in bar order (the prototype's
- * renderDeckView): Draw from an own deck or discard pile, Play to the first
+ * renderDeckView): Draw from an own deck or discard pile (side ones too), Play to the first
  * free slot of the credited deck's row (creditedSeat), Discard, Put at the
  * bottom of the deck, and Shuffle into its deck for the out-of-play and
- * discard piles. Another player's deck or set-aside cards cannot be touched.
+ * discard piles. Another player's decks or set-aside cards cannot be touched.
  */
 export function tileActions(card: CardView, pile: PileView, context: TileContext): TileAction[] {
   const seats = ownSeats(context.view);
   const own = seats.includes(pile.owner);
   const shared = pile.owner === -1;
   const outOfPlay = pile.kind === 'victory' || pile.kind === 'aside';
-  const discardPile = pile.kind === 'discard' || pile.kind === 'encounterDiscard';
-  if ((pile.kind === 'deck' || pile.kind === 'aside') && !own && !shared) {
+  const discardPile =
+    pile.kind === 'discard' || pile.kind === 'encounterDiscard' || pile.kind === 'sideDiscard';
+  const privatePile = pile.kind === 'deck' || pile.kind === 'sideDeck' || pile.kind === 'aside';
+  if (privatePile && !own && !shared) {
     return [];
   }
 
   const actions: TileAction[] = [];
-  if (own && (pile.kind === 'deck' || pile.kind === 'discard')) {
+  if (own && PLAYER_PILES.includes(pile.kind)) {
     actions.push({ id: 'draw', label: 'Draw', run: () => ({ kind: 'toHand', card: card.id }) });
   }
   actions.push({ id: 'play', label: 'Play', run: () => playAction(card, pile, context) });
 
-  // A card in a discard pile is discarded already.
-  if (!discardPile) {
+  // A card in a discard pile is discarded already; a side deck's card without one has nowhere to go.
+  const piles = context.view.table?.piles ?? [];
+  if (!discardPile && discardPileOf(card, piles) !== null) {
     actions.push({
       id: 'discard',
       label: 'Discard',
@@ -162,7 +184,7 @@ export function tileActions(card: CardView, pile: PileView, context: TileContext
   // deck, and an out-of-play or discarded card can be shuffled into it. Only
   // its owner (or anyone, for the encounter deck) may touch that home deck.
   const canGoHome = card.owner === -1 || seats.includes(card.owner);
-  const hasHome = context.view.table?.piles.some((p) => p.id === homeDeckOf(card)) ?? false;
+  const hasHome = piles.some((p) => p.id === homeDeckOf(card));
   if (isDeck(pile) || (outOfPlay && canGoHome && hasHome)) {
     actions.push({
       id: 'bottom',

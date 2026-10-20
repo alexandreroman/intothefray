@@ -31,6 +31,7 @@
     handAreaOf,
     handBand,
     insertIndex,
+    pileDropRect,
     pileTargets,
     sourceOf,
     stackOf,
@@ -42,7 +43,7 @@
     type Rect,
     type TableRect,
   } from './drag';
-  import { isHidden } from './face';
+  import { backCaption, isHidden, pileBack } from './face';
   import { interaction, type DropOn, type Held, type Pressable } from './interaction.svelte';
   import { cardBox, FIRST_PLAYER_BOX, HAND_CARD, type Box } from './layout';
   import { ALL_ROWS, type RowMap } from './rows';
@@ -121,11 +122,12 @@
   const HIDDEN_CARD = 'hidden-0';
 
   // The prototype's arrows in front of the labels.
-  const PILE_GLYPHS: Record<PileDrop, string> = { top: '↑', discard: '✕', pile: '→' };
+  const PILE_GLYPHS: Record<PileDrop, string> = { top: '↑', bottom: '↓', discard: '✕', pile: '→' };
   const TUCK_GLYPH = '↓';
   const HAND_GLYPH = '↓';
 
   const cards = $derived(view.table?.cards ?? []);
+  const tablePiles = $derived(view.table?.piles ?? []);
   const cardsById = $derived(new Map(cards.map((card) => [card.id, card])));
   /**
    * The ghosts of the last drop, set down where it landed (the cards, or the
@@ -316,7 +318,8 @@
       return { ...FIRST_PLAYER_BOX, rotated: false };
     }
     if (from.kind === 'encounter' || from.kind === 'deck') {
-      return cardBox('std', { faceDown: true });
+      const shown = from.kind === 'deck' ? shownDeckTop(from.pile) : undefined;
+      return shown ? cardBox(sizeOf(shown), {}) : cardBox('std', { faceDown: true });
     }
     const card = cardsById.get(from.card);
     if (!card) {
@@ -412,7 +415,8 @@
     for (const target of piles) {
       const rect = placedRect('.pile', target.pile);
       if (rect) {
-        targets.push({ kind: 'pile', ...target, rect });
+        // A deck takes a card on top in its upper half, under it in its lower half.
+        targets.push({ kind: 'pile', ...target, rect: pileDropRect(rect, target.drop) });
       }
     }
     // The dragged cards, a group's included, are never dropped on.
@@ -658,20 +662,40 @@
       return [{ ...ENCOUNTER_TOP, x, y }];
     }
     if (from.kind === 'deck') {
-      return [{ ...DECK_TOP, x, y }];
+      const shown = shownDeckTop(from.pile);
+      return shown ? [asPlayed(shown, x, y)] : [deckTop(from.pile, x, y)];
     }
     const card = cardsById.get(from.card);
     if (!card) {
       return [];
     }
     if (from.kind !== 'card') {
-      return [{ ...card, zone: 'table', x, y, onPile: undefined, parent: undefined }];
+      return [asPlayed(card, x, y)];
     }
     // The cards tucked under it, and the rest of a group, keep their offsets.
     return lifted.flatMap((id) => {
       const k = cardsById.get(id);
       return k ? [{ ...k, x: x + k.x - card.x, y: y + k.y - card.y }] : [];
     });
+  }
+
+  /** The unknown top card of a deck, its back the deck's: a side deck may have its own. */
+  function deckTop(pileId: string, x: number, y: number): TableCard {
+    const pile = tablePiles.find((p) => p.id === pileId);
+    const back = pile ? pileBack(pile) : DECK_TOP.back;
+    return { ...DECK_TOP, x, y, back, home: pile?.kind === 'sideDeck' ? pile.id : undefined };
+  }
+
+  /** A card from the hand or a pile, drawn as it would lie on the table. */
+  function asPlayed(card: TableCard, x: number, y: number): TableCard {
+    return { ...card, zone: 'table', x, y, onPile: undefined, parent: undefined };
+  }
+
+  /** The top card a side deck shows to everyone (topFaceUp), which its drag shows too. */
+  function shownDeckTop(pileId: string): TableCard | undefined {
+    const pile = view.table?.piles.find((p) => p.id === pileId);
+    const top = pile?.topFaceUp ? pile.cards?.at(-1) : undefined;
+    return top === undefined ? undefined : cardsById.get(top);
   }
 
   /** The cards drawn under the pointer. */
@@ -724,7 +748,7 @@
       style:height="{handGhost.height}px"
     >
       {#if isHidden(handGhost.card)}
-        <CardBack back={handGhost.card.back} />
+        <CardBack back={handGhost.card.back} caption={backCaption(handGhost.card, tablePiles)} />
       {:else}
         <CardFace
           images={face?.images ?? []}
@@ -735,11 +759,17 @@
     </div>
   {:else}
     {#each ghosts as ghost (ghost.id)}
-      <CardView card={ghost} face={faceOf(ghost)} ghost />
+      <CardView card={ghost} face={faceOf(ghost)} caption={backCaption(ghost, tablePiles)} ghost />
     {/each}
   {/if}
   {#each landedGhosts as ghost (ghost.id)}
-    <CardView card={ghost} face={faceOf(ghost)} ghost landed />
+    <CardView
+      card={ghost}
+      face={faceOf(ghost)}
+      caption={backCaption(ghost, tablePiles)}
+      ghost
+      landed
+    />
   {/each}
   {#if tokenGhost}
     <FirstPlayerToken x={tokenGhost.x} y={tokenGhost.y} ghost />

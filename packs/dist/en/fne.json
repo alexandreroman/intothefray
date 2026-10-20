@@ -1530,7 +1530,12 @@
         "60004",
         "60005",
         "60006"
-      ]
+      ],
+      "side": {
+        "label": "Sense",
+        "topFaceUp": true,
+        "back": "player"
+      }
     },
     {
       "code": "echo",
@@ -1569,7 +1574,10 @@
       "identity": "60001",
       "set": "daredevil",
       "obligation": "60032",
-      "nemesis": "daredevil_nemesis"
+      "nemesis": "daredevil_nemesis",
+      "sideDecks": [
+        "daredevil_sense_deck"
+      ]
     },
     {
       "identity": "60037",

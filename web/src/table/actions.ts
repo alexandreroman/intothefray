@@ -172,7 +172,8 @@ function spectatorActions(el: TableElement, table: TableView): ActionItem[] {
       }
       // The server lists the cards of the public piles only.
       const items: ActionItem[] = [];
-      if (pile.cards !== undefined) {
+      // A side deck showing its top card lists that card alone: it is not browsed.
+      if (pile.cards !== undefined && pile.kind !== 'sideDeck') {
         // No key: spectators get no game keys (P5b-R6).
         const browse = browseItem(pile);
         delete browse.key;
@@ -282,7 +283,10 @@ function counterItems(
   });
 }
 
-/** Discard and Move to, disabled while the card holds what a stage shows. */
+/**
+ * Discard and Move to, disabled while the card holds what a stage shows. A
+ * card of a side deck without a discard pile has no Discard.
+ */
 function leaveItems(card: CardView, context: Context): ActionItem[] {
   const discard: ActionItem = {
     id: 'discard',
@@ -302,16 +306,14 @@ function leaveItems(card: CardView, context: Context): ActionItem[] {
     menu: moveMenu(card, context),
   };
 
+  const items = discardPileOf(card, context.table.piles) === null ? [moveTo] : [discard, moveTo];
   const held = stageHeldBy(card, context.table);
   if (held) {
     // Mirrors checkNotStageCurrent: the server refuses to take that card away.
     const tip = `The ${held.label.toLowerCase()} card stays on the table: choose another card to show`;
-    return [
-      { ...discard, disabled: true, tip },
-      { ...moveTo, disabled: true, tip },
-    ];
+    return items.map((item) => ({ ...item, disabled: true, tip }));
   }
-  return [discard, moveTo];
+  return items;
 }
 
 /** The stage whose shown card is this card or one tucked under it, if any. */
@@ -349,13 +351,20 @@ function moveMenu(card: CardView, context: Context): ActionItem[] {
   }
   // A card returns to its home deck, which is private to its owner.
   const encounter = card.owner === -1;
-  if ((own || encounter) && hasPile(context.table, homeDeckOf(card))) {
+  const home = context.table.piles.find((pile) => pile.id === homeDeckOf(card));
+  if ((own || encounter) && home) {
+    const deck = home.kind === 'sideDeck' ? `${sideLabel(home)} deck` : 'deck';
     menu.push(
-      { id: 'deckTop', label: 'Top of deck', group: 0, run: () => toDeck(card, 'top') },
-      { id: 'deckBottom', label: 'Bottom of deck', group: 0, run: () => toDeck(card, 'bottom') },
+      { id: 'deckTop', label: `Top of ${deck}`, group: 0, run: () => toDeck(card, 'top') },
+      {
+        id: 'deckBottom',
+        label: `Bottom of ${deck}`,
+        group: 0,
+        run: () => toDeck(card, 'bottom'),
+      },
       {
         id: 'deckShuffle',
-        label: encounter ? 'Shuffle into encounter deck' : 'Shuffle into deck',
+        label: encounter ? 'Shuffle into encounter deck' : `Shuffle into ${deck}`,
         group: 0,
         run: () => toDeck(card, 'shuffle'),
       },
@@ -384,14 +393,56 @@ function moveMenu(card: CardView, context: Context): ActionItem[] {
 
 // The piles a card goes to, as the server names them (internal/game/state.go).
 
-/** The deck a card goes back to: the encounter deck for an encounter card, else its owner's. */
+const SIDE_DECK_PREFIX = 'side:';
+const SIDE_DISCARD_PREFIX = 'sided:';
+
+/**
+ * The deck a card goes back to: the side deck it belongs to (`home`), else the
+ * encounter deck for an encounter card, else its owner's deck.
+ */
 export function homeDeckOf(card: CardView): string {
+  if (card.home !== undefined) {
+    return card.home;
+  }
   return card.owner === -1 ? 'enc' : `deck:p${card.owner}`;
 }
 
-/** The discard pile a card goes to, as discardPileID has it. */
-export function discardPileOf(card: CardView): string {
+/**
+ * The discard pile a card goes to, as discardPileID has it: a side deck's card
+ * to that deck's discard pile, or nowhere (null) when the side deck has none.
+ */
+export function discardPileOf(card: CardView, piles: readonly PileView[]): string | null {
+  const home = homeDeckOf(card);
+  if (isSideDeckId(home)) {
+    const discard = deckDiscardOf(home);
+    return piles.some((pile) => pile.id === discard) ? discard : null;
+  }
   return card.owner === -1 ? 'encd' : `disc:p${card.owner}`;
+}
+
+/**
+ * The discard pile paired with a deck, by id: "deck:p0" with "disc:p0", a side
+ * deck "side:p0:1" with "sided:p0:1", the encounter deck with "encd". It may
+ * not exist: only some side decks have one.
+ */
+export function deckDiscardOf(deck: string): string {
+  if (deck === 'enc') {
+    return 'encd';
+  }
+  if (isSideDeckId(deck)) {
+    return SIDE_DISCARD_PREFIX + deck.slice(SIDE_DECK_PREFIX.length);
+  }
+  return deck.replace(/^deck:/, 'disc:');
+}
+
+/** Whether the pile id is a side deck's: "side:p0:1". */
+export function isSideDeckId(pile: string): boolean {
+  return pile.startsWith(SIDE_DECK_PREFIX);
+}
+
+/** The name of a side deck and of its discard pile: "Invocation", as in "Invocation deck". */
+export function sideLabel(pile: PileView): string {
+  return pile.label ?? 'side';
 }
 
 /** The set-aside pile for a card: its deck's own for the viewer's cards, the scenario's for any other. */
@@ -430,18 +481,34 @@ function pileActions(pile: PileView, context: Context): ActionItem[] | { text: s
       return [
         drawOneItem(),
         lookMenu(pile, 'your deck'),
-        deckMenu(pile, 'your deck', true),
+        deckMenu(pile, 'your deck', { draw: true, discardTop: true }),
         ...outOfPlay,
       ];
+    case 'sideDeck': {
+      // Private to its owner, like a deck; it opens no out-of-play pile.
+      if (!own) {
+        const name = seatPlayer(context.view, pile.owner)?.name ?? 'another player';
+        return { text: `Belongs to ${name}: only they can use it.` };
+      }
+      const pileName = `your ${sideLabel(pile)} deck`;
+      // Only a side deck with its own discard pile discards from the top.
+      const discardTop = hasPile(context.table, deckDiscardOf(pile.id));
+      return [
+        drawOneItem(pile),
+        lookMenu(pile, pileName),
+        deckMenu(pile, pileName, { draw: true, discardTop }),
+      ];
+    }
     case 'encounter':
       return [
         revealItem(pile, context),
         lookMenu(pile, 'the encounter deck'),
-        deckMenu(pile, 'the encounter deck', false),
+        deckMenu(pile, 'the encounter deck', { draw: false, discardTop: true }),
         ...outOfPlay,
       ];
     case 'discard':
     case 'encounterDiscard':
+    case 'sideDiscard':
       // Anyone may search a discard pile; only its owner shuffles it back.
       return own
         ? [searchItem(pile), shuffleBackItem(pile), ...outOfPlay]
@@ -508,16 +575,23 @@ function outOfPlayItem(
   };
 }
 
-function drawOneItem(): ActionItem {
-  // The server draws from the deck of the credited seat, the deck's owner (creditedSeat): no pile is sent.
+/**
+ * Draw 1, from a side deck when one is given. For a deck the server draws from
+ * the deck of the credited seat, the deck's owner (creditedSeat): no pile is sent.
+ */
+function drawOneItem(sideDeck?: PileView): ActionItem {
   return {
     id: 'draw1',
     label: 'Draw 1',
     key: 'W',
     tip: 'Draw 1',
     group: 0,
-    run: () => ({ kind: 'draw', n: 1 }),
+    run: () => drawAction(1, sideDeck),
   };
+}
+
+function drawAction(n: number, sideDeck?: PileView): Action {
+  return sideDeck ? { kind: 'draw', n, pile: sideDeck.id } : { kind: 'draw', n };
 }
 
 function revealItem(pile: PileView, context: Context): ActionItem {
@@ -566,10 +640,15 @@ function lookMenu(pile: PileView, pileName: string): ActionItem {
   return { id: 'look', label: 'Look', tip: 'Look', group: 0, menu: [lookTop, searchItem(pile)] };
 }
 
-/** Deck ▾: Draw… (own deck only), Discard top…, then Shuffle. */
-function deckMenu(pile: PileView, pileName: string, withDraw: boolean): ActionItem {
+/** Deck ▾: Draw… (own decks only), Discard top… (decks with a discard pile), then Shuffle. */
+function deckMenu(
+  pile: PileView,
+  pileName: string,
+  offers: { draw: boolean; discardTop: boolean },
+): ActionItem {
   const menu: ActionItem[] = [];
-  if (withDraw) {
+  const sideDeck = pile.kind === 'sideDeck' ? pile : undefined;
+  if (offers.draw) {
     menu.push({
       id: 'drawN',
       label: 'Draw…',
@@ -581,37 +660,40 @@ function deckMenu(pile: PileView, pileName: string, withDraw: boolean): ActionIt
           pile: pile.id,
           max: countLimit(pile),
           ok: 'Draw',
-          make: (n) => ({ kind: 'draw', n }),
+          make: (n) => drawAction(n, sideDeck),
         },
       }),
     });
   }
-  menu.push(
-    {
-      id: 'discardTop',
-      label: 'Discard top…',
-      group: 0,
-      run: () => ({
-        ask: {
-          title: 'Discard from the top',
-          question: `How many cards from the top of ${pileName} go to the discard pile?`,
-          pile: pile.id,
-          max: countLimit(pile),
-          ok: 'Discard',
-          make: (n) => ({ kind: 'discardTop', pile: pile.id, n }),
-        },
-      }),
-    },
-    SEPARATOR,
-    {
-      id: 'shuffle',
-      label: 'Shuffle',
-      key: 'U',
-      group: 0,
-      run: () => ({ kind: 'shuffle', pile: pile.id }),
-    },
-  );
+  if (offers.discardTop) {
+    menu.push(discardTopItem(pile, pileName), SEPARATOR);
+  }
+  menu.push({
+    id: 'shuffle',
+    label: 'Shuffle',
+    key: 'U',
+    group: 0,
+    run: () => ({ kind: 'shuffle', pile: pile.id }),
+  });
   return { id: 'deck', label: 'Deck', tip: 'Deck', group: 0, menu };
+}
+
+function discardTopItem(pile: PileView, pileName: string): ActionItem {
+  return {
+    id: 'discardTop',
+    label: 'Discard top…',
+    group: 0,
+    run: () => ({
+      ask: {
+        title: 'Discard from the top',
+        question: `How many cards from the top of ${pileName} go to the discard pile?`,
+        pile: pile.id,
+        max: countLimit(pile),
+        ok: 'Discard',
+        make: (n) => ({ kind: 'discardTop', pile: pile.id, n }),
+      },
+    }),
+  };
 }
 
 function countLimit(pile: PileView): number {

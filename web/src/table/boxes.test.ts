@@ -144,3 +144,70 @@ describe('a discard pile box', () => {
     expect(tiles.map((tile) => tile.id)).toEqual(['play']);
   });
 });
+
+describe('side decks', () => {
+  // Alex's Iron Man (p0) has an Invocation deck with its discard pile and a Sense deck without
+  // one; Sam (p2) has an Invocation deck and its discard pile.
+  const SIDE_PILES: PileView[] = [
+    pile('side:p0:0', { kind: 'sideDeck', owner: 0, label: 'Invocation', topFaceUp: true }),
+    pile('sided:p0:0', { kind: 'sideDiscard', owner: 0, label: 'Invocation' }),
+    pile('side:p0:1', { kind: 'sideDeck', owner: 0, label: 'Sense' }),
+    pile('side:p2:0', { kind: 'sideDeck', owner: 2, label: 'Invocation' }),
+    pile('sided:p2:0', { kind: 'sideDiscard', owner: 2, label: 'Invocation' }),
+  ];
+
+  function viewWithSideDecks(): View {
+    const view = makeView();
+    view.table!.piles = [...PILES, ...SIDE_PILES];
+    return view;
+  }
+
+  function sideOf(id: string): PileView {
+    const found = SIDE_PILES.find((p) => p.id === id);
+    if (!found) {
+      throw new Error(`no pile ${id}`);
+    }
+    return found;
+  }
+
+  function sideCard(id: string, owner: number, home: string): CardView {
+    return { ...card(id, owner), home };
+  }
+
+  it('names the side decks and their discard piles after their label', () => {
+    const view = viewWithSideDecks();
+    expect(pileLabel(sideOf('side:p0:0'), view)).toBe('Your Invocation deck');
+    expect(pileLabel(sideOf('side:p2:0'), view)).toBe("Sam's Invocation deck");
+    expect(pileLabel(sideOf('sided:p0:0'), view)).toBe('Your Invocation discard');
+    expect(pileLabel(sideOf('sided:p2:0'), view)).toBe("Sam's Invocation discard");
+  });
+
+  it('draws, plays, discards and puts under its side deck a card of an own side deck', () => {
+    const view = viewWithSideDecks();
+    const invocation = sideCard('i', 0, 'side:p0:0');
+    const tiles = tileActions(invocation, sideOf('side:p0:0'), contextOf(view));
+    expect(tiles.map((tile) => tile.id)).toEqual(['draw', 'play', 'discard', 'bottom']);
+    expect(tiles[3]?.run()).toEqual({ kind: 'toDeck', card: 'i', where: 'bottom' });
+  });
+
+  it('does not discard a card of a side deck without a discard pile', () => {
+    const view = viewWithSideDecks();
+    const sense = sideCard('s', 0, 'side:p0:1');
+    const tiles = tileActions(sense, sideOf('side:p0:1'), contextOf(view));
+    expect(tiles.map((tile) => tile.id)).toEqual(['draw', 'play', 'bottom']);
+  });
+
+  it('shuffles a side discard card back into its side deck', () => {
+    const view = viewWithSideDecks();
+    const used = sideCard('u', 0, 'side:p0:0');
+    const tiles = tileActions(used, sideOf('sided:p0:0'), contextOf(view));
+    expect(tiles.map((tile) => tile.id)).toEqual(['draw', 'play', 'shuffle']);
+    expect(tiles[2]?.run()).toEqual({ kind: 'toDeck', card: 'u', where: 'shuffle' });
+  });
+
+  it("keeps another player's side deck out", () => {
+    const view = viewWithSideDecks();
+    const theirs = sideCard('t', 2, 'side:p2:0');
+    expect(tileActions(theirs, sideOf('side:p2:0'), contextOf(view))).toEqual([]);
+  });
+});

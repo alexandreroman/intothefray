@@ -5,7 +5,7 @@
 
 import { modal } from '../components/modal.svelte';
 import type { Action, CardView, PileView, Size, View } from '../lib/types';
-import type { ActionItem } from './actions';
+import { discardPileOf, type ActionItem } from './actions';
 import { interaction } from './interaction.svelte';
 import { footprints, visualBox } from './layout';
 import { ownSeats } from './seats';
@@ -252,9 +252,15 @@ function handKey(key: string, id: string, table: KeyTable): boolean {
       table.act({ kind: 'play', card: id, x, y });
       return true;
     }
-    case 'backspace':
+    case 'backspace': {
+      // A side deck's card without a discard pile has nowhere to be discarded to.
+      const card = table.view.table?.cards.find((c) => c.id === id);
+      if (!card || discardPileOf(card, table.view.table?.piles ?? []) === null) {
+        return false;
+      }
       table.act({ kind: 'discard', card: id });
       return true;
+    }
     default:
       return false;
   }

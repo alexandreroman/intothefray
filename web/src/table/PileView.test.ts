@@ -102,6 +102,18 @@ describe('PileView', () => {
     expect(screen.getByRole('img', { name: 'Player card back' })).toBeTruthy();
   });
 
+  it('a side deck with its own back draws that back captioned, one without the player back', () => {
+    const gift = pile({ id: 'side:p0:0', kind: 'sideDeck', owner: 0, count: 3, label: 'Gift' });
+    render(PileView, { pile: { ...gift, back: 'encounter' } });
+    const back = screen.getByRole('img', { name: 'Gift card back' });
+    expect(back.querySelector('img')?.getAttribute('src')).toBe(ENCOUNTER_BACK);
+    expect(back.querySelector('.caption')?.textContent).toBe('GIFT');
+
+    const invocation = pile({ id: 'side:p0:1', kind: 'sideDeck', owner: 0, count: 5 });
+    render(PileView, { pile: { ...invocation, label: 'Invocation' } });
+    expect(screen.getByRole('img', { name: 'Player card back' })).toBeTruthy();
+  });
+
   it('a pile listing its cards shows the face of the top one', () => {
     const shown = pile({ kind: 'encounterDiscard', count: 2, cards: ['c8', 'c9'] });
     render(PileView, { pile: shown, top: topCard(), face: face() });

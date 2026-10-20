@@ -86,7 +86,17 @@ export interface CardPool {
 export type Phase = 'lobby' | 'playing' | 'ended';
 export type Role = 'player' | 'spectator';
 export type Zone = 'table' | 'hand' | 'pile' | 'stage';
-export type PileKind = 'deck' | 'discard' | 'encounter' | 'encounterDiscard' | 'victory' | 'aside';
+export type PileKind =
+  | 'deck'
+  | 'discard'
+  | 'encounter'
+  | 'encounterDiscard'
+  | 'victory'
+  | 'aside'
+  /** A hero's extra deck ("side deck"): `side:p<seat>:<i>`, private to its owner like a deck. */
+  | 'sideDeck'
+  /** The discard pile of a side deck, `sided:p<seat>:<i>`, paired by seat and index; only some have one. */
+  | 'sideDiscard';
 
 /**
  * A seat: "p0".."p3" for the player seated at that index. It says whose hand
@@ -111,6 +121,11 @@ export interface CardView {
   tokens?: Record<string, number>;
   status?: Record<string, number>;
   stage?: string;
+  /**
+   * The pile id of a card whose home is a side deck: sent with its code, and
+   * always for a card of a side deck with its own back, which names that deck.
+   */
+  home?: string;
 }
 
 export interface PileView {
@@ -120,7 +135,16 @@ export interface PileView {
   x: number;
   y: number;
   count: number;
-  cards?: string[]; // bottom to top, public piles only
+  cards?: string[]; // bottom to top, public piles only; a topFaceUp side deck lists its top card alone
+  /** The name of a side deck and of its discard pile: "Invocation". */
+  label?: string;
+  /** A side deck whose top card everyone sees. */
+  topFaceUp?: boolean;
+  /**
+   * The back of a side deck whose cards have their own (Labor, Gift, Sense):
+   * that back captioned with the deck's label.
+   */
+  back?: Back;
 }
 
 /** One deck slot of a player: a seat at the table once the game starts. */
@@ -278,7 +302,7 @@ export interface Action {
   kind: ActionKind;
   card?: string;
   target?: string; // card id (attach, arrow, play under it) or pile id
-  pile?: string;
+  pile?: string; // for draw, a side deck; without it, the credited seat's deck
   area?: Area; // whose hand (draw, handOrder), or who is dealt a card (deal)
   x?: number;
   y?: number;

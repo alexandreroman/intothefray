@@ -47,7 +47,7 @@
   import DragLayer from './DragLayer.svelte';
   import { DRAG_THRESHOLD, intersect, sourceOf, type Point, type Rect } from './drag';
   import Flights from './Flights.svelte';
-  import { isHidden } from './face';
+  import { backCaption, isHidden } from './face';
   import Hand from './Hand.svelte';
   import { interaction } from './interaction.svelte';
   import { handleKey } from './keys';
@@ -148,6 +148,11 @@
     return face ? localizedFace(face, lang) : null;
   }
 
+  /** The caption of a card's back: its side deck's label, when that deck has its own back. */
+  function captionOf(card: TableCard): string | undefined {
+    return backCaption(card, piles);
+  }
+
   /** Every face of a card, as the stage choice lists them, in the viewer's language; none while the catalog loads. */
   function facesOf(card: TableCard): PackFace[] {
     if (catalog !== 'ready' || !card.code) {
@@ -228,6 +233,10 @@
     // While a card taken from a pile is dragged or waits for the server, the pile shows its top card
     // without it; so it does while a card flies to it.
     const taken = interaction.takenFrom(pile.id);
+    // A side deck lists its top card alone: once that card is taken, the next one is unknown.
+    if (pile.topFaceUp && taken.includes(null)) {
+      return undefined;
+    }
     const topId = (pile.cards ?? [])
       .filter((id) => !taken.includes(id) && !motion.flying.has(id))
       .at(-1);
@@ -615,8 +624,9 @@
       return;
     }
     const under = document.elementFromPoint(x, y);
-    // Piles keep their own hover: an empty one has none, a deck keeps the preview.
-    if (under?.closest('.surface .pile')) {
+    const pile = under?.closest<HTMLElement>('.surface .pile');
+    if (pile) {
+      rehoverPile(pile);
       return;
     }
     const hit = under?.closest<HTMLElement>(
@@ -628,6 +638,25 @@
       return;
     }
     interaction.rehover({ kind: hit.classList.contains('hcard') ? 'hand' : 'card', id });
+  }
+
+  /**
+   * A pile keeps its own hover, which an empty pile without a bar does not
+   * have. A pile a card was dropped on was never entered, the pointer passing
+   * over it during the drag: it is hovered now, its bar showing, as entering
+   * it would (PileView: a deck that shows its back clears the preview).
+   */
+  function rehoverPile(element: HTMLElement): void {
+    const id = element.dataset.id;
+    const pile = piles.find((p) => p.id === id);
+    const hovered = interaction.hovered;
+    if (!pile || element.classList.contains('inert')) {
+      return;
+    }
+    if (hovered?.kind === 'pile' && hovered.id === pile.id) {
+      return;
+    }
+    interaction.rehover({ kind: 'pile', id: pile.id }, topOf(pile) ? 'show' : 'clear');
   }
 
   /**
@@ -1477,10 +1506,10 @@
   {/if}
 
   {#if handCards}
-    <Hand cards={handCards} {faceOf} narrow={narrow.current} bind:open={handRaised} />
+    <Hand cards={handCards} {faceOf} {captionOf} narrow={narrow.current} bind:open={handRaised} />
   {/if}
 
-  <Flights {faceOf} />
+  <Flights {faceOf} {captionOf} />
 
   <DragLayer
     {view}

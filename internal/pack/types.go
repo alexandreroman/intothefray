@@ -86,15 +86,31 @@ type Set struct {
 	// instead of in the encounter deck (the "Setup." keyword).
 	InPlay map[Difficulty][]FaceRef `json:"inPlay,omitempty"`
 	// Unlisted sets are left out of the lobby, e.g. the PvP standard set.
-	Unlisted bool `json:"unlisted,omitempty"`
+	Unlisted bool      `json:"unlisted,omitempty"`
+	Side     *SideDeck `json:"side,omitempty"`     // hero_special set used as a side deck
+	SetAside []string  `json:"setAside,omitempty"` // hero set: cards set aside at setup
 }
 
-// Hero links a hero identity card to its set, obligation and nemesis.
+// SideDeck describes how a hero's extra deck (a "side deck" in the rules
+// reference) is set up. Its cards are always shuffled at setup.
+type SideDeck struct {
+	Label     string `json:"label"`               // "Invocation": "Invocation deck"
+	TopFaceUp bool   `json:"topFaceUp,omitempty"` // top card faceup for everyone
+	Discard   bool   `json:"discard,omitempty"`   // has its own discard pile
+	// Back is the printed back all the set's cards share, captioned with the
+	// deck's label, as Hercules' Labor deck has; empty for a side deck whose
+	// cards keep their own backs.
+	Back Back `json:"back,omitempty"`
+}
+
+// Hero links a hero identity card to its set, obligation, nemesis and side
+// decks.
 type Hero struct {
-	Identity   string `json:"identity"`
-	Set        string `json:"set"`
-	Obligation string `json:"obligation,omitempty"`
-	Nemesis    string `json:"nemesis,omitempty"`
+	Identity   string   `json:"identity"`
+	Set        string   `json:"set"`
+	Obligation string   `json:"obligation,omitempty"`
+	Nemesis    string   `json:"nemesis,omitempty"`
+	SideDecks  []string `json:"sideDecks,omitempty"` // set codes, in the printed order of their cards
 }
 
 // FaceRef points at one face of a card.

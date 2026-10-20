@@ -37,6 +37,17 @@ beforeEach(() => {
 });
 
 describe('CardView', () => {
+  it("a face-down side card shows its back captioned with its deck's label", () => {
+    render(CardView, {
+      card: tableCard({ code: undefined, faceDown: true, home: 'side:p0:0' }),
+      face: null,
+      caption: 'Labor',
+    });
+    const back = screen.getByRole('img', { name: 'Labor card back' });
+    expect(back.querySelector('img')?.getAttribute('src')).toBe(HERO_BACK);
+    expect(back.querySelector('.caption')?.textContent).toBe('LABOR');
+  });
+
   it('a face-down card shows its back, whatever face it is given', async () => {
     render(CardView, { card: tableCard({ faceDown: true }), face: face() });
 

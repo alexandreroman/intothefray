@@ -20,7 +20,10 @@ func topCount(n int) string {
 
 // pileName names a pile from the point of view of who: the piles of any of
 // their seats are "their" piles. The pile of a player who holds several decks
-// adds the deck's hero: "their Spider-Man deck", "Alex's Spider-Man deck".
+// adds the deck's hero: "their Spider-Man deck", "Alex's Spider-Man deck". A
+// side pile goes by its label: "their Invocation deck", "Alex's Doctor Strange
+// Invocation discard pile". The client parses these names (narratedName in
+// web/src/table/animate.ts).
 func (g *Game) pileName(who actor, id string) string {
 	switch id {
 	case PileEncounter:
@@ -45,6 +48,10 @@ func (g *Game) pileName(who actor, id string) string {
 		noun = "discard pile"
 	case KindAside:
 		noun = "set-aside cards"
+	case KindSideDeck:
+		noun = pile.Label + " deck"
+	case KindSideDiscard:
+		noun = pile.Label + " discard pile"
 	default:
 		noun = "pile"
 	}
@@ -371,16 +378,24 @@ func (n narrator) cardList(ids []string) phrase {
 	return list
 }
 
-// drawText narrates a draw. A player holding several decks also learns which
-// deck the cards came from: "drew 2 cards from their Spider-Man deck".
+// drawText narrates a draw. A draw from a side deck names it: "drew 1 card
+// from their Invocation deck". A player holding several decks also learns
+// which deck the cards came from: "drew 2 cards from their Spider-Man deck".
 func (n narrator) drawText(a Action) string {
 	text := fmt.Sprintf("drew %d cards", len(a.Cards))
 	if len(a.Cards) == 1 {
 		text = "drew 1 card"
 	}
 	// resolveDraw sends the cards to the hand of the deck's owner.
-	deck := n.before.Piles["deck:"+string(a.Area)]
-	if deck == nil || n.game.deckHero(deck.Owner) == "" {
+	deckID := "deck:" + string(a.Area)
+	if a.Pile != "" {
+		deckID = a.Pile
+	}
+	deck := n.before.Piles[deckID]
+	if deck == nil {
+		return text
+	}
+	if deck.Kind != KindSideDeck && n.game.deckHero(deck.Owner) == "" {
 		return text
 	}
 	return text + " from " + n.game.pileName(n.who, deck.ID)
@@ -521,7 +536,8 @@ func (n narrator) face(c *Card) (pack.Face, pack.FaceRef, bool) {
 }
 
 // visible reports whether everyone at the table can see the face of card id
-// in t: face-up table cards, stage cards and cards in face-up piles.
+// in t: face-up table cards, stage cards and the cards piles show (see
+// Pile.shownCards).
 func visible(t *Table, id string) bool {
 	c, ok := t.Cards[id]
 	if !ok {
@@ -534,7 +550,7 @@ func visible(t *Table, id string) bool {
 		return true
 	case ZonePile:
 		pile, ok := t.Piles[c.Pile]
-		return ok && pile.Kind != KindDeck && pile.Kind != KindEncounter
+		return ok && pile.shows(id)
 	default:
 		return false
 	}

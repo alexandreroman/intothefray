@@ -298,12 +298,14 @@ func checkCount(n int) error {
 	return nil
 }
 
-// checkPile verifies that who may use pile. Decks and set-aside piles are
-// private to their owner's player; so are discard piles when privateDiscard is set
-// (piles operations), while cards lying in a discard pile stay shared.
+// checkPile verifies that who may use pile. Decks, side decks and set-aside
+// piles are private to their owner's player; so are discard piles when
+// privateDiscard is set (piles operations), while cards lying in a discard
+// pile stay shared.
 func checkPile(pile *Pile, who actor, privateDiscard bool) error {
-	private := pile.Kind == KindDeck || pile.Kind == KindAside ||
-		(pile.Kind == KindDiscard && privateDiscard)
+	isDiscard := pile.Kind == KindDiscard || pile.Kind == KindSideDiscard
+	private := pile.Kind == KindDeck || pile.Kind == KindSideDeck || pile.Kind == KindAside ||
+		(isDiscard && privateDiscard)
 	if private && pile.Owner != NoOwner && !who.owns(pile.Owner) {
 		return forbidden("pile %q belongs to another player", pile.ID)
 	}
@@ -465,7 +467,7 @@ func resolveToDeck(t *Table, who actor, a Action, rng *rand.Rand) (Action, error
 	switch a.Where {
 	case whereTop, whereBottom:
 	case whereShuffle:
-		a.Renames, a.Cards = reidentify(t, append(without(deck.Cards, c.ID), c.ID), rng)
+		a.Renames, a.Cards = reidentify(t, t.shuffledIntoDeck(c, deck), rng)
 	default:
 		return a, invalid("unknown position %q", a.Where)
 	}
@@ -473,8 +475,8 @@ func resolveToDeck(t *Table, who actor, a Action, rng *rand.Rand) (Action, error
 }
 
 // resolveDraw records whose hand the cards go to and which cards they are. A
-// draw takes from the deck of the credited seat, or from the deck a.Pile
-// names, which must be one of the actor's: the cards go to that deck's
+// draw takes from the deck of the credited seat, or from the deck or side deck
+// a.Pile names, which must be one of the actor's: the cards go to that deck's
 // owner's hand. The client-provided area is ignored.
 func resolveDraw(t *Table, who actor, a Action) (Action, error) {
 	if err := checkCount(a.N); err != nil {
@@ -488,7 +490,7 @@ func resolveDraw(t *Table, who actor, a Action) (Action, error) {
 	if err != nil {
 		return a, err
 	}
-	if deck.Kind != KindDeck {
+	if deck.Kind != KindDeck && deck.Kind != KindSideDeck {
 		return a, invalid("cards are drawn from a player's deck, not from %q", deck.ID)
 	}
 	a.Area = PlayerArea(deck.Owner)
@@ -514,16 +516,17 @@ func resolveReveal(t *Table, a Action) (Action, error) {
 }
 
 // resolvePlay checks a play, which may tuck the card under a target card. A
-// play from the top of the player's own deck names the deck rather than a
-// card, as the client does not know its cards: resolve records the top card,
-// whatever card the client names, so that a rebuild plays that card.
+// play from the top of the player's own deck or side deck names the deck
+// rather than a card, as the client does not know its cards: resolve records
+// the top card, whatever card the client names, so that a rebuild plays that
+// card.
 func resolvePlay(t *Table, who actor, a Action) (Action, error) {
 	if a.Pile != "" {
 		deck, err := ownPile(t, who, a.Pile)
 		if err != nil {
 			return a, err
 		}
-		if deck.Kind != KindDeck {
+		if deck.Kind != KindDeck && deck.Kind != KindSideDeck {
 			return a, invalid("only a deck's top card is played from its pile, not %q's", deck.ID)
 		}
 		if len(deck.Cards) == 0 {
@@ -548,11 +551,19 @@ func resolveDeal(t *Table, a Action) (Action, error) {
 	return a, nil
 }
 
-// resolveDiscardTop records the cards to discard, top first.
+// resolveDiscardTop records the cards to discard, top first. Only a deck with
+// a discard pile can be discarded from: a side deck may have none.
 func resolveDiscardTop(t *Table, who actor, a Action) (Action, error) {
 	pile, err := ownPile(t, who, a.Pile)
 	if err != nil {
 		return a, err
+	}
+	discardID, ok := discardPileOf(pile.ID)
+	if !ok {
+		return a, invalid("pile %q is not a deck", pile.ID)
+	}
+	if _, ok := t.Piles[discardID]; !ok {
+		return a, invalid("pile %q has no discard pile", pile.ID)
 	}
 	if a.N > len(pile.Cards) {
 		return a, invalid("cannot discard %d cards from pile %q", a.N, pile.ID)
@@ -593,7 +604,7 @@ func resolveShuffle(t *Table, who actor, a Action, rng *rand.Rand) (Action, erro
 	if err != nil {
 		return a, err
 	}
-	if pile.Kind != KindDeck && pile.Kind != KindEncounter {
+	if pile.Kind != KindDeck && pile.Kind != KindSideDeck && pile.Kind != KindEncounter {
 		return a, invalid("pile %q cannot be shuffled", pile.ID)
 	}
 	a.Renames, a.Cards = reidentify(t, pile.Cards, rng)

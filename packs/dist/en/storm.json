@@ -11,7 +11,7 @@
           "type": "hero",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36001A.jpg",
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36001B.jpg",
             "https://marvelcdb.com/bundles/cards/36001a.png"
           ],
           "handSize": 5,
@@ -29,7 +29,7 @@
           "type": "alter_ego",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36001B.jpg",
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/36001A.jpg",
             "https://marvelcdb.com/bundles/cards/36001b.png"
           ],
           "handSize": 6,
@@ -846,7 +846,11 @@
         "36003",
         "36004",
         "36005"
-      ]
+      ],
+      "side": {
+        "label": "Weather",
+        "back": "player"
+      }
     }
   ],
   "heroes": [
@@ -854,7 +858,10 @@
       "identity": "36001",
       "set": "storm",
       "obligation": "36030",
-      "nemesis": "storm_nemesis"
+      "nemesis": "storm_nemesis",
+      "sideDecks": [
+        "storm_weather_deck"
+      ]
     }
   ]
 }

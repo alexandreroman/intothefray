@@ -70,6 +70,9 @@ func ImageURLs(in Inputs) []string {
 // Build derives the packs and the index from the sources. Content that
 // cannot be displayed is left out and listed in the report.
 func Build(in Inputs) (Result, error) {
+	if err := checkCerebroOverrides(in.Curated.Cards, in.CB); err != nil {
+		return Result{}, err
+	}
 	fr := frenchSourcesOf(in)
 	faceCodes := faceCodesOf(in.MC)
 	cards, problems := BuildCards(in.MC, in.CB, in.Curated.Cards)
@@ -80,10 +83,17 @@ func Build(in Inputs) (Result, error) {
 	cardCodes := cardCodesOf(cards)
 	faceCounts := faceCountsOf(cards)
 	sets := pruneSets(BuildSets(in.MC, in.MCPacks), cardCodes)
-	if err := applySetDefs(sets, in.Curated.Sets, faceCounts); err != nil {
+	if err := applySetDefs(sets, in.Curated.Sets, cardCodes, faceCounts); err != nil {
 		return Result{}, err
 	}
-	heroes, heroProblems := checkHeroes(BuildHeroes(in.MC), cardCodes)
+	applySideBacks(cards, sets)
+	// Side decks are linked before the heroes are checked, so that a hero
+	// dropped for a missing image is reported rather than failing the build.
+	allHeroes := BuildHeroes(in.MC)
+	if err := linkSideDecks(allHeroes, sets); err != nil {
+		return Result{}, err
+	}
+	heroes, heroProblems := checkHeroes(allHeroes, cardCodes)
 	problems = append(problems, heroProblems...)
 
 	scenarios, refs, scenarioProblems := BuildScenarios(in.Curated.Scenarios, cards, sets, in.CBSets)
@@ -165,7 +175,12 @@ func pruneSets(sets map[string][]pack.Set, cardCodes map[string]bool) map[string
 // broken scenario, which is only reported as unsupported, a definition that
 // does not match the catalog fails the build: the set it completes would
 // otherwise be set up wrongly.
-func applySetDefs(sets map[string][]pack.Set, defs map[string]curated.SetDef, faceCounts map[string]int) error {
+func applySetDefs(
+	sets map[string][]pack.Set,
+	defs map[string]curated.SetDef,
+	cardCodes map[string]bool,
+	faceCounts map[string]int,
+) error {
 	setsByCode := make(map[string]*pack.Set)
 	for _, packSets := range sets {
 		for i := range packSets {
@@ -182,8 +197,67 @@ func applySetDefs(sets map[string][]pack.Set, defs map[string]curated.SetDef, fa
 		if err := checkInPlay(*set, def.InPlay, faceCounts); err != nil {
 			return fmt.Errorf("curated set %s: %w", code, err)
 		}
+		if err := checkSide(*set, def.Side); err != nil {
+			return fmt.Errorf("curated set %s: %w", code, err)
+		}
+		if err := checkSetAside(*set, def.SetAside, cardCodes); err != nil {
+			return fmt.Errorf("curated set %s: %w", code, err)
+		}
 		set.InPlay = def.InPlay
 		set.Unlisted = def.Unlisted
+		set.Side = def.Side
+		set.SetAside = def.SetAside
+	}
+	return nil
+}
+
+// applySideBacks gives every card of a side deck with a shared back that
+// back, whatever back its source tells: one card with another back would show
+// which card lies on top of the face-down deck.
+func applySideBacks(cards map[string][]pack.Card, sets map[string][]pack.Set) {
+	backs := make(map[string]pack.Back)
+	for _, packSets := range sets {
+		for _, set := range packSets {
+			if set.Side == nil || set.Side.Back == "" {
+				continue
+			}
+			for _, code := range set.Cards {
+				backs[code] = set.Side.Back
+			}
+		}
+	}
+	for _, packCards := range cards {
+		for i := range packCards {
+			if back, ok := backs[packCards[i].Code]; ok {
+				packCards[i].Back = back
+			}
+		}
+	}
+}
+
+// checkSide makes sure only a hero_special set becomes a side deck: other
+// kinds already have a place at setup.
+func checkSide(set pack.Set, side *pack.SideDeck) error {
+	if side != nil && set.Kind != heroSpecialKind {
+		return fmt.Errorf("side deck needs a %s set, not a %s set", heroSpecialKind, set.Kind)
+	}
+	return nil
+}
+
+// checkSetAside makes sure set-aside cards are listed on a hero set, the only
+// one setup reads them from, and exist in the catalog. They may belong to
+// another set, as Iceman's Frostbite cards do.
+func checkSetAside(set pack.Set, setAside []string, cardCodes map[string]bool) error {
+	if len(setAside) == 0 {
+		return nil
+	}
+	if set.Kind != heroKind {
+		return fmt.Errorf("set-aside cards need a %s set, not a %s set", heroKind, set.Kind)
+	}
+	for _, code := range setAside {
+		if !cardCodes[code] {
+			return fmt.Errorf("set-aside card %s is not in the catalog", code)
+		}
 	}
 	return nil
 }

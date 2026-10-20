@@ -28,7 +28,7 @@
   import CardView from './CardView.svelte';
   import { contains } from './drag';
   import FirstPlayerToken from './FirstPlayerToken.svelte';
-  import { pileBack } from './face';
+  import { backCaption, pileBack } from './face';
   import { interaction } from './interaction.svelte';
   import { ALL_ROWS, type RowMap } from './rows';
   import { scrollerRect, surfaceRect, toScreen, toTable } from './screen';
@@ -397,11 +397,14 @@
    */
   function hiddenCard(id: string, x: number, y: number): TableCard {
     const pile = view.table?.piles.find((p) => p.id === id);
+    // A hidden hand card carries no pile: it shows the player back, whatever its own back.
     return {
       id,
       face: 0,
       faceDown: true,
-      back: pile ? pileBack(pile.kind) : 'player',
+      back: pile ? pileBack(pile) : 'player',
+      // A side deck's own back is captioned with the deck's label.
+      home: pile?.kind === 'sideDeck' ? pile.id : undefined,
       owner: -1,
       zone: 'table',
       x,
@@ -613,7 +616,12 @@
   <div class="ghosts">
     {#each drawn.ghosts as ghost (ghost.color)}
       {#each ghost.cards as card (card.id)}
-        <CardView {card} face={faceOf(card)} ghost />
+        <CardView
+          {card}
+          face={faceOf(card)}
+          caption={backCaption(card, view.table?.piles ?? [])}
+          ghost
+        />
       {/each}
     {/each}
     {#each drawn.tokens as token (token.color)}
