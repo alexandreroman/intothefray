@@ -16,6 +16,7 @@
     ghost = false,
     landed = false,
     draggable = false,
+    side,
   }: {
     card: TableCard;
     /** The catalog face the card shows, null while unknown: it is then a std placeholder. */
@@ -26,6 +27,8 @@
     landed?: boolean;
     /** The viewer can drag it: the pointer grabs it. */
     draggable?: boolean;
+    /** The name of the side deck whose own back the card shows (sideBackName). */
+    side?: string;
   } = $props();
 
   type TokenKind = 'dmg' | 'thr' | 'gen';
@@ -110,7 +113,7 @@
   onclick={() => interaction.select(element)}
 >
   {#if hidden}
-    <CardBack back={card.back} />
+    <CardBack back={card.back} {side} />
   {:else}
     <CardFace
       images={face?.images ?? []}

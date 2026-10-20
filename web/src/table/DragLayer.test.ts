@@ -897,6 +897,27 @@ describe("dragging the top card of the viewer's deck", () => {
     );
   });
 
+  it("shows the own back of a side deck's unknown top card while it is dragged", async () => {
+    const view = makeView();
+    view.table!.piles.push(
+      pile('side:p0:0', {
+        kind: 'sideDeck',
+        owner: 0,
+        x: 920,
+        y: 300,
+        count: 3,
+        label: 'Labor',
+        ownBack: true,
+      }),
+    );
+    await renderTable(view);
+    await press(placed('side:p0:0'), 1010, 410);
+    await moveTo(300, 450);
+    const [ghost] = ghosts();
+    expect(ghost?.querySelector('[aria-label="Labor card back"]')?.textContent).toBe('LABOR');
+    await release(300, 450);
+  });
+
   it("cannot be dragged from another player's deck", async () => {
     const view = makeView({ withSam: true });
     const { session } = await renderTable(view);

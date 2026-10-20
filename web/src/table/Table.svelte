@@ -47,7 +47,7 @@
   import DragLayer from './DragLayer.svelte';
   import { DRAG_THRESHOLD, intersect, sourceOf, type Point, type Rect } from './drag';
   import Flights from './Flights.svelte';
-  import { isHidden } from './face';
+  import { isHidden, sideBackName } from './face';
   import Hand from './Hand.svelte';
   import { interaction } from './interaction.svelte';
   import { handleKey } from './keys';
@@ -146,6 +146,11 @@
     }
     const face = knownCard(card.code)?.card.faces[card.face];
     return face ? localizedFace(face, lang) : null;
+  }
+
+  /** The name of the side deck whose own back a card shows. */
+  function sideOf(card: TableCard): string | undefined {
+    return sideBackName(card, piles);
   }
 
   /** Every face of a card, as the stage choice lists them, in the viewer's language; none while the catalog loads. */
@@ -1481,10 +1486,10 @@
   {/if}
 
   {#if handCards}
-    <Hand cards={handCards} {faceOf} narrow={narrow.current} bind:open={handRaised} />
+    <Hand cards={handCards} {faceOf} {sideOf} narrow={narrow.current} bind:open={handRaised} />
   {/if}
 
-  <Flights {faceOf} />
+  <Flights {faceOf} {sideOf} />
 
   <DragLayer
     {view}

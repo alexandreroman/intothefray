@@ -5,7 +5,8 @@
 // ---- Card packs (internal/pack) ----
 
 export type Size = 'std' | 'land' | 'dstd' | 'dland';
-export type Back = 'player' | 'encounter' | 'villain';
+/** 'side': the own back of a side deck's cards (Labor, Gift, Sense), drawn with the deck's name. */
+export type Back = 'player' | 'encounter' | 'villain' | 'side';
 export type Difficulty = 'standard' | 'expert';
 
 export interface Threat {
@@ -121,7 +122,10 @@ export interface CardView {
   tokens?: Record<string, number>;
   status?: Record<string, number>;
   stage?: string;
-  /** The pile id of a card whose home is a side deck, sent only when its code is. */
+  /**
+   * The pile id of a card whose home is a side deck: sent with its code, and
+   * always for a card with back 'side', whose back names that deck.
+   */
   home?: string;
 }
 
@@ -137,6 +141,8 @@ export interface PileView {
   label?: string;
   /** A side deck whose top card everyone sees. */
   topFaceUp?: boolean;
+  /** A side deck whose cards have their own back (back 'side'), drawn with the deck's label. */
+  ownBack?: boolean;
 }
 
 /** One deck slot of a player: a seat at the table once the game starts. */

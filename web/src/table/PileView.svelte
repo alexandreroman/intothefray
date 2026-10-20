@@ -6,6 +6,7 @@
   import type { PackFace, CardView as TableCard, PileView } from '../lib/types';
   import CardBack from './CardBack.svelte';
   import CardFace from './CardFace.svelte';
+  import { sideLabel } from './actions';
   import { isHidden, pileBack } from './face';
   import { interaction, type PreviewChange } from './interaction.svelte';
   import { cardBox } from './layout';
@@ -97,9 +98,13 @@
       <CardFace images={face?.images ?? []} name={face?.name ?? ''} {rotated} />
     </div>
   {:else}
-    {@const back = shownTop?.back ?? pileBack(pile.kind)}
+    {@const back = shownTop?.back ?? pileBack(pile)}
     <div class="art">
-      <CardBack {back} label={back.toUpperCase()} />
+      <CardBack
+        {back}
+        label={back.toUpperCase()}
+        side={pile.kind === 'sideDeck' ? sideLabel(pile) : undefined}
+      />
     </div>
   {/if}
 

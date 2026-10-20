@@ -491,6 +491,37 @@ describe('Table', () => {
     expect(sense?.querySelector('img')?.getAttribute('alt')).toBe('Player card back');
   });
 
+  it("draws a side deck's own back on its pile and on its face-down cards, with its label", async () => {
+    const view = makeView({
+      cards: [
+        card('v', { code: '01094', back: 'villain', x: 360, y: 30 }),
+        card('l', { owner: 1, back: 'side', home: 'side:p1:0', faceDown: true, x: 700, y: 830 }),
+        // Its deck is not on the table: its name is unknown.
+        card('g', { owner: 1, back: 'side', home: 'side:p1:9', faceDown: true, x: 900, y: 830 }),
+      ],
+      piles: [
+        pile('side:p1:0', {
+          kind: 'sideDeck',
+          owner: 1,
+          x: 360,
+          y: 830,
+          count: 2,
+          label: 'Labor',
+          ownBack: true,
+        }),
+      ],
+    });
+    render(Table, { session: fakeSession(), view });
+
+    const backs = await within(surface()).findAllByRole('img', { name: 'Labor card back' });
+    expect(backs.map((back) => back.closest<HTMLElement>('[data-id]')?.dataset.id)).toEqual([
+      'side:p1:0',
+      'l',
+    ]);
+    expect(backs.map((back) => back.textContent)).toEqual(['LABOR', 'LABOR']);
+    expect(within(surface()).getByRole('img', { name: 'Side card back' }).textContent).toBe('?');
+  });
+
   it('moves the Focus panel to a corner clear of the hovered card', async () => {
     const rect = (left: number, top: number, width: number, height: number) =>
       ({ left, top, width, height, right: left + width, bottom: top + height }) as DOMRect;

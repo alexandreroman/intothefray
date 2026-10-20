@@ -28,7 +28,7 @@
   import CardView from './CardView.svelte';
   import { contains } from './drag';
   import FirstPlayerToken from './FirstPlayerToken.svelte';
-  import { pileBack } from './face';
+  import { pileBack, sideBackName } from './face';
   import { interaction } from './interaction.svelte';
   import { ALL_ROWS, type RowMap } from './rows';
   import { scrollerRect, surfaceRect, toScreen, toTable } from './screen';
@@ -401,7 +401,9 @@
       id,
       face: 0,
       faceDown: true,
-      back: pile ? pileBack(pile.kind) : 'player',
+      back: pile ? pileBack(pile) : 'player',
+      // A side deck's own back names the deck.
+      home: pile?.kind === 'sideDeck' ? pile.id : undefined,
       owner: -1,
       zone: 'table',
       x,
@@ -613,7 +615,12 @@
   <div class="ghosts">
     {#each drawn.ghosts as ghost (ghost.color)}
       {#each ghost.cards as card (card.id)}
-        <CardView {card} face={faceOf(card)} ghost />
+        <CardView
+          {card}
+          face={faceOf(card)}
+          side={sideBackName(card, view.table?.piles ?? [])}
+          ghost
+        />
       {/each}
     {/each}
     {#each drawn.tokens as token (token.color)}

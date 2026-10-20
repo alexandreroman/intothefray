@@ -1,27 +1,40 @@
 <!--
   A card back: the theme's image, or a drawn back when the theme has none
-  (or when the image fails to load).
+  (or when the image fails to load). A side deck's own back is always drawn,
+  with the deck's name on it.
 -->
 <script lang="ts">
   import type { Back } from '../lib/types';
   import { backUrl } from './theme';
 
-  let { back, label = '?' }: { back: Back; label?: string } = $props();
+  let {
+    back,
+    label = '?',
+    side,
+  }: {
+    back: Back;
+    /** What the drawn back says, but for a side back, which says its deck's name. */
+    label?: string;
+    /** The name of the side deck a 'side' back belongs to ("Labor"), undefined while unknown. */
+    side?: string;
+  } = $props();
 
-  const NAMES: Record<Back, string> = {
+  const NAMES: Record<Exclude<Back, 'side'>, string> = {
     player: 'Player card back',
     encounter: 'Encounter card back',
     villain: 'Villain card back',
   };
 
+  const name = $derived(back === 'side' ? `${side ?? 'Side'} card back` : NAMES[back]);
+  const text = $derived(back === 'side' ? (side?.toUpperCase() ?? '?') : label);
   const url = $derived(backUrl(back));
   let broken = $state(false);
 </script>
 
 {#if url && !broken}
-  <img src={url} alt={NAMES[back]} onerror={() => (broken = true)} />
+  <img src={url} alt={name} onerror={() => (broken = true)} />
 {:else}
-  <div class="back {back}" role="img" aria-label={NAMES[back]}>{label}</div>
+  <div class="back {back}" role="img" aria-label={name}>{text}</div>
 {/if}
 
 <style>
@@ -65,5 +78,10 @@
   .encounter,
   .villain {
     --frame: #ff443873;
+  }
+
+  /* A side deck's own back: a frame of its own, apart from the player and encounter ones. */
+  .side {
+    --frame: color-mix(in srgb, var(--villain) 60%, transparent);
   }
 </style>

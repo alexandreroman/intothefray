@@ -6,16 +6,19 @@
 import { storedTheme, type Theme } from '../lib/theme';
 import type { Back } from '../lib/types';
 
+/** The backs a theme may have an image for: a side deck's own back is always drawn. */
+type ImagedBack = Exclude<Back, 'side'>;
+
 interface ThemeAssets {
   /** Back image per back kind; null draws the backs instead. */
-  backs: Record<Back, string> | null;
+  backs: Record<ImagedBack, string> | null;
   /** First player token image; null draws a stand-in. */
   firstPlayer: string | null;
 }
 
 const CEREBRO = 'https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/';
 
-const OFFICIAL_BACKS: Record<Back, string> = {
+const OFFICIAL_BACKS: Record<ImagedBack, string> = {
   player: CEREBRO + 'HeroBack.jpg',
   encounter: CEREBRO + 'EncounterBack.jpg',
   villain: CEREBRO + 'VillainBack.jpg',
@@ -30,8 +33,14 @@ const THEME_ASSETS: Record<Theme, ThemeAssets> = {
   felt: { backs: OFFICIAL_BACKS, firstPlayer: FIRST_PLAYER_TOKEN },
 };
 
-/** The back image of a card, or null when the theme draws its backs. */
+/**
+ * The back image of a card, or null when the theme draws its backs. No image
+ * exists for a side deck's own back: every theme draws it.
+ */
 export function backUrl(back: Back, theme: Theme = storedTheme()): string | null {
+  if (back === 'side') {
+    return null;
+  }
   return THEME_ASSETS[theme].backs?.[back] ?? null;
 }
 

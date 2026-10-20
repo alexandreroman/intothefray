@@ -102,6 +102,17 @@ describe('PileView', () => {
     expect(screen.getByRole('img', { name: 'Player card back' })).toBeTruthy();
   });
 
+  it('a side deck with its own back draws it with its label, a side deck without one the player back', () => {
+    const sense = pile({ id: 'side:p0:0', kind: 'sideDeck', owner: 0, count: 5, label: 'Sense' });
+    render(PileView, { pile: { ...sense, ownBack: true } });
+    const back = screen.getByRole('img', { name: 'Sense card back' });
+    expect(back.textContent).toBe('SENSE');
+
+    const invocation = pile({ id: 'side:p0:1', kind: 'sideDeck', owner: 0, count: 5 });
+    render(PileView, { pile: { ...invocation, label: 'Invocation' } });
+    expect(screen.getByRole('img', { name: 'Player card back' })).toBeTruthy();
+  });
+
   it('a pile listing its cards shows the face of the top one', () => {
     const shown = pile({ kind: 'encounterDiscard', count: 2, cards: ['c8', 'c9'] });
     render(PileView, { pile: shown, top: topCard(), face: face() });

@@ -23,6 +23,7 @@
 <script lang="ts">
   import type { PackFace, CardView as TableCard, PileView as Pile } from '../lib/types';
   import CardView from './CardView.svelte';
+  import { sideBackName } from './face';
   import FirstPlayerToken from './FirstPlayerToken.svelte';
   import { overflowTip } from '../lib/overflowTip';
   import { interaction } from './interaction.svelte';
@@ -97,7 +98,12 @@
     />
   {/each}
   {#each cards as card (card.id)}
-    <CardView {card} face={faceOf(card)} draggable={canDrag({ kind: 'card', id: card.id })} />
+    <CardView
+      {card}
+      face={faceOf(card)}
+      side={sideBackName(card, piles)}
+      draggable={canDrag({ kind: 'card', id: card.id })}
+    />
   {/each}
   {#if firstPlayer && !interaction.tokenMoving}
     <!-- The token has no bar: hovering it drops the previous element at once. -->

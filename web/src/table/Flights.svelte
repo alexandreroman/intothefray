@@ -15,9 +15,12 @@
 
   let {
     faceOf,
+    sideOf = () => undefined,
   }: {
     /** The catalog face a card shows, null while unknown or hidden. */
     faceOf: (card: TableCard | undefined) => PackFace | null;
+    /** The name of the side deck whose own back a card shows (sideBackName). */
+    sideOf?: (card: TableCard) => string | undefined;
   } = $props();
 </script>
 
@@ -44,7 +47,7 @@
     {#if flight.kind === 'toPile'}
       {@const face = faceOf(flight.card)}
       {#if isHidden(flight.card)}
-        <CardBack back={flight.card.back} />
+        <CardBack back={flight.card.back} side={sideOf(flight.card)} />
       {:else}
         <CardFace
           images={face?.images ?? []}
@@ -57,13 +60,13 @@
       {#if !flight.faceUp}
         <!-- Its back, over its face until it turns edge-on (motion.launch). -->
         <div class="side" data-side="back">
-          <CardBack back={flight.card.back} />
+          <CardBack back={flight.card.back} side={sideOf(flight.card)} />
         </div>
       {/if}
     {:else if flight.card && !isHidden(flight.card)}
       {@render portrait(flight.card)}
     {:else}
-      <CardBack back={flight.card?.back ?? flight.back} />
+      <CardBack back={flight.card?.back ?? flight.back} side={flight.card ? sideOf(flight.card) : undefined} />
     {/if}
   </div>
 {/each}

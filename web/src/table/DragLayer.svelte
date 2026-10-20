@@ -43,7 +43,7 @@
     type Rect,
     type TableRect,
   } from './drag';
-  import { isHidden } from './face';
+  import { isHidden, pileBack, sideBackName } from './face';
   import { interaction, type DropOn, type Held, type Pressable } from './interaction.svelte';
   import { cardBox, FIRST_PLAYER_BOX, HAND_CARD, type Box } from './layout';
   import { ALL_ROWS, type RowMap } from './rows';
@@ -127,6 +127,7 @@
   const HAND_GLYPH = '↓';
 
   const cards = $derived(view.table?.cards ?? []);
+  const tablePiles = $derived(view.table?.piles ?? []);
   const cardsById = $derived(new Map(cards.map((card) => [card.id, card])));
   /**
    * The ghosts of the last drop, set down where it landed (the cards, or the
@@ -662,7 +663,7 @@
     }
     if (from.kind === 'deck') {
       const shown = shownDeckTop(from.pile);
-      return shown ? [asPlayed(shown, x, y)] : [{ ...DECK_TOP, x, y }];
+      return shown ? [asPlayed(shown, x, y)] : [deckTop(from.pile, x, y)];
     }
     const card = cardsById.get(from.card);
     if (!card) {
@@ -676,6 +677,13 @@
       const k = cardsById.get(id);
       return k ? [{ ...k, x: x + k.x - card.x, y: y + k.y - card.y }] : [];
     });
+  }
+
+  /** The unknown top card of a deck, its back the deck's: a side deck may have its own. */
+  function deckTop(pileId: string, x: number, y: number): TableCard {
+    const pile = view.table?.piles.find((p) => p.id === pileId);
+    const back = pile ? pileBack(pile) : DECK_TOP.back;
+    return { ...DECK_TOP, x, y, back, home: pile?.kind === 'sideDeck' ? pile.id : undefined };
   }
 
   /** A card from the hand or a pile, drawn as it would lie on the table. */
@@ -740,7 +748,7 @@
       style:height="{handGhost.height}px"
     >
       {#if isHidden(handGhost.card)}
-        <CardBack back={handGhost.card.back} />
+        <CardBack back={handGhost.card.back} side={sideBackName(handGhost.card, tablePiles)} />
       {:else}
         <CardFace
           images={face?.images ?? []}
@@ -751,11 +759,17 @@
     </div>
   {:else}
     {#each ghosts as ghost (ghost.id)}
-      <CardView card={ghost} face={faceOf(ghost)} ghost />
+      <CardView card={ghost} face={faceOf(ghost)} side={sideBackName(ghost, tablePiles)} ghost />
     {/each}
   {/if}
   {#each landedGhosts as ghost (ghost.id)}
-    <CardView card={ghost} face={faceOf(ghost)} ghost landed />
+    <CardView
+      card={ghost}
+      face={faceOf(ghost)}
+      side={sideBackName(ghost, tablePiles)}
+      ghost
+      landed
+    />
   {/each}
   {#if tokenGhost}
     <FirstPlayerToken x={tokenGhost.x} y={tokenGhost.y} ghost />
