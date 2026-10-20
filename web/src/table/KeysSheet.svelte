@@ -93,7 +93,7 @@
       [
         { what: 'Draw 1', keys: ['W'] },
         { what: 'Draw several cards', keys: ['⇧ W'] },
-        { what: 'Discard the top card', keys: ['X'] },
+        { what: 'Discard the top card', keys: ['X', '⌫'] },
         { what: 'Discard several cards', keys: ['⇧ X'] },
         { what: 'Reveal (encounter deck)', keys: ['R'] },
         { what: 'Look at the top cards', keys: ['L'] },

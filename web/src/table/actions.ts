@@ -780,12 +780,13 @@ function lookTopItem(pile: PileView, pileName: string): ActionItem {
   };
 }
 
-/** Discard 1 sends the deck's top card to its discard pile in one click: X, as on a card. */
+/** Discard 1 sends the deck's top card to its discard pile in one click: X or Backspace, as on a card. */
 function discardOneItem(pile: PileView): ActionItem {
   return {
     id: 'discard1',
     label: 'Discard 1',
     key: 'X',
+    altKeys: ['Backspace'],
     group: GROUP_MORE,
     run: () => ({ kind: 'discardTop', pile: pile.id, n: 1 }),
   };

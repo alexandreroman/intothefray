@@ -135,7 +135,7 @@ describe('KeysSheet', () => {
         [
           'Draw 1: W',
           'Draw several cards: ⇧ W',
-          'Discard the top card: X',
+          'Discard the top card: X⌫',
           'Discard several cards: ⇧ X',
           'Reveal (encounter deck): R',
           'Look at the top cards: L',

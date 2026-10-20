@@ -471,7 +471,7 @@ describe('actionsFor', () => {
 
     // The rarer actions, in a group of their own: Discard 1 takes X, Discard X Shift + X.
     const discardOne = item(items, 'discard1');
-    expect(discardOne).toMatchObject({ label: 'Discard 1', key: 'X' });
+    expect(discardOne).toMatchObject({ label: 'Discard 1', key: 'X', altKeys: ['Backspace'] });
     expect(discardOne.shift).toBeUndefined();
     expect(actionOf(discardOne)).toEqual({ kind: 'discardTop', pile: 'deck:p0', n: 1 });
     expect(item(items, 'discardTop')).toMatchObject({ label: 'Discard X', key: 'X', shift: true });
