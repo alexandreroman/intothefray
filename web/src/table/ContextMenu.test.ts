@@ -325,6 +325,56 @@ describe('the context menu', () => {
     expect(screen.queryByRole('menu', { name: 'Add a status' })).toBeNull();
   });
 
+  it.each([
+    {
+      row: 'Move to',
+      item: 'Hand',
+      action: { kind: 'toHand', card: 'mine' },
+    },
+    {
+      row: 'Add a token',
+      item: 'Damage (6)',
+      action: { kind: 'token', card: 'mine', name: 'dmg', delta: 1 },
+    },
+  ])(
+    'keeps the $row submenu open on hover over its items, which run',
+    async ({ row, item, action }) => {
+      const { session } = await renderTable();
+      await rightClick(placed('mine'));
+      vi.useFakeTimers();
+
+      await fireEvent.pointerEnter(menuItem(contextMenu()!, row));
+      await vi.advanceTimersByTimeAsync(200);
+      const submenu = screen.getByRole('menu', { name: row });
+
+      // On its way to an item, the pointer enters the submenu, then the item: both keep it open.
+      await fireEvent.pointerEnter(submenu);
+      await fireEvent.pointerEnter(menuItem(submenu, item));
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(screen.getByRole('menu', { name: row })).toBe(submenu);
+
+      await fireEvent.click(menuItem(submenu, item));
+      expect(session.act).toHaveBeenCalledWith(action, 0);
+      expect(contextMenu()).toBeNull();
+    },
+  );
+
+  it('closes the open submenu when the pointer rests on another row of the menu', async () => {
+    await renderTable();
+    await rightClick(placed('mine'));
+    vi.useFakeTimers();
+
+    await fireEvent.pointerEnter(menuItem(contextMenu()!, 'Move to'));
+    await vi.advanceTimersByTimeAsync(200);
+    const submenu = screen.getByRole('menu', { name: 'Move to' });
+    await fireEvent.pointerEnter(submenu);
+    await fireEvent.pointerEnter(menuItem(submenu, 'Hand'));
+
+    await fireEvent.pointerEnter(menuItem(contextMenu()!, 'Discard'));
+    await vi.advanceTimersByTimeAsync(200);
+    expect(screen.queryByRole('menu', { name: 'Move to' })).toBeNull();
+  });
+
   it('follows a redraw of its element', async () => {
     const { rerender } = await renderTable();
     await rightClick(placed('mine'));

@@ -207,6 +207,15 @@
     }
   }
 
+  /**
+   * The pointer is in the open submenu, on its panel or one of its items: it
+   * stays open, and what a row of the menu scheduled on the way is cancelled.
+   * Its items do not go through hoverRow, which would close it.
+   */
+  function keepSubmenu(): void {
+    clearTimeout(hoverTimer);
+  }
+
   /** A click opens the submenu at once; from the keyboard (Enter, Space), the focus goes into it. */
   async function clickSubmenu(entry: ContextSubmenu, event: MouseEvent): Promise<void> {
     if (entry.disabled) {
@@ -311,7 +320,8 @@
 <svelte:window onkeydowncapture={onWindowKeyDown} onscrollcapture={onScroll} onresize={onclose} />
 <svelte:document onpointerdowncapture={onDocumentPointerDown} />
 
-{#snippet actionRow(entry: ContextAction)}
+<!-- onhover: what the pointer entering it does, which differs in the menu and in a submenu. -->
+{#snippet actionRow(entry: ContextAction, onhover: () => void)}
   {@const item = entry.item}
   <!-- Disabled, it says why in its tooltip. -->
   <button
@@ -321,7 +331,7 @@
     role="menuitem"
     aria-disabled={item.disabled}
     data-tip={item.disabled ? item.tip : undefined}
-    onpointerenter={() => hoverRow(entry)}
+    onpointerenter={onhover}
     onclick={() => run(item)}
     ><span>{item.label}</span>{#if item.key}<kbd>{keyLabel(item)}</kbd>{/if}</button
   >
@@ -336,7 +346,7 @@
     {#if entry.kind === 'separator'}
       {@render separator()}
     {:else}
-      {@render actionRow(entry)}
+      {@render actionRow(entry, keepSubmenu)}
     {/if}
   {/each}
 {/snippet}
@@ -386,7 +396,7 @@
         ><span>{entry.label}</span><span class="opens" aria-hidden="true">▸</span></button
       >
     {:else}
-      {@render actionRow(entry)}
+      {@render actionRow(entry, () => hoverRow(entry))}
     {/if}
   {/each}
 </div>
@@ -402,7 +412,7 @@
     style:left="{subPlace?.left ?? 0}px"
     style:top="{subPlace?.top ?? 0}px"
     style:max-height={subPlace?.maxHeight == null ? undefined : `${subPlace.maxHeight}px`}
-    onpointerenter={() => clearTimeout(hoverTimer)}
+    onpointerenter={keepSubmenu}
     onkeydown={(event) => onMenuKey(event, true)}
     oncontextmenu={(event) => event.preventDefault()}
   >
