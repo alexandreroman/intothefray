@@ -46,7 +46,7 @@
 - [Truncated text shows a tooltip](references/project_truncated_text.md) — ellipsis text gets a full-text tooltip via use:overflowTip
 - [Animated switches and card art](references/project_switches_card_art.md) — switches slide via selectionIndicator; thumbnails use CardArt
 - [Spectators cannot change the stage card](references/project_spectator_stage.md) — no action on villain/main scheme cards for spectators
-- [CI scope](references/project_ci_scope.md) — ci.yml checks Go, web, Docker; pages.yml standalone; no packs sync, no Dependabot
+- [CI scope](references/project_ci_scope.md) — ci.yml checks Go, web, Docker, publishes the image on main; no packs sync, no Dependabot
 - [Moving several cards as a group](references/project_group_moves.md) — rubber band selection; drag or menu Discard / Move to on the group; one atomic group action
 - [Localized card names and images](references/project_localized_cards.md) — localized overrides per face and index entry; Options language, English default
 - [Fear No Evil scenarios](references/project_fear_no_evil_scenarios.md) — Kingpin curated; chosen-Underling scenarios unsupported
@@ -55,4 +55,4 @@
 - [Compact top bar hides on scroll](references/project_top_bar_auto_hide.md) — ≤600px wide or ≤500px tall: hides on scroll down, back on scroll up
 - [Every change of place animates](references/project_card_move_animations.md) — cards travel origin to destination; hidden ones as backs; unseen hands subtle
 - [Presence message budget](references/project_presence_budget.md) — moves every 150 ms, 3-unit dead zone, events at once; Redis free tier
-- [Deployment architecture](references/project_deployment.md) — Pages at intothefray.xyz, OVH VPS at api.intothefray.xyz, Cloudflare DNS
+- [Deployment architecture](references/project_deployment.md) — Pages at intothefray.xyz, VPS at api.intothefray.xyz; backend deploys first, then Pages
