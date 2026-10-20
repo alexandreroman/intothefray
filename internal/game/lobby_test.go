@@ -84,6 +84,41 @@ func TestJoinNormalizesName(t *testing.T) {
 	}
 }
 
+func TestCleanNameStripsEmojis(t *testing.T) {
+	sixteen := strings.Repeat("a", maxNameRunes)
+	tests := []struct {
+		name string
+		in   string
+		want string
+	}{
+		{"pictograph", "Brave 🔥", "Brave"},
+		{"joined family", "👨\u200d👩\u200d👧 Alex", "Alex"},
+		{"flag", "🇫🇷Alex", "Alex"},
+		{"skin tone", "👍🏽Alex", "Alex"},
+		{"keycap", "1\ufe0f\u20e3", "1"},
+		{"inner spaces", "Iron  Man", "Iron  Man"},
+		{"accented letter", "Zoé", "Zoé"},
+		{"other script", "東京", "東京"},
+		{"emojis not counted toward the limit", "🔥" + sixteen + "🔥b", sixteen},
+		{"only emojis", "🔥🔥", ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := cleanName(tt.in); got != tt.want {
+				t.Errorf("cleanName(%q) = %q, want %q", tt.in, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestJoinRejectsEmojiOnlyName(t *testing.T) {
+	g := mustNewGame(t, "g1", "h", "Host", testNow)
+
+	if _, err := g.Join("b", "🔥🔥"); !errors.Is(err, ErrInvalid) {
+		t.Errorf("emoji-only name err = %v, want ErrInvalid", err)
+	}
+}
+
 func TestRemoveFreesColour(t *testing.T) {
 	g := lobbyOfFour(t)
 

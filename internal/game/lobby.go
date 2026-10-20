@@ -5,6 +5,7 @@ import (
 	"slices"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/alexandreroman/intothefray/internal/pack"
 )
@@ -419,13 +420,26 @@ func heroFace(card pack.Card) pack.Face {
 	return card.Faces[0]
 }
 
-// cleanName trims a display name and cuts it to maxNameRunes runes.
+// cleanName strips emojis from a display name, trims it and cuts it to maxNameRunes runes,
+// so that emojis never count toward the limit.
 func cleanName(name string) string {
-	runes := []rune(strings.TrimSpace(name))
+	runes := []rune(strings.TrimSpace(strings.Map(dropEmoji, name)))
 	if len(runes) > maxNameRunes {
 		runes = runes[:maxNameRunes]
 	}
 	return strings.TrimSpace(string(runes))
+}
+
+// dropEmoji is the strings.Map function that removes the runes emojis are made of. The standard
+// library has no emoji property, so it goes by Unicode categories: pictographs and other symbols
+// (So), joiners and other format characters (Cf), the keycap and other enclosing marks (Me),
+// variation selectors, and the skin tone modifiers, which are modifier symbols (Sk) like accents.
+func dropEmoji(r rune) rune {
+	isSkinTone := r >= 0x1F3FB && r <= 0x1F3FF
+	if isSkinTone || unicode.In(r, unicode.So, unicode.Cf, unicode.Me, unicode.Variation_Selector) {
+		return -1
+	}
+	return r
 }
 
 // freeColor returns the lowest colour index no player uses.

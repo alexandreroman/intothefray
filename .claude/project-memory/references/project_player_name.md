@@ -17,6 +17,11 @@ it to `maxNameRunes` in `internal/game/lobby.go`, the source of truth, and
 the web app mirrors it with `MAX_NAME_LENGTH` in `web/src/lib/names.ts`
 (input `maxlength`, name cut when stored and when read back).
 
+A player name holds no emoji. Both sides strip the same runes before the
+length cut: Unicode categories So, Cf and Me, variation selectors and skin
+tone modifiers (`cleanName` in `lobby.go` and in `names.ts`); the Options
+input drops them as the player types. A name left blank is invalid.
+
 **Why:** typing a name before playing is friction a sandbox table does not
 need.
 

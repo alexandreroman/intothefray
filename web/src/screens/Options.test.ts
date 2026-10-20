@@ -18,6 +18,16 @@ describe('Options', () => {
     expect(getPref('itf-name')).toBe('Alex');
   });
 
+  it('removes a typed emoji from the input', async () => {
+    render(Options);
+    const input = screen.getByLabelText<HTMLInputElement>('Your name');
+
+    await fireEvent.input(input, { target: { value: 'Alex🔥' } });
+
+    expect(input.value).toBe('Alex');
+    expect(getPref('itf-name')).toBe('Alex');
+  });
+
   it('shows a stored name longer than the limit cut', () => {
     setPref('itf-name', 'Abcdefghijklmnopqrstuvwxyz');
     render(Options);

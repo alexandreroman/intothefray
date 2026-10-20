@@ -1,11 +1,12 @@
 import {
   ADJECTIVES,
-  cutName,
+  cleanName,
   MAX_NAME_LENGTH,
   NOUNS,
   playerName,
   randomName,
   savePlayerName,
+  stripEmoji,
 } from './names';
 import { getPref, setPref } from './prefs';
 
@@ -65,6 +66,18 @@ describe('playerName', () => {
     expect(playerName()).toBe('Abcdefghijklmnop');
   });
 
+  it('strips emojis from a stored name', () => {
+    setPref('itf-name', 'Alex 🔥');
+    expect(playerName()).toBe('Alex');
+  });
+
+  it('replaces a stored name made of emojis only', () => {
+    setPref('itf-name', '🔥🔥');
+    const name = playerName();
+    expect(name).toMatch(/^[A-Z][a-z]+ [A-Z][a-z]+$/);
+    expect(getPref('itf-name')).toBe(name);
+  });
+
   it('returns the same name on a second call', () => {
     expect(playerName()).toBe(playerName());
   });
@@ -83,13 +96,47 @@ describe('savePlayerName', () => {
   });
 });
 
-describe('cutName', () => {
+describe('stripEmoji', () => {
+  it('removes emojis and keeps the spaces', () => {
+    expect(stripEmoji('Brave 🔥')).toBe('Brave ');
+    expect(stripEmoji('👨\u200d👩\u200d👧 Alex')).toBe(' Alex');
+    expect(stripEmoji('Iron  Man')).toBe('Iron  Man');
+  });
+});
+
+describe('cleanName', () => {
+  it.each([
+    ['a pictograph', 'Brave 🔥', 'Brave'],
+    ['a joined family', '👨\u200d👩\u200d👧 Alex', 'Alex'],
+    ['a flag', '🇫🇷Alex', 'Alex'],
+    ['a skin tone', '👍🏽Alex', 'Alex'],
+    ['a keycap', '1\ufe0f\u20e3', '1'],
+  ])('strips %s', (_, name, want) => {
+    expect(cleanName(name)).toBe(want);
+  });
+
+  it('keeps accented letters, other scripts and inner spaces', () => {
+    expect(cleanName('Zoé')).toBe('Zoé');
+    expect(cleanName('東京')).toBe('東京');
+    expect(cleanName('Iron  Man')).toBe('Iron  Man');
+  });
+
+  it('does not count emojis toward the limit', () => {
+    const sixteen = 'a'.repeat(MAX_NAME_LENGTH);
+    expect(cleanName(`🔥${sixteen}🔥b`)).toBe(sixteen);
+  });
+
+  it('returns an empty name for emojis only', () => {
+    expect(cleanName('🔥🔥')).toBe('');
+  });
+
   it('counts code points, not UTF-16 units', () => {
-    expect(cutName('é'.repeat(20))).toBe('é'.repeat(16));
-    expect(Array.from(cutName('🦸'.repeat(20)))).toEqual(Array(16).fill('🦸'));
+    expect(cleanName('é'.repeat(20))).toBe('é'.repeat(16));
+    // A letter outside the Basic Multilingual Plane, made of two UTF-16 units.
+    expect(Array.from(cleanName('𝒜'.repeat(20)))).toEqual(Array(16).fill('𝒜'));
   });
 
   it('drops the spaces left at the cut', () => {
-    expect(cutName('  Abcdefghijklmno pqr')).toBe('Abcdefghijklmno');
+    expect(cleanName('  Abcdefghijklmno pqr')).toBe('Abcdefghijklmno');
   });
 });
