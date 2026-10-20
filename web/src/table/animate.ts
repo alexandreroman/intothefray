@@ -13,7 +13,7 @@ import type {
   View,
   Zone,
 } from '../lib/types';
-import { homeDeckOf, sideLabel } from './actions';
+import { discardPileOf, homeDeckOf, isSideDeckId, sideLabel } from './actions';
 import { stackOf } from './drag';
 import { isHidden } from './face';
 import type { Landing } from './interaction.svelte';
@@ -67,6 +67,8 @@ const SHUFFLED = 'shuffled ';
 // "put Web-Shooter at the bottom of their deck", "put 3 cards at the bottom of the encounter deck".
 const PUT = 'put ';
 const AT_THE_BOTTOM = ' at the bottom of ';
+// The line of an undo: 'undid “shuffled their deck”'.
+const UNDID = 'undid ';
 
 /**
  * The animations that take the table from prev to next. ownDrop is what the
@@ -427,37 +429,51 @@ function shuffledPiles(lines: LogView[], view: View, piles: PileView[]): string[
 }
 
 /**
- * The cards just put at the bottom of a deck that does not list them: a new
- * line says "put … at the bottom of" that deck (one card, or a group), and
- * cards of the table or the viewer's hand whose home it is left the view as
- * it grew. A deck that lists the card (a side deck showing its only card)
- * shows it flying there instead (travelOf). The viewer's own drop slips under
- * too, from where it was dropped.
+ * The cards just put at the bottom of a deck that does not list them, as
+ * they left the view and their home deck grew: those a new line says were
+ * "put … at the bottom of" that deck (one card, or a group), and the side
+ * cards tucked under a card that left the table, which go to the bottom of a
+ * side deck without a discard pile (the line names only that card). Cards of
+ * the table or the viewer's hand only. A deck that lists the card (a side deck
+ * showing its only card) shows it flying there instead (travelOf). The
+ * viewer's own drop slips under too, from where it was dropped.
  */
 function slidUnder(lines: LogView[], view: View, before: TableView, after: TableView): Anim[] {
-  const decks = new Set<string>();
-  for (const line of lines) {
-    if (line.undone || !line.text.startsWith(PUT) || !line.text.includes(AT_THE_BOTTOM)) {
-      continue;
-    }
-    const pile = lastNamedPile(line, view, after.piles);
-    if (pile !== null) {
-      decks.add(pile);
+  const done = lines.filter((line) => !line.undone);
+  const named = new Set<string>();
+  for (const line of done) {
+    if (line.text.startsWith(PUT) && line.text.includes(AT_THE_BOTTOM)) {
+      const pile = lastNamedPile(line, view, after.piles);
+      if (pile !== null) {
+        named.add(pile);
+      }
     }
   }
-  if (decks.size === 0) {
+  // An undo puts cards back where they were: nothing is tucked away then.
+  const acted = done.some((line) => !line.text.startsWith(UNDID));
+  if (named.size === 0 && !acted) {
     return [];
   }
+
   const listed = new Set(after.cards.map((card) => card.id));
+  const onTable = new Set(after.cards.filter((c) => c.zone === 'table').map((c) => c.id));
   const grew = (id: string) => {
     const was = before.piles.find((pile) => pile.id === id);
     const now = after.piles.find((pile) => pile.id === id);
     return was !== undefined && now !== undefined && now.count > was.count;
   };
+  const tuckedAway = (was: CardView) =>
+    acted &&
+    was.parent !== undefined &&
+    !onTable.has(was.parent) &&
+    isSideDeckId(homeDeckOf(was)) &&
+    discardPileOf(was, after.piles) === null;
+
   const anims: Anim[] = [];
   for (const was of before.cards) {
     const home = homeDeckOf(was);
-    if (isPlaced(was) && !listed.has(was.id) && decks.has(home) && grew(home)) {
+    const gone = isPlaced(was) && !listed.has(was.id) && grew(home);
+    if (gone && (named.has(home) || tuckedAway(was))) {
       anims.push({ kind: 'under', id: was.id, toPile: home });
     }
   }

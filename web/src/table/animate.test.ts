@@ -500,6 +500,91 @@ describe('diffViews', () => {
       expect(diffViews(prev, undone)).toEqual([]);
     });
 
+    describe('a side card tucked under a card that leaves the table', () => {
+      const invocation = (count: number): PileView =>
+        pile('side:p0:0', { kind: 'sideDeck', x: 360, count, label: 'Invocation' });
+      const used = (cards: string[]): PileView =>
+        pile('sided:p0:0', {
+          kind: 'sideDiscard',
+          x: 440,
+          count: cards.length,
+          label: 'Invocation',
+          cards,
+        });
+      const encd = (cards: string[]): PileView =>
+        pile('encd', { kind: 'encounterDiscard', owner: -1, count: cards.length, cards });
+      const enemy = card('e', { code: '01100', owner: -1, back: 'encounter', x: 800 });
+      const thug = card('t', { code: '01101', owner: -1, back: 'encounter', x: 1000 });
+      const tucked = (id: string, home: string, parent = 'e') =>
+        card(id, { code: '60004', x: 810, y: 10, parent, home });
+      const piles = (senseCount: number, discarded: string[], invocationCount = 5) => [
+        pile('deck:p0'),
+        sense(senseCount),
+        invocation(invocationCount),
+        used([]),
+        encd(discarded),
+      ];
+      const discardedLine = (text: string) => [OLD_LINE, line(text, alex)];
+
+      it('slips under its side deck without a discard pile, the line naming only the host', () => {
+        const before = view({ cards: [top, enemy, tucked('k', 'side:p0:1')], piles: piles(4, []) });
+        const after = view({
+          cards: [top, { ...enemy, zone: 'pile', x: 0, y: 0 }],
+          piles: piles(5, ['e']),
+          log: discardedLine('discarded Hydra Mercenary'),
+        });
+
+        expect(diffViews(before, after).filter((anim) => anim.kind === 'under')).toEqual([
+          { kind: 'under', id: 'k', toPile: 'side:p0:1' },
+        ]);
+      });
+
+      it('slips under for a host discarded with others, in a group', () => {
+        const before = view({
+          cards: [top, enemy, thug, tucked('k', 'side:p0:1'), tucked('j', 'side:p0:1', 't')],
+          piles: piles(4, []),
+        });
+        const after = view({
+          cards: [top, { ...enemy, zone: 'pile' }, { ...thug, zone: 'pile' }],
+          piles: piles(6, ['e', 't']),
+          log: discardedLine('discarded 2 cards (Hydra Mercenary, Hydra Mercenary)'),
+        });
+
+        expect(diffViews(before, after).filter((anim) => anim.kind === 'under')).toEqual([
+          { kind: 'under', id: 'k', toPile: 'side:p0:1' },
+          { kind: 'under', id: 'j', toPile: 'side:p0:1' },
+        ]);
+      });
+
+      it('leaves a card of a side deck with a discard pile to fly there', () => {
+        const before = view({ cards: [top, enemy, tucked('i', 'side:p0:0')], piles: piles(4, []) });
+        const after = view({
+          cards: [top, { ...enemy, zone: 'pile' }, { ...tucked('i', 'side:p0:0'), zone: 'pile' }],
+          piles: [pile('deck:p0'), sense(4), invocation(5), used(['i']), encd(['e'])],
+          log: discardedLine('discarded Hydra Mercenary'),
+        });
+
+        const anims = diffViews(before, after);
+        expect(anims.filter((anim) => anim.kind === 'under')).toEqual([]);
+        expect(anims).toContainEqual({ kind: 'fly', id: 'i', toPile: 'sided:p0:0' });
+      });
+
+      it('does not slip under on an undo', () => {
+        const before = view({ cards: [top, enemy, tucked('k', 'side:p0:1')], piles: piles(4, []) });
+        const after = view({
+          cards: [top],
+          piles: piles(5, []),
+          log: [
+            OLD_LINE,
+            line('attached Radar Sense', { ...alex, undone: true }),
+            line('undid “attached Radar Sense”', alex),
+          ],
+        });
+
+        expect(diffViews(before, after).filter((anim) => anim.kind === 'under')).toEqual([]);
+      });
+    });
+
     it('does not slip under on a view that comes too long after the last', () => {
       const next = bottomOf(5, 'put Radar Sense at the bottom of their Sense deck');
 
