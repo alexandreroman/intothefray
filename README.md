@@ -163,17 +163,20 @@ still sets `VITE_API_URL` or `ALLOWED_ORIGINS`, re-run
 `make packs` downloads the card data from marvelcdb and Cerebro, the
 French names from fr.marvelcdb.com and the French image paths from
 [mc4db](https://mc4db.merlindumesnil.net) (all cached in
-`packs/.cache`), keeps only the image URLs that answer, merges the hand-written files of
-`packs/curated/`, and writes the result to `packs/dist/`. Commit the
-regenerated files with the change that caused them. A face keeps its
-English name and images, and its `localized` map holds the overrides of
-other languages (`localized.fr`: name, subname, images tried before the
-English ones); pack, scenario and set entries of the index carry a
-localized name the same way. The report ends with the French coverage.
-The curated files are
-the scenarios (`scenarios/`), card overrides (`cards.json`) and set data
-(`sets.json`: the cards a set starts in play at each difficulty, and the
-sets the lobby leaves out).
+`packs/.cache`), keeps only the image URLs that answer, merges the
+hand-written files of `packs/curated/`, and writes the result to
+`packs/dist/`. Commit the regenerated files with the change that caused
+them. The answers to image checks are cached in `packs/.cache/images.json`
+for good: delete it to pick up images published since, such as new French
+scans. The curated files are the scenarios (`scenarios/`), card overrides
+(`cards.json`) and set data (`sets.json`: the cards a set starts in play
+at each difficulty, and the sets the lobby leaves out).
+
+A face keeps its English name and images, and its `localized` map holds
+the overrides of other languages (`localized.fr`: name, subname, images
+tried before the English ones). Pack, scenario and set entries of the
+index carry a localized name the same way. The generator's report
+includes the French coverage.
 
 ## Configuration
 

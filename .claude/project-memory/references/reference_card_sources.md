@@ -35,4 +35,6 @@ the only source of scans of the printed French cards. mc4db runs on a
 small shared host paid for by its owner.
 
 **How to access:** plain HTTPS GET, no auth; the generator caches
-responses under `packs/.cache/` and HEAD-checks every image URL.
+responses under `packs/.cache/` and HEAD-checks every image URL; the
+answers stay in `packs/.cache/images.json` until it is deleted, which
+is how new mc4db scans get picked up.
