@@ -295,6 +295,33 @@ describe('keys on the table', () => {
     expect(session.act).toHaveBeenCalledOnce();
   });
 
+  it('X discards the own deck top card; Shift + X asks how many with Discard X', async () => {
+    const { session } = await renderTable();
+    await fireEvent.pointerEnter(placed('deck:p0'));
+
+    await press('x');
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      { kind: 'discardTop', pile: 'deck:p0', n: 1 },
+      0,
+    );
+    expect(screen.queryByRole('dialog')).toBeNull();
+
+    await press('X', { shiftKey: true });
+    expect(screen.getByRole('dialog', { name: 'Discard from the top' })).toBeTruthy();
+    expect(session.act).toHaveBeenCalledOnce();
+  });
+
+  it('Backspace discards the own deck top card, as X does', async () => {
+    const { session } = await renderTable();
+    await fireEvent.pointerEnter(placed('deck:p0'));
+
+    await press('Backspace');
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      { kind: 'discardTop', pile: 'deck:p0', n: 1 },
+      0,
+    );
+  });
+
   it('Shift + W does not repeat while held', async () => {
     await renderTable();
     await fireEvent.pointerEnter(placed('deck:p0'));

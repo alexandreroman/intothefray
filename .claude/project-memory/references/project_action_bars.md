@@ -25,15 +25,17 @@ type: project
   arrow" for a card in play. Each entry shows its key; a refused one is
   greyed with its reason.
 - Pile entries: own deck Draw 1 (W), Draw X (⇧W) │ Top X (L), Search (K)
-  │ Discard X, Shuffle (U); encounter deck Reveal (R) │ Top X, Search │
-  Discard X, Shuffle; discard pile Search │ Shuffle into deck. Labels
-  are short; only a refused entry has a tooltip (its reason). The stage
+  │ Discard 1 (X or ⌫), Discard X (⇧X), Shuffle (U); encounter deck
+  Reveal (R) │ Top X, Search │ Discard 1, Discard X, Shuffle; discard pile
+  Search │ Shuffle into deck. Dragging the top of an own deck (or the
+  encounter deck) onto its discard pile discards it, as Discard 1 does.
+  Labels are short; only a refused entry has a tooltip (its reason). The stage
   choice reads "Change card…".
 - A hero side deck has the own deck's entries, Draw 1 and Draw X drawing
-  from it; Discard X only when it has a side discard pile (Invocation),
-  which has a discard pile's entries. A side card's Move to names its
-  deck ("Top of Sense deck"); without a side discard it has no Discard,
-  and X and Backspace do nothing on it.
+  from it; Discard 1 and Discard X only when it has a side discard pile
+  (Invocation), which has a discard pile's entries. A side card's Move to
+  names its deck ("Top of Sense deck"); without a side discard it has no
+  Discard, and X and Backspace do nothing on it.
 - Card keys beside the menu: E exhaust, F flip, X discard (Backspace
   too), H hand, B bottom of deck (a side card's side deck), V change
   card (villain / main scheme), A arrow; C stays Confused.

@@ -644,6 +644,7 @@ function pileActions(pile: PileView, context: Context): ActionItem[] | { text: s
         drawCountItem(pile),
         lookTopItem(pile, 'your deck'),
         searchItem(pile),
+        discardOneItem(pile),
         discardTopItem(pile, 'your deck'),
         shuffleItem(pile),
       ];
@@ -662,7 +663,7 @@ function pileActions(pile: PileView, context: Context): ActionItem[] | { text: s
       ];
       // Only a side deck with its own discard pile discards from the top.
       if (hasPile(context.table, deckDiscardOf(pile.id))) {
-        items.push(discardTopItem(pile, pileName));
+        items.push(discardOneItem(pile), discardTopItem(pile, pileName));
       }
       items.push(shuffleItem(pile));
       return items;
@@ -672,6 +673,7 @@ function pileActions(pile: PileView, context: Context): ActionItem[] | { text: s
         revealItem(pile, context),
         lookTopItem(pile, 'the encounter deck'),
         searchItem(pile),
+        discardOneItem(pile),
         discardTopItem(pile, 'the encounter deck'),
         shuffleItem(pile),
       ];
@@ -778,11 +780,28 @@ function lookTopItem(pile: PileView, pileName: string): ActionItem {
   };
 }
 
-/** Discard X, a deck's rarer action: pileName is how the question names the pile. */
+/** Discard 1 sends the deck's top card to its discard pile in one click: X or Backspace, as on a card. */
+function discardOneItem(pile: PileView): ActionItem {
+  return {
+    id: 'discard1',
+    label: 'Discard 1',
+    key: 'X',
+    altKeys: ['Backspace'],
+    group: GROUP_MORE,
+    run: () => ({ kind: 'discardTop', pile: pile.id, n: 1 }),
+  };
+}
+
+/**
+ * Discard X, a deck's rarer action: Shift + X, beside Discard 1's X. pileName is
+ * how the question names the pile.
+ */
 function discardTopItem(pile: PileView, pileName: string): ActionItem {
   return {
     id: 'discardTop',
     label: 'Discard X',
+    key: 'X',
+    shift: true,
     group: GROUP_MORE,
     run: () => ({
       ask: {

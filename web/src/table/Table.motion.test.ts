@@ -1062,6 +1062,56 @@ describe('Table animations', () => {
       expect(showsBack(fly)).toBe(true);
     });
 
+    describe("the viewer's own drop of their deck's top on its discard pile", () => {
+      const samDiscard = (cards: string[]) => discard(cards, 'disc:p1', 1, 840);
+      const art = '.surface .pile[data-id="disc:p1"] .art';
+
+      async function dropOnDiscard() {
+        const table = await renderTable(
+          makeView([], { piles: [samDeck(30), PILES[1]!, samDiscard([])] }),
+        );
+        interaction.land({
+          action: 1,
+          element: { kind: 'pile', id: 'deck:p1' },
+          card: null,
+          lifted: [],
+          handOrder: null,
+        });
+        await table.next(
+          makeView([card('c7', { owner: 1, zone: 'pile' })], {
+            piles: [samDeck(29), PILES[1]!, samDiscard(['c7'])],
+          }),
+        );
+        return table;
+      }
+
+      it('turns face up there, with no flight', async () => {
+        const { container } = await dropOnDiscard();
+
+        await waitFor(() =>
+          expect(animationsOf(art)).toEqual([
+            [
+              [
+                { transform: 'perspective(700px) rotateY(90deg)' },
+                { transform: 'perspective(700px) rotateY(0deg)' },
+              ],
+              expect.objectContaining({ duration: expect.any(Number) }),
+            ],
+          ]),
+        );
+        expect(container.querySelector('.fly')).toBeNull();
+      });
+
+      it('does not turn with reduced motion', async () => {
+        await withReducedMotion(async () => {
+          await dropOnDiscard();
+          await settle();
+          expect(animationsOf(art)).toEqual([]);
+          expect(animate).not.toHaveBeenCalled();
+        });
+      });
+    });
+
     it('with reduced motion none of these play', async () => {
       await withReducedMotion(async () => {
         const samDiscard = (cards: string[]) => discard(cards, 'disc:p1', 1, 840);

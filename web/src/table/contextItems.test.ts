@@ -268,7 +268,8 @@ describe('contextItems', () => {
       'Top X [L]',
       'Search [K]',
       '---',
-      'Discard X',
+      'Discard 1 [X]',
+      'Discard X [⇧X]',
       'Shuffle [U]',
     ]);
   });
@@ -280,7 +281,8 @@ describe('contextItems', () => {
       'Top X [L]',
       'Search [K]',
       '---',
-      'Discard X',
+      'Discard 1 [X]',
+      'Discard X [⇧X]',
       'Shuffle [U]',
     ]);
   });
@@ -295,7 +297,7 @@ describe('contextItems', () => {
     expect(texts(entriesFor({ kind: 'pile', id: 'disc:p1' }))).toEqual(['*Search [K]']);
   });
 
-  it('shows an own side deck flat, with Discard X only when it has a discard pile', () => {
+  it('shows an own side deck flat, with Discard 1 and Discard X only when it has a discard pile', () => {
     expect(texts(entriesFor({ kind: 'pile', id: 'side:p0:0' }))).toEqual([
       '*Draw 1 [W]',
       'Draw X [⇧W]',
@@ -303,7 +305,8 @@ describe('contextItems', () => {
       'Top X [L]',
       'Search [K]',
       '---',
-      'Discard X',
+      'Discard 1 [X]',
+      'Discard X [⇧X]',
       'Shuffle [U]',
     ]);
     expect(texts(entriesFor({ kind: 'pile', id: 'side:p0:1' }))).toEqual([

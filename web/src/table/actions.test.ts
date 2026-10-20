@@ -425,7 +425,7 @@ describe('actionsFor', () => {
     expect(groups(items)).toEqual([
       ['draw1', 'drawN'],
       ['lookTop', 'search'],
-      ['discardTop', 'shuffle'],
+      ['discard1', 'discardTop', 'shuffle'],
     ]);
     expect(items.some((it) => it.reason !== undefined)).toBe(false);
     const draw = item(items, 'draw1');
@@ -469,9 +469,12 @@ describe('actionsFor', () => {
     expect(item(items, 'search')).toMatchObject({ label: 'Search', key: 'K' });
     expect(actionOf(item(items, 'search'))).toEqual({ kind: 'search', pile: 'deck:p0' });
 
-    // The rarer actions, in a group of their own.
-    expect(item(items, 'discardTop').label).toBe('Discard X');
-    expect(item(items, 'discardTop').key).toBeUndefined();
+    // The rarer actions, in a group of their own: Discard 1 takes X, Discard X Shift + X.
+    const discardOne = item(items, 'discard1');
+    expect(discardOne).toMatchObject({ label: 'Discard 1', key: 'X', altKeys: ['Backspace'] });
+    expect(discardOne.shift).toBeUndefined();
+    expect(actionOf(discardOne)).toEqual({ kind: 'discardTop', pile: 'deck:p0', n: 1 });
+    expect(item(items, 'discardTop')).toMatchObject({ label: 'Discard X', key: 'X', shift: true });
     expect(item(items, 'shuffle')).toMatchObject({ label: 'Shuffle', key: 'U' });
     const discardTop = item(items, 'discardTop').run?.();
     if (!discardTop || !('ask' in discardTop)) {
@@ -498,7 +501,11 @@ describe('actionsFor', () => {
   it('encounter deck items', () => {
     const items = itemsFor({ kind: 'pile', id: 'enc' });
 
-    expect(groups(items)).toEqual([['reveal'], ['lookTop', 'search'], ['discardTop', 'shuffle']]);
+    expect(groups(items)).toEqual([
+      ['reveal'],
+      ['lookTop', 'search'],
+      ['discard1', 'discardTop', 'shuffle'],
+    ]);
     const reveal = item(items, 'reveal');
     expect(reveal).toMatchObject({ label: 'Reveal', key: 'R' });
     expect(reveal.reason).toBeUndefined();
@@ -509,6 +516,7 @@ describe('actionsFor', () => {
       'How many cards from the top of the encounter deck?',
     );
     expect(actionOf(item(items, 'search'))).toEqual({ kind: 'search', pile: 'enc' });
+    expect(actionOf(item(items, 'discard1'))).toEqual({ kind: 'discardTop', pile: 'enc', n: 1 });
     const discardTop = item(items, 'discardTop').run?.();
     expect(discardTop && 'ask' in discardTop && discardTop.ask.question).toBe(
       'How many cards from the top of the encounter deck go to the discard pile?',
@@ -686,7 +694,7 @@ describe('a player with two decks', () => {
     expect(groups(deck)).toEqual([
       ['draw1', 'drawN'],
       ['lookTop', 'search'],
-      ['discardTop', 'shuffle'],
+      ['discard1', 'discardTop', 'shuffle'],
     ]);
 
     const move = menuOf(itemsFor({ kind: 'card', id: 'second' }, view, TWO_DECKS), 'moveTo');
@@ -756,13 +764,13 @@ describe('side decks', () => {
   const view = () => makeView({ cards: sideCards, piles: sidePiles });
   const pileItems = (id: string) => itemsFor({ kind: 'pile', id }, view());
 
-  it('own side deck items: Draw 1 and Draw X from it, Top X, Search, Discard X when it has a discard pile, Shuffle', () => {
+  it('own side deck items: Draw 1 and X from it, Top X, Search, Discard 1 and X with a discard pile, Shuffle', () => {
     const items = pileItems('side:p0:0');
     // No out-of-play buttons: those are on the deck and the discard pile.
     expect(groups(items)).toEqual([
       ['draw1', 'drawN'],
       ['lookTop', 'search'],
-      ['discardTop', 'shuffle'],
+      ['discard1', 'discardTop', 'shuffle'],
     ]);
     expect(actionOf(item(items, 'draw1'))).toEqual({ kind: 'draw', n: 1, pile: 'side:p0:0' });
     const drawN = item(items, 'drawN').run?.();
@@ -781,6 +789,11 @@ describe('side decks', () => {
       pile: 'side:p0:0',
     });
 
+    expect(actionOf(item(items, 'discard1'))).toEqual({
+      kind: 'discardTop',
+      pile: 'side:p0:0',
+      n: 1,
+    });
     const discardTop = item(items, 'discardTop').run?.();
     expect(discardTop && 'ask' in discardTop && discardTop.ask.make(1)).toEqual({
       kind: 'discardTop',
@@ -790,7 +803,7 @@ describe('side decks', () => {
     expect(actionOf(item(items, 'shuffle'))).toEqual({ kind: 'shuffle', pile: 'side:p0:0' });
   });
 
-  it('a side deck without a discard pile has no Discard X', () => {
+  it('a side deck without a discard pile has neither Discard 1 nor Discard X', () => {
     expect(groups(pileItems('side:p0:1'))).toEqual([
       ['draw1', 'drawN'],
       ['lookTop', 'search'],
