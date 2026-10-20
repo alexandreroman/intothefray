@@ -7,10 +7,12 @@ import { untrack } from 'svelte';
 import { on } from 'svelte/events';
 
 /**
- * The screens on which the top bar hides on scroll: its compact layout, below
- * which it drops its least useful items too. The top bar's @media rules match it.
+ * The small screens on which the top bar hides on scroll: narrow (a phone
+ * upright, the top bar's compact layout) or short (a phone on its side, 320 to
+ * 440px tall, where a tablet on its side is 744px tall or more). The items the
+ * bar drops follow the width only (TopBar.svelte).
  */
-export const COMPACT_QUERY = 'max-width: 600px';
+export const COMPACT_QUERY = '(max-width: 600px), (max-height: 500px)';
 
 /** The top bar's height, in px (TopBar.svelte). */
 export const TOP_BAR_HEIGHT = 56;

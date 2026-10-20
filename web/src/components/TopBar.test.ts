@@ -3,7 +3,7 @@ import { tick } from 'svelte';
 import TopBar from './TopBar.svelte';
 import { route } from '../lib/router.svelte';
 import { cutShort } from '../lib/overflowTip.testing';
-import { COMPACT_QUERY } from '../lib/autoHide.svelte';
+import { DESKTOP, LANDSCAPE_PHONE, mockScreen, PHONE, TABLET } from '../lib/screen.testing';
 
 // jsdom has no Fullscreen API: each test installs the one it needs, as own
 // properties that shadow nothing and are simply deleted afterwards.
@@ -355,20 +355,6 @@ describe('TopBar on scroll', () => {
     }
   });
 
-  /** Makes the compact screen's media query match, with or without its parentheses, or none. */
-  function mockScreen(compact: boolean): void {
-    vi.spyOn(window, 'matchMedia').mockImplementation(
-      (query) =>
-        Object.assign(new EventTarget(), {
-          media: query,
-          matches: compact && query.replace(/^\((.*)\)$/, '$1') === COMPACT_QUERY,
-          onchange: null,
-          addListener: () => {},
-          removeListener: () => {},
-        }) as MediaQueryList,
-    );
-  }
-
   /** Scrolls the window to that vertical offset. */
   async function scrollWindowTo(offset: number): Promise<void> {
     Object.defineProperty(window, 'scrollY', { value: offset, configurable: true });
@@ -399,7 +385,7 @@ describe('TopBar on scroll', () => {
   }
 
   it('slides out of view on a compact screen as the page scrolls down, and back as it scrolls up', async () => {
-    mockScreen(true);
+    mockScreen(PHONE);
     const { container } = render(TopBar);
     expect(header(container).classList).toContain('auto-hide');
     expect(header(container).classList).not.toContain('hidden');
@@ -411,8 +397,20 @@ describe('TopBar on scroll', () => {
     expect(header(container).classList).not.toContain('hidden');
   });
 
+  it('slides out of view on a phone on its side, wider than a compact screen but short', async () => {
+    mockScreen(LANDSCAPE_PHONE);
+    const { container } = render(TopBar);
+    expect(header(container).classList).toContain('auto-hide');
+
+    await scrollWindowTo(300);
+    expect(header(container).classList).toContain('hidden');
+
+    await scrollWindowTo(250);
+    expect(header(container).classList).not.toContain('hidden');
+  });
+
   it('follows the scroller it is given rather than the window', async () => {
-    mockScreen(true);
+    mockScreen(PHONE);
     const scroller = document.createElement('div');
     Object.defineProperties(scroller, {
       scrollHeight: { value: 3000 },
@@ -430,7 +428,7 @@ describe('TopBar on scroll', () => {
   });
 
   it('stays in view while keyboard focus is inside it', async () => {
-    mockScreen(true);
+    mockScreen(PHONE);
     focusBy('keyboard');
     const { container } = render(TopBar);
     await scrollWindowTo(300);
@@ -455,7 +453,7 @@ describe('TopBar on scroll', () => {
   });
 
   it('keeps the page where it was as keyboard focus brings it back', async () => {
-    mockScreen(true);
+    mockScreen(PHONE);
     focusBy('keyboard');
     render(TopBar);
     await scrollWindowTo(300);
@@ -468,7 +466,7 @@ describe('TopBar on scroll', () => {
   });
 
   it('does not stay for the focus a tap leaves, nor the one a closed dialog gives back', async () => {
-    mockScreen(true);
+    mockScreen(PHONE);
     focusBy('pointer');
     const { container } = render(TopBar, { onend: () => {} });
     const end = screen.getByRole('button', { name: 'End game' });
@@ -486,7 +484,7 @@ describe('TopBar on scroll', () => {
   });
 
   it('stays in view while its End game dialog is open', async () => {
-    mockScreen(true);
+    mockScreen(PHONE);
     const { container } = render(TopBar, { onend: () => {} });
     await fireEvent.click(screen.getByRole('button', { name: 'End game' }));
 
@@ -494,8 +492,11 @@ describe('TopBar on scroll', () => {
     expect(header(container).classList).not.toContain('hidden');
   });
 
-  it('never hides on a larger screen', async () => {
-    mockScreen(false);
+  it.each([
+    ['a tablet', TABLET],
+    ['a desktop', DESKTOP],
+  ])('never hides on a larger screen: %s', async (_name, size) => {
+    mockScreen(size);
     const { container } = render(TopBar);
 
     await scrollWindowTo(300);

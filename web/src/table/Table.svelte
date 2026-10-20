@@ -2283,18 +2283,32 @@
   }
 
   /*
-    On a compact screen the top bar floats over the top of the play area, which takes the whole
-    window: sliding away, it shows the table under it, and nothing else moves.
+    On a compact screen the top bar floats over the top of the play area, which takes the window's
+    whole height: sliding away, it shows the table under it, and nothing else moves. A short screen
+    wider than a narrow one (a large phone on its side) keeps the history column, which then runs
+    from the top of the window: the bar floats over the play area only, its icons on the play
+    area's edge.
   */
   .app.bar-over {
     grid-template-rows: minmax(0, 1fr);
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-areas: 'table';
+    grid-template-areas: 'table side';
   }
 
   .app.bar-over .top {
+    --bar-gutter-end: var(--content-gutter);
     grid-area: table;
     align-self: start;
+  }
+
+  /* Without the history column, the bar spans the window, its icons close to the window's edge. */
+  @media (max-width: 900px) {
+    .app.bar-over {
+      grid-template-areas: 'table';
+    }
+
+    .app.bar-over .top {
+      --bar-gutter-end: 8px;
+    }
   }
 
   /*

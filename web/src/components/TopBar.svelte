@@ -364,7 +364,9 @@
    * A narrow bar drops its least useful items first: the crumb, Fullscreen,
    * then the spectator count. The logo and End game always stay. Fullscreen
    * stays while active, or a viewer without an Escape key could not leave it.
-   * The breakpoint is COMPACT_QUERY (lib/autoHide), on which the bar hides on scroll.
+   * The items follow the width only: the bar also hides on scroll on a short
+   * screen (COMPACT_QUERY, lib/autoHide), a phone on its side, which has the
+   * room for all of them.
    */
   @media (max-width: 600px) {
     .bar {

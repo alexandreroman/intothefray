@@ -63,6 +63,8 @@ const PHONE: Screen = { width: 390, height: 844, touch: true };
 // A desktop window narrowed to the small screen breakpoint, with a mouse: the table fits its width.
 const SMALL_WINDOW: Screen = { width: 600, height: 800 };
 const PHONE_SIDEWAYS: Screen = { width: 844, height: 390, touch: true };
+// A large phone held sideways (iPhone 16 Pro Max): short, and wide enough for the history column.
+const LARGE_PHONE_SIDEWAYS: Screen = { width: 932, height: 430, touch: true };
 const TABLET_SIDEWAYS: Screen = { width: 1180, height: 820, touch: true };
 
 /** Whether one feature of a media query, as "max-width: 900px", holds on that screen. */
@@ -1012,6 +1014,44 @@ describe('Table under a compact top bar', () => {
     await waitFor(() => {
       expect(wrap.scrollTop).toBe(24 + TOP_BAR_HEIGHT + 480 - 430);
     });
+  });
+
+  it('floats the bar over a phone on its side, in the narrow layout', async () => {
+    vi.mocked(loadGameCards).mockRejectedValue(new Error('offline'));
+    mockScreen(PHONE_SIDEWAYS);
+    const { container } = render(Table, { session: fakeSession(), view: makeView() });
+    const app = container.querySelector<HTMLElement>('.app')!;
+    expect(app.classList).toContain('bar-over');
+    expect(app.style.getPropertyValue('--bar-start')).toBe(`${TOP_BAR_HEIGHT}px`);
+    expect(app.style.getPropertyValue('--bar-room')).toBe(`${TOP_BAR_HEIGHT}px`);
+    // The narrow layout: no history, Undo floating over the table.
+    expect(sidePanel()).toBeNull();
+    expect(screen.getAllByRole('button', { name: 'Undo last action' })).toHaveLength(1);
+    // The catalog notice keeps clear of the bar through --bar-room.
+    expect((await screen.findByRole('alert')).classList).toContain('notice');
+
+    await scrollTable(container.querySelector<HTMLElement>('.tablewrap')!, 400);
+    expect(container.querySelector('header')?.classList).toContain('hidden');
+    expect(app.style.getPropertyValue('--bar-room')).toBe('0px');
+  });
+
+  it('floats the bar over the play area only of a large phone on its side, beside the history', () => {
+    mockScreen(LARGE_PHONE_SIDEWAYS);
+    const { container } = render(Table, { session: fakeSession(), view: makeView() });
+    const app = container.querySelector<HTMLElement>('.app')!;
+    expect(app.classList).toContain('bar-over');
+    expect(app.style.getPropertyValue('--bar-start')).toBe(`${TOP_BAR_HEIGHT}px`);
+    expect(sidePanel()).not.toBeNull();
+
+    // jsdom applies no stylesheet: the rules themselves are checked. The history column stays
+    // beside the play area, and goes with the narrow layout.
+    const barOverRule = /\n {2}\.app\.bar-over \{([^}]*)\}/.exec(tableSource)?.[1];
+    expect(barOverRule).toMatch(/grid-template-areas: 'table side';/);
+    expect(barOverRule).not.toMatch(/grid-template-columns/);
+    const narrowRule = /@media \(max-width: 900px\) \{\s*\.app\.bar-over \{([^}]*)\}/.exec(
+      tableSource,
+    )?.[1];
+    expect(narrowRule).toMatch(/grid-template-areas: 'table';/);
   });
 
   it('leaves the bar in its own row on a tablet, without the history column', () => {
