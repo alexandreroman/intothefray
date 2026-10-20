@@ -624,8 +624,9 @@
       return;
     }
     const under = document.elementFromPoint(x, y);
-    // Piles keep their own hover: an empty one has none, a deck keeps the preview.
-    if (under?.closest('.surface .pile')) {
+    const pile = under?.closest<HTMLElement>('.surface .pile');
+    if (pile) {
+      rehoverPile(pile);
       return;
     }
     const hit = under?.closest<HTMLElement>(
@@ -637,6 +638,25 @@
       return;
     }
     interaction.rehover({ kind: hit.classList.contains('hcard') ? 'hand' : 'card', id });
+  }
+
+  /**
+   * A pile keeps its own hover, which an empty pile without a bar does not
+   * have. A pile a card was dropped on was never entered, the pointer passing
+   * over it during the drag: it is hovered now, its bar showing, as entering
+   * it would (PileView: a deck that shows its back clears the preview).
+   */
+  function rehoverPile(element: HTMLElement): void {
+    const id = element.dataset.id;
+    const pile = piles.find((p) => p.id === id);
+    const hovered = interaction.hovered;
+    if (!pile || element.classList.contains('inert')) {
+      return;
+    }
+    if (hovered?.kind === 'pile' && hovered.id === pile.id) {
+      return;
+    }
+    interaction.rehover({ kind: 'pile', id: pile.id }, topOf(pile) ? 'show' : 'clear');
   }
 
   /**

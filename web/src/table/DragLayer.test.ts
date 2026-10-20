@@ -1359,6 +1359,61 @@ describe('the card under a still pointer after the viewer acts', () => {
     expect(session.act).toHaveBeenLastCalledWith({ kind: 'flip', card: 'dealt' }, 0);
   });
 
+  it('hovers the discard pile a card was dropped on, so that its bar shows', async () => {
+    hitTestFrom();
+    const { session, rerender } = await renderTable();
+    await press(placed('mine'), 50, 400);
+    await moveTo(830, 400);
+    await release(830, 400);
+    expect(session.act).toHaveBeenLastCalledWith({ kind: 'discard', card: 'mine' }, 0);
+
+    // The server puts it on the discard pile, under the pointer, which has not moved.
+    const others = CARDS.filter((c) => c.id !== 'mine');
+    await rerender(makeView({ cards: others, discarded: ['d1'] }));
+    await waitFor(() => expect(interaction.hovered).toEqual({ kind: 'pile', id: 'disc:p0' }));
+  });
+
+  it("hovers a side deck's discard pile a card was dropped on", async () => {
+    hitTestFrom();
+    /** Alex's Invocation deck and its discard pile, the Invocation card on the table or discarded. */
+    const invocation = (discarded: boolean): View => {
+      const inv = discarded
+        ? card('inv', { zone: 'pile', home: 'side:p0:0' })
+        : card('inv', { x: 200, y: 300, home: 'side:p0:0' });
+      const view = makeView({ cards: [...CARDS, inv] });
+      view.table!.piles.push(
+        pile('side:p0:0', {
+          kind: 'sideDeck',
+          owner: 0,
+          x: 920,
+          y: 300,
+          count: 3,
+          label: 'Invocation',
+        }),
+        pile('sided:p0:0', {
+          kind: 'sideDiscard',
+          owner: 0,
+          x: 920,
+          y: 600,
+          count: discarded ? 1 : 0,
+          label: 'Invocation',
+          cards: discarded ? ['inv'] : [],
+        }),
+      );
+      return view;
+    };
+    const { session, rerender } = await renderTable(invocation(false));
+    // The side discard pile lies at 940, 640 on the screen.
+    await press(placed('inv'), 270, 400);
+    await moveTo(1000, 700);
+    await release(1000, 700);
+    expect(session.act).toHaveBeenLastCalledWith({ kind: 'discard', card: 'inv' }, 0);
+
+    await rerender(invocation(true));
+    await waitFor(() => expect(interaction.hovered).toEqual({ kind: 'pile', id: 'sided:p0:0' }));
+    expect(screen.getByRole('toolbar', { name: 'Actions' })).toBeTruthy();
+  });
+
   it("hovers what another player's action puts under the pointer, and drops what it takes away", async () => {
     hitTestFrom();
     const { rerender } = await renderTable();
