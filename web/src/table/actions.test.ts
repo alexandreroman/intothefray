@@ -120,7 +120,7 @@ function itemsFor(
   view = makeView(),
   you: { areas?: readonly Area[]; role: Role } = ALEX,
 ): ActionItem[] {
-  const result = actionsFor(el, view, you);
+  const result = actionsFor(el, view, you, 'en');
   if (!Array.isArray(result)) {
     throw new Error(`expected items, got the text "${result.text}"`);
   }
@@ -543,7 +543,7 @@ describe('actionsFor', () => {
 
   it("other player's deck shows the belongs text without set-aside cards", () => {
     const view = makeView({ piles: [pile('deck:p1', { owner: 1, count: 30 })] });
-    expect(actionsFor({ kind: 'pile', id: 'deck:p1' }, view, ALEX)).toEqual({
+    expect(actionsFor({ kind: 'pile', id: 'deck:p1' }, view, ALEX, 'en')).toEqual({
       text: 'Belongs to Sam: only they can use it.',
     });
   });
@@ -594,7 +594,7 @@ describe('actionsFor', () => {
       piles: [pile('disc:p0', { kind: 'discard', owner: 0, count: 0 })],
     });
 
-    expect(actionsFor({ kind: 'pile', id: 'disc:p0' }, view, ALEX)).toEqual([]);
+    expect(actionsFor({ kind: 'pile', id: 'disc:p0' }, view, ALEX, 'en')).toEqual([]);
   });
 
   it("an empty deck or discard pile still opens its owner's out-of-play piles", () => {
@@ -621,7 +621,7 @@ describe('actionsFor', () => {
     view.you = { role: 'spectator', name: 'Kim', color: -1, host: false };
     const spectator: { role: Role } = { role: 'spectator' };
 
-    expect(actionsFor({ kind: 'card', id: 'mine' }, view, spectator)).toEqual([]);
+    expect(actionsFor({ kind: 'card', id: 'mine' }, view, spectator, 'en')).toEqual([]);
     // Decks only open their owner's out-of-play piles.
     const ids = (id: string) => itemsFor({ kind: 'pile', id }, view, spectator).map((it) => it.id);
     expect(ids('deck:p0')).toEqual(['aside']);
@@ -642,17 +642,17 @@ describe('actionsFor', () => {
     view.you = { role: 'spectator', name: 'Kim', color: -1, host: false };
     const spectator: { role: Role } = { role: 'spectator' };
 
-    expect(actionsFor({ kind: 'card', id: 'v' }, view, spectator)).toEqual([]);
-    expect(actionsFor({ kind: 'card', id: 's' }, view, spectator)).toEqual([]);
+    expect(actionsFor({ kind: 'card', id: 'v' }, view, spectator, 'en')).toEqual([]);
+    expect(actionsFor({ kind: 'card', id: 's' }, view, spectator, 'en')).toEqual([]);
   });
 
   it('hand card gets no bar', () => {
-    expect(actionsFor({ kind: 'hand', id: 'h' }, makeView(), ALEX)).toEqual([]);
+    expect(actionsFor({ kind: 'hand', id: 'h' }, makeView(), ALEX, 'en')).toEqual([]);
   });
 
   it('an element that is gone gets no bar', () => {
-    expect(actionsFor({ kind: 'card', id: 'gone' }, makeView(), ALEX)).toEqual([]);
-    expect(actionsFor({ kind: 'pile', id: 'gone' }, makeView(), ALEX)).toEqual([]);
+    expect(actionsFor({ kind: 'card', id: 'gone' }, makeView(), ALEX, 'en')).toEqual([]);
+    expect(actionsFor({ kind: 'pile', id: 'gone' }, makeView(), ALEX, 'en')).toEqual([]);
   });
 });
 
@@ -715,7 +715,7 @@ describe('a player with two decks', () => {
 
   it("other player's deck belongs", () => {
     const view = twoDeckView([pile('deck:p2', { owner: 2, count: 30 })]);
-    expect(actionsFor({ kind: 'pile', id: 'deck:p2' }, view, TWO_DECKS)).toEqual({
+    expect(actionsFor({ kind: 'pile', id: 'deck:p2' }, view, TWO_DECKS, 'en')).toEqual({
       text: 'Belongs to Sam: only they can use it.',
     });
     const move = menuOf(itemsFor({ kind: 'card', id: 'sams' }, view, TWO_DECKS), 'moveTo');

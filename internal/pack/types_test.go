@@ -130,3 +130,25 @@ func TestIndexRoundTrip(t *testing.T) {
 		t.Errorf("round trip mismatch:\nwant %+v\ngot  %+v", want, got)
 	}
 }
+
+func TestLocalizedIsZero(t *testing.T) {
+	tests := []struct {
+		name      string
+		localized Localized
+		want      bool
+	}{
+		{"empty", Localized{}, true},
+		{"empty images", Localized{Images: []string{}}, true},
+		{"name", Localized{Name: "Le Rhino"}, false},
+		{"subname", Localized{Subname: "Bruce Banner"}, false},
+		{"images", Localized{Images: []string{"https://example.com/01097.webp"}}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			if got := tt.localized.IsZero(); got != tt.want {
+				t.Errorf("IsZero() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

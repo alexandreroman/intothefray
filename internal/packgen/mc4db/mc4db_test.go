@@ -32,10 +32,10 @@ func TestFetchCards(t *testing.T) {
 
 	want := []Card{
 		{
-			Code: "26002", PackCode: "vision",
+			Code:     "26002",
 			ImageSrc: "/bundles/cards/EN/vision/26002.webp", BackImageSrc: "/bundles/cards/EN/vision/26002b.webp",
 		},
-		{Code: "01043b", PackCode: "core"},
+		{Code: "01043b"},
 	}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("cards = %+v, want %+v", got, want)

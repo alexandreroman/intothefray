@@ -20,18 +20,18 @@ type Unsupported struct {
 type Coverage struct {
 	Lang   string
 	Faces  int // faces of every pack
-	Names  int // faces whose name is known in the language
+	Names  int // faces whose name is translated, i.e. differs from English
 	Images int // faces with at least one image in the language
 	// PacksWithoutImages lists, in release order, the packs that have faces
 	// but no image in the language.
 	PacksWithoutImages []string
 }
 
-// String formats the counts, e.g. "fr: names 3,900/4,027 faces, images
-// 3,880/4,027 faces".
+// String formats the counts, e.g. "fr: names 2,437/4,027 faces translated,
+// images 4,017/4,027 faces".
 func (c Coverage) String() string {
 	faces := thousands(c.Faces)
-	return fmt.Sprintf("%s: names %s/%s faces, images %s/%s faces",
+	return fmt.Sprintf("%s: names %s/%s faces translated, images %s/%s faces",
 		c.Lang, thousands(c.Names), faces, thousands(c.Images), faces)
 }
 

@@ -62,12 +62,12 @@ func TestLocalizeCardsNames(t *testing.T) {
 
 func TestFrenchImageCandidates(t *testing.T) {
 	fr := frenchSourcesOf(Inputs{MC4DB: []mc4db.Card{
-		{Code: "01004", PackCode: "core", ImageSrc: "/bundles/cards/EN/core/01004.webp"},
+		{Code: "01004", ImageSrc: "/bundles/cards/EN/core/01004.webp"},
 		// A reprint stored with the image of its original.
-		{Code: "16015", PackCode: "gmw", ImageSrc: "/bundles/cards/EN/core/01079.webp"},
-		{Code: "01043b", PackCode: "core"},
+		{Code: "16015", ImageSrc: "/bundles/cards/EN/core/01079.webp"},
+		{Code: "01043b"},
 		{
-			Code: "26002", PackCode: "vision",
+			Code:     "26002",
 			ImageSrc: "/bundles/cards/EN/vision/26002.webp", BackImageSrc: "/bundles/cards/EN/vision/26002b.webp",
 		},
 	}})
@@ -120,7 +120,7 @@ func frenchInputs(t *testing.T) Inputs {
 	var mc4dbCards []mc4db.Card
 	for _, card := range mc {
 		mc4dbCards = append(mc4dbCards, mc4db.Card{
-			Code: card.Code, PackCode: "core", ImageSrc: "/bundles/cards/EN/core/" + card.Code + ".webp",
+			Code: card.Code, ImageSrc: "/bundles/cards/EN/core/" + card.Code + ".webp",
 		})
 	}
 	return Inputs{
@@ -224,12 +224,15 @@ func TestBuildReportsFrenchCoverage(t *testing.T) {
 	}
 
 	faces := len(in.MC) // one face per record
+	// Of the four French names, only the scheme and the side scheme differ
+	// from English: Rhino and Klaw keep theirs, so they are not translated.
+	const translated = 2
 	got := result.Coverage
 	if len(got) != 1 {
 		t.Fatalf("coverage = %+v, want one language", got)
 	}
-	if got[0].Lang != "fr" || got[0].Faces != faces || got[0].Names != 4 || got[0].Images != faces-2 {
-		t.Errorf("coverage = %+v, want fr with %d faces, 4 names and %d images", got[0], faces, faces-2)
+	if got[0].Lang != "fr" || got[0].Faces != faces || got[0].Names != translated || got[0].Images != faces-2 {
+		t.Errorf("coverage = %+v, want fr with %d faces, %d names and %d images", got[0], faces, translated, faces-2)
 	}
 	if want := []string{"other"}; !slices.Equal(got[0].PacksWithoutImages, want) {
 		t.Errorf("packs without images = %v, want %v", got[0].PacksWithoutImages, want)

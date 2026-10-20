@@ -106,7 +106,7 @@ func Build(in Inputs) (Result, error) {
 		Packs:    packs,
 		Index:    index,
 		Report:   problems,
-		Coverage: []report.Coverage{frenchCoverage(packs, faceCodes, fr)},
+		Coverage: []report.Coverage{frenchCoverage(packs)},
 	}, nil
 }
 

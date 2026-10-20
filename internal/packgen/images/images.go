@@ -300,7 +300,7 @@ func liveLocalized(overrides map[string]pack.Localized, alive map[string]bool) m
 	var live map[string]pack.Localized
 	for lang, override := range overrides {
 		override.Images = liveOnly(override.Images, alive)
-		if override.Name == "" && override.Subname == "" && len(override.Images) == 0 {
+		if override.IsZero() {
 			continue
 		}
 		if live == nil {

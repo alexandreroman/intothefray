@@ -62,7 +62,7 @@ func localizeCards(cards map[string][]pack.Card, faceCodes map[string][]string, 
 			for i := range card.Faces {
 				face := &card.Faces[i]
 				override := fr.faceOverride(*face, codes[i], i, packCode)
-				if !isEmpty(override) {
+				if !override.IsZero() {
 					face.Localized = map[string]pack.Localized{french: override}
 				}
 			}
@@ -105,10 +105,6 @@ func (fr frenchSources) imageOf(faceCode string, faceIndex int, packCode string)
 		}
 	}
 	return mc4db.DirectFrenchImageURL(packCode, faceCode)
-}
-
-func isEmpty(override pack.Localized) bool {
-	return override.Name == "" && override.Subname == "" && len(override.Images) == 0
 }
 
 // faceCodesOf maps each card code to the marvelcdb codes of its faces, in face
@@ -163,20 +159,22 @@ func localizedName(english, frenchName string) map[string]pack.Localized {
 }
 
 // frenchCoverage counts the faces of the packs that have French data. A face
-// counts as named when the French source lists it, even when its French name is
-// the same as the English one.
-func frenchCoverage(packs []pack.PackFile, faceCodes map[string][]string, fr frenchSources) report.Coverage {
+// counts as translated only when it has a French name override: fr.marvelcdb
+// lists untranslated cards under their English name, so counting the faces it
+// lists would say nothing. A name that French keeps as is, e.g. "Rhino", is
+// not counted either, so the figure is a lower bound.
+func frenchCoverage(packs []pack.PackFile) report.Coverage {
 	coverage := report.Coverage{Lang: french}
 	for _, packFile := range packs {
 		faces, images := 0, 0
 		for _, card := range packFile.Cards {
-			codes := faceCodes[card.Code]
-			for i, face := range card.Faces {
+			for _, face := range card.Faces {
 				faces++
-				if fr.cards[codes[i]].name != "" {
+				override := face.Localized[french]
+				if override.Name != "" {
 					coverage.Names++
 				}
-				if len(face.Localized[french].Images) > 0 {
+				if len(override.Images) > 0 {
 					images++
 				}
 			}

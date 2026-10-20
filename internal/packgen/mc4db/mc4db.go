@@ -19,7 +19,6 @@ const BaseURL = "https://mc4db.merlindumesnil.net"
 // API ignores the locale.
 type Card struct {
 	Code         string `json:"code"`
-	PackCode     string `json:"pack_code"`
 	ImageSrc     string `json:"imagesrc"`
 	BackImageSrc string `json:"backimagesrc"` // set for some double-sided cards stored under one code
 }

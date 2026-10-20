@@ -118,7 +118,7 @@ export function actionsFor(
   el: TableElement,
   view: View,
   you: { areas?: readonly Area[]; role: Role },
-  lang: Lang = 'en',
+  lang: Lang,
 ): ActionItem[] | { text: string } {
   if (!view.table) {
     return [];

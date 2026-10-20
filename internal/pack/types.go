@@ -60,6 +60,12 @@ type Localized struct {
 	Images  []string `json:"images,omitempty"` // tried before the English images
 }
 
+// IsZero reports whether the override has nothing to override, so it would
+// only add an empty entry to the JSON.
+func (l Localized) IsZero() bool {
+	return l.Name == "" && l.Subname == "" && len(l.Images) == 0
+}
+
 // Card is a physical card with one or more faces.
 type Card struct {
 	Code     string   `json:"code"` // canonical base code, e.g. "01097"
