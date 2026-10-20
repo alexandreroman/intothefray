@@ -225,7 +225,7 @@ function withOutOfPlay(view: View): View {
   return view;
 }
 function zoomLabel(): HTMLElement {
-  return screen.getByRole('button', { name: 'Fit to width' });
+  return screen.getByRole('button', { name: 'Back to 100%' });
 }
 
 /** The preview floating over the table: only there while something is previewed. */
@@ -511,10 +511,9 @@ describe('Table', () => {
     await fireEvent.click(zoomIn);
     expect(zoomLabel().textContent).toBe('60%');
 
-    // The label goes back to the fit, which nothing measured leaves at 100 %, and forgets the zoom.
     await fireEvent.click(zoomLabel());
     expect(zoomLabel().textContent).toBe('100%');
-    expect(localStorage.getItem('itf-zoom')).toBeNull();
+    expect(localStorage.getItem('itf-zoom')).toBe('1');
   });
 
   it('restores the stored zoom and applies it as --z to the whole page', () => {
@@ -551,11 +550,10 @@ describe('Table', () => {
     // The app's tooltip names it with its key, as every zoom button's does.
     expect(keys.dataset).toMatchObject({ tip: 'Keyboard shortcuts', kbd: '?' });
     expect(keys.getAttribute('aria-keyshortcuts')).toBe('?');
-    // The % label fits the table to its width: no key does that (0 is back to 100 %).
-    const kbds = ['Zoom out', 'Fit to width', 'Zoom in'].map(
+    const kbds = ['Zoom out', 'Back to 100%', 'Zoom in'].map(
       (name) => screen.getByRole('button', { name }).dataset.kbd,
     );
-    expect(kbds).toEqual(['−', undefined, '+']);
+    expect(kbds).toEqual(['−', '0', '+']);
   });
 
   it('places the first player token on the table', async () => {

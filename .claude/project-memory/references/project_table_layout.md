@@ -32,9 +32,11 @@ type: project
 - Cards and piles act through their action menu (see "Action menu
   organisation").
 
-- Small screens: while the viewer has not chosen a zoom (`itf-zoom`),
-  the zoom fits the content width (never above 100%; minimum 30% at
-  ≤ 600 px wide, else 50%); the % button goes back to the fit. Owner
+- While the viewer has not chosen a zoom (`itf-zoom`), screens ≤ 600 px
+  wide fit the content width (never above 100%) and wider screens show
+  100%, following the width live. The % button reads "Fit to width" at
+  ≤ 600 px and "Back to 100%" (key 0) elsewhere. Minimum zoom 30% at
+  ≤ 600 px wide, else 50%. Owner
   names and chips keep ≥ 11 px text at any zoom. At ≤ 600 px wide or
   ≤ 500 px tall, Undo and the zoom control form one bar at the bottom
   right above the resting hand, and hand cards are sized from the window.

@@ -1,6 +1,7 @@
 // Table zoom: a per-viewer display setting. Card positions stay in table
 // units; the screen shows them multiplied by the zoom. Until the viewer
-// chooses a zoom, the table fits its content's width (fitZoom).
+// chooses a zoom, a phone fits the table's content to its width (fitZoom);
+// a wider screen shows it at 100 %.
 
 import { getPref, removePref, setPref } from '../lib/prefs';
 
@@ -35,7 +36,7 @@ export function saveZoom(zoom: number): void {
   setPref(ZOOM_KEY, String(zoom));
 }
 
-/** Forgets the viewer's zoom: the table fits its width again. */
+/** Forgets the viewer's zoom: the table shows the screen's default zoom again. */
 export function forgetZoom(): void {
   removePref(ZOOM_KEY);
 }

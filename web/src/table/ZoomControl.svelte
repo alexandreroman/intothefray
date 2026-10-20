@@ -1,7 +1,8 @@
 <!--
   The zoom control at the bottom right of the table: − / % / +, and the
   keyboard shortcuts button. The parent owns the zoom and clamps it. The %
-  label fits the table to its width again, as before the viewer chose a zoom.
+  label goes back to the zoom shown before the viewer chose one: the zoom that
+  fits the table's width (onfit, on a phone), or else 100 %, as the 0 key does.
 -->
 <script lang="ts">
   import { ZOOM_STEP } from './zoom';
@@ -16,8 +17,8 @@
   }: {
     zoom: number;
     onzoom: (zoom: number) => void;
-    /** Goes back to the zoom that fits the table's width. */
-    onfit: () => void;
+    /** Goes back to the zoom that fits the table's width; without it, the % label goes back to 100 %. */
+    onfit?: () => void;
     /** Shows or hides the keyboard shortcuts sheet; without it (no keyboard), there is no such button. */
     onkeys?: () => void;
     /** Whether the keyboard shortcuts sheet is shown. */
@@ -35,9 +36,21 @@
     aria-label="Zoom out"
     onclick={() => onzoom(zoom - ZOOM_STEP)}>−</button
   >
-  <button class="btn-ghost pct" data-tip="Fit to width" aria-label="Fit to width" onclick={onfit}>
-    {Math.round(zoom * 100)}%
-  </button>
+  {#if onfit}
+    <button class="btn-ghost pct" data-tip="Fit to width" aria-label="Fit to width" onclick={onfit}>
+      {Math.round(zoom * 100)}%
+    </button>
+  {:else}
+    <button
+      class="btn-ghost pct"
+      data-tip="Back to 100%"
+      data-kbd="0"
+      aria-label="Back to 100%"
+      onclick={() => onzoom(1)}
+    >
+      {Math.round(zoom * 100)}%
+    </button>
+  {/if}
   <button
     class="btn-ghost"
     data-tip="Zoom in"

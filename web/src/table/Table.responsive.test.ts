@@ -51,6 +51,8 @@ const WIDE: Screen = { width: 1280, height: 800 };
 // Narrow (900 px wide or less), not small: a tablet held upright, with a mouse.
 const NARROW: Screen = { width: 800, height: 1000 };
 const PHONE: Screen = { width: 390, height: 844, touch: true };
+// A desktop window narrowed to the small screen breakpoint, with a mouse: the table fits its width.
+const SMALL_WINDOW: Screen = { width: 600, height: 800 };
 const PHONE_SIDEWAYS: Screen = { width: 844, height: 390, touch: true };
 const TABLET_SIDEWAYS: Screen = { width: 1180, height: 820, touch: true };
 
@@ -208,6 +210,13 @@ function makeView(): View {
 /** A card of Sam's lying far right: the table's content is 1500 + 140 = 1640 units wide. */
 const FAR_RIGHT: TableCard = { ...IN_PLAY, id: 't2', x: 1500 };
 
+/** Sam's three cards in hand, one card in play, and another one at `x`: the content is x + 140 units wide. */
+function viewWithFarCardAt(x: number): View {
+  const view = makeView();
+  view.table!.cards.push({ ...FAR_RIGHT, x });
+  return view;
+}
+
 function pile(id: string, fields: Partial<PileView>): PileView {
   return { id, kind: 'deck', owner: 0, x: 0, y: 500, count: 0, ...fields };
 }
@@ -224,8 +233,9 @@ function makeWideView(): View {
   return view;
 }
 
+/** The % label: it fits the width on a small screen, and is back to 100 % on a wider one. */
 function zoomLabel(): string | undefined {
-  return screen.getByRole('button', { name: 'Fit to width' }).textContent?.trim();
+  return screen.getByRole('button', { name: /^(Fit to width|Back to 100%)$/ }).textContent?.trim();
 }
 
 function fakeSession() {
@@ -523,82 +533,119 @@ describe('Table in touch mode', () => {
   });
 });
 
-describe('Table zoom fitting the width', () => {
-  it('fits the content into the scroller while no zoom was chosen, never above 100 %', () => {
+describe('Table zoom on a wide screen', () => {
+  it('shows 100 % while no zoom was chosen, even when the content is wider', () => {
     mockScreen(WIDE);
     mockScrollerWidth(1000);
     const { container } = render(Table, { session: fakeSession(), view: makeWideView() });
 
-    // 1000 px, less the 2 × 24 px padding and 12 px kept for a scrollbar, over 1640 units.
-    expect(zoomLabel()).toBe('57%');
+    // 1640 units in 940 px would fit at 57 %: the table scrolls instead.
+    expect(zoomLabel()).toBe('100%');
+    expect(container.querySelector<HTMLElement>('.app')?.style.getPropertyValue('--z')).toBe('1');
+    expect(localStorage.getItem('itf-zoom')).toBeNull();
+  });
+
+  it('the % label is back to 100 %, with 0 as its key, and stores it', async () => {
+    mockScreen(WIDE);
+    mockScrollerWidth(1000);
+    render(Table, { session: fakeSession(), view: makeWideView() });
+    expect(screen.queryByRole('button', { name: 'Fit to width' })).toBeNull();
+    const label = screen.getByRole('button', { name: 'Back to 100%' });
+    expect(label.dataset).toMatchObject({ tip: 'Back to 100%', kbd: '0' });
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Zoom in' }));
+    expect(zoomLabel()).toBe('110%');
+    await fireEvent.click(label);
+    expect(zoomLabel()).toBe('100%');
+    expect(localStorage.getItem('itf-zoom')).toBe('1');
+  });
+});
+
+describe('Table zoom fitting the width on a small screen', () => {
+  it('fits the content into the scroller while no zoom was chosen, never above 100 %', () => {
+    mockScreen(SMALL_WINDOW);
+    mockScrollerWidth(600);
+    const { container } = render(Table, { session: fakeSession(), view: makeWideView() });
+
+    // 600 px, less the 2 × 24 px padding and 12 px kept for a scrollbar, over 1640 units.
+    expect(zoomLabel()).toBe('32%');
     expect(container.querySelector<HTMLElement>('.app')?.style.getPropertyValue('--z')).toBe(
-      '0.57',
+      '0.32',
     );
     expect(localStorage.getItem('itf-zoom')).toBeNull();
   });
 
+  it('the % label fits the width, with no key', () => {
+    mockScreen(PHONE);
+    render(Table, { session: fakeSession(), view: makeWideView() });
+    expect(screen.queryByRole('button', { name: 'Back to 100%' })).toBeNull();
+    const label = screen.getByRole('button', { name: 'Fit to width' });
+    expect(label.dataset.tip).toBe('Fit to width');
+    expect(label.dataset.kbd).toBeUndefined();
+  });
+
   it('stays at 100 % while nothing is measured, and when the content fits', async () => {
-    mockScreen(WIDE);
+    mockScreen(SMALL_WINDOW);
     const setWidth = mockScrollerWidth(0);
     render(Table, { session: fakeSession(), view: makeView() });
     expect(zoomLabel()).toBe('100%');
 
-    // 440 units in 940 px.
-    setWidth(1000);
+    // 440 units in 540 px.
+    setWidth(600);
     FakeResizeObserver.resizeAll();
     await tick();
     expect(zoomLabel()).toBe('100%');
   });
 
   it('follows a resize and new content, until the viewer zooms', async () => {
-    const lists = mockScreen(WIDE);
-    const setWidth = mockScrollerWidth(1000);
+    const lists = mockScreen(SMALL_WINDOW);
+    const setWidth = mockScrollerWidth(600);
     const session = fakeSession();
-    const { rerender } = render(Table, { session, view: makeWideView() });
-    expect(zoomLabel()).toBe('57%');
+    const { rerender } = render(Table, { session, view: viewWithFarCardAt(900) });
+    // 1040 units in 540 px.
+    expect(zoomLabel()).toBe('51%');
 
-    setWidth(1300);
-    await resizeScreen(lists, { width: 1580, height: 900 });
-    expect(zoomLabel()).toBe('75%');
+    setWidth(500);
+    await resizeScreen(lists, { width: 500, height: 800 });
+    expect(zoomLabel()).toBe('42%');
 
-    // The far card comes closer: 1040 units fit at 100 %.
-    const closer = makeWideView();
-    closer.table!.cards = closer.table!.cards.map((card) =>
-      card.id === FAR_RIGHT.id ? { ...card, x: 900 } : card,
-    );
-    await rerender({ session, view: closer });
+    // The far card leaves: 440 units fit at 100 %.
+    await rerender({ session, view: makeView() });
     expect(zoomLabel()).toBe('100%');
-    await rerender({ session, view: makeWideView() });
-    expect(zoomLabel()).toBe('75%');
+    await rerender({ session, view: viewWithFarCardAt(900) });
+    expect(zoomLabel()).toBe('42%');
 
     // The viewer's zoom, on a 10 % step, stays through a resize and is remembered.
-    await fireEvent.click(screen.getByRole('button', { name: 'Zoom out' }));
-    expect(zoomLabel()).toBe('70%');
-    expect(localStorage.getItem('itf-zoom')).toBe('0.7');
-    setWidth(1000);
-    await resizeScreen(lists, WIDE);
-    expect(zoomLabel()).toBe('70%');
+    await fireEvent.click(screen.getByRole('button', { name: 'Zoom in' }));
+    expect(zoomLabel()).toBe('50%');
+    expect(localStorage.getItem('itf-zoom')).toBe('0.5');
+    setWidth(600);
+    await resizeScreen(lists, SMALL_WINDOW);
+    expect(zoomLabel()).toBe('50%');
 
     // The % label goes back to the fit, and forgets the viewer's zoom.
     await fireEvent.click(screen.getByRole('button', { name: 'Fit to width' }));
-    expect(zoomLabel()).toBe('57%');
+    expect(zoomLabel()).toBe('51%');
     expect(localStorage.getItem('itf-zoom')).toBeNull();
   });
 
   it('the 0 key is back to 100 %, a chosen zoom', async () => {
-    mockScreen(WIDE);
-    mockScrollerWidth(1000);
+    const lists = mockScreen(SMALL_WINDOW);
+    const setWidth = mockScrollerWidth(600);
     render(Table, { session: fakeSession(), view: makeWideView() });
 
     await fireEvent.keyDown(window, { key: '0' });
     expect(zoomLabel()).toBe('100%');
     expect(localStorage.getItem('itf-zoom')).toBe('1');
+    setWidth(500);
+    await resizeScreen(lists, { width: 500, height: 800 });
+    expect(zoomLabel()).toBe('100%');
   });
 
   it('a stored zoom wins over the fit', () => {
     localStorage.setItem('itf-zoom', '1');
-    mockScreen(WIDE);
-    mockScrollerWidth(1000);
+    mockScreen(SMALL_WINDOW);
+    mockScrollerWidth(600);
     render(Table, { session: fakeSession(), view: makeWideView() });
 
     expect(zoomLabel()).toBe('100%');
@@ -622,6 +669,59 @@ describe('Table zoom fitting the width', () => {
     expect(zoomLabel()).toBe('50%');
     await fireEvent.click(screen.getByRole('button', { name: 'Zoom out' }));
     expect(zoomLabel()).toBe('50%');
+  });
+});
+
+describe('Table zoom across the small screen breakpoint', () => {
+  it('switches between 100 % and the fit as the window crosses 600 px, while no zoom was chosen', async () => {
+    const lists = mockScreen({ width: 1000, height: 800 });
+    const setWidth = mockScrollerWidth(1000);
+    render(Table, { session: fakeSession(), view: viewWithFarCardAt(900) });
+    // 1040 units would fit in 940 px at 90 %.
+    expect(zoomLabel()).toBe('100%');
+    expect(screen.getByRole('button', { name: 'Back to 100%' })).toBeTruthy();
+
+    // 1040 units in 440 px.
+    setWidth(500);
+    await resizeScreen(lists, { width: 500, height: 800 });
+    expect(zoomLabel()).toBe('42%');
+    expect(screen.getByRole('button', { name: 'Fit to width' })).toBeTruthy();
+
+    setWidth(1000);
+    await resizeScreen(lists, { width: 1000, height: 800 });
+    expect(zoomLabel()).toBe('100%');
+    expect(screen.getByRole('button', { name: 'Back to 100%' })).toBeTruthy();
+    expect(localStorage.getItem('itf-zoom')).toBeNull();
+  });
+
+  it('switches as a phone turns', async () => {
+    const lists = mockScreen(PHONE);
+    const setWidth = mockScrollerWidth(390);
+    render(Table, { session: fakeSession(), view: viewWithFarCardAt(900) });
+    // 1040 units in 330 px.
+    expect(zoomLabel()).toBe('31%');
+
+    // Sideways, 844 px wide: more than 600 px.
+    setWidth(844);
+    await resizeScreen(lists, PHONE_SIDEWAYS);
+    expect(zoomLabel()).toBe('100%');
+
+    setWidth(390);
+    await resizeScreen(lists, PHONE);
+    expect(zoomLabel()).toBe('31%');
+  });
+
+  it('keeps a chosen zoom on either side', async () => {
+    const lists = mockScreen({ width: 1000, height: 800 });
+    const setWidth = mockScrollerWidth(1000);
+    render(Table, { session: fakeSession(), view: viewWithFarCardAt(900) });
+    await fireEvent.click(screen.getByRole('button', { name: 'Zoom out' }));
+    expect(zoomLabel()).toBe('90%');
+
+    setWidth(500);
+    await resizeScreen(lists, { width: 500, height: 800 });
+    expect(zoomLabel()).toBe('90%');
+    expect(localStorage.getItem('itf-zoom')).toBe('0.9');
   });
 });
 

@@ -432,7 +432,7 @@
   // The breakpoints of the @media rules below. On a narrow screen the side
   // column goes: the history is not shown.
   const narrow = new MediaQuery('max-width: 900px');
-  // A phone held upright: the table zooms further out.
+  // A phone held upright: the table zooms further out, and fits its width until the viewer zooms.
   const phone = new MediaQuery('max-width: 600px');
   // A phone either way up: the hand's cards follow the window, and the controls at the bottom right
   // gather in one bar above the resting hand.
@@ -451,7 +451,7 @@
   // ---- The zoom ----
 
   // The zoom the viewer chose (buttons, keys, Ctrl + wheel), remembered; null until then, or since
-  // the % label went back to the fit: the table then fits its content's width (fitZoom).
+  // the % label went back to the fit on a phone: the table then shows the screen's default zoom.
   let chosenZoom = $state(storedZoom());
   const zoomMin = $derived(phone.current ? ZOOM_MIN_SMALL : ZOOM_MIN);
 
@@ -474,8 +474,12 @@
       zoomMin,
     ),
   );
+  // Until the viewer chooses a zoom: a phone fits the content's width, as a row would not show
+  // across it at 100 %; a wider screen shows 100 % and scrolls. Live: a resize or a turn across
+  // 600 px switches between the two.
+  const defaultZoom = $derived(phone.current ? fittedZoom : 1);
   // The surface size follows it, so it is declared before it.
-  const zoom = $derived(chosenZoom === null ? fittedZoom : clampZoom(chosenZoom, zoomMin));
+  const zoom = $derived(chosenZoom === null ? defaultZoom : clampZoom(chosenZoom, zoomMin));
 
   // In table units: at least what shows, rounded down so that an empty table never scrolls.
   const surface = $derived(
@@ -1724,11 +1728,14 @@
         <span class="sep" aria-hidden="true"></span>
       {/if}
     {/if}
-    <!-- Touch mode has no keyboard: no shortcuts button. -->
+    <!--
+      Touch mode has no keyboard: no shortcuts button. The % label goes back to a phone's fit,
+      or to 100 % on a wider screen.
+    -->
     <ZoomControl
       {zoom}
       onzoom={zoomWithButtons}
-      onfit={fitToWidth}
+      onfit={phone.current ? fitToWidth : undefined}
       onkeys={touchMode.current ? undefined : toggleKeySheet}
       keysShown={keySheetShown}
       bind:keysButton
