@@ -262,8 +262,10 @@ describe("the viewer's own presence", () => {
     await fireEvent.pointerMove(window, { clientX: 225, clientY: 482 });
     expect(sent()).toEqual([{ cursor: { x: 100, y: 200 } }]);
 
-    // The latest position follows at the end of the 50 ms window, in whole units.
-    await vi.advanceTimersByTimeAsync(50);
+    // The latest position follows at the end of the 150 ms window, in whole units.
+    await vi.advanceTimersByTimeAsync(149);
+    expect(sent()).toHaveLength(1);
+    await vi.advanceTimersByTimeAsync(1);
     expect(sent()).toEqual([{ cursor: { x: 100, y: 200 } }, { cursor: { x: 103, y: 201 } }]);
   });
 
@@ -445,6 +447,30 @@ describe("other players' presence", () => {
     expect(cursors()[0]!.classList.contains('off')).toBe(true);
   });
 
+  it('glides to the spots of a message, but moves with the table at once', async () => {
+    const { receive } = await renderTable();
+    const glide = () =>
+      document.querySelector<HTMLElement>('.presence')!.style.getPropertyValue('--glide');
+    // The table laid out as it showed.
+    await nextFrame();
+
+    receive({ color: 1, name: 'Sam', cursor: { x: 100, y: 650 } });
+    await nextFrame();
+    expect(glide()).toBe('150ms');
+
+    // Scrolled, or resized: the cursors and the ghosts must not trail behind the table.
+    scrolled = { x: 50, y: 100 };
+    await fireEvent.scroll(document.querySelector('.tablewrap')!);
+    await nextFrame();
+    expect(glide()).toBe('0ms');
+    receive({ color: 1, name: 'Sam', cursor: { x: 110, y: 650 } });
+    await nextFrame();
+    expect(glide()).toBe('150ms');
+    await fireEvent(window, new Event('resize'));
+    await nextFrame();
+    expect(glide()).toBe('0ms');
+  });
+
   it('holds a cursor scrolled out of view at the top or bottom edge, its label pointing there', async () => {
     const { receive } = await renderTable();
     // Far below what shows: the table spans 40 to 900 on the screen, the layer starting at 40.
@@ -602,6 +628,25 @@ describe("other players' presence", () => {
     expect(document.querySelector('.presence .card[data-id="sam"]')).not.toBeNull();
     await vi.advanceTimersByTimeAsync(2_000);
     expect(document.querySelector('.presence .card')).toBeNull();
+  });
+
+  it('draws a new ghost for a new drag of the same card, not the landing one gliding over', async () => {
+    const { receive } = await renderTable();
+    const ghost = () => document.querySelector<HTMLElement>('.presence .card[data-id="sam"]');
+
+    receive({ color: 1, name: 'Sam', drag: { cards: ['sam'], x: 500, y: 320 } });
+    await nextFrame();
+    receive({ color: 1, name: 'Sam', drag: null });
+    await nextFrame();
+    const landing = ghost();
+    expect(landing).not.toBeNull();
+
+    // Picked up again before the landing ended: the ghost shows at once where it starts.
+    receive({ color: 1, name: 'Sam', drag: { cards: ['sam'], x: 100, y: 120 } });
+    await nextFrame();
+    expect(ghost()).not.toBe(landing);
+    expect([ghost()!.style.left, ghost()!.style.top]).toEqual(['120px', '160px']);
+    expect(document.querySelectorAll('.presence .card')).toHaveLength(1);
   });
 
   it('draws the own back of a side deck whose unknown top card another player drags', async () => {

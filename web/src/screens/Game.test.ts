@@ -3,7 +3,11 @@ import Game from './Game.svelte';
 import { GameSession } from '../lib/session.svelte';
 import type { View } from '../lib/types';
 
-vi.mock('../lib/session.svelte', () => ({ GameSession: vi.fn() }));
+// Only the session is faked: the table reads the module's constants.
+vi.mock('../lib/session.svelte', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../lib/session.svelte')>()),
+  GameSession: vi.fn(),
+}));
 // The table loads the card catalog: keep the tests off the network.
 vi.mock('../lib/catalog', () => ({
   loadGameCards: vi.fn(() => Promise.resolve()),

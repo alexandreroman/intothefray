@@ -7,14 +7,18 @@
   away from the table (hand raised, dialog open), their cursor is hidden from
   the others: nothing tells where the pointer goes in the hand or in the
   dialog. Spectators send nothing, as no player draws them (ruling P5c-R2:
-  the server refuses their pings and drags).
+  the server refuses their presence).
 
   Spots travel as table units of the surface (screen.ts). Messages can come in
   floods: the session keeps only the latest state of each player, and the
-  layer draws them all in one pass per animation frame.
+  layer draws them all in one pass per animation frame. Moves come once per
+  throttle interval at most (session.svelte.ts): cursors and drags glide
+  between them over that interval, but follow the table at once as it
+  scrolls, zooms or resizes.
 -->
 <script lang="ts">
   import { untrack } from 'svelte';
+  import { PRESENCE_INTERVAL_MS } from '../lib/session.svelte';
   import type {
     CardView as TableCard,
     PackFace,
@@ -115,6 +119,11 @@
 
   /** Another player's drag under way: its cards, or the first player token, as they lay when it started. */
   interface Dragging {
+    /**
+     * Tells this drag from the player's earlier ones, whose ghosts may carry the same ids (a pile, a
+     * hidden card): a new drag draws new ghosts, never gliding from where the last one landed.
+     */
+    key: number;
     drag: PresenceDrag;
     from: Map<string, Spot>;
     /** The table cards as it started: a card taken from a pile or a hand is new to it once dropped. */
@@ -133,14 +142,22 @@
   interface Drawn {
     cursors: (Placed & { color: number; name: string })[];
     /** The cards of each drag, in table units of the zoomed ghost layer. */
-    ghosts: { color: number; cards: TableCard[] }[];
+    ghosts: { key: number; cards: TableCard[] }[];
     /** The corner of each drag of the first player token, in table units of the zoomed ghost layer. */
-    tokens: (Point & { color: number })[];
+    tokens: (Point & { key: number })[];
     pings: (Placed & { key: number; color: number })[];
   }
 
   let layer = $state<HTMLElement>();
   let drawn = $state.raw<Drawn>({ cursors: [], ghosts: [], tokens: [], pings: [] });
+  /**
+   * Whether the last pass drew new spots, which glide, rather than the table moving under the
+   * spots (a scroll, a zoom, a resize, a new view), which they follow at once: gliding, they would
+   * trail behind the table.
+   */
+  let glide = $state(true);
+  /** Whether the table moved under the spots since the last pass. Read by the drawing pass only. */
+  let tableMoved = false;
   // Read by the drawing pass only, which runs outside any effect: plain values, not state.
   let pings: Ping[] = [];
   let nextPing = 0;
@@ -149,6 +166,7 @@
   /** Wakes the drawing pass when the next player falls silent or the next ping is done. */
   let wakeTimer: ReturnType<typeof setTimeout> | undefined;
   let frame = 0;
+  let nextDrag = 0;
   // Read and written outside any effect's dependencies: plain values, not state. By colour.
   // eslint-disable-next-line svelte/prefer-svelte-reactivity
   const draggings = new Map<number, Dragging>();
@@ -322,6 +340,7 @@
         if (!dragging) {
           landings.delete(color);
           draggings.set(color, {
+            key: nextDrag++,
             drag,
             from: spotsOf(drag),
             onTable: tableCardIds(),
@@ -453,14 +472,14 @@
   }
 
   /** Draws a drag, under way or landing: the first player token, or the cards. */
-  function drawDrag(next: Drawn, color: number, drag: PresenceDrag, origin: DOMRect): void {
+  function drawDrag(next: Drawn, { key, drag }: Dragging, origin: DOMRect): void {
     if (!drag.token) {
-      next.ghosts.push({ color, cards: ghostsOf(drag, origin) });
+      next.ghosts.push({ key, cards: ghostsOf(drag, origin) });
       return;
     }
     const corner = cornerOf(drag, origin);
     if (corner) {
-      next.tokens.push({ ...corner, color });
+      next.tokens.push({ ...corner, key });
     }
   }
 
@@ -506,8 +525,10 @@
       if (state.preview && !previews.has(state.preview)) {
         previews.set(state.preview, state.color);
       }
-      if (state.drag) {
-        drawDrag(next, state.color, state.drag, origin);
+      // Its drag as followDrags noted it, with the latest spot.
+      const dragging = draggings.get(state.color);
+      if (dragging) {
+        drawDrag(next, dragging, origin);
       }
     }
     for (const [color, landing] of landings) {
@@ -516,7 +537,7 @@
         continue;
       }
       nextChange = Math.min(nextChange, landing.until);
-      drawDrag(next, color, landing.drag, origin);
+      drawDrag(next, landing, origin);
     }
     pings = pings.filter((p) => p.until > now);
     for (const { key, color, spot, until } of pings) {
@@ -528,6 +549,8 @@
       }
     }
     drawn = next;
+    glide = !tableMoved;
+    tableMoved = false;
     interaction.liftByOthers(tableCardsOf(next.ghosts));
     interaction.tokenLiftedByOthers = next.tokens.length > 0;
     // Each card or pile draws its ring itself, which follows it as it moves (CardView, PileView).
@@ -549,6 +572,12 @@
     }
   }
 
+  /** Draws again at the next frame, the table having moved under the spots: they follow it at once. */
+  function followTable(): void {
+    tableMoved = true;
+    schedule();
+  }
+
   /**
    * Whether the view shows where a landing's cards went. A card taken from
    * outside the table cannot be followed by its id: the first view after the
@@ -568,6 +597,7 @@
         landings.delete(color);
       }
       if (landed.length > 0) {
+        tableMoved = true;
         measure();
       }
     });
@@ -578,7 +608,7 @@
     void view;
     void zoom;
     void layout;
-    schedule();
+    followTable();
   });
 
   // Scrolling the table, in the capture phase: scroll events do not bubble.
@@ -587,8 +617,8 @@
     if (!page) {
       return;
     }
-    page.addEventListener('scroll', schedule, true);
-    return () => page.removeEventListener('scroll', schedule, true);
+    page.addEventListener('scroll', followTable, true);
+    return () => page.removeEventListener('scroll', followTable, true);
   });
 
   // The table resized: the side panel slid, or the window changed.
@@ -596,7 +626,7 @@
     if (!layer) {
       return;
     }
-    const observer = new ResizeObserver(schedule);
+    const observer = new ResizeObserver(followTable);
     observer.observe(layer);
     return () => observer.disconnect();
   });
@@ -610,11 +640,16 @@
   });
 </script>
 
-<svelte:window onpointermove={onPointerMove} onresize={schedule} />
+<svelte:window onpointermove={onPointerMove} onresize={followTable} />
 
-<div class="presence" bind:this={layer} aria-hidden="true">
+<div
+  class="presence"
+  bind:this={layer}
+  aria-hidden="true"
+  style:--glide="{glide ? PRESENCE_INTERVAL_MS : 0}ms"
+>
   <div class="ghosts">
-    {#each drawn.ghosts as ghost (ghost.color)}
+    {#each drawn.ghosts as ghost (ghost.key)}
       {#each ghost.cards as card (card.id)}
         <CardView
           {card}
@@ -624,7 +659,7 @@
         />
       {/each}
     {/each}
-    {#each drawn.tokens as token (token.color)}
+    {#each drawn.tokens as token (token.key)}
       <FirstPlayerToken x={token.x} y={token.y} ghost />
     {/each}
   </div>
@@ -681,12 +716,33 @@
     zoom: var(--z, 1);
   }
 
+  /*
+    Other players' drags glide between their moves, as the cursors do; the viewer's own ghosts
+    (DragLayer) follow the pointer without delay. A ghost that appears shows in its place at once:
+    a transition only runs on a change. While the table moves under them, --glide is 0: they move
+    with it. Under .presence: above the ghost rules of CardView and FirstPlayerToken, whatever the
+    order of the bundled styles.
+  */
+  .presence .ghosts :global(.card.ghost) {
+    transition:
+      left var(--glide) linear,
+      top var(--glide) linear,
+      scale 0.12s;
+  }
+
+  .presence .ghosts :global(.fptoken.ghost) {
+    transition:
+      transform 0.12s,
+      left var(--glide) linear,
+      top var(--glide) linear;
+  }
+
   .rcursor {
     position: absolute;
     left: 0;
     top: 0;
-    /* Messages come 20 times a second at most: the cursor glides between them. */
-    transition: transform 0.08s linear;
+    /* The cursor glides between its moves, which come once per interval at most. */
+    transition: transform var(--glide) linear;
   }
 
   .rcursor svg {
