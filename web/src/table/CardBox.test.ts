@@ -598,6 +598,39 @@ describe('CardBox', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
+  it('gives the focus back to a clicked chip without a focus ring', async () => {
+    await renderTable();
+    const victory = chip(-1, 'Victory display (1)');
+    const focus = vi.spyOn(victory, 'focus');
+
+    // A mouse press focuses the button it clicks; jsdom does not.
+    await fireEvent.pointerDown(victory);
+    victory.focus();
+    await fireEvent.click(victory, { detail: 1 });
+    expect(document.activeElement).not.toBe(victory);
+    await fireEvent.click(within(box()).getByRole('button', { name: 'Close' }));
+
+    expect(document.activeElement).toBe(victory);
+    expect(focus).toHaveBeenLastCalledWith({ focusVisible: false });
+  });
+
+  it('gives the focus back to a chip pressed from the keyboard, ring and all', async () => {
+    await renderTable();
+    const victory = chip(-1, 'Victory display (1)');
+    victory.focus();
+    const focus = vi.spyOn(victory, 'focus');
+
+    // Enter on a button clicks it.
+    await fireEvent.keyDown(victory, { key: 'Enter' });
+    await fireEvent.click(victory, { detail: 0 });
+    expect(document.activeElement).not.toBe(victory);
+    await fireEvent.keyDown(window, { key: 'Escape' });
+
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(document.activeElement).toBe(victory);
+    expect(focus).toHaveBeenLastCalledWith();
+  });
+
   it('out-of-play piles list their cards by card number, with no place badge', async () => {
     const view = withLooseCards(makeView());
     view.table!.piles = view.table!.piles.map((p) =>

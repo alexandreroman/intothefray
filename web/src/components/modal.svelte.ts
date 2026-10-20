@@ -22,3 +22,29 @@ export function openModal(): () => void {
     }
   };
 }
+
+// Whether the last press was the pointer's (mouse, pen, touch) rather than a
+// key's. Listened to on the window, before anything else handles the press,
+// from the start: whoever opened a dialog is known as it opens.
+let pointerPressedLast = false;
+
+window.addEventListener(
+  'pointerdown',
+  () => {
+    pointerPressedLast = true;
+  },
+  { capture: true },
+);
+
+window.addEventListener(
+  'keydown',
+  () => {
+    pointerPressedLast = false;
+  },
+  { capture: true },
+);
+
+/** Whether the last press was the pointer's rather than a key's: a click opening a dialog, as it opens. */
+export function lastPressByPointer(): boolean {
+  return pointerPressedLast;
+}
