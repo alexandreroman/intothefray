@@ -17,7 +17,7 @@ func TestPrintFallback(t *testing.T) {
 	var out strings.Builder
 	printFallback(&out, entries)
 
-	want := "from mc4db (fne): 2 records: 60065, 60066\nfrom mc4db (thor): 1 records: 06099\n"
+	want := "from mc4db (fne): 2 records: 60065, 60066\nfrom mc4db (thor): 1 record: 06099\n"
 	if got := out.String(); got != want {
 		t.Errorf("got %q, want %q", got, want)
 	}

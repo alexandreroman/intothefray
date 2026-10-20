@@ -131,8 +131,59 @@ func TestEmbeddedCoreSet(t *testing.T) {
 				supported++
 			}
 		}
-		if supported != 3 {
-			t.Errorf("supported scenarios = %d, want 3", supported)
+		if supported != 4 {
+			t.Errorf("supported scenarios = %d, want 4", supported)
+		}
+	})
+}
+
+// TestEmbeddedFearNoEvil checks the pack that marvelcdb lists only partly and
+// mc4db completes.
+func TestEmbeddedFearNoEvil(t *testing.T) {
+	catalog, err := packs.Catalog()
+	if err != nil {
+		t.Fatalf("Catalog() error = %v", err)
+	}
+
+	t.Run("kingpin scenario", func(t *testing.T) {
+		index := slices.IndexFunc(catalog.Index().Scenarios, func(ref pack.ScenarioRef) bool {
+			return ref.ID == "kingpin"
+		})
+		if index < 0 {
+			t.Fatal("scenario ref kingpin not found")
+		}
+		ref := catalog.Index().Scenarios[index]
+		if !ref.Supported || ref.Pack != "fne" {
+			t.Errorf("kingpin ref = supported %t in pack %q, want supported in pack fne", ref.Supported, ref.Pack)
+		}
+	})
+
+	t.Run("villain and main scheme", func(t *testing.T) {
+		tests := []struct {
+			code      string
+			wantFaces int
+		}{
+			{"60159", 2},
+			{"60161", 2},
+		}
+		for _, tt := range tests {
+			card, _, err := catalog.Card(tt.code)
+			if err != nil {
+				t.Fatalf("Card(%s) error = %v", tt.code, err)
+			}
+			if len(card.Faces) != tt.wantFaces {
+				t.Errorf("Card(%s) faces = %d, want %d", tt.code, len(card.Faces), tt.wantFaces)
+			}
+		}
+	})
+
+	t.Run("underling set", func(t *testing.T) {
+		set, ok := catalog.Set("bullseye")
+		if !ok {
+			t.Fatal("set bullseye not found")
+		}
+		if set.Kind != "underling" {
+			t.Errorf("bullseye kind = %q, want underling", set.Kind)
 		}
 	})
 }

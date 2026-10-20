@@ -176,8 +176,12 @@ func printFallback(w io.Writer, entries []report.Fallback) {
 			}
 			codes = append(codes, entry.Code)
 		}
-		_, _ = fmt.Fprintf(w, "from %s (%s): %d records: %s\n",
-			first.Source, first.Pack, len(codes), strings.Join(codes, ", "))
+		noun := "records"
+		if len(codes) == 1 {
+			noun = "record"
+		}
+		_, _ = fmt.Fprintf(w, "from %s (%s): %d %s: %s\n",
+			first.Source, first.Pack, len(codes), noun, strings.Join(codes, ", "))
 		entries = entries[len(codes):]
 	}
 }
