@@ -281,7 +281,7 @@ func buildFaces(
 }
 
 // imagesOf returns the image candidates of a face: the Cerebro image matching
-// its code, or cerebroID when set, then the marvelcdb image.
+// its code, or cerebroID when set, then the image of its source record.
 func imagesOf(entry marvelcdb.Card, cerebroIDs map[string]string, cerebroID string) []string {
 	if cerebroID == "" {
 		cerebroID = entry.Code
@@ -292,7 +292,11 @@ func imagesOf(entry marvelcdb.Card, cerebroIDs map[string]string, cerebroID stri
 		images = append(images, fmt.Sprintf(cerebroImageURL, id))
 	}
 	if entry.ImageSrc != "" {
-		images = append(images, marvelcdbHost+entry.ImageSrc)
+		host := entry.ImageHost
+		if host == "" {
+			host = marvelcdbHost
+		}
+		images = append(images, host+entry.ImageSrc)
 	}
 	return images
 }

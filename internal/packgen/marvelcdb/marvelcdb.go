@@ -34,6 +34,9 @@ type Card struct {
 	HandSize        int    `json:"hand_size"`
 	BaseThreat      *int   `json:"base_threat"`
 	BaseThreatFixed bool   `json:"base_threat_fixed"`
+	// ImageHost is the host ImageSrc is relative to, BaseURL when empty. A
+	// record taken from another source keeps the host of that source.
+	ImageHost string `json:"-"`
 }
 
 // Pack describes a marvelcdb pack.

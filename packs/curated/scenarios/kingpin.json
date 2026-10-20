@@ -1,0 +1,61 @@
+{
+  "id": "kingpin",
+  "villainSet": "kingpin",
+  "piles": [
+    {
+      "key": "villain",
+      "label": "Villain",
+      "cards": [
+        "60159",
+        "60160"
+      ]
+    },
+    {
+      "key": "scheme",
+      "label": "Main scheme",
+      "cards": [
+        "60161",
+        "60162"
+      ]
+    }
+  ],
+  "start": {
+    "standard": {
+      "top": {
+        "villain": {
+          "card": "60159",
+          "face": 0
+        },
+        "scheme": {
+          "card": "60161",
+          "face": 1
+        }
+      },
+      "inPlay": [
+        {
+          "card": "60163",
+          "face": 0
+        }
+      ]
+    },
+    "expert": {
+      "top": {
+        "villain": {
+          "card": "60160",
+          "face": 0
+        },
+        "scheme": {
+          "card": "60161",
+          "face": 1
+        }
+      },
+      "inPlay": [
+        {
+          "card": "60163",
+          "face": 0
+        }
+      ]
+    }
+  },
+  "setAside": []
+}

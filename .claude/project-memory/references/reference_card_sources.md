@@ -25,6 +25,16 @@ type: reference
   exists only once a HEAD check says so. Pack folders follow mc4db's own
   paths (e.g. `fear_no_evil_by_ffg/`), not always the marvelcdb pack
   code. Nearly every face has a French image (4,017 of 4,027).
+- mc4db is also the fallback card source: marvelcdb is primary, and the
+  generator adds the mc4db records of official cards (card `pack_creator`
+  `FFG`) whose base code marvelcdb lacks, all faces of a card from one
+  source. mc4db codes map to marvelcdb ones: pack by code, else by name
+  (`fear_no_evil_by_ffg` is `fne`), set codes without `_by_ffg`; their
+  images are relative to the mc4db host. Packs list: `/api/public/packs/`
+  (`creator`). The report lists the records taken from mc4db per pack.
+  Fear No Evil is the pack it completes (171 records, checked 2026-10-20).
+- Cerebro is not a card-list source: it holds no official card that both
+  marvelcdb and mc4db lack.
 - mc4db answers 429 to Go's default User-Agent; the generator sends
   `intothefray-packgen (+https://github.com/alexandreroman/intothefray)`.
 - Cerebro has no French images.

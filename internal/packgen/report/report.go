@@ -1,5 +1,5 @@
-// Package report describes the problems met while generating the packs, and
-// how much of them is localized.
+// Package report describes the problems met while generating the packs, the
+// records taken from fallback sources, and how much of the packs is localized.
 package report
 
 import (
@@ -13,6 +13,15 @@ type Unsupported struct {
 	Name   string
 	Pack   string
 	Reason string
+}
+
+// Fallback is a record taken from a fallback source because marvelcdb lacks
+// its card.
+type Fallback struct {
+	Source string // e.g. "mc4db"
+	Pack   string // marvelcdb pack code
+	Code   string
+	Name   string
 }
 
 // Coverage counts the faces of the generated packs that have data in one

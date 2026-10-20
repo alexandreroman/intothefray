@@ -8,19 +8,30 @@ import (
 	"strings"
 
 	"github.com/alexandreroman/intothefray/internal/packgen/fetch"
+	"github.com/alexandreroman/intothefray/internal/packgen/marvelcdb"
 )
 
 // BaseURL is the mc4db site. It is a small shared host: the packs link to its
 // images and never copy them.
 const BaseURL = "https://mc4db.merlindumesnil.net"
 
-// Card holds the mc4db card fields used by the pack build. The image paths are
-// those of the English scans, e.g. "/bundles/cards/EN/core/01004.webp"; the
-// API ignores the locale.
+// Card holds the mc4db card fields used by the pack build. mc4db shares the
+// marvelcdb schema and card codes, but not all pack and set codes. The image
+// paths are those of the English scans, relative to BaseURL, e.g.
+// "/bundles/cards/EN/core/01004.webp"; the API ignores the locale.
 type Card struct {
-	Code         string `json:"code"`
-	ImageSrc     string `json:"imagesrc"`
+	marvelcdb.Card
 	BackImageSrc string `json:"backimagesrc"` // set for some double-sided cards stored under one code
+	// PackCreator names who made the card, e.g. "FFG" for the official cards.
+	PackCreator string `json:"pack_creator"`
+}
+
+// Pack describes an mc4db pack, official or fan-made.
+type Pack struct {
+	Code     string `json:"code"`
+	Name     string `json:"name"`
+	Position int    `json:"position"`
+	Creator  string `json:"creator"` // e.g. "FFG" for the official packs
 }
 
 // FetchCards returns the cards of every pack, encounter cards included.
@@ -35,6 +46,19 @@ func fetchCards(ctx context.Context, c *fetch.Client, base string) ([]Card, erro
 		return nil, fmt.Errorf("fetch mc4db cards: %w", err)
 	}
 	return cards, nil
+}
+
+// FetchPacks returns every pack, fan-made ones included.
+func FetchPacks(ctx context.Context, c *fetch.Client) ([]Pack, error) {
+	return fetchPacks(ctx, c, BaseURL)
+}
+
+func fetchPacks(ctx context.Context, c *fetch.Client, base string) ([]Pack, error) {
+	var packs []Pack
+	if err := c.JSON(ctx, base+"/api/public/packs/", &packs); err != nil {
+		return nil, fmt.Errorf("fetch mc4db packs: %w", err)
+	}
+	return packs, nil
 }
 
 // FrenchImageURL turns the path of an English scan into the URL of the French
