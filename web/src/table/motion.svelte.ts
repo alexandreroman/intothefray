@@ -117,6 +117,7 @@ const pileSubject = (id: string): Subject => `pile:${id}`;
 function subjectOf(anim: Anim): Subject | null {
   switch (anim.kind) {
     case 'shuffle':
+    case 'reveal':
       return pileSubject(anim.pile);
     case 'drawAway':
       return null;
@@ -437,6 +438,9 @@ class TableMotion {
         case 'shuffle':
           this.#riffle(root, anim.pile);
           break;
+        case 'reveal':
+          this.#reveal(root, anim.pile);
+          break;
         case 'fly': {
           const flight = this.#flight(root, anim.id, anim.toPile, before, cardsBefore);
           if (flight) {
@@ -745,6 +749,26 @@ class TableMotion {
         ]
       : [{ transform: edgeOn }, { transform: flat }];
     this.#run(element, keyframes, { duration: oldSide ? FLIP_MS : half }, cardSubject(id));
+  }
+
+  /**
+   * The new top card of a side deck turns face up on its pile, as a hidden
+   * card come onto the table does: the second half of a flip, from edge-on.
+   */
+  #reveal(root: HTMLElement, id: string): void {
+    const art = root.querySelector<HTMLElement>(`${tablePile(id)} .art`);
+    if (!art) {
+      return;
+    }
+    this.#run(
+      art,
+      [
+        { transform: `${FLIP_PERSPECTIVE} rotateY(90deg)` },
+        { transform: `${FLIP_PERSPECTIVE} rotateY(0deg)` },
+      ],
+      { duration: FLIP_MS / 2 },
+      pileSubject(id),
+    );
   }
 
   #glow(root: HTMLElement, id: string, color: number): void {

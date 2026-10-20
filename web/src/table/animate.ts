@@ -33,6 +33,8 @@ export type Anim =
   /** Turned over on the table: flipped, another face shown, or a hidden card come face up. */
   | { kind: 'flip'; id: string }
   | { kind: 'shuffle'; pile: string }
+  /** A side deck showing its top card turns a new one face up on it (revealedTops). */
+  | { kind: 'reveal'; pile: string }
   | { kind: 'fly'; id: string; toPile: string }
   /**
    * Drawn into one of the viewer's hands out of a pile: face up all along when
@@ -129,6 +131,9 @@ export function diffViews(prev: View, next: View, ownDrop?: OwnDrop, apart = 0):
   anims.push(...drawnAway(prev, next, before, after));
   for (const pile of shuffledPiles(lines, next, after.piles)) {
     anims.push({ kind: 'shuffle', pile });
+  }
+  for (const pile of revealedTops(before, after, dropped)) {
+    anims.push({ kind: 'reveal', pile });
   }
   const tokenMoved =
     before.firstPlayer.x !== after.firstPlayer.x || before.firstPlayer.y !== after.firstPlayer.y;
@@ -331,6 +336,34 @@ function handCounts(view: View): Map<number, number> {
     }
   }
   return counts;
+}
+
+/**
+ * The side decks showing their top card (topFaceUp) whose top is a card
+ * nobody saw before: the previous top left, or the deck was shuffled. A card
+ * put back on top was seen, face up, where it came from: it moves there, as
+ * the viewer's own drop already lies there.
+ */
+function revealedTops(before: TableView, after: TableView, dropped: Set<string>): string[] {
+  const revealed: string[] = [];
+  for (const pile of after.piles) {
+    const top = pile.topFaceUp ? pile.cards?.at(-1) : undefined;
+    const wasTop = before.piles.find((p) => p.id === pile.id)?.cards?.at(-1);
+    if (top === undefined || top === wasTop || dropped.has(top) || wasSeen(top, before)) {
+      continue;
+    }
+    revealed.push(pile.id);
+  }
+  return revealed;
+}
+
+/** Whether the card showed its face before: on the table, in a hand, or in a pile that lists it. */
+function wasSeen(id: string, before: TableView): boolean {
+  const was = before.cards.find((card) => card.id === id);
+  if (!was || isHidden(was)) {
+    return false;
+  }
+  return isPlaced(was) || before.piles.some((pile) => pile.cards?.includes(id));
 }
 
 /** Exhausted or readied, flipped, turned face up, or its tokens or statuses changed. */

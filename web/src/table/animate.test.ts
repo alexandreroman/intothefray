@@ -1,5 +1,5 @@
 import type { Area, CardView, LogView, PileView, Point, PrivateView, View } from '../lib/types';
-import { diffViews, mergedLines, type OwnDrop } from './animate';
+import { diffViews, MAX_APART_MS, mergedLines, type OwnDrop } from './animate';
 
 function card(id: string, extra: Partial<CardView> = {}): CardView {
   return {
@@ -368,6 +368,75 @@ describe('diffViews', () => {
         ]),
       ),
     ).toEqual([{ kind: 'shuffle', pile: 'deck:p1' }]);
+  });
+
+  describe('the top card of a side deck that shows it', () => {
+    const invocation = (top: string, count = 4): PileView =>
+      pile('side:p0:0', {
+        kind: 'sideDeck',
+        x: 360,
+        count,
+        label: 'Invocation',
+        topFaceUp: true,
+        cards: [top],
+      });
+    const onPile = (id: string) => card(id, { code: '09032', zone: 'pile', home: 'side:p0:0' });
+    const withTop = (top: string, cards: CardView[], count?: number) =>
+      view({ cards, piles: [pile('deck:p0'), invocation(top, count)] });
+
+    it('turns face up when the previous top leaves', () => {
+      const prev = withTop('i1', [onPile('i1')]);
+      const next = withTop(
+        'i2',
+        [card('i1', { code: '09032', x: 500, home: 'side:p0:0' }), onPile('i2')],
+        3,
+      );
+
+      expect(diffViews(prev, next)).toContainEqual({ kind: 'reveal', pile: 'side:p0:0' });
+      // Even when the viewer played it there themselves.
+      expect(diffViews(prev, next, droppedCard('i1'))).toContainEqual({
+        kind: 'reveal',
+        pile: 'side:p0:0',
+      });
+    });
+
+    it('turns face up after the deck is shuffled', () => {
+      const prev = withTop('i1', [onPile('i1')]);
+      const next = view({
+        cards: [onPile('i7')],
+        piles: [pile('deck:p0'), invocation('i7')],
+        log: [OLD_LINE, line('shuffled their Invocation deck', { who: 'Alex', color: 0 })],
+      });
+
+      expect(diffViews(prev, next)).toEqual([
+        { kind: 'shuffle', pile: 'side:p0:0' },
+        { kind: 'reveal', pile: 'side:p0:0' },
+      ]);
+    });
+
+    it('does not turn when the same card stays on top', () => {
+      const prev = withTop('i1', [onPile('i1'), card('a')]);
+      const next = withTop('i1', [onPile('i1'), card('a', { x: 300 })]);
+
+      expect(diffViews(prev, next).filter((anim) => anim.kind === 'reveal')).toEqual([]);
+    });
+
+    it('does not turn a card put back on top: it flies there', () => {
+      const prev = withTop('i1', [
+        onPile('i1'),
+        card('back', { code: '09033', x: 500, home: 'side:p0:0' }),
+      ]);
+      const next = withTop('back', [onPile('i1'), onPile('back')], 5);
+
+      expect(diffViews(prev, next)).toEqual([{ kind: 'fly', id: 'back', toPile: 'side:p0:0' }]);
+    });
+
+    it('does not turn on a view that comes too long after the last', () => {
+      const prev = withTop('i1', [onPile('i1')]);
+      const next = withTop('i2', [onPile('i2')], 3);
+
+      expect(diffViews(prev, next, undefined, MAX_APART_MS + 1)).toEqual([]);
+    });
   });
 
   it('shuffle of a side deck or its discard pile names the pile after its label', () => {
