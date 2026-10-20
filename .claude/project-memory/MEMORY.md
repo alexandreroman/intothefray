@@ -25,7 +25,7 @@
 - [Name and license](references/project_name_license.md) — intothefray, Go module path, Apache-2.0
 - [Tech stack choices](references/project_tech_stack.md) — Go + Redis backend, Svelte SPA on GitHub Pages, path routes, why
 - [Product constraints](references/project_constraints.md) — anti-cheat, no images, 24 h expiry, pack scope, v1 limits
-- [Card data sources](references/reference_card_sources.md) — marvelcdb and Cerebro APIs and image URLs
+- [Card data sources](references/reference_card_sources.md) — marvelcdb, Cerebro, fr.marvelcdb and mc4db APIs and image URLs
 - [Automated setup scope](references/project_setup_scope.md) — setup places cards; players draw their own opening hand
 - [Replayable board state](references/project_replayable_state.md) — seed at start, full action history, snapshots every 10 actions
 - [Moving card stacks](references/project_stack_moves.md) — top card moves the whole stack; a tucked card detaches
@@ -47,3 +47,4 @@
 - [Spectators have no stage button](references/project_spectator_stage.md) — no action on villain/main scheme cards for spectators
 - [CI scope](references/project_ci_scope.md) — ci.yml checks Go, web, Docker; pages.yml standalone; no packs sync, no Dependabot
 - [Moving several cards as a group](references/project_group_moves.md) — rubber band selection; a group only moves; one atomic group action
+- [Localized card names and images](references/project_localized_cards.md) — localized overrides per face and index entry; Options language, English default
