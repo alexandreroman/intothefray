@@ -833,6 +833,259 @@ describe('Table animations', () => {
     });
   });
 
+  describe('cards changing place', () => {
+    const discard = (cards: string[], id = 'disc:p0', owner = 0, x = 720): PileView => ({
+      id,
+      kind: 'discard',
+      owner,
+      x,
+      y: 0,
+      count: cards.length,
+      cards,
+    });
+    const samDeck = (count: number): PileView => ({ ...PILES[0]!, count });
+    /** Whether a copy shows a card's back anywhere, its own or a caption's. */
+    const showsBack = (element: Element | null) =>
+      element?.querySelector('[aria-label$="card back"], [alt$="card back"]') != null;
+
+    async function renderTable(view: View) {
+      const session = { ...fakeSession(), presence: new SvelteMap<number, PresenceState>() };
+      const rendered = render(Table, { session, view });
+      await settle();
+      return { ...rendered, session, next: (view: View) => rendered.rerender({ session, view }) };
+    }
+
+    it('a card played from the discard slides from the pile to its spot', async () => {
+      const { next } = await renderTable(
+        makeView([card('c9', { zone: 'pile' })], { piles: [PILES[0]!, discard(['c9'])] }),
+      );
+
+      await next(
+        makeView([card('c9', { x: 300, y: 100 })], {
+          piles: [PILES[0]!, discard([])],
+          log: [START, line('played Spider-Man')],
+        }),
+      );
+      const placed = '.surface .card[data-id="c9"]';
+      await waitFor(() => expect(animationsOf(placed)).toHaveLength(1));
+      const [[keyframes, options]] = animationsOf(placed) as [
+        [Keyframe[], KeyframeAnimationOptions],
+      ];
+      expect(keyframes[0]).toMatchObject({ translate: expect.stringMatching(/^\d+px -100px$/) });
+      expect(keyframes[1]).toMatchObject({ translate: '0px 0px', scale: '1' });
+      expect(options.duration).toBe(250);
+    });
+
+    it("another player's drop of a discard card slides from their ghost", async () => {
+      const { next, session } = await renderTable(
+        makeView([card('c9', { zone: 'pile' })], { piles: [PILES[0]!, discard(['c9'])] }),
+      );
+      // Alex drags it out of the discard to 250, 100, then lets go: its ghost stays there.
+      session.presence.set(0, {
+        color: 0,
+        name: 'Alex',
+        at: Date.now(),
+        drag: { cards: ['c9'], x: 250, y: 100 },
+      });
+      const ghost = () => document.querySelector('.presence .card.ghost[data-id="c9"]');
+      await waitFor(() => expect(ghost()).not.toBeNull());
+      session.presence.set(0, { color: 0, name: 'Alex', at: Date.now(), drag: null });
+      await settle();
+
+      await next(makeView([card('c9', { x: 300, y: 100 })], { piles: [PILES[0]!, discard([])] }));
+      const placed = '.surface .card[data-id="c9"]';
+      await waitFor(() => expect(animationsOf(placed)).toHaveLength(1));
+      const [[keyframes]] = animationsOf(placed) as [[Keyframe[], KeyframeAnimationOptions]];
+      expect(keyframes[0]).toMatchObject({ translate: '-50px 0px' });
+    });
+
+    it('a card put on top of a deck flies there as its face', async () => {
+      const { next, container } = await renderTable(
+        makeView([card('c4', { owner: 1, x: 40 })], { piles: [samDeck(30), PILES[1]!] }),
+      );
+
+      await next(makeView([], { piles: [samDeck(31), PILES[1]!] }));
+      await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
+      const fly = container.querySelector('.fly');
+      expect(fly?.getAttribute('style')).toContain('left: 40px');
+      expect(showsBack(fly)).toBe(false);
+      const [[keyframes, options]] = animationsOf('.fly') as [
+        [Keyframe[], KeyframeAnimationOptions],
+      ];
+      expect(String(keyframes.at(-1)?.transform)).toContain('translate(');
+      expect(options.duration).toBe(420);
+
+      // The deck lists none of its cards: an unrelated view does not cut the flight.
+      await next(makeView([card('z', { x: 500 })], { piles: [samDeck(31), PILES[1]!] }));
+      await settle();
+      expect(container.querySelector('.fly')).not.toBeNull();
+      // Its pile gone, it ends.
+      await next(makeView([card('z', { x: 500 })], { piles: [PILES[1]!] }));
+      await waitFor(() => expect(container.querySelector('.fly')).toBeNull());
+    });
+
+    it('cards discarded from a deck fly to the discard on their back, then turn', async () => {
+      const samDiscard = (cards: string[]) => discard(cards, 'disc:p1', 1, 840);
+      const discarded = (id: string) => card(id, { owner: 1, zone: 'pile' });
+      const { next, container } = await renderTable(
+        makeView([], { piles: [samDeck(30), PILES[1]!, samDiscard([])] }),
+      );
+
+      await next(
+        makeView([discarded('c7'), discarded('c8')], {
+          piles: [samDeck(28), PILES[1]!, samDiscard(['c7', 'c8'])],
+        }),
+      );
+      await waitFor(() => expect(container.querySelectorAll('.fly')).toHaveLength(2));
+      const flies = [...container.querySelectorAll('.fly')];
+      // They leave the deck, on their back over their face.
+      for (const fly of flies) {
+        expect(fly.getAttribute('style')).toContain('left: 600px');
+        expect(fly.querySelector('[data-side="back"]')).not.toBeNull();
+      }
+      const flights = animationsOf('.fly');
+      expect(flights.map(([frames]) => frames.map((frame) => frame.offset))).toEqual([
+        [0, 0.6, 0.8, 1],
+        [0, 0.6, 0.8, 1],
+      ]);
+      expect(String(flights[0]?.[0][2]?.transform)).toContain('rotateY(90deg)');
+      expect(flights.map(([, options]) => [options.duration, options.delay])).toEqual([
+        [420, 0],
+        [420, 70],
+      ]);
+      // The back gives way once edge-on.
+      expect(animationsOf('.fly [data-side="back"]')).toHaveLength(2);
+      // The discard is drawn as it was until they land.
+      const pile = container.querySelector('.surface .pile[data-id="disc:p1"]');
+      expect(pile?.classList).toContain('empty');
+      for (const animation of started.filter((a) => a.element.matches('.fly'))) {
+        animation.finish();
+      }
+      await waitFor(() => expect(container.querySelector('.fly')).toBeNull());
+      expect(pile?.classList).not.toContain('empty');
+    });
+
+    it('a card sent to the victory display flies to its chip', async () => {
+      const villain: PileView[] = [
+        ...PILES,
+        { id: 'enc', kind: 'encounter', owner: -1, x: 0, y: 300, count: 20 },
+        { id: 'vic', kind: 'victory', owner: -1, x: 0, y: 0, count: 0, cards: [] },
+      ];
+      const withVictory = (cards: string[]) =>
+        villain.map((pile) => (pile.id === 'vic' ? { ...pile, count: cards.length, cards } : pile));
+      const { next, container } = await renderTable(
+        makeView([card('v', { owner: -1, x: 400 })], { piles: withVictory([]) }),
+      );
+      const chip = container.querySelector<HTMLElement>('.surface .chip[data-pile="vic"]')!;
+      chip.style.left = '900px';
+      chip.style.top = '280px';
+      chip.style.width = '40px';
+      chip.style.height = '20px';
+
+      await next(makeView([card('v', { owner: -1, zone: 'pile' })], { piles: withVictory(['v']) }));
+      await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
+      expect(motion.flights).toMatchObject([
+        { kind: 'toPile', pile: 'vic', to: { cx: 920, cy: 290 } },
+      ]);
+    });
+
+    it("a card taken into another player's hand slides down and fades where it was", async () => {
+      const { next, container } = await renderTable(makeView([card('c2', { x: 100 })]));
+
+      await next(makeView([], { handCounts: [6, 5] }));
+      await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
+      const fly = container.querySelector('.fly');
+      expect(fly?.getAttribute('style')).toContain('left: 100px');
+      // Seen on the table, it shows its face.
+      expect(showsBack(fly)).toBe(false);
+      const [[keyframes, options]] = animationsOf('.fly') as [
+        [Keyframe[], KeyframeAnimationOptions],
+      ];
+      expect(keyframes.at(-1)).toMatchObject({ opacity: 0 });
+      expect(String(keyframes.at(-1)?.transform)).toContain('40px');
+      expect(options.duration).toBe(380);
+    });
+
+    it('a face-down card taken into another hand shows its back', async () => {
+      const { next, container } = await renderTable(
+        makeView([card('c2', { x: 100, faceDown: true, code: undefined })]),
+      );
+
+      await next(makeView([], { handCounts: [6, 5] }));
+      await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
+      expect(showsBack(container.querySelector('.fly'))).toBe(true);
+    });
+
+    it('a card another player discards from their hand rises into the discard', async () => {
+      const { next, container } = await renderTable(makeView([]));
+
+      await next(
+        makeView([card('c5', { zone: 'pile' })], {
+          piles: [PILES[0]!, discard(['c5'])],
+          handCounts: [4, 5],
+        }),
+      );
+      await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
+      const fly = container.querySelector('.fly');
+      expect(fly?.getAttribute('style')).toContain('left: 720px');
+      expect(showsBack(fly)).toBe(false);
+      const [[keyframes, options]] = animationsOf('.fly') as [
+        [Keyframe[], KeyframeAnimationOptions],
+      ];
+      expect(keyframes[0]).toMatchObject({ opacity: 0 });
+      expect(keyframes.at(-1)).toMatchObject({ transform: 'translate(0, 0) scale(1)', opacity: 1 });
+      expect(options.duration).toBe(380);
+      // The discard shows the card once it is in.
+      const pile = container.querySelector('.surface .pile[data-id="disc:p0"]');
+      expect(pile?.classList).toContain('empty');
+      started.find((animation) => animation.element === fly)?.finish();
+      await waitFor(() => expect(container.querySelector('.fly')).toBeNull());
+      expect(pile?.classList).not.toContain('empty');
+    });
+
+    it("a card put on another player's deck out of their hand rises into it on its back", async () => {
+      const alexDeck = (count: number): PileView => ({
+        ...PILES[0]!,
+        id: 'deck:p0',
+        owner: 0,
+        x: 480,
+        count,
+      });
+      const { next, container } = await renderTable(
+        makeView([], { piles: [...PILES, alexDeck(30)] }),
+      );
+
+      await next(makeView([], { piles: [...PILES, alexDeck(31)], handCounts: [4, 5] }));
+      await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
+      const fly = container.querySelector('.fly');
+      expect(fly?.getAttribute('style')).toContain('left: 480px');
+      expect(showsBack(fly)).toBe(true);
+    });
+
+    it('with reduced motion none of these play', async () => {
+      await withReducedMotion(async () => {
+        const samDiscard = (cards: string[]) => discard(cards, 'disc:p1', 1, 840);
+        const { next, container } = await renderTable(
+          makeView([card('c9', { zone: 'pile' }), card('c2', { x: 100 })], {
+            piles: [samDeck(30), discard(['c9']), samDiscard([])],
+          }),
+        );
+
+        // c9 played from the discard, c2 taken into Alex's hand, c7 discarded from Sam's deck.
+        await next(
+          makeView([card('c9', { x: 300 }), card('c7', { owner: 1, zone: 'pile' })], {
+            piles: [samDeck(29), discard([]), samDiscard(['c7'])],
+            handCounts: [6, 5],
+          }),
+        );
+        await settle();
+        expect(container.querySelector('.fly')).toBeNull();
+        expect(motion.flights).toEqual([]);
+        expect(animate).not.toHaveBeenCalled();
+      });
+    });
+  });
+
   it('an animation waiting for the redraw does not play after a stop', async () => {
     const view = makeView([card('a', { x: 0 })]);
     const { container } = render(Table, { session: fakeSession(), view });
@@ -968,7 +1221,7 @@ describe('Table animations', () => {
     expect(container.querySelector('.surface .card[aria-hidden="true"]')).toBeNull();
   });
 
-  it('a card come face up from a deck onto the table only turns in', async () => {
+  it('a card come face up from a deck onto the table slides out of it and turns in', async () => {
     // The server never lists a deck's cards: the card shows up on the table as the deck shrinks.
     const session = fakeSession();
     const { rerender } = render(Table, { session, view: makeView([]) });
@@ -977,17 +1230,24 @@ describe('Table animations', () => {
     const deck = PILES.map((pile) => (pile.id === 'deck:p1' ? { ...pile, count: 29 } : pile));
     await rerender({
       session,
-      view: makeView([card('a', { x: 300 })], {
+      view: makeView([card('a', { owner: 1, x: 300 })], {
         piles: deck,
         log: [START, line('played Spider-Man')],
       }),
     });
+    const frames = () =>
+      animationsOf('.surface .card[data-id="a"]').map(([keyframes]) => keyframes);
     await waitFor(() =>
-      expect(animationsOf('.surface .card[data-id="a"]').map(([frames]) => frames)).toContainEqual([
+      expect(frames()).toContainEqual([
         { transform: 'perspective(700px) rotateY(90deg)' },
         { transform: 'perspective(700px) rotateY(0deg)' },
       ]),
     );
+    // Its slide out of the deck, at x 600, plays with the turn: translate and scale, not transform.
+    expect(frames()).toContainEqual([
+      { translate: expect.stringMatching(/^3\d\dpx /), scale: expect.any(String) },
+      { translate: '0px 0px', scale: '1' },
+    ]);
   });
 
   it('a glow plays on through an unrelated view', async () => {

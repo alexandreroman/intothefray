@@ -31,11 +31,14 @@ Everything below works today, except where noted.
   Iceman's Frostbite...) on its set-aside pile
 - **Discoverable actions** — every action one or two clicks away,
   and you always see what the other players just did: history,
-  live cursors, pings, arrows and animated moves
+  live cursors, pings, arrows, and every card that changes place
+  travelling there (as a back when you may not see it)
 - **Group moves** — drag on an empty spot of the table to select
   the cards you touch, then drag one of them to move them all
   together: elsewhere on the table, onto a pile or a deck, or into
-  your hand when they are all yours. `Esc` lets go of the selection
+  your hand when they are all yours; Discard and Move to in a
+  selected card's menu send the whole selection too. `Esc` lets go
+  of the selection
 - **Undo** — take back your own last actions, across all your decks
 - **Keyboard shortcuts** — press `?` at the table for the full sheet
 - **Themes** — official, minimal or green felt, per viewer

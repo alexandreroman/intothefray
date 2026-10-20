@@ -851,6 +851,181 @@ describe('side decks', () => {
   });
 });
 
+describe('a selected group', () => {
+  // Alex's three cards, listed out of their drawing order (z), an encounter
+  // card, Sam's card, Alex's identity, two cards of Alex's Sense deck and one
+  // tucked under c1.
+  const groupCards = [
+    card('c2', { z: 2 }),
+    card('c3', { z: 3 }),
+    card('c1', { z: 1 }),
+    card('e1', { code: '01100', owner: -1, back: 'encounter', z: 4 }),
+    card('t1', { owner: 1, z: 5 }),
+    card('me', { identity: true, z: 6 }),
+    card('s1', { home: 'side:p0:1', z: 7 }),
+    card('s2', { home: 'side:p0:1', z: 8 }),
+    card('under', { parent: 'c1', z: 9 }),
+  ];
+  const groupView = () =>
+    makeView({
+      cards: groupCards,
+      piles: [
+        ...makeView().table!.piles,
+        pile('side:p0:1', { kind: 'sideDeck', owner: 0, count: 5, label: 'Sense' }),
+      ],
+    });
+
+  function groupItems(el: string, group: string[]): ActionItem[] {
+    const result = actionsFor({ kind: 'card', id: el }, groupView(), ALEX, 'en', new Set(group));
+    if (!Array.isArray(result)) {
+      throw new Error(`expected items, got the text "${result.text}"`);
+    }
+    return result;
+  }
+
+  const moveIds = (items: ActionItem[]) => menuOf(items, 'moveTo').map((it) => it.id);
+
+  it('Discard reads the number of cards and discards every unit, in unit order', () => {
+    const discard = item(groupItems('c1', ['c1', 'c2', 'c3']), 'discard');
+    expect(discard).toMatchObject({ label: 'Discard 3 cards', key: 'X', altKeys: ['Backspace'] });
+    expect(actionOf(discard)).toEqual({
+      kind: 'group',
+      actions: [
+        { kind: 'discard', card: 'c1' },
+        { kind: 'discard', card: 'c2' },
+        { kind: 'discard', card: 'c3' },
+      ],
+    });
+  });
+
+  it('an encounter card leaves Hand out; the decks need every unit own or encounter', () => {
+    expect(moveIds(groupItems('c1', ['c1', 'e1']))).toEqual([
+      'deckTop',
+      'deckBottom',
+      'sep',
+      'victory',
+      'aside',
+    ]);
+    // Sam's card goes to no deck of the viewer's, nor to their hand.
+    expect(moveIds(groupItems('c1', ['c1', 't1']))).toEqual(['victory', 'aside']);
+  });
+
+  it('a card outside the group, or a group of one unit, gets its own items', () => {
+    for (const [el, group] of [
+      ['c1', ['c2', 'c3']],
+      ['c1', ['c1']],
+      // The tucked card comes along with its host: one unit.
+      ['c1', ['c1', 'under']],
+    ] as const) {
+      const items = groupItems(el, [...group]);
+      const discard = item(items, 'discard');
+      expect(discard.label).toBe('Discard');
+      expect(actionOf(discard)).toEqual({ kind: 'discard', card: 'c1' });
+      expect(moveIds(items)).toContain('deckShuffle');
+    }
+  });
+
+  it('a unit that stays on the table disables Discard and Move to', () => {
+    const items = groupItems('c1', ['c1', 'me']);
+    const reason = 'The identity card stays on the table';
+    expect(item(items, 'discard')).toMatchObject({ disabled: true, reason });
+    expect(item(items, 'moveTo')).toMatchObject({ disabled: true, reason });
+  });
+
+  it('offers no shuffle into a deck', () => {
+    expect(moveIds(groupItems('c1', ['c1', 'c2']))).toEqual([
+      'hand',
+      'deckTop',
+      'deckBottom',
+      'sep',
+      'victory',
+      'aside',
+    ]);
+  });
+
+  it('every other item still acts on the one card', () => {
+    const items = groupItems('c2', ['c1', 'c2']);
+    expect(actionOf(item(items, 'exhaust'))).toEqual({ kind: 'exhaust', card: 'c2' });
+    expect(actionOf(item(menuOf(items, 'tokens'), 'dmg'))).toEqual({
+      kind: 'token',
+      card: 'c2',
+      name: 'dmg',
+      delta: 1,
+    });
+  });
+
+  it('Hand takes every unit into the hand', () => {
+    const hand = item(menuOf(groupItems('c1', ['c1', 'c2']), 'moveTo'), 'hand');
+    expect(hand).toMatchObject({ label: 'Hand', key: 'H' });
+    expect(actionOf(hand)).toEqual({
+      kind: 'group',
+      actions: [
+        { kind: 'toHand', card: 'c1' },
+        { kind: 'toHand', card: 'c2' },
+      ],
+    });
+  });
+
+  it('group Top of deck sends toDeck where top for every unit', () => {
+    const top = item(menuOf(groupItems('c1', ['c1', 'c2']), 'moveTo'), 'deckTop');
+    expect(top.label).toBe('Top of deck');
+    expect(actionOf(top)).toEqual({
+      kind: 'group',
+      actions: [
+        { kind: 'toDeck', card: 'c1', where: 'top' },
+        { kind: 'toDeck', card: 'c2', where: 'top' },
+      ],
+    });
+  });
+
+  it('group Bottom of deck uses the B key', () => {
+    const bottom = item(menuOf(groupItems('c1', ['c1', 'c2']), 'moveTo'), 'deckBottom');
+    expect(bottom).toMatchObject({ label: 'Bottom of deck', key: 'B' });
+    expect(actionOf(bottom)).toEqual({
+      kind: 'group',
+      actions: [
+        { kind: 'toDeck', card: 'c1', where: 'bottom' },
+        { kind: 'toDeck', card: 'c2', where: 'bottom' },
+      ],
+    });
+  });
+
+  it('one shared side deck names it, mixed homes read decks', () => {
+    const sense = groupItems('s1', ['s1', 's2']);
+    // The Sense deck has no discard pile: no Discard either.
+    expect(sense.map((it) => it.id)).not.toContain('discard');
+    const senseLabels = menuOf(sense, 'moveTo').map((it) => it.label);
+    expect(senseLabels).toContain('Top of Sense deck');
+    expect(senseLabels).toContain('Bottom of Sense deck');
+
+    const mixed = menuOf(groupItems('c1', ['c1', 's1']), 'moveTo').map((it) => it.label);
+    expect(mixed).toContain('Top of decks');
+    expect(mixed).toContain('Bottom of decks');
+  });
+
+  it("group Set aside sends toPile per unit to its owner's aside pile", () => {
+    const aside = item(menuOf(groupItems('c1', ['c1', 't1']), 'moveTo'), 'aside');
+    expect(actionOf(aside)).toEqual({
+      kind: 'group',
+      actions: [
+        { kind: 'toPile', card: 'c1', target: 'aside:p0' },
+        { kind: 'toPile', card: 't1', target: 'saside' },
+      ],
+    });
+  });
+
+  it('Victory display sends toPile vic per unit', () => {
+    const victory = item(menuOf(groupItems('c1', ['c1', 'e1']), 'moveTo'), 'victory');
+    expect(actionOf(victory)).toEqual({
+      kind: 'group',
+      actions: [
+        { kind: 'toPile', card: 'c1', target: 'vic' },
+        { kind: 'toPile', card: 'e1', target: 'vic' },
+      ],
+    });
+  });
+});
+
 describe('keyLabel', () => {
   it('shows the main key, a Shift key after ⇧, and nothing without a key', () => {
     expect(keyLabel({ key: 'E' })).toBe('E');

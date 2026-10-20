@@ -1,7 +1,8 @@
 // What changed on the table between two views, as the animations to play
-// (spec 5.2, 5.5, 5.6): cards that moved, changed, turned in or flew to a
-// pile, cards drawn into a hand, piles that were shuffled, and the first
-// player token moved. Pure: the table plays the list (motion.svelte.ts).
+// (spec 5.2, 5.5, 5.6): cards that moved, changed, turned in, flew to a pile
+// or entered the table from one, cards drawn into a hand or taken into one
+// the viewer does not see, piles that were shuffled, and the first player
+// token moved. Pure: the table plays the list (motion.svelte.ts).
 
 import type {
   CardView,
@@ -35,7 +36,18 @@ export type Anim =
   | { kind: 'shuffle'; pile: string }
   /** A side deck showing its top card turns a new one face up on it (revealedTops). */
   | { kind: 'reveal'; pile: string }
-  | { kind: 'fly'; id: string; toPile: string }
+  /**
+   * Gone to a pile: out of the table or the hand, or out of another pile
+   * (fromPile). It turns over on the way when it left that pile on its back: a
+   * deck, or the viewer's look through one.
+   */
+  | { kind: 'fly'; id: string; toPile: string; fromPile?: string; turns?: boolean }
+  /** Come onto the table out of a pile. */
+  | { kind: 'enter'; id: string; fromPile: string }
+  /** Taken from the table into a hand the viewer does not see. */
+  | { kind: 'away'; id: string }
+  /** Put on a pile out of a hand the viewer does not see: the card when the pile shows it. */
+  | { kind: 'arrive'; pile: string; card?: string }
   /** Put at the bottom of a deck that does not show it: it flies there and slips under (slidUnder). */
   | { kind: 'under'; id: string; toPile: string }
   /**
@@ -62,6 +74,9 @@ export type OwnDrop = Pick<Landing, 'element' | 'card' | 'lifted'>;
  * table jumps to its new state instead of replaying everything at once.
  */
 export const MAX_APART_MS = 2000;
+
+/** At most this many cards fly from one pile to another in one view (a shuffle back): the top ones. */
+const MAX_PILE_FLIGHTS = 5;
 
 const SHUFFLED = 'shuffled ';
 // "put Web-Shooter at the bottom of their deck", "put 3 cards at the bottom of the encounter deck".
@@ -97,20 +112,19 @@ export function diffViews(prev: View, next: View, ownDrop?: OwnDrop, apart = 0):
   const actor = lines.at(-1)?.color ?? -1;
   const turned = turnedIn(before, after);
   const shrunk = shrunkHiddenPiles(before, after);
-  const revealed = shrunk.length > 0;
+  // The viewer's own draw or deal, a deck dragged onto the hand or the table, already lies there.
+  const draggedPile = ownDrop?.element.kind === 'pile' ? ownDrop.element.id : null;
+  const tally = tallyOf(prev, next, before, after);
+  const unders = slidUnder(lines, next, before, after);
+  for (const under of unders) {
+    takeOne(tally.growth, under.toPile);
+  }
 
   const anims: Anim[] = [];
   for (const card of after.cards) {
     const was = previous.get(card.id);
-    if (!was) {
-      // Never listed before: it came out of a deck nobody sees, or out of another player's hand.
-      // Only the first turns over as it lands, the viewer's own drop included.
-      if (revealed && card.zone === 'table' && !isHidden(card)) {
-        anims.push({ kind: 'flip', id: card.id });
-      }
-      continue;
-    }
-    if (dropped.has(card.id)) {
+    // A card never listed before is new in the view (arrivals).
+    if (!was || dropped.has(card.id)) {
       continue;
     }
     const travel = travelOf(was, card, after);
@@ -128,18 +142,20 @@ export function diffViews(prev: View, next: View, ownDrop?: OwnDrop, apart = 0):
       anims.push({ kind: 'glow', id: card.id, color: actor });
     }
   }
-  // The viewer's own draw, a deck dragged onto the hand, already lies there.
-  const draggedPile = ownDrop?.element.kind === 'pile' ? ownDrop.element.id : null;
+  const unslid = new Set(unders.map((under) => under.id));
+  anims.push(...departures(before, after, dropped, unslid, draggedPile, tally));
+  anims.push(...arrivals(before, after, dropped, draggedPile, shrunk, tally));
+  anims.push(...unseenArrivals(after, tally));
   for (const draw of drawsOf(before, after, shrunk, ownSeats(next))) {
     if (!dropped.has(draw.id) && draw.fromPile !== draggedPile) {
       anims.push(draw);
     }
   }
-  anims.push(...drawnAway(prev, next, before, after));
+  anims.push(...drawnAway(tally.rises, before, after));
   for (const pile of shuffledPiles(lines, next, after.piles)) {
     anims.push({ kind: 'shuffle', pile });
   }
-  anims.push(...slidUnder(lines, next, before, after));
+  anims.push(...unders);
   for (const pile of revealedTops(before, after, dropped)) {
     anims.push({ kind: 'reveal', pile });
   }
@@ -290,19 +306,18 @@ function hiddenOrigin(
 
 /**
  * The cards the other seats drew, which the viewer does not see: as many as
- * a seat's hand grew by, taken from that seat's piles that shrank, its deck
- * first, at most what each pile lost. A card out of a pile that showed its
- * cards is named, unless it shows up somewhere else.
+ * a seat's hand grew by, less the table cards taken into it (away), taken
+ * from that seat's piles that shrank, its deck first, at most what each pile
+ * lost. A card out of a pile that showed its cards is named, unless it shows
+ * up somewhere else.
  */
-function drawnAway(prev: View, next: View, before: TableView, after: TableView): Anim[] {
-  const own = ownSeats(next);
+function drawnAway(rises: Map<number, number>, before: TableView, after: TableView): Anim[] {
   const listed = new Set(after.cards.map((card) => card.id));
-  const counts = handCounts(prev);
   const shrunk = shrunkPiles(before, after);
   const anims: Anim[] = [];
-  for (const [seat, count] of handCounts(next)) {
-    let rise = count - (counts.get(seat) ?? count);
-    if (own.includes(seat) || rise <= 0) {
+  for (const [seat, seatRise] of rises) {
+    let rise = seatRise;
+    if (rise <= 0) {
       continue;
     }
     const piles = shrunk.filter(({ pile }) => pile.owner === seat);
@@ -344,6 +359,272 @@ function handCounts(view: View): Map<number, number> {
     }
   }
   return counts;
+}
+
+/**
+ * What a change of view leaves to account for, used up as cards are matched
+ * to it: no more cards go into a pile or come out of one than it gained or
+ * lost.
+ */
+interface Tally {
+  /** The cards each pile gained. */
+  growth: Map<string, number>;
+  /** The cards each pile that does not show its cards lost. */
+  losses: Map<string, number>;
+  /** The cards each hand the viewer does not see gained, by seat. */
+  rises: Map<number, number>;
+  /** The cards each hand the viewer does not see lost, by seat. */
+  falls: Map<number, number>;
+  /** The cards that flew from one pile to another (MAX_PILE_FLIGHTS). */
+  flown: Map<string, number>;
+}
+
+function tallyOf(prev: View, next: View, before: TableView, after: TableView): Tally {
+  const growth = new Map<string, number>();
+  for (const pile of after.piles) {
+    const was = before.piles.find((p) => p.id === pile.id);
+    if (was && pile.count > was.count) {
+      growth.set(pile.id, pile.count - was.count);
+    }
+  }
+  const losses = new Map<string, number>();
+  for (const { was, pile } of shrunkPiles(before, after)) {
+    if (pile.cards === undefined) {
+      losses.set(pile.id, was.count - pile.count);
+    }
+  }
+  const own = ownSeats(next);
+  const counts = handCounts(prev);
+  const rises = new Map<number, number>();
+  const falls = new Map<number, number>();
+  for (const [seat, count] of handCounts(next)) {
+    if (own.includes(seat)) {
+      continue;
+    }
+    const change = count - (counts.get(seat) ?? count);
+    if (change > 0) {
+      rises.set(seat, change);
+    } else if (change < 0) {
+      falls.set(seat, -change);
+    }
+  }
+  return { growth, losses, rises, falls, flown: new Map() };
+}
+
+/** Uses up one of a key's count; false when none is left. */
+function takeOne<K>(counts: Map<K, number>, key: K): boolean {
+  const left = counts.get(key) ?? 0;
+  if (left <= 0) {
+    return false;
+  }
+  counts.set(key, left - 1);
+  return true;
+}
+
+/** Whether one more card may fly from one pile to another in this view. */
+function admitFlight(tally: Tally, from: string, to: string): boolean {
+  const pair = `${from} ${to}`;
+  const flown = tally.flown.get(pair) ?? 0;
+  if (flown >= MAX_PILE_FLIGHTS) {
+    return false;
+  }
+  tally.flown.set(pair, flown + 1);
+  return true;
+}
+
+/** A card a pile listed: a pile that shows its cards, or the viewer's look through a deck. */
+interface Listed {
+  id: string;
+  pile: string;
+  /** Listed by the viewer's look only: the card leaves the deck on its back. */
+  private: boolean;
+}
+
+/** The cards each pile of a table lists, top first, then those of the viewer's look. */
+function listedCards(table: TableView): Listed[] {
+  const listed: Listed[] = [];
+  for (const pile of table.piles) {
+    // A pile lists its cards bottom to top.
+    for (const id of [...(pile.cards ?? [])].reverse()) {
+      listed.push({ id, pile: pile.id, private: false });
+    }
+  }
+  const look = table.private;
+  if (look) {
+    for (const id of look.cards) {
+      listed.push({ id, pile: look.pile, private: true });
+    }
+  }
+  return listed;
+}
+
+/** A card that left a pile or the view: it entered the table, flew to a pile, or went into a hand. */
+type Departure = Extract<Anim, { kind: 'enter' | 'fly' | 'away' }>;
+
+/**
+ * The cards that left a pile, and those gone from the view: out of the table
+ * or the hand, out of a pile that showed them, or out of the viewer's look
+ * through a deck. A card come onto the table enters from its pile, and one
+ * that another pile lists flies there from it. Placed cards first, then each
+ * pile's cards top first, so that the top ones fly when a pile gives many.
+ */
+function departures(
+  before: TableView,
+  after: TableView,
+  dropped: Set<string>,
+  unslid: Set<string>,
+  draggedPile: string | null,
+  tally: Tally,
+): Anim[] {
+  const previous = new Map(before.cards.map((card) => [card.id, card]));
+  const current = new Map(after.cards.map((card) => [card.id, card]));
+  const anims: Anim[] = [];
+  // The viewer's own drop, or the top of a pile they dragged, is not animated, but it still fills its pile.
+  const keep = (anim: Departure | null) => {
+    const from = anim && 'fromPile' in anim ? anim.fromPile : undefined;
+    if (anim && !dropped.has(anim.id) && (from === undefined || from !== draggedPile)) {
+      anims.push(anim);
+    }
+  };
+  for (const was of before.cards) {
+    if (isPlaced(was) && !current.has(was.id) && !unslid.has(was.id)) {
+      keep(vanished(was, undefined, tally));
+    }
+  }
+  const seen = new Set<string>();
+  for (const { id, pile, private: turns } of listedCards(before)) {
+    const was = previous.get(id);
+    if (!was || seen.has(id)) {
+      continue;
+    }
+    seen.add(id);
+    const card = current.get(id);
+    if (!card) {
+      keep(vanished(was, pile, tally));
+    } else if (card.zone === 'table') {
+      // A card out of the viewer's look also turns over (isTurnedOver).
+      keep({ kind: 'enter', id, fromPile: pile });
+    } else if (card.zone === 'pile') {
+      const to = after.piles.find((p) => p.cards?.includes(id));
+      if (to && to.id !== pile && admitFlight(tally, pile, to.id)) {
+        keep({ kind: 'fly', id, toPile: to.id, fromPile: pile, ...(turns && { turns }) });
+      }
+    }
+  }
+  return anims;
+}
+
+/**
+ * Where a card gone from the view went: its home deck when that deck grew, a
+ * card from a pile flying from it; else, from the table or the hand, the
+ * hand of its owner when that hand, which the viewer does not see, grew.
+ */
+function vanished(was: CardView, from: string | undefined, tally: Tally): Departure | null {
+  const home = homeDeckOf(was);
+  if (takeOne(tally.growth, home)) {
+    if (from === undefined) {
+      return { kind: 'fly', id: was.id, toPile: home };
+    }
+    return admitFlight(tally, from, home)
+      ? { kind: 'fly', id: was.id, toPile: home, fromPile: from }
+      : null;
+  }
+  if (from === undefined && takeOne(tally.rises, was.owner)) {
+    return { kind: 'away', id: was.id };
+  }
+  return null;
+}
+
+/** Where a card new in the view came from: a pile that does not show its cards, or a hand the viewer does not see. */
+type Origin = { pile: string } | { hand: number };
+
+/**
+ * A hidden pile that lost cards, as hiddenOrigin picks it, each pile giving at
+ * most what it lost; else the hand of the card's owner when that hand lost
+ * cards.
+ */
+function originOf(card: CardView, shrunk: PileView[], tally: Tally): Origin | null {
+  const giving = shrunk.filter((pile) => (tally.losses.get(pile.id) ?? 0) > 0);
+  const pile = hiddenOrigin(card, giving)?.fromPile;
+  if (pile !== undefined) {
+    takeOne(tally.losses, pile);
+    return { pile };
+  }
+  return takeOne(tally.falls, card.owner) ? { hand: card.owner } : null;
+}
+
+/**
+ * The cards new in the view, out of a hidden pile or a hand the viewer does
+ * not see (originOf). Onto the table, a card out of a pile enters from it,
+ * and one that shows its face turns over as it lands, the viewer's own drop
+ * included. Onto a pile that shows it, a card out of a pile flies there on
+ * its back, top first, and one out of a hand rises into it. A card drawn into
+ * the viewer's hand is a draw (drawsOf).
+ */
+function arrivals(
+  before: TableView,
+  after: TableView,
+  dropped: Set<string>,
+  draggedPile: string | null,
+  shrunk: PileView[],
+  tally: Tally,
+): Anim[] {
+  const previous = new Set(before.cards.map((card) => card.id));
+  const current = new Map(after.cards.map((card) => [card.id, card]));
+  const isOwnDrop = (id: string, origin: Origin) =>
+    dropped.has(id) || ('pile' in origin && origin.pile === draggedPile);
+  const anims: Anim[] = [];
+  for (const card of after.cards) {
+    const origin =
+      previous.has(card.id) || card.zone !== 'table' ? null : originOf(card, shrunk, tally);
+    if (!origin) {
+      continue;
+    }
+    if ('pile' in origin && !isOwnDrop(card.id, origin)) {
+      anims.push({ kind: 'enter', id: card.id, fromPile: origin.pile });
+    }
+    if (!isHidden(card)) {
+      anims.push({ kind: 'flip', id: card.id });
+    }
+  }
+  for (const pile of after.piles) {
+    for (const id of [...(pile.cards ?? [])].reverse()) {
+      const card = current.get(id);
+      const origin = !card || previous.has(id) ? null : originOf(card, shrunk, tally);
+      if (!origin || isOwnDrop(id, origin)) {
+        continue;
+      }
+      if (!('pile' in origin)) {
+        anims.push({ kind: 'arrive', pile: pile.id, card: id });
+      } else if (admitFlight(tally, origin.pile, pile.id)) {
+        anims.push({ kind: 'fly', id, toPile: pile.id, fromPile: origin.pile, turns: true });
+      }
+    }
+  }
+  return anims;
+}
+
+/**
+ * The cards put on a hidden pile out of a hand the viewer does not see, which
+ * nothing names: as many as the pile grew by and the hand lost, at most
+ * MAX_PILE_FLIGHTS, out of its owner's hand first.
+ */
+function unseenArrivals(after: TableView, tally: Tally): Anim[] {
+  const anims: Anim[] = [];
+  for (const pile of after.piles) {
+    if (pile.cards !== undefined) {
+      continue;
+    }
+    let left = Math.min(tally.growth.get(pile.id) ?? 0, MAX_PILE_FLIGHTS);
+    for (const seat of [pile.owner, ...tally.falls.keys()]) {
+      while (left > 0 && takeOne(tally.falls, seat)) {
+        takeOne(tally.growth, pile.id);
+        anims.push({ kind: 'arrive', pile: pile.id });
+        left--;
+      }
+    }
+  }
+  return anims;
 }
 
 /**
@@ -428,6 +709,8 @@ function shuffledPiles(lines: LogView[], view: View, piles: PileView[]): string[
   return [...shuffled];
 }
 
+type Under = Extract<Anim, { kind: 'under' }>;
+
 /**
  * The cards just put at the bottom of a deck that does not list them, as
  * they left the view and their home deck grew: those a new line says were
@@ -438,7 +721,7 @@ function shuffledPiles(lines: LogView[], view: View, piles: PileView[]): string[
  * showing its only card) shows it flying there instead (travelOf). The
  * viewer's own drop slips under too, from where it was dropped.
  */
-function slidUnder(lines: LogView[], view: View, before: TableView, after: TableView): Anim[] {
+function slidUnder(lines: LogView[], view: View, before: TableView, after: TableView): Under[] {
   const done = lines.filter((line) => !line.undone);
   const named = new Set<string>();
   for (const line of done) {
@@ -469,7 +752,7 @@ function slidUnder(lines: LogView[], view: View, before: TableView, after: Table
     isSideDeckId(homeDeckOf(was)) &&
     discardPileOf(was, after.piles) === null;
 
-  const anims: Anim[] = [];
+  const anims: Under[] = [];
   for (const was of before.cards) {
     const home = homeDeckOf(was);
     const gone = isPlaced(was) && !listed.has(was.id) && grew(home);
