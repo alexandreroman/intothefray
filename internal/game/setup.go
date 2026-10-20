@@ -17,9 +17,11 @@ import (
 // and its discard pile, then the villain or the identity; the villain's row
 // goes on with the main scheme, the first player's row with the first player
 // token, and cards in play are added to the right. A hero with side decks
-// lays them out where the identity would be, each followed by its discard
-// pile if it has one, sidePileStepX apart: they push the identity, and the
-// first player token in the first player's row, to the right. Things sit rowContentY
+// lays them out after its discard pile, each followed by its own discard pile
+// if it has one, sidePileStepX apart as the deck and the discard pile are.
+// The identity then lies pileZoneGap after the end of the last pile, the
+// first player token in the first player's row keeping its distance to it:
+// without side piles, they sit at identityX and firstPlayerX. Things sit rowContentY
 // below the top of their row, leaving room for the client's owner label
 // above the piles. Out-of-play piles (victory display, set-aside cards) keep
 // a position for the model, on the deck, but the client never draws them.
@@ -34,10 +36,16 @@ const (
 	rowHeight        = 330
 	rowContentY      = 30
 
+	// portraitWidth is the width of a portrait card, and so of a pile.
+	portraitWidth = 140
+	// pileZoneGap is the room between the last pile of a row and the
+	// cards in play after it.
+	pileZoneGap = 60
+
 	deckX        = 0
 	discardX     = 160
 	outOfPlayX   = 0
-	identityX    = 360
+	identityX    = discardX + portraitWidth + pileZoneGap
 	villainX     = 360
 	mainSchemeX  = 520
 	firstPlayerX = 520
@@ -471,10 +479,12 @@ func (b *tableBuilder) setupPlayer(seat int, deck *DeckChoice) error {
 	if err != nil {
 		return err
 	}
-	shift := sidePileStepX * sidePiles
-	b.placeOnTable(identity, alterEgoFace(identityDef), identityX+shift, rowY(playerRow(seat)))
+	// The identity follows the last pile: the discard pile (index 1) or the
+	// last side pile.
+	x := pileX(1+sidePiles) + portraitWidth + pileZoneGap
+	b.placeOnTable(identity, alterEgoFace(identityDef), x, rowY(playerRow(seat)))
 	if seat == 0 {
-		b.table.FirstPlayer.X = firstPlayerX + shift
+		b.table.FirstPlayer.X = x + firstPlayerX - identityX
 	}
 
 	if hero.Obligation != "" {
@@ -521,9 +531,15 @@ func (b *tableBuilder) setupPlayer(seat int, deck *DeckChoice) error {
 	return nil
 }
 
+// pileX returns the x of the pile at index i of a player's row: 0 for the
+// deck, 1 for the discard pile, then the side piles.
+func pileX(i int) int {
+	return deckX + sidePileStepX*i
+}
+
 // addSidePiles creates the empty side decks of seat's hero, each followed by
-// its discard pile when it has one, from left to right where the identity
-// would be. It returns the number of piles it created.
+// its discard pile when it has one, from left to right after the discard
+// pile. It returns the number of piles it created.
 func (b *tableBuilder) addSidePiles(seat int, hero pack.Hero) (int, error) {
 	y := rowY(playerRow(seat))
 	count := 0
@@ -532,13 +548,14 @@ func (b *tableBuilder) addSidePiles(seat int, hero pack.Hero) (int, error) {
 		if !ok || set.Side == nil {
 			return 0, fmt.Errorf("%w: %q is not a side deck", ErrInvalid, setCode)
 		}
-		deck := b.table.addPile(sideDeckID(seat, i), KindSideDeck, seat, identityX+sidePileStepX*count, y)
+		// Side piles come after the deck and the discard pile.
+		deck := b.table.addPile(sideDeckID(seat, i), KindSideDeck, seat, pileX(2+count), y)
 		deck.Label = set.Side.Label
 		deck.TopFaceUp = set.Side.TopFaceUp
 		deck.Back = set.Side.Back
 		count++
 		if set.Side.Discard {
-			discard := b.table.addPile(sideDiscardID(seat, i), KindSideDiscard, seat, identityX+sidePileStepX*count, y)
+			discard := b.table.addPile(sideDiscardID(seat, i), KindSideDiscard, seat, pileX(2+count), y)
 			discard.Label = set.Side.Label
 			count++
 		}

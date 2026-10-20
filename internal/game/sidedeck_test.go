@@ -103,8 +103,8 @@ func TestSetupSideDecks(t *testing.T) {
 
 	invocation := table.Piles[invocationDeck]
 	if invocation == nil || invocation.Kind != KindSideDeck || invocation.Owner != 0 ||
-		invocation.Label != "Invocation" || !invocation.TopFaceUp || invocation.X != 360 || invocation.Y != rowY0 {
-		t.Fatalf("Invocation deck = %+v, want p0's face-up side deck at (360, %d)", invocation, rowY0)
+		invocation.Label != "Invocation" || !invocation.TopFaceUp || invocation.X != 320 || invocation.Y != rowY0 {
+		t.Fatalf("Invocation deck = %+v, want p0's face-up side deck at (320, %d)", invocation, rowY0)
 	}
 	invocationCodes := []string{"09032", "09033", "09034", "09035", "09036"}
 	if got := codesOf(table, invocation.Cards); !slices.Equal(got, invocationCodes) {
@@ -117,8 +117,8 @@ func TestSetupSideDecks(t *testing.T) {
 	}
 	discard := table.Piles[invocationDiscard]
 	if discard == nil || discard.Kind != KindSideDiscard || discard.Owner != 0 || discard.Label != "Invocation" ||
-		discard.TopFaceUp || len(discard.Cards) != 0 || discard.X != 520 || discard.Y != rowY0 {
-		t.Errorf("Invocation discard = %+v, want p0's empty side discard at (520, %d)", discard, rowY0)
+		discard.TopFaceUp || len(discard.Cards) != 0 || discard.X != 480 || discard.Y != rowY0 {
+		t.Errorf("Invocation discard = %+v, want p0's empty side discard at (480, %d)", discard, rowY0)
 	}
 	if strange := f.g.Table.Cards[identityOf(t, f.g, 0)]; strange.X != 680 || strange.Y != rowY0 {
 		t.Errorf("Doctor Strange at (%d, %d), want (680, %d)", strange.X, strange.Y, rowY0)
@@ -129,8 +129,8 @@ func TestSetupSideDecks(t *testing.T) {
 
 	sense := table.Piles[senseDeck]
 	if sense == nil || sense.Kind != KindSideDeck || sense.Owner != 1 || sense.Label != "Sense" ||
-		sense.TopFaceUp || len(sense.Cards) != 5 || sense.X != 360 || sense.Y != rowY1 {
-		t.Errorf("Sense deck = %+v, want p1's face-down side deck of 5 at (360, %d)", sense, rowY1)
+		sense.TopFaceUp || len(sense.Cards) != 5 || sense.X != 320 || sense.Y != rowY1 {
+		t.Errorf("Sense deck = %+v, want p1's face-down side deck of 5 at (320, %d)", sense, rowY1)
 	}
 	if _, ok := table.Piles["sided:p1:0"]; ok {
 		t.Error("the Sense deck has a discard pile")
@@ -158,7 +158,7 @@ func TestSetupTwoSideDecks(t *testing.T) {
 	y := rowY(playerRow(0))
 
 	labels := map[string]bool{}
-	for i, x := range []int{360, 520} {
+	for i, x := range []int{320, 480} {
 		pile := table.Piles[sideDeckID(0, i)]
 		if pile == nil || pile.Kind != KindSideDeck || pile.X != x || pile.Y != y || len(pile.Cards) != 3 {
 			t.Fatalf("side deck %d = %+v, want 3 cards at (%d, %d)", i, pile, x, y)
