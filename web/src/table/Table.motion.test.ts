@@ -1,4 +1,4 @@
-import { render, waitFor } from '@testing-library/svelte';
+import { fireEvent, render, waitFor } from '@testing-library/svelte';
 import { tick } from 'svelte';
 import { SvelteMap } from 'svelte/reactivity';
 import Table from './Table.svelte';
@@ -970,5 +970,59 @@ describe('Table animations', () => {
     await waitFor(() => expect(first.cancelled).toBe(true));
     await waitFor(() => expect(runningOn(cardA)).toHaveLength(1));
     expect(runningOn(cardA)[0]?.keyframes[0]).toMatchObject({ translate: '-200px 0px' });
+  });
+});
+
+describe('the hover under a pointer at rest', () => {
+  it('goes to the hand card that slid under the pointer, once its slide has ended', async () => {
+    const session = fakeSession();
+    const inHand = (id: string) => card(id, { owner: 1, zone: 'hand' });
+    const { rerender, container } = render(Table, {
+      session,
+      view: makeView([inHand('a'), inHand('b')], { hands: { p1: ['a', 'b'] } }),
+    });
+    await settle();
+    const hcard = (id: string) =>
+      container.querySelector<HTMLElement>(`.hand .hcard[data-id="${id}"]`)!;
+    await fireEvent.pointerMove(window, { clientX: 40, clientY: 500 });
+    await fireEvent.pointerEnter(hcard('a'), { clientX: 40, clientY: 500 });
+    expect(interaction.hovered).toEqual({ kind: 'hand', id: 'a' });
+
+    // B slides into A's slot with a CSS transition, which motion does not play: it is under the
+    // pointer only once there.
+    let slid = false;
+    let endSlide = () => {};
+    const slide = {
+      finished: new Promise<void>((resolve) => {
+        endSlide = () => {
+          slid = true;
+          resolve();
+        };
+      }),
+    };
+    const hand = container.querySelector<HTMLElement>('.hand')!;
+    hand.getAnimations = (() => (slid ? [] : [slide])) as unknown as typeof hand.getAnimations;
+    const underPointer = vi
+      .spyOn(document, 'elementFromPoint')
+      .mockImplementation(() => (slid ? hcard('b').querySelector('.hit') : null));
+
+    try {
+      // Sam plays A.
+      await rerender({
+        session,
+        view: makeView([card('a', { owner: 1, x: 300 }), inHand('b')], { hands: { p1: ['b'] } }),
+      });
+      await settle();
+      for (const animation of started) {
+        animation.finish();
+      }
+      await settle();
+      expect(interaction.hovered).toBeNull();
+
+      endSlide();
+      await waitFor(() => expect(interaction.hovered).toEqual({ kind: 'hand', id: 'b' }));
+    } finally {
+      underPointer.mockRestore();
+    }
   });
 });
