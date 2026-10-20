@@ -17,20 +17,30 @@ const (
 	maxPresenceText = 64
 	// maxDragCards bounds the cards of one drag.
 	maxDragCards = 50
-	// maxPresencePerSecond is how many presence messages a viewer may send
-	// per second; the others are dropped.
+	// maxPresencePerSecond is how many presence messages a player may send
+	// per second; the others are dropped. The web client sends its
+	// continuous moves at most once per PRESENCE_INTERVAL_MS (web
+	// session.svelte.ts), and its discrete events (pings, previews, drag
+	// start and end, a hidden cursor) at once: the limit leaves room for a
+	// burst of those, while it caps a modified client, as each relayed
+	// message costs one Redis publish. Events are not capped by the client,
+	// though: a burst past the limit (previews changing fast) loses the
+	// messages dropped, and the others see a stale state until the next one.
 	maxPresencePerSecond = 30
-	// spectatorColor is the colour relayed with a spectator's presence, as
-	// spectators have none.
-	spectatorColor = -1
 	// presenceIDLength is the length of the hex hash that tells the sender
 	// of a presence event apart.
 	presenceIDLength = 16
 )
 
-// presence relays the viewer's cursor, preview, drag or ping to the other
+// presence relays the player's cursor, preview, drag or ping to the other
 // viewers of the game, on every instance. Presence is never stored.
 func (s *Server) presence(ctx context.Context, c *conn, msg clientMessage) error {
+	// Checked first, so that a spectator's presence costs no Redis publish:
+	// the web client never sends any, only a modified one would.
+	you := c.identity()
+	if you.Role != game.RolePlayer {
+		return fmt.Errorf("%w: a spectator sends no presence", game.ErrForbidden)
+	}
 	if !c.presenceLimit.allow(time.Now()) {
 		return nil
 	}
@@ -39,19 +49,10 @@ func (s *Server) presence(ctx context.Context, c *conn, msg clientMessage) error
 		return err
 	}
 
-	you := c.identity()
-	color := you.Color
-	if you.Role != game.RolePlayer {
-		if fields.Ping != nil || fields.Drag != nil {
-			return fmt.Errorf("%w: a spectator cannot ping or drag", game.ErrForbidden)
-		}
-		color = spectatorColor
-	}
-
 	payload, err := json.Marshal(presenceEvent{
 		Kind:           eventPresence,
 		From:           c.presenceID,
-		Color:          color,
+		Color:          you.Color,
 		Name:           you.Name,
 		presenceFields: fields,
 	})

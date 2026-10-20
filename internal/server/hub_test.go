@@ -333,28 +333,53 @@ func TestSpectatorPresence(t *testing.T) {
 	created := createGame(t, ts, "Alex")
 	host := connect(t, ts, created.ID)
 	host.hello(created.Token, "Alex")
+	player := connect(t, ts, created.ID)
+	player.hello("", "Carol")
 	guest := connect(t, ts, created.ID)
 	_, guestView := guest.hello("", "Bob")
-	host.expect("view")
+	host.awaitView(func(v game.View) bool { return len(v.Players) == 3 })
 	host.lobby("removePlayer", map[string]any{"color": guestView.View.You.Color})
-	host.expect("view")
 	guest.awaitView(func(v game.View) bool { return v.You.Role == game.RoleSpectator })
 
-	for _, field := range []string{"ping", "drag"} {
-		value := map[string]any{"x": 1, "y": 2}
-		if field == "drag" {
-			value["cards"] = []string{"c1"}
+	point := map[string]any{"x": 1, "y": 2}
+	tests := []struct {
+		name string
+		msg  map[string]any
+	}{
+		{"ping", map[string]any{"ping": point}},
+		{"drag", map[string]any{"drag": map[string]any{"cards": []string{"c1"}, "x": 1, "y": 2}}},
+		{"cursor", map[string]any{"cursor": point}},
+		{"hidden cursor", map[string]any{"cursor": nil}},
+		{"preview", map[string]any{"preview": "c1"}},
+	}
+	for _, tt := range tests {
+		msg := map[string]any{"type": "presence"}
+		for k, v := range tt.msg {
+			msg[k] = v
 		}
-		guest.send(map[string]any{"type": "presence", field: value})
+		guest.send(msg)
 		if reply := guest.expect("error"); reply.Code != "forbidden" {
-			t.Errorf("spectator %s: error = %s, want code forbidden", field, reply.raw)
+			t.Errorf("spectator %s: error = %s, want code forbidden", tt.name, reply.raw)
 		}
 	}
-	guest.send(map[string]any{"type": "presence", "cursor": map[string]any{"x": 1, "y": 2}})
 
-	got := host.expect("presence")
-	if got.Color == nil || *got.Color != -1 || got.Name != "Bob" {
-		t.Errorf("presence = %s, want Bob's name and colour -1", got.raw)
+	// Carol's presence goes through Redis after every refused message of
+	// Bob: had one of them been relayed, the host would get it first.
+	player.send(map[string]any{"type": "presence", "preview": "c1"})
+	if got := host.awaitPresence(); got.Name != "Carol" {
+		t.Errorf("host got presence %s, want Carol's and none from the spectator", got.raw)
+	}
+}
+
+// awaitPresence reads messages until a presence comes, and returns it. Views
+// may come before it, as the lobby changes.
+func (c *testClient) awaitPresence() received {
+	c.t.Helper()
+	for {
+		msg := c.read()
+		if msg.Type == "presence" {
+			return msg
+		}
 	}
 }
 
