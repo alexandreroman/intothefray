@@ -39,7 +39,7 @@
 - [Card image preload](references/project_image_preload.md) — browser-native: low-priority Image per pool face, no custom queue
 - [No compression in the backend](references/project_no_backend_compression.md) — Go sends HTTP/WS uncompressed; Caddy/CDN compress
 - [Visual identity](references/project_visual_identity.md) — Ink & Signal: Archivo, ink palette, split-card logo, full wordmark in bars
-- [Table layout](references/project_table_layout.md) — one surface in rows, owner frames, out-of-play via pile bars
+- [Table layout](references/project_table_layout.md) — one surface in rows, owner frames, out-of-play via owner frame chips
 - [Provider-neutral UI copy](references/project_provider_neutral_copy.md) — UI says "deck link", names no deck provider
 - [Top bar alignment](references/project_top_bar_alignment.md) — bar edges follow each screen's content column; table: icons 8px from window edge
 - [Several decks per player](references/project_multi_deck.md) — 1 to 4 deck slots per player, 4 in all; seat = deck; credited seat
@@ -50,3 +50,4 @@
 - [Moving several cards as a group](references/project_group_moves.md) — rubber band selection; a group only moves; one atomic group action
 - [Localized card names and images](references/project_localized_cards.md) — localized overrides per face and index entry; Options language, English default
 - [Fear No Evil scenarios](references/project_fear_no_evil_scenarios.md) — Kingpin curated; chosen-Underling scenarios unsupported
+- [Action bar organisation](references/project_action_bars.md) — one bar order, flat pile bars, no hand bar, out-of-play chips on owner frames

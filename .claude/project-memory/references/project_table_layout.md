@@ -19,8 +19,9 @@ type: project
   with the player's name ("Villain" in purple, as in the game, for the
   encounter piles); the frame's tooltip gives that player's hand count.
 - Out-of-play piles (victory display, set-aside) are not drawn on the
-  table: the action bar of a deck or discard pile opens its owner's
-  out-of-play piles.
+  table: chips on their owner's frame open them (see "Action bar
+  organisation", step 8 of its plan); until that step is built, the
+  action bar of a deck or discard pile opens them.
 - A portrait table card is 140×196 table units, chosen for readability;
   the hand and the preview have their own sizes. Tokens sit inside the
   card: damage and counters on its lower part, threat on its right side.
