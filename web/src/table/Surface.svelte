@@ -241,6 +241,32 @@
     pointer-events: auto;
   }
 
+  /*
+    A finger needs 44 px, whatever the zoom: on touch, an invisible hit area around each chip, 44
+    screen px a side (44px / --z in table units, which the surface's zoom brings back to 44px).
+    Under the chips (z-index -1 in their stacking context), so that a chip keeps all of its face
+    where the hit area of its neighbour reaches it. It goes at most 18 units below the chip, over
+    the 8 units of clear space above the frame and the frame's 10 units of padding (layout.ts),
+    never over the piles: the rest goes above, into the empty bottom of the row above.
+  */
+  @media (pointer: coarse) {
+    .chip {
+      position: relative;
+    }
+
+    .chip::before {
+      --hit: calc(44px / var(--z, 1));
+      content: '';
+      position: absolute;
+      z-index: -1;
+      left: 50%;
+      bottom: calc(-1 * min(18px, max(0px, (var(--hit) - 100%) / 2)));
+      width: max(100%, var(--hit));
+      height: max(100%, var(--hit));
+      translate: -50% 0;
+    }
+  }
+
   .chip :global(svg) {
     width: 14px;
     height: 14px;

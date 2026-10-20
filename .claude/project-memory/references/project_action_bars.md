@@ -10,6 +10,10 @@ type: project
   A click (no drag) or a right click opens their **action menu** at the
   pointer; a tap on touch (a long press opens nothing). Hover only
   rings, previews and targets keys; a hovered token shows its −/+ pill.
+- A click or tap on a token or status disc opens no menu; it shows the
+  −/+ pill, which a tap pins until a tap elsewhere or Esc. A tap on a
+  card or pile also shows it in the preview. Under a coarse pointer, menu
+  entries, chips and pill buttons have at least 44 px hit areas.
 - The menu's title is an eyebrow in the owner's colour (card type and
   stage, or the pile's owner) above the card name, or the pile kind with
   its count pill.

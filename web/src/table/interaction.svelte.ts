@@ -124,6 +124,11 @@ class TableInteraction {
   counter = $state.raw<CounterTarget | null>(null);
   /** The pointer is on the pill. */
   onPill = $state(false);
+  /**
+   * A tap showed the pill: touch has no hover, so it stays, and so does the
+   * hover of its card, until a press elsewhere, Escape, or its token goes.
+   */
+  counterPinned = $state(false);
 
   /** The element pressed or dragged, if any. */
   held = $state.raw<Held | null>(null);
@@ -173,7 +178,13 @@ class TableInteraction {
    * (spec 5.8).
    */
   rehover(element: TableElement | null, preview: PreviewChange = 'show'): void {
-    if (modal.open || this.dragging || this.locked || this.contextMenu !== null || this.onPill) {
+    if (
+      modal.open ||
+      this.dragging ||
+      this.locked ||
+      this.contextMenu !== null ||
+      this.#pillHolds()
+    ) {
       return;
     }
     if (element === null) {
@@ -401,7 +412,7 @@ class TableInteraction {
   leave(): void {
     this.#cancelHide();
     this.#hideTimer = setTimeout(() => {
-      if (this.locked || this.contextMenu !== null || this.onPill) {
+      if (this.locked || this.contextMenu !== null || this.#pillHolds()) {
         return;
       }
       this.hovered = null;
@@ -409,20 +420,28 @@ class TableInteraction {
     }, LINGER_MS);
   }
 
-  /** The pointer entered a token or a status. */
+  /**
+   * The pointer entered a token or a status: its pill shows. A finger
+   * entering it is a tap, which pins the pill; another token's tap moves it
+   * there.
+   */
   enterCounter(target: CounterTarget, event: PointerEvent): void {
     if (!this.#isReal(event) || modal.open) {
       return;
     }
     this.#cancelCounterHide();
     this.counter = target;
+    this.counterPinned = event.pointerType === 'touch';
   }
 
-  /** The pointer left a token, a status or the pill: the pill goes after the linger, unless it is on it. */
+  /**
+   * The pointer left a token, a status or the pill: the pill goes after the
+   * linger, unless the pointer is on it or a tap pinned it.
+   */
   leaveCounter(): void {
     this.#cancelCounterHide();
     this.#counterTimer = setTimeout(() => {
-      if (!this.onPill) {
+      if (!this.#pillHolds()) {
         this.counter = null;
       }
     }, LINGER_MS);
@@ -440,10 +459,24 @@ class TableInteraction {
     this.leave();
   }
 
-  /** Drops the pill at once. */
+  /** Drops the pill at once, pinned or not. */
   hideCounter(): void {
     this.#cancelCounterHide();
     this.counter = null;
+    this.counterPinned = false;
+  }
+
+  /**
+   * Drops the pill a tap pinned, on a press elsewhere or Escape. Its card's
+   * hover lingers out with it, unless that press hovered another element.
+   */
+  unpinCounter(): void {
+    const card = this.counter?.card;
+    this.hideCounter();
+    const hovered = this.hovered;
+    if (hovered?.kind === 'card' && hovered.id === card) {
+      this.leave();
+    }
   }
 
   isCounter(target: CounterTarget): boolean {
@@ -491,11 +524,18 @@ class TableInteraction {
 
   /**
    * Opens the context menu of a table card or pile at that point of the
-   * screen: the element becomes the hovered one, without a tap selection, and
-   * the token pill goes. The press that opened it (a right click, or Ctrl +
-   * click on macOS) does not become a drag.
+   * screen: the element becomes the hovered and the previewed one, without a
+   * tap selection, and the token pill goes. Previewed too, since the press
+   * may come while another element's menu held the hover and the preview: a
+   * tap (touch) shows its card in the preview as well as its menu. The press
+   * that opened it (a right click, or Ctrl + click on macOS) does not become
+   * a drag.
    */
-  openContextMenu(element: TableElement, at: { x: number; y: number }): void {
+  openContextMenu(
+    element: TableElement,
+    at: { x: number; y: number },
+    preview: PreviewChange = 'show',
+  ): void {
     if (modal.open || this.dragging !== null) {
       return;
     }
@@ -503,6 +543,7 @@ class TableInteraction {
     this.hideCounter();
     this.locked = false;
     this.hovered = element;
+    this.#changePreview(element, preview);
     this.letGo();
     this.contextMenu = { element, at };
   }
@@ -554,13 +595,17 @@ class TableInteraction {
   }
 
   /**
-   * Escape closes the context menu, and only that: the group stays. Otherwise
-   * it clears the group and the band, and cancels the arrow, or releases the
-   * selection.
+   * Escape closes the context menu, or else the pill a tap pinned, and only
+   * that: the group stays. Otherwise it clears the group and the band, and
+   * cancels the arrow, or releases the selection.
    */
   escape(): void {
     if (this.contextMenu !== null) {
       this.closeContextMenu();
+      return;
+    }
+    if (this.counterPinned) {
+      this.unpinCounter();
       return;
     }
     this.clearGroup();
@@ -599,6 +644,11 @@ class TableInteraction {
     } else if (preview === 'show') {
       this.previewed = element;
     }
+  }
+
+  /** The pill keeps itself and its card's hover: the pointer is on it, or a tap pinned it. */
+  #pillHolds(): boolean {
+    return this.onPill || this.counterPinned;
   }
 
   #cancelCounterHide(): void {

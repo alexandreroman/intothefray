@@ -4,6 +4,7 @@ import Table from './Table.svelte';
 import { interaction, LINGER_MS } from './interaction.svelte';
 import { knownCard, loadGameCards, loadIndex, type CardInfo } from '../lib/catalog';
 import { setLang } from '../lib/lang';
+import surfaceSource from './Surface.svelte?raw';
 import { cutShort } from '../lib/overflowTip.testing';
 import { clearPrefMemory } from '../lib/prefs';
 import type {
@@ -391,6 +392,19 @@ describe('Table', () => {
     expect(empty.dataset.tip).toBe('Set-aside cards (0): empty');
     await fireEvent.click(empty);
     expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('gives each chip a hit area of 44 screen px on a touch screen, whatever the zoom', () => {
+    const coarse = /@media \(pointer: coarse\) \{[\s\S]*?\.chip::before \{([^}]*)\}/.exec(
+      surfaceSource,
+    )?.[1];
+    // 44px in table units, which the surface's zoom turns back into 44 screen px.
+    expect(coarse).toMatch(/--hit: calc\(44px \/ var\(--z, 1\)\);/);
+    expect(coarse).toMatch(/width: max\(100%, var\(--hit\)\);/);
+    expect(coarse).toMatch(/height: max\(100%, var\(--hit\)\);/);
+    // Invisible, and under the chips' faces.
+    expect(coarse).not.toMatch(/background|border/);
+    expect(coarse).toMatch(/z-index: -1;/);
   });
 
   it('a spectator opens the out-of-play piles from their chips too', async () => {

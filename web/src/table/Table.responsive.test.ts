@@ -8,6 +8,7 @@ import type { CardView as TableCard, PresenceState, View } from '../lib/types';
 import tableSource from './Table.svelte?raw';
 import sidePanelSource from './SidePanel.svelte?raw';
 import zoomSource from './ZoomControl.svelte?raw';
+import menuSource from './ContextMenu.svelte?raw';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -155,6 +156,27 @@ describe('Table on a narrow screen', () => {
 
     await fireEvent.pointerEnter(cardInPlay());
     expect(within(peek(container) as HTMLElement).getByLabelText('Card preview')).toBeTruthy();
+  });
+
+  it('a tap on a card shows the preview over the table, and its menu over the preview', async () => {
+    mockScreen(true);
+    const { container } = render(Table, { session: fakeSession(), view: makeView() });
+
+    const touch = { pointerType: 'touch', button: 0, clientX: 200, clientY: 300 };
+    await fireEvent.pointerEnter(cardInPlay(), touch);
+    await fireEvent.pointerDown(cardInPlay(), touch);
+    await fireEvent.pointerUp(cardInPlay(), touch);
+    await fireEvent.click(cardInPlay(), { clientX: 200, clientY: 300 });
+    await fireEvent.pointerLeave(cardInPlay(), touch);
+
+    expect(within(peek(container)!).getByLabelText('Card preview')).toBeTruthy();
+    expect(container.querySelector('.table-menu.context')).not.toBeNull();
+    // On a phone they can meet: the menu is drawn over the preview, which lets every tap through.
+    const peekRule = /\n {2}\.peek \{([^}]*)\}/.exec(tableSource)?.[1] ?? '';
+    const menuRule = /\n {2}\.table-menu \{([^}]*)\}/.exec(menuSource)?.[1] ?? '';
+    const zOf = (rule: string) => Number(/z-index: (\d+);/.exec(rule)?.[1]);
+    expect(zOf(menuRule)).toBeGreaterThan(zOf(peekRule));
+    expect(peekRule).toMatch(/pointer-events: none;/);
   });
 
   it('follows the window as it narrows', async () => {

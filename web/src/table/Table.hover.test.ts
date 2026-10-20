@@ -137,6 +137,30 @@ function noPreview(): boolean {
   return screen.queryByLabelText('Card preview') === null;
 }
 
+/** The context menu of a table card or pile, if open. */
+function contextMenu(): HTMLElement | null {
+  return document.querySelector<HTMLElement>('.table-menu.context');
+}
+
+/**
+ * A tap, as a finger makes it: it enters each element it lands in, outermost
+ * first (a card, then its token), presses, lets go and clicks the innermost,
+ * then leaves them all as it lifts.
+ */
+async function tap(...entered: HTMLElement[]): Promise<void> {
+  const target = entered.at(-1)!;
+  const touch = { pointerType: 'touch', clientX: 50, clientY: 50 };
+  for (const element of entered) {
+    await fireEvent.pointerEnter(element, touch);
+  }
+  await fireEvent.pointerDown(target, { ...touch, button: 0 });
+  await fireEvent.pointerUp(target, { ...touch, button: 0 });
+  await fireEvent.click(target, { clientX: 50, clientY: 50 });
+  for (const element of [...entered].reverse()) {
+    await fireEvent.pointerLeave(element, touch);
+  }
+}
+
 beforeEach(() => {
   vi.mocked(loadGameCards).mockResolvedValue();
   vi.mocked(knownCard).mockImplementation(infoOf);
@@ -233,6 +257,40 @@ describe('hovering the table', () => {
 
     await fireEvent.pointerEnter(placed('mine'), { clientX: 41, clientY: 60 });
     expect(interaction.hovered).toEqual({ kind: 'card', id: 'mine' });
+  });
+});
+
+describe('a tap on touch', () => {
+  it('previews a card in play and opens its menu, both staying once the finger lifts', async () => {
+    await renderTable();
+    vi.useFakeTimers();
+    await tap(placed('two'));
+    await vi.advanceTimersByTimeAsync(1000);
+
+    expect(interaction.contextMenu?.element).toEqual({ kind: 'card', id: 'two' });
+    expect(contextMenu()).not.toBeNull();
+    expect(within(preview()).getByRole('img', { name: 'Peter Parker' })).toBeTruthy();
+  });
+
+  it('moves the preview to the next card tapped while a menu is open, with the menu', async () => {
+    await renderTable();
+    await tap(placed('two'));
+
+    // The open menu holds the hover: entering the next card changes nothing until its tap opens it.
+    await tap(placed('mine'));
+    expect(interaction.contextMenu?.element).toEqual({ kind: 'card', id: 'mine' });
+    expect(within(preview()).getByRole('img', { name: 'Spider-Man' })).toBeTruthy();
+  });
+
+  it("previews a pile's top card, and no deck's back, as its menu opens", async () => {
+    await renderTable();
+    await tap(placed('disc:p0'));
+    expect(interaction.contextMenu?.element).toEqual({ kind: 'pile', id: 'disc:p0' });
+    expect(within(preview()).getByRole('img', { name: 'Spider-Man' })).toBeTruthy();
+
+    await tap(placed('deck:p0'));
+    expect(interaction.contextMenu?.element).toEqual({ kind: 'pile', id: 'deck:p0' });
+    expect(noPreview()).toBe(true);
   });
 });
 
@@ -377,6 +435,96 @@ describe('tokens and statuses', () => {
     await vi.advanceTimersByTimeAsync(300);
     expect(interaction.hovered).toBeNull();
     expect(noPreview()).toBe(true);
+    expect(pill()).toBeNull();
+  });
+
+  it('a click on a token or a status opens no menu: hovering it shows the pill', async () => {
+    await renderTable(viewWithCounters());
+    await fireEvent.pointerEnter(placed('mine'));
+    for (const name of ['token:dmg', 'status:stunned']) {
+      const target = counter('mine', name);
+      await fireEvent.pointerEnter(target);
+      await fireEvent.pointerDown(target, { button: 0 });
+      await fireEvent.pointerUp(target, { button: 0 });
+      await fireEvent.click(target);
+      expect(contextMenu()).toBeNull();
+      expect(pill()).not.toBeNull();
+    }
+
+    // A click on the card itself opens its menu.
+    await fireEvent.click(placed('mine'));
+    expect(contextMenu()).not.toBeNull();
+  });
+
+  it('a tap on a token shows the pill, opens no menu, and the pill stays once the finger lifts', async () => {
+    await renderTable(viewWithCounters());
+    vi.useFakeTimers();
+    await tap(placed('mine'), counter('mine', 'token:dmg'));
+    await vi.advanceTimersByTimeAsync(1000);
+
+    expect(pill()?.textContent).toContain('2');
+    expect(contextMenu()).toBeNull();
+    // Its card stays hovered and previewed with it, touch having no hover to keep them.
+    expect(interaction.hovered).toEqual({ kind: 'card', id: 'mine' });
+    expect(within(preview()).getByRole('img', { name: 'Spider-Man' })).toBeTruthy();
+  });
+
+  it('a tapped pill stays through taps on − and +, and moves to the next token tapped', async () => {
+    const { session } = await renderTable(viewWithCounters());
+    vi.useFakeTimers();
+    await tap(placed('mine'), counter('mine', 'token:dmg'));
+
+    await tap(pill()!, within(pill()!).getByRole('button', { name: 'Add 1' }));
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      { kind: 'token', card: 'mine', name: 'dmg', delta: 1 },
+      0,
+    );
+    expect(pill()).not.toBeNull();
+
+    await tap(placed('mine'), counter('mine', 'status:stunned'));
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(interaction.counter).toEqual({ card: 'mine', kind: 'status', name: 'stunned' });
+    expect(pill()).not.toBeNull();
+  });
+
+  it('a tapped pill goes with a tap elsewhere, and its card with it', async () => {
+    await renderTable(viewWithCounters());
+    vi.useFakeTimers();
+    await tap(placed('mine'), counter('mine', 'token:dmg'));
+
+    // On the same card, off the token: the card's menu opens instead.
+    await tap(placed('mine'));
+    expect(pill()).toBeNull();
+    expect(interaction.contextMenu?.element).toEqual({ kind: 'card', id: 'mine' });
+    await fireEvent.keyDown(window, { key: 'Escape' });
+
+    await tap(placed('mine'), counter('mine', 'token:dmg'));
+    // Outside the table: the card's hover and preview linger out with the pill.
+    await tap(screen.getByRole('button', { name: 'Zoom in' }));
+    expect(pill()).toBeNull();
+    await vi.advanceTimersByTimeAsync(LINGER_MS);
+    expect(interaction.hovered).toBeNull();
+    expect(noPreview()).toBe(true);
+  });
+
+  it('a tapped pill goes with its token, and its card lingers out with it', async () => {
+    const { rerender } = await renderTable(viewWithCounters());
+    vi.useFakeTimers();
+    await tap(placed('mine'), counter('mine', 'token:dmg'));
+
+    await rerender({ view: viewWithCounters({ dmg: 0 }) });
+    expect(pill()).toBeNull();
+    await vi.advanceTimersByTimeAsync(LINGER_MS);
+    expect(interaction.hovered).toBeNull();
+    expect(noPreview()).toBe(true);
+  });
+
+  it('Escape lets go of a tapped pill', async () => {
+    await renderTable(viewWithCounters());
+    await tap(placed('mine'), counter('mine', 'token:dmg'));
+
+    await fireEvent.keyDown(window, { key: 'Escape' });
     expect(pill()).toBeNull();
   });
 

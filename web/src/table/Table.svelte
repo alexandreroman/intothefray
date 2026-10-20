@@ -57,7 +57,7 @@
   import Flights from './Flights.svelte';
   import { backCaption, isHidden } from './face';
   import Hand from './Hand.svelte';
-  import { interaction } from './interaction.svelte';
+  import { interaction, type PreviewChange } from './interaction.svelte';
   import { handleKey } from './keys';
   import KeysSheet from './KeysSheet.svelte';
   import { isOutOfPlay, outOfPlayChips, ownerFrames, surfaceSize } from './layout';
@@ -250,6 +250,11 @@
       .filter((id) => !taken.includes(id) && !motion.flying.has(id))
       .at(-1);
     return topId === undefined ? undefined : cardsById.get(topId);
+  }
+
+  /** What pointing at a pile does to the preview: it shows its top card, and a deck's back clears it. */
+  function previewOfPile(pile: PileView): PreviewChange {
+    return topOf(pile) ? 'show' : 'clear';
   }
 
   // ---- What the surface shows ----
@@ -663,7 +668,7 @@
     if (hovered?.kind === 'pile' && hovered.id === pile.id) {
       return;
     }
-    interaction.rehover({ kind: 'pile', id: pile.id }, topOf(pile) ? 'show' : 'clear');
+    interaction.rehover({ kind: 'pile', id: pile.id }, previewOfPile(pile));
   }
 
   /**
@@ -758,10 +763,15 @@
     return value > 0 ? { target, value } : null;
   });
 
-  // A pill that went away must not come back when the token does.
+  // A pill that went away must not come back when the token does. A tapped one held its card's
+  // hover, which lingers out with it; a mouse still on the card keeps it.
   $effect(() => {
     if (interaction.counter && !counterShown) {
-      interaction.hideCounter();
+      if (interaction.counterPinned) {
+        interaction.unpinCounter();
+      } else {
+        interaction.hideCounter();
+      }
     }
   });
 
@@ -845,11 +855,17 @@
     return { kind: hit.classList.contains('pile') ? 'pile' : 'card', id };
   }
 
-  /** Opens the element's context menu at that point, unless it has nothing to show. */
+  /**
+   * Opens the element's context menu at that point, unless it has nothing to
+   * show. It previews the element as entering it would (PileView: a deck that
+   * shows its back clears the preview).
+   */
   function openContextMenu(element: TableElement, at: Point): void {
-    if (contextContentOf(element) !== null) {
-      interaction.openContextMenu(element, at);
+    if (contextContentOf(element) === null) {
+      return;
     }
+    const pile = element.kind === 'pile' ? piles.find((p) => p.id === element.id) : undefined;
+    interaction.openContextMenu(element, at, pile ? previewOfPile(pile) : 'show');
   }
 
   /**
@@ -858,10 +874,14 @@
    * that press closed leaves it closed. The click that ends a drag, a rubber
    * band or an arrow never gets here (interaction.swallowNextClick). Alt +
    * click pings the spot, and Ctrl + click is macOS's right click, which
-   * onTableContextMenu handles.
+   * onTableContextMenu handles. A token or a status has its − / + pill
+   * instead, which hovering it shows, or tapping it on touch.
    */
   function onTableClick(event: MouseEvent): void {
     if (event.altKey || event.ctrlKey) {
+      return;
+    }
+    if (event.target instanceof Element && event.target.closest('.surface [data-counter]')) {
       return;
     }
     const element = contextElementOf(event.target);
