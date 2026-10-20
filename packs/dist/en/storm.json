@@ -846,7 +846,10 @@
         "36003",
         "36004",
         "36005"
-      ]
+      ],
+      "side": {
+        "label": "Weather"
+      }
     }
   ],
   "heroes": [
@@ -854,7 +857,10 @@
       "identity": "36001",
       "set": "storm",
       "obligation": "36030",
-      "nemesis": "storm_nemesis"
+      "nemesis": "storm_nemesis",
+      "sideDecks": [
+        "storm_weather_deck"
+      ]
     }
   ]
 }

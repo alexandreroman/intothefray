@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/fs"
+	"maps"
 	"slices"
 	"strings"
 	"testing"
@@ -250,10 +251,98 @@ func TestEmbeddedDataInvariants(t *testing.T) {
 		}
 	})
 
+	t.Run("set-aside cards resolve", func(t *testing.T) {
+		for _, file := range files {
+			for _, set := range file.Sets {
+				for _, code := range set.SetAside {
+					requireCard(t, "set-aside card of "+set.Code, code)
+				}
+			}
+		}
+	})
+
+	t.Run("hero side decks are side-deck sets", func(t *testing.T) {
+		sets := make(map[string]pack.Set)
+		for _, file := range files {
+			for _, set := range file.Sets {
+				sets[set.Code] = set
+			}
+		}
+		for _, file := range files {
+			for _, hero := range file.Heroes {
+				for _, code := range hero.SideDecks {
+					if set := sets[code]; set.Side == nil || set.Kind != "hero_special" {
+						t.Errorf("hero %s lists side deck %s, which is not a hero_special side-deck set", hero.Identity, code)
+					}
+				}
+			}
+		}
+	})
+
 	t.Run("ultron set lists its lettered cards", func(t *testing.T) {
 		for _, code := range []string{"01144a", "01144b", "01144c"} {
 			if !slices.Contains(setCards["ultron"], code) {
 				t.Errorf("set ultron does not list %s", code)
+			}
+		}
+	})
+}
+
+func TestEmbeddedHeroSetup(t *testing.T) {
+	files := loadPackFiles(t)
+	sets := make(map[string]pack.Set)
+	heroes := make(map[string]pack.Hero)
+	for _, file := range files {
+		for _, set := range file.Sets {
+			sets[set.Code] = set
+		}
+		for _, hero := range file.Heroes {
+			heroes[hero.Identity] = hero
+		}
+	}
+
+	t.Run("side decks", func(t *testing.T) {
+		tests := []struct {
+			identity string
+			want     map[string]pack.SideDeck
+		}{
+			{"09001", map[string]pack.SideDeck{
+				"doctor_strange_invocation_deck": {Label: "Invocation", TopFaceUp: true, Discard: true},
+			}},
+			{"36001", map[string]pack.SideDeck{"storm_weather_deck": {Label: "Weather"}}},
+			{"59001", map[string]pack.SideDeck{
+				"hercules_gift_deck":  {Label: "Gift"},
+				"hercules_labor_deck": {Label: "Labor"},
+			}},
+			{"60001", map[string]pack.SideDeck{"daredevil_sense_deck": {Label: "Sense"}}},
+		}
+		for _, tt := range tests {
+			hero := heroes[tt.identity]
+			// Pack order is set code order.
+			if want := slices.Sorted(maps.Keys(tt.want)); !slices.Equal(hero.SideDecks, want) {
+				t.Errorf("hero %s side decks = %v, want %v", tt.identity, hero.SideDecks, want)
+			}
+			for code, want := range tt.want {
+				if got := sets[code].Side; got == nil || *got != want {
+					t.Errorf("set %s side = %+v, want %+v", code, got, want)
+				}
+			}
+		}
+	})
+
+	t.Run("set-aside cards", func(t *testing.T) {
+		tests := []struct {
+			set  string
+			want []string
+		}{
+			{"iceman", []string{"46002"}},
+			{"valk", []string{"25002"}},
+			{"rogue", []string{"38002"}},
+			{"ironheart", []string{"29002", "29003"}},
+		}
+		for _, tt := range tests {
+			if got := sets[tt.set].SetAside; !slices.Equal(got, tt.want) {
+				t.Errorf("set %s set-aside cards = %v, want %v", tt.set, got, tt.want)
 			}
 		}
 	})

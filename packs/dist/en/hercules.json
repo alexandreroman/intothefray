@@ -941,7 +941,10 @@
         "59005",
         "59006",
         "59007"
-      ]
+      ],
+      "side": {
+        "label": "Gift"
+      }
     },
     {
       "code": "hercules_labor_deck",
@@ -951,7 +954,10 @@
         "59002",
         "59003",
         "59004"
-      ]
+      ],
+      "side": {
+        "label": "Labor"
+      }
     },
     {
       "code": "hercules_nemesis",
@@ -971,7 +977,11 @@
       "identity": "59001",
       "set": "hercules",
       "obligation": "59035",
-      "nemesis": "hercules_nemesis"
+      "nemesis": "hercules_nemesis",
+      "sideDecks": [
+        "hercules_gift_deck",
+        "hercules_labor_deck"
+      ]
     }
   ]
 }

@@ -5,5 +5,8 @@
       "expert": [{"card": "24049", "face": 1}]
     }
   },
-  "standard_pvp": {"unlisted": true}
+  "standard_pvp": {"unlisted": true},
+  "doctor_strange_invocation_deck": {"side": {"label": "Invocation", "topFaceUp": true, "discard": true}},
+  "storm_weather_deck": {"side": {"label": "Weather"}},
+  "valk": {"setAside": ["25002"]}
 }

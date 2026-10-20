@@ -884,7 +884,12 @@
         "09034",
         "09035",
         "09036"
-      ]
+      ],
+      "side": {
+        "label": "Invocation",
+        "topFaceUp": true,
+        "discard": true
+      }
     },
     {
       "code": "doctor_strange_nemesis",
@@ -903,7 +908,10 @@
       "identity": "09001",
       "set": "doctor_strange",
       "obligation": "09027",
-      "nemesis": "doctor_strange_nemesis"
+      "nemesis": "doctor_strange_nemesis",
+      "sideDecks": [
+        "doctor_strange_invocation_deck"
+      ]
     }
   ]
 }

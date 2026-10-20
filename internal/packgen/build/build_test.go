@@ -288,3 +288,110 @@ func TestBuildRejectsInvalidCuratedSets(t *testing.T) {
 		})
 	}
 }
+
+// heroSetsInputs returns the core fixture plus two hero_special sets of
+// Spider-Man and a card of his hero set, for the side-deck and set-aside data.
+func heroSetsInputs(t *testing.T, defs map[string]curated.SetDef) Inputs {
+	t.Helper()
+	heroCard := func(code, setCode, setType string) marvelcdb.Card {
+		return marvelcdb.Card{
+			Code: code, Name: "Card " + code, TypeCode: "upgrade", PackCode: "core",
+			SetCode: setCode, SetName: setCode, SetType: setType,
+			ImageSrc: "/" + code + ".png", Quantity: 1,
+		}
+	}
+	mc := append(setsFixture(t),
+		heroCard("09010", "spider_man_web_deck", "hero_special"),
+		heroCard("09011", "spider_man_web_deck", "hero_special"),
+		heroCard("09012", "spider_man_tech_deck", "hero_special"),
+		heroCard("09013", "spider_man", "hero"),
+	)
+	return allAlive(Inputs{MC: mc, MCPacks: corePacks, Curated: curated.Curated{Sets: defs}})
+}
+
+func TestBuildMergesSideDecksAndSetAsideCards(t *testing.T) {
+	web := &pack.SideDeck{Label: "Web", TopFaceUp: true, Discard: true}
+	tech := &pack.SideDeck{Label: "Tech"}
+	in := heroSetsInputs(t, map[string]curated.SetDef{
+		"spider_man_web_deck":  {Side: web},
+		"spider_man_tech_deck": {Side: tech},
+		// A set-aside card may come from another set, as Iceman's Frostbite.
+		"spider_man": {SetAside: []string{"09013", "09012"}},
+	})
+
+	result, err := Build(in)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	core := result.Packs[0]
+	sets := make(map[string]pack.Set)
+	for _, set := range core.Sets {
+		sets[set.Code] = set
+	}
+	if got := sets["spider_man_web_deck"].Side; !reflect.DeepEqual(got, web) {
+		t.Errorf("got web deck side %+v, want %+v", got, web)
+	}
+	if got := sets["spider_man_tech_deck"].Side; !reflect.DeepEqual(got, tech) {
+		t.Errorf("got tech deck side %+v, want %+v", got, tech)
+	}
+	if got, want := sets["spider_man"].SetAside, []string{"09013", "09012"}; !slices.Equal(got, want) {
+		t.Errorf("got set-aside cards %v, want %v", got, want)
+	}
+	if got := sets["rhino"]; got.Side != nil || got.SetAside != nil {
+		t.Errorf("got rhino %+v, want it untouched", got)
+	}
+
+	if len(core.Heroes) != 1 {
+		t.Fatalf("got heroes %+v, want Spider-Man", core.Heroes)
+	}
+	// Side decks follow the pack set order, which is set code order.
+	wantSideDecks := []string{"spider_man_tech_deck", "spider_man_web_deck"}
+	if got := core.Heroes[0].SideDecks; !slices.Equal(got, wantSideDecks) {
+		t.Errorf("got side decks %v, want %v", got, wantSideDecks)
+	}
+}
+
+func TestBuildRejectsInvalidHeroSetDefs(t *testing.T) {
+	side := &pack.SideDeck{Label: "Web"}
+	tests := []struct {
+		name string
+		defs map[string]curated.SetDef
+		want string
+	}{
+		{
+			"side deck of another kind",
+			map[string]curated.SetDef{"spider_man_nemesis": {Side: side}},
+			"curated set spider_man_nemesis: side deck needs a hero_special set, not a nemesis set",
+		},
+		{
+			"unknown set-aside card",
+			map[string]curated.SetDef{"spider_man": {SetAside: []string{"09999"}}},
+			"curated set spider_man: set-aside card 09999 is not in the catalog",
+		},
+		{
+			"set-aside cards on another kind",
+			map[string]curated.SetDef{"spider_man_web_deck": {SetAside: []string{"09010"}}},
+			"curated set spider_man_web_deck: set-aside cards need a hero set, not a hero_special set",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := Build(heroSetsInputs(t, tt.defs))
+			if err == nil || !strings.Contains(err.Error(), tt.want) {
+				t.Fatalf("got error %v, want one containing %q", err, tt.want)
+			}
+		})
+	}
+}
+
+func TestBuildRejectsSideDeckWithoutHero(t *testing.T) {
+	in := heroSetsInputs(t, map[string]curated.SetDef{"spider_man_web_deck": {Side: &pack.SideDeck{Label: "Web"}}})
+	// Without its identity card the hero is not derived at all.
+	in.MC = slices.DeleteFunc(in.MC, func(card marvelcdb.Card) bool { return card.TypeCode == "hero" })
+
+	_, err := Build(in)
+	if err == nil || !strings.Contains(err.Error(), "side deck spider_man_web_deck matches no hero of pack core") {
+		t.Fatalf("got error %v, want one naming the unmatched side deck", err)
+	}
+}

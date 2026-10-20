@@ -40,6 +40,10 @@ type SetDef struct {
 	InPlay map[pack.Difficulty][]pack.FaceRef `json:"inPlay,omitempty"`
 	// Unlisted keeps the set out of the lobby, e.g. the PvP standard set.
 	Unlisted bool `json:"unlisted,omitempty"`
+	// Side makes a hero_special set one of its hero's side decks.
+	Side *pack.SideDeck `json:"side,omitempty"`
+	// SetAside lists the cards a hero set puts aside, out of play, at setup.
+	SetAside []string `json:"setAside,omitempty"`
 }
 
 // Curated is the content of a curated data directory.
@@ -89,20 +93,25 @@ func Load(dir string) (Curated, error) {
 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return Curated{}, err
 	}
-	if err := checkDifficulties(curated.Sets); err != nil {
+	if err := checkSetDefs(curated.Sets); err != nil {
 		return Curated{}, fmt.Errorf("%s: %w", setsPath, err)
 	}
 	return curated, nil
 }
 
-// checkDifficulties rejects the in-play cards listed under an unknown
-// difficulty, which setup would silently ignore.
-func checkDifficulties(defs map[string]SetDef) error {
+// checkSetDefs rejects the in-play cards listed under an unknown difficulty,
+// which setup would silently ignore, and the side decks without a label,
+// which the table could not name.
+func checkSetDefs(defs map[string]SetDef) error {
 	for _, code := range slices.Sorted(maps.Keys(defs)) {
-		for _, difficulty := range slices.Sorted(maps.Keys(defs[code].InPlay)) {
+		def := defs[code]
+		for _, difficulty := range slices.Sorted(maps.Keys(def.InPlay)) {
 			if difficulty != pack.Standard && difficulty != pack.Expert {
 				return fmt.Errorf("set %q: unknown difficulty %q", code, difficulty)
 			}
+		}
+		if def.Side != nil && def.Side.Label == "" {
+			return fmt.Errorf("set %q: side deck has no label", code)
 		}
 	}
 	return nil

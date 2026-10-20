@@ -39,6 +39,11 @@ func TestLoad(t *testing.T) {
 			pack.Expert:   {{Card: "24049", Face: 1}},
 		}},
 		"standard_pvp": {Unlisted: true},
+		"doctor_strange_invocation_deck": {
+			Side: &pack.SideDeck{Label: "Invocation", TopFaceUp: true, Discard: true},
+		},
+		"storm_weather_deck": {Side: &pack.SideDeck{Label: "Weather"}},
+		"valk":               {SetAside: []string{"25002"}},
 	}
 	if !reflect.DeepEqual(loaded.Sets, wantSets) {
 		t.Errorf("got sets %+v, want %+v", loaded.Sets, wantSets)
@@ -119,6 +124,12 @@ func TestLoadRejectsInvalidSets(t *testing.T) {
 	}{
 		{"unknown difficulty", `{"standard_ii":{"inPlay":{"heroic":[{"card":"24049","face":0}]}}}`, `unknown difficulty "heroic"`},
 		{"unknown field", `{"standard_pvp":{"hidden":true}}`, `unknown field "hidden"`},
+		{
+			"side deck without label",
+			`{"storm_weather_deck":{"side":{"discard":true}}}`,
+			`set "storm_weather_deck": side deck has no label`,
+		},
+		{"unknown side field", `{"storm_weather_deck":{"side":{"label":"Weather","faceUp":true}}}`, `unknown field "faceUp"`},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
