@@ -166,8 +166,10 @@ export interface OwnerFrame {
   h: number;
 }
 
-// Room between the piles and their frame: the count pill under a pile stays inside. The
-// owner's name lies above the frame, in the 30 units the server leaves above the piles (setup.go).
+// Room between the piles and their frame: the count pill under a pile stays inside. The owner's
+// name line lies from 30 to 8 units above the frame (Surface.svelte): 10 units past the 30 the
+// server leaves above the piles (setup.go), into the empty bottom of the row above, or into the
+// scroller's padding for the villain's frame.
 const FRAME_PADDING = 10;
 
 const HOME_KINDS: readonly PileKind[] = [

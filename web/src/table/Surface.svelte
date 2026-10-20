@@ -185,11 +185,15 @@
     background: color-mix(in srgb, var(--owner) 6%, transparent);
   }
 
-  /* The owner's name, in the room above the frame, clear of it and of the chips at its right. */
+  /*
+    The owner's name, in the room above the frame, clear of it and of the chips at its right: its
+    line, 14 units high, lies from 26 to 12 units above the frame, centred on the chips. The offset
+    runs from inside the frame's 2-unit border, hence 14 and not 12.
+  */
   .owner {
     position: absolute;
     left: 4px;
-    bottom: calc(100% + 6px);
+    bottom: calc(100% + 14px);
     max-width: calc(100% - 8px - var(--chips) * var(--chip-room));
     overflow: hidden;
     text-overflow: ellipsis;
@@ -201,15 +205,17 @@
   }
 
   /*
-    The name line of a frame: the chips sit at its right end, centred on the name, 13 units above
-    the frame, so from 24 to 2 units above it. Above every card, whose z-index the server raises
-    with each move.
+    The name line of a frame: the chips sit at its right end, centred on the name, 19 units above
+    the frame, so from 30 to 8 units above it. The 8 units of clear space keep the line apart from
+    the frame's border; more would push the villain's line, whose frame lies 20 units under the
+    surface's top, past the scroller's 24px padding at the largest zoom (2). Above every card,
+    whose z-index the server raises with each move.
   */
   .chips {
     position: absolute;
     z-index: 100000;
     height: 22px;
-    margin-top: -24px;
+    margin-top: -30px;
     display: flex;
     justify-content: flex-end;
     gap: var(--chip-gap);
