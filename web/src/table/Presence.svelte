@@ -397,6 +397,7 @@
    */
   function hiddenCard(id: string, x: number, y: number): TableCard {
     const pile = view.table?.piles.find((p) => p.id === id);
+    // A hidden hand card carries no pile: it shows the player back, whatever its own back.
     return {
       id,
       face: 0,

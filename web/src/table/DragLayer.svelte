@@ -681,7 +681,7 @@
 
   /** The unknown top card of a deck, its back the deck's: a side deck may have its own. */
   function deckTop(pileId: string, x: number, y: number): TableCard {
-    const pile = view.table?.piles.find((p) => p.id === pileId);
+    const pile = tablePiles.find((p) => p.id === pileId);
     const back = pile ? pileBack(pile) : DECK_TOP.back;
     return { ...DECK_TOP, x, y, back, home: pile?.kind === 'sideDeck' ? pile.id : undefined };
   }
