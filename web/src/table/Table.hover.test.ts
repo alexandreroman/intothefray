@@ -201,18 +201,26 @@ describe('hovering the table', () => {
     expect(interaction.contextMenu).toBeNull();
   });
 
-  it('a tap selects a hand card on touch, and a tap on the table lets go of it', async () => {
+  it('a tap raises the hand on touch, the next selects a card, a tap on the table lets go', async () => {
     await renderTable();
+    const hand = screen.getByRole('list', { name: 'Your hand' });
     const hcard = document.querySelector<HTMLElement>('.hand [data-id="h"]')!;
     await fireEvent.pointerDown(hcard, { pointerType: 'touch' });
     await fireEvent.click(hcard);
+    expect(hand.classList).toContain('open');
+    expect(interaction.locked).toBe(false);
+
+    await fireEvent.pointerDown(hcard, { pointerType: 'touch' });
+    await fireEvent.click(hcard);
     expect(interaction.isLocked({ kind: 'hand', id: 'h' })).toBe(true);
+    expect(hcard.classList).toContain('locked');
 
     // The hand lets taps through (pointer-events: none): around its cards, they land on the table.
     const scroller = placed('mine').closest<HTMLElement>('.tablewrap')!;
     await fireEvent.pointerDown(scroller, { pointerType: 'touch' });
     expect(interaction.locked).toBe(false);
     expect(interaction.hovered).toBeNull();
+    expect(hand.classList).not.toContain('open');
   });
 
   it('keeps the hover of an element through a redraw that keeps it, drops it once it leaves', async () => {

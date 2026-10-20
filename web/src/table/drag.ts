@@ -518,6 +518,16 @@ export function handBand(cards: Rect[], table: Rect, windowBottom: number): Rect
   };
 }
 
+/**
+ * Whether a press went down, within 45° of straight down, as it passed the
+ * drag threshold. A finger pushing a hand card down swipes the hand away
+ * rather than dragging the card (Hand.svelte): the table, where cards are
+ * played, lies above the hand, and a reorder goes sideways.
+ */
+export function isDownward(from: Point, to: Point): boolean {
+  return to.y - from.y > Math.abs(to.x - from.x);
+}
+
 /** Where a card dragged at x slots in among the other hand cards, given their middles. */
 export function insertIndex(middles: number[], x: number): number {
   return middles.filter((middle) => middle < x).length;

@@ -39,7 +39,10 @@ type: project
 - Another player's deck or side deck shows "Belongs to …" in its menu
   instead of entries. A click on a selected card opens that card's menu
   and keeps the group selection.
-- Hand cards have no menu and no bar: drag, P and Backspace.
+- Hand cards have no menu and no bar: drag, P and Backspace. On touch,
+  a tap on the lowered hand raises and pins it; a tap on a card then
+  selects (lifts) it; a tap on the table, Esc, a downward swipe, a drop on
+  the table or a dialog lowers it.
 - No quick token button: tokens come from the submenus, the keys and the
   token pill.
 - Out-of-play piles (victory display, set-aside) are reached from chips

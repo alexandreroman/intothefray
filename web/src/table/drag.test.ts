@@ -7,6 +7,7 @@ import {
   handAreaOf,
   handBand,
   insertIndex,
+  isDownward,
   pileDropRect,
   pileTargets,
   snap,
@@ -366,6 +367,18 @@ describe('dropAction', () => {
 });
 
 const AT_ORIGIN = { x: 0, y: 0 };
+
+describe('isDownward', () => {
+  it('is true within 45 degrees of straight down only', () => {
+    const from = { x: 100, y: 100 };
+    expect(isDownward(from, { x: 100, y: 104 })).toBe(true);
+    expect(isDownward(from, { x: 97, y: 104 })).toBe(true);
+    // Sideways (a reorder), up (to the table), or right on the diagonal.
+    expect(isDownward(from, { x: 104, y: 101 })).toBe(false);
+    expect(isDownward(from, { x: 100, y: 96 })).toBe(false);
+    expect(isDownward(from, { x: 103, y: 103 })).toBe(false);
+  });
+});
 
 describe('dealRecipient', () => {
   // The setup's rows: the villain's from 0, then one per seat every 330, the deck 30 below its top.
