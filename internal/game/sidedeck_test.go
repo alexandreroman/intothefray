@@ -477,18 +477,15 @@ func TestSideDeckViews(t *testing.T) {
 		t.Errorf("deck card in hand has home %q, want none", got)
 	}
 
-	// A face-down side card on the table hides its home with its code, but
-	// from its owner, who needs it to move the card.
+	// A face-down side card on the table hides its code, not its home: every
+	// viewer, its owner or not, sees which deck it came from.
 	f.mustDo(t, "b", Action{Kind: ActPlay, Card: sense, X: 800, Y: 830}, at(3))
 	f.g.Table.Cards[sense].FaceDown = true
-	for _, cv := range f.g.ViewFor("h").Table.Cards {
-		if cv.ID == sense && (cv.Code != "" || cv.Home != "") {
-			t.Errorf("Host sees the face-down Sense card as %+v, want neither code nor home", cv)
-		}
-	}
-	for _, cv := range f.g.ViewFor("b").Table.Cards {
-		if cv.ID == sense && (cv.Code != "" || cv.Home != senseDeck) {
-			t.Errorf("Bob sees his face-down Sense card as %+v, want its home only", cv)
+	for _, token := range []string{"h", "b", "nobody"} {
+		for _, cv := range f.g.ViewFor(token).Table.Cards {
+			if cv.ID == sense && (cv.Code != "" || cv.Home != senseDeck) {
+				t.Errorf("%s sees the face-down Sense card as %+v, want its home only", token, cv)
+			}
 		}
 	}
 }
