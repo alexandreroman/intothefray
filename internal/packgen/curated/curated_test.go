@@ -32,6 +32,9 @@ func TestLoad(t *testing.T) {
 	if got := loaded.Cards["01097a"].Size; got != pack.SizeLand {
 		t.Errorf("got override size %q, want %q", got, pack.SizeLand)
 	}
+	if got := loaded.Cards["01001a"].Cerebro; got != "01001B" {
+		t.Errorf("got override Cerebro image %q, want 01001B", got)
+	}
 
 	wantSets := map[string]SetDef{
 		"standard_ii": {InPlay: map[pack.Difficulty][]pack.FaceRef{

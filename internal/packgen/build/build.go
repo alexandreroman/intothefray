@@ -70,6 +70,9 @@ func ImageURLs(in Inputs) []string {
 // Build derives the packs and the index from the sources. Content that
 // cannot be displayed is left out and listed in the report.
 func Build(in Inputs) (Result, error) {
+	if err := checkCerebroOverrides(in.Curated.Cards, in.CB); err != nil {
+		return Result{}, err
+	}
 	fr := frenchSourcesOf(in)
 	faceCodes := faceCodesOf(in.MC)
 	cards, problems := BuildCards(in.MC, in.CB, in.Curated.Cards)

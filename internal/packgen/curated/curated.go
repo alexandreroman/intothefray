@@ -18,6 +18,9 @@ import (
 // CardOverride replaces values derived from the sources for one face code.
 type CardOverride struct {
 	Size pack.Size `json:"size,omitempty"`
+	// Cerebro is the Cerebro image id to use for the face instead of the one
+	// matching its code, for cards whose Cerebro images are swapped.
+	Cerebro string `json:"cerebro,omitempty"`
 }
 
 // ScenarioDef is a hand-written scenario setup, completed at build time with

@@ -5,6 +5,7 @@ import (
 	"os"
 	"reflect"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/alexandreroman/intothefray/internal/pack"
@@ -172,6 +173,26 @@ func TestSizeOverride(t *testing.T) {
 	}
 	if faces[2].Size != pack.SizeDoubleStd || faces[0].Size != pack.SizeStd {
 		t.Errorf("sizes = %q, %q, %q", faces[0].Size, faces[1].Size, faces[2].Size)
+	}
+}
+
+func TestCerebroOverride(t *testing.T) {
+	entries := marvelcdbCards(t, "01097a", "01097b")
+	cb := []cerebro.Card{{ID: "01097A"}, {ID: "01097B"}}
+	// Cerebro swaps the images of some identities: each face takes the other's.
+	overrides := map[string]curated.CardOverride{
+		"01097a": {Cerebro: "01097B"},
+		"01097b": {Cerebro: "01097a"}, // matched whatever its case
+	}
+
+	cards, _ := BuildCards(entries, cb, overrides)
+
+	faces := findCard(t, cards, "core", "01097").Faces
+	wantImages := []string{"01097B.jpg", "01097A.jpg"}
+	for i, want := range wantImages {
+		if got := faces[i].Images[0]; !strings.HasSuffix(got, "/"+want) {
+			t.Errorf("face %d first image = %s, want one ending in %s", i, got, want)
+		}
 	}
 }
 

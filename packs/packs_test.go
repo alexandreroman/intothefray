@@ -68,6 +68,28 @@ func TestEmbeddedCoreSet(t *testing.T) {
 		}
 	})
 
+	t.Run("swapped Cerebro images", func(t *testing.T) {
+		card, _, err := catalog.Card("36001")
+		if err != nil {
+			t.Fatalf("Card(36001) error = %v", err)
+		}
+		tests := []struct {
+			face     int
+			faceType string
+			image    string
+		}{
+			{0, "hero", "/36001B.jpg"},
+			{1, "alter_ego", "/36001A.jpg"},
+		}
+		for _, tt := range tests {
+			face := card.Faces[tt.face]
+			if face.Type != tt.faceType || !strings.HasSuffix(face.Images[0], tt.image) {
+				t.Errorf("Storm face %d = %s with first image %s, want %s ending in %s",
+					tt.face, face.Type, face.Images[0], tt.faceType, tt.image)
+			}
+		}
+	})
+
 	t.Run("lettered codes that are distinct cards", func(t *testing.T) {
 		tests := []struct {
 			code         string

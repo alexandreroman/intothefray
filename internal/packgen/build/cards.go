@@ -4,6 +4,7 @@ package build
 import (
 	"cmp"
 	"fmt"
+	"maps"
 	"slices"
 	"strings"
 
@@ -31,11 +32,7 @@ func BuildCards(
 	cb []cerebro.Card,
 	overrides map[string]curated.CardOverride,
 ) (cards map[string][]pack.Card, unsupported []report.Unsupported) {
-	cerebroIDs := make(map[string]string, len(cb))
-	for _, card := range cb {
-		cerebroIDs[strings.ToUpper(card.ID)] = card.ID
-	}
-
+	cerebroIDs := cerebroIDsOf(cb)
 	entriesByCard, _, reprints := groupEntries(mc)
 	reprintsByCard, unresolved := resolveReprints(reprints, entriesByCard)
 	unsupported = append(unsupported, unresolved...)
@@ -71,6 +68,32 @@ func BuildCards(
 	}
 	slices.SortFunc(unsupported, func(a, b report.Unsupported) int { return cmp.Compare(a.Code, b.Code) })
 	return cards, unsupported
+}
+
+// cerebroIDsOf maps the upper-case id of each Cerebro card to its id as
+// Cerebro spells it, so that ids match whatever their case.
+func cerebroIDsOf(cb []cerebro.Card) map[string]string {
+	ids := make(map[string]string, len(cb))
+	for _, card := range cb {
+		ids[strings.ToUpper(card.ID)] = card.ID
+	}
+	return ids
+}
+
+// checkCerebroOverrides fails when a curated card names a Cerebro image that
+// Cerebro does not have: the face would silently lose its Cerebro image.
+func checkCerebroOverrides(overrides map[string]curated.CardOverride, cb []cerebro.Card) error {
+	cerebroIDs := cerebroIDsOf(cb)
+	for _, faceCode := range slices.Sorted(maps.Keys(overrides)) {
+		id := overrides[faceCode].Cerebro
+		if id == "" {
+			continue
+		}
+		if _, found := cerebroIDs[strings.ToUpper(id)]; !found {
+			return fmt.Errorf("curated card %s: Cerebro image %s is not a Cerebro card", faceCode, id)
+		}
+	}
+	return nil
 }
 
 // CanonicalCodes maps the code of each marvelcdb record that is a card or a
@@ -229,14 +252,15 @@ func buildFaces(
 ) ([]pack.Face, bool) {
 	faces := make([]pack.Face, 0, len(entries))
 	for _, entry := range entries {
-		images := imagesOf(entry, cerebroIDs)
+		override := overrides[entry.Code]
+		images := imagesOf(entry, cerebroIDs, override.Cerebro)
 		if len(images) == 0 {
 			return nil, false
 		}
 
 		size := sizeOf(entry.TypeCode)
-		if override := overrides[entry.Code].Size; override != "" {
-			size = override
+		if override.Size != "" {
+			size = override.Size
 		}
 
 		face := pack.Face{
@@ -256,9 +280,15 @@ func buildFaces(
 	return faces, true
 }
 
-func imagesOf(entry marvelcdb.Card, cerebroIDs map[string]string) []string {
+// imagesOf returns the image candidates of a face: the Cerebro image matching
+// its code, or cerebroID when set, then the marvelcdb image.
+func imagesOf(entry marvelcdb.Card, cerebroIDs map[string]string, cerebroID string) []string {
+	if cerebroID == "" {
+		cerebroID = entry.Code
+	}
+
 	var images []string
-	if id, found := cerebroIDs[strings.ToUpper(entry.Code)]; found {
+	if id, found := cerebroIDs[strings.ToUpper(cerebroID)]; found {
 		images = append(images, fmt.Sprintf(cerebroImageURL, id))
 	}
 	if entry.ImageSrc != "" {

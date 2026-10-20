@@ -11,7 +11,7 @@
           "type": "hero",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38001A.jpg",
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38001B.jpg",
             "https://marvelcdb.com/bundles/cards/38001a.png"
           ],
           "handSize": 5,
@@ -29,7 +29,7 @@
           "type": "alter_ego",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38001B.jpg",
+            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/38001A.jpg",
             "https://marvelcdb.com/bundles/cards/38001b.png"
           ],
           "handSize": 6,

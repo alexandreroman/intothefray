@@ -176,17 +176,17 @@ hand-written files of `packs/curated/`, and writes the result to
 them. The answers to image checks are cached in `packs/.cache/images.json`
 for good: delete it to pick up images published since, such as new French
 scans. The curated files are the scenarios (`scenarios/`), card overrides
-(`cards.json`) and set data (`sets.json`: the cards a set starts in play
-at each difficulty, the sets the lobby leaves out, the hero side decks
-such as Doctor Strange's Invocation deck, and the cards a hero set puts
-aside at setup). A side deck is a `hero_special` set linked to the hero of
-its pack whose set code, followed by `_`, starts its own (`doctor_strange`
-for `doctor_strange_invocation_deck`); the generator fails when a side
-deck matches no hero or several, or when a set-aside card is unknown. The
-cards of a side deck with a shared `back` (Hercules' Labor and Gift decks,
-Daredevil's Sense deck, Storm's Weather deck) all get that back, whatever
-back the sources give them, and the table captions it with the deck's
-label.
+(`cards.json`: face sizes, and the Cerebro image ids of the identities whose
+Cerebro images are swapped) and set data (`sets.json`: the cards a set starts in
+play at each difficulty, the sets the lobby leaves out, the hero side decks such
+as Doctor Strange's Invocation deck, and the cards a hero set puts aside at
+setup). A side deck is a `hero_special` set linked to the hero of its pack whose
+set code, followed by `_`, starts its own (`doctor_strange` for
+`doctor_strange_invocation_deck`); the generator fails when a side deck matches
+no hero or several, or when a set-aside card is unknown. The cards of a side
+deck with a shared `back` (Hercules' Labor and Gift decks, Daredevil's Sense
+deck, Storm's Weather deck) all get that back, whatever back the sources give
+them, and the table captions it with the deck's label.
 
 A face keeps its English name and images, and its `localized` map holds
 the overrides of other languages (`localized.fr`: name, subname, images

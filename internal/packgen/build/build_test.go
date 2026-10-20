@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/alexandreroman/intothefray/internal/pack"
+	"github.com/alexandreroman/intothefray/internal/packgen/cerebro"
 	"github.com/alexandreroman/intothefray/internal/packgen/curated"
 	"github.com/alexandreroman/intothefray/internal/packgen/marvelcdb"
 	"github.com/alexandreroman/intothefray/internal/packgen/report"
@@ -429,5 +430,22 @@ func TestBuildRejectsSideDeckWithoutHero(t *testing.T) {
 	_, err := Build(in)
 	if err == nil || !strings.Contains(err.Error(), "side deck spider_man_web_deck matches no hero of pack core") {
 		t.Fatalf("got error %v, want one naming the unmatched side deck", err)
+	}
+}
+
+func TestBuildRejectsUnknownCerebroOverride(t *testing.T) {
+	in := allAlive(Inputs{
+		MC:      setsFixture(t),
+		MCPacks: corePacks,
+		CB:      []cerebro.Card{{ID: "01001A"}, {ID: "01001B"}},
+		Curated: curated.Curated{Cards: map[string]curated.CardOverride{
+			"01001a": {Cerebro: "01001B"},
+			"01001b": {Cerebro: "01001C"},
+		}},
+	})
+
+	_, err := Build(in)
+	if err == nil || !strings.Contains(err.Error(), "curated card 01001b: Cerebro image 01001C is not a Cerebro card") {
+		t.Fatalf("got error %v, want one naming the unknown Cerebro image", err)
 	}
 }
