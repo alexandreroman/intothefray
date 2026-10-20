@@ -22,8 +22,11 @@ type: reference
   (uppercase `FR`). Its bulk API `/api/public/cards/?encounter=1` gives
   each card's English `imagesrc`/`backimagesrc`; the French path swaps
   `/EN/` for `/FR/`. The bulk API ignores the locale, so a French image
-  exists only once a HEAD check says so. About 96% of the faces have one;
-  the newest packs (`fne`, `jj`, `luke_cage`) have none.
+  exists only once a HEAD check says so. Pack folders follow mc4db's own
+  paths (e.g. `fear_no_evil_by_ffg/`), not always the marvelcdb pack
+  code. Nearly every face has a French image (4,017 of 4,027).
+- mc4db answers 429 to Go's default User-Agent; the generator sends
+  `intothefray-packgen (+https://github.com/alexandreroman/intothefray)`.
 - Cerebro has no French images.
 
 **Why:** Cerebro is preferred for multi-face scheme and villain images
