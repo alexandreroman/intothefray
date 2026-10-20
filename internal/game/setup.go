@@ -604,7 +604,8 @@ func (b *tableBuilder) sideDeckCodes(hero pack.Hero) ([]string, error) {
 // setupSideCards creates the cards of seat's side decks, owned by the seat
 // and at home in their side deck, and shuffles each deck. It then puts the
 // cards the hero's set sets aside on seat's set-aside pile, every catalog
-// copy of them, at home in seat's deck.
+// copy of them, at home in seat's deck. The identity cards among them are
+// other versions of the identity (see Card.IdentityVersion).
 func (b *tableBuilder) setupSideCards(seat int, deck *DeckChoice) error {
 	hero, ok := b.cat.HeroByIdentity(deck.Hero)
 	if !ok {
@@ -633,10 +634,19 @@ func (b *tableBuilder) setupSideCards(seat int, deck *DeckChoice) error {
 			if err != nil {
 				return err
 			}
+			c.IdentityVersion = isIdentityCard(def)
 			b.pushToPile("aside:"+area, c)
 		}
 	}
 	return nil
+}
+
+// isIdentityCard reports whether def is an identity: one of its faces is a
+// hero or an alter ego.
+func isIdentityCard(def pack.Card) bool {
+	return slices.ContainsFunc(def.Faces, func(face pack.Face) bool {
+		return face.Type == faceTypeHero || face.Type == faceTypeAlterEgo
+	})
 }
 
 // alterEgoFace returns the index of the alter-ego face, or 0 if there is none.

@@ -513,7 +513,8 @@ func isPlainTargetPile(id string) bool {
 }
 
 // applyPlay puts a card from a hand or a pile face up on the table: at a
-// point, or, with a target, tucked under that table card as attach does.
+// point, or, with a target, tucked under that table card as attach does. A
+// version of its owner's identity takes the identity over.
 func applyPlay(t *Table, a Action) error {
 	c, err := t.card(a.Card)
 	if err != nil {
@@ -534,6 +535,9 @@ func applyPlay(t *Table, a Action) error {
 	}
 
 	t.leave(c)
+	if c.IdentityVersion {
+		t.takeOverIdentity(c)
+	}
 	c.Zone = ZoneTable
 	c.Pile = ""
 	if target != nil {
@@ -544,6 +548,20 @@ func applyPlay(t *Table, a Action) error {
 	c.X, c.Y = snap(a.X), snap(a.Y)
 	c.Z = t.nextZ()
 	return nil
+}
+
+// takeOverIdentity makes c, a version of its owner's identity entering play,
+// that seat's identity. The identity it replaces becomes a version in turn:
+// free to leave the table, it takes the identity back if it is played again.
+// Other seats keep theirs.
+func (t *Table) takeOverIdentity(c *Card) {
+	for _, other := range t.Cards {
+		if other.Identity && other.Owner == c.Owner {
+			other.Identity = false
+			other.IdentityVersion = true
+		}
+	}
+	c.Identity = true
 }
 
 // statusLocked keeps a card from readying: it is exhausted as usual, but
