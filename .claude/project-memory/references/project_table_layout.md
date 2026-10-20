@@ -1,6 +1,6 @@
 ---
 name: "Table layout"
-description: "One play surface laid out in rows; owner frames; out-of-play piles reached from pile bars"
+description: "One play surface laid out in rows; owner frames; out-of-play piles reached from owner frame chips"
 type: project
 ---
 
