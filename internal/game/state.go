@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"maps"
 	"slices"
+	"strings"
 
 	"github.com/alexandreroman/intothefray/internal/pack"
 )
@@ -65,15 +66,44 @@ const (
 	KindEncounterDiscard PileKind = "encounterDiscard"
 	KindVictory          PileKind = "victory"
 	KindAside            PileKind = "aside"
+	// A side deck is one of a hero's extra decks, such as Doctor Strange's
+	// Invocation deck; a side discard is the discard pile of one of them.
+	KindSideDeck    PileKind = "sideDeck"
+	KindSideDiscard PileKind = "sideDiscard"
 )
 
-// Well-known pile ids. Per-player piles are "deck:pN", "disc:pN", "aside:pN".
+// Well-known pile ids. Per-player piles are "deck:pN", "disc:pN", "aside:pN",
+// and for the side decks of a hero "side:pN:I" and "sided:pN:I" (see
+// sideDeckID).
 const (
 	PileEncounter        = "enc"
 	PileEncounterDiscard = "encd"
 	PileVictory          = "vic"
 	PileScenarioAside    = "saside"
 )
+
+// Prefixes of the ids of side piles.
+const (
+	sideDeckPrefix    = "side:"
+	sideDiscardPrefix = "sided:"
+)
+
+// sideDeckID returns the id of the side deck of seat at index i of its
+// hero's side decks: "side:p0:0".
+func sideDeckID(seat, i int) string {
+	return fmt.Sprintf("%s%s:%d", sideDeckPrefix, PlayerArea(seat), i)
+}
+
+// sideDiscardID returns the id of the discard pile of that side deck:
+// "sided:p0:0".
+func sideDiscardID(seat, i int) string {
+	return fmt.Sprintf("%s%s:%d", sideDiscardPrefix, PlayerArea(seat), i)
+}
+
+// isSideDeckID reports whether id names a side deck.
+func isSideDeckID(id string) bool {
+	return strings.HasPrefix(id, sideDeckPrefix)
+}
 
 // Pile is an ordered stack of cards.
 type Pile struct {
@@ -83,6 +113,11 @@ type Pile struct {
 	X     int      `json:"x"`
 	Y     int      `json:"y"`
 	Cards []string `json:"cards"` // bottom → top
+	// Label names a side pile: "Invocation" for the Invocation deck and its
+	// discard pile.
+	Label string `json:"label,omitempty"`
+	// TopFaceUp shows the top card of a side deck to everyone.
+	TopFaceUp bool `json:"topFaceUp,omitempty"`
 }
 
 // Stage is a scheme or villain stage track.

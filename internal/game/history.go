@@ -320,9 +320,11 @@ func (g *Game) openView(who actor, a Action, now time.Time) error {
 	if err != nil {
 		return err
 	}
-	// Decks are private to their owner; every other pile is either the
-	// shared encounter deck or face up, so anyone may look through it.
-	if pile.Kind == KindDeck && !who.owns(pile.Owner) {
+	// Decks and side decks are private to their owner; every other pile is
+	// either the shared encounter deck or face up, so anyone may look
+	// through it.
+	private := pile.Kind == KindDeck || pile.Kind == KindSideDeck
+	if private && !who.owns(pile.Owner) {
 		return forbidden("pile %q belongs to another player", pile.ID)
 	}
 	if len(pile.Cards) == 0 {

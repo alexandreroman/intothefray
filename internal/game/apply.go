@@ -136,8 +136,14 @@ func validArea(a Area) bool {
 	return false
 }
 
-// discardPileID returns the id of the pile where c is discarded.
+// discardPileID returns the id of the pile where c is discarded: the discard
+// pile of its side deck for a side deck card, which may not exist, or else the
+// discard pile of its owner.
 func discardPileID(c *Card) string {
+	if isSideDeckID(c.Home) {
+		discardID, _ := discardPileOf(c.Home)
+		return discardID
+	}
 	if c.Owner == NoOwner {
 		return PileEncounterDiscard
 	}
@@ -451,7 +457,8 @@ func applyToPile(t *Table, a Action) error {
 }
 
 // isPlainTargetPile reports whether id is a pile cards can be sent to by hand:
-// the victory display or a set-aside pile.
+// the victory display or a set-aside pile. No deck or discard pile is one, so
+// a side deck card never lands in a regular deck or discard pile this way.
 func isPlainTargetPile(id string) bool {
 	return id == PileVictory || id == PileScenarioAside || strings.HasPrefix(id, "aside:")
 }
@@ -703,14 +710,23 @@ func (t *Table) placeOnTable(c *Card, x, y int) {
 
 // applyDraw moves the recorded cards from the deck to the hand, in the recorded
 // order. Resolve records the top cards, but an undo may have put other cards
-// above them since: they are taken wherever they are in the deck.
+// above them since: they are taken wherever they are in the deck. The deck is
+// the one a.Pile names, or the deck of the hand's seat when it names none, as
+// in the draws recorded before a draw could name its deck.
 func applyDraw(t *Table, a Action) error {
 	if !validArea(a.Area) {
 		return invalid("area %q has no hand", a.Area)
 	}
-	deck, err := t.pile("deck:" + string(a.Area))
+	deckID := "deck:" + string(a.Area)
+	if a.Pile != "" {
+		deckID = a.Pile
+	}
+	deck, err := t.pile(deckID)
 	if err != nil {
 		return err
+	}
+	if deck.Owner == NoOwner || PlayerArea(deck.Owner) != a.Area {
+		return invalid("cards of pile %q do not go to hand %q", deck.ID, a.Area)
 	}
 	if err := checkInPile(deck, a.Cards); err != nil {
 		return err
@@ -828,16 +844,23 @@ func deckOfDiscard(discardID string) (string, bool) {
 	if owner, ok := strings.CutPrefix(discardID, "disc:"); ok {
 		return "deck:" + owner, true
 	}
+	if side, ok := strings.CutPrefix(discardID, sideDiscardPrefix); ok {
+		return sideDeckPrefix + side, true
+	}
 	return "", false
 }
 
-// discardPileOf returns the id of the discard pile of a deck pile.
+// discardPileOf returns the id of the discard pile of a deck pile. A side
+// deck may have no discard pile: the id it returns then names no pile.
 func discardPileOf(deckID string) (string, bool) {
 	if deckID == PileEncounter {
 		return PileEncounterDiscard, true
 	}
 	if owner, ok := strings.CutPrefix(deckID, "deck:"); ok {
 		return "disc:" + owner, true
+	}
+	if side, ok := strings.CutPrefix(deckID, sideDeckPrefix); ok {
+		return sideDiscardPrefix + side, true
 	}
 	return "", false
 }
