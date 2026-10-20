@@ -73,7 +73,8 @@ export function placeSubmenu(
 }
 
 /**
- * The left edge of a box of that width: at `wanted` when it fits there, else
+ * The left edge of a box of that width: at `wanted` when it fits there, never
+ * closer than MENU_EDGE to the room's left edge (a pointer right by it), else
  * at `flipped` (the other side of its anchor) when that fits, else as far
  * right as fits, its left side kept in when it is wider than the room.
  */
@@ -81,7 +82,7 @@ function flip(wanted: number, flipped: number, width: number, min: number, max: 
   const leftmost = min + MENU_EDGE;
   const rightmost = max - MENU_EDGE - width;
   if (wanted <= rightmost) {
-    return wanted;
+    return Math.max(leftmost, wanted);
   }
   if (flipped >= leftmost) {
     return flipped;

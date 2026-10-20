@@ -251,7 +251,7 @@ describe('keys on the table', () => {
     field.remove();
   });
 
-  it('the status keys reach the second section of the counter menu', async () => {
+  it('the status keys reach the items of the Add a status submenu', async () => {
     const { session } = await renderTable();
     await fireEvent.pointerEnter(placed('mine'));
 

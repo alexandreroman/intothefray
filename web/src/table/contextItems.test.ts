@@ -200,7 +200,7 @@ describe('contextItems', () => {
       '---',
       'Draw an arrow [A]',
     ]);
-    // The token menu splits in two, with the current counts.
+    // One submenu for the tokens, one for the statuses, with the current counts.
     expect(texts(submenu(entries, 'Add a token').entries)).toEqual([
       'Damage (6) [D]',
       'Threat [T]',
@@ -248,19 +248,19 @@ describe('contextItems', () => {
       '---',
       'Draw an arrow [A]',
     ]);
-    expect(itemOf(entries, 'Discard').tip).toBe(reason);
-    expect(submenu(entries, 'Move to').tip).toBe(reason);
+    expect(itemOf(entries, 'Discard').reason).toBe(reason);
+    expect(submenu(entries, 'Move to').reason).toBe(reason);
   });
 
   it('greys out Discard and Move to on the identity card', () => {
     const entries = entriesFor({ kind: 'card', id: 'me' });
     const reason = 'The identity card stays on the table';
 
-    expect(itemOf(entries, 'Discard')).toMatchObject({ disabled: true, tip: reason });
-    expect(submenu(entries, 'Move to')).toMatchObject({ disabled: true, tip: reason });
+    expect(itemOf(entries, 'Discard')).toMatchObject({ disabled: true, reason });
+    expect(submenu(entries, 'Move to')).toMatchObject({ disabled: true, reason });
   });
 
-  it('shows the own deck flat, More actions inline', () => {
+  it('shows the own deck flat, its rarer actions as their own group', () => {
     expect(texts(entriesFor({ kind: 'pile', id: 'deck:p0' }))).toEqual([
       '*Draw 1 [W]',
       'Draw X [⇧W]',

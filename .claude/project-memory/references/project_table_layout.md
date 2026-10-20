@@ -19,7 +19,7 @@ type: project
   with the player's name ("Villain" in purple, as in the game, for the
   encounter piles); the frame's tooltip gives that player's hand count.
 - Out-of-play piles (victory display, set-aside) are not drawn on the
-  table: chips on their owner's frame open them (see "Action bar
+  table: chips on their owner's frame open them (see "Action menu
   organisation").
 - A portrait table card is 140×196 table units, chosen for readability;
   the hand and the preview have their own sizes. Tokens sit inside the
@@ -31,13 +31,12 @@ type: project
   action").
 - Cards and piles act through their action menu (see "Action menu
   organisation").
-
 - While the viewer has not chosen a zoom (`itf-zoom`), screens ≤ 600 px
   wide fit the content width (never above 100%) and wider screens show
   100%, following the width live. The % button reads "Fit to width" at
   ≤ 600 px and "Back to 100%" (key 0) elsewhere. Minimum zoom 30% at
-  ≤ 600 px wide, else 50%. Owner
-  names and chips keep ≥ 11 px text at any zoom. At ≤ 600 px wide or
+  ≤ 600 px wide, else 50%. Owner names and chips keep ≥ 11 px text at
+  any zoom. At ≤ 600 px wide or
   ≤ 500 px tall, Undo and the zoom control form one bar at the bottom
   right above the resting hand, and hand cards are sized from the window.
 - Touch mode (no hover, coarse pointer) shows no card preview and no

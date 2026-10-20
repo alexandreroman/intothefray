@@ -1,15 +1,15 @@
 ---
 name: "Action menu organisation"
-description: "A click or right click opens an action menu on cards, piles and box tiles; no floating bars; chips for out-of-play piles"
+description: "A click or right click opens the action menu of cards, piles and box tiles; chips open out-of-play piles"
 type: project
 ---
 
 # Action menu organisation
 
-- Table cards in play, piles and box tiles have no floating action bar.
-  A click (no drag) or a right click opens their **action menu** at the
-  pointer; a tap on touch (a long press opens nothing). Hover only
-  rings, previews and targets keys; a hovered token shows its −/+ pill.
+- Table cards in play, piles and box tiles act through their **action
+  menu**: a click (no drag) or a right click opens it at the pointer, a
+  tap on touch (a long press opens nothing). Hover only rings, previews
+  and targets keys; a hovered token shows its −/+ pill.
 - A click or tap on a token or status disc opens no menu; it shows the
   −/+ pill, which a tap pins until a tap elsewhere or Esc. In touch mode
   (no hover, coarse pointer) nothing is ever previewed. Under a coarse
@@ -27,8 +27,8 @@ type: project
 - Pile entries: own deck Draw 1 (W), Draw X (⇧W) │ Top X (L), Search (K)
   │ Discard X, Shuffle (U); encounter deck Reveal (R) │ Top X, Search │
   Discard X, Shuffle; discard pile Search │ Shuffle into deck. Labels
-  stay short; tooltips say the rest. The stage choice reads "Change
-  card…".
+  are short; only a refused entry has a tooltip (its reason). The stage
+  choice reads "Change card…".
 - A hero side deck has the own deck's entries, Draw 1 and Draw X drawing
   from it; Discard X only when it has a side discard pile (Invocation),
   which has a discard pile's entries. A side card's Move to names its
@@ -40,12 +40,11 @@ type: project
 - Another player's deck or side deck shows "Belongs to …" in its menu
   instead of entries. A click on a selected card opens that card's menu
   and keeps the group selection.
-- Hand cards have no menu and no bar: drag, P and Backspace. On touch,
+- Hand cards are played by dragging, P, and X or Backspace to discard. On touch,
   a tap on the lowered hand raises and pins it; a tap on a card then
   selects (lifts) it; a tap on the table, Esc, a downward swipe, a drop on
   the table or a dialog lowers it.
-- No quick token button: tokens come from the submenus, the keys and the
-  token pill.
+- Tokens come from the submenus, the keys and the token pill.
 - Out-of-play piles (victory display, set-aside) are reached from chips
   (icon and count) at the right of the owner frame's name line; an
   empty chip is dimmed and inert.

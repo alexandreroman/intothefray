@@ -4,8 +4,9 @@
   saying why it has none. Opened by a click, a tap or a right click, at the
   pointer, and flipped up or left to stay inside its bounds (the visible
   table, the box's grid) and the window. A submenu opens beside its row, on
-  hover or on a click. Escape, a press outside the menu, a scroll of its
-  bounds, a zoom of the table, or a resize close it.
+  hover or on a click. Escape, Tab, a press outside the menu, a scroll of its
+  bounds, a zoom of the table, or a resize close it. With only a note and no
+  entries, it is a small dialog rather than a menu with nothing to choose.
   The table's keys keep working while it is open, on its element as under
   the pointer (keys.ts): the simplest consistent choice. The menu stays open
   and follows what they change ("Damage (7)").
@@ -53,6 +54,14 @@
 
   const uid = $props.id();
   const noteId = `${uid}-note`;
+
+  // Nothing to choose, only a note saying why: a menu needs items, so it is a dialog described by its note.
+  const noteOnly = $derived(entries.length === 0 && note !== undefined);
+
+  /** The id of a disabled entry's reason, which describes it: unique in the menu and its submenu. */
+  function reasonId(where: 'menu' | 'submenu', entryId: string): string {
+    return `${uid}-${where}-${entryId}-reason`;
+  }
 
   // How long the pointer rests on a row before its submenu opens, or the open
   // one closes: on its way to a submenu, the pointer may cross another row.
@@ -276,11 +285,15 @@
   /**
    * ↑ and ↓ step through the items, → opens the focused row's submenu, ←
    * closes the submenu (Escape: onWindowKeyDown). Taken: the table's keys do
-   * not see them.
+   * not see them. Tab closes the menu, and the focus moves on as Tab moves it,
+   * from where it was before the menu opened.
    */
   function onMenuKey(event: KeyboardEvent, inSubmenu: boolean): void {
     const list = inSubmenu ? submenu : menu;
     switch (event.key) {
+      case 'Tab':
+        onclose();
+        return;
       case 'ArrowDown':
         step(list, 1);
         break;
@@ -320,20 +333,37 @@
 <svelte:window onkeydowncapture={onWindowKeyDown} onscrollcapture={onScroll} onresize={onclose} />
 <svelte:document onpointerdowncapture={onDocumentPointerDown} />
 
-<!-- onhover: what the pointer entering it does, which differs in the menu and in a submenu. -->
-{#snippet actionRow(entry: ContextAction, onhover: () => void)}
+<!--
+  Why an entry is disabled, which describes it: hidden but read by screen readers, as the tooltip
+  says it under a mouse. A finger has no tooltip: under a coarse pointer, it shows below the label.
+-->
+{#snippet reasonText(id: string | undefined, reason: string | undefined)}
+  {#if id !== undefined}<span class="reason" {id} aria-hidden="true">{reason}</span>{/if}
+{/snippet}
+
+<!--
+  onhover: what the pointer entering it does, which differs in the menu and in a submenu; where:
+  which of the two it is in.
+-->
+{#snippet actionRow(entry: ContextAction, onhover: () => void, where: 'menu' | 'submenu')}
   {@const item = entry.item}
-  <!-- Disabled, it says why in its tooltip. -->
+  {@const reason = item.disabled ? item.reason : undefined}
+  {@const reasonFor = reason === undefined ? undefined : reasonId(where, item.id)}
   <button
     type="button"
     class="btn-ghost"
     class:default={item.default}
+    class:has-reason={reason !== undefined}
     role="menuitem"
     aria-disabled={item.disabled}
-    data-tip={item.disabled ? item.tip : undefined}
+    aria-describedby={reasonFor}
+    data-tip={reason}
     onpointerenter={onhover}
     onclick={() => run(item)}
-    ><span>{item.label}</span>{#if item.key}<kbd>{keyLabel(item)}</kbd>{/if}</button
+    ><span>{item.label}</span>{#if item.key}<kbd>{keyLabel(item)}</kbd>{/if}{@render reasonText(
+      reasonFor,
+      reason,
+    )}</button
   >
 {/snippet}
 
@@ -346,7 +376,7 @@
     {#if entry.kind === 'separator'}
       {@render separator()}
     {:else}
-      {@render actionRow(entry, keepSubmenu)}
+      {@render actionRow(entry, keepSubmenu, 'submenu')}
     {/if}
   {/each}
 {/snippet}
@@ -354,7 +384,7 @@
 <div
   class="table-menu context"
   class:placed={place !== null}
-  role="menu"
+  role={noteOnly ? 'dialog' : 'menu'}
   aria-label={header.label}
   aria-describedby={note === undefined ? undefined : noteId}
   tabindex="-1"
@@ -381,22 +411,27 @@
     {#if entry.kind === 'separator'}
       {@render separator()}
     {:else if entry.kind === 'submenu'}
+      {@const reason = entry.disabled ? entry.reason : undefined}
+      {@const reasonFor = reason === undefined ? undefined : reasonId('menu', entry.id)}
       <button
         type="button"
         class="btn-ghost"
         class:open={openSubmenu?.id === entry.id}
+        class:has-reason={reason !== undefined}
         role="menuitem"
         aria-haspopup="menu"
         aria-expanded={openSubmenu?.id === entry.id}
         aria-disabled={entry.disabled}
+        aria-describedby={reasonFor}
         data-submenu={entry.id}
-        data-tip={entry.disabled ? entry.tip : undefined}
+        data-tip={reason}
         onpointerenter={() => hoverRow(entry)}
         onclick={(event) => clickSubmenu(entry, event)}
-        ><span>{entry.label}</span><span class="opens" aria-hidden="true">▸</span></button
+        ><span>{entry.label}</span><span class="opens" aria-hidden="true">▸</span
+        >{@render reasonText(reasonFor, reason)}</button
       >
     {:else}
-      {@render actionRow(entry, () => hoverRow(entry))}
+      {@render actionRow(entry, () => hoverRow(entry), 'menu')}
     {/if}
   {/each}
 </div>
@@ -488,6 +523,45 @@
   @media (pointer: coarse) {
     .table-menu button {
       height: 44px;
+    }
+  }
+
+  /* A disabled entry's reason: out of sight, read by screen readers (aria-describedby). */
+  .reason {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /*
+    A finger has no tooltip: the reason shows on a line of its own below the label and the key,
+    in small muted text. It has no width of its own (contain), so that it wraps within the width of
+    the labels rather than widening the menu, which stays within the window.
+  */
+  @media (pointer: coarse) {
+    .table-menu button.has-reason {
+      flex-wrap: wrap;
+      row-gap: 2px;
+      height: auto;
+      min-height: 44px;
+      padding-block: 6px;
+    }
+
+    .table-menu button > .reason {
+      position: static;
+      flex: 1 0 100%;
+      width: auto;
+      height: auto;
+      overflow: visible;
+      clip-path: none;
+      white-space: normal;
+      contain: inline-size;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 500;
     }
   }
 
@@ -592,7 +666,7 @@
   }
 
   /* The element's default action. */
-  .default span {
+  .default > span:first-child {
     font-weight: 800;
     color: var(--text);
   }

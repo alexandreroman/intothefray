@@ -269,10 +269,11 @@ const SMALL_HAND_CARD_MAX_W = 151;
 const SMALL_HAND_CARD_SHARE = 0.25;
 const HAND_CARD_RATIO = HAND_CARD.h / HAND_CARD.w;
 
-/** The hand's padding above and below its cards, in px (Hand.svelte). */
-const HAND_PADDING_Y = 26 + 18;
+/** The hand's padding above and below its cards, in px: Hand.svelte draws it. */
+export const HAND_PADDING = { top: 26, bottom: 18 } as const;
+const HAND_PADDING_Y = HAND_PADDING.top + HAND_PADDING.bottom;
 
-/** The resting hand is drawn at this scale, from its bottom edge (Hand.svelte). */
+/** The resting hand is drawn at this scale, from its bottom edge: Hand.svelte draws it. */
 export const HAND_REST_SCALE = 0.82;
 
 /** How far the resting hand drops below its raised place, in px, but on a small screen. */

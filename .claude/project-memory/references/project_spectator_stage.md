@@ -1,10 +1,10 @@
 ---
-name: "Spectators have no stage button"
+name: "Spectators cannot change the stage card"
 description: "Spectators get no action on the villain and main scheme cards"
 type: project
 ---
 
-# Spectators have no stage button
+# Spectators cannot change the stage card
 
 Spectators get no action menu on the villain and main scheme cards: the
 "Change card…" box opens for players only, and always offers the choice.

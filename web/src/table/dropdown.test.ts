@@ -35,6 +35,14 @@ describe('placeAtPoint', () => {
     });
   });
 
+  it('keeps off the left edge when the pointer is right by it', () => {
+    expect(placeAtPoint({ x: 3, y: 200 }, SIZE, ROOM).left).toBe(MENU_EDGE);
+    const inset = { left: 100, top: 0, right: 1000, bottom: 800 };
+    expect(placeAtPoint({ x: 104, y: 200 }, SIZE, inset).left).toBe(100 + MENU_EDGE);
+    // Past the edge, it opens at the pointer.
+    expect(placeAtPoint({ x: MENU_EDGE + 1, y: 200 }, SIZE, ROOM).left).toBe(MENU_EDGE + 1);
+  });
+
   it('stays inside the room when it fits on neither side of the pointer', () => {
     const narrow = { left: 0, top: 0, right: 300, bottom: 800 };
     expect(placeAtPoint({ x: 150, y: 100 }, SIZE, narrow).left).toBe(300 - MENU_EDGE - 200);

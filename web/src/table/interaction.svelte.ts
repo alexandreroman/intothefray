@@ -17,6 +17,9 @@ export interface CounterTarget {
   name: string;
 }
 
+/** A card of the viewer's hand: the only element a tap selects. */
+export type HandCard = Extract<TableElement, { kind: 'hand' }>;
+
 /** What a press can drag: a table element, or the first player token. */
 export type Pressable = TableElement | { kind: 'firstPlayer' };
 
@@ -80,6 +83,18 @@ export type PreviewChange = 'show' | 'clear';
 export function isTouchContextMenu(event: MouseEvent, pressType: string): boolean {
   const eventType = event instanceof PointerEvent ? event.pointerType : '';
   return (eventType || pressType) === 'touch';
+}
+
+/** A touch held longer than this, in ms, is a long press, which opens nothing. */
+export const LONG_PRESS_MS = 500;
+
+/**
+ * Whether a click ends a long touch press: iOS fires no contextmenu event,
+ * but may fire a click once the finger lifts after a long hold, which must
+ * open nothing either. pressedAt is the timeStamp of the press it ends.
+ */
+export function isLongTouchClick(click: MouseEvent, pressType: string, pressedAt: number): boolean {
+  return pressType === 'touch' && click.timeStamp - pressedAt > LONG_PRESS_MS;
 }
 
 /**
@@ -150,6 +165,8 @@ class TableInteraction {
   // Where the pointer was when the table was last redrawn.
   #drawnAt = { x: NaN, y: NaN };
   #pointerType = 'mouse';
+  // When the current press began: the timeStamp of its event.
+  #pressedAt = 0;
   // The click that ends a drag, or that picks an arrow's target, is not a click on what lies there.
   #swallowClick = false;
   // The element whose context menu was open as the current press began: the press closes it
@@ -209,6 +226,7 @@ class TableInteraction {
    */
   pointerPressed(event: PointerEvent): void {
     this.#pointerType = event.pointerType || 'mouse';
+    this.#pressedAt = event.timeStamp;
     this.#swallowClick = false;
     this.#menuAtPress = this.contextMenu?.element ?? null;
   }
@@ -216,6 +234,11 @@ class TableInteraction {
   /** Whether a touch fired that contextmenu event, which then opens no context menu. */
   isTouchContextMenu(event: MouseEvent): boolean {
     return isTouchContextMenu(event, this.#pointerType);
+  }
+
+  /** Whether that click ends a long touch press, which opens nothing. */
+  isLongTouchClick(event: MouseEvent): boolean {
+    return isLongTouchClick(event, this.#pointerType, this.#pressedAt);
   }
 
   /**
@@ -492,7 +515,7 @@ class TableInteraction {
    * A tap on a hand card. Only touch selects: with a mouse, hovering is
    * enough. A table card or pile opens its context menu instead (Table.svelte).
    */
-  select(element: TableElement): void {
+  select(element: HandCard): void {
     if (this.#pointerType !== 'touch' || modal.open) {
       return;
     }
@@ -508,8 +531,8 @@ class TableInteraction {
     return !this.locked && hovered?.kind === element.kind && hovered.id === element.id;
   }
 
-  /** Whether a tap selected this element. */
-  isLocked(element: TableElement): boolean {
+  /** Whether a tap selected this hand card. */
+  isLocked(element: HandCard): boolean {
     const hovered = this.hovered;
     return this.locked && hovered?.kind === element.kind && hovered.id === element.id;
   }
@@ -527,12 +550,10 @@ class TableInteraction {
   /**
    * Opens the context menu of a table card or pile at that point of the
    * screen: the element becomes the hovered and the previewed one, without a
-   * tap selection, and the token pill goes. Previewed too, since the press
-   * may come while another element's menu held the hover and the preview: a
-   * tap shows its card in the preview as well as its menu, but in touch mode,
-   * which previews nothing. The press
-   * that opened it (a right click, or Ctrl + click on macOS) does not become
-   * a drag.
+   * tap selection, and the token pill goes. Previewed too, since the click
+   * may come while another element's menu held the hover and the preview;
+   * touch mode previews nothing. The press that opened it (a right click, or
+   * Ctrl + click on macOS) does not become a drag.
    */
   openContextMenu(
     element: TableElement,
@@ -598,15 +619,12 @@ class TableInteraction {
   }
 
   /**
-   * Escape closes the context menu, or else the pill a tap pinned, and only
-   * that: the group stays. Otherwise it clears the group and the band, and
-   * cancels the arrow, or releases the selection.
+   * Escape closes the pill a tap pinned, and only that: the group stays.
+   * Otherwise it clears the group and the band, and cancels the arrow, or
+   * releases the selection. An open context menu takes Escape before it gets
+   * here (ContextMenu.svelte), and closes alone.
    */
   escape(): void {
-    if (this.contextMenu !== null) {
-      this.closeContextMenu();
-      return;
-    }
     if (this.counterPinned) {
       this.unpinCounter();
       return;
@@ -647,6 +665,7 @@ class TableInteraction {
     this.#pointer = { x: NaN, y: NaN };
     this.#drawnAt = { x: NaN, y: NaN };
     this.#pointerType = 'mouse';
+    this.#pressedAt = 0;
   }
 
   /** A hand card is never previewed: the raised hand shows it large enough. Nothing is, in touch mode. */

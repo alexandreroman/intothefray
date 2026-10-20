@@ -467,13 +467,26 @@
   // The scroller's width, its scrollbar included, in px.
   let scrollerWidth = $state(0);
 
-  const fittedZoom = $derived(
+  // The zoom that fits the content's width into the scroller, as they are now.
+  const contentFit = $derived(
     fitZoom(
       contentWidth(tableCards, tablePiles, sizeOf),
       scrollerWidth - 2 * SCROLL_PADDING - SCROLLBAR_ROOM,
       zoomMin,
     ),
   );
+  // The fit holds still while the action menu is open, which any zoom change closes
+  // (ContextMenu.svelte), and while a card or a pile is pressed or dragged, which a zoom would move
+  // from under the finger: a card another player moves meanwhile changes the content's width.
+  const fitHeld = $derived(interaction.contextMenu !== null || interaction.held !== null);
+  // The fit the table uses: the content's, caught up once nothing holds it. Not a derived, which
+  // could not keep its value while held.
+  let fittedZoom = $state(untrack(() => contentFit));
+  $effect.pre(() => {
+    if (!fitHeld) {
+      fittedZoom = contentFit;
+    }
+  });
   // Until the viewer chooses a zoom: a phone fits the content's width, as a row would not show
   // across it at 100 %; a wider screen shows 100 % and scrolls. Live: a resize or a turn across
   // 600 px switches between the two.
@@ -823,7 +836,9 @@
 
   // ---- The arrow mode's hint ----
 
+  // A touch screen has no Esc key, and taps rather than clicks.
   const ARROW_HINT = 'Click the card to point at — Esc or a click on an empty spot to cancel.';
+  const ARROW_HINT_TOUCH = 'Tap the card to point at — tap an empty spot to cancel.';
 
   // Above the card the arrow starts from, until the arrow is drawn or cancelled, whatever the
   // pointer hovers meanwhile; not while a Shift + drag draws it, which shows where it goes.
@@ -966,14 +981,15 @@
   /**
    * A click on a card in play or a pile, with the main button or a finger,
    * opens its context menu at the pointer; a click on the element whose menu
-   * that press closed leaves it closed. The click that ends a drag, a rubber
+   * that press closed leaves it closed, and so does the click iOS fires after
+   * a long press, which opens nothing. The click that ends a drag, a rubber
    * band or an arrow never gets here (interaction.swallowNextClick). Alt +
    * click pings the spot, and Ctrl + click is macOS's right click, which
    * onTableContextMenu handles. A token or a status has its − / + pill
    * instead, which hovering it shows, or tapping it on touch.
    */
   function onTableClick(event: MouseEvent): void {
-    if (event.altKey || event.ctrlKey) {
+    if (event.altKey || event.ctrlKey || interaction.isLongTouchClick(event)) {
       return;
     }
     if (event.target instanceof Element && event.target.closest('.surface [data-counter]')) {
@@ -986,13 +1002,12 @@
   }
 
   /**
-   * A right click or a Ctrl + click on macOS, anywhere on the table: never the
-   * browser's menu there, and the element's own on a card or a pile, as a
-   * click opens it. On touch, a tap opens it: the contextmenu event a long
+   * A right click or a Ctrl + click on macOS on a card or a pile opens its
+   * menu, as a click does (the screen prevents the browser's own:
+   * preventNativeMenu). On touch, a tap opens it: the contextmenu event a long
    * touch fires (Android) opens nothing.
    */
   function onTableContextMenu(event: MouseEvent): void {
-    event.preventDefault();
     if (interaction.isTouchContextMenu(event)) {
       return;
     }
@@ -1000,6 +1015,21 @@
     if (element) {
       openContextMenu(element, { x: event.clientX, y: event.clientY });
     }
+  }
+
+  /**
+   * Never the browser's menu on the table screen, from a right click or a long touch: on the table,
+   * the hand, the token pill or the bottom bars, it would offer to save or copy a card image. On the
+   * window, as the table screen is the whole page while it shows; the table's own handler, which
+   * opens the action menu on a card or a pile, sees the event first. A text field keeps the browser's
+   * menu, to paste in.
+   */
+  function preventNativeMenu(event: MouseEvent): void {
+    const target = event.target;
+    if (target instanceof Element && target.closest('input, textarea, [contenteditable]')) {
+      return;
+    }
+    event.preventDefault();
   }
 
   /** A chosen entry runs on the menu's element, once the menu is closed. */
@@ -1585,6 +1615,7 @@
   onpointerup={onPointerUp}
   onpointercancel={onPointerCancel}
   onkeydown={onKeydown}
+  oncontextmenu={preventNativeMenu}
   onresize={measureFocus}
   bind:innerWidth={windowWidth}
   bind:innerHeight={windowHeight}
@@ -1784,7 +1815,13 @@
   />
 
   {#if arrowHintShown && wrap}
-    <ArrowHint anchor={arrowSource} text={ARROW_HINT} bounds={wrap} {zoom} version={view} />
+    <ArrowHint
+      anchor={arrowSource}
+      text={touchMode.current ? ARROW_HINT_TOUCH : ARROW_HINT}
+      bounds={wrap}
+      {zoom}
+      version={view}
+    />
   {/if}
 
   {#if interaction.contextMenu && contextHeader && contextContent && wrap}
@@ -1905,6 +1942,13 @@
       'top top'
       'table side';
     transition: grid-template-columns 0.2s ease;
+    /* Something held down opens no callout of the system on iOS (save, copy, share an image). */
+    -webkit-touch-callout: none;
+  }
+
+  /* A text field keeps its callout, to paste in. */
+  .app :global(:is(input, textarea, [contenteditable])) {
+    -webkit-touch-callout: default;
   }
 
   /* A finger needs taller targets in the bars at the bottom. */
@@ -1929,8 +1973,6 @@
   */
   .tablewrap {
     grid-area: table;
-    /* An image held down opens no callout of the system on iOS (save, copy, share). */
-    -webkit-touch-callout: none;
     overflow: auto;
     scrollbar-width: thin;
     scrollbar-color: #2c3654 transparent;

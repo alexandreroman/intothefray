@@ -3,7 +3,15 @@ import { tick } from 'svelte';
 import Table from './Table.svelte';
 import { FOCUS_MARGINS, TABLE_EDGE, TABLE_EDGE_BOTTOM } from './focus';
 import { interaction } from './interaction.svelte';
-import { fanPositions, HAND_CARD, HAND_CARD_NARROW, HAND_REST_DROP, restingStrip } from './layout';
+import {
+  fanPositions,
+  HAND_CARD,
+  HAND_CARD_NARROW,
+  HAND_PADDING,
+  HAND_REST_DROP,
+  HAND_REST_SCALE,
+  restingStrip,
+} from './layout';
 import { knownCard, loadGameCards, loadIndex } from '../lib/catalog';
 import type { CardView as TableCard, PileView, PresenceState, View } from '../lib/types';
 import tableSource from './Table.svelte?raw';
@@ -629,6 +637,37 @@ describe('Table zoom fitting the width on a small screen', () => {
     expect(localStorage.getItem('itf-zoom')).toBeNull();
   });
 
+  it('holds the fit while the action menu is open or a card is pressed, so that the menu stays open', async () => {
+    mockScreen(SMALL_WINDOW);
+    mockScrollerWidth(600);
+    const session = fakeSession();
+    const { rerender, container } = render(Table, { session, view: viewWithFarCardAt(900) });
+    const menu = () => container.querySelector('.table-menu.context');
+    const at = { button: 0, clientX: 200, clientY: 300 };
+    expect(zoomLabel()).toBe('51%');
+
+    // A click opens the card's menu; the far card leaves meanwhile, which would fit at 100 %.
+    await fireEvent.pointerDown(cardInPlay(), at);
+    await fireEvent.pointerUp(cardInPlay(), at);
+    await fireEvent.click(cardInPlay(), at);
+    expect(menu()).not.toBeNull();
+    await rerender({ session, view: makeView() });
+    expect(zoomLabel()).toBe('51%');
+    expect(menu()).not.toBeNull();
+
+    // Once it closes, the fit catches up.
+    await fireEvent.keyDown(window, { key: 'Escape' });
+    expect(menu()).toBeNull();
+    expect(zoomLabel()).toBe('100%');
+
+    // A press holds it as well, until it is let go.
+    await fireEvent.pointerDown(cardInPlay(), at);
+    await rerender({ session, view: viewWithFarCardAt(900) });
+    expect(zoomLabel()).toBe('100%');
+    await fireEvent.pointerUp(window, at);
+    expect(zoomLabel()).toBe('51%');
+  });
+
   it('the 0 key is back to 100 %, a chosen zoom', async () => {
     const lists = mockScreen(SMALL_WINDOW);
     const setWidth = mockScrollerWidth(600);
@@ -783,9 +822,17 @@ describe('Table on a small screen', () => {
     expect(hand().style.getPropertyValue('--card-w')).toBe('97px');
     expect(hand().style.getPropertyValue('--card-h')).toBe('136px');
     expect(hand().style.getPropertyValue('--rest-drop')).toBe('74px');
-    // Hand.svelte's own rule: the drop comes from the variable.
+    // Hand.svelte's own rule: the drop, the scale and the padding come from the variables, which
+    // layout.ts's measures set.
     const handRule = /\n {2}\.hand \{([^}]*)\}/.exec(handSource)?.[1];
-    expect(handRule).toMatch(/transform: translateY\(var\(--rest-drop\)\) scale\(0\.82\);/);
+    expect(handRule).toMatch(
+      /transform: translateY\(var\(--rest-drop\)\) scale\(var\(--rest-scale\)\);/,
+    );
+    expect(handRule).toMatch(/padding: var\(--pad-top\) 18px var\(--pad-bottom\);/);
+    expect(handSource).not.toMatch(/0\.82|26px/);
+    expect(hand().style.getPropertyValue('--rest-scale')).toBe(`${HAND_REST_SCALE}`);
+    expect(hand().style.getPropertyValue('--pad-top')).toBe(`${HAND_PADDING.top}px`);
+    expect(hand().style.getPropertyValue('--pad-bottom')).toBe(`${HAND_PADDING.bottom}px`);
   });
 
   it('keeps the raised hand to half the window held sideways', () => {

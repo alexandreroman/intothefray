@@ -26,33 +26,20 @@ export interface ContextSubmenu {
   id: string;
   label: string;
   disabled: boolean;
-  /** Why it is disabled, as its tooltip says it. */
-  tip?: string;
+  /** Why it is disabled, shown with it. */
+  reason?: string;
   entries: (ContextAction | ContextSeparator)[];
 }
 
 export type ContextEntry = ContextAction | ContextSeparator | ContextSubmenu;
-
-/**
- * The item list whose items the menu shows inline: "More actions", the last
- * group of a deck's actions. A submenu would hide them again.
- */
-const FLATTENED_MENU = 'more';
-
-/** The submenu each section of an item list becomes: the token list splits in two. */
-const SECTION_SUBMENUS: Record<string, string> = {
-  Tokens: 'Add a token',
-  Status: 'Add a status',
-};
 
 const SEPARATOR: ContextSeparator = { kind: 'separator' };
 
 /**
  * The entries of an element's context menu, from its actions (actionsFor):
  * their order, a separator between their groups. An item with a list of its
- * own becomes a submenu, the token list one per section; More actions shows
- * its items inline. A card in play gets a last group, Draw an arrow. Nothing
- * for an element without actions, or one that belongs to someone else.
+ * own becomes a submenu. A card in play gets a last group, Draw an arrow.
+ * Nothing for an element without actions, or one that belongs to someone else.
  */
 export function contextItems(
   element: TableElement,
@@ -95,63 +82,30 @@ function grouped(items: readonly ActionItem[]): ContextEntry[] {
   const groups: ContextEntry[][] = [];
   let lastGroup: number | null = null;
   for (const item of items) {
-    const entries = entriesOf(item);
+    const entry = entryOf(item);
     const current = groups.at(-1);
     if (current && item.group === lastGroup) {
-      current.push(...entries);
+      current.push(entry);
     } else {
-      groups.push(entries);
+      groups.push([entry]);
     }
     lastGroup = item.group;
   }
   return groups.flatMap((group, i) => (i === 0 ? group : [SEPARATOR, ...group]));
 }
 
-/** What one action item becomes in the menu. */
-function entriesOf(item: ActionItem): ContextEntry[] {
+/** What one action item becomes in the menu: an entry, or a submenu for an item with a list. */
+function entryOf(item: ActionItem): ContextEntry {
   if (!item.menu) {
-    return [{ kind: 'action', item }];
+    return action(item);
   }
-  if (item.id === FLATTENED_MENU) {
-    // Its separator only parted two rare actions: inline, the group reads better without it.
-    return item.menu.filter((choice) => choice.id !== 'sep').map((choice) => action(choice));
-  }
-  if (item.menu.some((choice) => choice.section !== undefined)) {
-    return sectionsOf(item.menu).map((section) => {
-      const name = section.name ?? item.label;
-      return submenu(item, `${item.id}:${name}`, SECTION_SUBMENUS[name] ?? name, section.choices);
-    });
-  }
-  return [submenu(item, item.id, item.label, item.menu)];
-}
-
-/** An item list, cut where its section changes. */
-function sectionsOf(menu: ActionItem[]): { name?: string; choices: ActionItem[] }[] {
-  const sections: { name?: string; choices: ActionItem[] }[] = [];
-  for (const choice of menu) {
-    const last = sections.at(-1);
-    if (last && last.name === choice.section) {
-      last.choices.push(choice);
-    } else {
-      sections.push({ name: choice.section, choices: [choice] });
-    }
-  }
-  return sections;
-}
-
-function submenu(
-  parent: ActionItem,
-  id: string,
-  label: string,
-  choices: ActionItem[],
-): ContextSubmenu {
   return {
     kind: 'submenu',
-    id,
-    label,
-    disabled: parent.disabled ?? false,
-    tip: parent.disabled ? parent.tip : undefined,
-    entries: choices.map((choice) => (choice.id === 'sep' ? SEPARATOR : action(choice))),
+    id: item.id,
+    label: item.label,
+    disabled: item.disabled ?? false,
+    reason: item.disabled ? item.reason : undefined,
+    entries: item.menu.map((choice) => (choice.id === 'sep' ? SEPARATOR : action(choice))),
   };
 }
 

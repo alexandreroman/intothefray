@@ -38,7 +38,7 @@ export type LocalAction =
   | { local: 'arrow'; card: string };
 
 /**
- * How an item's key shows in a tooltip or a menu: a key taken with Shift after
+ * How an item's key shows in the context menu: a key taken with Shift after
  * ⇧ (⇧W). Only the main key shows, not its alternatives. Undefined for an item
  * without a key.
  */
@@ -50,7 +50,7 @@ export function keyLabel(item: Pick<ActionItem, 'key' | 'shift'>): string | unde
 }
 
 export interface ActionItem {
-  /** Stable id: 'exhaust', 'flip', 'stage', 'counters', 'discard', 'moveTo', 'draw1', … */
+  /** Stable id: 'exhaust', 'flip', 'stage', 'tokens', 'statuses', 'discard', 'moveTo', 'draw1', … */
   id: string;
   label: string;
   key?: string;
@@ -59,16 +59,12 @@ export interface ActionItem {
   /** The key is taken with Shift: Draw X is Shift + W, while W alone is Draw 1. */
   shift?: true;
   disabled?: boolean;
-  tip?: string;
-  /**
-   * The element's default action, usually its first: shown in bold in the context menu. Set by
-   * the builders rather than found from the position, as it will also be what a double click does.
-   */
+  /** Why a disabled item is: the context menu shows it with the item. */
+  reason?: string;
+  /** The element's default action, usually its first: shown in bold in the context menu. */
   default?: true;
   /** Items of different groups are drawn with a separator between them. */
   group: number;
-  /** An item of a list under a heading: the token list splits into a submenu per section. */
-  section?: string;
   /** The items of a submenu; a separator is an item with the id 'sep'. */
   menu?: ActionItem[];
   run?: () => Action | { ask: CountQuestion } | LocalAction;
@@ -78,7 +74,8 @@ export interface ActionItem {
 const MAX_COUNT = 99;
 
 // Groups of a card in play, in menu order: Exhaust and Flip (or the stage
-// choice) turn the card, the counters mark it, Discard and Move to take it away.
+// choice) turn the card, the token and status submenus mark it, Discard and
+// Move to take it away.
 const GROUP_TURN = 0;
 const GROUP_MARK = 1;
 const GROUP_LEAVE = 2;
@@ -86,7 +83,7 @@ const GROUP_LEAVE = 2;
 const GROUP_POINT = 3;
 
 // Groups of a pile, in menu order: its main action (Draw, Reveal), the ways to
-// look at its cards, then the rarer actions.
+// look at its cards, then the rarer actions (Discard X, Shuffle).
 const GROUP_MAIN = 0;
 const GROUP_LOOK = 1;
 const GROUP_MORE = 2;
@@ -206,20 +203,19 @@ function cardActions(card: CardView, context: Context): ActionItem[] {
   } else if (canFlip(card)) {
     items.push(flipItem(card));
   }
-  items.push(counterMenu(card));
+  items.push(counterMenu(card, 'token'), counterMenu(card, 'status'));
   items.push(...leaveItems(card, context));
   return items;
 }
 
 function exhaustItem(card: CardView): ActionItem {
-  const label = card.exhausted ? 'Ready' : 'Exhaust';
   const stuck = card.exhausted === true && isLocked(card);
   return {
     id: 'exhaust',
-    label,
+    label: card.exhausted ? 'Ready' : 'Exhaust',
     key: 'E',
-    tip: stuck ? 'Locked: this card does not ready' : label,
     disabled: stuck,
+    reason: stuck ? 'Locked: this card does not ready' : undefined,
     default: true,
     group: GROUP_TURN,
     // The server decides the outcome (resolveExhaust): the client sends only the card.
@@ -236,7 +232,6 @@ function stageItem(): ActionItem {
     id: 'stage',
     label: 'Change card…',
     key: 'V',
-    tip: 'Change card…',
     group: GROUP_TURN,
     run: () => ({ local: 'stageBox' }),
   };
@@ -255,42 +250,35 @@ function flipItem(card: CardView): ActionItem {
     id: 'flip',
     label: 'Flip',
     key: 'F',
-    tip: 'Flip',
     group: GROUP_TURN,
     // The server picks the face the card ends on (resolveFlip).
     run: () => ({ kind: 'flip', card: card.id }),
   };
 }
 
-/** The tokens, then the statuses, each in its section: a submenu per section. */
-function counterMenu(card: CardView): ActionItem {
-  const label = 'Add a token or status';
-  const menu = [
-    ...counterItems(card, 'token', 'Tokens', TOKENS, card.tokens),
-    ...counterItems(card, 'status', 'Status', STATUSES, card.status),
-  ];
-  return { id: 'counters', label, tip: label, group: GROUP_MARK, menu };
-}
-
-/** Each counter adds one, its current count in brackets. */
-function counterItems(
-  card: CardView,
-  kind: 'token' | 'status',
-  section: string,
-  counters: { name: string; label: string; key: string }[],
-  counts: Record<string, number> | undefined,
-): ActionItem[] {
-  return counters.map((counter): ActionItem => {
+/**
+ * "Add a token" or "Add a status": a submenu whose items each add one of
+ * their counter, its current count in brackets.
+ */
+function counterMenu(card: CardView, kind: 'token' | 'status'): ActionItem {
+  const counters = kind === 'token' ? TOKENS : STATUSES;
+  const counts = kind === 'token' ? card.tokens : card.status;
+  const menu = counters.map((counter): ActionItem => {
     const count = counts?.[counter.name] ?? 0;
     return {
       id: counter.name,
       label: count > 0 ? `${counter.label} (${count})` : counter.label,
       key: counter.key,
       group: 0,
-      section,
       run: () => ({ kind, card: card.id, name: counter.name, delta: 1 }),
     };
   });
+  return {
+    id: kind === 'token' ? 'tokens' : 'statuses',
+    label: kind === 'token' ? 'Add a token' : 'Add a status',
+    group: GROUP_MARK,
+    menu,
+  };
 }
 
 /**
@@ -303,22 +291,20 @@ function leaveItems(card: CardView, context: Context): ActionItem[] {
     label: 'Discard',
     key: 'X',
     altKeys: ['Backspace'],
-    tip: 'Discard',
     group: GROUP_LEAVE,
     run: () => ({ kind: 'discard', card: card.id }),
   };
   const moveTo: ActionItem = {
     id: 'moveTo',
     label: 'Move to',
-    tip: 'Move to',
     group: GROUP_LEAVE,
     menu: moveMenu(card, context),
   };
 
   const items = discardPileOf(card, context.table.piles) === null ? [moveTo] : [discard, moveTo];
-  const tip = staysOnTable(card, context.table);
-  if (tip) {
-    return items.map((item) => ({ ...item, disabled: true, tip }));
+  const reason = staysOnTable(card, context.table);
+  if (reason) {
+    return items.map((item) => ({ ...item, disabled: true, reason }));
   }
   return items;
 }
@@ -426,7 +412,6 @@ export function arrowItem(card: string): ActionItem {
     id: 'arrow',
     label: 'Draw an arrow',
     key: 'A',
-    tip: 'Draw an arrow to another card',
     group: GROUP_POINT,
     run: () => ({ local: 'arrow', card }),
   };
@@ -507,8 +492,7 @@ function hasPile(table: TableView, id: string): boolean {
 
 /**
  * Every pile's actions have the same order, a separator between the groups:
- * the main action, the ways to look at the cards, then the rarer actions (More
- * actions of a deck, listed inline in the menu).
+ * the main action, the ways to look at the cards, then the rarer actions.
  */
 function pileActions(pile: PileView, context: Context): ActionItem[] | { text: string } {
   // Shared piles have no owner (-1).
@@ -524,7 +508,8 @@ function pileActions(pile: PileView, context: Context): ActionItem[] | { text: s
         drawCountItem(pile),
         lookTopItem(pile, 'your deck'),
         searchItem(pile),
-        moreMenu(pile, 'your deck', true),
+        discardTopItem(pile, 'your deck'),
+        shuffleItem(pile),
       ];
     case 'sideDeck': {
       // Private to its owner, like a deck.
@@ -533,22 +518,26 @@ function pileActions(pile: PileView, context: Context): ActionItem[] | { text: s
         return { text: `Belongs to ${name}: only they can use it.` };
       }
       const pileName = `your ${sideLabel(pile)} deck`;
-      // Only a side deck with its own discard pile discards from the top.
-      const discardTop = hasPile(context.table, deckDiscardOf(pile.id));
-      return [
+      const items = [
         drawOneItem(pile),
         drawCountItem(pile),
         lookTopItem(pile, pileName),
         searchItem(pile),
-        moreMenu(pile, pileName, discardTop),
       ];
+      // Only a side deck with its own discard pile discards from the top.
+      if (hasPile(context.table, deckDiscardOf(pile.id))) {
+        items.push(discardTopItem(pile, pileName));
+      }
+      items.push(shuffleItem(pile));
+      return items;
     }
     case 'encounter':
       return [
         revealItem(pile, context),
         lookTopItem(pile, 'the encounter deck'),
         searchItem(pile),
-        moreMenu(pile, 'the encounter deck', true),
+        discardTopItem(pile, 'the encounter deck'),
+        shuffleItem(pile),
       ];
     case 'discard':
     case 'encounterDiscard':
@@ -573,7 +562,6 @@ function drawOneItem(sideDeck?: PileView): ActionItem {
     id: 'draw1',
     label: 'Draw 1',
     key: 'W',
-    tip: 'Draw 1',
     default: true,
     group: GROUP_MAIN,
     run: () => drawAction(1, sideDeck),
@@ -595,7 +583,6 @@ function drawCountItem(pile: PileView): ActionItem {
     label: 'Draw X',
     key: 'W',
     shift: true,
-    tip: 'Draw X cards',
     group: GROUP_MAIN,
     run: () => ({
       ask: {
@@ -615,7 +602,6 @@ function revealItem(pile: PileView, context: Context): ActionItem {
     id: 'reveal',
     label: 'Reveal',
     key: 'R',
-    tip: 'Reveal',
     default: true,
     group: GROUP_MAIN,
     run: () => ({ kind: 'reveal' }),
@@ -627,7 +613,7 @@ function revealItem(pile: PileView, context: Context): ActionItem {
   return {
     ...reveal,
     disabled: true,
-    tip: `${cardName(shown, context.lang)} is already revealed on this deck: move it first`,
+    reason: `${cardName(shown, context.lang)} is already revealed on this deck: move it first`,
   };
 }
 
@@ -642,7 +628,6 @@ function lookTopItem(pile: PileView, pileName: string): ActionItem {
     id: 'lookTop',
     label: 'Top X',
     key: 'L',
-    tip: 'Look at the top X cards',
     group: GROUP_LOOK,
     run: () => ({
       ask: {
@@ -657,29 +642,12 @@ function lookTopItem(pile: PileView, pileName: string): ActionItem {
   };
 }
 
-/**
- * More actions of a deck, for what is done less often: Discard X (decks with
- * a discard pile), then Shuffle. pileName is how the question names the pile.
- */
-function moreMenu(pile: PileView, pileName: string, withDiscardTop: boolean): ActionItem {
-  const shuffle: ActionItem = {
-    id: 'shuffle',
-    label: 'Shuffle',
-    key: 'U',
-    group: 0,
-    run: () => ({ kind: 'shuffle', pile: pile.id }),
-  };
-  const menu = withDiscardTop ? [discardTopItem(pile, pileName), SEPARATOR, shuffle] : [shuffle];
-  const label = 'More actions';
-  return { id: 'more', label, tip: label, group: GROUP_MORE, menu };
-}
-
+/** Discard X, a deck's rarer action: pileName is how the question names the pile. */
 function discardTopItem(pile: PileView, pileName: string): ActionItem {
   return {
     id: 'discardTop',
     label: 'Discard X',
-    tip: 'Discard the top X cards',
-    group: 0,
+    group: GROUP_MORE,
     run: () => ({
       ask: {
         title: 'Discard from the top',
@@ -693,6 +661,16 @@ function discardTopItem(pile: PileView, pileName: string): ActionItem {
   };
 }
 
+function shuffleItem(pile: PileView): ActionItem {
+  return {
+    id: 'shuffle',
+    label: 'Shuffle',
+    key: 'U',
+    group: GROUP_MORE,
+    run: () => ({ kind: 'shuffle', pile: pile.id }),
+  };
+}
+
 function countLimit(pile: PileView): number {
   return Math.min(pile.count, MAX_COUNT);
 }
@@ -703,18 +681,16 @@ function searchItem(pile: PileView): ActionItem {
     id: 'search',
     label: 'Search',
     key: 'K',
-    tip: 'Search this pile',
     group: GROUP_LOOK,
     run: () => ({ kind: 'search', pile: pile.id }),
   };
 }
 
-/** An item of its own rather than More actions: the only rarer action of a discard pile. */
+/** The only rarer action of a discard pile. */
 function shuffleBackItem(pile: PileView): ActionItem {
   return {
     id: 'shuffleBack',
     label: 'Shuffle into deck',
-    tip: 'Shuffle this discard pile back into its deck',
     group: GROUP_MORE,
     run: () => ({ kind: 'shuffleBack', pile: pile.id }),
   };
@@ -726,7 +702,6 @@ function browseItem(pile: PileView): ActionItem {
     id: 'browse',
     label: 'Browse…',
     key: 'K',
-    tip: 'Browse…',
     // A spectator's only action on a pile.
     default: true,
     group: GROUP_LOOK,

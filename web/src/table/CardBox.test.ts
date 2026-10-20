@@ -3,7 +3,7 @@ import { tick } from 'svelte';
 import Table from './Table.svelte';
 import boxSource from './CardBox.svelte?raw';
 import { compareCardNumbers, pileLabel, tileActions, type TileAction } from './boxes';
-import { interaction } from './interaction.svelte';
+import { interaction, LONG_PRESS_MS } from './interaction.svelte';
 import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
 import type {
   CardView as TableCard,
@@ -655,6 +655,27 @@ describe('CardBox', () => {
     const rightClick = createEvent.contextMenu(image, { clientX: 50, clientY: 60 });
     await fireEvent(image, rightClick);
     expect(rightClick.defaultPrevented).toBe(true);
+    expect(screen.getByRole('menu', { name: 'Web-Shooter, Your deck · #1' })).toBe(contextMenu());
+  });
+
+  it('opens nothing on the click iOS fires after a long touch press on a tile; a short tap opens it', async () => {
+    await renderTable(makeView({ private: SEARCH }));
+    const image = tile('c1').querySelector<HTMLElement>('.img') as HTMLElement;
+    // A press held that long, in ms: the events' time stamps (jsdom's Date.now) say how long.
+    const touchFor = async (ms: number): Promise<void> => {
+      const now = vi.spyOn(Date, 'now').mockReturnValue(10_000);
+      const touch = { button: 0, clientX: 50, clientY: 60, pointerType: 'touch' };
+      await fireEvent.pointerDown(image, touch);
+      now.mockReturnValue(10_000 + ms);
+      await fireEvent.pointerUp(image, touch);
+      await fireEvent.click(image, { clientX: 50, clientY: 60 });
+      now.mockRestore();
+    };
+
+    await touchFor(LONG_PRESS_MS + 100);
+    expect(contextMenu()).toBeNull();
+
+    await touchFor(200);
     expect(screen.getByRole('menu', { name: 'Web-Shooter, Your deck · #1' })).toBe(contextMenu());
   });
 

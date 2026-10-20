@@ -2,7 +2,9 @@ import { createEvent, fireEvent, render, screen, waitFor, within } from '@testin
 import { tick } from 'svelte';
 import Table from './Table.svelte';
 import menuSource from './ContextMenu.svelte?raw';
-import { interaction } from './interaction.svelte';
+import tableSource from './Table.svelte?raw';
+import { interaction, LONG_PRESS_MS } from './interaction.svelte';
+import { TOUCH_MODE_QUERY } from './touch';
 import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
 import type { CardView as TableCard, PackFace, PileView, PresenceState, View } from '../lib/types';
 
@@ -223,6 +225,20 @@ function headerOf(menu: HTMLElement): {
   };
 }
 
+/**
+ * Taps the element with a finger held down that long, in ms: the events' time
+ * stamps (jsdom's Date.now) say how long the press lasted.
+ */
+async function touchFor(target: Element, ms: number, x = 120, y = 80): Promise<void> {
+  const now = vi.spyOn(Date, 'now').mockReturnValue(10_000);
+  const touch = { button: 0, clientX: x, clientY: y, pointerType: 'touch' };
+  await fireEvent.pointerDown(target, touch);
+  now.mockReturnValue(10_000 + ms);
+  await fireEvent.pointerUp(target, touch);
+  await fireEvent.click(target, { clientX: x, clientY: y });
+  now.mockRestore();
+}
+
 /** The hint of the arrow mode, above the card the arrow starts from. */
 function arrowHint(): HTMLElement | null {
   return document.querySelector<HTMLElement>('.arrowhint');
@@ -397,13 +413,18 @@ describe('the context menu', () => {
     await rightClick(placed('v'));
     const menu = screen.getByRole('menu', { name: 'Rhino, Villain, stage I' });
 
+    const reason = 'The villain card stays on the table: choose another card to show';
     const discard = menuItem(menu, 'Discard');
     expect(discard.getAttribute('aria-disabled')).toBe('true');
-    expect(discard.dataset.tip).toBe(
-      'The villain card stays on the table: choose another card to show',
-    );
-    await fireEvent.click(discard);
+    expect(discard.dataset.tip).toBe(reason);
+    // Screen readers read the reason with the item; its name stays its label and its key.
+    expect(screen.getByRole('menuitem', { name: 'DiscardX', description: reason })).toBe(discard);
     const moveTo = menuItem(menu, 'Move to');
+    expect(screen.getByRole('menuitem', { name: 'Move to', description: reason })).toBe(moveTo);
+    // An enabled item has no reason.
+    expect(menuItem(menu, 'Exhaust').hasAttribute('aria-describedby')).toBe(false);
+    expect(menuItem(menu, 'Exhaust').hasAttribute('data-tip')).toBe(false);
+    await fireEvent.click(discard);
     await fireEvent.click(moveTo);
     expect(session.act).not.toHaveBeenCalled();
     expect(screen.queryByRole('menu', { name: 'Move to' })).toBeNull();
@@ -516,6 +537,48 @@ describe('the context menu', () => {
     expect(document.activeElement).toBe(menuItem(menu, 'Add a token'));
   });
 
+  it('shows the reason of a disabled item under its label under a finger, within the menu width', () => {
+    const hidden = /\n {2}\.reason \{([^}]*)\}/.exec(menuSource)?.[1];
+    expect(hidden).toMatch(/position: absolute;/);
+    expect(hidden).toMatch(/clip-path: inset\(50%\);/);
+    const coarse =
+      /@media \(pointer: coarse\) \{\s*\.table-menu button\.has-reason \{[^}]*\}\s*\.table-menu button > \.reason \{([^}]*)\}/.exec(
+        menuSource,
+      )?.[1];
+    expect(coarse).toMatch(/position: static;/);
+    expect(coarse).toMatch(/flex: 1 0 100%;/);
+    expect(coarse).toMatch(/white-space: normal;/);
+    // It wraps within the labels' width rather than widening the menu.
+    expect(coarse).toMatch(/contain: inline-size;/);
+    expect(coarse).toMatch(/color: var\(--muted\);/);
+  });
+
+  it('closes on Tab, which lets the focus move on', async () => {
+    await renderTable();
+    await rightClick(placed('mine'));
+    const menu = screen.getByRole('menu', { name: 'Spider-Man, Hero' });
+    menuItem(menu, 'Exhaust').focus();
+
+    const tab = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+    document.activeElement!.dispatchEvent(tab);
+    await tick();
+    expect(contextMenu()).toBeNull();
+    // The browser moves the focus as Tab does.
+    expect(tab.defaultPrevented).toBe(false);
+
+    // From a submenu too.
+    await rightClick(placed('mine'));
+    await fireEvent.click(menuItem(contextMenu()!, 'Add a token'));
+    within(screen.getByRole('menu', { name: 'Add a token' }))
+      .getAllByRole('menuitem')[0]!
+      .focus();
+    document.activeElement!.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }),
+    );
+    await tick();
+    expect(contextMenu()).toBeNull();
+  });
+
   it('prevents the native menu on an empty spot of the table, without a menu of its own', async () => {
     await renderTable();
     const surface = document.querySelector('.tablewrap .surface')!;
@@ -525,14 +588,30 @@ describe('the context menu', () => {
     expect(contextMenu()).toBeNull();
   });
 
-  it('leaves the native menu outside the table, and on hand cards', async () => {
-    await renderTable();
+  it('prevents the native menu anywhere on the screen, opening no menu off the table', async () => {
+    const { container } = await renderTable();
 
     const history = screen.getByRole('complementary', { name: 'History' });
-    expect((await rightClick(history)).defaultPrevented).toBe(false);
+    expect((await rightClick(history)).defaultPrevented).toBe(true);
     const hand = within(screen.getByRole('list', { name: 'Your hand' })).getByRole('listitem');
-    expect((await rightClick(hand)).defaultPrevented).toBe(false);
+    expect((await rightClick(hand)).defaultPrevented).toBe(true);
+    const zoomIn = screen.getByRole('button', { name: 'Zoom in' });
+    expect((await rightClick(zoomIn)).defaultPrevented).toBe(true);
     expect(contextMenu()).toBeNull();
+
+    // A text field keeps it, to paste in.
+    const field = container.querySelector('.app')!.appendChild(document.createElement('input'));
+    expect((await rightClick(field)).defaultPrevented).toBe(false);
+  });
+
+  it('opens no callout of iOS anywhere on the screen, but in a text field', () => {
+    const app = /\n {2}\.app \{([^}]*)\}/.exec(tableSource)?.[1];
+    expect(app).toMatch(/-webkit-touch-callout: none;/);
+    const fields =
+      /\n {2}\.app :global\(:is\(input, textarea, \[contenteditable\]\)\) \{([^}]*)\}/.exec(
+        tableSource,
+      )?.[1];
+    expect(fields).toMatch(/-webkit-touch-callout: default;/);
   });
 });
 
@@ -617,6 +696,25 @@ describe('opening the context menu with a click', () => {
     expect(screen.getByRole('menu', { name: 'Rhino, Villain, stage I' })).toBe(contextMenu());
   });
 
+  it('opens nothing on the click iOS fires after a long touch press; a short tap opens it', async () => {
+    await renderTable();
+
+    await touchFor(placed('v'), LONG_PRESS_MS + 100, 320, 140);
+    expect(contextMenu()).toBeNull();
+
+    await touchFor(placed('v'), 200, 320, 140);
+    expect(screen.getByRole('menu', { name: 'Rhino, Villain, stage I' })).toBe(contextMenu());
+
+    // A mouse held as long still clicks.
+    await fireEvent.keyDown(window, { key: 'Escape' });
+    const now = vi.spyOn(Date, 'now').mockReturnValue(10_000);
+    await fireEvent.pointerDown(placed('v'), { button: 0, clientX: 320, clientY: 140 });
+    now.mockReturnValue(12_000);
+    await fireEvent.pointerUp(placed('v'), { button: 0, clientX: 320, clientY: 140 });
+    await fireEvent.click(placed('v'), { clientX: 320, clientY: 140 });
+    expect(contextMenu()).not.toBeNull();
+  });
+
   it("opens on macOS's Ctrl + click, a mouse contextmenu", async () => {
     await renderTable();
 
@@ -662,16 +760,22 @@ describe('opening the context menu with a click', () => {
     expect(contextMenu()).toBeNull();
   });
 
-  it("says whose another player's deck is, with nothing to choose", async () => {
+  it("says whose another player's deck is in a dialog, with nothing to choose", async () => {
     await renderTable();
 
     await click(placed('deck:p1'));
-    const menu = screen.getByRole('menu', { name: "Sam's deck, 30 cards" });
-    expect(within(menu).queryAllByRole('menuitem')).toHaveLength(0);
-    const note = menu.querySelector<HTMLElement>('.note')!;
-    expect(note.textContent).toBe('Belongs to Sam: only they can use it.');
-    expect(menu.getAttribute('aria-describedby')).toBe(note.id);
-    expect(document.activeElement).toBe(menu);
+    // No menu without items: a dialog, described by its note.
+    expect(screen.queryByRole('menu')).toBeNull();
+    const dialog = screen.getByRole('dialog', {
+      name: "Sam's deck, 30 cards",
+      description: 'Belongs to Sam: only they can use it.',
+    });
+    expect(dialog).toBe(contextMenu());
+    expect(within(dialog).queryAllByRole('menuitem')).toHaveLength(0);
+    expect(document.activeElement).toBe(dialog);
+
+    await fireEvent.keyDown(dialog, { key: 'Escape' });
+    expect(contextMenu()).toBeNull();
   });
 
   it('offers a spectator Browse… on a public pile, and nothing on a card', async () => {
@@ -978,7 +1082,9 @@ describe('the arrow mode', () => {
     await fireEvent.keyDown(window, { key: 'a' });
 
     const hint = arrowHint()!;
-    expect(hint.textContent).toContain('Click the card to point at');
+    expect(hint.textContent).toBe(
+      'Click the card to point at — Esc or a click on an empty spot to cancel.',
+    );
     // Not a choice: every press goes through it to the table.
     expect(hint.getAttribute('role')).toBe('status');
     // Centred above "mine", 8 px away.
@@ -992,6 +1098,26 @@ describe('the arrow mode', () => {
     await vi.advanceTimersByTimeAsync(1000);
     expect(interaction.hovered).toBeNull();
     expect(arrowHint()?.style.left).toBe('300px');
+  });
+
+  it('speaks of taps and no Esc key in touch mode', async () => {
+    vi.spyOn(window, 'matchMedia').mockImplementation(
+      (query) =>
+        Object.assign(new EventTarget(), {
+          media: query,
+          matches: query === TOUCH_MODE_QUERY,
+          onchange: null,
+          addListener: () => {},
+          removeListener: () => {},
+        }) as unknown as MediaQueryList,
+    );
+    await renderTable();
+    await click(placed('mine'), 120, 80, { pointerType: 'touch' });
+    await fireEvent.click(menuItem(contextMenu()!, 'Draw an arrow'));
+
+    expect(arrowHint()?.textContent).toBe(
+      'Tap the card to point at — tap an empty spot to cancel.',
+    );
   });
 
   it('shows no hint while a Shift + drag draws the arrow', async () => {

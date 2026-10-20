@@ -542,7 +542,7 @@
       return;
     }
     if (!pressed.moved) {
-      // A tap or a click: the click selects.
+      // A tap or a click, not a drag: its click opens the action menu, or selects a hand card on touch.
       interaction.letGo();
       return;
     }

@@ -27,7 +27,7 @@
   import ContextMenu from './ContextMenu.svelte';
   import { tileEntries, type ContextHeader } from './contextItems';
   import type { Point } from './drag';
-  import { isTouchContextMenu, LANDING_MS } from './interaction.svelte';
+  import { isLongTouchClick, isTouchContextMenu, LANDING_MS } from './interaction.svelte';
   import { isOutOfPlay } from './layout';
   import { ownerLook, ownSeats, seatPlayer } from './seats';
 
@@ -237,8 +237,9 @@
   let menuAtPress: string | null = null;
   // The press that ended a reorder: its click is no click on a tile.
   let dragEnded = false;
-  // The kind of pointer of the current press: a long touch's contextmenu opens no menu.
+  // The kind of pointer of the current press, and when it began: a long touch opens no menu.
   let pressType = 'mouse';
+  let pressedAt = 0;
 
   // Found again in every redraw: the menu goes with its card, or with its last action.
   const menuTile = $derived.by(() => {
@@ -258,15 +259,17 @@
     menuAtPress = tileMenu?.key ?? null;
     dragEnded = false;
     pressType = event.pointerType || 'mouse';
+    pressedAt = event.timeStamp;
   }
 
   /**
    * A click or a tap on a pile tile opens its menu at the pointer, unless it
-   * ends a reorder, or its press closed that tile's menu; a tile without
-   * actions (a spectator's) opens nothing.
+   * ends a reorder or a long touch press (iOS fires that click), or its press
+   * closed that tile's menu; a tile without actions (a spectator's) opens
+   * nothing.
    */
   function clickTile(tile: Tile, event: MouseEvent): void {
-    if (dragEnded || menuAtPress === tile.key) {
+    if (dragEnded || menuAtPress === tile.key || isLongTouchClick(event, pressType, pressedAt)) {
       return;
     }
     openTileMenu(tile, { x: event.clientX, y: event.clientY });

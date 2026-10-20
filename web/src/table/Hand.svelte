@@ -12,7 +12,14 @@
   import CardFace from './CardFace.svelte';
   import { isHidden } from './face';
   import { interaction } from './interaction.svelte';
-  import { cardBox, fanPositions, HAND_CARD, HAND_REST_DROP } from './layout';
+  import {
+    cardBox,
+    fanPositions,
+    HAND_CARD,
+    HAND_PADDING,
+    HAND_REST_DROP,
+    HAND_REST_SCALE,
+  } from './layout';
   import { motion } from './motion.svelte';
 
   let {
@@ -323,6 +330,9 @@
   style:--card-w="{cardSize.w}px"
   style:--card-h="{cardSize.h}px"
   style:--rest-drop="{restDrop}px"
+  style:--rest-scale={HAND_REST_SCALE}
+  style:--pad-top="{HAND_PADDING.top}px"
+  style:--pad-bottom="{HAND_PADDING.bottom}px"
   bind:this={list}
   bind:clientWidth={width}
 >
@@ -406,15 +416,15 @@
       Border box: the padding around one card. The prototype's min-heights (218 px, 180 px on a
       narrow screen) are below this, so its hand grows to the same height around its card row.
     */
-    min-height: calc(26px + var(--card-h) + 18px);
+    min-height: calc(var(--pad-top) + var(--card-h) + var(--pad-bottom));
     margin: 0;
-    padding: 26px 18px 18px;
+    padding: var(--pad-top) 18px var(--pad-bottom);
     list-style: none;
     overflow: visible;
     pointer-events: none;
     background: linear-gradient(to top, #07090fe6 0%, #07090fa0 55%, transparent 100%);
-    /* Low enough that only the top part of the cards shows (layout.ts: HAND_REST_SCALE). */
-    transform: translateY(var(--rest-drop)) scale(0.82);
+    /* Low enough that only the top part of the cards shows. */
+    transform: translateY(var(--rest-drop)) scale(var(--rest-scale));
     transform-origin: 50% 100%;
     transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
@@ -433,7 +443,7 @@
   /* Placed around the middle of the hand, below its top padding: --x is the card's middle. */
   .hcard {
     position: absolute;
-    top: 26px;
+    top: var(--pad-top);
     left: calc(50% + var(--x));
     width: var(--card-w);
     height: var(--card-h);
