@@ -22,7 +22,7 @@
     top?: TableCard;
     /** The catalog face of the top card, null while unknown. */
     face?: PackFace | null;
-    /** The viewer can drag from it (sourceOf): the pointer grabs it; else it only has a bar. */
+    /** The viewer can drag from it (sourceOf): the pointer grabs it; else it only has a menu. */
     draggable?: boolean;
   } = $props();
 
@@ -32,7 +32,7 @@
   // with the cards still flying to it.
   const arriving = $derived((pile.cards ?? []).filter((id) => motion.flying.has(id)).length);
   const count = $derived(pile.count - interaction.takenFrom(pile.id).length - arriving);
-  // An empty pile has no bar: it is inert, like an empty spot.
+  // An empty pile has no menu: it is inert, like an empty spot.
   const empty = $derived(count === 0);
   const targeted = $derived(
     interaction.dropOn?.kind === 'pile' && interaction.dropOn.id === pile.id,
@@ -42,7 +42,6 @@
   const rotated = $derived(cardBox(face?.size ?? 'std', { onPile: true }).rotated);
   const highlighted = $derived(shownTop !== undefined && interaction.highlighted.has(shownTop.id));
   const element = $derived({ kind: 'pile', id: pile.id } as const);
-  const locked = $derived(interaction.isLocked(element));
   const hovered = $derived(interaction.isHovered(element));
   // Another player previews the pile: their ring is drawn inside it, as on a card.
   const previewer = $derived(interaction.previewerOf(pile.id));
@@ -57,15 +56,12 @@
       interaction.enter(element, event, previewChange);
     }
   }
-
-  function onTap(): void {
-    if (!empty) {
-      interaction.select(element, previewChange);
-    }
-  }
 </script>
 
-<!-- The pointer feeds the side preview and the action bar: no role to announce. -->
+<!--
+  The pointer feeds the side preview, the keys and the context menu (a click, Table.svelte): no role
+  to announce.
+-->
 <div
   class="card pile"
   role="presentation"
@@ -74,7 +70,6 @@
   class:inert={empty}
   class:grab={draggable}
   class:highlighted
-  class:locked
   class:hovered
   class:drop-pile={targeted}
   style:left="{pile.x}px"
@@ -84,7 +79,6 @@
   onpointerenter={onEnter}
   onpointerleave={() => interaction.leave()}
   onpointerdown={(event) => interaction.press(element, event)}
-  onclick={onTap}
 >
   {#if empty}
     <div class="slot"></div>
@@ -114,7 +108,7 @@
     position: absolute;
     z-index: 0;
     border-radius: 6px;
-    /* Something to drag (.grab), or else a bar to open a box from; nothing on an inert pile. */
+    /* Something to drag (.grab), or else a menu to open a box from; nothing on an inert pile. */
     cursor: pointer;
     user-select: none;
     -webkit-user-select: none;

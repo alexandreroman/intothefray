@@ -1,5 +1,12 @@
 import { actionsFor, keyLabel, type ActionItem, type TableElement } from './actions';
-import { cardHeader, contextItems, pileHeader, type ContextEntry } from './contextItems';
+import type { TileAction } from './boxes';
+import {
+  cardHeader,
+  contextItems,
+  pileHeader,
+  tileEntries,
+  type ContextEntry,
+} from './contextItems';
 import { knownCard, type CardInfo } from '../lib/catalog';
 import type { Area, CardView, PackFace, PileView, Role, View } from '../lib/types';
 
@@ -83,6 +90,8 @@ function makeView(): View {
         card('v', { code: '01094', owner: -1, back: 'villain' }),
         card('s', { code: '01097', owner: -1, back: 'encounter' }),
         card('down', { code: undefined, faceDown: true }),
+        card('inv', { home: 'side:p0:0' }),
+        card('sense', { home: 'side:p0:1' }),
       ],
       piles: [
         pile('deck:p0', { owner: 0, count: 34 }),
@@ -93,6 +102,17 @@ function makeView(): View {
         pile('enc', { kind: 'encounter', count: 29 }),
         pile('encd', { kind: 'encounterDiscard', count: 1, cards: ['t'] }),
         pile('vic', { kind: 'victory', count: 0, cards: [] }),
+        // Alex's Invocation deck has a discard pile of its own, the Sense deck none.
+        pile('side:p0:0', { kind: 'sideDeck', owner: 0, count: 4, label: 'Invocation' }),
+        pile('sided:p0:0', {
+          kind: 'sideDiscard',
+          owner: 0,
+          count: 1,
+          label: 'Invocation',
+          cards: ['u'],
+        }),
+        pile('side:p0:1', { kind: 'sideDeck', owner: 0, count: 5, label: 'Sense' }),
+        pile('side:p1:0', { kind: 'sideDeck', owner: 1, count: 5, label: 'Invocation' }),
       ],
       hands: {},
       stages: [
@@ -166,7 +186,7 @@ beforeEach(() => {
 });
 
 describe('contextItems', () => {
-  it('lists a card in play in bar order, with its submenus and the arrow', () => {
+  it('lists a card in play in its order, with its submenus and the arrow', () => {
     const entries = entriesFor({ kind: 'card', id: 'mine' });
 
     expect(texts(entries)).toEqual([
@@ -201,7 +221,7 @@ describe('contextItems', () => {
       'Victory display',
       'Set aside',
     ]);
-    // The items are the bar's: they run the same actions.
+    // The items are actionsFor's, which the keys run too: they run the same actions.
     expect(itemOf(submenu(entries, 'Add a token').entries, 'Damage (6)').run?.()).toEqual({
       kind: 'token',
       card: 'mine',
@@ -275,6 +295,58 @@ describe('contextItems', () => {
     expect(texts(entriesFor({ kind: 'pile', id: 'disc:p1' }))).toEqual(['*Search [K]']);
   });
 
+  it('shows an own side deck flat, with Discard X only when it has a discard pile', () => {
+    expect(texts(entriesFor({ kind: 'pile', id: 'side:p0:0' }))).toEqual([
+      '*Draw 1 [W]',
+      'Draw X [⇧W]',
+      '---',
+      'Top X [L]',
+      'Search [K]',
+      '---',
+      'Discard X',
+      'Shuffle [U]',
+    ]);
+    expect(texts(entriesFor({ kind: 'pile', id: 'side:p0:1' }))).toEqual([
+      '*Draw 1 [W]',
+      'Draw X [⇧W]',
+      '---',
+      'Top X [L]',
+      'Search [K]',
+      '---',
+      'Shuffle [U]',
+    ]);
+    expect(texts(entriesFor({ kind: 'pile', id: 'sided:p0:0' }))).toEqual([
+      '*Search [K]',
+      '---',
+      'Shuffle into deck',
+    ]);
+  });
+
+  it('sends a side card to its side deck, and discards it only with a side discard pile', () => {
+    const invocation = entriesFor({ kind: 'card', id: 'inv' });
+    expect(texts(submenu(invocation, 'Move to').entries)).toEqual([
+      'Hand [H]',
+      'Top of Invocation deck',
+      'Bottom of Invocation deck',
+      'Shuffle into Invocation deck',
+      '---',
+      'Victory display',
+      'Set aside',
+    ]);
+    expect(texts(invocation)).toContain('Discard [⌫]');
+
+    expect(texts(entriesFor({ kind: 'card', id: 'sense' }))).toEqual([
+      '*Exhaust [E]',
+      '---',
+      'Add a token ▸',
+      'Add a status ▸',
+      '---',
+      'Move to ▸',
+      '---',
+      'Draw an arrow [A]',
+    ]);
+  });
+
   it('offers a spectator Browse… only, and no card actions', () => {
     expect(texts(entriesFor({ kind: 'pile', id: 'disc:p0' }, SPECTATOR))).toEqual(['*Browse…']);
     expect(entriesFor({ kind: 'card', id: 'mine' }, SPECTATOR)).toEqual([]);
@@ -282,8 +354,51 @@ describe('contextItems', () => {
 
   it("has nothing for another player's deck, an empty pile or a hand card", () => {
     expect(entriesFor({ kind: 'pile', id: 'deck:p1' })).toEqual([]);
+    expect(entriesFor({ kind: 'pile', id: 'side:p1:0' })).toEqual([]);
     expect(entriesFor({ kind: 'pile', id: 'aside:p0' })).toEqual([]);
     expect(entriesFor({ kind: 'hand', id: 'h' })).toEqual([]);
+  });
+});
+
+describe('tileEntries', () => {
+  function tileAction(id: string, label: string): TileAction {
+    return { id, label, run: () => ({ kind: 'discard', card: id }) };
+  }
+
+  it('lists what takes the card, then what sends it away, with Play as the default', () => {
+    const entries = tileEntries([
+      tileAction('draw', 'Draw'),
+      tileAction('play', 'Play'),
+      tileAction('discard', 'Discard'),
+      tileAction('bottom', 'Put at the bottom of the deck'),
+      tileAction('shuffle', 'Shuffle into its deck'),
+    ]);
+
+    expect(
+      entries.map((entry) =>
+        entry.kind === 'action' ? [entry.item.id, entry.item.default ?? false] : entry.kind,
+      ),
+    ).toEqual([
+      ['draw', false],
+      ['play', true],
+      'separator',
+      ['discard', false],
+      ['bottom', false],
+      ['shuffle', false],
+    ]);
+  });
+
+  it('runs what the tile action runs', () => {
+    const [entry] = tileEntries([tileAction('discard', 'Discard')]);
+    expect(entry?.kind === 'action' && entry.item.run?.()).toEqual({
+      kind: 'discard',
+      card: 'discard',
+    });
+  });
+
+  it('has no separator when every action sends the card away', () => {
+    const entries = tileEntries([tileAction('discard', 'Discard'), tileAction('bottom', 'Bottom')]);
+    expect(entries.map((entry) => entry.kind)).toEqual(['action', 'action']);
   });
 });
 
@@ -364,5 +479,11 @@ describe('cardHeader and pileHeader', () => {
       color: 'var(--p2)',
     });
     expect(headerOfPile('encd').label).toBe('Encounter discard, 1 card');
+    expect(headerOfPile('side:p0:0')).toMatchObject({
+      eyebrow: 'Alex',
+      name: 'Invocation deck',
+      label: 'Your Invocation deck, 4 cards',
+    });
+    expect(headerOfPile('sided:p0:0').name).toBe('Invocation discard');
   });
 });

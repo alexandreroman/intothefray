@@ -149,7 +149,7 @@
     />
   {/each}
   {#if firstPlayer && !interaction.tokenMoving}
-    <!-- The token has no bar: hovering it drops the previous element at once. -->
+    <!-- The token has no menu: hovering it drops the previous element at once. -->
     <FirstPlayerToken
       x={firstPlayer.x}
       y={firstPlayer.y}

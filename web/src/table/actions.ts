@@ -1,19 +1,18 @@
-// The actions of a table element, as the floating action bar, its menus and
-// the keys offer them. The client mirrors the server's permissions only to
+// The actions of a table element, as its context menu (contextItems.ts) and
+// the keys (keys.ts) offer them. The client mirrors the server's permissions only to
 // hide what would be refused (internal/game/action.go, resolve); the server
 // still checks everything.
 
 import { knownCard } from '../lib/catalog';
 import type { Lang } from '../lib/lang';
 import { localizedFace } from '../lib/localize';
-import type { IconName } from './Icons.svelte';
 import { isOutOfPlay } from './layout';
 import { seatOf, seatPlayer } from './seats';
 import type { Action, Area, CardView, PileView, Role, Stage, TableView, View } from '../lib/types';
 
 /**
- * What the bar is for: a table card, a pile or a card of the viewer's hand.
- * Not named Element: that would shadow the DOM's.
+ * What the actions are for: a table card, a pile or a card of the viewer's
+ * hand. Not named Element: that would shadow the DOM's.
  */
 export type TableElement =
   { kind: 'card'; id: string } | { kind: 'pile'; id: string } | { kind: 'hand'; id: string };
@@ -54,24 +53,21 @@ export interface ActionItem {
   /** Stable id: 'exhaust', 'flip', 'stage', 'counters', 'discard', 'moveTo', 'draw1', … */
   id: string;
   label: string;
-  icon?: IconName;
   key?: string;
   /** The key is taken with Shift: Draw X is Shift + W, while W alone is Draw 1. */
   shift?: true;
   disabled?: boolean;
   tip?: string;
-  /** Drawn pressed: Ready on an exhausted card. */
-  pressed?: boolean;
   /**
-   * The element's default action, the first of its bar: shown in bold in the context menu. Set by
+   * The element's default action, usually its first: shown in bold in the context menu. Set by
    * the builders rather than found from the position, as it will also be what a double click does.
    */
   default?: true;
   /** Items of different groups are drawn with a separator between them. */
   group: number;
-  /** A dropdown item under a heading: the heading starts where the section changes. */
+  /** An item of a list under a heading: the token list splits into a submenu per section. */
   section?: string;
-  /** Dropdown items; a separator is an item with the id 'sep'. A dropdown with an icon has no caret. */
+  /** The items of a submenu; a separator is an item with the id 'sep'. */
   menu?: ActionItem[];
   run?: () => Action | { ask: CountQuestion } | LocalAction;
 }
@@ -79,15 +75,15 @@ export interface ActionItem {
 /** Mirrors maxCount in internal/game/action.go: the most cards one action takes. */
 const MAX_COUNT = 99;
 
-// Groups of a card in play, in bar order: Exhaust and Flip (or the stage
+// Groups of a card in play, in menu order: Exhaust and Flip (or the stage
 // choice) turn the card, the counters mark it, Discard and Move to take it away.
 const GROUP_TURN = 0;
 const GROUP_MARK = 1;
 const GROUP_LEAVE = 2;
-// The context menu's own last group, which the bar does not show: the arrow, which has no button.
+// The context menu's own last group, which the keys reach otherwise (A): the arrow.
 const GROUP_POINT = 3;
 
-// Groups of a pile, in bar order: its main action (Draw, Reveal), the ways to
+// Groups of a pile, in menu order: its main action (Draw, Reveal), the ways to
 // look at its cards, then the rarer actions.
 const GROUP_MAIN = 0;
 const GROUP_LOOK = 1;
@@ -170,7 +166,7 @@ export function actionsFor(
 }
 
 /**
- * A spectator's read-only bar (ruling P5c-R2): Browse… on the piles whose
+ * A spectator's read-only actions (ruling P5c-R2): Browse… on the piles whose
  * cards everyone sees. Cards in play, the villain and main scheme included, get none.
  */
 function spectatorActions(el: TableElement, table: TableView): ActionItem[] {
@@ -219,11 +215,9 @@ function exhaustItem(card: CardView): ActionItem {
   return {
     id: 'exhaust',
     label,
-    icon: 'exhaust',
     key: 'E',
     tip: stuck ? 'Locked: this card does not ready' : label,
     disabled: stuck,
-    pressed: card.exhausted,
     default: true,
     group: GROUP_TURN,
     // The server decides the outcome (resolveExhaust): the client sends only the card.
@@ -239,7 +233,6 @@ function stageItem(): ActionItem {
   return {
     id: 'stage',
     label: 'Change card…',
-    icon: 'stage-pick',
     tip: 'Change card…',
     group: GROUP_TURN,
     run: () => ({ local: 'stageBox' }),
@@ -258,7 +251,6 @@ function flipItem(card: CardView): ActionItem {
   return {
     id: 'flip',
     label: 'Flip',
-    icon: 'flip',
     key: 'F',
     tip: 'Flip',
     group: GROUP_TURN,
@@ -267,14 +259,14 @@ function flipItem(card: CardView): ActionItem {
   };
 }
 
-/** The "+" dropdown: the tokens, then the statuses, each in its section. */
+/** The tokens, then the statuses, each in its section: a submenu per section. */
 function counterMenu(card: CardView): ActionItem {
   const label = 'Add a token or status';
   const menu = [
     ...counterItems(card, 'token', 'Tokens', TOKENS, card.tokens),
     ...counterItems(card, 'status', 'Status', STATUSES, card.status),
   ];
-  return { id: 'counters', label, icon: 'token', tip: label, group: GROUP_MARK, menu };
+  return { id: 'counters', label, tip: label, group: GROUP_MARK, menu };
 }
 
 /** Each counter adds one, its current count in brackets. */
@@ -306,7 +298,6 @@ function leaveItems(card: CardView, context: Context): ActionItem[] {
   const discard: ActionItem = {
     id: 'discard',
     label: 'Discard',
-    icon: 'discard',
     key: 'Backspace',
     tip: 'Discard',
     group: GROUP_LEAVE,
@@ -315,7 +306,6 @@ function leaveItems(card: CardView, context: Context): ActionItem[] {
   const moveTo: ActionItem = {
     id: 'moveTo',
     label: 'Move to',
-    icon: 'move',
     tip: 'Move to',
     group: GROUP_LEAVE,
     menu: moveMenu(card, context),
@@ -333,7 +323,7 @@ function leaveItems(card: CardView, context: Context): ActionItem[] {
  * Why the card cannot leave the table, or undefined when it can: it is, or
  * holds tucked under it, the card a stage shows or a player's identity. It
  * mirrors checkStaysOnTable, which refuses to take such a card away, so that
- * the bar, the keys and the drag share one rule.
+ * the menu, the keys and the drag share one rule.
  */
 export function staysOnTable(card: CardView, table: TableView): string | undefined {
   const held = stageHeldBy(card, table);
@@ -423,8 +413,8 @@ function moveMenu(card: CardView, context: Context): ActionItem[] {
 }
 
 /**
- * Draw an arrow, for the context menu only: the bar has no button for it, the A key and Shift + drag
- * start it. It starts the same arrow mode as A.
+ * Draw an arrow, for the context menu only: it is no action of the keys' list, as the A key and
+ * Shift + drag start it. It starts the same arrow mode as A.
  */
 export function arrowItem(card: string): ActionItem {
   return {
@@ -511,9 +501,9 @@ function hasPile(table: TableView, id: string): boolean {
 // ---- Piles ----
 
 /**
- * Every bar has the same order, a separator between the groups: the main
- * action, the ways to look at the cards, then the rarer actions (the ⋯
- * dropdown of a deck).
+ * Every pile's actions have the same order, a separator between the groups:
+ * the main action, the ways to look at the cards, then the rarer actions (More
+ * actions of a deck, listed inline in the menu).
  */
 function pileActions(pile: PileView, context: Context): ActionItem[] | { text: string } {
   // Shared piles have no owner (-1).
@@ -663,8 +653,8 @@ function lookTopItem(pile: PileView, pileName: string): ActionItem {
 }
 
 /**
- * The ⋯ dropdown of a deck, for what is done less often: Discard X (decks
- * with a discard pile), then Shuffle. pileName is how the question names the pile.
+ * More actions of a deck, for what is done less often: Discard X (decks with
+ * a discard pile), then Shuffle. pileName is how the question names the pile.
  */
 function moreMenu(pile: PileView, pileName: string, withDiscardTop: boolean): ActionItem {
   const shuffle: ActionItem = {
@@ -676,7 +666,7 @@ function moreMenu(pile: PileView, pileName: string, withDiscardTop: boolean): Ac
   };
   const menu = withDiscardTop ? [discardTopItem(pile, pileName), SEPARATOR, shuffle] : [shuffle];
   const label = 'More actions';
-  return { id: 'more', label, icon: 'more', tip: label, group: GROUP_MORE, menu };
+  return { id: 'more', label, tip: label, group: GROUP_MORE, menu };
 }
 
 function discardTopItem(pile: PileView, pileName: string): ActionItem {
@@ -714,7 +704,7 @@ function searchItem(pile: PileView): ActionItem {
   };
 }
 
-/** A button rather than a dropdown item: the only rarer action of a discard pile. */
+/** An item of its own rather than More actions: the only rarer action of a discard pile. */
 function shuffleBackItem(pile: PileView): ActionItem {
   return {
     id: 'shuffleBack',

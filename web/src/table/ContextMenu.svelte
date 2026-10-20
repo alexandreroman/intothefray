@@ -1,10 +1,11 @@
 <!--
-  The context menu of a table card or pile (contextItems.ts): every action of
-  the element, under its name. Opened by a right click, a Ctrl + click on
-  macOS or a long touch, at the pointer, and flipped up or left to stay inside
-  the visible table and the window. A submenu opens beside its row, on hover
-  or on a click. Escape, a press outside the menu, a scroll or a zoom of the
-  table, or a resize close it.
+  The context menu of a table card or pile, or of a card box's tile
+  (contextItems.ts): every action of the element, under its name, or a line
+  saying why it has none. Opened by a click, a tap or a right click, at the
+  pointer, and flipped up or left to stay inside its bounds (the visible
+  table, the box's grid) and the window. A submenu opens beside its row, on
+  hover or on a click. Escape, a press outside the menu, a scroll of its
+  bounds, a zoom of the table, or a resize close it.
   The table's keys keep working while it is open, on its element as under
   the pointer (keys.ts): the simplest consistent choice. The menu stays open
   and follows what they change ("Damage (7)").
@@ -23,11 +24,11 @@
   } from './contextItems';
   import { intersect, type Rect } from './drag';
   import { placeAtPoint, placeSubmenu, type DropdownPlace } from './dropdown';
-  import './menu.css';
 
   let {
     header,
     entries,
+    note,
     at,
     bounds,
     zoom,
@@ -37,16 +38,21 @@
     /** What the element is and whose, as the header shows it; the menu is named by its label. */
     header: ContextHeader;
     entries: ContextEntry[];
+    /** Why the element has no entries for the viewer, shown under the header instead. */
+    note?: string;
     /** The point of the screen it opens at. */
     at: { x: number; y: number };
-    /** The visible table: the menu stays within it. */
+    /** What the menu stays within: the visible table, a box's grid. A scroll of it closes the menu. */
     bounds: HTMLElement;
-    /** A zoom of the table closes the menu: its element moves from under it. */
-    zoom: number;
-    /** Runs a chosen item, as a click on the bar would; the menu is closed first. */
+    /** The table's zoom: a change closes the menu, as its element moves from under it. */
+    zoom?: number;
+    /** Runs a chosen item; the caller closes the menu first. */
     onrun: (item: ActionItem) => void;
     onclose: () => void;
   } = $props();
+
+  const uid = $props.id();
+  const noteId = `${uid}-note`;
 
   // How long the pointer rests on a row before its submenu opens, or the open
   // one closes: on its way to a submenu, the pointer may cross another row.
@@ -110,12 +116,16 @@
     document.activeElement instanceof HTMLElement ? document.activeElement : null;
   const openedByPointer = lastPressByPointer();
 
-  onMount(() => {
-    if (openedByPointer) {
-      menu?.focus({ preventScroll: true });
-    } else {
-      itemsOf(menu)[0]?.focus({ preventScroll: true });
+  onMount(async () => {
+    // Not before it shows: the browsers refuse the focus to the menu while it is hidden, unplaced, and it
+    // would stay where it was (a card box, whose Escape would then close the box).
+    await tick();
+    if (!menu?.isConnected) {
+      return;
     }
+    // From the keyboard, the first item takes it, if there is one.
+    const first = openedByPointer ? undefined : itemsOf(menu)[0];
+    (first ?? menu).focus({ preventScroll: true });
   });
 
   onDestroy(() => {
@@ -151,7 +161,26 @@
     }
   }
 
-  /** A scroll that moves the element (the table's, the page's) closes it; the menu's own does not. */
+  /**
+   * Escape closes the open submenu, then the menu, wherever the focus is: in
+   * the capture phase of the window, before anything else sees the key, so
+   * that it does nothing more (a card box under the menu stays open, the
+   * table's selection stays).
+   */
+  function onWindowKeyDown(event: KeyboardEvent): void {
+    if (event.key !== 'Escape' || event.defaultPrevented) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    if (openId !== null) {
+      closeSubmenu();
+    } else {
+      onclose();
+    }
+  }
+
+  /** A scroll that moves the element (its bounds', the page's) closes it; the menu's own does not. */
   function onScroll(event: Event): void {
     const target = event.target;
     if (target instanceof Node && target.contains(bounds)) {
@@ -236,8 +265,9 @@
   }
 
   /**
-   * ↑ and ↓ step through the items, → opens the focused row's submenu, ← and
-   * Escape close the submenu, then the menu. Taken: the table's keys do not see them.
+   * ↑ and ↓ step through the items, → opens the focused row's submenu, ←
+   * closes the submenu (Escape: onWindowKeyDown). Taken: the table's keys do
+   * not see them.
    */
   function onMenuKey(event: KeyboardEvent, inSubmenu: boolean): void {
     const list = inSubmenu ? submenu : menu;
@@ -256,13 +286,6 @@
       case 'ArrowLeft':
         if (inSubmenu) {
           closeSubmenu();
-        }
-        break;
-      case 'Escape':
-        if (openId !== null) {
-          closeSubmenu();
-        } else {
-          onclose();
         }
         break;
       default:
@@ -285,7 +308,7 @@
   }
 </script>
 
-<svelte:window onscrollcapture={onScroll} onresize={onclose} />
+<svelte:window onkeydowncapture={onWindowKeyDown} onscrollcapture={onScroll} onresize={onclose} />
 <svelte:document onpointerdowncapture={onDocumentPointerDown} />
 
 {#snippet actionRow(entry: ContextAction)}
@@ -323,6 +346,7 @@
   class:placed={place !== null}
   role="menu"
   aria-label={header.label}
+  aria-describedby={note === undefined ? undefined : noteId}
   tabindex="-1"
   bind:this={menu}
   style:left="{place?.left ?? 0}px"
@@ -339,6 +363,10 @@
       {#if header.count !== undefined}<span class="count">{header.count}</span>{/if}
     </div>
   </div>
+  {#if note !== undefined}
+    <!-- Not a choice: read as the menu's description. -->
+    <p class="note" id={noteId}>{note}</p>
+  {/if}
   {#each entries as entry, i (keyOf(entry, i))}
     {#if entry.kind === 'separator'}
       {@render separator()}
@@ -383,7 +411,85 @@
 {/if}
 
 <style>
-  /* Over the table and the hand, as the bar's dropdowns; measured before it is placed: unseen until then. */
+  /*
+    Over the table, the hand and a card box's tiles: flat items on the ink panel, a key on a dark
+    chip at the right. Cut to the room it has, it scrolls inside (dropdown.ts). Its padding and its
+    border make MENU_INSET there: a submenu's first item lines up with its row.
+  */
+  .table-menu {
+    position: fixed;
+    z-index: 5000;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    min-width: 180px;
+    padding: 5px;
+    border: 1px solid var(--line-strong);
+    border-radius: 12px;
+    background: var(--panel-2);
+    box-shadow: 0 14px 34px #0009;
+    /* A panel of choices, not of text: the hand all over it (headers, separators, padding), and
+       no text cursor or selection. A disabled item keeps the arrow of a disabled button. */
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* Cut short, its items keep their height: it scrolls rather than squeezing them. */
+  .table-menu > * {
+    flex-shrink: 0;
+  }
+
+  .table-menu:focus {
+    outline: none;
+  }
+
+  /* Flat items: only the hovered one lights up. */
+  .table-menu button {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    height: 34px;
+    padding: 0 11px;
+    border: 0;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: left;
+  }
+
+  /* A finger needs a taller target than a mouse. */
+  @media (pointer: coarse) {
+    .table-menu button {
+      height: 44px;
+    }
+  }
+
+  .table-menu button:focus-visible {
+    outline: 2px solid var(--sel);
+    outline-offset: -2px;
+  }
+
+  .msep {
+    height: 1px;
+    margin: 4px 2px;
+    background: var(--line-strong);
+  }
+
+  /* The key of a choice, on a dark chip. */
+  kbd {
+    padding: 1px 6px;
+    border-radius: 5px;
+    background: var(--bg);
+    color: var(--muted);
+    font: inherit;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  /* Measured before it is placed: unseen until then. */
   .context {
     visibility: hidden;
   }
@@ -461,7 +567,7 @@
     line-height: 18px;
   }
 
-  /* The default action, which the element's first bar button runs. */
+  /* The element's default action. */
   .default span {
     font-weight: 800;
     color: var(--text);
@@ -470,6 +576,16 @@
   .opens {
     color: var(--muted);
     font-size: 11px;
+  }
+
+  /* Why there is nothing to choose: plain muted text, lined up with the header, the arrow cursor. */
+  .note {
+    max-width: 280px;
+    margin: 0;
+    padding: 4px 11px 6px;
+    color: var(--muted);
+    font-size: 13px;
+    cursor: default;
   }
 
   /* A row whose submenu is open stays lit, as under the pointer. */

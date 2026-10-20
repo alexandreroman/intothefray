@@ -231,7 +231,7 @@ async function renderTable(view: View = makeView()) {
   let current = view;
   layOut(() => current, zoom);
   const result = render(Table, { session, view });
-  // The bar needs the catalog.
+  // The actions need the catalog.
   await Promise.resolve();
   return {
     session,
@@ -604,17 +604,15 @@ describe('dragging a table card', () => {
     expect(session.act).not.toHaveBeenCalled();
   });
 
-  it('hides the action bar and the token pill while dragging', async () => {
+  it('hides the token pill while dragging', async () => {
     await renderTable();
     await fireEvent.pointerEnter(placed('mine'));
     const token = placed('mine').querySelector<HTMLElement>('[data-counter="token:dmg"]');
     await fireEvent.pointerEnter(token as HTMLElement);
-    await waitFor(() => expect(document.querySelector('.actionbar')).not.toBeNull());
-    expect(document.querySelector('.tokpill')).not.toBeNull();
+    await waitFor(() => expect(document.querySelector('.tokpill')).not.toBeNull());
 
     await press(placed('mine'), 50, 400);
     await moveTo(150, 420);
-    expect(document.querySelector('.actionbar')).toBeNull();
     expect(document.querySelector('.tokpill')).toBeNull();
   });
 
@@ -666,19 +664,21 @@ describe('dragging a table card', () => {
     expect(screen.getByRole('button', { name: 'Back to 100%' }).textContent).toBe('120%');
   });
 
-  it('does not select the card with the tap that ends a touch drag', async () => {
+  it('opens no menu with the click or the tap that ends a drag', async () => {
     await renderTable();
-    await press(placed('mine'), 50, 400, 'touch');
-    await moveTo(254, 452);
-    await release(254, 452);
-    await fireEvent.click(placed('mine'));
-    expect(interaction.locked).toBe(false);
+    for (const pointerType of ['mouse', 'touch'] as const) {
+      await press(placed('mine'), 50, 400, pointerType);
+      await moveTo(254, 452);
+      await release(254, 452);
+      await fireEvent.click(placed('mine'));
+      expect(interaction.contextMenu).toBeNull();
+    }
 
-    // A plain tap still selects.
+    // A plain tap opens it.
     await press(placed('mine'), 50, 400, 'touch');
     await release(50, 400);
     await fireEvent.click(placed('mine'));
-    expect(interaction.locked).toBe(true);
+    expect(interaction.contextMenu?.element).toEqual({ kind: 'card', id: 'mine' });
   });
 });
 
@@ -1395,7 +1395,7 @@ describe('the card under a still pointer after the viewer acts', () => {
     expect(session.act).toHaveBeenLastCalledWith({ kind: 'flip', card: 'dealt' }, 0);
   });
 
-  it('hovers the discard pile a card was dropped on, so that its bar shows', async () => {
+  it('hovers the discard pile a card was dropped on, so that the keys act on it', async () => {
     hitTestFrom();
     const { session, rerender } = await renderTable();
     await press(placed('mine'), 50, 400);
@@ -1447,7 +1447,8 @@ describe('the card under a still pointer after the viewer acts', () => {
 
     await rerender(invocation(true));
     await waitFor(() => expect(interaction.hovered).toEqual({ kind: 'pile', id: 'sided:p0:0' }));
-    expect(screen.getByRole('toolbar', { name: 'Actions' })).toBeTruthy();
+    await fireEvent.keyDown(window, { key: 'k' });
+    expect(session.act).toHaveBeenLastCalledWith({ kind: 'search', pile: 'sided:p0:0' }, 0);
   });
 
   it("hovers what another player's action puts under the pointer, and drops what it takes away", async () => {
@@ -1471,12 +1472,11 @@ describe('the card under a still pointer after the viewer acts', () => {
     await waitFor(() => expect(interaction.hovered).toBeNull());
   });
 
-  it('keeps the hover while the pointer is on the action bar, whatever the view moves', async () => {
+  it('keeps the hover while the context menu is open, whatever the view moves', async () => {
     hitTestFrom();
     const { rerender } = await renderTable();
     await moveTo(300, 450, 0);
-    interaction.hovered = { kind: 'card', id: 'mine' };
-    interaction.enterBar();
+    interaction.openContextMenu({ kind: 'card', id: 'mine' }, { x: 300, y: 450 });
 
     await rerender(makeView({ cards: CARDS.map((c) => (c.id === 'mine' ? { ...c, x: 700 } : c)) }));
     await new Promise((resolve) => setTimeout(resolve, 0));

@@ -4,7 +4,7 @@ import type { TableElement } from './actions';
 import type { Rect } from './drag';
 import { isFree } from './selection';
 
-/** How long the bar and the preview stay after the pointer leaves their element. */
+/** How long the hover and the preview stay after the pointer leaves their element. */
 export const LINGER_MS = 100;
 
 /** How long a drop waits for the server's answer before its cards go back. */
@@ -71,22 +71,14 @@ export interface ContextMenuAt {
 /** What hovering an element does to the side preview. */
 export type PreviewChange = 'show' | 'clear';
 
-/** A rectangle on the screen, in CSS pixels. */
-export interface ScreenBox {
-  left: number;
-  top: number;
-  right: number;
-  bottom: number;
-}
-
 /**
  * What the viewer points at on the table, shared by the table, the hand, the
- * action bar and the side panel. Ids rather than faces, so the preview and
- * the bar follow their element through redraws (a flip, a pile's new top
+ * context menu and the side panel. Ids rather than faces, so the preview and
+ * the menu follow their element through redraws (a flip, a pile's new top
  * card).
  */
 class TableInteraction {
-  /** What the action bar and the keys act on. */
+  /** What the keys act on: the element under the pointer, or the one whose context menu is open. */
   hovered = $state.raw<TableElement | null>(null);
   /** The element previewed: the preview shows its face, and nothing for a card back. */
   previewed = $state.raw<TableElement | null>(null);
@@ -105,28 +97,17 @@ class TableInteraction {
    * it through every move, turn and tilt (Presence.svelte).
    */
   previewedByOthers = $state.raw<ReadonlyMap<string, number>>(new Map());
-  /** A tap selected the hovered element (touch): it stays until released. */
+  /** A tap selected the hovered hand card (touch): it stays until released. */
   locked = $state(false);
   /** The card an arrow starts from, while the viewer picks its target. */
   arrowFrom = $state<string | null>(null);
   /** The arrow is drawn with Shift + drag: releasing the button picks its target. */
   arrowDrag = $state(false);
-  /** The id of the bar item whose dropdown is open. */
-  menu = $state<string | null>(null);
-  /** The pointer is on the bar or its dropdown. */
-  onBar = $state(false);
   /**
    * The context menu open, if any. Its element is the hovered one, and stays
    * so while it is open: neither hovers nor redraws change what it is for.
    */
   contextMenu = $state.raw<ContextMenuAt | null>(null);
-  /**
-   * The way from the hovered element to its bar, set by the bar as it is
-   * placed: the gap between them, and the part of the element's box next to
-   * the bar, which a tilted (exhausted) card leaves partly bare. The linger
-   * does not run out while the pointer is there.
-   */
-  barWay: ScreenBox | null = null;
 
   /** The token or status the viewer points at: its − / + pill shows above it. */
   counter = $state.raw<CounterTarget | null>(null);
@@ -151,16 +132,14 @@ class TableInteraction {
   // Where the pointer was when the table was last redrawn.
   #drawnAt = { x: NaN, y: NaN };
   #pointerType = 'mouse';
-  // The click that ends a drag, or that picks an arrow's target, is not a tap on what lies there.
+  // The click that ends a drag, or that picks an arrow's target, is not a click on what lies there.
   #swallowClick = false;
+  // The element whose context menu was open as the current press began: the press closes it
+  // (ContextMenu.svelte), and the click it ends must not open it again.
+  #menuAtPress: TableElement | null = null;
   #hideTimer: ReturnType<typeof setTimeout> | undefined;
   #counterTimer: ReturnType<typeof setTimeout> | undefined;
   #landingTimer: ReturnType<typeof setTimeout> | undefined;
-
-  /** The kind of the last pointer pressed: 'mouse', 'pen' or 'touch'. */
-  get pointerType(): string {
-    return this.#pointerType;
-  }
 
   /** Follows the pointer, to tell real hovers from the ones a redraw fires. */
   pointerMoved(event: PointerEvent): void {
@@ -175,23 +154,15 @@ class TableInteraction {
   /**
    * A new view redrew what lies under a pointer at rest, whoever acted: a
    * card dropped, moved, turned over or taken away. What is there now is
-   * hovered, as if entered, so that the ring, the bar, the preview and the
-   * keys follow it at once; null when no card is there any more, which drops
-   * a hovered card (a hovered pile keeps its hover). Not while a dialog is
-   * open, nor during a drag, nor while a selection, a dropdown, the bar or
-   * the pill holds the hover: the bar must not jump from under the pointer
+   * hovered, as if entered, so that the ring, the preview and the keys
+   * follow it at once; null when no card is there any more, which drops a
+   * hovered card (a hovered pile keeps its hover). Not while a dialog is
+   * open, nor during a drag, nor while a selection, the context menu or the
+   * pill holds the hover: what they are for must not change under them
    * (spec 5.8).
    */
   rehover(element: TableElement | null, preview: PreviewChange = 'show'): void {
-    if (
-      modal.open ||
-      this.dragging ||
-      this.locked ||
-      this.menu !== null ||
-      this.contextMenu !== null ||
-      this.onBar ||
-      this.onPill
-    ) {
+    if (modal.open || this.dragging || this.locked || this.contextMenu !== null || this.onPill) {
       return;
     }
     if (element === null) {
@@ -207,13 +178,27 @@ class TableInteraction {
     this.#changePreview(element, preview);
   }
 
-  /** Remembers the kind of the last pointer pressed: only a touch tap selects. */
+  /**
+   * To call on every press, in the capture phase of the window, before the
+   * open context menu sees it: remembers the kind of pointer (only a touch tap
+   * selects a hand card) and the menu the press closes.
+   */
   pointerPressed(event: PointerEvent): void {
     this.#pointerType = event.pointerType || 'mouse';
     this.#swallowClick = false;
+    this.#menuAtPress = this.contextMenu?.element ?? null;
   }
 
-  /** The click that follows the current press selects nothing. */
+  /**
+   * Whether the current press closed that element's context menu: its click
+   * leaves the menu closed rather than opening it again.
+   */
+  closedByPress(element: TableElement): boolean {
+    const closed = this.#menuAtPress;
+    return closed?.kind === element.kind && closed.id === element.id;
+  }
+
+  /** The click that follows the current press opens nothing and selects nothing. */
   swallowNextClick(): void {
     this.#swallowClick = true;
   }
@@ -250,13 +235,12 @@ class TableInteraction {
     };
   }
 
-  /** The press turned into a drag: the bar's dropdown and the token pill go. */
+  /** The press turned into a drag: the token pill goes. */
   lift(card: string | null, lifted: readonly string[]): void {
     if (this.held === null) {
       return;
     }
     this.held = { ...this.held, moved: true, card, lifted };
-    this.menu = null;
     this.hideCounter();
   }
 
@@ -372,14 +356,11 @@ class TableInteraction {
       return;
     }
     this.#cancelHide();
-    // The context menu holds its element and the preview while it is open.
+    // A tap selection, or the context menu, holds its element and the preview.
     if (this.locked || this.contextMenu !== null) {
       return;
     }
-    // An open dropdown belongs to the bar's element: it stays the bar's.
-    if (this.menu === null) {
-      this.hovered = element;
-    }
+    this.hovered = element;
     this.#changePreview(element, preview);
   }
 
@@ -389,7 +370,7 @@ class TableInteraction {
       return;
     }
     this.#cancelHide();
-    if (this.locked || this.menu !== null || this.contextMenu !== null) {
+    if (this.locked || this.contextMenu !== null) {
       return;
     }
     this.hovered = null;
@@ -397,45 +378,19 @@ class TableInteraction {
   }
 
   /**
-   * The pointer left an element or the bar: they go after the linger, unless
-   * still in use. A pointer on its way to the bar gets as long as it takes,
-   * however slowly it moves.
+   * The pointer left an element: it goes after the linger, unless still in
+   * use. The linger lets the pointer reach the pill of a token near the
+   * card's edge, and spares the preview a flicker between two cards.
    */
   leave(): void {
     this.#cancelHide();
     this.#hideTimer = setTimeout(() => {
-      if (
-        this.locked ||
-        this.menu !== null ||
-        this.contextMenu !== null ||
-        this.onBar ||
-        this.onPill
-      ) {
-        return;
-      }
-      if (this.#onBarWay()) {
-        this.leave();
+      if (this.locked || this.contextMenu !== null || this.onPill) {
         return;
       }
       this.hovered = null;
       this.previewed = null;
     }, LINGER_MS);
-  }
-
-  #onBarWay(): boolean {
-    const way = this.barWay;
-    const { x, y } = this.#pointer;
-    return way !== null && x >= way.left && x < way.right && y >= way.top && y < way.bottom;
-  }
-
-  enterBar(): void {
-    this.#cancelHide();
-    this.onBar = true;
-  }
-
-  leaveBar(): void {
-    this.onBar = false;
-    this.leave();
   }
 
   /** The pointer entered a token or a status. */
@@ -482,18 +437,21 @@ class TableInteraction {
     );
   }
 
-  /** A tap on an element. Only touch selects: with a mouse, hovering is enough. */
-  select(element: TableElement, preview: PreviewChange = 'show'): void {
+  /**
+   * A tap on a hand card. Only touch selects: with a mouse, hovering is
+   * enough. A table card or pile opens its context menu instead (Table.svelte).
+   */
+  select(element: TableElement): void {
     if (this.#pointerType !== 'touch' || modal.open) {
       return;
     }
     this.#cancelHide();
     this.hovered = element;
-    this.#changePreview(element, preview);
+    this.#changePreview(element, 'show');
     this.locked = true;
   }
 
-  /** Whether the pointer rests on this element, which a tap did not select: it gets the bar. */
+  /** Whether the pointer rests on this element, which a tap did not select: it is ringed. */
   isHovered(element: TableElement): boolean {
     const hovered = this.hovered;
     return !this.locked && hovered?.kind === element.kind && hovered.id === element.id;
@@ -505,22 +463,21 @@ class TableInteraction {
     return this.locked && hovered?.kind === element.kind && hovered.id === element.id;
   }
 
-  /** Lets go of the selection, the bar and the preview. */
+  /** Lets go of the selection, the context menu and the preview. */
   release(): void {
     this.#cancelHide();
     this.hideCounter();
     this.hovered = null;
     this.previewed = null;
     this.locked = false;
-    this.menu = null;
     this.contextMenu = null;
   }
 
   /**
    * Opens the context menu of a table card or pile at that point of the
    * screen: the element becomes the hovered one, without a tap selection, and
-   * the bar's dropdown and the token pill go. The press that opened it (Ctrl +
-   * click on macOS, a long touch) does not become a drag.
+   * the token pill goes. The press that opened it (a right click, Ctrl + click
+   * on macOS, a long touch on Android) does not become a drag.
    */
   openContextMenu(element: TableElement, at: { x: number; y: number }): void {
     if (modal.open || this.dragging !== null) {
@@ -528,7 +485,6 @@ class TableInteraction {
     }
     this.#cancelHide();
     this.hideCounter();
-    this.menu = null;
     this.locked = false;
     this.hovered = element;
     this.letGo();
@@ -549,7 +505,6 @@ class TableInteraction {
 
   /** Starts an arrow from that card: picked with a click, or, with `drag`, where the button is let go. */
   startArrow(from: string, drag = false): void {
-    this.menu = null;
     this.arrowFrom = from;
     this.arrowDrag = drag;
   }
@@ -584,8 +539,8 @@ class TableInteraction {
 
   /**
    * Escape closes the context menu, and only that: the group stays. Otherwise
-   * it clears the group and the band, and closes the open dropdown, or cancels
-   * the arrow, or releases the selection.
+   * it clears the group and the band, and cancels the arrow, or releases the
+   * selection.
    */
   escape(): void {
     if (this.contextMenu !== null) {
@@ -594,9 +549,7 @@ class TableInteraction {
     }
     this.clearGroup();
     this.band = null;
-    if (this.menu !== null) {
-      this.menu = null;
-    } else if (this.arrowFrom !== null) {
+    if (this.arrowFrom !== null) {
       this.endArrow();
     } else {
       this.release();
@@ -611,13 +564,12 @@ class TableInteraction {
     this.clearGroup();
     this.band = null;
     this.#swallowClick = false;
+    this.#menuAtPress = null;
     this.highlighted = new Set();
     this.liftedByOthers = new Set();
     this.tokenLiftedByOthers = false;
     this.previewedByOthers = new Map();
     this.endArrow();
-    this.onBar = false;
-    this.barWay = null;
     this.onPill = false;
     this.#pointer = { x: NaN, y: NaN };
     this.#drawnAt = { x: NaN, y: NaN };

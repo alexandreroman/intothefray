@@ -15,7 +15,7 @@ type: project
   unit, relative positions intact, each stack following its top card
   (see "Moving card stacks"). It drops on the table (no tuck over a card),
   onto a pile valid for every card, or into the hand when every card is
-  the player's own. The action bar and keys act on one card.
+  the player's own. The action menu and keys act on one card.
 - The engine has one atomic `group` action: 2 to 99 sub-actions of one
   kind among move, toHand, toDeck (top or bottom), discard and toPile,
   all or nothing. It is one event, one undo step and one history line

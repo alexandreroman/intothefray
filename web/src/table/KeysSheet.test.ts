@@ -154,7 +154,7 @@ describe('KeysSheet', () => {
       [
         'Mouse',
         [
-          'All the actions of a card or pile: right click',
+          'All the actions of a card or pile: click or right click',
           'Ping a spot: Alt + click',
           'Arrow from a card to another: Shift + drag',
           'Select cards: drag on an empty spot',

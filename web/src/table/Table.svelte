@@ -29,7 +29,6 @@
     Size,
     View,
   } from '../lib/types';
-  import ActionBar from './ActionBar.svelte';
   import { diffViews, MAX_APART_MS } from './animate';
   import {
     actionsFor,
@@ -40,6 +39,7 @@
     type LocalAction,
     type TableElement,
   } from './actions';
+  import ArrowHint from './ArrowHint.svelte';
   import Arrows from './Arrows.svelte';
   import AskCount from './AskCount.svelte';
   import type { LocalBox, ShownBox } from './boxes';
@@ -61,7 +61,6 @@
   import { handleKey } from './keys';
   import KeysSheet from './KeysSheet.svelte';
   import { isOutOfPlay, outOfPlayChips, ownerFrames, surfaceSize } from './layout';
-  import { LongPress } from './longPress';
   import {
     ALL_ROWS,
     focusRows,
@@ -620,7 +619,7 @@
   /**
    * Hovers what a new view put under a pointer at rest, whoever acted (spec
    * 5.8): the card or hand card there, or nothing once the hovered card went
-   * from under it. The ring, the bar and the preview follow.
+   * from under it. The ring, the preview and the keys follow.
    */
   function rehoverUnderPointer(): void {
     const { x, y } = interaction.pointer;
@@ -649,10 +648,10 @@
   }
 
   /**
-   * A pile keeps its own hover, which an empty pile without a bar does not
-   * have. A pile a card was dropped on was never entered, the pointer passing
-   * over it during the drag: it is hovered now, its bar showing, as entering
-   * it would (PileView: a deck that shows its back clears the preview).
+   * A pile keeps its own hover, which an empty, inert pile does not have. A
+   * pile a card was dropped on was never entered, the pointer passing over it
+   * during the drag: it is hovered now, the keys acting on it, as entering it
+   * would (PileView: a deck that shows its back clears the preview).
    */
   function rehoverPile(element: HTMLElement): void {
     const id = element.dataset.id;
@@ -683,7 +682,7 @@
 
   $effect(() => () => motion.stop());
 
-  // ---- The action bar ----
+  // ---- The hovered element ----
 
   /** Whether the element is still where it was hovered: on the table, or in the hand. */
   function isPresent(element: TableElement): boolean {
@@ -697,7 +696,7 @@
     }
   }
 
-  // An element that left the table takes its bar (and its arrow mode) with it.
+  // An element that left the table takes its hover, its context menu and its arrow mode with it.
   $effect(() => {
     const hovered = interaction.hovered;
     if (hovered && !isPresent(hovered)) {
@@ -709,9 +708,10 @@
     }
   });
 
-  const barItems = $derived.by((): ActionItem[] | { text: string } => {
+  /** The actions of the hovered element, which its keys run (keys.ts). */
+  const hoveredItems = $derived.by((): ActionItem[] | { text: string } => {
     // actionsFor reads the catalog's plain Map (are there several faces to
-    // flip?): reading the catalog state here recomputes the bar once it loads.
+    // flip?): reading the catalog state here recomputes the items once it loads.
     void catalog;
     const hovered = interaction.hovered;
     const role = view.you.role;
@@ -721,36 +721,23 @@
     return actionsFor(hovered, view, { areas: view.you.areas, role }, lang);
   });
 
+  // ---- The arrow mode's hint ----
+
   const ARROW_HINT = 'Click the card to point at — Esc or a click on an empty spot to cancel.';
 
-  // Never for a hand card: its cards are dragged, or played with their keys.
-  // In arrow mode, the hint stays until the arrow is drawn or cancelled,
-  // whatever the pointer hovers meanwhile.
-  const barShown = $derived.by(() => {
-    // The context menu lists the same actions, and more: the bar would only hide the table under it.
-    if (interaction.dragging || interaction.band || interaction.contextMenu) {
-      return false;
-    }
-    if (interaction.arrowFrom !== null) {
-      return true;
-    }
-    const hovered = interaction.hovered;
-    if (!hovered || hovered.kind === 'hand') {
-      return false;
-    }
-    return !Array.isArray(barItems) || barItems.length > 0;
-  });
+  // Above the card the arrow starts from, until the arrow is drawn or cancelled, whatever the
+  // pointer hovers meanwhile; not while a Shift + drag draws it, which shows where it goes.
+  const arrowHintShown = $derived(interaction.arrowFrom !== null && !interaction.arrowDrag);
 
-  /** What the bar sits on: the card an arrow starts from, or else the hovered element. */
-  function anchorOf(): HTMLElement | null {
+  /** The card the arrow starts from, on the table. */
+  function arrowSource(): HTMLElement | null {
     const from = interaction.arrowFrom;
-    const element: TableElement | null =
-      from !== null ? { kind: 'card', id: from } : interaction.hovered;
-    if (!element || !wrap) {
+    if (from === null || !wrap) {
       return null;
     }
-    const selector = element.kind === 'pile' ? '.pile' : '.card:not(.pile)';
-    return wrap.querySelector<HTMLElement>(`.surface ${selector}[data-id="${element.id}"]`);
+    return wrap.querySelector<HTMLElement>(
+      `.surface .card:not(.pile)[data-id="${CSS.escape(from)}"]`,
+    );
   }
 
   // ---- The token pill ----
@@ -799,21 +786,32 @@
 
   // ---- The context menu ----
 
-  /** Every action of a table card or pile, as its context menu lists them; none for a hand card. */
-  function contextEntriesOf(element: TableElement): ContextEntry[] {
+  /**
+   * What the context menu of a table card or pile shows: every action of the
+   * element, or why it has none for the viewer ("Belongs to Sam: …"). Nothing
+   * for a hand card, nor for an element without either (a card, to a spectator).
+   */
+  type ContextContent = { entries: ContextEntry[]; note?: string };
+
+  function contextContentOf(element: TableElement): ContextContent | null {
     const role = view.you.role;
     if (role === undefined || element.kind === 'hand') {
-      return [];
+      return null;
     }
-    return contextItems(element, actionsFor(element, view, { areas: view.you.areas, role }, lang));
+    const items = actionsFor(element, view, { areas: view.you.areas, role }, lang);
+    if (!Array.isArray(items)) {
+      return { entries: [], note: items.text };
+    }
+    const entries = contextItems(element, items);
+    return entries.length > 0 ? { entries } : null;
   }
 
-  // From the current view, as the bar: a redraw updates the entries ("Damage (7)").
-  const contextEntries = $derived.by((): ContextEntry[] => {
-    // As for the bar: actionsFor reads the catalog's plain Map.
+  // From the current view: a redraw updates the entries ("Damage (7)").
+  const contextContent = $derived.by((): ContextContent | null => {
+    // As for the hovered items: actionsFor reads the catalog's plain Map.
     void catalog;
     const open = interaction.contextMenu;
-    return open ? contextEntriesOf(open.element) : [];
+    return open ? contextContentOf(open.element) : null;
   });
 
   /** The header of the menu: what the card or pile is, whose it is; none once it is gone. */
@@ -829,7 +827,7 @@
 
   // A redraw that leaves its element without actions (an emptied pile, a card gone) closes it.
   $effect(() => {
-    if (interaction.contextMenu && contextEntries.length === 0) {
+    if (interaction.contextMenu && contextContent === null) {
       untrack(() => interaction.closeContextMenu());
     }
   });
@@ -847,36 +845,45 @@
     return { kind: hit.classList.contains('pile') ? 'pile' : 'card', id };
   }
 
-  /** Opens the element's context menu at that point, unless it has no actions. */
+  /** Opens the element's context menu at that point, unless it has nothing to show. */
   function openContextMenu(element: TableElement, at: Point): void {
-    if (contextEntriesOf(element).length > 0) {
+    if (contextContentOf(element) !== null) {
       interaction.openContextMenu(element, at);
     }
   }
 
   /**
-   * A right click, or a Ctrl + click on macOS, anywhere on the table: never the
-   * browser's menu there, and the element's own on a card or a pile. A touch
-   * opens it with a long press instead, which Android also reports as a
-   * context menu: that one is already handled.
+   * A click on a card in play or a pile, with the main button or a finger,
+   * opens its context menu at the pointer; a click on the element whose menu
+   * that press closed leaves it closed. The click that ends a drag, a rubber
+   * band or an arrow never gets here (interaction.swallowNextClick). Alt +
+   * click pings the spot, and Ctrl + click is macOS's right click, which
+   * onTableContextMenu handles.
+   */
+  function onTableClick(event: MouseEvent): void {
+    if (event.altKey || event.ctrlKey) {
+      return;
+    }
+    const element = contextElementOf(event.target);
+    if (element && !interaction.closedByPress(element)) {
+      openContextMenu(element, { x: event.clientX, y: event.clientY });
+    }
+  }
+
+  /**
+   * A right click, a Ctrl + click on macOS or a long touch on Android, anywhere
+   * on the table: never the browser's menu there, and the element's own on a
+   * card or a pile, as a click opens it.
    */
   function onTableContextMenu(event: MouseEvent): void {
     event.preventDefault();
-    if (interaction.pointerType === 'touch') {
-      return;
-    }
     const element = contextElementOf(event.target);
     if (element) {
       openContextMenu(element, { x: event.clientX, y: event.clientY });
     }
   }
 
-  /** The finger held still on a card or a pile, which opens its context menu (longPress.ts). */
-  const longPress = new LongPress();
-
-  $effect(() => () => longPress.cancel());
-
-  /** A chosen entry runs as a click on the bar would, once the menu is closed. */
+  /** A chosen entry runs on the menu's element, once the menu is closed. */
   function runContextItem(item: ActionItem): void {
     const element = interaction.contextMenu?.element ?? null;
     interaction.closeContextMenu();
@@ -898,7 +905,7 @@
     }
   });
 
-  /** Runs a bar item on its element: the hovered one, or the context menu's. */
+  /** Runs an action item on its element: the hovered one (a key), or the context menu's. */
   function runItem(item: ActionItem, element: TableElement | null = interaction.hovered): void {
     if (!item.run || item.disabled || !element) {
       return;
@@ -1020,8 +1027,8 @@
   });
 
   // A dialog (a card box, the count question, the shortcuts sheet, a
-  // confirmation) freezes the table under its backdrop: its bar, preview,
-  // selection and any press or drag under way go.
+  // confirmation) freezes the table under its backdrop: its context menu,
+  // preview, selection and any press or drag under way go.
   $effect(() => {
     if (modal.open) {
       untrack(() => {
@@ -1086,8 +1093,8 @@
       act({ kind: 'arrowAdd', card: from, target: to }, { kind: 'card', id: from });
     }
     interaction.endArrow();
-    // On touch, the tap goes on to the card as a click, which would select it;
-    // a Shift + drag released on its own card would click it.
+    // The press that picks the target goes on to the card as a click, which would open its
+    // context menu; so would a Shift + drag released on its own card.
     interaction.swallowNextClick();
   }
 
@@ -1100,8 +1107,6 @@
    */
   function onTablePointerDown(event: PointerEvent): void {
     const target = event.target as HTMLElement;
-    // Another finger, or any press, ends the long press under way.
-    longPress.cancel();
     if (interaction.arrowFrom !== null && !interaction.arrowDrag) {
       event.preventDefault();
       event.stopPropagation();
@@ -1126,15 +1131,6 @@
       event.stopPropagation();
       interaction.startArrow(pressed, true);
       return;
-    }
-    // A finger held on a card or a pile opens its menu. Until then the press goes on as usual, and may
-    // become a drag; once the menu opens, the press is over and the tap the finger ends is no tap.
-    const element = contextElementOf(target);
-    if (event.pointerType === 'touch' && element && !modal.open) {
-      longPress.start(event, (at) => {
-        openContextMenu(element, at);
-        interaction.swallowNextClick();
-      });
     }
     if (isEmptySpot(target)) {
       interaction.release();
@@ -1205,7 +1201,6 @@
   /** The band follows the pointer once it has moved past the drag threshold. */
   function onPointerMove(event: PointerEvent): void {
     interaction.pointerMoved(event);
-    longPress.moved(event);
     const press = emptyPress;
     if (!press?.canBand || event.pointerId !== press.pointerId) {
       return;
@@ -1251,7 +1246,7 @@
     if (band !== null) {
       interaction.setGroup(new Set(cardsInBand(band, freeCardBoxes())));
     }
-    // The click that ends the band is no click on an empty spot: the arrows and a tap selection stay.
+    // The click that ends the band is no click on an empty spot or a card: the arrows stay, no menu opens.
     interaction.swallowNextClick();
   }
 
@@ -1262,7 +1257,6 @@
 
   /** A Shift + drag arrow goes to the card the button is let go over. */
   function onPointerUp(event: PointerEvent): void {
-    longPress.ended(event);
     if (interaction.arrowDrag) {
       endArrowAt(tableCardOf(document.elementFromPoint(event.clientX, event.clientY)));
     }
@@ -1270,8 +1264,7 @@
   }
 
   /** A finger that scrolls the table, among others, cancels its press: it is no click. */
-  function onPointerCancel(event: PointerEvent): void {
-    longPress.ended(event);
+  function onPointerCancel(): void {
     if (interaction.arrowDrag) {
       interaction.endArrow();
     }
@@ -1281,7 +1274,7 @@
   function onKeydown(event: KeyboardEvent): void {
     handleKey(event, {
       view,
-      items: barItems,
+      items: hoveredItems,
       zoom,
       setZoom: zoomWithButtons,
       run: runItem,
@@ -1503,6 +1496,7 @@
     bind:clientHeight={visibleHeight}
     bind:clientWidth={visibleWidth}
     onpointerdowncapture={onTablePointerDown}
+    onclick={onTableClick}
     oncontextmenu={onTableContextMenu}
     onscroll={measureFocus}
   >
@@ -1637,23 +1631,17 @@
     lastError={session.lastError}
   />
 
-  {#if barShown && wrap}
-    <ActionBar
-      anchor={anchorOf}
-      items={barItems}
-      hint={interaction.arrowFrom !== null ? ARROW_HINT : undefined}
-      bounds={wrap}
-      {zoom}
-      onrun={runItem}
-    />
+  {#if arrowHintShown && wrap}
+    <ArrowHint anchor={arrowSource} text={ARROW_HINT} bounds={wrap} {zoom} version={view} />
   {/if}
 
-  {#if interaction.contextMenu && contextHeader && contextEntries.length > 0 && wrap}
+  {#if interaction.contextMenu && contextHeader && contextContent && wrap}
     <!-- Created afresh for each opening: the focus it gives back is the one before that opening. -->
     {#key interaction.contextMenu}
       <ContextMenu
         header={contextHeader}
-        entries={contextEntries}
+        entries={contextContent.entries}
+        note={contextContent.note}
         at={interaction.contextMenu.at}
         bounds={wrap}
         {zoom}
@@ -1784,7 +1772,7 @@
   */
   .tablewrap {
     grid-area: table;
-    /* A long touch opens the context menu, not the system's callout (iOS). */
+    /* A long touch never opens the system's callout (iOS): a tap opens the context menu. */
     -webkit-touch-callout: none;
     overflow: auto;
     scrollbar-width: thin;
@@ -1803,10 +1791,9 @@
 
   /*
     Rings drawn around the cut card, for cards and piles alike (the cut would clip them on the
-    image): the ring of a tap selection, the white ring of the cards of the hovered history line,
+    image): the white ring of the hovered element and of the cards of the hovered history line,
     and the drop outlines.
   */
-  .table :global(.card.locked)::before,
   .table :global(.card.hovered)::before,
   .table :global(.card.highlighted)::before,
   .table :global(.card.drop-target)::before,
@@ -1819,14 +1806,7 @@
     z-index: 1;
   }
 
-  /* The selection glows in the signal blue: a ring, then a soft halo. */
-  .table :global(.card.locked)::before {
-    box-shadow:
-      0 0 0 2px var(--sel),
-      0 0 0 7px #49c6ff38;
-  }
-
-  /* The hovered card or pile, whose bar shows, has the same white ring as the prototype's. */
+  /* The hovered card or pile, or the one whose context menu is open, has the prototype's white ring. */
   .table :global(.card.hovered)::before,
   .table :global(.card.highlighted)::before {
     box-shadow:
@@ -1849,7 +1829,7 @@
       0 0 22px 6px color-mix(in srgb, var(--c) 22%, transparent);
   }
 
-  /* A card the rubber band selected: the tap selection's ring and halo, in the viewer's colour. */
+  /* A card the rubber band selected: a ring and a halo, in the viewer's colour. */
   .table :global(.card > .sring) {
     position: absolute;
     inset: 1%;

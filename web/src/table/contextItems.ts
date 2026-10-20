@@ -1,12 +1,11 @@
-// The context menu of a table card or pile: every action of the element, in
-// the order of its action bar and from the same items (actions.ts), so that
-// both share their permissions, their reasons and what they run. The bar
-// stays the main path; the menu is the complete, labelled list. Pure:
+// The context menu of a table card or pile, or of a card box's tile: every
+// action of the element, from the items its keys share (actions.ts, boxes.ts),
+// so that both have the same permissions, reasons and outcomes. Pure:
 // ContextMenu.svelte draws it.
 
 import type { CardView, PackFace, PileView, View } from '../lib/types';
 import { arrowItem, sideLabel, type ActionItem, type TableElement } from './actions';
-import { pileLabel, stageLabel } from './boxes';
+import { pileLabel, stageLabel, type TileAction } from './boxes';
 import { isHidden } from './face';
 import { ownerLook } from './seats';
 
@@ -27,7 +26,7 @@ export interface ContextSubmenu {
   id: string;
   label: string;
   disabled: boolean;
-  /** Why it is disabled, as the bar's tooltip says it. */
+  /** Why it is disabled, as its tooltip says it. */
   tip?: string;
   entries: (ContextAction | ContextSeparator)[];
 }
@@ -35,12 +34,12 @@ export interface ContextSubmenu {
 export type ContextEntry = ContextAction | ContextSeparator | ContextSubmenu;
 
 /**
- * The bar dropdown whose items the menu shows inline: "More actions" (⋯), the
- * last group of a deck's bar. A submenu would hide them again.
+ * The item list whose items the menu shows inline: "More actions", the last
+ * group of a deck's actions. A submenu would hide them again.
  */
 const FLATTENED_MENU = 'more';
 
-/** The submenu each section of a bar dropdown becomes: the token menu splits in two. */
+/** The submenu each section of an item list becomes: the token list splits in two. */
 const SECTION_SUBMENUS: Record<string, string> = {
   Tokens: 'Add a token',
   Status: 'Add a status',
@@ -49,11 +48,11 @@ const SECTION_SUBMENUS: Record<string, string> = {
 const SEPARATOR: ContextSeparator = { kind: 'separator' };
 
 /**
- * The entries of an element's context menu, from the items its bar offers:
- * the bar's order, a separator between its groups. A dropdown becomes a
- * submenu, the token menu one per section; the ⋯ dropdown shows its items
- * inline. A card in play gets a last group, Draw an arrow. Nothing for an
- * element without actions, or one that belongs to someone else.
+ * The entries of an element's context menu, from its actions (actionsFor):
+ * their order, a separator between their groups. An item with a list of its
+ * own becomes a submenu, the token list one per section; More actions shows
+ * its items inline. A card in play gets a last group, Draw an arrow. Nothing
+ * for an element without actions, or one that belongs to someone else.
  */
 export function contextItems(
   element: TableElement,
@@ -64,10 +63,38 @@ export function contextItems(
   }
   // Only a player gets a card's actions (actionsFor): they may draw arrows from it, too.
   const all = element.kind === 'card' ? [...items, arrowItem(element.id)] : items;
+  return grouped(all);
+}
 
+// The groups of a tile's menu: what takes the card (Draw, Play), then what sends it away.
+const TILE_TAKE = 0;
+const TILE_AWAY = 1;
+
+/**
+ * The entries of a box tile's context menu, from its actions (tileActions),
+ * in their order: Draw and Play, then a separator before the ones that send
+ * the card away (Discard, Put at the bottom of the deck, Shuffle into its
+ * deck). Play is the default: what a tile is most often taken out for.
+ */
+export function tileEntries(actions: readonly TileAction[]): ContextEntry[] {
+  const items = actions.map((action): ActionItem => {
+    const takes = action.id === 'draw' || action.id === 'play';
+    const item: ActionItem = {
+      id: action.id,
+      label: action.label,
+      group: takes ? TILE_TAKE : TILE_AWAY,
+      run: action.run,
+    };
+    return action.id === 'play' ? { ...item, default: true } : item;
+  });
+  return grouped(items);
+}
+
+/** The entries of the items, in their order, a separator where their group changes. */
+function grouped(items: readonly ActionItem[]): ContextEntry[] {
   const groups: ContextEntry[][] = [];
   let lastGroup: number | null = null;
-  for (const item of all) {
+  for (const item of items) {
     const entries = entriesOf(item);
     const current = groups.at(-1);
     if (current && item.group === lastGroup) {
@@ -80,7 +107,7 @@ export function contextItems(
   return groups.flatMap((group, i) => (i === 0 ? group : [SEPARATOR, ...group]));
 }
 
-/** What one bar item becomes in the menu. */
+/** What one action item becomes in the menu. */
 function entriesOf(item: ActionItem): ContextEntry[] {
   if (!item.menu) {
     return [{ kind: 'action', item }];
@@ -98,7 +125,7 @@ function entriesOf(item: ActionItem): ContextEntry[] {
   return [submenu(item, item.id, item.label, item.menu)];
 }
 
-/** A dropdown's items, cut where their section changes, as the bar's dropdown heads them. */
+/** An item list, cut where its section changes. */
 function sectionsOf(menu: ActionItem[]): { name?: string; choices: ActionItem[] }[] {
   const sections: { name?: string; choices: ActionItem[] }[] = [];
   for (const choice of menu) {

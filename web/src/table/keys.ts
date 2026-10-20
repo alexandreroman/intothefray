@@ -1,7 +1,7 @@
 // The table's keyboard shortcuts (spec 5.10). One keydown listener on the
-// window acts on the element under the pointer, with the items its action bar
-// offers; the arrow, which has no button, and the hand cards, which have no
-// bar, get their own keys here.
+// window acts on the element under the pointer, or on the one whose context
+// menu is open, with the items its menu lists; the arrow, which is no item of
+// that list, and the hand cards, which have no menu, get their own keys here.
 
 import { modal } from '../components/modal.svelte';
 import type { Action, CardView, PileView, Size, View } from '../lib/types';
@@ -29,11 +29,11 @@ const HERO_STEPS: Record<string, -1 | 1> = {
 /** What the keys need from the table. */
 export interface KeyTable {
   view: View;
-  /** The actions of the hovered element, as its bar offers them. */
+  /** The actions of the hovered element, as its context menu lists them. */
   items: ActionItem[] | { text: string };
   zoom: number;
   setZoom: (zoom: number) => void;
-  /** Runs a bar item, as a click on it would. */
+  /** Runs an action item, as choosing it in the context menu would. */
   run: (item: ActionItem) => void;
   act: (action: Action) => void;
   /** Whether the table has a card that Ready all would ready. */
@@ -198,8 +198,8 @@ function playerKey(event: KeyboardEvent, table: KeyTable): boolean {
 }
 
 /**
- * The enabled item with that key, in the bar or in one of its enabled
- * dropdowns, taken with Shift or not as the item says.
+ * The enabled item with that key, in the list or in one of its enabled
+ * submenus, taken with Shift or not as the item says.
  */
 function findItem(items: ActionItem[], key: string, shift: boolean): ActionItem | undefined {
   for (const item of items) {

@@ -50,5 +50,5 @@
 - [Moving several cards as a group](references/project_group_moves.md) — rubber band selection; a group only moves; one atomic group action
 - [Localized card names and images](references/project_localized_cards.md) — localized overrides per face and index entry; Options language, English default
 - [Fear No Evil scenarios](references/project_fear_no_evil_scenarios.md) — Kingpin curated; chosen-Underling scenarios unsupported
-- [Action bar organisation](references/project_action_bars.md) — one bar order, flat pile bars, no hand bar, out-of-play chips on owner frames
+- [Action menu organisation](references/project_action_bars.md) — click opens the action menu, no bars, no hand menu, out-of-play chips
 - [Identity card stays on the table](references/project_identity_stays.md) — identity never leaves the table, like a stage card

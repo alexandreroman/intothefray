@@ -260,8 +260,8 @@
   /*
     Over the cards, and under everything else at rest: the resting hand (20), the preview (30),
     the other players' presence (2500), the veil and the raised hand (2600). While cards move, over
-    the flights (2900) and the drag layer (3000) too, still under the action bar (3500), the token
-    pill, the menus, the dialogs and the tooltips. The table does not isolate its stacking for
+    the flights (2900) and the drag layer (3000) too, still under the arrow mode's hint (3500), the
+    token pill, the menus, the dialogs and the tooltips. The table does not isolate its stacking for
     that: the arrows, though clipped and scrolled by it, stack with the page's layers.
   */
   .arrows {

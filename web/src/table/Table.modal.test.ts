@@ -1,5 +1,5 @@
 // Every dialog over the table (Dialog.svelte) freezes it the same way: no
-// hover, no press, no action bar and no table key while it is open; a click
+// hover, no press, no context menu and no table key while it is open; a click
 // on its backdrop closes it and does nothing else; the table works again once
 // it is closed.
 
@@ -101,8 +101,8 @@ function placed(id: string): HTMLElement {
   return document.querySelector<HTMLElement>(`.surface [data-id="${id}"]`)!;
 }
 
-function bar(): HTMLElement | null {
-  return screen.queryByRole('toolbar', { name: 'Actions' });
+function contextMenu(): HTMLElement | null {
+  return document.querySelector<HTMLElement>('.table-menu.context');
 }
 
 function press(key: string) {
@@ -165,7 +165,8 @@ const KINDS: Kind[] = [
     name: 'the stage choice box',
     open: async () => {
       await hover(placed('v'));
-      await fireEvent.click(within(bar()!).getByRole('button', { name: 'Change card…' }));
+      await fireEvent.click(placed('v'));
+      await fireEvent.click(within(contextMenu()!).getByRole('menuitem', { name: 'Change card…' }));
     },
     close: 'Close',
   },
@@ -206,17 +207,18 @@ describe.each(KINDS)('while $name is open', ({ open, close, closing }) => {
   it('the table is frozen, and the focus is in the dialog', async () => {
     const session = await openOverTable();
     expect(dialog()!.contains(document.activeElement)).toBe(true);
-    // What was hovered to open it is let go: no bar, no preview.
+    // What was hovered to open it is let go: no menu, no preview.
     expect(interaction.hovered).toBeNull();
-    expect(bar()).toBeNull();
+    expect(contextMenu()).toBeNull();
 
     await hover(placed('mine'));
     await fireEvent.pointerDown(placed('mine'), { button: 0 });
+    await fireEvent.click(placed('mine'));
     await press('e');
     await press('+');
     expect(interaction.hovered).toBeNull();
     expect(interaction.held).toBeNull();
-    expect(bar()).toBeNull();
+    expect(contextMenu()).toBeNull();
     expect(session.act).not.toHaveBeenCalled();
   });
 
@@ -251,7 +253,7 @@ describe.each(KINDS)('while $name is open', ({ open, close, closing }) => {
     expect(dialog()).toBeNull();
     sentOnClose(session);
     await hover(placed('mine'));
-    expect(bar()).not.toBeNull();
+    expect(interaction.hovered).toEqual({ kind: 'card', id: 'mine' });
     await press('e');
     expect(session.act).toHaveBeenLastCalledWith({ kind: 'exhaust', card: 'mine' }, 0);
   });

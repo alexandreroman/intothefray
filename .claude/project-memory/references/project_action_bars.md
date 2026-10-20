@@ -1,43 +1,42 @@
 ---
-name: "Action bar organisation"
-description: "One order for every action bar, hand without bar, flat pile bars, out-of-play chips on owner frames"
+name: "Action menu organisation"
+description: "A click or right click opens an action menu on cards, piles and box tiles; no floating bars; chips for out-of-play piles"
 type: project
 ---
 
-# Action bar organisation
+# Action menu organisation
 
-- Every action bar follows one order: main action, then mark (tokens) or
-  look, then leave (discard, move), then a "More actions" ⋯ dropdown.
-  The first button is the element's default action.
-- Cards in play use icon buttons, piles use words; box tiles count as
-  cards. Pile labels stay short (Draw X, Top X, Discard X, Search);
-  the tooltip says the rest.
-- Pile bars:
-  - own deck: Draw 1 (W), Draw X (⇧W) │ Top X (L), Search (K) │
-    ⋯ Discard X, Shuffle (U);
-  - encounter deck: Reveal (R) │ Top X, Search │ ⋯;
-  - discard pile: Search │ Shuffle into deck.
-- The card bar has no quick token button: tokens and statuses are added
-  from the token menu, the keys (D, T, N…) and the token's − / + pill.
-- A right click (long press on touch) on a card in play or a pile opens
-  a context menu with every action of the element, default in bold,
-  tokens and statuses as two submenus. Hand cards, box tiles and group
-  selections have no context menu.
-- Hand cards have no floating bar: they are played or discarded by
-  dragging, P and Backspace. A bar on the fanned hand is unreadable and
-  of little use.
-- Out-of-play piles (victory display, set-aside) are reached from small
-  chips (icon and count) at the right of the owner frame's name line:
-  the villain frame shows the victory display and the scenario's
-  set-aside cards, a player frame that player's set-aside cards. A chip
-  opens the Browse box; an empty one is dimmed and inert. Pile bars hold
-  only their own pile's actions.
+- Table cards in play, piles and box tiles have no floating action bar.
+  A click (no drag) or a right click opens their **action menu** at the
+  pointer; a tap on touch. Hover only rings, previews and targets keys;
+  a hovered token shows its −/+ pill.
+- The menu's title is an eyebrow in the owner's colour (card type and
+  stage, or the pile's owner) above the card name, or the pile kind with
+  its count pill.
+- Entries follow one order, separated by group: the default action in
+  bold (Exhaust, Draw 1, Reveal, Search, Browse…, Play on a box tile),
+  the rest of the main group, then look actions, "Add a token" and "Add
+  a status" submenus, Discard and the Move to submenu, then "Draw an
+  arrow" for a card in play. Each entry shows its key; a refused one is
+  greyed with its reason.
+- Pile entries: own deck Draw 1 (W), Draw X (⇧W) │ Top X (L), Search (K)
+  │ Discard X, Shuffle (U); encounter deck Reveal (R) │ Top X, Search │
+  Discard X, Shuffle; discard pile Search │ Shuffle into deck. Labels
+  stay short; tooltips say the rest. The stage choice reads "Change
+  card…".
+- Another player's deck shows "Belongs to …" in its menu instead of
+  entries. A click on a selected card opens that card's menu and keeps
+  the group selection.
+- Hand cards have no menu and no bar: drag, P and Backspace.
+- No quick token button: tokens come from the submenus, the keys and the
+  token pill.
+- Out-of-play piles (victory display, set-aside) are reached from chips
+  (icon and count) at the right of the owner frame's name line; an
+  empty chip is dimmed and inert.
 
-**Why:** UX review of 2026-10-20 against DragnCards and OCTGN: the bars
-mixed icons and words, moved the same action between elements and hid
-frequent actions (Draw X, out-of-play piles) in generic menus.
+**Why:** UX review of 2026-10-20 against DragnCards and OCTGN, then the
+user's choice that one complete, labelled menu replaces the bars.
 
-**How to apply:** the plan, its eight steps and the mockups are in
-`docs/superpowers/specs/2026-10-20-action-bars-ux-review.md` (local,
-not committed). Build each step only once the user picks it; keep the
-spec (§5.3, §5.5, §5.10) in step with what is built.
+**How to apply:** new actions go into `actionsFor` (keys and menu read
+it); the review and its steps are in
+`docs/superpowers/specs/2026-10-20-action-bars-ux-review.md` (local).

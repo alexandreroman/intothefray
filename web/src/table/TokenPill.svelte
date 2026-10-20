@@ -1,6 +1,6 @@
 <!--
   The small "− value +" pill above a hovered token or status. It stays while
-  the pointer is on it, like the action bar.
+  the pointer is on it, and so does the hover of its card.
 -->
 <script lang="ts">
   import { onDestroy } from 'svelte';

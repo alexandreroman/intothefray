@@ -333,7 +333,7 @@ describe('keys on the table', () => {
     expect(interaction.arrowFrom).toBeNull();
   });
 
-  it('disabled items do nothing, nor do the items of a disabled dropdown', async () => {
+  it('disabled items do nothing, nor do the items of a disabled submenu', async () => {
     const cards = [
       // The villain card is tucked under 'host': Discard and Move to (and its Hand) are disabled.
       card('v', { code: '01094', owner: -1, back: 'villain', parent: 'host' }),

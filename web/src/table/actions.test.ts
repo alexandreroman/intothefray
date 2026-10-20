@@ -127,7 +127,7 @@ function itemsFor(
   return result;
 }
 
-/** The item ids, one list per group, in bar order. */
+/** The item ids, one list per group, in menu order. */
 function groups(items: ActionItem[]): string[][] {
   const out: string[][] = [];
   let last: number | null = null;
@@ -172,24 +172,22 @@ describe('actionsFor', () => {
 
     expect(groups(items)).toEqual([['exhaust'], ['counters'], ['discard', 'moveTo']]);
     const exhaust = item(items, 'exhaust');
-    expect(exhaust).toMatchObject({ label: 'Exhaust', icon: 'exhaust', key: 'E', tip: 'Exhaust' });
+    expect(exhaust).toMatchObject({ label: 'Exhaust', key: 'E', tip: 'Exhaust' });
     expect(actionOf(exhaust)).toEqual({ kind: 'exhaust', card: 'mine' });
-    // The arrow starts with its key (A) or a Shift + drag: the bar has no button for it.
+    // The arrow starts with its key (A), a Shift + drag or the context menu's own last item.
     expect(items.map((i) => i.id)).not.toContain('arrow');
     const discard = item(items, 'discard');
     expect(discard).toMatchObject({
       label: 'Discard',
-      icon: 'discard',
       key: 'Backspace',
       tip: 'Discard',
     });
     expect(actionOf(discard)).toEqual({ kind: 'discard', card: 'mine' });
 
-    // One "+" dropdown for both: the tokens, then the statuses, each in its section.
+    // One list for both: the tokens, then the statuses, each in its section.
     expect(item(items, 'counters')).toMatchObject({
       label: 'Add a token or status',
       tip: 'Add a token or status',
-      icon: 'token',
     });
     const counters = menuOf(items, 'counters');
     expect(counters.map((it) => [it.section, it.id, it.label, it.key])).toEqual([
@@ -214,9 +212,8 @@ describe('actionsFor', () => {
       delta: 1,
     });
 
-    // Move to is an icon: its name stays in the label and the tip.
     const move = menuOf(items, 'moveTo');
-    expect(item(items, 'moveTo')).toMatchObject({ label: 'Move to', icon: 'move', tip: 'Move to' });
+    expect(item(items, 'moveTo')).toMatchObject({ label: 'Move to', tip: 'Move to' });
     expect(move.every((it) => it.section === undefined)).toBe(true);
     expect(move.map((it) => it.id)).toEqual([
       'hand',
@@ -271,7 +268,6 @@ describe('actionsFor', () => {
       label: 'Ready',
       tip: 'Ready',
       key: 'E',
-      pressed: true,
     });
     expect(menuOf(items, 'counters').map((it) => it.label)).toEqual([
       'Damage (2)',
@@ -305,7 +301,7 @@ describe('actionsFor', () => {
 
     expect(groups(items)).toEqual([['exhaust', 'flip'], ['counters'], ['discard', 'moveTo']]);
     const flip = item(items, 'flip');
-    expect(flip).toMatchObject({ label: 'Flip', icon: 'flip', key: 'F', tip: 'Flip' });
+    expect(flip).toMatchObject({ label: 'Flip', key: 'F', tip: 'Flip' });
     expect(actionOf(flip)).toEqual({ kind: 'flip', card: 'two' });
   });
 
@@ -318,7 +314,6 @@ describe('actionsFor', () => {
     expect(stage).toMatchObject({
       label: 'Change card…',
       tip: 'Change card…',
-      icon: 'stage-pick',
     });
     expect(stage.key).toBeUndefined();
     expect(stage.run?.()).toEqual({ local: 'stageBox' });
@@ -417,7 +412,7 @@ describe('actionsFor', () => {
   it('own deck items', () => {
     const items = itemsFor({ kind: 'pile', id: 'deck:p0' });
 
-    // The out-of-play piles open from the owner frame's chips, not from the bar.
+    // The out-of-play piles open from the owner frame's chips, not from a menu.
     expect(groups(items)).toEqual([['draw1', 'drawN'], ['lookTop', 'search'], ['more']]);
     const draw = item(items, 'draw1');
     expect(draw).toMatchObject({ label: 'Draw 1', key: 'W', tip: 'Draw 1' });
@@ -469,10 +464,9 @@ describe('actionsFor', () => {
     });
     expect(actionOf(item(items, 'search'))).toEqual({ kind: 'search', pile: 'deck:p0' });
 
-    // The ⋯ dropdown: an icon, named More actions.
+    // More actions: the rarer ones, which the menu lists inline.
     expect(item(items, 'more')).toMatchObject({
       label: 'More actions',
-      icon: 'more',
       tip: 'More actions',
     });
     const more = menuOf(items, 'more');
@@ -572,7 +566,7 @@ describe('actionsFor', () => {
     expect(groups(itemsFor({ kind: 'pile', id: 'disc:p1' }))).toEqual([['search']]);
   });
 
-  it('out-of-play piles have no bar: they are not drawn on the table', () => {
+  it('out-of-play piles have no actions: they are not drawn on the table', () => {
     for (const id of ['vic', 'saside', 'aside:p0', 'aside:p1']) {
       expect(itemsFor({ kind: 'pile', id })).toEqual([]);
       const spectator: { role: Role } = { role: 'spectator' };
@@ -647,11 +641,11 @@ describe('actionsFor', () => {
     expect(actionsFor({ kind: 'card', id: 's' }, view, spectator, 'en')).toEqual([]);
   });
 
-  it('hand card gets no bar', () => {
+  it('hand card gets no actions', () => {
     expect(actionsFor({ kind: 'hand', id: 'h' }, makeView(), ALEX, 'en')).toEqual([]);
   });
 
-  it('an element that is gone gets no bar', () => {
+  it('an element that is gone gets no actions', () => {
     expect(actionsFor({ kind: 'card', id: 'gone' }, makeView(), ALEX, 'en')).toEqual([]);
     expect(actionsFor({ kind: 'pile', id: 'gone' }, makeView(), ALEX, 'en')).toEqual([]);
   });

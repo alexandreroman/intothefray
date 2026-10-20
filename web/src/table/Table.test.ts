@@ -159,6 +159,18 @@ function surface(): HTMLElement {
   return element;
 }
 
+/** Chooses the item of that label in the open context menu, on the table or over a box. */
+async function choose(label: string): Promise<void> {
+  const menu = document.querySelector<HTMLElement>('.table-menu.context');
+  const item = [...(menu?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? [])].find(
+    (candidate) => candidate.querySelector('span')?.textContent === label,
+  );
+  if (!item) {
+    throw new Error(`no menu item ${label}`);
+  }
+  await fireEvent.click(item);
+}
+
 /** Waits for the catalog: the villain shows its face. */
 async function catalogLoaded(): Promise<void> {
   await within(surface()).findByRole('img', { name: 'Rhino' });
@@ -681,7 +693,7 @@ describe('Table', () => {
     }
   });
 
-  it('rings the hovered card or pile, not a tap selection, which has its own ring', async () => {
+  it('rings the hovered card or pile, and keeps the ring of the one whose menu is open', async () => {
     render(Table, { session: fakeSession(), view: makeView() });
     await catalogLoaded();
     const rhino = surface().querySelector<HTMLElement>('.card[data-id="v"]')!;
@@ -693,10 +705,12 @@ describe('Table', () => {
     expect(deck.classList).toContain('hovered');
     expect(rhino.classList).not.toContain('hovered');
 
+    // A tap opens the villain's menu: its ring stays while the finger, or the pointer, goes on.
     await fireEvent.pointerDown(rhino, { pointerType: 'touch' });
     await fireEvent.click(rhino);
-    expect(rhino.classList).toContain('locked');
-    expect(rhino.classList).not.toContain('hovered');
+    await fireEvent.pointerEnter(deck);
+    expect(rhino.classList).toContain('hovered');
+    expect(deck.classList).not.toContain('hovered');
   });
 
   it('hovering a card previews it; leaving it clears the preview after a linger', async () => {
@@ -993,17 +1007,17 @@ describe('Table', () => {
     expect(screen.queryByRole('button', { name: 'Ready all cards' })).toBeNull();
   });
 
-  it('grabs what the viewer can drag, points at the piles that only have a bar', async () => {
+  it('grabs what the viewer can drag, points at the piles that only have a menu', async () => {
     const { unmount } = render(Table, { session: fakeSession(), view: makeView() });
     const at = (id: string) => surface().querySelector<HTMLElement>(`.card[data-id="${id}"]`)!;
     // Sam (p1): every table card, their own deck and the encounter deck.
     for (const id of ['a', 'b', 'v', 'd1', 'enc']) {
       expect(at(id).classList, id).toContain('grab');
     }
-    // Alex's deck is private: it has a bar, nothing to drag.
+    // Alex's deck is private: it has a menu, nothing to drag.
     expect(at('d0').classList).not.toContain('grab');
     expect(at('d0').classList).not.toContain('inert');
-    // An empty pile has no bar: it is not even pointed at.
+    // An empty pile has no menu: it is not even pointed at.
     expect(at('x1').classList).toContain('inert');
     unmount();
 
@@ -1515,9 +1529,8 @@ describe('several decks', () => {
     await catalogLoaded();
 
     // Spider-Man (seat 0) is selected; the card belongs to Ant-Man, Alex's seat 1.
-    await fireEvent.pointerEnter(surface().querySelector<HTMLElement>('.card[data-id="b"]')!);
-    const bar = screen.getByRole('toolbar', { name: 'Actions' });
-    await fireEvent.click(within(bar).getByRole('button', { name: 'Exhaust' }));
+    await fireEvent.click(surface().querySelector<HTMLElement>('.card[data-id="b"]')!);
+    await choose('Exhaust');
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'exhaust', card: 'b' }, 1);
   });
 
@@ -1527,9 +1540,8 @@ describe('several decks', () => {
     await within(hand()).findByRole('img', { name: 'Spider-Man' });
     await fireEvent.keyDown(window, { key: 'q' });
 
-    await fireEvent.pointerEnter(surface().querySelector<HTMLElement>('.card[data-id="v"]')!);
-    const bar = screen.getByRole('toolbar', { name: 'Actions' });
-    await fireEvent.click(within(bar).getByRole('button', { name: 'Exhaust' }));
+    await fireEvent.click(surface().querySelector<HTMLElement>('.card[data-id="v"]')!);
+    await choose('Exhaust');
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'exhaust', card: 'v' }, 1);
   });
 
@@ -1541,9 +1553,8 @@ describe('several decks', () => {
     await fireEvent.click(within(picker()).getByRole('radio', { name: 'Alex · Ant-Man' }));
     await fireEvent.click(within(picker()).getByRole('radio', { name: 'Sam · She-Hulk' }));
 
-    await fireEvent.pointerEnter(surface().querySelector<HTMLElement>('.card[data-id="s"]')!);
-    const bar = screen.getByRole('toolbar', { name: 'Actions' });
-    await fireEvent.click(within(bar).getByRole('button', { name: 'Exhaust' }));
+    await fireEvent.click(surface().querySelector<HTMLElement>('.card[data-id="s"]')!);
+    await choose('Exhaust');
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'exhaust', card: 's' }, 1);
   });
 
@@ -1558,9 +1569,8 @@ describe('several decks', () => {
 
     // Spider-Man (seat 0) is selected; the card belongs to Ant-Man, Alex's seat 1.
     const box = screen.getByRole('dialog');
-    await fireEvent.pointerEnter(box.querySelector<HTMLElement>('.tile[data-id="x"]')!);
-    const bar = screen.getByRole('toolbar', { name: 'Card actions' });
-    await fireEvent.click(within(bar).getByRole('button', { name: 'Discard' }));
+    await fireEvent.click(box.querySelector<HTMLElement>('.tile[data-id="x"] .img')!);
+    await choose('Discard');
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'discard', card: 'x' }, 1);
   });
 

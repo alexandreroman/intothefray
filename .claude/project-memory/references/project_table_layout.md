@@ -29,8 +29,8 @@ type: project
   (`itf-history-collapsed`). On a narrow screen the preview is an overlay,
   the history is hidden and a floating button offers Undo ("Undo last
   action").
-- The card action bar groups Exhaust and Flip, puts tokens and statuses in
-  one menu behind a token icon, and shows Move to as an icon.
+- Cards and piles act through their action menu (see "Action menu
+  organisation").
 
 **Why:** decided with the user on 2026-10-19: players add cards as they
 play, so fixed things sit on the left and play grows right; zones and

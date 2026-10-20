@@ -177,7 +177,7 @@ async function renderTable(view: View, group: string[]) {
   const session = fakeSession();
   layOut(() => view);
   const result = render(Table, { session, view });
-  // The bar needs the catalog.
+  // The actions need the catalog.
   await Promise.resolve();
   interaction.setGroup(new Set(group));
   return {

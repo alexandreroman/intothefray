@@ -2,8 +2,9 @@
   The card box (spec 5.7): Search, Look at top, Browse and the stage choice
   share one fixed-size box, two rows of 5:7 tiles with the rest scrolling, a
   name filter and a footer (the prototype's renderDeckView and
-  renderStageView). Hovering a pile tile shows its floating bar; in Look at
-  top, tiles are reordered by dragging, with a live preview. The stage choice
+  renderStageView). A click, a tap or a right click on a pile tile opens its
+  context menu at the pointer, over the box; in Look at top, tiles are
+  reordered by dragging, with a live preview. The stage choice
   and the out-of-play piles list their cards by card number, the other piles
   top first. The box follows the view: cards that leave the pile leave the box.
 -->
@@ -21,11 +22,14 @@
     type ShownBox,
     type TileAction,
   } from './boxes';
+  import type { ActionItem } from './actions';
   import CardFace from './CardFace.svelte';
+  import ContextMenu from './ContextMenu.svelte';
+  import { tileEntries, type ContextHeader } from './contextItems';
+  import type { Point } from './drag';
   import { LANDING_MS } from './interaction.svelte';
   import { isOutOfPlay } from './layout';
-  import { ownSeats, seatPlayer } from './seats';
-  import TileBar from './TileBar.svelte';
+  import { ownerLook, ownSeats, seatPlayer } from './seats';
 
   let {
     box,
@@ -51,10 +55,8 @@
     onclose: (shuffle: boolean) => void;
   } = $props();
 
-  // The prototype's values: the tile bar lingers this long after the pointer
-  // leaves, a press becomes a drag past this distance, and the grid scrolls
-  // by this step when a dragged tile nears its edge.
-  const BAR_LINGER_MS = 220;
+  // The prototype's values: a press becomes a drag past this distance, and the
+  // grid scrolls by this step when a dragged tile nears its edge.
   const DRAG_THRESHOLD = 5;
   const EDGE_SCROLL = 40;
   const SCROLL_STEP = 12;
@@ -195,7 +197,6 @@
   }
 
   function runAction(action: TileAction, tile: Tile): void {
-    hovered = null;
     const sent = act(action.run());
     if (action.id === 'bottom' && sent !== null) {
       sentDown = [...sentDown, tile.card.id];
@@ -210,37 +211,99 @@
     onclose(false);
   }
 
-  // ---- Hover and the tile bar ----
+  // ---- Hover and the tile menu ----
 
+  // The tile under the pointer, ringed as on the table.
   let hovered = $state<string | null>(null);
-  let onBar = false;
-  let hideTimer: ReturnType<typeof setTimeout> | undefined;
 
   function enterTile(tile: Tile, event: PointerEvent): void {
     if (!isRealHover(event) || drag?.lifted || (box.kind === 'stage' && tile.shown)) {
       return;
     }
-    clearTimeout(hideTimer);
     hovered = tile.key;
   }
 
-  function hideSoon(): void {
-    clearTimeout(hideTimer);
-    hideTimer = setTimeout(() => {
-      if (!onBar) {
-        hovered = null;
-      }
-    }, BAR_LINGER_MS);
+  function leaveTile(tile: Tile): void {
+    if (hovered === tile.key) {
+      hovered = null;
+    }
   }
 
-  // The bar of the hovered tile, while it is still in the box and has actions.
-  const barTile = $derived.by(() => {
-    if (drag?.lifted) {
-      return null;
-    }
-    const tile = matching.find((t) => t.key === hovered);
+  /** The tile whose context menu is open, and the point of the screen it opened at. */
+  let tileMenu = $state.raw<{ key: string; at: Point } | null>(null);
+  // The tile whose menu was open as the current press began: the press closes it (ContextMenu),
+  // and the click it ends must not open it again.
+  let menuAtPress: string | null = null;
+  // The press that ended a reorder: its click is no click on a tile.
+  let dragEnded = false;
+
+  // Found again in every redraw: the menu goes with its card, or with its last action.
+  const menuTile = $derived.by(() => {
+    const open = tileMenu;
+    const tile = open ? tiles.find((t) => t.key === open.key) : undefined;
     return tile && actionsOf(tile).length > 0 ? tile : null;
   });
+
+  $effect(() => {
+    if (tileMenu && !menuTile) {
+      tileMenu = null;
+    }
+  });
+
+  /** Before the open menu sees the press, in the capture phase of the window. */
+  function onWindowPointerDown(): void {
+    menuAtPress = tileMenu?.key ?? null;
+    dragEnded = false;
+  }
+
+  /**
+   * A click or a tap on a pile tile opens its menu at the pointer, unless it
+   * ends a reorder, or its press closed that tile's menu; a tile without
+   * actions (a spectator's) opens nothing.
+   */
+  function clickTile(tile: Tile, event: MouseEvent): void {
+    if (dragEnded || menuAtPress === tile.key) {
+      return;
+    }
+    openTileMenu(tile, { x: event.clientX, y: event.clientY });
+  }
+
+  /** A right click opens the menu too, and never the browser's own. */
+  function rightClickTile(tile: Tile, event: MouseEvent): void {
+    event.preventDefault();
+    openTileMenu(tile, { x: event.clientX, y: event.clientY });
+  }
+
+  function openTileMenu(tile: Tile, at: Point): void {
+    if (actionsOf(tile).length > 0) {
+      tileMenu = { key: tile.key, at };
+    }
+  }
+
+  /**
+   * The header of a tile's menu, in the pile owner's colour: the pile as the
+   * box title names it, and the tile's place when it shows, over the card's
+   * name ("Your deck · #3" over "Backflip").
+   */
+  function tileHeader(tile: Tile, pile: PileView): ContextHeader {
+    const label = boxPileLabel(pile);
+    const eyebrow = tile.badge ? `${label} · ${tile.badge}` : label;
+    return {
+      eyebrow,
+      name: tile.name,
+      color: ownerLook(view, pile.owner).color,
+      label: `${tile.name}, ${eyebrow}`,
+    };
+  }
+
+  /** A chosen entry runs its tile's action, once the menu is closed. */
+  function runTileItem(item: ActionItem, tile: Tile): void {
+    tileMenu = null;
+    const action = actionsOf(tile).find((candidate) => candidate.id === item.id);
+    if (action) {
+      runAction(action, tile);
+    }
+  }
 
   let grid = $state<HTMLElement>();
 
@@ -312,8 +375,8 @@
 
   // When other players' actions move the tiles, the browser reports the tile
   // that lands under a pointer at rest as entered, at the very spot the
-  // pointer rests: that is not the viewer hovering it (spec 5.8), and its bar
-  // would offer to act on a card they did not point at.
+  // pointer rests: that is not the viewer hovering it (spec 5.8), and its ring
+  // would mark a card they did not point at.
   let pointer = { x: NaN, y: NaN };
   let drawnAt = { x: NaN, y: NaN };
 
@@ -456,7 +519,12 @@
   function onPointerUp(): void {
     const done = drag;
     drag = null;
-    if (!done?.lifted || box.kind !== 'pile') {
+    if (!done?.lifted) {
+      return;
+    }
+    // The click this release fires, on the tile let go over, is the end of the reorder.
+    dragEnded = true;
+    if (box.kind !== 'pile') {
       return;
     }
     // What the box shows is the new order of those cards; the others keep their
@@ -492,13 +560,11 @@
     }
   }
 
-  $effect(() => () => {
-    clearTimeout(hideTimer);
-    clearTimeout(pendingTimer);
-  });
+  $effect(() => () => clearTimeout(pendingTimer));
 </script>
 
 <svelte:window
+  onpointerdowncapture={onWindowPointerDown}
   onpointermove={onPointerMove}
   onpointerup={onPointerUp}
   onpointercancel={() => (drag = null)}
@@ -536,13 +602,13 @@
         class="tile"
         class:pick={box.kind === 'stage'}
         class:shown={tile.shown}
-        class:hovered={hovered === tile.key}
+        class:hovered={hovered === tile.key || tileMenu?.key === tile.key}
         class:lifting={drag?.lifted && drag.key === tile.key}
         data-id={tile.key}
         data-tip={box.kind === 'stage' ? tile.name : undefined}
         aria-label={tile.name}
         onpointerenter={(event) => enterTile(tile, event)}
-        onpointerleave={hideSoon}
+        onpointerleave={() => leaveTile(tile)}
       >
         {#if box.kind === 'stage'}
           <button
@@ -555,11 +621,15 @@
             {@render art(tile)}
           </button>
         {:else}
+          <!-- A pointer target: the tile's name is its list item's. -->
           <div
             class="img"
             class:movable
+            class:menu={actionsOf(tile).length > 0}
             role="presentation"
             onpointerdown={(event) => press(tile, event)}
+            onclick={(event) => clickTile(tile, event)}
+            oncontextmenu={(event) => rightClickTile(tile, event)}
           >
             {@render art(tile)}
           </div>
@@ -601,25 +671,19 @@
     {/if}
   </div>
 
-  {#if barTile}
-    {@const anchor = imageOf(barTile.key)}
-    {#if anchor}
-      {#key barTile.key}
-        <TileBar
-          {anchor}
-          actions={actionsOf(barTile)}
-          onrun={(action) => runAction(action, barTile)}
-          onenter={() => {
-            onBar = true;
-            clearTimeout(hideTimer);
-          }}
-          onleave={() => {
-            onBar = false;
-            hideSoon();
-          }}
-        />
-      {/key}
-    {/if}
+  <!-- Inside the dialog, so that it shows over it; created afresh for each opening, as on the table. -->
+  {#if tileMenu && menuTile && box.kind === 'pile' && grid}
+    {@const tile = menuTile}
+    {#key tileMenu}
+      <ContextMenu
+        header={tileHeader(tile, box.pile)}
+        entries={tileEntries(actionsOf(tile))}
+        at={tileMenu.at}
+        bounds={grid}
+        onrun={(item) => runTileItem(item, tile)}
+        onclose={() => (tileMenu = null)}
+      />
+    {/key}
   {/if}
 
   {#if drag?.lifted}
@@ -713,6 +777,11 @@
     border-radius: 9px;
     color: inherit;
     font: inherit;
+  }
+
+  /* A tile with a menu to open; one to reorder grabs, which comes after. */
+  .img.menu {
+    cursor: pointer;
   }
 
   .img.movable {

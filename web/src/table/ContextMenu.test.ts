@@ -1,7 +1,8 @@
-import { createEvent, fireEvent, render, screen, within } from '@testing-library/svelte';
+import { createEvent, fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
+import { tick } from 'svelte';
 import Table from './Table.svelte';
+import menuSource from './ContextMenu.svelte?raw';
 import { interaction } from './interaction.svelte';
-import { LONG_PRESS_MS } from './longPress';
 import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
 import type { CardView as TableCard, PackFace, PileView, PresenceState, View } from '../lib/types';
 
@@ -14,6 +15,10 @@ vi.mock('../lib/catalog', async (importOriginal) => ({
 // The catalog of the fixture: code -> faces.
 const FACES: Record<string, Partial<PackFace>[]> = {
   '01001': [{ name: 'Spider-Man', type: 'hero' }],
+  '01002': [
+    { name: 'Peter Parker', type: 'alter_ego' },
+    { name: 'Spider-Man', type: 'hero' },
+  ],
   '01094': [{ name: 'Rhino', type: 'villain', stage: 'I' }],
   '01099': [{ name: 'Black Cat', type: 'ally' }],
 };
@@ -53,11 +58,16 @@ function pile(id: string, extra: Partial<PileView>): PileView {
 }
 
 /** Rhino with Alex (p0, the viewer) and Sam (p1). */
-function makeView(extra: { cards?: TableCard[] } = {}): View {
+function makeView(extra: { cards?: TableCard[]; piles?: PileView[] } = {}): View {
   const cards = extra.cards ?? [
     card('mine', { x: 0, tokens: { dmg: 6 } }),
     card('v', { code: '01094', owner: -1, back: 'villain', x: 300 }),
     card('h', { zone: 'hand' }),
+  ];
+  const piles = extra.piles ?? [
+    pile('deck:p0', { owner: 0, x: 600, count: 34 }),
+    pile('deck:p1', { owner: 1, x: 600, y: 300 }),
+    pile('enc', { kind: 'encounter', x: 900, count: 29 }),
   ];
   return {
     id: 'g1',
@@ -83,11 +93,7 @@ function makeView(extra: { cards?: TableCard[] } = {}): View {
     config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
     table: {
       cards,
-      piles: [
-        pile('deck:p0', { owner: 0, x: 600, count: 34 }),
-        pile('deck:p1', { owner: 1, x: 600, y: 300 }),
-        pile('enc', { kind: 'encounter', x: 900, count: 29 }),
-      ],
+      piles,
       hands: { p0: ['h'] },
       stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
       firstPlayer: { x: 860, y: 40 },
@@ -161,6 +167,21 @@ async function rightClick(target: Element, x = 120, y = 80): Promise<Event> {
   return event;
 }
 
+/**
+ * Clicks the element at that point as a mouse or a finger does: a press, a
+ * release that does not move, then the click.
+ */
+async function click(
+  target: Element,
+  x = 120,
+  y = 80,
+  init: { pointerType?: string; altKey?: boolean } = {},
+): Promise<void> {
+  await fireEvent.pointerDown(target, { button: 0, clientX: x, clientY: y, ...init });
+  await fireEvent.pointerUp(target, { button: 0, clientX: x, clientY: y, ...init });
+  await fireEvent.click(target, { clientX: x, clientY: y, altKey: init.altKey ?? false });
+}
+
 function contextMenu(): HTMLElement | null {
   return document.querySelector<HTMLElement>('.table-menu.context');
 }
@@ -202,8 +223,9 @@ function headerOf(menu: HTMLElement): {
   };
 }
 
-function bar(): HTMLElement | null {
-  return screen.queryByRole('toolbar', { name: 'Actions' });
+/** The hint of the arrow mode, above the card the arrow starts from. */
+function arrowHint(): HTMLElement | null {
+  return document.querySelector<HTMLElement>('.arrowhint');
 }
 
 beforeEach(() => {
@@ -223,7 +245,6 @@ describe('the context menu', () => {
   it('opens at the pointer on a right click, with every action of the card', async () => {
     await renderTable();
     await fireEvent.pointerEnter(placed('mine'));
-    expect(bar()).not.toBeNull();
 
     const event = await rightClick(placed('mine'));
     expect(event.defaultPrevented).toBe(true);
@@ -249,8 +270,7 @@ describe('the context menu', () => {
     expect(tokens.getAttribute('aria-haspopup')).toBe('menu');
     expect(tokens.getAttribute('aria-expanded')).toBe('false');
     expect(tokens.textContent).toContain('▸');
-    // The bar goes while the menu is open, and the menu has the focus.
-    expect(bar()).toBeNull();
+    // The menu has the focus: the arrow keys reach its items.
     expect(document.activeElement).toBe(menu);
   });
 
@@ -261,7 +281,7 @@ describe('the context menu', () => {
     expect(contextMenu()?.style.left).toBe('750px');
   });
 
-  it('runs a chosen item as the bar would, then closes', async () => {
+  it('runs a chosen item, then closes', async () => {
     const { session } = await renderTable();
     await rightClick(placed('mine'));
 
@@ -464,62 +484,415 @@ describe('the context menu', () => {
     expect((await rightClick(hand)).defaultPrevented).toBe(false);
     expect(contextMenu()).toBeNull();
   });
+});
 
-  it('opens on a long touch, which neither drags nor taps', async () => {
+describe('opening the context menu with a click', () => {
+  it('opens at the pointer on a plain click on a card or a pile', async () => {
     await renderTable();
-    vi.useFakeTimers();
-    const mine = placed('mine');
 
-    await fireEvent.pointerDown(mine, { pointerType: 'touch', clientX: 40, clientY: 90 });
-    await vi.advanceTimersByTimeAsync(LONG_PRESS_MS);
+    await click(placed('mine'), 140, 90);
     const menu = screen.getByRole('menu', { name: 'Spider-Man, Hero' });
-    expect(menu.style.left).toBe('40px');
+    expect(menu.style.left).toBe('140px');
     expect(menu.style.top).toBe('90px');
-    // The press is over: moving the finger drags nothing, lifting it taps nothing.
-    expect(interaction.held).toBeNull();
-    await fireEvent.pointerMove(mine, {
-      pointerType: 'touch',
-      clientX: 140,
-      clientY: 190,
-      buttons: 1,
-    });
-    expect(interaction.dragging).toBeNull();
-    await fireEvent.pointerUp(mine, { pointerType: 'touch' });
-    await fireEvent.click(mine);
-    expect(interaction.locked).toBe(false);
+    expect(document.activeElement).toBe(menu);
+
+    // A click on another element opens that one's menu instead, where it is clicked.
+    await click(placed('deck:p0'), 610, 120);
+    const deck = screen.getByRole('menu', { name: 'Your deck, 34 cards' });
+    expect(deck).toBe(contextMenu());
+    expect(deck.style.left).toBe('610px');
+    expect(labels(deck)[0]).toBe('Draw 1');
+  });
+
+  it('closes on a second click on the same element', async () => {
+    await renderTable();
+    await click(placed('mine'));
+    expect(contextMenu()).not.toBeNull();
+
+    await click(placed('mine'));
+    expect(contextMenu()).toBeNull();
+    // A third click opens it again.
+    await click(placed('mine'));
     expect(contextMenu()).not.toBeNull();
   });
 
-  it('opens on no touch that moves or lifts too soon', async () => {
+  it('opens at the tap point on a touch tap', async () => {
     await renderTable();
-    vi.useFakeTimers();
-    const mine = placed('mine');
 
-    await fireEvent.pointerDown(mine, { pointerType: 'touch', clientX: 40, clientY: 90 });
-    await fireEvent.pointerMove(mine, {
-      pointerType: 'touch',
-      clientX: 60,
-      clientY: 90,
-      buttons: 1,
-    });
-    await vi.advanceTimersByTimeAsync(LONG_PRESS_MS * 2);
-    expect(contextMenu()).toBeNull();
-    await fireEvent.pointerUp(mine, { pointerType: 'touch' });
+    await click(placed('v'), 320, 140, { pointerType: 'touch' });
+    const menu = screen.getByRole('menu', { name: 'Rhino, Villain, stage I' });
+    expect(menu.style.left).toBe('320px');
+    expect(menu.style.top).toBe('140px');
+    // A tap selects nothing on the table: the menu holds the card.
+    expect(interaction.locked).toBe(false);
+    expect(interaction.hovered).toEqual({ kind: 'card', id: 'v' });
+  });
 
-    await fireEvent.pointerDown(mine, { pointerType: 'touch', clientX: 40, clientY: 90 });
-    await vi.advanceTimersByTimeAsync(LONG_PRESS_MS / 2);
-    await fireEvent.pointerUp(mine, { pointerType: 'touch' });
-    await vi.advanceTimersByTimeAsync(LONG_PRESS_MS);
+  it('opens nothing with the click that ends a drag', async () => {
+    await renderTable();
+
+    await fireEvent.pointerDown(placed('mine'), { button: 0, clientX: 50, clientY: 90 });
+    await fireEvent.pointerMove(window, { clientX: 250, clientY: 190, buttons: 1 });
+    await fireEvent.pointerUp(window, { clientX: 250, clientY: 190 });
+    await fireEvent.click(placed('mine'), { clientX: 250, clientY: 190 });
     expect(contextMenu()).toBeNull();
   });
 
-  it('opens on no long touch of a hand card', async () => {
+  it('opens nothing with Alt + click, which pings', async () => {
     await renderTable();
-    vi.useFakeTimers();
-    const hand = within(screen.getByRole('list', { name: 'Your hand' })).getByRole('listitem');
 
-    await fireEvent.pointerDown(hand, { pointerType: 'touch' });
-    await vi.advanceTimersByTimeAsync(LONG_PRESS_MS * 2);
+    await click(placed('mine'), 120, 80, { altKey: true });
     expect(contextMenu()).toBeNull();
+  });
+
+  it('opens nothing on a hand card, nor on an empty pile', async () => {
+    const view = makeView();
+    view.table!.piles = view.table!.piles.map((p) => (p.id === 'enc' ? { ...p, count: 0 } : p));
+    await renderTable(view);
+
+    await click(within(screen.getByRole('list', { name: 'Your hand' })).getByRole('listitem'));
+    expect(contextMenu()).toBeNull();
+    await click(placed('enc'));
+    expect(contextMenu()).toBeNull();
+  });
+
+  it("says whose another player's deck is, with nothing to choose", async () => {
+    await renderTable();
+
+    await click(placed('deck:p1'));
+    const menu = screen.getByRole('menu', { name: "Sam's deck, 30 cards" });
+    expect(within(menu).queryAllByRole('menuitem')).toHaveLength(0);
+    const note = menu.querySelector<HTMLElement>('.note')!;
+    expect(note.textContent).toBe('Belongs to Sam: only they can use it.');
+    expect(menu.getAttribute('aria-describedby')).toBe(note.id);
+    expect(document.activeElement).toBe(menu);
+  });
+
+  it('offers a spectator Browse… on a public pile, and nothing on a card', async () => {
+    const view = makeView({
+      piles: [
+        ...makeView().table!.piles,
+        pile('disc:p0', { kind: 'discard', owner: 0, x: 750, count: 1, cards: ['gone'] }),
+      ],
+    });
+    view.table!.cards.push(card('gone', { zone: 'pile' }));
+    view.you = { role: 'spectator', name: 'Kim', color: -1, host: false };
+    await renderTable(view);
+
+    await click(placed('mine'));
+    expect(contextMenu()).toBeNull();
+    await click(placed('v'));
+    expect(contextMenu()).toBeNull();
+
+    await click(placed('disc:p0'));
+    expect(labels(contextMenu()!)).toEqual(['Browse…']);
+    await fireEvent.click(menuItem(contextMenu()!, 'Browse…'));
+    expect(screen.getByRole('dialog', { name: "Alex's discard" })).toBeTruthy();
+  });
+
+  it("opens a selected card's own menu and keeps the selection; another card's clears it", async () => {
+    const cards = [
+      card('mine', { x: 0 }),
+      card('cat', { code: '01099', x: 150 }),
+      card('v', { code: '01094', owner: -1, back: 'villain', x: 300 }),
+    ];
+    const { session } = await renderTable(makeView({ cards }));
+    interaction.setGroup(new Set(['mine', 'cat']));
+
+    await click(placed('mine'));
+    expect(screen.getByRole('menu', { name: 'Spider-Man, Hero' })).toBe(contextMenu());
+    expect([...interaction.group]).toEqual(['mine', 'cat']);
+    // Its actions are that card's alone: a group only moves by drag.
+    await fireEvent.click(menuItem(contextMenu()!, 'Exhaust'));
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'exhaust', card: 'mine' }, 0);
+    expect(interaction.group.size).toBe(2);
+
+    await click(placed('v'));
+    expect(screen.getByRole('menu', { name: 'Rhino, Villain, stage I' })).toBe(contextMenu());
+    expect(interaction.group.size).toBe(0);
+  });
+
+  it('closes with Escape wherever the focus is, which does nothing more', async () => {
+    const cards = [
+      card('mine', { x: 0 }),
+      card('cat', { code: '01099', x: 150 }),
+      card('v', { code: '01094', owner: -1, back: 'villain', x: 300 }),
+    ];
+    const { session } = await renderTable(makeView({ cards }));
+    interaction.setGroup(new Set(['mine', 'cat']));
+    await click(placed('mine'));
+    await fireEvent.click(menuItem(contextMenu()!, 'Add a token'));
+    expect(screen.getByRole('menu', { name: 'Add a token' })).toBeTruthy();
+    // The focus left on the page, as a press elsewhere than the menu would leave it.
+    (document.activeElement as HTMLElement | null)?.blur();
+
+    // A real key: dispatched on the focused element, bubbling up to the window.
+    const escape = () =>
+      document.activeElement!.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }),
+      );
+    escape();
+    await tick();
+    expect(screen.queryByRole('menu', { name: 'Add a token' })).toBeNull();
+    expect(contextMenu()).not.toBeNull();
+
+    escape();
+    await tick();
+    expect(contextMenu()).toBeNull();
+    // The selection stays: only the next Escape, with no menu open, lets go of it.
+    expect(interaction.group.size).toBe(2);
+    escape();
+    expect(interaction.group.size).toBe(0);
+    expect(session.act).not.toHaveBeenCalled();
+  });
+
+  it('has items tall enough for a finger on a touch screen', () => {
+    const coarse = /@media \(pointer: coarse\) \{\s*\.table-menu button \{([^}]*)\}/.exec(
+      menuSource,
+    );
+    expect(coarse?.[1]).toMatch(/height: 44px;/);
+  });
+});
+
+describe('what the menu runs', () => {
+  it('shows Flip on a card with two faces once the catalog is loaded', async () => {
+    let loaded: () => void = () => {};
+    vi.mocked(loadGameCards).mockReturnValue(new Promise<void>((resolve) => (loaded = resolve)));
+    // Before the load, the catalog knows nothing.
+    vi.mocked(knownCard).mockReturnValue(null);
+    const cards = [card('two', { code: '01002', x: 0 }), card('v', { code: '01094', owner: -1 })];
+    render(Table, { session: fakeSession(), view: makeView({ cards }) });
+
+    await click(placed('two'));
+    expect(labels(contextMenu()!)).not.toContain('Flip');
+
+    vi.mocked(knownCard).mockImplementation(infoOf);
+    loaded();
+    await waitFor(() => expect(labels(contextMenu()!)).toContain('Flip'));
+  });
+
+  it('Draw X asks how many cards, then draws them', async () => {
+    const { session } = await renderTable();
+    await click(placed('deck:p0'));
+
+    await fireEvent.click(menuItem(contextMenu()!, 'Draw X'));
+    expect(contextMenu()).toBeNull();
+    const dialog = screen.getByRole('dialog', { name: 'Draw cards' });
+    expect(dialog.textContent).toContain('How many cards do you draw?');
+    expect(session.act).not.toHaveBeenCalled();
+
+    await fireEvent.click(within(dialog).getByRole('button', { name: 'Draw' }));
+    expect(session.act).toHaveBeenCalledWith({ kind: 'draw', n: 5 }, 0);
+  });
+
+  it('Top X asks how many cards, then looks at them', async () => {
+    const { session } = await renderTable();
+    await click(placed('deck:p0'));
+
+    await fireEvent.click(menuItem(contextMenu()!, 'Top X'));
+    const dialog = screen.getByRole('dialog', { name: 'Look at the top cards' });
+    expect(dialog.textContent).toContain('How many cards from the top of your deck?');
+    await fireEvent.click(within(dialog).getByRole('button', { name: 'One more' }));
+    await fireEvent.click(within(dialog).getByRole('button', { name: 'Look' }));
+    expect(session.act).toHaveBeenCalledWith({ kind: 'look', pile: 'deck:p0', n: 6 }, 0);
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('the count question follows its pile while it is open, and closes once it is empty', async () => {
+    const { session, rerender } = await renderTable();
+    const withEncounter = (count: number) =>
+      makeView({
+        piles: makeView().table!.piles.map((p) => (p.id === 'enc' ? { ...p, count } : p)),
+      });
+    await click(placed('enc'));
+    await fireEvent.click(menuItem(contextMenu()!, 'Top X'));
+    const dialog = screen.getByRole('dialog', { name: 'Look at the top cards' });
+
+    // Sam deals encounter cards meanwhile: three are left.
+    await rerender({ view: withEncounter(3) });
+    const value = within(dialog).getByRole('spinbutton', { name: 'Number of cards' });
+    expect(value.getAttribute('aria-valuenow')).toBe('3');
+    await fireEvent.click(within(dialog).getByRole('button', { name: 'Look' }));
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'look', pile: 'enc', n: 3 }, 0);
+
+    await click(placed('enc'));
+    await fireEvent.click(menuItem(contextMenu()!, 'Discard X'));
+    expect(screen.getByRole('dialog', { name: 'Discard from the top' })).toBeTruthy();
+    await rerender({ view: withEncounter(0) });
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it("lists an own discard pile's Search, then Shuffle into deck", async () => {
+    const piles = [
+      ...makeView().table!.piles,
+      pile('disc:p0', { kind: 'discard', owner: 0, x: 750, count: 1, cards: ['gone'] }),
+    ];
+    const view = makeView({ piles });
+    view.table!.cards.push(card('gone', { zone: 'pile' }));
+    const { session } = await renderTable(view);
+
+    await click(placed('disc:p0'));
+    expect(labels(contextMenu()!)).toEqual(['Search', 'Shuffle into deck']);
+    expect(menuItem(contextMenu()!, 'Search').classList).toContain('default');
+    await fireEvent.click(menuItem(contextMenu()!, 'Shuffle into deck'));
+    expect(session.act).toHaveBeenCalledWith({ kind: 'shuffleBack', pile: 'disc:p0' }, 0);
+  });
+
+  it("lists an own side deck's actions, which draw from it, on its pile and its faceup top card", async () => {
+    const piles = [
+      ...makeView().table!.piles,
+      pile('side:p0:0', {
+        kind: 'sideDeck',
+        owner: 0,
+        x: 750,
+        count: 4,
+        label: 'Invocation',
+        topFaceUp: true,
+        cards: ['top'],
+      }),
+    ];
+    const view = makeView({ piles });
+    view.table!.cards.push(card('top', { code: '01099', zone: 'pile', home: 'side:p0:0' }));
+    const { session } = await renderTable(view);
+
+    // Its top card shows face up on the pile, which opens the pile's menu.
+    await click(within(placed('side:p0:0')).getByRole('img', { name: 'Black Cat' }));
+    const menu = screen.getByRole('menu', { name: 'Your Invocation deck, 4 cards' });
+    // Without a discard pile of its own, it has no Discard X.
+    expect(labels(menu)).toEqual(['Draw 1', 'Draw X', 'Top X', 'Search', 'Shuffle']);
+    await fireEvent.click(menuItem(menu, 'Draw 1'));
+    expect(session.act).toHaveBeenCalledWith({ kind: 'draw', n: 1, pile: 'side:p0:0' }, 0);
+  });
+
+  it('sends a side card back to its side deck, with no Discard without a side discard pile', async () => {
+    const piles = [
+      ...makeView().table!.piles,
+      pile('side:p0:1', { kind: 'sideDeck', owner: 0, x: 750, count: 5, label: 'Sense' }),
+    ];
+    const cards = [...makeView().table!.cards, card('sense', { x: 150, home: 'side:p0:1' })];
+    const { session } = await renderTable(makeView({ cards, piles }));
+
+    await click(placed('sense'));
+    expect(labels(contextMenu()!)).not.toContain('Discard');
+    await fireEvent.click(menuItem(contextMenu()!, 'Move to'));
+    const submenu = screen.getByRole('menu', { name: 'Move to' });
+    expect(labels(submenu)).toEqual([
+      'Hand',
+      'Top of Sense deck',
+      'Bottom of Sense deck',
+      'Shuffle into Sense deck',
+    ]);
+    await fireEvent.click(menuItem(submenu, 'Bottom of Sense deck'));
+    expect(session.act).toHaveBeenCalledWith({ kind: 'toDeck', card: 'sense', where: 'bottom' }, 0);
+  });
+
+  it('greys out Reveal while a card is revealed on the encounter deck, saying why', async () => {
+    const view = makeView();
+    view.table!.cards.push(card('rev', { owner: -1, back: 'encounter', x: 900, onPile: 'enc' }));
+    const { session } = await renderTable(view);
+
+    await click(placed('enc'));
+    expect(labels(contextMenu()!)).toEqual(['Reveal', 'Top X', 'Search', 'Discard X', 'Shuffle']);
+    const reveal = menuItem(contextMenu()!, 'Reveal');
+    expect(reveal.getAttribute('aria-disabled')).toBe('true');
+    expect(reveal.dataset.tip).toBe('Spider-Man is already revealed on this deck: move it first');
+    await fireEvent.click(reveal);
+    expect(session.act).not.toHaveBeenCalled();
+  });
+
+  it('the stage choice opens its box: nothing is sent yet', async () => {
+    const { session } = await renderTable();
+    await click(placed('v'));
+
+    await fireEvent.click(menuItem(contextMenu()!, 'Change card…'));
+    expect(screen.getByRole('dialog', { name: 'Villain: choose the card to show' })).toBeTruthy();
+    expect(session.act).not.toHaveBeenCalled();
+  });
+});
+
+describe('the arrow mode', () => {
+  it('a click on another card sends the arrow, and opens no menu', async () => {
+    const { session } = await renderTable();
+    await click(placed('mine'));
+    await fireEvent.click(menuItem(contextMenu()!, 'Draw an arrow'));
+
+    await click(placed('v'));
+    expect(session.act).toHaveBeenCalledWith({ kind: 'arrowAdd', card: 'mine', target: 'v' }, 0);
+    expect(interaction.arrowFrom).toBeNull();
+    expect(contextMenu()).toBeNull();
+
+    // The next click opens the menu as usual.
+    await click(placed('v'));
+    expect(contextMenu()).not.toBeNull();
+  });
+
+  it('on touch, the tap that picks the target opens no menu', async () => {
+    const { session } = await renderTable();
+    await fireEvent.pointerEnter(placed('mine'));
+    await fireEvent.keyDown(window, { key: 'a' });
+
+    await click(placed('v'), 320, 100, { pointerType: 'touch' });
+    expect(session.act).toHaveBeenCalledWith({ kind: 'arrowAdd', card: 'mine', target: 'v' }, 0);
+    expect(contextMenu()).toBeNull();
+  });
+
+  it('Escape or a click on an empty spot cancels', async () => {
+    const { session } = await renderTable();
+    await fireEvent.pointerEnter(placed('mine'));
+    await fireEvent.keyDown(window, { key: 'a' });
+    await fireEvent.keyDown(window, { key: 'Escape' });
+    expect(interaction.arrowFrom).toBeNull();
+    expect(arrowHint()).toBeNull();
+
+    await fireEvent.pointerEnter(placed('mine'));
+    await fireEvent.keyDown(window, { key: 'a' });
+    await click(placed('mine').parentElement as HTMLElement);
+    expect(interaction.arrowFrom).toBeNull();
+    expect(session.act).not.toHaveBeenCalled();
+  });
+
+  it('shows its hint above the source card, wherever the pointer goes', async () => {
+    await renderTable();
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      if (this.classList.contains('tablewrap')) {
+        return rect(0, 50, 1000, 700);
+      }
+      if (this.classList.contains('arrowhint')) {
+        return rect(0, 0, 300, 34);
+      }
+      if (this.dataset.id === 'mine') {
+        return rect(400, 400, 100, 140);
+      }
+      return rect(0, 0, 0, 0);
+    });
+    vi.useFakeTimers();
+    await fireEvent.pointerEnter(placed('mine'));
+    await fireEvent.keyDown(window, { key: 'a' });
+
+    const hint = arrowHint()!;
+    expect(hint.textContent).toContain('Click the card to point at');
+    // Not a choice: every press goes through it to the table.
+    expect(hint.getAttribute('role')).toBe('status');
+    // Centred above "mine", 8 px away.
+    expect(hint.style.left).toBe('300px');
+    expect(hint.style.top).toBe('358px');
+
+    // The pointer goes over the villain, then off every card: the hover goes, the hint stays.
+    await fireEvent.pointerLeave(placed('mine'));
+    await fireEvent.pointerEnter(placed('v'));
+    await fireEvent.pointerLeave(placed('v'));
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(interaction.hovered).toBeNull();
+    expect(arrowHint()?.style.left).toBe('300px');
+  });
+
+  it('shows no hint while a Shift + drag draws the arrow', async () => {
+    await renderTable();
+
+    await fireEvent.pointerDown(placed('mine'), { button: 0, shiftKey: true });
+    expect(interaction.arrowFrom).toBe('mine');
+    expect(arrowHint()).toBeNull();
   });
 });

@@ -6,9 +6,8 @@ type: project
 
 # Spectators have no stage button
 
-Spectators get no action bar on the villain and main scheme cards: the
-"Choose the … card to show" box opens for players only, and always offers
-the choice.
+Spectators get no action menu on the villain and main scheme cards: the
+"Change card…" box opens for players only, and always offers the choice.
 
 **Why:** product decision for the spectator view.
 
