@@ -1,18 +1,10 @@
-// The top bar of a small screen slides out of view while the page scrolls
-// down, and comes back as soon as it scrolls up, nears the top or is used.
-// The decision is plain logic (AutoHide), fed by a scroll listener that keeps
-// its result reactive (ScrollAutoHide).
+// The top bar of a small screen (SMALL_SCREEN_QUERY, lib/screen) slides out
+// of view while the page scrolls down, and comes back as soon as it scrolls
+// up, nears the top or is used. The decision is plain logic (AutoHide), fed by
+// a scroll listener that keeps its result reactive (ScrollAutoHide).
 
 import { untrack } from 'svelte';
 import { on } from 'svelte/events';
-
-/**
- * The small screens on which the top bar hides on scroll: narrow (a phone
- * upright, the top bar's compact layout) or short (a phone on its side, 320 to
- * 440px tall, where a tablet on its side is 744px tall or more). The items the
- * bar drops follow the width only (TopBar.svelte).
- */
-export const COMPACT_QUERY = '(max-width: 600px), (max-height: 500px)';
 
 /** The top bar's height, in px (TopBar.svelte). */
 export const TOP_BAR_HEIGHT = 56;
@@ -141,7 +133,7 @@ function metricsOf(source: ScrollSource): ScrollMetrics {
 export interface ScrollAutoHideOptions {
   /** What scrolls under the bar. */
   source: () => ScrollSource;
-  /** Whether the bar may hide at all (a compact screen): when not, nothing is listened to. */
+  /** Whether the bar may hide at all (a small screen): when not, nothing is listened to. */
   enabled: () => boolean;
   /** Whether the bar is in use and stays in view. */
   pinned: () => boolean;

@@ -12,11 +12,12 @@
   import { MediaQuery } from 'svelte/reactivity';
   import Tooltip from '../components/Tooltip.svelte';
   import TopBar from '../components/TopBar.svelte';
-  import { COMPACT_QUERY, TOP_BAR_HEIGHT } from '../lib/autoHide.svelte';
+  import { TOP_BAR_HEIGHT } from '../lib/autoHide.svelte';
   import { gameCards, knownCard, loadGameCards, loadIndex } from '../lib/catalog';
   import { storedLang } from '../lib/lang';
   import { localizedFace, localizedName } from '../lib/localize';
   import { getPref, setPref } from '../lib/prefs';
+  import { SMALL_SCREEN_QUERY } from '../lib/screen';
   import { selectionIndicator } from '../lib/selectionIndicator';
   import type { GameSession } from '../lib/session.svelte';
   import type {
@@ -435,9 +436,9 @@
   const narrow = new MediaQuery('max-width: 900px');
   // A phone held upright: the table zooms further out, and fits its width until the viewer zooms.
   const phone = new MediaQuery('max-width: 600px');
-  // A phone either way up: the hand's cards follow the window, and the controls at the bottom right
-  // gather in one bar above the resting hand.
-  const small = new MediaQuery('(max-width: 600px), (max-height: 500px)');
+  // A phone either way up: the top bar floats over the play area, the hand's cards follow the
+  // window, and the controls at the bottom right gather in one bar above the resting hand.
+  const small = new MediaQuery(SMALL_SCREEN_QUERY);
   const touchMode = new MediaQuery(TOUCH_MODE_QUERY);
 
   // The window's size, in px: a small screen's hand cards follow it.
@@ -462,14 +463,13 @@
   // fit would make the scrollbar come and go, and the fit with it.
   const SCROLLBAR_ROOM = 12;
 
-  // On a compact screen the top bar floats over the play area, and slides away as the table
-  // scrolls down (TopBar): the table starts below it, and what floats at the top of the play area
-  // keeps clear of it while it shows.
-  const compact = new MediaQuery(COMPACT_QUERY);
+  // On a small screen the top bar floats over the play area, and slides away as the table scrolls
+  // down (TopBar): the table starts below it, and what floats at the top of the play area keeps
+  // clear of it while it shows.
   let barHidden = $state(false);
   // The room the bar keeps at the start of the table, and over the top of the play area, in px.
-  const barStart = $derived(compact.current ? TOP_BAR_HEIGHT : 0);
-  const barRoom = $derived(compact.current && !barHidden ? TOP_BAR_HEIGHT : 0);
+  const barStart = $derived(small.current ? TOP_BAR_HEIGHT : 0);
+  const barRoom = $derived(small.current && !barHidden ? TOP_BAR_HEIGHT : 0);
 
   // The table's visible size, in px.
   let visibleWidth = $state(0);
@@ -1522,7 +1522,7 @@
     const scale = next / from;
 
     // What lies under the point now, in zoomed px of the surface (past the scroller's padding,
-    // which keeps the top bar's room at the top on a compact screen): the page is not redrawn
+    // which keeps the top bar's room at the top on a small screen): the page is not redrawn
     // before the tick.
     const paddingTop = SCROLL_PADDING + barStart;
     const underX = wrap.scrollLeft + x - box.left - SCROLL_PADDING;
@@ -1644,7 +1644,7 @@
   class:arrowing={interaction.arrowFrom !== null}
   class:dragging={interaction.dragging !== null}
   class:history-collapsed={historyCollapsed && !narrow.current}
-  class:bar-over={compact.current}
+  class:bar-over={small.current}
   class:banding={interaction.band !== null}
   class:compact={small.current}
   class:touch={touchMode.current}
@@ -2283,7 +2283,7 @@
   }
 
   /*
-    On a compact screen the top bar floats over the top of the play area, which takes the window's
+    On a small screen the top bar floats over the top of the play area, which takes the window's
     whole height: sliding away, it shows the table under it, and nothing else moves. A short screen
     wider than a narrow one (a large phone on its side) keeps the history column, which then runs
     from the top of the window: the bar floats over the play area only, its icons on the play

@@ -7,9 +7,9 @@ type: project
 # Compact top bar hides on scroll
 
 - Compact screens are those up to 600px wide (the top bar's own breakpoint)
-  or up to 500px tall (phones in landscape). `COMPACT_QUERY` in
-  `web/src/lib/autoHide.svelte.ts` is its single source for scripts; other
-  screens always show the bar. The items the bar drops follow the width
+  or up to 500px tall (phones in landscape). `SMALL_SCREEN_QUERY` in
+  `web/src/lib/screen.ts` is its single source for scripts, shared with
+  the table's small screen layout; other screens always show the bar. The items the bar drops follow the width
   only.
 - On a compact screen the bar slides out of view (a transform, no layout
   change) once the content scrolls down by 10px past the bar's height.

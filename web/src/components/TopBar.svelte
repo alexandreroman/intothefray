@@ -8,7 +8,8 @@
   import { href } from '../lib/router.svelte';
   import Segmented from './Segmented.svelte';
   import { overflowTip } from '../lib/overflowTip';
-  import { COMPACT_QUERY, ScrollAutoHide } from '../lib/autoHide.svelte';
+  import { ScrollAutoHide } from '../lib/autoHide.svelte';
+  import { SMALL_SCREEN_QUERY } from '../lib/screen';
 
   let {
     spectators = 0,
@@ -38,7 +39,7 @@
     onviewmode?: (mode: 'all' | 'focus') => void;
     /** Readies every card of the player's that can be: on the table, for players only. */
     readyAll?: { disabled: boolean; run: () => void };
-    /** What scrolls under the bar, when not the window: on a compact screen, the bar hides as it scrolls down. */
+    /** What scrolls under the bar, when not the window: on a small screen, the bar hides as it scrolls down. */
     scroller?: HTMLElement;
     /** Whether the bar is slid out of view, for a screen whose layout follows it. */
     hidden?: boolean;
@@ -54,14 +55,14 @@
 
   let confirmingEnd = $state(false);
 
-  // On a compact screen the bar slides away as the page scrolls down. It stays while it is in
+  // On a small screen the bar slides away as the page scrolls down. It stays while it is in
   // use: keyboard focus inside it, or the dialog it opened. The focus a tap or a click leaves
   // behind does not count, or the bar would never hide again after a use.
-  const compact = new MediaQuery(COMPACT_QUERY);
+  const small = new MediaQuery(SMALL_SCREEN_QUERY);
   let focusWithin = $state(false);
   const autoHide = new ScrollAutoHide({
     source: () => scroller ?? window,
-    enabled: () => compact.current,
+    enabled: () => small.current,
     pinned: () => focusWithin || confirmingEnd,
   });
 
@@ -138,7 +139,7 @@
 
 <!-- Hidden, it stays focusable: a tab into it brings it back. -->
 <header
-  class:auto-hide={compact.current}
+  class:auto-hide={small.current}
   class:hidden
   onfocusin={focusEntered}
   onfocusout={focusLeft}
@@ -232,7 +233,7 @@
   }
 
   /*
-   * On a compact screen it sticks to the top of a scrolling page, over the content but under the
+   * On a small screen it sticks to the top of a scrolling page, over the content but under the
    * connection status (Game.svelte, 200), the dialogs (5600) and the tooltips (6000), and slides
    * out of view while the page scrolls down:
    * its border box, border included, goes. The content scrolls into the room it leaves.
@@ -365,7 +366,7 @@
    * then the spectator count. The logo and End game always stay. Fullscreen
    * stays while active, or a viewer without an Escape key could not leave it.
    * The items follow the width only: the bar also hides on scroll on a short
-   * screen (COMPACT_QUERY, lib/autoHide), a phone on its side, which has the
+   * screen (SMALL_SCREEN_QUERY, lib/screen), a phone on its side, which has the
    * room for all of them.
    */
   @media (max-width: 600px) {
