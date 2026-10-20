@@ -34,7 +34,10 @@ export type Anim =
   /** Turned over on the table: flipped, another face shown, or a hidden card come face up. */
   | { kind: 'flip'; id: string }
   | { kind: 'shuffle'; pile: string }
-  /** A side deck showing its top card turns a new one face up on it (revealedTops). */
+  /**
+   * A side deck showing its top card turns a new one face up on it (revealedTops);
+   * so does a pile the viewer dropped a deck's hidden top card on (arrivals).
+   */
   | { kind: 'reveal'; pile: string }
   /**
    * Gone to a pile: out of the table or the hand, or out of another pile
@@ -559,7 +562,9 @@ function originOf(card: CardView, shrunk: PileView[], tally: Tally): Origin | nu
  * and one that shows its face turns over as it lands, the viewer's own drop
  * included. Onto a pile that shows it, a card out of a pile flies there on
  * its back, top first, and one out of a hand rises into it. A card drawn into
- * the viewer's hand is a draw (drawsOf).
+ * the viewer's hand is a draw (drawsOf). The viewer's own drop of a deck's
+ * hidden top card already lies on the pile it went to, but came there on its
+ * back: when that pile shows it, it turns face up there (reveal).
  */
 function arrivals(
   before: TableView,
@@ -590,8 +595,19 @@ function arrivals(
   for (const pile of after.piles) {
     for (const id of [...(pile.cards ?? [])].reverse()) {
       const card = current.get(id);
-      const origin = !card || previous.has(id) ? null : originOf(card, shrunk, tally);
-      if (!origin || isOwnDrop(id, origin)) {
+      if (!card || previous.has(id)) {
+        continue;
+      }
+      const origin = originOf(card, shrunk, tally);
+      if (!origin) {
+        continue;
+      }
+      if (isOwnDrop(id, origin)) {
+        // A deck's top dropped on a pile lands on top: only that card turns, once per pile.
+        const turnsUp = !isHidden(card) && id === pile.cards?.at(-1);
+        if (turnsUp) {
+          anims.push({ kind: 'reveal', pile: pile.id });
+        }
         continue;
       }
       if (!('pile' in origin)) {
