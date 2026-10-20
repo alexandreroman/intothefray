@@ -24,12 +24,17 @@ type: project
   Discard X, Shuffle; discard pile Search │ Shuffle into deck. Labels
   stay short; tooltips say the rest. The stage choice reads "Change
   card…".
+- A hero side deck has the own deck's entries, Draw 1 and Draw X drawing
+  from it; Discard X only when it has a side discard pile (Invocation),
+  which has a discard pile's entries. A side card's Move to names its
+  deck ("Top of Sense deck"); without a side discard it has no Discard,
+  and X and Backspace do nothing on it.
 - Card keys beside the menu: E exhaust, F flip, X discard (Backspace
-  too), H hand, B bottom of deck, V change card (villain / main scheme),
-  A arrow; C stays Confused.
-- Another player's deck shows "Belongs to …" in its menu instead of
-  entries. A click on a selected card opens that card's menu and keeps
-  the group selection.
+  too), H hand, B bottom of deck (a side card's side deck), V change
+  card (villain / main scheme), A arrow; C stays Confused.
+- Another player's deck or side deck shows "Belongs to …" in its menu
+  instead of entries. A click on a selected card opens that card's menu
+  and keeps the group selection.
 - Hand cards have no menu and no bar: drag, P and Backspace.
 - No quick token button: tokens come from the submenus, the keys and the
   token pill.
