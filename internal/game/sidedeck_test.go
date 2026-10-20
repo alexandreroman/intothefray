@@ -605,10 +605,18 @@ func TestOwnBackSideDecks(t *testing.T) {
 			labor = pile
 		}
 	}
+	sideDecks := 0
 	for _, pv := range f.g.ViewFor("nobody").Table.Piles {
-		if strings.HasPrefix(pv.ID, sideDeckPrefix) && !pv.OwnBack {
+		if !strings.HasPrefix(pv.ID, sideDeckPrefix) {
+			continue
+		}
+		sideDecks++
+		if !pv.OwnBack {
 			t.Errorf("a spectator sees %s without its own back", pv.ID)
 		}
+	}
+	if sideDecks != 2 {
+		t.Errorf("a spectator sees %d side decks, want 2", sideDecks)
 	}
 
 	// A Labor card is played and goes to the victory display like any card.
