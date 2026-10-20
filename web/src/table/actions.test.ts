@@ -802,7 +802,7 @@ describe('side decks', () => {
   });
 
   it("another player's side deck belongs to them", () => {
-    expect(actionsFor({ kind: 'pile', id: 'side:p1:0' }, view(), ALEX)).toEqual({
+    expect(actionsFor({ kind: 'pile', id: 'side:p1:0' }, view(), ALEX, 'en')).toEqual({
       text: 'Belongs to Sam: only they can use it.',
     });
   });
