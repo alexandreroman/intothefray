@@ -34,6 +34,7 @@
 - [mise pins the frontend toolchain](references/project_mise_versions.md) — root mise.toml is the only node/pnpm version source
 - [Random player name](references/project_player_name.md) — no name prompt; random "Adjective Noun" name in itf-name; 16 chars, no emoji
 - [Standard and Expert set setup](references/project_set_setup.md) — Setup-keyword set cards start in play via sets.json; Standard PvP unlisted
+- [Hero side decks](references/project_hero_side_decks.md) — curated side decks, only Invocation has a discard; set-aside hero cards
 - [Per-game card pool](references/project_card_pool.md) — table loads GET /api/games/{id}/cards; SPA ships pack index only
 - [Card image preload](references/project_image_preload.md) — browser-native: low-priority Image per pool face, no custom queue
 - [No compression in the backend](references/project_no_backend_compression.md) — Go sends HTTP/WS uncompressed; Caddy/CDN compress
