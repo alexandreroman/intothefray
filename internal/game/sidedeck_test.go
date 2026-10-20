@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/alexandreroman/intothefray/internal/pack"
@@ -582,5 +583,46 @@ func TestDeckListSideCardsStayInTheirSideDeck(t *testing.T) {
 	}
 	if got := len(table.Piles[invocationDeck].Cards); got != 5 {
 		t.Errorf("Invocation deck holds %d cards, want 5", got)
+	}
+}
+
+func TestOwnBackSideDecks(t *testing.T) {
+	f := heroGame(t, heroDeck(t, newCatalog(t), herculesIdentity, "Hercules"))
+	table := f.g.Table
+
+	var labor *Pile
+	for i := range 2 {
+		pile := table.Piles[sideDeckID(0, i)]
+		if !pile.OwnBack {
+			t.Errorf("%s deck = %+v, want its own back", pile.Label, pile)
+		}
+		for _, id := range pile.Cards {
+			if c := table.Cards[id]; c.Back != pack.BackSide {
+				t.Errorf("%s card %s has back %q, want %q", pile.Label, c.Code, c.Back, pack.BackSide)
+			}
+		}
+		if pile.Label == "Labor" {
+			labor = pile
+		}
+	}
+	for _, pv := range f.g.ViewFor("nobody").Table.Piles {
+		if strings.HasPrefix(pv.ID, sideDeckPrefix) && !pv.OwnBack {
+			t.Errorf("a spectator sees %s without its own back", pv.ID)
+		}
+	}
+
+	// A Labor card is played and goes to the victory display like any card.
+	id := topCards(labor, 1)[0]
+	f.mustDo(t, "h", Action{Kind: ActPlay, Pile: labor.ID, X: 800, Y: 500}, at(1))
+	f.mustDo(t, "h", Action{Kind: ActToPile, Card: id, Target: PileVictory}, at(2))
+	if c := table.Cards[id]; c.Pile != PileVictory || c.Back != pack.BackSide {
+		t.Errorf("Labor card = %+v, want on the victory display with its side back", c)
+	}
+	checkIntegrity(t, table)
+
+	// The Invocation deck keeps the player back.
+	strange := sideDeckFixture(t)
+	if pile := strange.g.Table.Piles[invocationDeck]; pile.OwnBack {
+		t.Errorf("Invocation deck = %+v, want the player back", pile)
 	}
 }

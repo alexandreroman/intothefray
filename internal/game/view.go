@@ -48,6 +48,7 @@ type PileView struct {
 	Cards     []string `json:"cards,omitempty"` // bottom → top
 	Label     string   `json:"label,omitempty"` // see Pile.Label
 	TopFaceUp bool     `json:"topFaceUp,omitempty"`
+	OwnBack   bool     `json:"ownBack,omitempty"` // see Pile.OwnBack
 }
 
 // PlayerView is what everybody may know about a player.
@@ -347,7 +348,7 @@ func (p *Pile) shows(id string) bool {
 func (p *Pile) viewOf() PileView {
 	return PileView{
 		ID: p.ID, Kind: p.Kind, Owner: p.Owner, X: p.X, Y: p.Y, Count: len(p.Cards),
-		Cards: p.shownCards(), Label: p.Label, TopFaceUp: p.TopFaceUp,
+		Cards: p.shownCards(), Label: p.Label, TopFaceUp: p.TopFaceUp, OwnBack: p.OwnBack,
 	}
 }
 

@@ -182,7 +182,10 @@ such as Doctor Strange's Invocation deck, and the cards a hero set puts
 aside at setup). A side deck is a `hero_special` set linked to the hero of
 its pack whose set code, followed by `_`, starts its own (`doctor_strange`
 for `doctor_strange_invocation_deck`); the generator fails when a side
-deck matches no hero or several, or when a set-aside card is unknown.
+deck matches no hero or several, or when a set-aside card is unknown. The
+cards of a side deck printed with a back of its own (`ownBack`, such as
+Hercules' Labor deck) all get the `side` back, whatever back the sources
+give them.
 
 A face keeps its English name and images, and its `localized` map holds
 the overrides of other languages (`localized.fr`: name, subname, images

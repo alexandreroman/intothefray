@@ -291,9 +291,13 @@ func TestEmbeddedHeroSetup(t *testing.T) {
 	files := loadPackFiles(t)
 	sets := make(map[string]pack.Set)
 	heroes := make(map[string]pack.Hero)
+	backs := make(map[string]pack.Back)
 	for _, file := range files {
 		for _, set := range file.Sets {
 			sets[set.Code] = set
+		}
+		for _, card := range file.Cards {
+			backs[card.Code] = card.Back
 		}
 		for _, hero := range file.Heroes {
 			heroes[hero.Identity] = hero
@@ -314,10 +318,10 @@ func TestEmbeddedHeroSetup(t *testing.T) {
 			}},
 			{"36001", []sideDeck{{"storm_weather_deck", pack.SideDeck{Label: "Weather"}}}},
 			{"59001", []sideDeck{
-				{"hercules_labor_deck", pack.SideDeck{Label: "Labor"}},
-				{"hercules_gift_deck", pack.SideDeck{Label: "Gift"}},
+				{"hercules_labor_deck", pack.SideDeck{Label: "Labor", OwnBack: true}},
+				{"hercules_gift_deck", pack.SideDeck{Label: "Gift", OwnBack: true}},
 			}},
-			{"60001", []sideDeck{{"daredevil_sense_deck", pack.SideDeck{Label: "Sense"}}}},
+			{"60001", []sideDeck{{"daredevil_sense_deck", pack.SideDeck{Label: "Sense", OwnBack: true}}}},
 		}
 		for _, tt := range tests {
 			var wantCodes []string
@@ -329,6 +333,25 @@ func TestEmbeddedHeroSetup(t *testing.T) {
 			}
 			if got := heroes[tt.identity].SideDecks; !slices.Equal(got, wantCodes) {
 				t.Errorf("hero %s side decks = %v, want %v", tt.identity, got, wantCodes)
+			}
+		}
+	})
+
+	t.Run("side deck backs", func(t *testing.T) {
+		// Protect Humanity (59004) comes with an encounter back from the
+		// sources: in a face-down Labor deck it would stand out.
+		for _, set := range sets {
+			if set.Side == nil {
+				continue
+			}
+			want := pack.BackPlayer
+			if set.Side.OwnBack {
+				want = pack.BackSide
+			}
+			for _, code := range set.Cards {
+				if backs[code] != want {
+					t.Errorf("card %s of %s has back %q, want %q", code, set.Code, backs[code], want)
+				}
 			}
 		}
 	})

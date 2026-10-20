@@ -353,6 +353,41 @@ func TestBuildMergesSideDecksAndSetAsideCards(t *testing.T) {
 	}
 }
 
+func TestBuildGivesOwnBackSideDecksTheSideBack(t *testing.T) {
+	in := heroSetsInputs(t, map[string]curated.SetDef{
+		"spider_man_web_deck":  {Side: &pack.SideDeck{Label: "Web", OwnBack: true}},
+		"spider_man_tech_deck": {Side: &pack.SideDeck{Label: "Tech"}},
+	})
+	// One card of the deck comes with another back, as Hercules' Protect
+	// Humanity does: the deck's own back wins.
+	for i := range in.MC {
+		if in.MC[i].Code == "09011" {
+			in.MC[i].TypeCode, in.MC[i].SetType = "obligation", "hero_special"
+		}
+	}
+
+	result, err := Build(in)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	backs := make(map[string]pack.Back)
+	for _, card := range result.Packs[0].Cards {
+		backs[card.Code] = card.Back
+	}
+	want := map[string]pack.Back{
+		"09010": pack.BackSide,
+		"09011": pack.BackSide,
+		"09012": pack.BackPlayer,
+		"09013": pack.BackPlayer,
+	}
+	for code, back := range want {
+		if backs[code] != back {
+			t.Errorf("card %s has back %q, want %q", code, backs[code], back)
+		}
+	}
+}
+
 func TestBuildRejectsInvalidHeroSetDefs(t *testing.T) {
 	side := &pack.SideDeck{Label: "Web"}
 	tests := []struct {

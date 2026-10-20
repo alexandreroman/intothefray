@@ -70,7 +70,7 @@
         }
       ],
       "set": "daredevil_sense_deck",
-      "back": "player",
+      "back": "side",
       "quantity": 1
     },
     {
@@ -94,7 +94,7 @@
         }
       ],
       "set": "daredevil_sense_deck",
-      "back": "player",
+      "back": "side",
       "quantity": 1
     },
     {
@@ -118,7 +118,7 @@
         }
       ],
       "set": "daredevil_sense_deck",
-      "back": "player",
+      "back": "side",
       "quantity": 1
     },
     {
@@ -142,7 +142,7 @@
         }
       ],
       "set": "daredevil_sense_deck",
-      "back": "player",
+      "back": "side",
       "quantity": 1
     },
     {
@@ -166,7 +166,7 @@
         }
       ],
       "set": "daredevil_sense_deck",
-      "back": "player",
+      "back": "side",
       "quantity": 1
     },
     {
@@ -1532,7 +1532,8 @@
         "60006"
       ],
       "side": {
-        "label": "Sense"
+        "label": "Sense",
+        "ownBack": true
       }
     },
     {

@@ -83,6 +83,7 @@ func Build(in Inputs) (Result, error) {
 	if err := applySetDefs(sets, in.Curated.Sets, cardCodes, faceCounts); err != nil {
 		return Result{}, err
 	}
+	applySideBacks(cards, sets)
 	// Side decks are linked before the heroes are checked, so that a hero
 	// dropped for a missing image is reported rather than failing the build.
 	allHeroes := BuildHeroes(in.MC)
@@ -205,6 +206,30 @@ func applySetDefs(
 		set.SetAside = def.SetAside
 	}
 	return nil
+}
+
+// applySideBacks gives every card of a side deck printed with a back of its
+// own that back, whatever back its source tells: one card with another back
+// would show which card lies on top of the face-down deck.
+func applySideBacks(cards map[string][]pack.Card, sets map[string][]pack.Set) {
+	ownBack := make(map[string]bool)
+	for _, packSets := range sets {
+		for _, set := range packSets {
+			if set.Side == nil || !set.Side.OwnBack {
+				continue
+			}
+			for _, code := range set.Cards {
+				ownBack[code] = true
+			}
+		}
+	}
+	for _, packCards := range cards {
+		for i := range packCards {
+			if ownBack[packCards[i].Code] {
+				packCards[i].Back = pack.BackSide
+			}
+		}
+	}
 }
 
 // checkSide makes sure only a hero_special set becomes a side deck: other
