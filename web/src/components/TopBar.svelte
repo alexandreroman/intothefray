@@ -1,12 +1,15 @@
 <script lang="ts">
   import ConfirmDialog from './ConfirmDialog.svelte';
   import { on } from 'svelte/events';
+  import { MediaQuery } from 'svelte/reactivity';
   import Icon from './Icon.svelte';
   import Icons from '../table/Icons.svelte';
   import Logo from './Logo.svelte';
   import { href } from '../lib/router.svelte';
   import Segmented from './Segmented.svelte';
   import { overflowTip } from '../lib/overflowTip';
+  import { ScrollAutoHide } from '../lib/autoHide.svelte';
+  import { SMALL_SCREEN_QUERY } from '../lib/screen';
 
   let {
     spectators = 0,
@@ -18,6 +21,8 @@
     viewMode,
     onviewmode,
     readyAll,
+    scroller,
+    hidden = $bindable(false),
   }: {
     spectators?: number;
     /** Where the viewer is, after the logo: the first part stands out, the rest is dimmed. */
@@ -34,6 +39,10 @@
     onviewmode?: (mode: 'all' | 'focus') => void;
     /** Readies every card of the player's that can be: on the table, for players only. */
     readyAll?: { disabled: boolean; run: () => void };
+    /** What scrolls under the bar, when not the window: on a small screen, the bar hides as it scrolls down. */
+    scroller?: HTMLElement;
+    /** Whether the bar is slid out of view, for a screen whose layout follows it. */
+    hidden?: boolean;
   } = $props();
 
   const VIEW_MODES = [
@@ -45,6 +54,36 @@
   const [crumbHead, ...crumbRest] = $derived(crumbs);
 
   let confirmingEnd = $state(false);
+
+  // On a small screen the bar slides away as the page scrolls down. It stays while it is in
+  // use: keyboard focus inside it, or the dialog it opened. The focus a tap or a click leaves
+  // behind does not count, or the bar would never hide again after a use.
+  const small = new MediaQuery(SMALL_SCREEN_QUERY);
+  let focusWithin = $state(false);
+  const autoHide = new ScrollAutoHide({
+    source: () => scroller ?? window,
+    enabled: () => small.current,
+    pinned: () => focusWithin || confirmingEnd,
+  });
+
+  $effect(() => {
+    hidden = autoHide.hidden;
+  });
+
+  function focusEntered(event: FocusEvent): void {
+    if (!(event.target as Element).matches(':focus-visible')) {
+      return;
+    }
+    // Brought back by a keyboard focus, the bar keeps the page where the reader left it.
+    autoHide.keepPlace();
+    focusWithin = true;
+  }
+
+  // As :focus-within: focus leaving for another of the bar's controls stays within.
+  function focusLeft(event: FocusEvent): void {
+    const header = event.currentTarget as HTMLElement;
+    focusWithin = header.contains(event.relatedTarget as Node | null);
+  }
 
   function endGame(): void {
     confirmingEnd = false;
@@ -98,7 +137,13 @@
   }
 </script>
 
-<header>
+<!-- Hidden, it stays focusable: a tab into it brings it back. -->
+<header
+  class:auto-hide={small.current}
+  class:hidden
+  onfocusin={focusEntered}
+  onfocusout={focusLeft}
+>
   <div class="bar">
     {#if onback}
       <button class="icon-button" aria-label="Back" title="Back" onclick={onback}>
@@ -180,11 +225,34 @@
 {/if}
 
 <style>
-  /* The background and the border span the window. */
+  /* The background and the border span the window. The height is TOP_BAR_HEIGHT (lib/autoHide). */
   header {
     height: 56px;
     background: var(--bg);
     border-bottom: 1px solid var(--panel-2);
+  }
+
+  /*
+   * On a small screen it sticks to the top of a scrolling page, over the content but under the
+   * connection status (Game.svelte, 200), the dialogs (5600) and the tooltips (6000), and slides
+   * out of view while the page scrolls down:
+   * its border box, border included, goes. The content scrolls into the room it leaves.
+   */
+  header.auto-hide {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    transition: transform 0.2s ease;
+  }
+
+  header.auto-hide.hidden {
+    transform: translateY(-100%);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    header.auto-hide {
+      transition: none;
+    }
   }
 
   /*
@@ -297,6 +365,9 @@
    * A narrow bar drops its least useful items first: the crumb, Fullscreen,
    * then the spectator count. The logo and End game always stay. Fullscreen
    * stays while active, or a viewer without an Escape key could not leave it.
+   * The items follow the width only: the bar also hides on scroll on a short
+   * screen (SMALL_SCREEN_QUERY, lib/screen), a phone on its side, which has the
+   * room for all of them.
    */
   @media (max-width: 600px) {
     .bar {

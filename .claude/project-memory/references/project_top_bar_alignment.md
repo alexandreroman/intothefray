@@ -14,6 +14,10 @@ type: project
 - On the table, the bar's left edge is the play area's padding and its
   icons sit 8px from the window's right edge, over the history panel: they
   do not move when the panel collapses.
+- On a short table screen that keeps the history panel (wider than 900px,
+  up to 500px tall), the bar floats over the play area only: its icons sit
+  on the play area's 24px gutter and the history panel runs from the top
+  of the window.
 
 **Why:** a bar whose edges match the content reads as part of the page.
 

@@ -3,6 +3,7 @@ import { tick } from 'svelte';
 import TopBar from './TopBar.svelte';
 import { route } from '../lib/router.svelte';
 import { cutShort } from '../lib/overflowTip.testing';
+import { DESKTOP, LANDSCAPE_PHONE, mockScreen, PHONE, TABLET } from '../lib/screen.testing';
 
 // jsdom has no Fullscreen API: each test installs the one it needs, as own
 // properties that shadow nothing and are simply deleted afterwards.
@@ -321,5 +322,186 @@ describe('TopBar logo', () => {
     await fireEvent.click(screen.getByRole('link', { name: 'Into The Fray: home' }));
     expect(window.location.pathname).toBe('/');
     expect(route.current).toEqual({ name: 'home' });
+  });
+});
+
+describe('TopBar on scroll', () => {
+  // The page scrolls up to 1200 px.
+  const PAGE_HEIGHT = 2000;
+  const WINDOW_HEIGHT = 800;
+  const scrollY = Object.getOwnPropertyDescriptor(window, 'scrollY');
+  const innerHeight = Object.getOwnPropertyDescriptor(window, 'innerHeight');
+
+  beforeEach(() => {
+    Object.defineProperty(document.documentElement, 'scrollHeight', {
+      value: PAGE_HEIGHT,
+      configurable: true,
+    });
+    Object.defineProperty(window, 'innerHeight', { value: WINDOW_HEIGHT, configurable: true });
+    // jsdom does not scroll: the calls are only recorded.
+    vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    Reflect.deleteProperty(document.documentElement, 'scrollHeight');
+    for (const [name, descriptor] of [
+      ['scrollY', scrollY],
+      ['innerHeight', innerHeight],
+    ] as const) {
+      if (descriptor) {
+        Object.defineProperty(window, name, descriptor);
+      }
+    }
+  });
+
+  /** Scrolls the window to that vertical offset. */
+  async function scrollWindowTo(offset: number): Promise<void> {
+    Object.defineProperty(window, 'scrollY', { value: offset, configurable: true });
+    await fireEvent.scroll(window);
+  }
+
+  function header(container: HTMLElement): HTMLElement {
+    return container.querySelector('header')!;
+  }
+
+  /** Waits for the next animation frame, and for what was asked of it. */
+  function nextFrame(): Promise<void> {
+    return new Promise((resolve) => requestAnimationFrame(() => resolve()));
+  }
+
+  /**
+   * Makes every focus look like the keyboard's, as a tab gives, or a tap's or a click's: whether
+   * :focus-visible matches the focused element. jsdom guesses it from the events seen before.
+   */
+  function focusBy(device: 'keyboard' | 'pointer'): void {
+    const matches = Element.prototype.matches;
+    vi.spyOn(Element.prototype, 'matches').mockImplementation(function (this: Element, selectors) {
+      if (selectors === ':focus-visible') {
+        return device === 'keyboard' && matches.call(this, ':focus');
+      }
+      return matches.call(this, selectors);
+    });
+  }
+
+  it('slides out of view on a compact screen as the page scrolls down, and back as it scrolls up', async () => {
+    mockScreen(PHONE);
+    const { container } = render(TopBar);
+    expect(header(container).classList).toContain('auto-hide');
+    expect(header(container).classList).not.toContain('hidden');
+
+    await scrollWindowTo(300);
+    expect(header(container).classList).toContain('hidden');
+
+    await scrollWindowTo(250);
+    expect(header(container).classList).not.toContain('hidden');
+  });
+
+  it('slides out of view on a phone on its side, wider than a compact screen but short', async () => {
+    mockScreen(LANDSCAPE_PHONE);
+    const { container } = render(TopBar);
+    expect(header(container).classList).toContain('auto-hide');
+
+    await scrollWindowTo(300);
+    expect(header(container).classList).toContain('hidden');
+
+    await scrollWindowTo(250);
+    expect(header(container).classList).not.toContain('hidden');
+  });
+
+  it('follows the scroller it is given rather than the window', async () => {
+    mockScreen(PHONE);
+    const scroller = document.createElement('div');
+    Object.defineProperties(scroller, {
+      scrollHeight: { value: 3000 },
+      clientHeight: { value: 600 },
+      scrollTop: { value: 0, writable: true },
+    });
+    const { container } = render(TopBar, { scroller });
+
+    await scrollWindowTo(300);
+    expect(header(container).classList).not.toContain('hidden');
+
+    scroller.scrollTop = 400;
+    await fireEvent.scroll(scroller);
+    expect(header(container).classList).toContain('hidden');
+  });
+
+  it('stays in view while keyboard focus is inside it', async () => {
+    mockScreen(PHONE);
+    focusBy('keyboard');
+    const { container } = render(TopBar);
+    await scrollWindowTo(300);
+    expect(header(container).classList).toContain('hidden');
+
+    // Hidden, it stays in the accessibility tree: a tab into it brings it back.
+    const home = screen.getByRole('link', { name: 'Into The Fray: home' });
+    home.focus();
+    await tick();
+    expect(header(container).classList).not.toContain('hidden');
+    await nextFrame();
+
+    await scrollWindowTo(600);
+    expect(header(container).classList).not.toContain('hidden');
+
+    // Let go, it stays until the next scroll down.
+    home.blur();
+    await tick();
+    expect(header(container).classList).not.toContain('hidden');
+    await scrollWindowTo(700);
+    expect(header(container).classList).toContain('hidden');
+  });
+
+  it('keeps the page where it was as keyboard focus brings it back', async () => {
+    mockScreen(PHONE);
+    focusBy('keyboard');
+    render(TopBar);
+    await scrollWindowTo(300);
+
+    // The browser scrolls the page up to bring the focused control into view.
+    screen.getByRole('link', { name: 'Into The Fray: home' }).focus();
+    Object.defineProperty(window, 'scrollY', { value: 95, configurable: true });
+    await nextFrame();
+    expect(window.scrollTo).toHaveBeenCalledExactlyOnceWith({ top: 300, behavior: 'instant' });
+  });
+
+  it('does not stay for the focus a tap leaves, nor the one a closed dialog gives back', async () => {
+    mockScreen(PHONE);
+    focusBy('pointer');
+    const { container } = render(TopBar, { onend: () => {} });
+    const end = screen.getByRole('button', { name: 'End game' });
+
+    // Tapped, the button takes the focus.
+    end.focus();
+    await fireEvent.click(end);
+    await fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(document.activeElement).toBe(end);
+
+    await scrollWindowTo(300);
+    expect(header(container).classList).toContain('hidden');
+    expect(window.scrollTo).not.toHaveBeenCalled();
+  });
+
+  it('stays in view while its End game dialog is open', async () => {
+    mockScreen(PHONE);
+    const { container } = render(TopBar, { onend: () => {} });
+    await fireEvent.click(screen.getByRole('button', { name: 'End game' }));
+
+    await scrollWindowTo(300);
+    expect(header(container).classList).not.toContain('hidden');
+  });
+
+  it.each([
+    ['a tablet', TABLET],
+    ['a desktop', DESKTOP],
+  ])('never hides on a larger screen: %s', async (_name, size) => {
+    mockScreen(size);
+    const { container } = render(TopBar);
+
+    await scrollWindowTo(300);
+    await scrollWindowTo(900);
+    expect(header(container).classList).not.toContain('auto-hide');
+    expect(header(container).classList).not.toContain('hidden');
   });
 });
