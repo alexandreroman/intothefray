@@ -3,6 +3,7 @@ import { tick } from 'svelte';
 import Table from './Table.svelte';
 import { interaction, LINGER_MS } from './interaction.svelte';
 import { knownCard, loadGameCards, loadIndex, type CardInfo } from '../lib/catalog';
+import { setLang } from '../lib/lang';
 import { cutShort } from '../lib/overflowTip.testing';
 import { clearPrefMemory } from '../lib/prefs';
 import type {
@@ -753,6 +754,55 @@ describe('Table', () => {
     await waitFor(() => {
       expect(container.querySelector('header .crumbs')?.textContent?.trim()).toBe(
         'Rhino / Bomb Scare / Masters of Evil',
+      );
+    });
+  });
+
+  it('shows card names, images, history and crumbs in French when chosen', async () => {
+    setLang('fr');
+    // Built once, as the catalog keeps its cards: a localized face is made once per face.
+    const english = infoOf('01094')!;
+    const rhino: CardInfo = {
+      ...english,
+      card: {
+        ...english.card,
+        faces: english.card.faces.map((face) => ({
+          ...face,
+          localized: { fr: { name: 'Rhinocéros', images: ['fr/01094.webp'] } },
+        })),
+      },
+    };
+    vi.mocked(knownCard).mockImplementation((code) => (code === '01094' ? rhino : infoOf(code)));
+    vi.mocked(loadIndex).mockResolvedValue({
+      ...INDEX,
+      scenarios: INDEX.scenarios.map((s) => ({ ...s, localized: { fr: { name: 'Rhinocéros' } } })),
+      sets: INDEX.sets.map((s) =>
+        s.code === 'bomb_scare' ? { ...s, localized: { fr: { name: 'Alerte à la bombe' } } } : s,
+      ),
+    });
+    const view = makeView();
+    view.config = { ...view.config, modulars: ['bomb_scare', 'masters_of_evil'] };
+    view.log = [
+      {
+        who: 'Alex',
+        color: 0,
+        text: 'flipped Rhino',
+        at: new Date().toISOString(),
+        parts: [
+          { text: 'flipped ' },
+          { text: 'Rhino', card: true, ref: { card: '01094', face: 0 } },
+        ],
+      },
+    ];
+    const { container } = render(Table, { session: fakeSession(), view });
+
+    const villain = await within(surface()).findByRole('img', { name: 'Rhinocéros' });
+    expect(villain.getAttribute('src')).toBe('fr/01094.webp');
+    const history = screen.getByRole('list', { name: 'History' });
+    expect(within(history).getByText('Rhinocéros').tagName).toBe('B');
+    await waitFor(() => {
+      expect(container.querySelector('header .crumbs')?.textContent?.trim()).toBe(
+        'Rhinocéros / Alerte à la bombe / Masters of Evil',
       );
     });
   });

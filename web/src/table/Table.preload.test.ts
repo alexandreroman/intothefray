@@ -5,6 +5,7 @@ import { render } from '@testing-library/svelte';
 import { tick } from 'svelte';
 import Table from './Table.svelte';
 import { gameCards, loadGameCards, loadIndex } from '../lib/catalog';
+import { setLang } from '../lib/lang';
 import type { PackCard, PackFace, PresenceState, View } from '../lib/types';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
@@ -25,8 +26,8 @@ class RecordedImage {
   }
 }
 
-function face(name: string, images: string[]): PackFace {
-  return { name, type: '', size: 'std', images };
+function face(name: string, images: string[], extra: Partial<PackFace> = {}): PackFace {
+  return { name, type: '', size: 'std', images, ...extra };
 }
 
 const POOL: PackCard[] = [
@@ -34,7 +35,7 @@ const POOL: PackCard[] = [
     code: '01001',
     faces: [
       face('Spider-Man', ['01001a.jpg', 'cdb-01001a.jpg']),
-      face('Peter Parker', ['01001b.jpg']),
+      face('Peter Parker', ['01001b.jpg'], { localized: { fr: { images: ['fr/01001b.webp'] } } }),
     ],
     back: 'player',
     quantity: 1,
@@ -90,6 +91,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  localStorage.clear();
   vi.unstubAllGlobals();
   vi.clearAllMocks();
   document.body.replaceChildren();
@@ -104,6 +106,15 @@ describe('Table preload', () => {
 
     expect(sources()).toEqual(['01001a.jpg', '01001b.jpg', '01094.jpg']);
     expect(RecordedImage.made.every((img) => img.fetchPriority === 'low')).toBe(true);
+  });
+
+  it('fetches the French image of a face that has one when French is chosen', async () => {
+    setLang('fr');
+    render(Table, { session: fakeSession(), view: makeView() });
+
+    await settle();
+
+    expect(sources()).toEqual(['01001a.jpg', 'fr/01001b.webp', '01094.jpg']);
   });
 
   it('fetches nothing when the browser asks to save data', async () => {

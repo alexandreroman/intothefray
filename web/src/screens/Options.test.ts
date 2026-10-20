@@ -52,6 +52,29 @@ describe('Options', () => {
     expect(felt.getAttribute('aria-pressed')).toBe('true');
   });
 
+  it('offers English and French, English first by default', () => {
+    render(Options);
+    const select = screen.getByLabelText<HTMLSelectElement>('Language');
+
+    expect([...select.options].map((option) => option.textContent)).toEqual([
+      'English',
+      'Français',
+    ]);
+    expect(select.value).toBe('en');
+    expect(screen.getByText('Card names and images. The interface stays in English.')).toBeTruthy();
+  });
+
+  it('stores the chosen language and shows it next time', async () => {
+    const { unmount } = render(Options);
+
+    await fireEvent.change(screen.getByLabelText('Language'), { target: { value: 'fr' } });
+
+    expect(getPref('itf-lang')).toBe('fr');
+    unmount();
+    render(Options);
+    expect(screen.getByLabelText<HTMLSelectElement>('Language').value).toBe('fr');
+  });
+
   it('shows the title and where the options are saved', () => {
     render(Options);
 

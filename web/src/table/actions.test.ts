@@ -16,7 +16,7 @@ const FACES: Record<string, Partial<PackFace>[]> = {
     { name: 'The Break-In!', size: 'land' },
     { name: 'The Break-In!', size: 'land' },
   ],
-  '01100': [{ name: 'Hard to Keep Down' }],
+  '01100': [{ name: 'Hard to Keep Down', localized: { fr: { name: 'Coriace' } } }],
 };
 
 function infoOf(code: string): CardInfo | null {
@@ -489,6 +489,21 @@ describe('actionsFor', () => {
 
     expect(reveal.disabled).toBe(true);
     expect(reveal.tip).toBe('Hard to Keep Down is already revealed on this deck: move it first');
+  });
+
+  it('names the revealed card in the viewer language', () => {
+    const view = makeView({
+      cards: [card('r', { code: '01100', owner: -1, onPile: 'enc' })],
+      piles: [pile('enc', { kind: 'encounter', count: 20 })],
+    });
+    const items = actionsFor({ kind: 'pile', id: 'enc' }, view, ALEX, 'fr');
+    if (!Array.isArray(items)) {
+      throw new Error(`expected items, got the text "${items.text}"`);
+    }
+
+    expect(item(items, 'reveal').tip).toBe(
+      'Coriace is already revealed on this deck: move it first',
+    );
   });
 
   it('discard pile items', () => {

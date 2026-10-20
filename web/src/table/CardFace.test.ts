@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import CardFace from './CardFace.svelte';
+import { localizedFace } from '../lib/localize';
 
 describe('CardFace', () => {
   it('CardFace falls back to the next image', async () => {
@@ -10,6 +11,26 @@ describe('CardFace', () => {
     await fireEvent.error(img);
 
     expect(screen.getByRole('img', { name: 'Rhino' }).getAttribute('src')).toBe('b.png');
+  });
+
+  it('falls back from the French image to the English one', async () => {
+    const rhino = localizedFace(
+      {
+        name: 'Rhino',
+        type: 'villain',
+        size: 'std',
+        images: ['en/01094.jpg'],
+        localized: { fr: { images: ['fr/01094.webp'] } },
+      },
+      'fr',
+    );
+    render(CardFace, { images: rhino.images, name: rhino.name });
+    const img = screen.getByRole('img', { name: 'Rhino' });
+    expect(img.getAttribute('src')).toBe('fr/01094.webp');
+
+    await fireEvent.error(img);
+
+    expect(screen.getByRole('img', { name: 'Rhino' }).getAttribute('src')).toBe('en/01094.jpg');
   });
 
   it('shows a placeholder with the name once no URL is left', async () => {
