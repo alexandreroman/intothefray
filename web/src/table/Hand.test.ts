@@ -1,8 +1,9 @@
-import { fireEvent, render, screen, within } from '@testing-library/svelte';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
 import Hand from './Hand.svelte';
 import handSource from './Hand.svelte?raw';
 import { interaction } from './interaction.svelte';
 import { fanPositions, HAND_CARD } from './layout';
+import { motion } from './motion.svelte';
 import type { CardView as TableCard, PackFace } from '../lib/types';
 
 const NAMES: Record<string, string> = {
@@ -33,6 +34,7 @@ function handCards(): HTMLElement[] {
 afterEach(() => {
   vi.restoreAllMocks();
   interaction.reset();
+  motion.stop();
 });
 
 describe('Hand', () => {
@@ -101,6 +103,29 @@ describe('Hand', () => {
     // Beside the cards, at the bottom: still closed.
     await fireEvent.pointerMove(window, { clientX: 590, clientY: 800 });
     expect(isOpen()).toBe(false);
+  });
+
+  it('a drawn card waiting for its copy is hidden, and left out of the band until it lands', async () => {
+    // h1 measures 600..732 on the screen, the others 900..1032.
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: Element,
+    ) {
+      const x = this.closest<HTMLElement>('.hcard')?.dataset.id === 'h1' ? 600 : 900;
+      return DOMRect.fromRect({ x, y: 700, width: 132, height: 185 });
+    });
+    motion.drawing.add('h1');
+    render(Hand, { cards: CARDS, faceOf });
+    expect(handCards()[0]?.classList).toContain('arriving');
+
+    await fireEvent.pointerMove(window, { clientX: 650, clientY: 800 });
+    // Whatever measures the band as the hand is drawn is done.
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(handList().classList).not.toContain('open');
+
+    // Landed: it shows, and the band, measured again, takes it in under the resting pointer.
+    motion.drawing.delete('h1');
+    await waitFor(() => expect(handList().classList).toContain('open'));
+    expect(handCards()[0]?.classList).not.toContain('arriving');
   });
 
   it('closes when the pointer leaves the window', async () => {

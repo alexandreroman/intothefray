@@ -1,4 +1,4 @@
-import type { CardView, LogView, PileView, Point, View } from '../lib/types';
+import type { Area, CardView, LogView, PileView, Point, PrivateView, View } from '../lib/types';
 import { diffViews, mergedLines, type OwnDrop } from './animate';
 
 function card(id: string, extra: Partial<CardView> = {}): CardView {
@@ -38,9 +38,14 @@ function view(
     log?: LogView[];
     current?: string;
     firstPlayer?: Point;
+    hands?: Partial<Record<Area, string[]>>;
+    /** How many cards Alex and Sam hold. */
+    handCounts?: [number, number];
+    look?: PrivateView;
   } = {},
 ): View {
   const cards = extra.cards ?? [];
+  const [alexHand, samHand] = extra.handCounts ?? [0, 0];
   return {
     id: 'g1',
     phase: 'playing',
@@ -51,14 +56,14 @@ function view(
         color: 0,
         host: true,
         ready: true,
-        decks: [{ area: 'p0', ready: true, handCount: 0 }],
+        decks: [{ area: 'p0', ready: true, handCount: alexHand }],
       },
       {
         name: 'Sam',
         color: 1,
         host: false,
         ready: true,
-        decks: [{ area: 'p1', ready: true, handCount: 0 }],
+        decks: [{ area: 'p1', ready: true, handCount: samHand }],
       },
     ],
     spectators: 0,
@@ -75,6 +80,8 @@ function view(
         { key: 'villain', label: 'Villain', current: extra.current ?? 'v1', cards: ['v1', 'v2'] },
       ],
       firstPlayer: extra.firstPlayer ?? { x: 0, y: 0 },
+      ...(extra.hands && { hands: extra.hands }),
+      ...(extra.look && { private: extra.look }),
     },
     log: extra.log ?? [OLD_LINE],
   };
@@ -449,6 +456,198 @@ describe('diffViews', () => {
     expect(
       diffViews(prev, next, { element: { kind: 'firstPlayer' }, card: null, lifted: [] }),
     ).toEqual([]);
+  });
+
+  describe('draws', () => {
+    const deck = (count: number) => pile('deck:p0', { count });
+    const discard = (cards: string[]) =>
+      pile('disc:p0', { kind: 'discard', x: 720, count: cards.length, cards });
+    const inHand = (id: string, extra: Partial<CardView> = {}) =>
+      card(id, { code: '01001', zone: 'hand', ...extra });
+
+    it('a card drawn from the deck comes out of it on its back', () => {
+      const prev = view({ piles: [deck(10)], hands: { p0: [] } });
+      const next = view({ cards: [inHand('d')], piles: [deck(9)], hands: { p0: ['d'] } });
+
+      expect(diffViews(prev, next)).toEqual([
+        { kind: 'draw', id: 'd', fromPile: 'deck:p0', faceUp: false },
+      ]);
+    });
+
+    it('several cards drawn at once come in hand order', () => {
+      const prev = view({ cards: [inHand('h')], piles: [deck(10)], hands: { p0: ['h'] } });
+      const next = view({
+        cards: [inHand('b'), inHand('h'), inHand('a')],
+        piles: [deck(8)],
+        hands: { p0: ['h', 'a', 'b'] },
+      });
+
+      expect(diffViews(prev, next)).toEqual([
+        { kind: 'draw', id: 'a', fromPile: 'deck:p0', faceUp: false },
+        { kind: 'draw', id: 'b', fromPile: 'deck:p0', faceUp: false },
+      ]);
+    });
+
+    it("a card drawn by one of the viewer's two decks comes out of that deck", () => {
+      const twoDecks = (count: number, cards: CardView[], hand: string[]): View => {
+        const base = view({
+          cards,
+          piles: [deck(10), pile('deck:p1', { owner: 1, count })],
+          hands: { p0: [], p1: hand },
+        });
+        base.you = { ...base.you, areas: ['p0', 'p1'] };
+        return base;
+      };
+      const prev = twoDecks(10, [], []);
+      const next = twoDecks(9, [inHand('d', { owner: 1 })], ['d']);
+
+      expect(diffViews(prev, next)).toEqual([
+        { kind: 'draw', id: 'd', fromPile: 'deck:p1', faceUp: false },
+      ]);
+    });
+
+    it('a card taken from a discard pile shows its face all along', () => {
+      const prev = view({
+        cards: [card('t', { code: '01001', zone: 'pile' })],
+        piles: [deck(10), discard(['t'])],
+        hands: { p0: [] },
+      });
+      const next = view({
+        cards: [inHand('t')],
+        piles: [deck(10), discard([])],
+        hands: { p0: ['t'] },
+      });
+
+      expect(diffViews(prev, next)).toEqual([
+        { kind: 'draw', id: 't', fromPile: 'disc:p0', faceUp: true },
+      ]);
+    });
+
+    it('a card taken from the deck the viewer looks through comes out of it on its back', () => {
+      const prev = view({
+        cards: [card('s', { code: '01001', zone: 'pile' })],
+        piles: [deck(10)],
+        hands: { p0: [] },
+        look: { pile: 'deck:p0', mode: 'search', cards: ['s'] },
+      });
+      const next = view({ cards: [inHand('s')], piles: [deck(9)], hands: { p0: ['s'] } });
+
+      expect(diffViews(prev, next)).toEqual([
+        { kind: 'draw', id: 's', fromPile: 'deck:p0', faceUp: false },
+      ]);
+    });
+
+    it('a card passed from another hand comes out of no pile', () => {
+      const prev = view({ piles: [deck(10)], hands: { p0: [] } });
+      const next = view({ cards: [inHand('p')], piles: [deck(10)], hands: { p0: ['p'] } });
+
+      expect(diffViews(prev, next)).toEqual([]);
+    });
+
+    it("a card passed in while another player draws does not come out of that player's deck", () => {
+      const samDeck = (count: number) => pile('deck:p1', { owner: 1, count });
+      const prev = view({ piles: [deck(10), samDeck(10)], hands: { p0: [] }, handCounts: [0, 5] });
+      // Sam passes one of each to Alex, and draws two: one more in his hand.
+      const next = view({
+        cards: [inHand('fromSam', { owner: 1 }), inHand('alexs')],
+        piles: [deck(10), samDeck(8)],
+        hands: { p0: ['fromSam', 'alexs'] },
+        handCounts: [2, 6],
+      });
+
+      expect(diffViews(prev, next)).toEqual([{ kind: 'drawAway', pile: 'deck:p1' }]);
+    });
+
+    it('an encounter card drawn into the hand comes out of the encounter deck', () => {
+      const encounter = (count: number) => pile('enc', { kind: 'encounter', owner: -1, count });
+      const prev = view({ piles: [deck(10), encounter(20)], hands: { p0: [] } });
+      const next = view({
+        cards: [inHand('e', { owner: -1, back: 'encounter' })],
+        piles: [deck(10), encounter(19)],
+        hands: { p0: ['e'] },
+      });
+
+      expect(diffViews(prev, next)).toEqual([
+        { kind: 'draw', id: 'e', fromPile: 'enc', faceUp: false },
+      ]);
+    });
+
+    it("the viewer's own deck dragged onto the hand does not draw again", () => {
+      const prev = view({ piles: [deck(10)], hands: { p0: [] } });
+      const next = view({ cards: [inHand('d')], piles: [deck(9)], hands: { p0: ['d'] } });
+      const ownDraw: OwnDrop = { element: { kind: 'pile', id: 'deck:p0' }, card: null, lifted: [] };
+
+      expect(diffViews(prev, next, ownDraw)).toEqual([]);
+    });
+
+    it('a table card back in the hand still moves there', () => {
+      const prev = view({ cards: [card('t', { x: 100 })], piles: [deck(10)], hands: { p0: [] } });
+      const next = view({ cards: [inHand('t')], piles: [deck(10)], hands: { p0: ['t'] } });
+
+      expect(diffViews(prev, next)).toEqual([
+        {
+          kind: 'move',
+          id: 't',
+          from: { zone: 'table', x: 100, y: 0 },
+          to: { zone: 'hand', x: 0, y: 0 },
+        },
+      ]);
+    });
+
+    it("another player's draw from their deck leaves it unseen", () => {
+      const samDeck = (count: number) => pile('deck:p1', { owner: 1, count });
+      const prev = view({ piles: [deck(10), samDeck(10)], handCounts: [0, 5] });
+      const next = view({ piles: [deck(10), samDeck(8)], handCounts: [0, 7] });
+
+      expect(diffViews(prev, next)).toEqual([
+        { kind: 'drawAway', pile: 'deck:p1' },
+        { kind: 'drawAway', pile: 'deck:p1' },
+      ]);
+    });
+
+    it("another player's draw from their discard pile names the card", () => {
+      const samDiscard = (cards: string[]) =>
+        pile('disc:p1', { kind: 'discard', owner: 1, count: cards.length, cards });
+      const prev = view({
+        cards: [card('x', { code: '01001', owner: 1, zone: 'pile' })],
+        piles: [pile('deck:p1', { owner: 1 }), samDiscard(['x'])],
+        handCounts: [0, 5],
+      });
+      const next = view({
+        piles: [pile('deck:p1', { owner: 1 }), samDiscard([])],
+        handCounts: [0, 6],
+      });
+
+      expect(diffViews(prev, next)).toEqual([{ kind: 'drawAway', pile: 'disc:p1', card: 'x' }]);
+    });
+
+    it("a spectator sees every player's draw leave", () => {
+      const spectating = (counts: [number, number], decks: [number, number]): View => {
+        const base = view({
+          piles: [deck(decks[0]), pile('deck:p1', { owner: 1, count: decks[1] })],
+          handCounts: counts,
+        });
+        base.you = { role: 'spectator', color: -1, host: false };
+        return base;
+      };
+
+      expect(diffViews(spectating([5, 5], [10, 10]), spectating([6, 6], [9, 9]))).toEqual([
+        { kind: 'drawAway', pile: 'deck:p0' },
+        { kind: 'drawAway', pile: 'deck:p1' },
+      ]);
+    });
+
+    it('draws more than 2 s apart yield nothing', () => {
+      const prev = view({ piles: [deck(10)], hands: { p0: [] }, handCounts: [0, 5] });
+      const next = view({
+        cards: [inHand('d')],
+        piles: [deck(9)],
+        hands: { p0: ['d'] },
+        handCounts: [1, 6],
+      });
+
+      expect(diffViews(prev, next, undefined, 2001)).toEqual([]);
+    });
   });
 
   it('views more than 2 s apart yield nothing', () => {
