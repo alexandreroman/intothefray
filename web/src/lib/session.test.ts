@@ -623,14 +623,6 @@ describe('GameSession', () => {
       });
     });
 
-    it('ignores spectators, whose colour is negative', () => {
-      const session = newSession();
-      lastSocket().open();
-      lastSocket().receive({ type: 'presence', color: -1, name: 'Watcher' });
-
-      expect(session.presence.size).toBe(0);
-    });
-
     it('drops a player that a view no longer lists', () => {
       const session = newSession();
       lastSocket().open();
@@ -655,30 +647,222 @@ describe('GameSession', () => {
 
       expect(session.presence.size).toBe(0);
     });
+  });
 
-    it('is throttled to 20 messages a second, keeping the latest on the trailing edge', () => {
+  describe('sendPresence', () => {
+    const drag = (x: number, y: number, cards = ['c1']) => ({ cards, x, y });
+
+    // The presence messages sent since the session opened, without their type.
+    function presenceSent(): Record<string, unknown>[] {
+      return lastSocket()
+        .sent.filter((m) => m.type === 'presence')
+        .map(({ type: _type, ...fields }) => fields);
+    }
+
+    function openSession(): GameSession {
       const session = newSession();
       lastSocket().open();
-      const presenceSent = () => lastSocket().sent.filter((m) => m.type === 'presence');
+      return session;
+    }
 
-      session.sendPresence({ cursor: { x: 1, y: 1 } });
-      session.sendPresence({ cursor: { x: 2, y: 2 } });
-      session.sendPresence({ cursor: { x: 3, y: 3 } });
-      session.sendPresence({ ping: { x: 9, y: 9 } });
+    it('sends the first move at once and the latest of the next ones at the end of the interval', () => {
+      const session = openSession();
+
+      session.sendPresence({ cursor: { x: 10, y: 10 } });
+      session.sendPresence({ cursor: { x: 20, y: 20 } });
+      session.sendPresence({ cursor: { x: 30, y: 30 } });
+      expect(presenceSent()).toEqual([{ cursor: { x: 10, y: 10 } }]);
+
+      vi.advanceTimersByTime(50);
+      expect(presenceSent()).toHaveLength(1);
+
+      vi.advanceTimersByTime(100);
+      expect(presenceSent()).toEqual([{ cursor: { x: 10, y: 10 } }, { cursor: { x: 30, y: 30 } }]);
+    });
+
+    it('throttles the moves of a drag like those of the cursor', () => {
+      const session = openSession();
+
+      session.sendPresence({ drag: drag(10, 10) });
+      session.sendPresence({ drag: drag(20, 20) });
+      session.sendPresence({ drag: drag(30, 30) });
+      expect(presenceSent()).toEqual([{ drag: drag(10, 10) }]);
+
+      vi.advanceTimersByTime(150);
+      expect(presenceSent()).toEqual([{ drag: drag(10, 10) }, { drag: drag(30, 30) }]);
+    });
+
+    it.each([
+      ['a ping', { ping: { x: 9, y: 9 } }],
+      ['a preview', { preview: 'c1' }],
+      ['a cleared preview', { preview: '' }],
+      ['the cursor leaving', { cursor: null }],
+    ])('sends %s at once, with the move waiting', (_name, event) => {
+      const session = openSession();
+      session.sendPresence({ cursor: { x: 10, y: 10 } });
+      session.sendPresence({ cursor: { x: 20, y: 20 } });
+
+      session.sendPresence(event);
+      expect(presenceSent()).toEqual([
+        { cursor: { x: 10, y: 10 } },
+        { cursor: { x: 20, y: 20 }, ...event },
+      ]);
+
+      // What it took along is not sent again.
+      vi.advanceTimersByTime(1000);
+      expect(presenceSent()).toHaveLength(2);
+    });
+
+    it('sends the start and the end of a drag at once, the end after the last move', () => {
+      const session = openSession();
+      session.sendPresence({ cursor: { x: 10, y: 10 } });
+      session.sendPresence({ cursor: { x: 20, y: 20 } });
+
+      session.sendPresence({ drag: drag(20, 20) });
+      session.sendPresence({ drag: drag(40, 40) });
+      session.sendPresence({ drag: null });
+      // The others keep the ghost where the drag ends: its last spot goes out before the end.
+      expect(presenceSent()).toEqual([
+        { cursor: { x: 10, y: 10 } },
+        { cursor: { x: 20, y: 20 }, drag: drag(20, 20) },
+        { drag: drag(40, 40) },
+        { drag: null },
+      ]);
+
+      vi.advanceTimersByTime(1000);
+      expect(presenceSent()).toHaveLength(4);
+    });
+
+    it('sends a held move of a drag, with the other moves held, before its end', () => {
+      const session = openSession();
+      session.sendPresence({ cursor: { x: 10, y: 10 }, drag: drag(10, 10) });
+      vi.advanceTimersByTime(150);
+      session.sendPresence({ cursor: { x: 11, y: 10 }, drag: drag(11, 11) });
+      expect(presenceSent()).toHaveLength(1);
+
+      session.sendPresence({ drag: null });
+      expect(presenceSent()).toEqual([
+        { cursor: { x: 10, y: 10 }, drag: drag(10, 10) },
+        { cursor: { x: 11, y: 10 }, drag: drag(11, 11) },
+        { drag: null },
+      ]);
+
+      vi.advanceTimersByTime(1000);
+      expect(presenceSent()).toHaveLength(3);
+    });
+
+    it('starts afresh on a new connection: its first moves go out at once', () => {
+      const session = openSession();
+      session.sendPresence({ cursor: { x: 10, y: 10 } });
+      session.sendPresence({ drag: drag(10, 10) });
+      lastSocket().drop();
+      vi.advanceTimersByTime(500);
+      lastSocket().open();
+
+      // Within the dead zone of what went out on the old socket, which the others no longer know:
+      // neither held, nor taken for a move of the drag sent then.
+      session.sendPresence({ cursor: { x: 11, y: 10 } });
+      session.sendPresence({ drag: drag(11, 10) });
+      expect(presenceSent()).toEqual([{ cursor: { x: 11, y: 10 } }, { drag: drag(11, 10) }]);
+
+      vi.advanceTimersByTime(1000);
+      expect(presenceSent()).toHaveLength(2);
+    });
+
+    it('sends at once a drag of other cards than the last one sent: a new drag', () => {
+      const session = openSession();
+      session.sendPresence({ drag: drag(10, 10) });
+
+      session.sendPresence({ drag: drag(20, 20, ['c2']) });
+      session.sendPresence({ drag: { cards: [], token: true, x: 30, y: 30 } });
+
+      expect(presenceSent()).toEqual([
+        { drag: drag(10, 10) },
+        { drag: drag(20, 20, ['c2']) },
+        { drag: { cards: [], token: true, x: 30, y: 30 } },
+      ]);
+    });
+
+    it('keeps the order: a ping carries the move waiting, the end of the interval sends only newer moves', () => {
+      const session = openSession();
+      session.sendPresence({ cursor: { x: 10, y: 10 } });
+      session.sendPresence({ cursor: { x: 20, y: 20 } });
+      session.sendPresence({ ping: { x: 20, y: 20 } });
+      session.sendPresence({ cursor: { x: 30, y: 30 } });
+
+      vi.advanceTimersByTime(150);
+      expect(presenceSent()).toEqual([
+        { cursor: { x: 10, y: 10 } },
+        { cursor: { x: 20, y: 20 }, ping: { x: 20, y: 20 } },
+        { cursor: { x: 30, y: 30 } },
+      ]);
+    });
+
+    it('holds a move within the dead zone of the last one sent, but not a longer one', () => {
+      const session = openSession();
+      session.sendPresence({ cursor: { x: 10, y: 10 } });
+      vi.advanceTimersByTime(150);
+
+      session.sendPresence({ cursor: { x: 12, y: 12 } }); // 2.8 units away
+      expect(presenceSent()).toHaveLength(1);
+
+      session.sendPresence({ cursor: { x: 13, y: 10 } }); // 3 units away
+      expect(presenceSent()).toEqual([{ cursor: { x: 10, y: 10 } }, { cursor: { x: 13, y: 10 } }]);
+
+      // The longer move superseded the held one.
+      vi.advanceTimersByTime(1000);
+      expect(presenceSent()).toHaveLength(2);
+    });
+
+    it('sends a trembling cursor once it stops, exactly where it stopped', () => {
+      const session = openSession();
+      session.sendPresence({ cursor: { x: 10, y: 10 } });
+      vi.advanceTimersByTime(150);
+
+      for (const [x, y] of [
+        [11, 10],
+        [10, 11],
+        [12, 11],
+        [11, 12],
+      ] as const) {
+        session.sendPresence({ cursor: { x, y } });
+        vi.advanceTimersByTime(100);
+      }
       expect(presenceSent()).toHaveLength(1);
 
       vi.advanceTimersByTime(50);
-      expect(presenceSent()).toHaveLength(2);
-      expect(presenceSent()[1]).toEqual({
-        type: 'presence',
-        cursor: { x: 3, y: 3 },
-        ping: { x: 9, y: 9 },
-      });
+      expect(presenceSent()).toEqual([{ cursor: { x: 10, y: 10 } }, { cursor: { x: 11, y: 12 } }]);
 
-      // Nothing pending: the window closes and the next message goes out at once.
-      vi.advanceTimersByTime(50);
+      vi.advanceTimersByTime(1000);
+      expect(presenceSent()).toHaveLength(2);
+    });
+
+    it('holds the small moves of a drag too', () => {
+      const session = openSession();
+      session.sendPresence({ drag: drag(10, 10) });
+      vi.advanceTimersByTime(150);
+
+      session.sendPresence({ drag: drag(11, 11) });
+      expect(presenceSent()).toHaveLength(1);
+
+      vi.advanceTimersByTime(150);
+      expect(presenceSent()).toEqual([{ drag: drag(10, 10) }, { drag: drag(11, 11) }]);
+    });
+
+    it('sends a held move with an event that comes first', () => {
+      const session = openSession();
+      session.sendPresence({ cursor: { x: 10, y: 10 } });
+      vi.advanceTimersByTime(150);
+      session.sendPresence({ cursor: { x: 11, y: 10 } });
+
       session.sendPresence({ preview: 'c1' });
-      expect(presenceSent()).toHaveLength(3);
+      expect(presenceSent()).toEqual([
+        { cursor: { x: 10, y: 10 } },
+        { cursor: { x: 11, y: 10 }, preview: 'c1' },
+      ]);
+
+      vi.advanceTimersByTime(1000);
+      expect(presenceSent()).toHaveLength(2);
     });
   });
 });

@@ -3,7 +3,9 @@ import { getToken, setToken } from './prefs';
 import type {
   Action,
   LobbyConfig,
+  PresenceDrag,
   PresenceFields,
+  PresencePoint,
   PresenceState,
   Role,
   SessionError,
@@ -47,8 +49,19 @@ interface Deps {
 
 /** Retry delays in ms; the last one repeats forever. */
 const BACKOFF_MS = [500, 1000, 2000, 4000, 8000];
-/** At most 20 presence messages per second. */
-const PRESENCE_INTERVAL_MS = 50;
+/**
+ * The least time between two moves of the cursor or of a drag sent to the
+ * others (~7 a second): each message costs the server a Redis publish. The
+ * table glides the others' cursors and drags over the same time.
+ */
+export const PRESENCE_INTERVAL_MS = 150;
+/**
+ * A move shorter than this, in table units (about CSS pixels at 100 %), is
+ * not sent until the pointer stops: well below what the others can notice
+ * while the cursor glides, ~1.5 % of a card's width, and above the 1-unit
+ * jitter of rounding and of a trembling hand.
+ */
+const PRESENCE_DEAD_ZONE = 3;
 const SOCKET_OPEN = 1;
 /** Close code of the server for an unknown game. */
 const CLOSE_GAME_NOT_FOUND = 4404;
@@ -89,10 +102,16 @@ export class GameSession {
   #viewAt: number | null = null;
   #droppedSinceView = false;
 
-  // Presence throttling: a message goes out at once if none went out in the
-  // last interval, otherwise the latest one waits for the trailing edge.
-  #presenceTimerRunning = false;
-  #pendingPresence: PresenceFields | null = null;
+  // Presence throttling (sendPresence). After a message, the moves wait for
+  // the end of the interval, the latest winning; a move within the dead zone
+  // of the last one sent is held until the pointer settles.
+  #presenceWindowOpen = false;
+  #pendingPresence: PresenceFields = {};
+  #heldPresence: PresenceFields = {};
+  // Tells whether a settle timer still holds the latest held value.
+  #settleGeneration = 0;
+  #sentCursor: PresencePoint | null = null;
+  #sentDrag: PresenceDrag | null = null;
 
   constructor(gameId: string, name: string, deps: Deps = {}) {
     this.#gameId = gameId;
@@ -117,6 +136,7 @@ export class GameSession {
         return;
       }
       this.status = 'open';
+      this.#resetPresence();
       this.#send({ type: 'hello', token: getToken(this.#gameId) ?? undefined, name: this.#name });
     };
     socket.onmessage = (event: MessageEvent) => {
@@ -170,28 +190,128 @@ export class GameSession {
   }
 
   /**
-   * Relays the viewer's cursor, preview, drag or ping, at most 20 times a
-   * second. Fields sent while waiting are merged, as each one is a change on
-   * its own (a ping must not erase the cursor position).
+   * Relays the viewer's cursor, preview, drag or ping. Events (a ping, a
+   * preview, the cursor leaving the table, a drag starting or ending) go out
+   * at once. Moves (of the cursor, or of a drag) go out at most once per
+   * interval, the latest winning, and a tiny move waits until the pointer
+   * stops. An event carries the moves still waiting, so that none arrives
+   * after it: the cursor's latest spot goes out with a ping, not after it.
+   * The end of a drag is the exception: the moves waiting, the drag's last
+   * one among them, go out first, as the others keep the ghost where the
+   * drag ends.
    */
   sendPresence(fields: PresenceFields): void {
-    if (this.#presenceTimerRunning) {
-      this.#pendingPresence = { ...this.#pendingPresence, ...fields };
+    if (this.#isPresenceEvent(fields)) {
+      this.#sendPresenceNow(fields);
       return;
     }
-    this.#send({ type: 'presence', ...fields });
-    this.#startPresenceTimer();
+    this.#pendingPresence = { ...this.#pendingPresence, ...fields };
+    if (!this.#presenceWindowOpen) {
+      this.#releasePendingPresence();
+    }
   }
 
-  #startPresenceTimer(): void {
-    this.#presenceTimerRunning = true;
+  #isPresenceEvent(fields: PresenceFields): boolean {
+    if (fields.ping !== undefined || fields.preview !== undefined) {
+      return true;
+    }
+    if (fields.cursor === null || fields.drag === null) {
+      return true;
+    }
+    // Other cards (or the token instead of cards) than the last drag sent: a new drag starts.
+    return fields.drag !== undefined && !isSameLoad(fields.drag, this.#sentDrag);
+  }
+
+  /** Sends the fields with every move waiting or held, past the throttle and the dead zone. */
+  #sendPresenceNow(fields: PresenceFields): void {
+    const waiting = { ...this.#heldPresence, ...this.#pendingPresence };
+    this.#heldPresence = {};
+    this.#pendingPresence = {};
+    if (fields.drag === null && waiting.drag) {
+      // The others keep the ghost of a drag that ends where it was let go: the end must not
+      // erase its last move, which goes out first.
+      this.#transmitPresence(waiting);
+      this.#transmitPresence(fields);
+    } else {
+      this.#transmitPresence({ ...waiting, ...fields });
+    }
+    this.#openPresenceWindow();
+  }
+
+  /** Sends one presence message, and notes the spots the others then know. */
+  #transmitPresence(message: PresenceFields): void {
+    if (!this.#send({ type: 'presence', ...message })) {
+      return;
+    }
+    if (message.cursor !== undefined) {
+      this.#sentCursor = message.cursor;
+    }
+    if (message.drag !== undefined) {
+      this.#sentDrag = message.drag;
+    }
+  }
+
+  /**
+   * Forgets what the throttle knows of the last connection: the spots sent
+   * then, and the moves waiting or held. A new socket starts afresh, so that
+   * its first move goes out at once.
+   */
+  #resetPresence(): void {
+    this.#pendingPresence = {};
+    this.#heldPresence = {};
+    this.#settleGeneration += 1; // A settle timer still running finds nothing to send.
+    this.#sentCursor = null;
+    this.#sentDrag = null;
+  }
+
+  /** Sends the moves waiting, but holds those within the dead zone of the last ones sent. */
+  #releasePendingPresence(): void {
+    const due = this.#pendingPresence;
+    this.#pendingPresence = {};
+    let held = false;
+    if (due.cursor !== undefined && isNear(due.cursor, this.#sentCursor)) {
+      this.#heldPresence.cursor = due.cursor;
+      delete due.cursor;
+      held = true;
+    }
+    // A drag waiting carries the load last sent: one of other cards is an event, sent at once.
+    if (due.drag !== undefined && isNear(due.drag, this.#sentDrag)) {
+      this.#heldPresence.drag = due.drag;
+      delete due.drag;
+      held = true;
+    }
+    if (Object.keys(due).length > 0) {
+      this.#sendPresenceNow(due);
+    } else if (held) {
+      this.#settlePresence();
+    }
+  }
+
+  /**
+   * Sends the held moves once the pointer stays still for an interval: the
+   * others then see exactly where it stopped. Each new held move restarts
+   * the wait; the timer cannot be cleared, so a newer one makes it stale.
+   */
+  #settlePresence(): void {
+    this.#settleGeneration += 1;
+    const generation = this.#settleGeneration;
     this.#setTimeout(() => {
-      this.#presenceTimerRunning = false;
-      const pending = this.#pendingPresence;
-      this.#pendingPresence = null;
-      if (pending) {
-        this.sendPresence(pending);
+      const latest = generation === this.#settleGeneration;
+      if (latest && Object.keys(this.#heldPresence).length > 0) {
+        this.#sendPresenceNow({});
       }
+    }, PRESENCE_INTERVAL_MS);
+  }
+
+  /** After a message, the moves wait for the end of the interval. */
+  #openPresenceWindow(): void {
+    if (this.#presenceWindowOpen) {
+      return;
+    }
+    this.#presenceWindowOpen = true;
+    this.#setTimeout(() => {
+      this.#presenceWindowOpen = false;
+      this.#releasePendingPresence();
     }, PRESENCE_INTERVAL_MS);
   }
 
@@ -289,9 +409,6 @@ export class GameSession {
   #handlePresence(message: Extract<ServerMessage, { type: 'presence' }>): void {
     // Absent fields did not change: merge into what is known of the viewer.
     const { color, name, cursor, preview, drag, ping } = message;
-    if (color < 0) {
-      return; // A spectator: the table shows the players' cursors only.
-    }
     const changes = Object.fromEntries(
       Object.entries({ cursor, preview, drag, ping }).filter(([, value]) => value !== undefined),
     );
@@ -345,4 +462,24 @@ function deckSignature(view: View | null): string {
   const me = view?.players.find((player) => player.color === view.you.color);
   const decks = me?.decks.map((deck) => [deck.deckName, deck.hero, deck.heroName]);
   return JSON.stringify(decks);
+}
+
+/** Whether a drag carries the same cards, or the token, as another one: it only moved. */
+function isSameLoad(drag: PresenceDrag, other: PresenceDrag | null): boolean {
+  if (other === null || Boolean(drag.token) !== Boolean(other.token)) {
+    return false;
+  }
+  return (
+    drag.cards.length === other.cards.length && drag.cards.every((id, i) => id === other.cards[i])
+  );
+}
+
+/** Whether a spot lies within the dead zone of the last one sent. */
+function isNear(spot: PresencePoint | null, sent: PresencePoint | null): boolean {
+  if (spot === null || sent === null) {
+    return false;
+  }
+  const dx = spot.x - sent.x;
+  const dy = spot.y - sent.y;
+  return dx * dx + dy * dy < PRESENCE_DEAD_ZONE * PRESENCE_DEAD_ZONE;
 }
