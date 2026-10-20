@@ -44,6 +44,8 @@
   import AskCount from './AskCount.svelte';
   import type { LocalBox, ShownBox } from './boxes';
   import CardBox from './CardBox.svelte';
+  import ContextMenu from './ContextMenu.svelte';
+  import { cardTitle, contextItems, pileTitle, type ContextEntry } from './contextItems';
   import DragLayer from './DragLayer.svelte';
   import { DRAG_THRESHOLD, intersect, sourceOf, type Point, type Rect } from './drag';
   import Flights from './Flights.svelte';
@@ -53,6 +55,7 @@
   import { handleKey } from './keys';
   import KeysSheet from './KeysSheet.svelte';
   import { isOutOfPlay, outOfPlayChips, ownerFrames, surfaceSize } from './layout';
+  import { LongPress } from './longPress';
   import {
     ALL_ROWS,
     focusRows,
@@ -720,7 +723,8 @@
   // In arrow mode, the hint stays until the arrow is drawn or cancelled,
   // whatever the pointer hovers meanwhile.
   const barShown = $derived.by(() => {
-    if (interaction.dragging || interaction.band) {
+    // The context menu lists the same actions, and more: the bar would only hide the table under it.
+    if (interaction.dragging || interaction.band || interaction.contextMenu) {
       return false;
     }
     if (interaction.arrowFrom !== null) {
@@ -789,6 +793,92 @@
     }
   }
 
+  // ---- The context menu ----
+
+  /** Every action of a table card or pile, as its context menu lists them; none for a hand card. */
+  function contextEntriesOf(element: TableElement): ContextEntry[] {
+    const role = view.you.role;
+    if (role === undefined || element.kind === 'hand') {
+      return [];
+    }
+    return contextItems(element, actionsFor(element, view, { areas: view.you.areas, role }, lang));
+  }
+
+  // From the current view, as the bar: a redraw updates the entries ("Damage (7)").
+  const contextEntries = $derived.by((): ContextEntry[] => {
+    // As for the bar: actionsFor reads the catalog's plain Map.
+    void catalog;
+    const open = interaction.contextMenu;
+    return open ? contextEntriesOf(open.element) : [];
+  });
+
+  /** The header of the menu: the card's name as the table shows it, or the pile's with its count. */
+  const contextTitle = $derived.by(() => {
+    const element = interaction.contextMenu?.element;
+    if (element?.kind === 'pile') {
+      const pile = piles.find((p) => p.id === element.id);
+      return pile ? pileTitle(pile, view) : '';
+    }
+    const card = element ? cardsById.get(element.id) : undefined;
+    return card ? cardTitle(card, faceOf(card)) : '';
+  });
+
+  // A redraw that leaves its element without actions (an emptied pile, a card gone) closes it.
+  $effect(() => {
+    if (interaction.contextMenu && contextEntries.length === 0) {
+      untrack(() => interaction.closeContextMenu());
+    }
+  });
+
+  /** The table card or pile an element of the surface belongs to, if any: what a context menu is for. */
+  function contextElementOf(target: EventTarget | null): TableElement | null {
+    if (!(target instanceof Element)) {
+      return null;
+    }
+    const hit = target.closest<HTMLElement>('.surface .card:not(.ghost)[data-id]');
+    const id = hit?.dataset.id;
+    if (!hit || id === undefined) {
+      return null;
+    }
+    return { kind: hit.classList.contains('pile') ? 'pile' : 'card', id };
+  }
+
+  /** Opens the element's context menu at that point, unless it has no actions. */
+  function openContextMenu(element: TableElement, at: Point): void {
+    if (contextEntriesOf(element).length > 0) {
+      interaction.openContextMenu(element, at);
+    }
+  }
+
+  /**
+   * A right click, or a Ctrl + click on macOS, anywhere on the table: never the
+   * browser's menu there, and the element's own on a card or a pile. A touch
+   * opens it with a long press instead, which Android also reports as a
+   * context menu: that one is already handled.
+   */
+  function onTableContextMenu(event: MouseEvent): void {
+    event.preventDefault();
+    if (interaction.pointerType === 'touch') {
+      return;
+    }
+    const element = contextElementOf(event.target);
+    if (element) {
+      openContextMenu(element, { x: event.clientX, y: event.clientY });
+    }
+  }
+
+  /** The finger held still on a card or a pile, which opens its context menu (longPress.ts). */
+  const longPress = new LongPress();
+
+  $effect(() => () => longPress.cancel());
+
+  /** A chosen entry runs as a click on the bar would, once the menu is closed. */
+  function runContextItem(item: ActionItem): void {
+    const element = interaction.contextMenu?.element ?? null;
+    interaction.closeContextMenu();
+    runItem(item, element);
+  }
+
   /** The "How many cards?" question being asked, if any. */
   let asking = $state<CountQuestion | null>(null);
 
@@ -804,8 +894,8 @@
     }
   });
 
-  function runItem(item: ActionItem): void {
-    const element = interaction.hovered;
+  /** Runs a bar item on its element: the hovered one, or the context menu's. */
+  function runItem(item: ActionItem, element: TableElement | null = interaction.hovered): void {
     if (!item.run || item.disabled || !element) {
       return;
     }
@@ -831,6 +921,9 @@
         }
         return;
       }
+      case 'arrow':
+        interaction.startArrow(local.card);
+        return;
     }
   }
 
@@ -1003,6 +1096,8 @@
    */
   function onTablePointerDown(event: PointerEvent): void {
     const target = event.target as HTMLElement;
+    // Another finger, or any press, ends the long press under way.
+    longPress.cancel();
     if (interaction.arrowFrom !== null && !interaction.arrowDrag) {
       event.preventDefault();
       event.stopPropagation();
@@ -1027,6 +1122,15 @@
       event.stopPropagation();
       interaction.startArrow(pressed, true);
       return;
+    }
+    // A finger held on a card or a pile opens its menu. Until then the press goes on as usual, and may
+    // become a drag; once the menu opens, the press is over and the tap the finger ends is no tap.
+    const element = contextElementOf(target);
+    if (event.pointerType === 'touch' && element && !modal.open) {
+      longPress.start(event, (at) => {
+        openContextMenu(element, at);
+        interaction.swallowNextClick();
+      });
     }
     if (isEmptySpot(target)) {
       interaction.release();
@@ -1097,6 +1201,7 @@
   /** The band follows the pointer once it has moved past the drag threshold. */
   function onPointerMove(event: PointerEvent): void {
     interaction.pointerMoved(event);
+    longPress.moved(event);
     const press = emptyPress;
     if (!press?.canBand || event.pointerId !== press.pointerId) {
       return;
@@ -1153,6 +1258,7 @@
 
   /** A Shift + drag arrow goes to the card the button is let go over. */
   function onPointerUp(event: PointerEvent): void {
+    longPress.ended(event);
     if (interaction.arrowDrag) {
       endArrowAt(tableCardOf(document.elementFromPoint(event.clientX, event.clientY)));
     }
@@ -1160,7 +1266,8 @@
   }
 
   /** A finger that scrolls the table, among others, cancels its press: it is no click. */
-  function onPointerCancel(): void {
+  function onPointerCancel(event: PointerEvent): void {
+    longPress.ended(event);
     if (interaction.arrowDrag) {
       interaction.endArrow();
     }
@@ -1392,6 +1499,7 @@
     bind:clientHeight={visibleHeight}
     bind:clientWidth={visibleWidth}
     onpointerdowncapture={onTablePointerDown}
+    oncontextmenu={onTableContextMenu}
     onscroll={measureFocus}
   >
     <div class="table">
@@ -1536,6 +1644,21 @@
     />
   {/if}
 
+  {#if interaction.contextMenu && contextEntries.length > 0 && wrap}
+    <!-- Created afresh for each opening: the focus it gives back is the one before that opening. -->
+    {#key interaction.contextMenu}
+      <ContextMenu
+        title={contextTitle}
+        entries={contextEntries}
+        at={interaction.contextMenu.at}
+        bounds={wrap}
+        {zoom}
+        onrun={runContextItem}
+        onclose={() => interaction.closeContextMenu()}
+      />
+    {/key}
+  {/if}
+
   {#if counterShown}
     <TokenPill
       anchor={counterAnchor}
@@ -1657,6 +1780,8 @@
   */
   .tablewrap {
     grid-area: table;
+    /* A long touch opens the context menu, not the system's callout (iOS). */
+    -webkit-touch-callout: none;
     overflow: auto;
     scrollbar-width: thin;
     scrollbar-color: #2c3654 transparent;

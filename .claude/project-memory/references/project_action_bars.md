@@ -19,6 +19,10 @@ type: project
   - discard pile: Search │ Shuffle into deck.
 - The card bar has no quick token button: tokens and statuses are added
   from the token menu, the keys (D, T, N…) and the token's − / + pill.
+- A right click (long press on touch) on a card in play or a pile opens
+  a context menu with every action of the element, default in bold,
+  tokens and statuses as two submenus. Hand cards, box tiles and group
+  selections have no context menu.
 - Hand cards have no floating bar: they are played or discarded by
   dragging, P and Backspace. A bar on the fanned hand is unreadable and
   of little use.

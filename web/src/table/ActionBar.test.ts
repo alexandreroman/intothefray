@@ -801,6 +801,8 @@ describe('ActionBar', () => {
     await renderTable();
     vi.useFakeTimers();
     await fireEvent.pointerDown(placed('mine'), { pointerType: 'touch' });
+    // The finger lifts: held, it would open the context menu.
+    await fireEvent.pointerUp(placed('mine'), { pointerType: 'touch' });
     await fireEvent.click(placed('mine'));
     await fireEvent.pointerLeave(placed('mine'));
     await vi.advanceTimersByTimeAsync(1000);

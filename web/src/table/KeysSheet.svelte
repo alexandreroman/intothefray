@@ -114,6 +114,7 @@
     [
       'Mouse',
       [
+        { what: 'All the actions of a card or pile', keys: [], with: 'right click' },
         { what: 'Ping a spot', keys: ['Alt'], with: 'click' },
         { what: 'Arrow from a card to another', keys: ['Shift'], with: 'drag' },
         { what: 'Select cards', keys: [], with: 'drag on an empty spot' },

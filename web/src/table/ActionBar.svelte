@@ -14,6 +14,7 @@
   import { placeDropdown, type DropdownPlace } from './dropdown';
   import Icons from './Icons.svelte';
   import { interaction } from './interaction.svelte';
+  import './menu.css';
 
   let {
     anchor,
@@ -303,7 +304,7 @@
 
 {#if openMenu}
   <div
-    class="menu"
+    class="table-menu"
     role="menu"
     aria-label={openMenu.label}
     tabindex="-1"
@@ -402,9 +403,8 @@
     background: var(--line-strong);
   }
 
-  /* Flat buttons on the ink panel: only the hovered one lights up. */
-  .actionbar button,
-  .menu button {
+  /* Flat buttons on the ink panel: only the hovered one lights up. The dropdowns' look is menu.css's. */
+  .actionbar button {
     height: 34px;
     padding: 0 11px;
     border: 0;
@@ -413,8 +413,7 @@
     font-weight: 600;
   }
 
-  .actionbar button:focus-visible,
-  .menu button:focus-visible {
+  .actionbar button:focus-visible {
     outline: 2px solid var(--sel);
     outline-offset: -2px;
   }
@@ -453,39 +452,6 @@
     font-size: 11px;
   }
 
-  /* Cut to the room it has, it scrolls inside (dropdown.ts). */
-  .menu {
-    position: fixed;
-    z-index: 5000;
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-    min-width: 180px;
-    padding: 5px;
-    border: 1px solid var(--line-strong);
-    border-radius: 12px;
-    background: var(--panel-2);
-    box-shadow: 0 14px 34px #0009;
-  }
-
-  /* Cut short, its items keep their height: it scrolls rather than squeezing them. */
-  .menu > :global(*) {
-    flex-shrink: 0;
-  }
-
-  .menu:focus {
-    outline: none;
-  }
-
-  .menu button {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    width: 100%;
-    text-align: left;
-  }
-
   .section {
     display: flex;
     flex-direction: column;
@@ -505,22 +471,5 @@
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--muted);
-  }
-
-  .msep {
-    height: 1px;
-    margin: 4px 2px;
-    background: var(--line-strong);
-  }
-
-  /* The key of a choice, on a dark chip. */
-  kbd {
-    padding: 1px 6px;
-    border-radius: 5px;
-    background: var(--bg);
-    color: var(--muted);
-    font: inherit;
-    font-size: 11px;
-    font-weight: 700;
   }
 </style>

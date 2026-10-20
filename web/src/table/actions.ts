@@ -34,7 +34,9 @@ export type LocalAction =
   /** The card choice of the stage the hovered card shows. */
   | { local: 'stageBox' }
   /** The cards of a public pile: the hovered one. */
-  | { local: 'browseBox'; pile: string };
+  | { local: 'browseBox'; pile: string }
+  /** The arrow mode from that card, as the A key starts it: a click then picks the card it points at. */
+  | { local: 'arrow'; card: string };
 
 /**
  * How an item's key shows in a tooltip or a menu: Backspace as its ⌫ glyph, a
@@ -60,6 +62,11 @@ export interface ActionItem {
   tip?: string;
   /** Drawn pressed: Ready on an exhausted card. */
   pressed?: boolean;
+  /**
+   * The element's default action, the first of its bar: shown in bold in the context menu. Set by
+   * the builders rather than found from the position, as it will also be what a double click does.
+   */
+  default?: true;
   /** Items of different groups are drawn with a separator between them. */
   group: number;
   /** A dropdown item under a heading: the heading starts where the section changes. */
@@ -77,6 +84,8 @@ const MAX_COUNT = 99;
 const GROUP_TURN = 0;
 const GROUP_MARK = 1;
 const GROUP_LEAVE = 2;
+// The context menu's own last group, which the bar does not show: the arrow, which has no button.
+const GROUP_POINT = 3;
 
 // Groups of a pile, in bar order: its main action (Draw, Reveal), the ways to
 // look at its cards, then the rarer actions.
@@ -215,6 +224,7 @@ function exhaustItem(card: CardView): ActionItem {
     tip: stuck ? 'Locked: this card does not ready' : label,
     disabled: stuck,
     pressed: card.exhausted,
+    default: true,
     group: GROUP_TURN,
     // The server decides the outcome (resolveExhaust): the client sends only the card.
     run: () => ({ kind: 'exhaust', card: card.id }),
@@ -410,6 +420,21 @@ function moveMenu(card: CardView, context: Context): ActionItem[] {
   return [...menu, ...outOfPlay];
 }
 
+/**
+ * Draw an arrow, for the context menu only: the bar has no button for it, the A key and Shift + drag
+ * start it. It starts the same arrow mode as A.
+ */
+export function arrowItem(card: string): ActionItem {
+  return {
+    id: 'arrow',
+    label: 'Draw an arrow',
+    key: 'A',
+    tip: 'Draw an arrow to another card',
+    group: GROUP_POINT,
+    run: () => ({ local: 'arrow', card }),
+  };
+}
+
 // The piles a card goes to, as the server names them (internal/game/state.go).
 
 const SIDE_DECK_PREFIX = 'side:';
@@ -530,9 +555,11 @@ function pileActions(pile: PileView, context: Context): ActionItem[] | { text: s
       ];
     case 'discard':
     case 'encounterDiscard':
-    case 'sideDiscard':
-      // Anyone may search a discard pile; only its owner shuffles it into its deck.
-      return own ? [searchItem(pile), shuffleBackItem(pile)] : [searchItem(pile)];
+    case 'sideDiscard': {
+      // Anyone may search a discard pile, its default action; only its owner shuffles it into its deck.
+      const search: ActionItem = { ...searchItem(pile), default: true };
+      return own ? [search, shuffleBackItem(pile)] : [search];
+    }
     case 'victory':
     case 'aside':
       // Not drawn on the table: the chips on their owner's frame open their box.
@@ -550,6 +577,7 @@ function drawOneItem(sideDeck?: PileView): ActionItem {
     label: 'Draw 1',
     key: 'W',
     tip: 'Draw 1',
+    default: true,
     group: GROUP_MAIN,
     run: () => drawAction(1, sideDeck),
   };
@@ -591,6 +619,7 @@ function revealItem(pile: PileView, context: Context): ActionItem {
     label: 'Reveal',
     key: 'R',
     tip: 'Reveal',
+    default: true,
     group: GROUP_MAIN,
     run: () => ({ kind: 'reveal' }),
   };
@@ -701,6 +730,8 @@ function browseItem(pile: PileView): ActionItem {
     label: 'Browse…',
     key: 'K',
     tip: 'Browse…',
+    // A spectator's only action on a pile.
+    default: true,
     group: GROUP_LOOK,
     run: () => ({ local: 'browseBox', pile: pile.id }),
   };

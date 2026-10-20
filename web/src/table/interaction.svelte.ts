@@ -62,6 +62,12 @@ export interface DropOn {
   id: string;
 }
 
+/** A table card or pile whose context menu is open, and the point of the screen it opens at. */
+export interface ContextMenuAt {
+  element: TableElement;
+  at: { x: number; y: number };
+}
+
 /** What hovering an element does to the side preview. */
 export type PreviewChange = 'show' | 'clear';
 
@@ -110,6 +116,11 @@ class TableInteraction {
   /** The pointer is on the bar or its dropdown. */
   onBar = $state(false);
   /**
+   * The context menu open, if any. Its element is the hovered one, and stays
+   * so while it is open: neither hovers nor redraws change what it is for.
+   */
+  contextMenu = $state.raw<ContextMenuAt | null>(null);
+  /**
    * The way from the hovered element to its bar, set by the bar as it is
    * placed: the gap between them, and the part of the element's box next to
    * the bar, which a tilted (exhausted) card leaves partly bare. The linger
@@ -146,6 +157,11 @@ class TableInteraction {
   #counterTimer: ReturnType<typeof setTimeout> | undefined;
   #landingTimer: ReturnType<typeof setTimeout> | undefined;
 
+  /** The kind of the last pointer pressed: 'mouse', 'pen' or 'touch'. */
+  get pointerType(): string {
+    return this.#pointerType;
+  }
+
   /** Follows the pointer, to tell real hovers from the ones a redraw fires. */
   pointerMoved(event: PointerEvent): void {
     this.#pointer = { x: event.clientX, y: event.clientY };
@@ -172,6 +188,7 @@ class TableInteraction {
       this.dragging ||
       this.locked ||
       this.menu !== null ||
+      this.contextMenu !== null ||
       this.onBar ||
       this.onPill
     ) {
@@ -355,7 +372,8 @@ class TableInteraction {
       return;
     }
     this.#cancelHide();
-    if (this.locked) {
+    // The context menu holds its element and the preview while it is open.
+    if (this.locked || this.contextMenu !== null) {
       return;
     }
     // An open dropdown belongs to the bar's element: it stays the bar's.
@@ -371,7 +389,7 @@ class TableInteraction {
       return;
     }
     this.#cancelHide();
-    if (this.locked || this.menu !== null) {
+    if (this.locked || this.menu !== null || this.contextMenu !== null) {
       return;
     }
     this.hovered = null;
@@ -386,7 +404,13 @@ class TableInteraction {
   leave(): void {
     this.#cancelHide();
     this.#hideTimer = setTimeout(() => {
-      if (this.locked || this.menu !== null || this.onBar || this.onPill) {
+      if (
+        this.locked ||
+        this.menu !== null ||
+        this.contextMenu !== null ||
+        this.onBar ||
+        this.onPill
+      ) {
         return;
       }
       if (this.#onBarWay()) {
@@ -489,6 +513,38 @@ class TableInteraction {
     this.previewed = null;
     this.locked = false;
     this.menu = null;
+    this.contextMenu = null;
+  }
+
+  /**
+   * Opens the context menu of a table card or pile at that point of the
+   * screen: the element becomes the hovered one, without a tap selection, and
+   * the bar's dropdown and the token pill go. The press that opened it (Ctrl +
+   * click on macOS, a long touch) does not become a drag.
+   */
+  openContextMenu(element: TableElement, at: { x: number; y: number }): void {
+    if (modal.open || this.dragging !== null) {
+      return;
+    }
+    this.#cancelHide();
+    this.hideCounter();
+    this.menu = null;
+    this.locked = false;
+    this.hovered = element;
+    this.letGo();
+    this.contextMenu = { element, at };
+  }
+
+  /**
+   * Closes the context menu. The pointer may be anywhere by then: its element
+   * goes after the linger, unless the pointer enters it again.
+   */
+  closeContextMenu(): void {
+    if (this.contextMenu === null) {
+      return;
+    }
+    this.contextMenu = null;
+    this.leave();
   }
 
   /** Starts an arrow from that card: picked with a click, or, with `drag`, where the button is let go. */
@@ -527,10 +583,15 @@ class TableInteraction {
   }
 
   /**
-   * Escape clears the group and the band, and closes the open dropdown, or
-   * cancels the arrow, or releases the selection.
+   * Escape closes the context menu, and only that: the group stays. Otherwise
+   * it clears the group and the band, and closes the open dropdown, or cancels
+   * the arrow, or releases the selection.
    */
   escape(): void {
+    if (this.contextMenu !== null) {
+      this.closeContextMenu();
+      return;
+    }
     this.clearGroup();
     this.band = null;
     if (this.menu !== null) {
