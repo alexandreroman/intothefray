@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/fs"
-	"maps"
 	"slices"
 	"strings"
 	"testing"
@@ -302,30 +301,34 @@ func TestEmbeddedHeroSetup(t *testing.T) {
 	}
 
 	t.Run("side decks", func(t *testing.T) {
+		type sideDeck struct {
+			set  string
+			side pack.SideDeck
+		}
 		tests := []struct {
 			identity string
-			want     map[string]pack.SideDeck
+			want     []sideDeck // in printed order
 		}{
-			{"09001", map[string]pack.SideDeck{
-				"doctor_strange_invocation_deck": {Label: "Invocation", TopFaceUp: true, Discard: true},
+			{"09001", []sideDeck{
+				{"doctor_strange_invocation_deck", pack.SideDeck{Label: "Invocation", TopFaceUp: true, Discard: true}},
 			}},
-			{"36001", map[string]pack.SideDeck{"storm_weather_deck": {Label: "Weather"}}},
-			{"59001", map[string]pack.SideDeck{
-				"hercules_gift_deck":  {Label: "Gift"},
-				"hercules_labor_deck": {Label: "Labor"},
+			{"36001", []sideDeck{{"storm_weather_deck", pack.SideDeck{Label: "Weather"}}}},
+			{"59001", []sideDeck{
+				{"hercules_labor_deck", pack.SideDeck{Label: "Labor"}},
+				{"hercules_gift_deck", pack.SideDeck{Label: "Gift"}},
 			}},
-			{"60001", map[string]pack.SideDeck{"daredevil_sense_deck": {Label: "Sense"}}},
+			{"60001", []sideDeck{{"daredevil_sense_deck", pack.SideDeck{Label: "Sense"}}}},
 		}
 		for _, tt := range tests {
-			hero := heroes[tt.identity]
-			// Pack order is set code order.
-			if want := slices.Sorted(maps.Keys(tt.want)); !slices.Equal(hero.SideDecks, want) {
-				t.Errorf("hero %s side decks = %v, want %v", tt.identity, hero.SideDecks, want)
-			}
-			for code, want := range tt.want {
-				if got := sets[code].Side; got == nil || *got != want {
-					t.Errorf("set %s side = %+v, want %+v", code, got, want)
+			var wantCodes []string
+			for _, want := range tt.want {
+				wantCodes = append(wantCodes, want.set)
+				if got := sets[want.set].Side; got == nil || *got != want.side {
+					t.Errorf("set %s side = %+v, want %+v", want.set, got, want.side)
 				}
+			}
+			if got := heroes[tt.identity].SideDecks; !slices.Equal(got, wantCodes) {
+				t.Errorf("hero %s side decks = %v, want %v", tt.identity, got, wantCodes)
 			}
 		}
 	})

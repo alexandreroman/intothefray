@@ -979,8 +979,8 @@
       "obligation": "59035",
       "nemesis": "hercules_nemesis",
       "sideDecks": [
-        "hercules_gift_deck",
-        "hercules_labor_deck"
+        "hercules_labor_deck",
+        "hercules_gift_deck"
       ]
     }
   ]

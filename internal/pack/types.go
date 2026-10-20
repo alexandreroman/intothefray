@@ -106,7 +106,7 @@ type Hero struct {
 	Set        string   `json:"set"`
 	Obligation string   `json:"obligation,omitempty"`
 	Nemesis    string   `json:"nemesis,omitempty"`
-	SideDecks  []string `json:"sideDecks,omitempty"` // set codes, in pack order
+	SideDecks  []string `json:"sideDecks,omitempty"` // set codes, in the printed order of their cards
 }
 
 // FaceRef points at one face of a card.

@@ -345,8 +345,9 @@ func TestBuildMergesSideDecksAndSetAsideCards(t *testing.T) {
 	if len(core.Heroes) != 1 {
 		t.Fatalf("got heroes %+v, want Spider-Man", core.Heroes)
 	}
-	// Side decks follow the pack set order, which is set code order.
-	wantSideDecks := []string{"spider_man_tech_deck", "spider_man_web_deck"}
+	// Side decks follow the printed order of their cards (09010, then 09012),
+	// not the set code order.
+	wantSideDecks := []string{"spider_man_web_deck", "spider_man_tech_deck"}
 	if got := core.Heroes[0].SideDecks; !slices.Equal(got, wantSideDecks) {
 		t.Errorf("got side decks %v, want %v", got, wantSideDecks)
 	}

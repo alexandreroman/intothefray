@@ -109,14 +109,13 @@ func BuildHeroes(mc []marvelcdb.Card) map[string][]pack.Hero {
 // (doctor_strange_invocation_deck goes to doctor_strange). A side-deck set
 // that matches no hero, or several, fails the build: setup would leave its
 // cards out or give them to the wrong hero.
+//
+// A hero's side decks follow the printed order of their cards (Hercules'
+// Labor deck, 59002-59004, before his Gift deck, 59005-59007).
 func linkSideDecks(heroes map[string][]pack.Hero, sets map[string][]pack.Set) error {
 	for _, packCode := range slices.Sorted(maps.Keys(sets)) {
 		packHeroes := heroes[packCode]
-		for _, set := range sets[packCode] { // sorted by set code
-			if set.Side == nil {
-				continue
-			}
-
+		for _, set := range sideDecksInPrintedOrder(sets[packCode]) {
 			var matches []int
 			for i, hero := range packHeroes {
 				if strings.HasPrefix(set.Code, hero.Set+"_") {
@@ -140,6 +139,28 @@ func linkSideDecks(heroes map[string][]pack.Hero, sets map[string][]pack.Set) er
 		}
 	}
 	return nil
+}
+
+// sideDecksInPrintedOrder returns the side-deck sets ordered by their lowest
+// card code. A set without cards sorts first.
+func sideDecksInPrintedOrder(sets []pack.Set) []pack.Set {
+	var sideDecks []pack.Set
+	for _, set := range sets {
+		if set.Side != nil {
+			sideDecks = append(sideDecks, set)
+		}
+	}
+	slices.SortStableFunc(sideDecks, func(a, b pack.Set) int {
+		return cmp.Compare(lowestCardCode(a), lowestCardCode(b))
+	})
+	return sideDecks
+}
+
+func lowestCardCode(set pack.Set) string {
+	if len(set.Cards) == 0 {
+		return ""
+	}
+	return slices.Min(set.Cards)
 }
 
 // sortedByCode returns a copy of the cards ordered by code, so that "lowest

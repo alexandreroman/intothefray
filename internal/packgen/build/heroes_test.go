@@ -127,7 +127,7 @@ func TestBuildHeroesUsesCanonicalCodes(t *testing.T) {
 	}
 }
 
-func TestLinkSideDecksAddsSetsToTheirHeroInPackOrder(t *testing.T) {
+func TestLinkSideDecksAddsSetsToTheirHeroInPrintedOrder(t *testing.T) {
 	invocation := &pack.SideDeck{Label: "Invocation"}
 	heroes := map[string][]pack.Hero{
 		"drs":  {{Identity: "09001", Set: "doctor_strange"}},
@@ -135,10 +135,11 @@ func TestLinkSideDecksAddsSetsToTheirHeroInPackOrder(t *testing.T) {
 	}
 	sets := map[string][]pack.Set{
 		"drs": {
-			{Code: "doctor_strange", Kind: "hero"},
-			{Code: "doctor_strange_a_deck", Kind: "hero_special", Side: invocation},
-			{Code: "doctor_strange_b_deck", Kind: "hero_special", Side: invocation},
-			{Code: "doctor_strange_nemesis", Kind: "nemesis"},
+			{Code: "doctor_strange", Kind: "hero", Cards: []string{"09001"}},
+			// Set code order differs from the printed order of the cards.
+			{Code: "doctor_strange_a_deck", Kind: "hero_special", Cards: []string{"09040", "09041"}, Side: invocation},
+			{Code: "doctor_strange_b_deck", Kind: "hero_special", Cards: []string{"09033", "09032"}, Side: invocation},
+			{Code: "doctor_strange_nemesis", Kind: "nemesis", Cards: []string{"09028"}},
 		},
 		"core": {{Code: "spider_man", Kind: "hero"}},
 	}
@@ -147,7 +148,7 @@ func TestLinkSideDecksAddsSetsToTheirHeroInPackOrder(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	want := []string{"doctor_strange_a_deck", "doctor_strange_b_deck"}
+	want := []string{"doctor_strange_b_deck", "doctor_strange_a_deck"}
 	if got := heroes["drs"][0].SideDecks; !slices.Equal(got, want) {
 		t.Errorf("got side decks %v, want %v", got, want)
 	}
