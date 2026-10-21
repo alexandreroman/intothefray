@@ -485,12 +485,12 @@
     gap: 4px 8px;
     text-align: right;
     font-size: 11px;
-    color: var(--faint);
+    color: color-mix(in srgb, var(--faint) 60%, var(--table-bg));
   }
 
   /* Subdued like the rest of the line, yet still noticeable. */
   .differ {
-    color: color-mix(in srgb, var(--warn) 75%, var(--bg));
+    color: color-mix(in srgb, var(--warn) 60%, var(--table-bg));
   }
 
   /* A phone: 16px gutters, and smaller theme cards to fit three in a row. */
