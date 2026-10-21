@@ -60,7 +60,7 @@ const TILE_AWAY = 1;
 /**
  * The entries of a box tile's context menu, from its actions (tileActions),
  * in their order: Draw and Play, then a separator before the ones that send
- * the card away (Discard, Put at the bottom of the deck, Shuffle into its
+ * the card away (Discard, Put at the bottom of the deck, Shuffle into
  * deck). Play is the default: what a tile is most often taken out for.
  */
 export function tileEntries(actions: readonly TileAction[]): ContextEntry[] {
