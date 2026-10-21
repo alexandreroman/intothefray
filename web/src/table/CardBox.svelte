@@ -873,7 +873,7 @@
   .pos {
     position: absolute;
     top: 4px;
-    left: 4px;
+    right: 4px;
     z-index: 3;
     padding: 1px 7px;
     background: #07090fcc;
