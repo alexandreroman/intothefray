@@ -1,6 +1,6 @@
 ---
 name: "Presence message budget"
-description: "Presence is throttled to 150 ms with a 3-unit dead zone; events bypass it; spectators send none"
+description: "No presence while nobody else watches; 150 ms throttle, 3-unit dead zone; events bypass it; spectators send none"
 type: project
 ---
 
@@ -17,9 +17,20 @@ Remote cursors and drag ghosts glide linearly over the same interval when a
 message moves them, and follow the table at once when it scrolls, zooms or
 resizes. The server refuses all presence from spectators.
 
+The client sends no presence at all while no other viewer is connected: the
+others are the online players of another colour (`PlayerView.online`) and the
+connected spectators (`View.spectators`), both filled by the server from a
+`game.Audience`. The viewer's own other tabs do not count, as the server never
+relays presence to the sender's token. While alone, the session records the
+latest cursor, drag and preview and drops pings; when the count of others
+rises, it sends that latest state in one message, so a newcomer sees a drag in
+progress. A player's first tab opening or last tab closing re-sends every
+connection a full view, a cost tied to joins and leaves, not to activity.
+
 **Why:** keep the Redis op rate of a busy table within a small managed tier
 while remote cursors still look smooth.
 
 **How to apply:** route any new presence field through `sendPresence` and
-classify it as an event or a move; keep the glide duration derived from
+classify it as an event or a move, and add it to the latest state the session
+records and re-sends to a newcomer; keep the glide duration derived from
 `PRESENCE_INTERVAL_MS`, never a hard-coded value.
