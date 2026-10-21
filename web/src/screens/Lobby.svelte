@@ -81,8 +81,9 @@
   // A failed deck import shows under the field of the slot it was loading; anything else in the start bar.
   const deckLoadError = $derived(session.deckLoadError?.message ?? null);
   const otherError = $derived(session.lastError?.message ?? null);
-  // The slot whose load is under way or failed. A removal shifts the slots, so it starts over.
-  let loadingSlot = $state(0);
+  // The slot whose load is under way or failed, null before any load. A removal shifts the slots,
+  // so it starts over, and an error goes to the first slot.
+  let loadingSlot = $state<number | null>(null);
 
   function loadDeck(slot: number, url: string): void {
     loadingSlot = slot;
@@ -104,7 +105,12 @@
     }
   });
 
+  // While a deck load is in flight, the slots stay as they are: none is added nor removed, so that
+  // none remounts or shifts under the load.
   function addDeck(): void {
+    if (session.deckLoading) {
+      return;
+    }
     if (me && session.lobby('addDeck')) {
       addingFrom = me.decks.length;
     }
@@ -112,7 +118,7 @@
 
   function removeDeck(slot: number): void {
     addingFrom = null;
-    loadingSlot = 0;
+    loadingSlot = null;
     session.lobby('removeDeck', { deck: slot });
   }
 </script>
@@ -174,8 +180,11 @@
                 <DeckLoader
                   {deck}
                   slot={several ? slot + 1 : null}
-                  deckError={slot === loadingSlot ? session.deckError : null}
-                  error={slot === loadingSlot ? deckLoadError : null}
+                  deckError={slot === (loadingSlot ?? 0) ? session.deckError : null}
+                  error={slot === (loadingSlot ?? 0) ? deckLoadError : null}
+                  loading={session.deckLoading && slot === loadingSlot}
+                  locked={session.deckLoading}
+                  loaded={slot === loadingSlot ? session.deckLoaded : undefined}
                   onload={(url) => loadDeck(slot, url)}
                   onremove={several ? () => removeDeck(slot) : undefined}
                   autofocus={slot === focusSlot}
@@ -184,7 +193,7 @@
             {/key}
             {#if deckCount < MAX_DECKS}
               <div class="sect">
-                <button class="btn add" onclick={addDeck}>
+                <button class="btn add" aria-disabled={session.deckLoading} onclick={addDeck}>
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
                   Add a deck
                 </button>

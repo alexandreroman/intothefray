@@ -581,6 +581,209 @@ describe('GameSession', () => {
     });
   });
 
+  describe('deckLoading', () => {
+    const others = [player({ color: 1 })];
+    const unchanged = (version: number) => ({
+      type: 'view',
+      version,
+      view: view([player(), ...others]),
+    });
+
+    function loadingSession(): GameSession {
+      const session = newSession();
+      lastSocket().open();
+      lastSocket().receive(unchanged(1));
+      session.lobby('setDeck', { url: 'x' });
+      return session;
+    }
+
+    it('is set once setDeck is sent', () => {
+      const session = loadingSession();
+
+      expect(session.deckLoading).toBe(true);
+    });
+
+    it('is not set by a setDeck that could not be sent', () => {
+      const session = newSession();
+
+      expect(session.lobby('setDeck', { url: 'x' })).toBe(false);
+      expect(session.deckLoading).toBe(false);
+    });
+
+    it('ends with a deckSet for a version the view already holds', () => {
+      const session = loadingSession();
+      lastSocket().receive(unchanged(2));
+      lastSocket().receive({ type: 'deckSet', version: 2 });
+
+      expect(session.deckLoading).toBe(false);
+    });
+
+    it('ends with the view of the version a deckSet named before it', () => {
+      const session = loadingSession();
+      lastSocket().receive({ type: 'deckSet', version: 2 });
+      expect(session.deckLoading).toBe(true);
+
+      lastSocket().receive(unchanged(2));
+
+      expect(session.deckLoading).toBe(false);
+    });
+
+    it('ignores a deckSet while no load is in flight', () => {
+      const session = newSession();
+      lastSocket().open();
+      lastSocket().receive(unchanged(1));
+      lastSocket().receive({ type: 'deckSet', version: 2 });
+      session.lobby('setDeck', { url: 'x' });
+
+      lastSocket().receive(unchanged(2));
+
+      expect(session.deckLoading).toBe(true);
+    });
+
+    it('ends with a deckError', () => {
+      const session = loadingSession();
+      lastSocket().receive({
+        type: 'deckError',
+        unsupported: [{ code: '01001', name: 'Spider-Man', pack: 'core', qty: 1 }],
+      });
+
+      expect(session.deckLoading).toBe(false);
+    });
+
+    it('ends with the error that answers the load', () => {
+      const session = loadingSession();
+      lastSocket().receive({ type: 'error', code: 'deck', message: 'Nope.' });
+
+      expect(session.deckLoading).toBe(false);
+      expect(session.deckLoadError?.code).toBe('deck');
+    });
+
+    it('stays on with a view that changes the player deck, without a deckSet', () => {
+      const session = loadingSession();
+      lastSocket().receive({
+        type: 'view',
+        version: 2,
+        view: view([player({ decks: [deck({ deckName: 'Justice', hero: '01001a' })] }), ...others]),
+      });
+
+      expect(session.deckLoading).toBe(true);
+      expect(session.deckLoaded).toBe(0);
+    });
+
+    it('waits past the views below the version its deckSet named', () => {
+      const session = loadingSession();
+      lastSocket().receive({ type: 'deckSet', version: 3 });
+      // Another change, made before the deck was set.
+      lastSocket().receive({
+        type: 'view',
+        version: 2,
+        view: view([player({ decks: [deck({ deckName: 'Justice', hero: '01001a' })] }), ...others]),
+      });
+      expect(session.deckLoading).toBe(true);
+
+      lastSocket().receive(unchanged(3));
+
+      expect(session.deckLoading).toBe(false);
+      expect(session.deckLoaded).toBe(1);
+    });
+
+    it('takes an error that follows its deckSet as no answer to the load', () => {
+      const session = loadingSession();
+      lastSocket().receive({ type: 'deckSet', version: 2 });
+      lastSocket().receive({ type: 'error', code: 'forbidden', message: 'Nope.' });
+      expect(session.lastError?.code).toBe('forbidden');
+
+      lastSocket().receive(unchanged(2));
+
+      expect(session.deckLoaded).toBe(1);
+      expect(session.deckLoadError).toBeNull();
+    });
+
+    it('stays on with a view that changes nothing of the player deck', () => {
+      const session = loadingSession();
+      lastSocket().receive(unchanged(2));
+
+      expect(session.deckLoading).toBe(true);
+    });
+
+    it('ends when the connection drops, forgetting the version a deckSet named', () => {
+      const session = loadingSession();
+      lastSocket().receive({ type: 'deckSet', version: 2 });
+      lastSocket().drop();
+      expect(session.deckLoading).toBe(false);
+
+      vi.advanceTimersByTime(500);
+      lastSocket().open();
+      session.lobby('setDeck', { url: 'y' });
+      lastSocket().receive(unchanged(2));
+
+      expect(session.deckLoading).toBe(true);
+    });
+
+    it('ends when the session closes', () => {
+      const session = loadingSession();
+      session.close();
+
+      expect(session.deckLoading).toBe(false);
+    });
+
+    describe('deckLoaded', () => {
+      it('counts a load confirmed by a deckSet after its view', () => {
+        const session = loadingSession();
+        lastSocket().receive(unchanged(2));
+        lastSocket().receive({ type: 'deckSet', version: 2 });
+
+        expect(session.deckLoaded).toBe(1);
+      });
+
+      it('counts a load confirmed by a deckSet before its view, once the view comes', () => {
+        const session = loadingSession();
+        lastSocket().receive({ type: 'deckSet', version: 2 });
+        expect(session.deckLoaded).toBe(0);
+
+        lastSocket().receive(unchanged(2));
+
+        expect(session.deckLoaded).toBe(1);
+      });
+
+      it('counts each confirmed load once', () => {
+        const session = loadingSession();
+        lastSocket().receive({ type: 'deckSet', version: 2 });
+        lastSocket().receive({
+          type: 'view',
+          version: 2,
+          view: view([player({ decks: [deck({ deckName: 'Justice' })] }), ...others]),
+        });
+        lastSocket().receive(unchanged(3));
+
+        expect(session.deckLoaded).toBe(1);
+      });
+
+      it('counts no load that ends with an error', () => {
+        const session = loadingSession();
+        lastSocket().receive({ type: 'error', code: 'deck', message: 'Nope.' });
+        session.lobby('setDeck', { url: 'y' });
+        lastSocket().receive({
+          type: 'deckError',
+          unsupported: [{ code: '01001', name: 'Spider-Man', pack: 'core', qty: 1 }],
+        });
+
+        expect(session.deckLoaded).toBe(0);
+      });
+
+      it('counts no load cut short by a lost connection or the end of the session', () => {
+        const session = loadingSession();
+        lastSocket().drop();
+        vi.advanceTimersByTime(500);
+        lastSocket().open();
+        session.lobby('setDeck', { url: 'y' });
+        session.close();
+
+        expect(session.deckLoaded).toBe(0);
+      });
+    });
+  });
+
   describe('presence', () => {
     it('keeps the latest state of each viewer by colour, stamped with its time', () => {
       vi.setSystemTime(1_000);

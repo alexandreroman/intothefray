@@ -124,6 +124,8 @@ interface FakeSession {
   view: View;
   deckError: UnsupportedCard[] | null;
   deckLoadError: null;
+  deckLoading: boolean;
+  deckLoaded: number;
   lastError: null;
   lobby: ReturnType<typeof vi.fn>;
 }
@@ -176,6 +178,11 @@ function renderLive() {
       FakeSocket.last.receive(message);
       await rerender({ session, view: session.view! });
     },
+    /** Loses the connection; the session then waits to reconnect. */
+    async drop(): Promise<void> {
+      FakeSocket.last.onclose?.({ code: 1006 });
+      await rerender({ session, view: session.view! });
+    },
   };
 }
 
@@ -205,6 +212,8 @@ function renderLobby(fields: {
     view,
     deckError: fields.deckError ?? null,
     deckLoadError: null,
+    deckLoading: false,
+    deckLoaded: 0,
     lastError: null,
     lobby: vi.fn(),
   };
@@ -823,5 +832,145 @@ describe('Lobby', () => {
 
     // Slot 1 now holds the former deck 3, which never failed to load.
     expect(screen.queryByRole('alert')).toBeNull();
+  });
+
+  describe('deck loads', () => {
+    /** Renders the lobby live with three empty slots of Alex's, then loads deck 2. */
+    async function loadSecondOfThree() {
+      const live = renderLive();
+      await live.receive({
+        type: 'view',
+        version: 2,
+        view: lobbyView([{ ...alex, decks: [noDeck, noDeck, noDeck] }, sam]),
+      });
+      // No slot was loaded yet: none shows a load.
+      expect(document.querySelector('[aria-busy="true"]')).toBeNull();
+      await fireEvent.input(screen.getByRole('textbox', { name: 'Deck 2 link' }), {
+        target: { value: 'https://example.com/deck/2' },
+      });
+      await fireEvent.click(screen.getAllByRole('button', { name: 'Load' })[1]!);
+      return live;
+    }
+
+    /** Renders the lobby live with Alex's Spider-Man deck, then changes it for another link. */
+    async function changeSpiderMan() {
+      const live = renderLive();
+      await live.receive({
+        type: 'view',
+        version: 2,
+        view: lobbyView([{ ...alex, decks: [spiderMan] }, sam]),
+      });
+      await fireEvent.click(screen.getByRole('button', { name: 'Change deck' }));
+      await fireEvent.input(screen.getByRole('textbox', { name: 'Deck link' }), {
+        target: { value: 'https://example.com/deck/1' },
+      });
+      await fireEvent.click(screen.getByRole('button', { name: 'Load' }));
+      expect(screen.getByRole('button', { name: 'Loading' })).toBeTruthy();
+      return live;
+    }
+
+    it('shows the load in flight on the slot being loaded only', async () => {
+      await loadSecondOfThree();
+
+      const busy = document.querySelectorAll('[aria-busy="true"]');
+      expect(busy).toHaveLength(1);
+      expect(busy[0]?.querySelector('input')?.id).toBe(
+        screen.getByRole('textbox', { name: 'Deck 2 link' }).id,
+      );
+      expect(screen.getAllByRole('button', { name: 'Loading' })).toHaveLength(1);
+      expect(screen.getAllByRole('status').map((status) => status.textContent?.trim())).toEqual([
+        '',
+        'Loading the deck…',
+        '',
+      ]);
+    });
+
+    it('locks the other slots until the load ends', async () => {
+      const live = await loadSecondOfThree();
+      const lobby = vi.spyOn(live.session, 'lobby');
+      await fireEvent.input(screen.getByRole('textbox', { name: 'Deck 1 link' }), {
+        target: { value: 'https://example.com/deck/1' },
+      });
+
+      const others = screen.getAllByRole('button', { name: 'Load' });
+      await fireEvent.click(others[0]!);
+
+      expect(others.map((button) => button.getAttribute('aria-disabled'))).toEqual([
+        'true',
+        'true',
+      ]);
+      expect(lobby).not.toHaveBeenCalled();
+
+      await live.receive({ type: 'error', code: 'deck', message: 'This deck link is not valid.' });
+
+      expect(
+        screen.getAllByRole('button', { name: 'Load' })[0]!.getAttribute('aria-disabled'),
+      ).toBe('false');
+    });
+
+    it('neither adds nor removes a slot until the load ends', async () => {
+      const live = renderLive();
+      await live.receive({
+        type: 'view',
+        version: 2,
+        view: lobbyView([{ ...alex, decks: [noDeck, noDeck] }, sam]),
+      });
+      await fireEvent.input(screen.getByRole('textbox', { name: 'Deck 2 link' }), {
+        target: { value: 'https://example.com/deck/2' },
+      });
+      await fireEvent.click(screen.getAllByRole('button', { name: 'Load' })[1]!);
+      const lobby = vi.spyOn(live.session, 'lobby');
+      const add = screen.getByRole('button', { name: 'Add a deck' });
+      const remove = screen.getByRole('button', { name: 'Remove deck 1' });
+
+      await fireEvent.click(add);
+      await fireEvent.click(remove);
+
+      expect(add.getAttribute('aria-disabled')).toBe('true');
+      expect(remove.getAttribute('aria-disabled')).toBe('true');
+      expect(lobby).not.toHaveBeenCalled();
+
+      await live.receive({ type: 'error', code: 'deck', message: 'This deck link is not valid.' });
+      await fireEvent.click(screen.getByRole('button', { name: 'Add a deck' }));
+
+      expect(lobby).toHaveBeenCalledWith('addDeck');
+    });
+
+    it('closes a Change once the server confirms its load, even on the same deck', async () => {
+      const live = await changeSpiderMan();
+
+      // The same deck again: the view looks as before, but for its version.
+      await live.receive({
+        type: 'view',
+        version: 3,
+        view: lobbyView([{ ...alex, decks: [spiderMan] }, sam]),
+      });
+      await live.receive({ type: 'deckSet', version: 3 });
+
+      expect(screen.queryByRole('textbox', { name: 'Deck link' })).toBeNull();
+      expect(screen.getByRole('button', { name: 'Change deck' })).toBeTruthy();
+    });
+
+    it('keeps a Change open, with its link, when the connection drops during the load', async () => {
+      const live = await changeSpiderMan();
+
+      await live.drop();
+
+      const field = screen.getByRole<HTMLInputElement>('textbox', { name: 'Deck link' });
+      expect(field.value).toBe('https://example.com/deck/1');
+      expect(field.readOnly).toBe(false);
+      expect(screen.getByRole('button', { name: 'Load' })).toBeTruthy();
+      live.session.close(); // No reconnection outlives the test.
+    });
+
+    it('keeps a Change open, with its link, when the load fails', async () => {
+      const live = await changeSpiderMan();
+
+      await live.receive({ type: 'error', code: 'deck', message: 'This deck link is not valid.' });
+
+      const field = screen.getByRole<HTMLInputElement>('textbox', { name: 'Deck link' });
+      expect(field.value).toBe('https://example.com/deck/1');
+      expect(screen.getByRole('alert').textContent).toBe('This deck link is not valid.');
+    });
   });
 });

@@ -39,6 +39,7 @@ const (
 	typeView      = "view"
 	typeError     = "error"
 	typeDeckError = "deckError"
+	typeDeckSet   = "deckSet"
 )
 
 // Operations of the lobby message.
@@ -133,6 +134,13 @@ type errorMessage struct {
 type deckErrorMessage struct {
 	Type        string              `json:"type"`
 	Unsupported []decks.Unsupported `json:"unsupported"`
+}
+
+// deckSetMessage tells the viewer that its deck load went through, in the
+// game version given.
+type deckSetMessage struct {
+	Type    string `json:"type"`
+	Version int64  `json:"version"`
 }
 
 // Kinds of the events published on a game's channel.
