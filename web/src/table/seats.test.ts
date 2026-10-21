@@ -32,6 +32,7 @@ function makeView(
         color: 0,
         host: true,
         ready: true,
+        online: true,
         decks: [
           { area: 'p0', hero: '01010', heroName: 'Iron Man', ready: true, handCount: 5 },
           { area: 'p1', hero: '01001', heroName: 'Spider-Man', ready: true, handCount: 4 },
@@ -42,6 +43,7 @@ function makeView(
         color: 1,
         host: false,
         ready: true,
+        online: true,
         decks: [{ area: 'p2', hero: '01029', heroName: 'She-Hulk', ready: true, handCount: 6 }],
       },
     ],

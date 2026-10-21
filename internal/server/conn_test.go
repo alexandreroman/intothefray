@@ -262,31 +262,36 @@ func TestRemovePlayerByColor(t *testing.T) {
 	}
 }
 
-func TestSendViewResendsWhenOnlyTheCountChanges(t *testing.T) {
+func TestSendViewResendsWhenOnlyTheAudienceChanges(t *testing.T) {
 	g, err := game.NewGame("abc", "host-token", "Alex", time.Now())
 	if err != nil {
 		t.Fatal(err)
 	}
 	c := newConn(nil, "abc", slog.New(slog.NewTextHandler(io.Discard, nil)))
+	host := g.Players[0].Color
 
-	// Each step builds on the views sent by the previous ones.
+	// Each step builds on the views sent by the previous ones. A nil
+	// audience is one that could not be read.
 	steps := []struct {
-		name       string
-		version    int64
-		spectators int
-		sent       bool
-		// wantSpectators is the count of the view sent.
+		name     string
+		version  int64
+		audience *game.Audience
+		sent     bool
+		// wantSpectators and wantOnline tell the audience of the view sent.
 		wantSpectators int
+		wantOnline     bool
 	}{
-		{"first view", 2, 1, true, 1},
-		{"same version and count", 2, 1, false, 0},
-		{"same version, new count", 2, 3, true, 3},
-		{"older version", 1, 5, false, 0},
-		{"same version, unknown count", 2, keepSpectators, false, 0},
-		{"new version, unknown count", 3, keepSpectators, true, 3},
+		{"first view", 2, &game.Audience{Spectators: 1}, true, 1, false},
+		{"same version and audience", 2, &game.Audience{Spectators: 1}, false, 0, false},
+		{"same version, new count", 2, &game.Audience{Spectators: 3}, true, 3, false},
+		{"same version, player online", 2, &game.Audience{Spectators: 3, Players: []int{host}}, true, 3, true},
+		{"older version", 1, &game.Audience{Spectators: 5}, false, 0, false},
+		{"same version, unknown audience", 2, nil, false, 0, false},
+		{"new version, unknown audience", 3, nil, true, 3, true},
+		{"same version, player offline", 3, &game.Audience{Spectators: 3}, true, 3, false},
 	}
 	for _, step := range steps {
-		c.sendView(g, step.version, step.spectators)
+		c.sendView(g, step.version, step.audience)
 
 		data := c.takeView()
 		if !step.sent {
@@ -302,9 +307,13 @@ func TestSendViewResendsWhenOnlyTheCountChanges(t *testing.T) {
 		if err := json.Unmarshal(data, &msg); err != nil {
 			t.Fatalf("%s: decode %s: %v", step.name, data, err)
 		}
-		if msg.Version != step.version || msg.View.Spectators != step.wantSpectators {
+		view := msg.View
+		if msg.Version != step.version || view.Spectators != step.wantSpectators {
 			t.Errorf("%s: sent version %d with %d spectators, want version %d with %d",
-				step.name, msg.Version, msg.View.Spectators, step.version, step.wantSpectators)
+				step.name, msg.Version, view.Spectators, step.version, step.wantSpectators)
+		}
+		if online := view.Players[0].Online; online != step.wantOnline {
+			t.Errorf("%s: host online = %v, want %v", step.name, online, step.wantOnline)
 		}
 	}
 }

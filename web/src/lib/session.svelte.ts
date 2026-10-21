@@ -112,6 +112,14 @@ export class GameSession {
   #settleGeneration = 0;
   #sentCursor: PresencePoint | null = null;
   #sentDrag: PresenceDrag | null = null;
+  // Presence gating: the number of other viewers who would see the viewer's
+  // presence, from the last view, and the viewer's latest presence, recorded
+  // even when nobody watches so that a newcomer gets it at once. The cursor
+  // is undefined until the viewer first sets it.
+  #othersWatching = 0;
+  #latestCursor: PresencePoint | null | undefined = undefined;
+  #latestDrag: PresenceDrag | null = null;
+  #latestPreview = '';
 
   constructor(gameId: string, name: string, deps: Deps = {}) {
     this.#gameId = gameId;
@@ -199,8 +207,19 @@ export class GameSession {
    * The end of a drag is the exception: the moves waiting, the drag's last
    * one among them, go out first, as the others keep the ghost where the
    * drag ends.
+   *
+   * Nothing goes out while no other viewer is connected, no other player
+   * and no spectator: each message costs the server a Redis publish that
+   * nobody would receive. The viewer's own other tabs do not count, as the
+   * server never relays presence to the sender's token. The latest cursor,
+   * drag and preview are recorded all the same, and sent at once to a
+   * newcomer (see #followOthersWatching); a ping, an event of its moment, is lost.
    */
   sendPresence(fields: PresenceFields): void {
+    this.#recordPresence(fields);
+    if (this.#othersWatching === 0) {
+      return;
+    }
     if (this.#isPresenceEvent(fields)) {
       this.#sendPresenceNow(fields);
       return;
@@ -208,6 +227,40 @@ export class GameSession {
     this.#pendingPresence = { ...this.#pendingPresence, ...fields };
     if (!this.#presenceWindowOpen) {
       this.#releasePendingPresence();
+    }
+  }
+
+  #recordPresence(fields: PresenceFields): void {
+    if (fields.cursor !== undefined) {
+      this.#latestCursor = fields.cursor;
+    }
+    if (fields.drag !== undefined) {
+      this.#latestDrag = fields.drag;
+    }
+    if (fields.preview !== undefined) {
+      this.#latestPreview = fields.preview;
+    }
+  }
+
+  /**
+   * Sends the viewer's latest presence at once, for viewers who just came:
+   * the cursor once known, the drag in progress, the card previewed. A drag
+   * started before they came then shows, and its later moves and its end
+   * follow as usual.
+   */
+  #sendPresenceSnapshot(): void {
+    const snapshot: PresenceFields = {};
+    if (this.#latestCursor !== undefined) {
+      snapshot.cursor = this.#latestCursor;
+    }
+    if (this.#latestDrag !== null) {
+      snapshot.drag = this.#latestDrag;
+    }
+    if (this.#latestPreview !== '') {
+      snapshot.preview = this.#latestPreview;
+    }
+    if (Object.keys(snapshot).length > 0) {
+      this.#sendPresenceNow(snapshot);
     }
   }
 
@@ -252,9 +305,10 @@ export class GameSession {
   }
 
   /**
-   * Forgets what the throttle knows of the last connection: the spots sent
-   * then, and the moves waiting or held. A new socket starts afresh, so that
-   * its first move goes out at once.
+   * Forgets what the throttle knows of the last connection, or of the
+   * viewers who all left: the spots sent then, and the moves waiting or
+   * held. What follows starts afresh, so that its first move goes out at
+   * once.
    */
   #resetPresence(): void {
     this.#pendingPresence = {};
@@ -370,11 +424,28 @@ export class GameSession {
     this.#droppedSinceView = false;
     this.#viewAt = now;
     this.view = next;
+    this.#followOthersWatching(next);
     // A colour no longer seated has left: its cursor must not linger.
     for (const color of [...this.presence.keys()]) {
       if (!next.players.some((player) => player.color === color)) {
         this.presence.delete(color);
       }
+    }
+  }
+
+  /**
+   * Gates presence on the viewers the view tells connected. Newcomers get
+   * the latest presence at once, else they would see nothing until the next
+   * move; once all have left, the throttle forgets what they were sent.
+   */
+  #followOthersWatching(next: View): void {
+    const others = othersWatching(next);
+    const newcomers = others > this.#othersWatching;
+    this.#othersWatching = others;
+    if (others === 0) {
+      this.#resetPresence();
+    } else if (newcomers) {
+      this.#sendPresenceSnapshot();
     }
   }
 
@@ -431,6 +502,8 @@ export class GameSession {
 
   #scheduleReconnect(): void {
     this.presence.clear();
+    // Until the next view tells who is there, nobody watches.
+    this.#othersWatching = 0;
     this.#droppedSinceView = true;
     this.#deckLoadPending = false; // Its answer, if any, went with the old socket.
     this.status = 'reconnecting';
@@ -449,6 +522,7 @@ export class GameSession {
     this.#socket = null; // Its close event is now ignored.
     this.status = 'closed';
     this.presence.clear();
+    this.#othersWatching = 0;
     this.#deckLoadPending = false;
     if (error) {
       this.lastError = error;
@@ -462,6 +536,17 @@ function deckSignature(view: View | null): string {
   const me = view?.players.find((player) => player.color === view.you.color);
   const decks = me?.decks.map((deck) => [deck.deckName, deck.hero, deck.heroName]);
   return JSON.stringify(decks);
+}
+
+/**
+ * The number of the other viewers connected to the game, who would see the
+ * viewer's presence. A player's own tabs share their colour and never count.
+ */
+function othersWatching(view: View): number {
+  const otherPlayers = view.players.filter(
+    (player) => player.online && player.color !== view.you.color,
+  ).length;
+  return otherPlayers + view.spectators;
 }
 
 /** Whether a drag carries the same cards, or the token, as another one: it only moved. */

@@ -54,6 +54,6 @@
 - [Identity card stays on the table](references/project_identity_stays.md) — identity never leaves the table, like a stage card
 - [Compact top bar hides on scroll](references/project_top_bar_auto_hide.md) — ≤600px wide or ≤500px tall: hides on scroll down, back on scroll up
 - [Every change of place animates](references/project_card_move_animations.md) — cards travel origin to destination; hidden ones as backs; unseen hands subtle
-- [Presence message budget](references/project_presence_budget.md) — moves every 150 ms, 3-unit dead zone, events at once; Redis free tier
+- [Presence message budget](references/project_presence_budget.md) — none while alone; moves every 150 ms, 3-unit dead zone, events at once; Redis free tier
 - [Deployment architecture](references/project_deployment.md) — Pages at intothefray.xyz, VPS at api.intothefray.xyz; CI: image, then Pages, then backend
 - [Commit reporting](references/project_commit_reporting.md) — GET /api/version, VITE_COMMIT, Options shows app and server commits

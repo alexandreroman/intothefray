@@ -102,6 +102,7 @@ function makeView(extra: { private?: PrivateView; cards?: TableCard[] } = {}): V
         color: 0,
         host: true,
         ready: true,
+        online: true,
         decks: [{ area: 'p0', ready: true, handCount: 0 }],
       },
       {
@@ -109,6 +110,7 @@ function makeView(extra: { private?: PrivateView; cards?: TableCard[] } = {}): V
         color: 1,
         host: false,
         ready: true,
+        online: true,
         decks: [{ area: 'p1', ready: true, handCount: 0 }],
       },
     ],

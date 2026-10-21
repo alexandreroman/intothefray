@@ -65,6 +65,7 @@ function makeView(extra: { spectator?: boolean; arrows?: Arrow[] } = {}): View {
         color: 0,
         host: true,
         ready: true,
+        online: true,
         decks: [{ area: 'p0', ready: true, handCount: 1 }],
       },
       {
@@ -72,6 +73,7 @@ function makeView(extra: { spectator?: boolean; arrows?: Arrow[] } = {}): View {
         color: 1,
         host: false,
         ready: true,
+        online: true,
         decks: [{ area: 'p1', ready: true, handCount: 0 }],
       },
     ],
@@ -180,6 +182,9 @@ async function renderTable(view: View = makeView()) {
   session.connect();
   const socket = FakeWebSocket.last!;
   socket.open();
+  // The session sends presence only once a view tells it someone else watches.
+  let version = 1;
+  socket.receive({ type: 'view', version, view });
   const result = render(Table, { session, view });
   // The catalog loads.
   await Promise.resolve();
@@ -187,6 +192,8 @@ async function renderTable(view: View = makeView()) {
     socket,
     /** A new view, as the server would send it. */
     async show(next: View): Promise<void> {
+      version += 1;
+      socket.receive({ type: 'view', version, view: next });
       await result.rerender({ session, view: next });
     },
     /** The presence messages sent so far, without their type. */

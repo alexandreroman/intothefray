@@ -164,6 +164,7 @@ export interface PlayerView {
   color: number;
   host: boolean;
   ready: boolean; // every deck slot holds a deck
+  online: boolean; // has a connection open, in any tab
   decks: DeckView[];
 }
 

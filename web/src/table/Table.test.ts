@@ -130,6 +130,7 @@ function makeView(extra: { cards?: TableCard[]; piles?: PileView[] } = {}): View
         color: 0,
         host: true,
         ready: true,
+        online: true,
         decks: [{ area: 'p0', heroName: 'Spider-Man', ready: true, handCount: 6 }],
       },
       {
@@ -137,6 +138,7 @@ function makeView(extra: { cards?: TableCard[]; piles?: PileView[] } = {}): View
         color: 1,
         host: false,
         ready: true,
+        online: true,
         decks: [{ area: 'p1', heroName: 'Ant-Man', ready: true, handCount: 5 }],
       },
     ],
@@ -1215,6 +1217,7 @@ describe('Table view modes', () => {
       color: 2,
       host: false,
       ready: true,
+      online: true,
       decks: [{ area: 'p2', ready: true, handCount: 0 }],
     });
     view.table!.piles.push(pile('d2', { owner: 2, x: 0, y: 1160 }));
@@ -1243,6 +1246,7 @@ describe('Table view modes', () => {
       color: 2,
       host: false,
       ready: true,
+      online: true,
       decks: [{ area: 'p2', ready: true, handCount: 0 }],
     });
     view.table!.piles.push(pile('d2', { owner: 2, x: 0, y: 1160 }));
@@ -1357,6 +1361,7 @@ describe('several decks', () => {
         color: 0,
         host: true,
         ready: true,
+        online: true,
         decks: [
           { area: 'p0', heroName: 'Spider-Man', ready: true, handCount: 1 },
           { area: 'p1', heroName: 'Ant-Man', ready: true, handCount: 1 },
@@ -1367,6 +1372,7 @@ describe('several decks', () => {
         color: 1,
         host: false,
         ready: true,
+        online: true,
         decks: [{ area: 'p2', heroName: 'She-Hulk', ready: true, handCount: 4 }],
       },
     ];

@@ -20,7 +20,7 @@ const (
 	// get their expiry reset.
 	touchInterval = 10 * time.Minute
 	// onlineInterval is how often the connections of this instance get their
-	// lease renewed, and their viewers the count of connected spectators.
+	// lease renewed, and their viewers who is connected.
 	onlineInterval = 30 * time.Second
 	// leaseRounds is how many online intervals a lease lasts: a connection
 	// counts as open that long without a renewal, so that one late round
@@ -36,8 +36,8 @@ const (
 var errSubscriptionEnded = errors.New("game event subscription ended")
 
 // hub keeps the connections of this instance, grouped by game, and sends
-// them the new versions of their game, the count of connected spectators and
-// the presence of the other viewers.
+// them the new versions of their game, who is connected and the presence of
+// the other viewers.
 type hub struct {
 	mu sync.Mutex
 	// closed is set once the server shuts down: no connection is accepted
@@ -107,11 +107,11 @@ func (h *hub) remove(c *conn) {
 }
 
 // broadcast sends version of g to every local connection of the game, each
-// with the view of its own token, and spectators as the count of connected
-// spectators (see conn.sendView).
-func (h *hub) broadcast(g *game.Game, version int64, spectators int) {
+// with the view of its own token, and audience as who is connected (see
+// conn.sendView).
+func (h *hub) broadcast(g *game.Game, version int64, audience *game.Audience) {
 	for _, c := range h.recipients(g.ID, version) {
-		c.sendView(g, version, spectators)
+		c.sendView(g, version, audience)
 	}
 }
 
@@ -318,14 +318,14 @@ func (s *Server) relayUpdate(ctx context.Context, ev store.Event) {
 	}
 }
 
-// relayOnline sends the local viewers of a game the new count of connected
-// spectators, after a viewer connected or disconnected on any instance.
+// relayOnline sends the local viewers of a game who is connected, after a
+// viewer connected or disconnected on any instance.
 func (s *Server) relayOnline(ctx context.Context, gameID string) {
 	if !s.hub.watched(gameID) {
 		return
 	}
 	if err := s.sendStoredGame(ctx, gameID); err != nil {
-		s.deps.Logger.Warn("load game to count its spectators", "game_id", gameID, "error", err)
+		s.deps.Logger.Warn("load game to tell who is connected", "game_id", gameID, "error", err)
 	}
 }
 
@@ -341,8 +341,8 @@ func (s *Server) resyncLocalGames(ctx context.Context) {
 }
 
 // sendStoredGame sends the stored version of a game to its local viewers,
-// with the current count of connected spectators. Connections skip it when
-// they already have this version and count.
+// with who is connected now. Connections skip it when they already have this
+// version and audience.
 func (s *Server) sendStoredGame(ctx context.Context, gameID string) error {
 	ctx, cancel := context.WithTimeout(ctx, storeCallTimeout)
 	defer cancel()
@@ -351,20 +351,21 @@ func (s *Server) sendStoredGame(ctx context.Context, gameID string) error {
 	if err != nil {
 		return err
 	}
-	s.hub.broadcast(g, version, s.onlineSpectators(ctx, g))
+	s.hub.broadcast(g, version, s.onlineAudience(ctx, g))
 	return nil
 }
 
-// onlineSpectators counts the spectators of g connected to any instance. When
-// the connections cannot be read, it returns keepSpectators: a failure never
-// holds back a view, which then shows the last count sent.
-func (s *Server) onlineSpectators(ctx context.Context, g *game.Game) int {
+// onlineAudience tells who of g is connected to any instance. When the
+// connections cannot be read, it returns nil: a failure never holds back a
+// view, which then shows the last audience sent.
+func (s *Server) onlineAudience(ctx context.Context, g *game.Game) *game.Audience {
 	online, err := s.deps.Store.Online(ctx, g.ID, time.Now())
 	if err != nil {
 		s.deps.Logger.Warn("load online connections", "game_id", g.ID, "error", err)
-		return keepSpectators
+		return nil
 	}
-	return g.OnlineSpectators(online)
+	audience := g.OnlineAudience(online)
+	return &audience
 }
 
 // relayPresence sends a viewer's presence to the other local viewers of the
@@ -402,16 +403,16 @@ func (s *Server) touchLocalGames(ctx context.Context) {
 }
 
 // renewOnline renews the leases of the local connections, then sends their
-// viewers the current count of connected spectators. The count leaves out the
-// connections whose lease passed, such as those of an instance that stopped
-// without closing them, and corrects a count that a broadcast read just
-// before a viewer connected or disconnected.
+// viewers who is connected now. The audience leaves out the connections whose
+// lease passed, such as those of an instance that stopped without closing
+// them, and corrects one that a broadcast read just before a viewer connected
+// or disconnected.
 func (s *Server) renewOnline(ctx context.Context) {
 	for id, conns := range s.hub.connections() {
 		s.keepOnline(ctx, id, conns)
 		s.forgetClosed(ctx, id, conns)
 		if err := s.sendStoredGame(ctx, id); err != nil {
-			s.deps.Logger.Warn("load game to count its spectators", "game_id", id, "error", err)
+			s.deps.Logger.Warn("load game to tell who is connected", "game_id", id, "error", err)
 		}
 	}
 }

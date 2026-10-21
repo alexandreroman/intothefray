@@ -52,6 +52,7 @@ const player = (overrides: Partial<PlayerView> = {}): PlayerView => ({
   color: 0,
   host: true,
   ready: false,
+  online: true,
   decks: [deck()],
   ...overrides,
 });
@@ -659,9 +660,19 @@ describe('GameSession', () => {
         .map(({ type: _type, ...fields }) => fields);
     }
 
+    // A view with Bo, another player, connected: presence has a viewer.
+    const watched = (): View => view([player(), player({ name: 'Bo', color: 1, host: false })]);
+
+    let version = 0;
+    function receiveView(next: View): void {
+      version += 1;
+      lastSocket().receive({ type: 'view', version, view: next });
+    }
+
     function openSession(): GameSession {
       const session = newSession();
       lastSocket().open();
+      receiveView(watched());
       return session;
     }
 
@@ -751,7 +762,7 @@ describe('GameSession', () => {
       expect(presenceSent()).toHaveLength(3);
     });
 
-    it('starts afresh on a new connection: its first moves go out at once', () => {
+    it('sends nothing before the first view of a new connection, then what the viewer is doing', () => {
       const session = openSession();
       session.sendPresence({ cursor: { x: 10, y: 10 } });
       session.sendPresence({ drag: drag(10, 10) });
@@ -759,14 +770,15 @@ describe('GameSession', () => {
       vi.advanceTimersByTime(500);
       lastSocket().open();
 
-      // Within the dead zone of what went out on the old socket, which the others no longer know:
-      // neither held, nor taken for a move of the drag sent then.
-      session.sendPresence({ cursor: { x: 11, y: 10 } });
-      session.sendPresence({ drag: drag(11, 10) });
-      expect(presenceSent()).toEqual([{ cursor: { x: 11, y: 10 } }, { drag: drag(11, 10) }]);
+      session.sendPresence({ drag: drag(30, 30) });
+      expect(presenceSent()).toEqual([]);
+
+      // The others know nothing of the old socket: the whole state goes out, the drag included.
+      receiveView(watched());
+      expect(presenceSent()).toEqual([{ cursor: { x: 10, y: 10 }, drag: drag(30, 30) }]);
 
       vi.advanceTimersByTime(1000);
-      expect(presenceSent()).toHaveLength(2);
+      expect(presenceSent()).toHaveLength(1);
     });
 
     it('sends at once a drag of other cards than the last one sent: a new drag', () => {
@@ -863,6 +875,157 @@ describe('GameSession', () => {
 
       vi.advanceTimersByTime(1000);
       expect(presenceSent()).toHaveLength(2);
+    });
+
+    describe('with nobody else connected', () => {
+      const alone = (): View => view([player(), player({ name: 'Bo', color: 1, online: false })]);
+
+      function aloneSession(): GameSession {
+        const session = newSession();
+        lastSocket().open();
+        receiveView(alone());
+        return session;
+      }
+
+      it.each([
+        ['a cursor move', { cursor: { x: 10, y: 10 } }],
+        ['the cursor leaving', { cursor: null }],
+        ['a drag', { drag: drag(10, 10) }],
+        ['the end of a drag', { drag: null }],
+        ['a ping', { ping: { x: 9, y: 9 } }],
+        ['a preview', { preview: 'c1' }],
+      ])('sends nothing for %s', (_name, fields) => {
+        const session = aloneSession();
+
+        session.sendPresence(fields);
+        vi.advanceTimersByTime(1000);
+
+        expect(presenceSent()).toEqual([]);
+      });
+
+      it("does not count the viewer's own other tabs", () => {
+        const session = newSession();
+        lastSocket().open();
+        // Alex, colour 0 and online, is the viewer: their other tabs never get their presence.
+        receiveView(view([player(), player({ name: 'Bo', color: 1, online: false })]));
+
+        session.sendPresence({ cursor: { x: 10, y: 10 } });
+
+        expect(presenceSent()).toEqual([]);
+      });
+
+      it('sends what the viewer is doing once a spectator connects', () => {
+        const session = aloneSession();
+        session.sendPresence({ cursor: { x: 10, y: 10 } });
+        session.sendPresence({ ping: { x: 10, y: 10 } });
+        session.sendPresence({ preview: 'c1' });
+        session.sendPresence({ cursor: { x: 20, y: 20 } });
+
+        receiveView({ ...alone(), spectators: 1 });
+
+        // A ping is of its moment: it is not replayed.
+        expect(presenceSent()).toEqual([{ cursor: { x: 20, y: 20 }, preview: 'c1' }]);
+      });
+
+      it('sends what the viewer is doing once another player comes online', () => {
+        const session = aloneSession();
+        session.sendPresence({ cursor: { x: 10, y: 10 } });
+        session.sendPresence({ cursor: null });
+
+        receiveView(watched());
+
+        expect(presenceSent()).toEqual([{ cursor: null }]);
+      });
+
+      it('sends nothing to a newcomer when there is nothing to tell', () => {
+        const session = aloneSession();
+        session.sendPresence({ preview: 'c1' });
+        session.sendPresence({ preview: '' });
+        session.sendPresence({ drag: drag(10, 10) });
+        session.sendPresence({ drag: null });
+
+        receiveView(watched());
+
+        expect(presenceSent()).toEqual([]);
+      });
+
+      it('sends a drag in progress to a newcomer, then its moves and its end', () => {
+        const session = aloneSession();
+        session.sendPresence({ drag: drag(10, 10) });
+        session.sendPresence({ drag: drag(20, 20) });
+
+        receiveView(watched());
+        // Moves of the drag already sent, throttled as usual.
+        session.sendPresence({ drag: drag(30, 30) });
+        vi.advanceTimersByTime(150);
+        session.sendPresence({ drag: drag(40, 40) });
+        session.sendPresence({ drag: null });
+
+        expect(presenceSent()).toEqual([
+          { drag: drag(20, 20) },
+          { drag: drag(30, 30) },
+          { drag: drag(40, 40) },
+          { drag: null },
+        ]);
+      });
+
+      it('drops the moves waiting when the last other viewer leaves', () => {
+        const session = openSession();
+        session.sendPresence({ cursor: { x: 10, y: 10 } });
+        session.sendPresence({ cursor: { x: 30, y: 30 } });
+
+        receiveView(alone());
+        vi.advanceTimersByTime(1000);
+
+        expect(presenceSent()).toEqual([{ cursor: { x: 10, y: 10 } }]);
+      });
+
+      it('forgets what the viewers who left were sent', () => {
+        const session = openSession();
+        session.sendPresence({ drag: drag(10, 10) });
+        receiveView(alone());
+        session.sendPresence({ drag: null });
+        receiveView(watched());
+
+        // The newcomer knows nothing of the first drag: one of the same card, close by, is a new
+        // drag sent at once, not a tiny move of the old one held in the dead zone.
+        session.sendPresence({ drag: drag(11, 10) });
+        expect(presenceSent()).toEqual([{ drag: drag(10, 10) }, { drag: drag(11, 10) }]);
+      });
+    });
+
+    describe('as other viewers come and go', () => {
+      const withSpectators = (spectators: number): View => ({ ...watched(), spectators });
+
+      it('sends what the viewer is doing to each newcomer, once', () => {
+        const session = openSession();
+        session.sendPresence({ cursor: { x: 10, y: 10 } });
+        vi.advanceTimersByTime(150);
+
+        receiveView(withSpectators(1));
+        expect(presenceSent()).toEqual([
+          { cursor: { x: 10, y: 10 } },
+          { cursor: { x: 10, y: 10 } },
+        ]);
+
+        // Same viewers, then fewer: nobody new to tell.
+        receiveView(withSpectators(1));
+        receiveView(withSpectators(0));
+        vi.advanceTimersByTime(1000);
+        expect(presenceSent()).toHaveLength(2);
+      });
+
+      it('counts the online players, not those who closed every tab', () => {
+        const session = openSession();
+        session.sendPresence({ cursor: { x: 10, y: 10 } });
+        vi.advanceTimersByTime(150);
+
+        // Kim is seated but offline: still only Bo watches.
+        receiveView(view([...watched().players, player({ name: 'Kim', color: 2, online: false })]));
+        vi.advanceTimersByTime(1000);
+
+        expect(presenceSent()).toHaveLength(1);
+      });
     });
   });
 });

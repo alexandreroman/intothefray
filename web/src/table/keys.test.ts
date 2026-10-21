@@ -78,6 +78,7 @@ function makeView(extra: Partial<View> & { cards?: TableCard[] } = {}): View {
         color: 0,
         host: true,
         ready: true,
+        online: true,
         decks: [{ area: 'p0', heroName: 'Spider-Man', ready: true, handCount: 1 }],
       },
     ],
