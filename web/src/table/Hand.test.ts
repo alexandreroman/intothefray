@@ -31,6 +31,12 @@ function handCards(): HTMLElement[] {
   return within(handList()).getAllByRole('listitem');
 }
 
+/** The declarations of a rule of the hand's stylesheet. */
+function rule(selector: string): string {
+  const pattern = new RegExp(`\\n {2}${selector.replace(/[.]/g, '\\.')} \\{([^}]*)\\}`);
+  return pattern.exec(handSource)?.[1] ?? '';
+}
+
 afterEach(() => {
   vi.restoreAllMocks();
   interaction.reset();
@@ -189,13 +195,10 @@ describe('Hand', () => {
       // The hit area comes before the drawn card, which lets the pointer through to it.
       expect([...card.children].map((child) => child.className.split(' ')[0])).toEqual([
         'hit',
+        'foot',
         'fan',
       ]);
     }
-    /** The declarations of a rule of the hand's stylesheet. */
-    const rule = (selector: string) =>
-      new RegExp(`\\n {2}${selector.replace(/[.]/g, '\\.')} \\{([^}]*)\\}`).exec(handSource)?.[1] ??
-      '';
     // Only the hit area takes the pointer, on the card's resting transform.
     expect(rule('.hcard')).toMatch(/pointer-events: none;/);
     expect(rule('.fan')).toMatch(/pointer-events: none;/);
@@ -208,7 +211,39 @@ describe('Hand', () => {
     expect(popRules.length).toBeGreaterThan(0);
     for (const selector of popRules) {
       expect(selector).not.toContain('.hit');
+      expect(selector).not.toContain('.foot');
     }
+  });
+
+  it('keeps a card popped under it, down to the bottom of the screen; the gap slot has no foot', () => {
+    // A hand card dragged back over the fan, where it would slot in second.
+    interaction.press({ kind: 'hand', id: 'h1' }, {
+      button: 0,
+      pointerId: 1,
+      clientX: 0,
+      clientY: 0,
+      preventDefault: () => {},
+    } as unknown as PointerEvent);
+    interaction.lift('h1', ['h1']);
+    interaction.handGap = 1;
+    const { container } = render(Hand, { cards: CARDS, faceOf });
+
+    const cards = handCards();
+    expect(cards.map((card) => card.dataset.id)).toEqual(['h2', 'h3']);
+    for (const card of cards) {
+      expect(card.querySelector(':scope > .foot')).not.toBeNull();
+    }
+    const gap = container.querySelector('.hcard.gap');
+    expect(gap).not.toBeNull();
+    expect(gap?.querySelector('.foot')).toBeNull();
+
+    // Upright, from the card's bottom on the arc down to the bottom of the hand (the window's), not
+    // past it; it takes the pointer.
+    const foot = rule('.foot');
+    expect(foot).toMatch(/pointer-events: auto;/);
+    expect(foot).toMatch(/top: calc\(100% \+ var\(--ty\)\);/);
+    expect(foot).toMatch(/bottom: calc\(-1 \* var\(--pad-bottom\)\);/);
+    expect(foot).not.toMatch(/transform/);
   });
 
   it('turns a landscape card a quarter to fit its slot', () => {

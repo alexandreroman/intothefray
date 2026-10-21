@@ -377,6 +377,8 @@
       >
         <!-- What the pointer hovers: the card at rest, which the pop does not move. -->
         <div class="hit"></div>
+        <!-- And the strip below it, down to the bottom of the screen, so the card stays up there. -->
+        <div class="foot"></div>
         <div class="fan">
           {#if isHidden(card)}
             <CardBack back={card.back} caption={captionOf(card)} />
@@ -455,7 +457,7 @@
     width: var(--card-w);
     height: var(--card-h);
     transform: translateX(-50%);
-    /* Only its hit area takes the pointer (see .hit). */
+    /* Only its hit area and the foot below it take the pointer (see .hit and .foot). */
     pointer-events: none;
     cursor: grab;
     touch-action: none;
@@ -501,6 +503,22 @@
     inset: 0;
     transform-origin: 50% 110%;
     transform: translateY(var(--ty)) rotate(var(--rot));
+    pointer-events: auto;
+  }
+
+  /*
+    The strip from the card's bottom on the arc down to the bottom of the hand, which is the
+    bottom of the window: a pointer pushed to the bottom of the screen under a card keeps it popped.
+    Upright, as wide as the slot: the rotation origin sits just below the card's bottom middle, so
+    the tilt barely moves that bottom. A card lowered below the window, at the ends of the arc, has
+    a top past the bottom edge, and so no foot at all. Like .hit, the pop never moves it.
+  */
+  .foot {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(100% + var(--ty));
+    bottom: calc(-1 * var(--pad-bottom));
     pointer-events: auto;
   }
 
