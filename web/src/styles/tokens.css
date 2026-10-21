@@ -166,6 +166,49 @@ button:hover:not(:disabled, [aria-disabled='true']) {
   }
 }
 
+/*
+  A list that fades out at its scrolling edges (lib/scrollFade.ts): an edge with more of the list
+  beyond it fades to transparent, whatever lies behind; the other edges stay sharp. The depths
+  are registered lengths, so that they transition: a fade grows in and out rather than popping.
+*/
+@property --scroll-fade-top {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --scroll-fade-bottom {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+[data-scroll-fade] {
+  mask-image: linear-gradient(
+    transparent,
+    #000 var(--scroll-fade-top),
+    #000 calc(100% - var(--scroll-fade-bottom)),
+    transparent
+  );
+  transition:
+    --scroll-fade-top 0.2s ease-out,
+    --scroll-fade-bottom 0.2s ease-out;
+}
+
+[data-scroll-fade~='top'] {
+  --scroll-fade-top: 32px;
+}
+
+[data-scroll-fade~='bottom'] {
+  --scroll-fade-bottom: 32px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-scroll-fade] {
+    transition: none;
+  }
+}
+
 button:focus-visible {
   outline: 2px solid var(--sel);
   outline-offset: 2px;

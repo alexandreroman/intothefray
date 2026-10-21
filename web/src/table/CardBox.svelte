@@ -11,6 +11,7 @@
 <script lang="ts">
   import { tick, untrack } from 'svelte';
   import Dialog from '../components/Dialog.svelte';
+  import { scrollFade } from '../lib/scrollFade';
   import type { Action, CardView, PackFace, PileView, Size, View } from '../lib/types';
   import {
     canShuffleIn,
@@ -609,6 +610,7 @@
     class:dragging={drag?.lifted}
     style:height={gridHeight === null ? undefined : `${gridHeight}px`}
     {@attach sizeGrid}
+    {@attach scrollFade}
     onscroll={() => (hovered = null)}
   >
     {#each shownTiles as tile (tile.key)}
