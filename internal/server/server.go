@@ -250,7 +250,17 @@ func (s *Server) handleGameSocket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	conn, err := websocket.Accept(w, r, &websocket.AcceptOptions{OriginPatterns: s.originPatterns})
+	conn, err := websocket.Accept(w, r, &websocket.AcceptOptions{
+		OriginPatterns: s.originPatterns,
+		// Views carry the whole log and deflate to a fifth of their size or
+		// less, and neither Caddy nor Cloudflare compresses WebSocket frames, so
+		// the server does. Without context takeover the flate writers stay
+		// pooled instead of holding close to 1 MiB per connection; context
+		// takeover would only help while a view fits the 32 KB window. The
+		// default threshold (512 bytes) leaves small presence messages
+		// uncompressed.
+		CompressionMode: websocket.CompressionNoContextTakeover,
+	})
 	if err != nil {
 		// Accept has already replied to the client (403 for a bad origin).
 		s.deps.Logger.Warn("websocket upgrade refused", "game_id", id, "error", err)

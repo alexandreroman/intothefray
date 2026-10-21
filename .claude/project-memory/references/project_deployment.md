@@ -23,9 +23,10 @@ type: project
   - The zone's API token lives in the local `.env` of
     `intothefray-infra` (Zone Read, DNS Edit, Zone Settings Edit).
   - `api` points at the VPS through the Cloudflare proxy (orange cloud):
-    it hides the VPS address, compresses responses (the backend sends
-    them uncompressed) and carries the WebSockets (the server pings every
-    30 s, below Cloudflare's 100 s idle timeout).
+    it hides the VPS address, compresses HTTP responses (the backend sends
+    them uncompressed) and carries the WebSockets, which the backend
+    compresses (the server pings every 30 s, below Cloudflare's 100 s
+    idle timeout).
   - SSL mode Full (strict), with a Cloudflare Origin CA or DNS-01 Let's
     Encrypt certificate on the VPS; the VPS firewall accepts 443 from
     Cloudflare's addresses only.
