@@ -132,8 +132,9 @@
         </button>
       {/if}
     </form>
-    <!-- Always there while the form shows: a live region must exist before what it announces. -->
-    <p class="status" class:on={loading} role="status">
+    <!-- Always there while the form shows: a live region must exist before what it announces. Only
+         screen readers get it; the Loading button shows the load. -->
+    <p class="sr-only" role="status">
       {#if loading}Loading the deck…{/if}
     </p>
     {#if deckError && deckError.length > 0}
@@ -258,15 +259,14 @@
     }
   }
 
-  /* Empty while idle, it takes no room. */
-  .status {
-    margin: 0;
-    color: var(--muted);
-    font-size: 12px;
-  }
-
-  .status.on {
-    margin-top: 10px;
+  /* Out of sight and taking no room, yet read by screen readers. */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 
   .loaded {

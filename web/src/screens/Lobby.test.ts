@@ -878,6 +878,7 @@ describe('Lobby', () => {
         screen.getByRole('textbox', { name: 'Deck 2 link' }).id,
       );
       expect(screen.getAllByRole('button', { name: 'Loading' })).toHaveLength(1);
+      // Each slot's status is visually hidden: only screen readers announce the load.
       expect(screen.getAllByRole('status').map((status) => status.textContent?.trim())).toEqual([
         '',
         'Loading the deck…',

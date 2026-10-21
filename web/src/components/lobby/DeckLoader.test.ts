@@ -166,9 +166,10 @@ describe('DeckLoader', () => {
       );
     });
 
-    it('tells that the deck is loading, in a status that is there before', async () => {
+    it('announces that the deck is loading, in a hidden status that is there before', async () => {
       const { rerender } = renderLoader(waiting);
       const status = screen.getByRole('status');
+      expect(status.classList.contains('sr-only')).toBe(true);
       expect(status.textContent?.trim()).toBe('');
 
       await rerender({ loading: true });
