@@ -82,9 +82,10 @@
   });
   let list = $state<HTMLElement>();
 
-  // The band the pointer opens the hand in: the cards' area stretched down to
-  // the bottom of the window. Open, it is wider, so the pointer that raised
-  // the hand keeps it up.
+  // The band the pointer opens the hand in: the area of the cards as seen,
+  // tilted on the arc and the popped one included, stretched down to the
+  // bottom of the window. Open, it is wider, so the pointer that raised the
+  // hand keeps it up.
   const RESTING_MARGIN = 6;
   const OPEN_MARGIN = 24;
 
@@ -232,9 +233,11 @@
     }
     // A card flying in (drawn, or brought back from the table) is drawn away from its slot
     // meanwhile: the band is the resting cards'. Once it has landed, the band is measured again.
+    // Each card is measured by its fan, the card as seen: the slot stays upright, and the tilted
+    // cards at the ends of the arc stick out of it.
     const boxes = cardsShown
       .filter((card) => !isMoving(card))
-      .map((card) => card.getBoundingClientRect());
+      .map((card) => (card.querySelector('.fan') ?? card).getBoundingClientRect());
     if (boxes.length === 0) {
       return;
     }
@@ -374,6 +377,8 @@
       >
         <!-- What the pointer hovers: the card at rest, which the pop does not move. -->
         <div class="hit"></div>
+        <!-- And the strip below it, down to the bottom of the screen, so the card stays up there. -->
+        <div class="foot"></div>
         <div class="fan">
           {#if isHidden(card)}
             <CardBack back={card.back} caption={captionOf(card)} />
@@ -452,7 +457,7 @@
     width: var(--card-w);
     height: var(--card-h);
     transform: translateX(-50%);
-    /* Only its hit area takes the pointer (see .hit). */
+    /* Only its hit area and the foot below it take the pointer (see .hit and .foot). */
     pointer-events: none;
     cursor: grab;
     touch-action: none;
@@ -498,6 +503,22 @@
     inset: 0;
     transform-origin: 50% 110%;
     transform: translateY(var(--ty)) rotate(var(--rot));
+    pointer-events: auto;
+  }
+
+  /*
+    The strip from the card's bottom on the arc down to the bottom of the hand, which is the
+    bottom of the window: a pointer pushed to the bottom of the screen under a card keeps it popped.
+    Upright, as wide as the slot: the rotation origin sits just below the card's bottom middle, so
+    the tilt barely moves that bottom. A card lowered below the window, at the ends of the arc, has
+    a top past the bottom edge, and so no foot at all. Like .hit, the pop never moves it.
+  */
+  .foot {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(100% + var(--ty));
+    bottom: calc(-1 * var(--pad-bottom));
     pointer-events: auto;
   }
 
