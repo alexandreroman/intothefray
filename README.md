@@ -308,7 +308,9 @@ Both sides report the commit they run, so a mismatch shows at once:
   from a checkout (`make build`) reports its Git revision, with `-dirty`
   when the checkout has changes, and an image reports `dev`;
 - the `Pages` workflow passes the SHA to the frontend build as
-  `VITE_COMMIT` (`dev` when unset);
+  `VITE_COMMIT`. Without it, a build from a checkout (`pnpm build`)
+  reports its Git revision, with `-dirty` when the checkout has changes,
+  and a build without Git reports `dev`;
 - the Options screen shows `version <sha>` (short SHA, plain text) when
   the app and server match, `version mismatch <app>/<server>` when they
   differ (a `dev` build included), and `version <app>/unavailable` when
