@@ -175,7 +175,7 @@ func mergeKey(a Action) string {
 	switch a.Kind {
 	case ActFlip:
 		return "flip:" + a.Card
-	case ActToken, ActStatus:
+	case ActToken, ActStatus, ActModifier:
 		return fmt.Sprintf("%s:%s:%s", a.Kind, a.Card, a.Name)
 	default:
 		return ""
@@ -269,6 +269,8 @@ func (n narrator) describe(a Action) (logLine, bool) {
 		return n.flipEvent(a), true
 	case ActToken, ActStatus:
 		return n.counterEvent(a), true
+	case ActModifier:
+		return n.modifierEvent(a), true
 	case ActChooseStage:
 		return n.stageEvent(a), true
 	case ActDraw:
@@ -436,13 +438,44 @@ func (n narrator) counterEvent(a Action) logLine {
 	return logLine{text: text, cards: n.visibleCards(a.Card), merged: set}
 }
 
-// counterValue returns the token or status named by a on its card in t.
+// modifierEvent narrates a change of a stat modifier with the change it made:
+// "gave Rhino −2 ATK". Merged, the line tells the modifier the card ends up
+// with: "set the DEF modifier on Spider-Man to +2", or "cleared the DEF
+// modifier on Spider-Man" back at 0.
+func (n narrator) modifierEvent(a Action) logLine {
+	before, after := counterValue(n.before, a), counterValue(n.after, a)
+	stat := strings.ToUpper(a.Name)
+	card := n.name(a.Card)
+
+	set := join(words("set the "+stat+" modifier on "), card, words(" to "+signed(after)))
+	if after == 0 {
+		set = join(words("cleared the "+stat+" modifier on "), card)
+	}
+	text := join(words("gave "), card, words(" "+signed(after-before)+" "+stat))
+	return logLine{text: text, cards: n.visibleCards(a.Card), merged: set}
+}
+
+// signed writes n with its sign, a real minus sign (U+2212) when negative:
+// "+2", "−1".
+func signed(n int) string {
+	if n < 0 {
+		return fmt.Sprintf("\u2212%d", -n)
+	}
+	return fmt.Sprintf("+%d", n)
+}
+
+// counterValue returns the token, status or modifier named by a on its card
+// in t.
 func counterValue(t *Table, a Action) int {
 	c := t.Cards[a.Card]
-	if a.Kind == ActStatus {
+	switch a.Kind {
+	case ActStatus:
 		return c.Status[a.Name]
+	case ActModifier:
+		return c.Mods[a.Name]
+	default:
+		return c.Tokens[a.Name]
 	}
-	return c.Tokens[a.Name]
 }
 
 func (n narrator) stageEvent(a Action) logLine {

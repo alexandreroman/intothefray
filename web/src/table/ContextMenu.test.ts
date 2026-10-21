@@ -276,6 +276,7 @@ describe('the context menu', () => {
       'Exhaust',
       'Add a token',
       'Add a status',
+      'Add a modifier',
       'Discard',
       'Move to',
       'Draw an arrow',

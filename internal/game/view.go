@@ -27,6 +27,7 @@ type CardView struct {
 	Exhausted bool           `json:"exhausted,omitempty"`
 	Tokens    map[string]int `json:"tokens,omitempty"`
 	Status    map[string]int `json:"status,omitempty"`
+	Mods      map[string]int `json:"mods,omitempty"`
 	Stage     string         `json:"stage,omitempty"` // stage key, for stage cards
 	Identity  bool           `json:"identity,omitempty"`
 	// Home is the side deck a side deck card returns to, sent whatever its
@@ -392,7 +393,7 @@ func (c *Card) viewOf(stageKey string) CardView {
 		ID: c.ID, Code: c.Code, Face: c.Face, FaceDown: c.FaceDown, Back: c.Back,
 		Owner: c.Owner, Zone: c.Zone, X: c.X, Y: c.Y, Z: c.Z,
 		Parent: c.Parent, OnPile: c.OnPile, Exhausted: c.Exhausted,
-		Tokens: maps.Clone(c.Tokens), Status: maps.Clone(c.Status), Stage: stageKey,
+		Tokens: maps.Clone(c.Tokens), Status: maps.Clone(c.Status), Mods: maps.Clone(c.Mods), Stage: stageKey,
 		Identity: c.Identity,
 	}
 	if c.FaceDown && c.Zone == ZoneTable {

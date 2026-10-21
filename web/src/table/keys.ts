@@ -5,7 +5,7 @@
 
 import { modal } from '../components/modal.svelte';
 import type { Action, CardView, PileView, Size, View } from '../lib/types';
-import { discardPileOf, type ActionItem } from './actions';
+import { countersOf, discardPileOf, type ActionItem, type CounterKind } from './actions';
 import { interaction } from './interaction.svelte';
 import { footprints, visualBox } from './layout';
 import { ownSeats } from './seats';
@@ -225,13 +225,17 @@ function answersTo(item: ActionItem, key: string): boolean {
   return keys.some((itemKey) => itemKey?.toLowerCase() === key);
 }
 
+/** An action that changes a counter of a card: a token or status item's, as the keys send it. */
+type CounterAction = Action & { kind: CounterKind };
+
 /** The action of a token or status item, which adds one; null for any other item. */
-function counterAction(item: ActionItem): Action | null {
+function counterAction(item: ActionItem): CounterAction | null {
   const result = item.run?.();
   if (!result || !('kind' in result)) {
     return null;
   }
-  return result.kind === 'token' || result.kind === 'status' ? result : null;
+  const { kind } = result;
+  return kind === 'token' || kind === 'status' ? { ...result, kind } : null;
 }
 
 /**
@@ -239,9 +243,9 @@ function counterAction(item: ActionItem): Action | null {
  * other way. Nothing is sent when the card has none, rather than a change
  * that changes nothing.
  */
-function removeOne(adds: Action, table: KeyTable): boolean {
+function removeOne(adds: CounterAction, table: KeyTable): boolean {
   const card = table.view.table?.cards.find((c) => c.id === adds.card);
-  const counts = adds.kind === 'token' ? card?.tokens : card?.status;
+  const counts = card && countersOf(card, adds.kind);
   if ((counts?.[adds.name ?? ''] ?? 0) > 0) {
     table.act({ ...adds, delta: -1 });
   }

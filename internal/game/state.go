@@ -53,6 +53,9 @@ type Card struct {
 	Exhausted bool           `json:"exhausted,omitempty"`
 	Tokens    map[string]int `json:"tokens,omitempty"` // "dmg", "thr", "gen"
 	Status    map[string]int `json:"status,omitempty"` // "stunned", "confused", "tough"
+	// Mods records signed stat modifiers ("atk", "thw", "def", "sch", "rec"),
+	// bookkeeping only: a modifier changes nothing else on the card.
+	Mods map[string]int `json:"mods,omitempty"`
 	// Identity marks a player's hero or alter-ego card, set at setup: it never
 	// leaves the table (see checkStaysOnTable). A version of the identity
 	// takes the mark over when it is played (see takeOverIdentity).
@@ -200,6 +203,7 @@ func (c *Card) clone() *Card {
 	clone := *c
 	clone.Tokens = maps.Clone(c.Tokens)
 	clone.Status = maps.Clone(c.Status)
+	clone.Mods = maps.Clone(c.Mods)
 	return &clone
 }
 

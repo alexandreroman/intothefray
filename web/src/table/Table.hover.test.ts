@@ -432,6 +432,35 @@ describe('tokens and statuses', () => {
     );
   });
 
+  it('a modifier pill sends signed modifier actions and hides at zero', async () => {
+    const withMods = (mods: Record<string, number>) =>
+      makeView({ cards: [card('mine', { mods }), ...others] });
+    const { session, rerender } = await renderTable(withMods({ def: 1 }));
+    await fireEvent.pointerEnter(placed('mine'));
+    await fireEvent.pointerEnter(counter('mine', 'modifier:def'));
+
+    const shown = pill()!;
+    expect(shown.getAttribute('aria-label')).toBe('Change DEF modifier');
+    expect(shown.textContent).toContain('+1');
+    await fireEvent.click(within(shown).getByRole('button', { name: 'Remove 1' }));
+    expect(session.act).toHaveBeenCalledWith(
+      { kind: 'modifier', card: 'mine', name: 'def', delta: -1 },
+      0,
+    );
+
+    // A modifier goes below zero: the pill stays on a negative value.
+    await rerender({ view: withMods({ def: -1 }) });
+    expect(pill()!.textContent).toContain('−1');
+    await fireEvent.click(within(pill()!).getByRole('button', { name: 'Add 1' }));
+    expect(session.act).toHaveBeenLastCalledWith(
+      { kind: 'modifier', card: 'mine', name: 'def', delta: 1 },
+      0,
+    );
+
+    await rerender({ view: withMods({}) });
+    expect(pill()).toBeNull();
+  });
+
   it('the pill follows its token through redraws and hides at zero', async () => {
     const { rerender } = await renderTable(viewWithCounters());
     await fireEvent.pointerEnter(placed('mine'));

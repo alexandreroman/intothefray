@@ -196,6 +196,7 @@ describe('contextItems', () => {
       '---',
       'Add a token ▸',
       'Add a status ▸',
+      'Add a modifier ▸',
       '---',
       'Discard [X]',
       'Move to ▸',
@@ -214,6 +215,26 @@ describe('contextItems', () => {
       'Tough [G]',
       'Locked [L]',
     ]);
+    // The modifiers have no keys: +1 to each stat, then −1 past a separator.
+    expect(texts(submenu(entries, 'Add a modifier').entries)).toEqual([
+      '+1 ATK',
+      '+1 THW',
+      '+1 DEF',
+      '+1 SCH',
+      '+1 REC',
+      '---',
+      '−1 ATK',
+      '−1 THW',
+      '−1 DEF',
+      '−1 SCH',
+      '−1 REC',
+    ]);
+    expect(itemOf(submenu(entries, 'Add a modifier').entries, '−1 SCH').run?.()).toEqual({
+      kind: 'modifier',
+      card: 'mine',
+      name: 'sch',
+      delta: -1,
+    });
     expect(texts(submenu(entries, 'Move to').entries)).toEqual([
       'Hand [H]',
       'Top of deck',
@@ -244,6 +265,7 @@ describe('contextItems', () => {
       '---',
       'Add a token ▸',
       'Add a status ▸',
+      'Add a modifier ▸',
       '---',
       'Discard [X] (off)',
       'Move to ▸ (off)',
@@ -345,6 +367,7 @@ describe('contextItems', () => {
       '---',
       'Add a token ▸',
       'Add a status ▸',
+      'Add a modifier ▸',
       '---',
       'Move to ▸',
       '---',

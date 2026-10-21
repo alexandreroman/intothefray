@@ -124,7 +124,7 @@ func (g *Game) perform(who actor, a Action, cat *pack.Catalog, rng *rand.Rand, n
 // actions are not recorded.
 func changedNothing(before, after *Table, a Action) bool {
 	switch a.Kind {
-	case ActToken, ActStatus, ActFlip, ActChooseStage:
+	case ActToken, ActStatus, ActModifier, ActFlip, ActChooseStage:
 		return reflect.DeepEqual(before.Cards[a.Card], after.Cards[a.Card])
 	default:
 		return false

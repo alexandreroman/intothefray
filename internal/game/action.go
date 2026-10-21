@@ -26,6 +26,7 @@ const (
 	ActFlip        Kind = "flip"
 	ActToken       Kind = "token"
 	ActStatus      Kind = "status"
+	ActModifier    Kind = "modifier"
 	ActChooseStage Kind = "chooseStage"
 
 	ActDraw        Kind = "draw"
@@ -59,7 +60,7 @@ type Action struct {
 	// rather than at the default tucked offset (see tuckedPlace).
 	Placed bool     `json:"placed,omitempty"`
 	N      int      `json:"n,omitempty"`
-	Name   string   `json:"name,omitempty"` // token or status name
+	Name   string   `json:"name,omitempty"` // token, status or modifier name
 	Delta  int      `json:"delta,omitempty"`
 	Face   int      `json:"face,omitempty"`  // chosen stage face; resulting face of a flip
 	Where  string   `json:"where,omitempty"` // "top" | "bottom" | "shuffle"
@@ -86,7 +87,7 @@ type Action struct {
 // Limits applied to client-provided numbers.
 const (
 	maxCoordinate = 20000 // table coordinates are 0..maxCoordinate
-	maxCount      = 99    // cards per draw/discard, and counter delta magnitude
+	maxCount      = 99    // cards per draw/discard, counter delta magnitude, and a stored modifier (±99)
 )
 
 // actor is who performs an action: the credited seat, which the event records,
@@ -147,7 +148,7 @@ func resolve(g *Game, who actor, a Action, rng *rand.Rand) (Action, error) {
 	t := g.Table
 
 	switch a.Kind {
-	case ActMove, ActToken, ActStatus, ActChooseStage, ActDiscard:
+	case ActMove, ActToken, ActStatus, ActModifier, ActChooseStage, ActDiscard:
 		return a, checkCards(t, who, a.Card)
 	case ActExhaust:
 		return resolveExhaust(t, who, a)
@@ -281,7 +282,8 @@ func checkLimits(a Action) error {
 	if a.X < 0 || a.X > maxCoordinate || a.Y < 0 || a.Y > maxCoordinate {
 		return invalid("position (%d,%d) is outside the table", a.X, a.Y)
 	}
-	if (a.Kind == ActToken || a.Kind == ActStatus) && (a.Delta < -maxCount || a.Delta > maxCount) {
+	isCounter := a.Kind == ActToken || a.Kind == ActStatus || a.Kind == ActModifier
+	if isCounter && (a.Delta < -maxCount || a.Delta > maxCount) {
 		return invalid("delta %d is out of range", a.Delta)
 	}
 	if a.Kind == ActDiscardTop {

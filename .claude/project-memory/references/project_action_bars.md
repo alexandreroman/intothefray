@@ -20,9 +20,10 @@ type: project
   its count pill.
 - Entries follow one order, separated by group: the default action in
   bold (Exhaust, Draw 1, Reveal, Search, Browse…, Play on a box tile),
-  the rest of the main group, then look actions, "Add a token" and "Add
-  a status" submenus, Discard and the Move to submenu, then "Draw an
-  arrow" for a card in play. Each entry shows its key; a refused one is
+  the rest of the main group, then look actions, "Add a token", "Add a
+  status" and "Add a modifier" submenus, Discard and the Move to
+  submenu, then "Draw an arrow" for a card in play. Each entry that has
+  a key shows it (the modifier entries have none); a refused one is
   greyed with its reason.
 - Pile entries: own deck Draw 1 (W), Draw X (⇧W) │ Top X (L), Search (K)
   │ Discard 1 (X or ⌫), Discard X (⇧X), Shuffle (U); encounter deck

@@ -146,6 +146,8 @@ func TestResolveRejectsInvalidInput(t *testing.T) {
 		{"y too large", Action{Kind: ActMove, Card: f.ownTable, Y: 20001}},
 		{"delta too large", Action{Kind: ActToken, Card: f.ownTable, Name: "dmg", Delta: 100}},
 		{"delta too small", Action{Kind: ActStatus, Card: f.ownTable, Name: "tough", Delta: -100}},
+		{"modifier delta too large", Action{Kind: ActModifier, Card: f.ownTable, Name: "atk", Delta: 100}},
+		{"modifier delta too small", Action{Kind: ActModifier, Card: f.ownTable, Name: "atk", Delta: -100}},
 		{"discard zero", Action{Kind: ActDiscardTop, Pile: "deck:p0", N: 0}},
 		{"discard 100", Action{Kind: ActDiscardTop, Pile: "deck:p0", N: 100}},
 		{"discard more than the deck", Action{Kind: ActDiscardTop, Pile: "deck:p0", N: f.deckCount}},

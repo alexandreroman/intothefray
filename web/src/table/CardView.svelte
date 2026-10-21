@@ -1,9 +1,10 @@
 <!--
   One card lying on the table: its face (or its back when hidden), placed in
-  table units, with its tokens and statuses.
+  table units, with its tokens, statuses and stat modifiers.
 -->
 <script lang="ts">
   import type { PackFace, CardView as TableCard } from '../lib/types';
+  import { MODIFIERS, withSign } from './actions';
   import CardBack from './CardBack.svelte';
   import CardFace from './CardFace.svelte';
   import { isHidden } from './face';
@@ -54,6 +55,8 @@
   const middleThreat = $derived(!scheme && hasToken('thr'));
   const cornerThreat = $derived(scheme && hasToken('thr'));
   const statuses = $derived(STATUSES.filter(([k]) => (card.status?.[k] ?? 0) > 0));
+  // A modifier is signed: only 0 hides it.
+  const modifiers = $derived(MODIFIERS.filter((name) => (card.mods?.[name] ?? 0) !== 0));
   const element = $derived({ kind: 'card', id: card.id } as const);
   // A ghost is a copy: only the card on the table shows that it is hovered.
   const hovered = $derived(!ghost && interaction.isHovered(element));
@@ -158,6 +161,24 @@
                 d="M3 4.5V3a2 2 0 0 1 4 0v1.5"
               /></svg
             >{/if}{label}{n > 1 ? ` ×${n}` : ''}</span
+        >
+      {/each}
+    </div>
+  {/if}
+
+  {#if modifiers.length > 0}
+    <div class="mods">
+      {#each modifiers as name (name)}
+        {@const n = card.mods?.[name] ?? 0}
+        {@const target = { card: card.id, kind: 'modifier', name } as const}
+        <span
+          class="st mod"
+          class:neg={n < 0}
+          class:hot={interaction.isCounter(target)}
+          data-counter="modifier:{name}"
+          role="presentation"
+          onpointerenter={(event) => interaction.enterCounter(target, event)}
+          onpointerleave={() => interaction.leaveCounter()}>{withSign(n)} {name.toUpperCase()}</span
         >
       {/each}
     </div>
@@ -393,6 +414,69 @@
 
   .st.locked {
     background: linear-gradient(#7d8aa8, #46506b);
+  }
+
+  /*
+    Stat modifiers: tabs like the statuses, on the edge the statuses leave free. On a portrait
+    card, they stick out of the left edge from the bottom, clear of the stats printed along the
+    top left, of the corner pile and of the middle threat, which is narrower than the card.
+    Anchored at the bottom, the column grows upwards and still reads ATK to REC top to bottom.
+    On a portrait scheme, whose left edge holds the statuses, they stick out of the right edge
+    between the threat in the top corner and the corner pile, at most two tokens high (61px).
+  */
+  .mods {
+    position: absolute;
+    bottom: 6px;
+    left: -8px;
+    z-index: 4;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+  }
+
+  .card.scheme .mods {
+    top: 38px;
+    bottom: auto;
+    left: auto;
+    right: -8px;
+    align-items: flex-end;
+  }
+
+  /*
+    A landscape card, scheme or not, is too low for a column: they lie in a row along the bottom
+    from the left corner, stopping short of the corner pile (26px wide, 6px in) and wrapping
+    upwards.
+  */
+  .card.land .mods {
+    top: auto;
+    right: auto;
+    bottom: 6px;
+    left: 6px;
+    max-width: calc(100% - 44px);
+    flex-direction: row;
+    flex-wrap: wrap-reverse;
+    align-items: flex-end;
+  }
+
+  .mod {
+    /* "+1 ATK" never breaks between its number and its stat. */
+    white-space: nowrap;
+    border-radius: 6px 4px 4px 6px;
+    background: linear-gradient(var(--line-strong), var(--panel-2));
+  }
+
+  .card.scheme .mod {
+    border-radius: 4px 6px 6px 4px;
+  }
+
+  .card.land .mod {
+    border-radius: 4px;
+  }
+
+  /* A penalty is in the Fray red. */
+  .mod.neg {
+    background: linear-gradient(var(--accent), var(--accent-deep));
   }
 
   /* The small lock before the Locked label. */

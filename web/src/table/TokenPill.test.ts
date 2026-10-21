@@ -9,11 +9,32 @@ function renderPill(value = 3, anchor = document.createElement('span')) {
   return onstep;
 }
 
+function renderModifierPill(value: number) {
+  const anchor = document.createElement('span');
+  document.body.append(anchor);
+  render(TokenPill, {
+    props: {
+      anchor: () => anchor,
+      label: 'DEF modifier',
+      value,
+      signed: true,
+      zoom: 1,
+      onstep: vi.fn(),
+    },
+  });
+}
+
 describe('TokenPill', () => {
   it('shows the value between minus and plus', () => {
     renderPill(3);
     const pill = screen.getByRole('group', { name: 'Change damage' });
     expect(pill.textContent?.replace(/\s/g, '')).toBe('−3+');
+  });
+
+  it('shows a modifier with its sign', () => {
+    renderModifierPill(-2);
+    const pill = screen.getByRole('group', { name: 'Change DEF modifier' });
+    expect(pill.textContent?.replace(/\s/g, '')).toBe('−−2+');
   });
 
   it('steps by one in each direction', async () => {

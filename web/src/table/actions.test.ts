@@ -1,4 +1,11 @@
-import { actionsFor, keyLabel, type ActionItem, type TableElement } from './actions';
+import {
+  actionsFor,
+  counterName,
+  keyLabel,
+  withSign,
+  type ActionItem,
+  type TableElement,
+} from './actions';
 import { knownCard, type CardInfo } from '../lib/catalog';
 import type { Action, Area, CardView, PackFace, PileView, Role, View } from '../lib/types';
 
@@ -172,7 +179,11 @@ describe('actionsFor', () => {
   it('card in play groups and order', () => {
     const items = itemsFor({ kind: 'card', id: 'mine' });
 
-    expect(groups(items)).toEqual([['exhaust'], ['tokens', 'statuses'], ['discard', 'moveTo']]);
+    expect(groups(items)).toEqual([
+      ['exhaust'],
+      ['tokens', 'statuses', 'modifiers'],
+      ['discard', 'moveTo'],
+    ]);
     const exhaust = item(items, 'exhaust');
     expect(exhaust).toMatchObject({ label: 'Exhaust', key: 'E' });
     // Only a disabled item says why.
@@ -263,6 +274,39 @@ describe('actionsFor', () => {
     });
   });
 
+  it('the modifier submenu gives +1 then, past a separator, −1 to each stat, without keys', () => {
+    const items = itemsFor({ kind: 'card', id: 'mine' });
+
+    expect(item(items, 'modifiers').label).toBe('Add a modifier');
+    const modifiers = menuOf(items, 'modifiers');
+    expect(modifiers.map((it) => it.label)).toEqual([
+      '+1 ATK',
+      '+1 THW',
+      '+1 DEF',
+      '+1 SCH',
+      '+1 REC',
+      '-',
+      '−1 ATK',
+      '−1 THW',
+      '−1 DEF',
+      '−1 SCH',
+      '−1 REC',
+    ]);
+    expect(modifiers.some((it) => it.key !== undefined)).toBe(false);
+    expect(actionOf(item(modifiers, 'def+1'))).toEqual({
+      kind: 'modifier',
+      card: 'mine',
+      name: 'def',
+      delta: 1,
+    });
+    expect(actionOf(item(modifiers, 'atk-1'))).toEqual({
+      kind: 'modifier',
+      card: 'mine',
+      name: 'atk',
+      delta: -1,
+    });
+  });
+
   it('an exhausted card shows ready and the counter submenus give the counts', () => {
     const view = makeView({
       cards: [card('mine', { exhausted: true, tokens: { dmg: 2 }, status: { stunned: 1 } })],
@@ -304,7 +348,7 @@ describe('actionsFor', () => {
 
     expect(groups(items)).toEqual([
       ['exhaust', 'flip'],
-      ['tokens', 'statuses'],
+      ['tokens', 'statuses', 'modifiers'],
       ['discard', 'moveTo'],
     ]);
     const flip = item(items, 'flip');
@@ -318,7 +362,7 @@ describe('actionsFor', () => {
 
     expect(groups(items)).toEqual([
       ['exhaust', 'stage'],
-      ['tokens', 'statuses'],
+      ['tokens', 'statuses', 'modifiers'],
       ['discard', 'moveTo'],
     ]);
     const stage = item(items, 'stage');
@@ -385,7 +429,7 @@ describe('actionsFor', () => {
 
     expect(groups(items)).toEqual([
       ['exhaust', 'flip'],
-      ['tokens', 'statuses'],
+      ['tokens', 'statuses', 'modifiers'],
       ['discard', 'moveTo'],
     ]);
     expect(actionOf(item(items, 'flip'))).toEqual({ kind: 'flip', card: 'down' });
@@ -1050,5 +1094,20 @@ describe('keyLabel', () => {
     expect(keyLabel(item(itemsFor({ kind: 'card', id: 'mine' }), 'discard'))).toBe('X');
     expect(keyLabel({ key: 'W', shift: true })).toBe('⇧W');
     expect(keyLabel({})).toBeUndefined();
+  });
+});
+
+describe('counterName', () => {
+  it('names a token or status in lower case, a modifier by its stat', () => {
+    expect(counterName('token', 'dmg')).toBe('damage');
+    expect(counterName('status', 'stunned')).toBe('stunned');
+    expect(counterName('modifier', 'def')).toBe('DEF modifier');
+  });
+});
+
+describe('withSign', () => {
+  it('writes a modifier with its sign, a real minus sign when negative', () => {
+    expect(withSign(2)).toBe('+2');
+    expect(withSign(-1)).toBe('−1');
   });
 });

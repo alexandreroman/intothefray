@@ -671,14 +671,15 @@ function wasSeen(id: string, before: TableView): boolean {
   return isPlaced(was) || before.piles.some((pile) => pile.cards?.includes(id));
 }
 
-/** Exhausted or readied, flipped, turned face up, or its tokens or statuses changed. */
+/** Exhausted or readied, flipped, turned face up, or its tokens, statuses or modifiers changed. */
 function hasChanged(was: CardView, card: CardView): boolean {
   return (
     !!was.exhausted !== !!card.exhausted ||
     was.face !== card.face ||
     !!was.faceDown !== !!card.faceDown ||
     !sameCounts(was.tokens, card.tokens) ||
-    !sameCounts(was.status, card.status)
+    !sameCounts(was.status, card.status) ||
+    !sameCounts(was.mods, card.mods)
   );
 }
 
