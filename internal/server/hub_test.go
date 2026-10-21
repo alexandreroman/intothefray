@@ -114,11 +114,18 @@ func waitFor(t *testing.T, what string, cond func() bool) {
 }
 
 // awaitView reads views until one satisfies done, and returns it. Views are
-// coalesced, so the intermediate ones may or may not arrive.
+// coalesced, so the intermediate ones may or may not arrive. The deckSet
+// acknowledgements read meanwhile are skipped.
 func (c *testClient) awaitView(done func(game.View) bool) received {
 	c.t.Helper()
 	for {
-		msg := c.expect("view")
+		msg := c.read()
+		if msg.Type == typeDeckSet {
+			continue
+		}
+		if msg.Type != typeView {
+			c.t.Fatalf("got message %s, want type %q", msg.raw, typeView)
+		}
 		if done(msg.View) {
 			return msg
 		}

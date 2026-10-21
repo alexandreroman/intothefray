@@ -471,7 +471,10 @@ func (s *Server) lobby(ctx context.Context, c *conn, msg clientMessage) error {
 // setDeck imports the deck into the viewer's deck slot, importing before
 // touching the game: the import calls marvelcdb, which has no place in a
 // store transaction that may run several times. A failed import, or a hero
-// already at the table, is answered here and leaves the game as it is.
+// already at the table, is answered here and leaves the game as it is. A
+// deck set is acknowledged with the version that holds it: reloading the same
+// deck may leave the viewer's view as it was, and the view and the
+// acknowledgement may reach the viewer in either order.
 func (s *Server) setDeck(ctx context.Context, c *conn, link string, slot int) error {
 	deck, err := s.deps.Decks.Import(ctx, link, s.deps.Catalog)
 	var unsupported *decks.UnsupportedError
@@ -483,7 +486,7 @@ func (s *Server) setDeck(ctx context.Context, c *conn, link string, slot int) er
 		c.send(errorMessage{Type: typeError, Code: codeDeck, Message: s.importErrorText(c, err)})
 		return nil
 	}
-	err = s.update(ctx, c.gameID, func(g *game.Game) error {
+	version, err := s.updateVersion(ctx, c.gameID, func(g *game.Game) error {
 		return g.SetDeck(c.token, slot, deck, s.deps.Catalog)
 	})
 	var taken *game.HeroTakenError
@@ -491,7 +494,11 @@ func (s *Server) setDeck(ctx context.Context, c *conn, link string, slot int) er
 		c.send(errorMessage{Type: typeError, Code: codeDeck, Message: heroTakenText(taken)})
 		return nil
 	}
-	return err
+	if err != nil {
+		return err
+	}
+	c.send(deckSetMessage{Type: typeDeckSet, Version: version})
+	return nil
 }
 
 // heroTakenText is the message of a deck refused because its hero is already
@@ -533,13 +540,19 @@ func (s *Server) act(ctx context.Context, c *conn, msg clientMessage) error {
 // update applies change to the stored game, then sends the new version to
 // the local viewers and tells the other instances about it.
 func (s *Server) update(ctx context.Context, gameID string, change func(*game.Game) error) error {
+	_, err := s.updateVersion(ctx, gameID, change)
+	return err
+}
+
+// updateVersion is update that also returns the version of the changed game.
+func (s *Server) updateVersion(ctx context.Context, gameID string, change func(*game.Game) error) (int64, error) {
 	g, version, err := s.deps.Store.Update(ctx, gameID, change)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	s.hub.broadcast(g, version, s.onlineAudience(ctx, g))
 	s.publishUpdated(ctx, gameID, version)
-	return nil
+	return version, nil
 }
 
 // publishUpdated tells the other instances that a game changed. The change

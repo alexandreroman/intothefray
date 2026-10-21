@@ -40,6 +40,7 @@ type ServerMessage =
   | { type: 'view'; version: number; view: View }
   | { type: 'error'; id?: number; code: string; message: string }
   | { type: 'deckError'; unsupported: UnsupportedCard[] }
+  | { type: 'deckSet'; version: number }
   | ({ type: 'presence'; color: number; name: string } & PresenceFields);
 
 interface Deps {
@@ -78,6 +79,13 @@ export class GameSession {
   deckError = $state<UnsupportedCard[] | null>(null);
   /** The error that answered the last deck load, kept until the next load or a new deck. */
   deckLoadError = $state<SessionError | null>(null);
+  /** A deck load is in flight: sent, and not yet answered. */
+  deckLoading = $state(false);
+  /**
+   * The number of deck loads the server confirmed with a deckSet. A load that
+   * ends otherwise (an error, a lost connection) leaves it as it is.
+   */
+  deckLoaded = $state(0);
   readonly presence: Map<number, PresenceState> = new SvelteMap();
   /**
    * How long the viewer went without a live view before the current one came,
@@ -95,9 +103,10 @@ export class GameSession {
   #socket: WebSocket | null = null;
   #failedAttempts = 0;
   #nextActionId = 0;
-  // Lobby errors carry no request id: the first error after a setDeck is
-  // taken as its answer.
-  #deckLoadPending = false;
+  // The version of the last view, and the version named by a deckSet that
+  // came before its view: the deck load ends with that view.
+  #viewVersion: number | null = null;
+  #deckSetVersion: number | null = null;
   // When the last view came, and whether the connection dropped since.
   #viewAt: number | null = null;
   #droppedSinceView = false;
@@ -175,9 +184,12 @@ export class GameSession {
     if (op === 'setDeck') {
       this.deckError = null;
       this.deckLoadError = null;
-      this.#deckLoadPending = true;
     }
-    return this.#send({ type: 'lobby', op, ...payload });
+    const sent = this.#send({ type: 'lobby', op, ...payload });
+    if (sent && op === 'setDeck') {
+      this.deckLoading = true;
+    }
+    return sent;
   }
 
   /**
@@ -391,7 +403,7 @@ export class GameSession {
         this.role = message.role;
         break;
       case 'view':
-        this.#handleView(message.view);
+        this.#handleView(message.version, message.view);
         break;
       case 'error':
         this.#handleError(
@@ -401,8 +413,11 @@ export class GameSession {
         );
         break;
       case 'deckError':
-        this.#deckLoadPending = false;
+        this.#endDeckLoad();
         this.deckError = message.unsupported;
+        break;
+      case 'deckSet':
+        this.#handleDeckSet(message.version);
         break;
       case 'presence':
         this.#handlePresence(message);
@@ -410,14 +425,20 @@ export class GameSession {
     }
   }
 
-  #handleView(next: View): void {
+  #handleView(version: number, next: View): void {
     // The connection is healthy once the server has accepted the hello.
     this.#failedAttempts = 0;
     this.lastError = null;
+    this.#viewVersion = version;
     if (deckSignature(this.view) !== deckSignature(next)) {
       this.deckError = null;
       this.deckLoadError = null;
-      this.#deckLoadPending = false;
+    }
+    // A change of the viewer's decks says nothing of the load: it may come from
+    // another tab, or overtake the error that answers the load. Only the
+    // version of its deckSet does.
+    if (this.#deckSetVersion !== null && version >= this.#deckSetVersion) {
+      this.#confirmDeckLoad();
     }
     const now = Date.now();
     this.viewGap = this.#droppedSinceView && this.#viewAt !== null ? now - this.#viewAt : 0;
@@ -450,16 +471,45 @@ export class GameSession {
   }
 
   /**
+   * Ends the deck load the server acknowledged, once the view holds the
+   * version the deck was set in. The view and the deckSet come in either
+   * order: when the deckSet comes first, the load ends with the view.
+   */
+  #handleDeckSet(version: number): void {
+    if (!this.deckLoading) {
+      return;
+    }
+    if (this.#viewVersion !== null && this.#viewVersion >= version) {
+      this.#confirmDeckLoad();
+    } else {
+      this.#deckSetVersion = version;
+    }
+  }
+
+  #confirmDeckLoad(): void {
+    this.#endDeckLoad();
+    this.deckLoaded += 1;
+  }
+
+  #endDeckLoad(): void {
+    this.deckLoading = false;
+    this.#deckSetVersion = null;
+  }
+
+  /**
    * Before the first view, an error means the hello failed. A game-level
    * notFound (no action id) ends the session; any other error is a failed
    * attempt, retried with the usual backoff. Afterwards, the first error
-   * without an action id that follows a setDeck answers that deck load;
-   * other errors only report.
+   * without an action id that follows a setDeck answers that deck load,
+   * unless its deckSet came already; other errors only report.
    */
   #handleError(error: SessionError): void {
     const actionId = error.id;
-    if (this.#deckLoadPending && this.view !== null && actionId === undefined) {
-      this.#deckLoadPending = false;
+    // Lobby errors carry no request id: the first one during a load is its
+    // answer, until the deckSet that answers it instead.
+    const awaitingAnswer = this.deckLoading && this.#deckSetVersion === null;
+    if (awaitingAnswer && this.view !== null && actionId === undefined) {
+      this.#endDeckLoad();
       this.deckLoadError = error;
       return;
     }
@@ -505,7 +555,7 @@ export class GameSession {
     // Until the next view tells who is there, nobody watches.
     this.#othersWatching = 0;
     this.#droppedSinceView = true;
-    this.#deckLoadPending = false; // Its answer, if any, went with the old socket.
+    this.#endDeckLoad(); // Its answer, if any, went with the old socket.
     this.status = 'reconnecting';
     const delay = BACKOFF_MS[Math.min(this.#failedAttempts, BACKOFF_MS.length - 1)] ?? 0;
     this.#failedAttempts += 1;
@@ -523,7 +573,7 @@ export class GameSession {
     this.status = 'closed';
     this.presence.clear();
     this.#othersWatching = 0;
-    this.#deckLoadPending = false;
+    this.#endDeckLoad();
     if (error) {
       this.lastError = error;
     }

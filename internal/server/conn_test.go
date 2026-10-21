@@ -133,6 +133,26 @@ func (c *testClient) lobby(op string, fields map[string]any) {
 	c.send(msg)
 }
 
+// setDeck loads a deck, then returns the view that holds it and the deckSet
+// that acknowledges it, which may come in either order.
+func (c *testClient) setDeck(fields map[string]any) (received, received) {
+	c.t.Helper()
+	c.lobby("setDeck", fields)
+	var view, ack received
+	for range 2 {
+		msg := c.read()
+		switch {
+		case msg.Type == typeView && view.Type == "":
+			view = msg
+		case msg.Type == typeDeckSet && ack.Type == "":
+			ack = msg
+		default:
+			c.t.Fatalf("got message %s, want a view and a deckSet", msg.raw)
+		}
+	}
+	return view, ack
+}
+
 // stubMarvelcdb serves deck as decklist 1 and names card 99999.
 func stubMarvelcdb(t *testing.T, deck string) *decks.Importer {
 	t.Helper()
@@ -373,8 +393,7 @@ func TestSetDeckHeroTaken(t *testing.T) {
 		t.Errorf("error = %s, want code deck with %q", reply.raw, want)
 	}
 
-	host.lobby("setDeck", map[string]any{"url": spiderManDeckLink})
-	host.expect("view")
+	host.setDeck(map[string]any{"url": spiderManDeckLink})
 	host.lobby("addDeck", nil)
 	host.expect("view")
 
@@ -384,6 +403,30 @@ func TestSetDeckHeroTaken(t *testing.T) {
 	want = "Spider-Man (Peter Parker) is already at the table."
 	if reply.Code != "deck" || reply.Message != want {
 		t.Errorf("error = %s, want code deck with %q", reply.raw, want)
+	}
+}
+
+func TestSetDeckAcknowledged(t *testing.T) {
+	ts, _ := newTestServerWith(t, func(s *Server) { s.deps.Decks = stubMarvelcdb(t, blackPantherDeck) })
+	created := createGame(t, ts, "Alex")
+	host := connect(t, ts, created.ID)
+	host.hello(created.Token, "Alex")
+
+	view, ack := host.setDeck(map[string]any{"url": deckLink})
+
+	if deck := view.View.Players[0].Decks[0]; !deck.Ready || deck.HeroName != "Black Panther" {
+		t.Fatalf("deck = %+v, want the Black Panther deck", deck)
+	}
+	if ack.Version != view.Version {
+		t.Errorf("deckSet version = %d, want %d, the version of the view that holds the deck", ack.Version, view.Version)
+	}
+
+	// Reloading the same deck leaves the view as it was, but for its version.
+	reloaded, ack := host.setDeck(map[string]any{"url": deckLink})
+
+	if ack.Version != reloaded.Version || reloaded.Version <= view.Version {
+		t.Errorf("deckSet version = %d, view version = %d, want both the same and above %d",
+			ack.Version, reloaded.Version, view.Version)
 	}
 }
 
@@ -397,8 +440,7 @@ func TestStartThenAct(t *testing.T) {
 	host := connect(t, ts, created.ID)
 	host.hello(created.Token, "Alex")
 
-	host.lobby("setDeck", map[string]any{"url": deckLink})
-	host.expect("view")
+	host.setDeck(map[string]any{"url": deckLink})
 	host.lobby("configure", map[string]any{"config": game.DefaultConfig(cat, "rhino")})
 	host.expect("view")
 	host.lobby("start", nil)
@@ -633,8 +675,7 @@ func startSolo(t *testing.T, host *testClient) received {
 	if err != nil {
 		t.Fatal(err)
 	}
-	host.lobby("setDeck", map[string]any{"url": deckLink})
-	host.expect("view")
+	host.setDeck(map[string]any{"url": deckLink})
 	host.lobby("configure", map[string]any{"config": game.DefaultConfig(cat, "rhino")})
 	host.expect("view")
 	host.lobby("start", nil)
@@ -662,8 +703,7 @@ func TestLobbyRemoveDeck(t *testing.T) {
 	host.hello(created.Token, "Alex")
 	host.lobby("addDeck", nil)
 	host.expect("view")
-	host.lobby("setDeck", map[string]any{"url": deckLink, "deck": 1})
-	host.expect("view")
+	host.setDeck(map[string]any{"url": deckLink, "deck": 1})
 
 	// Removing the empty first slot leaves the loaded one, moved down.
 	host.lobby("removeDeck", map[string]any{"deck": 0})
@@ -687,9 +727,8 @@ func TestSetDeckSlot(t *testing.T) {
 	host.lobby("addDeck", nil)
 	host.expect("view")
 
-	host.lobby("setDeck", map[string]any{"url": deckLink, "deck": 1})
+	view, _ := host.setDeck(map[string]any{"url": deckLink, "deck": 1})
 
-	view := host.expect("view")
 	slots := view.View.Players[0].Decks
 	if len(slots) != 2 {
 		t.Fatalf("view = %s, want 2 deck slots", view.raw)
@@ -730,8 +769,7 @@ func TestActionSeatForeign(t *testing.T) {
 	guest.hello("", "Bob")
 	host.expect("view")
 	// Every change below reaches the host as a view, in order.
-	host.lobby("setDeck", map[string]any{"url": deckLink})
-	host.expect("view")
+	host.setDeck(map[string]any{"url": deckLink})
 	guest.lobby("setDeck", map[string]any{"url": spiderManDeckLink})
 	host.expect("view")
 	host.lobby("configure", map[string]any{"config": game.DefaultConfig(cat, "rhino")})

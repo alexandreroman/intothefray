@@ -9,7 +9,14 @@
    * One deck slot of the viewer. `slot` is the 1-based number shown when the
    * player has several decks, null with a single one; `onremove` is given only
    * when the slot can be removed. `autofocus` focuses the deck link as the slot
-   * mounts.
+   * mounts. `loading` tells that the slot's deck load is in flight: the form
+   * then waits for its answer. `locked` tells that a deck load is in flight,
+   * this slot's or another's: meanwhile the slot can neither start a load nor
+   * be removed, and only the loading slot shows the load. `loaded` counts the
+   * loads the server confirmed while this slot is the one loading, and is
+   * undefined for the other slots: each new one closes a Change in progress
+   * and clears the field, which shows a reload of the same deck, whose view
+   * looks as before.
    */
   let {
     deck,
@@ -19,6 +26,9 @@
     onload,
     onremove,
     autofocus = false,
+    loading = false,
+    locked = false,
+    loaded,
   }: {
     deck: DeckView;
     slot: number | null;
@@ -27,6 +37,9 @@
     onload: (url: string) => void;
     onremove?: () => void;
     autofocus?: boolean;
+    loading?: boolean;
+    locked?: boolean;
+    loaded?: number;
   } = $props();
 
   const inputId = $props.id();
@@ -41,6 +54,7 @@
   const changeLabel = $derived(slot === null ? 'Change deck' : `Change deck ${slot}`);
   const signature = $derived(JSON.stringify([deck.hero, deck.deckName]));
   const showForm = $derived(!deck.ready || changingFrom === signature);
+  const inFlight = $derived(loading || locked);
   const unsupportedCount = $derived(deckError?.reduce((sum, card) => sum + card.qty, 0) ?? 0);
   const unsupportedText = $derived(
     unsupportedCount === 1
@@ -58,11 +72,28 @@
     input?.select();
   });
 
+  // The confirmed count last seen, undefined while another slot is the loading one. Only a count
+  // that grows while this slot stays the loading one tells of a load that went through.
+  let seenLoaded: number | undefined;
+  $effect(() => {
+    if (loaded !== undefined && seenLoaded !== undefined && loaded > seenLoaded) {
+      changingFrom = null;
+      url = '';
+    }
+    seenLoaded = loaded;
+  });
+
   function load(event: SubmitEvent): void {
     event.preventDefault();
     const link = url.trim();
-    if (link !== '') {
+    if (link !== '' && !inFlight) {
       onload(link);
+    }
+  }
+
+  function removeSlot(): void {
+    if (!inFlight) {
+      onremove?.();
     }
   }
 </script>
@@ -73,19 +104,39 @@
       <label class="lbl" for={inputId}>{label}</label>
       {@render remove()}
     </div>
-    <form class="row" onsubmit={load}>
+    <!-- Busy, the form leaves out the status line below: a busy region may hold back what it
+         announces. -->
+    <form class="row" onsubmit={load} aria-busy={loading || undefined}>
       <input
         id={inputId}
         type="text"
         placeholder="Paste a deck link…"
+        readonly={loading}
         bind:value={url}
         bind:this={input}
       />
-      <button class="btn" type="submit" disabled={url.trim() === ''}>Load</button>
+      <!-- aria-disabled rather than disabled while a load is in flight: the button keeps the focus. -->
+      <button class="btn" type="submit" disabled={url.trim() === ''} aria-disabled={inFlight}>
+        <!-- Both labels share one cell, so that the button keeps its width. Hidden, the other label
+             is left out of the button's name too. -->
+        <span class="labels">
+          <span style:visibility={loading ? 'hidden' : undefined}>Load</span>
+          <span class="busy" style:visibility={loading ? undefined : 'hidden'}>
+            <span class="spinner"></span>Loading
+          </span>
+        </span>
+      </button>
       {#if changingFrom !== null}
-        <button class="btn" type="button" onclick={() => (changingFrom = null)}>Cancel</button>
+        <button class="btn" type="button" disabled={loading} onclick={() => (changingFrom = null)}>
+          Cancel
+        </button>
       {/if}
     </form>
+    <!-- Always there while the form shows: a live region must exist before what it announces. Only
+         screen readers get it; the Loading button shows the load. -->
+    <p class="sr-only" role="status">
+      {#if loading}Loading the deck…{/if}
+    </p>
     {#if deckError && deckError.length > 0}
       <div class="err" role="alert">
         <b>This deck can't be used yet: {unsupportedText}</b>
@@ -131,7 +182,8 @@
       class="btn-ghost tool remove"
       data-tip={removeLabel}
       aria-label={removeLabel}
-      onclick={onremove}
+      aria-disabled={inFlight}
+      onclick={removeSlot}
     >
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
     </button>
@@ -154,6 +206,67 @@
 
   .row button {
     flex: none;
+  }
+
+  /* The field stands further from Load than Load from Cancel: 12px, clear of the focus outline. */
+  .row input {
+    margin-right: 4px;
+  }
+
+  .labels {
+    display: grid;
+    justify-items: center;
+  }
+
+  .labels > * {
+    grid-area: 1 / 1;
+  }
+
+  .busy {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* A ring with one side left open, turning. */
+  .spinner {
+    flex: none;
+    width: 14px;
+    height: 14px;
+    box-sizing: border-box;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(1turn);
+    }
+  }
+
+  /* Without motion, the ring stands still and slowly fades in and out. */
+  @media (prefers-reduced-motion: reduce) {
+    .spinner {
+      animation: pulse 1.6s ease-in-out infinite alternate;
+    }
+  }
+
+  @keyframes pulse {
+    to {
+      opacity: 0.4;
+    }
+  }
+
+  /* Out of sight and taking no room, yet read by screen readers. */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 
   .loaded {
