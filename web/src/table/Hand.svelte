@@ -18,7 +18,8 @@
     HAND_CARD,
     HAND_PADDING,
     HAND_REST_DROP,
-    HAND_REST_SCALE,
+    handRestScale,
+    restingFanPositions,
   } from './layout';
   import { motion } from './motion.svelte';
 
@@ -27,6 +28,7 @@
     faceOf,
     captionOf = () => undefined,
     cardSize = HAND_CARD,
+    restCardSize,
     restDrop = HAND_REST_DROP,
     open = $bindable(false),
   }: {
@@ -36,8 +38,14 @@
     faceOf: (card: TableCard) => PackFace | null;
     /** The caption of a card's back (backCaption): its side deck's label, if any. */
     captionOf?: (card: TableCard) => string | undefined;
-    /** The size of a card, in px: smaller on a narrow or a small screen (Table.svelte). */
+    /** The size of a card in the raised hand, in px (Table.svelte). */
     cardSize?: { w: number; h: number };
+    /**
+     * The size of the base card the resting hand shows at HAND_REST_SCALE, in px: the rest scale
+     * follows from it (handRestScale), and the resting fan is laid out for it
+     * (restingFanPositions). The raised card's by default.
+     */
+    restCardSize?: { w: number; h: number };
     /** How far the resting hand drops below its raised place, in px. */
     restDrop?: number;
     /** Whether the hand is raised. */
@@ -66,7 +74,14 @@
 
   // The whole hand's width, padding included: fanPositions keeps that padding free.
   let width = $state(0);
-  const slots = $derived(fanPositions(shown.length, width, cardSize.w));
+  // Raised, the fan spreads out for the raised cards; at rest, it is the base cards' fan.
+  const restCard = $derived(restCardSize ?? cardSize);
+  const restScale = $derived(handRestScale(restCard, cardSize));
+  const slots = $derived(
+    open
+      ? fanPositions(shown.length, width, cardSize.w)
+      : restingFanPositions(shown.length, width, restCard.w, cardSize.w),
+  );
 
   // A table card of the viewer's own, dragged over the hand to go back to it.
   const dropTarget = $derived(interaction.dropOn?.kind === 'hand');
@@ -254,8 +269,19 @@
     if (id !== undefined && motion.drawing.has(id)) {
       return true;
     }
-    // Some environments (tests) have no Web Animations: nothing moves there.
-    return card.getAnimations?.().some((animation) => animation.playState === 'running') ?? false;
+    // The cards' own CSS transitions do not count: opening or lowering the hand slides every card
+    // to its other fan (`left`), and leaving them out of the band meanwhile would lower and raise
+    // the hand again under a pointer at rest. Some environments (tests) have no Web Animations,
+    // nor CSSTransition: nothing moves there.
+    return (
+      card
+        .getAnimations?.()
+        .some((animation) => animation.playState === 'running' && !isTransition(animation)) ?? false
+    );
+  }
+
+  function isTransition(animation: Animation): boolean {
+    return typeof CSSTransition !== 'undefined' && animation instanceof CSSTransition;
   }
 
   // When a drag ends, and once the cards a view brought have landed, the band is measured again
@@ -337,7 +363,7 @@
   style:--card-w="{cardSize.w}px"
   style:--card-h="{cardSize.h}px"
   style:--rest-drop="{restDrop}px"
-  style:--rest-scale={HAND_REST_SCALE}
+  style:--rest-scale={restScale}
   style:--pad-top="{HAND_PADDING.top}px"
   style:--pad-bottom="{HAND_PADDING.bottom}px"
   bind:this={list}

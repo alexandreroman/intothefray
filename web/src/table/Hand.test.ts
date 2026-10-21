@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/sve
 import Hand from './Hand.svelte';
 import handSource from './Hand.svelte?raw';
 import { interaction } from './interaction.svelte';
-import { fanPositions, HAND_CARD } from './layout';
+import { fanPositions, HAND_CARD, HAND_REST_SCALE, restingFanPositions } from './layout';
 import { motion } from './motion.svelte';
 import type { CardView as TableCard, PackFace } from '../lib/types';
 
@@ -55,6 +55,32 @@ describe('Hand', () => {
         .getByRole('img')
         .getAttribute('src'),
     ).toBe('01003.png');
+  });
+
+  it('lays the resting fan out for the base cards, and spreads it for the raised ones', async () => {
+    vi.spyOn(Element.prototype, 'clientWidth', 'get').mockReturnValue(1200);
+    const raised = { w: 238, h: 333 };
+    const props = { cards: CARDS, faceOf, cardSize: raised, restCardSize: HAND_CARD };
+    const { rerender } = render(Hand, props);
+    const xs = () => handCards().map((item) => item.style.getPropertyValue('--x'));
+
+    const resting = restingFanPositions(3, 1200, HAND_CARD.w, raised.w).map(
+      (slot) => `${slot.x}px`,
+    );
+    expect(xs()).toEqual(resting);
+
+    await rerender({ ...props, open: true });
+    const raisedFan = fanPositions(3, 1200, raised.w).map((slot) => `${slot.x}px`);
+    expect(xs()).toEqual(raisedFan);
+    expect(raisedFan).not.toEqual(resting);
+  });
+
+  it('draws the resting hand as large as its base card at HAND_REST_SCALE', async () => {
+    const { rerender } = render(Hand, { cards: CARDS, faceOf });
+    expect(handList().style.getPropertyValue('--rest-scale')).toBe(`${HAND_REST_SCALE}`);
+
+    await rerender({ cards: CARDS, faceOf, cardSize: { w: 238, h: 333 }, restCardSize: HAND_CARD });
+    expect(Number(handList().style.getPropertyValue('--rest-scale'))).toBeCloseTo(0.6374, 4);
   });
 
   it('lays the cards out on the fan of the measured width', () => {
@@ -159,6 +185,32 @@ describe('Hand', () => {
     motion.drawing.delete('h1');
     await waitFor(() => expect(handList().classList).toContain('open'));
     expect(handCards()[0]?.classList).not.toContain('arriving');
+  });
+
+  it('keeps the cards sliding to their other fan in the band', async () => {
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockReturnValue(
+      DOMRect.fromRect({ x: 600, y: 700, width: 132, height: 185 }),
+    );
+    // jsdom has no Web Animations: every card runs a CSS transition, as when the hand opens.
+    class FakeTransition {
+      playState = 'running';
+    }
+    vi.stubGlobal('CSSTransition', FakeTransition);
+    Object.defineProperty(Element.prototype, 'getAnimations', {
+      configurable: true,
+      value: () => [new FakeTransition()],
+    });
+    try {
+      render(Hand, { cards: CARDS, faceOf });
+
+      await fireEvent.pointerMove(window, { clientX: 650, clientY: 800 });
+      expect(handList().classList).toContain('open');
+      await fireEvent.pointerMove(window, { clientX: 652, clientY: 798 });
+      expect(handList().classList).toContain('open');
+    } finally {
+      Reflect.deleteProperty(Element.prototype, 'getAnimations');
+      vi.unstubAllGlobals();
+    }
   });
 
   it('closes when the pointer leaves the window', async () => {

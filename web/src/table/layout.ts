@@ -44,11 +44,12 @@ const FAN_RADIUS = 1260;
 const FAN_MAX_STEP_DEG = 5;
 const FAN_MAX_TOTAL_DEG = 44;
 const FAN_OVERLAP = 40;
-// Kept free beside the row, and the share of a card the tilted outer cards take beyond it. The
-// cards turn around a point below their bottom edge (Hand.svelte's transform-origin 50% 110%),
-// so at the full 22° the top corners of 185 × 259 outer cards reach about 12 px past this room
-// on each side, into the hand's padding. Reserving that overhang instead would pack a 10-card
-// hand tighter than the prototype does.
+// Kept free beside the row for 185 px cards, and the share of a card the tilted outer cards take
+// beyond it. The cards turn around a point below their bottom edge (Hand.svelte's
+// transform-origin 50% 110%), so at the full 22° the top corners of 185 × 259 outer cards reach
+// about 12 px past the width on each side. Reserving that overhang instead would pack a 10-card
+// hand tighter than the prototype does. The overhang grows with the card: a larger card keeps a
+// room as much larger (fanPositions), and its corners as little past the width, in proportion.
 const FAN_SIDE_ROOM = 112;
 const FAN_TILT_ROOM = 0.35;
 
@@ -274,7 +275,11 @@ const HAND_CARD_RATIO = HAND_CARD.h / HAND_CARD.w;
 export const HAND_PADDING = { top: 26, bottom: 18 } as const;
 const HAND_PADDING_Y = HAND_PADDING.top + HAND_PADDING.bottom;
 
-/** The resting hand is drawn at this scale, from its bottom edge: Hand.svelte draws it. */
+/**
+ * The resting hand shows its base card (HAND_CARD, HAND_CARD_NARROW or
+ * smallHandCard) at this scale, from its bottom edge: Hand.svelte draws the
+ * raised card at handRestScale to match.
+ */
 export const HAND_REST_SCALE = 0.82;
 
 /** How far the resting hand drops below its raised place, in px, but on a small screen. */
@@ -288,7 +293,7 @@ export const HAND_REST_DROP = 140;
  */
 export function smallHandCard(window: { w: number; h: number }): { w: number; h: number } {
   const fromWidth = window.w * SMALL_HAND_CARD_SHARE;
-  const fromHeight = (window.h / 2 - HAND_PADDING_Y) / HAND_CARD_RATIO;
+  const fromHeight = halfHeightCardWidth(window.h);
   const w = Math.floor(
     Math.max(SMALL_HAND_CARD_MIN_W, Math.min(SMALL_HAND_CARD_MAX_W, fromWidth, fromHeight)),
   );
@@ -304,9 +309,91 @@ export function smallHandDrop(cardHeight: number): number {
   return Math.round((cardHeight * HAND_REST_DROP) / HAND_CARD.h);
 }
 
-/** The height of the resting hand that shows above the window's bottom edge, in px. */
+/**
+ * The widest hand card that keeps the raised hand, its padding included, to
+ * half the window's height, in px: a phone held sideways.
+ */
+function halfHeightCardWidth(windowHeight: number): number {
+  return (windowHeight / 2 - HAND_PADDING_Y) / HAND_CARD_RATIO;
+}
+
+/**
+ * The height of the resting hand that shows above the window's bottom edge, in
+ * px, for its base card and the drop that goes with it.
+ */
 export function restingStrip(cardHeight: number, drop: number): number {
   return Math.max(0, Math.round(HAND_REST_SCALE * (HAND_PADDING_Y + cardHeight) - drop));
+}
+
+// The preview's frame (.peek, Table.svelte): at most 320 px wide, its 10 px padding and 1 px border
+// included, never wider than 45 % of the table area, nor taller than the window less 200 px. Keep
+// in step with .peek (Table.svelte).
+const PREVIEW_MAX_W = 320;
+const PREVIEW_AREA_SHARE = 0.45;
+const PREVIEW_ROOM_Y = 200;
+const PREVIEW_PADDING = 10;
+const PREVIEW_BORDER = 1;
+const PORTRAIT_RATIO = 5 / 7;
+
+/** The raised hand's cards are this share of the preview's card. */
+const RAISED_HAND_SHARE = 0.8;
+
+/**
+ * The width of the portrait card the preview shows, in px, from the table
+ * area's width (`area.w`) and the window's height (`area.h`), as .peek's CSS
+ * sizes it: its frame, less the padding and the border inside it.
+ */
+export function previewCardWidth(area: { w: number; h: number }): number {
+  // The CSS adds the padding only to the width the height allows, not the border.
+  const fromHeight = (area.h - PREVIEW_ROOM_Y) * PORTRAIT_RATIO + 2 * PREVIEW_PADDING;
+  const frame = Math.min(PREVIEW_MAX_W, area.w * PREVIEW_AREA_SHARE, fromHeight);
+  return Math.max(0, frame - 2 * (PREVIEW_PADDING + PREVIEW_BORDER));
+}
+
+/**
+ * A card of the raised hand, in px: 80 % of the preview's card (see
+ * previewCardWidth for `area`), never smaller than the base card the resting
+ * hand shows, and on a small screen never so tall that the raised hand takes
+ * more than half the window's height.
+ */
+export function raisedHandCard(
+  base: { w: number; h: number },
+  area: { w: number; h: number },
+  opts: { small: boolean },
+): { w: number; h: number } {
+  let w = Math.round(RAISED_HAND_SHARE * previewCardWidth(area));
+  if (opts.small) {
+    w = Math.min(w, Math.floor(halfHeightCardWidth(area.h)));
+  }
+  if (w <= base.w) {
+    return base;
+  }
+  return { w, h: Math.round(w * HAND_CARD_RATIO) };
+}
+
+/**
+ * The scale the resting hand is drawn at, from its bottom edge: its raised
+ * cards then show as large as its base cards at HAND_REST_SCALE.
+ */
+export function handRestScale(base: { w: number }, raised: { w: number }): number {
+  // The ratio first: an unchanged card keeps HAND_REST_SCALE exactly.
+  return HAND_REST_SCALE * (base.w / raised.w);
+}
+
+/**
+ * How far the resting hand drops below its raised place, in px, so that its
+ * raised cards, drawn at handRestScale, show as tall a part above the window's
+ * bottom edge as the base card at HAND_REST_SCALE dropped by `baseDrop`. The
+ * cards are measured, not the hand's box: its top padding lies above them.
+ */
+export function handRestDrop(
+  base: { w: number; h: number },
+  baseDrop: number,
+  raised: { w: number; h: number },
+): number {
+  const baseShown = HAND_REST_SCALE * (base.h + HAND_PADDING.bottom) - baseDrop;
+  const scale = handRestScale(base, raised);
+  return Math.max(0, Math.round(scale * (raised.h + HAND_PADDING.bottom) - baseShown));
 }
 
 const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
@@ -314,9 +401,9 @@ const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
 /**
  * Lays out `n` cards of a hand, as the prototype does: the cards overlap by
  * 40, more when the row does not fit `width` (keeping 112 plus a third of a
- * card for the tilted outer cards), and turn 5 degrees apart, 44 at most in
- * total. Each card sags by how far a circle of radius 1260 falls away from
- * its top at that angle.
+ * card for the tilted outer cards, the 112 growing with a card wider than
+ * 185), and turn 5 degrees apart, 44 at most in total. Each card sags by how
+ * far a circle of radius 1260 falls away from its top at that angle.
  *
  * Coordinates are relative to the fan centre, the middle of the middle card:
  * `x` grows to the right, `y` grows downward (outer cards sit lower), `angle`
@@ -329,7 +416,10 @@ export function fanPositions(n: number, width: number, cardWidth: number = HAND_
   const gaps = Math.max(1, n - 1);
   const step = Math.min(FAN_MAX_STEP_DEG, FAN_MAX_TOTAL_DEG / gaps);
   const roomy = cardWidth - FAN_OVERLAP;
-  const fitted = (width - FAN_SIDE_ROOM - (1 + FAN_TILT_ROOM) * cardWidth) / gaps;
+  // A card up to the desktop's keeps the prototype's room; a larger one keeps a room in proportion
+  // to its width, as its corners swing out in proportion.
+  const sideRoom = FAN_SIDE_ROOM * Math.max(1, cardWidth / HAND_CARD.w);
+  const fitted = (width - sideRoom - (1 + FAN_TILT_ROOM) * cardWidth) / gaps;
   // Never below 0: with no room at all, the cards pile up rather than swap places.
   const pitch = Math.max(0, Math.min(roomy, fitted));
 
@@ -342,4 +432,24 @@ export function fanPositions(n: number, width: number, cardWidth: number = HAND_
       angle,
     };
   });
+}
+
+/**
+ * The fan of the resting hand, in the raised hand's px: laid out for the base
+ * card the resting hand shows (`restCardWidth`), then spread by as much as the
+ * rest scale (handRestScale) draws the raised card (`cardWidth`) smaller. On
+ * screen, the resting fan is then the base card's at HAND_REST_SCALE.
+ */
+export function restingFanPositions(
+  n: number,
+  width: number,
+  restCardWidth: number,
+  cardWidth: number,
+): FanSlot[] {
+  const spread = cardWidth / restCardWidth;
+  return fanPositions(n, width, restCardWidth).map((slot) => ({
+    x: slot.x * spread,
+    y: slot.y * spread,
+    angle: slot.angle,
+  }));
 }

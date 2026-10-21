@@ -69,9 +69,11 @@
     HAND_CARD,
     HAND_CARD_NARROW,
     HAND_REST_DROP,
+    handRestDrop,
     isOutOfPlay,
     outOfPlayChips,
     ownerFrames,
+    raisedHandCard,
     restingStrip,
     smallHandCard,
     smallHandDrop,
@@ -572,15 +574,23 @@
 
   // ---- The hand and the controls at the bottom ----
 
-  // The hand's cards: smaller on a narrow screen, and following the window on a small one, where
-  // the resting hand drops by as much of them as elsewhere.
-  const handCard = $derived.by(() => {
+  // The hand's base cards, which the resting hand shows: smaller on a narrow screen, and following
+  // the window on a small one, where the resting hand drops by as much of them as elsewhere.
+  const baseHandCard = $derived.by(() => {
     if (small.current) {
       return smallHandCard({ w: windowWidth, h: windowHeight });
     }
     return narrow.current ? HAND_CARD_NARROW : HAND_CARD;
   });
-  const handDrop = $derived(small.current ? smallHandDrop(handCard.h) : HAND_REST_DROP);
+  const baseHandDrop = $derived(small.current ? smallHandDrop(baseHandCard.h) : HAND_REST_DROP);
+
+  // The raised hand's cards, 80 % of the preview's. At rest, Hand.svelte draws them at the size of
+  // the base card at HAND_REST_SCALE, on the base card's fan, and they drop so that as tall a part
+  // of them shows as of the base card dropped by baseHandDrop.
+  const raisedCard = $derived(
+    raisedHandCard(baseHandCard, { w: scrollerWidth, h: windowHeight }, { small: small.current }),
+  );
+  const handDrop = $derived(handRestDrop(baseHandCard, baseHandDrop, raisedCard));
 
   // The room between the resting hand's strip and the controls above it on a small screen, in px.
   const ABOVE_HAND = 8;
@@ -588,11 +598,13 @@
   /**
    * The room under the controls at the bottom of the table (the zoom control,
    * the narrow Undo, the player selector), in px. On a small screen they sit
-   * above the resting hand, which would cover them otherwise.
+   * above the resting hand, which would cover them otherwise: above the strip
+   * restingStrip gives for the base card, which the resting hand, drawn from its
+   * raised cards (handRestDrop), does not rise past.
    */
   const controlsBottom = $derived(
     small.current && handCards !== undefined
-      ? restingStrip(handCard.h, handDrop) + ABOVE_HAND
+      ? restingStrip(baseHandCard.h, baseHandDrop) + ABOVE_HAND
       : TABLE_EDGE_BOTTOM,
   );
 
@@ -1821,7 +1833,8 @@
       cards={handCards}
       {faceOf}
       {captionOf}
-      cardSize={handCard}
+      cardSize={raisedCard}
+      restCardSize={baseHandCard}
       restDrop={handDrop}
       bind:open={handRaised}
     />
@@ -2332,8 +2345,10 @@
     z-index: 30;
     position: relative;
     /*
-      A 300 px wide portrait card in its 10 px padding, never wider than 45 % of the table, nor
-      so tall that it reaches the zoom control: the top bar and the corners keep 200 px.
+      A 298 px wide portrait card in its 10 px padding and 1 px border, never wider than 45 % of
+      the table, nor so tall that it reaches the zoom control: the top bar and the corners keep
+      200 px. Keep in step with previewCardWidth (layout.ts): the raised hand's cards follow this
+      card.
     */
     width: min(320px, 45%, calc((100dvh - 200px) * 5 / 7 + 20px));
     padding: 10px;
