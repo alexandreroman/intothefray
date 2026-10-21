@@ -23,6 +23,20 @@ describe('CardBack', () => {
     expect(back.textContent).toBe('ENCOUNTER');
   });
 
+  it('shows the back of an explicit theme over the stored one', () => {
+    localStorage.setItem('itf-theme', 'minimal');
+    render(CardBack, { back: 'player', theme: 'official' });
+    expect(screen.getByRole('img', { name: 'Player card back' }).getAttribute('src')).toBe(
+      CEREBRO + 'HeroBack.jpg',
+    );
+  });
+
+  it('draws the back of an explicit theme without images', () => {
+    render(CardBack, { back: 'player', theme: 'minimal' });
+    const back = screen.getByRole('img', { name: 'Player card back' });
+    expect(back.tagName.toLowerCase()).toBe('div');
+  });
+
   it("captions a side deck's own back at its bottom, over the theme image", () => {
     render(CardBack, { back: 'encounter', caption: 'Gift' });
     const back = screen.getByRole('img', { name: 'Gift card back' });

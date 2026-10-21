@@ -179,9 +179,7 @@
     user-select: none;
     -webkit-user-select: none;
     touch-action: none;
-    /* Light from the top left: the shadow is cast at 45°, and falls on the cards underneath. */
-    filter: drop-shadow(2px 2px 2px #000000c8) drop-shadow(6px 6px 9px #000000a6)
-      drop-shadow(12px 12px 16px #00000059);
+    filter: var(--card-shadow);
   }
 
   .card.exhausted {

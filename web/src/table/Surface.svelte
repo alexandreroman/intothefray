@@ -85,7 +85,7 @@
 </script>
 
 <!-- Card z-indexes come from the server and can be negative: the surface isolates them. -->
-<div class="surface" style:width="{width}px" style:height="{height}px">
+<div class="surface table-dots" style:width="{width}px" style:height="{height}px">
   {#each owners as owner (owner.frame.owner)}
     <div
       class="ownerbox"
@@ -185,8 +185,6 @@
     position: relative;
     isolation: isolate;
     zoom: var(--z, 1);
-    background-image: radial-gradient(circle, var(--dot) 1px, transparent 1.2px);
-    background-size: 10px 10px;
   }
 
   /* Under the piles and the cards, which lie over it. */
