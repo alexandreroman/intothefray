@@ -46,4 +46,28 @@ describe('ConfirmDialog', () => {
     expect(oncancel).toHaveBeenCalledTimes(2);
     expect(onconfirm).not.toHaveBeenCalled();
   });
+
+  it('describes itself with the detail under the question', () => {
+    render(ConfirmDialog, {
+      question: 'Sure?',
+      detail: 'There is no going back.',
+      confirmLabel: 'Do it',
+      onconfirm: () => {},
+      oncancel: () => {},
+    });
+    const dialog = screen.getByRole('alertdialog', {
+      name: 'Sure?',
+      description: 'There is no going back.',
+    });
+    const detail = screen.getByText('There is no going back.');
+    expect(detail.tagName).toBe('P');
+    expect(dialog.getAttribute('aria-describedby')).toBe(detail.id);
+  });
+
+  it('has no description without a detail', () => {
+    renderDialog();
+    const dialog = screen.getByRole('alertdialog', { name: 'Sure?' });
+    expect(dialog.hasAttribute('aria-describedby')).toBe(false);
+    expect(dialog.querySelector('p')).toBeNull();
+  });
 });

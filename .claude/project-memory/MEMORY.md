@@ -63,3 +63,4 @@
 - [Stat modifier tokens](references/project_stat_modifiers.md) — signed ATK/THW/DEF/SCH/REC per card; menu + pill, no keys; ±99
 - [Hand card sizes](references/project_hand_sizes.md) — raised: 80 % of the preview card; resting: base card at 82 %, its fan and height
 - [Scrolling lists fade at their edges](references/project_scroll_fade.md) — card box lists, lobby villain list: {@attach scrollFade}
+- [Lobby columns share one height](references/project_lobby_columns.md) — side by side, Scenario box fills its column; settings slide in

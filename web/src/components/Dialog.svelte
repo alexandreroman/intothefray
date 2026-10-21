@@ -19,6 +19,7 @@
     wide = false,
     at,
     width,
+    describedby,
     box = $bindable(),
     heading,
     children,
@@ -36,6 +37,8 @@
     at?: { top: number; left: number };
     /** A width of its own (any CSS length), rather than its kind's. */
     width?: string;
+    /** The id of the element of the content that describes the box, read after its name. */
+    describedby?: string;
     /** The box, for whoever places it. */
     box?: HTMLElement;
     /** Draws the heading instead of the title; the element it gives the id to names the box. */
@@ -153,6 +156,7 @@
     {role}
     aria-modal="true"
     aria-labelledby={titleId}
+    aria-describedby={describedby}
     tabindex="-1"
     bind:this={box}
     onkeydown={onBoxKeydown}
