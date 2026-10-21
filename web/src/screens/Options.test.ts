@@ -113,15 +113,13 @@ describe('Options', () => {
     expect(screen.getByText('Saved in this browser only. Changes apply right away.')).toBeTruthy();
   });
 
-  it('shows the app and server commits, linked to GitHub', async () => {
+  it('shows the app and server short commits as plain text', async () => {
     render(Options);
 
-    const appLink = screen.getByRole('link', { name: '0123456' });
-    expect(appLink.getAttribute('href')).toBe(
-      `https://github.com/alexandreroman/intothefray/commit/${APP_SHA}`,
-    );
-    expect(appLink.getAttribute('title')).toBe(APP_SHA);
-    await waitFor(() => expect(screen.getAllByRole('link', { name: '0123456' })).toHaveLength(2));
+    const appCommit = screen.getByText('0123456');
+    expect(appCommit.getAttribute('title')).toBe(APP_SHA);
+    await waitFor(() => expect(screen.getAllByText('0123456')).toHaveLength(2));
+    expect(screen.queryByRole('link', { name: '0123456' })).toBeNull();
     expect(screen.queryByText('App and server differ')).toBeNull();
   });
 
@@ -129,7 +127,7 @@ describe('Options', () => {
     stubServerCommit(SERVER_SHA);
     render(Options);
 
-    expect(await screen.findByRole('link', { name: 'fedcba9' })).toBeTruthy();
+    expect(await screen.findByText('fedcba9')).toBeTruthy();
     expect(screen.getByText('App and server differ')).toBeTruthy();
   });
 
@@ -138,7 +136,7 @@ describe('Options', () => {
     stubServerCommit(SERVER_SHA);
     render(Options);
 
-    expect(await screen.findByRole('link', { name: 'fedcba9' })).toBeTruthy();
+    expect(await screen.findByText('fedcba9')).toBeTruthy();
     expect(screen.queryByText('App and server differ')).toBeNull();
   });
 
@@ -151,11 +149,11 @@ describe('Options', () => {
     expect(screen.queryByText('App and server differ')).toBeNull();
   });
 
-  it('shows an unlinked "dev" for a local build', () => {
+  it('shows "dev" for a local build', () => {
     vi.stubEnv('VITE_COMMIT', '');
     render(Options);
 
-    expect(screen.getByText('dev').closest('a')).toBeNull();
+    expect(screen.getByText('dev')).toBeTruthy();
   });
 
   it('goes back home', async () => {

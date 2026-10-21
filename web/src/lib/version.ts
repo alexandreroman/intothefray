@@ -1,6 +1,5 @@
 import { apiUrl } from './api';
 
-const REPO_URL = 'https://github.com/alexandreroman/intothefray';
 const SHORT_LENGTH = 7;
 const FULL_SHA = /^[0-9a-f]{40}$/;
 
@@ -31,9 +30,4 @@ export function isCommit(commit: string): boolean {
 /** The short form of a full SHA; any other value ("dev") as is. */
 export function shortCommit(commit: string): string {
   return isCommit(commit) ? commit.slice(0, SHORT_LENGTH) : commit;
-}
-
-/** The commit's page on GitHub, only for a full SHA. */
-export function commitUrl(commit: string): string | undefined {
-  return isCommit(commit) ? `${REPO_URL}/commit/${commit}` : undefined;
 }

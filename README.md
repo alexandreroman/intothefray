@@ -309,8 +309,8 @@ Both sides report the commit they run, so a mismatch shows at once:
   when the checkout has changes, and an image reports `dev`;
 - the `Pages` workflow passes the SHA to the frontend build as
   `VITE_COMMIT` (`dev` when unset);
-- the Options screen shows both, `App <sha> · Server <sha>`, each
-  linked to its commit on GitHub, and says when two full SHAs differ.
+- the Options screen shows both short SHAs as plain text,
+  `App <sha> / Server <sha>`, and says when two full SHAs differ.
 
 In the repository settings:
 

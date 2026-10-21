@@ -6,7 +6,7 @@
   import { go } from '../lib/router.svelte';
   import { selectionIndicator } from '../lib/selectionIndicator';
   import { applyTheme, storedTheme, type Theme } from '../lib/theme';
-  import { appCommit, commitUrl, fetchServerCommit, isCommit, shortCommit } from '../lib/version';
+  import { appCommit, fetchServerCommit, isCommit, shortCommit } from '../lib/version';
   import TopBar from '../components/TopBar.svelte';
 
   // Each card shows its theme whatever the current one: a table, a card back
@@ -174,7 +174,7 @@
 
     <p class="version">
       <span>App {@render commit(app)}</span>
-      <span aria-hidden="true">·</span>
+      <span aria-hidden="true">/</span>
       <span>
         Server
         {#if server}
@@ -193,12 +193,7 @@
 </div>
 
 {#snippet commit(sha: string)}
-  {@const url = commitUrl(sha)}
-  {#if url}
-    <a href={url} title={sha} target="_blank" rel="noopener noreferrer">{shortCommit(sha)}</a>
-  {:else}
-    <span title={sha}>{shortCommit(sha)}</span>
-  {/if}
+  <span title={sha}>{shortCommit(sha)}</span>
 {/snippet}
 
 <style>
@@ -486,21 +481,16 @@
     margin: 20px 0 0;
     display: flex;
     flex-wrap: wrap;
+    justify-content: flex-end;
     gap: 4px 8px;
-    font-size: 13px;
-    color: var(--muted);
+    text-align: right;
+    font-size: 11px;
+    color: var(--faint);
   }
 
-  .version a {
-    color: inherit;
-  }
-
-  .version a:hover {
-    color: var(--text);
-  }
-
+  /* Subdued like the rest of the line, yet still noticeable. */
   .differ {
-    color: var(--warn);
+    color: color-mix(in srgb, var(--warn) 75%, var(--bg));
   }
 
   /* A phone: 16px gutters, and smaller theme cards to fit three in a row. */

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { appCommit, commitUrl, fetchServerCommit, isCommit, shortCommit } from './version';
+import { appCommit, fetchServerCommit, isCommit, shortCommit } from './version';
 
 const SHA = '0123456789abcdef0123456789abcdef01234567';
 
@@ -56,15 +56,5 @@ describe('shortCommit', () => {
 
   it('keeps any other value as is', () => {
     expect(shortCommit('dev')).toBe('dev');
-  });
-});
-
-describe('commitUrl', () => {
-  it('links a full SHA to its commit', () => {
-    expect(commitUrl(SHA)).toBe(`https://github.com/alexandreroman/intothefray/commit/${SHA}`);
-  });
-
-  it('has no link for any other value', () => {
-    expect(commitUrl('dev')).toBeUndefined();
   });
 });
