@@ -27,8 +27,9 @@ Everything below works today, except where noted.
   modular sets: villain, main scheme and decks are laid out for you,
   with each hero's side decks (Doctor Strange's Invocation deck and
   its discard pile, Daredevil's Sense deck...) shuffled beside the
-  identity, and the cards a hero sets aside (Valkyrie's Death-Glow,
-  Iceman's Frostbite...) on its set-aside pile
+  identity, and the cards a hero or a deck card sets aside
+  (Valkyrie's Death-Glow, Iceman's Frostbite, the Specialists of
+  Specialized Training...) on its set-aside pile
 - **Discoverable actions** — every action one or two clicks away,
   and you always see what the other players just did: history,
   live cursors, pings, arrows, and every card that changes place
@@ -179,16 +180,19 @@ hand-written files of `packs/curated/`, and writes the result to
 them. The answers to image checks are cached in `packs/.cache/images.json`
 for good: delete it to pick up images published since, such as new French
 scans. The curated files are the scenarios (`scenarios/`), card overrides
-(`cards.json`: face sizes, and the Cerebro image ids of the identities whose
-Cerebro images are swapped) and set data (`sets.json`: the cards a set starts in
-play at each difficulty, the sets the lobby leaves out, the hero side decks such
-as Doctor Strange's Invocation deck, and the cards a hero set puts aside at
-setup). A side deck is a `hero_special` set linked to the hero of its pack whose
-set code, followed by `_`, starts its own (`doctor_strange` for
+(`cards.json`: face sizes, the Cerebro image ids of the identities whose
+Cerebro images are swapped, and the cards a deck containing a card puts aside
+at setup, such as Specialized Training's Specialists, listed on the card's code
+rather than a face code) and set data (`sets.json`: the cards a set starts in
+play at each difficulty, the sets the lobby leaves out, the hero side decks
+such as Doctor Strange's Invocation deck, and the cards a hero set puts aside
+at setup). A side deck is a `hero_special` set linked to the hero of its pack
+whose set code, followed by `_`, starts its own (`doctor_strange` for
 `doctor_strange_invocation_deck`); the generator fails when a side deck matches
-no hero or several, or when a set-aside card is unknown. The cards of a side
-deck with a shared `back` (Doctor Strange's Invocation deck, Hercules' Labor
-and Gift decks, Daredevil's Sense deck, Storm's Weather deck) all get that
+no hero or several, when a set-aside card is unknown, or when a card's
+set-aside cards are listed on a face code or include the card itself. The cards
+of a side deck with a shared `back` (Doctor Strange's Invocation deck, Hercules'
+Labor and Gift decks, Daredevil's Sense deck, Storm's Weather deck) all get that
 back, whatever back the sources give them, and the table captions it with the
 deck's label.
 

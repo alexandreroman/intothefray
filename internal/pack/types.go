@@ -73,7 +73,8 @@ type Card struct {
 	Set      string   `json:"set,omitempty"` // marvelcdb card_set_code
 	Back     Back     `json:"back"`
 	Quantity int      `json:"quantity"`
-	Aliases  []string `json:"aliases,omitempty"` // face codes and reprint codes resolving here
+	Aliases  []string `json:"aliases,omitempty"`  // face codes and reprint codes resolving here
+	SetAside []string `json:"setAside,omitempty"` // player card: cards a deck with it sets aside at setup
 }
 
 // Set is a named group of cards (hero, villain, modular, standard, expert...).

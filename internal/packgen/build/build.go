@@ -93,6 +93,9 @@ func Build(in Inputs) (Result, error) {
 	problems = append(problems, dropped...)
 
 	cardCodes := cardCodesOf(cards)
+	if err := checkCardSetAside(in.Curated.Cards, CanonicalCodes(in.MC), cardCodes); err != nil {
+		return Result{}, err
+	}
 	faceCounts := faceCountsOf(cards)
 	sets := pruneSets(BuildSets(in.MC, in.MCPacks), cardCodes)
 	if err := applySetDefs(sets, in.Curated.Sets, cardCodes, faceCounts); err != nil {
@@ -270,6 +273,39 @@ func checkSetAside(set pack.Set, setAside []string, cardCodes map[string]bool) e
 	for _, code := range setAside {
 		if !cardCodes[code] {
 			return fmt.Errorf("set-aside card %s is not in the catalog", code)
+		}
+	}
+	return nil
+}
+
+// checkCardSetAside makes sure the cards a curated card sets aside exist in
+// the catalog and do not include the card itself, which belongs in the deck,
+// and that they are listed on the code of a card, the only one BuildCards
+// reads them from: on a face code they would be silently ignored.
+func checkCardSetAside(
+	overrides map[string]curated.CardOverride,
+	canonicalCodes map[string]string,
+	cardCodes map[string]bool,
+) error {
+	for _, code := range slices.Sorted(maps.Keys(overrides)) {
+		setAside := overrides[code].SetAside
+		if len(setAside) == 0 {
+			continue
+		}
+		canonical, found := canonicalCodes[code]
+		if !found {
+			return fmt.Errorf("curated card %s is not in the catalog", code)
+		}
+		if canonical != code {
+			return fmt.Errorf("curated card %s: set-aside cards need the code of a card, not of one of its faces", code)
+		}
+		for _, aside := range setAside {
+			if aside == code {
+				return fmt.Errorf("curated card %s: sets itself aside", code)
+			}
+			if !cardCodes[aside] {
+				return fmt.Errorf("curated card %s: set-aside card %s is not in the catalog", code, aside)
+			}
 		}
 	}
 	return nil
