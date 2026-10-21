@@ -152,8 +152,8 @@ const PLAYER_PILES: readonly PileKind[] = ['deck', 'discard', 'sideDeck', 'sideD
  * The actions of a card in a pile box, in menu order (the prototype's
  * renderDeckView): Draw from an own deck or discard pile (side ones too), Play to the first
  * free slot of the credited deck's row (creditedSeat), Discard, Put at the
- * bottom of the deck, and Shuffle into its deck for the out-of-play and
- * discard piles. Another player's decks or set-aside cards cannot be touched.
+ * bottom of the deck, and Shuffle into deck for the out-of-play and discard
+ * piles. Another player's decks or set-aside cards cannot be touched.
  */
 export function tileActions(card: CardView, pile: PileView, context: TileContext): TileAction[] {
   const seats = ownSeats(context.view);
@@ -198,7 +198,7 @@ export function tileActions(card: CardView, pile: PileView, context: TileContext
   if ((outOfPlay || discardPile) && canGoHome && hasHome) {
     actions.push({
       id: 'shuffle',
-      label: 'Shuffle into its deck',
+      label: 'Shuffle into deck',
       run: () => ({ kind: 'toDeck', card: card.id, where: 'shuffle' }),
     });
   }

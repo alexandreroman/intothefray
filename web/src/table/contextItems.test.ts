@@ -376,7 +376,7 @@ describe('tileEntries', () => {
       tileAction('play', 'Play'),
       tileAction('discard', 'Discard'),
       tileAction('bottom', 'Put at the bottom of the deck'),
-      tileAction('shuffle', 'Shuffle into its deck'),
+      tileAction('shuffle', 'Shuffle into deck'),
     ]);
 
     expect(

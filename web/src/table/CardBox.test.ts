@@ -746,9 +746,9 @@ describe('CardBox', () => {
       'Play',
       'Discard',
       'Put at the bottom of the deck',
-      'Shuffle into its deck',
+      'Shuffle into deck',
     ]);
-    await fireEvent.click(menuItem('Shuffle into its deck'));
+    await fireEvent.click(menuItem('Shuffle into deck'));
     expect(session.act).toHaveBeenCalledExactlyOnceWith(
       { kind: 'toDeck', card: 'q1', where: 'shuffle' },
       0,
