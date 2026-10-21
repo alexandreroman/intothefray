@@ -104,6 +104,7 @@ function makeView(
         color: 0,
         host: true,
         ready: true,
+        online: true,
         decks: [{ area: 'p0', heroName: 'Spider-Man', ready: true, handCount: 3 }],
       },
       ...(extra.withSam
@@ -113,6 +114,7 @@ function makeView(
               color: 1,
               host: false,
               ready: true,
+              online: true,
               decks: [{ area: 'p1' as const, ready: true, handCount: 0 }],
             },
           ]
@@ -545,6 +547,7 @@ describe('dragging a table card', () => {
         color: 1,
         host: false,
         ready: true,
+        online: true,
         decks: [{ area: 'p2', heroName: 'She-Hulk', ready: true, handCount: 0 }],
       },
     ];

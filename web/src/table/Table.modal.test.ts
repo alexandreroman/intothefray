@@ -64,6 +64,7 @@ function makeView(): View {
         color: 0,
         host: true,
         ready: true,
+        online: true,
         decks: [{ area: 'p0', ready: true, handCount: 0 }],
       },
     ],

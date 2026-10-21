@@ -477,8 +477,8 @@ func TestSpectatorNoHands(t *testing.T) {
 	}
 }
 
-func TestOnlineSpectators(t *testing.T) {
-	g := lobbyOfFour(t)
+func TestOnlineAudience(t *testing.T) {
+	g := lobbyOfFour(t) // players h, b, c and d hold colours 0 to 3
 	for _, token := range []string{"e", "f", "g"} {
 		if _, err := g.Join(token, "Spectator "+token); err != nil {
 			t.Fatal(err)
@@ -488,19 +488,66 @@ func TestOnlineSpectators(t *testing.T) {
 	tests := []struct {
 		name   string
 		online map[string]bool
-		want   int
+		want   Audience
 	}{
-		{"nobody online", nil, 0},
-		{"players only", map[string]bool{"h": true, "b": true}, 0},
-		{"some spectators", map[string]bool{"h": true, "e": true, "g": true}, 2},
-		{"unknown tokens", map[string]bool{"e": true, "stranger": true}, 1},
+		{"nobody online", nil, Audience{}},
+		{"players only", map[string]bool{"h": true, "c": true}, Audience{Players: []int{0, 2}}},
+		{"spectators only", map[string]bool{"e": true, "g": true}, Audience{Spectators: 2}},
+		{"both", map[string]bool{"d": true, "f": true}, Audience{Spectators: 1, Players: []int{3}}},
+		{"unknown tokens", map[string]bool{"e": true, "stranger": true}, Audience{Spectators: 1}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := g.OnlineSpectators(tt.online); got != tt.want {
-				t.Errorf("OnlineSpectators = %d, want %d", got, tt.want)
+			if got := g.OnlineAudience(tt.online); !got.Equal(tt.want) {
+				t.Errorf("OnlineAudience = %+v, want %+v", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestAudienceEqual(t *testing.T) {
+	tests := []struct {
+		name string
+		a, b Audience
+		want bool
+	}{
+		{"both empty", Audience{}, Audience{Players: []int{}}, true},
+		{"same", Audience{Spectators: 1, Players: []int{0, 2}}, Audience{Spectators: 1, Players: []int{0, 2}}, true},
+		{"other count", Audience{Spectators: 1}, Audience{Spectators: 2}, false},
+		{"other players", Audience{Players: []int{0, 2}}, Audience{Players: []int{0, 3}}, false},
+		{"one more player", Audience{Players: []int{0}}, Audience{Players: []int{0, 1}}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.a.Equal(tt.b); got != tt.want {
+				t.Errorf("Equal = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestSetAudience(t *testing.T) {
+	g := lobbyOfFour(t)
+	v := g.ViewFor("h")
+	for _, p := range v.Players {
+		if p.Online {
+			t.Errorf("ViewFor: player %d online, want every player offline until the server tells", p.Color)
+		}
+	}
+	if doc := mustJSON(t, v); !strings.Contains(doc, `"online":false`) {
+		t.Errorf("view of an offline player has no online key: %s", doc)
+	}
+
+	v.SetAudience(Audience{Spectators: 2, Players: []int{1, 3}})
+
+	if v.Spectators != 2 {
+		t.Errorf("spectators = %d, want 2", v.Spectators)
+	}
+	for _, p := range v.Players {
+		want := p.Color == 1 || p.Color == 3
+		if p.Online != want {
+			t.Errorf("player %d online = %v, want %v", p.Color, p.Online, want)
+		}
 	}
 }
 

@@ -81,6 +81,7 @@ function makeView(extra: { cards?: TableCard[]; piles?: PileView[] } = {}): View
         color: 0,
         host: true,
         ready: true,
+        online: true,
         decks: [{ area: 'p0', heroName: 'Spider-Man', ready: true, handCount: 1 }],
       },
       {
@@ -88,6 +89,7 @@ function makeView(extra: { cards?: TableCard[]; piles?: PileView[] } = {}): View
         color: 1,
         host: false,
         ready: true,
+        online: true,
         decks: [{ area: 'p1', heroName: 'Ant-Man', ready: true, handCount: 0 }],
       },
     ],

@@ -33,9 +33,6 @@ const (
 	writeTimeout = 60 * time.Second
 	// publishTimeout bounds telling the other instances about a change.
 	publishTimeout = 2 * time.Second
-	// keepSpectators stands for a count of connected spectators that could
-	// not be read: the view goes out with the last count sent instead.
-	keepSpectators = -1
 )
 
 // errInvalidMessage reports a message that breaks the protocol.
@@ -72,10 +69,10 @@ type conn struct {
 	viewReady chan struct{}
 	// viewMu guards the view state, so that concurrent broadcasts leave the
 	// newest version pending.
-	viewMu         sync.Mutex
-	pendingView    []byte
-	lastVersion    int64
-	lastSpectators int
+	viewMu       sync.Mutex
+	pendingView  []byte
+	lastVersion  int64
+	lastAudience game.Audience
 	// you is who the viewer is in the last view sent, which presence
 	// messages are signed with.
 	you game.YouView
@@ -120,30 +117,31 @@ func (c *conn) sendPresence(data []byte) {
 	}
 }
 
-// sendView makes the viewer's view of g the pending view, with spectators as
-// the count of connected spectators, or the last count sent when it is
-// keepSpectators. The viewer gets a version newer than the last one sent, or
-// the same version when the count changed: viewers come and go without the
-// game changing.
-func (c *conn) sendView(g *game.Game, version int64, spectators int) {
+// sendView makes the viewer's view of g the pending view, with audience as
+// who is connected, or the last audience sent when it is nil: the
+// connections could not be read. The viewer gets a version newer than the
+// last one sent, or the same version when the audience changed: viewers come
+// and go without the game changing.
+func (c *conn) sendView(g *game.Game, version int64, audience *game.Audience) {
 	c.viewMu.Lock()
 	defer c.viewMu.Unlock()
 
-	if spectators == keepSpectators {
-		spectators = c.lastSpectators
+	current := c.lastAudience
+	if audience != nil {
+		current = *audience
 	}
-	if version < c.lastVersion || (version == c.lastVersion && spectators == c.lastSpectators) {
+	if version < c.lastVersion || (version == c.lastVersion && current.Equal(c.lastAudience)) {
 		return
 	}
 	view := g.ViewFor(c.token)
-	view.Spectators = spectators
+	view.SetAudience(current)
 	data, err := c.encode(viewMessage{Type: typeView, Version: version, View: view})
 	if err != nil {
 		return
 	}
 	c.you = view.You
 	c.lastVersion = version
-	c.lastSpectators = spectators
+	c.lastAudience = current
 	c.pendingView = data
 	select {
 	case c.viewReady <- struct{}{}:
@@ -392,8 +390,10 @@ func (s *Server) hello(ctx context.Context, c *conn, msg clientMessage) error {
 	c.presenceID = presenceID(token)
 	c.onlineID = onlineID
 	c.send(welcomeMessage{Type: typeWelcome, Token: token, Role: role})
-	s.hub.register(c)
+	// Recorded online before it is registered, so that no view reaches c,
+	// relayed by the event loop meanwhile, that tells the viewer offline.
 	s.keepOnline(ctx, c.gameID, []store.Connection{c.online()})
+	s.hub.register(c)
 	// Loading after registering leaves no gap: an update made since the join
 	// is either in this view or broadcast to c.
 	g, version, err := s.deps.Store.Load(ctx, c.gameID)
@@ -404,8 +404,8 @@ func (s *Server) hello(ctx context.Context, c *conn, msg clientMessage) error {
 		_ = c.ws.Close(websocket.StatusInternalError, "internal error")
 		return nil
 	}
-	c.sendView(g, version, s.onlineSpectators(ctx, g))
-	// The other viewers count c from now on, when it is a spectator.
+	c.sendView(g, version, s.onlineAudience(ctx, g))
+	// The other viewers count c from now on.
 	s.publishOnline(ctx, c.gameID)
 	return nil
 }
@@ -536,7 +536,7 @@ func (s *Server) update(ctx context.Context, gameID string, change func(*game.Ga
 	if err != nil {
 		return err
 	}
-	s.hub.broadcast(g, version, s.onlineSpectators(ctx, g))
+	s.hub.broadcast(g, version, s.onlineAudience(ctx, g))
 	s.publishUpdated(ctx, gameID, version)
 	return nil
 }

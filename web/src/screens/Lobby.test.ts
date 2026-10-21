@@ -92,9 +92,30 @@ const captainMarvel: DeckView = {
   handCount: 0,
 };
 
-const alex: PlayerView = { name: 'Alex', color: 0, host: true, ready: false, decks: [noDeck] };
-const sam: PlayerView = { name: 'Sam', color: 1, host: false, ready: false, decks: [noDeck] };
-const jo: PlayerView = { name: 'Jo', color: 2, host: false, ready: true, decks: [spiderMan] };
+const alex: PlayerView = {
+  name: 'Alex',
+  color: 0,
+  host: true,
+  ready: false,
+  online: true,
+  decks: [noDeck],
+};
+const sam: PlayerView = {
+  name: 'Sam',
+  color: 1,
+  host: false,
+  ready: false,
+  online: true,
+  decks: [noDeck],
+};
+const jo: PlayerView = {
+  name: 'Jo',
+  color: 2,
+  host: false,
+  ready: true,
+  online: true,
+  decks: [spiderMan],
+};
 
 const asHost: YouView = { role: 'player', name: 'Alex', color: 0, host: true };
 const asSam: YouView = { role: 'player', name: 'Sam', color: 1, host: false };

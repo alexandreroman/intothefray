@@ -84,6 +84,7 @@ function makeView(
         color: 2,
         host: true,
         ready: true,
+        online: true,
         decks: [{ area: 'p0', ready: true, handCount: 1 }],
       },
       {
@@ -91,6 +92,7 @@ function makeView(
         color: 0,
         host: false,
         ready: true,
+        online: true,
         decks: [{ area: 'p1', ready: true, handCount: 0 }],
       },
     ],

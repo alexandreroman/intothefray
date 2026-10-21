@@ -50,7 +50,7 @@ function viewOf(config: LobbyConfig, you: YouView = asHost): View {
     id: 'g1',
     phase: 'lobby',
     you,
-    players: [{ name: 'Alex', color: 0, host: true, ready: false, decks: [] }],
+    players: [{ name: 'Alex', color: 0, host: true, ready: false, online: true, decks: [] }],
     spectators: 0,
     config,
     log: [],

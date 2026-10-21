@@ -54,11 +54,15 @@ type PileView struct {
 
 // PlayerView is what everybody may know about a player.
 type PlayerView struct {
-	Name  string     `json:"name"`
-	Color int        `json:"color"`
-	Host  bool       `json:"host"`
-	Ready bool       `json:"ready"` // every deck slot holds a deck
-	Decks []DeckView `json:"decks"` // slot order
+	Name  string `json:"name"`
+	Color int    `json:"color"`
+	Host  bool   `json:"host"`
+	Ready bool   `json:"ready"` // every deck slot holds a deck
+	// Online tells whether the player has a connection open, in any tab.
+	// The game does not know who is connected: ViewFor leaves it false and
+	// the server fills it, with SetAudience.
+	Online bool       `json:"online"`
+	Decks  []DeckView `json:"decks"` // slot order
 }
 
 // DeckView is what everybody may know about one deck slot of a player.
@@ -113,7 +117,7 @@ type View struct {
 	// Spectators is the number of spectators connected to the game, those
 	// who closed every tab left out. The game does not know who is
 	// connected: ViewFor leaves it at zero and the server fills it, with
-	// OnlineSpectators.
+	// SetAudience.
 	Spectators int         `json:"spectators"`
 	Config     LobbyConfig `json:"config"`
 	Table      *TableView  `json:"table,omitempty"`
@@ -157,16 +161,43 @@ func (g *Game) ViewFor(token string) View {
 	return v
 }
 
-// OnlineSpectators counts the spectators whose token is in online, the
-// tokens with an open connection. Players are never counted.
-func (g *Game) OnlineSpectators(online map[string]bool) int {
-	count := 0
-	for _, s := range g.Spectators {
-		if online[s.Token] {
-			count++
+// Audience is who is connected to a game: what a view tells about the
+// connections, which the game itself does not know.
+type Audience struct {
+	// Spectators is the number of connected spectators.
+	Spectators int
+	// Players holds the colours of the connected players, in seat order.
+	Players []int
+}
+
+// Equal reports whether a and other tell the same connections.
+func (a Audience) Equal(other Audience) bool {
+	return a.Spectators == other.Spectators && slices.Equal(a.Players, other.Players)
+}
+
+// OnlineAudience tells who is connected among the participants, from online,
+// the tokens with an open connection. Unknown tokens are left out.
+func (g *Game) OnlineAudience(online map[string]bool) Audience {
+	var audience Audience
+	for _, p := range g.Players {
+		if online[p.Token] {
+			audience.Players = append(audience.Players, p.Color)
 		}
 	}
-	return count
+	for _, s := range g.Spectators {
+		if online[s.Token] {
+			audience.Spectators++
+		}
+	}
+	return audience
+}
+
+// SetAudience fills in the view who is connected, which ViewFor leaves out.
+func (v *View) SetAudience(audience Audience) {
+	v.Spectators = audience.Spectators
+	for i := range v.Players {
+		v.Players[i].Online = slices.Contains(audience.Players, v.Players[i].Color)
+	}
 }
 
 func (g *Game) youView(token string, player *Player, seats []int) YouView {

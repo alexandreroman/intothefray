@@ -29,6 +29,7 @@ function makeView(): View {
         color: 0,
         host: true,
         ready: true,
+        online: true,
         decks: [
           { area: 'p0', heroName: 'Iron Man', ready: true, handCount: 0 },
           { area: 'p1', heroName: 'Spider-Man', ready: true, handCount: 0 },
@@ -39,6 +40,7 @@ function makeView(): View {
         color: 1,
         host: false,
         ready: true,
+        online: true,
         decks: [{ area: 'p2', ready: true, handCount: 0 }],
       },
     ],

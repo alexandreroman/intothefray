@@ -125,6 +125,23 @@ func (c *testClient) awaitView(done func(game.View) bool) received {
 	}
 }
 
+// playerOnline reports whether the player of v with color is online, false
+// when no player holds it.
+func playerOnline(v game.View, color int) bool {
+	for _, p := range v.Players {
+		if p.Color == color {
+			return p.Online
+		}
+	}
+	return false
+}
+
+// bothSeatedOnline tells a view of two players, both connected: once Alex
+// sees it, the views relayed for Bob's join are all in.
+func bothSeatedOnline(v game.View) bool {
+	return len(v.Players) == 2 && v.Players[0].Online && v.Players[1].Online
+}
+
 // bobSeat is the seat of Bob, who joins a twoPlayerGame after Alex.
 const bobSeat = 1
 
@@ -156,7 +173,7 @@ func startTwoPlayerGame(t *testing.T) *twoPlayerGame {
 	alex.hello(created.Token, "Alex")
 	bob := connect(t, second, created.ID)
 	bobWelcome, _ := bob.hello("", "Bob")
-	alex.awaitView(func(v game.View) bool { return len(v.Players) == 2 })
+	alex.awaitView(bothSeatedOnline)
 
 	alex.lobby("setDeck", map[string]any{"url": deckLink})
 	bob.lobby("setDeck", map[string]any{"url": spiderManDeckLink})
@@ -263,7 +280,7 @@ func TestPresenceRelayed(t *testing.T) {
 	_, alexView := alex.hello(created.Token, "Alex")
 	bob := connect(t, second, created.ID)
 	bob.hello("", "Bob")
-	alex.awaitView(func(v game.View) bool { return len(v.Players) == 2 })
+	alex.awaitView(bothSeatedOnline)
 
 	alex.send(map[string]any{"type": "presence", "cursor": map[string]any{"x": 120, "y": 340}})
 
@@ -296,7 +313,7 @@ func TestFirstPlayerTokenDragRelayed(t *testing.T) {
 	alex.hello(created.Token, "Alex")
 	bob := connect(t, second, created.ID)
 	bob.hello("", "Bob")
-	alex.awaitView(func(v game.View) bool { return len(v.Players) == 2 })
+	alex.awaitView(bothSeatedOnline)
 
 	// The token carries no card: the drag tells only where its corner is.
 	alex.send(map[string]any{"type": "presence", "drag": map[string]any{"token": true, "x": 160, "y": 640}})
@@ -315,7 +332,7 @@ func TestHiddenCursorRelayed(t *testing.T) {
 	alex.hello(created.Token, "Alex")
 	bob := connect(t, ts, created.ID)
 	bob.hello("", "Bob")
-	alex.awaitView(func(v game.View) bool { return len(v.Players) == 2 })
+	alex.awaitView(bothSeatedOnline)
 
 	// Alex raises his hand or opens a dialog: his cursor goes, and nothing
 	// tells where his pointer is.
@@ -507,7 +524,7 @@ func TestSpectatorCountFollowsConnections(t *testing.T) {
 	bob := connect(t, second, created.ID)
 	bobWelcome, _ := bob.hello("", "Bob")
 
-	seated := alex.awaitView(func(v game.View) bool { return len(v.Players) == 2 })
+	seated := alex.awaitView(bothSeatedOnline)
 	if seated.View.Spectators != 0 {
 		t.Errorf("with Bob playing: spectators = %d, want 0 as players never count", seated.View.Spectators)
 	}
@@ -533,6 +550,42 @@ func TestSpectatorCountFollowsConnections(t *testing.T) {
 	alex.awaitSpectators(1)
 }
 
+func TestPlayerOnlineFollowsConnections(t *testing.T) {
+	mr := miniredis.RunT(t)
+	first := startInstance(t, mr, nil)
+	second := startInstance(t, mr, nil)
+	created := createGame(t, first, "Alex")
+	alex := connect(t, first, created.ID)
+	_, alexView := alex.hello(created.Token, "Alex")
+	alexColor := alexView.View.You.Color
+	if !playerOnline(alexView.View, alexColor) {
+		t.Errorf("first view = %s, want Alex online in it", alexView.raw)
+	}
+
+	bob := connect(t, second, created.ID)
+	bobWelcome, bobView := bob.hello("", "Bob")
+	bobColor := bobView.View.You.Color
+	joined := alex.awaitView(func(v game.View) bool { return playerOnline(v, bobColor) })
+	if !playerOnline(joined.View, alexColor) {
+		t.Errorf("with Bob in: Alex offline, want online")
+	}
+
+	// Closing the tab leaves the game as it is: only Bob's state changes.
+	_ = bob.ws.Close(websocket.StatusNormalClosure, "")
+	gone := alex.awaitView(func(v game.View) bool { return !playerOnline(v, bobColor) })
+	if gone.Version != joined.Version {
+		t.Errorf("version = %d after Bob left, want %d, the game being unchanged", gone.Version, joined.Version)
+	}
+	if len(gone.View.Players) != 2 || gone.View.Spectators != 0 {
+		t.Errorf("after Bob left: %d players and %d spectators, want Bob still seated", len(gone.View.Players),
+			gone.View.Spectators)
+	}
+
+	back := connect(t, second, created.ID)
+	back.hello(bobWelcome.Token, "Bob")
+	alex.awaitView(func(v game.View) bool { return playerOnline(v, bobColor) })
+}
+
 func TestLeasesKeepOnlyLiveConnections(t *testing.T) {
 	const (
 		interval = 20 * time.Millisecond // leases last leaseRounds intervals
@@ -547,7 +600,7 @@ func TestLeasesKeepOnlyLiveConnections(t *testing.T) {
 	alex.hello(created.Token, "Alex")
 	bob := connect(t, ts, created.ID)
 	bobWelcome, _ := bob.hello("", "Bob")
-	alex.awaitView(func(v game.View) bool { return len(v.Players) == 2 })
+	alex.awaitView(bothSeatedOnline)
 	bob.lobby("leave", nil)
 	alex.awaitView(func(v game.View) bool { return len(v.Players) == 1 && v.Spectators == 1 })
 
@@ -765,7 +818,7 @@ func TestSlowTouchDoesNotDelayPresence(t *testing.T) {
 	alex.hello(created.Token, "Alex")
 	bob := connect(t, ts, created.ID)
 	bob.hello("", "Bob")
-	alex.awaitView(func(v game.View) bool { return len(v.Players) == 2 })
+	alex.awaitView(bothSeatedOnline)
 	select {
 	case <-blocker.entered:
 	case <-time.After(waitTimeout):
