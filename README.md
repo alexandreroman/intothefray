@@ -299,6 +299,23 @@ Pages has no rewrite rules, so the workflow copies `index.html` to
 `404.html`: a deep link such as `/g/<id>` gets the app, which then
 reads the path.
 
+Both sides report the commit they run, so a mismatch shows at once:
+
+- the backend answers `GET /api/version` with `{"commit": "<sha>"}`, and
+  logs the commit when it starts. CI passes the SHA to the image build
+  as the `COMMIT` build argument, and labels the published image with
+  `org.opencontainers.image.revision`. Without `COMMIT`, a binary built
+  from a checkout (`make build`) reports its Git revision, with `-dirty`
+  when the checkout has changes, and an image reports `dev`;
+- the `Pages` workflow passes the SHA to the frontend build as
+  `VITE_COMMIT`. Without it, a build from a checkout (`pnpm build`)
+  reports its Git revision, with `-dirty` when the checkout has changes,
+  and a build without Git reports `dev`;
+- the Options screen shows `version <sha>` (short SHA, plain text) when
+  the app and server match, `version mismatch <app>/<server>` when they
+  differ (a `dev` build included), and `version <app>/unavailable` when
+  the server cannot be reached.
+
 In the repository settings:
 
 - set the Pages source to GitHub Actions, with the custom domain
@@ -351,6 +368,7 @@ time it appears (not when the browser asks to save data).
 | `internal/decks/`   | Deck import from marvelcdb                     |
 | `internal/game/`    | Game engine: lobby, setup, actions, undo, view |
 | `internal/server/`  | HTTP API, WebSocket endpoint, instance fan-out |
+| `internal/version/` | Commit the binary was built from               |
 | `internal/store/`   | Redis game store, connection leases, pub/sub   |
 | `internal/pack/`    | Card pack schema and catalog                   |
 | `internal/packgen/` | Generator internals (fetch, build, images...)  |

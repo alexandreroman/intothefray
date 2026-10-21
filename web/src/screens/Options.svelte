@@ -1,10 +1,12 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { isLang, LANGS, setLang, storedLang } from '../lib/lang';
   import { cleanName, MAX_NAME_LENGTH, randomName, savePlayerName, stripEmoji } from '../lib/names';
   import { getPref, setPref } from '../lib/prefs';
   import { go } from '../lib/router.svelte';
   import { selectionIndicator } from '../lib/selectionIndicator';
   import { applyTheme, storedTheme, type Theme } from '../lib/theme';
+  import { appCommit, fetchServerCommit, shortCommit } from '../lib/version';
   import TopBar from '../components/TopBar.svelte';
 
   // Each card shows its theme whatever the current one: a table, a card back
@@ -20,6 +22,19 @@
   let name = $state(cleanName(getPref('itf-name') ?? ''));
   let theme = $state(storedTheme());
   let lang = $state(storedLang());
+
+  const app = appCommit();
+  let server = $state<string>();
+  let serverFailed = $state(false);
+  // The server commit, once it is known to differ from the app's.
+  let mismatchedServer = $derived(server !== undefined && server !== app ? server : undefined);
+
+  onMount(() => {
+    fetchServerCommit().then(
+      (commit) => (server = commit),
+      () => (serverFailed = true),
+    );
+  });
 
   function onNameInput(): void {
     // Not trimmed here, so that a space can be typed between two words.
@@ -154,8 +169,23 @@
         </select>
       </div>
     </div>
+
+    <p class="version" class:mismatch={mismatchedServer !== undefined}>
+      version
+      {#if mismatchedServer}
+        mismatch {@render commit(app)}/{@render commit(mismatchedServer)}
+      {:else if serverFailed}
+        {@render commit(app)}/unavailable
+      {:else}
+        {@render commit(app)}
+      {/if}
+    </p>
   </main>
 </div>
+
+{#snippet commit(sha: string)}
+  <span title={sha}>{shortCommit(sha)}</span>
+{/snippet}
 
 <style>
   /* The column's width and gutter are shared with the top bar. */
@@ -236,7 +266,8 @@
     border-top: 1px solid var(--panel-2);
   }
 
-  .row:last-child {
+  /* The last setting: the version line after it is no .row. */
+  .row:last-of-type {
     border-bottom: 1px solid var(--panel-2);
   }
 
@@ -435,6 +466,18 @@
     margin: 2px;
     border-radius: 50%;
     border: 1.5px solid #3a4766;
+  }
+
+  .version {
+    margin: 20px 0 0;
+    text-align: right;
+    font-size: 11px;
+    color: color-mix(in srgb, var(--faint) 60%, var(--table-bg));
+  }
+
+  /* As subdued as the faint line, yet still noticeable. */
+  .version.mismatch {
+    color: color-mix(in srgb, var(--warn) 60%, var(--table-bg));
   }
 
   /* A phone: 16px gutters, and smaller theme cards to fit three in a row. */

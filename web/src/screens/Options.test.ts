@@ -1,10 +1,38 @@
-import { fireEvent, render, screen } from '@testing-library/svelte';
+import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import Options from './Options.svelte';
 import { getPref, setPref } from '../lib/prefs';
+
+const APP_SHA = '0123456789abcdef0123456789abcdef01234567';
+const SERVER_SHA = 'fedcba9876543210fedcba9876543210fedcba98';
+
+/** Makes GET /api/version answer `commit`. */
+function stubServerCommit(commit: string): void {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ commit }))));
+}
+
+function versionLine(): HTMLElement {
+  const line = document.querySelector<HTMLElement>('.version');
+  if (!line) {
+    throw new Error('No version line');
+  }
+  return line;
+}
+
+/** The version line as read, with its whitespace collapsed. */
+function versionText(): string {
+  return (versionLine().textContent ?? '').replace(/\s+/g, ' ').trim();
+}
 
 beforeEach(() => {
   localStorage.clear();
   document.documentElement.removeAttribute('data-theme');
+  vi.stubEnv('VITE_COMMIT', APP_SHA);
+  stubServerCommit(APP_SHA);
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+  vi.unstubAllGlobals();
 });
 
 describe('Options', () => {
@@ -96,6 +124,56 @@ describe('Options', () => {
 
     expect(screen.getByRole('heading', { level: 1, name: 'SUIT UP' })).toBeTruthy();
     expect(screen.getByText('Saved in this browser only. Changes apply right away.')).toBeTruthy();
+  });
+
+  it('shows the app version alone while the server is loading', () => {
+    vi.stubGlobal('fetch', vi.fn().mockReturnValue(new Promise(() => {})));
+    render(Options);
+
+    expect(versionText()).toBe('version 0123456');
+    expect(screen.getByText('0123456').getAttribute('title')).toBe(APP_SHA);
+  });
+
+  it('shows a single version when the app and server match', async () => {
+    const fetchMock = vi.mocked(fetch);
+    render(Options);
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    await waitFor(() => expect(versionText()).toBe('version 0123456'));
+    expect(versionLine().classList.contains('mismatch')).toBe(false);
+    expect(screen.queryByRole('link', { name: '0123456' })).toBeNull();
+  });
+
+  it('tells a mismatch when the app and server differ', async () => {
+    stubServerCommit(SERVER_SHA);
+    render(Options);
+
+    expect((await screen.findByText('fedcba9')).getAttribute('title')).toBe(SERVER_SHA);
+    expect(versionText()).toBe('version mismatch 0123456/fedcba9');
+    expect(versionLine().classList.contains('mismatch')).toBe(true);
+  });
+
+  it('tells a mismatch when the app is a local "dev" build', async () => {
+    vi.stubEnv('VITE_COMMIT', '');
+    stubServerCommit(SERVER_SHA);
+    render(Options);
+
+    await waitFor(() => expect(versionText()).toBe('version mismatch dev/fedcba9'));
+  });
+
+  it('shows the server as unavailable on error', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('offline')));
+    render(Options);
+
+    await waitFor(() => expect(versionText()).toBe('version 0123456/unavailable'));
+    expect(versionLine().classList.contains('mismatch')).toBe(false);
+  });
+
+  it('shows "dev" for a local build', () => {
+    vi.stubEnv('VITE_COMMIT', '');
+    render(Options);
+
+    expect(screen.getByText('dev')).toBeTruthy();
   });
 
   it('goes back home', async () => {

@@ -97,11 +97,13 @@ jobs:
 
       - uses: docker/setup-buildx-action@v4
 
-      # Same platform as the published image, so both jobs share the gha cache.
+      # Same platform and build args as the published image, so both jobs share
+      # the gha cache.
       - uses: docker/build-push-action@v7
         with:
           context: .
           platforms: linux/amd64
+          build-args: COMMIT=${{ github.sha }}
           push: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -142,11 +144,14 @@ jobs:
         with:
           context: .
           platforms: linux/amd64
+          build-args: COMMIT=${{ github.sha }}
           push: true
           tags: |
             ghcr.io/alexandreroman/intothefray:${{ github.sha }}
             ghcr.io/alexandreroman/intothefray:main
-          labels: org.opencontainers.image.source=https://github.com/alexandreroman/intothefray
+          labels: |
+            org.opencontainers.image.source=https://github.com/alexandreroman/intothefray
+            org.opencontainers.image.revision=${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 

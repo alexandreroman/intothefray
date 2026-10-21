@@ -19,6 +19,11 @@ type createGameResponse struct {
 	Token string `json:"token"`
 }
 
+// versionResponse is the reply to GET /api/version.
+type versionResponse struct {
+	Commit string `json:"commit"`
+}
+
 // errorResponse is the body of every HTTP error reply.
 type errorResponse struct {
 	Error string `json:"error"`
