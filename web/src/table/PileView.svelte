@@ -114,8 +114,7 @@
     -webkit-user-select: none;
     touch-action: none;
     /* The same 45° shadow as a card on the table. */
-    filter: drop-shadow(2px 2px 2px #000000c8) drop-shadow(6px 6px 9px #000000a6)
-      drop-shadow(12px 12px 16px #00000059);
+    filter: var(--card-shadow);
   }
 
   .card.empty {

@@ -24,7 +24,8 @@ const SIZES: Record<Size, { w: number; h: number }> = {
   dland: { w: 280, h: 196 },
 };
 
-const PORTRAIT_CARD = SIZES.std;
+/** A portrait card on the table, in table units. */
+export const PORTRAIT_CARD = SIZES.std;
 const PILE_BOX = PORTRAIT_CARD;
 
 // Free room past the rightmost and the lowest item of the table, once they reach the edge of what

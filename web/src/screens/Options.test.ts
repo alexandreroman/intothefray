@@ -1,6 +1,10 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import Options from './Options.svelte';
 import { getPref, setPref } from '../lib/prefs';
+import { applyTheme } from '../lib/theme';
+
+const CEREBRO = 'https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/';
+const FIRST_PLAYER = 'https://card-table.app/images/table/first_player_token_marvelchampions.png';
 
 const APP_SHA = '0123456789abcdef0123456789abcdef01234567';
 const SERVER_SHA = 'fedcba9876543210fedcba9876543210fedcba98';
@@ -94,6 +98,41 @@ describe('Options', () => {
 
     expect(official.getAttribute('aria-pressed')).toBe('false');
     expect(felt.getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('previews each theme in its own colours, whatever the current one', () => {
+    applyTheme('felt');
+    render(Options);
+
+    for (const [name, key] of [
+      ['Official', 'official'],
+      ['Minimal', 'minimal'],
+      ['Green felt', 'felt'],
+    ]) {
+      const surface = screen.getByRole('button', { name }).querySelector<HTMLElement>('.surface');
+      expect(surface?.dataset.theme).toBe(key);
+      expect(surface?.classList).toContain('table-bg');
+      expect(surface?.getAttribute('aria-hidden')).toBe('true');
+    }
+  });
+
+  it("previews the official theme's images while the minimal one is stored", () => {
+    setPref('itf-theme', 'minimal');
+    render(Options);
+
+    const official = screen.getByRole('button', { name: 'Official' });
+    const sources = [...official.querySelectorAll('img')].map((img) => img.getAttribute('src'));
+    expect(sources).toEqual([CEREBRO + 'HeroBack.jpg', FIRST_PLAYER]);
+  });
+
+  it('previews the drawn back and token of the minimal theme while the official one is stored', () => {
+    setPref('itf-theme', 'official');
+    render(Options);
+
+    const minimal = screen.getByRole('button', { name: 'Minimal' });
+    expect(minimal.querySelector('img')).toBeNull();
+    expect(minimal.querySelector('.back.player')).not.toBeNull();
+    expect(minimal.querySelector('svg[aria-label="First player"]')).not.toBeNull();
   });
 
   it('offers English and French, English first by default', () => {

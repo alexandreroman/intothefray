@@ -4,6 +4,7 @@
   Sense) is the classic back with the deck's name captioned at its bottom.
 -->
 <script lang="ts">
+  import type { Theme } from '../lib/theme';
   import type { Back } from '../lib/types';
   import { backUrl } from './theme';
 
@@ -11,12 +12,15 @@
     back,
     label = '?',
     caption,
+    theme,
   }: {
     back: Back;
     /** What a drawn back says in its middle. */
     label?: string;
     /** The name of the side deck whose own back this is ("Labor"), written at its bottom. */
     caption?: string;
+    /** The theme to draw it in; the stored one by default (the options preview others). */
+    theme?: Theme;
   } = $props();
 
   const NAMES: Record<Back, string> = {
@@ -25,7 +29,7 @@
     villain: 'Villain card back',
   };
 
-  const url = $derived(backUrl(back));
+  const url = $derived(backUrl(back, theme));
   let broken = $state(false);
 </script>
 

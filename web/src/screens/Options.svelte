@@ -5,19 +5,21 @@
   import { getPref, setPref } from '../lib/prefs';
   import { go } from '../lib/router.svelte';
   import { selectionIndicator } from '../lib/selectionIndicator';
-  import { applyTheme, storedTheme, type Theme } from '../lib/theme';
+  import { applyTheme, storedTheme, THEMES, type Theme } from '../lib/theme';
   import { appCommit, fetchServerCommit, shortCommit } from '../lib/version';
   import TopBar from '../components/TopBar.svelte';
+  import CardBack from '../table/CardBack.svelte';
+  import FirstPlayerArt from '../table/FirstPlayerArt.svelte';
+  import { FIRST_PLAYER_BOX, PORTRAIT_CARD } from '../table/layout';
 
-  // Each card shows its theme whatever the current one: a table, a card back
-  // ("plain" has none) and the first player token.
-  const CARD_BACK =
-    'https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/HeroBack.jpg';
-  const themes: { key: Theme; label: string; bg: string; dot: string; back: boolean }[] = [
-    { key: 'official', label: 'Official', bg: '#07090f', dot: '#1a2133', back: true },
-    { key: 'minimal', label: 'Minimal', bg: '#07090f', dot: '#1a2133', back: false },
-    { key: 'felt', label: 'Green felt', bg: '#0e2419', dot: '#1b3a2a', back: true },
-  ];
+  // Each card shows its theme whatever the current one, drawn by the table's own pieces: the
+  // table's colours (tokens.css, under the preview's data-theme), a player card back and the
+  // first player token, as large next to the card as on the table.
+  const THEME_LABELS: Record<Theme, string> = {
+    official: 'Official',
+    minimal: 'Minimal',
+    felt: 'Green felt',
+  };
 
   let name = $state(cleanName(getPref('itf-name') ?? ''));
   let theme = $state(storedTheme());
@@ -115,32 +117,25 @@
         <span class="label">Theme</span>
         <p>Card backs, first player token and table colours: only on your screen.</p>
       </div>
-      <div class="control themes" use:selectionIndicator>
+      <div
+        class="control themes"
+        use:selectionIndicator
+        style:--card-ratio="{PORTRAIT_CARD.w} / {PORTRAIT_CARD.h}"
+        style:--token-ratio="{FIRST_PLAYER_BOX.w} / {FIRST_PLAYER_BOX.h}"
+        style:--token-scale={FIRST_PLAYER_BOX.w / PORTRAIT_CARD.w}
+      >
         <!-- The ring around the chosen theme, over its card's edge: it slides to the next one. -->
         <span class="ring-sel" data-indicator aria-hidden="true"></span>
-        {#each themes as t (t.key)}
-          {@const selected = t.key === theme}
-          <button class="theme" aria-pressed={selected} onclick={() => chooseTheme(t.key)}>
-            <span class="surface" style:--sw-bg={t.bg} style:--sw-dot={t.dot}>
-              <span
-                class="card"
-                class:plain={!t.back}
-                style:background-image={t.back ? `url(${CARD_BACK})` : null}
-              ></span>
-              <span class="token" class:plain={!t.back}>
-                {#if t.back}
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path
-                      d="M12 1.5 L14.6 9.4 L22.5 12 L14.6 14.6 L12 22.5 L9.4 14.6 L1.5 12 L9.4 9.4 Z"
-                    />
-                  </svg>
-                {:else}
-                  <span aria-hidden="true">1</span>
-                {/if}
-              </span>
+        {#each THEMES as key (key)}
+          {@const selected = key === theme}
+          <button class="theme" aria-pressed={selected} onclick={() => chooseTheme(key)}>
+            <!-- Only a picture: the button is named by its label. -->
+            <span class="surface table-bg" data-theme={key} aria-hidden="true">
+              <span class="card"><CardBack back="player" theme={key} /></span>
+              <span class="token"><FirstPlayerArt theme={key} /></span>
             </span>
             <span class="theme-label">
-              {t.label}
+              {THEME_LABELS[key]}
               {#if selected}
                 <span class="check">
                   <svg viewBox="0 0 24 24" aria-hidden="true"
@@ -379,53 +374,29 @@
       0 0 0 5px color-mix(in srgb, var(--sel) 16%, transparent);
   }
 
+  /* The table in the theme's colours (.table-bg), the card's width setting the pieces' sizes. */
   .surface {
+    --card-w: 56px;
     height: 132px;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 16px;
-    background:
-      radial-gradient(circle, var(--sw-dot) 1px, transparent 1.6px) 0 0 / 12px 12px,
-      var(--sw-bg);
   }
 
+  /* A table card, tilted, with its shadow on the table. */
   .card {
-    width: 56px;
-    height: 78px;
-    border-radius: 5px;
-    background: center / cover;
-    box-shadow: 0 8px 18px rgb(0 0 0 / 50%);
+    width: var(--card-w);
+    aspect-ratio: var(--card-ratio);
+    filter: var(--card-shadow);
     transform: rotate(-6deg);
   }
 
-  .card.plain {
-    background: var(--panel);
-    border: 1px solid #3a4766;
-  }
-
+  /* The first player token, in its box from the table, sized against the card as there. */
   .token {
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    background: var(--bg);
-    border: 2.5px solid var(--spark);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .token svg {
-    width: 16px;
-    height: 16px;
-    fill: var(--spark);
-  }
-
-  .token.plain {
-    border-color: var(--muted);
-    font-stretch: 62%;
-    font-weight: 900;
-    font-size: 14px;
+    width: calc(var(--card-w) * var(--token-scale));
+    aspect-ratio: var(--token-ratio);
+    filter: var(--token-shadow);
   }
 
   .theme-label {
@@ -496,18 +467,9 @@
     }
 
     .surface {
+      --card-w: 42px;
       height: 104px;
       gap: 8px;
-    }
-
-    .card {
-      width: 42px;
-      height: 58px;
-    }
-
-    .token {
-      width: 28px;
-      height: 28px;
     }
 
     .theme-label {
