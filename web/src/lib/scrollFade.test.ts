@@ -76,6 +76,20 @@ describe('scrollFade', () => {
     expect(element.dataset.scrollFade).toBe('');
   });
 
+  it('follows items leaving a group of the list', async () => {
+    const element = list();
+    const group = document.createElement('ul');
+    const item = document.createElement('li');
+    group.append(document.createElement('li'), item);
+    element.append(group);
+    scrollFade(element);
+
+    setScroll(element, { top: 0, height: 200, client: 200 });
+    item.remove();
+    await mutationsDelivered();
+    expect(element.dataset.scrollFade).toBe('');
+  });
+
   it('follows a resize of the list', () => {
     let resized: ResizeObserverCallback = () => {};
     vi.stubGlobal(

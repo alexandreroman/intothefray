@@ -2,6 +2,7 @@
   import { storedLang } from '../../lib/lang';
   import { localizedName } from '../../lib/localize';
   import { overflowTip } from '../../lib/overflowTip';
+  import { scrollFade } from '../../lib/scrollFade';
   import CardArt from '../CardArt.svelte';
   import Segmented from '../Segmented.svelte';
   import type { Difficulty, Index, LobbyConfig, ScenarioRef, View } from '../../lib/types';
@@ -201,6 +202,7 @@
       class="villains"
       bind:this={villains}
       style:--visible-height={visibleHeight === null ? undefined : `${visibleHeight}px`}
+      {@attach scrollFade}
     >
       {#each groups as group (group.pack.code)}
         <div class="pack">
