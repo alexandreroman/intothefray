@@ -390,8 +390,9 @@ func (s *Server) hello(ctx context.Context, c *conn, msg clientMessage) error {
 	c.presenceID = presenceID(token)
 	c.onlineID = onlineID
 	c.send(welcomeMessage{Type: typeWelcome, Token: token, Role: role})
-	// Recorded online before it is registered, so that no view reaches c,
-	// relayed by the event loop meanwhile, that tells the viewer offline.
+	// Recorded online before it is registered: the viewer's first view, and
+	// any view the event loop relays to the others meanwhile, already show
+	// the newcomer online, so the views come in a set order.
 	s.keepOnline(ctx, c.gameID, []store.Connection{c.online()})
 	s.hub.register(c)
 	// Loading after registering leaves no gap: an update made since the join

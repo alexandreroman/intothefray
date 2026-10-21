@@ -1026,20 +1026,6 @@ describe('GameSession', () => {
 
         expect(presenceSent()).toHaveLength(1);
       });
-
-      it('leaves a spectator out of the spectators they see', () => {
-        const session = newSession();
-        lastSocket().open();
-        receiveView({
-          ...view([player({ online: false })]),
-          you: { role: 'spectator', color: 0, host: false },
-          spectators: 1,
-        });
-
-        session.sendPresence({ cursor: { x: 10, y: 10 } });
-
-        expect(presenceSent()).toEqual([]);
-      });
     });
   });
 });

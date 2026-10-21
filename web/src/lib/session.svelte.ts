@@ -540,16 +540,13 @@ function deckSignature(view: View | null): string {
 
 /**
  * The number of the other viewers connected to the game, who would see the
- * viewer's presence. A player's own tabs share their colour and never count;
- * a spectator leaves themself out of the spectators.
+ * viewer's presence. A player's own tabs share their colour and never count.
  */
 function othersWatching(view: View): number {
-  const isPlayer = view.you.role === 'player';
   const otherPlayers = view.players.filter(
-    (player) => player.online && !(isPlayer && player.color === view.you.color),
+    (player) => player.online && player.color !== view.you.color,
   ).length;
-  const otherSpectators = isPlayer ? view.spectators : Math.max(view.spectators - 1, 0);
-  return otherPlayers + otherSpectators;
+  return otherPlayers + view.spectators;
 }
 
 /** Whether a drag carries the same cards, or the token, as another one: it only moved. */
