@@ -14,7 +14,14 @@ type: project
   (in memory, not exposed). `ALLOWED_ORIGINS` is `https://intothefray.xyz`.
 - DNS: Cloudflare manages `intothefray.xyz`.
   - The apex points at GitHub Pages DNS-only (grey cloud), so GitHub
-    issues and renews its certificate.
+    issues and renews its certificate. Pages enforces HTTPS.
+  - `www` is a CNAME to `alexandreroman.github.io`, DNS-only; GitHub
+    redirects it to the apex.
+  - The TXT record `_github-pages-challenge-alexandreroman` makes
+    `intothefray.xyz` a verified domain of the GitHub account, so no
+    other account can claim it for Pages.
+  - The zone's API token lives in the local `.env` of
+    `intothefray-infra` (Zone Read, DNS Edit, Zone Settings Edit).
   - `api` points at the VPS through the Cloudflare proxy (orange cloud):
     it hides the VPS address, compresses responses (the backend sends
     them uncompressed) and carries the WebSockets (the server pings every
