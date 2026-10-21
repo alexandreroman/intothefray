@@ -60,6 +60,7 @@ func BuildCards(
 			Back:     backOf(first),
 			Quantity: max(first.Quantity, 1),
 			Aliases:  aliasesOf(code, entries, reprintsByCard[code]),
+			SetAside: overrides[code].SetAside,
 		})
 	}
 

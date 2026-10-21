@@ -118,7 +118,7 @@ func (g *Game) Start(hostToken string, cat *pack.Catalog, seed uint64, now time.
 		}
 	}
 	b.shuffle(PileEncounter)
-	// Side decks and set-aside hero cards come last, so that a game without
+	// Side decks and set-aside cards come last, so that a game without
 	// them draws the same random numbers as before they existed: its table
 	// and card ids stay the same for the same seed.
 	for i, p := range g.Players {
@@ -503,7 +503,7 @@ func (b *tableBuilder) setupPlayer(seat int, deck *DeckChoice) error {
 
 	// Set-aside and side deck cards are created apart (see setupSideCards),
 	// even when the deck list names them.
-	apart, err := b.setAsideCodes(hero)
+	apart, err := b.setAsideCodes(hero, deck)
 	if err != nil {
 		return err
 	}
@@ -564,20 +564,32 @@ func (b *tableBuilder) addSidePiles(seat int, hero pack.Hero) (int, error) {
 	return count, nil
 }
 
-// setAsideCodes returns the canonical codes of the cards hero's set puts
-// aside at setup, in their listed order.
-func (b *tableBuilder) setAsideCodes(hero pack.Hero) ([]string, error) {
-	set, ok := b.cat.Set(hero.Set)
-	if !ok {
-		return nil, nil
+// setAsideCodes returns the canonical codes of the cards put aside at setup,
+// each once: those listed by hero's set, then those listed by deck's cards
+// (as Specialized Training lists the Specialist upgrades), in their listed
+// order.
+func (b *tableBuilder) setAsideCodes(hero pack.Hero, deck *DeckChoice) ([]string, error) {
+	var listed []string
+	if set, ok := b.cat.Set(hero.Set); ok {
+		listed = append(listed, set.SetAside...)
 	}
-	codes := make([]string, 0, len(set.SetAside))
-	for _, code := range set.SetAside {
+	for _, entry := range deck.Cards {
+		def, _, err := b.cat.Card(entry.Code)
+		if err != nil {
+			return nil, fmt.Errorf("%w: %w", ErrInvalid, err)
+		}
+		listed = append(listed, def.SetAside...)
+	}
+
+	var codes []string
+	for _, code := range listed {
 		canonical, err := b.canonical(code)
 		if err != nil {
 			return nil, err
 		}
-		codes = append(codes, canonical)
+		if !slices.Contains(codes, canonical) {
+			codes = append(codes, canonical)
+		}
 	}
 	return codes, nil
 }
@@ -603,9 +615,10 @@ func (b *tableBuilder) sideDeckCodes(hero pack.Hero) ([]string, error) {
 
 // setupSideCards creates the cards of seat's side decks, owned by the seat
 // and at home in their side deck, and shuffles each deck. It then puts the
-// cards the hero's set sets aside on seat's set-aside pile, every catalog
-// copy of them, at home in seat's deck. The identity cards among them are
-// other versions of the identity (see Card.IdentityVersion).
+// cards the hero's set and the deck's cards set aside on seat's set-aside
+// pile, every catalog copy of them, at home in seat's deck. The identity
+// cards among them are other versions of the identity (see
+// Card.IdentityVersion).
 func (b *tableBuilder) setupSideCards(seat int, deck *DeckChoice) error {
 	hero, ok := b.cat.HeroByIdentity(deck.Hero)
 	if !ok {
@@ -620,7 +633,7 @@ func (b *tableBuilder) setupSideCards(seat int, deck *DeckChoice) error {
 	}
 
 	area := string(PlayerArea(seat))
-	setAside, err := b.setAsideCodes(hero)
+	setAside, err := b.setAsideCodes(hero, deck)
 	if err != nil {
 		return err
 	}

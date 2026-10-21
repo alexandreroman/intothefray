@@ -57,3 +57,4 @@
 - [Presence message budget](references/project_presence_budget.md) — none while alone; moves every 150 ms, 3-unit dead zone, events at once; Redis free tier
 - [Deployment architecture](references/project_deployment.md) — Pages at intothefray.xyz, VPS at api.intothefray.xyz; CI: image, then Pages, then backend
 - [Commit reporting](references/project_commit_reporting.md) — GET /api/version, VITE_COMMIT, Options shows app and server commits
+- [Cards set aside by a deck card](references/project_deck_set_aside.md) — curated `setAside` in cards.json (Specialized Training → Specialists)

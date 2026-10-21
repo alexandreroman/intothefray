@@ -449,3 +449,66 @@ func TestBuildRejectsUnknownCerebroOverride(t *testing.T) {
 		t.Fatalf("got error %v, want one naming the unknown Cerebro image", err)
 	}
 }
+
+func TestBuildCarriesCardSetAside(t *testing.T) {
+	in := heroSetsInputs(t, nil)
+	in.Curated.Cards = map[string]curated.CardOverride{
+		"09013": {SetAside: []string{"09011", "09010"}},
+	}
+
+	result, err := Build(in)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	cards := make(map[string]pack.Card)
+	for _, card := range result.Packs[0].Cards {
+		cards[card.Code] = card
+	}
+	if got, want := cards["09013"].SetAside, []string{"09011", "09010"}; !slices.Equal(got, want) {
+		t.Errorf("got set-aside cards %v, want %v", got, want)
+	}
+	if got := cards["09012"].SetAside; got != nil {
+		t.Errorf("got set-aside cards %v on 09012, want none", got)
+	}
+}
+
+func TestBuildRejectsInvalidCardSetAside(t *testing.T) {
+	tests := []struct {
+		name      string
+		overrides map[string]curated.CardOverride
+		want      string
+	}{
+		{
+			"unknown set-aside card",
+			map[string]curated.CardOverride{"09013": {SetAside: []string{"09999"}}},
+			"curated card 09013: set-aside card 09999 is not in the catalog",
+		},
+		{
+			"set-aside cards on a face code",
+			map[string]curated.CardOverride{"01001a": {SetAside: []string{"09010"}}},
+			"curated card 01001a: set-aside cards need the code of a card, not of one of its faces",
+		},
+		{
+			"card setting itself aside",
+			map[string]curated.CardOverride{"09013": {SetAside: []string{"09010", "09013"}}},
+			"curated card 09013: sets itself aside",
+		},
+		{
+			"unknown curated card",
+			map[string]curated.CardOverride{"09999": {SetAside: []string{"09010"}}},
+			"curated card 09999 is not in the catalog",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			in := heroSetsInputs(t, nil)
+			in.Curated.Cards = tt.overrides
+
+			_, err := Build(in)
+			if err == nil || !strings.Contains(err.Error(), tt.want) {
+				t.Fatalf("got error %v, want one containing %q", err, tt.want)
+			}
+		})
+	}
+}

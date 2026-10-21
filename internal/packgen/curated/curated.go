@@ -21,6 +21,10 @@ type CardOverride struct {
 	// Cerebro is the Cerebro image id to use for the face instead of the one
 	// matching its code, for cards whose Cerebro images are swapped.
 	Cerebro string `json:"cerebro,omitempty"`
+	// SetAside lists the cards that a deck containing this card puts aside,
+	// out of play, at setup. It is only valid on the code of a card, not on
+	// the code of one of its faces.
+	SetAside []string `json:"setAside,omitempty"`
 }
 
 // ScenarioDef is a hand-written scenario setup, completed at build time with
