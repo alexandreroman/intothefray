@@ -38,13 +38,16 @@
       <div class="pitch">
         <p class="tagline">Play Marvel Champions in your browser.</p>
         <p class="sub">
-          Play solo or with up to three friends. No account, nothing to install: start a game, share
-          the link, deal the cards.
+          Play solo or with up to three friends.<br />
+          No account, nothing to install: start a game, share the link, deal the cards.
         </p>
       </div>
 
       <div class="start">
         <div class="actions">
+          <button class="secondary" onclick={() => go('/options')}
+            ><Icon name="sliders" />Options</button
+          >
           <button class="btn-primary" disabled={starting} onclick={onStart}>
             <svg
               viewBox="0 0 24 24"
@@ -59,9 +62,6 @@
             </svg>
             Start a game
           </button>
-          <button class="secondary" onclick={() => go('/options')}
-            ><Icon name="sliders" />Options</button
-          >
         </div>
         {#if error}
           <p class="error" role="alert">{error}</p>
@@ -214,6 +214,7 @@
   .actions {
     display: flex;
     flex-wrap: wrap;
+    justify-content: space-between;
     gap: 14px;
   }
 
