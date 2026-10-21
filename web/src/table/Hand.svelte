@@ -82,9 +82,10 @@
   });
   let list = $state<HTMLElement>();
 
-  // The band the pointer opens the hand in: the cards' area stretched down to
-  // the bottom of the window. Open, it is wider, so the pointer that raised
-  // the hand keeps it up.
+  // The band the pointer opens the hand in: the area of the cards as seen,
+  // tilted on the arc and the popped one included, stretched down to the
+  // bottom of the window. Open, it is wider, so the pointer that raised the
+  // hand keeps it up.
   const RESTING_MARGIN = 6;
   const OPEN_MARGIN = 24;
 
@@ -232,9 +233,11 @@
     }
     // A card flying in (drawn, or brought back from the table) is drawn away from its slot
     // meanwhile: the band is the resting cards'. Once it has landed, the band is measured again.
+    // Each card is measured by its fan, the card as seen: the slot stays upright, and the tilted
+    // cards at the ends of the arc stick out of it.
     const boxes = cardsShown
       .filter((card) => !isMoving(card))
-      .map((card) => card.getBoundingClientRect());
+      .map((card) => (card.querySelector('.fan') ?? card).getBoundingClientRect());
     if (boxes.length === 0) {
       return;
     }

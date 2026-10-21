@@ -105,6 +105,33 @@ describe('Hand', () => {
     expect(isOpen()).toBe(false);
   });
 
+  it('the band covers the tilted cards beyond their slots', async () => {
+    // The slots measure 600..732 × 700..885, the tilted cards 60 more on each side.
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: Element,
+    ) {
+      if (this.classList.contains('fan')) {
+        return DOMRect.fromRect({ x: 540, y: 700, width: 252, height: 185 });
+      }
+      return DOMRect.fromRect({ x: 600, y: 700, width: 132, height: 185 });
+    });
+    render(Hand, { cards: CARDS, faceOf });
+    const isOpen = () => handList().classList.contains('open');
+
+    await fireEvent.pointerMove(window, { clientX: 650, clientY: 800 });
+    expect(isOpen()).toBe(true);
+
+    // On a tilted card, beyond its slot and the open margin (24): still open.
+    await fireEvent.pointerMove(window, { clientX: 550, clientY: 800 });
+    expect(isOpen()).toBe(true);
+    await fireEvent.pointerMove(window, { clientX: 780, clientY: 800 });
+    expect(isOpen()).toBe(true);
+
+    // Beyond the tilted card and the open margin: lowered.
+    await fireEvent.pointerMove(window, { clientX: 510, clientY: 800 });
+    expect(isOpen()).toBe(false);
+  });
+
   it('a drawn card waiting for its copy is hidden, and left out of the band until it lands', async () => {
     // h1 measures 600..732 on the screen, the others 900..1032.
     vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
