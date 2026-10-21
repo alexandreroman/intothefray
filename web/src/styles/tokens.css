@@ -85,9 +85,7 @@ body {
     every action but the main one, in a dialog too (Cancel, Close);
   - .btn-ghost: no surface of its own (icons, ×, toolbar and menu items); a light wash on hover;
   - .btn-primary: the one main action of a screen, a dialog or a box (.compact in a dialog
-    or a box); a lighter red on hover;
-  - .btn-danger: a confirmation that cannot be taken back; rounded ink outlined in red, so
-    it never reads as the main action; filled red on hover.
+    or a box); a lighter red on hover.
   A disabled button has no hover. A pressed or "on" state set by a component keeps its look
   and gives its own hover.
   A label never wraps.
@@ -127,19 +125,6 @@ button:hover:not(:disabled, [aria-disabled='true']) {
   color: var(--text);
 }
 
-.btn-danger {
-  background: var(--bg);
-  border-color: var(--accent);
-  color: var(--accent);
-  font-weight: 800;
-}
-
-.btn-danger:hover:not(:disabled, [aria-disabled='true']) {
-  background-color: var(--accent);
-  border-color: var(--accent);
-  color: var(--bg);
-}
-
 @media (prefers-reduced-motion: reduce) {
   button {
     transition: none;
@@ -177,6 +162,49 @@ button:hover:not(:disabled, [aria-disabled='true']) {
 @media (prefers-reduced-motion: reduce) {
   [data-indicator][data-slides],
   [data-indicator] ~ button {
+    transition: none;
+  }
+}
+
+/*
+  A list that fades out at its scrolling edges (lib/scrollFade.ts): an edge with more of the list
+  beyond it fades to transparent, whatever lies behind; the other edges stay sharp. The depths
+  are registered lengths, so that they transition: a fade grows in and out rather than popping.
+*/
+@property --scroll-fade-top {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --scroll-fade-bottom {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+[data-scroll-fade] {
+  mask-image: linear-gradient(
+    transparent,
+    #000 var(--scroll-fade-top),
+    #000 calc(100% - var(--scroll-fade-bottom)),
+    transparent
+  );
+  transition:
+    --scroll-fade-top 0.2s ease-out,
+    --scroll-fade-bottom 0.2s ease-out;
+}
+
+[data-scroll-fade~='top'] {
+  --scroll-fade-top: 32px;
+}
+
+[data-scroll-fade~='bottom'] {
+  --scroll-fade-bottom: 32px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-scroll-fade] {
     transition: none;
   }
 }

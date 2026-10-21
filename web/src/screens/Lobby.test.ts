@@ -237,7 +237,8 @@ describe('Lobby', () => {
     expect(session.lobby).not.toHaveBeenCalled();
 
     const dialog = screen.getByRole('alertdialog', {
-      name: 'Close the lobby? This ends the game for everyone.',
+      name: 'Close the lobby?',
+      description: 'This ends the game for everyone.',
     });
     await fireEvent.click(within(dialog).getByRole('button', { name: 'Close the lobby' }));
     expect(session.lobby).toHaveBeenCalledExactlyOnceWith('end');
@@ -311,7 +312,7 @@ describe('Lobby', () => {
     expect(name.dataset.tip).toBe('Klaw');
   });
 
-  it('shows the first pack and two rows of villains, the rest scrolling', async () => {
+  it('measures the first pack name and tile that set the floor of the villain list', async () => {
     // jsdom lays nothing out: the observer is triggered and the sizes are set by hand.
     const observed: { callback: ResizeObserverCallback; targets: Element[] }[] = [];
     vi.stubGlobal(
@@ -335,20 +336,32 @@ describe('Lobby', () => {
       renderLobby({});
       await screen.findByRole('button', { name: /Klaw/ });
       const list = document.querySelector<HTMLElement>('.villains')!;
-      expect(list.style.getPropertyValue('--visible-height')).toBe('');
+      expect(list.style.getPropertyValue('--pack-name-height')).toBe('');
+      expect(list.style.getPropertyValue('--tile-height')).toBe('');
+      const resizeList = async () => {
+        for (const { callback, targets } of observed) {
+          if (targets.includes(list)) {
+            callback([], {} as ResizeObserver);
+          }
+        }
+        await tick();
+      };
 
       const sized = (height: number) => () => new DOMRect(0, 0, 200, height);
       list.querySelector<HTMLElement>('.pkname')!.getBoundingClientRect = sized(41);
       list.querySelector<HTMLElement>('.vil')!.getBoundingClientRect = sized(112.5);
-      list.querySelector<HTMLElement>('.vgrid')!.style.rowGap = '12px';
-      for (const { callback, targets } of observed) {
-        if (targets.includes(list)) {
-          callback([], {} as ResizeObserver);
-        }
-      }
-      await tick();
+      await resizeList();
 
-      expect(list.style.getPropertyValue('--visible-height')).toBe(`${41 + 2 * 112.5 + 12}px`);
+      // The rows themselves add up in CSS, which jsdom does not lay out.
+      expect(list.style.getPropertyValue('--pack-name-height')).toBe('41px');
+      expect(list.style.getPropertyValue('--tile-height')).toBe('112.5px');
+
+      // A filter that matches nothing keeps the last sizes.
+      await fireEvent.input(screen.getByLabelText('Filter by scenario or pack'), {
+        target: { value: 'nobody' },
+      });
+      await resizeList();
+      expect(list.style.getPropertyValue('--tile-height')).toBe('112.5px');
     } finally {
       vi.unstubAllGlobals();
     }

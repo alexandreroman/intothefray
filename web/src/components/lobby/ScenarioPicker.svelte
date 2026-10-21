@@ -1,7 +1,11 @@
 <script lang="ts">
+  import { cubicOut } from 'svelte/easing';
+  import { prefersReducedMotion } from 'svelte/motion';
+  import { slide } from 'svelte/transition';
   import { storedLang } from '../../lib/lang';
   import { localizedName } from '../../lib/localize';
   import { overflowTip } from '../../lib/overflowTip';
+  import { scrollFade } from '../../lib/scrollFade';
   import CardArt from '../CardArt.svelte';
   import Segmented from '../Segmented.svelte';
   import type { Difficulty, Index, LobbyConfig, ScenarioRef, View } from '../../lib/types';
@@ -19,6 +23,7 @@
     { value: 'standard', label: 'Standard' },
     { value: 'expert', label: 'Expert' },
   ];
+  const SETTINGS_SLIDE_MS = 250;
 
   // Pack, scenario and set names in the language chosen in Options, a separate route: read once.
   const lang = storedLang();
@@ -87,27 +92,27 @@
       .filter((group) => group.scenarios.length > 0),
   );
 
-  // The host's list shows the first pack's name and two rows of villains; the rest scrolls.
+  // The host's list never gets shorter than the first pack's name and a few rows of tiles (see
+  // .villains in the styles): both heights are measured here.
   let villains = $state<HTMLElement>();
-  let visibleHeight = $state<number | null>(null);
+  let listSizes = $state<{ packName: number; tile: number } | null>(null);
 
-  /** The height of the first pack's name and two rows of tiles, null while nothing is laid out. */
-  function twoRowsHeight(list: HTMLElement): number | null {
-    const header = list.querySelector('.pkname');
-    const grid = list.querySelector('.vgrid');
+  /** The heights of the list's first pack name and first tile, null while nothing is laid out. */
+  function measureList(list: HTMLElement): { packName: number; tile: number } | null {
+    const packName = list.querySelector('.pkname');
     const tile = list.querySelector('.vil');
-    if (!header || !grid || !tile) {
+    if (!packName || !tile) {
       return null;
     }
     const tileHeight = tile.getBoundingClientRect().height;
     if (tileHeight === 0) {
       return null;
     }
-    const rowGap = parseFloat(getComputedStyle(grid).rowGap) || 0;
-    return header.getBoundingClientRect().height + 2 * tileHeight + rowGap;
+    return { packName: packName.getBoundingClientRect().height, tile: tileHeight };
   }
 
-  // A tile's height follows its width: measured again whenever the list is resized.
+  // A tile's height follows its width: measured again whenever the list is resized. A filter that
+  // matches nothing leaves no tile to measure: the last sizes stay.
   $effect(() => {
     const list = villains;
     if (!list || !isHost) {
@@ -116,11 +121,23 @@
     // Read so that a new filter, with another first pack, observes the list anew.
     void groups;
     const observer = new ResizeObserver(() => {
-      visibleHeight = twoRowsHeight(list);
+      listSizes = measureList(list) ?? listSizes;
     });
     observer.observe(list);
     return () => observer.disconnect();
   });
+
+  // The settings take their room from the list: the villain the host just chose may have slipped
+  // out of its view. A guest's list holds that villain alone, and scrolling it could move the page.
+  function revealChosen(): void {
+    if (!isHost) {
+      return;
+    }
+    villains?.querySelector('.vil.on')?.scrollIntoView({
+      block: 'nearest',
+      behavior: prefersReducedMotion.current ? 'instant' : 'smooth',
+    });
+  }
 
   function configure(changes: Partial<LobbyConfig>): void {
     onconfigure({
@@ -186,7 +203,7 @@
     {/if}
   </div>
 
-  <div class="sect">
+  <div class="sect villain">
     <div class="lbl">Villain</div>
     {#if isHost}
       <input
@@ -200,7 +217,9 @@
     <div
       class="villains"
       bind:this={villains}
-      style:--visible-height={visibleHeight === null ? undefined : `${visibleHeight}px`}
+      style:--pack-name-height={listSizes ? `${listSizes.packName}px` : undefined}
+      style:--tile-height={listSizes ? `${listSizes.tile}px` : undefined}
+      {@attach scrollFade}
     >
       {#each groups as group (group.pack.code)}
         <div class="pack">
@@ -242,8 +261,16 @@
     </div>
   </div>
 
+  <!-- Opens once a first scenario is chosen, and stays as the host picks others. -->
   {#if chosen}
-    <div class="sect settings">
+    <div
+      class="sect settings"
+      transition:slide={{
+        duration: prefersReducedMotion.current ? 0 : SETTINGS_SLIDE_MS,
+        easing: cubicOut,
+      }}
+      onintroend={revealChosen}
+    >
       <div class="difficulty">
         <div class="lbl">Difficulty</div>
         <Segmented
@@ -341,20 +368,43 @@
 </section>
 
 <style>
+  /* The lobby may stretch the box to its row: the villain section takes the height left. */
+  .card-box {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .villain {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
   .filter {
     margin-bottom: 4px;
   }
 
-  /* The whole range scrolls inside the box, from a fixed height until measured. */
+  /*
+    The whole range scrolls in the room the box has left. The zero basis keeps the tiles from making
+    the box taller, down to a floor: the first pack's name and --villain-rows rows of tiles, the
+    count the lobby sets for its layout. The fallback sizes hold until the list is measured.
+  */
   .villains {
-    max-height: var(--visible-height, 520px);
+    --tile-gap: 12px;
+    flex: 1 1 0;
+    min-height: calc(
+      var(--pack-name-height, 41px) + var(--villain-rows, 2) * var(--tile-height, 112px) +
+        (var(--villain-rows, 2) - 1) * var(--tile-gap)
+    );
     overflow-y: auto;
     margin-right: -10px;
     padding-right: 10px;
   }
 
+  /* A guest's list holds the chosen scenario alone: it shows whole, and fills a stretched box. */
   .guest .villains {
-    max-height: none;
+    flex: 1 0 auto;
+    min-height: 0;
   }
 
   /* The pack's name, then a rule to the edge. */
@@ -386,7 +436,7 @@
   .vgrid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 12px;
+    gap: var(--tile-gap);
   }
 
   /* The aspect given to its CardArt too. */

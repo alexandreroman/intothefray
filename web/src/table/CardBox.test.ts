@@ -522,6 +522,9 @@ describe('CardBox', () => {
     await fireEvent.click(menuItem('Change card…'));
 
     expect(tileNames()).toEqual(['The Break-In! (1A)', 'The Break-In! (1B)']);
+    // Close is the box's one action, so its main one.
+    const close = within(box()).getByRole('button', { name: 'Close' });
+    expect(close.classList.contains('btn-primary')).toBe(true);
     await pick('s:1');
     expect(session.act).toHaveBeenCalledExactlyOnceWith(
       {
@@ -874,7 +877,9 @@ describe('CardBox', () => {
 
     expect(screen.getByRole('dialog', { name: 'Victory display' })).toBeTruthy();
     expect(tileNames()).toEqual(['Hard to Keep Down']);
-    await fireEvent.click(within(box()).getByRole('button', { name: 'Close' }));
+    const close = within(box()).getByRole('button', { name: 'Close' });
+    expect(close.classList.contains('btn-primary')).toBe(false);
+    await fireEvent.click(close);
     expect(session.act).not.toHaveBeenCalled();
     expect(screen.queryByRole('dialog')).toBeNull();
   });

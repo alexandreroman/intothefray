@@ -19,6 +19,7 @@
     onend,
     endLabel = 'End game',
     endQuestion = 'End this game for everyone?',
+    endDetail,
     viewMode,
     onviewmode,
     readyAll,
@@ -35,6 +36,8 @@
     /** The end button's name, tooltip and confirmation, and the question it asks. */
     endLabel?: string;
     endQuestion?: string;
+    /** A line under the question, when it needs one. */
+    endDetail?: string;
     /** What the table shows, on the table only: every row, or the villain's and one player's. */
     viewMode?: 'all' | 'focus';
     onviewmode?: (mode: 'all' | 'focus') => void;
@@ -192,8 +195,8 @@
 {#if confirmingEnd}
   <ConfirmDialog
     question={endQuestion}
+    detail={endDetail}
     confirmLabel={endLabel}
-    danger
     onconfirm={endGame}
     oncancel={() => (confirmingEnd = false)}
   />

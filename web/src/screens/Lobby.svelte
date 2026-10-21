@@ -128,7 +128,8 @@
     spectators={view.spectators}
     onend={view.you.host ? () => session.lobby('end') : undefined}
     endLabel="Close the lobby"
-    endQuestion="Close the lobby? This ends the game for everyone."
+    endQuestion="Close the lobby?"
+    endDetail="This ends the game for everyone."
   />
 
   <main class="lobby">
@@ -276,22 +277,38 @@
     line-height: 1.5;
   }
 
-  /* Two columns that wrap into one on a narrow screen. */
+  /*
+    One column on a narrow window. Two side by side once the content is 944px wide (560px for the
+    scenario, the gap, 360px for the players), that is from a 992px window with its gutters: both
+    stretch to the taller one, the scenario box fills its column, and its villain list takes the
+    room left. The list shows at least --villain-rows rows of tiles (ScenarioPicker): two when
+    stacked, which is then its height, one side by side. One media query sets both the layout and
+    the row count, so they always agree.
+  */
   .columns {
-    display: flex;
-    flex-wrap: wrap;
+    --villain-rows: 2;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 24px;
-    align-items: flex-start;
+  }
+
+  @media (min-width: 992px) {
+    .columns {
+      --villain-rows: 1;
+      grid-template-columns: minmax(0, 1fr) 360px;
+    }
   }
 
   .wide {
-    flex: 999 1 560px;
-    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .wide > :global(.card-box) {
+    flex-grow: 1;
   }
 
   .narrow {
-    flex: 1 1 360px;
-    min-width: 0;
     display: flex;
     flex-direction: column;
     gap: 24px;

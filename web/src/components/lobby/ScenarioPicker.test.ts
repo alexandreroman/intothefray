@@ -3,6 +3,18 @@ import ScenarioPicker from './ScenarioPicker.svelte';
 import { setLang } from '../../lib/lang';
 import type { Index, LobbyConfig, View, YouView } from '../../lib/types';
 
+// Whether the viewer prefers reduced motion, as each test chooses.
+const motion = vi.hoisted(() => ({ reduced: false }));
+
+vi.mock('svelte/motion', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('svelte/motion')>()),
+  prefersReducedMotion: {
+    get current() {
+      return motion.reduced;
+    },
+  },
+}));
+
 const index: Index = {
   version: 1,
   lang: 'en',
@@ -210,5 +222,85 @@ describe('ScenarioPicker Add a set menu', () => {
     expect(await fireEvent.keyDown(window, { key: 'Escape' })).toBe(false);
     expect(add.getAttribute('aria-expanded')).toBe('false');
     expect(await fireEvent.keyDown(window, { key: 'Escape' })).toBe(true);
+  });
+});
+
+describe('ScenarioPicker settings', () => {
+  const noScenario: LobbyConfig = { ...rhino, scenario: '', standard: '', modulars: [] };
+
+  // jsdom has neither Web Animations nor scrolling: each animation finishes on the next task.
+  const animate = vi.fn(() => {
+    const animation = { onfinish: null as (() => void) | null, cancel: () => {}, effect: null };
+    setTimeout(() => animation.onfinish?.());
+    return animation as unknown as Animation;
+  });
+  const scrollIntoView = vi.fn();
+  const originals = {
+    animate: Element.prototype.animate,
+    scrollIntoView: Element.prototype.scrollIntoView,
+  };
+
+  beforeEach(() => {
+    Element.prototype.animate = animate;
+    Element.prototype.scrollIntoView = scrollIntoView;
+  });
+
+  afterEach(() => {
+    Element.prototype.animate = originals.animate;
+    Element.prototype.scrollIntoView = originals.scrollIntoView;
+    animate.mockClear();
+    scrollIntoView.mockClear();
+    motion.reduced = false;
+  });
+
+  it('slide open once a first scenario is chosen, then bring the chosen villain into view', async () => {
+    const { rerender } = renderPicker(noScenario);
+    expect(screen.queryByText('Modular sets')).toBeNull();
+
+    await rerender({ view: viewOf(rhino) });
+
+    expect(screen.getByText('Modular sets')).toBeTruthy();
+    await vi.waitFor(() => expect(scrollIntoView).toHaveBeenCalledOnce());
+    expect(animate).toHaveBeenCalledWith(
+      expect.any(Array),
+      expect.objectContaining({ duration: 250 }),
+    );
+    expect(scrollIntoView).toHaveBeenCalledWith({ block: 'nearest', behavior: 'smooth' });
+    expect(scrollIntoView.mock.contexts[0]).toBe(screen.getByRole('button', { name: /Rhino/ }));
+  });
+
+  it('stay open, without sliding again, when the host chooses another scenario', async () => {
+    const { rerender } = renderPicker(rhino);
+
+    await rerender({ view: viewOf({ ...rhino, scenario: 'klaw', modulars: [] }) });
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(screen.getByText('Modular sets')).toBeTruthy();
+    expect(animate).not.toHaveBeenCalled();
+    expect(scrollIntoView).not.toHaveBeenCalled();
+  });
+
+  it('open at once, and bring the villain into view at once, under reduced motion', async () => {
+    motion.reduced = true;
+    const { rerender } = renderPicker(noScenario);
+
+    await rerender({ view: viewOf(rhino) });
+
+    expect(screen.getByText('Modular sets')).toBeTruthy();
+    expect(animate).not.toHaveBeenCalled();
+    expect(scrollIntoView).toHaveBeenCalledExactlyOnceWith({
+      block: 'nearest',
+      behavior: 'instant',
+    });
+  });
+
+  it("leave a guest's list and page where they are", async () => {
+    motion.reduced = true;
+    const { rerender } = renderPicker(noScenario, asGuest);
+
+    await rerender({ view: viewOf(rhino, asGuest) });
+
+    expect(screen.getByText('Modular sets')).toBeTruthy();
+    expect(scrollIntoView).not.toHaveBeenCalled();
   });
 });

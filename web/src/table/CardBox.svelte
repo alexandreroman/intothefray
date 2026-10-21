@@ -11,6 +11,7 @@
 <script lang="ts">
   import { tick, untrack } from 'svelte';
   import Dialog from '../components/Dialog.svelte';
+  import { scrollFade } from '../lib/scrollFade';
   import type { Action, CardView, PackFace, PileView, Size, View } from '../lib/types';
   import {
     canShuffleIn,
@@ -609,6 +610,7 @@
     class:dragging={drag?.lifted}
     style:height={gridHeight === null ? undefined : `${gridHeight}px`}
     {@attach sizeGrid}
+    {@attach scrollFade}
     onscroll={() => (hovered = null)}
   >
     {#each shownTiles as tile (tile.key)}
@@ -681,7 +683,12 @@
           Shuffle into the encounter deck
         </button>
       {/if}
-      <button type="button" onclick={() => onclose(false)}>Close</button>
+      <!-- A stage box has no other action: Close is its main one. -->
+      <button
+        type="button"
+        class={box.kind === 'stage' ? 'btn-primary compact' : undefined}
+        onclick={() => onclose(false)}>Close</button
+      >
     {/if}
   </div>
 
@@ -912,7 +919,7 @@
     flex-wrap: wrap;
     align-items: center;
     justify-content: flex-end;
-    gap: 8px;
+    gap: 16px;
     padding: 12px 16px;
     border-top: 1px solid var(--line);
   }

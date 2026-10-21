@@ -38,8 +38,8 @@
       <div class="pitch">
         <p class="tagline">Play Marvel Champions in your browser.</p>
         <p class="sub">
-          Play solo or with up to three friends. No account, nothing to install: start a game, share
-          the link, deal the cards.
+          Play solo or with up to three friends.<br />
+          No account, nothing to install: start a game, share the link, deal the cards.
         </p>
       </div>
 
@@ -214,6 +214,7 @@
   .actions {
     display: flex;
     flex-wrap: wrap;
+    justify-content: space-between;
     gap: 14px;
   }
 

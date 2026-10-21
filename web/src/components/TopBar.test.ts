@@ -153,6 +153,23 @@ describe('TopBar', () => {
     expect(onend).toHaveBeenCalledOnce();
   });
 
+  it('shows the end detail under the question', async () => {
+    render(TopBar, {
+      spectators: 0,
+      onend: () => {},
+      endQuestion: 'Close the lobby?',
+      endDetail: 'This ends the game for everyone.',
+    });
+    await fireEvent.click(screen.getByRole('button', { name: 'End game' }));
+
+    expect(
+      screen.getByRole('alertdialog', {
+        name: 'Close the lobby?',
+        description: 'This ends the game for everyone.',
+      }),
+    ).toBeTruthy();
+  });
+
   it('orders the actions, End game last, with a cross', () => {
     document.documentElement.requestFullscreen = vi.fn();
     render(TopBar, { spectators: 0, onend: () => {} });
