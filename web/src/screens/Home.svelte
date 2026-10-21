@@ -45,9 +45,6 @@
 
       <div class="start">
         <div class="actions">
-          <button class="secondary" onclick={() => go('/options')}
-            ><Icon name="sliders" />Options</button
-          >
           <button class="btn-primary" disabled={starting} onclick={onStart}>
             <svg
               viewBox="0 0 24 24"
@@ -62,6 +59,9 @@
             </svg>
             Start a game
           </button>
+          <button class="secondary" onclick={() => go('/options')}
+            ><Icon name="sliders" />Options</button
+          >
         </div>
         {#if error}
           <p class="error" role="alert">{error}</p>
