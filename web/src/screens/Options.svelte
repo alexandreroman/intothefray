@@ -1,10 +1,12 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { isLang, LANGS, setLang, storedLang } from '../lib/lang';
   import { cleanName, MAX_NAME_LENGTH, randomName, savePlayerName, stripEmoji } from '../lib/names';
   import { getPref, setPref } from '../lib/prefs';
   import { go } from '../lib/router.svelte';
   import { selectionIndicator } from '../lib/selectionIndicator';
   import { applyTheme, storedTheme, type Theme } from '../lib/theme';
+  import { appCommit, commitUrl, fetchServerCommit, isCommit, shortCommit } from '../lib/version';
   import TopBar from '../components/TopBar.svelte';
 
   // Each card shows its theme whatever the current one: a table, a card back
@@ -20,6 +22,21 @@
   let name = $state(cleanName(getPref('itf-name') ?? ''));
   let theme = $state(storedTheme());
   let lang = $state(storedLang());
+
+  const app = appCommit();
+  let server = $state<string>();
+  let serverFailed = $state(false);
+  // Only two real commits can tell a mismatch: a local "dev" build always differs.
+  let differ = $derived(
+    server !== undefined && isCommit(app) && isCommit(server) && server !== app,
+  );
+
+  onMount(() => {
+    fetchServerCommit().then(
+      (commit) => (server = commit),
+      () => (serverFailed = true),
+    );
+  });
 
   function onNameInput(): void {
     // Not trimmed here, so that a space can be typed between two words.
@@ -154,8 +171,35 @@
         </select>
       </div>
     </div>
+
+    <p class="version">
+      <span>App {@render commit(app)}</span>
+      <span aria-hidden="true">·</span>
+      <span>
+        Server
+        {#if server}
+          {@render commit(server)}
+        {:else if serverFailed}
+          unavailable
+        {:else}
+          …
+        {/if}
+      </span>
+      {#if differ}
+        <span class="differ">App and server differ</span>
+      {/if}
+    </p>
   </main>
 </div>
+
+{#snippet commit(sha: string)}
+  {@const url = commitUrl(sha)}
+  {#if url}
+    <a href={url} title={sha} target="_blank" rel="noopener noreferrer">{shortCommit(sha)}</a>
+  {:else}
+    <span title={sha}>{shortCommit(sha)}</span>
+  {/if}
+{/snippet}
 
 <style>
   /* The column's width and gutter are shared with the top bar. */
@@ -236,7 +280,8 @@
     border-top: 1px solid var(--panel-2);
   }
 
-  .row:last-child {
+  /* The last setting: the version line after it is no .row. */
+  .row:last-of-type {
     border-bottom: 1px solid var(--panel-2);
   }
 
@@ -435,6 +480,27 @@
     margin: 2px;
     border-radius: 50%;
     border: 1.5px solid #3a4766;
+  }
+
+  .version {
+    margin: 20px 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .version a {
+    color: inherit;
+  }
+
+  .version a:hover {
+    color: var(--text);
+  }
+
+  .differ {
+    color: var(--warn);
   }
 
   /* A phone: 16px gutters, and smaller theme cards to fit three in a row. */

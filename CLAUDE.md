@@ -39,6 +39,9 @@ make web-build    # production build into web/dist/
 - `internal/game/` — pure game engine (lobby, setup, actions, undo, views)
 - `internal/server/` — HTTP API, game creation, game card pool,
   WebSocket endpoint, cross-instance fan-out (hub)
+- `internal/version/` — commit the binary was built from (`-X` at link
+  time, else the Go VCS stamp, `-dirty` if modified), served by
+  `GET /api/version`
 - `internal/store/` — Redis game store, connection leases and game
   event pub/sub
 - `internal/pack/` — card pack schema (types) and catalog

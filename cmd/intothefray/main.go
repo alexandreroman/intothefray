@@ -20,6 +20,7 @@ import (
 	"github.com/alexandreroman/intothefray/internal/decks"
 	"github.com/alexandreroman/intothefray/internal/server"
 	"github.com/alexandreroman/intothefray/internal/store"
+	"github.com/alexandreroman/intothefray/internal/version"
 	"github.com/alexandreroman/intothefray/packs"
 )
 
@@ -84,7 +85,7 @@ func run() error {
 
 	group, groupCtx := errgroup.WithContext(ctx)
 	group.Go(func() error {
-		slog.Info("server listening", "addr", addr)
+		slog.Info("server listening", "addr", addr, "commit", version.Commit())
 		// ListenAndServe only returns ErrServerClosed after a shutdown.
 		if err := httpServer.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
 			return fmt.Errorf("listen on %s: %w", addr, err)

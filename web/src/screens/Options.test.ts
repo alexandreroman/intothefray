@@ -1,10 +1,25 @@
-import { fireEvent, render, screen } from '@testing-library/svelte';
+import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import Options from './Options.svelte';
 import { getPref, setPref } from '../lib/prefs';
+
+const APP_SHA = '0123456789abcdef0123456789abcdef01234567';
+const SERVER_SHA = 'fedcba9876543210fedcba9876543210fedcba98';
+
+/** Makes GET /api/version answer `commit`. */
+function stubServerCommit(commit: string): void {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ commit }))));
+}
 
 beforeEach(() => {
   localStorage.clear();
   document.documentElement.removeAttribute('data-theme');
+  vi.stubEnv('VITE_COMMIT', APP_SHA);
+  stubServerCommit(APP_SHA);
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+  vi.unstubAllGlobals();
 });
 
 describe('Options', () => {
@@ -96,6 +111,51 @@ describe('Options', () => {
 
     expect(screen.getByRole('heading', { level: 1, name: 'SUIT UP' })).toBeTruthy();
     expect(screen.getByText('Saved in this browser only. Changes apply right away.')).toBeTruthy();
+  });
+
+  it('shows the app and server commits, linked to GitHub', async () => {
+    render(Options);
+
+    const appLink = screen.getByRole('link', { name: '0123456' });
+    expect(appLink.getAttribute('href')).toBe(
+      `https://github.com/alexandreroman/intothefray/commit/${APP_SHA}`,
+    );
+    expect(appLink.getAttribute('title')).toBe(APP_SHA);
+    await waitFor(() => expect(screen.getAllByRole('link', { name: '0123456' })).toHaveLength(2));
+    expect(screen.queryByText('App and server differ')).toBeNull();
+  });
+
+  it('tells when the app and server commits differ', async () => {
+    stubServerCommit(SERVER_SHA);
+    render(Options);
+
+    expect(await screen.findByRole('link', { name: 'fedcba9' })).toBeTruthy();
+    expect(screen.getByText('App and server differ')).toBeTruthy();
+  });
+
+  it('tells no mismatch when the app is a local "dev" build', async () => {
+    vi.stubEnv('VITE_COMMIT', '');
+    stubServerCommit(SERVER_SHA);
+    render(Options);
+
+    expect(await screen.findByRole('link', { name: 'fedcba9' })).toBeTruthy();
+    expect(screen.queryByText('App and server differ')).toBeNull();
+  });
+
+  it('shows the server commit as loading, then unavailable on error', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('offline')));
+    render(Options);
+
+    expect(screen.getByText(/Server\s+…/)).toBeTruthy();
+    expect(await screen.findByText(/Server\s+unavailable/)).toBeTruthy();
+    expect(screen.queryByText('App and server differ')).toBeNull();
+  });
+
+  it('shows an unlinked "dev" for a local build', () => {
+    vi.stubEnv('VITE_COMMIT', '');
+    render(Options);
+
+    expect(screen.getByText('dev').closest('a')).toBeNull();
   });
 
   it('goes back home', async () => {

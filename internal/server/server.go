@@ -24,6 +24,7 @@ import (
 	"github.com/alexandreroman/intothefray/internal/game"
 	"github.com/alexandreroman/intothefray/internal/pack"
 	"github.com/alexandreroman/intothefray/internal/store"
+	"github.com/alexandreroman/intothefray/internal/version"
 )
 
 const (
@@ -94,11 +95,12 @@ func New(d Deps) *Server {
 // the origin literally.
 var patternEscaper = strings.NewReplacer(`\`, `\\`, "*", `\*`, "?", `\?`, "[", `\[`, "]", `\]`)
 
-// Handler returns the routes: GET /healthz, POST /api/games,
-// GET /api/games/{id}/cards and GET /ws/games/{id}.
+// Handler returns the routes: GET /healthz, GET /api/version,
+// POST /api/games, GET /api/games/{id}/cards and GET /ws/games/{id}.
 func (s *Server) Handler() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", handleHealthz)
+	mux.HandleFunc("GET /api/version", handleVersion)
 	mux.HandleFunc("POST /api/games", s.handleCreateGame)
 	mux.HandleFunc("GET /api/games/{id}/cards", s.handleGameCards)
 	mux.HandleFunc("GET /ws/games/{id}", s.handleGameSocket)
@@ -109,6 +111,14 @@ func handleHealthz(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	// A failed write means the client is gone: there is nobody left to report it to.
 	_, _ = io.WriteString(w, "ok")
+}
+
+// handleVersion tells which commit the server runs, so that it can be told
+// apart from the commit of the frontend.
+func handleVersion(w http.ResponseWriter, _ *http.Request) {
+	// A cached reply would show the commit of a previous deployment.
+	w.Header().Set("Cache-Control", "no-store")
+	writeJSON(w, http.StatusOK, versionResponse{Commit: version.Commit()})
 }
 
 // withCORS answers preflight requests and adds CORS headers for allowed

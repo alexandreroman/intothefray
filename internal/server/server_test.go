@@ -23,6 +23,7 @@ import (
 	"github.com/alexandreroman/intothefray/internal/config"
 	"github.com/alexandreroman/intothefray/internal/decks"
 	"github.com/alexandreroman/intothefray/internal/store"
+	"github.com/alexandreroman/intothefray/internal/version"
 	"github.com/alexandreroman/intothefray/packs"
 )
 
@@ -442,6 +443,37 @@ func TestHealthz(t *testing.T) {
 
 	if resp.status != http.StatusOK || string(resp.body) != "ok" {
 		t.Errorf("got %d %q, want 200 \"ok\"", resp.status, resp.body)
+	}
+}
+
+func TestVersion(t *testing.T) {
+	ts, _ := newTestServer(t)
+
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, ts.URL+"/api/version", http.NoBody)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Origin", allowedOrigin)
+	resp := send(t, req)
+
+	if resp.status != http.StatusOK {
+		t.Fatalf("status = %d, want %d", resp.status, http.StatusOK)
+	}
+	if got := resp.header.Get("Content-Type"); got != "application/json" {
+		t.Errorf("Content-Type = %q, want application/json", got)
+	}
+	if got := resp.header.Get("Access-Control-Allow-Origin"); got != allowedOrigin {
+		t.Errorf("Access-Control-Allow-Origin = %q, want %q", got, allowedOrigin)
+	}
+	if got := resp.header.Get("Cache-Control"); got != "no-store" {
+		t.Errorf("Cache-Control = %q, want no-store", got)
+	}
+	var body versionResponse
+	if err := json.Unmarshal(resp.body, &body); err != nil {
+		t.Fatal(err)
+	}
+	if want := version.Commit(); body.Commit != want {
+		t.Errorf("commit = %q, want %q", body.Commit, want)
 	}
 }
 

@@ -68,6 +68,8 @@ jobs:
           cp dist/index.html dist/404.html
         env:
           VITE_API_URL: ${{ vars.API_URL }}
+          # Shown in Options next to the commit the server reports.
+          VITE_COMMIT: ${{ github.sha }}
           BASE_PATH: ${{ steps.pages.outputs.base_path }}
 
       - uses: actions/upload-pages-artifact@v5
