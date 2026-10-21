@@ -85,9 +85,7 @@ body {
     every action but the main one, in a dialog too (Cancel, Close);
   - .btn-ghost: no surface of its own (icons, ×, toolbar and menu items); a light wash on hover;
   - .btn-primary: the one main action of a screen, a dialog or a box (.compact in a dialog
-    or a box); a lighter red on hover;
-  - .btn-danger: a confirmation that cannot be taken back; rounded ink outlined in red, so
-    it never reads as the main action; filled red on hover.
+    or a box); a lighter red on hover.
   A disabled button has no hover. A pressed or "on" state set by a component keeps its look
   and gives its own hover.
   A label never wraps.
@@ -125,19 +123,6 @@ button:hover:not(:disabled, [aria-disabled='true']) {
   background-color: var(--hover-wash);
   border-color: transparent;
   color: var(--text);
-}
-
-.btn-danger {
-  background: var(--bg);
-  border-color: var(--accent);
-  color: var(--accent);
-  font-weight: 800;
-}
-
-.btn-danger:hover:not(:disabled, [aria-disabled='true']) {
-  background-color: var(--accent);
-  border-color: var(--accent);
-  color: var(--bg);
 }
 
 @media (prefers-reduced-motion: reduce) {

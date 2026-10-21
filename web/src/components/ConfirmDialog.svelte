@@ -8,14 +8,11 @@
   let {
     question,
     confirmLabel,
-    danger = false,
     onconfirm,
     oncancel,
   }: {
     question: string;
     confirmLabel: string;
-    /** The confirmed action cannot be taken back: the button says so. */
-    danger?: boolean;
     onconfirm: () => void;
     oncancel: () => void;
   } = $props();
@@ -26,9 +23,7 @@
     <!-- The safe choice has the focus. -->
     <!-- svelte-ignore a11y_autofocus -->
     <button type="button" onclick={oncancel} autofocus>Cancel</button>
-    <button type="button" class={danger ? 'btn-danger' : 'btn-primary compact'} onclick={onconfirm}
-      >{confirmLabel}</button
-    >
+    <button type="button" class="btn-primary compact" onclick={onconfirm}>{confirmLabel}</button>
   </div>
 </Dialog>
 
@@ -36,7 +31,7 @@
   .buttons {
     display: flex;
     justify-content: flex-end;
-    gap: 8px;
+    gap: 16px;
     margin-top: 20px;
   }
 

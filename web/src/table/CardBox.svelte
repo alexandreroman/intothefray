@@ -681,7 +681,12 @@
           Shuffle into the encounter deck
         </button>
       {/if}
-      <button type="button" onclick={() => onclose(false)}>Close</button>
+      <!-- A stage box has no other action: Close is its main one. -->
+      <button
+        type="button"
+        class={box.kind === 'stage' ? 'btn-primary compact' : undefined}
+        onclick={() => onclose(false)}>Close</button
+      >
     {/if}
   </div>
 
@@ -912,7 +917,7 @@
     flex-wrap: wrap;
     align-items: center;
     justify-content: flex-end;
-    gap: 8px;
+    gap: 16px;
     padding: 12px 16px;
     border-top: 1px solid var(--line);
   }

@@ -193,7 +193,6 @@
   <ConfirmDialog
     question={endQuestion}
     confirmLabel={endLabel}
-    danger
     onconfirm={endGame}
     oncancel={() => (confirmingEnd = false)}
   />
