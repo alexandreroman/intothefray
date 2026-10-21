@@ -170,7 +170,9 @@
 <svelte:window
   onclick={closeMenuOnOutsideClick}
   onkeydown={(event) => {
-    if (event.key === 'Escape') {
+    // Closing takes the key, so that fullscreen stays (lib/fullscreen).
+    if (event.key === 'Escape' && menuOpen) {
+      event.preventDefault();
       menuOpen = false;
     }
   }}

@@ -198,3 +198,17 @@ describe('ScenarioPicker in French', () => {
     expect(screen.queryByText('Klaw')).toBeNull();
   });
 });
+
+describe('ScenarioPicker Add a set menu', () => {
+  it('Escape closes it and takes the key (preventDefault); closed, it leaves the key alone', async () => {
+    renderPicker(rhino);
+    const add = screen.getByRole('button', { name: '+ Add a set' });
+    await fireEvent.click(add);
+    expect(add.getAttribute('aria-expanded')).toBe('true');
+
+    // fireEvent reports false for a prevented event.
+    expect(await fireEvent.keyDown(window, { key: 'Escape' })).toBe(false);
+    expect(add.getAttribute('aria-expanded')).toBe('false');
+    expect(await fireEvent.keyDown(window, { key: 'Escape' })).toBe(true);
+  });
+});

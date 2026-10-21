@@ -205,3 +205,19 @@ describe('Hand', () => {
     }
   });
 });
+
+describe('Hand raised by a tap', () => {
+  it('Escape lowers it and takes the key (preventDefault); lowered, it leaves the key alone', async () => {
+    render(Hand, { cards: CARDS, faceOf });
+    const hand = handList();
+    const [first] = handCards();
+    await fireEvent.pointerDown(first!, { pointerType: 'touch' });
+    await fireEvent.click(first!);
+    expect(hand.classList).toContain('open');
+
+    // fireEvent reports false for a prevented event.
+    expect(await fireEvent.keyDown(window, { key: 'Escape' })).toBe(false);
+    expect(hand.classList).not.toContain('open');
+    expect(await fireEvent.keyDown(window, { key: 'Escape' })).toBe(true);
+  });
+});

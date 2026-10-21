@@ -10,6 +10,7 @@
   import { overflowTip } from '../lib/overflowTip';
   import { ScrollAutoHide } from '../lib/autoHide.svelte';
   import { SMALL_SCREEN_QUERY } from '../lib/screen';
+  import { canFullscreen, isFullscreen, toggleFullscreen } from '../lib/fullscreen';
 
   let {
     spectators = 0,
@@ -90,31 +91,14 @@
     onend?.();
   }
 
-  // iPad and older Safari only have the WebKit-prefixed Fullscreen API, whose
-  // calls may return nothing rather than a promise.
-  type WebkitDocument = Document & {
-    webkitFullscreenElement?: Element | null;
-    webkitExitFullscreen?: () => Promise<void> | void;
-  };
-  type WebkitElement = HTMLElement & {
-    webkitRequestFullscreen?: () => Promise<void> | void;
-  };
+  // iPhone Safari has neither Fullscreen API: the button is not shown there.
+  const fullscreenSupported = canFullscreen();
 
-  const webkitDocument = document as WebkitDocument;
-  const root = document.documentElement as WebkitElement;
-
-  // iPhone Safari has neither API: the button is not shown there.
-  const fullscreenSupported = Boolean(root.requestFullscreen ?? root.webkitRequestFullscreen);
-
-  function fullscreenElement(): Element | null {
-    return document.fullscreenElement ?? webkitDocument.webkitFullscreenElement ?? null;
-  }
-
-  let fullscreen = $state(fullscreenElement() !== null);
+  let fullscreen = $state(isFullscreen());
   const fullscreenLabel = $derived(fullscreen ? 'Exit fullscreen' : 'Fullscreen');
 
   function syncFullscreen(): void {
-    fullscreen = fullscreenElement() !== null;
+    fullscreen = isFullscreen();
   }
 
   // The WebKit event has no <svelte:document> attribute, so both are listened to here.
@@ -126,15 +110,6 @@
       offWebkit();
     };
   });
-
-  function toggleFullscreen(): void {
-    const result = fullscreenElement()
-      ? (document.exitFullscreen?.() ?? webkitDocument.webkitExitFullscreen?.())
-      : (root.requestFullscreen?.() ?? root.webkitRequestFullscreen?.());
-    // A request can be refused (no user gesture, a policy of the embedding
-    // page): nothing changes then.
-    void Promise.resolve(result).catch(() => {});
-  }
 </script>
 
 <!-- Hidden, it stays focusable: a tab into it brings it back. -->

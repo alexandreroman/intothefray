@@ -623,12 +623,19 @@ class TableInteraction {
    * Otherwise it clears the group and the band, and cancels the arrow, or
    * releases the selection. An open context menu takes Escape before it gets
    * here (ContextMenu.svelte), and closes alone.
+   *
+   * Returns whether it dropped something the viewer set up (the pinned pill, a
+   * group, the band, an arrow, or a tap selection): the key then belongs to
+   * the table, rather than to fullscreen (lib/fullscreen). A mere hover it
+   * releases is no such thing.
    */
-  escape(): void {
+  escape(): boolean {
     if (this.counterPinned) {
       this.unpinCounter();
-      return;
+      return true;
     }
+    const dropped =
+      this.group.size > 0 || this.band !== null || this.arrowFrom !== null || this.locked;
     this.clearGroup();
     this.band = null;
     if (this.arrowFrom !== null) {
@@ -636,6 +643,7 @@ class TableInteraction {
     } else {
       this.release();
     }
+    return dropped;
   }
 
   /** Enters or leaves touch mode; entering it drops the preview shown, if any. */

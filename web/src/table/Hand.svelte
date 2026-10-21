@@ -152,8 +152,12 @@
     swipe = null;
   }
 
+  // Lowering takes the key, so that fullscreen stays (lib/fullscreen). The table's Escape (keys.ts),
+  // listened to before this one, has run already, and taking the key does not stop this one: a
+  // single press lowers the hand and lets go of the card the same tap locked.
   function onKey(event: KeyboardEvent): void {
     if (event.key === 'Escape' && pinned) {
+      event.preventDefault();
       lower();
     }
   }
