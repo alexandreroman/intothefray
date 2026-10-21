@@ -12,9 +12,12 @@ type: project
   VCS stamp (with `-dirty` for a modified checkout), else `dev`.
 - The frontend reads `VITE_COMMIT` (set to `github.sha` by `pages.yml`),
   else `dev`.
-- The Options screen shows `app <sha> / server <sha>` as plain short SHAs
-  (full SHA in a tooltip, no link), in small faint right-aligned text, and
-  says "app and server differ" only when both are full SHAs that differ.
+- The Options screen shows one small, faint, right-aligned lowercase line
+  of plain short SHAs (full value in a tooltip, no link): `version <app>`
+  while the server loads or when both values are equal,
+  `version mismatch <app>/<server>` in a subdued warn colour when the
+  strings differ (a `dev` build counts), and `version <app>/unavailable`
+  when `/api/version` fails.
 
 **Why:** Pages and the VPS deploy separately, so the two can run different
 commits; a mismatch must be visible without digging into CI or logs.

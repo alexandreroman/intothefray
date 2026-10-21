@@ -22,12 +22,7 @@ export async function fetchServerCommit(): Promise<string> {
   return body.commit;
 }
 
-/** Whether `commit` is a full SHA, rather than "dev" or a "-dirty" local build. */
-export function isCommit(commit: string): boolean {
-  return FULL_SHA.test(commit);
-}
-
 /** The short form of a full SHA; any other value ("dev") as is. */
 export function shortCommit(commit: string): string {
-  return isCommit(commit) ? commit.slice(0, SHORT_LENGTH) : commit;
+  return FULL_SHA.test(commit) ? commit.slice(0, SHORT_LENGTH) : commit;
 }

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { appCommit, fetchServerCommit, isCommit, shortCommit } from './version';
+import { appCommit, fetchServerCommit, shortCommit } from './version';
 
 const SHA = '0123456789abcdef0123456789abcdef01234567';
 
@@ -41,14 +41,6 @@ describe('fetchServerCommit', () => {
   });
 });
 
-describe('isCommit', () => {
-  it('accepts a full SHA only', () => {
-    expect(isCommit(SHA)).toBe(true);
-    expect(isCommit('dev')).toBe(false);
-    expect(isCommit(`${SHA}-dirty`)).toBe(false);
-  });
-});
-
 describe('shortCommit', () => {
   it('keeps the first 7 characters of a full SHA', () => {
     expect(shortCommit(SHA)).toBe('0123456');
@@ -56,5 +48,6 @@ describe('shortCommit', () => {
 
   it('keeps any other value as is', () => {
     expect(shortCommit('dev')).toBe('dev');
+    expect(shortCommit(`${SHA}-dirty`)).toBe(`${SHA}-dirty`);
   });
 });

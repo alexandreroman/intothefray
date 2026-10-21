@@ -10,6 +10,19 @@ function stubServerCommit(commit: string): void {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ commit }))));
 }
 
+function versionLine(): HTMLElement {
+  const line = document.querySelector<HTMLElement>('.version');
+  if (!line) {
+    throw new Error('No version line');
+  }
+  return line;
+}
+
+/** The version line as read, with its whitespace collapsed. */
+function versionText(): string {
+  return (versionLine().textContent ?? '').replace(/\s+/g, ' ').trim();
+}
+
 beforeEach(() => {
   localStorage.clear();
   document.documentElement.removeAttribute('data-theme');
@@ -113,40 +126,47 @@ describe('Options', () => {
     expect(screen.getByText('Saved in this browser only. Changes apply right away.')).toBeTruthy();
   });
 
-  it('shows the app and server short commits as plain text', async () => {
+  it('shows the app version alone while the server is loading', () => {
+    vi.stubGlobal('fetch', vi.fn().mockReturnValue(new Promise(() => {})));
     render(Options);
 
-    const appCommit = screen.getByText('0123456');
-    expect(appCommit.getAttribute('title')).toBe(APP_SHA);
-    await waitFor(() => expect(screen.getAllByText('0123456')).toHaveLength(2));
-    expect(screen.queryByRole('link', { name: '0123456' })).toBeNull();
-    expect(screen.queryByText('app and server differ')).toBeNull();
+    expect(versionText()).toBe('version 0123456');
+    expect(screen.getByText('0123456').getAttribute('title')).toBe(APP_SHA);
   });
 
-  it('tells when the app and server commits differ', async () => {
+  it('shows a single version when the app and server match', async () => {
+    const fetchMock = vi.mocked(fetch);
+    render(Options);
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    await waitFor(() => expect(versionText()).toBe('version 0123456'));
+    expect(versionLine().classList.contains('mismatch')).toBe(false);
+    expect(screen.queryByRole('link', { name: '0123456' })).toBeNull();
+  });
+
+  it('tells a mismatch when the app and server differ', async () => {
     stubServerCommit(SERVER_SHA);
     render(Options);
 
-    expect(await screen.findByText('fedcba9')).toBeTruthy();
-    expect(screen.getByText('app and server differ')).toBeTruthy();
+    expect((await screen.findByText('fedcba9')).getAttribute('title')).toBe(SERVER_SHA);
+    expect(versionText()).toBe('version mismatch 0123456/fedcba9');
+    expect(versionLine().classList.contains('mismatch')).toBe(true);
   });
 
-  it('tells no mismatch when the app is a local "dev" build', async () => {
+  it('tells a mismatch when the app is a local "dev" build', async () => {
     vi.stubEnv('VITE_COMMIT', '');
     stubServerCommit(SERVER_SHA);
     render(Options);
 
-    expect(await screen.findByText('fedcba9')).toBeTruthy();
-    expect(screen.queryByText('app and server differ')).toBeNull();
+    await waitFor(() => expect(versionText()).toBe('version mismatch dev/fedcba9'));
   });
 
-  it('shows the server commit as loading, then unavailable on error', async () => {
+  it('shows the server as unavailable on error', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('offline')));
     render(Options);
 
-    expect(screen.getByText(/server\s+…/)).toBeTruthy();
-    expect(await screen.findByText(/server\s+unavailable/)).toBeTruthy();
-    expect(screen.queryByText('app and server differ')).toBeNull();
+    await waitFor(() => expect(versionText()).toBe('version 0123456/unavailable'));
+    expect(versionLine().classList.contains('mismatch')).toBe(false);
   });
 
   it('shows "dev" for a local build', () => {

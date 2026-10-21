@@ -309,8 +309,10 @@ Both sides report the commit they run, so a mismatch shows at once:
   when the checkout has changes, and an image reports `dev`;
 - the `Pages` workflow passes the SHA to the frontend build as
   `VITE_COMMIT` (`dev` when unset);
-- the Options screen shows both short SHAs as plain text,
-  `app <sha> / server <sha>`, and says when two full SHAs differ.
+- the Options screen shows `version <sha>` (short SHA, plain text) when
+  the app and server match, `version mismatch <app>/<server>` when they
+  differ (a `dev` build included), and `version <app>/unavailable` when
+  the server cannot be reached.
 
 In the repository settings:
 

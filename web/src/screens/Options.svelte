@@ -6,7 +6,7 @@
   import { go } from '../lib/router.svelte';
   import { selectionIndicator } from '../lib/selectionIndicator';
   import { applyTheme, storedTheme, type Theme } from '../lib/theme';
-  import { appCommit, fetchServerCommit, isCommit, shortCommit } from '../lib/version';
+  import { appCommit, fetchServerCommit, shortCommit } from '../lib/version';
   import TopBar from '../components/TopBar.svelte';
 
   // Each card shows its theme whatever the current one: a table, a card back
@@ -26,10 +26,8 @@
   const app = appCommit();
   let server = $state<string>();
   let serverFailed = $state(false);
-  // Only two real commits can tell a mismatch: a local "dev" build always differs.
-  let differ = $derived(
-    server !== undefined && isCommit(app) && isCommit(server) && server !== app,
-  );
+  // The server commit, once it is known to differ from the app's.
+  let mismatchedServer = $derived(server !== undefined && server !== app ? server : undefined);
 
   onMount(() => {
     fetchServerCommit().then(
@@ -172,21 +170,14 @@
       </div>
     </div>
 
-    <p class="version">
-      <span>app {@render commit(app)}</span>
-      <span aria-hidden="true">/</span>
-      <span>
-        server
-        {#if server}
-          {@render commit(server)}
-        {:else if serverFailed}
-          unavailable
-        {:else}
-          …
-        {/if}
-      </span>
-      {#if differ}
-        <span class="differ">app and server differ</span>
+    <p class="version" class:mismatch={mismatchedServer !== undefined}>
+      version
+      {#if mismatchedServer}
+        mismatch {@render commit(app)}/{@render commit(mismatchedServer)}
+      {:else if serverFailed}
+        {@render commit(app)}/unavailable
+      {:else}
+        {@render commit(app)}
       {/if}
     </p>
   </main>
@@ -479,17 +470,13 @@
 
   .version {
     margin: 20px 0 0;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    gap: 4px 8px;
     text-align: right;
     font-size: 11px;
     color: color-mix(in srgb, var(--faint) 60%, var(--table-bg));
   }
 
-  /* Subdued like the rest of the line, yet still noticeable. */
-  .differ {
+  /* As subdued as the faint line, yet still noticeable. */
+  .version.mismatch {
     color: color-mix(in srgb, var(--warn) 60%, var(--table-bg));
   }
 
