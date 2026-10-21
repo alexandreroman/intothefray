@@ -120,7 +120,7 @@ describe('Options', () => {
     expect(appCommit.getAttribute('title')).toBe(APP_SHA);
     await waitFor(() => expect(screen.getAllByText('0123456')).toHaveLength(2));
     expect(screen.queryByRole('link', { name: '0123456' })).toBeNull();
-    expect(screen.queryByText('App and server differ')).toBeNull();
+    expect(screen.queryByText('app and server differ')).toBeNull();
   });
 
   it('tells when the app and server commits differ', async () => {
@@ -128,7 +128,7 @@ describe('Options', () => {
     render(Options);
 
     expect(await screen.findByText('fedcba9')).toBeTruthy();
-    expect(screen.getByText('App and server differ')).toBeTruthy();
+    expect(screen.getByText('app and server differ')).toBeTruthy();
   });
 
   it('tells no mismatch when the app is a local "dev" build', async () => {
@@ -137,16 +137,16 @@ describe('Options', () => {
     render(Options);
 
     expect(await screen.findByText('fedcba9')).toBeTruthy();
-    expect(screen.queryByText('App and server differ')).toBeNull();
+    expect(screen.queryByText('app and server differ')).toBeNull();
   });
 
   it('shows the server commit as loading, then unavailable on error', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('offline')));
     render(Options);
 
-    expect(screen.getByText(/Server\s+…/)).toBeTruthy();
-    expect(await screen.findByText(/Server\s+unavailable/)).toBeTruthy();
-    expect(screen.queryByText('App and server differ')).toBeNull();
+    expect(screen.getByText(/server\s+…/)).toBeTruthy();
+    expect(await screen.findByText(/server\s+unavailable/)).toBeTruthy();
+    expect(screen.queryByText('app and server differ')).toBeNull();
   });
 
   it('shows "dev" for a local build', () => {

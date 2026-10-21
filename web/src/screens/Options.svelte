@@ -173,10 +173,10 @@
     </div>
 
     <p class="version">
-      <span>App {@render commit(app)}</span>
+      <span>app {@render commit(app)}</span>
       <span aria-hidden="true">/</span>
       <span>
-        Server
+        server
         {#if server}
           {@render commit(server)}
         {:else if serverFailed}
@@ -186,7 +186,7 @@
         {/if}
       </span>
       {#if differ}
-        <span class="differ">App and server differ</span>
+        <span class="differ">app and server differ</span>
       {/if}
     </p>
   </main>

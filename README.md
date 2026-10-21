@@ -310,7 +310,7 @@ Both sides report the commit they run, so a mismatch shows at once:
 - the `Pages` workflow passes the SHA to the frontend build as
   `VITE_COMMIT` (`dev` when unset);
 - the Options screen shows both short SHAs as plain text,
-  `App <sha> / Server <sha>`, and says when two full SHAs differ.
+  `app <sha> / server <sha>`, and says when two full SHAs differ.
 
 In the repository settings:
 

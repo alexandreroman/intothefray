@@ -12,9 +12,9 @@ type: project
   VCS stamp (with `-dirty` for a modified checkout), else `dev`.
 - The frontend reads `VITE_COMMIT` (set to `github.sha` by `pages.yml`),
   else `dev`.
-- The Options screen shows `App <sha> / Server <sha>` as plain short SHAs
+- The Options screen shows `app <sha> / server <sha>` as plain short SHAs
   (full SHA in a tooltip, no link), in small faint right-aligned text, and
-  says "App and server differ" only when both are full SHAs that differ.
+  says "app and server differ" only when both are full SHAs that differ.
 
 **Why:** Pages and the VPS deploy separately, so the two can run different
 commits; a mismatch must be visible without digging into CI or logs.
