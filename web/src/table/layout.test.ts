@@ -6,10 +6,17 @@ import {
   fanPositions,
   footprints,
   HAND_CARD,
+  HAND_CARD_NARROW,
   HAND_REST_DROP,
+  HAND_REST_SCALE,
+  handRestDrop,
+  handRestScale,
   isOutOfPlay,
   outOfPlayChips,
   ownerFrames,
+  previewCardWidth,
+  raisedHandCard,
+  restingFanPositions,
   restingStrip,
   smallHandCard,
   smallHandDrop,
@@ -255,12 +262,15 @@ describe('fanPositions', () => {
 
   // Width of the box around the fanned cards. Each card turns around a point below its bottom
   // edge (transform-origin 50% 110% in Hand.svelte), so its top corners swing out the most.
-  function boundingWidth(fan: { x: number; angle: number }[]): number {
+  function boundingWidth(
+    fan: { x: number; angle: number }[],
+    card: { w: number; h: number } = { w: cardWidth, h: cardHeight },
+  ): number {
     const xs = fan.flatMap((p) => {
       const a = (p.angle * Math.PI) / 180;
       // The corners, from the pivot, with y growing downward.
-      const corners = [-cardWidth / 2, cardWidth / 2].flatMap((x) =>
-        [-1.1 * cardHeight, -0.1 * cardHeight].map((y) => ({ x, y })),
+      const corners = [-card.w / 2, card.w / 2].flatMap((x) =>
+        [-1.1 * card.h, -0.1 * card.h].map((y) => ({ x, y })),
       );
       return corners.map((c) => p.x + c.x * Math.cos(a) - c.y * Math.sin(a));
     });
@@ -289,6 +299,26 @@ describe('fanPositions', () => {
     [30, 900],
   ])('keeps %i cards inside %i, but for the accepted 11.7 on each side', (n, width) => {
     expect(boundingWidth(fanPositions(n, width))).toBeLessThanOrEqual(width + 2 * 11.7);
+  });
+
+  it.each([
+    [12, 1300],
+    [12, 800],
+    [30, 1200],
+  ])(
+    'keeps %i larger cards inside %i, but for the accepted overhang grown with the card',
+    (n, width) => {
+      // A raised hand card, 80 % of the preview's: its corners swing out in proportion to its width.
+      const raised = { w: 238, h: 333 };
+      const overhang = 11.7 * (raised.w / cardWidth);
+      const fan = fanPositions(n, width, raised.w);
+      expect(boundingWidth(fan, raised)).toBeLessThanOrEqual(width + 2 * overhang);
+    },
+  );
+
+  it('keeps the layout of cards up to the desktop size', () => {
+    expect(pitchOf(fanPositions(12, 1200, 185))).toBeCloseTo(76.2, 1);
+    expect(pitchOf(fanPositions(12, 800, 140))).toBeCloseTo((800 - 112 - 1.35 * 140) / 11);
   });
 
   it('piles the cards up rather than reversing them when there is no room', () => {
@@ -385,5 +415,106 @@ describe("a small screen's hand", () => {
     expect(restingStrip(HAND_CARD.h, HAND_REST_DROP)).toBe(108);
     expect(restingStrip(136, 74)).toBe(74);
     expect(restingStrip(10, 500)).toBe(0);
+  });
+});
+
+describe('the raised hand', () => {
+  it("measures the preview's card as .peek sizes it", () => {
+    // 320 px less 10 px of padding and 1 px of border each side.
+    expect(previewCardWidth({ w: 1500, h: 1080 })).toBe(298);
+    // 45 % of a narrow table area.
+    expect(previewCardWidth({ w: 500, h: 1000 })).toBe(203);
+    // A short window: 5/7 of its height less 200 px, plus the padding.
+    expect(previewCardWidth({ w: 1500, h: 600 })).toBeCloseTo((400 * 5) / 7 - 2);
+    // Not measured yet.
+    expect(previewCardWidth({ w: 0, h: 1080 })).toBe(0);
+  });
+
+  it("takes 80 % of the preview's card on a desktop", () => {
+    expect(raisedHandCard(HAND_CARD, { w: 1500, h: 1080 }, { small: false })).toEqual({
+      w: 238,
+      h: 333,
+    });
+    expect(raisedHandCard(HAND_CARD, { w: 1500, h: 600 }, { small: false })).toEqual({
+      w: 227,
+      h: 318,
+    });
+  });
+
+  it('follows a narrow table area', () => {
+    expect(raisedHandCard(HAND_CARD_NARROW, { w: 500, h: 1000 }, { small: false })).toEqual({
+      w: 162,
+      h: 227,
+    });
+  });
+
+  it('is never smaller than the base card', () => {
+    // A short window, and a table area not measured yet.
+    expect(raisedHandCard(HAND_CARD, { w: 1500, h: 500 }, { small: false })).toBe(HAND_CARD);
+    expect(raisedHandCard(HAND_CARD, { w: 0, h: 1080 }, { small: false })).toBe(HAND_CARD);
+    const phone = smallHandCard({ w: 844, h: 390 });
+    expect(raisedHandCard(phone, { w: 844, h: 390 }, { small: true })).toBe(phone);
+  });
+
+  it('never raises over half the window height on a small screen, its padding included', () => {
+    const window = { w: 560, h: 500 };
+    const base = smallHandCard(window);
+    expect(base).toEqual({ w: 140, h: 196 });
+    const raised = raisedHandCard(base, window, { small: true });
+    expect(raised).toEqual({ w: 147, h: 206 });
+    expect(raised.h + 44).toBeLessThanOrEqual(window.h / 2);
+    // Elsewhere, the preview alone decides.
+    expect(raisedHandCard(base, window, { small: false })).toEqual({ w: 170, h: 238 });
+  });
+
+  it('draws the raised cards at rest as large as the base card at HAND_REST_SCALE', () => {
+    expect(handRestScale(HAND_CARD, HAND_CARD)).toBe(HAND_REST_SCALE);
+    const scale = handRestScale(HAND_CARD, { w: 238 });
+    expect(scale).toBeCloseTo(0.6374, 4);
+    expect(scale * 238).toBeCloseTo(HAND_REST_SCALE * HAND_CARD.w);
+  });
+
+  it("lays the resting fan out as the base cards' at the rest scale, on screen", () => {
+    const raised = { w: 238 };
+    const scale = handRestScale(HAND_CARD, raised);
+    for (const [n, width] of [
+      [3, 1200],
+      [12, 1440],
+      [12, 800],
+    ] as const) {
+      const base = fanPositions(n, width, HAND_CARD.w);
+      const resting = restingFanPositions(n, width, HAND_CARD.w, raised.w);
+      resting.forEach((slot, i) => {
+        expect(slot.x * scale).toBeCloseTo(HAND_REST_SCALE * base[i]!.x, 9);
+        expect(slot.y * scale).toBeCloseTo(HAND_REST_SCALE * base[i]!.y, 9);
+        expect(slot.angle).toBe(base[i]!.angle);
+      });
+    }
+    // An unchanged card keeps its fan.
+    expect(restingFanPositions(5, 1200, 185, 185)).toEqual(fanPositions(5, 1200, 185));
+  });
+
+  it('drops the resting cards so that they show as tall as the base card at HAND_REST_SCALE', () => {
+    // The height of a resting card above the window's bottom edge, its 18 px of bottom padding
+    // included: the top padding lies above it.
+    const shown = (card: { w: number; h: number }, drop: number) =>
+      handRestScale(HAND_CARD, card) * (card.h + 18) - drop;
+    const baseShown = shown(HAND_CARD, HAND_REST_DROP);
+    expect(baseShown).toBeCloseTo(87.14, 2);
+
+    // The base card itself drops by the base drop.
+    expect(handRestDrop(HAND_CARD, HAND_REST_DROP, HAND_CARD)).toBe(HAND_REST_DROP);
+    const phone = smallHandCard({ w: 390, h: 844 });
+    expect(handRestDrop(phone, 74, phone)).toBe(74);
+
+    const raised = { w: 238, h: 333 };
+    const drop = handRestDrop(HAND_CARD, HAND_REST_DROP, raised);
+    expect(drop).toBe(137);
+    expect(Math.abs(shown(raised, drop) - baseShown)).toBeLessThanOrEqual(0.5);
+    // Its box, with the top padding drawn smaller, shows no higher than restingStrip's.
+    const box = handRestScale(HAND_CARD, raised) * (44 + raised.h) - drop;
+    expect(box).toBeLessThanOrEqual(restingStrip(HAND_CARD.h, HAND_REST_DROP));
+    // Never above its raised place.
+    expect(handRestDrop(HAND_CARD, 0, raised)).toBe(0);
   });
 });

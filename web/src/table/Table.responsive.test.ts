@@ -901,6 +901,50 @@ describe('Table on a small screen', () => {
   });
 });
 
+describe('Table raised hand', () => {
+  function hand(): HTMLElement {
+    return screen.getByRole('list', { name: 'Your hand' });
+  }
+
+  it("raises the hand's cards to 80 % of the preview's, drawn at rest as the base card", () => {
+    mockScreen(WIDE);
+    mockScrollerWidth(1000);
+    render(Table, { session: fakeSession(), view: makeView() });
+
+    // The preview's card is 298 px wide: 80 % of it, 1.4 times as tall.
+    expect(hand().style.getPropertyValue('--card-w')).toBe('238px');
+    expect(hand().style.getPropertyValue('--card-h')).toBe('333px');
+    // At rest, as large as the desktop card at 82 % (185 / 238 of it), and dropped so that 87 px of
+    // the cards show, as of the desktop card dropped by 140 px.
+    expect(Number(hand().style.getPropertyValue('--rest-scale'))).toBeCloseTo(0.6374, 4);
+    expect(hand().style.getPropertyValue('--rest-drop')).toBe('137px');
+  });
+
+  it("follows the preview on a phone, the controls staying above the resting hand's strip", () => {
+    mockScreen(PHONE);
+    mockScrollerWidth(390);
+    const { container } = render(Table, { session: fakeSession(), view: makeView() });
+
+    // 45 % of 390 px less the preview's padding and border: 153.5 px, 80 % of it.
+    expect(hand().style.getPropertyValue('--card-w')).toBe('123px');
+    expect(hand().style.getPropertyValue('--card-h')).toBe('172px');
+    // 82 % of 97 / 123, and dropped so that 52 px of the cards show, as of the base card.
+    expect(Number(hand().style.getPropertyValue('--rest-scale'))).toBeCloseTo(0.6467, 4);
+    expect(hand().style.getPropertyValue('--rest-drop')).toBe('71px');
+    const app = container.querySelector<HTMLElement>('.app')!;
+    expect(app.style.getPropertyValue('--controls-bottom')).toBe(`${restingStrip(136, 74) + 8}px`);
+  });
+
+  it('keeps the base cards while the table area is not measured', () => {
+    mockScreen(WIDE);
+    render(Table, { session: fakeSession(), view: makeView() });
+
+    expect(hand().style.getPropertyValue('--card-w')).toBe(`${HAND_CARD.w}px`);
+    expect(hand().style.getPropertyValue('--rest-scale')).toBe(`${HAND_REST_SCALE}`);
+    expect(hand().style.getPropertyValue('--rest-drop')).toBe(`${HAND_REST_DROP}px`);
+  });
+});
+
 describe('Table menus on a phone', () => {
   it('keeps the action menu inside the window, its labels cut short', () => {
     const rule = /\n {2}\.table-menu \{([^}]*)\}/.exec(menuSource)?.[1];
