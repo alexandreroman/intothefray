@@ -670,6 +670,28 @@ describe('Escape', () => {
     await fireEvent.keyDown(field, { key: 'Escape' });
     expect(interaction.hovered).toBeNull();
   });
+
+  it('takes the key (preventDefault) only when it drops something, so that fullscreen stays', async () => {
+    await renderTable();
+    await fireEvent.pointerEnter(placed('mine'));
+    await press('a');
+
+    // fireEvent reports false for a prevented event.
+    expect(await press('Escape')).toBe(false);
+    expect(interaction.arrowFrom).toBeNull();
+    // The hover alone goes too, but leaves the key to the browser (fullscreen).
+    expect(await press('Escape')).toBe(true);
+    expect(interaction.hovered).toBeNull();
+  });
+
+  it('ignores a held Escape repeating', async () => {
+    await renderTable();
+    await fireEvent.pointerEnter(placed('mine'));
+    await press('a');
+
+    expect(await press('Escape', { repeat: true })).toBe(true);
+    expect(interaction.arrowFrom).toBe('mine');
+  });
 });
 
 describe('keys on a hand card', () => {

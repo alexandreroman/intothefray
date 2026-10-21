@@ -233,6 +233,34 @@ describe('interaction group', () => {
     expect(interaction.band).toBeNull();
   });
 
+  it('escape tells whether it dropped something: the group, the band, an arrow, a pin or a tap', () => {
+    interaction.setGroup(new Set(['a']));
+    expect(interaction.escape()).toBe(true);
+
+    interaction.band = rect(0, 0, 10, 10);
+    expect(interaction.escape()).toBe(true);
+
+    interaction.arrowFrom = 'a';
+    expect(interaction.escape()).toBe(true);
+    expect(interaction.arrowFrom).toBeNull();
+
+    interaction.counterPinned = true;
+    expect(interaction.escape()).toBe(true);
+
+    interaction.hovered = { kind: 'hand', id: 'h' };
+    interaction.locked = true;
+    expect(interaction.escape()).toBe(true);
+    expect(interaction.hovered).toBeNull();
+  });
+
+  it('escape drops nothing from a mere hover, which it still releases', () => {
+    interaction.hovered = { kind: 'card', id: 'a' };
+    expect(interaction.escape()).toBe(false);
+    expect(interaction.hovered).toBeNull();
+    // Nothing at all.
+    expect(interaction.escape()).toBe(false);
+  });
+
   it('reset clears the group and the band', () => {
     interaction.setGroup(new Set(['a']));
     interaction.band = rect(0, 0, 10, 10);
