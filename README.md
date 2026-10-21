@@ -339,7 +339,9 @@ visibility), so that the VPS pulls the image without credentials.
 
 The backend accepts the frontend origin through `ALLOWED_ORIGINS`, set
 to `https://intothefray.xyz`. It sends its responses uncompressed:
-Cloudflare compresses them, as Caddy does locally.
+Cloudflare compresses them, as Caddy does locally. The game WebSocket is
+the exception: it negotiates permessage-deflate (without context
+takeover), since neither Caddy nor Cloudflare compresses WebSocket frames.
 
 ## Architecture
 

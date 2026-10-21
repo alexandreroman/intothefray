@@ -25,6 +25,9 @@ import (
 const (
 	// readTimeoutInTests bounds every wait for a server message.
 	readTimeoutInTests = 5 * time.Second
+	// compressionThreshold is coder/websocket's default for
+	// CompressionNoContextTakeover: smaller messages are sent uncompressed.
+	compressionThreshold = 512
 	// deckLink is a marvelcdb link; the importer of the test server fetches
 	// it from a stub instead.
 	deckLink = "https://marvelcdb.com/decklist/view/1"
@@ -741,5 +744,58 @@ func TestActionSeatForeign(t *testing.T) {
 
 	if reply := host.expect("error"); reply.Code != "forbidden" || reply.ID != 4 {
 		t.Errorf("error = %s, want code forbidden with id 4", reply.raw)
+	}
+}
+
+func TestGameSocketNegotiatesCompression(t *testing.T) {
+	tests := []struct {
+		name        string
+		mode        websocket.CompressionMode
+		wantDeflate bool
+	}{
+		{name: "client asks for compression", mode: websocket.CompressionNoContextTakeover, wantDeflate: true},
+		{name: "client without compression", mode: websocket.CompressionDisabled, wantDeflate: false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ts, _ := newTestServerWith(t, func(s *Server) { s.deps.Decks = stubMarvelcdb(t, blackPantherDeck) })
+			created := createGame(t, ts, "Alex")
+			opts := &websocket.DialOptions{
+				HTTPHeader:      http.Header{"Origin": {allowedOrigin}},
+				CompressionMode: tt.mode,
+			}
+			// After a successful handshake the response body is not a real stream.
+			ws, resp, err := websocket.Dial(t.Context(), wsURL(ts, created.ID), opts) //nolint:bodyclose // see above
+			if err != nil {
+				t.Fatalf("dial: %v", err)
+			}
+			ws.SetReadLimit(-1)
+			t.Cleanup(func() { _ = ws.CloseNow() })
+
+			extensions := resp.Header.Get("Sec-WebSocket-Extensions")
+			if tt.wantDeflate {
+				for _, want := range []string{"permessage-deflate", "server_no_context_takeover"} {
+					if !strings.Contains(extensions, want) {
+						t.Errorf("Sec-WebSocket-Extensions = %q, want it to contain %q", extensions, want)
+					}
+				}
+			} else if extensions != "" {
+				t.Errorf("Sec-WebSocket-Extensions = %q, want none", extensions)
+			}
+
+			// The lobby view is under the compression threshold; the view of a
+			// started game is over it, so in the deflate case it goes through the
+			// compressed write path and must still decode on the client.
+			host := &testClient{t: t, ws: ws}
+			host.hello(created.Token, "Alex")
+			view := startSolo(t, host)
+			if len(view.raw) <= compressionThreshold {
+				t.Fatalf("view is %d bytes, want more than the %d-byte compression threshold",
+					len(view.raw), compressionThreshold)
+			}
+			if view.View.Phase == game.PhaseLobby {
+				t.Errorf("view = %s, want the view of the started game", view.raw)
+			}
+		})
 	}
 }

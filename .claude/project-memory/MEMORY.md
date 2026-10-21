@@ -37,7 +37,7 @@
 - [Hero side decks](references/project_hero_side_decks.md) — curated side decks, only Invocation has a discard; set-aside hero cards
 - [Per-game card pool](references/project_card_pool.md) — table loads GET /api/games/{id}/cards; SPA ships pack index only
 - [Card image preload](references/project_image_preload.md) — browser-native: low-priority Image per pool face, no custom queue
-- [No compression in the backend](references/project_no_backend_compression.md) — Go sends HTTP/WS uncompressed; Caddy/CDN compress
+- [Compression split](references/project_no_backend_compression.md) — HTTP: proxy compresses; WebSocket: permessage-deflate, no takeover
 - [Visual identity](references/project_visual_identity.md) — Ink & Signal: Archivo, ink palette, split-card logo, full wordmark in bars
 - [Table layout](references/project_table_layout.md) — one surface in rows, owner frames, out-of-play via owner frame chips
 - [Provider-neutral UI copy](references/project_provider_neutral_copy.md) — UI says "deck link", names no deck provider
