@@ -192,7 +192,7 @@
               {/each}
             {/key}
             {#if deckCount < MAX_DECKS}
-              <div class="sect">
+              <div class="sect add-deck">
                 <button class="btn add" aria-disabled={session.deckLoading} onclick={addDeck}>
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
                   Add a deck
@@ -352,6 +352,7 @@
     Deck slots sit closer together than plain sections. The first slot keeps the section's top
     padding under the heading, a last slot its bottom padding at the foot of the box, and the
     Add a deck section its own top padding, so the button stands a little apart from the slots.
+    That section draws no line above it: the button belongs to the slots it adds to.
   */
   .decks :global(.slot + .slot) {
     padding-top: 9px;
@@ -359,6 +360,10 @@
 
   .decks :global(.slot:not(:last-child)) {
     padding-bottom: 9px;
+  }
+
+  .decks .sect.add-deck {
+    border-top: 0;
   }
 
   .lobby :global(.lbl) {

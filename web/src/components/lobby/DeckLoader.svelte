@@ -207,6 +207,11 @@
     flex: none;
   }
 
+  /* The field stands further from Load than Load from Cancel: 12px, clear of the focus outline. */
+  .row input {
+    margin-right: 4px;
+  }
+
   .labels {
     display: grid;
     justify-items: center;
