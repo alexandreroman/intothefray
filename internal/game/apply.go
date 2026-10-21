@@ -47,9 +47,11 @@ func apply(t *Table, a Action) error {
 	case ActFlip:
 		return applyFlip(t, a)
 	case ActToken:
-		return applyCounter(t, a, tokenNames, func(c *Card) *map[string]int { return &c.Tokens })
+		return applyCounter(t, a, tokenNames, 0, math.MaxInt, func(c *Card) *map[string]int { return &c.Tokens })
 	case ActStatus:
-		return applyCounter(t, a, statusNames, func(c *Card) *map[string]int { return &c.Status })
+		return applyCounter(t, a, statusNames, 0, math.MaxInt, func(c *Card) *map[string]int { return &c.Status })
+	case ActModifier:
+		return applyCounter(t, a, modifierNames, -maxCount, maxCount, func(c *Card) *map[string]int { return &c.Mods })
 	case ActChooseStage:
 		return applyChooseStage(t, a)
 	case ActDraw:
@@ -303,6 +305,7 @@ func resetCard(c *Card) {
 	c.Exhausted = false
 	c.Tokens = nil
 	c.Status = nil
+	c.Mods = nil
 	c.Parent = ""
 	c.OnPile = ""
 }
@@ -572,6 +575,9 @@ const statusLocked = "locked"
 var (
 	tokenNames  = []string{"dmg", "thr", "gen"}
 	statusNames = []string{"stunned", "confused", "tough", statusLocked}
+	// modifierNames are the stats a modifier changes, in the order cards
+	// print them.
+	modifierNames = []string{"atk", "thw", "def", "sch", "rec"}
 )
 
 // applyExhaust sets the exhausted state resolve recorded (see
@@ -631,9 +637,10 @@ func applyFlip(t *Table, a Action) error {
 }
 
 // applyCounter adds a.Delta to the counter a.Name of a card. The field
-// function selects the map (tokens or statuses) and allowed lists its valid
-// names. A counter never goes below 0 and is deleted at 0.
-func applyCounter(t *Table, a Action, allowed []string, field func(*Card) *map[string]int) error {
+// function selects the map (tokens, statuses or modifiers) and allowed lists
+// its valid names. The counter is clamped to [lowest, highest] and deleted at
+// 0: tokens and statuses never go below 0, modifiers are signed.
+func applyCounter(t *Table, a Action, allowed []string, lowest, highest int, field func(*Card) *map[string]int) error {
 	c, err := t.tableCard(a.Card)
 	if err != nil {
 		return err
@@ -643,7 +650,7 @@ func applyCounter(t *Table, a Action, allowed []string, field func(*Card) *map[s
 	}
 
 	counters := field(c)
-	value := max((*counters)[a.Name]+a.Delta, 0)
+	value := min(max((*counters)[a.Name]+a.Delta, lowest), highest)
 	if value == 0 {
 		delete(*counters, a.Name)
 		return nil
@@ -696,7 +703,7 @@ func applyChooseStage(t *Table, a Action) error {
 	chosen.FaceDown = false
 	chosen.Exhausted = false
 
-	// Tokens and statuses stay on the previous card, so going back restores them.
+	// Tokens, statuses and modifiers stay on the previous card, so going back restores them.
 	t.removeArrows(previous.ID)
 	previous.Zone = ZoneStage
 	previous.X, previous.Y, previous.Z = 0, 0, 0

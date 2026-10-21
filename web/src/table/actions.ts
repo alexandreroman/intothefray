@@ -51,7 +51,7 @@ export function keyLabel(item: Pick<ActionItem, 'key' | 'shift'>): string | unde
 }
 
 export interface ActionItem {
-  /** Stable id: 'exhaust', 'flip', 'stage', 'tokens', 'statuses', 'discard', 'moveTo', 'draw1', … */
+  /** Stable id: 'exhaust', 'flip', 'stage', 'tokens', 'statuses', 'modifiers', 'discard', 'moveTo', 'draw1', … */
   id: string;
   label: string;
   key?: string;
@@ -75,8 +75,8 @@ export interface ActionItem {
 const MAX_COUNT = 99;
 
 // Groups of a card in play, in menu order: Exhaust and Flip (or the stage
-// choice) turn the card, the token and status submenus mark it, Discard and
-// Move to take it away.
+// choice) turn the card, the token, status and modifier submenus mark it,
+// Discard and Move to take it away.
 const GROUP_TURN = 0;
 const GROUP_MARK = 1;
 const GROUP_LEAVE = 2;
@@ -104,13 +104,45 @@ const STATUSES = [
   { name: 'locked', label: 'Locked', key: 'L' },
 ];
 
+/**
+ * The stats a modifier changes, in the order cards print them. Mirrors modifierNames in
+ * internal/game/apply.go.
+ */
+export const MODIFIERS = ['atk', 'thw', 'def', 'sch', 'rec'] as const;
+
+/** The kinds of counters a card carries: tokens and statuses count up from 0, modifiers are signed. */
+export type CounterKind = 'token' | 'status' | 'modifier';
+
+/** The counters of one kind a card carries, by name. */
+export function countersOf(card: CardView, kind: CounterKind): Record<string, number> | undefined {
+  switch (kind) {
+    case 'token':
+      return card.tokens;
+    case 'status':
+      return card.status;
+    case 'modifier':
+      return card.mods;
+  }
+}
+
+/** A modifier with its sign, a real minus sign (U+2212) when negative: "+1", "−2". */
+export function withSign(value: number): string {
+  return value < 0 ? `\u2212${-value}` : `+${value}`;
+}
+
 /** Whether a card carries the Locked status: exhausted, it does not ready (the server refuses). */
 export function isLocked(card: CardView): boolean {
   return (card.status?.locked ?? 0) > 0;
 }
 
-/** The lower-case name of a token or status, as the pill says it: "damage", "stunned". */
-export function counterName(kind: 'token' | 'status', name: string): string {
+/**
+ * The name of a counter as the pill says it: a token or status in lower case, "damage",
+ * "stunned"; a modifier by its stat, "DEF modifier".
+ */
+export function counterName(kind: CounterKind, name: string): string {
+  if (kind === 'modifier') {
+    return `${name.toUpperCase()} modifier`;
+  }
   const counters = kind === 'token' ? TOKENS : STATUSES;
   return (counters.find((counter) => counter.name === name)?.label ?? name).toLowerCase();
 }
@@ -229,7 +261,7 @@ function cardActions(card: CardView, context: Context, units: CardView[] | null)
   } else if (canFlip(card)) {
     items.push(flipItem(card));
   }
-  items.push(counterMenu(card, 'token'), counterMenu(card, 'status'));
+  items.push(counterMenu(card, 'token'), counterMenu(card, 'status'), modifierMenu(card));
   items.push(...(units ? groupLeaveItems(units, context) : leaveItems(card, context)));
   return items;
 }
@@ -288,7 +320,7 @@ function flipItem(card: CardView): ActionItem {
  */
 function counterMenu(card: CardView, kind: 'token' | 'status'): ActionItem {
   const counters = kind === 'token' ? TOKENS : STATUSES;
-  const counts = kind === 'token' ? card.tokens : card.status;
+  const counts = countersOf(card, kind);
   const menu = counters.map((counter): ActionItem => {
     const count = counts?.[counter.name] ?? 0;
     return {
@@ -304,6 +336,26 @@ function counterMenu(card: CardView, kind: 'token' | 'status'): ActionItem {
     label: kind === 'token' ? 'Add a token' : 'Add a status',
     group: GROUP_MARK,
     menu,
+  };
+}
+
+/**
+ * "Add a modifier": a submenu that gives the card +1 to a stat, then, past a
+ * separator, −1. Unlike the token and status items, these have no keys.
+ */
+function modifierMenu(card: CardView): ActionItem {
+  const step = (delta: 1 | -1) =>
+    MODIFIERS.map((name): ActionItem => ({
+      id: `${name}${delta > 0 ? '+1' : '-1'}`,
+      label: `${withSign(delta)} ${name.toUpperCase()}`,
+      group: 0,
+      run: () => ({ kind: 'modifier', card: card.id, name, delta }),
+    }));
+  return {
+    id: 'modifiers',
+    label: 'Add a modifier',
+    group: GROUP_MARK,
+    menu: [...step(1), SEPARATOR, ...step(-1)],
   };
 }
 

@@ -165,6 +165,16 @@ describe('diffViews', () => {
     ]);
   });
 
+  it('a modifier change glows too', () => {
+    const prev = view({ cards: [card('a', { mods: { def: 1 } })] });
+    const next = view({
+      cards: [card('a', { mods: { def: -1 } })],
+      log: [OLD_LINE, line('gave Spider-Man −2 DEF')],
+    });
+
+    expect(diffViews(prev, next)).toEqual([{ kind: 'glow', id: 'a', color: 1 }]);
+  });
+
   it('turns over a card flipped, or shown on another face', () => {
     const known = (id: string, extra: Partial<CardView> = {}) =>
       card(id, { code: '01001', ...extra });

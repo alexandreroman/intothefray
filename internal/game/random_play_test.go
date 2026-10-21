@@ -81,7 +81,7 @@ func randomAction(r *rand.Rand, t *Table, seat int) Action {
 	oneOf := func(values ...string) string { return values[r.IntN(len(values))] }
 	x, y := 10*r.IntN(100), 10*r.IntN(40)
 
-	switch r.IntN(30) {
+	switch r.IntN(31) {
 	case 0, 1:
 		return Action{Kind: ActDraw, N: 1 + r.IntN(3)}
 	case 2:
@@ -148,6 +148,8 @@ func randomAction(r *rand.Rand, t *Table, seat int) Action {
 			return Action{Kind: ActCloseView, Where: oneOf("", whereShuffle)}
 		}
 		return Action{Kind: Kind(oneOf(string(ActLook), string(ActSearch))), Pile: oneOf(deck, PileEncounter, PileEncounterDiscard), N: 3}
+	case 26:
+		return Action{Kind: ActModifier, Card: pick(onTable), Name: oneOf("atk", "def"), Delta: 1 - 2*r.IntN(2)}
 	default:
 		return Action{Kind: ActUndo}
 	}

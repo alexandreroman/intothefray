@@ -1063,6 +1063,7 @@ func TestIdentityCardIsPlayedOnTheTable(t *testing.T) {
 		{"flip", Action{Kind: ActFlip, Card: "c1", Face: 0, FaceDown: new(false)}},
 		{"token", Action{Kind: ActToken, Card: "c1", Name: "dmg", Delta: 1}},
 		{"status", Action{Kind: ActStatus, Card: "c1", Name: "tough", Delta: 1}},
+		{"modifier", Action{Kind: ActModifier, Card: "c1", Name: "def", Delta: 1}},
 		{"arrow", Action{Kind: ActArrowAdd, Card: "c7", Target: "c1", Seat: 1}},
 		{"ready all", Action{Kind: ActReadyAll, Cards: []string{"c1"}}},
 		{"play under it", Action{Kind: ActPlay, Card: "c3", Target: "c1"}},

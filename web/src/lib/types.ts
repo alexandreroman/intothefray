@@ -120,6 +120,8 @@ export interface CardView {
   exhausted?: boolean;
   tokens?: Record<string, number>;
   status?: Record<string, number>;
+  /** Signed stat modifiers by stat ("atk", "thw", "def", "sch", "rec"): never 0. */
+  mods?: Record<string, number>;
   stage?: string;
   identity?: boolean; // a player's hero or alter-ego card: it never leaves the table
   /**
@@ -274,6 +276,7 @@ export type ActionKind =
   | 'flip'
   | 'token'
   | 'status'
+  | 'modifier' // add `delta`, signed, to the stat modifier `name` of a card
   | 'chooseStage'
   | 'draw'
   | 'reveal'
@@ -311,7 +314,7 @@ export interface Action {
   /** A card tucked under `target` (attach, play) lies at `x`, `y`, where it was dropped. */
   placed?: boolean;
   n?: number;
-  name?: string; // token or status name
+  name?: string; // token, status or modifier name
   delta?: number;
   face?: number; // chosen stage face
   where?: 'top' | 'bottom' | 'shuffle';

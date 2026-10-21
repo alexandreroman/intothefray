@@ -36,6 +36,7 @@
   import {
     actionsFor,
     counterName,
+    countersOf,
     isLocked,
     type ActionItem,
     type CountQuestion,
@@ -883,9 +884,9 @@
     if (card?.zone !== 'table') {
       return null;
     }
-    const counts = target.kind === 'token' ? card.tokens : card.status;
-    const value = counts?.[target.name] ?? 0;
-    return value > 0 ? { target, value } : null;
+    // A modifier is signed: only 0 removes it.
+    const value = countersOf(card, target.kind)?.[target.name] ?? 0;
+    return value !== 0 ? { target, value } : null;
   });
 
   // A pill that went away must not come back when the token does. A tapped one held its card's
@@ -1873,6 +1874,7 @@
       anchor={counterAnchor}
       label={counterName(counterShown.target.kind, counterShown.target.name)}
       value={counterShown.value}
+      signed={counterShown.target.kind === 'modifier'}
       {zoom}
       version={view}
       onstep={stepCounter}

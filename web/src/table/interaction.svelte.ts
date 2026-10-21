@@ -1,6 +1,6 @@
 import { modal } from '../components/modal.svelte';
 import type { CardView } from '../lib/types';
-import type { TableElement } from './actions';
+import type { CounterKind, TableElement } from './actions';
 import type { Rect } from './drag';
 import { isFree } from './selection';
 
@@ -10,10 +10,10 @@ export const LINGER_MS = 100;
 /** How long a drop waits for the server's answer before its cards go back. */
 export const LANDING_MS = 2000;
 
-/** A token or status of a table card, found again by its names after every redraw. */
+/** A token, status or modifier of a table card, found again by its names after every redraw. */
 export interface CounterTarget {
   card: string;
-  kind: 'token' | 'status';
+  kind: CounterKind;
   name: string;
 }
 

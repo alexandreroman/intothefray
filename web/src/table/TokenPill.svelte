@@ -1,25 +1,29 @@
 <!--
-  The small "− value +" pill above a hovered token or status. It stays while
+  The small "− value +" pill above a hovered token, status or modifier. It stays while
   the pointer is on it, and so does the hover of its card. Tapped (touch), it
   stays until a press lands outside it and its token.
 -->
 <script lang="ts">
   import { onDestroy } from 'svelte';
+  import { withSign } from './actions';
   import { interaction } from './interaction.svelte';
 
   let {
     anchor,
     label,
     value,
+    signed = false,
     zoom,
     version,
     onstep,
   }: {
-    /** The token or status disc, found anew at every placement as redraws replace it. */
+    /** The token disc, status tab or modifier badge, found anew at every placement as redraws replace it. */
     anchor: () => HTMLElement | null;
-    /** "damage", "stunned": what the pill changes. */
+    /** "damage", "stunned", "DEF modifier": what the pill changes. */
     label: string;
     value: number;
+    /** The value is a modifier: it shows with its sign, "+1", "−2". */
+    signed?: boolean;
     /** Read to place the pill again when the table is zoomed. */
     zoom: number;
     /** Changes with every redraw of the table, which may move the token. */
@@ -98,7 +102,7 @@
     onmousedown={noSelection}
     onclick={() => onstep(-1)}>−</button
   >
-  <span class="value">{value}</span>
+  <span class="value">{signed ? withSign(value) : value}</span>
   <button
     class="btn-ghost"
     type="button"

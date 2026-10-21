@@ -161,6 +161,29 @@ describe('CardView', () => {
     expect(tab?.querySelector('svg.lock')).not.toBeNull();
   });
 
+  it('shows each modifier with its sign in stat order, a penalty in red', () => {
+    const card = tableCard({ mods: { rec: 1, atk: -2, def: 1, thw: 0 } });
+    const { container } = render(CardView, { card, face: face() });
+
+    const badges = [...container.querySelectorAll<HTMLElement>('.mods .mod')];
+    expect(badges.map((badge) => badge.textContent)).toEqual(['−2 ATK', '+1 DEF', '+1 REC']);
+    // The token pill finds every modifier by its counter name.
+    expect(badges.map((badge) => badge.dataset.counter)).toEqual([
+      'modifier:atk',
+      'modifier:def',
+      'modifier:rec',
+    ]);
+    expect(badges.map((badge) => badge.classList.contains('neg'))).toEqual([true, false, false]);
+  });
+
+  it('shows no modifier row when there is none', () => {
+    const { container } = render(CardView, {
+      card: tableCard({ mods: { atk: 0 } }),
+      face: face(),
+    });
+    expect(container.querySelector('.mods')).toBeNull();
+  });
+
   /** The counter names of the tokens in each group of the card. */
   function tokenGroups(container: HTMLElement): Record<string, string[]> {
     const groups: Record<string, string[]> = {};
