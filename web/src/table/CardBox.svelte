@@ -683,11 +683,8 @@
           Shuffle into the encounter deck
         </button>
       {/if}
-      <!-- A stage box has no other action: Close is its main one. -->
-      <button
-        type="button"
-        class={box.kind === 'stage' ? 'btn-primary compact' : undefined}
-        onclick={() => onclose(false)}>Close</button
+      <!-- Close is the box's main action; a shuffle in stays secondary. -->
+      <button type="button" class="btn-primary compact" onclick={() => onclose(false)}>Close</button
       >
     {/if}
   </div>

@@ -15,6 +15,7 @@ import type {
 } from '../lib/types';
 import { discardPileOf, homeDeckOf, sideLabel, type TableElement } from './actions';
 import { freeSlot } from './keys';
+import { isOutOfPlay } from './layout';
 import { creditedSeatAmong, ownSeats, seatPlayer } from './seats';
 
 /** A box opened by the client alone: browsing a public pile, or choosing a stage card. */
@@ -159,7 +160,7 @@ export function tileActions(card: CardView, pile: PileView, context: TileContext
   const seats = ownSeats(context.view);
   const own = seats.includes(pile.owner);
   const shared = pile.owner === -1;
-  const outOfPlay = pile.kind === 'victory' || pile.kind === 'aside';
+  const outOfPlay = isOutOfPlay(pile);
   const discardPile =
     pile.kind === 'discard' || pile.kind === 'encounterDiscard' || pile.kind === 'sideDiscard';
   const privatePile = pile.kind === 'deck' || pile.kind === 'sideDeck' || pile.kind === 'aside';
