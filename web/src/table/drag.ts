@@ -72,8 +72,8 @@ export type DragSource =
   /** The unknown top card of the encounter deck, dealt face down. */
   | { kind: 'encounter'; pile: string }
   /**
-   * The unknown top card of one of the viewer's own decks: drawn, discarded, or played, face down
-   * but from a side deck that shows its top card (the server's landsFaceDown).
+   * The unknown top card of one of the viewer's own decks: drawn, discarded, or played face down,
+   * or face up from a side deck that shows its top card (the server's landsFaceDown).
    */
   | { kind: 'deck'; pile: string }
   /** The first player token (spec 5.8), from where it lies. */

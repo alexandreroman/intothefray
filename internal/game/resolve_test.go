@@ -423,7 +423,7 @@ func TestResolveRecordsTheResultingState(t *testing.T) {
 
 // TestFlipSides checks the side each flip leads to, from face 0 face up: a
 // single-faced card turns face down and up again, a card with several faces
-// goes through them.
+// goes through them. Whether a player or nobody owns the card changes nothing.
 func TestFlipSides(t *testing.T) {
 	type side struct {
 		face     int

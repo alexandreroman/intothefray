@@ -526,10 +526,14 @@ class TableMotion {
       this.drawing.add(id);
     }
     // The side a card showed before it was turned over: the new view is about to replace it.
+    // A card taken into the hand turns there, with no old side: it is drawn on the table only.
+    const intoHand = new Set(
+      (tables.after?.cards ?? []).flatMap((card) => (card.zone === 'hand' ? [card.id] : [])),
+    );
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
     const oldSides = new Map<string, HTMLElement>();
     for (const anim of shown) {
-      if (anim.kind !== 'flip') {
+      if (anim.kind !== 'flip' || intoHand.has(anim.id)) {
         continue;
       }
       const element = root.querySelector(tableCard(anim.id));
@@ -911,20 +915,29 @@ class TableMotion {
   /**
    * Turns a card over around its vertical axis: a copy of its old side turns
    * away to edge-on, then the card, drawn with its new side, turns back flat.
-   * Without an old side (a hidden card come onto the table), only the second
-   * half plays; so it does for a card taken face down into the hand, as the
-   * old side is a copy of the table card. An exhausted card keeps its tilt.
+   * Without an old side (a hidden card come onto the table, or one taken face
+   * down into the hand), only the second half plays. An exhausted card keeps
+   * its tilt; a hand card keeps its place.
    */
-  #flip(root: HTMLElement, id: string, tableSide: HTMLElement | undefined): void {
-    const element = root.querySelector<HTMLElement>(`${tableCard(id)}, ${handCard(id)}`);
+  #flip(root: HTMLElement, id: string, oldSide: HTMLElement | undefined): void {
+    const onTable = root.querySelector<HTMLElement>(tableCard(id));
+    const element = onTable ?? root.querySelector<HTMLElement>(handCard(id));
     if (!element || typeof element.animate !== 'function') {
       return;
     }
-    const oldSide = element.matches(tableCard(id)) ? tableSide : undefined;
-    const tilt = getComputedStyle(element).transform;
-    const rest = tilt && tilt !== 'none' ? ` ${tilt}` : '';
-    const flat = `${FLIP_PERSPECTIVE} rotateY(0deg)${rest}`;
-    const edgeOn = `${FLIP_PERSPECTIVE} rotateY(90deg)${rest}`;
+    const computed = getComputedStyle(element).transform;
+    const own = computed && computed !== 'none' ? computed : '';
+    const turned = (angle: string) => {
+      const turn = `${FLIP_PERSPECTIVE} rotateY(${angle})`;
+      if (!own) {
+        return turn;
+      }
+      // A table card's tilt turns with it. A hand card's placement (translateX(-50%)) comes
+      // first: after the turn, it would shift the axis to the card's edge.
+      return onTable ? `${turn} ${own}` : `${own} ${turn}`;
+    };
+    const flat = turned('0deg');
+    const edgeOn = turned('90deg');
     const half = FLIP_MS / 2;
 
     if (oldSide && element.parentElement) {

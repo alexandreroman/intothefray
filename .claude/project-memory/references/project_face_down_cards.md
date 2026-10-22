@@ -1,10 +1,10 @@
 ---
-name: "Single-faced cards flip face down"
-description: "Flip toggles any single-faced table card face up and down; deck cards land face down when played"
+name: "Face-down cards"
+description: "Flip toggles a single-faced table card face up and down; a card played from a hidden deck lands face down"
 type: project
 ---
 
-# Single-faced cards flip face down
+# Face-down cards
 
 - Flip on a single-faced table card, encounter or player-owned, toggles
   it: face up turns face down, face down turns face up, without end.
@@ -31,6 +31,9 @@ type: project
 
 **Why:** user decision of 2026-10-22.
 
-**How to apply:** the rules live in `turnsFaceDown` and `landsFaceDown`
-(internal/game) and `canFlip` (web/src/table/actions.ts); keep the
-server and the web in step. See also [[project_action_bars]].
+**How to apply:** the rules live in `turnsFaceDown` (action.go) and
+`landsFaceDown` (apply.go) in internal/game, and in `canFlip`
+(web/src/table/actions.ts); keep the server and the web in step.
+`faceDownPlayEvent` (narrate.go) words a face-down play without naming
+the card, and `logViews` (view.go) drops the card ids of face-down cards
+from the history. See also [[project_action_bars]].

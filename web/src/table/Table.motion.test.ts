@@ -1273,32 +1273,87 @@ describe('Table animations', () => {
     expect(container.querySelector('.surface .card[aria-hidden="true"]')).toBeNull();
   });
 
-  it('a card taken face down into the hand slides there and turns face up, with no old side', async () => {
-    const session = fakeSession();
-    const { rerender, container } = render(Table, {
-      session,
-      view: makeView([card('d', { owner: 1, x: 300, faceDown: true, code: undefined })], {
-        hands: { p1: [] },
-      }),
-    });
-    await settle();
+  /** Stubs the computed transform of the elements that match selector: jsdom computes none. */
+  function stubTransform(selector: string, transform: string) {
+    const computed = window.getComputedStyle;
+    return vi
+      .spyOn(window, 'getComputedStyle')
+      .mockImplementation((element, pseudo) =>
+        element.matches(selector)
+          ? ({ transform } as CSSStyleDeclaration)
+          : computed(element, pseudo),
+      );
+  }
 
-    await rerender({
-      session,
-      view: makeView([card('d', { owner: 1, zone: 'hand' })], {
-        hands: { p1: ['d'] },
-        log: [START, line('took a card into hand', { who: 'Sam', color: 1 })],
-      }),
-    });
-    const frames = () => animationsOf('.hand .hcard[data-id="d"]').map(([keyframes]) => keyframes);
-    await waitFor(() =>
-      expect(frames()).toContainEqual([
-        { transform: 'perspective(700px) rotateY(90deg)' },
-        { transform: 'perspective(700px) rotateY(0deg)' },
-      ]),
-    );
-    // The table card's old side is not copied into the hand.
-    expect(container.querySelector('[aria-hidden="true"].card')).toBeNull();
+  it('a card taken face down into the hand turns face up about its middle, with no old side', async () => {
+    // The hand card's translateX(-50%), as computed: it comes before the turn.
+    const shift = 'matrix(1, 0, 0, 1, -70, 0)';
+    const spy = stubTransform('.hand .hcard', shift);
+    try {
+      const session = fakeSession();
+      const { rerender, container } = render(Table, {
+        session,
+        view: makeView([card('d', { owner: 1, x: 300, faceDown: true, code: undefined })], {
+          hands: { p1: [] },
+        }),
+      });
+      await settle();
+
+      await rerender({
+        session,
+        view: makeView([card('d', { owner: 1, zone: 'hand' })], {
+          hands: { p1: ['d'] },
+          log: [START, line('took a card into hand', { who: 'Sam', color: 1 })],
+        }),
+      });
+      const frames = () =>
+        animationsOf('.hand .hcard[data-id="d"]').map(([keyframes]) => keyframes);
+      await waitFor(() =>
+        expect(frames()).toContainEqual([
+          { transform: `${shift} perspective(700px) rotateY(90deg)` },
+          { transform: `${shift} perspective(700px) rotateY(0deg)` },
+        ]),
+      );
+      // The table card's old side is not copied into the hand.
+      expect(container.querySelector('[aria-hidden="true"].card')).toBeNull();
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it('an exhausted card turned over on the table keeps its tilt after the turn', async () => {
+    const tilt = 'matrix(0.97, 0.26, -0.26, 0.97, 0, 0)';
+    const spy = stubTransform('.card.exhausted', tilt);
+    try {
+      const session = fakeSession();
+      const { rerender } = render(Table, {
+        session,
+        view: makeView([card('a', { x: 40, exhausted: true })]),
+      });
+      await settle();
+
+      await rerender({
+        session,
+        view: makeView([card('a', { x: 40, exhausted: true, faceDown: true, code: undefined })], {
+          log: [START, line('turned Spider-Man face down')],
+        }),
+      });
+      await waitFor(() =>
+        expect(
+          animationsOf('.surface .card[data-id="a"]').map(([frames]) => frames),
+        ).toContainEqual([
+          { transform: `perspective(700px) rotateY(90deg) ${tilt}`, offset: 0 },
+          {
+            transform: `perspective(700px) rotateY(90deg) ${tilt}`,
+            offset: 0.5,
+            easing: 'ease-out',
+          },
+          { transform: `perspective(700px) rotateY(0deg) ${tilt}`, offset: 1 },
+        ]),
+      );
+    } finally {
+      spy.mockRestore();
+    }
   });
 
   it('a card come face up from a deck onto the table slides out of it and turns in', async () => {

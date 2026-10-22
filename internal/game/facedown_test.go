@@ -38,19 +38,30 @@ func (f *doFixture) singleFacedInDeck(t *testing.T) string {
 	return ""
 }
 
-func TestPlayOutOfAHiddenPileLandsFaceDown(t *testing.T) {
-	hercules := func(t *testing.T) *doFixture {
-		return heroGame(t, heroDeck(t, newCatalog(t), herculesIdentity, "Hercules"))
-	}
-	// laborDeck returns the id of Hercules' Labor deck, which lies face down.
-	laborDeck := func(t *testing.T, f *doFixture) string {
-		for i := range 2 {
-			if pile := f.g.Table.Piles[sideDeckID(0, i)]; pile.Label == "Labor" {
-				return pile.ID
-			}
+// sideDeckLabeled returns the id of p0's side deck with that label.
+func (f *doFixture) sideDeckLabeled(t *testing.T, label string) string {
+	t.Helper()
+	for id, pile := range f.g.Table.Piles {
+		if pile.Kind == KindSideDeck && pile.Owner == 0 && pile.Label == label {
+			return id
 		}
-		t.Fatal("Hercules has no Labor deck")
-		return ""
+	}
+	t.Fatalf("p0 has no %s deck", label)
+	return ""
+}
+
+func TestPlayOutOfAHiddenPileLandsFaceDown(t *testing.T) {
+	hero := func(identity, name string) func(t *testing.T) *doFixture {
+		return func(t *testing.T) *doFixture {
+			return heroGame(t, heroDeck(t, newCatalog(t), identity, name))
+		}
+	}
+	// playSideTop plays the top card of p0's side deck with that label.
+	playSideTop := func(label string) func(t *testing.T, f *doFixture) (string, Action) {
+		return func(t *testing.T, f *doFixture) (string, Action) {
+			deck := f.sideDeckLabeled(t, label)
+			return topCards(f.g.Table.Piles[deck], 1)[0], Action{Kind: ActPlay, Pile: deck, X: 800, Y: 500}
+		}
 	}
 	tests := []struct {
 		name    string
@@ -72,10 +83,19 @@ func TestPlayOutOfAHiddenPileLandsFaceDown(t *testing.T) {
 			top := topCards(f.g.Table.Piles["deck:p0"], 1)[0]
 			return top, Action{Kind: ActPlay, Pile: "deck:p0", Target: f.villain()}
 		}, true, "played a card face down from their deck under Rhino"},
-		{"face-down side deck", hercules, func(t *testing.T, f *doFixture) (string, Action) {
-			labor := laborDeck(t, f)
-			return topCards(f.g.Table.Piles[labor], 1)[0], Action{Kind: ActPlay, Pile: labor, X: 800, Y: 500}
-		}, true, "played a card face down from their Labor deck"},
+		{
+			"Labor side deck", hero(herculesIdentity, "Hercules"), playSideTop("Labor"),
+			true, "played a card face down from their Labor deck",
+		},
+		{
+			// Its cards have an encounter back, yet the deck is Hercules'.
+			"Gift side deck", hero(herculesIdentity, "Hercules"), playSideTop("Gift"),
+			true, "played a card face down from their Gift deck",
+		},
+		{
+			"Weather side deck", hero(stormIdentity, "Storm"), playSideTop("Weather"),
+			true, "played a card face down from their Weather deck",
+		},
 		{"face-up side deck", sideDeckFixture, func(_ *testing.T, f *doFixture) (string, Action) {
 			top := topCards(f.g.Table.Piles[invocationDeck], 1)[0]
 			return top, Action{Kind: ActPlay, Pile: invocationDeck, X: 800, Y: 500}
@@ -118,6 +138,52 @@ func TestPlayOutOfAHiddenPileLandsFaceDown(t *testing.T) {
 			checkHistory(t, f.g)
 		})
 	}
+}
+
+// TestFaceDownPlayFlippedBackWithinABurst plays the deck's top card face
+// down, flips it up and back down at once: the flips cancel, their line goes,
+// and the card stays hidden.
+func TestFaceDownPlayFlippedBackWithinABurst(t *testing.T) {
+	f := newDoFixture(t)
+	top := topCards(f.g.Table.Piles["deck:p0"], 1)[0]
+	f.mustDo(t, "h", Action{Kind: ActPlay, Pile: "deck:p0", X: 400, Y: 200}, at(1))
+	lines := len(f.g.Log)
+
+	f.mustDo(t, "h", Action{Kind: ActFlip, Card: top}, at(5))
+	f.mustDo(t, "h", Action{Kind: ActFlip, Card: top}, at(7))
+
+	if got := len(f.g.Log); got != lines {
+		t.Errorf("flipping back left lines %q", f.logTexts()[lines:])
+	}
+	if !f.g.Table.Cards[top].FaceDown {
+		t.Error("flipping back left the played card face up")
+	}
+	checkHiddenEverywhere(t, f.g, top, "h", "b")
+	checkHistory(t, f.g)
+}
+
+// TestUndoFaceDownPlay has the player take back their face-down play: the
+// card goes back on top of the deck, and the struck line still names no card.
+func TestUndoFaceDownPlay(t *testing.T) {
+	f := newDoFixture(t)
+	top := topCards(f.g.Table.Piles["deck:p0"], 1)[0]
+	f.mustDo(t, "h", Action{Kind: ActPlay, Pile: "deck:p0", X: 400, Y: 200}, at(1))
+	played := len(f.g.Log) - 1
+
+	f.mustDo(t, "h", Action{Kind: ActUndo}, at(2))
+
+	if got := topCards(f.g.Table.Piles["deck:p0"], 1)[0]; got != top {
+		t.Errorf("deck top = %s after the undo, want the played card %s", got, top)
+	}
+	if line := f.g.Log[played]; !line.Undone {
+		t.Errorf("play line %q is not struck", line.Text)
+	}
+	if got, want := f.lastLog().Text, "undid “played a card face down from their deck”"; got != want {
+		t.Errorf("undo line = %q, want %q", got, want)
+	}
+	checkHiddenEverywhere(t, f.g, top, "h", "b")
+	checkIntegrity(t, f.g.Table)
+	checkHistory(t, f.g)
 }
 
 // TestFaceDownPlayerCardLeavesTheTableFaceUp turns a player's card face down
