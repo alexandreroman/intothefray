@@ -374,7 +374,7 @@ describe('CardBox', () => {
 
     expect(screen.getByRole('dialog', { name: 'Top 3 of Your deck' })).toBeTruthy();
     const close = within(box()).getByRole('button', { name: 'Close' });
-    expect(close.classList.contains('btn-primary')).toBe(false);
+    expect(close.classList.contains('btn-primary')).toBe(true);
     await fireEvent.click(close);
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'closeView' }, 0);
     expect(screen.queryByRole('dialog')).toBeNull();
@@ -954,7 +954,7 @@ describe('CardBox', () => {
     expect(tileNames()).toEqual(['Web-Shooter', 'Hard to Keep Down', 'Swinging Web Kick']);
     expect(tileBadges()).toEqual(['#1', '#2', '#3']);
     const close = within(box()).getByRole('button', { name: 'Close' });
-    expect(close.classList.contains('btn-primary')).toBe(false);
+    expect(close.classList.contains('btn-primary')).toBe(true);
   });
 
   it('stage box lists its cards by card number, each face A before B', async () => {
