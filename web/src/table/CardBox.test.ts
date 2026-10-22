@@ -373,7 +373,9 @@ describe('CardBox', () => {
     const { session } = await renderTable(makeView({ private: LOOK }));
 
     expect(screen.getByRole('dialog', { name: 'Top 3 of Your deck' })).toBeTruthy();
-    await fireEvent.click(within(box()).getByRole('button', { name: 'Close' }));
+    const close = within(box()).getByRole('button', { name: 'Close' });
+    expect(close.classList.contains('btn-primary')).toBe(false);
+    await fireEvent.click(close);
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'closeView' }, 0);
     expect(screen.queryByRole('dialog')).toBeNull();
   });
@@ -845,9 +847,14 @@ describe('CardBox', () => {
     const { session } = await renderTable(view);
     await fireEvent.click(chip(-1, 'Set-aside cards (1)'));
 
-    await fireEvent.click(
-      within(box()).getByRole('button', { name: 'Shuffle into the encounter deck' }),
-    );
+    // Close stays the main button of an out-of-play pile box; the shuffle in is a secondary one.
+    const close = within(box()).getByRole('button', { name: 'Close' });
+    expect(close.classList.contains('btn-primary')).toBe(true);
+    const shuffleIn = within(box()).getByRole('button', {
+      name: 'Shuffle into the encounter deck',
+    });
+    expect(shuffleIn.classList.contains('btn-primary')).toBe(false);
+    await fireEvent.click(shuffleIn);
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'shuffleIn', pile: 'saside' }, 0);
     expect(screen.queryByRole('dialog')).toBeNull();
   });
@@ -877,8 +884,9 @@ describe('CardBox', () => {
 
     expect(screen.getByRole('dialog', { name: 'Victory display' })).toBeTruthy();
     expect(tileNames()).toEqual(['Hard to Keep Down']);
+    // Close is the main button of an out-of-play pile box.
     const close = within(box()).getByRole('button', { name: 'Close' });
-    expect(close.classList.contains('btn-primary')).toBe(false);
+    expect(close.classList.contains('btn-primary')).toBe(true);
     await fireEvent.click(close);
     expect(session.act).not.toHaveBeenCalled();
     expect(screen.queryByRole('dialog')).toBeNull();
@@ -945,6 +953,8 @@ describe('CardBox', () => {
     await fireEvent.click(menuItem('Browse…'));
     expect(tileNames()).toEqual(['Web-Shooter', 'Hard to Keep Down', 'Swinging Web Kick']);
     expect(tileBadges()).toEqual(['#1', '#2', '#3']);
+    const close = within(box()).getByRole('button', { name: 'Close' });
+    expect(close.classList.contains('btn-primary')).toBe(false);
   });
 
   it('stage box lists its cards by card number, each face A before B', async () => {

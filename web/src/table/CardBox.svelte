@@ -569,6 +569,10 @@
     !readOnly && box.kind === 'pile' && canShuffleIn(box.pile, ownSeats(view)) ? box.pile : null,
   );
 
+  const closeIsMain = $derived(
+    box.kind === 'stage' || (box.kind === 'pile' && isOutOfPlay(box.pile)),
+  );
+
   function shuffleIn(pile: PileView): void {
     if (act({ kind: 'shuffleIn', pile: pile.id }) !== null) {
       onclose(false);
@@ -683,10 +687,10 @@
           Shuffle into the encounter deck
         </button>
       {/if}
-      <!-- A stage box has no other action: Close is its main one. -->
+      <!-- In a stage box and an out-of-play pile box, Close is the main action; a shuffle in stays secondary. -->
       <button
         type="button"
-        class={box.kind === 'stage' ? 'btn-primary compact' : undefined}
+        class={closeIsMain ? 'btn-primary compact' : undefined}
         onclick={() => onclose(false)}>Close</button
       >
     {/if}
