@@ -358,7 +358,9 @@
   /*
     Status cards: small tabs sticking out of the right edge, like real cards tucked under. They
     end just above the middle, so the tokens there never cover them: half a token (13px) and a
-    3px gap.
+    3px gap. Above that, a portrait card has room for four tabs (17px high, 3px apart): a fifth
+    starts a second column inside the card, beside the bottom tab, clear of the title and of the
+    middle threat. The column still reads top to bottom, then on to the second one.
   */
   .statuses {
     position: absolute;
@@ -367,29 +369,52 @@
     z-index: 4;
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
+    /* The second column goes to the left; wrap-reverse swaps the cross axis: flex-start is right. */
+    flex-wrap: wrap-reverse;
+    justify-content: flex-end;
+    align-items: flex-start;
     gap: 3px;
+    max-height: 77px;
   }
 
   /*
     A landscape card is too low for three tabs above its middle: they lie side by side along its
-    top instead, the last one sticking out of the right edge.
+    top instead, the last one sticking out of the right edge. A row too long for the card wraps
+    downwards, its first tabs on the top row, clear of the middle threat.
   */
   .card.land .statuses {
     top: 6px;
     bottom: auto;
+    max-width: calc(100% + 2px);
+    max-height: none;
     flex-direction: row;
+    flex-wrap: wrap;
     align-items: flex-start;
   }
 
-  /* On a scheme, the right corners hold the tokens: the tabs stick out of the left edge. */
+  /*
+    On a scheme, the right corners hold the tokens: the tabs stick out of the left edge, from
+    the top, where a portrait scheme has room for all five.
+  */
   .card.scheme .statuses {
     top: 6px;
     right: auto;
     bottom: auto;
     left: -8px;
+    max-width: none;
+    max-height: none;
     flex-direction: column;
+    flex-wrap: nowrap;
     align-items: flex-start;
+  }
+
+  /*
+    A landscape scheme has room for four tabs above the modifiers along its bottom: a fifth
+    starts a second column inside the card, beside the bottom tab.
+  */
+  .card.land.scheme .statuses {
+    max-height: 77px;
+    flex-wrap: wrap;
   }
 
   .card.scheme .st {

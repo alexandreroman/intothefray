@@ -161,6 +161,29 @@ describe('CardView', () => {
     expect(one.container.querySelector('.st.retaliate')?.textContent).toBe('Retaliate 1');
   });
 
+  it('shows all five statuses in order', () => {
+    const card = tableCard({
+      status: { locked: 1, retaliate: 3, tough: 2, confused: 1, stunned: 1 },
+    });
+    const { container } = render(CardView, { card, face: face() });
+
+    const tabs = [...container.querySelectorAll<HTMLElement>('.statuses .st')];
+    expect(tabs.map((tab) => tab.textContent)).toEqual([
+      'Stunned',
+      'Confused',
+      'Tough ×2',
+      'Retaliate 3',
+      'Locked',
+    ]);
+    expect(tabs.map((tab) => tab.dataset.counter)).toEqual([
+      'status:stunned',
+      'status:confused',
+      'status:tough',
+      'status:retaliate',
+      'status:locked',
+    ]);
+  });
+
   it('shows the Locked status with a small lock', () => {
     const card = tableCard({ status: { locked: 1 } });
     const { container } = render(CardView, { card, face: face() });
