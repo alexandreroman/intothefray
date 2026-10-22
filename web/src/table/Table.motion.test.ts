@@ -1273,6 +1273,34 @@ describe('Table animations', () => {
     expect(container.querySelector('.surface .card[aria-hidden="true"]')).toBeNull();
   });
 
+  it('a card taken face down into the hand slides there and turns face up, with no old side', async () => {
+    const session = fakeSession();
+    const { rerender, container } = render(Table, {
+      session,
+      view: makeView([card('d', { owner: 1, x: 300, faceDown: true, code: undefined })], {
+        hands: { p1: [] },
+      }),
+    });
+    await settle();
+
+    await rerender({
+      session,
+      view: makeView([card('d', { owner: 1, zone: 'hand' })], {
+        hands: { p1: ['d'] },
+        log: [START, line('took a card into hand', { who: 'Sam', color: 1 })],
+      }),
+    });
+    const frames = () => animationsOf('.hand .hcard[data-id="d"]').map(([keyframes]) => keyframes);
+    await waitFor(() =>
+      expect(frames()).toContainEqual([
+        { transform: 'perspective(700px) rotateY(90deg)' },
+        { transform: 'perspective(700px) rotateY(0deg)' },
+      ]),
+    );
+    // The table card's old side is not copied into the hand.
+    expect(container.querySelector('[aria-hidden="true"].card')).toBeNull();
+  });
+
   it('a card come face up from a deck onto the table slides out of it and turns in', async () => {
     // The server never lists a deck's cards: the card shows up on the table as the deck shrinks.
     const session = fakeSession();

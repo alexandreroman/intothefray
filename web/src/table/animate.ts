@@ -31,7 +31,10 @@ export type Anim =
   | { kind: 'move'; id: string; from: Box; to: Box }
   | { kind: 'glow'; id: string; color: number }
   | { kind: 'turnIn'; id: string }
-  /** Turned over on the table: flipped, another face shown, or a hidden card come face up. */
+  /**
+   * Turned over on the table: flipped, another face shown, or a hidden card come face up; or
+   * taken face down off the table into the viewer's hand, where it turns face up.
+   */
   | { kind: 'flip'; id: string }
   | { kind: 'shuffle'; pile: string }
   /**
@@ -215,9 +218,13 @@ function travelOf(was: CardView, card: CardView, table: TableView): Anim | null 
 /**
  * A table card that shows another side: flipped face down or face up, turned
  * to another face, or come face up out of a pile that does not show its
- * cards (a deck the viewer was looking through).
+ * cards (a deck the viewer was looking through). A card that lay face down on
+ * the table shows its face once in the viewer's hand: it turns over there too.
  */
 function isTurnedOver(was: CardView, card: CardView, before: TableView): boolean {
+  if (card.zone === 'hand') {
+    return was.zone === 'table' && !!was.faceDown && !isHidden(card);
+  }
   if (card.zone !== 'table') {
     return false;
   }

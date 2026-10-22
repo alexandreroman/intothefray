@@ -253,8 +253,8 @@ func TestResolvePlayFromDeckTakesItsTopCard(t *testing.T) {
 	table := f.g.Table.Clone()
 	mustApply(t, table, got)
 	c := table.Cards[top]
-	if c.Zone != ZoneTable || c.FaceDown || c.X != 400 || c.Y != 200 {
-		t.Errorf("played card = %+v, want it face up on the table at 400, 200", c)
+	if c.Zone != ZoneTable || !c.FaceDown || c.X != 400 || c.Y != 200 {
+		t.Errorf("played card = %+v, want it face down on the table at 400, 200", c)
 	}
 	if n := len(table.Piles["deck:p0"].Cards); n != f.deckCount-4 {
 		t.Errorf("deck holds %d cards, want %d", n, f.deckCount-4)
@@ -422,9 +422,8 @@ func TestResolveRecordsTheResultingState(t *testing.T) {
 }
 
 // TestFlipSides checks the side each flip leads to, from face 0 face up: a
-// single-faced encounter card turns face down and up again, a card with
-// several faces goes through them, and a player's single-faced card stays as
-// it is.
+// single-faced card turns face down and up again, a card with several faces
+// goes through them.
 func TestFlipSides(t *testing.T) {
 	type side struct {
 		face     int
@@ -439,13 +438,14 @@ func TestFlipSides(t *testing.T) {
 		{"single-faced encounter card", NoOwner, 1, []side{{0, true}, {0, false}, {0, true}}},
 		{"double-faced encounter card", NoOwner, 2, []side{{1, false}, {0, false}, {1, false}}},
 		{"double-faced player card", 0, 2, []side{{1, false}, {0, false}}},
-		{"single-faced player card", 0, 1, []side{{0, false}, {0, false}}},
+		{"single-faced player card", 0, 1, []side{{0, true}, {0, false}, {0, true}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			f := newResolveFixture(t)
+			// The fixture's table card is p0's identity, which never turns face down.
 			c := f.g.Table.Cards[f.ownTable]
-			c.Owner, c.Faces, c.Face, c.FaceDown = tt.owner, tt.faces, 0, false
+			c.Owner, c.Faces, c.Face, c.FaceDown, c.Identity = tt.owner, tt.faces, 0, false, false
 
 			for i, want := range tt.want {
 				flip, err := resolve(f.g, f.g.actorOf(0), Action{Kind: ActFlip, Card: c.ID}, newTestRNG())
@@ -475,5 +475,22 @@ func TestFlipLeavesTheVillainFaceUp(t *testing.T) {
 	flip, err := resolve(f.g, f.g.actorOf(0), Action{Kind: ActFlip, Card: villain.ID}, newTestRNG())
 	if err != nil || flip.Face != villain.Face || flip.FaceDown == nil || *flip.FaceDown {
 		t.Errorf("flip of the villain = %+v, %v; want face %d, face up", flip, err, villain.Face)
+	}
+}
+
+// TestFlipLeavesAnIdentityFaceUp checks that a single-faced identity card does
+// not turn face down: it never leaves the table and must stay readable.
+func TestFlipLeavesAnIdentityFaceUp(t *testing.T) {
+	f := newResolveFixture(t)
+	identity := f.g.Table.Cards[f.ownTable]
+	if !identity.Identity || identity.FaceDown {
+		t.Fatalf("fixture table card = %+v, want p0's face-up identity", identity)
+	}
+	// No identity has a single face in the packs; the guard holds for one all the same.
+	identity.Faces, identity.Face = 1, 0
+
+	flip, err := resolve(f.g, f.g.actorOf(0), Action{Kind: ActFlip, Card: identity.ID}, newTestRNG())
+	if err != nil || flip.Face != 0 || flip.FaceDown == nil || *flip.FaceDown {
+		t.Errorf("flip of a single-faced identity = %+v, %v; want face 0, face up", flip, err)
 	}
 }

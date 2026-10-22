@@ -954,9 +954,6 @@ func TestPlayFromPileThroughDo(t *testing.T) {
 			f.mustDo(t, "h", Action{Kind: ActDiscardTop, Pile: PileEncounter, N: 1}, at(1))
 			return topCards(f.g.Table.Piles[PileEncounterDiscard], 1)[0]
 		}, nil},
-		{"own deck", "h", func(_ *testing.T, f *doFixture) string {
-			return f.g.Table.Piles["deck:p0"].Cards[3]
-		}, nil},
 		{"another player's deck", "b", func(_ *testing.T, f *doFixture) string {
 			return f.g.Table.Piles["deck:p0"].Cards[3]
 		}, ErrForbidden},
@@ -1135,17 +1132,17 @@ func TestPlayFromDeckIsNarratedAndSurvivesAnotherUndo(t *testing.T) {
 	f.mustDo(t, "b", Action{Kind: ActExhaust, Card: f.villain()}, at(1))
 	f.mustDo(t, "h", Action{Kind: ActPlay, Pile: "deck:p0", X: 400, Y: 200}, at(2))
 
-	if got, want := f.lastLog().Text, "played "+f.nameOf(t, top); got != want {
+	if got, want := f.lastLog().Text, "played a card face down from their deck"; got != want {
 		t.Errorf("last line = %q, want %q", got, want)
 	}
-	if got := f.lastLog().Cards; !slices.Equal(got, []string{top}) {
-		t.Errorf("play line cards = %v, want %v", got, []string{top})
+	if got := f.lastLog().Cards; len(got) != 0 {
+		t.Errorf("play line cards = %v, want none", got)
 	}
 
 	f.mustDo(t, "b", Action{Kind: ActUndo}, at(3))
 
-	if c := f.g.Table.Cards[top]; c.Zone != ZoneTable || c.FaceDown || c.X != 400 || c.Y != 200 {
-		t.Errorf("played card = %+v after Bob's undo, want it face up at 400, 200", c)
+	if c := f.g.Table.Cards[top]; c.Zone != ZoneTable || !c.FaceDown || c.X != 400 || c.Y != 200 {
+		t.Errorf("played card = %+v after Bob's undo, want it face down at 400, 200", c)
 	}
 	checkIntegrity(t, f.g.Table)
 	checkHistory(t, f.g)

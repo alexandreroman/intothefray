@@ -912,13 +912,15 @@ class TableMotion {
    * Turns a card over around its vertical axis: a copy of its old side turns
    * away to edge-on, then the card, drawn with its new side, turns back flat.
    * Without an old side (a hidden card come onto the table), only the second
-   * half plays. An exhausted card keeps its tilt.
+   * half plays; so it does for a card taken face down into the hand, as the
+   * old side is a copy of the table card. An exhausted card keeps its tilt.
    */
-  #flip(root: HTMLElement, id: string, oldSide: HTMLElement | undefined): void {
-    const element = root.querySelector<HTMLElement>(tableCard(id));
+  #flip(root: HTMLElement, id: string, tableSide: HTMLElement | undefined): void {
+    const element = root.querySelector<HTMLElement>(`${tableCard(id)}, ${handCard(id)}`);
     if (!element || typeof element.animate !== 'function') {
       return;
     }
+    const oldSide = element.matches(tableCard(id)) ? tableSide : undefined;
     const tilt = getComputedStyle(element).transform;
     const rest = tilt && tilt !== 'none' ? ` ${tilt}` : '';
     const flat = `${FLIP_PERSPECTIVE} rotateY(0deg)${rest}`;

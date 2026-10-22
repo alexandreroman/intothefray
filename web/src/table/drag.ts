@@ -71,7 +71,10 @@ export type DragSource =
   | { kind: 'pile'; pile: string; card: string }
   /** The unknown top card of the encounter deck, dealt face down. */
   | { kind: 'encounter'; pile: string }
-  /** The unknown top card of one of the viewer's own decks: drawn, discarded, or played face up. */
+  /**
+   * The unknown top card of one of the viewer's own decks: drawn, discarded, or played, face down
+   * but from a side deck that shows its top card (the server's landsFaceDown).
+   */
   | { kind: 'deck'; pile: string }
   /** The first player token (spec 5.8), from where it lies. */
   | { kind: 'firstPlayer'; x: number; y: number };
@@ -221,7 +224,7 @@ function onCard(
       if (isSideDeckId(drag.pile)) {
         return { kind: 'play', pile: drag.pile, target: card, x, y, placed: true };
       }
-      // A deck's top card is played face up where it lands, over that card.
+      // A deck's top card is played face down where it lands, over that card.
       return place(drag, at, dealTo, rows);
     case 'encounter':
       // Dealt face down where it lands, over that card (spec 5.5).

@@ -523,9 +523,17 @@ func isPlainTargetPile(id string) bool {
 	return id == PileVictory || id == PileScenarioAside || strings.HasPrefix(id, "aside:")
 }
 
-// applyPlay puts a card from a hand or a pile face up on the table: at a
-// point, or, with a target, tucked under that table card as attach does. A
-// version of its owner's identity takes the identity over.
+// landsFaceDown reports whether a card played out of pile lands face down: a
+// player's deck, or a side deck that does not show its top card, hides its
+// cards from everyone, its owner included, until the card is flipped.
+func landsFaceDown(pile *Pile) bool {
+	return pile.Kind == KindDeck || pile.Kind == KindSideDeck && !pile.TopFaceUp
+}
+
+// applyPlay puts a card from a hand or a pile on the table: at a point, or,
+// with a target, tucked under that table card as attach does. It lands face
+// up, but out of a pile that hides its cards (see landsFaceDown). A version of
+// its owner's identity takes the identity over, and stays face up.
 func applyPlay(t *Table, a Action) error {
 	c, err := t.card(a.Card)
 	if err != nil {
@@ -545,12 +553,14 @@ func applyPlay(t *Table, a Action) error {
 		return err
 	}
 
+	faceDown := c.Zone == ZonePile && landsFaceDown(t.Piles[c.Pile])
 	t.leave(c)
 	if c.IdentityVersion {
 		t.takeOverIdentity(c)
 	}
 	c.Zone = ZoneTable
 	c.Pile = ""
+	c.FaceDown = faceDown && !c.Identity
 	if target != nil {
 		c.Parent = target.ID
 		c.X, c.Y, c.Z = tuckedPlace(target, a)
