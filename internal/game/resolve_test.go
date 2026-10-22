@@ -466,10 +466,14 @@ func TestFlipSides(t *testing.T) {
 // shows does not turn face down: its stage choice changes it instead.
 func TestFlipLeavesTheVillainFaceUp(t *testing.T) {
 	f := newResolveFixture(t)
-	villain := f.g.Table.stage(pileKeyVillain).Current
+	villain := f.g.Table.Cards[f.g.Table.stage(pileKeyVillain).Current]
+	// Only the stage keeps such a card face up.
+	if villain.Owner != NoOwner || faceCount(villain) != 1 || villain.FaceDown {
+		t.Fatalf("villain = %+v, want a face-up single-faced card with no owner", villain)
+	}
 
-	flip, err := resolve(f.g, f.g.actorOf(0), Action{Kind: ActFlip, Card: villain}, newTestRNG())
-	if err != nil || flip.FaceDown == nil || *flip.FaceDown {
-		t.Errorf("flip of the villain = %+v, %v; want face up", flip, err)
+	flip, err := resolve(f.g, f.g.actorOf(0), Action{Kind: ActFlip, Card: villain.ID}, newTestRNG())
+	if err != nil || flip.Face != villain.Face || flip.FaceDown == nil || *flip.FaceDown {
+		t.Errorf("flip of the villain = %+v, %v; want face %d, face up", flip, err, villain.Face)
 	}
 }

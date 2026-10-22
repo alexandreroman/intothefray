@@ -626,6 +626,27 @@ func TestLogCardsFilteredToTheView(t *testing.T) {
 	}
 }
 
+// TestLogCardsDropACardTurnedFaceDown checks that lines naming a card lose
+// its id once it lies face down: no one can tie the name to the card.
+func TestLogCardsDropACardTurnedFaceDown(t *testing.T) {
+	f := newViewFixture(t)
+	dealt := f.dealSingleFaced(t, hostToken, at(1))
+	f.mustDo(t, hostToken, Action{Kind: ActFlip, Card: dealt}, at(20))
+	f.mustDo(t, bobToken, Action{Kind: ActToken, Card: dealt, Name: "dmg", Delta: 1}, at(21))
+	if got := f.g.ViewFor(bobToken).Log; !slices.Contains(got[len(got)-1].Cards, dealt) {
+		t.Fatalf("token line on the face-up card has cards %v, want %s", got[len(got)-1].Cards, dealt)
+	}
+	f.mustDo(t, hostToken, Action{Kind: ActFlip, Card: dealt}, at(40))
+
+	for _, token := range []string{hostToken, bobToken, specToken} {
+		for _, line := range f.g.ViewFor(token).Log {
+			if slices.Contains(line.Cards, dealt) {
+				t.Errorf("%s: line %q keeps the id of the face-down card", token, line.Text)
+			}
+		}
+	}
+}
+
 func TestViewIsDeterministic(t *testing.T) {
 	f := newViewFixture(t)
 	first := viewJSON(t, f.g, hostToken)

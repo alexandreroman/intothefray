@@ -8,7 +8,8 @@ type: project
 
 - Flip on a single-faced encounter card (owner `NoOwner`, -1 in the web)
   toggles it: face up turns face down, face down turns face up, without
-  end. Face down, its code leaves every view again.
+  end. Face down, its code leaves every view again, and every history
+  line that named it loses its card id (`logViews`).
 - A card with several faces (encounter or player) turns face up on its
   current face when face down, and shows its next face when face up.
 - A player's single-faced card has no Flip (the server treats it as a
