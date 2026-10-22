@@ -11,8 +11,10 @@ type: project
   table, or the owner frame chip of an out-of-play pile (victory display,
   set-aside), which stands for that pile.
 - A card the viewer cannot see travels as a back: out of a face-down pile
-  it leaves on its back and turns to its face where it lands face up. The
-  client only animates what the view holds, so nothing leaks.
+  it leaves on its back and turns to its face where it lands face up; a
+  card that lands face down stays a back. A card taken face down off the
+  table into the viewer's hand turns face up there. The client only
+  animates what the view holds, so nothing leaks.
 - A hand the viewer does not see stays subtle: a card going into it slides
   down and fades out where it was; a card coming out of it rises into its
   pile, or turns face up where it lands on the table.

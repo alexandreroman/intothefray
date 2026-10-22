@@ -67,3 +67,4 @@
 - [Lobby columns share one height](references/project_lobby_columns.md) — side by side, Scenario box fills its column; settings slide in
 - [Close is the main button of a card box](references/project_card_box_close.md) — Close is primary in every card box footer; other buttons secondary
 - [Single-faced encounter cards flip face down](references/project_encounter_reflip.md) — Flip toggles them face up/down; others cycle faces
+- [Single-faced cards flip face down](references/project_face_down_cards.md) — Flip toggles them; deck cards land face down
