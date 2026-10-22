@@ -78,6 +78,7 @@
         { what: 'Stunned', keys: ['S'] },
         { what: 'Confused', keys: ['C'] },
         { what: 'Tough', keys: ['G'] },
+        { what: 'Retaliate', keys: ['R'] },
         { what: 'Locked', keys: ['L'] },
       ],
     ],

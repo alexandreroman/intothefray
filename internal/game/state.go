@@ -52,9 +52,11 @@ type Card struct {
 	OnPile    string         `json:"onPile,omitempty"` // revealed on top of this pile (Zone table)
 	Exhausted bool           `json:"exhausted,omitempty"`
 	Tokens    map[string]int `json:"tokens,omitempty"` // "dmg", "thr", "gen"
-	Status    map[string]int `json:"status,omitempty"` // "stunned", "confused", "tough"
-	// Mods records signed stat modifiers ("atk", "thw", "def", "sch", "rec"),
-	// bookkeeping only: a modifier changes nothing else on the card.
+	// Status counts the statuses ("stunned", "confused", "tough", "retaliate",
+	// "locked"); the count of "retaliate" is the card's Retaliate value.
+	Status map[string]int `json:"status,omitempty"`
+	// Mods records signed stat modifiers ("atk", "thw", "def", "sch", "rec",
+	// "hp"), bookkeeping only: a modifier changes nothing else on the card.
 	Mods map[string]int `json:"mods,omitempty"`
 	// Identity marks a player's hero or alter-ego card, set at setup: it never
 	// leaves the table (see checkStaysOnTable). A version of the identity

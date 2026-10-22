@@ -101,14 +101,15 @@ const STATUSES = [
   { name: 'stunned', label: 'Stunned', key: 'S' },
   { name: 'confused', label: 'Confused', key: 'C' },
   { name: 'tough', label: 'Tough', key: 'G' },
+  { name: 'retaliate', label: 'Retaliate', key: 'R' },
   { name: 'locked', label: 'Locked', key: 'L' },
 ];
 
 /**
- * The stats a modifier changes, in the order cards print them. Mirrors modifierNames in
- * internal/game/apply.go.
+ * The stats a modifier changes, in the order cards print them: the stat column, then the hit
+ * points. Mirrors modifierNames in internal/game/apply.go.
  */
-export const MODIFIERS = ['atk', 'thw', 'def', 'sch', 'rec'] as const;
+export const MODIFIERS = ['atk', 'thw', 'def', 'sch', 'rec', 'hp'] as const;
 
 /** The kinds of counters a card carries: tokens and statuses count up from 0, modifiers are signed. */
 export type CounterKind = 'token' | 'status' | 'modifier';

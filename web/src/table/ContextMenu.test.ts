@@ -336,7 +336,7 @@ describe('the context menu', () => {
     expect(screen.queryByRole('menu', { name: 'Add a status' })).toBeNull();
     await vi.advanceTimersByTimeAsync(200);
     const submenu = screen.getByRole('menu', { name: 'Add a status' });
-    expect(labels(submenu)).toEqual(['Stunned', 'Confused', 'Tough', 'Locked']);
+    expect(labels(submenu)).toEqual(['Stunned', 'Confused', 'Tough', 'Retaliate', 'Locked']);
 
     // Resting on a plain item closes it.
     await fireEvent.pointerEnter(menuItem(contextMenu()!, 'Exhaust'));

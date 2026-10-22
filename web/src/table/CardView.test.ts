@@ -152,6 +152,15 @@ describe('CardView', () => {
     expect(container.querySelector('.st.tough')?.textContent).toBe('Tough ×2');
   });
 
+  it('shows the Retaliate value on its tab, even at 1', () => {
+    const two = render(CardView, { card: tableCard({ status: { retaliate: 2 } }), face: face() });
+    expect(two.container.querySelector('.st.retaliate')?.textContent).toBe('Retaliate 2');
+    two.unmount();
+
+    const one = render(CardView, { card: tableCard({ status: { retaliate: 1 } }), face: face() });
+    expect(one.container.querySelector('.st.retaliate')?.textContent).toBe('Retaliate 1');
+  });
+
   it('shows the Locked status with a small lock', () => {
     const card = tableCard({ status: { locked: 1 } });
     const { container } = render(CardView, { card, face: face() });
@@ -162,18 +171,29 @@ describe('CardView', () => {
   });
 
   it('shows each modifier with its sign in stat order, a penalty in red', () => {
-    const card = tableCard({ mods: { rec: 1, atk: -2, def: 1, thw: 0 } });
+    const card = tableCard({ mods: { hp: -2, rec: 1, atk: -2, def: 1, thw: 0 } });
     const { container } = render(CardView, { card, face: face() });
 
     const badges = [...container.querySelectorAll<HTMLElement>('.mods .mod')];
-    expect(badges.map((badge) => badge.textContent)).toEqual(['−2 ATK', '+1 DEF', '+1 REC']);
+    expect(badges.map((badge) => badge.textContent)).toEqual([
+      '−2 ATK',
+      '+1 DEF',
+      '+1 REC',
+      '−2 HP',
+    ]);
     // The token pill finds every modifier by its counter name.
     expect(badges.map((badge) => badge.dataset.counter)).toEqual([
       'modifier:atk',
       'modifier:def',
       'modifier:rec',
+      'modifier:hp',
     ]);
-    expect(badges.map((badge) => badge.classList.contains('neg'))).toEqual([true, false, false]);
+    expect(badges.map((badge) => badge.classList.contains('neg'))).toEqual([
+      true,
+      false,
+      false,
+      true,
+    ]);
   });
 
   it('shows no modifier row when there is none', () => {

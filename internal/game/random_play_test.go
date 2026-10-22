@@ -100,7 +100,7 @@ func randomAction(r *rand.Rand, t *Table, seat int) Action {
 	case 7:
 		return Action{Kind: ActToken, Card: pick(onTable), Name: oneOf("dmg", "thr"), Delta: 1 - 2*r.IntN(2)}
 	case 8:
-		return Action{Kind: ActStatus, Card: pick(onTable), Name: oneOf("tough", statusLocked), Delta: 1 - 2*r.IntN(2)}
+		return Action{Kind: ActStatus, Card: pick(onTable), Name: oneOf("tough", "retaliate", statusLocked), Delta: 1 - 2*r.IntN(2)}
 	case 9:
 		return Action{Kind: ActReveal}
 	case 10:
@@ -149,7 +149,7 @@ func randomAction(r *rand.Rand, t *Table, seat int) Action {
 		}
 		return Action{Kind: Kind(oneOf(string(ActLook), string(ActSearch))), Pile: oneOf(deck, PileEncounter, PileEncounterDiscard), N: 3}
 	case 26:
-		return Action{Kind: ActModifier, Card: pick(onTable), Name: oneOf("atk", "def"), Delta: 1 - 2*r.IntN(2)}
+		return Action{Kind: ActModifier, Card: pick(onTable), Name: oneOf("atk", "def", "hp"), Delta: 1 - 2*r.IntN(2)}
 	default:
 		return Action{Kind: ActUndo}
 	}
