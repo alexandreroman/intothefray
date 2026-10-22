@@ -251,9 +251,17 @@ func (t *Table) checkStaysOnTable(c *Card) error {
 // checkNotStageCurrent refuses to take away the card a stage shows: the stage
 // would be left with nothing on the table.
 func (t *Table) checkNotStageCurrent(c *Card) error {
+	if stage := t.stageShowing(c.ID); stage != nil {
+		return invalid("the %s card stays on the table; choose another card to show", strings.ToLower(stage.Label))
+	}
+	return nil
+}
+
+// stageShowing returns the stage that shows card id, or nil.
+func (t *Table) stageShowing(id string) *Stage {
 	for _, stage := range t.Stages {
-		if stage.Current == c.ID {
-			return invalid("the %s card stays on the table; choose another card to show", strings.ToLower(stage.Label))
+		if stage.Current == id {
+			return stage
 		}
 	}
 	return nil

@@ -296,8 +296,13 @@ function stageItem(): ActionItem {
   };
 }
 
+/**
+ * Whether Flip changes the card (the server decides how, in resolveFlip): a face-down card turns
+ * face up, a card with several faces shows its next one, and an encounter card with a single face
+ * turns face down. A player's single-faced card has nothing to flip to.
+ */
 function canFlip(card: CardView): boolean {
-  if (card.faceDown || !card.code) {
+  if (card.faceDown || !card.code || card.owner === -1) {
     return true;
   }
   const faces = knownCard(card.code)?.card.faces.length ?? 1;

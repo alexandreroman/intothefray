@@ -368,6 +368,14 @@ describe('actionsFor', () => {
     expect(actionOf(flip)).toEqual({ kind: 'flip', card: 'two' });
   });
 
+  it('a face-up single-faced encounter card shows flip, a single-faced player card does not', () => {
+    const items = itemsFor({ kind: 'card', id: 'enemy' });
+
+    expect(groups(items)[0]).toEqual(['exhaust', 'flip']);
+    expect(actionOf(item(items, 'flip'))).toEqual({ kind: 'flip', card: 'enemy' });
+    expect(groups(itemsFor({ kind: 'card', id: 'mine' }))[0]).toEqual(['exhaust']);
+  });
+
   it('stage top card shows choose instead of flip', () => {
     // The main scheme has two faces, yet its card choice replaces Flip.
     const items = itemsFor({ kind: 'card', id: 's' });

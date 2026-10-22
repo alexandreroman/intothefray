@@ -420,3 +420,56 @@ func TestResolveRecordsTheResultingState(t *testing.T) {
 		t.Errorf("flip of a face-down card = %+v, %v; want face 1, face up", flip, err)
 	}
 }
+
+// TestFlipSides checks the side each flip leads to, from face 0 face up: a
+// single-faced encounter card turns face down and up again, a card with
+// several faces goes through them, and a player's single-faced card stays as
+// it is.
+func TestFlipSides(t *testing.T) {
+	type side struct {
+		face     int
+		faceDown bool
+	}
+	tests := []struct {
+		name  string
+		owner int
+		faces int
+		want  []side // after each flip
+	}{
+		{"single-faced encounter card", NoOwner, 1, []side{{0, true}, {0, false}, {0, true}}},
+		{"double-faced encounter card", NoOwner, 2, []side{{1, false}, {0, false}, {1, false}}},
+		{"double-faced player card", 0, 2, []side{{1, false}, {0, false}}},
+		{"single-faced player card", 0, 1, []side{{0, false}, {0, false}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			f := newResolveFixture(t)
+			c := f.g.Table.Cards[f.ownTable]
+			c.Owner, c.Faces, c.Face, c.FaceDown = tt.owner, tt.faces, 0, false
+
+			for i, want := range tt.want {
+				flip, err := resolve(f.g, f.g.actorOf(0), Action{Kind: ActFlip, Card: c.ID}, newTestRNG())
+				if err != nil {
+					t.Fatalf("flip %d: %v", i+1, err)
+				}
+				mustApply(t, f.g.Table, flip)
+				if got := (side{c.Face, c.FaceDown}); got != want {
+					t.Errorf("after flip %d: face %d, face down %t; want face %d, face down %t",
+						i+1, got.face, got.faceDown, want.face, want.faceDown)
+				}
+			}
+		})
+	}
+}
+
+// TestFlipLeavesTheVillainFaceUp checks that the single-faced card a stage
+// shows does not turn face down: its stage choice changes it instead.
+func TestFlipLeavesTheVillainFaceUp(t *testing.T) {
+	f := newResolveFixture(t)
+	villain := f.g.Table.stage(pileKeyVillain).Current
+
+	flip, err := resolve(f.g, f.g.actorOf(0), Action{Kind: ActFlip, Card: villain}, newTestRNG())
+	if err != nil || flip.FaceDown == nil || *flip.FaceDown {
+		t.Errorf("flip of the villain = %+v, %v; want face up", flip, err)
+	}
+}

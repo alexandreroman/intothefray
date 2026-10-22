@@ -281,6 +281,32 @@ func TestPublicPilesListed(t *testing.T) {
 	}
 }
 
+// TestCardTurnedFaceDownAgainHasNoCode checks that an encounter card flipped
+// face up, then face down again, hides its code once more.
+func TestCardTurnedFaceDownAgainHasNoCode(t *testing.T) {
+	f := newViewFixture(t)
+	dealt := f.dealSingleFaced(t, hostToken, at(1))
+	code := f.g.Table.Cards[dealt].Code
+	viewCode := func() string {
+		for _, c := range f.g.ViewFor(bobToken).Table.Cards {
+			if c.ID == dealt {
+				return c.Code
+			}
+		}
+		t.Fatal("the dealt card is not listed")
+		return ""
+	}
+
+	f.mustDo(t, hostToken, Action{Kind: ActFlip, Card: dealt}, at(20))
+	if got := viewCode(); got != code {
+		t.Fatalf("face-up card code = %q, want %q", got, code)
+	}
+	f.mustDo(t, hostToken, Action{Kind: ActFlip, Card: dealt}, at(40))
+	if got := viewCode(); got != "" {
+		t.Errorf("card turned face down again shows its code %q", got)
+	}
+}
+
 func TestFaceDownCardHasNoCodeKey(t *testing.T) {
 	f := newViewFixture(t)
 	f.mustDo(t, hostToken, Action{Kind: ActDeal, Area: "p0", X: 600, Y: 200}, at(1))

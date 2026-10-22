@@ -407,9 +407,12 @@ func (n narrator) drawText(a Action) string {
 func (n narrator) flipEvent(a Action) logLine {
 	old, cur := n.before.Cards[a.Card], n.after.Cards[a.Card]
 	var text phrase
-	if old.FaceDown {
+	switch {
+	case old.FaceDown:
 		text = join(words("turned "), n.faceName(cur), words(" face up"))
-	} else {
+	case cur.FaceDown:
+		text = join(words("turned "), n.faceName(old), words(" face down"))
+	default:
 		from, to := n.faceName(old), n.faceName(cur)
 		// Both faces of a main scheme share a name; their stages tell them apart.
 		if from.String() == to.String() {
