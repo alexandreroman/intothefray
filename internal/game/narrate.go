@@ -193,13 +193,14 @@ func (c counterNoun) count(n int) string {
 }
 
 var counterNouns = map[string]counterNoun{
-	"dmg":      {"damage", "damage"},
-	"thr":      {"threat", "threat"},
-	"gen":      {"counter", "counters"},
-	"stunned":  {"stunned status", "stunned statuses"},
-	"confused": {"confused status", "confused statuses"},
-	"tough":    {"tough status", "tough statuses"},
-	"locked":   {"locked status", "locked statuses"},
+	"dmg":       {"damage", "damage"},
+	"thr":       {"threat", "threat"},
+	"gen":       {"counter", "counters"},
+	"stunned":   {"stunned status", "stunned statuses"},
+	"confused":  {"confused status", "confused statuses"},
+	"tough":     {"tough status", "tough statuses"},
+	"retaliate": {"retaliate", "retaliate"},
+	"locked":    {"locked status", "locked statuses"},
 }
 
 // hiddenCard is how the history names a card nobody could see.

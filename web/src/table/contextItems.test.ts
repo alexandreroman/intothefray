@@ -213,6 +213,7 @@ describe('contextItems', () => {
       'Stunned (1) [S]',
       'Confused [C]',
       'Tough [G]',
+      'Retaliate [R]',
       'Locked [L]',
     ]);
     // The modifiers have no keys: +1 to each stat, then −1 past a separator.
@@ -222,12 +223,14 @@ describe('contextItems', () => {
       '+1 DEF',
       '+1 SCH',
       '+1 REC',
+      '+1 HP',
       '---',
       '−1 ATK',
       '−1 THW',
       '−1 DEF',
       '−1 SCH',
       '−1 REC',
+      '−1 HP',
     ]);
     expect(itemOf(submenu(entries, 'Add a modifier').entries, '−1 SCH').run?.()).toEqual({
       kind: 'modifier',

@@ -34,6 +34,31 @@ func TestModifierIsSigned(t *testing.T) {
 	}
 }
 
+func TestHPModifierIsClamped(t *testing.T) {
+	table := newTestTable()
+	hp := func(delta int) Action {
+		return Action{Kind: ActModifier, Card: "c1", Name: "hp", Delta: delta}
+	}
+
+	steps := []struct {
+		delta int
+		want  map[string]int
+	}{
+		{3, map[string]int{"hp": 3}},
+		{99, map[string]int{"hp": 99}},
+		{-99, nil},
+		{-99, map[string]int{"hp": -99}},
+		{-1, map[string]int{"hp": -99}},
+	}
+	for i, step := range steps {
+		mustApply(t, table, hp(step.delta))
+
+		if got := table.Cards["c1"].Mods; !maps.Equal(got, step.want) {
+			t.Fatalf("step %d (delta %d): mods = %v, want %v", i, step.delta, got, step.want)
+		}
+	}
+}
+
 func TestModifiersAreIndependent(t *testing.T) {
 	table := newTestTable()
 
@@ -47,7 +72,7 @@ func TestModifiersAreIndependent(t *testing.T) {
 
 func TestModifierRejectsBadInput(t *testing.T) {
 	tests := []Action{
-		{Kind: ActModifier, Card: "c1", Name: "hp", Delta: 1},
+		{Kind: ActModifier, Card: "c1", Name: "cost", Delta: 1},
 		{Kind: ActModifier, Card: "c1", Name: "dmg", Delta: 1},
 		{Kind: ActModifier, Card: "c1", Name: "ATK", Delta: 1},
 		{Kind: ActToken, Card: "c1", Name: "atk", Delta: 1},
@@ -114,6 +139,24 @@ func TestModifierNarration(t *testing.T) {
 	}
 	checkPartsSpellText(t, f.lastLog())
 	checkPartRefs(t, f.cat, f.g.Log)
+}
+
+func TestHPModifierNarration(t *testing.T) {
+	f := newDoFixture(t)
+	rhino := f.villain()
+	hp := func(delta int) Action {
+		return Action{Kind: ActModifier, Card: rhino, Name: "hp", Delta: delta}
+	}
+
+	f.mustDo(t, "h", hp(-2), at(0))
+	if got, want := f.lastLog().Text, "gave Rhino −2 HP"; got != want {
+		t.Errorf("first line = %q, want %q", got, want)
+	}
+	f.mustDo(t, "h", hp(4), at(1))
+	if got, want := f.lastLog().Text, "set the HP modifier on Rhino to +2"; got != want {
+		t.Errorf("merged line = %q, want %q", got, want)
+	}
+	checkPartsSpellText(t, f.lastLog())
 }
 
 func TestModifierUndo(t *testing.T) {

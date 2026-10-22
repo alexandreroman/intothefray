@@ -127,6 +127,7 @@ describe('KeysSheet', () => {
           'Stunned: S',
           'Confused: C',
           'Tough: G',
+          'Retaliate: R',
           'Locked: L',
         ],
       ],

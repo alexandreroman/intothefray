@@ -42,6 +42,7 @@
     ['stunned', 'Stunned'],
     ['confused', 'Confused'],
     ['tough', 'Tough'],
+    ['retaliate', 'Retaliate'],
     ['locked', 'Locked'],
   ] as const;
 
@@ -55,6 +56,18 @@
   const middleThreat = $derived(!scheme && hasToken('thr'));
   const cornerThreat = $derived(scheme && hasToken('thr'));
   const statuses = $derived(STATUSES.filter(([k]) => (card.status?.[k] ?? 0) > 0));
+
+  /**
+   * What a status tab reads: "Tough", or "Tough ×2" for several. The count of Retaliate is its
+   * value, which always shows: "Retaliate 1".
+   */
+  function statusText(name: string, label: string, count: number): string {
+    if (name === 'retaliate') {
+      return `${label} ${count}`;
+    }
+    return count > 1 ? `${label} ×${count}` : label;
+  }
+
   // A modifier is signed: only 0 hides it.
   const modifiers = $derived(MODIFIERS.filter((name) => (card.mods?.[name] ?? 0) !== 0));
   const element = $derived({ kind: 'card', id: card.id } as const);
@@ -160,7 +173,7 @@
               ><rect x="1.5" y="4.5" width="7" height="5" rx="1" /><path
                 d="M3 4.5V3a2 2 0 0 1 4 0v1.5"
               /></svg
-            >{/if}{label}{n > 1 ? ` ×${n}` : ''}</span
+            >{/if}{statusText(k, label, n)}</span
         >
       {/each}
     </div>
@@ -345,7 +358,9 @@
   /*
     Status cards: small tabs sticking out of the right edge, like real cards tucked under. They
     end just above the middle, so the tokens there never cover them: half a token (13px) and a
-    3px gap.
+    3px gap. Above that, a portrait card has room for four tabs (17px high, 3px apart): a fifth
+    starts a second column inside the card, beside the bottom tab, clear of the title and of the
+    middle threat. The column still reads top to bottom, then on to the second one.
   */
   .statuses {
     position: absolute;
@@ -354,29 +369,52 @@
     z-index: 4;
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
+    /* The second column goes to the left; wrap-reverse swaps the cross axis: flex-start is right. */
+    flex-wrap: wrap-reverse;
+    justify-content: flex-end;
+    align-items: flex-start;
     gap: 3px;
+    max-height: 77px;
   }
 
   /*
     A landscape card is too low for three tabs above its middle: they lie side by side along its
-    top instead, the last one sticking out of the right edge.
+    top instead, the last one sticking out of the right edge. A row too long for the card wraps
+    downwards, its first tabs on the top row, clear of the middle threat.
   */
   .card.land .statuses {
     top: 6px;
     bottom: auto;
+    max-width: calc(100% + 2px);
+    max-height: none;
     flex-direction: row;
+    flex-wrap: wrap;
     align-items: flex-start;
   }
 
-  /* On a scheme, the right corners hold the tokens: the tabs stick out of the left edge. */
+  /*
+    On a scheme, the right corners hold the tokens: the tabs stick out of the left edge, from
+    the top, where a portrait scheme has room for all five.
+  */
   .card.scheme .statuses {
     top: 6px;
     right: auto;
     bottom: auto;
     left: -8px;
+    max-width: none;
+    max-height: none;
     flex-direction: column;
+    flex-wrap: nowrap;
     align-items: flex-start;
+  }
+
+  /*
+    A landscape scheme has room for four tabs above the modifiers along its bottom: a fifth
+    starts a second column inside the card, beside the bottom tab.
+  */
+  .card.land.scheme .statuses {
+    max-height: 77px;
+    flex-wrap: wrap;
   }
 
   .card.scheme .st {
@@ -412,6 +450,10 @@
     background: linear-gradient(#f0a53a, #a8600f);
   }
 
+  .st.retaliate {
+    background: linear-gradient(#2bb0b5, #13696f);
+  }
+
   .st.locked {
     background: linear-gradient(#7d8aa8, #46506b);
   }
@@ -423,6 +465,10 @@
     Anchored at the bottom, the column grows upwards and still reads ATK to REC top to bottom.
     On a portrait scheme, whose left edge holds the statuses, they stick out of the right edge
     between the threat in the top corner and the corner pile, at most two tokens high (61px).
+    That room holds five tabs (17px high, 3px apart): a column holds no more, which also keeps
+    it clear of the stats on a portrait card. With all six stats, HP starts a second column
+    inside the card, beside the bottom tab: higher up, it would cover the middle threat of a
+    portrait card or the statuses of a scheme.
   */
   .mods {
     position: absolute;
@@ -431,8 +477,11 @@
     z-index: 4;
     display: flex;
     flex-direction: column;
+    flex-wrap: wrap;
+    justify-content: flex-end;
     align-items: flex-start;
     gap: 3px;
+    max-height: 97px;
   }
 
   .card.scheme .mods {
@@ -440,7 +489,9 @@
     bottom: auto;
     left: auto;
     right: -8px;
-    align-items: flex-end;
+    /* The second column goes to the left; wrap-reverse swaps the cross axis: flex-start is right. */
+    flex-wrap: wrap-reverse;
+    align-items: flex-start;
   }
 
   /*
@@ -454,6 +505,8 @@
     bottom: 6px;
     left: 6px;
     max-width: calc(100% - 44px);
+    max-height: none;
+    justify-content: flex-start;
     flex-direction: row;
     flex-wrap: wrap-reverse;
     align-items: flex-end;

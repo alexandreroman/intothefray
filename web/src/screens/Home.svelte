@@ -214,8 +214,7 @@
   .actions {
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 14px;
+    gap: 14px 24px;
   }
 
   .actions button {

@@ -573,11 +573,13 @@ const statusLocked = "locked"
 
 // Counter names a card can carry.
 var (
-	tokenNames  = []string{"dmg", "thr", "gen"}
-	statusNames = []string{"stunned", "confused", "tough", statusLocked}
+	tokenNames = []string{"dmg", "thr", "gen"}
+	// statusNames are the statuses a card can carry, each with a count. The
+	// count of "retaliate" is the card's Retaliate value: sources add up.
+	statusNames = []string{"stunned", "confused", "tough", "retaliate", statusLocked}
 	// modifierNames are the stats a modifier changes, in the order cards
-	// print them.
-	modifierNames = []string{"atk", "thw", "def", "sch", "rec"}
+	// print them: the stat column, then the hit points.
+	modifierNames = []string{"atk", "thw", "def", "sch", "rec", "hp"}
 )
 
 // applyExhaust sets the exhausted state resolve recorded (see

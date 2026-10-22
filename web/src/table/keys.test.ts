@@ -268,6 +268,30 @@ describe('keys on the table', () => {
     );
   });
 
+  it('R adds Retaliate to a card in play, Shift + R takes one off; on the encounter deck it reveals', async () => {
+    const cards = [
+      card('mine', { x: 280, status: { retaliate: 2 } }),
+      card('v', { code: '01094', owner: -1, back: 'villain' }),
+    ];
+    const { session } = await renderTable(makeView({ cards }));
+    await fireEvent.pointerEnter(placed('mine'));
+
+    await press('r');
+    expect(session.act).toHaveBeenCalledWith(
+      { kind: 'status', card: 'mine', name: 'retaliate', delta: 1 },
+      0,
+    );
+    await press('R', { shiftKey: true });
+    expect(session.act).toHaveBeenLastCalledWith(
+      { kind: 'status', card: 'mine', name: 'retaliate', delta: -1 },
+      0,
+    );
+
+    await fireEvent.pointerEnter(placed('enc'));
+    await press('r');
+    expect(session.act).toHaveBeenLastCalledWith({ kind: 'reveal' }, 0);
+  });
+
   it('menu items answer to their keys', async () => {
     const { session } = await renderTable();
     await fireEvent.pointerEnter(placed('mine'));

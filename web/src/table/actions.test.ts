@@ -213,6 +213,7 @@ describe('actionsFor', () => {
       ['stunned', 'Stunned', 'S'],
       ['confused', 'Confused', 'C'],
       ['tough', 'Tough', 'G'],
+      ['retaliate', 'Retaliate', 'R'],
       ['locked', 'Locked', 'L'],
     ]);
     expect(actionOf(item(tokens, 'thr'))).toEqual({
@@ -285,12 +286,14 @@ describe('actionsFor', () => {
       '+1 DEF',
       '+1 SCH',
       '+1 REC',
+      '+1 HP',
       '-',
       '−1 ATK',
       '−1 THW',
       '−1 DEF',
       '−1 SCH',
       '−1 REC',
+      '−1 HP',
     ]);
     expect(modifiers.some((it) => it.key !== undefined)).toBe(false);
     expect(actionOf(item(modifiers, 'def+1'))).toEqual({
@@ -305,11 +308,19 @@ describe('actionsFor', () => {
       name: 'atk',
       delta: -1,
     });
+    expect(actionOf(item(modifiers, 'hp-1'))).toEqual({
+      kind: 'modifier',
+      card: 'mine',
+      name: 'hp',
+      delta: -1,
+    });
   });
 
   it('an exhausted card shows ready and the counter submenus give the counts', () => {
     const view = makeView({
-      cards: [card('mine', { exhausted: true, tokens: { dmg: 2 }, status: { stunned: 1 } })],
+      cards: [
+        card('mine', { exhausted: true, tokens: { dmg: 2 }, status: { stunned: 1, retaliate: 2 } }),
+      ],
     });
     const items = itemsFor({ kind: 'card', id: 'mine' }, view);
 
@@ -323,6 +334,7 @@ describe('actionsFor', () => {
       'Stunned (1)',
       'Confused',
       'Tough',
+      'Retaliate (2)',
       'Locked',
     ]);
   });

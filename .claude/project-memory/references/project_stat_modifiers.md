@@ -1,13 +1,14 @@
 ---
 name: "Stat modifier tokens"
-description: "Signed per-card modifiers on ATK, THW, DEF, SCH, REC: bookkeeping only, menu and pill, no keys"
+description: "Signed per-card modifiers on ATK, THW, DEF, SCH, REC, HP: bookkeeping only, menu and pill, no keys"
 type: project
 ---
 
 # Stat modifier tokens
 
 - A card in play carries signed stat modifiers (`Card.Mods`, action kind
-  `modifier`) on "atk", "thw", "def", "sch" and "rec", in that order.
+  `modifier`) on "atk", "thw", "def", "sch", "rec" and "hp" (hit
+  points, badge "HP"), in that order: the printed stat column, then HP.
   They are bookkeeping only: no rules effect.
 - A modifier is clamped to ±99 and deleted at 0; like tokens and
   statuses, modifiers are cleared when the card leaves the table.
@@ -19,7 +20,10 @@ type: project
   stand in a column out of the bottom-left edge, clear of the stats
   printed along the top left; on a portrait scheme, on the right edge
   between its corner tokens; on a landscape card, in a row along the
-  bottom from the left corner.
+  bottom from the left corner. A column holds at most five badges (the
+  room between a scheme's corner tokens, clear of a portrait card's
+  printed stats): with all six, HP starts a second column beside the
+  bottom badge.
 - A badge opens the − / + pill, which steps the value by one and closes
   when it reaches 0, as it does for a token.
 - History: "gave Rhino −2 ATK"; merged: "set the DEF modifier on Rhino to

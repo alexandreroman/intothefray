@@ -120,7 +120,7 @@ export interface CardView {
   exhausted?: boolean;
   tokens?: Record<string, number>;
   status?: Record<string, number>;
-  /** Signed stat modifiers by stat ("atk", "thw", "def", "sch", "rec"): never 0. */
+  /** Signed stat modifiers by stat ("atk", "thw", "def", "sch", "rec", "hp"): never 0. */
   mods?: Record<string, number>;
   stage?: string;
   identity?: boolean; // a player's hero or alter-ego card: it never leaves the table
