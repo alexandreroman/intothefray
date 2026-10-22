@@ -121,6 +121,31 @@ describe('diffViews', () => {
     ]);
   });
 
+  it('a card taken face down off the table into the hand turns face up there', () => {
+    const prev = view({ cards: [card('d', { faceDown: true, x: 100 })] });
+    const next = view({
+      cards: [card('d', { code: '01002', zone: 'hand' })],
+      log: [OLD_LINE, line('took a card into hand')],
+    });
+
+    expect(diffViews(prev, next)).toEqual([
+      {
+        kind: 'move',
+        id: 'd',
+        from: { zone: 'table', x: 100, y: 0 },
+        to: { zone: 'hand', x: 0, y: 0 },
+      },
+      { kind: 'flip', id: 'd' },
+    ]);
+  });
+
+  it('a card played from the hand does not turn over in the hand it left', () => {
+    const prev = view({ cards: [card('h', { code: '01002', zone: 'hand' })] });
+    const next = view({ cards: [card('h', { code: '01002', x: 100 })] });
+
+    expect(diffViews(prev, next)).not.toContainEqual({ kind: 'flip', id: 'h' });
+  });
+
   it('token change yields glow in the actor colour', () => {
     const prev = view({ cards: [card('a')] });
     const next = view({
@@ -1076,6 +1101,16 @@ describe('diffViews', () => {
 
       // Face down: it does not turn over.
       expect(diffViews(prev, next)).toEqual([{ kind: 'enter', id: 'dealt', fromPile: 'enc' }]);
+    });
+
+    it('a card played from the deck enters face down: it does not turn over', () => {
+      const prev = view({ piles: [pile('deck:p0', { count: 10 })] });
+      const next = view({
+        cards: [card('played', { faceDown: true, x: 300 })],
+        piles: [pile('deck:p0', { count: 9 })],
+      });
+
+      expect(diffViews(prev, next)).toEqual([{ kind: 'enter', id: 'played', fromPile: 'deck:p0' }]);
     });
 
     it('a revealed encounter card still turns over', () => {

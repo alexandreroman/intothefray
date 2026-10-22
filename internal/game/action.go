@@ -402,18 +402,31 @@ func locked(c *Card) bool {
 }
 
 // resolveFlip records the side the card ends on: a face-down card turns face
-// up, any other goes to its next face.
+// up, a single-faced card turns face down (see turnsFaceDown), any other goes
+// to its next face.
 func resolveFlip(t *Table, who actor, a Action) (Action, error) {
 	c, err := usableTableCard(t, who, a.Card)
 	if err != nil {
 		return a, err
 	}
 	a.Face = c.Face
-	if !c.FaceDown {
+	switch {
+	case c.FaceDown:
+		a.FaceDown = new(false)
+	case turnsFaceDown(t, c):
+		a.FaceDown = new(true)
+	default:
 		a.Face = (c.Face + 1) % faceCount(c)
+		a.FaceDown = new(false)
 	}
-	a.FaceDown = new(false)
 	return a, nil
+}
+
+// turnsFaceDown reports whether flipping c, face up, turns it face down: a
+// card with a single face has no other face to show. An identity card and the
+// card a stage shows stay face up, so that everyone can read them.
+func turnsFaceDown(t *Table, c *Card) bool {
+	return faceCount(c) == 1 && !c.Identity && t.stageShowing(c.ID) == nil
 }
 
 // usableTableCard returns the table card with the given id when who may

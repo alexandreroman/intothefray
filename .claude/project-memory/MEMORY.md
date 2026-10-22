@@ -66,3 +66,4 @@
 - [Scrolling lists fade at their edges](references/project_scroll_fade.md) — card box lists, lobby villain list: {@attach scrollFade}
 - [Lobby columns share one height](references/project_lobby_columns.md) — side by side, Scenario box fills its column; settings slide in
 - [Close is the main button of a card box](references/project_card_box_close.md) — Close is primary in every card box footer; other buttons secondary
+- [Face-down cards](references/project_face_down_cards.md) — Flip toggles single-faced cards; cards played from a hidden deck land face down

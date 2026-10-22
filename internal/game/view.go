@@ -244,12 +244,15 @@ func (g *Game) playerView(p *Player, seats []int) PlayerView {
 }
 
 // logViews converts the history, keeping the card ids of each line that this
-// view lists. table is nil in the lobby.
+// view lists face up. A card turned face down after a line named it loses its
+// id there: the id would tie its name to the face-down card and let a player
+// follow it on the table. table is nil in the lobby.
 func (g *Game) logViews(table *TableView) []LogView {
 	listed := map[string]bool{}
 	if table != nil {
 		for _, c := range table.Cards {
-			listed[c.ID] = true
+			faceDown := c.FaceDown && c.Zone == ZoneTable
+			listed[c.ID] = !faceDown
 		}
 	}
 	views := make([]LogView, 0, len(g.Log))

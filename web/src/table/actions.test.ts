@@ -180,7 +180,7 @@ describe('actionsFor', () => {
     const items = itemsFor({ kind: 'card', id: 'mine' });
 
     expect(groups(items)).toEqual([
-      ['exhaust'],
+      ['exhaust', 'flip'],
       ['tokens', 'statuses', 'modifiers'],
       ['discard', 'moveTo'],
     ]);
@@ -366,6 +366,37 @@ describe('actionsFor', () => {
     const flip = item(items, 'flip');
     expect(flip).toMatchObject({ label: 'Flip', key: 'F' });
     expect(actionOf(flip)).toEqual({ kind: 'flip', card: 'two' });
+  });
+
+  it('a face-up single-faced card shows flip: an encounter card, an own or another player card', () => {
+    // Any player may flip a card in play, whoever owns it, as the server allows.
+    for (const id of ['enemy', 'mine', 'theirs']) {
+      const items = itemsFor({ kind: 'card', id });
+
+      expect(groups(items)[0]).toEqual(['exhaust', 'flip']);
+      expect(item(items, 'flip')).toMatchObject({ label: 'Flip', key: 'F' });
+      expect(actionOf(item(items, 'flip'))).toEqual({ kind: 'flip', card: id });
+    }
+  });
+
+  it('a single-faced identity card has no flip, a double-faced one has', () => {
+    const view = makeView({
+      cards: [card('mine', { identity: true }), card('two', { code: '01002', identity: true })],
+    });
+
+    expect(groups(itemsFor({ kind: 'card', id: 'mine' }, view))[0]).toEqual(['exhaust']);
+    expect(groups(itemsFor({ kind: 'card', id: 'two' }, view))[0]).toEqual(['exhaust', 'flip']);
+  });
+
+  it('a face-down player card shows flip, Exhaust staying its default as on any card', () => {
+    // Played from its deck, the card lies face down: the view has no code for it.
+    const view = makeView({ cards: [card('played', { code: undefined, faceDown: true })] });
+    const items = itemsFor({ kind: 'card', id: 'played' }, view);
+
+    expect(groups(items)[0]).toEqual(['exhaust', 'flip']);
+    expect(item(items, 'exhaust').default).toBe(true);
+    expect(item(items, 'flip').default).toBeUndefined();
+    expect(actionOf(item(items, 'flip'))).toEqual({ kind: 'flip', card: 'played' });
   });
 
   it('stage top card shows choose instead of flip', () => {

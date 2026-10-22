@@ -120,8 +120,9 @@ func (g *Game) perform(who actor, a Action, cat *pack.Catalog, rng *rand.Rand, n
 }
 
 // changedNothing reports whether a left its card as it was: a counter already
-// at 0, a flip of a single-faced card, or the stage face already shown. Such
-// actions are not recorded.
+// at 0, a flip of a single-faced identity or stage card, which stays face up
+// (see turnsFaceDown), or the stage face already shown. Such actions are not
+// recorded.
 func changedNothing(before, after *Table, a Action) bool {
 	switch a.Kind {
 	case ActToken, ActStatus, ActModifier, ActFlip, ActChooseStage:

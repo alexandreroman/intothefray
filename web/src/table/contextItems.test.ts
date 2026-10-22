@@ -193,6 +193,7 @@ describe('contextItems', () => {
 
     expect(texts(entries)).toEqual([
       '*Exhaust [E]',
+      'Flip [F]',
       '---',
       'Add a token ▸',
       'Add a status ▸',
@@ -367,6 +368,7 @@ describe('contextItems', () => {
 
     expect(texts(entriesFor({ kind: 'card', id: 'sense' }))).toEqual([
       '*Exhaust [E]',
+      'Flip [F]',
       '---',
       'Add a token ▸',
       'Add a status ▸',

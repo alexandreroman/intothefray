@@ -252,6 +252,9 @@ func (n narrator) describe(a Action) (logLine, bool) {
 		text := join(words("moved "), n.name(a.Card), words(" to "), n.pile(a.Target))
 		return logLine{text: text, cards: n.visibleCards(a.Card)}, true
 	case ActPlay:
+		if n.after.Cards[a.Card].FaceDown {
+			return n.faceDownPlayEvent(a), true
+		}
 		if a.Target != "" {
 			text := join(words("played "), n.name(a.Card), words(" under "), n.name(a.Target))
 			return logLine{text: text, cards: n.visibleCards(a.Card, a.Target)}, true
@@ -404,12 +407,27 @@ func (n narrator) drawText(a Action) string {
 	return text + " from " + n.game.pileName(n.who, deck.ID)
 }
 
+// faceDownPlayEvent narrates a play that lands face down (see landsFaceDown)
+// without naming the card: "played a card face down from their deck", and
+// with a target, "… under Rhino".
+func (n narrator) faceDownPlayEvent(a Action) logLine {
+	text := join(words("played a card face down from "), n.pile(n.before.Cards[a.Card].Pile))
+	if a.Target == "" {
+		return logLine{text: text}
+	}
+	text = join(text, words(" under "), n.name(a.Target))
+	return logLine{text: text, cards: n.visibleCards(a.Target)}
+}
+
 func (n narrator) flipEvent(a Action) logLine {
 	old, cur := n.before.Cards[a.Card], n.after.Cards[a.Card]
 	var text phrase
-	if old.FaceDown {
+	switch {
+	case old.FaceDown:
 		text = join(words("turned "), n.faceName(cur), words(" face up"))
-	} else {
+	case cur.FaceDown:
+		text = join(words("turned "), n.faceName(old), words(" face down"))
+	default:
 		from, to := n.faceName(old), n.faceName(cur)
 		// Both faces of a main scheme share a name; their stages tell them apart.
 		if from.String() == to.String() {

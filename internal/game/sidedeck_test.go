@@ -18,6 +18,7 @@ const (
 	herculesIdentity      = "59001"
 	valkyrieIdentity      = "25001"
 	icemanIdentity        = "46001"
+	stormIdentity         = "36001"
 )
 
 // Pile ids of the side piles of the side-deck fixture.

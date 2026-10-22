@@ -192,6 +192,77 @@ func TestFlipBackRemovesLine(t *testing.T) {
 	checkHistory(t, f.g)
 }
 
+// dealSingleFaced has the player with token deal a single-faced encounter
+// card face down to p0 and returns its id.
+func (f *doFixture) dealSingleFaced(t *testing.T, token string, at time.Time) string {
+	t.Helper()
+	enc := f.g.Table.Piles[PileEncounter]
+	i := slices.IndexFunc(enc.Cards, func(id string) bool { return f.g.Table.Cards[id].Faces == 1 })
+	if i < 0 {
+		t.Fatal("the encounter deck has no single-faced card")
+	}
+	// The deal takes the top card, the last one.
+	dealt := enc.Cards[i]
+	enc.Cards = append(slices.Delete(enc.Cards, i, i+1), dealt)
+	f.mustDo(t, token, Action{Kind: ActDeal, Area: "p0", X: 600, Y: 200}, at)
+	return dealt
+}
+
+func TestFlipTurnsAnEncounterCardFaceDownAgain(t *testing.T) {
+	f := newDoFixture(t)
+	dealt := f.dealSingleFaced(t, "h", at(0))
+	name := f.nameOf(t, dealt)
+
+	f.mustDo(t, "h", Action{Kind: ActFlip, Card: dealt}, at(20))
+	if got, want := f.lastLog().Text, "turned "+name+" face up"; got != want {
+		t.Errorf("flip up line = %q, want %q", got, want)
+	}
+	f.mustDo(t, "h", Action{Kind: ActFlip, Card: dealt}, at(40))
+	line := f.lastLog()
+	if want := "turned " + name + " face down"; line.Text != want {
+		t.Errorf("flip down line = %q, want %q", line.Text, want)
+	}
+	// Everyone saw the card face up: the line names it, yet points at no card on the table.
+	if got, want := cardRefs(line), []pack.FaceRef{f.faceRefOf(t, dealt)}; !slices.Equal(got, want) {
+		t.Errorf("flip down line refers to %+v, want %+v", got, want)
+	}
+	if len(line.Cards) != 0 {
+		t.Errorf("flip down line points at the face-down card: %v", line.Cards)
+	}
+	if !f.g.Table.Cards[dealt].FaceDown {
+		t.Fatal("the flip left the encounter card face up")
+	}
+
+	f.mustDo(t, "h", Action{Kind: ActUndo}, at(41))
+	if f.g.Table.Cards[dealt].FaceDown {
+		t.Error("undoing the flip left the encounter card face down")
+	}
+	checkPartRefs(t, f.cat, f.g.Log)
+	checkHistory(t, f.g)
+}
+
+func TestFlipBackFaceDownRemovesLine(t *testing.T) {
+	f := newDoFixture(t)
+	dealt := f.dealSingleFaced(t, "h", at(0))
+	lines := len(f.g.Log)
+
+	f.mustDo(t, "h", Action{Kind: ActFlip, Card: dealt}, at(20))
+	f.mustDo(t, "h", Action{Kind: ActFlip, Card: dealt}, at(22))
+
+	if got := len(f.g.Log); got != lines {
+		t.Errorf("flipping back face down left lines %q", f.logTexts()[lines:])
+	}
+	if !f.g.Table.Cards[dealt].FaceDown {
+		t.Error("flipping back left the encounter card face up")
+	}
+	// The deal is the last thing left to undo.
+	f.mustDo(t, "h", Action{Kind: ActUndo}, at(23))
+	if c := f.g.Table.Cards[dealt]; c.Zone != ZonePile || c.Pile != PileEncounter {
+		t.Errorf("undo took back no deal: the card lies in %s %q", c.Zone, c.Pile)
+	}
+	checkHistory(t, f.g)
+}
+
 func TestMoveIsUntracked(t *testing.T) {
 	f := newDoFixture(t)
 	lines := len(f.g.Log)
@@ -883,9 +954,6 @@ func TestPlayFromPileThroughDo(t *testing.T) {
 			f.mustDo(t, "h", Action{Kind: ActDiscardTop, Pile: PileEncounter, N: 1}, at(1))
 			return topCards(f.g.Table.Piles[PileEncounterDiscard], 1)[0]
 		}, nil},
-		{"own deck", "h", func(_ *testing.T, f *doFixture) string {
-			return f.g.Table.Piles["deck:p0"].Cards[3]
-		}, nil},
 		{"another player's deck", "b", func(_ *testing.T, f *doFixture) string {
 			return f.g.Table.Piles["deck:p0"].Cards[3]
 		}, ErrForbidden},
@@ -1064,17 +1132,17 @@ func TestPlayFromDeckIsNarratedAndSurvivesAnotherUndo(t *testing.T) {
 	f.mustDo(t, "b", Action{Kind: ActExhaust, Card: f.villain()}, at(1))
 	f.mustDo(t, "h", Action{Kind: ActPlay, Pile: "deck:p0", X: 400, Y: 200}, at(2))
 
-	if got, want := f.lastLog().Text, "played "+f.nameOf(t, top); got != want {
+	if got, want := f.lastLog().Text, "played a card face down from their deck"; got != want {
 		t.Errorf("last line = %q, want %q", got, want)
 	}
-	if got := f.lastLog().Cards; !slices.Equal(got, []string{top}) {
-		t.Errorf("play line cards = %v, want %v", got, []string{top})
+	if got := f.lastLog().Cards; len(got) != 0 {
+		t.Errorf("play line cards = %v, want none", got)
 	}
 
 	f.mustDo(t, "b", Action{Kind: ActUndo}, at(3))
 
-	if c := f.g.Table.Cards[top]; c.Zone != ZoneTable || c.FaceDown || c.X != 400 || c.Y != 200 {
-		t.Errorf("played card = %+v after Bob's undo, want it face up at 400, 200", c)
+	if c := f.g.Table.Cards[top]; c.Zone != ZoneTable || !c.FaceDown || c.X != 400 || c.Y != 200 {
+		t.Errorf("played card = %+v after Bob's undo, want it face down at 400, 200", c)
 	}
 	checkIntegrity(t, f.g.Table)
 	checkHistory(t, f.g)

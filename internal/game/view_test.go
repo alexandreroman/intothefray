@@ -281,6 +281,32 @@ func TestPublicPilesListed(t *testing.T) {
 	}
 }
 
+// TestCardTurnedFaceDownAgainHasNoCode checks that an encounter card flipped
+// face up, then face down again, hides its code once more.
+func TestCardTurnedFaceDownAgainHasNoCode(t *testing.T) {
+	f := newViewFixture(t)
+	dealt := f.dealSingleFaced(t, hostToken, at(1))
+	code := f.g.Table.Cards[dealt].Code
+	viewCode := func() string {
+		for _, c := range f.g.ViewFor(bobToken).Table.Cards {
+			if c.ID == dealt {
+				return c.Code
+			}
+		}
+		t.Fatal("the dealt card is not listed")
+		return ""
+	}
+
+	f.mustDo(t, hostToken, Action{Kind: ActFlip, Card: dealt}, at(20))
+	if got := viewCode(); got != code {
+		t.Fatalf("face-up card code = %q, want %q", got, code)
+	}
+	f.mustDo(t, hostToken, Action{Kind: ActFlip, Card: dealt}, at(40))
+	if got := viewCode(); got != "" {
+		t.Errorf("card turned face down again shows its code %q", got)
+	}
+}
+
 func TestFaceDownCardHasNoCodeKey(t *testing.T) {
 	f := newViewFixture(t)
 	f.mustDo(t, hostToken, Action{Kind: ActDeal, Area: "p0", X: 600, Y: 200}, at(1))
@@ -597,6 +623,27 @@ func TestLogCardsFilteredToTheView(t *testing.T) {
 	}
 	if got := last(f.g.ViewFor(bobToken)).Cards; len(got) != 0 {
 		t.Errorf("bob sees log cards %v", got)
+	}
+}
+
+// TestLogCardsDropACardTurnedFaceDown checks that lines naming a card lose
+// its id once it lies face down: no one can tie the name to the card.
+func TestLogCardsDropACardTurnedFaceDown(t *testing.T) {
+	f := newViewFixture(t)
+	dealt := f.dealSingleFaced(t, hostToken, at(1))
+	f.mustDo(t, hostToken, Action{Kind: ActFlip, Card: dealt}, at(20))
+	f.mustDo(t, bobToken, Action{Kind: ActToken, Card: dealt, Name: "dmg", Delta: 1}, at(21))
+	if got := f.g.ViewFor(bobToken).Log; !slices.Contains(got[len(got)-1].Cards, dealt) {
+		t.Fatalf("token line on the face-up card has cards %v, want %s", got[len(got)-1].Cards, dealt)
+	}
+	f.mustDo(t, hostToken, Action{Kind: ActFlip, Card: dealt}, at(40))
+
+	for _, token := range []string{hostToken, bobToken, specToken} {
+		for _, line := range f.g.ViewFor(token).Log {
+			if slices.Contains(line.Cards, dealt) {
+				t.Errorf("%s: line %q keeps the id of the face-down card", token, line.Text)
+			}
+		}
 	}
 }
 

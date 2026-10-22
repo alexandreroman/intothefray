@@ -274,6 +274,7 @@ describe('the context menu', () => {
     expect(headerOf(menu)).toEqual({ eyebrow: 'Hero', name: 'Spider-Man', color: 'var(--p1)' });
     expect(labels(menu)).toEqual([
       'Exhaust',
+      'Flip',
       'Add a token',
       'Add a status',
       'Add a modifier',
@@ -482,11 +483,16 @@ describe('the context menu', () => {
     await fireEvent.keyDown(contextMenu()!, { key: 'Escape' });
 
     await rightClick(placed('down'));
-    expect(headerOf(screen.getByRole('menu', { name: 'Face-down card' }))).toEqual({
+    const down = screen.getByRole('menu', { name: 'Face-down card' });
+    expect(headerOf(down)).toEqual({
       eyebrow: 'Face down',
       name: 'Face-down card',
       color: 'var(--p1)',
     });
+    // A player's card lying face down turns face up with Flip; it shows no face meanwhile.
+    expect(labels(down).slice(0, 2)).toEqual(['Exhaust', 'Flip']);
+    expect(menuItem(down, 'Exhaust').classList).toContain('default');
+    expect(screen.queryByLabelText('Card preview')).toBeNull();
   });
 
   it("heads a pile with its owner, its kind and a count pill, in the owner's colour", async () => {
@@ -537,6 +543,8 @@ describe('the context menu', () => {
 
     await fireEvent.keyDown(menu, { key: 'ArrowDown' });
     expect(document.activeElement).toBe(menuItem(menu, 'Exhaust'));
+    await fireEvent.keyDown(document.activeElement!, { key: 'ArrowDown' });
+    expect(document.activeElement).toBe(menuItem(menu, 'Flip'));
     await fireEvent.keyDown(document.activeElement!, { key: 'ArrowDown' });
     expect(document.activeElement).toBe(menuItem(menu, 'Add a token'));
 
@@ -876,12 +884,16 @@ describe('opening the context menu with a click', () => {
 });
 
 describe('what the menu runs', () => {
-  it('shows Flip on a card with two faces once the catalog is loaded', async () => {
+  it('shows Flip on an identity card with two faces once the catalog is loaded', async () => {
     let loaded: () => void = () => {};
     vi.mocked(loadGameCards).mockReturnValue(new Promise<void>((resolve) => (loaded = resolve)));
     // Before the load, the catalog knows nothing.
     vi.mocked(knownCard).mockReturnValue(null);
-    const cards = [card('two', { code: '01002', x: 0 }), card('v', { code: '01094', owner: -1 })];
+    // Any other card has Flip from the start; a single-faced identity has none.
+    const cards = [
+      card('two', { code: '01002', x: 0, identity: true }),
+      card('v', { code: '01094', owner: -1 }),
+    ];
     render(Table, { session: fakeSession(), view: makeView({ cards }) });
 
     await click(placed('two'));

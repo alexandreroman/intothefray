@@ -165,6 +165,30 @@ describe('keys on the table', () => {
     expect(session.act).toHaveBeenCalledWith({ kind: 'exhaust', card: 'mine' }, 0);
   });
 
+  it('F flips a single-faced card in play and a face-down one, not a single-faced identity', async () => {
+    const cards = [
+      card('mine', { x: 280 }),
+      card('played', { code: undefined, faceDown: true, x: 560 }),
+      card('hero', { identity: true, x: 840 }),
+      card('v', { code: '01094', owner: -1, back: 'villain' }),
+    ];
+    const { session } = await renderTable(makeView({ cards }));
+
+    await fireEvent.pointerEnter(placed('mine'));
+    await press('f');
+    expect(session.act).toHaveBeenLastCalledWith({ kind: 'flip', card: 'mine' }, 0);
+
+    // A card played from the deck lies face down, with no code: F turns it face up.
+    await fireEvent.pointerEnter(placed('played'));
+    await press('f');
+    expect(session.act).toHaveBeenLastCalledWith({ kind: 'flip', card: 'played' }, 0);
+    expect(screen.queryByLabelText('Card preview')).toBeNull();
+
+    await fireEvent.pointerEnter(placed('hero'));
+    await press('f');
+    expect(session.act).toHaveBeenCalledTimes(2);
+  });
+
   it('Shift + Space readies all cards, wherever the pointer is', async () => {
     // Only the villain is exhausted: Ready all readies it too.
     const exhausted = [card('v', { code: '01094', owner: -1, back: 'villain', exhausted: true })];
