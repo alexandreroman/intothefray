@@ -111,18 +111,10 @@ function fakeSession() {
   };
 }
 
+// A real DOMRect, as a browser measures it: its sides are getters on its prototype, which a
+// spread of the rect loses.
 function domRect(left: number, top: number, width: number, height: number): DOMRect {
-  return {
-    left,
-    top,
-    width,
-    height,
-    right: left + width,
-    bottom: top + height,
-    x: left,
-    y: top,
-    toJSON: () => ({}),
-  } as DOMRect;
+  return new DOMRect(left, top, width, height);
 }
 
 const SURFACE = { left: 20, top: 40 };
@@ -295,6 +287,27 @@ describe('dragging a group of cards', () => {
         actions: [
           { kind: 'discard', card: 'mine' },
           { kind: 'discard', card: 'other' },
+        ],
+      },
+      0,
+    );
+  });
+
+  it('puts every card on top of the deck, dropped anywhere on it', async () => {
+    const { session } = await renderTable(makeView(), ['mine', 'other']);
+    await press(placed('mine'), 50, 400);
+    // On the lower part of the deck, which lies from 340 to 536 on the screen.
+    await moveTo(660, 500);
+    expect(placed('deck:p0').classList).toContain('drop-pile');
+    expect(screen.getByText('Top of deck')).toBeTruthy();
+
+    await release(660, 500);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      {
+        kind: 'group',
+        actions: [
+          { kind: 'toDeck', card: 'mine', where: 'top' },
+          { kind: 'toDeck', card: 'other', where: 'top' },
         ],
       },
       0,

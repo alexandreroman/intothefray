@@ -8,7 +8,6 @@ import {
   handBand,
   insertIndex,
   isDownward,
-  pileDropRect,
   pileTargets,
   snap,
   sourceOf,
@@ -349,20 +348,6 @@ describe('dropAction', () => {
     expect(
       dropAction({ kind: 'pile', pile: 'encd', card: 'top' }, discard, AT_ORIGIN, DEAL_TO),
     ).toBeNull();
-    // A revealed card put back on the deck it was revealed from.
-    const revealed: DragSource = { ...TABLE_CARD, onPile: 'enc' };
-    const encounter: DropRect = { ...discard, pile: 'enc', drop: 'top', label: 'Top of deck' };
-    expect(dropAction(revealed, encounter, AT_ORIGIN, DEAL_TO)).toBeNull();
-  });
-
-  it('moves a revealed card off its pile', () => {
-    const revealed: DragSource = { ...TABLE_CARD, onPile: 'enc' };
-    expect(dropAction(revealed, TABLE, { x: 300, y: 0 }, DEAL_TO)).toEqual({
-      kind: 'move',
-      card: 'c',
-      x: 300,
-      y: 0,
-    });
   });
 });
 
@@ -424,7 +409,6 @@ describe('sourceOf', () => {
       card: 'c',
       x: 30,
       y: 40,
-      onPile: 'enc',
     });
     expect(sourceOf({ kind: 'hand', id: 'h1' }, view)).toEqual({
       kind: 'hand',
@@ -505,12 +489,10 @@ describe('pileTargets', () => {
     // Those are not drawn on the table: Move to ▾ sends a card there.
     expect(of('mine')).toEqual([
       ['deck:p0', 'top', 'Top of deck'],
-      ['deck:p0', 'bottom', 'Bottom of deck'],
       ['disc:p0', 'discard', 'Discard'],
     ]);
     expect(of('minion')).toEqual([
       ['enc', 'top', 'Top of deck'],
-      ['enc', 'bottom', 'Bottom of deck'],
       ['encd', 'discard', 'Discard'],
     ]);
   });
@@ -522,8 +504,8 @@ describe('pileTargets', () => {
   it('offers nothing for the card a stage shows, or a card it is tucked under', () => {
     expect(of('v')).toEqual([]);
     expect(of('over')).toEqual([]);
-    // What is tucked under it can go: on top of the deck, under it, or to the discard pile.
-    expect(of('under')).toHaveLength(3);
+    // What is tucked under it can go: on top of the deck, or to the discard pile.
+    expect(of('under')).toHaveLength(2);
   });
 
   it('offers nothing for an identity card, or a card it is tucked under', () => {
@@ -539,8 +521,8 @@ describe('pileTargets', () => {
       pileTargets({ kind: 'card', card: id, x: 0, y: 0 }, withIdentity);
     expect(targetsOf('hero')).toEqual([]);
     expect(targetsOf('host')).toEqual([]);
-    // What is tucked under it can go: the top and the bottom of its deck, or its discard pile.
-    expect(targetsOf('up').map((t) => t.drop)).toEqual(['top', 'bottom', 'discard']);
+    // What is tucked under it can go: the top of its deck, or its discard pile.
+    expect(targetsOf('up').map((t) => t.drop)).toEqual(['top', 'discard']);
   });
 
   it('offers the encounter deck its discard pile only', () => {
@@ -773,67 +755,53 @@ describe('a player with two decks', () => {
   it("offers the second deck's own piles", () => {
     const view = twoDeckView();
     const targets = (drag: DragSource) => pileTargets(drag, view).map((t) => t.pile);
-    expect(targets({ kind: 'card', card: 'second', x: 0, y: 0 })).toEqual([
-      'deck:p1',
-      'deck:p1',
-      'disc:p1',
-    ]);
+    expect(targets({ kind: 'card', card: 'second', x: 0, y: 0 })).toEqual(['deck:p1', 'disc:p1']);
     expect(targets({ kind: 'card', card: 'sams', x: 0, y: 0 })).toEqual(['disc:p2']);
     expect(targets({ kind: 'deck', pile: 'deck:p1' })).toEqual(['disc:p1']);
   });
 });
 
-describe('putting a card under a deck', () => {
+describe('dropping a card on its deck', () => {
   const deckRect = rect(100, 350, 140, 200);
   const top: DropRect = {
     kind: 'pile',
     pile: 'deck:p0',
     drop: 'top',
     label: 'Top of deck',
-    rect: pileDropRect(deckRect, 'top'),
-  };
-  const bottom: DropRect = {
-    kind: 'pile',
-    pile: 'deck:p0',
-    drop: 'bottom',
-    label: 'Bottom of deck',
-    rect: pileDropRect(deckRect, 'bottom'),
+    rect: deckRect,
   };
 
-  it('splits a deck: its upper half takes the top, its lower half the bottom', () => {
-    expect(pileDropRect(deckRect, 'top')).toEqual(rect(100, 350, 140, 100));
-    expect(pileDropRect(deckRect, 'bottom')).toEqual(rect(100, 450, 140, 100));
-    expect(pileDropRect(deckRect, 'discard')).toEqual(deckRect);
-    const targets = [TABLE, top, bottom];
-    expect(dropTarget({ x: 150, y: 370 }, targets)).toBe(top);
-    expect(dropTarget({ x: 150, y: 530 }, targets)).toBe(bottom);
-    // Just above or below the deck, within the margin.
-    expect(dropTarget({ x: 150, y: 340 }, targets)).toBe(top);
-    expect(dropTarget({ x: 150, y: 560 }, targets)).toBe(bottom);
-  });
-
-  it('sends the card to the bottom of its deck', () => {
-    expect(dropAction(TABLE_CARD, bottom, AT_ORIGIN, DEAL_TO)).toEqual({
+  it('puts a table card or a hand card on top of its deck', () => {
+    expect(dropAction(TABLE_CARD, top, AT_ORIGIN, DEAL_TO)).toEqual({
       kind: 'toDeck',
       card: 'c',
-      where: 'bottom',
+      where: 'top',
     });
     const hand: DragSource = { kind: 'hand', card: 'h1', hand: ['h1'], area: 'p0' };
-    expect(dropAction(hand, bottom, AT_ORIGIN, DEAL_TO)).toEqual({
+    expect(dropAction(hand, top, AT_ORIGIN, DEAL_TO)).toEqual({
       kind: 'toDeck',
       card: 'h1',
-      where: 'bottom',
+      where: 'top',
     });
   });
 
-  it('puts a card revealed on its deck under it, and leaves it on top', () => {
-    const revealed: DragSource = { kind: 'card', card: 'r', x: 0, y: 0, onPile: 'deck:p0' };
-    expect(dropAction(revealed, bottom, AT_ORIGIN, DEAL_TO)).toEqual({
+  it('puts a card revealed on its deck back on top of it', () => {
+    const view = makeView({
+      cards: [card('r', { onPile: 'deck:p0' })],
+      piles: [pile('deck:p0', { owner: 0 })],
+    });
+    const revealed = sourceOf({ kind: 'card', id: 'r' }, view);
+    if (revealed === null) {
+      throw new Error('the revealed card cannot be dragged');
+    }
+    expect(pileTargets(revealed, view)).toEqual([
+      { pile: 'deck:p0', drop: 'top', label: 'Top of deck' },
+    ]);
+    expect(dropAction(revealed, top, AT_ORIGIN, DEAL_TO)).toEqual({
       kind: 'toDeck',
       card: 'r',
-      where: 'bottom',
+      where: 'top',
     });
-    expect(dropAction(revealed, top, AT_ORIGIN, DEAL_TO)).toBeNull();
   });
 });
 
@@ -870,16 +838,14 @@ describe('side decks', () => {
   const view = makeView({ cards, piles });
   const of = (drag: DragSource) => pileTargets(drag, view).map((t) => [t.pile, t.drop, t.label]);
 
-  it('offers a side card its side deck, on top or under it, and its discard pile when it has one', () => {
+  it('offers a side card the top of its side deck, and its discard pile when it has one', () => {
     expect(of({ kind: 'card', card: 'inv', x: 0, y: 0 })).toEqual([
       ['side:p0:0', 'top', 'Top of Invocation deck'],
-      ['side:p0:0', 'bottom', 'Bottom of Invocation deck'],
       ['sided:p0:0', 'discard', 'Discard'],
     ]);
     // The Sense deck has no discard pile: no drop discards a Sense card.
     expect(of({ kind: 'card', card: 'sense', x: 0, y: 0 })).toEqual([
       ['side:p0:1', 'top', 'Top of Sense deck'],
-      ['side:p0:1', 'bottom', 'Bottom of Sense deck'],
     ]);
   });
 
@@ -932,21 +898,20 @@ describe('side decks', () => {
   it("returns a side discard pile's top card to its side deck", () => {
     expect(of({ kind: 'pile', pile: 'sided:p0:0', card: 'inv-used' })).toEqual([
       ['side:p0:0', 'top', 'Top of Invocation deck'],
-      ['side:p0:0', 'bottom', 'Bottom of Invocation deck'],
       ['sided:p0:0', 'discard', 'Discard'],
     ]);
-    const bottom: DropRect = {
+    const top: DropRect = {
       kind: 'pile',
       pile: 'side:p0:0',
-      drop: 'bottom',
-      label: 'Bottom of Invocation deck',
+      drop: 'top',
+      label: 'Top of Invocation deck',
       rect: rect(0, 0, 1, 1),
     };
     const fromDiscard: DragSource = { kind: 'pile', pile: 'sided:p0:0', card: 'inv-used' };
-    expect(dropAction(fromDiscard, bottom, AT_ORIGIN, DEAL_TO)).toEqual({
+    expect(dropAction(fromDiscard, top, AT_ORIGIN, DEAL_TO)).toEqual({
       kind: 'toDeck',
       card: 'inv-used',
-      where: 'bottom',
+      where: 'top',
     });
   });
 });

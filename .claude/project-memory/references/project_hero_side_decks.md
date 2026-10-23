@@ -19,8 +19,7 @@ classic back (encounter for Gift, player for the others), captioned at
 the bottom with the deck's name, since no source hosts an image of the
 printed one. A side card with no side discard is never discarded: Discard
 is not offered, and when it is tucked under a card that leaves the table
-it goes to the bottom of its side deck. A card dropped on the lower half
-of its home deck goes to the bottom. The cards a hero set
+it goes to the bottom of its side deck. The cards a hero set
 lists in `setAside` (Iceman's Frostbite, Valkyrie's Death-Glow, Rogue's
 Touched, Ironheart's other versions) go to the player's set-aside pile.
 Storm's starting Weather card and other heroes' Setup permanents stay

@@ -34,6 +34,9 @@ type: project
   Reveal (R) │ Top X, Search │ Discard 1, Discard X, Shuffle; discard pile
   Search │ Shuffle into deck. Dragging the top of an own deck (or the
   encounter deck) onto its discard pile discards it, as Discard 1 does.
+  A card dropped anywhere on its home deck (player deck, side deck or
+  encounter deck) goes on top of it, as Move to ▾ "Top of deck" does;
+  Bottom of deck is a Move to ▾ entry (B) only, never a drop target.
   Labels are short; only a refused entry has a tooltip (its reason). The stage
   choice reads "Change card…".
 - A hero side deck has the own deck's entries, Draw 1 and Draw X drawing

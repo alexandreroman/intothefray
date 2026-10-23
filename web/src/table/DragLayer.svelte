@@ -33,7 +33,6 @@
     handBand,
     insertIndex,
     isDownward,
-    pileDropRect,
     pileTargets,
     sourceOf,
     stackOf,
@@ -124,7 +123,7 @@
   const HIDDEN_CARD = 'hidden-0';
 
   // The prototype's arrows in front of the labels.
-  const PILE_GLYPHS: Record<PileDrop, string> = { top: '↑', bottom: '↓', discard: '✕', pile: '→' };
+  const PILE_GLYPHS: Record<PileDrop, string> = { top: '↑', discard: '✕', pile: '→' };
   const TUCK_GLYPH = '↓';
   const HAND_GLYPH = '↓';
 
@@ -433,8 +432,7 @@
     for (const target of piles) {
       const rect = placedRect('.pile', target.pile);
       if (rect) {
-        // A deck takes a card on top in its upper half, under it in its lower half.
-        targets.push({ kind: 'pile', ...target, rect: pileDropRect(rect, target.drop) });
+        targets.push({ kind: 'pile', ...target, rect });
       }
     }
     // The dragged cards, a group's included, are never dropped on.

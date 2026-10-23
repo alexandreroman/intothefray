@@ -41,10 +41,10 @@ export interface Rect {
 }
 
 /**
- * What a drop onto a pile does: back on top of the deck or under it,
- * discarded, or put in that pile.
+ * What a drop onto a pile does: back on top of the deck, discarded, or put in
+ * that pile.
  */
-export type PileDrop = 'top' | 'bottom' | 'discard' | 'pile';
+export type PileDrop = 'top' | 'discard' | 'pile';
 
 /** Where a drop can land, with its box on the screen. */
 export type DropRect =
@@ -64,7 +64,7 @@ type CardRect = Extract<DropRect, { kind: 'card' }>;
 /** What is dragged, read from the current view. */
 export type DragSource =
   /** A table card, with the cards tucked under it. */
-  | { kind: 'card'; card: string; x: number; y: number; onPile?: string }
+  | { kind: 'card'; card: string; x: number; y: number }
   /** A card of the hand of the player seated in `area`. */
   | { kind: 'hand'; card: string; hand: readonly string[]; area: Area }
   /** The top card of a pile that shows its cards. */
@@ -149,7 +149,8 @@ export function dropTarget(point: Point, targets: DropRect[]): DropRect | null {
  * is drawn, in table units, `dealTo` the player an encounter card dealt there
  * goes to (see dealRecipient), and `rows` where the view mode draws the rows.
  * Null when nothing would change: no target, the spot it was taken from, or
- * its own place in the hand.
+ * its own place in the hand. A card revealed on its deck lies on that deck, so
+ * dropped where it lies it goes back on top, as Move to's Top of deck does.
  */
 export function dropAction(
   drag: DragSource,
@@ -247,11 +248,9 @@ function reorder(drag: Extract<DragSource, { kind: 'hand' }>, index: number): Ac
 }
 
 function onPile(drag: CardSource, pile: string, drop: PileDrop): Action | null {
-  // Back onto the pile it came from: a pile's top card, or a card revealed on its deck. Put
-  // under that deck, a revealed card does move.
-  const fromPile =
-    (drag.kind === 'pile' && drag.pile === pile) || (drag.kind === 'card' && drag.onPile === pile);
-  if (fromPile && drop !== 'bottom') {
+  // A pile's top card dropped back onto its pile stays where it is. A card revealed on its deck
+  // goes back on top of it, as its Move to ▾ "Top of deck" does.
+  if (drag.kind === 'pile' && drag.pile === pile) {
     return null;
   }
   if (drag.kind === 'encounter' || drag.kind === 'deck') {
@@ -259,8 +258,7 @@ function onPile(drag: CardSource, pile: string, drop: PileDrop): Action | null {
   }
   switch (drop) {
     case 'top':
-    case 'bottom':
-      return { kind: 'toDeck', card: drag.card, where: drop };
+      return { kind: 'toDeck', card: drag.card, where: 'top' };
     case 'discard':
       return { kind: 'discard', card: drag.card };
     case 'pile':
@@ -285,7 +283,7 @@ function place(drag: DragSource, at: Point, dealTo: Area, rows: RowMap): Action 
   const { x, y } = spotOf(at, rows);
   switch (drag.kind) {
     case 'card':
-      // A revealed card dropped where it lies is still on its deck: nothing moves.
+      // A card dropped where it lies does not move.
       if (x === drag.x && y === drag.y) {
         return null;
       }
@@ -347,8 +345,7 @@ export function sourceOf(element: Pressable, view: View, taken?: string): DragSo
       if (card?.zone !== 'table') {
         return null;
       }
-      const source: DragSource = { kind: 'card', card: card.id, x: card.x, y: card.y };
-      return card.onPile ? { ...source, onPile: card.onPile } : source;
+      return { kind: 'card', card: card.id, x: card.x, y: card.y };
     }
     case 'hand': {
       for (const seat of seats) {
@@ -416,10 +413,10 @@ export interface PileTarget {
 
 /**
  * The piles a dragged card can go to, as its Move to ▾ menu has them: its
- * home deck, on top or under it (the viewer's own cards and encounter cards
- * only), and its discard pile, when it has one; none when it stays on the
- * table. The top card of one of the viewer's decks goes to that deck's discard
- * pile, the encounter deck's to the encounter discard pile.
+ * home deck, on top (the viewer's own cards and encounter cards only), and
+ * its discard pile, when it has one; none when it stays on the table. The top
+ * card of one of the viewer's decks goes to that deck's discard pile, the
+ * encounter deck's to the encounter discard pile.
  */
 export function pileTargets(drag: DragSource, view: View): PileTarget[] {
   const table = view.table;
@@ -453,10 +450,7 @@ export function pileTargets(drag: DragSource, view: View): PileTarget[] {
   const home = table.piles.find((p) => p.id === homeDeckOf(card));
   if (home && (seats.includes(card.owner) || card.owner === -1)) {
     const deck = home.kind === 'sideDeck' ? `${sideLabel(home)} deck` : 'deck';
-    targets.push(
-      { pile: home.id, drop: 'top', label: `Top of ${deck}` },
-      { pile: home.id, drop: 'bottom', label: `Bottom of ${deck}` },
-    );
+    targets.push({ pile: home.id, drop: 'top', label: `Top of ${deck}` });
   }
   // The out-of-play piles are not drawn: Move to ▾ sends a card there.
   const discard = discardPileOf(card, table.piles);
@@ -464,23 +458,6 @@ export function pileTargets(drag: DragSource, view: View): PileTarget[] {
     targets.push({ pile: discard, drop: 'discard', label: 'Discard' });
   }
   return targets.filter(exists);
-}
-
-/**
- * The part of a pile's box on the screen that takes a drop: the upper half of
- * a deck puts the card on top, the lower half under it; any other drop takes
- * the whole pile.
- */
-export function pileDropRect(rect: Rect, drop: PileDrop): Rect {
-  const middle = (rect.top + rect.bottom) / 2;
-  switch (drop) {
-    case 'top':
-      return { ...rect, bottom: middle };
-    case 'bottom':
-      return { ...rect, top: middle };
-    default:
-      return rect;
-  }
 }
 
 /** The card and every table card tucked under it, directly or not: what moves with it. */
