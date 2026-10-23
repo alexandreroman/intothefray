@@ -388,6 +388,54 @@ describe('actionsFor', () => {
     expect(groups(itemsFor({ kind: 'card', id: 'two' }, view))[0]).toEqual(['exhaust', 'flip']);
   });
 
+  describe('a card revealed on a deck', () => {
+    const revealedView = () =>
+      makeView({
+        cards: [
+          card('mine-rev', { onPile: 'deck:p0' }),
+          card('sams-rev', { owner: 1, onPile: 'deck:p1' }),
+          card('enc-rev', { code: '01100', owner: -1, back: 'encounter', onPile: 'enc' }),
+        ],
+      });
+
+    it("is drawn by its deck's owner, and neither exhausted nor marked", () => {
+      const items = itemsFor({ kind: 'card', id: 'mine-rev' }, revealedView());
+
+      expect(groups(items)).toEqual([
+        ['draw', 'flip'],
+        ['discard', 'moveTo'],
+      ]);
+      const draw = item(items, 'draw');
+      expect(draw).toMatchObject({ label: 'Draw', key: 'W', default: true });
+      expect(actionOf(draw)).toEqual({ kind: 'draw', n: 1, pile: 'deck:p0' });
+    });
+
+    it("has no Draw on another player's deck, nor on the encounter deck", () => {
+      for (const id of ['sams-rev', 'enc-rev']) {
+        expect(groups(itemsFor({ kind: 'card', id }, revealedView())), id).toEqual([
+          ['flip'],
+          ['discard', 'moveTo'],
+        ]);
+      }
+    });
+
+    it('is drawn from a side deck it lies on', () => {
+      const view = makeView({
+        cards: [card('labor-rev', { home: 'side:p0:2', onPile: 'side:p0:2' })],
+        piles: [
+          pile('deck:p0', { owner: 0, count: 30 }),
+          pile('side:p0:2', { kind: 'sideDeck', owner: 0, count: 4, label: 'Labor' }),
+        ],
+      });
+
+      expect(actionOf(item(itemsFor({ kind: 'card', id: 'labor-rev' }, view), 'draw'))).toEqual({
+        kind: 'draw',
+        n: 1,
+        pile: 'side:p0:2',
+      });
+    });
+  });
+
   it('a face-down player card shows flip, Exhaust staying its default as on any card', () => {
     // Played from its deck, the card lies face down: the view has no code for it.
     const view = makeView({ cards: [card('played', { code: undefined, faceDown: true })] });

@@ -316,6 +316,22 @@ describe('keys on the table', () => {
     expect(session.act).toHaveBeenLastCalledWith({ kind: 'reveal' }, 0);
   });
 
+  it('W draws a card revealed on the own deck; E and the token and status keys do nothing on it', async () => {
+    const cards = [
+      card('rev', { x: 0, onPile: 'deck:p0' }),
+      card('v', { code: '01094', owner: -1, back: 'villain' }),
+    ];
+    const { session } = await renderTable(makeView({ cards }));
+    await fireEvent.pointerEnter(placed('rev'));
+
+    for (const key of ['e', 'd', 't', 'n', 's', 'c', 'g', 'r', 'l']) {
+      await press(key);
+    }
+    expect(session.act).not.toHaveBeenCalled();
+    await press('w');
+    expect(session.act).toHaveBeenCalledWith({ kind: 'draw', n: 1, pile: 'deck:p0' }, 0);
+  });
+
   it("R on the viewer's own deck reveals its top card onto it", async () => {
     const { session } = await renderTable();
     await fireEvent.pointerEnter(placed('deck:p0'));

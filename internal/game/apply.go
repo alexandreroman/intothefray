@@ -140,6 +140,20 @@ func (t *Table) tableCard(id string) (*Card, error) {
 	return c, nil
 }
 
+// inPlayCard returns the table card with the given id when it is in play. A
+// card revealed on a pile lies on its deck, out of play: it is neither
+// exhausted nor given tokens, statuses or modifiers until it leaves it.
+func (t *Table) inPlayCard(id string) (*Card, error) {
+	c, err := t.tableCard(id)
+	if err != nil {
+		return nil, err
+	}
+	if c.OnPile != "" {
+		return nil, invalid("card %q lies revealed on pile %q, out of play", c.ID, c.OnPile)
+	}
+	return c, nil
+}
+
 func snap(v int) int {
 	return int(math.Round(float64(v)/gridSize)) * gridSize
 }
@@ -622,7 +636,7 @@ var (
 // applyExhaust sets the exhausted state resolve recorded (see
 // resolveExhaust).
 func applyExhaust(t *Table, a Action) error {
-	c, err := t.tableCard(a.Card)
+	c, err := t.inPlayCard(a.Card)
 	if err != nil {
 		return err
 	}
@@ -640,7 +654,7 @@ func applyReadyAll(t *Table, a Action) error {
 	}
 	cards := make([]*Card, 0, len(a.Cards))
 	for _, id := range a.Cards {
-		c, err := t.tableCard(id)
+		c, err := t.inPlayCard(id)
 		if err != nil {
 			return err
 		}
@@ -693,7 +707,7 @@ func applyFlip(t *Table, a Action) error {
 // its valid names. The counter is clamped to [lowest, highest] and deleted at
 // 0: tokens and statuses never go below 0, modifiers are signed.
 func applyCounter(t *Table, a Action, allowed []string, lowest, highest int, field func(*Card) *map[string]int) error {
-	c, err := t.tableCard(a.Card)
+	c, err := t.inPlayCard(a.Card)
 	if err != nil {
 		return err
 	}

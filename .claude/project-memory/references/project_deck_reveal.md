@@ -28,6 +28,15 @@ type: project
   deck") and gives the reordered cards new ids, as a shuffle does, so
   nobody can follow the revealed card into the deck. A reorder with no
   revealed card only arranges the deck: no line, no undo, same ids.
+- A revealed card is not in play: it is neither exhausted (Ready all
+  leaves it out) nor given tokens, statuses or modifiers; the server
+  refuses those actions on it (`inPlayCard`), and its menu has no
+  Exhaust and no token, status or modifier submenus, their keys doing
+  nothing on it. Its menu keeps Flip, Discard, Move to and the arrow.
+- On a player's own deck or side deck, the revealed card's menu starts
+  with Draw (W, default): a draw of 1 from that deck (`pile` = its deck),
+  which takes the revealed card. Other players, and a card revealed on
+  the encounter deck, get no Draw.
 - A Flip that turns a revealed card face down puts it back on top of its
   deck ("put X back on top of their deck"); a flip to another face keeps
   it revealed.

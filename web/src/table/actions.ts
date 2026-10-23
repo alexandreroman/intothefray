@@ -256,16 +256,48 @@ function groupUnitsOf(
 }
 
 function cardActions(card: CardView, context: Context, units: CardView[] | null): ActionItem[] {
-  const items: ActionItem[] = [exhaustItem(card)];
+  // A card revealed on a deck lies there, out of play: it is neither exhausted nor marked (the
+  // server refuses it, inPlayCard), and its owner draws it from there.
+  const revealed = card.onPile !== undefined;
+  const items: ActionItem[] = [];
+  if (!revealed) {
+    items.push(exhaustItem(card));
+  } else if (drawsRevealed(card, context)) {
+    items.push(drawRevealedItem(card));
+  }
   const shownByStage = context.table.stages.some((stage) => stage.current === card.id);
   if (shownByStage) {
     items.push(stageItem());
   } else if (canFlip(card)) {
     items.push(flipItem(card));
   }
-  items.push(counterMenu(card, 'token'), counterMenu(card, 'status'), modifierMenu(card));
+  if (!revealed) {
+    items.push(counterMenu(card, 'token'), counterMenu(card, 'status'), modifierMenu(card));
+  }
   items.push(...(units ? groupLeaveItems(units, context) : leaveItems(card, context)));
   return items;
+}
+
+/** Whether the viewer draws a card revealed on a deck: from one of their own decks or side decks. */
+function drawsRevealed(card: CardView, context: Context): boolean {
+  const pile = context.table.piles.find((p) => p.id === card.onPile);
+  const playerDeck = pile?.kind === 'deck' || pile?.kind === 'sideDeck';
+  return playerDeck && context.seats.includes(pile.owner);
+}
+
+/**
+ * Draw takes a card revealed on a deck into its owner's hand: a draw of that deck, whose top card
+ * it is (internal/game coveredFor).
+ */
+function drawRevealedItem(card: CardView): ActionItem {
+  return {
+    id: 'draw',
+    label: 'Draw',
+    key: 'W',
+    default: true,
+    group: GROUP_TURN,
+    run: () => ({ kind: 'draw', n: 1, pile: card.onPile }),
+  };
 }
 
 function exhaustItem(card: CardView): ActionItem {

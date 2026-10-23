@@ -564,3 +564,58 @@ func TestFlipFaceDownOfACardOffItsDeckLeavesItOnTheTable(t *testing.T) {
 		t.Errorf("c7 = %+v, want it face down on the table", c)
 	}
 }
+
+// TestRevealedCardIsNotInPlay refuses to exhaust a card revealed on a deck,
+// or to give it tokens, statuses or modifiers: it lies on its deck.
+func TestRevealedCardIsNotInPlay(t *testing.T) {
+	for _, deck := range revealedDecks {
+		for name, a := range map[string]Action{
+			"exhaust":  {Kind: ActExhaust},
+			"token":    {Kind: ActToken, Name: "dmg", Delta: 1},
+			"status":   {Kind: ActStatus, Name: "stunned", Delta: 1},
+			"modifier": {Kind: ActModifier, Name: "atk", Delta: 1},
+		} {
+			t.Run(deck.name+" "+name, func(t *testing.T) {
+				f := newDoFixture(t)
+				a.Card = f.revealTop(t, "h", deck.reveal, 1)
+				before := mustJSON(t, f.g)
+
+				if err := f.do("h", a, at(2)); !errors.Is(err, ErrInvalid) {
+					t.Errorf("err = %v, want ErrInvalid", err)
+				}
+				if mustJSON(t, f.g) != before {
+					t.Error("the refused action changed the game")
+				}
+			})
+		}
+	}
+}
+
+// TestReadyAllLeavesTheRevealedCardOut readies the cards in play only: a
+// card revealed on a deck is never exhausted.
+func TestReadyAllLeavesTheRevealedCardOut(t *testing.T) {
+	f := newDoFixture(t)
+	f.mustDo(t, "h", Action{Kind: ActExhaust, Card: f.villain()}, at(1))
+	id := f.revealTop(t, "h", "deck:p0", 2)
+
+	f.mustDo(t, "h", Action{Kind: ActReadyAll}, at(3))
+
+	if got := f.g.History.Events[len(f.g.History.Events)-1].Action.Cards; slices.Contains(got, id) {
+		t.Errorf("readied %v, want the revealed card %s left out", got, id)
+	}
+	checkRevealedOn(t, f.g.Table, id, "deck:p0")
+}
+
+func TestApplyRefusesToMarkARevealedCard(t *testing.T) {
+	table := newTestTable()
+	table.Cards["c7"].OnPile = PileEncounter
+	for _, a := range []Action{
+		{Kind: ActExhaust, Card: "c7", Exhausted: new(true)},
+		{Kind: ActToken, Card: "c7", Name: "thr", Delta: 1},
+		{Kind: ActReadyAll, Cards: []string{"c7"}},
+	} {
+		if err := apply(table, a); !errors.Is(err, ErrInvalid) {
+			t.Errorf("%s: err = %v, want ErrInvalid", a.Kind, err)
+		}
+	}
+}

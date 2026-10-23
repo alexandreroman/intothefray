@@ -49,6 +49,9 @@ type: project
 - Card keys beside the menu: E exhaust, F flip, X discard (Backspace
   too), H hand, B bottom of deck (a side card's side deck), V change
   card (villain / main scheme), A arrow; C stays Confused.
+  A card revealed on a deck has no Exhaust (E) and no token, status or
+  modifier entries; on an own deck, W draws it (see
+  [[project_deck_reveal]]).
 - Another player's deck or side deck shows "Belongs to …" in its menu
   instead of entries. A click on a selected card opens that card's menu
   and keeps the group selection.
