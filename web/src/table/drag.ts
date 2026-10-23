@@ -19,6 +19,18 @@ import { ownSeats } from './seats';
 /** A press turns into a drag once the pointer has moved this far, in screen pixels. */
 export const DRAG_THRESHOLD = 4;
 
+/**
+ * The ids the ghost of a deck's unknown top card goes by, until the server
+ * names the card (DragLayer.svelte): the encounter deck's, and any other's.
+ */
+export const ENCOUNTER_TOP_ID = 'encounter-top';
+export const DECK_TOP_ID = 'deck-top';
+
+/** The id the ghost of a pile's unknown top card goes by, when that card is dragged. */
+export function unknownTopId(pile: Pick<PileView, 'kind'>): string {
+  return pile.kind === 'encounter' ? ENCOUNTER_TOP_ID : DECK_TOP_ID;
+}
+
 /** A drop this close to a pile, in screen pixels, goes onto it. */
 const PILE_MARGIN = 20;
 

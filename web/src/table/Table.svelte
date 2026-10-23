@@ -714,8 +714,9 @@
   let drawnView = view;
 
   // Before the new view is drawn, while the cards still show where they were.
-  // The viewer's own drop already lies where it went (DragLayer's landing,
-  // which ends with this view).
+  // The viewer's own drop (DragLayer's landing, which ends with this view)
+  // already lies where it went on the table or in the hand; onto a pile, it
+  // flies there from its landed ghost, still drawn now.
   $effect.pre(() => {
     const next = view;
     untrack(() => {

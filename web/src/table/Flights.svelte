@@ -1,11 +1,13 @@
 <!--
   The copies of cards flying to and out of piles, above everything, the
-  pointer passing through them: a card flying from where it was, or from the
-  pile it left, to the pile it went to (spec 5.5: discards animate to the
-  owner's pile), on its back and turning over when it left a face-down pile;
-  a card drawn flying from its pile to its slot in the viewer's hand; a card
-  going into a hand the viewer does not see leaving its pile or its spot on
-  the table; and a card coming out of such a hand rising into its pile.
+  pointer passing through them: a card flying from where it was, from where
+  the viewer let it go, or from the pile it left, to the pile it went to
+  (spec 5.5: discards animate to the owner's pile), turning over on the way
+  when it lands on another side: face up out of a face-down pile, face down
+  into a deck; a card drawn flying from its pile to its slot in the viewer's
+  hand; a card going into a hand the viewer does not see leaving its pile or
+  its spot on the table; and a card coming out of such a hand rising into its
+  pile.
 -->
 <script lang="ts">
   import type { PackFace, CardView as TableCard } from '../lib/types';
@@ -46,9 +48,12 @@
   />
 {/snippet}
 
-<!-- Its back, over its face until it turns edge-on (motion.launch). -->
-{#snippet turningBack(card: TableCard)}
-  <div class="side" data-side="back">
+<!--
+  Its back, over its face until it turns edge-on, or, turning face down
+  (hidden), from then on (motion.launch).
+-->
+{#snippet turningBack(card: TableCard, hidden = false)}
+  <div class="side" data-side="back" style:opacity={hidden ? 0 : undefined}>
     <CardBack back={card.back} caption={captionOf(card)} />
   </div>
 {/snippet}
@@ -67,9 +72,9 @@
       {#if isHidden(flight.card)}
         <CardBack back={flight.card.back} caption={captionOf(flight.card)} />
       {:else}
-        {@render (flight.outOfPile ? portrait : placed)(flight.card)}
+        {@render (flight.asOnPile ? portrait : placed)(flight.card)}
         {#if flight.turns}
-          {@render turningBack(flight.card)}
+          {@render turningBack(flight.card, flight.turns === 'down')}
         {/if}
       {/if}
     {:else if flight.kind === 'draw'}

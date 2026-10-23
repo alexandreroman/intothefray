@@ -10,8 +10,9 @@
 import { tick } from 'svelte';
 import { SvelteSet } from 'svelte/reactivity';
 import type { Back, CardView, PileView, TableView } from '../lib/types';
-import type { Anim } from './animate';
-import { isHidden, pileBack, pileCaption } from './face';
+import type { Anim, Turn } from './animate';
+import { unknownTopId } from './drag';
+import { pileBack, pileCaption } from './face';
 
 /** A card moving to its new place (FLIP). */
 const MOVE_MS = 250;
@@ -72,15 +73,24 @@ interface PileFlight extends FlightBase {
   kind: 'toPile';
   /** The pile it flies to. */
   pile: string;
-  /** The card as it was before it left, or as its new pile lists it when it was not listed before. */
+  /**
+   * The card as it was before it left, or as its new pile lists it when it
+   * turns face up there or was not listed before.
+   */
   card: CardView;
   to: Measured;
   /** Put at the bottom of the pile: it lands just below it, then slips under it. */
   under: boolean;
-  /** It leaves a pile rather than the table or the hand: it shows as a pile draws it. */
-  outOfPile: boolean;
-  /** It leaves its pile on its back, and turns over on the way, as a drawn card does. */
-  turns: boolean;
+  /**
+   * Its face shows as a pile draws it, a landscape card turned a quarter
+   * (facesAsOnPile); otherwise as the table or the hand draws it.
+   */
+  asOnPile: boolean;
+  /**
+   * It turns over on the way, as a drawn card does: face up, leaving on its
+   * back, or face down, leaving on its face.
+   */
+  turns: Turn | undefined;
 }
 
 /** A copy of a drawn card on its way from its pile to its slot in the hand. */
@@ -242,10 +252,10 @@ function measure(element: HTMLElement, zoom: number): Measured {
 /**
  * What a card about to travel shows on now: another player's ghost of it,
  * where they let it go; else its place on the table or in the hand, or the
- * pile it leaves. The viewer's own drop slipping under a pile lies where it
- * landed.
+ * pile it leaves. The viewer's own drop slipping under a pile, or flying to
+ * one, lies where it landed.
  */
-function originOf(root: HTMLElement, anim: Anim): HTMLElement | null {
+function originOf(root: HTMLElement, anim: Anim, piles: readonly PileView[]): HTMLElement | null {
   const find = (selector: string) => root.querySelector<HTMLElement>(selector);
   const placed = (id: string) => `${tableCard(id)}, ${handCard(id)}`;
   switch (anim.kind) {
@@ -256,13 +266,29 @@ function originOf(root: HTMLElement, anim: Anim): HTMLElement | null {
       return find(remoteGhost(anim.id)) ?? find(ownGhost(anim.id)) ?? find(placed(anim.id));
     case 'fly': {
       const place = anim.fromPile === undefined ? placed(anim.id) : pilePlace(anim.fromPile);
-      return find(remoteGhost(anim.id)) ?? find(place);
+      const ghost = find(remoteGhost(anim.id)) ?? find(ownGhost(anim.id));
+      // A deck's hidden top card the viewer dragged landed as an unknown card, not under its id.
+      const pile = anim.dropped ? piles.find((p) => p.id === anim.fromPile) : undefined;
+      const unknownTop = pile ? find(ownGhost(unknownTopId(pile))) : null;
+      return ghost ?? unknownTop ?? find(place);
     }
     case 'enter':
       return find(remoteGhost(anim.id)) ?? find(pilePlace(anim.fromPile));
     default:
       return null;
   }
+}
+
+/**
+ * Whether a copy flying to a pile shows its face as a pile draws it: where
+ * it shows it, on the pile it leaves, or, turning face up, on the pile it
+ * lands on. The viewer's own drop leaves its ghost, which the table draws.
+ */
+function facesAsOnPile(anim: Extract<Anim, { kind: 'fly' }>): boolean {
+  if (anim.turns === 'up') {
+    return true;
+  }
+  return anim.fromPile !== undefined && !anim.dropped;
 }
 
 /** The pile an animation leaves or reaches without a card on the table: a draw's, or a hand's unseen card's. */
@@ -298,7 +324,7 @@ function playerColor(color: number): string {
 /**
  * A copy's way from one place to another, tilting to angle degrees as it
  * goes; when it turns, it turns over in the last part of the way: edge-on
- * from its back, then flat on its face.
+ * from one side, then flat on the other.
  */
 function turningFrames(from: Measured, to: Measured, angle: number, turns: boolean): Keyframe[] {
   const dx = to.cx - from.cx;
@@ -322,12 +348,20 @@ function drawFrames(flight: DrawFlight): Keyframe[] {
   return turningFrames(flight.from, flight.to, flight.angle, !flight.faceUp);
 }
 
-/** The back drawn over a turning copy's face: gone once the copy is edge-on. */
+/** The back drawn over a copy turning face up: gone once the copy is edge-on. */
 const BACK_FRAMES: Keyframe[] = [
   { opacity: 1, offset: 0 },
   { opacity: 1, offset: DRAW_EDGE_ON },
   { opacity: 0, offset: DRAW_EDGE_ON },
   { opacity: 0, offset: 1 },
+];
+
+/** The back drawn over a copy turning face down: it shows once the copy is edge-on. */
+const BACK_IN_FRAMES: Keyframe[] = [
+  { opacity: 0, offset: 0 },
+  { opacity: 0, offset: DRAW_EDGE_ON },
+  { opacity: 1, offset: DRAW_EDGE_ON },
+  { opacity: 1, offset: 1 },
 ];
 
 const DRAW_AWAY_FRAMES: Keyframe[] = [
@@ -502,7 +536,7 @@ class TableMotion {
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
     const before = new Map<string, Measured>();
     for (const anim of shown) {
-      const element = root ? originOf(root, anim) : null;
+      const element = root ? originOf(root, anim, tables.before?.piles ?? []) : null;
       if (element && 'id' in anim) {
         before.set(anim.id, measure(element, zoom));
       }
@@ -625,12 +659,15 @@ class TableMotion {
           break;
         }
         case 'fly': {
-          // A card new in the view, out of a deck, is known from where it went.
-          const card = cardsBefore.get(anim.id) ?? cardsAfter.get(anim.id);
+          // Turning face up, it shows the face it lands on: it may lie face down before, or be new
+          // in the view, out of a deck. Otherwise it shows as it left.
+          const card =
+            anim.turns === 'up'
+              ? (cardsAfter.get(anim.id) ?? cardsBefore.get(anim.id))
+              : (cardsBefore.get(anim.id) ?? cardsAfter.get(anim.id));
           const flight = this.#flight(root, anim.toPile, before.get(anim.id), card, {
-            outOfPile: anim.fromPile !== undefined,
-            // A card the view shows the back of has no face to turn to.
-            turns: anim.turns === true && card !== undefined && !isHidden(card),
+            asOnPile: facesAsOnPile(anim),
+            turns: anim.turns,
           });
           if (flight) {
             flights.push(flight);
@@ -705,11 +742,11 @@ class TableMotion {
     // Followed through motion.flights: dropping the flight removes its copy, which cancels these.
     const timing = { delay: flight.delay, easing: FLY_EASING, fill: 'both' } as const;
     const animations: (Animation | null)[] = [];
-    // Its back gives way to its face once it is edge-on.
-    const turnBack = (duration: number) => {
+    // Once it is edge-on, its back gives way to its face, or its face to its back (BACK_IN_FRAMES).
+    const turnBack = (duration: number, frames = BACK_FRAMES) => {
       const back = element.querySelector<HTMLElement>('[data-side="back"]');
       if (back) {
-        animations.push(this.#run(back, BACK_FRAMES, { ...timing, duration }, null));
+        animations.push(this.#run(back, frames, { ...timing, duration }, null));
       }
     };
     switch (flight.kind) {
@@ -724,7 +761,7 @@ class TableMotion {
           this.#run(element, frames, { ...timing, duration: flightMs(flight) }, null),
         );
         if (flight.turns) {
-          turnBack(FLY_MS);
+          turnBack(FLY_MS, flight.turns === 'up' ? BACK_FRAMES : BACK_IN_FRAMES);
         }
         break;
       }
@@ -1108,7 +1145,7 @@ class TableMotion {
     pileId: string,
     from: Measured | undefined,
     card: CardView | undefined,
-    how: Partial<Pick<PileFlight, 'under' | 'outOfPile' | 'turns'>>,
+    how: Partial<Pick<PileFlight, 'under' | 'asOnPile' | 'turns'>>,
   ): PileFlight | null {
     const pile = root.querySelector<HTMLElement>(pilePlace(pileId));
     if (!from || !card || !pile) {
@@ -1123,8 +1160,8 @@ class TableMotion {
       from,
       to: { cx: to.left + to.width / 2, cy: to.top + to.height / 2, w: to.width, h: to.height },
       under: how.under ?? false,
-      outOfPile: how.outOfPile ?? false,
-      turns: how.turns ?? false,
+      asOnPile: how.asOnPile ?? false,
+      turns: how.turns,
       delay: 0,
     };
   }

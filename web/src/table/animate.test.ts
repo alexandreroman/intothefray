@@ -462,14 +462,18 @@ describe('diffViews', () => {
       expect(diffViews(prev, next).filter((anim) => anim.kind === 'reveal')).toEqual([]);
     });
 
-    it('does not turn a card put back on top: it flies there', () => {
+    it('does not turn a card put back on top: it flies there, over the top it covers', () => {
       const prev = withTop('i1', [
         onPile('i1'),
         card('back', { code: '09033', x: 500, home: 'side:p0:0' }),
       ]);
-      const next = withTop('back', [onPile('i1'), onPile('back')], 5);
+      // The covered top is no longer listed: it leaves the view, but stays in the deck.
+      const next = withTop('back', [onPile('back')], 5);
+      const flight = { kind: 'fly', id: 'back', toPile: 'side:p0:0' };
 
-      expect(diffViews(prev, next)).toEqual([{ kind: 'fly', id: 'back', toPile: 'side:p0:0' }]);
+      expect(diffViews(prev, next)).toEqual([flight]);
+      // The viewer's own drop too, from where it was let go.
+      expect(diffViews(prev, next, droppedCard('back'))).toEqual([{ ...flight, dropped: true }]);
     });
 
     it('does not turn on a view that comes too long after the last', () => {
@@ -527,9 +531,9 @@ describe('diffViews', () => {
     });
 
     it('does not slip under for a card put on top, nor for an undone line', () => {
-      // Put on top, it flies there instead.
+      // Put on top, it flies there instead, turning face down.
       expect(diffViews(prev, bottomOf(5, 'put Radar Sense on top of their Sense deck'))).toEqual([
-        { kind: 'fly', id: 'radar', toPile: 'side:p0:1' },
+        { kind: 'fly', id: 'radar', toPile: 'side:p0:1', turns: 'down' },
       ]);
       const undone = view({
         cards: [top],
@@ -719,7 +723,7 @@ describe('diffViews', () => {
     ]);
   });
 
-  it('own drop onto a pile does not fly', () => {
+  it('own drop onto a pile flies there from where it was let go', () => {
     const prev = view({ cards: [card('a', { x: 40 })] });
     const next = view({
       cards: [card('a', { zone: 'pile' })],
@@ -727,7 +731,9 @@ describe('diffViews', () => {
       log: [OLD_LINE, line('discarded Spider-Man', { who: 'Alex', color: 0 })],
     });
 
-    expect(diffViews(prev, next, droppedCard('a'))).toEqual([]);
+    expect(diffViews(prev, next, droppedCard('a'))).toEqual([
+      { kind: 'fly', id: 'a', toPile: 'disc:p0', dropped: true },
+    ]);
   });
 
   it("another player's move of the first player token yields its move", () => {
@@ -1018,24 +1024,24 @@ describe('diffViews', () => {
       });
 
       expect(diffViews(prev, next)).toEqual([
-        { kind: 'fly', id: 'c8', toPile: 'disc:p1', fromPile: 'deck:p1', turns: true },
-        { kind: 'fly', id: 'c7', toPile: 'disc:p1', fromPile: 'deck:p1', turns: true },
+        { kind: 'fly', id: 'c8', toPile: 'disc:p1', fromPile: 'deck:p1', turns: 'up' },
+        { kind: 'fly', id: 'c7', toPile: 'disc:p1', fromPile: 'deck:p1', turns: 'up' },
       ]);
     });
 
-    it("the viewer's own drop of their deck's top on its discard pile turns face up there", () => {
+    it("the viewer's own drop of their deck's top on its discard pile flies there, turning face up", () => {
       const prev = view({ piles: [deck(10), discard([])] });
       const next = view({ cards: [onPile('c7')], piles: [deck(9), discard(['c7'])] });
       const drag: OwnDrop = { element: { kind: 'pile', id: 'deck:p0' }, card: null, lifted: [] };
+      const flight = { kind: 'fly', id: 'c7', toPile: 'disc:p0', fromPile: 'deck:p0', turns: 'up' };
 
-      expect(diffViews(prev, next, drag)).toEqual([{ kind: 'reveal', pile: 'disc:p0' }]);
-      // Seen by anyone else, it flies there on its back and turns on the way.
-      expect(diffViews(prev, next)).toEqual([
-        { kind: 'fly', id: 'c7', toPile: 'disc:p0', fromPile: 'deck:p0', turns: true },
-      ]);
+      // From where the viewer let it go.
+      expect(diffViews(prev, next, drag)).toEqual([{ ...flight, dropped: true }]);
+      // Seen by anyone else, it flies there from the deck.
+      expect(diffViews(prev, next)).toEqual([flight]);
     });
 
-    it("the viewer's own drop of the encounter deck's top on its discard pile turns face up there", () => {
+    it("the viewer's own drop of the encounter deck's top on its discard pile flies there, turning face up", () => {
       const encd = (cards: string[]) =>
         pile('encd', { kind: 'encounterDiscard', owner: -1, count: cards.length, cards });
       const prev = view({ piles: [deck(10), encounter(20), encd([])] });
@@ -1045,7 +1051,9 @@ describe('diffViews', () => {
       });
       const drag: OwnDrop = { element: { kind: 'pile', id: 'enc' }, card: null, lifted: [] };
 
-      expect(diffViews(prev, next, drag)).toEqual([{ kind: 'reveal', pile: 'encd' }]);
+      expect(diffViews(prev, next, drag)).toEqual([
+        { kind: 'fly', id: 'e1', toPile: 'encd', fromPile: 'enc', turns: 'up', dropped: true },
+      ]);
     });
 
     it('a card another player plays face up from their hand turns over', () => {
@@ -1147,6 +1155,7 @@ describe('diffViews', () => {
           id,
           toPile: 'deck:p0',
           fromPile: 'disc:p0',
+          turns: 'down',
         })),
         { kind: 'shuffle', pile: 'deck:p0' },
       ]);
@@ -1180,17 +1189,137 @@ describe('diffViews', () => {
         ],
       });
 
-      expect(diffViews(prev, next)).toEqual([{ kind: 'fly', id: 'c3', toPile: 'deck:p0' }]);
+      expect(diffViews(prev, next)).toEqual([
+        { kind: 'fly', id: 'c3', toPile: 'deck:p0', turns: 'down' },
+      ]);
     });
 
-    it('a table card put on top of its deck flies there', () => {
+    it('a face-up table card put on top of its deck flies there, turning face down', () => {
       const prev = view({
         cards: [card('c4', { code: '01001', owner: 1 })],
         piles: [deck(10), samDeck(10)],
       });
       const next = view({ piles: [deck(10), samDeck(11)] });
+      const flight = { kind: 'fly', id: 'c4', toPile: 'deck:p1', turns: 'down' };
 
-      expect(diffViews(prev, next)).toEqual([{ kind: 'fly', id: 'c4', toPile: 'deck:p1' }]);
+      expect(diffViews(prev, next)).toEqual([flight]);
+      // The viewer's own drop too, from where it was let go.
+      expect(diffViews(prev, next, droppedCard('c4'))).toEqual([{ ...flight, dropped: true }]);
+    });
+
+    it('a face-down table card put on top of its deck flies there on its back', () => {
+      const prev = view({ cards: [card('c4', { faceDown: true })], piles: [deck(10)] });
+      const next = view({ piles: [deck(11)] });
+
+      expect(diffViews(prev, next)).toEqual([{ kind: 'fly', id: 'c4', toPile: 'deck:p0' }]);
+    });
+
+    it('a face-down table card discarded flies there, turning face up', () => {
+      const prev = view({
+        cards: [card('c4', { code: '01001', faceDown: true })],
+        piles: [deck(10), discard([])],
+      });
+      const next = view({ cards: [onPile('c4')], piles: [deck(10), discard(['c4'])] });
+      const flight = { kind: 'fly', id: 'c4', toPile: 'disc:p0', turns: 'up' };
+
+      expect(diffViews(prev, next)).toEqual([flight]);
+      expect(diffViews(prev, next, droppedCard('c4'))).toEqual([{ ...flight, dropped: true }]);
+    });
+
+    it('a face-up table card discarded flies there as its face', () => {
+      const prev = view({
+        cards: [card('c4', { code: '01001' })],
+        piles: [deck(10), discard([])],
+      });
+      const next = view({ cards: [onPile('c4')], piles: [deck(10), discard(['c4'])] });
+
+      expect(diffViews(prev, next, droppedCard('c4'))).toEqual([
+        { kind: 'fly', id: 'c4', toPile: 'disc:p0', dropped: true },
+      ]);
+    });
+
+    it("the viewer's own hand card put on top of their deck flies there, turning face down", () => {
+      const prev = view({
+        cards: [card('h', { code: '01001', zone: 'hand' })],
+        piles: [deck(10)],
+        hands: { p0: ['h'] },
+      });
+      const next = view({ piles: [deck(11)], hands: { p0: [] } });
+      const handDrop: OwnDrop = { element: { kind: 'hand', id: 'h' }, card: 'h', lifted: ['h'] };
+
+      expect(diffViews(prev, next, handDrop)).toEqual([
+        { kind: 'fly', id: 'h', toPile: 'deck:p0', turns: 'down', dropped: true },
+      ]);
+    });
+
+    it("the viewer's own drop of a discard pile's top on the deck flies there, turning face down", () => {
+      const prev = view({ cards: [onPile('c9')], piles: [deck(10), discard(['c9'])] });
+      const next = view({ piles: [deck(11), discard([])] });
+      const drag: OwnDrop = { element: { kind: 'pile', id: 'disc:p0' }, card: 'c9', lifted: [] };
+
+      expect(diffViews(prev, next, drag)).toEqual([
+        {
+          kind: 'fly',
+          id: 'c9',
+          toPile: 'deck:p0',
+          fromPile: 'disc:p0',
+          turns: 'down',
+          dropped: true,
+        },
+      ]);
+    });
+
+    it("the viewer's own drop of a stack on a pile flies each of its cards there", () => {
+      const prev = view({
+        cards: [card('t', { code: '01001' }), card('u', { code: '01002', parent: 't' })],
+        piles: [deck(10), discard([])],
+      });
+      const next = view({
+        cards: [onPile('t'), onPile('u')],
+        piles: [deck(10), discard(['u', 't'])],
+      });
+
+      // The card tucked under it is lifted with it.
+      const stackDrop: OwnDrop = {
+        element: { kind: 'card', id: 't' },
+        card: 't',
+        lifted: ['t', 'u'],
+      };
+
+      expect(diffViews(prev, next, stackDrop)).toEqual([
+        { kind: 'fly', id: 't', toPile: 'disc:p0', dropped: true },
+        { kind: 'fly', id: 'u', toPile: 'disc:p0', dropped: true },
+      ]);
+    });
+
+    it("the viewer's own group drop on a deck flies each of its cards there", () => {
+      const prev = view({
+        cards: [card('a', { code: '01001' }), card('b', { code: '01002', x: 200 })],
+        piles: [deck(10)],
+      });
+      const next = view({ piles: [deck(12)] });
+      const groupDrop: OwnDrop = {
+        element: { kind: 'card', id: 'a' },
+        card: 'a',
+        lifted: ['a', 'b'],
+      };
+
+      expect(diffViews(prev, next, groupDrop)).toEqual([
+        { kind: 'fly', id: 'a', toPile: 'deck:p0', turns: 'down', dropped: true },
+        { kind: 'fly', id: 'b', toPile: 'deck:p0', turns: 'down', dropped: true },
+      ]);
+    });
+
+    it("the viewer's own drop on the table or in the hand still yields nothing", () => {
+      const prev = view({
+        cards: [card('c9', { code: '01001', zone: 'hand' })],
+        hands: { p0: ['c9'] },
+      });
+      const next = view({ cards: [card('c9', { code: '01001', x: 300 })], hands: { p0: [] } });
+      const handDrop: OwnDrop = { element: { kind: 'hand', id: 'c9' }, card: 'c9', lifted: ['c9'] };
+
+      expect(diffViews(prev, next, handDrop)).toEqual([]);
+      expect(diffViews(next, prev, droppedCard('c9'))).toEqual([]);
     });
 
     it('a card put at the bottom of its deck still slips under, and only that', () => {
@@ -1211,7 +1340,7 @@ describe('diffViews', () => {
       });
 
       expect(diffViews(prev, next)).toEqual([
-        { kind: 'fly', id: 'm', toPile: 'deck:p0' },
+        { kind: 'fly', id: 'm', toPile: 'deck:p0', turns: 'down' },
         { kind: 'shuffle', pile: 'deck:p0' },
       ]);
     });
@@ -1225,7 +1354,7 @@ describe('diffViews', () => {
       });
 
       expect(diffViews(prev, next)).toEqual([
-        { kind: 'fly', id: 'e', toPile: 'enc' },
+        { kind: 'fly', id: 'e', toPile: 'enc', turns: 'down' },
         { kind: 'shuffle', pile: 'enc' },
       ]);
     });
@@ -1241,7 +1370,7 @@ describe('diffViews', () => {
       });
 
       expect(diffViews(prev, next)).toEqual([
-        { kind: 'fly', id: 's', toPile: 'side:p0:0' },
+        { kind: 'fly', id: 's', toPile: 'side:p0:0', turns: 'down' },
         { kind: 'shuffle', pile: 'side:p0:0' },
       ]);
     });
@@ -1293,7 +1422,7 @@ describe('diffViews', () => {
       });
 
       expect(diffViews(prev, next)).toEqual([
-        { kind: 'fly', id: 'l1', toPile: 'disc:p0', fromPile: 'deck:p0', turns: true },
+        { kind: 'fly', id: 'l1', toPile: 'disc:p0', fromPile: 'deck:p0', turns: 'up' },
       ]);
     });
 
