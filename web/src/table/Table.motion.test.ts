@@ -2,6 +2,7 @@ import { fireEvent, render, waitFor } from '@testing-library/svelte';
 import { tick } from 'svelte';
 import { SvelteMap } from 'svelte/reactivity';
 import Table from './Table.svelte';
+import { DECK_TOP_ID } from './drag';
 import { interaction } from './interaction.svelte';
 import { motion } from './motion.svelte';
 import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
@@ -12,6 +13,7 @@ import type {
   PileView,
   Point,
   PresenceState,
+  Size,
   Stage,
   View,
 } from '../lib/types';
@@ -22,8 +24,12 @@ vi.mock('../lib/catalog', async (importOriginal) => ({
   loadGameCards: vi.fn(),
 }));
 
+/** A side scheme: a landscape card. */
+const SIDE_SCHEME = '01107';
+
 function infoOf(code: string): CardInfo {
-  const face = { name: 'Spider-Man', type: 'hero', size: 'std' as const, images: [`${code}.png`] };
+  const size: Size = code === SIDE_SCHEME ? 'land' : 'std';
+  const face = { name: 'Spider-Man', type: 'hero', size, images: [`${code}.png`] };
   return { card: { code, faces: [face], back: 'player', quantity: 1 }, face: 0 };
 }
 
@@ -940,6 +946,28 @@ describe('Table animations', () => {
       return { ...rendered, session, next: (view: View) => rendered.rerender({ session, view }) };
     }
 
+    /**
+     * Lays the ghost the viewer's drop leaves where it was let go, until the
+     * view shows it (DragLayer.svelte), under the id DragLayer gives it.
+     */
+    function landGhost(
+      container: Element,
+      id: string,
+      at: Point,
+      size: { w: number; h: number } = { w: 63, h: 88 },
+    ): void {
+      const ghost = document.createElement('div');
+      ghost.className = 'card ghost landed';
+      ghost.dataset.id = id;
+      Object.assign(ghost.style, {
+        left: `${at.x}px`,
+        top: `${at.y}px`,
+        width: `${size.w}px`,
+        height: `${size.h}px`,
+      });
+      container.querySelector('.draglayer')?.append(ghost);
+    }
+
     it('a card played from the discard slides from the pile to its spot', async () => {
       const { next } = await renderTable(
         makeView([card('c9', { zone: 'pile' })], { piles: [PILES[0]!, discard(['c9'])] }),
@@ -984,7 +1012,7 @@ describe('Table animations', () => {
       expect(keyframes[0]).toMatchObject({ translate: '-50px 0px' });
     });
 
-    it('a card put on top of a deck flies there as its face', async () => {
+    it('a face-up card put on top of a deck flies there, turning face down', async () => {
       const { next, container } = await renderTable(
         makeView([card('c4', { owner: 1, x: 40 })], { piles: [samDeck(30), PILES[1]!] }),
       );
@@ -993,12 +1021,20 @@ describe('Table animations', () => {
       await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
       const fly = container.querySelector('.fly');
       expect(fly?.getAttribute('style')).toContain('left: 40px');
-      expect(showsBack(fly)).toBe(false);
+      // It leaves on its face: its back is drawn over it, but hidden until it turns.
+      const back = fly?.querySelector<HTMLElement>('[data-side="back"]');
+      expect(back?.style.opacity).toBe('0');
       const [[keyframes, options]] = animationsOf('.fly') as [
         [Keyframe[], KeyframeAnimationOptions],
       ];
+      expect(keyframes.map((frame) => frame.offset)).toEqual([0, 0.6, 0.8, 1]);
+      expect(String(keyframes[2]?.transform)).toContain('rotateY(90deg)');
       expect(String(keyframes.at(-1)?.transform)).toContain('translate(');
       expect(options.duration).toBe(420);
+      // A portrait card turns no quarter, and its back lies as the copy does.
+      expect(String(keyframes.at(-1)?.transform)).toContain(' rotate(0deg) ');
+      expect(options.easing).toBe('cubic-bezier(.3, .7, .2, 1)');
+      expect(back?.classList).not.toContain('upright');
 
       // The deck lists none of its cards: an unrelated view does not cut the flight.
       await next(makeView([card('z', { x: 500 })], { piles: [samDeck(31), PILES[1]!] }));
@@ -1048,6 +1084,207 @@ describe('Table animations', () => {
       }
       await waitFor(() => expect(container.querySelector('.fly')).toBeNull());
       expect(pile?.classList).not.toContain('empty');
+    });
+
+    describe('a landscape card going to a portrait pile', () => {
+      const encounter = (count: number): PileView => ({
+        id: 'enc',
+        kind: 'encounter',
+        owner: -1,
+        x: 0,
+        y: 300,
+        count,
+      });
+      const encd = (cards: string[]): PileView => ({
+        id: 'encd',
+        kind: 'encounterDiscard',
+        owner: -1,
+        x: 160,
+        y: 300,
+        count: cards.length,
+        cards,
+      });
+      const scheme = (extra: Partial<TableCard> = {}) =>
+        card('ss', { code: SIDE_SCHEME, owner: -1, back: 'encounter', x: 400, y: 100, ...extra });
+      const piles = (count: number, discarded: string[] = []) => [
+        ...PILES,
+        encounter(count),
+        encd(discarded),
+      ];
+      const QUARTER_MS = 420 + 360;
+
+      /** The copy's keyframes and options, and its back layer's. */
+      function flightOf(container: HTMLElement) {
+        const [[keyframes, options]] = animationsOf('.fly') as [
+          [Keyframe[], KeyframeAnimationOptions],
+        ];
+        const back = container.querySelector<HTMLElement>('.fly [data-side="back"]');
+        return { keyframes, options, back, backs: animationsOf('.fly [data-side="back"]') };
+      }
+
+      /** Checks a copy turning a quarter on its way to the encounter deck, then face down there. */
+      function expectQuarterThenFlip(container: HTMLElement) {
+        const { keyframes, options, back, backs } = flightOf(container);
+        expect(options.duration).toBe(QUARTER_MS);
+        expect(options.easing).toBe('linear');
+        expect(keyframes.map((frame) => frame.offset)).toEqual([
+          0,
+          420 / QUARTER_MS,
+          (420 + 180) / QUARTER_MS,
+          1,
+        ]);
+        // On the pile, turned a quarter counter-clockwise; edge-on about the screen's vertical axis.
+        expect(String(keyframes[1]?.transform)).toContain('rotateY(0deg) rotate(-90deg)');
+        expect(String(keyframes[2]?.transform)).toContain('rotateY(90deg) rotate(-90deg)');
+        expect(String(keyframes[3]?.transform)).toContain('rotateY(0deg) rotate(-90deg)');
+        // Its long side ends as tall as the pile.
+        const card = container.querySelector<HTMLElement>('.fly')!;
+        const pile = container.querySelector<HTMLElement>('.surface .pile[data-id="enc"]')!;
+        const scale = Number.parseFloat(pile.style.height) / Number.parseFloat(card.style.width);
+        expect(String(keyframes[1]?.transform)).toContain(`scale(${scale})`);
+        // Its back is a portrait card turned the other way, shown from the flip's edge-on point.
+        expect(back?.classList).toContain('upright');
+        expect(back?.style.width).toBe(card.style.height);
+        expect(back?.style.height).toBe(card.style.width);
+        expect(
+          backs.map(([frames]) => frames.map((frame) => [frame.offset, frame.opacity])),
+        ).toEqual([
+          [
+            [0, 0],
+            [(420 + 180) / QUARTER_MS, 0],
+            [(420 + 180) / QUARTER_MS, 1],
+            [1, 1],
+          ],
+        ]);
+        expect(backs[0]?.[1]).toMatchObject({ duration: QUARTER_MS, easing: 'linear' });
+      }
+
+      it('put on top of the encounter deck turns a quarter on its way, then face down there', async () => {
+        const { next, container } = await renderTable(makeView([scheme()], { piles: piles(20) }));
+
+        await next(makeView([], { piles: piles(21) }));
+        await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
+        expect(container.querySelector('.fly')?.getAttribute('style')).toContain('left: 400px');
+        expectQuarterThenFlip(container);
+      });
+
+      it("as the viewer's own drop, from where it was let go", async () => {
+        const { next, container } = await renderTable(makeView([scheme()], { piles: piles(20) }));
+        interaction.land({
+          action: 1,
+          element: { kind: 'card', id: 'ss' },
+          card: 'ss',
+          lifted: ['ss'],
+          handOrder: null,
+        });
+        landGhost(container, 'ss', { x: 250, y: 150 }, { w: 98, h: 70 });
+
+        await next(makeView([], { piles: piles(21) }));
+        await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
+        const style = container.querySelector('.fly')?.getAttribute('style');
+        expect(style).toContain('left: 250px');
+        expect(style).toContain('width: 98px');
+        expectQuarterThenFlip(container);
+      });
+
+      it('discarded face up only turns a quarter, as the pile shows it', async () => {
+        const { next, container } = await renderTable(makeView([scheme()], { piles: piles(20) }));
+
+        await next(makeView([scheme({ zone: 'pile' })], { piles: piles(20, ['ss']) }));
+        await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
+        const { keyframes, options, back } = flightOf(container);
+        expect(options.duration).toBe(420);
+        expect(keyframes.map((frame) => frame.offset)).toEqual([0, 1]);
+        expect(String(keyframes[1]?.transform)).toContain('rotateY(0deg) rotate(-90deg)');
+        expect(back).toBeNull();
+      });
+
+      it('shuffled into the encounter deck: the deck riffles once it has turned over there', async () => {
+        const { next, container } = await renderTable(makeView([scheme()], { piles: piles(20) }));
+
+        await next(
+          makeView([], {
+            piles: piles(21),
+            log: [
+              START,
+              line('shuffled Spider-Man into the encounter deck', { who: 'Sam', color: 1 }),
+            ],
+          }),
+        );
+        await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
+        const bounce = animationsOf('.surface .pile[data-id="enc"]').map(
+          ([, options]) => options.delay,
+        );
+        expect(bounce).toEqual([QUARTER_MS]);
+      });
+    });
+
+    it('a copy turning face down shows its back once edge-on, as one turning face up loses it', async () => {
+      const samDiscard = (cards: string[]) => discard(cards, 'disc:p1', 1, 840);
+      const alexDeck = (count: number): PileView => ({
+        ...PILES[0]!,
+        id: 'deck:p0',
+        owner: 0,
+        x: 480,
+        count,
+      });
+      const { next, container } = await renderTable(
+        makeView([card('c4', { x: 40 })], {
+          piles: [samDeck(30), alexDeck(20), samDiscard([])],
+        }),
+      );
+
+      // c4 put on top of Alex's deck, c7 discarded from Sam's.
+      await next(
+        makeView([card('c7', { owner: 1, zone: 'pile' })], {
+          piles: [samDeck(29), alexDeck(21), samDiscard(['c7'])],
+        }),
+      );
+      await waitFor(() => expect(container.querySelectorAll('.fly')).toHaveLength(2));
+      const opacities = animationsOf('.fly [data-side="back"]').map(([frames]) =>
+        frames.map((frame) => [frame.offset, frame.opacity]),
+      );
+      expect(opacities).toEqual([
+        // c4, face down from edge-on.
+        [
+          [0, 0],
+          [0.8, 0],
+          [0.8, 1],
+          [1, 1],
+        ],
+        // c7, face up from edge-on.
+        [
+          [0, 1],
+          [0.8, 1],
+          [0.8, 0],
+          [1, 0],
+        ],
+      ]);
+    });
+
+    it("the viewer's own drop on a discard pile flies there from where it was let go", async () => {
+      const { next, container } = await renderTable(makeView([card('b', { owner: 1, x: 40 })]));
+      interaction.land({
+        action: 1,
+        element: { kind: 'card', id: 'b' },
+        card: 'b',
+        lifted: ['b'],
+        handOrder: null,
+      });
+      landGhost(container, 'b', { x: 300, y: 200 });
+
+      await next(
+        makeView([card('b', { owner: 1, zone: 'pile' })], {
+          piles: [PILES[0]!, discard(['b'])],
+        }),
+      );
+      await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
+      const fly = container.querySelector('.fly');
+      expect(fly?.getAttribute('style')).toContain('left: 300px');
+      expect(fly?.getAttribute('style')).toContain('top: 200px');
+      // Face up all along.
+      expect(showsBack(fly)).toBe(false);
+      expect(animationsOf('.fly')).toHaveLength(1);
     });
 
     it('a card sent to the victory display flies to its chip', async () => {
@@ -1162,6 +1399,8 @@ describe('Table animations', () => {
           lifted: [],
           handOrder: null,
         });
+        // The deck's top is not known: it landed as an unknown card.
+        landGhost(table.container, DECK_TOP_ID, { x: 500, y: 200 });
         await table.next(
           makeView([card('c7', { owner: 1, zone: 'pile' })], {
             piles: [samDeck(29), PILES[1]!, samDiscard(['c7'])],
@@ -1170,21 +1409,22 @@ describe('Table animations', () => {
         return table;
       }
 
-      it('turns face up there, with no flight', async () => {
+      it('flies there from where it was let go, turning face up on the way', async () => {
         const { container } = await dropOnDiscard();
 
-        await waitFor(() =>
-          expect(animationsOf(art)).toEqual([
-            [
-              [
-                { transform: 'perspective(700px) rotateY(90deg)' },
-                { transform: 'perspective(700px) rotateY(0deg)' },
-              ],
-              expect.objectContaining({ duration: expect.any(Number) }),
-            ],
-          ]),
-        );
-        expect(container.querySelector('.fly')).toBeNull();
+        await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
+        const fly = container.querySelector('.fly');
+        expect(fly?.getAttribute('style')).toContain('left: 500px');
+        expect(fly?.getAttribute('style')).toContain('top: 200px');
+        // It leaves on its back, which gives way once edge-on.
+        const back = fly?.querySelector<HTMLElement>('[data-side="back"]');
+        expect(back).not.toBeNull();
+        expect(back?.style.opacity).toBe('');
+        const [[keyframes]] = animationsOf('.fly') as [[Keyframe[], KeyframeAnimationOptions]];
+        expect(keyframes.map((frame) => frame.offset)).toEqual([0, 0.6, 0.8, 1]);
+        expect(animationsOf('.fly [data-side="back"]')).toHaveLength(1);
+        // The pile does not turn its top over again.
+        expect(animationsOf(art)).toEqual([]);
       });
 
       it('does not turn with reduced motion', async () => {

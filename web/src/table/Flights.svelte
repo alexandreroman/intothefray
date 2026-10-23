@@ -1,11 +1,14 @@
 <!--
   The copies of cards flying to and out of piles, above everything, the
-  pointer passing through them: a card flying from where it was, or from the
-  pile it left, to the pile it went to (spec 5.5: discards animate to the
-  owner's pile), on its back and turning over when it left a face-down pile;
-  a card drawn flying from its pile to its slot in the viewer's hand; a card
-  going into a hand the viewer does not see leaving its pile or its spot on
-  the table; and a card coming out of such a hand rising into its pile.
+  pointer passing through them: a card flying from where it was, from where
+  the viewer let it go, or from the pile it left, to the pile it went to
+  (spec 5.5: discards animate to the owner's pile), turning over on the way
+  when it lands on another side: face up out of a face-down pile, face down
+  into a deck. A landscape card going to a portrait pile turns a quarter on
+  its way, as the pile draws it, and turns over once there. Then a card
+  drawn flying from its pile to its slot in the viewer's hand; a card going
+  into a hand the viewer does not see leaving its pile or its spot on the
+  table; and a card coming out of such a hand rising into its pile.
 -->
 <script lang="ts">
   import type { PackFace, CardView as TableCard } from '../lib/types';
@@ -46,9 +49,25 @@
   />
 {/snippet}
 
-<!-- Its back, over its face until it turns edge-on (motion.launch). -->
-{#snippet turningBack(card: TableCard)}
-  <div class="side" data-side="back">
+<!--
+  Its back, over its face until it turns edge-on, or, turning face down
+  (hidden), from then on (motion.launch). On a landscape copy that turns a
+  quarter on its way to a portrait pile (upright, the copy's size), it is a
+  portrait card turned the other way, upright once the copy has turned.
+-->
+{#snippet turningBack(
+  card: TableCard,
+  hidden = false,
+  upright: { w: number; h: number } | null = null,
+)}
+  <div
+    class="side"
+    class:upright={upright !== null}
+    data-side="back"
+    style:opacity={hidden ? 0 : undefined}
+    style:width={upright ? `${upright.h}px` : undefined}
+    style:height={upright ? `${upright.w}px` : undefined}
+  >
     <CardBack back={card.back} caption={captionOf(card)} />
   </div>
 {/snippet}
@@ -67,9 +86,13 @@
       {#if isHidden(flight.card)}
         <CardBack back={flight.card.back} caption={captionOf(flight.card)} />
       {:else}
-        {@render (flight.outOfPile ? portrait : placed)(flight.card)}
+        {@render (flight.asOnPile ? portrait : placed)(flight.card)}
         {#if flight.turns}
-          {@render turningBack(flight.card)}
+          {@render turningBack(
+            flight.card,
+            flight.turns === 'down',
+            flight.quarter ? flight.from : null,
+          )}
         {/if}
       {/if}
     {:else if flight.kind === 'draw'}
@@ -101,5 +124,12 @@
   .side {
     position: absolute;
     inset: 0;
+  }
+
+  .side.upright {
+    inset: auto;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) rotate(90deg);
   }
 </style>

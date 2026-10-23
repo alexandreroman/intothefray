@@ -26,9 +26,11 @@
   import {
     contains,
     dealRecipient,
+    DECK_TOP_ID,
     DRAG_THRESHOLD,
     dropAction,
     dropTarget,
+    ENCOUNTER_TOP_ID,
     handAreaOf,
     handBand,
     insertIndex,
@@ -87,7 +89,7 @@
 
   // The top card of a deck is not known: its ghost is a face-down card, until the server answers.
   const ENCOUNTER_TOP: TableCard = {
-    id: 'encounter-top',
+    id: ENCOUNTER_TOP_ID,
     face: 0,
     faceDown: true,
     back: 'encounter',
@@ -147,7 +149,7 @@
   const source = $derived(held ? sourceOf(held.element, view, held.card ?? undefined) : null);
   const overHand = $derived(interaction.handGap !== null);
 
-  const DECK_TOP: TableCard = { ...ENCOUNTER_TOP, id: 'deck-top', back: 'player' };
+  const DECK_TOP: TableCard = { ...ENCOUNTER_TOP, id: DECK_TOP_ID, back: 'player' };
 
   /** The card a source moves; null for a deck's hidden top card and the token. */
   function movedCard(from: DragSource): string | null {
