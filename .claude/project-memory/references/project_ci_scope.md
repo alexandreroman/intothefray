@@ -12,15 +12,23 @@ pinned to the local version), `web` (svelte-check, lint, vitest, build)
 and `docker` (`linux/amd64` image build without push, `compose.yaml` and
 Caddyfile validation). Decided 2026-10-20.
 
-- On a push to `main` only, after the three checks pass, three jobs
-  run in order: `publish` pushes `ghcr.io/alexandreroman/intothefray`
-  (`linux/amd64`, tags = full commit SHA and `main`) with `GITHUB_TOKEN`,
-  sharing the gha cache with `docker`; `pages` calls the reusable
-  `pages.yml`; `deploy-backend` sends the `deploy-app` dispatch to
-  `intothefray-infra` (see [[project_deployment]]). Pull requests build
-  the image without pushing it.
-- `pages.yml` runs its own web verification before deploying; it runs
-  when CI calls it (`workflow_call`) or by hand.
+- On `main` (a push or a manual `workflow_dispatch` run), after the
+  three checks pass, three jobs run in order: `publish` pushes
+  `ghcr.io/alexandreroman/intothefray` (`linux/amd64`, tags = full
+  commit SHA and `main`) with `GITHUB_TOKEN`, sharing the gha cache with
+  `docker`; `pages` deploys the Pages artifact; `deploy-backend` sends
+  the `deploy-app` dispatch to `intothefray-infra` (see
+  [[project_deployment]]). Pull requests build the image without
+  pushing it.
+- The Pages build lives in the `web` job: on `main` it runs
+  `configure-pages`, the production build and `upload-pages-artifact`
+  after the web checks, so the frontend is verified once per commit.
+  `ci.yml` is the only workflow; a manual run of it on `main`
+  republishes everything.
+- The game tests share one pack catalog (`sharedCatalog`, a
+  `sync.OnceValues` in `internal/game/lobby_test.go`): decoding the
+  embedded packs per test made the race-enabled suite take minutes.
+  Tests only read the catalog.
 - CI does not compare `packs/dist` with `packs/curated`: packgen fetches
   marvelcdb and Cerebro over the network (`packs/.cache` is gitignored).
 - The Caddyfile is validated through the compose `web` service, so the
@@ -28,9 +36,10 @@ Caddyfile validation). Decided 2026-10-20.
 - Action and dependency updates are manual (no Dependabot).
 
 **Why:** keep CI fast and deterministic, with no network-dependent job,
-keep each tool version in a single file, and publish only images whose
-commit passed every check.
+no check run twice on a commit, keep each tool version in a single file,
+and publish only images whose commit passed every check.
 
 **How to apply:** when bumping golangci-lint locally, bump the
 `version:` of the lint step in `ci.yml` too; do not add a packs
-regeneration job or Dependabot config without asking.
+regeneration job or Dependabot config without asking; keep `-race` on
+every package and share expensive read-only test fixtures instead.
