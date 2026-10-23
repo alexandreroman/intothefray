@@ -145,18 +145,10 @@ function fakeSession() {
   };
 }
 
+// A real DOMRect, as a browser measures it: its sides are getters on its prototype, which a
+// spread of the rect loses.
 function domRect(left: number, top: number, width: number, height: number): DOMRect {
-  return {
-    left,
-    top,
-    width,
-    height,
-    right: left + width,
-    bottom: top + height,
-    x: left,
-    y: top,
-    toJSON: () => ({}),
-  } as DOMRect;
+  return new DOMRect(left, top, width, height);
 }
 
 // The screen, at zoom 1: the surface 20 px in from the left and 40 px down
@@ -461,20 +453,33 @@ describe('dragging a table card', () => {
     );
   });
 
-  it('goes under the deck when dropped on its lower half', async () => {
+  it('goes on top of the deck when dropped on its lower part', async () => {
     const { session } = await renderTable();
     await press(placed('mine'), 50, 400);
-    // The deck lies from 340 to 536 on the screen: its lower half starts at 438.
+    // The deck lies from 340 to 536 on the screen.
     await moveTo(660, 500);
     expect(placed('deck:p0').classList).toContain('drop-pile');
-    expect(screen.getByText('Bottom of deck')).toBeTruthy();
-    await moveTo(660, 420);
     expect(screen.getByText('Top of deck')).toBeTruthy();
 
-    await moveTo(660, 500);
     await release(660, 500);
     expect(session.act).toHaveBeenCalledExactlyOnceWith(
-      { kind: 'toDeck', card: 'mine', where: 'bottom' },
+      { kind: 'toDeck', card: 'mine', where: 'top' },
+      0,
+    );
+  });
+
+  it('puts an encounter card on top of the encounter deck', async () => {
+    const minion = card('minion', { owner: -1, back: 'encounter', x: 200, y: 300 });
+    const { session } = await renderTable(makeView({ cards: [...CARDS, minion] }));
+    await press(placed('minion'), 250, 400);
+    // The encounter deck lies at 20, 40 on the screen.
+    await moveTo(90, 200);
+    expect(placed('enc').classList).toContain('drop-pile');
+    expect(screen.getByText('Top of deck')).toBeTruthy();
+
+    await release(90, 200);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      { kind: 'toDeck', card: 'minion', where: 'top' },
       0,
     );
   });
@@ -1046,6 +1051,20 @@ describe('dragging a hand card', () => {
     expect(screen.getByText('Discard')).toBeTruthy();
     await release(800, 400);
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'discard', card: 'h3' }, 0);
+  });
+
+  it('goes on top of its deck when dropped on it', async () => {
+    const { session } = await renderTable();
+    await press(handCard('h3'), 650, 780);
+    await moveTo(660, 500);
+    expect(placed('deck:p0').classList).toContain('drop-pile');
+    expect(screen.getByText('Top of deck')).toBeTruthy();
+
+    await release(660, 500);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      { kind: 'toDeck', card: 'h3', where: 'top' },
+      0,
+    );
   });
 });
 
