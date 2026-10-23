@@ -11,7 +11,11 @@ type: project
   tap on touch (a long press opens nothing). Hover only rings, previews
   and targets keys; a hovered token shows its −/+ pill.
 - A click or tap on a token or status disc opens no menu; it shows the
-  −/+ pill, which a tap pins until a tap elsewhere or Esc. In touch mode
+  −/+ pill, which a tap pins until a tap elsewhere or Esc. A hovered
+  token's pill holds while the pointer stays in the box spanning the
+  token's bounding box and the pill (an exhausted card's 15° tilt leaves
+  a gap below the pill); out of that box, it goes after the 100 ms linger.
+  In touch mode
   (no hover, coarse pointer) nothing is ever previewed. Under a coarse
   pointer, menu entries, chips and pill buttons have at least 44 px hit
   areas.

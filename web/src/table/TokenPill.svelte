@@ -1,7 +1,7 @@
 <!--
   The small "− value +" pill above a hovered token, status or modifier. It stays while
-  the pointer is on it, and so does the hover of its card. Tapped (touch), it
-  stays until a press lands outside it and its token.
+  the pointer is within its reach, the box spanning the pill and its token, and so does the
+  hover of its card. Tapped (touch), it stays until a press lands outside it and its token.
 -->
 <script lang="ts">
   import { onDestroy } from 'svelte';
@@ -58,6 +58,44 @@
     place();
   });
 
+  /**
+   * The pointer is in the box spanning the token and the pill. A tilted token (an exhausted card)
+   * has its top edge well below the top of its bounding box: the pointer crosses that room, on
+   * neither the token nor the pill, on its way up, and the box covers it whatever the tilt or zoom.
+   */
+  function inReach(x: number, y: number): boolean {
+    const element = anchor();
+    if (!pill || !element) {
+      return false;
+    }
+    const token = element.getBoundingClientRect();
+    const own = pill.getBoundingClientRect();
+    const left = Math.min(token.left, own.left);
+    const right = Math.max(token.right, own.right);
+    const top = Math.min(token.top, own.top);
+    const bottom = Math.max(token.bottom, own.bottom);
+    return x >= left && x < right && y >= top && y < bottom;
+  }
+
+  /** The pointer is on the card of the token, which then keeps its hover: no pointerenter brings it back. */
+  function onItsCard(target: EventTarget | null): boolean {
+    const card = anchor()?.closest('.card');
+    return target instanceof Node && card != null && card.contains(target);
+  }
+
+  function onPointerMove(event: PointerEvent): void {
+    // Touch has no hover to follow: a tap pins the pill instead.
+    if (event.pointerType === 'touch') {
+      return;
+    }
+    const inside = inReach(event.clientX, event.clientY);
+    if (inside && !interaction.onPill) {
+      interaction.enterPill();
+    } else if (!inside && interaction.onPill) {
+      interaction.leavePill(onItsCard(event.target));
+    }
+  }
+
   /** Quick clicks on − and + never start a text selection, in any browser. */
   function noSelection(event: MouseEvent): void {
     event.preventDefault();
@@ -80,7 +118,7 @@
   });
 </script>
 
-<svelte:window onscrollcapture={place} onresize={place} />
+<svelte:window onscrollcapture={place} onresize={place} onpointermove={onPointerMove} />
 <svelte:document onpointerdowncapture={onDocumentPointerDown} />
 
 <div
@@ -92,7 +130,7 @@
   style:top="{position?.y ?? 0}px"
   class:placed={position !== null}
   onpointerenter={() => interaction.enterPill()}
-  onpointerleave={() => interaction.leavePill()}
+  onpointerleave={(event) => interaction.leavePill(onItsCard(event.relatedTarget))}
 >
   <button
     class="btn-ghost"

@@ -633,4 +633,96 @@ describe('tokens and statuses', () => {
     await vi.advanceTimersByTimeAsync(LINGER_MS);
     expect(pill()).toBeNull();
   });
+
+  describe('within reach of the pill', () => {
+    // The token's box spans x 100 to 140, y 200 to 220; the pill's x 90 to 150, y 170 to 196.
+    // Their reach spans x 90 to 150, y 170 to 220. A tilted token leaves room in it, on neither.
+    const GAP = { clientX: 95, clientY: 198 };
+    const OUTSIDE = { clientX: 400, clientY: 400 };
+
+    /** Hovers the token of 'mine' and lays out its box and its pill's, which jsdom leaves at 0 × 0. */
+    async function hoverToken(): Promise<HTMLElement> {
+      await fireEvent.pointerEnter(placed('mine'));
+      const token = counter('mine', 'token:dmg');
+      token.getBoundingClientRect = () =>
+        DOMRect.fromRect({ x: 100, y: 200, width: 40, height: 20 });
+      await fireEvent.pointerEnter(token);
+      pill()!.getBoundingClientRect = () =>
+        DOMRect.fromRect({ x: 90, y: 170, width: 60, height: 26 });
+      await fireEvent.pointerMove(token, { clientX: 120, clientY: 210 });
+      return token;
+    }
+
+    function surface(): HTMLElement {
+      return document.querySelector<HTMLElement>('.surface')!;
+    }
+
+    it('the pill stays while the pointer crosses the room between its token and it', async () => {
+      const { session } = await renderTable(viewWithCounters());
+      vi.useFakeTimers();
+      const token = await hoverToken();
+
+      // Off the token and its card, onto the table, short of the pill.
+      await fireEvent.pointerLeave(token);
+      await fireEvent.pointerLeave(placed('mine'));
+      await fireEvent.pointerMove(surface(), GAP);
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(pill()).not.toBeNull();
+      expect(interaction.hovered).toEqual({ kind: 'card', id: 'mine' });
+
+      const add = within(pill()!).getByRole('button', { name: 'Add 1' });
+      await fireEvent.pointerEnter(pill()!);
+      await fireEvent.pointerMove(add, { clientX: 140, clientY: 180 });
+      await fireEvent.click(add);
+      expect(session.act).toHaveBeenCalledExactlyOnceWith(
+        { kind: 'token', card: 'mine', name: 'dmg', delta: 1 },
+        0,
+      );
+    });
+
+    it('the pill and its card linger out once the pointer leaves its reach for the table', async () => {
+      await renderTable(viewWithCounters());
+      vi.useFakeTimers();
+      const token = await hoverToken();
+      await fireEvent.pointerLeave(token);
+      await fireEvent.pointerLeave(placed('mine'));
+      await fireEvent.pointerMove(surface(), GAP);
+
+      await fireEvent.pointerMove(surface(), OUTSIDE);
+      await vi.advanceTimersByTimeAsync(LINGER_MS - 1);
+      expect(pill()).not.toBeNull();
+      await vi.advanceTimersByTimeAsync(1);
+      expect(pill()).toBeNull();
+      expect(interaction.hovered).toBeNull();
+      expect(noPreview()).toBe(true);
+    });
+
+    it('the pill goes once the pointer leaves its reach for its own card, which stays hovered', async () => {
+      await renderTable(viewWithCounters());
+      vi.useFakeTimers();
+      const token = await hoverToken();
+      await fireEvent.pointerLeave(token);
+
+      await fireEvent.pointerMove(placed('mine'), OUTSIDE);
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(pill()).toBeNull();
+      expect(interaction.hovered).toEqual({ kind: 'card', id: 'mine' });
+      expect(within(preview()).getByRole('img', { name: 'Spider-Man' })).toBeTruthy();
+    });
+
+    it('the pill goes once the pointer leaves its reach for another card, which stays hovered', async () => {
+      await renderTable(viewWithCounters());
+      vi.useFakeTimers();
+      const token = await hoverToken();
+      await fireEvent.pointerLeave(token);
+      await fireEvent.pointerLeave(placed('mine'));
+
+      // Entering a card comes before the move that lands on it.
+      await fireEvent.pointerEnter(placed('theirs'));
+      await fireEvent.pointerMove(placed('theirs'), OUTSIDE);
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(pill()).toBeNull();
+      expect(interaction.hovered).toEqual({ kind: 'card', id: 'theirs' });
+    });
+  });
 });
