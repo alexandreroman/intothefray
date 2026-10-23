@@ -139,7 +139,10 @@ class TableInteraction {
 
   /** The token or status the viewer points at: its − / + pill shows above it. */
   counter = $state.raw<CounterTarget | null>(null);
-  /** The pointer is on the pill. */
+  /**
+   * The pointer is within reach of the pill: on it, on its token, or in the
+   * room between them (TokenPill.svelte).
+   */
   onPill = $state(false);
   /**
    * A tap showed the pill: touch has no hover, so it stays, and so does the
@@ -431,8 +434,8 @@ class TableInteraction {
 
   /**
    * The pointer left an element: it goes after the linger, unless still in
-   * use. The linger lets the pointer reach the pill of a token near the
-   * card's edge, and spares the preview a flicker between two cards.
+   * use, as the card of a pill within reach. The linger spares the preview a
+   * flicker between two cards.
    */
   leave(): void {
     this.#cancelHide();
@@ -460,8 +463,9 @@ class TableInteraction {
   }
 
   /**
-   * The pointer left a token, a status or the pill: the pill goes after the
-   * linger, unless the pointer is on it or a tap pinned it.
+   * The pointer left a token, a status or the pill's reach: the pill goes
+   * after the linger, unless the pointer is within its reach or a tap pinned
+   * it.
    */
   leaveCounter(): void {
     this.#cancelCounterHide();
@@ -472,16 +476,26 @@ class TableInteraction {
     }, LINGER_MS);
   }
 
+  /** The pointer came within reach of the pill: the pill stays, and so does its card's hover. */
   enterPill(): void {
     this.#cancelCounterHide();
     this.onPill = true;
   }
 
-  leavePill(): void {
+  /**
+   * The pointer left the pill's reach: the pill goes after the linger, and
+   * the card it belongs to lingers out with it. Not when the pointer is back
+   * on that card, which keeps its hover, nor when it hovers another element
+   * already.
+   */
+  leavePill(onItsCard: boolean): void {
+    const card = this.counter?.card;
     this.onPill = false;
     this.leaveCounter();
-    // The card the pill belongs to lingers out with it.
-    this.leave();
+    const hovered = this.hovered;
+    if (!onItsCard && hovered?.kind === 'card' && hovered.id === card) {
+      this.leave();
+    }
   }
 
   /** Drops the pill at once, pinned or not. */
@@ -685,7 +699,7 @@ class TableInteraction {
     }
   }
 
-  /** The pill keeps itself and its card's hover: the pointer is on it, or a tap pinned it. */
+  /** The pill keeps itself and its card's hover: the pointer is within its reach, or a tap pinned it. */
   #pillHolds(): boolean {
     return this.onPill || this.counterPinned;
   }
