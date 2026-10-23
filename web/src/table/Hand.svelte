@@ -86,12 +86,25 @@
   // A table card of the viewer's own, dragged over the hand to go back to it.
   const dropTarget = $derived(interaction.dropOn?.kind === 'hand');
 
+  // A band of the screen the pointer keeps the hand up in (see followBand), down to the bottom of
+  // the window.
+  type Band = { left: number; right: number; top: number };
+
+  // The band of the raised hand, as last measured.
+  let openBand: Band | null = null;
+  // The band of a raised hand some cards left without a drag (played or discarded with a key): the
+  // fan closes up behind them, and a pointer resting where they were would be out of the new band.
+  // The hand stays up while the pointer is in either band, and lowers once it is out of both. A drag
+  // decides on its own, and forgets it.
+  let keptBand: Band | null = null;
+
   // While something is dragged, the drag decides: the hand rises only under a
   // hand card brought back over it, or a table card going back to it. Once
   // the card is dropped, the pointer decides again (see below).
   $effect.pre(() => {
     const drag = interaction.dragging;
     if (drag) {
+      keptBand = null;
       open = (drag.element.kind === 'hand' && interaction.handGap !== null) || dropTarget;
     }
   });
@@ -207,6 +220,7 @@
   function lower(): void {
     pinned = false;
     open = false;
+    keptBand = null;
     if (interaction.locked && interaction.hovered?.kind === 'hand') {
       interaction.release();
     }
@@ -238,11 +252,13 @@
   function followBand(at: { x: number; y: number }): void {
     // A dialog freezes the table: the hand stays down under its backdrop.
     if (modal.open) {
+      keptBand = null;
       open = false;
       return;
     }
     const cardsShown = [...(list?.querySelectorAll<HTMLElement>('.hcard') ?? [])];
     if (cardsShown.length === 0) {
+      keptBand = null;
       open = false;
       return;
     }
@@ -257,11 +273,46 @@
       return;
     }
     const margin = open ? OPEN_MARGIN : RESTING_MARGIN;
-    const left = Math.min(...boxes.map((box) => box.left)) - margin;
-    const right = Math.max(...boxes.map((box) => box.right)) + margin;
-    const top = Math.min(...boxes.map((box) => box.top)) - margin;
-    open = at.x >= left && at.x <= right && at.y >= top;
+    const band = {
+      left: Math.min(...boxes.map((box) => box.left)) - margin,
+      right: Math.max(...boxes.map((box) => box.right)) + margin,
+      top: Math.min(...boxes.map((box) => box.top)) - margin,
+    };
+    const inKeptBand = keptBand !== null && isIn(keptBand, at);
+    if (!inKeptBand) {
+      keptBand = null;
+    }
+    open = isIn(band, at) || inKeptBand;
+    openBand = open ? band : null;
   }
+
+  function isIn(band: Band, at: { x: number; y: number }): boolean {
+    return at.x >= band.left && at.x <= band.right && at.y >= band.top;
+  }
+
+  /** The smallest band that holds both. */
+  function union(a: Band, b: Band): Band {
+    return {
+      left: Math.min(a.left, b.left),
+      right: Math.max(a.right, b.right),
+      top: Math.min(a.top, b.top),
+    };
+  }
+
+  // Cards leaving the raised hand under a mouse or a pen keep its band (see keptBand). A card
+  // dragged out of the hand is lifted out of the fan as the drag starts instead, and the drag
+  // decides then (see above).
+  let shownIds: string[] = [];
+  $effect(() => {
+    const ids = shown.flatMap((card) => (card === 'gap' ? [] : [card.id]));
+    const someLeft = shownIds.some((id) => !ids.includes(id));
+    shownIds = ids;
+    untrack(() => {
+      if (someLeft && open && openBand !== null && !touch && !interaction.dragging) {
+        keptBand = keptBand === null ? openBand : union(keptBand, openBand);
+      }
+    });
+  });
 
   function isMoving(card: HTMLElement): boolean {
     // A drawn card waits hidden in its slot while its copy flies in from the pile.
@@ -337,6 +388,7 @@
       if (!interaction.dragging && event.pointerType !== 'touch') {
         pointer = null;
         open = false;
+        keptBand = null;
       }
     };
     root.addEventListener('pointerleave', close);

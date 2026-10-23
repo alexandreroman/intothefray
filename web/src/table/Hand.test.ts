@@ -164,6 +164,38 @@ describe('Hand', () => {
     expect(isOpen()).toBe(false);
   });
 
+  it('stays raised as the card under the pointer leaves it, until the pointer leaves where it was', async () => {
+    // Three cards side by side; with the last one gone, the fan closes up around the middle.
+    let lefts: Record<string, number> = { h1: 600, h2: 700, h3: 800 };
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: Element,
+    ) {
+      const id = this.closest<HTMLElement>('.hcard')?.dataset.id ?? '';
+      return DOMRect.fromRect({ x: lefts[id] ?? 0, y: 700, width: 132, height: 185 });
+    });
+    const { rerender } = render(Hand, { cards: CARDS, faceOf });
+    const isOpen = () => handList().classList.contains('open');
+
+    // Over the last card, then on its outer part: the open band is 576..956.
+    await fireEvent.pointerMove(window, { clientX: 850, clientY: 800 });
+    await fireEvent.pointerMove(window, { clientX: 920, clientY: 800 });
+    expect(isOpen()).toBe(true);
+
+    // Discarded with a key: the new band (626..906) leaves the resting pointer out.
+    lefts = { h1: 650, h2: 750 };
+    await rerender({ cards: CARDS.slice(0, 2), faceOf });
+    // The band is measured again once the hand has settled.
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(handCards().map((item) => item.dataset.id)).toEqual(['h1', 'h2']);
+    expect(isOpen()).toBe(true);
+
+    // Where the card was: still raised. Out of where it was too: lowered.
+    await fireEvent.pointerMove(window, { clientX: 940, clientY: 800 });
+    expect(isOpen()).toBe(true);
+    await fireEvent.pointerMove(window, { clientX: 1000, clientY: 800 });
+    expect(isOpen()).toBe(false);
+  });
+
   it('a drawn card waiting for its copy is hidden, and left out of the band until it lands', async () => {
     // h1 measures 600..732 on the screen, the others 900..1032.
     vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
