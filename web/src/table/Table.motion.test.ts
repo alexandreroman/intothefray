@@ -471,6 +471,89 @@ describe('Table animations', () => {
     ).toHaveLength(6);
   });
 
+  describe('when a shuffle riffles the pile', () => {
+    /** The delays of the riffle on a pile: its copies', in order, and its bounce's. */
+    function riffleDelays(container: HTMLElement, id: string) {
+      const pile = container.querySelector(`.surface .pile[data-id="${id}"]`);
+      const copies = animate.mock.calls.flatMap((call, i) => {
+        const element = animate.mock.contexts[i] as Element;
+        const [, options] = call as unknown as [Keyframe[], KeyframeAnimationOptions];
+        return element.parentElement === pile ? [options.delay] : [];
+      });
+      const bounce = animationsOf(`.surface .pile[data-id="${id}"]`).map(
+        ([, options]) => options.delay,
+      );
+      return { copies, bounce };
+    }
+
+    it('a card shuffled into its deck: the deck riffles once the card has landed', async () => {
+      const session = fakeSession();
+      const deck = (count: number): PileView => ({ ...PILES[0]!, count });
+      const { rerender, container } = render(Table, {
+        session,
+        view: makeView([card('b', { owner: 1, x: 40 })], { piles: [deck(30), PILES[1]!] }),
+      });
+      await settle();
+
+      await rerender({
+        session,
+        view: makeView([], {
+          piles: [deck(31), PILES[1]!],
+          log: [START, line('shuffled Spider-Man into their deck', { who: 'Sam', color: 1 })],
+        }),
+      });
+      await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
+      // The card flies for 420 ms; the copies then riffle one after the other, 40 ms apart.
+      expect(riffleDelays(container, 'deck:p1')).toEqual({
+        copies: [420, 460, 500, 540, 580, 620],
+        bounce: [420],
+      });
+    });
+
+    it('a discard pile shuffled back: the deck riffles once the last card has landed', async () => {
+      const session = fakeSession();
+      const ids = ['d1', 'd2', 'd3'];
+      const deck = (count: number): PileView => ({ ...PILES[0]!, id: 'deck:p0', owner: 0, count });
+      const discard = (cards: string[]): PileView => ({ ...PILES[1]!, count: cards.length, cards });
+      const onPile = ids.map((id) => card(id, { zone: 'pile' }));
+      const { rerender, container } = render(Table, {
+        session,
+        view: makeView(onPile, { piles: [deck(10), discard(ids)] }),
+      });
+      await settle();
+
+      await rerender({
+        session,
+        view: makeView([], {
+          piles: [deck(13), discard([])],
+          log: [START, line('shuffled their discard pile into their deck')],
+        }),
+      });
+      await waitFor(() => expect(container.querySelectorAll('.fly')).toHaveLength(3));
+      // Three cards leave 70 ms apart: the last one lands at 140 + 420 ms.
+      const { copies, bounce } = riffleDelays(container, 'deck:p0');
+      expect(copies[0]).toBe(560);
+      expect(bounce).toEqual([560]);
+    });
+
+    it('a shuffle with no card flying in riffles at once', async () => {
+      const session = fakeSession();
+      const { rerender, container } = render(Table, { session, view: makeView([]) });
+      await settle();
+
+      await rerender({
+        session,
+        view: makeView([], { log: [START, line('shuffled their deck', { who: 'Sam', color: 1 })] }),
+      });
+      await waitFor(() =>
+        expect(animationsOf('.surface .pile[data-id="deck:p1"]')).toHaveLength(1),
+      );
+      const { copies, bounce } = riffleDelays(container, 'deck:p1');
+      expect(copies[0]).toBe(0);
+      expect(bounce).toEqual([0]);
+    });
+  });
+
   it('a discarded card flies to its pile, which shows it once it lands', async () => {
     const session = fakeSession();
     const { rerender, container } = render(Table, {

@@ -23,7 +23,11 @@ const FLIP_MS = 360;
 const FLIP_PERSPECTIVE = 'perspective(700px)';
 /** The soft flash on a card that just changed. */
 const GLOW_MS = 1100;
-/** Copies of the pile's back split left and right, then riffle back in, one after the other. */
+/**
+ * Copies of the pile's back split left and right, then riffle back in, one
+ * after the other. A pile that cards fly into riffles once the last of them
+ * has landed, so that the shuffle is seen to mix them in.
+ */
 const RIFFLE_MS = 620;
 const RIFFLE_COPIES = 6;
 const RIFFLE_STAGGER_MS = 40;
@@ -365,6 +369,26 @@ function toPileFrames(flight: PileFlight): Keyframe[] {
   ];
 }
 
+/** How long a copy takes to get where it goes. */
+function flightMs(flight: Flight): number {
+  if (flight.kind === 'toPile') {
+    return flight.under ? UNDER_MS : FLY_MS;
+  }
+  return DRAW_MS;
+}
+
+/** When the last copy flying into a pile lands on it, from now (0 with none). */
+function lastLanding(flights: Flight[], pile: string): number {
+  let landing = 0;
+  for (const flight of flights) {
+    const intoPile = flight.kind === 'toPile' || flight.kind === 'arrive';
+    if (intoPile && flight.pile === pile) {
+      landing = Math.max(landing, flight.delay + flightMs(flight));
+    }
+  }
+  return landing;
+}
+
 /**
  * Copies of the same kind leave one after the other, in the order of their
  * animations; those leaving for or coming out of a hand the viewer does not
@@ -558,6 +582,7 @@ class TableMotion {
     const cardsAfter = new Map((tables.after?.cards ?? []).map((card) => [card.id, card]));
     const pileViews = new Map((tables.before?.piles ?? []).map((pile) => [pile.id, pile]));
     const flights: Flight[] = [];
+    const shuffled: string[] = [];
     for (const anim of shown) {
       switch (anim.kind) {
         // A card come onto the table slides out of its pile as a moved card does.
@@ -577,8 +602,9 @@ class TableMotion {
         case 'glow':
           this.#glow(root, anim.id, anim.color);
           break;
+        // Riffled below, once the copies flying into the pile are known.
         case 'shuffle':
-          this.#riffle(root, anim.pile);
+          shuffled.push(anim.pile);
           break;
         case 'reveal':
           this.#reveal(root, anim.pile);
@@ -661,7 +687,11 @@ class TableMotion {
         }
       }
     }
-    this.flights = [...this.flights, ...staggered(flights)];
+    const launched = staggered(flights);
+    for (const pile of shuffled) {
+      this.#riffle(root, pile, lastLanding(launched, pile));
+    }
+    this.flights = [...this.flights, ...launched];
   }
 
   /**
@@ -690,8 +720,9 @@ class TableMotion {
         } else if (flight.turns) {
           frames = turningFrames(flight.from, flight.to, 0, true);
         }
-        const duration = flight.under ? UNDER_MS : FLY_MS;
-        animations.push(this.#run(element, frames, { ...timing, duration }, null));
+        animations.push(
+          this.#run(element, frames, { ...timing, duration: flightMs(flight) }, null),
+        );
         if (flight.turns) {
           turnBack(FLY_MS);
         }
@@ -1011,8 +1042,11 @@ class TableMotion {
     );
   }
 
-  /** The prototype's riffle: copies of the pile split left and right, then riffle back into it. */
-  #riffle(root: HTMLElement, id: string): void {
+  /**
+   * The prototype's riffle: copies of the pile split left and right, then
+   * riffle back into it, after delay (ms): once the cards flying into it land.
+   */
+  #riffle(root: HTMLElement, id: string, delay: number): void {
     const pile = root.querySelector<HTMLElement>(tablePile(id));
     const art = pile?.querySelector('.art');
     if (!pile || !art || typeof pile.animate !== 'function') {
@@ -1021,11 +1055,14 @@ class TableMotion {
     for (let i = 0; i < RIFFLE_COPIES; i++) {
       const copy = document.createElement('div');
       copy.setAttribute('aria-hidden', 'true');
+      // Shown only while it riffles (its first and last frames), as waiting at rest it would cover
+      // the pile's count.
       Object.assign(copy.style, {
         position: 'absolute',
         inset: '0',
         zIndex: '6',
         pointerEvents: 'none',
+        visibility: 'hidden',
       });
       copy.append(art.cloneNode(true));
       pile.append(copy);
@@ -1035,15 +1072,15 @@ class TableMotion {
       const animation = this.#run(
         copy,
         [
-          { transform: 'translate(0, 0) rotate(0deg)' },
+          { transform: 'translate(0, 0) rotate(0deg)', visibility: 'visible' },
           {
             transform: `translate(${side * reach}px, ${-4 - i}px) rotate(${side * (6 + i * 2)}deg)`,
             offset: 0.45,
           },
           { transform: `translate(${side * 4}px, -2px) rotate(${side * 2}deg)`, offset: 0.8 },
-          { transform: 'translate(0, 0) rotate(0deg)' },
+          { transform: 'translate(0, 0) rotate(0deg)', visibility: 'visible' },
         ],
-        { duration: RIFFLE_MS, delay: i * RIFFLE_STAGGER_MS, easing: RIFFLE_EASING },
+        { duration: RIFFLE_MS, delay: delay + i * RIFFLE_STAGGER_MS, easing: RIFFLE_EASING },
         pileSubject(id),
       );
       const remove = () => {
@@ -1060,7 +1097,7 @@ class TableMotion {
         { transform: 'scale(1.03)', offset: 0.85 },
         { transform: 'scale(1)' },
       ],
-      { duration: PILE_BOUNCE_MS, easing: 'ease-out' },
+      { duration: PILE_BOUNCE_MS, delay, easing: 'ease-out' },
       pileSubject(id),
     );
   }
