@@ -1216,6 +1216,51 @@ describe('diffViews', () => {
       ]);
     });
 
+    it('an encounter card shuffled into the encounter deck flies there and the deck riffles', () => {
+      const soldier = card('e', { code: '01097', back: 'encounter', owner: -1, x: 300 });
+      const prev = view({ cards: [soldier], piles: [deck(10), encounter(20)] });
+      const next = view({
+        piles: [deck(10), encounter(21)],
+        log: [OLD_LINE, line('shuffled Hydra Soldier into the encounter deck', alex)],
+      });
+
+      expect(diffViews(prev, next)).toEqual([
+        { kind: 'fly', id: 'e', toPile: 'enc' },
+        { kind: 'shuffle', pile: 'enc' },
+      ]);
+    });
+
+    it('a side card shuffled into its side deck flies there and the side deck riffles', () => {
+      const invocation = (count: number) =>
+        pile('side:p0:0', { kind: 'sideDeck', x: 360, count, label: 'Invocation' });
+      const side = card('s', { code: '01001', home: 'side:p0:0', x: 300 });
+      const prev = view({ cards: [side], piles: [deck(10), invocation(4)] });
+      const next = view({
+        piles: [deck(10), invocation(5)],
+        log: [OLD_LINE, line('shuffled Hex into their Invocation deck', alex)],
+      });
+
+      expect(diffViews(prev, next)).toEqual([
+        { kind: 'fly', id: 's', toPile: 'side:p0:0' },
+        { kind: 'shuffle', pile: 'side:p0:0' },
+      ]);
+    });
+
+    it('an undone shuffle into the deck does not riffle the deck', () => {
+      const prev = view({ piles: [deck(11)] });
+      const next = view({
+        cards: [card('m', { code: '01001', x: 300 })],
+        piles: [deck(10)],
+        log: [
+          OLD_LINE,
+          line('shuffled Web-Shooter into their deck', { ...alex, undone: true }),
+          line('undid “shuffled Web-Shooter into their deck”', alex),
+        ],
+      });
+
+      expect(diffViews(prev, next)).not.toContainEqual({ kind: 'shuffle', pile: 'deck:p0' });
+    });
+
     it('a table card sent to the victory display flies there', () => {
       const prev = view({
         cards: [card('c', { code: '01001', x: 300 })],
