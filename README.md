@@ -270,12 +270,14 @@ They run the same checks as `make check` and `make build`. They do not
 regenerate `packs/dist`: the generator needs marvelcdb, Cerebro and
 mc4db over the network, so the committed files are used as they are.
 
-On a push to `main` only, once those three have passed, three more jobs
-run in turn (see Deployment):
+On `main` only, for a push or a manual run (`workflow_dispatch`), the
+`web` job also builds the frontend for GitHub Pages in place of its plain
+build, and once the three checks have passed, three more jobs run in turn
+(see Deployment):
 
 - `publish`: pushes the image to GHCR, tagged with the commit SHA and
   `main`;
-- `pages`: calls the `Pages` workflow;
+- `pages`: deploys the frontend that the `web` job built;
 - `deploy-backend`: asks the infra repository to deploy the image.
 
 ## Deployment
@@ -287,19 +289,19 @@ push to `main` deploys both:
 1. the `CI` workflow pushes the image to GHCR as
    `ghcr.io/alexandreroman/intothefray`, tagged with the commit SHA and
    `main`;
-2. it runs the `Pages` workflow, which builds that same commit and
-   publishes the frontend;
+2. it publishes to GitHub Pages the frontend that its `web` job built
+   from that same commit;
 3. it sends a `deploy-app` dispatch to the private
    `alexandreroman/intothefray-infra` repository, which deploys that
    image on the VPS.
 
-The frontend can be live a few minutes before its backend. The `Pages`
-workflow can also be run by hand (`workflow_dispatch`) to republish the
-frontend.
+The frontend can be live a few minutes before its backend. To republish,
+run the `CI` workflow by hand (`workflow_dispatch`) on `main`: it goes
+through the same steps.
 
 The site is at the root of its custom domain, so its base path is `/`.
-The workflow still reads the base path from `actions/configure-pages`.
-Pages has no rewrite rules, so the workflow copies `index.html` to
+The `web` job still reads the base path from `actions/configure-pages`.
+Pages has no rewrite rules, so the job copies `index.html` to
 `404.html`: a deep link such as `/g/<id>` gets the app, which then
 reads the path.
 
@@ -311,7 +313,7 @@ Both sides report the commit they run, so a mismatch shows at once:
   `org.opencontainers.image.revision`. Without `COMMIT`, a binary built
   from a checkout (`make build`) reports its Git revision, with `-dirty`
   when the checkout has changes, and an image reports `dev`;
-- the `Pages` workflow passes the SHA to the frontend build as
+- the `web` job of CI passes the SHA to the frontend build for Pages as
   `VITE_COMMIT`. Without it, a build from a checkout (`pnpm build`)
   reports its Git revision, with `-dirty` when the checkout has changes,
   and a build without Git reports `dev`;

@@ -15,6 +15,11 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+# A release run is a push or a manual run on main:
+#   github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+# It publishes the image, deploys the frontend to GitHub Pages, then the
+# backend; a manual run on main republishes them. Job and step conditions
+# cannot share a variable, so each one repeats that expression.
 jobs:
   go:
     runs-on: ubuntu-latest
@@ -45,8 +50,14 @@ jobs:
         with:
           version: v2.15.0
 
+  # On a release run, this job also builds the frontend that the pages job
+  # deploys, so the web app is verified and built once.
   web:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # configure-pages reads the site settings to find its base path.
+      pages: read
     steps:
       # The full checkout is needed: the web build copies ../packs/dist.
       - uses: actions/checkout@v7
@@ -83,10 +94,43 @@ jobs:
         working-directory: web
         run: pnpm test
 
-      # No VITE_API_URL: the app then calls the API on its own origin.
+      # No VITE_API_URL: the app then calls the API on its own origin. A release
+      # run skips it: the build for Pages below replaces it.
       - name: Build
+        if: ${{ !(github.ref == 'refs/heads/main' && github.event_name != 'pull_request') }}
         working-directory: web
         run: pnpm build
+
+      # The site's base path: "/<repo>" for a project site, empty at the domain
+      # root (custom domain or user/organisation site).
+      - id: pages
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/configure-pages@v6
+
+      # An unset variable would ship relative API URLs, which hit the GitHub
+      # Pages origin where no API runs.
+      - name: Build for Pages
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        working-directory: web
+        run: |
+          if [ -z "$VITE_API_URL" ]; then
+            echo "::error::The API_URL repository variable is not set"
+            exit 1
+          fi
+          pnpm build --base "$BASE_PATH/"
+          # Pages has no rewrite: its 404 page serves the SPA for deep links.
+          cp dist/index.html dist/404.html
+        env:
+          VITE_API_URL: ${{ vars.API_URL }}
+          # Shown in Options next to the commit the server reports.
+          VITE_COMMIT: ${{ github.sha }}
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}
+
+      - name: Upload the Pages artifact
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: web/dist
 
   docker:
     runs-on: ubuntu-latest
@@ -121,7 +165,7 @@ jobs:
   # Publishes the image only once every check of the commit has passed.
   publish:
     needs: [go, web, docker]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -155,20 +199,29 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # The frontend goes out once its image exists. A called workflow gets no more
-  # permissions than its caller grants, so this covers its build and deploy jobs.
+  # Deploys the frontend the web job built. It goes out once its image is
+  # published, so the release order stays image, frontend, then backend.
   pages:
-    needs: publish
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [publish, web]
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
     permissions:
-      contents: read
       pages: write
       id-token: write
-    uses: ./.github/workflows/pages.yml
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    # One deployment at a time; a newer deployment supersedes a queued one.
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
 
   deploy-backend:
     needs: pages
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions: {}
     steps:

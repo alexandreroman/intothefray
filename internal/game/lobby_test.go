@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -14,9 +15,13 @@ import (
 
 var testNow = time.Date(2026, 10, 18, 12, 0, 0, 0, time.UTC)
 
+// sharedCatalog loads the embedded catalog once for every test: decoding it
+// per test made the race-enabled suite slow, and tests only read it.
+var sharedCatalog = sync.OnceValues(packs.Catalog)
+
 func newCatalog(t *testing.T) *pack.Catalog {
 	t.Helper()
-	cat, err := packs.Catalog()
+	cat, err := sharedCatalog()
 	if err != nil {
 		t.Fatal(err)
 	}

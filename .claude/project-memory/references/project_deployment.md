@@ -8,7 +8,8 @@ type: project
 
 - Frontend: GitHub Pages at `https://intothefray.xyz` (custom domain at the
   root, so the build's base path is `/`). The repository variable `API_URL`
-  is `https://api.intothefray.xyz`; `pages.yml` passes it as `VITE_API_URL`.
+  is `https://api.intothefray.xyz`; the `web` job of `ci.yml` passes it as
+  `VITE_API_URL`.
 - Backend: an OVH VPS (Ubuntu 26, 2 GB of RAM) at
   `https://api.intothefray.xyz`, running the Go server and its own Redis
   (in memory, not exposed). `ALLOWED_ORIGINS` is `https://intothefray.xyz`.
@@ -31,12 +32,13 @@ type: project
     Encrypt certificate on the VPS; the VPS firewall accepts 443 from
     Cloudflare's addresses only.
 - Release flow (contract shared with the private
-  `alexandreroman/intothefray-infra` repository), on a push to `main`
-  once the CI checks pass, all in `ci.yml`:
+  `alexandreroman/intothefray-infra` repository), on `main` (a push or a
+  manual run of `ci.yml`) once the CI checks pass, all in `ci.yml`:
   1. `publish` pushes the image to GHCR (see [[project_ci_scope]]); the
      GHCR package is public, so the VPS pulls without credentials.
-  2. `pages` calls the reusable `pages.yml`, which publishes the
-     frontend; `pages.yml` also runs by hand to republish it.
+  2. `pages` deploys the frontend that the `web` job built and uploaded
+     as the Pages artifact; a manual run of `ci.yml` on `main`
+     republishes it.
   3. `deploy-backend` sends `repository_dispatch` `deploy-app` with
      `client_payload.sha` to `intothefray-infra`, using the app secret
      `INFRA_DISPATCH_TOKEN` (fine-grained PAT on `intothefray-infra`,
