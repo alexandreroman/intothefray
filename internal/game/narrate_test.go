@@ -293,7 +293,7 @@ func TestHiddenCardHasNoRef(t *testing.T) {
 	f.mustDo(t, "b", Action{Kind: ActDeal, Area: "p1", X: 400, Y: 200}, at(1))
 	dealt := f.lastDealt(t)
 	f.mustDo(t, "b", Action{Kind: ActReveal}, at(2))
-	revealed := f.g.Table.revealed()[0].ID
+	revealed := f.g.Table.revealedOn(PileEncounter)[0].ID
 	want := []pack.FaceRef{f.faceRefOf(t, revealed)}
 
 	// The face-down card is "a card": a plain part, with no reference.

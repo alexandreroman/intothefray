@@ -307,7 +307,11 @@ export interface Action {
   kind: ActionKind;
   card?: string;
   target?: string; // card id (attach, arrow, play under it) or pile id
-  pile?: string; // for draw, a side deck; without it, the credited seat's deck
+  /**
+   * For draw, a side deck, without it the credited seat's deck; for reveal, the viewer's deck or
+   * side deck, without it the encounter deck.
+   */
+  pile?: string;
   area?: Area; // whose hand (draw, handOrder), or who is dealt a card (deal)
   x?: number;
   y?: number;

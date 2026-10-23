@@ -506,7 +506,7 @@ func tuckedSenseFixture(t *testing.T) (f *doFixture, sense string) {
 func TestTuckedSideCardWithoutDiscardGoesUnderItsDeck(t *testing.T) {
 	f, sense := tuckedSenseFixture(t)
 	f.mustDo(t, "h", Action{Kind: ActReveal}, at(2))
-	enemy := f.g.Table.revealed()[0].ID
+	enemy := f.g.Table.revealedOn(PileEncounter)[0].ID
 	f.mustDo(t, "h", Action{Kind: ActPlay, Card: sense, Target: enemy}, at(3))
 
 	f.mustDo(t, "h", Action{Kind: ActDiscard, Card: enemy}, at(4))

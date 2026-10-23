@@ -328,7 +328,9 @@ func (g *Game) openView(who actor, a Action, now time.Time) error {
 	if private && !who.owns(pile.Owner) {
 		return forbidden("pile %q belongs to another player", pile.ID)
 	}
-	if len(pile.Cards) == 0 {
+	// A card revealed on the pile is its top card (see coveredFor).
+	cards := g.Table.deckCards(pile)
+	if len(cards) == 0 {
 		return invalid("pile %q is empty", pile.ID)
 	}
 
@@ -338,13 +340,13 @@ func (g *Game) openView(who actor, a Action, now time.Time) error {
 		if err := checkCount(a.N); err != nil {
 			return err
 		}
-		n := min(a.N, len(pile.Cards))
+		n := min(a.N, len(cards))
 		view.Mode = viewModeTop
-		view.Cards = topCards(pile, n)
+		view.Cards = topOf(cards, n)
 		text = fmt.Sprintf("is looking at %s of %s", topCount(n), g.pileName(who, pile.ID))
 	} else {
 		view.Mode = viewModeSearch
-		view.Cards = topCards(pile, len(pile.Cards))
+		view.Cards = topOf(cards, len(cards))
 		text = "is searching " + g.pileName(who, pile.ID)
 	}
 

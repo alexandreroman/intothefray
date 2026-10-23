@@ -316,6 +316,14 @@ describe('keys on the table', () => {
     expect(session.act).toHaveBeenLastCalledWith({ kind: 'reveal' }, 0);
   });
 
+  it("R on the viewer's own deck reveals its top card onto it", async () => {
+    const { session } = await renderTable();
+    await fireEvent.pointerEnter(placed('deck:p0'));
+
+    await press('r');
+    expect(session.act).toHaveBeenCalledWith({ kind: 'reveal', pile: 'deck:p0' }, 0);
+  });
+
   it('menu items answer to their keys', async () => {
     const { session } = await renderTable();
     await fireEvent.pointerEnter(placed('mine'));

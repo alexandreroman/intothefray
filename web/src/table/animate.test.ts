@@ -268,6 +268,65 @@ describe('diffViews', () => {
     expect(flipsOf(diffViews(view({ piles: [encounter(20)] }), dealt))).toEqual([]);
   });
 
+  it("turns a card revealed from a player's deck face up on it, for its owner and for others", () => {
+    for (const owner of [0, 1]) {
+      const deckId = `deck:p${owner}`;
+      const prev = view({ piles: [pile(deckId, { owner, count: 10 })] });
+      const next = view({
+        cards: [card('rev', { code: '01001', owner, x: 600, onPile: deckId })],
+        piles: [pile(deckId, { owner, count: 9 })],
+      });
+
+      expect(diffViews(prev, next)).toEqual([
+        { kind: 'enter', id: 'rev', fromPile: deckId },
+        { kind: 'flip', id: 'rev' },
+      ]);
+    }
+  });
+
+  it('a card revealed on a deck and drawn goes into the hand: the own one, or the unseen one', () => {
+    const revealed = (owner: number) =>
+      card('rev', { code: '01001', owner, x: 600, onPile: `deck:p${owner}` });
+    const own = diffViews(
+      view({ cards: [revealed(0)], piles: [pile('deck:p0', { count: 9 })] }),
+      view({
+        cards: [card('rev', { code: '01001', zone: 'hand' })],
+        piles: [pile('deck:p0', { count: 9 })],
+        hands: { p0: ['rev'] },
+        handCounts: [1, 0],
+      }),
+    );
+    expect(own).toEqual([
+      {
+        kind: 'move',
+        id: 'rev',
+        from: { zone: 'table', x: 600, y: 0 },
+        to: { zone: 'hand', x: 0, y: 0 },
+      },
+    ]);
+
+    const theirs = diffViews(
+      view({ cards: [revealed(1)], piles: [pile('deck:p1', { owner: 1, count: 9 })] }),
+      view({ piles: [pile('deck:p1', { owner: 1, count: 9 })], handCounts: [0, 1] }),
+    );
+    expect(theirs).toEqual([{ kind: 'away', id: 'rev' }]);
+  });
+
+  it('a card revealed on a deck that goes back into it turns face down on the way, for anyone', () => {
+    for (const owner of [0, 1]) {
+      const deckId = `deck:p${owner}`;
+      const prev = view({
+        cards: [card('rev', { code: '01001', owner, x: 600, onPile: deckId })],
+        piles: [pile(deckId, { owner, count: 9 })],
+      });
+      const next = view({ piles: [pile(deckId, { owner, count: 10 })] });
+
+      expect(diffViews(prev, next)).toEqual([
+        { kind: 'fly', id: 'rev', toPile: deckId, turns: 'down' },
+      ]);
+    }
+  });
+
   it('turns over a card played from a deck the viewer looks through', () => {
     // An open view of the deck lists its cards, though the deck shows none.
     const prev = view({

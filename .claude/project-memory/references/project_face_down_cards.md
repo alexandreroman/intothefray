@@ -18,7 +18,8 @@ type: project
   action, face down or not.
 - A card played out of a player's deck, or out of a side deck that does
   not show its top card (Weather, Labor, Gift), lands face down, tucked
-  under a card or not; the player flips it by hand. Out of a hand, a
+  under a card or not; the player flips it by hand. A card revealed on
+  such a deck lands face up (see [[project_deck_reveal]]). Out of a hand, a
   discard pile or a face-up side deck (Invocation, Sense), it lands face
   up. Setup placement is face up.
 - Face down, a card's code leaves every view, its owner's included, and

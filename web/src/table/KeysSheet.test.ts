@@ -139,7 +139,7 @@ describe('KeysSheet', () => {
           'Draw several cards: ⇧ W',
           'Discard the top card: X⌫',
           'Discard several cards: ⇧ X',
-          'Reveal (encounter deck): R',
+          'Reveal the top card: R',
           'Look at the top cards: L',
           'Search: K',
           'Shuffle: U',

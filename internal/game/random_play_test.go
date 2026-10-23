@@ -102,7 +102,7 @@ func randomAction(r *rand.Rand, t *Table, seat int) Action {
 	case 8:
 		return Action{Kind: ActStatus, Card: pick(onTable), Name: oneOf("tough", "retaliate", statusLocked), Delta: 1 - 2*r.IntN(2)}
 	case 9:
-		return Action{Kind: ActReveal}
+		return Action{Kind: ActReveal, Pile: oneOf("", deck)}
 	case 10:
 		return Action{Kind: ActDeal, Area: area, X: x, Y: y}
 	case 11:

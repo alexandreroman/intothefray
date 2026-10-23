@@ -1,6 +1,7 @@
 package game
 
 import (
+	"cmp"
 	"fmt"
 	"maps"
 	"math/rand/v2"
@@ -67,7 +68,9 @@ type Action struct {
 	Stage  string   `json:"stage,omitempty"`
 	Cards  []string `json:"cards,omitempty"` // resolved: ids taken from a pile top (top first), new orders
 	// Renames is filled by shuffles: the old id → new id of every card of the
-	// shuffled pile. Cards then holds the new order, in new ids.
+	// shuffled pile. Cards then holds the new order, in new ids. A reorder of
+	// the top that takes a revealed card back renames the reordered cards
+	// too, its Cards staying in their old ids (see resolveReorderTop).
 	Renames map[string]string `json:"renames,omitempty"`
 	Seat    int               `json:"seat,omitempty"` // acting seat, filled server-side (arrows)
 	// Seats is filled by an arrow clear of a player holding several decks:
@@ -145,7 +148,21 @@ func resolve(g *Game, who actor, a Action, rng *rand.Rand) (Action, error) {
 
 	// The client never chooses who acts.
 	a.Seat = who.seat
-	t := g.Table
+	if a.Kind == ActGroup {
+		return resolveGroup(g, who, a, rng)
+	}
+	return resolveOnTable(g.Table, who, a, rng)
+}
+
+// resolveOnTable resolves a, any kind but a group, on the table as apply
+// will see it: with the cards revealed on the deck a acts on back in it (see
+// coveredFor), so that the recorded cards are those apply takes. A rebuild
+// resolves its shuffles again here too (see resolveShuffleKind).
+func resolveOnTable(original *Table, who actor, a Action, rng *rand.Rand) (Action, error) {
+	t, err := original.coveredFor(a, PlayerArea(who.seat))
+	if err != nil {
+		return Action{}, err
+	}
 
 	switch a.Kind {
 	case ActMove, ActToken, ActStatus, ActModifier, ActChooseStage, ActDiscard:
@@ -167,7 +184,7 @@ func resolve(g *Game, who actor, a Action, rng *rand.Rand) (Action, error) {
 	case ActToPile:
 		return resolveToPile(t, who, a)
 	case ActReveal:
-		return resolveReveal(t, a)
+		return resolveReveal(t, who, a)
 	case ActDeal:
 		return resolveDeal(t, a)
 	case ActFirstPlayer:
@@ -187,16 +204,14 @@ func resolve(g *Game, who actor, a Action, rng *rand.Rand) (Action, error) {
 	case ActDiscardTop:
 		return resolveDiscardTop(t, who, a)
 	case ActReorderTop:
-		_, err := ownPile(t, who, a.Pile)
-		return a, err
+		// Whether it takes a revealed card shows on the table before covering.
+		return resolveReorderTop(original, who, a, rng)
 	case ActShuffle:
 		return resolveShuffle(t, who, a, rng)
 	case ActShuffleBack:
 		return resolveShuffleBack(t, who, a, rng)
 	case ActShuffleIn:
 		return resolveShuffleIn(t, who, a, rng)
-	case ActGroup:
-		return resolveGroup(g, who, a, rng)
 	default:
 		return Action{}, invalid("unknown action kind %q", a.Kind)
 	}
@@ -517,8 +532,58 @@ func resolveDraw(t *Table, who actor, a Action) (Action, error) {
 }
 
 // resolveReveal records the card to reveal: a rebuild after an undo reveals
-// that card, wherever it is in the deck, never the card then on top.
-func resolveReveal(t *Table, a Action) (Action, error) {
+// that card, wherever it is in the deck, never the card then on top. The deck
+// is the one a.Pile names, which must be one of the actor's, or the shared
+// encounter deck when it names none. Only one card at a time lies revealed on
+// a deck.
+func resolveReveal(t *Table, who actor, a Action) (Action, error) {
+	deck, err := ownPile(t, who, cmp.Or(a.Pile, PileEncounter))
+	if err != nil {
+		return a, err
+	}
+	if !revealable(deck) {
+		return a, invalid("the top card of pile %q cannot be revealed", deck.ID)
+	}
+	if len(t.revealedOn(deck.ID)) > 0 {
+		return a, invalid("a card is already revealed on pile %q", deck.ID)
+	}
+	if len(deck.Cards) == 0 {
+		return a, invalid("pile %q is empty", deck.ID)
+	}
+	a.Cards = topCards(deck, 1)
+	return a, nil
+}
+
+// resolvePlay checks a play, which may tuck the card under a target card. A
+// play from the top of the player's own deck or side deck names the deck
+// rather than a card, as the client does not know its cards: resolve records
+// the top card, whatever card the client names, so that a rebuild plays that
+// card. A card revealed on the deck is its top card (see applyPlay).
+func resolvePlay(t *Table, who actor, a Action) (Action, error) {
+	if a.Pile != "" {
+		deck, err := ownPile(t, who, a.Pile)
+		if err != nil {
+			return a, err
+		}
+		if deck.Kind != KindDeck && deck.Kind != KindSideDeck {
+			return a, invalid("only a deck's top card is played from its pile, not %q's", deck.ID)
+		}
+		cards := t.deckCards(deck)
+		if len(cards) == 0 {
+			return a, invalid("pile %q is empty", deck.ID)
+		}
+		a.Card = topOf(cards, 1)[0]
+	}
+	return a, checkCards(t, who, a.Card, a.Target)
+}
+
+// resolveDeal records the card to deal, the encounter deck's top card, so
+// that a rebuild deals that card (see resolveReveal). A card revealed on the
+// deck is its top card: it lies back on top here (see coveredFor).
+func resolveDeal(t *Table, a Action) (Action, error) {
+	if a.Area == "" {
+		return a, invalid("a deal needs a recipient")
+	}
 	enc, err := t.pile(PileEncounter)
 	if err != nil {
 		return a, err
@@ -530,39 +595,20 @@ func resolveReveal(t *Table, a Action) (Action, error) {
 	return a, nil
 }
 
-// resolvePlay checks a play, which may tuck the card under a target card. A
-// play from the top of the player's own deck or side deck names the deck
-// rather than a card, as the client does not know its cards: resolve records
-// the top card, whatever card the client names, so that a rebuild plays that
-// card.
-func resolvePlay(t *Table, who actor, a Action) (Action, error) {
-	if a.Pile != "" {
-		deck, err := ownPile(t, who, a.Pile)
-		if err != nil {
-			return a, err
-		}
-		if deck.Kind != KindDeck && deck.Kind != KindSideDeck {
-			return a, invalid("only a deck's top card is played from its pile, not %q's", deck.ID)
-		}
-		if len(deck.Cards) == 0 {
-			return a, invalid("pile %q is empty", deck.ID)
-		}
-		a.Card = topCards(deck, 1)[0]
+// resolveReorderTop checks a reorder of the top of one of the actor's piles.
+// A reorder of a deck with a card revealed on it takes that card, its top one,
+// back into the deck face down (see coveredFor). The reordered cards then get
+// new ids, as a shuffle gives them (see reidentify): nobody can follow the
+// card everybody saw into the deck. a.Cards keeps the new order in the ids
+// the cards had.
+func resolveReorderTop(t *Table, who actor, a Action, rng *rand.Rand) (Action, error) {
+	if _, err := ownPile(t, who, a.Pile); err != nil {
+		return a, err
 	}
-	return a, checkCards(t, who, a.Card, a.Target)
-}
-
-// resolveDeal records the card to deal, so that a rebuild deals that card
-// (see resolveReveal).
-func resolveDeal(t *Table, a Action) (Action, error) {
-	if a.Area == "" {
-		return a, invalid("a deal needs a recipient")
+	a.Renames = nil
+	if len(t.revealedOn(a.Pile)) > 0 {
+		a.Renames, _ = reidentify(t, a.Cards, rng)
 	}
-	id := t.dealtCard()
-	if id == "" {
-		return a, invalid("encounter deck is empty")
-	}
-	a.Cards = []string{id}
 	return a, nil
 }
 
@@ -600,18 +646,10 @@ func resolveHandOrder(who actor, a Action) (Action, error) {
 // resolveShuffleKind resolves a shuffle-producing action (see producesShuffle)
 // on t. A rebuild uses it when the recorded outcome no longer fits.
 func resolveShuffleKind(t *Table, who actor, a Action, rng *rand.Rand) (Action, error) {
-	switch a.Kind {
-	case ActShuffle:
-		return resolveShuffle(t, who, a, rng)
-	case ActShuffleBack:
-		return resolveShuffleBack(t, who, a, rng)
-	case ActShuffleIn:
-		return resolveShuffleIn(t, who, a, rng)
-	case ActToDeck:
-		return resolveToDeck(t, who, a, rng)
-	default:
+	if !producesShuffle(a) {
 		return a, invalid("%q does not shuffle", a.Kind)
 	}
+	return resolveOnTable(t, who, a, rng)
 }
 
 func resolveShuffle(t *Table, who actor, a Action, rng *rand.Rand) (Action, error) {

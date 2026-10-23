@@ -335,8 +335,8 @@ func (t *Table) viewFor(seats []int, home int) *TableView {
 }
 
 // privateView returns the view open for area, limited to the cards still in
-// its pile, top first in the pile's current order: a reorder of the top
-// cards shows in the view.
+// its pile or revealed on it, top first in the pile's current order (see
+// deckCards): a reorder of the top cards shows in the view.
 func (t *Table) privateView(area Area) *PrivateView {
 	view := t.Views[area]
 	if view == nil {
@@ -347,7 +347,8 @@ func (t *Table) privateView(area Area) *PrivateView {
 	if !ok {
 		return filtered
 	}
-	for _, id := range topCards(pile, len(pile.Cards)) {
+	cards := t.deckCards(pile)
+	for _, id := range topOf(cards, len(cards)) {
 		if slices.Contains(view.Cards, id) {
 			filtered.Cards = append(filtered.Cards, id)
 		}
