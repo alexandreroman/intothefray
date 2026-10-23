@@ -93,7 +93,8 @@
     data-counter="token:{k}"
     role="presentation"
     onpointerenter={(event) => interaction.enterCounter(target, event)}
-    onpointerleave={() => interaction.leaveCounter()}>{card.tokens?.[k]}</span
+    onpointerleave={() => interaction.leaveCounter()}
+    onpointerdown={(event) => interaction.pressCounter(target, event)}>{card.tokens?.[k]}</span
   >
 {/snippet}
 
@@ -169,6 +170,7 @@
           role="presentation"
           onpointerenter={(event) => interaction.enterCounter(target, event)}
           onpointerleave={() => interaction.leaveCounter()}
+          onpointerdown={(event) => interaction.pressCounter(target, event)}
           >{#if k === 'locked'}<svg class="lock" viewBox="0 0 10 10" aria-hidden="true"
               ><rect x="1.5" y="4.5" width="7" height="5" rx="1" /><path
                 d="M3 4.5V3a2 2 0 0 1 4 0v1.5"
@@ -191,7 +193,9 @@
           data-counter="modifier:{name}"
           role="presentation"
           onpointerenter={(event) => interaction.enterCounter(target, event)}
-          onpointerleave={() => interaction.leaveCounter()}>{withSign(n)} {name.toUpperCase()}</span
+          onpointerleave={() => interaction.leaveCounter()}
+          onpointerdown={(event) => interaction.pressCounter(target, event)}
+          >{withSign(n)} {name.toUpperCase()}</span
         >
       {/each}
     </div>
