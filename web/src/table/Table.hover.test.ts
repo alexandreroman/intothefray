@@ -384,14 +384,6 @@ describe('tokens and statuses', () => {
     return screen.queryByRole('group', { name: /^Change / });
   }
 
-  /** A click with the mouse: it presses, lets go and clicks. */
-  async function press(target: HTMLElement): Promise<void> {
-    const mouse = { pointerType: 'mouse', button: 0 };
-    await fireEvent.pointerDown(target, mouse);
-    await fireEvent.pointerUp(target, mouse);
-    await fireEvent.click(target);
-  }
-
   it('pill minus sends delta -1', async () => {
     const { session } = await renderTable(viewWithCounters());
     await fireEvent.pointerEnter(placed('mine'));
@@ -616,91 +608,6 @@ describe('tokens and statuses', () => {
 
     await fireEvent.keyDown(window, { key: 'Escape' });
     expect(pill()).toBeNull();
-  });
-
-  it('a press on a token pins its pill: it stays, and so does its card, wherever the pointer goes', async () => {
-    await renderTable(viewWithCounters());
-    vi.useFakeTimers();
-    await fireEvent.pointerEnter(placed('mine'));
-    const token = counter('mine', 'token:dmg');
-    await fireEvent.pointerEnter(token);
-    await press(token);
-
-    // Off the token and its card, as when the pointer goes round the tilted token of an exhausted card.
-    await fireEvent.pointerLeave(token);
-    await fireEvent.pointerLeave(placed('mine'));
-    await vi.advanceTimersByTimeAsync(1000);
-    expect(pill()?.textContent).toContain('2');
-    expect(interaction.counterPinned).toBe(true);
-    expect(interaction.hovered).toEqual({ kind: 'card', id: 'mine' });
-    expect(contextMenu()).toBeNull();
-  });
-
-  it('a pressed pill holds against hovers, and moves to the next token pressed', async () => {
-    await renderTable(viewWithCounters());
-    vi.useFakeTimers();
-    await fireEvent.pointerEnter(placed('mine'));
-    const token = counter('mine', 'token:dmg');
-    const status = counter('mine', 'status:stunned');
-    await fireEvent.pointerEnter(token);
-    await press(token);
-
-    await fireEvent.pointerLeave(token);
-    await fireEvent.pointerEnter(status);
-    await vi.advanceTimersByTimeAsync(1000);
-    expect(interaction.counter).toEqual({ card: 'mine', kind: 'token', name: 'dmg' });
-    expect(pill()?.getAttribute('aria-label')).toBe('Change damage');
-
-    await press(status);
-    await fireEvent.pointerLeave(status);
-    await vi.advanceTimersByTimeAsync(1000);
-    expect(interaction.counter).toEqual({ card: 'mine', kind: 'status', name: 'stunned' });
-    expect(interaction.counterPinned).toBe(true);
-    expect(pill()?.getAttribute('aria-label')).toBe('Change stunned');
-  });
-
-  it('a pressed pill goes with a press elsewhere on the table', async () => {
-    await renderTable(viewWithCounters());
-    vi.useFakeTimers();
-    await fireEvent.pointerEnter(placed('mine'));
-    const token = counter('mine', 'token:dmg');
-    await fireEvent.pointerEnter(token);
-    await press(token);
-    await fireEvent.pointerLeave(token);
-    await fireEvent.pointerLeave(placed('mine'));
-    await vi.advanceTimersByTimeAsync(1000);
-
-    await fireEvent.pointerEnter(placed('v'));
-    await fireEvent.pointerDown(placed('v'), { pointerType: 'mouse', button: 0 });
-    expect(pill()).toBeNull();
-    expect(interaction.counterPinned).toBe(false);
-    expect(interaction.hovered).toEqual({ kind: 'card', id: 'v' });
-  });
-
-  it('Escape lets go of a pressed pill; its card stays hovered while the pointer is on it', async () => {
-    await renderTable(viewWithCounters());
-    vi.useFakeTimers();
-    await fireEvent.pointerEnter(placed('mine'));
-    const token = counter('mine', 'token:dmg');
-    await fireEvent.pointerEnter(token);
-    await press(token);
-    await fireEvent.pointerLeave(token);
-
-    await fireEvent.keyDown(window, { key: 'Escape' });
-    expect(pill()).toBeNull();
-    await vi.advanceTimersByTimeAsync(1000);
-    expect(interaction.hovered).toEqual({ kind: 'card', id: 'mine' });
-
-    // Pinned again, then off the card: its hover lingers out with the pill.
-    await fireEvent.pointerEnter(token);
-    await press(token);
-    await fireEvent.pointerLeave(token);
-    await fireEvent.pointerLeave(placed('mine'));
-    await vi.advanceTimersByTimeAsync(1000);
-    await fireEvent.keyDown(window, { key: 'Escape' });
-    expect(pill()).toBeNull();
-    await vi.advanceTimersByTimeAsync(LINGER_MS);
-    expect(interaction.hovered).toBeNull();
   });
 
   it('lingers 100 ms after the pointer leaves, and stays while the pointer is on it', async () => {

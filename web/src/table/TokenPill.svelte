@@ -1,7 +1,7 @@
 <!--
   The small "− value +" pill above a hovered token, status or modifier. It stays while
-  the pointer is on it, and so does the hover of its card. Once its token is pressed or
-  tapped, it stays, whatever the pointer does, until a press lands outside it and its token.
+  the pointer is on it, and so does the hover of its card. Tapped (touch), it
+  stays until a press lands outside it and its token.
 -->
 <script lang="ts">
   import { onDestroy } from 'svelte';
@@ -63,10 +63,7 @@
     event.preventDefault();
   }
 
-  /**
-   * A press outside the pill and its token lets go of the pinned pill. On another token, it does
-   * so first (capture phase): that token's own press then pins its pill.
-   */
+  /** A press outside the pill and its token lets go of the pill a tap pinned. */
   function onDocumentPointerDown(event: PointerEvent): void {
     if (!interaction.counterPinned || !(event.target instanceof Node)) {
       return;

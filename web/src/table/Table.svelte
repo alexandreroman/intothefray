@@ -901,7 +901,7 @@
     return value !== 0 ? { target, value } : null;
   });
 
-  // A pill that went away must not come back when the token does. A pinned one held its card's
+  // A pill that went away must not come back when the token does. A tapped one held its card's
   // hover, which lingers out with it; a mouse still on the card keeps it.
   $effect(() => {
     if (interaction.counter && !counterShown) {
@@ -1019,9 +1019,8 @@
    * a long press, which opens nothing. The click that ends a drag, a rubber
    * band or an arrow never gets here (interaction.swallowNextClick). Alt +
    * click pings the spot, and Ctrl + click is macOS's right click, which
-   * onTableContextMenu handles. A token, a status or a modifier has its
-   * − / + pill instead, which hovering it shows, and pressing or tapping it
-   * pins.
+   * onTableContextMenu handles. A token or a status has its − / + pill
+   * instead, which hovering it shows, or tapping it on touch.
    */
   function onTableClick(event: MouseEvent): void {
     if (event.altKey || event.ctrlKey || interaction.isLongTouchClick(event)) {
