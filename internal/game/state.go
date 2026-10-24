@@ -84,6 +84,10 @@ const (
 	// Invocation deck; a side discard is the discard pile of one of them.
 	KindSideDeck    PileKind = "sideDeck"
 	KindSideDiscard PileKind = "sideDiscard"
+	// A scenario deck is a deck the scenario owns that is not an encounter
+	// deck; a scenario discard is its discard pile.
+	KindScenarioDeck    PileKind = "scenarioDeck"
+	KindScenarioDiscard PileKind = "scenarioDiscard"
 )
 
 // Well-known pile ids. Per-player piles are "deck:pN", "disc:pN", "aside:pN",
@@ -100,6 +104,15 @@ const (
 const (
 	sideDeckPrefix    = "side:"
 	sideDiscardPrefix = "sided:"
+)
+
+// Prefixes of the ids of scenario deck piles: encounter decks and their
+// discard piles, then the other scenario decks and their discard piles.
+const (
+	scenarioEncounterPrefix        = "enc:"
+	scenarioEncounterDiscardPrefix = "encd:"
+	scenarioDeckPrefix             = "sdeck:"
+	scenarioDiscardPrefix          = "sdisc:"
 )
 
 // sideDeckID returns the id of the side deck of seat at index i of its
@@ -119,6 +132,16 @@ func isSideDeckID(id string) bool {
 	return strings.HasPrefix(id, sideDeckPrefix)
 }
 
+// scenarioDeckIDs returns the ids of the deck of a scenario deck with key and
+// of its discard pile: "enc:w" and "encd:w" for an encounter deck, "sdeck:x"
+// and "sdisc:x" for the others.
+func scenarioDeckIDs(key string, encounter bool) (deck, discard string) {
+	if encounter {
+		return scenarioEncounterPrefix + key, scenarioEncounterDiscardPrefix + key
+	}
+	return scenarioDeckPrefix + key, scenarioDiscardPrefix + key
+}
+
 // Pile is an ordered stack of cards.
 type Pile struct {
 	ID    string   `json:"id"`
@@ -135,6 +158,8 @@ type Pile struct {
 	// Back is the printed back the cards of a side deck share, which the
 	// client captions with the deck's label; empty when they keep their own.
 	Back pack.Back `json:"back,omitempty"`
+	// Compact is a scenario deck or discard pile, drawn 100 x 140.
+	Compact bool `json:"compact,omitempty"`
 }
 
 // Stage is a scheme or villain stage track.
@@ -158,6 +183,12 @@ type Point struct {
 	Y int `json:"y"`
 }
 
+// Marker names of the table: the first player token and the active counter.
+const (
+	MarkerFirstPlayer = "firstPlayer"
+	MarkerActive      = "active"
+)
+
 // PrivateView is a Look or Search a player has opened on a pile.
 type PrivateView struct {
 	Pile  string   `json:"pile"`
@@ -167,14 +198,16 @@ type PrivateView struct {
 
 // Table is the whole shared state of a game.
 type Table struct {
-	Cards       map[string]*Card      `json:"cards"`
-	Piles       map[string]*Pile      `json:"piles"`
-	Hands       map[Area][]string     `json:"hands"`
-	Stages      []*Stage              `json:"stages"`
-	FirstPlayer Point                 `json:"firstPlayer"`
-	Arrows      []Arrow               `json:"arrows,omitempty"`
-	Views       map[Area]*PrivateView `json:"views,omitempty"` // open Look/Search per player
-	NextZ       int                   `json:"nextZ"`
+	Cards       map[string]*Card  `json:"cards"`
+	Piles       map[string]*Pile  `json:"piles"`
+	Hands       map[Area][]string `json:"hands"`
+	Stages      []*Stage          `json:"stages"`
+	FirstPlayer Point             `json:"firstPlayer"`
+	// Active is the active counter, nil when the scenario has none.
+	Active *Point                `json:"active,omitempty"`
+	Arrows []Arrow               `json:"arrows,omitempty"`
+	Views  map[Area]*PrivateView `json:"views,omitempty"` // open Look/Search per player
+	NextZ  int                   `json:"nextZ"`
 }
 
 // Clone returns a deep copy of the table; nothing is shared with t.
@@ -186,6 +219,10 @@ func (t *Table) Clone() *Table {
 	clone.Stages = cloneStages(t.Stages)
 	clone.Arrows = slices.Clone(t.Arrows)
 	clone.Views = cloneMapOfPtrs(t.Views, (*PrivateView).clone)
+	if t.Active != nil {
+		p := *t.Active
+		clone.Active = &p
+	}
 	return &clone
 }
 

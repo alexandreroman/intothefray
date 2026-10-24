@@ -118,6 +118,8 @@ type Hero struct {
 type FaceRef struct {
 	Card string `json:"card"`
 	Face int    `json:"face"`
+	// With is the key of the stage this in-play card is laid out after.
+	With string `json:"with,omitempty"`
 }
 
 // Pile is a labelled stack of cards on the scenario table.
@@ -125,6 +127,26 @@ type Pile struct {
 	Key   string   `json:"key"`
 	Label string   `json:"label"`
 	Cards []string `json:"cards"`
+	// Deck is the key of the scenario deck laid out right before this stage.
+	Deck string `json:"deck,omitempty"`
+}
+
+// ScenarioDeck is a named deck a scenario owns, apart from the classic
+// encounter deck (spec section 1).
+type ScenarioDeck struct {
+	Key   string `json:"key"`
+	Label string `json:"label"`
+	// Sets and Cards fill the deck: every copy of the cards of Sets, then of
+	// Cards, minus the cards the scenario places apart.
+	Sets  []string `json:"sets,omitempty"`
+	Cards []string `json:"cards,omitempty"`
+	// Ordered keeps the listed order instead of shuffling the deck at setup.
+	Ordered bool `json:"ordered,omitempty"`
+	// Discard gives the deck a discard pile.
+	Discard bool `json:"discard,omitempty"`
+	// Encounter makes the deck an encounter deck: dealt from, boosts dealt
+	// from, revealed, like the classic encounter deck.
+	Encounter bool `json:"encounter,omitempty"`
 }
 
 // Start describes the initial table layout of a scenario.
@@ -143,6 +165,12 @@ type Scenario struct {
 	Start       map[Difficulty]Start `json:"start"`
 	SetAside    []string             `json:"setAside,omitempty"`
 	Recommended []string             `json:"recommended,omitempty"` // modular set codes
+	Decks       []ScenarioDeck       `json:"decks,omitempty"`
+	// SelfContained scenarios use only their own cards.
+	SelfContained bool `json:"selfContained,omitempty"`
+	// Active is the key of the stage the active counter starts under; empty
+	// when the scenario has no active counter.
+	Active string `json:"active,omitempty"`
 }
 
 // PackFile is the content of one generated pack file.
@@ -178,6 +206,8 @@ type ScenarioRef struct {
 	Image       string   `json:"image"`
 	Supported   bool     `json:"supported"`
 	Recommended []string `json:"recommended"`
+	// SelfContained scenarios use only their own cards.
+	SelfContained bool `json:"selfContained,omitempty"`
 	// Localized holds the overrides of the entry per language code, e.g. "fr".
 	Localized map[string]Localized `json:"localized,omitempty"`
 }

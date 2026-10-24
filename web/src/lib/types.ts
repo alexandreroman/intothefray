@@ -56,6 +56,7 @@ export interface ScenarioRef {
   image: string;
   supported: boolean;
   recommended: string[];
+  selfContained?: boolean;
   localized?: Record<string, PackLocalized>; // name only, by language code
 }
 
@@ -96,7 +97,11 @@ export type PileKind =
   /** A hero's extra deck ("side deck"): `side:p<seat>:<i>`, private to its owner like a deck. */
   | 'sideDeck'
   /** The discard pile of a side deck, `sided:p<seat>:<i>`, paired by seat and index; only some have one. */
-  | 'sideDiscard';
+  | 'sideDiscard'
+  /** A deck the scenario owns that is not an encounter deck, `sdeck:<key>`. */
+  | 'scenarioDeck'
+  /** The discard pile of a scenario deck, `sdisc:<key>`. */
+  | 'scenarioDiscard';
 
 /**
  * A seat: "p0".."p3" for the player seated at that index. It says whose hand
@@ -143,6 +148,8 @@ export interface PileView {
   label?: string;
   /** A side deck whose top card everyone sees. */
   topFaceUp?: boolean;
+  /** A scenario deck or discard pile, drawn smaller (100 x 140 instead of 140 x 196). */
+  compact?: boolean;
   /**
    * The back of a side deck whose cards have their own (Labor, Gift, Sense):
    * that back captioned with the deck's label.
@@ -237,6 +244,8 @@ export interface TableView {
   hands?: Partial<Record<Area, string[]>>; // the hands of the viewer's own seats only
   stages: Stage[];
   firstPlayer: Point;
+  /** The active counter, absent when the scenario has none. */
+  active?: Point;
   arrows?: Arrow[];
   private?: PrivateView;
 }
