@@ -23,19 +23,21 @@ Everything below works today, except where noted.
   several decks, the player selector at the bottom left or the `Q`
   key picks the hand shown. An action is credited to the deck of the
   card or pile you touch, else to the selected deck
-- **Automated setup** — pick a scenario, a difficulty and the
-  modular sets: villain, main scheme and decks are laid out for you,
-  with each hero's side decks (Doctor Strange's Invocation deck and
-  its discard pile, Daredevil's Sense deck...) shuffled beside the
-  identity, and the cards a hero or a deck card sets aside
-  (Valkyrie's Death-Glow, Iceman's Frostbite, the Specialists of
-  Specialized Training...) on its set-aside pile. The main scheme
-  starts on its stage 1A: players resolve its Setup text themselves.
-  They also place the counters: the main scheme's starting threat
-  when they advance it to 1B (1A prints none), and counters such as
-  Criminal Enterprise's infamy. Only an environment the scenario puts
-  into play as it starts (Criminal Enterprise, Ultron Drones, Public
-  Support) is placed for you; other cards the Setup text names, such
+- **Automated setup** — pick a scenario, a difficulty and the modular sets:
+  villain, main scheme and decks are laid out for you, with each hero's side
+  decks (Doctor Strange's Invocation deck and its discard pile, Daredevil's
+  Sense deck...) shuffled beside the identity, and the cards a hero or a deck
+  card sets aside (Valkyrie's Death-Glow, Iceman's Frostbite, the Specialists of
+  Specialized Training...) on its set-aside pile. A scenario can bring its own
+  decks and several villains: The Wrecking Crew lays out its four villains, each
+  with its own encounter deck, discard pile and side scheme, and the active
+  counter, which players move by hand like the first player token. The main
+  scheme starts on its stage 1A: players resolve its Setup text themselves. They
+  also place the counters: the main scheme's starting threat when they advance
+  it to 1B (1A prints none), and counters such as Criminal Enterprise's infamy.
+  Only the environments the scenario puts into play as it starts (Criminal
+  Enterprise, Ultron Drones, Public Support) and the side schemes its printed
+  setup puts in play are placed for you; other cards the Setup text names, such
   as Klaw's Defense Network, stay in the encounter deck
 - **Discoverable actions** — every action one or two clicks away,
   and you always see what the other players just did: history,
@@ -56,10 +58,10 @@ Everything below works today, except where noted.
   English
 - **Fair play** — each player receives only what they may see
   (no peeking at hands, deck order or face-down cards)
-- **The whole card range** — expansions are added as data files,
-  card images load from their public sources. *Partly there:* the
-  player cards of every pack are in, a few scenarios only so far
-  (Rhino, Klaw, Ultron, Kingpin, Risky Business, Mutagen Formula)
+- **The whole card range** — expansions are added as data files, card images
+  load from their public sources. *Partly there:* the player cards of every pack
+  are in, a few scenarios only so far (Rhino, Klaw, Ultron, Kingpin, Risky
+  Business, Mutagen Formula, Wrecking Crew)
 
 ## Prerequisites
 
