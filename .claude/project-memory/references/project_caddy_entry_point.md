@@ -13,7 +13,7 @@ reverse-proxies `/api/*` and `/ws/*` to the Go server, so the browser
 talks to one origin. In `make dev` Caddy is infrastructure, like Redis,
 and the frontend is rebuilt by `vite build --watch` (manual page reload,
 no HMR). Production is GitHub Pages, cross-origin, with `VITE_API_URL`
-and `ALLOWED_ORIGINS`. Decided 2026-10-19.
+and `ALLOWED_ORIGINS`.
 
 **Why:** building an image only to copy static files is weight with no
 payoff, and one origin removes the API URL and CORS settings from local

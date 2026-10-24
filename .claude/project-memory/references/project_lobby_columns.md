@@ -26,7 +26,7 @@ type: project
   tile is scrolled into view (`block: 'nearest'`); a guest's page never
   scrolls.
 
-**Why:** user decision 2026-10-22, so both lobby columns end on one line
+**Why:** user decision, so both lobby columns end on one line
 and choosing a scenario does not make the Scenario box jump.
 
 **How to apply:** a change to the lobby columns keeps the single media

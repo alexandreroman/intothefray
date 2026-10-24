@@ -28,7 +28,7 @@ type: project
   ("discarded 3 cards (…)"). A group of moves is arranging (no line, no
   undo), like a single move.
 
-**Why:** decided with the user on 2026-10-20: moving a hero's play area
+**Why:** decided with the user: moving a hero's play area
 or a batch of cards in one gesture; the menu's Discard and Move to on a
 selection send the whole selection, as a player expects.
 

@@ -10,7 +10,7 @@ The root `mise.toml` is the single source of truth for the node and pnpm
 versions, locally and in the GitHub Actions workflows, CI and Pages
 (`jdx/mise-action`). mise is optional: the Makefile never calls it, and
 anyone with matching node and pnpm installed otherwise can run every
-target. Decided 2026-10-19.
+target.
 
 **Why:** one place to bump versions, the same toolchain on every machine
 and in CI.

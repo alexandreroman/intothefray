@@ -23,7 +23,7 @@ type: project
 - History: "added 1 retaliate to Rhino"; merged: "set retaliate on Rhino
   to 2".
 
-**Why:** user decision of 2026-10-22: Retaliate is a keyword with a value
+**Why:** user decision: Retaliate is a keyword with a value
 ("Retaliate 1"), not a status card like Stunned or Tough.
 
 **How to apply:** a status whose count is a value gets its own tab text

@@ -18,7 +18,7 @@ type: project
 - Comic cues stay sparse: slanted primary button, yellow narration
   captions, speech-bubble tooltips, halftone dots.
 
-**Why:** chosen with the user in the redesign of 2026-10-19 (mockups on a
+**Why:** chosen with the user in the redesign (mockups on a
 claude.ai design canvas): themed but modern and clean, original mark with
 no Marvel branding.
 

@@ -32,7 +32,7 @@ type: reference
   (`fear_no_evil_by_ffg` is `fne`), set codes without `_by_ffg`; their
   images are relative to the mc4db host. Packs list: `/api/public/packs/`
   (`creator`). The report lists the records taken from mc4db per pack.
-  Fear No Evil is the pack it completes (171 records, checked 2026-10-20).
+  Fear No Evil is the pack it completes (171 records).
 - Cerebro is not a card-list source: it holds no official card that both
   marvelcdb and mc4db lack.
 - mc4db answers 429 to Go's default User-Agent; the generator sends

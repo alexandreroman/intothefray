@@ -43,7 +43,8 @@ type: project
 - History: "revealed Rhino" on the encounter deck; "revealed X from their
   deck" / "… from their Labor deck" on a player's deck.
 
-**Why:** user decision of 2026-10-24.
+**Why:** user decision: a revealed card stands for its deck's top card,
+so every deck action treats it as such.
 
 **How to apply:** one generic rule in internal/game: `coveredFor`
 (apply.go) puts the revealed cards back on top of the deck an action acts

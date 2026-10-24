@@ -10,7 +10,7 @@ type: project
 Three jobs check every run: `go` (build, vet, race tests, golangci-lint
 pinned to the local version), `web` (svelte-check, lint, vitest, build)
 and `docker` (`linux/amd64` image build without push, `compose.yaml` and
-Caddyfile validation). Decided 2026-10-20.
+Caddyfile validation).
 
 - On `main` (a push or a manual `workflow_dispatch` run), after the
   three checks pass, three jobs run in order: `publish` pushes

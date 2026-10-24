@@ -9,8 +9,7 @@ type: project
 The app never asks the player for a name. Starting or joining a game uses
 the name stored in the browser (`itf-name`); when none is stored, a random
 "Adjective Noun" name (e.g. "Brave Falcon") is generated, stored as
-`itf-name` and reused next time. The player changes it in Options
-(decided 2026-10-19).
+`itf-name` and reused next time. The player changes it in Options.
 
 A player name holds at most 16 characters (code points): the server cuts
 it to `maxNameRunes` in `internal/game/lobby.go`, the source of truth, and

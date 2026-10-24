@@ -15,7 +15,7 @@ type: project
 - History lines in the side panel expand in place to their full text on
   hover, instead of a tooltip.
 
-**Why:** user decision 2026-10-19, for readability.
+**Why:** user decision, for readability.
 
 **How to apply:** new single-line truncated text (`white-space: nowrap`,
 `text-overflow: ellipsis`, `min-width: 0` in flex or grid) adds

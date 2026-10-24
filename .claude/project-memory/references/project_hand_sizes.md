@@ -22,7 +22,7 @@ type: project
 - The hover pop (`scale(1.2)`) and the preview's own size are independent
   of the hand.
 
-**Why:** decided with the user on 2026-10-22: the raised hand is for
+**Why:** decided with the user: the raised hand is for
 reading cards, so it follows the preview's size, while the resting hand
 stays a compact strip out of the way. The preview keeps its own size
 (at most a 298 px wide card) rather than growing with large screens.
