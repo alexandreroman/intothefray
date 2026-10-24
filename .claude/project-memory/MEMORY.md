@@ -26,7 +26,7 @@
 - [Tech stack choices](references/project_tech_stack.md) — Go + Redis backend, Svelte SPA on GitHub Pages, path routes, why
 - [Product constraints](references/project_constraints.md) — anti-cheat, images never stored or proxied, 24 h expiry, pack scope, v1 limits
 - [Card data sources](references/reference_card_sources.md) — marvelcdb primary, mc4db fallback cards; Cerebro, fr.marvelcdb, mc4db image URLs
-- [Automated setup scope](references/project_setup_scope.md) — setup places cards; players draw their own opening hand
+- [Automated setup scope](references/project_setup_scope.md) — scheme on 1A, only start environments placed; players resolve Setup, draw hands
 - [Replayable board state](references/project_replayable_state.md) — seed at start, full action history, snapshots every 10 actions
 - [Moving card stacks](references/project_stack_moves.md) — top card moves the whole stack; a tucked card detaches
 - [Optional Casper support](references/project_casper_optional.md) — Casper wiring only in .casper.json and scripts/casper.sh; APP_INSTANCE names the tab
