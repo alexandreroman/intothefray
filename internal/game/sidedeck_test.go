@@ -124,8 +124,9 @@ func TestSetupSideDecks(t *testing.T) {
 	if strange := f.g.Table.Cards[identityOf(t, f.g, 0)]; strange.X != 680 || strange.Y != rowY0 {
 		t.Errorf("Doctor Strange at (%d, %d), want (680, %d)", strange.X, strange.Y, rowY0)
 	}
-	if table.FirstPlayer != (Point{X: 840, Y: rowY0}) {
-		t.Errorf("first player = %+v, want (840, %d)", table.FirstPlayer, rowY0)
+	// The side piles leave the first player token under the deck.
+	if table.FirstPlayer != (Point{X: 30, Y: rowY0 + 220}) {
+		t.Errorf("first player = %+v, want (30, %d)", table.FirstPlayer, rowY0+220)
 	}
 
 	sense := table.Piles[senseDeck]
@@ -175,8 +176,8 @@ func TestSetupTwoSideDecks(t *testing.T) {
 	if hercules := f.g.Table.Cards[identityOf(t, f.g, 0)]; hercules.X != 680 {
 		t.Errorf("Hercules at x %d, want 680", hercules.X)
 	}
-	if table.FirstPlayer.X != 840 {
-		t.Errorf("first player at x %d, want 840", table.FirstPlayer.X)
+	if table.FirstPlayer.X != 30 {
+		t.Errorf("first player at x %d, want 30, under the deck", table.FirstPlayer.X)
 	}
 }
 
@@ -232,10 +233,11 @@ func TestSetupSetAsideHeroCards(t *testing.T) {
 // set-aside cards, recorded before side decks existed: those setups must
 // draw the same random numbers and so give the same tables and card ids.
 // They change only with the card data of the heroes and scenario they use,
-// or with the fields of a card (the identity mark).
+// with the fields of a card (the identity mark), or with the default
+// positions (the first player token under the deck, the villain row).
 const (
-	spiderManSetupHash = "5120d1649774c4a660a40191027103caa945bbdc519661947cf1db6674034ce7"
-	threeDeckSetupHash = "2e1e52c6057b9212c640ebb298ab237f6fa82a7bf4e106756787d79ee59d3fc4"
+	spiderManSetupHash = "689af7071da837c3c42f667838b41ee7966fb766f344f6089d49191eea702ae1"
+	threeDeckSetupHash = "41b9e0c3210037445da3820f1030bc5ae4a8ab2445c07d3f2e6fd693a1aba7bc"
 )
 
 func TestSetupWithoutSideDecksIsUnchanged(t *testing.T) {

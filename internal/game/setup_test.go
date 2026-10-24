@@ -206,8 +206,9 @@ func TestSetupStages(t *testing.T) {
 	}
 
 	scheme := cardWithCode(t, table, "01097")
-	if scheme.Zone != ZoneTable || scheme.Face != 0 || scheme.X != 520 || scheme.Y != 30 {
-		t.Errorf("main scheme = %+v, want on the table at (520, 30), face 0", scheme)
+	// The main scheme lies 50 past the villain at 360–500.
+	if scheme.Zone != ZoneTable || scheme.Face != 0 || scheme.X != 550 || scheme.Y != 30 {
+		t.Errorf("main scheme = %+v, want on the table at (550, 30), face 0", scheme)
 	}
 
 	if len(table.Stages) != 2 {
@@ -300,13 +301,13 @@ func TestSetupStandardAndExpertSets(t *testing.T) {
 		inPlay     []inPlayCard
 	}{
 		{"standard", pack.Standard, "standard", "", nil},
-		{"standard ii", pack.Standard, "standard_ii", "", []inPlayCard{{formidableFoe, 0, 760}}},
-		{"standard iii", pack.Standard, "standard_iii", "", []inPlayCard{{pursuedByThePast, 0, 760}}},
+		{"standard ii", pack.Standard, "standard_ii", "", []inPlayCard{{formidableFoe, 0, 800}}},
+		{"standard iii", pack.Standard, "standard_iii", "", []inPlayCard{{pursuedByThePast, 0, 800}}},
 		{"expert with standard", pack.Expert, "standard", "expert", nil},
 		{"expert ii with standard", pack.Expert, "standard", "expert_ii", nil},
-		{"expert ii with standard ii", pack.Expert, "standard_ii", "expert_ii", []inPlayCard{{formidableFoe, 1, 760}}},
-		{"expert with standard ii", pack.Expert, "standard_ii", "expert", []inPlayCard{{formidableFoe, 1, 760}}},
-		{"expert with standard iii", pack.Expert, "standard_iii", "expert", []inPlayCard{{pursuedByThePast, 0, 760}}},
+		{"expert ii with standard ii", pack.Expert, "standard_ii", "expert_ii", []inPlayCard{{formidableFoe, 1, 800}}},
+		{"expert with standard ii", pack.Expert, "standard_ii", "expert", []inPlayCard{{formidableFoe, 1, 800}}},
+		{"expert with standard iii", pack.Expert, "standard_iii", "expert", []inPlayCard{{pursuedByThePast, 0, 800}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -394,13 +395,51 @@ func TestSetupSetInPlayFollowsScenarioInPlay(t *testing.T) {
 	cfg.Difficulty, cfg.Standard, cfg.Expert = pack.Expert, "standard_ii", "expert"
 	table := startedGame(t, cfg).Table
 
-	// Ultron Drones take the first in-play slot, Formidable Foe the next.
-	if c := cardWithCode(t, table, "01140"); c.Zone != ZoneTable || c.X != 760 || c.Y != 30 {
-		t.Errorf("Ultron Drones = %+v, want on the table at (760, 30)", c)
+	// Ultron Drones take the first in-play slot. Portrait, they end at 940:
+	// Formidable Foe lies 50 past them.
+	if c := cardWithCode(t, table, "01140"); c.Zone != ZoneTable || c.X != 800 || c.Y != 30 {
+		t.Errorf("Ultron Drones = %+v, want on the table at (800, 30)", c)
 	}
 	foe := cardWithCode(t, table, "24049")
-	if foe.Zone != ZoneTable || foe.Face != 1 || foe.X != 980 || foe.Y != 30 {
-		t.Errorf("Formidable Foe = %+v, want in the villain row at (980, 30), face 1", foe)
+	if foe.Zone != ZoneTable || foe.Face != 1 || foe.X != 990 || foe.Y != 30 {
+		t.Errorf("Formidable Foe = %+v, want in the villain row at (990, 30), face 1", foe)
+	}
+}
+
+func TestPutInPlayLeavesTheGapPastEachCard(t *testing.T) {
+	b := &tableBuilder{cat: newCatalog(t), rng: newTestRNG(), table: newEmptyTable(1)}
+
+	// 01125 is landscape, 196 wide, and 24049 portrait, 140 wide: each card
+	// lies 50 past the previous one, up to the grid.
+	for _, want := range []struct {
+		code string
+		x    int
+	}{{"01125", 800}, {"24049", 1050}, {"01125", 1240}} {
+		c, err := b.putInPlay(pack.FaceRef{Card: want.code})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if c.X != want.x || c.Y != 30 {
+			t.Errorf("%s at (%d, %d), want (%d, 30)", want.code, c.X, c.Y, want.x)
+		}
+	}
+}
+
+func TestCardWidth(t *testing.T) {
+	// The widths of the client's table cards (SIZES, web/src/table/layout.ts).
+	tests := []struct {
+		size pack.Size
+		want int
+	}{
+		{pack.SizeStd, 140},
+		{pack.SizeLand, 196},
+		{pack.SizeDoubleStd, 196},
+		{pack.SizeDoubleLand, 280},
+	}
+	for _, tt := range tests {
+		if got := cardWidth(tt.size); got != tt.want {
+			t.Errorf("cardWidth(%q) = %d, want %d", tt.size, got, tt.want)
+		}
 	}
 }
 
@@ -482,8 +521,8 @@ func TestSetupPlayers(t *testing.T) {
 		}
 	}
 
-	// The first player token lies in the row of the first player, seat 0.
-	if table.FirstPlayer != (Point{X: 520, Y: 500}) {
+	// The first player token lies under the deck of the first player, seat 0.
+	if table.FirstPlayer != (Point{X: 30, Y: 720}) {
 		t.Errorf("first player = %+v", table.FirstPlayer)
 	}
 }
@@ -671,8 +710,8 @@ func TestStartRowsPerSeat(t *testing.T) {
 			t.Errorf("identity of seat %d = %+v, want on row %d", seat, identity, playerRow(seat))
 		}
 	}
-	if table.FirstPlayer != (Point{X: firstPlayerX, Y: rowY(playerRow(0))}) {
-		t.Errorf("first player = %+v, want in the row of seat 0", table.FirstPlayer)
+	if table.FirstPlayer != (Point{X: firstPlayerX, Y: rowY(playerRow(0)) + portraitHeight + firstPlayerGap}) {
+		t.Errorf("first player = %+v, want under the deck of seat 0", table.FirstPlayer)
 	}
 
 	// Starting threat per player counts the seats, one per hero.
@@ -803,8 +842,13 @@ func TestSetupLeavesRoomUnderTheVillainRow(t *testing.T) {
 			if deck.Y%10 != 0 || table.FirstPlayer.Y%10 != 0 {
 				t.Errorf("first player row at y %d (token %d), want on the 10-unit grid", deck.Y, table.FirstPlayer.Y)
 			}
-			if table.FirstPlayer.Y != deck.Y {
-				t.Errorf("first player token at y %d, want in the first player row at %d", table.FirstPlayer.Y, deck.Y)
+			// The first player token lies under the first player's deck, inside the row.
+			if want := deck.Y + portraitHeight + firstPlayerGap; table.FirstPlayer.Y != want {
+				t.Errorf("first player token at y %d, want under the first player's deck at %d", table.FirstPlayer.Y, want)
+			}
+			const tokenHeight = 70 // FIRST_PLAYER_BOX (web/src/table/layout.ts)
+			if bottom := table.FirstPlayer.Y + tokenHeight; bottom > firstRowTop+rowHeight {
+				t.Errorf("first player token ends at y %d, past its row's bottom at %d", bottom, firstRowTop+rowHeight)
 			}
 
 			for seat := 1; seat < players; seat++ {

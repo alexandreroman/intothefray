@@ -11,6 +11,7 @@ import type {
   PileView,
   Size,
   Stage,
+  TableView,
   View,
 } from '../lib/types';
 import { discardPileOf, homeDeckOf, sideLabel, type TableElement } from './actions';
@@ -173,7 +174,10 @@ export function tileActions(card: CardView, pile: PileView, context: TileContext
   if (own && PLAYER_PILES.includes(pile.kind)) {
     actions.push({ id: 'draw', label: 'Draw', run: () => ({ kind: 'toHand', card: card.id }) });
   }
-  actions.push({ id: 'play', label: 'Play', run: () => playAction(card, pile, context) });
+  const table = context.view.table;
+  if (table) {
+    actions.push({ id: 'play', label: 'Play', run: () => playAction(card, pile, table, context) });
+  }
 
   // A card in a discard pile is discarded already; a side deck's card without one has nowhere to go.
   const piles = context.view.table?.piles ?? [];
@@ -207,7 +211,12 @@ export function tileActions(card: CardView, pile: PileView, context: TileContext
   return actions;
 }
 
-function playAction(card: CardView, pile: PileView, context: TileContext): Action {
+function playAction(
+  card: CardView,
+  pile: PileView,
+  table: TableView,
+  context: TileContext,
+): Action {
   const { view, selected, sizeOf } = context;
   // The card first: an own card of a shared pile goes to its own deck's row.
   const touched: TableElement[] = [
@@ -215,7 +224,7 @@ function playAction(card: CardView, pile: PileView, context: TileContext): Actio
     { kind: 'pile', id: pile.id },
   ];
   const seat = creditedSeatAmong(touched, view, selected) ?? selected;
-  const { x, y } = freeSlot(view.table?.cards ?? [], view.table?.piles ?? [], seat, sizeOf);
+  const { x, y } = freeSlot(card, table, seat, sizeOf);
   // An explicit Play shows the card, even out of a deck that hides its cards; a drag lands it face down.
   return { kind: 'play', card: card.id, x, y, faceUp: true };
 }

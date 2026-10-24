@@ -15,15 +15,16 @@ import (
 // The table is laid out in rows: the villain's row on top, villainRowHeight
 // high, then one row of rowHeight per seat (one deck, see seats.go), in seat order. Every row starts with its deck
 // and its discard pile, then the villain or the identity; the villain's row
-// goes on with the main scheme, the first player's row with the first player
-// token, and cards in play are added to the right. A hero with side decks
-// lays them out after its discard pile, each followed by its own discard pile
-// if it has one, sidePileStepX apart as the deck and the discard pile are.
-// The identity then lies pileZoneGap after the end of the last pile, the
-// first player token in the first player's row keeping its distance to it:
-// without side piles, they sit at identityX and firstPlayerX. Things sit rowContentY
-// below the top of their row, leaving room for the client's owner label
-// above the piles. Out-of-play piles (victory display, set-aside cards) keep
+// goes on with the main scheme, and cards in play are added to the right.
+// In the villain's row, the villain, the main scheme and the cards in play
+// lie inPlayGap apart, the first card in play taken up to the grid. A
+// hero with side decks lays them out after its discard pile, each followed by
+// its own discard pile if it has one, sidePileStepX apart as the deck and the
+// discard pile are. The identity then lies pileZoneGap after the end of the
+// last pile: without side piles, it sits at identityX. The first player token
+// lies under the first player's deck, in the empty bottom of their row.
+// Things sit rowContentY below the top of their row, leaving room for the
+// client's owner label above the piles. Out-of-play piles (victory display, set-aside cards) keep
 // a position for the model, on the deck, but the client never draws them.
 //
 // The villain's row is taller so that it reads apart from the players' rows:
@@ -36,21 +37,38 @@ const (
 	rowHeight        = 330
 	rowContentY      = 30
 
-	// portraitWidth is the width of a portrait card, and so of a pile.
-	portraitWidth = 140
+	// portraitWidth and portraitHeight are the size of a portrait card, and
+	// so of a pile; landscapeWidth is the width of a landscape card, such as
+	// a main scheme.
+	portraitWidth  = 140
+	portraitHeight = 196
+	landscapeWidth = 196
 	// pileZoneGap is the room between the last pile of a row and the
 	// cards in play after it.
 	pileZoneGap = 60
+	// inPlayGap is the room between two cards in play, the same for the
+	// cards the setup puts in play and the cards played from the hand or a
+	// pile box (freeSlot, web/src/table/keys.ts). Turned 15° when exhausted,
+	// a portrait card reaches about 23 further on each side: 50 lets two
+	// neighbours both be exhausted without overlapping.
+	inPlayGap = 50
+	// The first player token, 84 by 70 (web/src/table/layout.ts), lies
+	// centred under the deck, 28 taken to the grid, and firstPlayerGap below
+	// it, on the grid: 14 units clear of the client's owner frame, which
+	// reaches 10 units past the piles. It ends 10 units above the bottom of
+	// the row.
+	firstPlayerX   = 30
+	firstPlayerGap = 24
 
-	deckX        = 0
-	discardX     = 160
-	outOfPlayX   = 0
-	identityX    = discardX + portraitWidth + pileZoneGap
-	villainX     = 360
-	mainSchemeX  = 520
-	firstPlayerX = 520
-	inPlayStartX = 760
-	inPlayStepX  = 220
+	deckX       = 0
+	discardX    = 160
+	outOfPlayX  = 0
+	identityX   = discardX + portraitWidth + pileZoneGap
+	villainX    = 360
+	mainSchemeX = villainX + portraitWidth + inPlayGap
+	// Past the main scheme, landscape, rounded up to the grid as ceilToGrid
+	// does.
+	inPlayStartX = (mainSchemeX + landscapeWidth + inPlayGap + gridSize - 1) / gridSize * gridSize
 
 	sidePileStepX = 160
 )
@@ -167,7 +185,7 @@ func newEmptyTable(seatCount int) *Table {
 		Cards:       map[string]*Card{},
 		Piles:       map[string]*Pile{},
 		Hands:       map[Area][]string{},
-		FirstPlayer: Point{X: firstPlayerX, Y: rowY(playerRow(0))},
+		FirstPlayer: Point{X: firstPlayerX, Y: rowY(playerRow(0)) + portraitHeight + firstPlayerGap},
 	}
 	villainY := rowY(villainRow)
 	t.addPile(PileEncounter, KindEncounter, NoOwner, deckX, villainY)
@@ -197,6 +215,9 @@ type tableBuilder struct {
 	cat   *pack.Catalog
 	rng   *rand.Rand
 	table *Table
+	// inPlayRight is the right edge of the last card put in play, 0 before
+	// the first one.
+	inPlayRight int
 }
 
 // newCard creates one card instance. The code may be any alias; the card
@@ -297,8 +318,8 @@ func (b *tableBuilder) setupScenario(cfg LobbyConfig) (pack.Scenario, error) {
 			return pack.Scenario{}, err
 		}
 	}
-	for i, ref := range start.InPlay {
-		c, err := b.putInPlay(ref, inPlayX(i))
+	for _, ref := range start.InPlay {
+		c, err := b.putInPlay(ref)
 		if err != nil {
 			return pack.Scenario{}, err
 		}
@@ -325,14 +346,12 @@ func (b *tableBuilder) setupScenario(cfg LobbyConfig) (pack.Scenario, error) {
 	// Cards each set leaves out of the encounter deck, by set code. The
 	// scenario setup only takes cards from the villain set.
 	skips := map[string]map[string]bool{scenario.VillainSet: apart}
-	inPlayCount := len(start.InPlay)
 	for _, setCode := range encounterSets[1:] {
-		placed, slots, err := b.putSetInPlay(setCode, cfg.Difficulty, inPlayCount)
+		placed, err := b.putSetInPlay(setCode, cfg.Difficulty)
 		if err != nil {
 			return pack.Scenario{}, err
 		}
 		skips[setCode] = placed
-		inPlayCount += slots
 	}
 
 	for _, setCode := range encounterSets {
@@ -344,30 +363,24 @@ func (b *tableBuilder) setupScenario(cfg LobbyConfig) (pack.Scenario, error) {
 }
 
 // putSetInPlay puts the cards a set starts in play at this difficulty (the
-// "Setup." keyword) in the villain's row, in the in-play slots from firstSlot
-// on. It returns the canonical codes it placed, which stay out of the
-// encounter deck, and the number of slots it used.
-func (b *tableBuilder) putSetInPlay(
-	setCode string,
-	difficulty pack.Difficulty,
-	firstSlot int,
-) (map[string]bool, int, error) {
+// "Setup." keyword) in the villain's row, after the cards already in play.
+// It returns the canonical codes it placed, which stay out of the encounter
+// deck.
+func (b *tableBuilder) putSetInPlay(setCode string, difficulty pack.Difficulty) (map[string]bool, error) {
 	set, ok := b.cat.Set(setCode)
 	if !ok {
-		return nil, 0, fmt.Errorf("%w: unknown set %q", ErrInvalid, setCode)
+		return nil, fmt.Errorf("%w: unknown set %q", ErrInvalid, setCode)
 	}
 
 	placed := map[string]bool{}
-	refs := set.InPlay[difficulty]
-	for i, ref := range refs {
-		slot := firstSlot + i
-		c, err := b.putInPlay(ref, inPlayX(slot))
+	for _, ref := range set.InPlay[difficulty] {
+		c, err := b.putInPlay(ref)
 		if err != nil {
-			return nil, 0, err
+			return nil, err
 		}
 		placed[c.Code] = true
 	}
-	return placed, len(refs), nil
+	return placed, nil
 }
 
 // setupStage creates the cards of one stage pile. The card named by top goes
@@ -418,21 +431,42 @@ func stagePosition(key string) (x, y int, err error) {
 	}
 }
 
-// inPlayX returns the x of the in-play slot with the given index.
-func inPlayX(slot int) int {
-	return inPlayStartX + inPlayStepX*slot
-}
-
-// putInPlay creates a starting card and puts it in the villain's row, at x.
-func (b *tableBuilder) putInPlay(ref pack.FaceRef, x int) (*Card, error) {
+// putInPlay creates a starting card and puts it in the villain's row: the
+// first one at inPlayStartX, each later one inPlayGap past the right edge of
+// the previous one, taken up to the grid.
+func (b *tableBuilder) putInPlay(ref pack.FaceRef) (*Card, error) {
 	c, def, err := b.newEncounterCard(ref.Card)
 	if err != nil {
 		return nil, err
 	}
+	x := inPlayStartX
+	if b.inPlayRight > 0 {
+		x = ceilToGrid(b.inPlayRight + inPlayGap)
+	}
 	if err := b.placeFace(c, def, ref.Face, x, rowY(villainRow)); err != nil {
 		return nil, err
 	}
+	b.inPlayRight = x + cardWidth(def.Faces[ref.Face].Size)
 	return c, nil
+}
+
+// cardWidth returns the width of a card face on the table, as the client
+// draws it (web/src/table/layout.ts).
+func cardWidth(size pack.Size) int {
+	switch size {
+	case pack.SizeLand, pack.SizeDoubleStd:
+		// A double-size portrait card is as wide as a landscape one.
+		return landscapeWidth
+	case pack.SizeDoubleLand:
+		return 280
+	default:
+		return portraitWidth
+	}
+}
+
+// ceilToGrid rounds a positive table coordinate up to the grid.
+func ceilToGrid(v int) int {
+	return (v + gridSize - 1) / gridSize * gridSize
 }
 
 // placeFace puts a new encounter card on the table, face up on the given
@@ -484,9 +518,6 @@ func (b *tableBuilder) setupPlayer(seat int, deck *DeckChoice) error {
 	// last side pile.
 	x := pileX(1+sidePiles) + portraitWidth + pileZoneGap
 	b.placeOnTable(identity, alterEgoFace(identityDef), x, rowY(playerRow(seat)))
-	if seat == 0 {
-		b.table.FirstPlayer.X = x + firstPlayerX - identityX
-	}
 
 	if hero.Obligation != "" {
 		c, _, err := b.newEncounterCard(hero.Obligation)

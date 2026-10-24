@@ -12,6 +12,13 @@ type: project
 - Setup lays the surface out in rows: the villain row first, then one row
   per seated player. Each row starts at the left with deck and discard,
   then the villain or identity and schemes; played cards go to the right.
+- A played card (hand key P, card box Play) lands 50 units past the last
+  card or pile of its row (past the identity on a fresh row), or in the
+  first hole wide enough; setup spaces the villain, the main scheme and the
+  cards it puts in play with the same 50 gap from each card's width. 50 lets two neighbouring portrait
+  cards both be exhausted (turned 15°) without overlapping.
+- The first player token starts under the first player's deck (x 30, 24
+  below the deck), in the empty bottom of that row; a played card avoids it.
 - The villain's row is taller (470 units, player rows 330): about 1.2
   portrait card heights (244 units, rows on the 10-unit grid) lie empty
   between its cards and the first player's row, so the two read apart.
