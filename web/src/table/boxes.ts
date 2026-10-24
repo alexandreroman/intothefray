@@ -215,7 +215,13 @@ function playAction(card: CardView, pile: PileView, context: TileContext): Actio
     { kind: 'pile', id: pile.id },
   ];
   const seat = creditedSeatAmong(touched, view, selected) ?? selected;
-  const { x, y } = freeSlot(view.table?.cards ?? [], view.table?.piles ?? [], seat, sizeOf);
+  const { x, y } = freeSlot(
+    view.table?.cards ?? [],
+    view.table?.piles ?? [],
+    seat,
+    sizeOf,
+    view.table?.firstPlayer,
+  );
   // An explicit Play shows the card, even out of a deck that hides its cards; a drag lands it face down.
   return { kind: 'play', card: card.id, x, y, faceUp: true };
 }

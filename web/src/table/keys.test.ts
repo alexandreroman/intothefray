@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/svelte';
 import Table from './Table.svelte';
 import { interaction } from './interaction.svelte';
 import { freeSlot, handleKey, type KeyTable } from './keys';
+import { footprints, visualBox } from './layout';
 import { openModal } from '../components/modal.svelte';
 import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
 import type {
@@ -770,7 +771,7 @@ describe('keys on a hand card', () => {
   it('P plays to a free slot', async () => {
     const cards = [
       card('v', { code: '01094', owner: -1, back: 'villain' }),
-      // 760–900 takes the slot at 760; a double-size card at 960–1156 the one at 980.
+      // 760–900 takes the slot at 760, a double-size card at 960–1156 the one at 950: the card lands at 1210.
       card('a', { x: 760 }),
       card('b', { code: '01010', x: 960 }),
       // Below the viewer's row, or in another row: not in the way.
@@ -782,7 +783,7 @@ describe('keys on a hand card', () => {
     await fireEvent.pointerEnter(inHand('h'));
 
     await press('p');
-    expect(session.act).toHaveBeenCalledWith({ kind: 'play', card: 'h', x: 1200, y: 0 }, 0);
+    expect(session.act).toHaveBeenCalledWith({ kind: 'play', card: 'h', x: 1210, y: 0 }, 0);
   });
 
   it('X and Backspace discard a hand card', async () => {
@@ -864,29 +865,82 @@ describe('freeSlot', () => {
     expect(freeSlot([], [], 0, sizeOf)).toEqual({ x: 760, y: 0 });
   });
 
-  it('steps by 220, keeping 40 free on each side of a 140-wide card', () => {
-    // 760 needs 720–940 free: a card from 930 is in the way, and its right edge (1070) blocks 980.
-    expect(freeSlot([card('a', { x: 930, y: 360 })], row, 0, sizeOf)).toEqual({ x: 1200, y: 360 });
-    // A card from 940 leaves 760 free; one ending at 940 leaves 980 free.
-    expect(freeSlot([card('a', { x: 940, y: 360 })], row, 0, sizeOf)).toEqual({ x: 760, y: 360 });
-    expect(freeSlot([card('a', { x: 800, y: 360 })], row, 0, sizeOf)).toEqual({ x: 980, y: 360 });
+  it('lands 50 past the last card of the row', () => {
+    // A card at 760–900 sends the next one to 950.
+    expect(freeSlot([card('a', { x: 760, y: 360 })], row, 0, sizeOf)).toEqual({ x: 950, y: 360 });
+    // Past one at 950–1090 too, it lands at 1140.
+    const cards = [card('a', { x: 760, y: 360 }), card('b', { x: 950, y: 360 })];
+    expect(freeSlot(cards, row, 0, sizeOf)).toEqual({ x: 1140, y: 360 });
+  });
+
+  it('finds the last card whatever the order of the cards', () => {
+    const cards = [card('b', { x: 950, y: 360 }), card('a', { x: 760, y: 360 })];
+    expect(freeSlot(cards, row, 0, sizeOf)).toEqual({ x: 1140, y: 360 });
+    const hole = [card('b', { x: 1140, y: 360 }), card('a', { x: 760, y: 360 })];
+    expect(freeSlot(hole, row, 0, sizeOf)).toEqual({ x: 950, y: 360 });
+  });
+
+  it('a card left of 760 that reaches past it is in the way', () => {
+    // An identity past two side piles lies at 680–820.
+    expect(freeSlot([card('id', { x: 680, y: 360 })], row, 0, sizeOf)).toEqual({ x: 870, y: 360 });
+  });
+
+  it("the first player token is in the way when it lies in the viewer's row", () => {
+    // Past two side piles, the identity lies at 680–820; dragged to 840–924, the token is where 870 would be.
+    const sides = [
+      pile('side:p0:0', { kind: 'sideDeck', owner: 0, x: 320, y: 360 }),
+      pile('side:p0:1', { kind: 'sideDeck', owner: 0, x: 480, y: 360 }),
+    ];
+    const hero = card('id', { x: 680, y: 360 });
+    expect(freeSlot([hero], [...row, ...sides], 0, sizeOf, { x: 840, y: 360 })).toEqual({
+      x: 980,
+      y: 360,
+    });
+    // In another row, it is not.
+    expect(freeSlot([identity], row, 0, sizeOf, { x: 760, y: 0 })).toEqual({ x: 760, y: 360 });
+  });
+
+  it('leaves room for two neighbours to be exhausted without overlapping', () => {
+    const first = card('a', { ...freeSlot([], row, 0, sizeOf) });
+    const second = card('b', { ...freeSlot([first], row, 0, sizeOf) });
+    const [left, right] = footprints(
+      [first, second].map((c) => ({ ...c, exhausted: true })),
+      [],
+      sizeOf,
+    ).map(visualBox);
+    expect(left!.right).toBeLessThanOrEqual(right!.left);
+  });
+
+  it('fills a hole wide enough for a 140-wide card with 50 free on each side', () => {
+    // 760 needs 710–950 free: a card from 950 leaves it free, one from 940 does not.
+    expect(freeSlot([card('a', { x: 950, y: 360 })], row, 0, sizeOf)).toEqual({ x: 760, y: 360 });
+    expect(freeSlot([card('a', { x: 940, y: 360 })], row, 0, sizeOf)).toEqual({ x: 1130, y: 360 });
+    // Between 900 and 1140, 950 has 900–1140 free.
+    const wide = [card('a', { x: 760, y: 360 }), card('b', { x: 1140, y: 360 })];
+    expect(freeSlot(wide, row, 0, sizeOf)).toEqual({ x: 950, y: 360 });
+    // Between 900 and 1130, it does not: the card goes past the last one, at 1320.
+    const narrow = [card('a', { x: 760, y: 360 }), card('b', { x: 1130, y: 360 })];
+    expect(freeSlot(narrow, row, 0, sizeOf)).toEqual({ x: 1320, y: 360 });
   });
 
   it('counts the visible width of a card: double size, face down, tilted when exhausted', () => {
-    // Double size, 196 wide: 760–956 blocks 980.
+    // Double size, 196 wide: 760–956, then 50 more, up to the grid.
     const double = card('a', { code: '01010', x: 760, y: 360 });
-    expect(freeSlot([double], row, 0, sizeOf)).toEqual({ x: 1200, y: 360 });
+    expect(freeSlot([double], row, 0, sizeOf)).toEqual({ x: 1010, y: 360 });
     // Face down, it is 140 wide again.
     const faceDown = card('a', { code: '01010', faceDown: true, x: 760, y: 360 });
-    expect(freeSlot([faceDown], row, 0, sizeOf)).toEqual({ x: 980, y: 360 });
-    // Exhausted, it turns 15°: its bounding box reaches past 940.
-    const exhausted = card('a', { x: 800, y: 360, exhausted: true });
-    expect(freeSlot([exhausted], row, 0, sizeOf)).toEqual({ x: 1200, y: 360 });
+    expect(freeSlot([faceDown], row, 0, sizeOf)).toEqual({ x: 950, y: 360 });
+    // Exhausted, it turns 15°: its bounding box spans 737–923, and 973 goes up to 980.
+    const exhausted = card('a', { x: 760, y: 360, exhausted: true });
+    expect(freeSlot([exhausted], row, 0, sizeOf)).toEqual({ x: 980, y: 360 });
+    // Its tilt counts on its left too: from 960, it reaches 937, before 950.
+    const tilted = card('a', { x: 960, y: 360, exhausted: true });
+    expect(freeSlot([tilted], row, 0, sizeOf)).toEqual({ x: 1180, y: 360 });
   });
 
   it('a pile is in the way, but not an out-of-play pile, which is not drawn', () => {
     const inPlay = pile('deck:p1', { owner: 1, x: 780, y: 360 });
-    expect(freeSlot([], [...row, inPlay], 0, sizeOf)).toEqual({ x: 980, y: 360 });
+    expect(freeSlot([], [...row, inPlay], 0, sizeOf)).toEqual({ x: 970, y: 360 });
     const aside = pile('aside:p0', { kind: 'aside', owner: 0, x: 780, y: 360 });
     expect(freeSlot([], [...row, aside], 0, sizeOf)).toEqual({ x: 760, y: 360 });
   });
@@ -900,7 +954,7 @@ describe('freeSlot', () => {
     // "above" ends at 356, "reaching" at 366: only the second one is in the way.
     expect(freeSlot(cards, row, 0, sizeOf)).toEqual({ x: 760, y: 360 });
     expect(freeSlot([...cards, card('a', { x: 760, y: 400 })], row, 0, sizeOf)).toEqual({
-      x: 1200,
+      x: 1170,
       y: 360,
     });
   });
