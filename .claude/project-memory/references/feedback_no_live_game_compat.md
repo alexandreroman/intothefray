@@ -11,9 +11,8 @@ Games in progress and their recorded histories need not keep replaying the
 same way: no compatibility fields, defaults chosen for old histories, or
 migration code.
 
-**Why:** user decision of 2026-10-24. Games are short-lived (24 h expiry,
-see [[project_constraints]]), so keeping old histories replayable is not
-worth the extra code.
+**Why:** games are short-lived (24 h expiry, see [[project_constraints]]),
+so keeping old histories replayable is not worth the extra code.
 
 **How to apply:** design action changes for the code as it is, not for
 histories already stored in Redis. The recorded replays under
