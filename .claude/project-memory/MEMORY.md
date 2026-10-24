@@ -39,7 +39,7 @@
 - [Card image preload](references/project_image_preload.md) — browser-native: low-priority Image per pool face, no custom queue
 - [Compression split](references/project_no_backend_compression.md) — HTTP: proxy compresses; WebSocket: permessage-deflate, no takeover
 - [Visual identity](references/project_visual_identity.md) — Ink & Signal: Archivo, ink palette, split-card logo, full wordmark in bars
-- [Table layout](references/project_table_layout.md) — one surface in rows, owner frames, out-of-play via owner frame chips
+- [Table layout](references/project_table_layout.md) — rows, owner frames, out-of-play chips; plays land 50 past the last card; token under deck
 - [Provider-neutral UI copy](references/project_provider_neutral_copy.md) — UI says "deck link", names no deck provider
 - [Top bar alignment](references/project_top_bar_alignment.md) — bar edges follow each screen's content column; table: icons 8px from window edge
 - [Several decks per player](references/project_multi_deck.md) — 1 to 4 deck slots per player, 4 in all; seat = deck; credited seat
