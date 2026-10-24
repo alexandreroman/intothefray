@@ -415,7 +415,7 @@ func TestPutInPlayLeavesTheGapPastEachCard(t *testing.T) {
 		code string
 		x    int
 	}{{"01125", 800}, {"24049", 1050}, {"01125", 1240}} {
-		c, err := b.putInPlay(pack.FaceRef{Card: want.code})
+		c, err := b.putInPlay(pack.FaceRef{Card: want.code}, PileEncounter)
 		if err != nil {
 			t.Fatal(err)
 		}

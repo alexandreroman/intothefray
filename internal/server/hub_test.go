@@ -461,6 +461,7 @@ func TestPresenceValidation(t *testing.T) {
 		{"drag with an empty card id", map[string]any{"drag": drag([]string{""})}, false},
 		{"drag as text", map[string]any{"drag": "c1"}, false},
 		{"marker drag with a long name", map[string]any{"drag": map[string]any{"token": long, "x": 1, "y": 2}}, false},
+		{"marker drag of an unknown marker", map[string]any{"drag": map[string]any{"token": "x", "x": 1, "y": 2}}, false},
 		{"marker drag with cards", map[string]any{"drag": tokenDragWithCards}, false},
 		{"ping with a text y", map[string]any{"ping": map[string]any{"x": 1, "y": "2"}}, false},
 	}

@@ -398,6 +398,23 @@ func TestEmbeddedWreckingCrew(t *testing.T) {
 					t.Errorf("seat %d set-aside pile holds %d cards, want none", seat, len(aside.Cards))
 				}
 			}
+
+			// A side scheme returns to the deck of its villain.
+			var side *game.Card
+			for _, c := range table.Cards {
+				if c.Code == "07004" {
+					side = c
+				}
+			}
+			if side == nil {
+				t.Fatal("no side scheme 07004")
+			}
+			if err := g.Do("h", -1, game.Action{Kind: game.ActDiscard, Card: side.ID}, cat, time.Unix(1, 0)); err != nil {
+				t.Fatalf("discard 07004 = %v", err)
+			}
+			if got := table.Piles["encd:wrecker"].Cards; !slices.Contains(got, side.ID) {
+				t.Errorf("encd:wrecker = %v, want 07004 (%s)", got, side.ID)
+			}
 		})
 	}
 }
@@ -533,7 +550,7 @@ func TestEmbeddedDataInvariants(t *testing.T) {
 	// puts in play, environments and side schemes (Criminal Enterprise, Ultron
 	// Drones, Public Support, Day of Reckoning): any other card stays in the
 	// encounter deck for the players.
-	t.Run("scenario in-play cards are environments", func(t *testing.T) {
+	t.Run("scenario in-play cards are environments or side schemes", func(t *testing.T) {
 		for _, file := range files {
 			for _, scenario := range file.Scenarios {
 				for difficulty, start := range scenario.Start {

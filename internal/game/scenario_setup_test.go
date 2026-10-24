@@ -293,16 +293,6 @@ func TestSelfContainedConfigCleared(t *testing.T) {
 		t.Errorf("Config = %+v, want the sets cleared", g.Config)
 	}
 
-	for _, bad := range []LobbyConfig{
-		{Scenario: "twice", Difficulty: pack.Standard, Standard: "standard"},
-		{Scenario: "twice", Difficulty: pack.Standard, Modulars: []string{"m"}},
-		{Scenario: "twice", Difficulty: pack.Expert, Expert: "expert"},
-	} {
-		err := validateConfig(bad, cat)
-		if !errors.Is(err, ErrInvalid) || !strings.Contains(err.Error(), `scenario "twice" uses only its own cards`) {
-			t.Errorf("validateConfig(%+v) = %v, want ErrInvalid uses only its own cards", bad, err)
-		}
-	}
 	if err := validateConfig(LobbyConfig{Scenario: "twice", Difficulty: pack.Standard}, cat); err != nil {
 		t.Errorf("validateConfig(no sets) = %v", err)
 	}
@@ -322,5 +312,30 @@ func TestOrderedDeckTopFirst(t *testing.T) {
 	want := []string{"12001", "12002", "12002", "12002", "12002", "11001", "11001"}
 	if !slices.Equal(top, want) {
 		t.Errorf("ordered deck from the top = %v, want %v", top, want)
+	}
+}
+
+func TestStageCardsHaveTheirDeckAsHome(t *testing.T) {
+	table := mustScenarioTable(t, "twice")
+	scheme, sideScheme := table.Cards[cardOfCode(t, table, "10003")], table.Cards[cardOfCode(t, table, "10006")]
+	if scheme.Home != "enc:da" || sideScheme.Home != "sdeck:db" {
+		t.Errorf("homes of the side schemes = %q, %q, want enc:da, sdeck:db", scheme.Home, sideScheme.Home)
+	}
+	if v := table.Cards[cardOfCode(t, table, "10001")]; v.Home != "enc:da" {
+		t.Errorf("stage card home = %q, want enc:da", v.Home)
+	}
+	if m := table.Cards[cardOfCode(t, table, "10010")]; m.Home != PileEncounter {
+		t.Errorf("stage card without a deck has home %q, want %q", m.Home, PileEncounter)
+	}
+
+	// A card tucked under the side scheme leaves with it.
+	tucked := table.Cards[cardOfCode(t, table, "10006")]
+	tucked.Parent, tucked.X, tucked.Y = scheme.ID, scheme.X, scheme.Y
+	mustApply(t, table, Action{Kind: ActDiscard, Card: scheme.ID})
+	if got := table.Piles["encd:da"].Cards; !slices.Equal(got, []string{scheme.ID}) {
+		t.Errorf("encd:da = %v, want [%s]", got, scheme.ID)
+	}
+	if tucked.Parent != "" || tucked.Zone != ZonePile || tucked.Pile != "sdeck:db" {
+		t.Errorf("tucked card = %+v, want back in sdeck:db", tucked)
 	}
 }

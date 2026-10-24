@@ -277,12 +277,8 @@ func DefaultConfig(cat *pack.Catalog, scenario string) LobbyConfig {
 }
 
 func validateConfig(cfg LobbyConfig, cat *pack.Catalog) error {
-	sc, ok := cat.Scenario(cfg.Scenario)
-	if !ok {
+	if _, ok := cat.Scenario(cfg.Scenario); !ok {
 		return fmt.Errorf("%w: unsupported scenario %q", ErrInvalid, cfg.Scenario)
-	}
-	if sc.SelfContained && (len(cfg.Modulars) > 0 || cfg.Standard != "" || cfg.Expert != "") {
-		return fmt.Errorf("%w: scenario %q uses only its own cards", ErrInvalid, cfg.Scenario)
 	}
 	// An empty Standard or Expert set means the game plays without it, as
 	// some scenarios allow.

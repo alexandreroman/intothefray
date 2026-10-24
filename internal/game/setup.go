@@ -71,7 +71,8 @@ const (
 	// the row.
 	firstPlayerX   = 30
 	firstPlayerGap = 24
-	// activeOffsetX centres the active counter under its stage card.
+	// activeOffsetX takes the centre of the active counter under its stage card to the grid: 40 on a 140 wide card
+	// puts the 70 wide counter's centre at 75, not 70.
 	activeOffsetX = 40
 
 	deckX      = 0
@@ -274,6 +275,18 @@ func (b *tableBuilder) newEncounterCard(code string) (*Card, pack.Card, error) {
 	return b.newCard(code, NoOwner, PileEncounter)
 }
 
+// stageHome returns the home of the cards of a stage: the id of its scenario deck, if it has one, else the
+// classic encounter deck.
+func stageHome(scenario pack.Scenario, pile pack.Pile) string {
+	if pile.Deck != "" {
+		if i := slices.IndexFunc(scenario.Decks, func(d pack.ScenarioDeck) bool { return d.Key == pile.Deck }); i >= 0 {
+			deckID, _ := scenarioDeckIDs(pile.Deck, scenario.Decks[i].Encounter)
+			return deckID
+		}
+	}
+	return PileEncounter
+}
+
 // pushToPile puts a new card on top of a pile.
 func (b *tableBuilder) pushToPile(pileID string, c *Card) {
 	b.table.pushOnPile(b.table.Piles[pileID], c)
@@ -370,7 +383,8 @@ func (b *tableBuilder) setupScenario(cfg LobbyConfig) (pack.Scenario, error) {
 			}
 			b.addDeckGroup(scenario.Decks[i])
 		}
-		stageCard, err := b.setupStage(pile, start.Top[pile.Key], apart)
+		home := stageHome(scenario, pile)
+		stageCard, err := b.setupStage(pile, home, start.Top[pile.Key], apart)
 		if err != nil {
 			return pack.Scenario{}, err
 		}
@@ -384,7 +398,7 @@ func (b *tableBuilder) setupScenario(cfg LobbyConfig) (pack.Scenario, error) {
 			if ref.With != pile.Key {
 				continue
 			}
-			c, err := b.putInPlay(ref)
+			c, err := b.putInPlay(ref, home)
 			if err != nil {
 				return pack.Scenario{}, err
 			}
@@ -402,7 +416,7 @@ func (b *tableBuilder) setupScenario(cfg LobbyConfig) (pack.Scenario, error) {
 		if ref.With != "" {
 			return pack.Scenario{}, fmt.Errorf("%w: card %s is with no stage %q", ErrInvalid, ref.Card, ref.With)
 		}
-		c, err := b.putInPlay(ref)
+		c, err := b.putInPlay(ref, PileEncounter)
 		if err != nil {
 			return pack.Scenario{}, err
 		}
@@ -549,7 +563,7 @@ func (b *tableBuilder) putSetInPlay(setCode string, difficulty pack.Difficulty) 
 
 	placed := map[string]bool{}
 	for _, ref := range set.InPlay[difficulty] {
-		c, err := b.putInPlay(ref)
+		c, err := b.putInPlay(ref, PileEncounter)
 		if err != nil {
 			return nil, err
 		}
@@ -560,8 +574,8 @@ func (b *tableBuilder) putSetInPlay(setCode string, difficulty pack.Difficulty) 
 
 // setupStage creates the cards of one stage pile. The card named by top goes
 // to the table on its start face; the others wait in the stage zone.
-// It returns the card on the table.
-func (b *tableBuilder) setupStage(pile pack.Pile, top pack.FaceRef, apart map[string]bool) (*Card, error) {
+// Its cards have home as their home. It returns the card on the table.
+func (b *tableBuilder) setupStage(pile pack.Pile, home string, top pack.FaceRef, apart map[string]bool) (*Card, error) {
 	topCode, err := b.canonical(top.Card)
 	if err != nil {
 		return nil, err
@@ -570,7 +584,7 @@ func (b *tableBuilder) setupStage(pile pack.Pile, top pack.FaceRef, apart map[st
 	stage := &Stage{Key: pile.Key, Label: pile.Label}
 	var current *Card
 	for _, code := range pile.Cards {
-		c, def, err := b.newEncounterCard(code)
+		c, def, err := b.newCard(code, NoOwner, home)
 		if err != nil {
 			return nil, err
 		}
@@ -612,9 +626,9 @@ func (b *tableBuilder) slotFor(def pack.Card, face, gap, first int) (int, error)
 
 // putInPlay creates a starting card and puts it in the villain's row, inPlayGap
 // past the right edge of the previous thing, taken up to the grid (the first
-// thing of the row, at inPlayStartX).
-func (b *tableBuilder) putInPlay(ref pack.FaceRef) (*Card, error) {
-	c, def, err := b.newEncounterCard(ref.Card)
+// thing of the row, at inPlayStartX). The card has home as its home.
+func (b *tableBuilder) putInPlay(ref pack.FaceRef, home string) (*Card, error) {
+	c, def, err := b.newCard(ref.Card, NoOwner, home)
 	if err != nil {
 		return nil, err
 	}
