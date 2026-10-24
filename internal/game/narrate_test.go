@@ -262,7 +262,7 @@ func TestCardPartsReferToTheNamedFace(t *testing.T) {
 		}},
 		{"flip the main scheme", func(t *testing.T, f *doFixture) []pack.FaceRef {
 			f.mustDo(t, "h", Action{Kind: ActFlip, Card: f.g.Table.stage(pileKeyScheme).Current}, at(1))
-			return []pack.FaceRef{theBreakInOneB, theBreakInOneA}
+			return []pack.FaceRef{theBreakInOneA, theBreakInOneB}
 		}},
 		{"replace the villain", func(t *testing.T, f *doFixture) []pack.FaceRef {
 			stage := f.g.Table.stage(pileKeyVillain)
@@ -271,8 +271,8 @@ func TestCardPartsReferToTheNamedFace(t *testing.T) {
 		}},
 		{"turn the main scheme", func(t *testing.T, f *doFixture) []pack.FaceRef {
 			stage := f.g.Table.stage(pileKeyScheme)
-			f.mustDo(t, "h", Action{Kind: ActChooseStage, Stage: stage.Key, Card: stage.Current, Face: 0}, at(1))
-			return []pack.FaceRef{theBreakInOneA}
+			f.mustDo(t, "h", Action{Kind: ActChooseStage, Stage: stage.Key, Card: stage.Current, Face: 1}, at(1))
+			return []pack.FaceRef{theBreakInOneB}
 		}},
 	}
 	for _, tt := range tests {

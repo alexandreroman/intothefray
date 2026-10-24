@@ -206,8 +206,8 @@ func TestSetupStages(t *testing.T) {
 	}
 
 	scheme := cardWithCode(t, table, "01097")
-	if scheme.Zone != ZoneTable || scheme.Face != 1 || scheme.X != 520 || scheme.Y != 30 {
-		t.Errorf("main scheme = %+v, want on the table at (520, 30), face 1", scheme)
+	if scheme.Zone != ZoneTable || scheme.Face != 0 || scheme.X != 520 || scheme.Y != 30 {
+		t.Errorf("main scheme = %+v, want on the table at (520, 30), face 0", scheme)
 	}
 
 	if len(table.Stages) != 2 {
@@ -389,14 +389,14 @@ func TestStartExpertWithoutExpertSet(t *testing.T) {
 
 func TestSetupSetInPlayFollowsScenarioInPlay(t *testing.T) {
 	cfg := rhinoConfig()
-	cfg.Scenario = "klaw"
-	cfg.Modulars = []string{"the_doomsday_chair"}
+	cfg.Scenario = "ultron"
+	cfg.Modulars = []string{"under_attack"}
 	cfg.Difficulty, cfg.Standard, cfg.Expert = pack.Expert, "standard_ii", "expert"
 	table := startedGame(t, cfg).Table
 
-	// Klaw's Defense Network takes the first in-play slot, Formidable Foe the next.
-	if c := cardWithCode(t, table, "01125"); c.Zone != ZoneTable || c.X != 760 || c.Y != 30 {
-		t.Errorf("Defense Network = %+v, want on the table at (760, 30)", c)
+	// Ultron Drones take the first in-play slot, Formidable Foe the next.
+	if c := cardWithCode(t, table, "01140"); c.Zone != ZoneTable || c.X != 760 || c.Y != 30 {
+		t.Errorf("Ultron Drones = %+v, want on the table at (760, 30)", c)
 	}
 	foe := cardWithCode(t, table, "24049")
 	if foe.Zone != ZoneTable || foe.Face != 1 || foe.X != 980 || foe.Y != 30 {
@@ -524,23 +524,18 @@ func TestSetupIDsAreUnique(t *testing.T) {
 	}
 }
 
-func TestSetupStartingThreatKlaw(t *testing.T) {
+// TestSetupKlawSideSchemeStaysInEncounterDeck checks that a side scheme the
+// main scheme's Setup text names is left to the players: only environments
+// start in play.
+func TestSetupKlawSideSchemeStaysInEncounterDeck(t *testing.T) {
 	cfg := rhinoConfig()
 	cfg.Scenario = "klaw"
 	cfg.Modulars = []string{"the_doomsday_chair"}
 	table := startedGame(t, cfg).Table
 
 	defense := cardWithCode(t, table, "01125")
-	if defense.Zone != ZoneTable || defense.X != 760 || defense.Y != 30 {
-		t.Errorf("Defense Network = %+v, want in the villain row at (760, 30)", defense)
-	}
-	if defense.Tokens["thr"] != 2 {
-		t.Errorf("Defense Network threat = %d, want 2", defense.Tokens["thr"])
-	}
-	for _, id := range table.Piles[PileEncounter].Cards {
-		if table.Cards[id].Code == "01125" {
-			t.Error("Defense Network is also in the encounter deck")
-		}
+	if defense.Zone != ZonePile || defense.Pile != PileEncounter {
+		t.Errorf("Defense Network = %+v, want in the encounter deck", defense)
 	}
 }
 
@@ -562,11 +557,20 @@ func TestStartingThreatScalesWithPlayers(t *testing.T) {
 }
 
 func TestZeroStartingThreatIsNotStored(t *testing.T) {
-	table := startedGame(t, rhinoConfig()).Table
+	cat := newCatalog(t)
+	b := &tableBuilder{cat: cat, rng: newTestRNG(), table: newEmptyTable(2)}
 
-	// Face 1 of Rhino's main scheme prints a starting threat of 0.
-	if scheme := cardWithCode(t, table, "01097"); scheme.Tokens != nil {
-		t.Errorf("main scheme tokens = %v, want none", scheme.Tokens)
+	// 01097 face 1 (Rhino's main scheme, stage 1B) prints a starting threat
+	// of 0.
+	c, def, err := b.newEncounterCard("01097")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := b.placeFace(c, def, 1, 0, 0); err != nil {
+		t.Fatal(err)
+	}
+	if c.Tokens != nil {
+		t.Errorf("tokens = %v, want none", c.Tokens)
 	}
 }
 

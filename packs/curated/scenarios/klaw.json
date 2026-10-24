@@ -29,15 +29,9 @@
         },
         "scheme": {
           "card": "01116",
-          "face": 1
-        }
-      },
-      "inPlay": [
-        {
-          "card": "01125",
           "face": 0
         }
-      ]
+      }
     },
     "expert": {
       "top": {
@@ -47,15 +41,9 @@
         },
         "scheme": {
           "card": "01116",
-          "face": 1
-        }
-      },
-      "inPlay": [
-        {
-          "card": "01125",
           "face": 0
         }
-      ]
+      }
     }
   },
   "setAside": []

@@ -1,0 +1,50 @@
+{
+  "id": "mutagen_formula",
+  "villainSet": "mutagen_formula",
+  "piles": [
+    {
+      "key": "villain",
+      "label": "Villain",
+      "cards": [
+        "02014",
+        "02015",
+        "02016"
+      ]
+    },
+    {
+      "key": "scheme",
+      "label": "Main scheme",
+      "cards": [
+        "02017",
+        "02018"
+      ]
+    }
+  ],
+  "start": {
+    "standard": {
+      "top": {
+        "villain": {
+          "card": "02014",
+          "face": 0
+        },
+        "scheme": {
+          "card": "02017",
+          "face": 0
+        }
+      }
+    },
+    "expert": {
+      "top": {
+        "villain": {
+          "card": "02015",
+          "face": 0
+        },
+        "scheme": {
+          "card": "02017",
+          "face": 0
+        }
+      }
+    }
+  },
+  "setAside": []
+}

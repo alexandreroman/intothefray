@@ -234,8 +234,8 @@ func TestSetupSetAsideHeroCards(t *testing.T) {
 // They change only with the card data of the heroes and scenario they use,
 // or with the fields of a card (the identity mark).
 const (
-	spiderManSetupHash = "73b104022eb9eeeb2b4ec3ec2f771729d75c3990213320b34b474c347f89d4fe"
-	threeDeckSetupHash = "152f3dcfbc8b0fda86be836ffae7d0e72dba46f0586b920c659b1efd1c3795bf"
+	spiderManSetupHash = "5120d1649774c4a660a40191027103caa945bbdc519661947cf1db6674034ce7"
+	threeDeckSetupHash = "2e1e52c6057b9212c640ebb298ab237f6fa82a7bf4e106756787d79ee59d3fc4"
 )
 
 func TestSetupWithoutSideDecksIsUnchanged(t *testing.T) {

@@ -1548,5 +1548,127 @@
         "02049"
       ]
     }
+  ],
+  "scenarios": [
+    {
+      "id": "risky_business",
+      "name": "Risky Business",
+      "pack": "gob",
+      "villainSet": "risky_business",
+      "piles": [
+        {
+          "key": "villain",
+          "label": "Villain",
+          "cards": [
+            "02001",
+            "02002",
+            "02003"
+          ]
+        },
+        {
+          "key": "scheme",
+          "label": "Main scheme",
+          "cards": [
+            "02004",
+            "02005"
+          ]
+        }
+      ],
+      "start": {
+        "expert": {
+          "top": {
+            "scheme": {
+              "card": "02004",
+              "face": 0
+            },
+            "villain": {
+              "card": "02002",
+              "face": 0
+            }
+          },
+          "inPlay": [
+            {
+              "card": "02006",
+              "face": 0
+            }
+          ]
+        },
+        "standard": {
+          "top": {
+            "scheme": {
+              "card": "02004",
+              "face": 0
+            },
+            "villain": {
+              "card": "02001",
+              "face": 0
+            }
+          },
+          "inPlay": [
+            {
+              "card": "02006",
+              "face": 0
+            }
+          ]
+        }
+      },
+      "recommended": [
+        "goblin_gimmicks"
+      ]
+    },
+    {
+      "id": "mutagen_formula",
+      "name": "Mutagen Formula",
+      "pack": "gob",
+      "villainSet": "mutagen_formula",
+      "piles": [
+        {
+          "key": "villain",
+          "label": "Villain",
+          "cards": [
+            "02014",
+            "02015",
+            "02016"
+          ]
+        },
+        {
+          "key": "scheme",
+          "label": "Main scheme",
+          "cards": [
+            "02017",
+            "02018"
+          ]
+        }
+      ],
+      "start": {
+        "expert": {
+          "top": {
+            "scheme": {
+              "card": "02017",
+              "face": 0
+            },
+            "villain": {
+              "card": "02015",
+              "face": 0
+            }
+          }
+        },
+        "standard": {
+          "top": {
+            "scheme": {
+              "card": "02017",
+              "face": 0
+            },
+            "villain": {
+              "card": "02014",
+              "face": 0
+            }
+          }
+        }
+      },
+      "recommended": [
+        "goblin_gimmicks"
+      ]
+    }
   ]
 }

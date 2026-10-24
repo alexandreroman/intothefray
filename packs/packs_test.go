@@ -131,8 +131,8 @@ func TestEmbeddedCoreSet(t *testing.T) {
 				supported++
 			}
 		}
-		if supported != 4 {
-			t.Errorf("supported scenarios = %d, want 4", supported)
+		if supported != 6 {
+			t.Errorf("supported scenarios = %d, want 6", supported)
 		}
 	})
 }
@@ -184,6 +184,84 @@ func TestEmbeddedFearNoEvil(t *testing.T) {
 		}
 		if set.Kind != "underling" {
 			t.Errorf("bullseye kind = %q, want underling", set.Kind)
+		}
+	})
+}
+
+// TestEmbeddedGreenGoblin checks the two scenarios of The Green Goblin.
+func TestEmbeddedGreenGoblin(t *testing.T) {
+	catalog, err := packs.Catalog()
+	if err != nil {
+		t.Fatalf("Catalog() error = %v", err)
+	}
+
+	t.Run("scenario refs", func(t *testing.T) {
+		for _, id := range []string{"risky_business", "mutagen_formula"} {
+			index := slices.IndexFunc(catalog.Index().Scenarios, func(ref pack.ScenarioRef) bool {
+				return ref.ID == id
+			})
+			if index < 0 {
+				t.Errorf("scenario ref %s not found", id)
+				continue
+			}
+			ref := catalog.Index().Scenarios[index]
+			if !ref.Supported || ref.Pack != "gob" {
+				t.Errorf("%s ref = supported %t in pack %q, want supported in pack gob", id, ref.Supported, ref.Pack)
+			}
+		}
+	})
+
+	t.Run("starts", func(t *testing.T) {
+		tests := []struct {
+			scenario    string
+			difficulty  pack.Difficulty
+			wantVillain pack.FaceRef
+			wantScheme  pack.FaceRef
+			wantInPlay  []pack.FaceRef
+		}{
+			{
+				scenario:    "risky_business",
+				difficulty:  pack.Standard,
+				wantVillain: pack.FaceRef{Card: "02001", Face: 0},
+				wantScheme:  pack.FaceRef{Card: "02004", Face: 0},
+				wantInPlay:  []pack.FaceRef{{Card: "02006", Face: 0}},
+			},
+			{
+				scenario:    "risky_business",
+				difficulty:  pack.Expert,
+				wantVillain: pack.FaceRef{Card: "02002", Face: 0},
+				wantScheme:  pack.FaceRef{Card: "02004", Face: 0},
+				wantInPlay:  []pack.FaceRef{{Card: "02006", Face: 0}},
+			},
+			{
+				scenario:    "mutagen_formula",
+				difficulty:  pack.Standard,
+				wantVillain: pack.FaceRef{Card: "02014", Face: 0},
+				wantScheme:  pack.FaceRef{Card: "02017", Face: 0},
+			},
+			{
+				scenario:    "mutagen_formula",
+				difficulty:  pack.Expert,
+				wantVillain: pack.FaceRef{Card: "02015", Face: 0},
+				wantScheme:  pack.FaceRef{Card: "02017", Face: 0},
+			},
+		}
+		for _, tt := range tests {
+			scenario, ok := catalog.Scenario(tt.scenario)
+			if !ok {
+				t.Errorf("scenario %s not found", tt.scenario)
+				continue
+			}
+			start := scenario.Start[tt.difficulty]
+			if got := start.Top["villain"]; got != tt.wantVillain {
+				t.Errorf("%s %s villain = %+v, want %+v", tt.scenario, tt.difficulty, got, tt.wantVillain)
+			}
+			if got := start.Top["scheme"]; got != tt.wantScheme {
+				t.Errorf("%s %s scheme = %+v, want %+v", tt.scenario, tt.difficulty, got, tt.wantScheme)
+			}
+			if !slices.Equal(start.InPlay, tt.wantInPlay) {
+				t.Errorf("%s %s in play = %v, want %v", tt.scenario, tt.difficulty, start.InPlay, tt.wantInPlay)
+			}
 		}
 	})
 }
@@ -289,6 +367,48 @@ func TestEmbeddedDataInvariants(t *testing.T) {
 					}
 					for _, ref := range start.InPlay {
 						requireFace(t, what, ref)
+					}
+				}
+			}
+		}
+	})
+
+	// Players resolve the stage 1A "Setup:" text themselves, so the main
+	// scheme starts on its first face, never already advanced to 1B.
+	t.Run("main schemes start on their first face", func(t *testing.T) {
+		for _, file := range files {
+			for _, scenario := range file.Scenarios {
+				for difficulty, start := range scenario.Start {
+					scheme, ok := start.Top["scheme"]
+					if !ok {
+						t.Errorf("scenario %s %s has no main scheme", scenario.ID, difficulty)
+						continue
+					}
+					if scheme.Face != 0 {
+						t.Errorf("scenario %s %s starts its main scheme %s on face %d, want face 0",
+							scenario.ID, difficulty, scheme.Card, scheme.Face)
+					}
+				}
+			}
+		}
+	})
+
+	// The only cards placed in play are the environments the scenario puts
+	// into play as it starts (Criminal Enterprise, Ultron Drones, Public
+	// Support): any other card stays in the encounter deck for the players.
+	t.Run("scenario in-play cards are environments", func(t *testing.T) {
+		for _, file := range files {
+			for _, scenario := range file.Scenarios {
+				for difficulty, start := range scenario.Start {
+					for _, ref := range start.InPlay {
+						card, _, err := catalog.Card(ref.Card)
+						if err != nil || ref.Face < 0 || ref.Face >= len(card.Faces) {
+							continue // reported by "scenarios resolve"
+						}
+						if got := card.Faces[ref.Face].Type; got != "environment" {
+							t.Errorf("scenario %s %s starts %s face %d in play, a %s, want an environment",
+								scenario.ID, difficulty, ref.Card, ref.Face, got)
+						}
 					}
 				}
 			}

@@ -542,7 +542,7 @@
       "name": "Risky Business",
       "pack": "gob",
       "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02001A.jpg",
-      "supported": false,
+      "supported": true,
       "recommended": [
         "goblin_gimmicks"
       ],
@@ -557,7 +557,7 @@
       "name": "Mutagen Formula",
       "pack": "gob",
       "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02014.jpg",
-      "supported": false,
+      "supported": true,
       "recommended": [
         "goblin_gimmicks"
       ],

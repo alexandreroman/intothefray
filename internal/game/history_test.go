@@ -355,12 +355,12 @@ func TestLogTexts(t *testing.T) {
 		}},
 		{"turn the main scheme", func(t *testing.T, f *doFixture) string {
 			stage := f.g.Table.stage(pileKeyScheme)
-			f.mustDo(t, "h", Action{Kind: ActChooseStage, Stage: stage.Key, Card: stage.Current, Face: 0}, at(1))
-			return "turned the main scheme to The Break-In! (1A)"
+			f.mustDo(t, "h", Action{Kind: ActChooseStage, Stage: stage.Key, Card: stage.Current, Face: 1}, at(1))
+			return "turned the main scheme to The Break-In! (1B)"
 		}},
 		{"flip the main scheme", func(t *testing.T, f *doFixture) string {
 			f.mustDo(t, "h", Action{Kind: ActFlip, Card: f.g.Table.stage(pileKeyScheme).Current}, at(1))
-			return "flipped The Break-In! (1B) to The Break-In! (1A)"
+			return "flipped The Break-In! (1A) to The Break-In! (1B)"
 		}},
 		{"discard from hand", func(t *testing.T, f *doFixture) string {
 			f.mustDo(t, "h", Action{Kind: ActDraw, N: 1}, at(1))
@@ -824,7 +824,7 @@ func TestNoOpActionsAreNotTracked(t *testing.T) {
 		}},
 		{"choose the stage already shown", func(f *doFixture) Action {
 			stage := f.g.Table.stage(pileKeyScheme)
-			return Action{Kind: ActChooseStage, Stage: stage.Key, Card: stage.Current, Face: 1}
+			return Action{Kind: ActChooseStage, Stage: stage.Key, Card: stage.Current, Face: 0}
 		}},
 	}
 	for _, tt := range tests {

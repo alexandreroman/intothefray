@@ -5870,7 +5870,7 @@
           "top": {
             "scheme": {
               "card": "01097",
-              "face": 1
+              "face": 0
             },
             "villain": {
               "card": "01095",
@@ -5882,7 +5882,7 @@
           "top": {
             "scheme": {
               "card": "01097",
-              "face": 1
+              "face": 0
             },
             "villain": {
               "card": "01094",
@@ -5924,37 +5924,25 @@
           "top": {
             "scheme": {
               "card": "01116",
-              "face": 1
+              "face": 0
             },
             "villain": {
               "card": "01114",
               "face": 0
             }
-          },
-          "inPlay": [
-            {
-              "card": "01125",
-              "face": 0
-            }
-          ]
+          }
         },
         "standard": {
           "top": {
             "scheme": {
               "card": "01116",
-              "face": 1
+              "face": 0
             },
             "villain": {
               "card": "01113",
               "face": 0
             }
-          },
-          "inPlay": [
-            {
-              "card": "01125",
-              "face": 0
-            }
-          ]
+          }
         }
       },
       "recommended": [
@@ -5991,7 +5979,7 @@
           "top": {
             "scheme": {
               "card": "01137",
-              "face": 1
+              "face": 0
             },
             "villain": {
               "card": "01135",
@@ -6009,7 +5997,7 @@
           "top": {
             "scheme": {
               "card": "01137",
-              "face": 1
+              "face": 0
             },
             "villain": {
               "card": "01134",

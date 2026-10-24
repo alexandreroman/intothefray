@@ -50,6 +50,7 @@
 - [Moving several cards as a group](references/project_group_moves.md) — rubber band selection; drag or menu Discard / Move to on the group; one atomic group action
 - [Localized card names and images](references/project_localized_cards.md) — localized overrides per face and index entry; Options language, English default
 - [Fear No Evil scenarios](references/project_fear_no_evil_scenarios.md) — Kingpin curated; chosen-Underling scenarios unsupported
+- [Green Goblin scenarios](references/project_green_goblin_scenarios.md) — Risky Business, Mutagen Formula curated; Goblin Thralls by hand
 - [Action menu organisation](references/project_action_bars.md) — click opens the action menu; hand plays by drag and keys; out-of-play chips
 - [Identity card stays on the table](references/project_identity_stays.md) — identity never leaves the table, like a stage card
 - [Compact top bar hides on scroll](references/project_top_bar_auto_hide.md) — ≤600px wide or ≤500px tall: hides on scroll down, back on scroll up
