@@ -222,12 +222,13 @@ type narrator struct {
 }
 
 // arrangingKinds only arrange the table: they write no history line and
-// cannot be undone. Every other table action has a case in describe.
+// cannot be undone. Every other table action has a case in describe; so does
+// a reorder of a deck's top, which only arranges unless it takes a revealed
+// card back (see reorderEvent).
 var arrangingKinds = map[Kind]bool{
 	ActMove:        true,
 	ActAttach:      true,
 	ActHandOrder:   true,
-	ActReorderTop:  true,
 	ActFirstPlayer: true,
 	ActArrowAdd:    true,
 	ActArrowClear:  true,
@@ -281,9 +282,16 @@ func (n narrator) describe(a Action) (logLine, bool) {
 		return logLine{text: words(n.drawText(a))}, true
 	case ActReveal:
 		id := a.Cards[0]
-		return logLine{text: join(words("revealed "), n.name(id)), cards: n.visibleCards(id)}, true
+		text := join(words("revealed "), n.name(id))
+		// The encounter deck, which a reveal naming no pile takes from, goes unsaid.
+		if a.Pile != "" {
+			text = join(text, words(" from "), n.pile(a.Pile))
+		}
+		return logLine{text: text, cards: n.visibleCards(id)}, true
 	case ActDeal:
 		return logLine{text: words("dealt an encounter card face down to " + n.areaName(a.Area))}, true
+	case ActReorderTop:
+		return n.reorderEvent(a)
 	case ActDiscardTop:
 		text := join(words("discarded "+topCount(len(a.Cards))+" of "), n.pile(a.Pile))
 		return logLine{text: text, cards: n.visibleCards(a.Cards...)}, true
@@ -303,6 +311,19 @@ func (n narrator) describe(a Action) (logLine, bool) {
 	default:
 		return logLine{}, false
 	}
+}
+
+// reorderEvent narrates a reorder of a deck's top that took the card revealed
+// on it back into the deck, renaming the reordered cards (see
+// resolveReorderTop). Any other reorder only arranges the deck: no line. Like
+// a card put on a deck, the line does not follow the card into the deck.
+func (n narrator) reorderEvent(a Action) (logLine, bool) {
+	covered := n.before.revealedOn(a.Pile)
+	if a.Renames == nil || len(covered) == 0 {
+		return logLine{}, false
+	}
+	top := covered[len(covered)-1].ID
+	return logLine{text: join(words("put "), n.name(top), words(" back into "), n.pile(a.Pile))}, true
 }
 
 func (n narrator) toHandEvent(a Action) logLine {
@@ -421,6 +442,11 @@ func (n narrator) faceDownPlayEvent(a Action) logLine {
 
 func (n narrator) flipEvent(a Action) logLine {
 	old, cur := n.before.Cards[a.Card], n.after.Cards[a.Card]
+	if cur.Zone == ZonePile {
+		// Turned face down, a revealed card went back on top of its deck
+		// (see applyFlip). Like a card put on a deck, the line does not follow it there.
+		return logLine{text: join(words("put "), n.name(a.Card), words(" back on top of "), n.pile(cur.Pile))}
+	}
 	var text phrase
 	switch {
 	case old.FaceDown:

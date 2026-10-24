@@ -192,8 +192,9 @@ export function actionsFor(
     }
     case 'pile': {
       const pile = context.table.piles.find((p) => p.id === el.id);
-      // An empty pile is inert: nothing to draw, look at or search.
-      if (!pile || pile.count === 0) {
+      // An empty pile is inert: nothing to draw, look at or search. A card revealed on a deck is
+      // still its top card.
+      if (!pile || deckCount(pile, context.table) === 0) {
         return [];
       }
       return pileActions(pile, context);
@@ -255,16 +256,48 @@ function groupUnitsOf(
 }
 
 function cardActions(card: CardView, context: Context, units: CardView[] | null): ActionItem[] {
-  const items: ActionItem[] = [exhaustItem(card)];
+  // A card revealed on a deck lies there, out of play: it is neither exhausted nor marked (the
+  // server refuses it, inPlayCard), and its owner draws it from there.
+  const revealed = card.onPile !== undefined;
+  const items: ActionItem[] = [];
+  if (!revealed) {
+    items.push(exhaustItem(card));
+  } else if (drawsRevealed(card, context)) {
+    items.push(drawRevealedItem(card));
+  }
   const shownByStage = context.table.stages.some((stage) => stage.current === card.id);
   if (shownByStage) {
     items.push(stageItem());
   } else if (canFlip(card)) {
     items.push(flipItem(card));
   }
-  items.push(counterMenu(card, 'token'), counterMenu(card, 'status'), modifierMenu(card));
+  if (!revealed) {
+    items.push(counterMenu(card, 'token'), counterMenu(card, 'status'), modifierMenu(card));
+  }
   items.push(...(units ? groupLeaveItems(units, context) : leaveItems(card, context)));
   return items;
+}
+
+/** Whether the viewer draws a card revealed on a deck: from one of their own decks or side decks. */
+function drawsRevealed(card: CardView, context: Context): boolean {
+  const pile = context.table.piles.find((p) => p.id === card.onPile);
+  const playerDeck = pile?.kind === 'deck' || pile?.kind === 'sideDeck';
+  return playerDeck && context.seats.includes(pile.owner);
+}
+
+/**
+ * Draw takes a card revealed on a deck into its owner's hand: a draw of that deck, whose top card
+ * it is (internal/game coveredFor).
+ */
+function drawRevealedItem(card: CardView): ActionItem {
+  return {
+    id: 'draw',
+    label: 'Draw',
+    key: 'W',
+    default: true,
+    group: GROUP_TURN,
+    run: () => ({ kind: 'draw', n: 1, pile: card.onPile }),
+  };
 }
 
 function exhaustItem(card: CardView): ActionItem {
@@ -699,11 +732,12 @@ function pileActions(pile: PileView, context: Context): ActionItem[] | { text: s
       }
       return [
         drawOneItem(),
-        drawCountItem(pile),
-        lookTopItem(pile, 'your deck'),
+        drawCountItem(pile, context.table),
+        revealItem(pile, context),
+        lookTopItem(pile, 'your deck', context.table),
         searchItem(pile),
         discardOneItem(pile),
-        discardTopItem(pile, 'your deck'),
+        discardTopItem(pile, 'your deck', context.table),
         shuffleItem(pile),
       ];
     case 'sideDeck': {
@@ -713,15 +747,15 @@ function pileActions(pile: PileView, context: Context): ActionItem[] | { text: s
         return { text: `Belongs to ${name}: only they can use it.` };
       }
       const pileName = `your ${sideLabel(pile)} deck`;
-      const items = [
-        drawOneItem(pile),
-        drawCountItem(pile),
-        lookTopItem(pile, pileName),
-        searchItem(pile),
-      ];
+      const items = [drawOneItem(pile), drawCountItem(pile, context.table)];
+      // A side deck showing its top card has nothing to reveal.
+      if (!pile.topFaceUp) {
+        items.push(revealItem(pile, context));
+      }
+      items.push(lookTopItem(pile, pileName, context.table), searchItem(pile));
       // Only a side deck with its own discard pile discards from the top.
       if (hasPile(context.table, deckDiscardOf(pile.id))) {
-        items.push(discardOneItem(pile), discardTopItem(pile, pileName));
+        items.push(discardOneItem(pile), discardTopItem(pile, pileName, context.table));
       }
       items.push(shuffleItem(pile));
       return items;
@@ -729,10 +763,10 @@ function pileActions(pile: PileView, context: Context): ActionItem[] | { text: s
     case 'encounter':
       return [
         revealItem(pile, context),
-        lookTopItem(pile, 'the encounter deck'),
+        lookTopItem(pile, 'the encounter deck', context.table),
         searchItem(pile),
         discardOneItem(pile),
-        discardTopItem(pile, 'the encounter deck'),
+        discardTopItem(pile, 'the encounter deck', context.table),
         shuffleItem(pile),
       ];
     case 'discard':
@@ -772,7 +806,7 @@ function drawAction(n: number, sideDeck?: PileView): Action {
  * Draw X asks how many cards: Shift + W, beside Draw 1's W. As Draw 1, it sends
  * the pile only for a side deck.
  */
-function drawCountItem(pile: PileView): ActionItem {
+function drawCountItem(pile: PileView, table: TableView): ActionItem {
   const sideDeck = pile.kind === 'sideDeck' ? pile : undefined;
   return {
     id: 'drawN',
@@ -785,7 +819,7 @@ function drawCountItem(pile: PileView): ActionItem {
         title: 'Draw cards',
         question: 'How many cards do you draw?',
         pile: pile.id,
-        max: countLimit(pile),
+        max: countLimit(pile, table),
         ok: 'Draw',
         make: (n) => drawAction(n, sideDeck),
       },
@@ -793,16 +827,23 @@ function drawCountItem(pile: PileView): ActionItem {
   };
 }
 
+/**
+ * Reveal turns a deck's top card face up onto the deck. It is the encounter deck's main action,
+ * which names no pile; a player's deck or side deck draws by default, and names itself.
+ */
 function revealItem(pile: PileView, context: Context): ActionItem {
+  const encounter = pile.kind === 'encounter';
   const reveal: ActionItem = {
     id: 'reveal',
     label: 'Reveal',
     key: 'R',
-    default: true,
     group: GROUP_MAIN,
-    run: () => ({ kind: 'reveal' }),
+    run: () => (encounter ? { kind: 'reveal' } : { kind: 'reveal', pile: pile.id }),
   };
-  const shown = context.table.cards.find((c) => c.zone === 'table' && c.onPile === pile.id);
+  if (encounter) {
+    reveal.default = true;
+  }
+  const shown = revealedOn(pile, context.table)[0];
   if (!shown) {
     return reveal;
   }
@@ -819,7 +860,7 @@ function cardName(card: CardView, lang: Lang): string {
 }
 
 /** Top X asks how many cards to look at; pileName is how the question names the pile. */
-function lookTopItem(pile: PileView, pileName: string): ActionItem {
+function lookTopItem(pile: PileView, pileName: string, table: TableView): ActionItem {
   return {
     id: 'lookTop',
     label: 'Top X',
@@ -830,7 +871,7 @@ function lookTopItem(pile: PileView, pileName: string): ActionItem {
         title: 'Look at the top cards',
         question: `How many cards from the top of ${pileName}?`,
         pile: pile.id,
-        max: countLimit(pile),
+        max: countLimit(pile, table),
         ok: 'Look',
         make: (n) => ({ kind: 'look', pile: pile.id, n }),
       },
@@ -854,7 +895,7 @@ function discardOneItem(pile: PileView): ActionItem {
  * Discard X, a deck's rarer action: Shift + X, beside Discard 1's X. pileName is
  * how the question names the pile.
  */
-function discardTopItem(pile: PileView, pileName: string): ActionItem {
+function discardTopItem(pile: PileView, pileName: string, table: TableView): ActionItem {
   return {
     id: 'discardTop',
     label: 'Discard X',
@@ -866,7 +907,7 @@ function discardTopItem(pile: PileView, pileName: string): ActionItem {
         title: 'Discard from the top',
         question: `How many cards from the top of ${pileName} go to the discard pile?`,
         pile: pile.id,
-        max: countLimit(pile),
+        max: countLimit(pile, table),
         ok: 'Discard',
         make: (n) => ({ kind: 'discardTop', pile: pile.id, n }),
       },
@@ -884,8 +925,18 @@ function shuffleItem(pile: PileView): ActionItem {
   };
 }
 
-function countLimit(pile: PileView): number {
-  return Math.min(pile.count, MAX_COUNT);
+function countLimit(pile: PileView, table: TableView): number {
+  return Math.min(deckCount(pile, table), MAX_COUNT);
+}
+
+/** The table cards lying revealed on a deck, which still count as its top cards (internal/game coveredFor). */
+function revealedOn(pile: PileView, table: TableView): CardView[] {
+  return table.cards.filter((c) => c.zone === 'table' && c.onPile === pile.id);
+}
+
+/** How many cards a deck's actions take from: those in it, and those revealed on it. */
+export function deckCount(pile: PileView, table: TableView): number {
+  return pile.count + revealedOn(pile, table).length;
 }
 
 /** Search opens a private view: the server sends the cards, which the box shows. */

@@ -388,6 +388,54 @@ describe('actionsFor', () => {
     expect(groups(itemsFor({ kind: 'card', id: 'two' }, view))[0]).toEqual(['exhaust', 'flip']);
   });
 
+  describe('a card revealed on a deck', () => {
+    const revealedView = () =>
+      makeView({
+        cards: [
+          card('mine-rev', { onPile: 'deck:p0' }),
+          card('sams-rev', { owner: 1, onPile: 'deck:p1' }),
+          card('enc-rev', { code: '01100', owner: -1, back: 'encounter', onPile: 'enc' }),
+        ],
+      });
+
+    it("is drawn by its deck's owner, and neither exhausted nor marked", () => {
+      const items = itemsFor({ kind: 'card', id: 'mine-rev' }, revealedView());
+
+      expect(groups(items)).toEqual([
+        ['draw', 'flip'],
+        ['discard', 'moveTo'],
+      ]);
+      const draw = item(items, 'draw');
+      expect(draw).toMatchObject({ label: 'Draw', key: 'W', default: true });
+      expect(actionOf(draw)).toEqual({ kind: 'draw', n: 1, pile: 'deck:p0' });
+    });
+
+    it("has no Draw on another player's deck, nor on the encounter deck", () => {
+      for (const id of ['sams-rev', 'enc-rev']) {
+        expect(groups(itemsFor({ kind: 'card', id }, revealedView())), id).toEqual([
+          ['flip'],
+          ['discard', 'moveTo'],
+        ]);
+      }
+    });
+
+    it('is drawn from a side deck it lies on', () => {
+      const view = makeView({
+        cards: [card('labor-rev', { home: 'side:p0:2', onPile: 'side:p0:2' })],
+        piles: [
+          pile('deck:p0', { owner: 0, count: 30 }),
+          pile('side:p0:2', { kind: 'sideDeck', owner: 0, count: 4, label: 'Labor' }),
+        ],
+      });
+
+      expect(actionOf(item(itemsFor({ kind: 'card', id: 'labor-rev' }, view), 'draw'))).toEqual({
+        kind: 'draw',
+        n: 1,
+        pile: 'side:p0:2',
+      });
+    });
+  });
+
   it('a face-down player card shows flip, Exhaust staying its default as on any card', () => {
     // Played from its deck, the card lies face down: the view has no code for it.
     const view = makeView({ cards: [card('played', { code: undefined, faceDown: true })] });
@@ -512,7 +560,7 @@ describe('actionsFor', () => {
 
     // The out-of-play piles open from the owner frame's chips, not from a menu.
     expect(groups(items)).toEqual([
-      ['draw1', 'drawN'],
+      ['draw1', 'drawN', 'reveal'],
       ['lookTop', 'search'],
       ['discard1', 'discardTop', 'shuffle'],
     ]);
@@ -580,6 +628,62 @@ describe('actionsFor', () => {
     expect(actionOf(item(items, 'shuffle'))).toEqual({ kind: 'shuffle', pile: 'deck:p0' });
   });
 
+  it("reveals the own deck's top card, Draw 1 staying its default action", () => {
+    const items = itemsFor({ kind: 'pile', id: 'deck:p0' });
+
+    const reveal = item(items, 'reveal');
+    expect(reveal).toMatchObject({ label: 'Reveal', key: 'R' });
+    expect(reveal.default).toBeUndefined();
+    expect(reveal.disabled).toBeFalsy();
+    expect(actionOf(reveal)).toEqual({ kind: 'reveal', pile: 'deck:p0' });
+    expect(items.filter((it) => it.default).map((it) => it.id)).toEqual(['draw1']);
+  });
+
+  it('own deck reveal disabled while a card is revealed on it', () => {
+    const view = makeView({
+      cards: [card('r', { onPile: 'deck:p0' })],
+      piles: [pile('deck:p0', { owner: 0, count: 30 })],
+    });
+    const reveal = item(itemsFor({ kind: 'pile', id: 'deck:p0' }, view), 'reveal');
+
+    expect(reveal.disabled).toBe(true);
+    expect(reveal.reason).toBe('Spider-Man is already revealed on this deck: move it first');
+  });
+
+  it('counts the card revealed on a deck as its top card', () => {
+    for (const id of ['deck:p0', 'enc']) {
+      const view = makeView({
+        cards: [card('r', { owner: id === 'enc' ? -1 : 0, onPile: id })],
+        piles: [
+          pile('deck:p0', { owner: 0, count: 30 }),
+          pile('enc', { kind: 'encounter', count: 30 }),
+        ],
+      });
+      const items = itemsFor({ kind: 'pile', id }, view);
+      const asks = ['drawN', 'lookTop', 'discardTop'].filter((it) =>
+        items.some((i) => i.id === it),
+      );
+      for (const ask of asks) {
+        const run = item(items, ask).run?.();
+        expect(run && 'ask' in run && run.ask.max, `${id} ${ask}`).toBe(31);
+      }
+    }
+  });
+
+  it('keeps the actions of an empty deck with a card revealed on it', () => {
+    const view = makeView({
+      cards: [card('r', { onPile: 'deck:p0' })],
+      piles: [pile('deck:p0', { owner: 0, count: 0 })],
+    });
+    const items = itemsFor({ kind: 'pile', id: 'deck:p0' }, view);
+
+    const draw = item(items, 'draw1');
+    expect(draw.disabled).toBeFalsy();
+    expect(actionOf(draw)).toEqual({ kind: 'draw', n: 1 });
+    const drawN = item(items, 'drawN').run?.();
+    expect(drawN && 'ask' in drawN && drawN.ask.max).toBe(1);
+  });
+
   it('a count is never asked beyond what the server accepts', () => {
     const view = makeView({ piles: [pile('deck:p0', { owner: 0, count: 120 })] });
     const lookTop = item(itemsFor({ kind: 'pile', id: 'deck:p0' }, view), 'lookTop').run?.();
@@ -596,7 +700,7 @@ describe('actionsFor', () => {
       ['discard1', 'discardTop', 'shuffle'],
     ]);
     const reveal = item(items, 'reveal');
-    expect(reveal).toMatchObject({ label: 'Reveal', key: 'R' });
+    expect(reveal).toMatchObject({ label: 'Reveal', key: 'R', default: true });
     expect(reveal.reason).toBeUndefined();
     expect(reveal.disabled).toBeFalsy();
     expect(actionOf(reveal)).toEqual({ kind: 'reveal' });
@@ -783,7 +887,7 @@ describe('a player with two decks', () => {
     const view = twoDeckView();
     const deck = itemsFor({ kind: 'pile', id: 'deck:p1' }, view, TWO_DECKS);
     expect(groups(deck)).toEqual([
-      ['draw1', 'drawN'],
+      ['draw1', 'drawN', 'reveal'],
       ['lookTop', 'search'],
       ['discard1', 'discardTop', 'shuffle'],
     ]);
@@ -836,7 +940,7 @@ describe('side decks', () => {
       label: 'Invocation',
       cards: ['u'],
     }),
-    pile('side:p0:1', { kind: 'sideDeck', owner: 0, count: 5, label: 'Sense' }),
+    pile('side:p0:1', { kind: 'sideDeck', owner: 0, count: 5, label: 'Sense', topFaceUp: true }),
     pile('side:p1:0', { kind: 'sideDeck', owner: 1, count: 5, label: 'Invocation' }),
     pile('sided:p1:0', {
       kind: 'sideDiscard',
@@ -892,6 +996,22 @@ describe('side decks', () => {
       n: 1,
     });
     expect(actionOf(item(items, 'shuffle'))).toEqual({ kind: 'shuffle', pile: 'side:p0:0' });
+  });
+
+  it('a side deck hiding its top card reveals it, right after Draw X', () => {
+    const labor = pile('side:p0:2', { kind: 'sideDeck', owner: 0, count: 5, label: 'Labor' });
+    const items = itemsFor(
+      { kind: 'pile', id: 'side:p0:2' },
+      makeView({ cards: sideCards, piles: [...sidePiles, labor] }),
+    );
+
+    expect(groups(items)).toEqual([
+      ['draw1', 'drawN', 'reveal'],
+      ['lookTop', 'search'],
+      ['shuffle'],
+    ]);
+    expect(item(items, 'reveal').default).toBeUndefined();
+    expect(actionOf(item(items, 'reveal'))).toEqual({ kind: 'reveal', pile: 'side:p0:2' });
   });
 
   it('a side deck without a discard pile has neither Discard 1 nor Discard X', () => {

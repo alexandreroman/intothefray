@@ -23,8 +23,24 @@ const (
 )
 
 // apply performs a on t. It is all-or-nothing: every check runs before the
-// first mutation, so an error leaves t untouched.
+// first mutation, so an error leaves t untouched. A deck action sees the cards
+// revealed on its deck back on top of it (see coveredFor).
 func apply(t *Table, a Action) error {
+	covered, err := t.coveredFor(a, a.Area)
+	if err != nil {
+		return err
+	}
+	if err := applyAction(covered, a); err != nil {
+		return err
+	}
+	if covered != t {
+		*t = *covered
+	}
+	return nil
+}
+
+// applyAction performs a on t, as apply does, on the table as a sees it.
+func applyAction(t *Table, a Action) error {
 	switch a.Kind {
 	case ActMove:
 		return applyMove(t, a)
@@ -120,6 +136,20 @@ func (t *Table) tableCard(id string) (*Card, error) {
 	}
 	if c.Zone != ZoneTable {
 		return nil, invalid("card %q is not on the table", id)
+	}
+	return c, nil
+}
+
+// inPlayCard returns the table card with the given id when it is in play. A
+// card revealed on a pile lies on its deck, out of play: it is neither
+// exhausted nor given tokens, statuses or modifiers until it leaves it.
+func (t *Table) inPlayCard(id string) (*Card, error) {
+	c, err := t.tableCard(id)
+	if err != nil {
+		return nil, err
+	}
+	if c.OnPile != "" {
+		return nil, invalid("card %q lies revealed on pile %q, out of play", c.ID, c.OnPile)
 	}
 	return c, nil
 }
@@ -532,15 +562,18 @@ func landsFaceDown(pile *Pile) bool {
 
 // applyPlay puts a card from a hand or a pile on the table: at a point, or,
 // with a target, tucked under that table card as attach does. It lands face
-// up, but out of a pile that hides its cards (see landsFaceDown). A version of
-// its owner's identity takes the identity over, and stays face up.
+// up, but out of a pile that hides its cards (see landsFaceDown). A card
+// revealed on a deck is played as that deck's top card, face up, as everybody
+// saw it. A version of its owner's identity takes the identity over, and
+// stays face up.
 func applyPlay(t *Table, a Action) error {
 	c, err := t.card(a.Card)
 	if err != nil {
 		return err
 	}
-	if c.Zone != ZoneHand && c.Zone != ZonePile {
-		return invalid("card %q is neither in a hand nor in a pile", c.ID)
+	revealed := c.Zone == ZoneTable && c.OnPile != ""
+	if c.Zone != ZoneHand && c.Zone != ZonePile && !revealed {
+		return invalid("card %q is neither in a hand, in a pile nor revealed on one", c.ID)
 	}
 	var target *Card
 	if a.Target != "" {
@@ -603,7 +636,7 @@ var (
 // applyExhaust sets the exhausted state resolve recorded (see
 // resolveExhaust).
 func applyExhaust(t *Table, a Action) error {
-	c, err := t.tableCard(a.Card)
+	c, err := t.inPlayCard(a.Card)
 	if err != nil {
 		return err
 	}
@@ -621,7 +654,7 @@ func applyReadyAll(t *Table, a Action) error {
 	}
 	cards := make([]*Card, 0, len(a.Cards))
 	for _, id := range a.Cards {
-		c, err := t.tableCard(id)
+		c, err := t.inPlayCard(id)
 		if err != nil {
 			return err
 		}
@@ -651,6 +684,19 @@ func applyFlip(t *Table, a Action) error {
 	if a.Face < 0 || a.Face >= faceCount(c) {
 		return invalid("card %q has no face %d", c.ID, a.Face)
 	}
+	// A card revealed on a deck that turns face down is that deck's top card
+	// again: it goes back on top of it, and the deck shows its back.
+	if *a.FaceDown && c.OnPile != "" {
+		deck, err := t.pile(c.OnPile)
+		if err != nil {
+			return err
+		}
+		if err := t.checkLeave(c); err != nil {
+			return err
+		}
+		t.putOnPile(deck, c)
+		return nil
+	}
 	c.Face = a.Face
 	c.FaceDown = *a.FaceDown
 	return nil
@@ -661,7 +707,7 @@ func applyFlip(t *Table, a Action) error {
 // its valid names. The counter is clamped to [lowest, highest] and deleted at
 // 0: tokens and statuses never go below 0, modifiers are signed.
 func applyCounter(t *Table, a Action, allowed []string, lowest, highest int, field func(*Card) *map[string]int) error {
-	c, err := t.tableCard(a.Card)
+	c, err := t.inPlayCard(a.Card)
 	if err != nil {
 		return err
 	}
@@ -754,7 +800,13 @@ func (t *Table) removeArrows(id string) {
 
 // topCards returns the n top cards of pile, top first.
 func topCards(pile *Pile, n int) []string {
-	top := slices.Clone(pile.Cards[len(pile.Cards)-n:])
+	return topOf(pile.Cards, n)
+}
+
+// topOf returns the n top cards of cards, a pile listed bottom to top, top
+// first.
+func topOf(cards []string, n int) []string {
+	top := slices.Clone(cards[len(cards)-n:])
 	slices.Reverse(top)
 	return top
 }
@@ -839,36 +891,57 @@ func applyDraw(t *Table, a Action) error {
 	return nil
 }
 
-// applyReveal reveals the recorded card wherever it is in the encounter deck
-// (see applyDraw).
+// applyReveal reveals the recorded card wherever it is in its deck (see
+// applyDraw): the deck a.Pile names, or the encounter deck when it names none,
+// as in the reveals recorded before a player's deck could be revealed.
 func applyReveal(t *Table, a Action) error {
-	enc, err := t.pile(PileEncounter)
+	deck, err := t.pile(cmp.Or(a.Pile, PileEncounter))
 	if err != nil {
 		return err
 	}
-	if len(t.revealed()) > 0 {
-		return invalid("an encounter card is already revealed")
+	if !revealable(deck) {
+		return invalid("the top card of pile %q cannot be revealed", deck.ID)
+	}
+	if len(t.revealedOn(deck.ID)) > 0 {
+		return invalid("a card is already revealed on pile %q", deck.ID)
 	}
 	if len(a.Cards) != 1 {
 		return invalid("reveal takes exactly one card, not %d", len(a.Cards))
 	}
-	if err := checkInPile(enc, a.Cards); err != nil {
+	if err := checkInPile(deck, a.Cards); err != nil {
 		return err
 	}
 
 	c := t.Cards[a.Cards[0]]
 	t.leave(c)
-	t.placeOnTable(c, enc.X, enc.Y)
-	c.OnPile = PileEncounter
+	t.placeOnTable(c, deck.X, deck.Y)
+	c.OnPile = deck.ID
 	return nil
 }
 
-// revealed returns the table cards lying revealed on top of the encounter
-// deck, from the lowest Z to the highest.
-func (t *Table) revealed() []*Card {
+// revealable reports whether the top card of pile can be revealed onto it:
+// the encounter deck's, a player's deck's, or a side deck's that hides its
+// top card. A side deck showing its top card has nothing to reveal.
+func revealable(pile *Pile) bool {
+	switch pile.Kind {
+	case KindEncounter, KindDeck:
+		return true
+	case KindSideDeck:
+		return !pile.TopFaceUp
+	default:
+		return false
+	}
+}
+
+// revealedOn returns the table cards lying revealed on top of the pile with
+// the given id, from the lowest Z to the highest; none for an empty id.
+func (t *Table) revealedOn(id string) []*Card {
+	if id == "" {
+		return nil
+	}
 	var found []*Card
 	for _, c := range t.Cards {
-		if c.Zone == ZoneTable && c.OnPile == PileEncounter {
+		if c.Zone == ZoneTable && c.OnPile == id {
 			found = append(found, c)
 		}
 	}
@@ -878,25 +951,77 @@ func (t *Table) revealed() []*Card {
 	return found
 }
 
-// dealtCard returns the id of the card a deal gives, or "" when there is
-// none. A revealed card covers the deck top, so dealing while a card is
-// revealed deals that revealed card.
-func (t *Table) dealtCard() string {
-	if covering := t.revealed(); len(covering) > 0 {
-		return covering[len(covering)-1].ID
+// deckCards returns the cards of pile, bottom to top, as its deck actions
+// see them: the cards revealed on it lie above its top (see coveredFor).
+func (t *Table) deckCards(pile *Pile) []string {
+	cards := slices.Clone(pile.Cards)
+	for _, c := range t.revealedOn(pile.ID) {
+		cards = append(cards, c.ID)
 	}
-	enc, ok := t.Piles[PileEncounter]
-	if !ok || len(enc.Cards) == 0 {
-		return ""
+	return cards
+}
+
+// coveredFor returns the table as a sees it. A card revealed on a deck still
+// counts as that deck's top card: when a takes, reorders or shuffles the top
+// of a deck with cards revealed on it (see actedDeck), they lie back on top
+// of that deck, face down, in a copy of t. Otherwise it returns t itself.
+// hand is the hand of the deck a draw naming no pile takes from.
+func (t *Table) coveredFor(a Action, hand Area) (*Table, error) {
+	deckID := t.actedDeck(a, hand)
+	covering := t.revealedOn(deckID)
+	if len(covering) == 0 {
+		return t, nil
 	}
-	return enc.Cards[len(enc.Cards)-1]
+	if _, err := t.pile(deckID); err != nil {
+		return nil, err
+	}
+	for _, c := range covering {
+		if err := t.checkLeave(c); err != nil {
+			return nil, err
+		}
+	}
+
+	covered := t.Clone()
+	deck := covered.Piles[deckID]
+	for _, c := range covering {
+		covered.putOnPile(deck, covered.Cards[c.ID])
+	}
+	return covered, nil
+}
+
+// actedDeck returns the id of the deck whose top a takes, reorders or
+// shuffles, or "" when a does none of that. hand is the hand of the deck a
+// draw naming no pile takes from. A play takes a revealed card as it lies,
+// face up (see applyPlay): it covers nothing.
+func (t *Table) actedDeck(a Action, hand Area) string {
+	switch a.Kind {
+	case ActDraw:
+		if a.Pile != "" {
+			return a.Pile
+		}
+		return "deck:" + string(hand)
+	case ActDiscardTop, ActReorderTop, ActShuffle:
+		return a.Pile
+	case ActDeal, ActShuffleIn:
+		return PileEncounter
+	case ActShuffleBack:
+		deckID, _ := deckOfDiscard(a.Pile)
+		return deckID
+	case ActToDeck:
+		// A card put on top of its deck, or shuffled into it, goes over or
+		// among the card revealed there; the revealed card itself goes as it is.
+		c, ok := t.Cards[a.Card]
+		if ok && (a.Where == whereTop || a.Where == whereShuffle) && c.OnPile != c.Home {
+			return c.Home
+		}
+	}
+	return ""
 }
 
 // applyDeal deals the recorded encounter card face down, wherever it is in the
-// encounter deck (see applyDraw). Revealed cards are first put back face down
-// on top of the encounter deck, so a revealed card can be dealt too (see
-// dealtCard). The card goes to the action's position; its area only names
-// the recipient, for the history.
+// encounter deck (see applyDraw). A card revealed on the deck is back in it
+// (see coveredFor), so a revealed card can be dealt too. The card goes to the
+// action's position; its area only names the recipient, for the history.
 func applyDeal(t *Table, a Action) error {
 	if !validArea(a.Area) {
 		return invalid("unknown recipient %q", a.Area)
@@ -908,22 +1033,11 @@ func applyDeal(t *Table, a Action) error {
 	if len(a.Cards) != 1 {
 		return invalid("deal takes exactly one card, not %d", len(a.Cards))
 	}
-	dealt := a.Cards[0]
-	covering := t.revealed()
-	isCovering := slices.ContainsFunc(covering, func(c *Card) bool { return c.ID == dealt })
-	if !isCovering && !slices.Contains(enc.Cards, dealt) {
-		return invalid("dealt card %q is neither in pile %q nor revealed on it", dealt, enc.ID)
-	}
-	for _, c := range covering {
-		if err := t.checkLeave(c); err != nil {
-			return err
-		}
+	if err := checkInPile(enc, a.Cards); err != nil {
+		return err
 	}
 
-	for _, c := range covering {
-		t.putOnPile(enc, c)
-	}
-	c := t.Cards[dealt]
+	c := t.Cards[a.Cards[0]]
 	t.leave(c)
 	t.placeOnTable(c, snap(a.X), snap(a.Y))
 	c.FaceDown = true
@@ -1053,12 +1167,35 @@ func applyReorderTop(t *Table, a Action) error {
 	if !samePermutation(topCards(pile, len(a.Cards)), a.Cards) {
 		return invalid("reordered cards are not the top of pile %q", pile.ID)
 	}
+	// A reorder that took a revealed card back renames the cards it reorders
+	// (see resolveReorderTop).
+	if a.Renames != nil {
+		if _, err := checkFreshIDs(t, a.Renames, a.Cards); err != nil {
+			return err
+		}
+	}
 
 	// Cards is top first, the pile is stored bottom to top.
 	reordered := slices.Clone(a.Cards)
 	slices.Reverse(reordered)
 	copy(pile.Cards[len(pile.Cards)-len(reordered):], reordered)
+	if a.Renames != nil {
+		renameInViews(t, a.Renames)
+		renameCards(t, a.Renames)
+	}
 	return nil
+}
+
+// renameInViews gives the renamed cards of the open views their new ids: the
+// player who reordered the top of their deck keeps looking at those cards.
+func renameInViews(t *Table, renames map[string]string) {
+	for _, view := range t.Views {
+		for i, id := range view.Cards {
+			if renamed, ok := renames[id]; ok {
+				view.Cards[i] = renamed
+			}
+		}
+	}
 }
 
 func applyHandOrder(t *Table, a Action) error {

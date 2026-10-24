@@ -50,32 +50,43 @@ func reidentify(t *Table, ids []string, rng *rand.Rand) (renames map[string]stri
 }
 
 // checkRenames checks the renames of a shuffle: they must cover exactly the
-// cards of expected, give each an unused and distinct id, and a.Cards must be
-// an ordering of those new ids.
+// cards of expected, give each an unused and distinct id (see
+// checkFreshIDs), and a.Cards must be an ordering of those new ids.
 func checkRenames(t *Table, a Action, expected []string) error {
-	if len(a.Renames) != len(expected) {
-		return invalid("renames cover %d cards, want %d", len(a.Renames), len(expected))
-	}
-	newIDs := make([]string, 0, len(expected))
-	seen := make(map[string]bool, len(expected))
-	for _, old := range expected {
-		id, ok := a.Renames[old]
-		if !ok {
-			return invalid("card %q is not renamed", old)
-		}
-		if _, taken := t.Cards[id]; taken {
-			return invalid("new id %q is already used", id)
-		}
-		if seen[id] {
-			return invalid("new id %q is given twice", id)
-		}
-		seen[id] = true
-		newIDs = append(newIDs, id)
+	newIDs, err := checkFreshIDs(t, a.Renames, expected)
+	if err != nil {
+		return err
 	}
 	if !samePermutation(newIDs, a.Cards) {
 		return invalid("shuffle order is not a permutation of the renamed cards")
 	}
 	return nil
+}
+
+// checkFreshIDs checks that renames cover exactly the cards of expected and
+// give each an unused and distinct id. It returns the new ids, in the order
+// of expected.
+func checkFreshIDs(t *Table, renames map[string]string, expected []string) ([]string, error) {
+	if len(renames) != len(expected) {
+		return nil, invalid("renames cover %d cards, want %d", len(renames), len(expected))
+	}
+	newIDs := make([]string, 0, len(expected))
+	seen := make(map[string]bool, len(expected))
+	for _, old := range expected {
+		id, ok := renames[old]
+		if !ok {
+			return nil, invalid("card %q is not renamed", old)
+		}
+		if _, taken := t.Cards[id]; taken {
+			return nil, invalid("new id %q is already used", id)
+		}
+		if seen[id] {
+			return nil, invalid("new id %q is given twice", id)
+		}
+		seen[id] = true
+		newIDs = append(newIDs, id)
+	}
+	return newIDs, nil
 }
 
 // renameCards gives cards new ids and rewrites every reference to them. The

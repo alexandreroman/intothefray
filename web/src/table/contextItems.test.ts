@@ -104,8 +104,15 @@ function makeView(): View {
         pile('enc', { kind: 'encounter', count: 29 }),
         pile('encd', { kind: 'encounterDiscard', count: 1, cards: ['t'] }),
         pile('vic', { kind: 'victory', count: 0, cards: [] }),
-        // Alex's Invocation deck has a discard pile of its own, the Sense deck none.
-        pile('side:p0:0', { kind: 'sideDeck', owner: 0, count: 4, label: 'Invocation' }),
+        // Alex's Invocation deck has a discard pile of its own, the Sense and Labor decks none.
+        // Invocation and Sense show their top card, Labor hides it.
+        pile('side:p0:0', {
+          kind: 'sideDeck',
+          owner: 0,
+          count: 4,
+          label: 'Invocation',
+          topFaceUp: true,
+        }),
         pile('sided:p0:0', {
           kind: 'sideDiscard',
           owner: 0,
@@ -113,7 +120,14 @@ function makeView(): View {
           label: 'Invocation',
           cards: ['u'],
         }),
-        pile('side:p0:1', { kind: 'sideDeck', owner: 0, count: 5, label: 'Sense' }),
+        pile('side:p0:1', {
+          kind: 'sideDeck',
+          owner: 0,
+          count: 5,
+          label: 'Sense',
+          topFaceUp: true,
+        }),
+        pile('side:p0:2', { kind: 'sideDeck', owner: 0, count: 5, label: 'Labor' }),
         pile('side:p1:0', { kind: 'sideDeck', owner: 1, count: 5, label: 'Invocation' }),
       ],
       hands: {},
@@ -292,6 +306,7 @@ describe('contextItems', () => {
     expect(texts(entriesFor({ kind: 'pile', id: 'deck:p0' }))).toEqual([
       '*Draw 1 [W]',
       'Draw X [⇧W]',
+      'Reveal [R]',
       '---',
       'Top X [L]',
       'Search [K]',
@@ -340,6 +355,17 @@ describe('contextItems', () => {
     expect(texts(entriesFor({ kind: 'pile', id: 'side:p0:1' }))).toEqual([
       '*Draw 1 [W]',
       'Draw X [⇧W]',
+      '---',
+      'Top X [L]',
+      'Search [K]',
+      '---',
+      'Shuffle [U]',
+    ]);
+    // A side deck hiding its top card reveals it, right after Draw X.
+    expect(texts(entriesFor({ kind: 'pile', id: 'side:p0:2' }))).toEqual([
+      '*Draw 1 [W]',
+      'Draw X [⇧W]',
+      'Reveal [R]',
       '---',
       'Top X [L]',
       'Search [K]',
@@ -518,5 +544,13 @@ describe('cardHeader and pileHeader', () => {
       label: 'Your Invocation deck, 4 cards',
     });
     expect(headerOfPile('sided:p0:0').name).toBe('Invocation discard');
+  });
+
+  it('counts a card revealed on a deck in its header, as its top card', () => {
+    const view = makeView();
+    view.table!.cards.push(card('rev', { onPile: 'deck:p0' }));
+    const deck = view.table!.piles.find((p) => p.id === 'deck:p0')!;
+
+    expect(pileHeader(deck, view)).toMatchObject({ count: 35, label: 'Your deck, 35 cards' });
   });
 });

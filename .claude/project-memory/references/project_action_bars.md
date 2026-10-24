@@ -21,7 +21,7 @@ type: project
   areas.
 - The menu's title is an eyebrow in the owner's colour (card type and
   stage, or the pile's owner) above the card name, or the pile kind with
-  its count pill.
+  its count pill, which counts a card revealed on the deck.
 - Entries follow one order, separated by group: the default action in
   bold (Exhaust, Draw 1, Reveal, Search, Browse…, Play on a box tile),
   the rest of the main group, then look actions, "Add a token", "Add a
@@ -29,24 +29,29 @@ type: project
   submenu, then "Draw an arrow" for a card in play. Each entry that has
   a key shows it (the modifier entries have none); a refused one is
   greyed with its reason.
-- Pile entries: own deck Draw 1 (W), Draw X (⇧W) │ Top X (L), Search (K)
-  │ Discard 1 (X or ⌫), Discard X (⇧X), Shuffle (U); encounter deck
-  Reveal (R) │ Top X, Search │ Discard 1, Discard X, Shuffle; discard pile
-  Search │ Shuffle into deck. Dragging the top of an own deck (or the
-  encounter deck) onto its discard pile discards it, as Discard 1 does.
+- Pile entries: own deck Draw 1 (W), Draw X (⇧W), Reveal (R) │ Top X
+  (L), Search (K) │ Discard 1 (X or ⌫), Discard X (⇧X), Shuffle (U);
+  encounter deck Reveal (R) │ Top X, Search │ Discard 1, Discard X,
+  Shuffle; discard pile Search │ Shuffle into deck. Dragging the top of
+  an own deck (or the encounter deck) onto its discard pile discards it,
+  as Discard 1 does.
   A card dropped anywhere on its home deck (player deck, side deck or
   encounter deck) goes on top of it, as Move to ▾ "Top of deck" does;
   Bottom of deck is a Move to ▾ entry (B) only, never a drop target.
   Labels are short; only a refused entry has a tooltip (its reason). The stage
   choice reads "Change card…".
 - A hero side deck has the own deck's entries, Draw 1 and Draw X drawing
-  from it; Discard 1 and Discard X only when it has a side discard pile
-  (Invocation), which has a discard pile's entries. A side card's Move to
-  names its deck ("Top of Sense deck"); without a side discard it has no
-  Discard, and X and Backspace do nothing on it.
+  from it; Reveal only when it hides its top card (Labor, Gift, Weather;
+  see [[project_deck_reveal]]); Discard 1 and Discard X only when it has a
+  side discard pile (Invocation), which has a discard pile's entries. A
+  side card's Move to names its deck ("Top of Sense deck"); without a
+  side discard it has no Discard, and X and Backspace do nothing on it.
 - Card keys beside the menu: E exhaust, F flip, X discard (Backspace
   too), H hand, B bottom of deck (a side card's side deck), V change
   card (villain / main scheme), A arrow; C stays Confused.
+  A card revealed on a deck has no Exhaust (E) and no token, status or
+  modifier entries; on an own deck, W draws it (see
+  [[project_deck_reveal]]).
 - Another player's deck or side deck shows "Belongs to …" in its menu
   instead of entries. A click on a selected card opens that card's menu
   and keeps the group selection.

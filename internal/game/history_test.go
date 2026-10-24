@@ -585,7 +585,7 @@ func TestRebuildRevealsTheRecordedCard(t *testing.T) {
 
 	f.mustDo(t, "h", Action{Kind: ActUndo}, at(3))
 
-	if got := f.g.Table.revealed(); len(got) != 1 || got[0].ID != revealed {
+	if got := f.g.Table.revealedOn(PileEncounter); len(got) != 1 || got[0].ID != revealed {
 		t.Errorf("revealed after undo = %v, want Bob's card %s", got, revealed)
 	}
 	if got := topCards(f.g.Table.Piles[PileEncounter], 1)[0]; got != discarded {
@@ -667,7 +667,7 @@ func TestUndoKeepsOwnUntrackedActions(t *testing.T) {
 func TestUndoOfDealPutsTheRevealedCardBack(t *testing.T) {
 	f := newDoFixture(t)
 	f.mustDo(t, "h", Action{Kind: ActReveal}, at(1))
-	revealed := *f.g.Table.revealed()[0]
+	revealed := *f.g.Table.revealedOn(PileEncounter)[0]
 	f.mustDo(t, "b", Action{Kind: ActDeal, Area: "p1", X: 400, Y: 200}, at(2))
 
 	f.mustDo(t, "b", Action{Kind: ActUndo}, at(3))
@@ -699,7 +699,7 @@ func TestUndoOnSharedPileLosesNoCard(t *testing.T) {
 	if got := f.g.Table.Piles[PileEncounterDiscard].Cards; len(got) != 0 {
 		t.Errorf("encounter discard = %v, want empty", got)
 	}
-	if got := f.g.Table.revealed(); len(got) != 0 {
+	if got := f.g.Table.revealedOn(PileEncounter); len(got) != 0 {
 		t.Errorf("revealed = %v, want none", got)
 	}
 }
@@ -887,7 +887,7 @@ func TestShuffleActionsThroughDo(t *testing.T) {
 			"shuffleIn",
 			func(t *testing.T, f *doFixture) (string, []string) {
 				f.mustDo(t, "h", Action{Kind: ActReveal}, at(1))
-				id := f.g.Table.revealed()[0].ID
+				id := f.g.Table.revealedOn(PileEncounter)[0].ID
 				f.mustDo(t, "h", Action{Kind: ActToPile, Card: id, Target: PileScenarioAside}, at(2))
 				return PileEncounter, []string{id}
 			},
@@ -1155,17 +1155,17 @@ func TestTwoRevealsSurviveAnotherUndo(t *testing.T) {
 	f := newDoFixture(t)
 	f.mustDo(t, "b", Action{Kind: ActExhaust, Card: f.villain()}, at(1))
 	f.mustDo(t, "h", Action{Kind: ActReveal}, at(2))
-	first := f.g.Table.revealed()[0].ID
+	first := f.g.Table.revealedOn(PileEncounter)[0].ID
 	f.mustDo(t, "h", Action{Kind: ActMove, Card: first, X: 600, Y: 300}, at(3))
 	f.mustDo(t, "h", Action{Kind: ActReveal}, at(4))
-	second := f.g.Table.revealed()[0].ID
+	second := f.g.Table.revealedOn(PileEncounter)[0].ID
 
 	f.mustDo(t, "b", Action{Kind: ActUndo}, at(5))
 
 	if c := f.g.Table.Cards[first]; c.Zone != ZoneTable || c.X != 600 || c.Y != 300 {
 		t.Errorf("first revealed card = %+v, want it where Host moved it", c)
 	}
-	if got := f.g.Table.revealed(); len(got) != 1 || got[0].ID != second {
+	if got := f.g.Table.revealedOn(PileEncounter); len(got) != 1 || got[0].ID != second {
 		t.Errorf("revealed = %v, want the second card %s", got, second)
 	}
 	checkIntegrity(t, f.g.Table)
@@ -1214,14 +1214,14 @@ func TestUndoAfterReshuffleKeepsLaterActions(t *testing.T) {
 	f.mustDo(t, "h", Action{Kind: ActShuffle, Pile: PileEncounter}, at(40))
 	f.mustDo(t, "h", Action{Kind: ActUndo}, at(41))
 	f.mustDo(t, "b", Action{Kind: ActReveal}, at(42))
-	revealed := f.g.Table.revealed()[0].ID
+	revealed := f.g.Table.revealedOn(PileEncounter)[0].ID
 
 	f.mustDo(t, "h", Action{Kind: ActUndo}, at(43))
 
 	if f.g.Table.Cards[f.villain()].Exhausted {
 		t.Error("the villain is still exhausted")
 	}
-	if got := f.g.Table.revealed(); len(got) != 1 || got[0].ID != revealed {
+	if got := f.g.Table.revealedOn(PileEncounter); len(got) != 1 || got[0].ID != revealed {
 		t.Errorf("revealed = %v, want Bob's card %s", got, revealed)
 	}
 	checkIntegrity(t, f.g.Table)
@@ -1359,14 +1359,13 @@ func TestUndoKeepsAnotherPlayersFlip(t *testing.T) {
 	checkHistory(t, f.g)
 }
 
-// TestOlderUndoReshufflesTheEncounterDeck undoes a reveal older than Bob's
-// shuffle of the encounter deck: the revealed card goes back, the recorded
+// TestOlderUndoReshufflesTheEncounterDeck undoes a discard older than Bob's
+// shuffle of the encounter deck: the discarded card goes back, the recorded
 // shuffle no longer fits, and the deck is shuffled again with fresh ids.
 func TestOlderUndoReshufflesTheEncounterDeck(t *testing.T) {
 	f := newDoFixture(t)
-	f.mustDo(t, "h", Action{Kind: ActReveal}, at(1))
-	revealed := f.g.Table.revealed()[0].ID
-	seen := append(slices.Clone(f.g.Table.Piles[PileEncounter].Cards), revealed)
+	seen := slices.Clone(f.g.Table.Piles[PileEncounter].Cards)
+	f.mustDo(t, "h", Action{Kind: ActDiscardTop, Pile: PileEncounter, N: 1}, at(1))
 	f.mustDo(t, "b", Action{Kind: ActShuffle, Pile: PileEncounter}, at(2))
 	shuffled := slices.Clone(f.g.Table.Piles[PileEncounter].Cards)
 
@@ -1381,8 +1380,8 @@ func TestOlderUndoReshufflesTheEncounterDeck(t *testing.T) {
 			t.Errorf("encounter card %s keeps an id from before the undo", id)
 		}
 	}
-	if got := f.g.Table.revealed(); len(got) != 0 {
-		t.Errorf("revealed = %v, want none", got)
+	if got := f.g.Table.Piles[PileEncounterDiscard].Cards; len(got) != 0 {
+		t.Errorf("encounter discard = %v, want it empty", got)
 	}
 	checkIntegrity(t, f.g.Table)
 	checkHistory(t, f.g)

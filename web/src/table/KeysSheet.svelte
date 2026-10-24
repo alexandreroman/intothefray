@@ -96,7 +96,7 @@
         { what: 'Draw several cards', keys: ['⇧ W'] },
         { what: 'Discard the top card', keys: ['X', '⌫'] },
         { what: 'Discard several cards', keys: ['⇧ X'] },
-        { what: 'Reveal (encounter deck)', keys: ['R'] },
+        { what: 'Reveal the top card', keys: ['R'] },
         { what: 'Look at the top cards', keys: ['L'] },
         { what: 'Search', keys: ['K'] },
         { what: 'Shuffle', keys: ['U'] },

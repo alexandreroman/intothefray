@@ -147,7 +147,7 @@ func TestIntegrityAfterActions(t *testing.T) {
 	f.mustDo(t, "h", Action{Kind: ActPlay, Card: played, X: 400, Y: 200}, at(3))
 	f.mustDo(t, "h", Action{Kind: ActAttach, Card: played, Target: identity}, at(4))
 	f.mustDo(t, "b", Action{Kind: ActReveal}, at(5))
-	revealed := f.g.Table.revealed()[0].ID
+	revealed := f.g.Table.revealedOn(PileEncounter)[0].ID
 	f.mustDo(t, "b", Action{Kind: ActArrowAdd, Card: revealed, Target: played}, at(6))
 	f.mustDo(t, "h", Action{Kind: ActChooseStage, Stage: villain.Key, Card: villain.Cards[1]}, at(7))
 	f.mustDo(t, "h", Action{Kind: ActFlip, Card: scheme.Current}, at(8))

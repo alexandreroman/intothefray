@@ -4,7 +4,7 @@
 // ContextMenu.svelte draws it.
 
 import type { CardView, PackFace, PileView, View } from '../lib/types';
-import { arrowItem, sideLabel, type ActionItem, type TableElement } from './actions';
+import { arrowItem, deckCount, sideLabel, type ActionItem, type TableElement } from './actions';
 import { pileLabel, stageLabel, type TileAction } from './boxes';
 import { isHidden } from './face';
 import { ownerLook } from './seats';
@@ -205,16 +205,18 @@ export function cardHeader(card: CardView, face: PackFace | null, view: View): C
  * The header of a pile's menu, in its owner's colour: its owner as their
  * frame names them over its kind and its count ("Villain" over "Encounter
  * deck (29)"); named from the viewer's side for screen readers ("Your deck, 34 cards").
+ * A card revealed on a deck counts as its top card, as the menu's limits have it (deckCount).
  */
 export function pileHeader(pile: PileView, view: View): ContextHeader {
   const owner = ownerLook(view, pile.owner);
-  const cards = pile.count === 1 ? 'card' : 'cards';
+  const count = view.table ? deckCount(pile, view.table) : pile.count;
+  const cards = count === 1 ? 'card' : 'cards';
   return {
     eyebrow: owner.name,
     name: pileName(pile),
-    count: pile.count,
+    count,
     color: owner.color,
-    label: `${pileLabel(pile, view)}, ${pile.count} ${cards}`,
+    label: `${pileLabel(pile, view)}, ${count} ${cards}`,
   };
 }
 

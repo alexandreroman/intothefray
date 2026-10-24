@@ -214,7 +214,7 @@ func TestGroupLineFaceDown(t *testing.T) {
 	f.mustDo(t, "b", Action{Kind: ActDeal, Area: "p1", X: 400, Y: 200}, at(1))
 	dealt := f.lastDealt(t)
 	f.mustDo(t, "b", Action{Kind: ActReveal}, at(2))
-	revealed := f.g.Table.revealed()[0].ID
+	revealed := f.g.Table.revealedOn(PileEncounter)[0].ID
 
 	f.mustDo(t, "b", groupOf(ActToDeck, whereBottom, "", dealt, revealed), at(10))
 

@@ -37,6 +37,7 @@
     actionsFor,
     counterName,
     countersOf,
+    deckCount,
     isLocked,
     type ActionItem,
     type CountQuestion,
@@ -1078,9 +1079,11 @@
   let asking = $state<CountQuestion | null>(null);
 
   // The pile can shrink while the question is open (another player deals from
-  // it): the answer never asks for more cards than it holds.
+  // it): the answer never asks for more cards than it holds, the card revealed on it included.
   const askedPile = $derived(asking ? piles.find((pile) => pile.id === asking?.pile) : undefined);
-  const askedMax = $derived(asking && askedPile ? Math.min(asking.max, askedPile.count) : 0);
+  const askedMax = $derived(
+    asking && askedPile && view.table ? Math.min(asking.max, deckCount(askedPile, view.table)) : 0,
+  );
 
   // Nothing is left to ask about once the pile is empty or gone.
   $effect(() => {

@@ -443,6 +443,7 @@ describe('the context menu', () => {
     expect(labels(menu)).toEqual([
       'Draw 1',
       'Draw X',
+      'Reveal',
       'Top X',
       'Search',
       'Discard 1',
@@ -450,6 +451,7 @@ describe('the context menu', () => {
       'Shuffle',
     ]);
     expect(menuItem(menu, 'Draw 1').classList).toContain('default');
+    expect(menuItem(menu, 'Reveal').classList).not.toContain('default');
     await fireEvent.click(menuItem(menu, 'Draw 1'));
     expect(session.act).toHaveBeenCalledWith({ kind: 'draw', n: 1 }, 0);
   });

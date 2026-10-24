@@ -295,10 +295,11 @@ function originOf(root: HTMLElement, anim: Anim, piles: readonly PileView[]): HT
 /**
  * Whether a copy flying to a pile shows its face as a pile draws it: where
  * it shows it, on the pile it leaves, or, turning face up, on the pile it
- * lands on. The viewer's own drop leaves its ghost, which the table draws.
+ * lands on. A card revealed on a deck lies there as the pile draws it. The
+ * viewer's own drop leaves its ghost, which the table draws.
  */
-function facesAsOnPile(anim: Extract<Anim, { kind: 'fly' }>): boolean {
-  if (anim.turns === 'up') {
+function facesAsOnPile(anim: Extract<Anim, { kind: 'fly' }>, card: CardView | undefined): boolean {
+  if (anim.turns === 'up' || card?.onPile !== undefined) {
     return true;
   }
   return anim.fromPile !== undefined && !anim.dropped;
@@ -711,7 +712,7 @@ class TableMotion {
               ? (cardsAfter.get(anim.id) ?? cardsBefore.get(anim.id))
               : (cardsBefore.get(anim.id) ?? cardsAfter.get(anim.id));
           const flight = this.#flight(root, anim.toPile, before.get(anim.id), card, {
-            asOnPile: facesAsOnPile(anim),
+            asOnPile: facesAsOnPile(anim, card),
             turns: anim.turns,
           });
           if (flight) {

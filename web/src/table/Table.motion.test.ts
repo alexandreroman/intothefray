@@ -1045,6 +1045,27 @@ describe('Table animations', () => {
       await waitFor(() => expect(container.querySelector('.fly')).toBeNull());
     });
 
+    it('a card revealed on a deck that goes back into it turns to its back there', async () => {
+      const deck = samDeck(30);
+      const { next, container } = await renderTable(
+        makeView([card('c4', { owner: 1, x: deck.x, y: deck.y, onPile: deck.id })], {
+          piles: [deck, PILES[1]!],
+        }),
+      );
+
+      await next(makeView([], { piles: [samDeck(31), PILES[1]!] }));
+      await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
+      // Its face shows first, its back drawn over it, hidden until the copy is edge-on.
+      expect(container.querySelector('.fly [data-side="back"]')).not.toBeNull();
+      const [[keyframes]] = animationsOf('.fly') as [[Keyframe[], KeyframeAnimationOptions]];
+      expect(keyframes.map((frame) => frame.offset)).toEqual([0, 0.6, 0.8, 1]);
+      expect(String(keyframes[2]?.transform)).toContain('rotateY(90deg)');
+      const [[backFrames]] = animationsOf('.fly [data-side="back"]') as [
+        [Keyframe[], KeyframeAnimationOptions],
+      ];
+      expect(backFrames.map((frame) => frame.opacity)).toEqual([0, 0, 1, 1]);
+    });
+
     it('cards discarded from a deck fly to the discard on their back, then turn', async () => {
       const samDiscard = (cards: string[]) => discard(cards, 'disc:p1', 1, 840);
       const discarded = (id: string) => card(id, { owner: 1, zone: 'pile' });
