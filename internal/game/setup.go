@@ -43,10 +43,10 @@ const (
 	// cards in play after it.
 	pileZoneGap = 60
 	// inPlayGap is the room between two cards in play, the same for the
-	// cards the setup puts in play and the cards played from the hand
-	// (web/src/table/keys.ts). Turned 15° when exhausted, a portrait card
-	// reaches about 23 further on each side: 50 lets two neighbours both be
-	// exhausted without overlapping.
+	// cards the setup puts in play and the cards played from the hand or a
+	// pile box (freeSlot, web/src/table/keys.ts). Turned 15° when exhausted,
+	// a portrait card reaches about 23 further on each side: 50 lets two
+	// neighbours both be exhausted without overlapping.
 	inPlayGap = 50
 	// The first player token, 84 by 70 (web/src/table/layout.ts), lies
 	// centred under the deck, 28 taken to the grid, and firstPlayerGap below

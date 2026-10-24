@@ -424,6 +424,24 @@ func TestPutInPlayLeavesTheGapPastEachCard(t *testing.T) {
 	}
 }
 
+func TestCardWidth(t *testing.T) {
+	// The widths of the client's table cards (SIZES, web/src/table/layout.ts).
+	tests := []struct {
+		size pack.Size
+		want int
+	}{
+		{pack.SizeStd, 140},
+		{pack.SizeLand, 196},
+		{pack.SizeDoubleStd, 196},
+		{pack.SizeDoubleLand, 280},
+	}
+	for _, tt := range tests {
+		if got := cardWidth(tt.size); got != tt.want {
+			t.Errorf("cardWidth(%q) = %d, want %d", tt.size, got, tt.want)
+		}
+	}
+}
+
 func TestSetupWithSetInPlayIsDeterministic(t *testing.T) {
 	cfg := rhinoConfig()
 	cfg.Standard = "standard_iii"
