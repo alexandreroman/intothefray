@@ -1186,6 +1186,7 @@
       "action": {
         "kind": "flip",
         "card": "cn5ph3gpe",
+        "face": 1,
         "seat": 1,
         "faceDown": false
       },
@@ -1201,7 +1202,6 @@
       "action": {
         "kind": "flip",
         "card": "cn5ph3gpe",
-        "face": 1,
         "seat": 1,
         "faceDown": false
       },

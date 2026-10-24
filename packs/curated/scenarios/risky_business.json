@@ -1,0 +1,62 @@
+{
+  "id": "risky_business",
+  "villainSet": "risky_business",
+  "piles": [
+    {
+      "key": "villain",
+      "label": "Villain",
+      "cards": [
+        "02001",
+        "02002",
+        "02003"
+      ]
+    },
+    {
+      "key": "scheme",
+      "label": "Main scheme",
+      "cards": [
+        "02004",
+        "02005"
+      ]
+    }
+  ],
+  "start": {
+    "standard": {
+      "top": {
+        "villain": {
+          "card": "02001",
+          "face": 0
+        },
+        "scheme": {
+          "card": "02004",
+          "face": 0
+        }
+      },
+      "inPlay": [
+        {
+          "card": "02006",
+          "face": 0
+        }
+      ]
+    },
+    "expert": {
+      "top": {
+        "villain": {
+          "card": "02002",
+          "face": 0
+        },
+        "scheme": {
+          "card": "02004",
+          "face": 0
+        }
+      },
+      "inPlay": [
+        {
+          "card": "02006",
+          "face": 0
+        }
+      ]
+    }
+  },
+  "setAside": []
+}

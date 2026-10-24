@@ -26,7 +26,7 @@
 - [Tech stack choices](references/project_tech_stack.md) — Go + Redis backend, Svelte SPA on GitHub Pages, path routes, why
 - [Product constraints](references/project_constraints.md) — anti-cheat, images never stored or proxied, 24 h expiry, pack scope, v1 limits
 - [Card data sources](references/reference_card_sources.md) — marvelcdb primary, mc4db fallback cards; Cerebro, fr.marvelcdb, mc4db image URLs
-- [Automated setup scope](references/project_setup_scope.md) — setup places cards; players draw their own opening hand
+- [Automated setup scope](references/project_setup_scope.md) — scheme on 1A, only start environments placed; players resolve Setup, draw hands
 - [Replayable board state](references/project_replayable_state.md) — seed at start, full action history, snapshots every 10 actions
 - [Moving card stacks](references/project_stack_moves.md) — top card moves the whole stack; a tucked card detaches
 - [Optional Casper support](references/project_casper_optional.md) — Casper wiring only in .casper.json and scripts/casper.sh; APP_INSTANCE names the tab
@@ -50,6 +50,7 @@
 - [Moving several cards as a group](references/project_group_moves.md) — rubber band selection; drag or menu Discard / Move to on the group; one atomic group action
 - [Localized card names and images](references/project_localized_cards.md) — localized overrides per face and index entry; Options language, English default
 - [Fear No Evil scenarios](references/project_fear_no_evil_scenarios.md) — Kingpin curated; chosen-Underling scenarios unsupported
+- [Green Goblin scenarios](references/project_green_goblin_scenarios.md) — Risky Business, Mutagen Formula curated; Goblin Thralls by hand
 - [Action menu organisation](references/project_action_bars.md) — click opens the action menu; hand plays by drag and keys; out-of-play chips
 - [Identity card stays on the table](references/project_identity_stays.md) — identity never leaves the table, like a stage card
 - [Compact top bar hides on scroll](references/project_top_bar_auto_hide.md) — ≤600px wide or ≤500px tall: hides on scroll down, back on scroll up

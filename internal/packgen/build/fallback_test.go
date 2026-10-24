@@ -168,7 +168,7 @@ func TestImagesOf(t *testing.T) {
 
 func TestBuildSupportsScenarioOverFallbackSet(t *testing.T) {
 	villain := pack.FaceRef{Card: "60159", Face: 0}
-	scheme := pack.FaceRef{Card: "60161", Face: 1}
+	scheme := pack.FaceRef{Card: "60161", Face: 0}
 	start := pack.Start{
 		Top:    map[string]pack.FaceRef{"villain": villain, "scheme": scheme},
 		InPlay: []pack.FaceRef{{Card: "60163", Face: 0}},

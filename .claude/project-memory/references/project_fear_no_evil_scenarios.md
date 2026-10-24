@@ -8,7 +8,7 @@ type: project
 
 Fear No Evil has two kinds of scenarios. Kingpin is a classic villain
 set with a curated scenario (`packs/curated/scenarios/kingpin.json`:
-Kingpin A1 standard, B1 expert, The King's Gambit on 1B, Public Support in
+Kingpin A1 standard, B1 expert, The King's Gambit on 1A, Public Support in
 play on its LOW side). Art Museum Heist, The Getaway, Protection Racket,
 Stop The Presses! and The Raft Breakout are main scheme sets (kind
 `villain`, no villain card) played with a chosen Underling villain:
