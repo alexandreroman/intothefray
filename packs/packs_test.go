@@ -7,7 +7,9 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/alexandreroman/intothefray/internal/game"
 	"github.com/alexandreroman/intothefray/internal/pack"
 	"github.com/alexandreroman/intothefray/packs"
 )
@@ -131,8 +133,8 @@ func TestEmbeddedCoreSet(t *testing.T) {
 				supported++
 			}
 		}
-		if supported != 6 {
-			t.Errorf("supported scenarios = %d, want 6", supported)
+		if supported != 7 {
+			t.Errorf("supported scenarios = %d, want 7", supported)
 		}
 	})
 }
@@ -266,6 +268,140 @@ func TestEmbeddedGreenGoblin(t *testing.T) {
 	})
 }
 
+func TestEmbeddedWreckingCrew(t *testing.T) {
+	cat, err := packs.Catalog()
+	if err != nil {
+		t.Fatalf("Catalog() error = %v", err)
+	}
+
+	t.Run("index", func(t *testing.T) {
+		found := false
+		for _, ref := range cat.Index().Scenarios {
+			switch ref.ID {
+			case "wrecker", "thunderball", "piledriver", "bulldozer":
+				t.Errorf("scenario entry %s should be merged into wrecking_crew", ref.ID)
+			case "wrecking_crew":
+				found = true
+				if !ref.Supported || !ref.SelfContained || !strings.HasSuffix(ref.Image, "07002.jpg") {
+					t.Errorf("wrecking_crew ref = %+v, want supported, self-contained, image 07002", ref)
+				}
+			}
+		}
+		if !found {
+			t.Error("scenario ref wrecking_crew not found")
+		}
+	})
+
+	tests := []struct {
+		difficulty pack.Difficulty
+		villains   []string
+	}{
+		{pack.Standard, []string{"07002", "07017", "07032", "07046"}},
+		{pack.Expert, []string{"07003", "07018", "07033", "07047"}},
+	}
+	keys := []string{"wrecker", "thunderball", "piledriver", "bulldozer"}
+	sideSchemes := []string{"07004", "07019", "07034", "07048"}
+	threats := []int{6, 5, 3, 4}
+	for _, tt := range tests {
+		t.Run(string(tt.difficulty), func(t *testing.T) {
+			g, err := game.NewGame("g1", "h", "Host", time.Unix(0, 0))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if _, err := g.Join("b", "Bob"); err != nil {
+				t.Fatal(err)
+			}
+			cfg := game.LobbyConfig{Scenario: "wrecking_crew", Difficulty: tt.difficulty, Modulars: []string{}}
+			if err := g.Configure("h", cfg, cat); err != nil {
+				t.Fatal(err)
+			}
+			for token, hero := range map[string]string{"h": "01001a", "b": "01010a"} {
+				choice := game.DeckChoice{Name: "Deck", Hero: hero, HeroName: hero}
+				if err := g.SetDeck(token, 0, choice, cat); err != nil {
+					t.Fatal(err)
+				}
+			}
+			if err := g.Start("h", cat, 1, time.Unix(0, 0)); err != nil {
+				t.Fatal(err)
+			}
+			table := g.Table
+			if _, ok := table.Piles["enc"]; ok {
+				t.Error("classic enc pile exists")
+			}
+			for i, key := range keys {
+				deck, disc := table.Piles["enc:"+key], table.Piles["encd:"+key]
+				if deck == nil || disc == nil {
+					t.Fatalf("missing piles enc:%s / encd:%s", key, key)
+				}
+				if len(deck.Cards) != 15 {
+					t.Errorf("%s deck has %d cards, want 15", key, len(deck.Cards))
+				}
+				for _, id := range deck.Cards {
+					if code := table.Cards[id].Code; code == "01165" || code == "01175" {
+						t.Errorf("%s deck holds an obligation %s", key, code)
+					}
+				}
+				var threat *int
+				for _, c := range table.Cards {
+					if c.Code == sideSchemes[i] {
+						if c.Zone != game.ZoneTable {
+							t.Errorf("%s not in play", c.Code)
+						}
+						n := c.Tokens["thr"]
+						threat = &n
+					}
+				}
+				if threat == nil || *threat != threats[i] {
+					t.Errorf("%s threat = %v, want %d", sideSchemes[i], threat, threats[i])
+				}
+			}
+			for i, key := range keys {
+				stage := slices.IndexFunc(table.Stages, func(s *game.Stage) bool { return s.Key == key })
+				if stage < 0 {
+					t.Fatalf("no stage %s", key)
+				}
+				if got := table.Cards[table.Stages[stage].Current].Code; got != tt.villains[i] {
+					t.Errorf("stage %s shows %s, want %s", key, got, tt.villains[i])
+				}
+			}
+			var scheme *game.Card
+			for _, c := range table.Cards {
+				if c.Code == "07001" {
+					scheme = c
+				}
+			}
+			if scheme == nil || scheme.Face != 0 {
+				t.Errorf("Breakout = %+v, want face 0", scheme)
+			}
+			if table.Active == nil {
+				t.Fatal("no active counter")
+			}
+			wrecker := table.Cards[table.Stages[slices.IndexFunc(table.Stages, func(s *game.Stage) bool {
+				return s.Key == "wrecker"
+			})].Current]
+			if want := (game.Point{X: wrecker.X + 40, Y: wrecker.Y + 196 + 24}); *table.Active != want {
+				t.Errorf("active counter = %+v, want %+v", *table.Active, want)
+			}
+			for _, c := range table.Cards {
+				card, _, err := cat.Card(c.Code)
+				if err != nil {
+					continue
+				}
+				for _, face := range card.Faces {
+					if face.Type == "obligation" {
+						t.Errorf("obligation %s on the table", c.Code)
+					}
+				}
+			}
+			for seat := range 2 {
+				if aside := table.Piles["aside:"+string(game.PlayerArea(seat))]; aside != nil && len(aside.Cards) > 0 {
+					t.Errorf("seat %d set-aside pile holds %d cards, want none", seat, len(aside.Cards))
+				}
+			}
+		})
+	}
+}
+
 // loadPackFiles decodes every embedded English pack file.
 func loadPackFiles(t *testing.T) []pack.PackFile {
 	t.Helper()
@@ -393,9 +529,10 @@ func TestEmbeddedDataInvariants(t *testing.T) {
 		}
 	})
 
-	// The only cards placed in play are the environments the scenario puts
-	// into play as it starts (Criminal Enterprise, Ultron Drones, Public
-	// Support): any other card stays in the encounter deck for the players.
+	// The only cards placed in play are the cards a scenario's printed setup
+	// puts in play, environments and side schemes (Criminal Enterprise, Ultron
+	// Drones, Public Support, Day of Reckoning): any other card stays in the
+	// encounter deck for the players.
 	t.Run("scenario in-play cards are environments", func(t *testing.T) {
 		for _, file := range files {
 			for _, scenario := range file.Scenarios {
@@ -405,8 +542,8 @@ func TestEmbeddedDataInvariants(t *testing.T) {
 						if err != nil || ref.Face < 0 || ref.Face >= len(card.Faces) {
 							continue // reported by "scenarios resolve"
 						}
-						if got := card.Faces[ref.Face].Type; got != "environment" {
-							t.Errorf("scenario %s %s starts %s face %d in play, a %s, want an environment",
+						if got := card.Faces[ref.Face].Type; got != "environment" && got != "side_scheme" {
+							t.Errorf("scenario %s %s starts %s face %d in play, a %s, want an environment or a side scheme",
 								scenario.ID, difficulty, ref.Card, ref.Face, got)
 						}
 					}

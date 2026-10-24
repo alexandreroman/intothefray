@@ -1605,5 +1605,192 @@
         "07001"
       ]
     }
+  ],
+  "scenarios": [
+    {
+      "id": "wrecking_crew",
+      "name": "Wrecking Crew",
+      "pack": "twc",
+      "villainSet": "wrecking_crew",
+      "piles": [
+        {
+          "key": "wrecker",
+          "label": "Wrecker",
+          "cards": [
+            "07002",
+            "07003"
+          ],
+          "deck": "wrecker"
+        },
+        {
+          "key": "thunderball",
+          "label": "Thunderball",
+          "cards": [
+            "07017",
+            "07018"
+          ],
+          "deck": "thunderball"
+        },
+        {
+          "key": "piledriver",
+          "label": "Piledriver",
+          "cards": [
+            "07032",
+            "07033"
+          ],
+          "deck": "piledriver"
+        },
+        {
+          "key": "bulldozer",
+          "label": "Bulldozer",
+          "cards": [
+            "07046",
+            "07047"
+          ],
+          "deck": "bulldozer"
+        },
+        {
+          "key": "scheme",
+          "label": "Main scheme",
+          "cards": [
+            "07001"
+          ]
+        }
+      ],
+      "start": {
+        "expert": {
+          "top": {
+            "bulldozer": {
+              "card": "07047",
+              "face": 0
+            },
+            "piledriver": {
+              "card": "07033",
+              "face": 0
+            },
+            "scheme": {
+              "card": "07001",
+              "face": 0
+            },
+            "thunderball": {
+              "card": "07018",
+              "face": 0
+            },
+            "wrecker": {
+              "card": "07003",
+              "face": 0
+            }
+          },
+          "inPlay": [
+            {
+              "card": "07004",
+              "face": 0,
+              "with": "wrecker"
+            },
+            {
+              "card": "07019",
+              "face": 0,
+              "with": "thunderball"
+            },
+            {
+              "card": "07034",
+              "face": 0,
+              "with": "piledriver"
+            },
+            {
+              "card": "07048",
+              "face": 0,
+              "with": "bulldozer"
+            }
+          ]
+        },
+        "standard": {
+          "top": {
+            "bulldozer": {
+              "card": "07046",
+              "face": 0
+            },
+            "piledriver": {
+              "card": "07032",
+              "face": 0
+            },
+            "scheme": {
+              "card": "07001",
+              "face": 0
+            },
+            "thunderball": {
+              "card": "07017",
+              "face": 0
+            },
+            "wrecker": {
+              "card": "07002",
+              "face": 0
+            }
+          },
+          "inPlay": [
+            {
+              "card": "07004",
+              "face": 0,
+              "with": "wrecker"
+            },
+            {
+              "card": "07019",
+              "face": 0,
+              "with": "thunderball"
+            },
+            {
+              "card": "07034",
+              "face": 0,
+              "with": "piledriver"
+            },
+            {
+              "card": "07048",
+              "face": 0,
+              "with": "bulldozer"
+            }
+          ]
+        }
+      },
+      "decks": [
+        {
+          "key": "wrecker",
+          "label": "Wrecker",
+          "sets": [
+            "wrecker"
+          ],
+          "discard": true,
+          "encounter": true
+        },
+        {
+          "key": "thunderball",
+          "label": "Thunderball",
+          "sets": [
+            "thunderball"
+          ],
+          "discard": true,
+          "encounter": true
+        },
+        {
+          "key": "piledriver",
+          "label": "Piledriver",
+          "sets": [
+            "piledriver"
+          ],
+          "discard": true,
+          "encounter": true
+        },
+        {
+          "key": "bulldozer",
+          "label": "Bulldozer",
+          "sets": [
+            "bulldozer"
+          ],
+          "discard": true,
+          "encounter": true
+        }
+      ],
+      "selfContained": true,
+      "active": "wrecker"
+    }
   ]
 }
