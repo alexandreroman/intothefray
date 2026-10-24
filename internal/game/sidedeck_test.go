@@ -234,10 +234,10 @@ func TestSetupSetAsideHeroCards(t *testing.T) {
 // draw the same random numbers and so give the same tables and card ids.
 // They change only with the card data of the heroes and scenario they use,
 // with the fields of a card (the identity mark), or with the default
-// positions (the first player token under the deck).
+// positions (the first player token under the deck, the villain row).
 const (
-	spiderManSetupHash = "6d3a6056f2b050e191696929a79245c1bdff3162b2ccbeaa6a455131a6535c01"
-	threeDeckSetupHash = "f90be57495162a09da7b805d4d77bb9195833e270538038fd57a9fd0cf9fc2c0"
+	spiderManSetupHash = "689af7071da837c3c42f667838b41ee7966fb766f344f6089d49191eea702ae1"
+	threeDeckSetupHash = "41b9e0c3210037445da3820f1030bc5ae4a8ab2445c07d3f2e6fd693a1aba7bc"
 )
 
 func TestSetupWithoutSideDecksIsUnchanged(t *testing.T) {

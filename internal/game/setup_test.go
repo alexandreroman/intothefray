@@ -206,8 +206,9 @@ func TestSetupStages(t *testing.T) {
 	}
 
 	scheme := cardWithCode(t, table, "01097")
-	if scheme.Zone != ZoneTable || scheme.Face != 0 || scheme.X != 520 || scheme.Y != 30 {
-		t.Errorf("main scheme = %+v, want on the table at (520, 30), face 0", scheme)
+	// The main scheme lies 50 past the villain at 360–500.
+	if scheme.Zone != ZoneTable || scheme.Face != 0 || scheme.X != 550 || scheme.Y != 30 {
+		t.Errorf("main scheme = %+v, want on the table at (550, 30), face 0", scheme)
 	}
 
 	if len(table.Stages) != 2 {
@@ -300,13 +301,13 @@ func TestSetupStandardAndExpertSets(t *testing.T) {
 		inPlay     []inPlayCard
 	}{
 		{"standard", pack.Standard, "standard", "", nil},
-		{"standard ii", pack.Standard, "standard_ii", "", []inPlayCard{{formidableFoe, 0, 760}}},
-		{"standard iii", pack.Standard, "standard_iii", "", []inPlayCard{{pursuedByThePast, 0, 760}}},
+		{"standard ii", pack.Standard, "standard_ii", "", []inPlayCard{{formidableFoe, 0, 800}}},
+		{"standard iii", pack.Standard, "standard_iii", "", []inPlayCard{{pursuedByThePast, 0, 800}}},
 		{"expert with standard", pack.Expert, "standard", "expert", nil},
 		{"expert ii with standard", pack.Expert, "standard", "expert_ii", nil},
-		{"expert ii with standard ii", pack.Expert, "standard_ii", "expert_ii", []inPlayCard{{formidableFoe, 1, 760}}},
-		{"expert with standard ii", pack.Expert, "standard_ii", "expert", []inPlayCard{{formidableFoe, 1, 760}}},
-		{"expert with standard iii", pack.Expert, "standard_iii", "expert", []inPlayCard{{pursuedByThePast, 0, 760}}},
+		{"expert ii with standard ii", pack.Expert, "standard_ii", "expert_ii", []inPlayCard{{formidableFoe, 1, 800}}},
+		{"expert with standard ii", pack.Expert, "standard_ii", "expert", []inPlayCard{{formidableFoe, 1, 800}}},
+		{"expert with standard iii", pack.Expert, "standard_iii", "expert", []inPlayCard{{pursuedByThePast, 0, 800}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -394,14 +395,14 @@ func TestSetupSetInPlayFollowsScenarioInPlay(t *testing.T) {
 	cfg.Difficulty, cfg.Standard, cfg.Expert = pack.Expert, "standard_ii", "expert"
 	table := startedGame(t, cfg).Table
 
-	// Ultron Drones take the first in-play slot. Portrait, they end at 900:
+	// Ultron Drones take the first in-play slot. Portrait, they end at 940:
 	// Formidable Foe lies 50 past them.
-	if c := cardWithCode(t, table, "01140"); c.Zone != ZoneTable || c.X != 760 || c.Y != 30 {
-		t.Errorf("Ultron Drones = %+v, want on the table at (760, 30)", c)
+	if c := cardWithCode(t, table, "01140"); c.Zone != ZoneTable || c.X != 800 || c.Y != 30 {
+		t.Errorf("Ultron Drones = %+v, want on the table at (800, 30)", c)
 	}
 	foe := cardWithCode(t, table, "24049")
-	if foe.Zone != ZoneTable || foe.Face != 1 || foe.X != 950 || foe.Y != 30 {
-		t.Errorf("Formidable Foe = %+v, want in the villain row at (950, 30), face 1", foe)
+	if foe.Zone != ZoneTable || foe.Face != 1 || foe.X != 990 || foe.Y != 30 {
+		t.Errorf("Formidable Foe = %+v, want in the villain row at (990, 30), face 1", foe)
 	}
 }
 
@@ -413,7 +414,7 @@ func TestPutInPlayLeavesTheGapPastEachCard(t *testing.T) {
 	for _, want := range []struct {
 		code string
 		x    int
-	}{{"01125", 760}, {"24049", 1010}, {"01125", 1200}} {
+	}{{"01125", 800}, {"24049", 1050}, {"01125", 1240}} {
 		c, err := b.putInPlay(pack.FaceRef{Card: want.code})
 		if err != nil {
 			t.Fatal(err)

@@ -15,7 +15,9 @@ import (
 // The table is laid out in rows: the villain's row on top, villainRowHeight
 // high, then one row of rowHeight per seat (one deck, see seats.go), in seat order. Every row starts with its deck
 // and its discard pile, then the villain or the identity; the villain's row
-// goes on with the main scheme, and cards in play are added to the right. A
+// goes on with the main scheme, and cards in play are added to the right.
+// In the villain's row, the villain, the main scheme and the cards in play
+// lie inPlayGap apart, the first card in play taken up to the grid. A
 // hero with side decks lays them out after its discard pile, each followed by
 // its own discard pile if it has one, sidePileStepX apart as the deck and the
 // discard pile are. The identity then lies pileZoneGap after the end of the
@@ -36,9 +38,11 @@ const (
 	rowContentY      = 30
 
 	// portraitWidth and portraitHeight are the size of a portrait card, and
-	// so of a pile.
+	// so of a pile; landscapeWidth is the width of a landscape card, such as
+	// a main scheme.
 	portraitWidth  = 140
 	portraitHeight = 196
+	landscapeWidth = 196
 	// pileZoneGap is the room between the last pile of a row and the
 	// cards in play after it.
 	pileZoneGap = 60
@@ -56,13 +60,15 @@ const (
 	firstPlayerX   = 30
 	firstPlayerGap = 24
 
-	deckX        = 0
-	discardX     = 160
-	outOfPlayX   = 0
-	identityX    = discardX + portraitWidth + pileZoneGap
-	villainX     = 360
-	mainSchemeX  = 520
-	inPlayStartX = 760
+	deckX       = 0
+	discardX    = 160
+	outOfPlayX  = 0
+	identityX   = discardX + portraitWidth + pileZoneGap
+	villainX    = 360
+	mainSchemeX = villainX + portraitWidth + inPlayGap
+	// Past the main scheme, landscape, rounded up to the grid as ceilToGrid
+	// does.
+	inPlayStartX = (mainSchemeX + landscapeWidth + inPlayGap + gridSize - 1) / gridSize * gridSize
 
 	sidePileStepX = 160
 )
@@ -449,7 +455,8 @@ func (b *tableBuilder) putInPlay(ref pack.FaceRef) (*Card, error) {
 func cardWidth(size pack.Size) int {
 	switch size {
 	case pack.SizeLand, pack.SizeDoubleStd:
-		return 196
+		// A double-size portrait card is as wide as a landscape one.
+		return landscapeWidth
 	case pack.SizeDoubleLand:
 		return 280
 	default:
