@@ -68,3 +68,4 @@
 - [Close is the main button of a card box](references/project_card_box_close.md) — Close is primary in every card box footer; other buttons secondary
 - [Face-down cards](references/project_face_down_cards.md) — Flip toggles single-faced cards; cards played from a hidden deck land face down
 - [Revealed card is its deck's top card](references/project_deck_reveal.md) — own hidden decks reveal; deck actions take it first
+- [No compatibility for games in progress](references/feedback_no_live_game_compat.md) — action changes ignore stored histories; simplest design
