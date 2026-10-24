@@ -245,3 +245,45 @@ func TestModularCodesKeepLowestCodeOfDuplicatedName(t *testing.T) {
 		}
 	}
 }
+
+func TestScenarioCopiesDecksSelfContainedAndActive(t *testing.T) {
+	f := newScenarioFixture(t)
+	def := rhinoDef()
+	def.Decks = []pack.ScenarioDeck{{Key: "d", Label: "D", Sets: []string{"rhino"}, Encounter: true, Discard: true}}
+	def.SelfContained = true
+	def.Active = "villain"
+
+	scenarios, refs, _ := BuildScenarios([]curated.ScenarioDef{def}, f.cards, f.sets, f.cb)
+
+	got := scenarios["core"][0]
+	if !reflect.DeepEqual(got.Decks, def.Decks) || !got.SelfContained || got.Active != "villain" {
+		t.Errorf("got scenario %+v, want decks, selfContained and active copied", got)
+	}
+	if !findRef(t, refs, "rhino").SelfContained {
+		t.Error("got ref not self-contained, want it")
+	}
+}
+
+func TestScenarioImageFromCoveredVillain(t *testing.T) {
+	card := func(code, set, kind string) pack.Card {
+		return pack.Card{Code: code, Set: set, Faces: []pack.Face{{Type: kind, Images: []string{"https://x/" + code}}}}
+	}
+	cards := map[string][]pack.Card{"p": {
+		card("07010", "wrecker", "minion"), card("07005", "thunderball", "leader"), card("07002", "piledriver", "leader"),
+	}}
+	sets := map[string][]pack.Set{"p": {
+		{Code: "wrecker", Name: "Wrecker", Kind: "villain", Cards: []string{"07010"}},
+		{Code: "thunderball", Name: "Thunderball", Kind: "leader", Cards: []string{"07005"}},
+		{Code: "piledriver", Name: "Piledriver", Kind: "leader", Cards: []string{"07002"}},
+	}}
+	def := curated.ScenarioDef{
+		ID: "crew", VillainSet: "wrecker", Covers: []string{"thunderball", "piledriver"},
+		Piles: []pack.Pile{{Key: "villain", Label: "Villain", Cards: []string{"07002"}}},
+	}
+
+	_, refs, _ := BuildScenarios([]curated.ScenarioDef{def}, cards, sets, nil)
+
+	if got := findRef(t, refs, "crew").Image; got != "https://x/07002" {
+		t.Errorf("got image %q, want the one of 07002", got)
+	}
+}

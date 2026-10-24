@@ -156,3 +156,66 @@ func TestLoadRejectsInvalidSets(t *testing.T) {
 		})
 	}
 }
+
+// loadScenario loads a directory holding one scenario file, named scenario.json.
+func loadScenario(t *testing.T, content string) error {
+	t.Helper()
+	dir := t.TempDir()
+	scenarios := filepath.Join(dir, "scenarios")
+	if err := os.Mkdir(scenarios, 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(scenarios, "scenario.json"), []byte(content), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	_, err := Load(dir)
+	return err
+}
+
+func wantScenarioError(t *testing.T, content, want string) {
+	t.Helper()
+	err := loadScenario(t, content)
+	if err == nil || !strings.Contains(err.Error(), "scenario.json") || !strings.Contains(err.Error(), want) {
+		t.Fatalf("got error %v, want one naming scenario.json and %q", err, want)
+	}
+}
+
+const deckA = `{"key":"a","label":"A","sets":["s"]}`
+
+func TestLoadRejectsEncounterDeckNotSelfContained(t *testing.T) {
+	wantScenarioError(t, `{"id":"x","villainSet":"x","decks":[{"key":"a","label":"A","sets":["s"],"encounter":true}]}`,
+		"selfContained")
+	if err := loadScenario(t, `{"id":"x","villainSet":"x","selfContained":true,`+
+		`"decks":[{"key":"a","label":"A","sets":["s"],"encounter":true}]}`); err != nil {
+		t.Fatalf("got error %v, want none for a self-contained scenario", err)
+	}
+}
+
+func TestLoadRejectsUnknownWith(t *testing.T) {
+	wantScenarioError(t, `{"id":"x","villainSet":"x","piles":[{"key":"v","label":"V","cards":[]}],`+
+		`"start":{"expert":{"top":{},"inPlay":[{"card":"1","face":0,"with":"nobody"}]}}}`, `"nobody"`)
+}
+
+func TestLoadRejectsBadDecks(t *testing.T) {
+	tests := []struct{ name, content, want string }{
+		{"duplicate key", `{"id":"x","villainSet":"x","decks":[` + deckA + `,` + deckA + `]}`, "duplicate deck key"},
+		{"empty key", `{"id":"x","villainSet":"x","decks":[{"label":"A","sets":["s"]}]}`, "no key"},
+		{"empty label", `{"id":"x","villainSet":"x","decks":[{"key":"a","sets":["s"]}]}`, "no label"},
+		{"empty deck", `{"id":"x","villainSet":"x","decks":[{"key":"a","label":"A"}]}`, "neither sets nor cards"},
+		{
+			"stage naming no deck",
+			`{"id":"x","villainSet":"x","piles":[{"key":"v","label":"V","cards":[],"deck":"b"}],"decks":[` + deckA + `]}`,
+			`unknown deck "b"`,
+		},
+		{
+			"deck named twice",
+			`{"id":"x","villainSet":"x","piles":[{"key":"v","label":"V","cards":[],"deck":"a"},` +
+				`{"key":"w","label":"W","cards":[],"deck":"a"}],"decks":[` + deckA + `]}`,
+			`deck "a" is named by`,
+		},
+		{"active naming no stage", `{"id":"x","villainSet":"x","active":"nobody"}`, `unknown stage "nobody"`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) { wantScenarioError(t, tt.content, tt.want) })
+	}
+}
