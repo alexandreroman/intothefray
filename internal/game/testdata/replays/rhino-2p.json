@@ -1372,7 +1372,8 @@
       "seq": 57,
       "seat": 0,
       "action": {
-        "kind": "firstPlayer",
+        "kind": "marker",
+        "name": "firstPlayer",
         "x": 670,
         "y": 110
       },
@@ -1884,7 +1885,8 @@
       "seq": 93,
       "seat": 0,
       "action": {
-        "kind": "firstPlayer",
+        "kind": "marker",
+        "name": "firstPlayer",
         "x": 630,
         "y": 130
       },

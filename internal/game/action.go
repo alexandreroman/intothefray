@@ -39,7 +39,7 @@ const (
 	ActShuffleIn   Kind = "shuffleIn"
 	ActReorderTop  Kind = "reorderTop"
 	ActHandOrder   Kind = "handOrder"
-	ActFirstPlayer Kind = "firstPlayer"
+	ActMarker      Kind = "marker"
 	ActArrowAdd    Kind = "arrowAdd"
 	ActArrowClear  Kind = "arrowClear"
 
@@ -191,7 +191,10 @@ func resolveOnTable(original *Table, who actor, a Action, rng *rand.Rand) (Actio
 		return resolveReveal(t, who, a)
 	case ActDeal:
 		return resolveDeal(t, a)
-	case ActFirstPlayer:
+	case ActMarker:
+		if t.marker(a.Name) == nil {
+			return Action{}, invalid("no marker %q on the table", a.Name)
+		}
 		return a, nil
 	case ActArrowClear:
 		// A player's arrows are credited to any of their seats. Seat alone

@@ -141,7 +141,7 @@ func randomAction(r *rand.Rand, t *Table, seat int) Action {
 		case 1:
 			return Action{Kind: ActArrowClear}
 		default:
-			return Action{Kind: ActFirstPlayer, X: x, Y: y}
+			return Action{Kind: ActMarker, Name: MarkerFirstPlayer, X: x, Y: y}
 		}
 	case 25:
 		if t.Views[area] != nil {

@@ -1292,7 +1292,7 @@ func TestArrangingActionsAreUntrackedEvents(t *testing.T) {
 		{Kind: ActAttach, Card: identity, Target: rhino},
 		{Kind: ActHandOrder, Area: "p0", Cards: hand},
 		{Kind: ActReorderTop, Pile: "deck:p0", Cards: top},
-		{Kind: ActFirstPlayer, Area: "p1", X: 100, Y: 100},
+		{Kind: ActMarker, Name: MarkerFirstPlayer, Area: "p1", X: 100, Y: 100},
 		{Kind: ActArrowAdd, Card: rhino, Target: identity},
 		{Kind: ActArrowClear},
 	}

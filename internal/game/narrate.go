@@ -226,12 +226,12 @@ type narrator struct {
 // a reorder of a deck's top, which only arranges unless it takes a revealed
 // card back (see reorderEvent).
 var arrangingKinds = map[Kind]bool{
-	ActMove:        true,
-	ActAttach:      true,
-	ActHandOrder:   true,
-	ActFirstPlayer: true,
-	ActArrowAdd:    true,
-	ActArrowClear:  true,
+	ActMove:       true,
+	ActAttach:     true,
+	ActHandOrder:  true,
+	ActMarker:     true,
+	ActArrowAdd:   true,
+	ActArrowClear: true,
 }
 
 // describe writes the history line of a, which has just been applied. It

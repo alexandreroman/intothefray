@@ -88,8 +88,8 @@ func applyAction(t *Table, a Action) error {
 		return applyReorderTop(t, a)
 	case ActHandOrder:
 		return applyHandOrder(t, a)
-	case ActFirstPlayer:
-		return applyFirstPlayer(t, a)
+	case ActMarker:
+		return applyMarker(t, a)
 	case ActArrowAdd:
 		return applyArrowAdd(t, a)
 	case ActArrowClear:
@@ -1213,8 +1213,25 @@ func applyHandOrder(t *Table, a Action) error {
 	return nil
 }
 
-func applyFirstPlayer(t *Table, a Action) error {
-	t.FirstPlayer = Point{X: snap(a.X), Y: snap(a.Y)}
+// marker returns the position of the table marker called name, or nil when
+// there is no such marker (an unknown name, or the active counter of a
+// scenario without one).
+func (t *Table) marker(name string) *Point {
+	switch name {
+	case MarkerFirstPlayer:
+		return &t.FirstPlayer
+	case MarkerActive:
+		return t.Active
+	}
+	return nil
+}
+
+func applyMarker(t *Table, a Action) error {
+	p := t.marker(a.Name)
+	if p == nil {
+		return invalid("no marker %q on the table", a.Name)
+	}
+	*p = Point{X: snap(a.X), Y: snap(a.Y)}
 	return nil
 }
 

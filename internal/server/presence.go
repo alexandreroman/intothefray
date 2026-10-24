@@ -107,11 +107,11 @@ func presenceFieldsOf(msg clientMessage) (presenceFields, error) {
 	return fields, nil
 }
 
-// valid reports whether d carries either the first player token alone, or
-// between 1 and maxDragCards cards.
+// valid reports whether d carries either a table marker alone, or between 1
+// and maxDragCards cards.
 func (d *presenceDrag) valid() bool {
-	if d.Token {
-		return len(d.Cards) == 0
+	if d.Token != "" {
+		return len(d.Cards) == 0 && validPresenceText(d.Token)
 	}
 	if len(d.Cards) == 0 || len(d.Cards) > maxDragCards {
 		return false

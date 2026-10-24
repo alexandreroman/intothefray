@@ -173,11 +173,11 @@ type presencePoint struct {
 	Y int `json:"y"`
 }
 
-// presenceDrag is a drag in progress: the cards dragged, or the first player
-// token, which carries no card, and where their corner is, in table units.
+// presenceDrag is a drag in progress: the cards dragged, or a table marker
+// (Token holds its name), which carries no card, and where their corner is, in table units.
 type presenceDrag struct {
 	Cards []string `json:"cards"`
-	Token bool     `json:"token,omitempty"`
+	Token string   `json:"token,omitempty"`
 	X     int      `json:"x"`
 	Y     int      `json:"y"`
 }
