@@ -152,9 +152,10 @@ const PLAYER_PILES: readonly PileKind[] = ['deck', 'discard', 'sideDeck', 'sideD
 /**
  * The actions of a card in a pile box, in menu order (the prototype's
  * renderDeckView): Draw from an own deck or discard pile (side ones too), Play to the first
- * free slot of the credited deck's row (creditedSeat), Discard, Put at the
- * bottom of the deck, and Shuffle into deck for the out-of-play and discard
- * piles. Another player's decks or set-aside cards cannot be touched.
+ * free slot of the credited deck's row (creditedSeat), face up even out of a
+ * deck that hides its cards, Discard, Put at the bottom of the deck, and
+ * Shuffle into deck for the out-of-play and discard piles. Another player's
+ * decks or set-aside cards cannot be touched.
  */
 export function tileActions(card: CardView, pile: PileView, context: TileContext): TileAction[] {
   const seats = ownSeats(context.view);
@@ -215,5 +216,6 @@ function playAction(card: CardView, pile: PileView, context: TileContext): Actio
   ];
   const seat = creditedSeatAmong(touched, view, selected) ?? selected;
   const { x, y } = freeSlot(view.table?.cards ?? [], view.table?.piles ?? [], seat, sizeOf);
-  return { kind: 'play', card: card.id, x, y };
+  // An explicit Play shows the card, even out of a deck that hides its cards; a drag lands it face down.
+  return { kind: 'play', card: card.id, x, y, faceUp: true };
 }

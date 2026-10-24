@@ -652,20 +652,24 @@ describe("the top card of the viewer's deck", () => {
     });
   });
 
-  it('is played face up where it lands on the table, even over a card', () => {
-    expect(dropAction(deck, TABLE, { x: 304, y: 296 }, DEAL_TO)).toEqual({
+  it('is played where it lands on the table, even over a card, face down: a drop is no explicit Play', () => {
+    const onTable = dropAction(deck, TABLE, { x: 304, y: 296 }, DEAL_TO);
+    expect(onTable).toEqual({
       kind: 'play',
       pile: 'deck:p0',
       x: 300,
       y: 300,
     });
+    expect(onTable).not.toHaveProperty('faceUp');
     const onCard: DropRect = { kind: 'card', card: 'x', z: 1, rect: rect(0, 0, 1, 1) };
-    expect(dropAction(deck, onCard, { x: 40, y: 60 }, DEAL_TO)).toEqual({
+    const overCard = dropAction(deck, onCard, { x: 40, y: 60 }, DEAL_TO);
+    expect(overCard).toEqual({
       kind: 'play',
       pile: 'deck:p0',
       x: 40,
       y: 60,
     });
+    expect(overCard).not.toHaveProperty('faceUp');
   });
 });
 

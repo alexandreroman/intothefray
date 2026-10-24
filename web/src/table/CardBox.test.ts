@@ -713,6 +713,8 @@ describe('CardBox', () => {
         // The first free slot of Alex's row from 760, past the deck at 600 (keys.ts).
         x: 980,
         y: 0,
+        // Played explicitly, the deck's card lands face up.
+        faceUp: true,
       },
       0,
     );

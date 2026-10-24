@@ -1,6 +1,6 @@
 ---
 name: "Face-down cards"
-description: "Flip toggles a single-faced table card face up and down; a card played from a hidden deck lands face down"
+description: "Flip toggles a single-faced table card face up and down; Play from a hidden deck lands face up, a drag face down"
 type: project
 ---
 
@@ -16,12 +16,15 @@ type: project
 - Any player may flip any card in play (the server checks no owner for a
   table card); spectators get no card actions. Exhaust stays the default
   action, face down or not.
-- A card played out of a player's deck, or out of a side deck that does
-  not show its top card (Weather, Labor, Gift), lands face down, tucked
-  under a card or not; the player flips it by hand. A card revealed on
-  such a deck lands face up (see [[project_deck_reveal]]). Out of a hand, a
-  discard pile or a face-up side deck (Invocation, Sense), it lands face
-  up. Setup placement is face up.
+- Out of a player's deck, or out of a side deck that does not show its
+  top card (Weather, Labor, Gift), the Play command (a box tile's Play, in
+  a Search or Top X box) puts a card in play face up, its history line
+  naming it, tucked under a card or not. A drag and drop from such a deck,
+  to the table or onto a card, lands the card face down; the player may
+  flip it by hand. A card revealed on such a deck lands face up (see
+  [[project_deck_reveal]]). Out of a hand, a discard pile or a face-up
+  side deck (Invocation, Sense), it lands face up. Setup placement is face
+  up.
 - Face down, a card's code leaves every view, its owner's included, and
   every history line that named it loses its card id (`logViews`).
 - A card leaving the table loses its face-down state wherever it goes:
@@ -30,11 +33,15 @@ type: project
   up", "played a card face down from their deck" (with a target: "…
   under Rhino"); flipping back within one burst removes the line.
 
-**Why:** user decision of 2026-10-22.
+**Why:** user decision: a hidden deck keeps its cards secret until a
+player chooses to show one. Play is explicit, the card played becomes
+visible; a drag and drop leaves the card as it was, face down.
 
 **How to apply:** the rules live in `turnsFaceDown` (action.go) and
 `landsFaceDown` (apply.go) in internal/game, and in `canFlip`
-(web/src/table/actions.ts); keep the server and the web in step.
+(web/src/table/actions.ts); keep the server and the web in step. The
+Play command sends `faceUp` on its play action (`playAction` in
+web/src/table/boxes.ts), which `applyPlay` honours; drags send none.
 `faceDownPlayEvent` (narrate.go) words a face-down play without naming
 the card, and `logViews` (view.go) drops the card ids of face-down cards
 from the history. See also [[project_action_bars]].

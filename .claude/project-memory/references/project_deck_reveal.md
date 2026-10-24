@@ -20,8 +20,8 @@ type: project
   deck), playing the top, putting a card on top, every count limit and
   the menu header's count.
 - Played as the deck's top (a deck-top play, or Play from a Search box),
-  the revealed card lands face up and its history line names it; every
-  other card played from a hidden deck lands face down.
+  the revealed card lands face up and its history line names it (see
+  [[project_face_down_cards]] for the other cards of a hidden deck).
 - A Top X reorder of a deck with a revealed card takes that card back
   into the deck, face down, wherever the reorder puts it. Such a reorder
   is a tracked, undoable action with a line ("put X back into their
