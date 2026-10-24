@@ -30,7 +30,7 @@
     PresenceState,
     View,
   } from '../lib/types';
-  import { markerPoint } from '../lib/types';
+  import { MARKERS, markerPoint } from '../lib/types';
   import CardView from './CardView.svelte';
   import { contains } from './drag';
   import MarkerToken from './MarkerToken.svelte';
@@ -297,7 +297,8 @@
    */
   function hasMoved(dragging: Dragging): boolean {
     if (dragging.drag.token) {
-      const now = view.table && markerPoint(view.table, markerOf(dragging.drag));
+      const marker = markerOf(dragging.drag);
+      const now = view.table && marker && markerPoint(view.table, marker);
       return now?.x !== dragging.token?.x || now?.y !== dragging.token?.y;
     }
     if (takesFromOutside(dragging)) {
@@ -341,12 +342,13 @@
       if (drag) {
         if (!dragging) {
           landings.delete(color);
+          const marker = markerOf(drag);
           draggings.set(color, {
             key: nextDrag++,
             drag,
             from: spotsOf(drag),
             onTable: tableCardIds(),
-            token: view.table && drag.token ? markerPoint(view.table, markerOf(drag)) : undefined,
+            token: view.table && marker ? markerPoint(view.table, marker) : undefined,
           });
         } else {
           dragging.drag = drag;
@@ -473,20 +475,21 @@
     return { x: (corner.x - origin.left) / zoom, y: (corner.y - origin.top) / zoom };
   }
 
-  /** The marker a drag carries: the active counter by name, else the first player token. */
-  function markerOf(drag: PresenceDrag): MarkerName {
-    return drag.token === 'active' ? 'active' : 'firstPlayer';
+  /** The marker a drag carries, by its name; none for a name that is not a marker. */
+  function markerOf(drag: PresenceDrag): MarkerName | undefined {
+    return MARKERS.find((name) => name === drag.token);
   }
 
   /** Draws a drag, under way or landing: a marker, or the cards. */
   function drawDrag(next: Drawn, { key, drag }: Dragging, origin: DOMRect): void {
+    const marker = markerOf(drag);
     if (!drag.token) {
       next.ghosts.push({ key, cards: ghostsOf(drag, origin) });
       return;
     }
-    const corner = cornerOf(drag, origin);
-    if (corner) {
-      next.tokens.push({ ...corner, key, name: markerOf(drag) });
+    const corner = marker && cornerOf(drag, origin);
+    if (marker && corner) {
+      next.tokens.push({ ...corner, key, name: marker });
     }
   }
 

@@ -365,7 +365,7 @@ export interface PresenceDrag {
   /** Empty for a marker, which carries no card. */
   cards: string[];
   /** The marker dragged (its MarkerName). */
-  token?: string;
+  token?: MarkerName;
   x: number;
   y: number;
 }

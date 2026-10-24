@@ -671,8 +671,8 @@ export function homeDeckOf(card: CardView): string {
 
 /**
  * The discard pile a card goes to, as discardPileID has it: a side or scenario deck's card
- * to that deck's discard pile, or nowhere (null) when the deck has none; a card of an encounter
- * scenario deck falls back to the encounter discard pile.
+ * to that deck's discard pile, or nowhere (null) when the deck has none; an encounter card
+ * without a home to the encounter discard pile, when the table has one.
  */
 export function discardPileOf(card: CardView, piles: readonly PileView[]): string | null {
   const home = homeDeckOf(card);
@@ -685,9 +685,10 @@ export function discardPileOf(card: CardView, piles: readonly PileView[]): strin
     if (piles.some((pile) => pile.id === discard)) {
       return discard;
     }
-    return home.startsWith(SCENARIO_ENCOUNTER_PREFIX) ? 'encd' : null;
+    return null;
   }
-  return card.owner === -1 ? 'encd' : `disc:p${card.owner}`;
+  const discard = card.owner === -1 ? 'encd' : `disc:p${card.owner}`;
+  return card.owner === -1 && !piles.some((pile) => pile.id === discard) ? null : discard;
 }
 
 /**
@@ -798,8 +799,8 @@ function pileActions(pile: PileView, context: Context): ActionItem[] | { text: s
         lookTopItem(pile, pileName, context.table),
         searchItem(pile),
       ];
-      // The encounter deck always has its discard pile; another scenario deck may have none.
-      if (pile.id === 'enc' || hasPile(context.table, deckDiscardOf(pile.id))) {
+      // A scenario deck may have no discard pile.
+      if (hasPile(context.table, deckDiscardOf(pile.id))) {
         items.push(discardOneItem(pile), discardTopItem(pile, pileName, context.table));
       }
       items.push(shuffleItem(pile));

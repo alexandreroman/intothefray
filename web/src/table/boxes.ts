@@ -139,11 +139,17 @@ function ownerOf(pile: PileView, view: View): string {
 /**
  * Whether the viewer may shuffle a set-aside pile into the encounter deck from
  * its box: the scenario's own, or that of one of their own seats (`seats`),
- * once it holds cards.
+ * once it holds cards and the table (`piles`) has an encounter deck.
  */
-export function canShuffleIn(pile: PileView, seats: readonly number[]): boolean {
+export function canShuffleIn(
+  pile: PileView,
+  seats: readonly number[],
+  piles: readonly PileView[],
+): boolean {
   const allowed = pile.owner === -1 || seats.includes(pile.owner);
-  return pile.kind === 'aside' && allowed && pile.count > 0;
+  return (
+    pile.kind === 'aside' && allowed && pile.count > 0 && piles.some((other) => other.id === 'enc')
+  );
 }
 
 /** Whether the pile is a deck the boxes search with a choice to shuffle on closing. */

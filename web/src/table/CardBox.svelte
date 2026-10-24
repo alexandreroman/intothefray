@@ -566,7 +566,11 @@
 
   // A set-aside pile is reached from its box only: it is not drawn on the table.
   const shuffleInPile = $derived(
-    !readOnly && box.kind === 'pile' && canShuffleIn(box.pile, ownSeats(view)) ? box.pile : null,
+    !readOnly &&
+      box.kind === 'pile' &&
+      canShuffleIn(box.pile, ownSeats(view), view.table?.piles ?? [])
+      ? box.pile
+      : null,
   );
 
   function shuffleIn(pile: PileView): void {

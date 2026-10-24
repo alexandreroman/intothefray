@@ -365,7 +365,7 @@ describe('Table animations', () => {
     await settle();
     const ghost = () => document.querySelector<HTMLElement>('.presence .marker.ghost');
     const placedToken = () => document.querySelector<HTMLElement>('.surface .marker')!;
-    const dragTo = (x: number) => ({ cards: [], token: 'firstPlayer', x, y: 40 });
+    const dragTo = (x: number) => ({ cards: [], token: 'firstPlayer' as const, x, y: 40 });
 
     session.presence.set(0, { color: 0, name: 'Alex', at: Date.now(), drag: dragTo(400) });
     await waitFor(() => expect(ghost()?.style.left).toBe('400px'));

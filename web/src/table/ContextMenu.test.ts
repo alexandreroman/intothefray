@@ -70,6 +70,7 @@ function makeView(extra: { cards?: TableCard[]; piles?: PileView[] } = {}): View
     pile('deck:p0', { owner: 0, x: 600, count: 34 }),
     pile('deck:p1', { owner: 1, x: 600, y: 300 }),
     pile('enc', { kind: 'encounter', x: 900, count: 29 }),
+    pile('encd', { kind: 'encounterDiscard', x: 900, y: 200, count: 0, cards: [] }),
   ];
   return {
     id: 'g1',
