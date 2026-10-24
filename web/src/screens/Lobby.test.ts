@@ -52,6 +52,15 @@ const index: Index = {
       recommended: [],
     },
     {
+      id: 'self_contained',
+      name: 'Self Contained',
+      pack: 'core',
+      image: '',
+      supported: true,
+      recommended: ['bomb_scare'],
+      selfContained: true,
+    },
+    {
       id: 'marauders',
       name: 'Marauders',
       pack: 'next_evol',
@@ -481,6 +490,17 @@ describe('Lobby', () => {
     renderLobby({ players: [{ ...alex, decks: [spiderMan] }], config: wreckingCrew });
 
     await screen.findByRole('button', { name: /Wrecking Crew/ });
+    expect(screen.getByText('Everyone is ready.')).toBeTruthy();
+    const start = screen.getByRole('button', { name: 'Set up the table' });
+    expect((start as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  it('start not blocked by a missing modular set', async () => {
+    const config: LobbyConfig = { ...noScenario, scenario: 'self_contained' };
+    renderLobby({ players: [{ ...alex, decks: [spiderMan] }], config });
+
+    await screen.findByRole('button', { name: /Self Contained/ });
+    expect(screen.queryByText('Choose at least one modular set.')).toBeNull();
     expect(screen.getByText('Everyone is ready.')).toBeTruthy();
     const start = screen.getByRole('button', { name: 'Set up the table' });
     expect((start as HTMLButtonElement).disabled).toBe(false);

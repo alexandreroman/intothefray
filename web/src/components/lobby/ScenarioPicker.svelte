@@ -48,8 +48,12 @@
   const standardSets = $derived(index.sets.filter((s) => s.kind === 'standard'));
   const expertSets = $derived(index.sets.filter((s) => s.kind === 'expert'));
   // "None" is always a choice, so even a single set gets a dropdown.
-  const showStandardSet = $derived(isHost && standardSets.length > 0);
-  const showExpertSet = $derived(isHost && difficulty === 'expert' && expertSets.length > 0);
+  // A self-contained scenario uses only its own cards: no modular, Standard or Expert set.
+  const selfContained = $derived(chosen?.selfContained === true);
+  const showStandardSet = $derived(isHost && !selfContained && standardSets.length > 0);
+  const showExpertSet = $derived(
+    isHost && !selfContained && difficulty === 'expert' && expertSets.length > 0,
+  );
   const recommended = $derived(chosen?.recommended ?? []);
   // Guests see the chosen level only, read only.
   const levels = $derived(isHost ? LEVELS : LEVELS.filter((level) => level.value === difficulty));
@@ -155,7 +159,17 @@
     if (!scenario.supported) {
       return;
     }
-    configure({ scenario: scenario.id, modulars: [...scenario.recommended] });
+    if (scenario.selfContained) {
+      configure({ scenario: scenario.id, standard: '', expert: '', modulars: [] });
+      return;
+    }
+    // Leaving a self-contained scenario brings the default sets back.
+    configure({
+      scenario: scenario.id,
+      standard: chosen?.selfContained ? DEFAULT_STANDARD : standardSet,
+      expert: difficulty === 'expert' ? (chosen?.selfContained ? DEFAULT_EXPERT : expertSet) : '',
+      modulars: [...scenario.recommended],
+    });
   }
 
   function chooseDifficulty(next: Difficulty): void {
@@ -314,55 +328,62 @@
         {/if}
       </div>
 
-      <div class="modulars">
-        <div class="lbl">Modular sets</div>
-        <div class="chips">
-          {#each config.modulars as code (code)}
-            <span class="chip" class:guest-chip={!isHost}>
-              {setName(code)}
-              {#if recommended.includes(code)}
-                <span class="rec" title="Recommended for this scenario">★</span>
-              {/if}
-              {#if isHost}
-                <button
-                  class="btn-ghost x"
-                  aria-label="Remove {setName(code)}"
-                  onclick={() => removeModular(code)}
-                >
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg
+      {#if selfContained}
+        <p class="own-cards">This scenario uses only its own cards.</p>
+      {:else}
+        <div class="modulars">
+          <div class="lbl">Modular sets</div>
+          <div class="chips">
+            {#each config.modulars as code (code)}
+              <span class="chip" class:guest-chip={!isHost}>
+                {setName(code)}
+                {#if recommended.includes(code)}
+                  <span class="rec" title="Recommended for this scenario">★</span>
+                {/if}
+                {#if isHost}
+                  <button
+                    class="btn-ghost x"
+                    aria-label="Remove {setName(code)}"
+                    onclick={() => removeModular(code)}
                   >
-                </button>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"
+                      ><path d="M6 6l12 12M18 6 6 18" /></svg
+                    >
+                  </button>
+                {/if}
+              </span>
+            {:else}
+              {#if !isHost}
+                <span class="aside">None</span>
               {/if}
-            </span>
-          {:else}
-            {#if !isHost}
-              <span class="aside">None</span>
+            {/each}
+            {#if isHost}
+              <span class="add-wrap">
+                <button class="add" aria-expanded={menuOpen} onclick={toggleMenu}
+                  >+ Add a set</button
+                >
+                {#if menuOpen}
+                  <div class="menu">
+                    {#each addableModulars as set (set.code)}
+                      <button class="btn-ghost" onclick={() => addModular(set.code)}>
+                        {localizedName(set, lang)}
+                        {#if recommended.includes(set.code)}
+                          <span class="rec">★ recommended</span>
+                        {/if}
+                      </button>
+                    {/each}
+                  </div>
+                {/if}
+              </span>
             {/if}
-          {/each}
+          </div>
           {#if isHost}
-            <span class="add-wrap">
-              <button class="add" aria-expanded={menuOpen} onclick={toggleMenu}>+ Add a set</button>
-              {#if menuOpen}
-                <div class="menu">
-                  {#each addableModulars as set (set.code)}
-                    <button class="btn-ghost" onclick={() => addModular(set.code)}>
-                      {localizedName(set, lang)}
-                      {#if recommended.includes(set.code)}
-                        <span class="rec">★ recommended</span>
-                      {/if}
-                    </button>
-                  {/each}
-                </div>
-              {/if}
-            </span>
+            <p class="hint">
+              The scenario's recommended sets (★) are added for you; change them freely.
+            </p>
           {/if}
         </div>
-        {#if isHost}
-          <p class="hint">
-            The scenario's recommended sets (★) are added for you; change them freely.
-          </p>
-        {/if}
-      </div>
+      {/if}
     </div>
   {/if}
 </section>
@@ -571,6 +592,13 @@
     width: auto;
     padding: 4px 8px;
     font-size: 13px;
+  }
+
+  .own-cards {
+    flex: 1;
+    min-width: 240px;
+    align-self: center;
+    color: var(--muted);
   }
 
   .modulars {

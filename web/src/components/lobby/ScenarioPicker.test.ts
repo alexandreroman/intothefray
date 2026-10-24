@@ -36,6 +36,15 @@ const index: Index = {
       supported: true,
       recommended: [],
     },
+    {
+      id: 'wrecking_crew',
+      name: 'Wrecking Crew',
+      pack: 'core',
+      image: '',
+      supported: true,
+      recommended: [],
+      selfContained: true,
+    },
   ],
   sets: [
     { code: 'standard', name: 'Standard', pack: 'core', kind: 'standard' },
@@ -302,5 +311,34 @@ describe('ScenarioPicker settings', () => {
 
     expect(screen.getByText('Modular sets')).toBeTruthy();
     expect(scrollIntoView).not.toHaveBeenCalled();
+  });
+});
+
+describe('ScenarioPicker self-contained scenario', () => {
+  const crew: LobbyConfig = { ...rhino, scenario: 'wrecking_crew', modulars: [] };
+
+  it('self-contained scenario hides set pickers and shows "This scenario uses only its own cards."', () => {
+    renderPicker({ ...crew, difficulty: 'expert', expert: 'expert' });
+
+    expect(screen.getByText('This scenario uses only its own cards.')).toBeTruthy();
+    expect(screen.queryByRole('combobox', { name: 'Standard set' })).toBeNull();
+    expect(screen.queryByRole('combobox', { name: 'Expert set' })).toBeNull();
+    expect(screen.queryByText('Modular sets')).toBeNull();
+    expect(screen.queryByText('+ Add a set')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Expert' })).toBeTruthy();
+  });
+
+  it('configures a self-contained scenario with no modular, standard or expert set', async () => {
+    const { onconfigure } = renderPicker({ ...rhino, difficulty: 'expert', expert: 'expert' });
+
+    await fireEvent.click(screen.getByRole('button', { name: /Wrecking Crew/ }));
+
+    expect(onconfigure).toHaveBeenCalledWith({
+      scenario: 'wrecking_crew',
+      difficulty: 'expert',
+      standard: '',
+      expert: '',
+      modulars: [],
+    });
   });
 });
