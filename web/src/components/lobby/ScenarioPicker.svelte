@@ -285,15 +285,20 @@
       }}
       onintroend={revealChosen}
     >
-      <div class="difficulty">
+      <div class="difficulty" class:self-contained={selfContained}>
         <div class="lbl">Difficulty</div>
-        <Segmented
-          options={levels}
-          value={difficulty}
-          onchange={chooseDifficulty}
-          label="Difficulty"
-          disabled={!isHost}
-        />
+        <div class="switch-row">
+          <Segmented
+            options={levels}
+            value={difficulty}
+            onchange={chooseDifficulty}
+            label="Difficulty"
+            disabled={!isHost}
+          />
+          {#if selfContained}
+            <p class="own-cards">This scenario uses only its own cards.</p>
+          {/if}
+        </div>
         {#if showStandardSet || showExpertSet}
           <div class="sets">
             {#if showStandardSet}
@@ -328,9 +333,7 @@
         {/if}
       </div>
 
-      {#if selfContained}
-        <p class="own-cards">This scenario uses only its own cards.</p>
-      {:else}
+      {#if !selfContained}
         <div class="modulars">
           <div class="lbl">Modular sets</div>
           <div class="chips">
@@ -571,6 +574,23 @@
     align-items: flex-start;
   }
 
+  /* The own-cards note shares the switch's row so it centres on the switch, and drops below it
+     when the row is too narrow; the column then fills the settings row to make room for it. */
+  .difficulty.self-contained {
+    flex: 1;
+  }
+
+  .switch-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 40px;
+  }
+
+  .self-contained .switch-row {
+    align-self: stretch;
+  }
+
   /* One grid for both set rows so their selects share a left edge whatever the label widths;
      each label flattens into the grid but still wraps its select for accessibility. */
   .sets {
@@ -597,7 +617,7 @@
   .own-cards {
     flex: 1;
     min-width: 240px;
-    align-self: center;
+    margin: 0;
     color: var(--muted);
   }
 
