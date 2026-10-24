@@ -568,7 +568,7 @@ function groupOf(units: readonly CardView[], actionOf: (unit: CardView) => Actio
 }
 
 /** How Move to names a deck: "deck", or a side deck's "Sense deck". */
-function deckName(home: PileView): string {
+export function deckName(home: PileView): string {
   if (home.kind === 'sideDeck') {
     return `${sideLabel(home)} deck`;
   }

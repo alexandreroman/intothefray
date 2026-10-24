@@ -13,10 +13,10 @@ import {
 } from '../lib/types';
 import {
   deckDiscardOf,
+  deckName,
   discardPileOf,
   homeDeckOf,
   isSideDeckId,
-  sideLabel,
   staysOnTable,
 } from './actions';
 import type { Pressable } from './interaction.svelte';
@@ -481,7 +481,7 @@ export function pileTargets(drag: DragSource, view: View): PileTarget[] {
   // A deck is private to its owner: the viewer's own cards and encounter cards only.
   const home = table.piles.find((p) => p.id === homeDeckOf(card));
   if (home && (seats.includes(card.owner) || card.owner === -1)) {
-    const deck = home.kind === 'sideDeck' ? `${sideLabel(home)} deck` : 'deck';
+    const deck = deckName(home);
     targets.push({ pile: home.id, drop: 'top', label: `Top of ${deck}` });
   }
   // The out-of-play piles are not drawn: Move to ▾ sends a card there.

@@ -257,3 +257,22 @@ describe('scenario pile names', () => {
     expect(narratedName(disc, undefined, view)).toBe('the Experimental Weapons discard pile');
   });
 });
+
+describe('drop targets of a scenario card', () => {
+  it('names the scenario deck it returns to', () => {
+    const view = makeView();
+    const table = view.table && {
+      ...view.table,
+      cards: [card('d1', { home: 'enc:wrecker', zone: 'table' })],
+    };
+    const source = sourceOf({ kind: 'card', id: 'd1' }, { ...view, table });
+    if (!source) {
+      throw new Error('no source');
+    }
+    expect(pileTargets(source, { ...view, table })[0]).toEqual({
+      pile: 'enc:wrecker',
+      drop: 'top',
+      label: 'Top of Wrecker deck',
+    });
+  });
+});

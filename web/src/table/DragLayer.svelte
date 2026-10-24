@@ -1,7 +1,7 @@
 <!--
   Drag and drop (spec 5.4). A press on a table card, a pile, a hand card or
-  a marker (first player token, active counter) becomes a drag after 4 px (a finger pushing a hand
-  card down swipes the hand away instead): what is dragged is drawn here,
+  a marker (first player token, active counter) becomes a drag after 4 px (a
+  finger pushing a hand card down swipes the hand away instead): what is dragged is drawn here,
   over the whole page at the table's zoom, outside the table's surface, so
   that new views redrawing the table leave it alone. The drop targets are
   measured on the screen and drag.ts decides what the drop sends. Once
