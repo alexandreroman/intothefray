@@ -989,12 +989,12 @@ describe('GameSession', () => {
       session.sendPresence({ drag: drag(10, 10) });
 
       session.sendPresence({ drag: drag(20, 20, ['c2']) });
-      session.sendPresence({ drag: { cards: [], token: true, x: 30, y: 30 } });
+      session.sendPresence({ drag: { cards: [], token: 'firstPlayer', x: 30, y: 30 } });
 
       expect(presenceSent()).toEqual([
         { drag: drag(10, 10) },
         { drag: drag(20, 20, ['c2']) },
-        { drag: { cards: [], token: true, x: 30, y: 30 } },
+        { drag: { cards: [], token: 'firstPlayer', x: 30, y: 30 } },
       ]);
     });
 

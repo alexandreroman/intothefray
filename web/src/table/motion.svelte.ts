@@ -9,7 +9,15 @@
 
 import { tick } from 'svelte';
 import { SvelteSet } from 'svelte/reactivity';
-import type { Back, CardView, PileView, TableView } from '../lib/types';
+import {
+  MARKERS,
+  markerPoint,
+  type Back,
+  type CardView,
+  type MarkerName,
+  type PileView,
+  type TableView,
+} from '../lib/types';
 import type { Anim, Turn } from './animate';
 import { unknownTopId } from './drag';
 import { pileBack, pileCaption } from './face';
@@ -158,18 +166,19 @@ const tablePile = (id: string) => `.surface .pile[data-id="${CSS.escape(id)}"]`;
  * owner's frame (Surface.svelte). A pile is never both.
  */
 const pilePlace = (id: string) => `${tablePile(id)}, .surface .chip[data-pile="${CSS.escape(id)}"]`;
-const tableToken = '.surface .fptoken';
-/** The first player token another player drags, or has just let go of (Presence.svelte). */
-const remoteToken = '.presence .fptoken.ghost';
+const tableMarker = (name: MarkerName) => `.surface .marker[data-marker="${name}"]`;
+/** The marker another player drags, or has just let go of (Presence.svelte). */
+const remoteMarker = (name: MarkerName) => `.presence .marker.ghost[data-marker="${name}"]`;
 
 /**
- * What an animation plays on, "card:<id>", "pile:<id>" or the first player
- * token: a new view stops only what it touches.
+ * What an animation plays on, "card:<id>", "pile:<id>" or
+ * "marker:<name>": a new view stops only what it touches.
  */
-type Subject = `card:${string}` | `pile:${string}` | 'firstPlayer';
+type Subject = `card:${string}` | `pile:${string}` | `marker:${MarkerName}`;
 
 const cardSubject = (id: string): Subject => `card:${id}`;
 const pileSubject = (id: string): Subject => `pile:${id}`;
+const markerSubject = (name: MarkerName): Subject => `marker:${name}`;
 
 /**
  * A card drawn into a hand the viewer does not see, or put on a pile out of
@@ -184,20 +193,22 @@ function subjectOf(anim: Anim): Subject | null {
     case 'drawAway':
     case 'arrive':
       return null;
-    case 'firstPlayer':
-      return 'firstPlayer';
+    case 'marker':
+      return markerSubject(anim.name);
     default:
       return cardSubject(anim.id);
   }
 }
 
-/** The subjects of a table: its cards drawn on the table or in the hand, its piles and the token. */
+/** The subjects of a table: its cards drawn on the table or in the hand, its piles and the markers present. */
 function subjectsOf(table: TableView | undefined): Set<Subject> {
   // A lookup for one call: nothing reacts to it.
   // eslint-disable-next-line svelte/prefer-svelte-reactivity
   const subjects = new Set<Subject>();
-  if (table) {
-    subjects.add('firstPlayer');
+  for (const name of MARKERS) {
+    if (table && markerPoint(table, name)) {
+      subjects.add(markerSubject(name));
+    }
   }
   for (const card of table?.cards ?? []) {
     if (card.zone === 'table' || card.zone === 'hand') {
@@ -597,13 +608,19 @@ class TableMotion {
         pilesBefore.set(pile, measure(element, zoom));
       }
     }
-    const tokenMoves = shown.some((anim) => anim.kind === 'firstPlayer');
     // Another player's drop goes from where their ghost lies, as for a card.
-    const tokenElement = tokenMoves
-      ? (root?.querySelector<HTMLElement>(remoteToken) ??
-        root?.querySelector<HTMLElement>(tableToken))
-      : null;
-    const tokenBefore = tokenElement ? measure(tokenElement, zoom) : undefined;
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    const markersBefore = new Map<MarkerName, Measured>();
+    for (const anim of shown) {
+      if (anim.kind === 'marker') {
+        const element =
+          root?.querySelector<HTMLElement>(remoteMarker(anim.name)) ??
+          root?.querySelector<HTMLElement>(tableMarker(anim.name));
+        if (element) {
+          markersBefore.set(anim.name, measure(element, zoom));
+        }
+      }
+    }
     this.#stopFor(shown, tables.after);
     const generation = ++this.#generation;
     if (!root || shown.length === 0) {
@@ -670,8 +687,8 @@ class TableMotion {
         case 'enter':
           this.#move(root, anim.id, before.get(anim.id), zoom);
           break;
-        case 'firstPlayer':
-          this.#moveToken(root, tokenBefore, zoom);
+        case 'marker':
+          this.#moveMarker(root, anim.name, markersBefore.get(anim.name), zoom);
           break;
         case 'turnIn':
           this.#turnIn(root, anim.id);
@@ -977,11 +994,11 @@ class TableMotion {
     }
   }
 
-  /** Slides the first player token from where it lay; no arrow follows it. */
-  #moveToken(root: HTMLElement, from: Measured | undefined, zoom: number): void {
-    const element = root.querySelector<HTMLElement>(tableToken);
+  /** Slides a marker from where it lay; no arrow follows it. */
+  #moveMarker(root: HTMLElement, name: MarkerName, from: Measured | undefined, zoom: number): void {
+    const element = root.querySelector<HTMLElement>(tableMarker(name));
     if (element && from) {
-      this.#slide(element, from, zoom, 'firstPlayer', false);
+      this.#slide(element, from, zoom, markerSubject(name), false);
     }
   }
 

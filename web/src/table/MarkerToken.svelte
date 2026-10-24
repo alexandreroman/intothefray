@@ -1,14 +1,17 @@
 <!--
-  The first player token (spec 5.8): its art (FirstPlayerArt.svelte) placed
-  in table units. It lies on the table, or in the drag layer while it is
+  A marker of the table (spec 5.8): the first player token (FirstPlayerArt.svelte)
+  or the active counter (ActiveCounterArt.svelte), placed in table units. It lies on the table, or in the drag layer while it is
   dragged or waits for the server after a drop, or in the presence layer
   while another player drags it.
 -->
 <script lang="ts">
+  import type { MarkerName } from '../lib/types';
+  import ActiveCounterArt from './ActiveCounterArt.svelte';
   import FirstPlayerArt from './FirstPlayerArt.svelte';
-  import { FIRST_PLAYER_BOX } from './layout';
+  import { ACTIVE_COUNTER_BOX, FIRST_PLAYER_BOX } from './layout';
 
   let {
+    name,
     x,
     y,
     ghost = false,
@@ -17,6 +20,7 @@
     onpointerenter,
     onpointerdown,
   }: {
+    name: MarkerName;
     x: number;
     y: number;
     /** The copy that follows a pointer (DragLayer, Presence). */
@@ -28,10 +32,13 @@
     onpointerenter?: (event: PointerEvent) => void;
     onpointerdown?: (event: PointerEvent) => void;
   } = $props();
+
+  const box = $derived(name === 'active' ? ACTIVE_COUNTER_BOX : FIRST_PLAYER_BOX);
 </script>
 
 <div
-  class="fptoken"
+  class="marker"
+  data-marker={name}
   class:ghost
   class:lifted
   class:movable={tip !== undefined}
@@ -41,14 +48,18 @@
   {onpointerdown}
   style:left="{x}px"
   style:top="{y}px"
-  style:width="{FIRST_PLAYER_BOX.w}px"
-  style:height="{FIRST_PLAYER_BOX.h}px"
+  style:width="{box.w}px"
+  style:height="{box.h}px"
 >
-  <FirstPlayerArt />
+  {#if name === 'active'}
+    <ActiveCounterArt />
+  {:else}
+    <FirstPlayerArt />
+  {/if}
 </div>
 
 <style>
-  .fptoken {
+  .marker {
     position: absolute;
     z-index: 500;
     touch-action: none;
@@ -56,20 +67,20 @@
     transition: transform 0.12s;
   }
 
-  .fptoken.movable {
+  .marker.movable {
     cursor: grab;
   }
 
-  .fptoken.movable:hover {
+  .marker.movable:hover {
     transform: scale(1.06);
   }
 
-  .fptoken.lifted {
+  .marker.lifted {
     visibility: hidden;
   }
 
   /* Picked up under the pointer. */
-  .fptoken.ghost {
+  .marker.ghost {
     cursor: grabbing;
     transform: scale(1.12) rotate(-6deg);
   }

@@ -258,6 +258,9 @@ export interface FanSlot {
 /** The first player token, in table units. */
 export const FIRST_PLAYER_BOX = { w: 84, h: 70 } as const;
 
+/** The active counter, in table units. */
+export const ACTIVE_COUNTER_BOX = { w: 70, h: 70 } as const;
+
 /** A card in the hand: about a third larger than a card on the table at 100 % (140 × 196). */
 export const HAND_CARD = { w: 185, h: 259 } as const;
 

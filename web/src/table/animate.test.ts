@@ -38,6 +38,7 @@ function view(
     log?: LogView[];
     current?: string;
     firstPlayer?: Point;
+    active?: Point;
     hands?: Partial<Record<Area, string[]>>;
     /** How many cards Alex and Sam hold. */
     handCounts?: [number, number];
@@ -82,6 +83,7 @@ function view(
         { key: 'villain', label: 'Villain', current: extra.current ?? 'v1', cards: ['v1', 'v2'] },
       ],
       firstPlayer: extra.firstPlayer ?? { x: 0, y: 0 },
+      ...(extra.active && { active: extra.active }),
       ...(extra.hands && { hands: extra.hands }),
       ...(extra.look && { private: extra.look }),
     },
@@ -800,8 +802,19 @@ describe('diffViews', () => {
     const next = view({ firstPlayer: { x: 160, y: 900 } });
 
     expect(diffViews(prev, next)).toEqual([
-      { kind: 'firstPlayer', from: { x: 520, y: 500 }, to: { x: 160, y: 900 } },
+      { kind: 'marker', name: 'firstPlayer', from: { x: 520, y: 500 }, to: { x: 160, y: 900 } },
     ]);
+  });
+
+  it('yields one move per marker that moved, and none for an absent counter', () => {
+    const prev = view({ firstPlayer: { x: 520, y: 500 }, active: { x: 400, y: 100 } });
+    const next = view({ firstPlayer: { x: 160, y: 900 }, active: { x: 450, y: 100 } });
+
+    expect(diffViews(prev, next)).toEqual([
+      { kind: 'marker', name: 'firstPlayer', from: { x: 520, y: 500 }, to: { x: 160, y: 900 } },
+      { kind: 'marker', name: 'active', from: { x: 400, y: 100 }, to: { x: 450, y: 100 } },
+    ]);
+    expect(diffViews(view(), view())).toEqual([]);
   });
 
   it("the viewer's own drop of the first player token is not animated", () => {
@@ -809,7 +822,11 @@ describe('diffViews', () => {
     const next = view({ firstPlayer: { x: 160, y: 900 } });
 
     expect(
-      diffViews(prev, next, { element: { kind: 'firstPlayer' }, card: null, lifted: [] }),
+      diffViews(prev, next, {
+        element: { kind: 'marker', name: 'firstPlayer' },
+        card: null,
+        lifted: [],
+      }),
     ).toEqual([]);
   });
 

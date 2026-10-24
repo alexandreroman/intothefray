@@ -1,5 +1,5 @@
 import { modal } from '../components/modal.svelte';
-import type { CardView } from '../lib/types';
+import type { CardView, MarkerName } from '../lib/types';
 import type { CounterKind, TableElement } from './actions';
 import type { Rect } from './drag';
 import { isFree } from './selection';
@@ -20,11 +20,11 @@ export interface CounterTarget {
 /** A card of the viewer's hand: the only element a tap selects. */
 export type HandCard = Extract<TableElement, { kind: 'hand' }>;
 
-/** What a press can drag: a table element, or the first player token. */
-export type Pressable = TableElement | { kind: 'firstPlayer' };
+/** What a press can drag: a table element, or a marker (the first player token, the active counter). */
+export type Pressable = TableElement | { kind: 'marker'; name: MarkerName };
 
 /**
- * A card, a pile, a hand card or the first player token pressed: it becomes
+ * A card, a pile, a hand card or a marker pressed: it becomes
  * a drag once the pointer moves (drag.ts). Ids only, so the drag outlives new
  * views.
  */
@@ -117,8 +117,8 @@ class TableInteraction {
    * follow those players' pointers (Presence.svelte).
    */
   liftedByOthers = $state.raw<ReadonlySet<string>>(new Set());
-  /** Another player drags the first player token: it is hidden in place meanwhile (Presence.svelte). */
-  tokenLiftedByOthers = $state(false);
+  /** The markers other players drag: hidden in place meanwhile (Presence.svelte). */
+  markersLiftedByOthers = $state.raw<ReadonlySet<MarkerName>>(new Set());
   /**
    * The cards and piles other players preview, with the colour of the player
    * who does: each draws that player's ring itself, so that the ring follows
@@ -346,9 +346,11 @@ class TableInteraction {
     return this.previewedByOthers.get(id);
   }
 
-  /** Whether the first player token is dragged or just dropped, drawn in the drag layer instead. */
-  get tokenMoving(): boolean {
-    return this.#moving().some((moving) => moving.element.kind === 'firstPlayer');
+  /** Whether the marker is dragged or just dropped, drawn in the drag layer instead. */
+  markerMoving(name: MarkerName): boolean {
+    return this.#moving().some(
+      (moving) => moving.element.kind === 'marker' && moving.element.name === name,
+    );
   }
 
   /**
@@ -680,7 +682,7 @@ class TableInteraction {
     this.#menuAtPress = null;
     this.highlighted = new Set();
     this.liftedByOthers = new Set();
-    this.tokenLiftedByOthers = false;
+    this.markersLiftedByOthers = new Set();
     this.previewedByOthers = new Map();
     this.endArrow();
     this.onPill = false;

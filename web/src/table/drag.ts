@@ -2,7 +2,15 @@
 // dropped, and the action a drop sends. Pure helpers; DragLayer.svelte follows
 // the pointer, measures the screen and calls them.
 
-import type { Action, Area, CardView, PileView, View } from '../lib/types';
+import {
+  markerPoint,
+  type Action,
+  type Area,
+  type CardView,
+  type MarkerName,
+  type PileView,
+  type View,
+} from '../lib/types';
 import {
   deckDiscardOf,
   discardPileOf,
@@ -88,8 +96,8 @@ export type DragSource =
    * or face up from a side deck that shows its top card (the server's landsFaceDown).
    */
   | { kind: 'deck'; pile: string }
-  /** The first player token (spec 5.8), from where it lies. */
-  | { kind: 'firstPlayer'; x: number; y: number };
+  /** A marker (the first player token, the active counter), from where it lies. */
+  | { kind: 'marker'; name: MarkerName; x: number; y: number };
 
 // A row of the table starts this far above its owner's deck: the owner's name lies there.
 const ROW_LABEL_ROOM = 30;
@@ -174,8 +182,8 @@ export function dropAction(
   if (target === null) {
     return null;
   }
-  // The token lies anywhere on the table, over cards and piles alike.
-  if (drag.kind === 'firstPlayer') {
+  // A marker lies anywhere on the table, over cards and piles alike.
+  if (drag.kind === 'marker') {
     return target.kind === 'hand' || target.kind === 'toHand'
       ? null
       : place(drag, at, dealTo, rows);
@@ -212,8 +220,8 @@ function toHand(drag: DragSource): Action | null {
   }
 }
 
-/** What can be dropped onto a card or a pile: everything but the token. */
-type CardSource = Exclude<DragSource, { kind: 'firstPlayer' }>;
+/** What can be dropped onto a card or a pile: everything but a marker. */
+type CardSource = Exclude<DragSource, { kind: 'marker' }>;
 
 function onCard(
   drag: CardSource,
@@ -308,11 +316,11 @@ function place(drag: DragSource, at: Point, dealTo: Area, rows: RowMap): Action 
     case 'deck':
       // The server plays the deck's top card, which the client does not know.
       return { kind: 'play', pile: drag.pile, x, y };
-    case 'firstPlayer':
+    case 'marker':
       if (x === drag.x && y === drag.y) {
         return null;
       }
-      return { kind: 'firstPlayer', x, y };
+      return { kind: 'marker', name: drag.name, x, y };
   }
 }
 
@@ -341,7 +349,7 @@ export function dealRecipient(piles: readonly PileView[], y: number, viewer: Are
  * out-of-play pile, or a card that is no longer there. During a drag from a
  * pile, `taken` is the card taken from it: the drag follows that card while
  * it is still in the pile, whatever lands on top of it. Any player can move
- * the first player token.
+ * a marker.
  */
 export function sourceOf(element: Pressable, view: View, taken?: string): DragSource | null {
   const table = view.table;
@@ -350,8 +358,10 @@ export function sourceOf(element: Pressable, view: View, taken?: string): DragSo
     return null;
   }
   switch (element.kind) {
-    case 'firstPlayer':
-      return { kind: 'firstPlayer', ...table.firstPlayer };
+    case 'marker': {
+      const at = markerPoint(table, element.name);
+      return at ? { kind: 'marker', name: element.name, ...at } : null;
+    }
     case 'card': {
       const card = table.cards.find((c) => c.id === element.id);
       if (card?.zone !== 'table') {
@@ -436,7 +446,7 @@ export function pileTargets(drag: DragSource, view: View): PileTarget[] {
   if (!table || seats.length === 0) {
     return [];
   }
-  if (drag.kind === 'firstPlayer') {
+  if (drag.kind === 'marker') {
     return [];
   }
   const exists = (target: PileTarget) => table.piles.some((p) => p.id === target.pile);

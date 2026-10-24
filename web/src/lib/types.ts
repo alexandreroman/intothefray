@@ -238,6 +238,17 @@ export interface PrivateView {
   cards: string[]; // top first
 }
 
+/** A marker lying on the table: the first player token, or the active counter. */
+export type MarkerName = 'firstPlayer' | 'active';
+
+/** Every marker, in draw order. */
+export const MARKERS: readonly MarkerName[] = ['firstPlayer', 'active'];
+
+/** Where a marker lies; undefined for the active counter when the scenario has none. */
+export function markerPoint(table: TableView, name: MarkerName): Point | undefined {
+  return name === 'active' ? table.active : table.firstPlayer;
+}
+
 export interface TableView {
   cards: CardView[];
   piles: PileView[];
@@ -296,7 +307,7 @@ export type ActionKind =
   | 'shuffleIn'
   | 'reorderTop'
   | 'handOrder'
-  | 'firstPlayer'
+  | 'marker' // a table marker moved: `name`, `x`, `y`
   | 'arrowAdd'
   | 'arrowClear'
   | 'look' // open a private view of the top `n` cards of `pile`
@@ -329,7 +340,7 @@ export interface Action {
   /** An explicit Play: the card lands face up, even out of a deck that hides its cards. A drag sends none. */
   faceUp?: boolean;
   n?: number;
-  name?: string; // token, status or modifier name
+  name?: string; // token, status or modifier name, or the marker moved (MarkerName)
   delta?: number;
   face?: number; // chosen stage face
   where?: 'top' | 'bottom' | 'shuffle';
@@ -347,14 +358,14 @@ export interface PresencePoint {
 }
 
 /**
- * A drag in progress: the cards dragged, or the first player token, and where
+ * A drag in progress: the cards dragged, or a marker, and where
  * their corner is, in table units.
  */
 export interface PresenceDrag {
-  /** Empty for the token, which carries no card. */
+  /** Empty for a marker, which carries no card. */
   cards: string[];
-  /** The first player token is dragged. */
-  token?: boolean;
+  /** The marker dragged (its MarkerName). */
+  token?: string;
   x: number;
   y: number;
 }
