@@ -72,6 +72,10 @@ func BuildScenarios(
 
 		if def, found := defsBySet[villain.set.Code]; found {
 			ref.ID = def.ID
+			ref.SelfContained = def.SelfContained
+			if villain.firstCard == nil {
+				ref.Image = imageOf(coveredVillainCard(def, villains))
+			}
 			missing := missingCards(def, cardsByCode)
 			for _, code := range missing {
 				problems = append(problems, report.Unsupported{
@@ -84,14 +88,17 @@ func BuildScenarios(
 			if len(missing) == 0 {
 				ref.Supported = true
 				scenarios[villain.pack] = append(scenarios[villain.pack], pack.Scenario{
-					ID:          def.ID,
-					Name:        villain.set.Name,
-					Pack:        villain.pack,
-					VillainSet:  def.VillainSet,
-					Piles:       def.Piles,
-					Start:       def.Start,
-					SetAside:    def.SetAside,
-					Recommended: ref.Recommended,
+					ID:            def.ID,
+					Name:          villain.set.Name,
+					Pack:          villain.pack,
+					VillainSet:    def.VillainSet,
+					Piles:         def.Piles,
+					Start:         def.Start,
+					SetAside:      def.SetAside,
+					Decks:         def.Decks,
+					SelfContained: def.SelfContained,
+					Active:        def.Active,
+					Recommended:   ref.Recommended,
 				})
 			}
 		}
@@ -110,6 +117,19 @@ func BuildScenarios(
 		}
 	}
 	return scenarios, refs, problems
+}
+
+// coveredVillainCard returns the lowest-code villain or leader card among the sets a
+// definition covers, for a scenario whose own villain set has none.
+func coveredVillainCard(def curated.ScenarioDef, villains []villainSet) *pack.Card {
+	var lowest *pack.Card
+	for _, villain := range villains {
+		card := villain.firstCard
+		if card != nil && slices.Contains(def.Covers, villain.set.Code) && (lowest == nil || card.Code < lowest.Code) {
+			lowest = card
+		}
+	}
+	return lowest
 }
 
 // isDefinedSet reports whether a definition has the set as its own villain set,

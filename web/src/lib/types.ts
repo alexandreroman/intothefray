@@ -56,6 +56,7 @@ export interface ScenarioRef {
   image: string;
   supported: boolean;
   recommended: string[];
+  selfContained?: boolean;
   localized?: Record<string, PackLocalized>; // name only, by language code
 }
 
@@ -96,7 +97,11 @@ export type PileKind =
   /** A hero's extra deck ("side deck"): `side:p<seat>:<i>`, private to its owner like a deck. */
   | 'sideDeck'
   /** The discard pile of a side deck, `sided:p<seat>:<i>`, paired by seat and index; only some have one. */
-  | 'sideDiscard';
+  | 'sideDiscard'
+  /** A deck the scenario owns that is not an encounter deck, `sdeck:<key>`. */
+  | 'scenarioDeck'
+  /** The discard pile of a scenario deck, `sdisc:<key>`. */
+  | 'scenarioDiscard';
 
 /**
  * A seat: "p0".."p3" for the player seated at that index. It says whose hand
@@ -143,6 +148,8 @@ export interface PileView {
   label?: string;
   /** A side deck whose top card everyone sees. */
   topFaceUp?: boolean;
+  /** A scenario deck or discard pile, drawn smaller (100 x 140 instead of 140 x 196). */
+  compact?: boolean;
   /**
    * The back of a side deck whose cards have their own (Labor, Gift, Sense):
    * that back captioned with the deck's label.
@@ -231,12 +238,25 @@ export interface PrivateView {
   cards: string[]; // top first
 }
 
+/** A marker lying on the table: the first player token, or the active counter. */
+export type MarkerName = 'firstPlayer' | 'active';
+
+/** Every marker, in draw order. */
+export const MARKERS: readonly MarkerName[] = ['firstPlayer', 'active'];
+
+/** Where a marker lies; undefined for the active counter when the scenario has none. */
+export function markerPoint(table: TableView, name: MarkerName): Point | undefined {
+  return name === 'active' ? table.active : table.firstPlayer;
+}
+
 export interface TableView {
   cards: CardView[];
   piles: PileView[];
   hands?: Partial<Record<Area, string[]>>; // the hands of the viewer's own seats only
   stages: Stage[];
   firstPlayer: Point;
+  /** The active counter, absent when the scenario has none. */
+  active?: Point;
   arrows?: Arrow[];
   private?: PrivateView;
 }
@@ -287,7 +307,7 @@ export type ActionKind =
   | 'shuffleIn'
   | 'reorderTop'
   | 'handOrder'
-  | 'firstPlayer'
+  | 'marker' // a table marker moved: `name`, `x`, `y`
   | 'arrowAdd'
   | 'arrowClear'
   | 'look' // open a private view of the top `n` cards of `pile`
@@ -320,7 +340,7 @@ export interface Action {
   /** An explicit Play: the card lands face up, even out of a deck that hides its cards. A drag sends none. */
   faceUp?: boolean;
   n?: number;
-  name?: string; // token, status or modifier name
+  name?: string; // token, status or modifier name, or the marker moved (MarkerName)
   delta?: number;
   face?: number; // chosen stage face
   where?: 'top' | 'bottom' | 'shuffle';
@@ -338,14 +358,14 @@ export interface PresencePoint {
 }
 
 /**
- * A drag in progress: the cards dragged, or the first player token, and where
+ * A drag in progress: the cards dragged, or a marker, and where
  * their corner is, in table units.
  */
 export interface PresenceDrag {
-  /** Empty for the token, which carries no card. */
+  /** Empty for a marker, which carries no card. */
   cards: string[];
-  /** The first player token is dragged. */
-  token?: boolean;
+  /** The marker dragged (its MarkerName). */
+  token?: MarkerName;
   x: number;
   y: number;
 }

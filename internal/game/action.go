@@ -39,7 +39,7 @@ const (
 	ActShuffleIn   Kind = "shuffleIn"
 	ActReorderTop  Kind = "reorderTop"
 	ActHandOrder   Kind = "handOrder"
-	ActFirstPlayer Kind = "firstPlayer"
+	ActMarker      Kind = "marker"
 	ActArrowAdd    Kind = "arrowAdd"
 	ActArrowClear  Kind = "arrowClear"
 
@@ -191,7 +191,10 @@ func resolveOnTable(original *Table, who actor, a Action, rng *rand.Rand) (Actio
 		return resolveReveal(t, who, a)
 	case ActDeal:
 		return resolveDeal(t, a)
-	case ActFirstPlayer:
+	case ActMarker:
+		if t.marker(a.Name) == nil {
+			return Action{}, invalid("no marker %q on the table", a.Name)
+		}
 		return a, nil
 	case ActArrowClear:
 		// A player's arrows are credited to any of their seats. Seat alone
@@ -581,19 +584,23 @@ func resolvePlay(t *Table, who actor, a Action) (Action, error) {
 	return a, checkCards(t, who, a.Card, a.Target)
 }
 
-// resolveDeal records the card to deal, the encounter deck's top card, so
+// resolveDeal records the card to deal, the top card of the encounter deck
+// a.Pile names (the classic one by default), so
 // that a rebuild deals that card (see resolveReveal). A card revealed on the
 // deck is its top card: it lies back on top here (see coveredFor).
 func resolveDeal(t *Table, a Action) (Action, error) {
 	if a.Area == "" {
 		return a, invalid("a deal needs a recipient")
 	}
-	enc, err := t.pile(PileEncounter)
+	enc, err := t.pile(cmp.Or(a.Pile, PileEncounter))
 	if err != nil {
 		return a, err
 	}
+	if enc.Kind != KindEncounter {
+		return a, invalid("cards are dealt from an encounter deck, not from %q", enc.ID)
+	}
 	if len(enc.Cards) == 0 {
-		return a, invalid("encounter deck is empty")
+		return a, invalid("pile %q is empty", enc.ID)
 	}
 	a.Cards = topCards(enc, 1)
 	return a, nil
@@ -661,7 +668,8 @@ func resolveShuffle(t *Table, who actor, a Action, rng *rand.Rand) (Action, erro
 	if err != nil {
 		return a, err
 	}
-	if pile.Kind != KindDeck && pile.Kind != KindSideDeck && pile.Kind != KindEncounter {
+	if pile.Kind != KindDeck && pile.Kind != KindSideDeck && pile.Kind != KindEncounter &&
+		pile.Kind != KindScenarioDeck {
 		return a, invalid("pile %q cannot be shuffled", pile.ID)
 	}
 	a.Renames, a.Cards = reidentify(t, pile.Cards, rng)
@@ -693,13 +701,16 @@ func resolveShuffleIn(t *Table, who actor, a Action, rng *rand.Rand) (Action, er
 	if source.Kind != KindAside {
 		return a, invalid("pile %q is not a set-aside pile", source.ID)
 	}
-	enc, err := t.pile(PileEncounter)
+	enc, err := t.pile(cmp.Or(a.Target, PileEncounter))
 	if err != nil {
 		return a, err
 	}
+	if enc.Kind != KindEncounter && enc.Kind != KindScenarioDeck {
+		return a, invalid("pile %q is not an encounter or scenario deck", enc.ID)
+	}
 	merged := slices.Clone(enc.Cards)
 	for _, id := range source.Cards {
-		if t.Cards[id].Home == PileEncounter {
+		if t.Cards[id].Home == enc.ID {
 			merged = append(merged, id)
 		}
 	}

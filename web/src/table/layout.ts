@@ -26,7 +26,14 @@ const SIZES: Record<Size, { w: number; h: number }> = {
 
 /** A portrait card on the table, in table units. */
 export const PORTRAIT_CARD = SIZES.std;
-const PILE_BOX = PORTRAIT_CARD;
+
+/** A compact pile (a scenario deck or its discard pile), in table units. */
+const COMPACT_PILE = { w: 100, h: 140 } as const;
+
+/** The box a pile takes on the table: compact for a scenario deck, else a portrait card. */
+export function pileBox(pile: PileView): { w: number; h: number } {
+  return pile.compact ? COMPACT_PILE : PORTRAIT_CARD;
+}
 
 // Free room past the rightmost and the lowest item of the table, once they reach the edge of what
 // shows, so that a card can always be dropped beyond them. The bottom room also keeps the last
@@ -124,7 +131,7 @@ export function footprints(
     });
   const stacked = piles
     .filter((p) => !isOutOfPlay(p))
-    .map((p) => ({ id: p.id, x: p.x, y: p.y, ...PILE_BOX }));
+    .map((p) => ({ id: p.id, x: p.x, y: p.y, ...pileBox(p) }));
   return [...onTable, ...stacked];
 }
 
@@ -178,6 +185,8 @@ function axisSize(end: number, visible: number, freeRoom: number): number {
 export interface OwnerFrame {
   /** The seat of the player, or -1 for the villain (the encounter deck and its discard pile). */
   owner: number;
+  /** The label of the scenario deck this frame holds with its discard pile; none for any other frame. */
+  label?: string;
   x: number;
   y: number;
   w: number;
@@ -197,7 +206,14 @@ const HOME_KINDS: readonly PileKind[] = [
   'sideDiscard',
   'encounter',
   'encounterDiscard',
+  'scenarioDeck',
+  'scenarioDiscard',
 ];
+
+/** The label a pile frames itself by: a scenario deck and its discard pile have a frame of their own. */
+function frameLabel(pile: PileView): string | undefined {
+  return pile.owner === -1 && pile.label ? pile.label : undefined;
+}
 
 /**
  * A frame around each owner's deck and discard pile, with their side decks
@@ -205,18 +221,22 @@ const HOME_KINDS: readonly PileKind[] = [
  * villain), from where the piles lie, in the order the owners first appear.
  */
 export function ownerFrames(piles: PileView[]): OwnerFrame[] {
-  const byOwner = new Map<number, PileView[]>();
+  const byFrame = new Map<string, PileView[]>();
   for (const pile of piles) {
     if (HOME_KINDS.includes(pile.kind)) {
-      byOwner.set(pile.owner, [...(byOwner.get(pile.owner) ?? []), pile]);
+      const key = `${pile.owner}:${frameLabel(pile) ?? ''}`;
+      byFrame.set(key, [...(byFrame.get(key) ?? []), pile]);
     }
   }
-  return [...byOwner].map(([owner, own]) => {
+  return [...byFrame.values()].map((own) => {
+    const owner = own[0]?.owner ?? -1;
+    const label = own[0] && frameLabel(own[0]);
     const left = Math.min(...own.map((p) => p.x)) - FRAME_PADDING;
     const top = Math.min(...own.map((p) => p.y)) - FRAME_PADDING;
-    const right = Math.max(...own.map((p) => p.x + PILE_BOX.w)) + FRAME_PADDING;
-    const bottom = Math.max(...own.map((p) => p.y + PILE_BOX.h)) + FRAME_PADDING;
-    return { owner, x: left, y: top, w: right - left, h: bottom - top };
+    const right = Math.max(...own.map((p) => p.x + pileBox(p).w)) + FRAME_PADDING;
+    const bottom = Math.max(...own.map((p) => p.y + pileBox(p).h)) + FRAME_PADDING;
+    const frame = { owner, x: left, y: top, w: right - left, h: bottom - top };
+    return label === undefined ? frame : { ...frame, label };
   });
 }
 
@@ -249,6 +269,24 @@ export function outOfPlayChips(owner: number, piles: readonly PileView[]): OutOf
   });
 }
 
+/**
+ * The chips of each frame, aligned with `frames`: the villain's chips go on the first frame owned by
+ * the villain (several frames share owner -1 when the scenario has decks of its own).
+ */
+export function chipsByFrame(
+  frames: readonly OwnerFrame[],
+  piles: readonly PileView[],
+): OutOfPlayChip[][] {
+  const seen = new Set<number>();
+  return frames.map((frame) => {
+    if (seen.has(frame.owner)) {
+      return [];
+    }
+    seen.add(frame.owner);
+    return outOfPlayChips(frame.owner, piles);
+  });
+}
+
 export interface FanSlot {
   x: number;
   y: number;
@@ -257,6 +295,9 @@ export interface FanSlot {
 
 /** The first player token, in table units. */
 export const FIRST_PLAYER_BOX = { w: 84, h: 70 } as const;
+
+/** The active counter, in table units. */
+export const ACTIVE_COUNTER_BOX = { w: 70, h: 70 } as const;
 
 /** A card in the hand: about a third larger than a card on the table at 100 % (140 × 196). */
 export const HAND_CARD = { w: 185, h: 259 } as const;

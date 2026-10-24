@@ -859,8 +859,8 @@ describe('freeSlot', () => {
   // The first player token where the setup puts it, under the deck: below the row.
   const underDeck = { x: 30, y: 580 };
   /** The free slot of seat 0 for the played card, on a table of these cards, piles and token. */
-  const slot = (cards: TableCard[], piles: PileView[], firstPlayer: Point) =>
-    freeSlot(played, { cards, piles, firstPlayer }, 0, sizeOf);
+  const slot = (cards: TableCard[], piles: PileView[], firstPlayer: Point, active?: Point) =>
+    freeSlot(played, { cards, piles, firstPlayer, active }, 0, sizeOf);
   // Alex's row, as the setup lays it out: deck, discard, identity at 360.
   const row = [
     pile('deck:p0', { owner: 0, x: 0, y: 360 }),
@@ -914,6 +914,18 @@ describe('freeSlot', () => {
     // Under the deck, where the setup puts it, or in another row, it is not.
     expect(slot([identity], row, underDeck)).toEqual({ x: 550, y: 360 });
     expect(slot([identity], row, { x: 550, y: 0 })).toEqual({ x: 550, y: 360 });
+  });
+
+  it('freeSlot avoids the active counter', () => {
+    // The 70 wide counter at 840–910 lies where 870, past Doctor Strange at 680–820, would be.
+    const active = { x: 840, y: 360 };
+    expect(slot([strange], [...row, ...sides], underDeck)).toEqual({ x: 870, y: 360 });
+    expect(slot([strange], [...row, ...sides], underDeck, active)).toEqual({ x: 960, y: 360 });
+    // In another row, it is not in the way.
+    expect(slot([strange], [...row, ...sides], underDeck, { x: 840, y: 0 })).toEqual({
+      x: 870,
+      y: 360,
+    });
   });
 
   it('leaves room for two neighbours to be exhausted without overlapping', () => {

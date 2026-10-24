@@ -674,7 +674,7 @@ describe("the top card of the viewer's deck", () => {
 });
 
 describe('the first player token', () => {
-  const token: DragSource = { kind: 'firstPlayer', x: 860, y: 40 };
+  const token: DragSource = { kind: 'marker', name: 'firstPlayer', x: 860, y: 40 };
   const card: DropRect = { kind: 'card', card: 'c', z: 1, rect: rect(0, 0, 1, 1) };
   const discard: DropRect = {
     kind: 'pile',
@@ -685,17 +685,20 @@ describe('the first player token', () => {
   };
 
   it('is taken by a player from where it lies, never by a spectator', () => {
-    expect(sourceOf({ kind: 'firstPlayer' }, makeView())).toEqual({
-      kind: 'firstPlayer',
+    expect(sourceOf({ kind: 'marker', name: 'firstPlayer' }, makeView())).toEqual({
+      kind: 'marker',
+      name: 'firstPlayer',
       x: 0,
       y: 0,
     });
-    expect(sourceOf({ kind: 'firstPlayer' }, makeView({ spectator: true }))).toBeNull();
+    expect(
+      sourceOf({ kind: 'marker', name: 'firstPlayer' }, makeView({ spectator: true })),
+    ).toBeNull();
   });
 
   it('goes where it lands, snapped, even over a card or a pile', () => {
     const at = { x: 164, y: 43 };
-    const moved = { kind: 'firstPlayer', x: 160, y: 40 };
+    const moved = { kind: 'marker', name: 'firstPlayer', x: 160, y: 40 };
 
     expect(dropAction(token, { kind: 'table', rect: rect(0, 0, 1, 1) }, at, DEAL_TO)).toEqual(
       moved,

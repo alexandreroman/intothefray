@@ -7,7 +7,15 @@ import { modal } from '../components/modal.svelte';
 import type { Action, CardView, Size, TableView, View } from '../lib/types';
 import { countersOf, discardPileOf, type ActionItem, type CounterKind } from './actions';
 import { interaction } from './interaction.svelte';
-import { cardBox, FIRST_PLAYER_BOX, footprints, GRID, PORTRAIT_CARD, visualBox } from './layout';
+import {
+  ACTIVE_COUNTER_BOX,
+  cardBox,
+  FIRST_PLAYER_BOX,
+  footprints,
+  GRID,
+  PORTRAIT_CARD,
+  visualBox,
+} from './layout';
 import { ownSeats } from './seats';
 import { ZOOM_STEP } from './zoom';
 
@@ -297,23 +305,26 @@ function handSeatOf(id: string, view: View): number | undefined {
  * deck, the discard pile, any side piles and the identity lie closer together
  * than that, so the card lands after the identity. The row is the height of
  * the player's deck (the top of the table, from x 0, without one). Every
- * table card and pile reaching into the row is in the way, and so is the
- * first player token.
+ * table card and pile reaching into the row is in the way, and so is every
+ * marker.
  */
 export function freeSlot(
   played: CardView,
-  table: Pick<TableView, 'cards' | 'piles' | 'firstPlayer'>,
+  table: Pick<TableView, 'cards' | 'piles' | 'firstPlayer' | 'active'>,
   seat: number,
   sizeOf: (card: CardView) => Size,
 ): { x: number; y: number } {
-  const { cards, piles, firstPlayer } = table;
+  const { cards, piles, firstPlayer, active } = table;
   // Played from the hand or explicitly from a pile, a card lands face up (applyPlay, internal/game/apply.go).
   const width = cardBox(sizeOf(played), { faceDown: false }).w;
   const deck = piles.find((pile) => pile.kind === 'deck' && pile.owner === seat);
   const start = deck?.x ?? 0;
   const y = deck?.y ?? 0;
-  const token = { id: 'firstPlayer', ...firstPlayer, ...FIRST_PLAYER_BOX };
-  const items = [...footprints(cards, piles, sizeOf), token].filter(
+  const markers = [
+    { id: 'firstPlayer', ...firstPlayer, ...FIRST_PLAYER_BOX },
+    ...(active ? [{ id: 'active', ...active, ...ACTIVE_COUNTER_BOX }] : []),
+  ];
+  const items = [...footprints(cards, piles, sizeOf), ...markers].filter(
     (item) => item.y < y + SLOT_ROW_HEIGHT && visualBox(item).bottom > y,
   );
   const isFree = (x: number) =>

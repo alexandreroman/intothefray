@@ -137,6 +137,10 @@ func (g *Game) Configure(hostToken string, cfg LobbyConfig, cat *pack.Catalog) e
 	if err := g.requireLobby(); err != nil {
 		return err
 	}
+	// A self-contained scenario uses no other set: choosing it clears them.
+	if sc, ok := cat.Scenario(cfg.Scenario); ok && sc.SelfContained {
+		cfg.Modulars, cfg.Standard, cfg.Expert = nil, "", ""
+	}
 	if err := validateConfig(cfg, cat); err != nil {
 		return err
 	}
@@ -253,7 +257,8 @@ func (g *Game) End(hostToken string) error {
 }
 
 // DefaultConfig is the usual setup of a scenario: its recommended modular
-// sets, standard version I and no expert set.
+// sets, standard version I and no expert set; none for a self-contained
+// scenario.
 func DefaultConfig(cat *pack.Catalog, scenario string) LobbyConfig {
 	cfg := LobbyConfig{
 		Scenario:   scenario,
@@ -262,7 +267,11 @@ func DefaultConfig(cat *pack.Catalog, scenario string) LobbyConfig {
 		Modulars:   []string{},
 	}
 	if sc, ok := cat.Scenario(scenario); ok {
-		cfg.Modulars = slices.Clone(sc.Recommended)
+		if sc.SelfContained {
+			cfg.Standard = ""
+		} else {
+			cfg.Modulars = slices.Clone(sc.Recommended)
+		}
 	}
 	return cfg
 }

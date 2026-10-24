@@ -21,6 +21,7 @@
   import { PRESENCE_INTERVAL_MS } from '../lib/session.svelte';
   import type {
     CardView as TableCard,
+    MarkerName,
     PackFace,
     Point,
     PresenceDrag,
@@ -29,9 +30,10 @@
     PresenceState,
     View,
   } from '../lib/types';
+  import { MARKERS, markerPoint } from '../lib/types';
   import CardView from './CardView.svelte';
   import { contains } from './drag';
-  import FirstPlayerToken from './FirstPlayerToken.svelte';
+  import MarkerToken from './MarkerToken.svelte';
   import { backCaption, pileBack } from './face';
   import { interaction } from './interaction.svelte';
   import { ALL_ROWS, type RowMap } from './rows';
@@ -117,7 +119,7 @@
     onPile?: string;
   }
 
-  /** Another player's drag under way: its cards, or the first player token, as they lay when it started. */
+  /** Another player's drag under way: its cards, or a marker, as they lay when it started. */
   interface Dragging {
     /**
      * Tells this drag from the player's earlier ones, whose ghosts may carry the same ids (a pile, a
@@ -128,7 +130,7 @@
     from: Map<string, Spot>;
     /** The table cards as it started: a card taken from a pile or a hand is new to it once dropped. */
     onTable: Set<string>;
-    /** Where the first player token lay as it started. */
+    /** Where the dragged marker lay as it started. */
     token: Point | undefined;
   }
 
@@ -143,8 +145,8 @@
     cursors: (Placed & { color: number; name: string })[];
     /** The cards of each drag, in table units of the zoomed ghost layer. */
     ghosts: { key: number; cards: TableCard[] }[];
-    /** The corner of each drag of the first player token, in table units of the zoomed ghost layer. */
-    tokens: (Point & { key: number })[];
+    /** The corner of each drag of a marker, in table units of the zoomed ghost layer. */
+    tokens: (Point & { key: number; name: MarkerName })[];
     pings: (Placed & { key: number; color: number })[];
   }
 
@@ -289,13 +291,14 @@
   }
 
   /**
-   * Whether the view lays some card of the drag, or the first player token,
+   * Whether the view lays some card of the drag, or its marker,
    * elsewhere than it lay as the drag started, or, for a card taken from
    * outside the table, lays a card on the table that was not there then.
    */
   function hasMoved(dragging: Dragging): boolean {
     if (dragging.drag.token) {
-      const now = view.table?.firstPlayer;
+      const marker = markerOf(dragging.drag);
+      const now = view.table && marker && markerPoint(view.table, marker);
       return now?.x !== dragging.token?.x || now?.y !== dragging.token?.y;
     }
     if (takesFromOutside(dragging)) {
@@ -339,12 +342,13 @@
       if (drag) {
         if (!dragging) {
           landings.delete(color);
+          const marker = markerOf(drag);
           draggings.set(color, {
             key: nextDrag++,
             drag,
             from: spotsOf(drag),
             onTable: tableCardIds(),
-            token: view.table?.firstPlayer,
+            token: view.table && marker ? markerPoint(view.table, marker) : undefined,
           });
         } else {
           dragging.drag = drag;
@@ -471,15 +475,21 @@
     return { x: (corner.x - origin.left) / zoom, y: (corner.y - origin.top) / zoom };
   }
 
-  /** Draws a drag, under way or landing: the first player token, or the cards. */
+  /** The marker a drag carries, by its name; none for a name that is not a marker. */
+  function markerOf(drag: PresenceDrag): MarkerName | undefined {
+    return MARKERS.find((name) => name === drag.token);
+  }
+
+  /** Draws a drag, under way or landing: a marker, or the cards. */
   function drawDrag(next: Drawn, { key, drag }: Dragging, origin: DOMRect): void {
+    const marker = markerOf(drag);
     if (!drag.token) {
       next.ghosts.push({ key, cards: ghostsOf(drag, origin) });
       return;
     }
-    const corner = cornerOf(drag, origin);
-    if (corner) {
-      next.tokens.push({ ...corner, key });
+    const corner = marker && cornerOf(drag, origin);
+    if (marker && corner) {
+      next.tokens.push({ ...corner, key, name: marker });
     }
   }
 
@@ -552,7 +562,7 @@
     glide = !tableMoved;
     tableMoved = false;
     interaction.liftByOthers(tableCardsOf(next.ghosts));
-    interaction.tokenLiftedByOthers = next.tokens.length > 0;
+    interaction.markersLiftedByOthers = new Set(next.tokens.map((token) => token.name));
     // Each card or pile draws its ring itself, which follows it as it moves (CardView, PileView).
     interaction.previewByOthers(previews);
 
@@ -635,7 +645,7 @@
     cancelAnimationFrame(frame);
     clearTimeout(wakeTimer);
     interaction.liftByOthers(new Set());
-    interaction.tokenLiftedByOthers = false;
+    interaction.markersLiftedByOthers = new Set();
     interaction.previewByOthers(new Map());
   });
 </script>
@@ -660,7 +670,7 @@
       {/each}
     {/each}
     {#each drawn.tokens as token (token.key)}
-      <FirstPlayerToken x={token.x} y={token.y} ghost />
+      <MarkerToken name={token.name} x={token.x} y={token.y} ghost />
     {/each}
   </div>
   {#each drawn.pings as pinged (pinged.key)}
@@ -720,7 +730,7 @@
     Other players' drags glide between their moves, as the cursors do; the viewer's own ghosts
     (DragLayer) follow the pointer without delay. A ghost that appears shows in its place at once:
     a transition only runs on a change. While the table moves under them, --glide is 0: they move
-    with it. Under .presence: above the ghost rules of CardView and FirstPlayerToken, whatever the
+    with it. Under .presence: above the ghost rules of CardView and MarkerToken, whatever the
     order of the bundled styles.
   */
   .presence .ghosts :global(.card.ghost) {
@@ -730,7 +740,7 @@
       scale 0.12s;
   }
 
-  .presence .ghosts :global(.fptoken.ghost) {
+  .presence .ghosts :global(.marker.ghost) {
     transition:
       transform 0.12s,
       left var(--glide) linear,

@@ -311,7 +311,7 @@ func TestPresenceRelayed(t *testing.T) {
 	}
 }
 
-func TestFirstPlayerTokenDragRelayed(t *testing.T) {
+func TestMarkerDragRelayed(t *testing.T) {
 	mr := miniredis.RunT(t)
 	first := startInstance(t, mr, nil)
 	second := startInstance(t, mr, nil)
@@ -322,11 +322,29 @@ func TestFirstPlayerTokenDragRelayed(t *testing.T) {
 	bob.hello("", "Bob")
 	alex.awaitView(bothSeatedOnline)
 
-	// The token carries no card: the drag tells only where its corner is.
-	alex.send(map[string]any{"type": "presence", "drag": map[string]any{"token": true, "x": 160, "y": 640}})
+	// A marker carries no card: the drag tells only where its corner is.
+	alex.send(map[string]any{"type": "presence", "drag": map[string]any{"token": "firstPlayer", "x": 160, "y": 640}})
 
 	got := bob.expect("presence")
-	if want := `"drag":{"cards":[],"token":true,"x":160,"y":640}`; !strings.Contains(string(got.raw), want) {
+	if want := `"drag":{"cards":[],"token":"firstPlayer","x":160,"y":640}`; !strings.Contains(string(got.raw), want) {
+		t.Errorf("presence = %s, want it to contain %s", got.raw, want)
+	}
+}
+
+func TestActiveMarkerDragRelayed(t *testing.T) {
+	mr := miniredis.RunT(t)
+	ts := startInstance(t, mr, nil)
+	created := createGame(t, ts, "Alex")
+	alex := connect(t, ts, created.ID)
+	alex.hello(created.Token, "Alex")
+	bob := connect(t, ts, created.ID)
+	bob.hello("", "Bob")
+	alex.awaitView(bothSeatedOnline)
+
+	alex.send(map[string]any{"type": "presence", "drag": map[string]any{"token": "active", "x": 160, "y": 640}})
+
+	got := bob.expect("presence")
+	if want := `"drag":{"cards":[],"token":"active","x":160,"y":640}`; !strings.Contains(string(got.raw), want) {
 		t.Errorf("presence = %s, want it to contain %s", got.raw, want)
 	}
 }
@@ -417,8 +435,8 @@ func TestPresenceValidation(t *testing.T) {
 	drag := func(cards []string) map[string]any {
 		return map[string]any{"cards": cards, "x": 1, "y": 2}
 	}
-	tokenDrag := map[string]any{"token": true, "x": 1, "y": 2}
-	tokenDragWithCards := map[string]any{"token": true, "cards": []string{"c1"}, "x": 1, "y": 2}
+	tokenDrag := map[string]any{"token": "active", "x": 1, "y": 2}
+	tokenDragWithCards := map[string]any{"token": "active", "cards": []string{"c1"}, "x": 1, "y": 2}
 
 	tests := []struct {
 		name  string
@@ -431,7 +449,7 @@ func TestPresenceValidation(t *testing.T) {
 		{"cleared preview", map[string]any{"preview": ""}, true},
 		{"drag", map[string]any{"drag": drag([]string{"c1", "c2"})}, true},
 		{"ended drag", map[string]any{"drag": nil}, true},
-		{"first player token drag", map[string]any{"drag": tokenDrag}, true},
+		{"marker drag", map[string]any{"drag": tokenDrag}, true},
 		{"ping", map[string]any{"ping": point}, true},
 		{"nothing", map[string]any{}, false},
 		{"cursor with a text x", map[string]any{"cursor": map[string]any{"x": "1", "y": 2}}, false},
@@ -442,7 +460,9 @@ func TestPresenceValidation(t *testing.T) {
 		{"drag with a long card id", map[string]any{"drag": drag([]string{long})}, false},
 		{"drag with an empty card id", map[string]any{"drag": drag([]string{""})}, false},
 		{"drag as text", map[string]any{"drag": "c1"}, false},
-		{"first player token drag with cards", map[string]any{"drag": tokenDragWithCards}, false},
+		{"marker drag with a long name", map[string]any{"drag": map[string]any{"token": long, "x": 1, "y": 2}}, false},
+		{"marker drag of an unknown marker", map[string]any{"drag": map[string]any{"token": "x", "x": 1, "y": 2}}, false},
+		{"marker drag with cards", map[string]any{"drag": tokenDragWithCards}, false},
 		{"ping with a text y", map[string]any{"ping": map[string]any{"x": 1, "y": "2"}}, false},
 	}
 

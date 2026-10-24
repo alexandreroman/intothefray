@@ -72,6 +72,7 @@ function makeView(
     log?: LogView[];
     stages?: Stage[];
     firstPlayer?: Point;
+    active?: Point;
     hands?: Partial<Record<Area, string[]>>;
     /** How many cards Alex and Sam hold. */
     handCounts?: [number, number];
@@ -107,6 +108,7 @@ function makeView(
       piles: extra.piles ?? PILES,
       stages: extra.stages ?? [],
       firstPlayer: extra.firstPlayer ?? { x: 860, y: 40 },
+      ...(extra.active && { active: extra.active }),
       ...(extra.hands && { hands: extra.hands }),
     },
     log: extra.log ?? [START],
@@ -314,13 +316,30 @@ describe('Table animations', () => {
     await settle();
 
     await rerender({ session, view: makeView([], { firstPlayer: { x: 160, y: 240 } }) });
-    await waitFor(() => expect(animationsOf('.surface .fptoken')).toHaveLength(1));
-    const [[keyframes, options]] = animationsOf('.surface .fptoken') as [
+    await waitFor(() => expect(animationsOf('.surface .marker')).toHaveLength(1));
+    const [[keyframes, options]] = animationsOf('.surface .marker') as [
       [Keyframe[], KeyframeAnimationOptions],
     ];
     expect(keyframes[0]).toMatchObject({ translate: '700px -200px' });
     expect(keyframes[1]).toMatchObject({ translate: '0px 0px' });
     expect(options.duration).toBe(250);
+  });
+
+  it('another viewer sees the active counter slide', async () => {
+    const session = fakeSession();
+    const { rerender } = render(Table, {
+      session,
+      view: makeView([], { active: { x: 860, y: 240 } }),
+    });
+    await settle();
+    const counter = '.surface .marker[data-marker="active"]';
+
+    await rerender({ session, view: makeView([], { active: { x: 160, y: 240 } }) });
+    await waitFor(() => expect(animationsOf(counter)).toHaveLength(1));
+    const [[keyframes]] = animationsOf(counter) as [[Keyframe[], KeyframeAnimationOptions]];
+    expect(keyframes[0]).toMatchObject({ translate: '700px 0px' });
+    // The first player token stayed.
+    expect(animationsOf('.surface .marker[data-marker="firstPlayer"]')).toEqual([]);
   });
 
   it("the viewer's own drop of the first player token does not move again", async () => {
@@ -329,7 +348,7 @@ describe('Table animations', () => {
     await settle();
     interaction.land({
       action: 1,
-      element: { kind: 'firstPlayer' },
+      element: { kind: 'marker', name: 'firstPlayer' },
       card: null,
       lifted: [],
       handOrder: null,
@@ -337,16 +356,16 @@ describe('Table animations', () => {
 
     await rerender({ session, view: makeView([], { firstPlayer: { x: 160, y: 240 } }) });
     await settle();
-    expect(animationsOf('.surface .fptoken')).toEqual([]);
+    expect(animationsOf('.surface .marker')).toEqual([]);
   });
 
   it("another player's drag of the first player token shows it under their pointer", async () => {
     const session = { ...fakeSession(), presence: new SvelteMap<number, PresenceState>() };
     const { rerender } = render(Table, { session, view: makeView([]) });
     await settle();
-    const ghost = () => document.querySelector<HTMLElement>('.presence .fptoken.ghost');
-    const placedToken = () => document.querySelector<HTMLElement>('.surface .fptoken')!;
-    const dragTo = (x: number) => ({ cards: [], token: true, x, y: 40 });
+    const ghost = () => document.querySelector<HTMLElement>('.presence .marker.ghost');
+    const placedToken = () => document.querySelector<HTMLElement>('.surface .marker')!;
+    const dragTo = (x: number) => ({ cards: [], token: 'firstPlayer' as const, x, y: 40 });
 
     session.presence.set(0, { color: 0, name: 'Alex', at: Date.now(), drag: dragTo(400) });
     await waitFor(() => expect(ghost()?.style.left).toBe('400px'));
@@ -361,8 +380,8 @@ describe('Table animations', () => {
 
     // It slides the last few pixels onto the grid, never again from its old place.
     await rerender({ session, view: makeView([], { firstPlayer: { x: 160, y: 40 } }) });
-    await waitFor(() => expect(animationsOf('.surface .fptoken')).toHaveLength(1));
-    const [[keyframes]] = animationsOf('.surface .fptoken') as [
+    await waitFor(() => expect(animationsOf('.surface .marker')).toHaveLength(1));
+    const [[keyframes]] = animationsOf('.surface .marker') as [
       [Keyframe[], KeyframeAnimationOptions],
     ];
     expect(keyframes[0]).toMatchObject({ translate: '-10px 0px' });
@@ -374,18 +393,18 @@ describe('Table animations', () => {
     const session = { ...fakeSession(), presence: new SvelteMap<number, PresenceState>() };
     render(Table, { session, view: makeView([]) });
     await settle();
-    const ghost = () => document.querySelector<HTMLElement>('.presence .fptoken.ghost');
+    const ghost = () => document.querySelector<HTMLElement>('.presence .marker.ghost');
 
     session.presence.set(0, {
       color: 0,
       name: 'Alex',
       at: Date.now(),
-      drag: { cards: [], token: true, x: 400, y: 40 },
+      drag: { cards: [], token: 'firstPlayer', x: 400, y: 40 },
     });
     await waitFor(() => expect(ghost()).not.toBeNull());
     session.presence.delete(0);
     await waitFor(() => expect(ghost()).toBeNull());
-    expect(document.querySelector('.surface .fptoken')?.classList).not.toContain('lifted');
+    expect(document.querySelector('.surface .marker')?.classList).not.toContain('lifted');
   });
 
   it('counts frames while a card moves, for the arrows to follow it', async () => {

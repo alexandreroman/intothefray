@@ -41,8 +41,10 @@
   // A scenario that recommends no modular set, like Wrecking Crew, may start without one. While the
   // index is unknown, the scenario is taken to need one.
   const chosenScenario = $derived(index?.scenarios.find((s) => s.id === view.config.scenario));
+  // A self-contained scenario never takes one.
   const needsModular = $derived(
-    chosenScenario === undefined || chosenScenario.recommended.length > 0,
+    chosenScenario === undefined ||
+      (!chosenScenario.selfContained && chosenScenario.recommended.length > 0),
   );
   const missingModular = $derived(needsModular && view.config.modulars.length === 0);
   const canStart = $derived(

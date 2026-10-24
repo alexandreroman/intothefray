@@ -12,7 +12,7 @@
   /** The frame around an owner's deck and discard pile, with the name above it. */
   export interface OwnerBox {
     frame: OwnerFrame;
-    /** The player's name, or "Villain". */
+    /** The player's name, "Villain", or the label of a scenario deck. */
     name: string;
     /** CSS colour of the frame and the name: the player's seat colour, or the villain's. */
     color: string;
@@ -24,10 +24,17 @@
 </script>
 
 <script lang="ts">
-  import type { PackFace, CardView as TableCard, PileView as Pile } from '../lib/types';
+  import type {
+    MarkerName,
+    PackFace,
+    Point,
+    CardView as TableCard,
+    PileView as Pile,
+  } from '../lib/types';
+  import { MARKERS } from '../lib/types';
   import CardView from './CardView.svelte';
   import { backCaption } from './face';
-  import FirstPlayerToken from './FirstPlayerToken.svelte';
+  import MarkerToken from './MarkerToken.svelte';
   import Icons from './Icons.svelte';
   import { overflowTip } from '../lib/overflowTip';
   import { interaction } from './interaction.svelte';
@@ -42,8 +49,8 @@
     onbrowse,
     width,
     height,
-    firstPlayer,
-    tokenMovable = false,
+    markers,
+    markersMovable = false,
     canDrag = () => false,
   }: {
     /** The cards lying on the table. */
@@ -60,15 +67,18 @@
     /** The surface size, in table units. */
     width: number;
     height: number;
-    /** Where the first player token lies. */
-    firstPlayer?: { x: number; y: number };
-    /** Whether the viewer can drag the token: any player can, spectators cannot. */
-    tokenMovable?: boolean;
+    /** Where each marker lies; the active counter is absent when the scenario has none. */
+    markers: Partial<Record<MarkerName, Point>>;
+    /** Whether the viewer can drag the markers: any player can, spectators cannot. */
+    markersMovable?: boolean;
     /** Whether the viewer can drag that card or pile: the pointer says so (grab). */
     canDrag?: (element: TableElement) => boolean;
   } = $props();
 
-  const TOKEN_TIP = 'First player: drag it to the next player';
+  const MARKER_TIPS: Record<MarkerName, string> = {
+    firstPlayer: 'First player: drag it to the next player',
+    active: 'Active counter: drag to move',
+  };
 
   /** What a chip says, in its tooltip and to screen readers: "Victory display (1)". */
   function chipTip(chip: OutOfPlayChip): string {
@@ -86,7 +96,7 @@
 
 <!-- Card z-indexes come from the server and can be negative: the surface isolates them. -->
 <div class="surface table-dots" style:width="{width}px" style:height="{height}px">
-  {#each owners as owner (owner.frame.owner)}
+  {#each owners as owner (`${owner.frame.owner}:${owner.frame.label ?? ''}`)}
     <div
       class="ownerbox"
       data-owner={owner.frame.owner}
@@ -149,19 +159,23 @@
       draggable={canDrag({ kind: 'card', id: card.id })}
     />
   {/each}
-  {#if firstPlayer && !interaction.tokenMoving}
-    <!-- The token has no menu: hovering it drops the previous element at once. -->
-    <FirstPlayerToken
-      x={firstPlayer.x}
-      y={firstPlayer.y}
-      lifted={interaction.tokenLiftedByOthers}
-      tip={tokenMovable ? TOKEN_TIP : undefined}
-      onpointerenter={(event) => interaction.enterNothing(event)}
-      onpointerdown={tokenMovable
-        ? (event) => interaction.press({ kind: 'firstPlayer' }, event)
-        : undefined}
-    />
-  {/if}
+  {#each MARKERS as name (name)}
+    {@const at = markers[name]}
+    {#if at && !interaction.markerMoving(name)}
+      <!-- A marker has no menu: hovering it drops the previous element at once. -->
+      <MarkerToken
+        {name}
+        x={at.x}
+        y={at.y}
+        lifted={interaction.markersLiftedByOthers.has(name)}
+        tip={markersMovable ? MARKER_TIPS[name] : undefined}
+        onpointerenter={(event) => interaction.enterNothing(event)}
+        onpointerdown={markersMovable
+          ? (event) => interaction.press({ kind: 'marker', name }, event)
+          : undefined}
+      />
+    {/if}
+  {/each}
 </div>
 
 <style>

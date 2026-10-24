@@ -105,9 +105,13 @@ export interface TileContext {
 export function pileLabel(pile: PileView, view: View): string {
   switch (pile.kind) {
     case 'encounter':
-      return 'Encounter deck';
+      return pile.label ? `${pile.label} deck` : 'Encounter deck';
     case 'encounterDiscard':
-      return 'Encounter discard';
+      return pile.label ? `${pile.label} discard` : 'Encounter discard';
+    case 'scenarioDeck':
+      return `${pile.label} deck`;
+    case 'scenarioDiscard':
+      return `${pile.label} discard`;
     case 'victory':
       return 'Victory display';
     case 'deck':
@@ -135,16 +139,27 @@ function ownerOf(pile: PileView, view: View): string {
 /**
  * Whether the viewer may shuffle a set-aside pile into the encounter deck from
  * its box: the scenario's own, or that of one of their own seats (`seats`),
- * once it holds cards.
+ * once it holds cards and the table (`piles`) has an encounter deck.
  */
-export function canShuffleIn(pile: PileView, seats: readonly number[]): boolean {
+export function canShuffleIn(
+  pile: PileView,
+  seats: readonly number[],
+  piles: readonly PileView[],
+): boolean {
   const allowed = pile.owner === -1 || seats.includes(pile.owner);
-  return pile.kind === 'aside' && allowed && pile.count > 0;
+  return (
+    pile.kind === 'aside' && allowed && pile.count > 0 && piles.some((other) => other.id === 'enc')
+  );
 }
 
 /** Whether the pile is a deck the boxes search with a choice to shuffle on closing. */
 export function isDeck(pile: PileView): boolean {
-  return pile.kind === 'deck' || pile.kind === 'encounter' || pile.kind === 'sideDeck';
+  return (
+    pile.kind === 'deck' ||
+    pile.kind === 'encounter' ||
+    pile.kind === 'sideDeck' ||
+    pile.kind === 'scenarioDeck'
+  );
 }
 
 /** A player's decks and discard piles, whose cards their owner draws from a box. */
@@ -164,7 +179,10 @@ export function tileActions(card: CardView, pile: PileView, context: TileContext
   const shared = pile.owner === -1;
   const outOfPlay = isOutOfPlay(pile);
   const discardPile =
-    pile.kind === 'discard' || pile.kind === 'encounterDiscard' || pile.kind === 'sideDiscard';
+    pile.kind === 'discard' ||
+    pile.kind === 'encounterDiscard' ||
+    pile.kind === 'sideDiscard' ||
+    pile.kind === 'scenarioDiscard';
   const privatePile = pile.kind === 'deck' || pile.kind === 'sideDeck' || pile.kind === 'aside';
   if (privatePile && !own && !shared) {
     return [];

@@ -1,4 +1,5 @@
 import {
+  discardPileOf,
   actionsFor,
   counterName,
   keyLabel,
@@ -1272,5 +1273,27 @@ describe('withSign', () => {
   it('writes a modifier with its sign, a real minus sign when negative', () => {
     expect(withSign(2)).toBe('+2');
     expect(withSign(-1)).toBe('−1');
+  });
+});
+
+describe('the discard pile of an encounter card', () => {
+  const scenarioPiles = [
+    pile('enc:w', { kind: 'scenarioDeck' }),
+    pile('encd:w', { kind: 'encounterDiscard' }),
+  ];
+
+  it('is the discard pile of its home scenario deck', () => {
+    expect(discardPileOf(card('a', { owner: -1, home: 'enc:w' }), scenarioPiles)).toBe('encd:w');
+  });
+
+  it('is none when its home scenario deck has no discard pile', () => {
+    expect(discardPileOf(card('a', { owner: -1, home: 'enc:w' }), [pile('enc:w', {})])).toBeNull();
+  });
+
+  it('is none for a card without a home on a table without an encounter discard pile', () => {
+    expect(discardPileOf(card('a', { owner: -1 }), scenarioPiles)).toBeNull();
+    expect(
+      discardPileOf(card('a', { owner: -1 }), [pile('encd', { kind: 'encounterDiscard' })]),
+    ).toBe('encd');
   });
 });

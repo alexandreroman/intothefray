@@ -82,6 +82,7 @@ function makeView(
     discarded?: string[];
     withSam?: boolean;
     firstPlayerY?: number;
+    active?: { x: number; y: number };
   } = {},
 ): View {
   const discarded = extra.discarded ?? [];
@@ -128,6 +129,7 @@ function makeView(
       hands: { p0: ['h1', 'h2', 'h3'] },
       stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
       firstPlayer: { x: 860, y: extra.firstPlayerY ?? 340 },
+      active: extra.active,
     },
     log: [],
   };
@@ -165,12 +167,14 @@ function layOut(view: () => View, zoom: number): void {
     if (this.classList.contains('surface')) {
       return domRect(SURFACE.left, SURFACE.top, 1200 * zoom, 1200 * zoom);
     }
-    const token = view().table?.firstPlayer;
-    if (this.closest('.surface') && this.classList.contains('fptoken') && token) {
+    const marker = (this as HTMLElement).dataset?.marker;
+    const token = marker === 'active' ? view().table?.active : view().table?.firstPlayer;
+    if (this.closest('.surface') && this.classList.contains('marker') && token) {
+      const width = marker === 'active' ? 70 : 84;
       return domRect(
         SURFACE.left + token.x * zoom,
         SURFACE.top + token.y * zoom,
-        84 * zoom,
+        width * zoom,
         70 * zoom,
       );
     }
@@ -1466,11 +1470,11 @@ describe('a drop waiting for the server', () => {
 
 describe('dragging the first player token', () => {
   function token(): HTMLElement | null {
-    return document.querySelector<HTMLElement>('.surface .fptoken');
+    return document.querySelector<HTMLElement>('.surface .marker');
   }
 
   function tokenGhost(): HTMLElement | null {
-    return document.querySelector<HTMLElement>('.draglayer .fptoken');
+    return document.querySelector<HTMLElement>('.draglayer .marker');
   }
 
   it("moves it to another player's row, snapped to the grid", async () => {
@@ -1483,7 +1487,10 @@ describe('dragging the first player token', () => {
 
     await release(204, 703);
     // Its corner at 184, 683 on the screen: 164, 643 on the table.
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'firstPlayer', x: 160, y: 640 }, 0);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      { kind: 'marker', name: 'firstPlayer', x: 160, y: 640 },
+      0,
+    );
     // It waits where it was dropped until the next view.
     expect(token()).toBeNull();
     expect(tokenGhost()).not.toBeNull();
@@ -1504,7 +1511,7 @@ describe('dragging the first player token', () => {
       .filter((fields) => 'drag' in fields)
       .map((fields) => fields.drag);
     // Its corner at 184, 683 on the screen: 164, 643 on the table, not snapped.
-    expect(drags).toEqual([{ cards: [], token: true, x: 164, y: 643 }, null]);
+    expect(drags).toEqual([{ cards: [], token: 'firstPlayer', x: 164, y: 643 }, null]);
   });
 
   it('sends nothing when put back where it was', async () => {
@@ -1676,5 +1683,59 @@ describe('the card under a still pointer after the viewer acts', () => {
     await rerender(makeView({ cards: CARDS.map((c) => (c.id === 'mine' ? { ...c, x: 700 } : c)) }));
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(interaction.hovered).toEqual({ kind: 'card', id: 'mine' });
+  });
+});
+
+describe('dragging the active counter', () => {
+  const ACTIVE = { x: 400, y: 100 };
+
+  function counter(): HTMLElement | null {
+    return document.querySelector<HTMLElement>('.surface .marker[data-marker="active"]');
+  }
+
+  it("drag active counter sends {kind:'marker', name:'active', x, y}", async () => {
+    const { session } = await renderTable(makeView({ withSam: true, active: ACTIVE }));
+    // The counter lies at 420, 140 on the screen: it is held 20 px in from its corner.
+    await press(counter()!, 440, 160);
+    await moveTo(204, 703);
+    await release(204, 703);
+
+    // Its corner at 184, 683 on the screen: 164, 643 on the table, snapped.
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      { kind: 'marker', name: 'active', x: 160, y: 640 },
+      0,
+    );
+  });
+
+  it('tells the other players which marker it is', async () => {
+    const { session } = await renderTable(makeView({ withSam: true, active: ACTIVE }));
+    await press(counter()!, 440, 160);
+    await moveTo(204, 703);
+    await release(204, 703);
+
+    const drags = session.sendPresence.mock.calls
+      .map(([fields]) => fields as { drag?: unknown })
+      .filter((fields) => 'drag' in fields)
+      .map((fields) => fields.drag);
+    expect(drags).toEqual([{ cards: [], token: 'active', x: 164, y: 643 }, null]);
+  });
+
+  it('is not drawn when the table has none', async () => {
+    await renderTable(makeView());
+    expect(document.querySelector('.surface .marker[data-marker="active"]')).toBeNull();
+    expect(document.querySelector('.surface .marker[data-marker="firstPlayer"]')).not.toBeNull();
+  });
+
+  it('shows the tooltip of a movable counter to players only', async () => {
+    await renderTable(makeView({ active: ACTIVE }));
+    expect(counter()?.dataset.tip).toBe('Active counter: drag to move');
+  });
+
+  it('a spectator cannot drag it', async () => {
+    const { session } = await renderTable(makeView({ spectator: true, active: ACTIVE }));
+    await press(counter()!, 440, 160);
+    await moveTo(204, 703);
+    await release(204, 703);
+    expect(session.act).not.toHaveBeenCalled();
   });
 });

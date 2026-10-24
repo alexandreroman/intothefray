@@ -6,12 +6,19 @@ export function isHidden(card: CardView): boolean {
   return !!card.faceDown || !card.code;
 }
 
+const ENCOUNTER_BACKS: readonly PileView['kind'][] = [
+  'encounter',
+  'encounterDiscard',
+  'scenarioDeck',
+  'scenarioDiscard',
+];
+
 /** The back a pile shows when its top card is not known: a side deck may have its own. */
 export function pileBack(pile: PileView): Back {
   if (pile.kind === 'sideDeck' && pile.back) {
     return pile.back;
   }
-  return pile.kind === 'encounter' || pile.kind === 'encounterDiscard' ? 'encounter' : 'player';
+  return ENCOUNTER_BACKS.includes(pile.kind) ? 'encounter' : 'player';
 }
 
 /** The caption of a side deck's own back: its label ("Labor"); none for any other pile. */

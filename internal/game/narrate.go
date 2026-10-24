@@ -1,6 +1,7 @@
 package game
 
 import (
+	"cmp"
 	"fmt"
 	"strings"
 
@@ -52,6 +53,14 @@ func (g *Game) pileName(who actor, id string) string {
 		noun = pile.Label + " deck"
 	case KindSideDiscard:
 		noun = pile.Label + " discard pile"
+	case KindEncounter:
+		return pile.Label + "'s encounter deck"
+	case KindEncounterDiscard:
+		return pile.Label + "'s encounter discard pile"
+	case KindScenarioDeck:
+		return "the " + pile.Label + " deck"
+	case KindScenarioDiscard:
+		return "the " + pile.Label + " discard pile"
 	default:
 		noun = "pile"
 	}
@@ -226,12 +235,12 @@ type narrator struct {
 // a reorder of a deck's top, which only arranges unless it takes a revealed
 // card back (see reorderEvent).
 var arrangingKinds = map[Kind]bool{
-	ActMove:        true,
-	ActAttach:      true,
-	ActHandOrder:   true,
-	ActFirstPlayer: true,
-	ActArrowAdd:    true,
-	ActArrowClear:  true,
+	ActMove:       true,
+	ActAttach:     true,
+	ActHandOrder:  true,
+	ActMarker:     true,
+	ActArrowAdd:   true,
+	ActArrowClear: true,
 }
 
 // describe writes the history line of a, which has just been applied. It
@@ -301,7 +310,8 @@ func (n narrator) describe(a Action) (logLine, bool) {
 		deck, _ := deckOfDiscard(a.Pile)
 		return logLine{text: join(words("shuffled "), n.pile(a.Pile), words(" into "), n.pile(deck))}, true
 	case ActShuffleIn:
-		return logLine{text: join(words("shuffled "), n.pile(a.Pile), words(" into "), n.pile(PileEncounter))}, true
+		deck := cmp.Or(a.Target, PileEncounter)
+		return logLine{text: join(words("shuffled "), n.pile(a.Pile), words(" into "), n.pile(deck))}, true
 	case ActGroup:
 		// A group of moves only arranges the table, as a single move does.
 		if arrangingKinds[a.Actions[0].Kind] {

@@ -1,7 +1,7 @@
 <!--
   The first player token's art: the theme's image, or a drawn stand-in
   without one (or when the image fails to load). It fills its box: the token
-  on the table (FirstPlayerToken.svelte), or a theme's preview in the options.
+  on the table (MarkerToken.svelte), or a theme's preview in the options.
 -->
 <script lang="ts">
   import type { Theme } from '../lib/theme';

@@ -1,7 +1,7 @@
 <!--
   Drag and drop (spec 5.4). A press on a table card, a pile, a hand card or
-  the first player token becomes a drag after 4 px (a finger pushing a hand
-  card down swipes the hand away instead): what is dragged is drawn here,
+  a marker (first player token, active counter) becomes a drag after 4 px (a
+  finger pushing a hand card down swipes the hand away instead): what is dragged is drawn here,
   over the whole page at the table's zoom, outside the table's surface, so
   that new views redrawing the table leave it alone. The drop targets are
   measured on the screen and drag.ts decides what the drop sends. Once
@@ -13,6 +13,7 @@
     Action,
     Area,
     CardView as TableCard,
+    MarkerName,
     PackFace,
     PresenceDrag,
     SessionError,
@@ -22,7 +23,7 @@
   import CardBack from './CardBack.svelte';
   import CardFace from './CardFace.svelte';
   import CardView from './CardView.svelte';
-  import FirstPlayerToken from './FirstPlayerToken.svelte';
+  import MarkerToken from './MarkerToken.svelte';
   import {
     contains,
     dealRecipient,
@@ -48,7 +49,7 @@
   } from './drag';
   import { backCaption, isHidden, pileBack } from './face';
   import { interaction, type DropOn, type Held, type Pressable } from './interaction.svelte';
-  import { cardBox, FIRST_PLAYER_BOX, HAND_CARD, type Box } from './layout';
+  import { ACTIVE_COUNTER_BOX, cardBox, FIRST_PLAYER_BOX, HAND_CARD, type Box } from './layout';
   import { ALL_ROWS, type RowMap } from './rows';
   import { surfaceRect, toScreen, toTable } from './screen';
   import { ownSeats, seatOf, seatPlayer } from './seats';
@@ -134,13 +135,13 @@
   const cardsById = $derived(new Map(cards.map((card) => [card.id, card])));
   /**
    * The ghosts of the last drop, set down where it landed (the cards, or the
-   * first player token's corner, in table units of the layer), the action
+   * marker's corner, in table units of the layer), the action
    * they wait for, and the view they were dropped on.
    */
   let landed = $state.raw<{
     action: number;
     ghosts: TableCard[];
-    token: Point | null;
+    token: (Point & { name: MarkerName }) | null;
     view: View;
   } | null>(null);
 
@@ -151,12 +152,12 @@
 
   const DECK_TOP: TableCard = { ...ENCOUNTER_TOP, id: DECK_TOP_ID, back: 'player' };
 
-  /** The card a source moves; null for a deck's hidden top card and the token. */
+  /** The card a source moves; null for a deck's hidden top card and a marker. */
   function movedCard(from: DragSource): string | null {
     switch (from.kind) {
       case 'encounter':
       case 'deck':
-      case 'firstPlayer':
+      case 'marker':
         return null;
       default:
         return from.card;
@@ -308,8 +309,10 @@
         };
       }
     }
-    if (from.kind === 'firstPlayer') {
-      const token = root?.querySelector('.surface .fptoken')?.getBoundingClientRect();
+    if (from.kind === 'marker') {
+      const token = root
+        ?.querySelector(`.surface .marker[data-marker="${from.name}"]`)
+        ?.getBoundingClientRect();
       if (token && token.width > 0 && token.height > 0) {
         return {
           x: (pressedAt.x - token.left) / token.width,
@@ -333,8 +336,11 @@
 
   /** The box of the dragged card on the table, in table units. */
   function boxOf(from: DragSource): Box {
-    if (from.kind === 'firstPlayer') {
-      return { ...FIRST_PLAYER_BOX, rotated: false };
+    if (from.kind === 'marker') {
+      return {
+        ...(from.name === 'active' ? ACTIVE_COUNTER_BOX : FIRST_PLAYER_BOX),
+        rotated: false,
+      };
     }
     if (from.kind === 'encounter' || from.kind === 'deck') {
       const shown = from.kind === 'deck' ? shownDeckTop(from.pile) : undefined;
@@ -424,8 +430,8 @@
     }
     const whole: TableRect = { kind: 'table', rect: table };
     targets.push(whole);
-    // The token lies anywhere on the table, over cards and piles alike.
-    if (from.kind === 'firstPlayer' || !contains(table, at)) {
+    // A marker lies anywhere on the table, over cards and piles alike.
+    if (from.kind === 'marker' || !contains(table, at)) {
       return targets;
     }
 
@@ -578,7 +584,8 @@
     landed = {
       action: sent,
       ghosts: reorder ? [] : ghostsAt(from, corner, pressed.lifted),
-      token: from.kind === 'firstPlayer' ? { x: corner.x / zoom, y: corner.y / zoom } : null,
+      token:
+        from.kind === 'marker' ? { name: from.name, x: corner.x / zoom, y: corner.y / zoom } : null,
       view,
     };
     interaction.land({
@@ -624,7 +631,7 @@
    * of a pile they cannot see) by a stand-in, and a deck's unknown top card
    * by its pile.
    */
-  function cardsShown(from: Exclude<DragSource, { kind: 'firstPlayer' }>): readonly string[] {
+  function cardsShown(from: Exclude<DragSource, { kind: 'marker' }>): readonly string[] {
     switch (from.kind) {
       case 'card':
         return interaction.dragging?.lifted ?? [from.card];
@@ -643,7 +650,7 @@
 
   /**
    * What the other players see of the drag: the cards it carries, or the
-   * first player token, and their corner, in table units, while it is over
+   * marker, and their corner, in table units, while it is over
    * the table. Not a hand card over the hand, which is the viewer's own
    * business.
    */
@@ -659,8 +666,8 @@
     const corner = onTable(cornerOf(from, at), surface);
     const x = Math.round(corner.x);
     const y = Math.round(corner.y);
-    if (from.kind === 'firstPlayer') {
-      return { cards: [], token: true, x, y };
+    if (from.kind === 'marker') {
+      return { cards: [], token: from.name, x, y };
     }
     return { cards: cardsShown(from).slice(0, MAX_DRAG_CARDS), x, y };
   }
@@ -673,7 +680,7 @@
   function ghostsAt(from: DragSource, corner: Point, lifted: readonly string[]): TableCard[] {
     const x = corner.x / zoom;
     const y = corner.y / zoom;
-    if (from.kind === 'firstPlayer') {
+    if (from.kind === 'marker') {
       return [];
     }
     if (from.kind === 'encounter') {
@@ -721,13 +728,13 @@
     pointer && source && held ? ghostsAt(source, cornerOf(source, pointer), held.lifted) : [],
   );
 
-  /** The first player token under the pointer, its corner in table units of the layer. */
+  /** The marker under the pointer, its corner in table units of the layer. */
   const tokenGhost = $derived.by(() => {
-    if (!pointer || source?.kind !== 'firstPlayer') {
+    if (!pointer || source?.kind !== 'marker') {
       return null;
     }
     const corner = cornerOf(source, pointer);
-    return { x: corner.x / zoom, y: corner.y / zoom };
+    return { name: source.name, x: corner.x / zoom, y: corner.y / zoom };
   });
 
   /** The last drop, while it waits for the server. */
@@ -790,9 +797,9 @@
     />
   {/each}
   {#if tokenGhost}
-    <FirstPlayerToken x={tokenGhost.x} y={tokenGhost.y} ghost />
+    <MarkerToken name={tokenGhost.name} x={tokenGhost.x} y={tokenGhost.y} ghost />
   {:else if waiting?.token}
-    <FirstPlayerToken x={waiting.token.x} y={waiting.token.y} />
+    <MarkerToken name={waiting.token.name} x={waiting.token.x} y={waiting.token.y} />
   {/if}
 </div>
 

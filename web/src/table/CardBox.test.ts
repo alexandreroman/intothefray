@@ -121,6 +121,7 @@ function makeView(extra: { private?: PrivateView; cards?: TableCard[] } = {}): V
       piles: [
         pile('deck:p0', { owner: 0, x: 600 }),
         pile('enc', { kind: 'encounter', x: 500, count: 20 }),
+        pile('encd', { kind: 'encounterDiscard', x: 500, y: 200, count: 0, cards: [] }),
         pile('vic', { kind: 'victory', x: 700, count: 1, cards: ['q1'] }),
       ],
       hands: { p0: [] },

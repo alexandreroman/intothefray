@@ -12,6 +12,12 @@ import (
 	"github.com/alexandreroman/intothefray/internal/pack"
 )
 
+// Keys of the stages of the classic scenarios.
+const (
+	pileKeyVillain = "villain"
+	pileKeyScheme  = "scheme"
+)
+
 // doFixture is a started game of two Spider-Man players: "h" (Host, p0) and
 // "b" (Bob, p1).
 type doFixture struct {
@@ -1292,7 +1298,7 @@ func TestArrangingActionsAreUntrackedEvents(t *testing.T) {
 		{Kind: ActAttach, Card: identity, Target: rhino},
 		{Kind: ActHandOrder, Area: "p0", Cards: hand},
 		{Kind: ActReorderTop, Pile: "deck:p0", Cards: top},
-		{Kind: ActFirstPlayer, Area: "p1", X: 100, Y: 100},
+		{Kind: ActMarker, Name: MarkerFirstPlayer, Area: "p1", X: 100, Y: 100},
 		{Kind: ActArrowAdd, Card: rhino, Target: identity},
 		{Kind: ActArrowClear},
 	}

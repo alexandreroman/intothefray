@@ -38,6 +38,12 @@ type ScenarioDef struct {
 	Piles    []pack.Pile                    `json:"piles"`
 	Start    map[pack.Difficulty]pack.Start `json:"start"`
 	SetAside []string                       `json:"setAside,omitempty"`
+	// Decks are the scenario's own decks, laid out by the stage piles that name them.
+	Decks []pack.ScenarioDeck `json:"decks,omitempty"`
+	// SelfContained scenarios use only their own cards: no modular set is picked.
+	SelfContained bool `json:"selfContained,omitempty"`
+	// Active is the key of the stage the active counter starts under.
+	Active string `json:"active,omitempty"`
 }
 
 // SetDef completes a generated set with hand-written setup data.
@@ -79,6 +85,9 @@ func Load(dir string) (Curated, error) {
 		if err := readStrict(path, &def); err != nil {
 			return Curated{}, err
 		}
+		if err := checkScenarioDef(def); err != nil {
+			return Curated{}, fmt.Errorf("%s: %w", path, err)
+		}
 		if other, taken := idFiles[def.ID]; taken {
 			return Curated{}, fmt.Errorf("scenario id %q is defined in %s and %s", def.ID, other, path)
 		}
@@ -104,6 +113,58 @@ func Load(dir string) (Curated, error) {
 		return Curated{}, fmt.Errorf("%s: %w", setsPath, err)
 	}
 	return curated, nil
+}
+
+// checkScenarioDef rejects the decks and stage links that setup could not lay out.
+func checkScenarioDef(def ScenarioDef) error {
+	decks := make(map[string]bool, len(def.Decks))
+	encounter := false
+	for _, deck := range def.Decks {
+		switch {
+		case deck.Key == "":
+			return errors.New("deck has no key")
+		case decks[deck.Key]:
+			return fmt.Errorf("duplicate deck key %q", deck.Key)
+		case deck.Label == "":
+			return fmt.Errorf("deck %q has no label", deck.Key)
+		case len(deck.Sets) == 0 && len(deck.Cards) == 0:
+			return fmt.Errorf("deck %q has neither sets nor cards", deck.Key)
+		}
+		decks[deck.Key] = true
+		encounter = encounter || deck.Encounter
+	}
+	if encounter && !def.SelfContained {
+		return errors.New("an encounter deck needs a selfContained scenario")
+	}
+
+	stages := make(map[string]bool, len(def.Piles))
+	for _, pile := range def.Piles {
+		stages[pile.Key] = true
+	}
+	linked := make(map[string]string)
+	for _, pile := range def.Piles {
+		if pile.Deck == "" {
+			continue
+		}
+		if !decks[pile.Deck] {
+			return fmt.Errorf("stage %q names unknown deck %q", pile.Key, pile.Deck)
+		}
+		if other, taken := linked[pile.Deck]; taken {
+			return fmt.Errorf("deck %q is named by stages %q and %q", pile.Deck, other, pile.Key)
+		}
+		linked[pile.Deck] = pile.Key
+	}
+	for _, difficulty := range slices.Sorted(maps.Keys(def.Start)) {
+		for _, ref := range def.Start[difficulty].InPlay {
+			if ref.With != "" && !stages[ref.With] {
+				return fmt.Errorf("in-play card %q (%s) is with unknown stage %q", ref.Card, difficulty, ref.With)
+			}
+		}
+	}
+	if def.Active != "" && !stages[def.Active] {
+		return fmt.Errorf("active names unknown stage %q", def.Active)
+	}
+	return nil
 }
 
 // checkSetDefs rejects the in-play cards listed under an unknown difficulty,

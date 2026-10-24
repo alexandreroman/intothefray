@@ -27,11 +27,13 @@
     FaceRef,
     Index,
     LobbyConfig,
+    MarkerName,
     PackFace,
     PileView,
     Size,
     View,
   } from '../lib/types';
+  import { MARKERS, markerPoint } from '../lib/types';
   import { diffViews, MAX_APART_MS } from './animate';
   import {
     actionsFor,
@@ -72,7 +74,7 @@
     HAND_REST_DROP,
     handRestDrop,
     isOutOfPlay,
-    outOfPlayChips,
+    chipsByFrame,
     ownerFrames,
     raisedHandCard,
     restingStrip,
@@ -419,10 +421,13 @@
   const tableCards = $derived(shown(cards.filter((card) => card.zone === 'table')));
 
   /** The frames around each owner's deck and discard pile, named after their owner. */
-  const owners = $derived(
-    ownerFrames(tablePiles).map((frame): OwnerBox => {
-      const outOfPlay = outOfPlayChips(frame.owner, piles);
-      const { name, color } = ownerLook(view, frame.owner);
+  const owners = $derived.by(() => {
+    const frames = ownerFrames(tablePiles);
+    const chips = chipsByFrame(frames, piles);
+    return frames.map((frame, i): OwnerBox => {
+      const outOfPlay = chips[i] ?? [];
+      const { name: ownerName, color } = ownerLook(view, frame.owner);
+      const name = frame.label ?? ownerName;
       // Only a seated deck has a hand: neither the villain nor an empty seat.
       const deck = deckAt(frame.owner);
       if (!deck) {
@@ -430,8 +435,8 @@
       }
       const inHand = `${deck.handCount} ${deck.handCount === 1 ? 'card' : 'cards'} in hand`;
       return { frame, name, color, tip: inHand, outOfPlay };
-    }),
-  );
+    });
+  });
 
   // ---- The screen ----
 
@@ -516,7 +521,19 @@
     }),
   );
 
-  const firstPlayer = $derived(shown(view.table?.firstPlayer ? [view.table.firstPlayer] : [])[0]);
+  /** Where each marker lies, as the view mode draws it; none for a marker the table does not have. */
+  const markers = $derived.by(() => {
+    const table = view.table;
+    const result: Partial<Record<MarkerName, Point>> = {};
+    for (const name of MARKERS) {
+      const at = table ? markerPoint(table, name) : undefined;
+      const [placed] = at ? shown([at]) : [];
+      if (placed) {
+        result[name] = placed;
+      }
+    }
+    return result;
+  });
 
   /** The face the preview shows; none for a card back, which tells nothing more on the table. */
   function previewOf(previewed: TableElement | null): Preview | null {
@@ -1717,8 +1734,8 @@
         onbrowse={openBrowseBox}
         width={surface.w}
         height={surface.h}
-        {firstPlayer}
-        tokenMovable={view.you.role === 'player'}
+        {markers}
+        markersMovable={view.you.role === 'player'}
         canDrag={(element) => sourceOf(element, view) !== null}
       />
       <!-- The arrows follow the cards while they move. -->
@@ -1854,7 +1871,7 @@
     {sizeOf}
     {rowMap}
     {selected}
-    act={(action, element) => act(action, element.kind === 'firstPlayer' ? null : element)}
+    act={(action, element) => act(action, element.kind === 'marker' ? null : element)}
     onhand={selectSeat}
     ondrag={(drag) => session.sendPresence({ drag })}
     lastError={session.lastError}

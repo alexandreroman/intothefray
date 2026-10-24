@@ -14,10 +14,22 @@ import (
 //
 // The table is laid out in rows: the villain's row on top, villainRowHeight
 // high, then one row of rowHeight per seat (one deck, see seats.go), in seat order. Every row starts with its deck
-// and its discard pile, then the villain or the identity; the villain's row
-// goes on with the main scheme, and cards in play are added to the right.
-// In the villain's row, the villain, the main scheme and the cards in play
-// lie inPlayGap apart, the first card in play taken up to the grid. A
+// and its discard pile, then the villain or the identity.
+//
+// The villain's row is one cursor walking left to right, every position taken
+// up to the grid: the classic encounter deck at deckX with its discard pile
+// (if the scenario has one), then the scenario decks no stage names, each with
+// its discard pile if it has one, then each stage in order: its own deck group
+// first, then the stage card, then the cards in play laid out "with" it, and
+// finally the other cards in play. A scenario deck is compact, 100 by 140, its
+// discard pile compactDiscardStepX right of it. A deck group lies pileZoneGap
+// after what precedes it; a stage card pileZoneGap after piles and inPlayGap
+// after a card; cards in play inPlayGap apart. The classic scenarios have no
+// deck group: the villain lies at 360, the main scheme at 550 and the first
+// card in play at 800. The active counter lies under its stage card, as the
+// first player token does under the first player's deck.
+//
+// In a player's row, the villain's place is the identity's. A
 // hero with side decks lays them out after its discard pile, each followed by
 // its own discard pile if it has one, sidePileStepX apart as the deck and the
 // discard pile are. The identity then lies pileZoneGap after the end of the
@@ -25,7 +37,7 @@ import (
 // lies under the first player's deck, in the empty bottom of their row.
 // Things sit rowContentY below the top of their row, leaving room for the
 // client's owner label above the piles. Out-of-play piles (victory display, set-aside cards) keep
-// a position for the model, on the deck, but the client never draws them.
+// a position for the model, on the first villain pile, but the client never draws them.
 //
 // The villain's row is taller so that it reads apart from the players' rows:
 // about 1.2 portrait card heights (244 units, keeping the rows on the 10-unit
@@ -59,16 +71,23 @@ const (
 	// the row.
 	firstPlayerX   = 30
 	firstPlayerGap = 24
+	// activeOffsetX takes the centre of the active counter under its stage card to the grid: 40 on a 140 wide card
+	// puts the 70 wide counter's centre at 75, not 70.
+	activeOffsetX = 40
 
-	deckX       = 0
-	discardX    = 160
-	outOfPlayX  = 0
-	identityX   = discardX + portraitWidth + pileZoneGap
-	villainX    = 360
-	mainSchemeX = villainX + portraitWidth + inPlayGap
-	// Past the main scheme, landscape, rounded up to the grid as ceilToGrid
-	// does.
-	inPlayStartX = (mainSchemeX + landscapeWidth + inPlayGap + gridSize - 1) / gridSize * gridSize
+	deckX      = 0
+	discardX   = 160
+	outOfPlayX = 0
+	identityX  = discardX + portraitWidth + pileZoneGap
+	// The first card in play of a villain's row with no stage before it: past a classic villain (identityX, where the
+	// villain lies as the identity does) and main scheme, landscape, rounded up to the grid as ceilToGrid does.
+	inPlayStartX = (identityX + portraitWidth + inPlayGap + landscapeWidth + inPlayGap +
+		gridSize - 1) / gridSize * gridSize
+
+	// A scenario deck is compact, and its discard pile lies compactDiscardStepX right of it.
+	compactWidth        = 100
+	compactHeight       = 140
+	compactDiscardStepX = 120
 
 	sidePileStepX = 160
 )
@@ -95,9 +114,6 @@ func rowTop(row int) int {
 }
 
 const (
-	pileKeyVillain = "villain"
-	pileKeyScheme  = "scheme"
-
 	faceTypeHero     = "hero"
 	faceTypeAlterEgo = "alter_ego"
 )
@@ -135,7 +151,9 @@ func (g *Game) Start(hostToken string, cat *pack.Catalog, seed uint64, now time.
 			}
 		}
 	}
-	b.shuffle(PileEncounter)
+	if b.table.Piles[PileEncounter] != nil {
+		b.shuffle(PileEncounter)
+	}
 	// Side decks and set-aside cards come last, so that a game without
 	// them draws the same random numbers as before they existed: its table
 	// and card ids stay the same for the same seed.
@@ -145,6 +163,11 @@ func (g *Game) Start(hostToken string, cat *pack.Catalog, seed uint64, now time.
 				return fmt.Errorf("%s: %w", p.Name, err)
 			}
 		}
+	}
+
+	// The scenario decks come after everything else, for the same reason.
+	if err := b.setupScenarioDecks(scenario); err != nil {
+		return err
 	}
 
 	host := g.player(hostToken)
@@ -215,9 +238,17 @@ type tableBuilder struct {
 	cat   *pack.Catalog
 	rng   *rand.Rand
 	table *Table
-	// inPlayRight is the right edge of the last card put in play, 0 before
-	// the first one.
+	// inPlayRight is the right edge of the last thing put in the villain's
+	// row (a pile, a stage card or a card in play), 0 before the first one.
 	inPlayRight int
+	// lastPile tells that the last thing put in the villain's row is a pile.
+	lastPile bool
+	// apart holds the codes of the villain set's cards the scenario places
+	// apart; the scenario decks leave them out.
+	apart map[string]bool
+	// selfContained tells that the scenario uses only its own cards: heroes
+	// bring no obligation and no nemesis set.
+	selfContained bool
 }
 
 // newCard creates one card instance. The code may be any alias; the card
@@ -242,6 +273,18 @@ func (b *tableBuilder) newCard(code string, owner int, home string) (*Card, pack
 // newEncounterCard creates a card of the encounter deck's owner: nobody.
 func (b *tableBuilder) newEncounterCard(code string) (*Card, pack.Card, error) {
 	return b.newCard(code, NoOwner, PileEncounter)
+}
+
+// stageHome returns the home of the cards of a stage: the id of its scenario deck, if it has one, else the
+// classic encounter deck.
+func stageHome(scenario pack.Scenario, pile pack.Pile) string {
+	if pile.Deck != "" {
+		if i := slices.IndexFunc(scenario.Decks, func(d pack.ScenarioDeck) bool { return d.Key == pile.Deck }); i >= 0 {
+			deckID, _ := scenarioDeckIDs(pile.Deck, scenario.Decks[i].Encounter)
+			return deckID
+		}
+	}
+	return PileEncounter
 }
 
 // pushToPile puts a new card on top of a pile.
@@ -297,9 +340,10 @@ func (b *tableBuilder) canonical(code string) (string, error) {
 	return def.Code, nil
 }
 
-// setupScenario creates the villain's row: stages, starting cards, set-aside
-// cards and the encounter deck. The deck stays unshuffled until the
-// obligations of the heroes have joined it.
+// setupScenario creates the villain's row: scenario decks, stages, starting
+// cards, set-aside cards and the classic encounter deck, if the scenario has
+// one. The classic deck stays unshuffled until the obligations of the heroes
+// have joined it; the scenario decks are filled later (see setupScenarioDecks).
 func (b *tableBuilder) setupScenario(cfg LobbyConfig) (pack.Scenario, error) {
 	scenario, ok := b.cat.Scenario(cfg.Scenario)
 	if !ok {
@@ -312,14 +356,67 @@ func (b *tableBuilder) setupScenario(cfg LobbyConfig) (pack.Scenario, error) {
 
 	// Cards that are set up by hand and so stay out of the encounter deck.
 	apart := map[string]bool{}
+	b.apart = apart
+	b.selfContained = scenario.SelfContained
 
-	for _, pile := range scenario.Piles {
-		if err := b.setupStage(pile, start.Top[pile.Key], apart); err != nil {
-			return pack.Scenario{}, err
+	classic := !slices.ContainsFunc(scenario.Decks, func(d pack.ScenarioDeck) bool { return d.Encounter })
+	if classic {
+		b.inPlayRight = discardX + portraitWidth
+		b.lastPile = true
+	} else {
+		delete(b.table.Piles, PileEncounter)
+		delete(b.table.Piles, PileEncounterDiscard)
+	}
+
+	// Decks no stage names come first, then each stage with its own deck.
+	for _, deck := range scenario.Decks {
+		if !slices.ContainsFunc(scenario.Piles, func(p pack.Pile) bool { return p.Deck == deck.Key }) {
+			b.addDeckGroup(deck)
 		}
 	}
-	for _, ref := range start.InPlay {
-		c, err := b.putInPlay(ref)
+	inPlay := make([]bool, len(start.InPlay))
+	for _, pile := range scenario.Piles {
+		if pile.Deck != "" {
+			i := slices.IndexFunc(scenario.Decks, func(d pack.ScenarioDeck) bool { return d.Key == pile.Deck })
+			if i < 0 {
+				return pack.Scenario{}, fmt.Errorf("%w: stage %q has no deck %q", ErrInvalid, pile.Key, pile.Deck)
+			}
+			b.addDeckGroup(scenario.Decks[i])
+		}
+		home := stageHome(scenario, pile)
+		stageCard, err := b.setupStage(pile, home, start.Top[pile.Key], apart)
+		if err != nil {
+			return pack.Scenario{}, err
+		}
+		if pile.Key == scenario.Active {
+			b.table.Active = &Point{
+				X: stageCard.X + activeOffsetX,
+				Y: rowY(villainRow) + portraitHeight + firstPlayerGap,
+			}
+		}
+		for i, ref := range start.InPlay {
+			if ref.With != pile.Key {
+				continue
+			}
+			c, err := b.putInPlay(ref, home)
+			if err != nil {
+				return pack.Scenario{}, err
+			}
+			apart[c.Code] = true
+			inPlay[i] = true
+		}
+	}
+	if scenario.Active != "" && b.table.Active == nil {
+		return pack.Scenario{}, fmt.Errorf("%w: no stage %q for the active counter", ErrInvalid, scenario.Active)
+	}
+	for i, ref := range start.InPlay {
+		if inPlay[i] {
+			continue
+		}
+		if ref.With != "" {
+			return pack.Scenario{}, fmt.Errorf("%w: card %s is with no stage %q", ErrInvalid, ref.Card, ref.With)
+		}
+		c, err := b.putInPlay(ref, PileEncounter)
 		if err != nil {
 			return pack.Scenario{}, err
 		}
@@ -354,12 +451,104 @@ func (b *tableBuilder) setupScenario(cfg LobbyConfig) (pack.Scenario, error) {
 		skips[setCode] = placed
 	}
 
+	if !classic {
+		return scenario, b.requireNoVillainLeftover(scenario.VillainSet)
+	}
 	for _, setCode := range encounterSets {
 		if err := b.addSetToPile(setCode, PileEncounter, skips[setCode]); err != nil {
 			return pack.Scenario{}, err
 		}
 	}
 	return scenario, nil
+}
+
+// requireNoVillainLeftover fails if the villain set has a card the scenario
+// did not place apart: without a classic encounter deck, it would go nowhere.
+func (b *tableBuilder) requireNoVillainLeftover(setCode string) error {
+	set, ok := b.cat.Set(setCode)
+	if !ok {
+		return fmt.Errorf("%w: unknown set %q", ErrInvalid, setCode)
+	}
+	for _, code := range set.Cards {
+		canonical, err := b.canonical(code)
+		if err != nil {
+			return err
+		}
+		if !b.apart[canonical] {
+			return fmt.Errorf("%w: card %s of set %q has no place, the scenario has no encounter deck",
+				ErrInvalid, canonical, setCode)
+		}
+	}
+	return nil
+}
+
+// addDeckGroup lays out the piles of a scenario deck at the cursor of the
+// villain's row: the deck, then its discard pile compactDiscardStepX right of it.
+func (b *tableBuilder) addDeckGroup(deck pack.ScenarioDeck) {
+	deckID, discardID := scenarioDeckIDs(deck.Key, deck.Encounter)
+	deckKind, discardKind := KindScenarioDeck, KindScenarioDiscard
+	if deck.Encounter {
+		deckKind, discardKind = KindEncounter, KindEncounterDiscard
+	}
+	y := rowY(villainRow)
+	x := b.slot(compactWidth, pileZoneGap, deckX)
+	pile := b.table.addPile(deckID, deckKind, NoOwner, x, y)
+	pile.Label, pile.Compact = deck.Label, true
+	if deck.Discard {
+		pile = b.table.addPile(discardID, discardKind, NoOwner, x+compactDiscardStepX, y)
+		pile.Label, pile.Compact = deck.Label, true
+		b.inPlayRight = pile.X + compactWidth
+	}
+	b.lastPile = true
+}
+
+// slot returns the x of the next thing of width w in the villain's row: gap
+// past the last one, taken up to the grid, or first when it is the first.
+func (b *tableBuilder) slot(w, gap, first int) int {
+	x := first
+	if b.inPlayRight > 0 {
+		x = ceilToGrid(b.inPlayRight + gap)
+	}
+	b.inPlayRight = x + w
+	b.lastPile = false
+	return x
+}
+
+// setupScenarioDecks creates the cards of the scenario decks: every copy of the
+// cards of the deck's sets, then of its cards, but those the scenario placed
+// apart. A deck is shuffled unless it is ordered, in which case its first
+// listed card ends on top.
+func (b *tableBuilder) setupScenarioDecks(scenario pack.Scenario) error {
+	for _, deck := range scenario.Decks {
+		deckID, _ := scenarioDeckIDs(deck.Key, deck.Encounter)
+		for _, setCode := range deck.Sets {
+			if err := b.addSetCards(setCode, NoOwner, deckID, deckID, b.apart); err != nil {
+				return err
+			}
+		}
+		for _, code := range deck.Cards {
+			def, _, err := b.cat.Card(code)
+			if err != nil {
+				return fmt.Errorf("%w: %w", ErrInvalid, err)
+			}
+			if b.apart[def.Code] {
+				continue
+			}
+			for range def.Quantity {
+				c, _, err := b.newCard(def.Code, NoOwner, deckID)
+				if err != nil {
+					return err
+				}
+				b.pushToPile(deckID, c)
+			}
+		}
+		if deck.Ordered {
+			slices.Reverse(b.table.Piles[deckID].Cards)
+		} else {
+			b.shuffle(deckID)
+		}
+	}
+	return nil
 }
 
 // putSetInPlay puts the cards a set starts in play at this difficulty (the
@@ -374,7 +563,7 @@ func (b *tableBuilder) putSetInPlay(setCode string, difficulty pack.Difficulty) 
 
 	placed := map[string]bool{}
 	for _, ref := range set.InPlay[difficulty] {
-		c, err := b.putInPlay(ref)
+		c, err := b.putInPlay(ref, PileEncounter)
 		if err != nil {
 			return nil, err
 		}
@@ -385,21 +574,19 @@ func (b *tableBuilder) putSetInPlay(setCode string, difficulty pack.Difficulty) 
 
 // setupStage creates the cards of one stage pile. The card named by top goes
 // to the table on its start face; the others wait in the stage zone.
-func (b *tableBuilder) setupStage(pile pack.Pile, top pack.FaceRef, apart map[string]bool) error {
-	x, y, err := stagePosition(pile.Key)
-	if err != nil {
-		return err
-	}
+// Its cards have home as their home. It returns the card on the table.
+func (b *tableBuilder) setupStage(pile pack.Pile, home string, top pack.FaceRef, apart map[string]bool) (*Card, error) {
 	topCode, err := b.canonical(top.Card)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	stage := &Stage{Key: pile.Key, Label: pile.Label}
+	var current *Card
 	for _, code := range pile.Cards {
-		c, def, err := b.newEncounterCard(code)
+		c, def, err := b.newCard(code, NoOwner, home)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		apart[c.Code] = true
 		stage.Cards = append(stage.Cards, c.ID)
@@ -408,45 +595,50 @@ func (b *tableBuilder) setupStage(pile pack.Pile, top pack.FaceRef, apart map[st
 			c.Zone = ZoneStage
 			continue
 		}
-		if err := b.placeFace(c, def, top.Face, x, y); err != nil {
-			return err
+		gap := inPlayGap
+		if b.lastPile {
+			gap = pileZoneGap
+		}
+		x, err := b.slotFor(def, top.Face, gap, deckX)
+		if err != nil {
+			return nil, err
+		}
+		if err := b.placeFace(c, def, top.Face, x, rowY(villainRow)); err != nil {
+			return nil, err
 		}
 		stage.Current = c.ID
+		current = c
 	}
-	if stage.Current == "" {
-		return fmt.Errorf("%w: stage %q has no card %s", ErrInvalid, pile.Key, top.Card)
+	if current == nil {
+		return nil, fmt.Errorf("%w: stage %q has no card %s", ErrInvalid, pile.Key, top.Card)
 	}
 	b.table.Stages = append(b.table.Stages, stage)
-	return nil
+	return current, nil
 }
 
-func stagePosition(key string) (x, y int, err error) {
-	switch key {
-	case pileKeyVillain:
-		return villainX, rowY(villainRow), nil
-	case pileKeyScheme:
-		return mainSchemeX, rowY(villainRow), nil
-	default:
-		return 0, 0, fmt.Errorf("%w: unknown stage pile %q", ErrInvalid, key)
+// slotFor is slot for the given face of a card.
+func (b *tableBuilder) slotFor(def pack.Card, face, gap, first int) (int, error) {
+	if face < 0 || face >= len(def.Faces) {
+		return 0, fmt.Errorf("%w: card %s has no face %d", ErrInvalid, def.Code, face)
 	}
+	return b.slot(cardWidth(def.Faces[face].Size), gap, first), nil
 }
 
-// putInPlay creates a starting card and puts it in the villain's row: the
-// first one at inPlayStartX, each later one inPlayGap past the right edge of
-// the previous one, taken up to the grid.
-func (b *tableBuilder) putInPlay(ref pack.FaceRef) (*Card, error) {
-	c, def, err := b.newEncounterCard(ref.Card)
+// putInPlay creates a starting card and puts it in the villain's row, inPlayGap
+// past the right edge of the previous thing, taken up to the grid (the first
+// thing of the row, at inPlayStartX). The card has home as its home.
+func (b *tableBuilder) putInPlay(ref pack.FaceRef, home string) (*Card, error) {
+	c, def, err := b.newCard(ref.Card, NoOwner, home)
 	if err != nil {
 		return nil, err
 	}
-	x := inPlayStartX
-	if b.inPlayRight > 0 {
-		x = ceilToGrid(b.inPlayRight + inPlayGap)
+	x, err := b.slotFor(def, ref.Face, inPlayGap, inPlayStartX)
+	if err != nil {
+		return nil, err
 	}
 	if err := b.placeFace(c, def, ref.Face, x, rowY(villainRow)); err != nil {
 		return nil, err
 	}
-	b.inPlayRight = x + cardWidth(def.Faces[ref.Face].Size)
 	return c, nil
 }
 
@@ -519,14 +711,14 @@ func (b *tableBuilder) setupPlayer(seat int, deck *DeckChoice) error {
 	x := pileX(1+sidePiles) + portraitWidth + pileZoneGap
 	b.placeOnTable(identity, alterEgoFace(identityDef), x, rowY(playerRow(seat)))
 
-	if hero.Obligation != "" {
+	if hero.Obligation != "" && !b.selfContained {
 		c, _, err := b.newEncounterCard(hero.Obligation)
 		if err != nil {
 			return err
 		}
 		b.pushToPile(PileEncounter, c)
 	}
-	if hero.Nemesis != "" {
+	if hero.Nemesis != "" && !b.selfContained {
 		if err := b.addSetToPile(hero.Nemesis, "aside:"+string(area), nil); err != nil {
 			return err
 		}

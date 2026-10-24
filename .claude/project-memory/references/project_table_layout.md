@@ -7,27 +7,40 @@ type: project
 # Table layout
 
 - The table is one play surface for everyone: one scroller (both axes),
-  one zoom. Table cards, piles and the first player token have x, y only;
-  hands and private views are keyed by seat ("pN").
+  one zoom. Table cards, piles and the markers (first player token, active
+  counter) have x, y only; hands and private views are keyed by seat
+  ("pN").
 - Setup lays the surface out in rows: the villain row first, then one row
   per seated player. Each row starts at the left with deck and discard,
   then the villain or identity and schemes; played cards go to the right.
+- The villain row walks left to right: the classic encounter deck and its
+  discard, then each stage in the scenario's order, each after the
+  scenario deck it is linked to and followed by the cards in play with it,
+  then the other cards in play. A scenario with several villains stays on
+  this one long row (Wrecking Crew: four villain groups, Breakout last).
+- A scenario deck and its discard pile are drawn smaller (100×140 table
+  units, the discard 120 right of its deck), in a frame of their own named
+  after the deck.
 - A played card (hand key P, card box Play) lands 50 units past the last
   card or pile of its row (past the identity on a fresh row), or in the
   first hole wide enough; setup spaces the villain, the main scheme and the
-  cards it puts in play with the same 50 gap from each card's width. 50 lets two neighbouring portrait
-  cards both be exhausted (turned 15°) without overlapping.
+  cards it puts in play with the same 50 gap from each card's width. 50
+  lets two neighbouring portrait cards both be exhausted (turned 15°)
+  without overlapping.
 - The first player token starts under the first player's deck (x 30, 24
-  below the deck), in the empty bottom of that row; a played card avoids it.
+  below the deck), in the empty bottom of that row; the active counter
+  starts under its villain card (40 right of the card's left edge, 24
+  below it). A played card avoids every marker.
 - The villain's row is taller (470 units, player rows 330): about 1.2
   portrait card heights (244 units, rows on the 10-unit grid) lie empty
   between its cards and the first player's row, so the two read apart.
 - Each owner's deck and discard sit in a frame in the seat colour labelled
   with the player's name ("Villain" in purple, as in the game, for the
-  encounter piles); the frame's tooltip gives that player's hand count.
+  encounter piles; the deck's name for a scenario deck); the frame's
+  tooltip gives that player's hand count.
 - Out-of-play piles (victory display, set-aside) are not drawn on the
   table: chips on their owner's frame open them (see "Action menu
-  organisation").
+  organisation"); the villain's chips sit on the first villain frame.
 - A portrait table card is 140×196 table units, chosen for readability;
   the hand and the preview have their own sizes. Tokens sit inside the
   card: damage and counters on its lower part, threat on its right side.
@@ -51,7 +64,10 @@ type: project
 
 **Why:** decided with the user: players add cards as they
 play, so fixed things sit on the left and play grows right; zones and
-their splits added complexity without value.
+their splits added complexity without value. One long villain row with
+smaller scenario decks keeps every villain on the same band, as the user
+chose for several villains.
 
 **How to apply:** new fixed table elements go at the start of their
 owner's row (server setup positions); never reintroduce per-player zones.
+See [[project_scenario_decks]].

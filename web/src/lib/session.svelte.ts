@@ -601,7 +601,7 @@ function othersWatching(view: View): number {
 
 /** Whether a drag carries the same cards, or the token, as another one: it only moved. */
 function isSameLoad(drag: PresenceDrag, other: PresenceDrag | null): boolean {
-  if (other === null || Boolean(drag.token) !== Boolean(other.token)) {
+  if (other === null || drag.token !== other.token) {
     return false;
   }
   return (

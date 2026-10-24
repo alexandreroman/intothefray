@@ -568,64 +568,13 @@
       }
     },
     {
-      "id": "wrecker",
-      "name": "Wrecker",
-      "pack": "twc",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07002.jpg",
-      "supported": false,
-      "recommended": [],
-      "localized": {
-        "fr": {
-          "name": "Le Démolisseur"
-        }
-      }
-    },
-    {
-      "id": "thunderball",
-      "name": "Thunderball",
-      "pack": "twc",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07017.jpg",
-      "supported": false,
-      "recommended": [],
-      "localized": {
-        "fr": {
-          "name": "Le Boulet"
-        }
-      }
-    },
-    {
-      "id": "piledriver",
-      "name": "Piledriver",
-      "pack": "twc",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07032.jpg",
-      "supported": false,
-      "recommended": [],
-      "localized": {
-        "fr": {
-          "name": "Le Compresseur"
-        }
-      }
-    },
-    {
-      "id": "bulldozer",
-      "name": "Bulldozer",
-      "pack": "twc",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07046.jpg",
-      "supported": false,
-      "recommended": [],
-      "localized": {
-        "fr": {
-          "name": "Le Bulldozer"
-        }
-      }
-    },
-    {
       "id": "wrecking_crew",
       "name": "Wrecking Crew",
       "pack": "twc",
-      "image": "",
-      "supported": false,
+      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07002.jpg",
+      "supported": true,
       "recommended": [],
+      "selfContained": true,
       "localized": {
         "fr": {
           "name": "Les Démolisseurs"

@@ -8,7 +8,7 @@
   import CardFace from './CardFace.svelte';
   import { isHidden, pileBack, pileCaption } from './face';
   import { interaction, type PreviewChange } from './interaction.svelte';
-  import { cardBox } from './layout';
+  import { cardBox, pileBox } from './layout';
   import { motion } from './motion.svelte';
 
   let {
@@ -26,7 +26,7 @@
     draggable?: boolean;
   } = $props();
 
-  const SLOT = cardBox('std', {});
+  const slot = $derived(pileBox(pile));
 
   // While a card taken from it is dragged or waits for the server, the pile counts it out; so it does
   // with the cards still flying to it.
@@ -74,8 +74,8 @@
   class:drop-pile={targeted}
   style:left="{pile.x}px"
   style:top="{pile.y}px"
-  style:width="{SLOT.w}px"
-  style:height="{SLOT.h}px"
+  style:width="{slot.w}px"
+  style:height="{slot.h}px"
   onpointerenter={onEnter}
   onpointerleave={() => interaction.leave()}
   onpointerdown={(event) => interaction.press(element, event)}

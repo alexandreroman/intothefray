@@ -17,6 +17,8 @@ const PILES: PileView[] = [
   pile('aside:p2', { kind: 'aside', owner: 2 }),
 ];
 
+const WITH_ENC: PileView[] = [...PILES, pile('enc', { kind: 'encounter' })];
+
 /** Alex plays p0 and p1 (Spider-Man); Sam sits at p2. */
 function makeView(): View {
   return {
@@ -74,7 +76,9 @@ describe('a player with two decks', () => {
 
     const aside = tileActions(card('a', 1), pileOf('aside:p1'), contextOf(view));
     expect(aside.map((tile) => tile.id)).toEqual(['play', 'discard', 'bottom', 'shuffle']);
-    expect(canShuffleIn(pileOf('aside:p1'), [0, 1])).toBe(true);
+    expect(canShuffleIn(pileOf('aside:p1'), [0, 1], WITH_ENC)).toBe(true);
+    // Without an encounter deck on the table there is nothing to shuffle into.
+    expect(canShuffleIn(pileOf('aside:p1'), [0, 1], PILES)).toBe(false);
     expect(pileLabel(pileOf('deck:p1'), view)).toBe('Your deck');
   });
 
@@ -93,7 +97,7 @@ describe('a player with two decks', () => {
     const view = makeView();
     expect(tileActions(card('s', 2), pileOf('deck:p2'), contextOf(view))).toEqual([]);
     expect(tileActions(card('s', 2), pileOf('aside:p2'), contextOf(view))).toEqual([]);
-    expect(canShuffleIn(pileOf('aside:p2'), [0, 1])).toBe(false);
+    expect(canShuffleIn(pileOf('aside:p2'), [0, 1], WITH_ENC)).toBe(false);
     expect(pileLabel(pileOf('deck:p2'), view)).toBe("Sam's deck");
   });
 });

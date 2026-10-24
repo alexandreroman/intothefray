@@ -563,7 +563,7 @@ describe('Table', () => {
 
     const token = await screen.findByRole('img', { name: 'First player' });
     expect(token.getAttribute('src')).toBe(FIRST_PLAYER_TOKEN);
-    const placed = token.closest<HTMLElement>('.fptoken');
+    const placed = token.closest<HTMLElement>('.marker');
     expect(placed?.style.left).toBe('860px');
     expect(placed?.style.top).toBe('40px');
     expect(surface().contains(token)).toBe(true);

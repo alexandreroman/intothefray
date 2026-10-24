@@ -637,6 +637,22 @@ describe("other players' presence", () => {
     expect(document.querySelector('.presence .card')).toBeNull();
   });
 
+  it('ignores a dragged marker it does not know, instead of drawing the first player token', async () => {
+    const { receive } = await renderTable();
+
+    receive({
+      color: 1,
+      name: 'Sam',
+      drag: { cards: [], token: 'bogus' as never, x: 500, y: 320 },
+    });
+    await nextFrame();
+    expect(document.querySelector('.presence .marker')).toBeNull();
+
+    receive({ color: 1, name: 'Sam', drag: { cards: [], token: 'active', x: 500, y: 320 } });
+    await nextFrame();
+    expect(document.querySelector('.presence .marker')).not.toBeNull();
+  });
+
   it('draws a new ghost for a new drag of the same card, not the landing one gliding over', async () => {
     const { receive } = await renderTable();
     const ghost = () => document.querySelector<HTMLElement>('.presence .card[data-id="sam"]');
