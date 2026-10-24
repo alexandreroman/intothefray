@@ -30,10 +30,10 @@ type CardView struct {
 	Mods      map[string]int `json:"mods,omitempty"`
 	Stage     string         `json:"stage,omitempty"` // stage key, for stage cards
 	Identity  bool           `json:"identity,omitempty"`
-	// Home is the side deck a side deck card returns to, sent whatever its
-	// face: as at a real table, everyone sees which deck a card came from,
-	// which tells only that it is a side card, not which one. It is left out
-	// for every other card, whose home the client infers.
+	// Home is the side deck or scenario deck a card of one returns to, sent
+	// whatever its face: as at a real table, everyone sees which deck a card
+	// came from. It is left out for every other card, whose home the client
+	// infers.
 	Home string `json:"home,omitempty"`
 }
 
@@ -47,8 +47,9 @@ type PileView struct {
 	X         int       `json:"x"`
 	Y         int       `json:"y"`
 	Count     int       `json:"count"`
-	Cards     []string  `json:"cards,omitempty"` // bottom → top
-	Label     string    `json:"label,omitempty"` // see Pile.Label
+	Cards     []string  `json:"cards,omitempty"`   // bottom → top
+	Label     string    `json:"label,omitempty"`   // see Pile.Label
+	Compact   bool      `json:"compact,omitempty"` // see Pile.Compact
 	TopFaceUp bool      `json:"topFaceUp,omitempty"`
 	Back      pack.Back `json:"back,omitempty"` // see Pile.Back
 }
@@ -365,7 +366,7 @@ func (t *Table) privateView(area Area) *PrivateView {
 // every kind but decks, side decks and the encounter deck, which are face
 // down.
 func (k PileKind) public() bool {
-	return k != KindDeck && k != KindSideDeck && k != KindEncounter
+	return k != KindDeck && k != KindSideDeck && k != KindEncounter && k != KindScenarioDeck
 }
 
 // shownCards returns the cards of p everybody may see, bottom to top: all of
@@ -390,7 +391,7 @@ func (p *Pile) shows(id string) bool {
 func (p *Pile) viewOf() PileView {
 	return PileView{
 		ID: p.ID, Kind: p.Kind, Owner: p.Owner, X: p.X, Y: p.Y, Count: len(p.Cards),
-		Cards: p.shownCards(), Label: p.Label, TopFaceUp: p.TopFaceUp, Back: p.Back,
+		Cards: p.shownCards(), Label: p.Label, Compact: p.Compact, TopFaceUp: p.TopFaceUp, Back: p.Back,
 	}
 }
 
@@ -408,7 +409,7 @@ func (c *Card) viewOf(stageKey string) CardView {
 	if c.FaceDown && c.Zone == ZoneTable {
 		cv.Code = ""
 	}
-	if isSideDeckID(c.Home) {
+	if isSideDeckID(c.Home) || isScenarioDeckID(c.Home) {
 		cv.Home = c.Home
 	}
 	return cv

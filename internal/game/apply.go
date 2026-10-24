@@ -168,11 +168,17 @@ func validArea(a Area) bool {
 	return false
 }
 
+// isScenarioDeckID reports whether id names a scenario deck, encounter or not.
+func isScenarioDeckID(id string) bool {
+	return strings.HasPrefix(id, scenarioEncounterPrefix) || strings.HasPrefix(id, scenarioDeckPrefix)
+}
+
 // discardPileID returns the id of the pile where c is discarded: the discard
-// pile of its side deck for a side deck card, which may not exist, or else the
-// discard pile of its owner.
+// pile of its side deck or scenario deck for a card of one, which may not
+// exist, or else the discard pile of its owner (the encounter discard pile for
+// a card owned by nobody).
 func discardPileID(c *Card) string {
-	if isSideDeckID(c.Home) {
+	if isSideDeckID(c.Home) || isScenarioDeckID(c.Home) {
 		discardID, _ := discardPileOf(c.Home)
 		return discardID
 	}
@@ -183,15 +189,15 @@ func discardPileID(c *Card) string {
 }
 
 // tuckedDestination returns the pile a card tucked under a card leaving the
-// table goes to: its discard pile, on top. A side deck card whose side deck
-// has no discard pile goes to the bottom of its side deck instead (bottom is
+// table goes to: its discard pile, on top. A side deck or scenario deck card
+// whose deck has no discard pile goes to the bottom of its deck instead (bottom is
 // then true), as Daredevil's Sense cards do, so that it never keeps its host
 // on the table. ok is false when there is no such pile.
 func (t *Table) tuckedDestination(c *Card) (pile *Pile, bottom, ok bool) {
 	if pile, ok := t.Piles[discardPileID(c)]; ok {
 		return pile, false, true
 	}
-	if isSideDeckID(c.Home) {
+	if isSideDeckID(c.Home) || isScenarioDeckID(c.Home) {
 		if home, ok := t.Piles[c.Home]; ok {
 			return home, true, true
 		}
@@ -921,11 +927,12 @@ func applyReveal(t *Table, a Action) error {
 }
 
 // revealable reports whether the top card of pile can be revealed onto it:
-// the encounter deck's, a player's deck's, or a side deck's that hides its
-// top card. A side deck showing its top card has nothing to reveal.
+// an encounter deck's, a scenario deck's, a player's deck's, or a side deck's
+// that hides its top card. A side deck showing its top card has nothing to
+// reveal.
 func revealable(pile *Pile) bool {
 	switch pile.Kind {
-	case KindEncounter, KindDeck:
+	case KindEncounter, KindScenarioDeck, KindDeck:
 		return true
 	case KindSideDeck:
 		return !pile.TopFaceUp
@@ -1003,8 +1010,10 @@ func (t *Table) actedDeck(a Action, hand Area) string {
 		return "deck:" + string(hand)
 	case ActDiscardTop, ActReorderTop, ActShuffle:
 		return a.Pile
-	case ActDeal, ActShuffleIn:
-		return PileEncounter
+	case ActDeal:
+		return cmp.Or(a.Pile, PileEncounter)
+	case ActShuffleIn:
+		return cmp.Or(a.Target, PileEncounter)
 	case ActShuffleBack:
 		deckID, _ := deckOfDiscard(a.Pile)
 		return deckID
@@ -1020,16 +1029,19 @@ func (t *Table) actedDeck(a Action, hand Area) string {
 }
 
 // applyDeal deals the recorded encounter card face down, wherever it is in the
-// encounter deck (see applyDraw). A card revealed on the deck is back in it
+// encounter deck a.Pile names, or the classic one (see applyDraw). A card revealed on the deck is back in it
 // (see coveredFor), so a revealed card can be dealt too. The card goes to the
 // action's position; its area only names the recipient, for the history.
 func applyDeal(t *Table, a Action) error {
 	if !validArea(a.Area) {
 		return invalid("unknown recipient %q", a.Area)
 	}
-	enc, err := t.pile(PileEncounter)
+	enc, err := t.pile(cmp.Or(a.Pile, PileEncounter))
 	if err != nil {
 		return err
+	}
+	if enc.Kind != KindEncounter {
+		return invalid("cards are dealt from an encounter deck, not from %q", enc.ID)
 	}
 	if len(a.Cards) != 1 {
 		return invalid("deal takes exactly one card, not %d", len(a.Cards))
@@ -1050,6 +1062,12 @@ func deckOfDiscard(discardID string) (string, bool) {
 	if discardID == PileEncounterDiscard {
 		return PileEncounter, true
 	}
+	if key, ok := strings.CutPrefix(discardID, scenarioEncounterDiscardPrefix); ok {
+		return scenarioEncounterPrefix + key, true
+	}
+	if key, ok := strings.CutPrefix(discardID, scenarioDiscardPrefix); ok {
+		return scenarioDeckPrefix + key, true
+	}
 	if owner, ok := strings.CutPrefix(discardID, "disc:"); ok {
 		return "deck:" + owner, true
 	}
@@ -1060,10 +1078,16 @@ func deckOfDiscard(discardID string) (string, bool) {
 }
 
 // discardPileOf returns the id of the discard pile of a deck pile. A side
-// deck may have no discard pile: the id it returns then names no pile.
+// deck or scenario deck may have no discard pile: the id it returns then names no pile.
 func discardPileOf(deckID string) (string, bool) {
 	if deckID == PileEncounter {
 		return PileEncounterDiscard, true
+	}
+	if key, ok := strings.CutPrefix(deckID, scenarioEncounterPrefix); ok {
+		return scenarioEncounterDiscardPrefix + key, true
+	}
+	if key, ok := strings.CutPrefix(deckID, scenarioDeckPrefix); ok {
+		return scenarioDiscardPrefix + key, true
 	}
 	if owner, ok := strings.CutPrefix(deckID, "deck:"); ok {
 		return "disc:" + owner, true
@@ -1124,7 +1148,15 @@ func applyShuffleIn(t *Table, a Action) error {
 	if !isPlainTargetPile(a.Pile) || a.Pile == PileVictory {
 		return invalid("pile %q is not a set-aside pile", a.Pile)
 	}
-	return mergeAndOrder(t, a, PileEncounter, func(c *Card) bool { return c.Home == PileEncounter })
+	deckID := cmp.Or(a.Target, PileEncounter)
+	deck, err := t.pile(deckID)
+	if err != nil {
+		return err
+	}
+	if deck.Kind != KindEncounter && deck.Kind != KindScenarioDeck {
+		return invalid("pile %q is not an encounter or scenario deck", deckID)
+	}
+	return mergeAndOrder(t, a, deckID, func(c *Card) bool { return c.Home == deckID })
 }
 
 // mergeAndOrder moves the cards of the source pile accepted by wanted into

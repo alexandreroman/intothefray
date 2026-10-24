@@ -1,6 +1,7 @@
 package game
 
 import (
+	"cmp"
 	"fmt"
 	"strings"
 
@@ -52,6 +53,14 @@ func (g *Game) pileName(who actor, id string) string {
 		noun = pile.Label + " deck"
 	case KindSideDiscard:
 		noun = pile.Label + " discard pile"
+	case KindEncounter:
+		return pile.Label + "'s encounter deck"
+	case KindEncounterDiscard:
+		return pile.Label + "'s encounter discard pile"
+	case KindScenarioDeck:
+		return "the " + pile.Label + " deck"
+	case KindScenarioDiscard:
+		return "the " + pile.Label + " discard pile"
 	default:
 		noun = "pile"
 	}
@@ -301,7 +310,7 @@ func (n narrator) describe(a Action) (logLine, bool) {
 		deck, _ := deckOfDiscard(a.Pile)
 		return logLine{text: join(words("shuffled "), n.pile(a.Pile), words(" into "), n.pile(deck))}, true
 	case ActShuffleIn:
-		return logLine{text: join(words("shuffled "), n.pile(a.Pile), words(" into "), n.pile(PileEncounter))}, true
+		return logLine{text: join(words("shuffled "), n.pile(a.Pile), words(" into "), n.pile(cmp.Or(a.Target, PileEncounter)))}, true
 	case ActGroup:
 		// A group of moves only arranges the table, as a single move does.
 		if arrangingKinds[a.Actions[0].Kind] {
