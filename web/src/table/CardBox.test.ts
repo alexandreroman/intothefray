@@ -710,8 +710,8 @@ describe('CardBox', () => {
       {
         kind: 'play',
         card: 'c1',
-        // The first free slot of Alex's row from 760 (keys.ts): the deck at 600 ends at 740, and the
-        // first player token at 860 ends at 944, 50 before 1000 once taken up to the grid.
+        // The first free slot of Alex's row from its deck (keys.ts): the deck at 600 ends at 740, and
+        // the first player token at 860 ends at 944, 50 before 1000 once taken up to the grid.
         x: 1000,
         y: 0,
         // Played explicitly, the deck's card lands face up.

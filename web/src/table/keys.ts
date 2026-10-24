@@ -11,13 +11,11 @@ import { FIRST_PLAYER_BOX, footprints, GRID, visualBox } from './layout';
 import { ownSeats } from './seats';
 import { ZOOM_STEP } from './zoom';
 
-// The free slot of a player's row: from x 760, where the cards in play start
-// past the deck, the discard pile, the identity and the main scheme
-// (internal/game/setup.go), a spot for a portrait card, 140 by 196, with 50
-// free on each side, as the setup leaves between the cards it puts in play.
-// Turned 15° when exhausted, a portrait card reaches about 23 further on each
-// side: 50 lets two neighbours both be exhausted without overlapping.
-const SLOT_FIRST_X = 760;
+// The free slot of a player's row: a spot for a portrait card, 140 by 196,
+// with 50 free on each side, as the setup leaves between the cards it puts in
+// play (internal/game/setup.go). Turned 15° when exhausted, a portrait card
+// reaches about 23 further on each side: 50 lets two neighbours both be
+// exhausted without overlapping.
 const SLOT_CARD = { w: 140, h: 196 };
 const SLOT_GAP = 50;
 
@@ -291,13 +289,15 @@ function handSeatOf(id: string, view: View): number | undefined {
 
 /**
  * The free slot for a card played from the hand: the first spot of the
- * player's row, from x 760, where a 140-wide card keeps 50 free on each side.
- * The spots tried are 760 and the spot 50 past the right edge of each thing in
- * the row, taken up to the grid, from left to right: the card lands right
- * after the last card or pile of the row, or in the first hole wide enough
- * before it. The row is the height of the player's deck (the top of the table
- * without one). Every table card and pile reaching into the row is in the
- * way, and so is the first player token.
+ * player's row, from its deck on, where a 140-wide card keeps 50 free on each
+ * side. The spots tried are the deck's x and the spot 50 past the right edge
+ * of each thing in the row, taken up to the grid, from left to right: the card
+ * lands right after the last card or pile of the row, or in the first hole
+ * wide enough before it. On a fresh row, the deck, the discard pile, any side
+ * piles and the identity lie closer together than that, so the card lands
+ * after the identity. The row is the height of the player's deck (the top of
+ * the table, from x 0, without one). Every table card and pile reaching into
+ * the row is in the way, and so is the first player token.
  */
 export function freeSlot(
   cards: CardView[],
@@ -307,6 +307,7 @@ export function freeSlot(
   firstPlayer?: Point,
 ): { x: number; y: number } {
   const deck = piles.find((pile) => pile.kind === 'deck' && pile.owner === seat);
+  const start = deck?.x ?? 0;
   const y = deck?.y ?? 0;
   const all = footprints(cards, piles, sizeOf);
   if (firstPlayer) {
@@ -320,8 +321,8 @@ export function freeSlot(
     });
   const pastItems = items
     .map((item) => Math.ceil((visualBox(item).right + SLOT_GAP) / GRID) * GRID)
-    .filter((x) => x >= SLOT_FIRST_X);
-  const candidates = [SLOT_FIRST_X, ...pastItems].sort((a, b) => a - b);
+    .filter((x) => x >= start);
+  const candidates = [start, ...pastItems].sort((a, b) => a - b);
   // The last spot lies past every item, so there is always a free one.
   return { x: candidates.find(isFree) ?? Math.max(...candidates), y };
 }
