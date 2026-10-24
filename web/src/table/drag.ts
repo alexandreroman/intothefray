@@ -312,7 +312,10 @@ function place(drag: DragSource, at: Point, dealTo: Area, rows: RowMap): Action 
     case 'pile':
       return { kind: 'play', card: drag.card, x, y };
     case 'encounter':
-      return { kind: 'deal', area: dealTo, x, y };
+      // The classic encounter deck is the default: only a scenario deck names itself.
+      return drag.pile === 'enc'
+        ? { kind: 'deal', area: dealTo, x, y }
+        : { kind: 'deal', pile: drag.pile, area: dealTo, x, y };
     case 'deck':
       // The server plays the deck's top card, which the client does not know.
       return { kind: 'play', pile: drag.pile, x, y };
@@ -393,7 +396,10 @@ export function sourceOf(element: Pressable, view: View, taken?: string): DragSo
       }
       // Out-of-play piles are not drawn on the table: only a discard pile is dragged from.
       const open =
-        pile.kind === 'discard' || pile.kind === 'encounterDiscard' || pile.kind === 'sideDiscard';
+        pile.kind === 'discard' ||
+        pile.kind === 'encounterDiscard' ||
+        pile.kind === 'sideDiscard' ||
+        pile.kind === 'scenarioDiscard';
       const card = taken ?? pile.cards?.at(-1);
       const inPile = card !== undefined && (pile.cards ?? []).includes(card);
       return open && inPile ? { kind: 'pile', pile: pile.id, card } : null;
@@ -451,7 +457,11 @@ export function pileTargets(drag: DragSource, view: View): PileTarget[] {
   }
   const exists = (target: PileTarget) => table.piles.some((p) => p.id === target.pile);
   if (drag.kind === 'encounter') {
-    const encounterDiscard: PileTarget = { pile: 'encd', drop: 'discard', label: 'Discard' };
+    const encounterDiscard: PileTarget = {
+      pile: deckDiscardOf(drag.pile),
+      drop: 'discard',
+      label: 'Discard',
+    };
     return [encounterDiscard].filter(exists);
   }
   if (drag.kind === 'deck') {

@@ -105,9 +105,13 @@ export interface TileContext {
 export function pileLabel(pile: PileView, view: View): string {
   switch (pile.kind) {
     case 'encounter':
-      return 'Encounter deck';
+      return pile.label ? `${pile.label} deck` : 'Encounter deck';
     case 'encounterDiscard':
-      return 'Encounter discard';
+      return pile.label ? `${pile.label} discard` : 'Encounter discard';
+    case 'scenarioDeck':
+      return `${pile.label} deck`;
+    case 'scenarioDiscard':
+      return `${pile.label} discard`;
     case 'victory':
       return 'Victory display';
     case 'deck':
@@ -144,7 +148,12 @@ export function canShuffleIn(pile: PileView, seats: readonly number[]): boolean 
 
 /** Whether the pile is a deck the boxes search with a choice to shuffle on closing. */
 export function isDeck(pile: PileView): boolean {
-  return pile.kind === 'deck' || pile.kind === 'encounter' || pile.kind === 'sideDeck';
+  return (
+    pile.kind === 'deck' ||
+    pile.kind === 'encounter' ||
+    pile.kind === 'sideDeck' ||
+    pile.kind === 'scenarioDeck'
+  );
 }
 
 /** A player's decks and discard piles, whose cards their owner draws from a box. */
@@ -164,7 +173,10 @@ export function tileActions(card: CardView, pile: PileView, context: TileContext
   const shared = pile.owner === -1;
   const outOfPlay = isOutOfPlay(pile);
   const discardPile =
-    pile.kind === 'discard' || pile.kind === 'encounterDiscard' || pile.kind === 'sideDiscard';
+    pile.kind === 'discard' ||
+    pile.kind === 'encounterDiscard' ||
+    pile.kind === 'sideDiscard' ||
+    pile.kind === 'scenarioDiscard';
   const privatePile = pile.kind === 'deck' || pile.kind === 'sideDeck' || pile.kind === 'aside';
   if (privatePile && !own && !shared) {
     return [];

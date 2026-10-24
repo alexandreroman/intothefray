@@ -12,7 +12,7 @@
   /** The frame around an owner's deck and discard pile, with the name above it. */
   export interface OwnerBox {
     frame: OwnerFrame;
-    /** The player's name, or "Villain". */
+    /** The player's name, "Villain", or the label of a scenario deck. */
     name: string;
     /** CSS colour of the frame and the name: the player's seat colour, or the villain's. */
     color: string;
@@ -96,7 +96,7 @@
 
 <!-- Card z-indexes come from the server and can be negative: the surface isolates them. -->
 <div class="surface table-dots" style:width="{width}px" style:height="{height}px">
-  {#each owners as owner (owner.frame.owner)}
+  {#each owners as owner (`${owner.frame.owner}:${owner.frame.label ?? ''}`)}
     <div
       class="ownerbox"
       data-owner={owner.frame.owner}

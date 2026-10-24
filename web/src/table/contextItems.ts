@@ -153,7 +153,10 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 /** How the header names a pile's kind: the pile's owner is in the eyebrow. */
-const PILE_NAMES: Record<Exclude<PileView['kind'], 'sideDeck' | 'sideDiscard'>, string> = {
+const PILE_NAMES: Record<
+  Exclude<PileView['kind'], 'sideDeck' | 'sideDiscard' | 'scenarioDeck' | 'scenarioDiscard'>,
+  string
+> = {
   deck: 'Deck',
   discard: 'Discard',
   encounter: 'Encounter deck',
@@ -169,6 +172,14 @@ function pileName(pile: PileView): string {
       return `${sideLabel(pile)} deck`;
     case 'sideDiscard':
       return `${sideLabel(pile)} discard`;
+    case 'scenarioDeck':
+      return `${pile.label} deck`;
+    case 'scenarioDiscard':
+      return `${pile.label} discard`;
+    case 'encounter':
+      return pile.label ? `${pile.label} deck` : PILE_NAMES.encounter;
+    case 'encounterDiscard':
+      return pile.label ? `${pile.label} discard` : PILE_NAMES.encounterDiscard;
     default:
       return PILE_NAMES[pile.kind];
   }

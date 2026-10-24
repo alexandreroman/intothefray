@@ -74,7 +74,7 @@
     HAND_REST_DROP,
     handRestDrop,
     isOutOfPlay,
-    outOfPlayChips,
+    chipsByFrame,
     ownerFrames,
     raisedHandCard,
     restingStrip,
@@ -421,10 +421,13 @@
   const tableCards = $derived(shown(cards.filter((card) => card.zone === 'table')));
 
   /** The frames around each owner's deck and discard pile, named after their owner. */
-  const owners = $derived(
-    ownerFrames(tablePiles).map((frame): OwnerBox => {
-      const outOfPlay = outOfPlayChips(frame.owner, piles);
-      const { name, color } = ownerLook(view, frame.owner);
+  const owners = $derived.by(() => {
+    const frames = ownerFrames(tablePiles);
+    const chips = chipsByFrame(frames, piles);
+    return frames.map((frame, i): OwnerBox => {
+      const outOfPlay = chips[i] ?? [];
+      const { name: ownerName, color } = ownerLook(view, frame.owner);
+      const name = frame.label ?? ownerName;
       // Only a seated deck has a hand: neither the villain nor an empty seat.
       const deck = deckAt(frame.owner);
       if (!deck) {
@@ -432,8 +435,8 @@
       }
       const inHand = `${deck.handCount} ${deck.handCount === 1 ? 'card' : 'cards'} in hand`;
       return { frame, name, color, tip: inHand, outOfPlay };
-    }),
-  );
+    });
+  });
 
   // ---- The screen ----
 

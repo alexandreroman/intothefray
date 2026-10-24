@@ -569,7 +569,12 @@ function groupOf(units: readonly CardView[], actionOf: (unit: CardView) => Actio
 
 /** How Move to names a deck: "deck", or a side deck's "Sense deck". */
 function deckName(home: PileView): string {
-  return home.kind === 'sideDeck' ? `${sideLabel(home)} deck` : 'deck';
+  if (home.kind === 'sideDeck') {
+    return `${sideLabel(home)} deck`;
+  }
+  return home.kind === 'scenarioDeck' || (home.kind === 'encounter' && home.label)
+    ? `${home.label} deck`
+    : 'deck';
 }
 
 function moveMenu(card: CardView, context: Context): ActionItem[] {
@@ -603,7 +608,7 @@ function moveMenu(card: CardView, context: Context): ActionItem[] {
       },
       {
         id: 'deckShuffle',
-        label: encounter ? 'Shuffle into encounter deck' : `Shuffle into ${deck}`,
+        label: encounter && !home.label ? 'Shuffle into encounter deck' : `Shuffle into ${deck}`,
         group: 0,
         run: () => toDeck(card, 'shuffle'),
       },
@@ -648,9 +653,13 @@ export function arrowItem(card: string): ActionItem {
 
 const SIDE_DECK_PREFIX = 'side:';
 const SIDE_DISCARD_PREFIX = 'sided:';
+const SCENARIO_ENCOUNTER_PREFIX = 'enc:';
+const SCENARIO_ENCOUNTER_DISCARD_PREFIX = 'encd:';
+const SCENARIO_DECK_PREFIX = 'sdeck:';
+const SCENARIO_DISCARD_PREFIX = 'sdisc:';
 
 /**
- * The deck a card goes back to: the side deck it belongs to (`home`), else the
+ * The deck a card goes back to: the side or scenario deck it belongs to (`home`), else the
  * encounter deck for an encounter card, else its owner's deck.
  */
 export function homeDeckOf(card: CardView): string {
@@ -661,8 +670,9 @@ export function homeDeckOf(card: CardView): string {
 }
 
 /**
- * The discard pile a card goes to, as discardPileID has it: a side deck's card
- * to that deck's discard pile, or nowhere (null) when the side deck has none.
+ * The discard pile a card goes to, as discardPileID has it: a side or scenario deck's card
+ * to that deck's discard pile, or nowhere (null) when the deck has none; a card of an encounter
+ * scenario deck falls back to the encounter discard pile.
  */
 export function discardPileOf(card: CardView, piles: readonly PileView[]): string | null {
   const home = homeDeckOf(card);
@@ -670,13 +680,21 @@ export function discardPileOf(card: CardView, piles: readonly PileView[]): strin
     const discard = deckDiscardOf(home);
     return piles.some((pile) => pile.id === discard) ? discard : null;
   }
+  if (isScenarioDeckId(home)) {
+    const discard = deckDiscardOf(home);
+    if (piles.some((pile) => pile.id === discard)) {
+      return discard;
+    }
+    return home.startsWith(SCENARIO_ENCOUNTER_PREFIX) ? 'encd' : null;
+  }
   return card.owner === -1 ? 'encd' : `disc:p${card.owner}`;
 }
 
 /**
  * The discard pile paired with a deck, by id: "deck:p0" with "disc:p0", a side
- * deck "side:p0:1" with "sided:p0:1", the encounter deck with "encd". It may
- * not exist: only some side decks have one.
+ * deck "side:p0:1" with "sided:p0:1", the encounter deck with "encd", a scenario
+ * deck "enc:w" with "encd:w" and "sdeck:x" with "sdisc:x". It may not exist: only
+ * some side and scenario decks have one.
  */
 export function deckDiscardOf(deck: string): string {
   if (deck === 'enc') {
@@ -685,12 +703,23 @@ export function deckDiscardOf(deck: string): string {
   if (isSideDeckId(deck)) {
     return SIDE_DISCARD_PREFIX + deck.slice(SIDE_DECK_PREFIX.length);
   }
+  if (deck.startsWith(SCENARIO_ENCOUNTER_PREFIX)) {
+    return SCENARIO_ENCOUNTER_DISCARD_PREFIX + deck.slice(SCENARIO_ENCOUNTER_PREFIX.length);
+  }
+  if (deck.startsWith(SCENARIO_DECK_PREFIX)) {
+    return SCENARIO_DISCARD_PREFIX + deck.slice(SCENARIO_DECK_PREFIX.length);
+  }
   return deck.replace(/^deck:/, 'disc:');
 }
 
 /** Whether the pile id is a side deck's: "side:p0:1". */
 export function isSideDeckId(pile: string): boolean {
   return pile.startsWith(SIDE_DECK_PREFIX);
+}
+
+/** Whether the pile id is a scenario deck's: "enc:wrecker" or "sdeck:weapons". */
+export function isScenarioDeckId(pile: string): boolean {
+  return pile.startsWith(SCENARIO_ENCOUNTER_PREFIX) || pile.startsWith(SCENARIO_DECK_PREFIX);
 }
 
 /** The name of a side deck and of its discard pile: "Invocation", as in "Invocation deck". */
@@ -761,16 +790,24 @@ function pileActions(pile: PileView, context: Context): ActionItem[] | { text: s
       return items;
     }
     case 'encounter':
-      return [
+    case 'scenarioDeck': {
+      // A scenario deck is named by its label; the classic encounter deck has none.
+      const pileName = pile.label ? `the ${pile.label} deck` : 'the encounter deck';
+      const items = [
         revealItem(pile, context),
-        lookTopItem(pile, 'the encounter deck', context.table),
+        lookTopItem(pile, pileName, context.table),
         searchItem(pile),
-        discardOneItem(pile),
-        discardTopItem(pile, 'the encounter deck', context.table),
-        shuffleItem(pile),
       ];
+      // The encounter deck always has its discard pile; another scenario deck may have none.
+      if (pile.id === 'enc' || hasPile(context.table, deckDiscardOf(pile.id))) {
+        items.push(discardOneItem(pile), discardTopItem(pile, pileName, context.table));
+      }
+      items.push(shuffleItem(pile));
+      return items;
+    }
     case 'discard':
     case 'encounterDiscard':
+    case 'scenarioDiscard':
     case 'sideDiscard': {
       // Anyone may search a discard pile, its default action; only its owner shuffles it into its deck.
       const search: ActionItem = { ...searchItem(pile), default: true };
@@ -829,16 +866,17 @@ function drawCountItem(pile: PileView, table: TableView): ActionItem {
 
 /**
  * Reveal turns a deck's top card face up onto the deck. It is the encounter deck's main action,
- * which names no pile; a player's deck or side deck draws by default, and names itself.
+ * which names no pile for the classic one; a player's deck or side deck draws by default, and names itself.
  */
 function revealItem(pile: PileView, context: Context): ActionItem {
-  const encounter = pile.kind === 'encounter';
+  // The encounter deck's main action; the classic one names no pile, a scenario deck names itself.
+  const encounter = pile.kind === 'encounter' || pile.kind === 'scenarioDeck';
   const reveal: ActionItem = {
     id: 'reveal',
     label: 'Reveal',
     key: 'R',
     group: GROUP_MAIN,
-    run: () => (encounter ? { kind: 'reveal' } : { kind: 'reveal', pile: pile.id }),
+    run: () => (pile.id === 'enc' ? { kind: 'reveal' } : { kind: 'reveal', pile: pile.id }),
   };
   if (encounter) {
     reveal.default = true;

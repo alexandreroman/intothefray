@@ -17,7 +17,7 @@ import {
   type View,
   type Zone,
 } from '../lib/types';
-import { discardPileOf, homeDeckOf, isSideDeckId, sideLabel } from './actions';
+import { discardPileOf, homeDeckOf, isScenarioDeckId, isSideDeckId, sideLabel } from './actions';
 import { stackOf } from './drag';
 import { isHidden } from './face';
 import type { Landing } from './interaction.svelte';
@@ -860,7 +860,7 @@ function slidUnder(lines: LogView[], view: View, before: TableView, after: Table
     acted &&
     was.parent !== undefined &&
     !onTable.has(was.parent) &&
-    isSideDeckId(homeDeckOf(was)) &&
+    (isSideDeckId(homeDeckOf(was)) || isScenarioDeckId(homeDeckOf(was))) &&
     discardPileOf(was, after.piles) === null;
 
   const anims: Under[] = [];
@@ -904,6 +904,28 @@ const PILE_NOUNS: Partial<Record<PileView['kind'], string>> = {
   aside: 'set-aside cards',
 };
 
+/**
+ * What the history calls a scenario deck or its discard pile (Game.pileName): "Wrecker's encounter deck"
+ * for an encounter deck, "the Experimental Weapons deck" for another; undefined for any other pile.
+ */
+function scenarioName(pile: PileView): string | undefined {
+  if (!pile.label || pile.owner !== -1) {
+    return undefined;
+  }
+  switch (pile.kind) {
+    case 'encounter':
+      return `${pile.label}'s encounter deck`;
+    case 'encounterDiscard':
+      return `${pile.label}'s encounter discard pile`;
+    case 'scenarioDeck':
+      return `the ${pile.label} deck`;
+    case 'scenarioDiscard':
+      return `the ${pile.label} discard pile`;
+    default:
+      return undefined;
+  }
+}
+
 /** What the history calls a pile of a player: "deck", "Invocation deck", "Invocation discard pile". */
 function pileNoun(pile: PileView): string {
   const label = sideLabel(pile);
@@ -923,10 +945,14 @@ function pileNoun(pile: PileView): string {
  * the pile of a player holding several decks adds the deck's hero ("their
  * Spider-Man deck", "Alex's Spider-Man deck").
  */
-function narratedName(pile: PileView, writer: PlayerView | undefined, view: View): string {
+export function narratedName(pile: PileView, writer: PlayerView | undefined, view: View): string {
   const shared = SHARED_PILE_NAMES[pile.id];
   if (shared) {
     return shared;
+  }
+  const scenario = scenarioName(pile);
+  if (scenario) {
+    return scenario;
   }
   let noun = pileNoun(pile);
   const hero = seatHero(view, pile.owner);
