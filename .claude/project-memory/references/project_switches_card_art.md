@@ -22,7 +22,7 @@ type: project
   property that `CardArt` reads; disabled tiles, hero thumbnails and
   `prefers-reduced-motion` get no zoom.
 
-**Why:** user decisions of 2026-10-19, for a livelier and cleaner UI.
+**Why:** user decisions, for a livelier and cleaner UI.
 
 **How to apply:** a new switch adds a `data-indicator` child and
 `use:selectionIndicator` (or uses `Segmented`); a new card thumbnail

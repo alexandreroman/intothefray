@@ -59,7 +59,11 @@ type Action struct {
 	// Placed tells that X and Y are where a card tucked under Target was
 	// dropped (attach, play under a card): it lies there, behind its host,
 	// rather than at the default tucked offset (see tuckedPlace).
-	Placed bool     `json:"placed,omitempty"`
+	Placed bool `json:"placed,omitempty"`
+	// FaceUp marks an explicit Play: the card lands face up, even out of a
+	// pile that hides its cards (see landsFaceDown). A drag and drop sends
+	// none.
+	FaceUp bool     `json:"faceUp,omitempty"`
 	N      int      `json:"n,omitempty"`
 	Name   string   `json:"name,omitempty"` // token, status or modifier name
 	Delta  int      `json:"delta,omitempty"`

@@ -20,8 +20,8 @@ type: project
   deck), playing the top, putting a card on top, every count limit and
   the menu header's count.
 - Played as the deck's top (a deck-top play, or Play from a Search box),
-  the revealed card lands face up and its history line names it; every
-  other card played from a hidden deck lands face down.
+  the revealed card lands face up and its history line names it (see
+  [[project_face_down_cards]] for the other cards of a hidden deck).
 - A Top X reorder of a deck with a revealed card takes that card back
   into the deck, face down, wherever the reorder puts it. Such a reorder
   is a tracked, undoable action with a line ("put X back into their
@@ -43,7 +43,8 @@ type: project
 - History: "revealed Rhino" on the encounter deck; "revealed X from their
   deck" / "… from their Labor deck" on a player's deck.
 
-**Why:** user decision of 2026-10-24.
+**Why:** user decision: a revealed card stands for its deck's top card,
+so every deck action treats it as such.
 
 **How to apply:** one generic rule in internal/game: `coveredFor`
 (apply.go) puts the revealed cards back on top of the deck an action acts

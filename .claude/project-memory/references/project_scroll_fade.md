@@ -26,7 +26,7 @@ type: project
   villain list's sticky pack names); the dragged tile and the tile context
   menu of a card box sit outside the list, out of the mask.
 
-**Why:** user decision 2026-10-22, so items come and go with a fade as a
+**Why:** user decision, so items come and go with a fade as a
 list scrolls.
 
 **How to apply:** another scrolling list that should fade its edges adds

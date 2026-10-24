@@ -42,7 +42,7 @@ type: project
 - Touch mode (no hover, coarse pointer) shows no card preview and no
   keyboard-shortcuts button; bar buttons are 44 px.
 
-**Why:** decided with the user on 2026-10-19: players add cards as they
+**Why:** decided with the user: players add cards as they
 play, so fixed things sit on the left and play grows right; zones and
 their splits added complexity without value.
 

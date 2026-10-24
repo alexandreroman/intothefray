@@ -19,7 +19,7 @@ type: project
 - The backend runs on an OVH VPS at `api.intothefray.xyz` (see
   `project_deployment.md`); it stays portable.
 
-**Why:** decided during the design (2026-10-18).
+**Why:** decided during the design.
 
 **How to apply:** check new features against these limits before
 building; the full rationale is in the design spec under `docs/`.

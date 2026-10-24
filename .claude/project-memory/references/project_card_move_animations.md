@@ -34,7 +34,7 @@ type: project
   Another player's drop starts from their ghost. Reduced motion keeps
   only the change glow.
 
-**Why:** decided with the user on 2026-10-20: players follow what happened
+**Why:** decided with the user: players follow what happened
 at the table without reading the history.
 
 **How to apply:** a new way for a card to change place needs its motion in

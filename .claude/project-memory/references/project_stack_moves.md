@@ -9,7 +9,7 @@ type: project
 On the table, cards tucked under another card form a stack. Moving the top
 card (the one the others are tucked under) moves the whole stack. Moving a
 tucked card detaches it, together with anything tucked under it. Spec 5.2
-states this rule (decided 2026-10-19).
+states this rule.
 
 A card tucked under another by a drag lies where it was dropped (grid
 snapped, behind its host, `placed` on attach and play); the fixed tucked

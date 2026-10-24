@@ -44,13 +44,13 @@ type: project
      `INFRA_DISPATCH_TOKEN` (fine-grained PAT on `intothefray-infra`,
      Contents: read and write); a missing secret logs a warning and
      succeeds. The infra repository sends no event back.
-- Memory budget on the 2 GB VPS (measured 2026-10-20): Go server about
+- Memory budget on the 2 GB VPS (measured): Go server about
   25-50 MB; a game in Redis about 30 KB at start, 350 KB after 1,000
   actions, 700 KB after 3,000 (one seat), two to three times that with
   four seats. Redis gets a `maxmemory` cap (about 512 MB, `noeviction`),
   the Go server `GOMEMLIMIT` (about 256 MiB), and the VPS a swap file.
 
-**Why:** decided 2026-10-20. A path-routed same-origin API on
+**Why:** a path-routed same-origin API on
 `intothefray.xyz/api` would need a Cloudflare Worker (Origin Rules cannot
 change the origin on the free plan) and the Cloudflare proxy in front of
 GitHub Pages, whose certificate renewals fail behind it; a separate `api`

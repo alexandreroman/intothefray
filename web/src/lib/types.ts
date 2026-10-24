@@ -317,6 +317,8 @@ export interface Action {
   y?: number;
   /** A card tucked under `target` (attach, play) lies at `x`, `y`, where it was dropped. */
   placed?: boolean;
+  /** An explicit Play: the card lands face up, even out of a deck that hides its cards. A drag sends none. */
+  faceUp?: boolean;
   n?: number;
   name?: string; // token, status or modifier name
   delta?: number;

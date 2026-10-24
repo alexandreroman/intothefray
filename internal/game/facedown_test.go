@@ -50,19 +50,23 @@ func (f *doFixture) sideDeckLabeled(t *testing.T, label string) string {
 	return ""
 }
 
+// heroFixture returns a fixture of a started game of one player, with that
+// hero's deck.
+func heroFixture(identity, name string) func(t *testing.T) *doFixture {
+	return func(t *testing.T) *doFixture {
+		return heroGame(t, heroDeck(t, newCatalog(t), identity, name))
+	}
+}
+
+// playSideTop plays the top card of p0's side deck with that label.
+func playSideTop(label string) func(t *testing.T, f *doFixture) (string, Action) {
+	return func(t *testing.T, f *doFixture) (string, Action) {
+		deck := f.sideDeckLabeled(t, label)
+		return topCards(f.g.Table.Piles[deck], 1)[0], Action{Kind: ActPlay, Pile: deck, X: 800, Y: 500}
+	}
+}
+
 func TestPlayOutOfAHiddenPileLandsFaceDown(t *testing.T) {
-	hero := func(identity, name string) func(t *testing.T) *doFixture {
-		return func(t *testing.T) *doFixture {
-			return heroGame(t, heroDeck(t, newCatalog(t), identity, name))
-		}
-	}
-	// playSideTop plays the top card of p0's side deck with that label.
-	playSideTop := func(label string) func(t *testing.T, f *doFixture) (string, Action) {
-		return func(t *testing.T, f *doFixture) (string, Action) {
-			deck := f.sideDeckLabeled(t, label)
-			return topCards(f.g.Table.Piles[deck], 1)[0], Action{Kind: ActPlay, Pile: deck, X: 800, Y: 500}
-		}
-	}
 	tests := []struct {
 		name    string
 		fixture func(t *testing.T) *doFixture
@@ -84,16 +88,16 @@ func TestPlayOutOfAHiddenPileLandsFaceDown(t *testing.T) {
 			return top, Action{Kind: ActPlay, Pile: "deck:p0", Target: f.villain()}
 		}, true, "played a card face down from their deck under Rhino"},
 		{
-			"Labor side deck", hero(herculesIdentity, "Hercules"), playSideTop("Labor"),
+			"Labor side deck", heroFixture(herculesIdentity, "Hercules"), playSideTop("Labor"),
 			true, "played a card face down from their Labor deck",
 		},
 		{
 			// Its cards have an encounter back, yet the deck is Hercules'.
-			"Gift side deck", hero(herculesIdentity, "Hercules"), playSideTop("Gift"),
+			"Gift side deck", heroFixture(herculesIdentity, "Hercules"), playSideTop("Gift"),
 			true, "played a card face down from their Gift deck",
 		},
 		{
-			"Weather side deck", hero(stormIdentity, "Storm"), playSideTop("Weather"),
+			"Weather side deck", heroFixture(stormIdentity, "Storm"), playSideTop("Weather"),
 			true, "played a card face down from their Weather deck",
 		},
 		{"face-up side deck", sideDeckFixture, func(_ *testing.T, f *doFixture) (string, Action) {
@@ -137,6 +141,81 @@ func TestPlayOutOfAHiddenPileLandsFaceDown(t *testing.T) {
 			checkIntegrity(t, f.g.Table)
 			checkHistory(t, f.g)
 		})
+	}
+}
+
+// TestExplicitPlayOutOfAHiddenPileLandsFaceUp plays cards out of the piles
+// that hide them as a box tile's Play does (FaceUp): they land face up, shown
+// to everyone, and their line names them as any face-up play does.
+func TestExplicitPlayOutOfAHiddenPileLandsFaceUp(t *testing.T) {
+	deckTop := func(_ *testing.T, f *doFixture) (string, Action) {
+		return topCards(f.g.Table.Piles["deck:p0"], 1)[0], Action{Kind: ActPlay, Pile: "deck:p0", X: 400, Y: 200}
+	}
+	deckCard := func(t *testing.T, f *doFixture) (string, Action) {
+		id := f.singleFacedInDeck(t)
+		return id, Action{Kind: ActPlay, Card: id, X: 400, Y: 200}
+	}
+	tests := []struct {
+		name    string
+		fixture func(t *testing.T) *doFixture
+		// play prepares the table and returns the card played and its play,
+		// FaceUp left out.
+		play  func(t *testing.T, f *doFixture) (string, Action)
+		under bool // tucked under the villain
+	}{
+		{"deck top", newDoFixture, deckTop, false},
+		{"deck card from a search", newDoFixture, deckCard, false},
+		{"deck top under a card", newDoFixture, deckTop, true},
+		{"deck card under a card", newDoFixture, deckCard, true},
+		{"Labor side deck", heroFixture(herculesIdentity, "Hercules"), playSideTop("Labor"), false},
+		{"Gift side deck", heroFixture(herculesIdentity, "Hercules"), playSideTop("Gift"), false},
+		{"Weather side deck", heroFixture(stormIdentity, "Storm"), playSideTop("Weather"), true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			f := tt.fixture(t)
+			id, play := tt.play(t, f)
+			play.FaceUp = true
+			want := "played " + f.nameOf(t, id)
+			if tt.under {
+				play.Target = f.villain()
+				want += " under Rhino"
+			}
+			f.mustDo(t, "h", play, at(5))
+
+			c := f.g.Table.Cards[id]
+			if c.Zone != ZoneTable || c.FaceDown {
+				t.Fatalf("played card = %+v, want on the table, face up", c)
+			}
+			if tt.under && c.Parent != play.Target {
+				t.Errorf("played card's parent = %q, want %q", c.Parent, play.Target)
+			}
+			if got := f.lastLog().Text; got != want {
+				t.Errorf("play line = %q, want %q", got, want)
+			}
+			checkShownEverywhere(t, f.g, id, "h", "b")
+			checkPartRefs(t, f.cat, f.g.Log)
+			checkIntegrity(t, f.g.Table)
+			checkHistory(t, f.g)
+			checkReplay(t, f)
+		})
+	}
+}
+
+// checkShownEverywhere fails when a view of the game, its owner's included,
+// hides the code of card id or leaves it out of the last history line.
+func checkShownEverywhere(t *testing.T, g *Game, id string, tokens ...string) {
+	t.Helper()
+	for _, token := range append(tokens, "nobody") {
+		v := g.ViewFor(token)
+		for _, c := range v.Table.Cards {
+			if c.ID == id && c.Code == "" {
+				t.Errorf("%s does not see the code of the face-up card", token)
+			}
+		}
+		if line := v.Log[len(v.Log)-1]; !slices.Contains(line.Cards, id) {
+			t.Errorf("%s: line %q drops the id of the face-up card", token, line.Text)
+		}
 	}
 }
 

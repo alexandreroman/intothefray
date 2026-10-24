@@ -23,7 +23,7 @@ type: project
   the preview) stay clear of it while it shows; larger screens give it its
   own row.
 
-**Why:** decided with the user on 2026-10-20: a phone gains the bar's room
+**Why:** decided with the user: a phone gains the bar's room
 for content while scrolling, and the bar is back as soon as it is needed.
 
 **How to apply:** a new screen with a top bar on a scrolling element passes

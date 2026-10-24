@@ -18,7 +18,7 @@ type: project
   makes it the seat's identity and frees the previous one, which becomes
   a version in turn, in the same event (undo restores both).
 
-**Why:** user decision of 2026-10-20: an identity, like the villain, is
+**Why:** user decision: an identity, like the villain, is
 never taken out of play in Marvel Champions.
 
 **How to apply:** any new action that takes a table card away goes

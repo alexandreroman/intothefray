@@ -29,7 +29,7 @@ type: project
 - History: "gave Rhino −2 ATK"; merged: "set the DEF modifier on Rhino to
   +2", or "cleared the DEF modifier on Rhino" at 0.
 
-**Why:** user design of 2026-10-21: players need to record stat changes
+**Why:** user design: players need to record stat changes
 such as a hero's +1 DEF or a villain's −1 ATK.
 
 **How to apply:** keep `modifierNames` (internal/game/apply.go) and

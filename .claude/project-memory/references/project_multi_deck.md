@@ -32,7 +32,7 @@ type: project
   Marvel"); history lines and box titles add the hero ("Alex · Spider-Man")
   only when the player has several decks.
 
-**Why:** decided with the user on 2026-10-19: one person can play a
+**Why:** decided with the user: one person can play a
 multi-handed game alone or alongside friends, and per-deck rules stay
 intact.
 

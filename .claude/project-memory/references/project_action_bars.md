@@ -64,8 +64,8 @@ type: project
   (icon and count) at the right of the owner frame's name line; an
   empty chip is dimmed and inert.
 
-**Why:** UX review of 2026-10-20 against DragnCards and OCTGN, then the
-user's choice that one complete, labelled menu replaces the bars.
+**Why:** a UX review against DragnCards and OCTGN, then the user's
+choice that one complete, labelled menu replaces the bars.
 
 **How to apply:** new actions go into `actionsFor` (keys and menu read
 it); the review and its steps are in
