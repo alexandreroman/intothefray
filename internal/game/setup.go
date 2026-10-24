@@ -113,9 +113,6 @@ func rowTop(row int) int {
 }
 
 const (
-	pileKeyVillain = "villain"
-	pileKeyScheme  = "scheme"
-
 	faceTypeHero     = "hero"
 	faceTypeAlterEgo = "alter_ego"
 )

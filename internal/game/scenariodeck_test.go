@@ -15,13 +15,16 @@ func scenarioFixture(t *testing.T) *doFixture {
 	f := newDoFixture(t)
 	tb := f.g.Table
 	code := tb.Cards[tb.Piles[PileEncounter].Cards[0]].Code
-	tb.Piles["enc:w"] = &Pile{ID: "enc:w", Kind: KindEncounter, Owner: NoOwner,
+	tb.Piles["enc:w"] = &Pile{
+		ID: "enc:w", Kind: KindEncounter, Owner: NoOwner,
 		Label: "Wrecker", Compact: true, X: 0, Y: 30,
 	}
-	tb.Piles["encd:w"] = &Pile{ID: "encd:w", Kind: KindEncounterDiscard, Owner: NoOwner,
+	tb.Piles["encd:w"] = &Pile{
+		ID: "encd:w", Kind: KindEncounterDiscard, Owner: NoOwner,
 		Label: "Wrecker", Compact: true, X: 120, Y: 30,
 	}
-	tb.Piles["sdeck:x"] = &Pile{ID: "sdeck:x", Kind: KindScenarioDeck, Owner: NoOwner,
+	tb.Piles["sdeck:x"] = &Pile{
+		ID: "sdeck:x", Kind: KindScenarioDeck, Owner: NoOwner,
 		Label: "Experimental Weapons", Compact: true, X: 300, Y: 30,
 	}
 	add := func(deck string, ids ...string) {

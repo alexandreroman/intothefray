@@ -12,6 +12,12 @@ import (
 	"github.com/alexandreroman/intothefray/internal/pack"
 )
 
+// Keys of the stages of the classic scenarios.
+const (
+	pileKeyVillain = "villain"
+	pileKeyScheme  = "scheme"
+)
+
 // doFixture is a started game of two Spider-Man players: "h" (Host, p0) and
 // "b" (Bob, p1).
 type doFixture struct {
