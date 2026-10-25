@@ -44,7 +44,8 @@ type: project
   frame.
 - A portrait table card is 140×196 table units, chosen for readability;
   the hand and the preview have their own sizes. Tokens sit inside the
-  card: damage and counters on its lower part, threat on its right side.
+  card: damage, threat and counters pile up from its bottom right corner,
+  damage in the corner; a scheme's threat sits in its top right corner.
 - On a wide screen the history panel shows at the right; it can be
   collapsed to a slim strip that keeps Undo, remembered per viewer
   (`itf-history-collapsed`). The card preview floats over the play area at
