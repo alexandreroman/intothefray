@@ -259,11 +259,6 @@
     return seatPlayer(view, seat)?.decks.find((deck) => deck.area === `p${seat}`);
   }
 
-  /** Shows the hand of the viewer's next deck, round their decks (Q). */
-  function selectNextDeck(): void {
-    stepOwnDeck(1);
-  }
-
   // Ready all has something to ready: an exhausted card on the table, whoever owns it, not locked.
   const canReadyAll = $derived(
     cards.some((card) => card.zone === 'table' && card.exhausted === true && !isLocked(card)),
@@ -332,7 +327,9 @@
     return selected !== null && seats.includes(selected) ? selected : (seats[0] ?? null);
   });
 
-  // With one player, "All" already shows the villain and that player: there is no choice to make.
+  // "Villain + player", when there is a choice to make: with one player, "All" already shows the
+  // villain and that player. The player selector at the bottom left, listing every seat, shows only
+  // then: "All" already shows every hero.
   const focused = $derived(viewMode === 'focus' && seats.length > 1 && shownSeat !== null);
 
   // The selected deck's hand, unless "Villain + player" shows another player's row: then no hand shows,
@@ -355,9 +352,6 @@
       : ALL_ROWS,
   );
 
-  // The player selector at the bottom left lists every seat, in "Villain + player" only: "All" already
-  // shows every hero.
-  const pickerShown = $derived(focused);
   // Shift + ← / → steps through the selector's heroes; in "All", through the viewer's own decks.
   const canStepHero = $derived(focused || own.length > 1);
 
@@ -684,7 +678,7 @@
       hovered: focusHovered,
       controls: homeControls,
       // The player selector at the bottom left.
-      taken: pickerShown ? ['bottom-left'] : [],
+      taken: focused ? ['bottom-left'] : [],
     });
     focusCorner = next;
   }
@@ -708,7 +702,7 @@
       visibleHeight,
       focusWidth,
       focusHeight,
-      pickerShown,
+      focused,
       homeControls,
       barRoom,
     ];
@@ -1486,7 +1480,7 @@
       run: runItem,
       act: (action) => send(action, targetOfKey(action)),
       showKeys: showKeySheet,
-      selectNextDeck,
+      selectNextDeck: () => stepOwnDeck(1),
       canStepHero,
       stepHero,
       canReadyAll,
@@ -1831,7 +1825,7 @@
     />
   </div>
 
-  {#if pickerShown && shownSeat !== null}
+  {#if focused && shownSeat !== null}
     {@render seatPicker(shownSeat)}
   {/if}
 
