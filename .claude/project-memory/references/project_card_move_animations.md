@@ -34,6 +34,11 @@ type: project
   its cards flies there from where it was let go (its landed ghost).
   Another player's drop starts from their ghost. Reduced motion keeps
   only the change glow.
+- A card turning over (`flip`) or turning in (`turnIn`, a stage card)
+  under a pointer at rest keeps its hover: the ring, the preview and the
+  keys follow its new face at once, for every viewer. Edge-on, it is out
+  of reach of the pointer, so the rehover after a view and the card's
+  `pointerleave` leave it hovered while it turns (`motion.isTurning`).
 
 **Why:** decided with the user: players follow what happened
 at the table without reading the history.

@@ -748,7 +748,8 @@
       void motion
         .animate(app, anims, { before: prev.table, after: next.table }, zoom)
         .then(async () => {
-          // Once drawn, then once still: a card turning over is edge-on, out of reach, meanwhile.
+          // Once drawn, then once still: a card turning over or in under the pointer keeps its
+          // hover meanwhile, edge-on out of reach of the hit-test (rehoverUnderPointer).
           rehoverUnderPointer();
           await motion.settled();
           rehoverUnderPointer();
@@ -774,7 +775,8 @@
   /**
    * Hovers what a new view put under a pointer at rest, whoever acted (spec
    * 5.8): the card or hand card there, or nothing once the hovered card went
-   * from under it. The ring, the preview and the keys follow.
+   * from under it. The ring, the preview and the keys follow. A hovered card
+   * turning over or in stays hovered: the pointer still rests on it, edge-on.
    */
   function rehoverUnderPointer(): void {
     const { x, y } = interaction.pointer;
@@ -783,6 +785,10 @@
       !Number.isFinite(y) ||
       typeof document.elementFromPoint !== 'function'
     ) {
+      return;
+    }
+    const hovered = interaction.hovered;
+    if (hovered?.kind === 'card' && motion.isTurning(hovered.id)) {
       return;
     }
     const under = document.elementFromPoint(x, y);
