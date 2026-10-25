@@ -1,8 +1,6 @@
 package game
 
 import (
-	"encoding/json"
-	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
@@ -272,41 +270,6 @@ func TestGroupToDeckLine(t *testing.T) {
 			t.Errorf("line = %q, want %q", line.Text, want)
 		}
 	})
-}
-
-// TestReplayGroup2p replays a stored two-player Rhino game with group
-// actions (replaced group moves, group discards, an undone group) and
-// compares the table it ends with to the golden one, byte for byte. Run with
-// -record to record the game again from its script, and with -update to
-// rewrite the golden file from the replay.
-func TestReplayGroup2p(t *testing.T) {
-	recording := filepath.Join("testdata", "replays", "group-2p.json")
-	golden := filepath.Join("testdata", "replays", "group-2p.table.golden.json")
-	cat := newCatalog(t)
-	if *recordGames {
-		recordGroupGame(t, recording, golden)
-	}
-
-	var game recordedGame
-	if err := json.Unmarshal(readFile(t, recording), &game); err != nil {
-		t.Fatal(err)
-	}
-	replayed, err := Replay(cat, game.Setup, game.Events)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if mustJSON(t, replayed.History.Events) != mustJSON(t, game.Events) {
-		t.Error("the replay records other events than the recorded ones")
-	}
-	checkIntegrity(t, replayed.Table)
-	checkHistory(t, replayed)
-	got := indentedJSON(t, replayed.Table)
-	if *updateGolden {
-		writeFile(t, golden, got)
-	}
-	if want := readFile(t, golden); string(got) != string(want) {
-		t.Errorf("the replayed table differs from %s", golden)
-	}
 }
 
 // recordGroupGame plays a scripted two-player Rhino game with group actions

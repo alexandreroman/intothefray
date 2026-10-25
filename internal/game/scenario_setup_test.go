@@ -163,7 +163,7 @@ func TestClassicLayoutUnchanged(t *testing.T) {
 	if got := stageX(t, table, "scheme"); got != 550 {
 		t.Errorf("scheme x = %d, want 550", got)
 	}
-	if got := table.Cards[cardOfCode(t, table, "20004")].X; got != 800 {
+	if got := table.Cards[cardWithCode(t, table, "20004").ID].X; got != 800 {
 		t.Errorf("first in-play x = %d, want 800", got)
 	}
 	if table.Piles[PileEncounter] == nil || table.Piles[PileEncounterDiscard].X != 160 {
@@ -175,17 +175,6 @@ func TestClassicLayoutUnchanged(t *testing.T) {
 	if n := len(table.Piles[PileEncounter].Cards); n != 2 {
 		t.Errorf("encounter deck has %d cards, want the 2 copies of 20003", n)
 	}
-}
-
-func cardOfCode(t *testing.T, table *Table, code string) string {
-	t.Helper()
-	for id, c := range table.Cards {
-		if c.Code == code {
-			return id
-		}
-	}
-	t.Fatalf("no card %s", code)
-	return ""
 }
 
 func TestScenarioDeckGroups(t *testing.T) {
@@ -226,10 +215,10 @@ func TestScenarioDeckGroups(t *testing.T) {
 			t.Errorf("stage %s x = %d, want %d", key, got, want)
 		}
 	}
-	if got := table.Cards[cardOfCode(t, table, "10003")].X; got != 470 {
+	if got := table.Cards[cardWithCode(t, table, "10003").ID].X; got != 470 {
 		t.Errorf("side scheme of v1 x = %d, want 470", got)
 	}
-	if got := table.Cards[cardOfCode(t, table, "10006")].X; got != 1080 {
+	if got := table.Cards[cardWithCode(t, table, "10006").ID].X; got != 1080 {
 		t.Errorf("side scheme of v2 x = %d, want 1080", got)
 	}
 }
@@ -317,19 +306,19 @@ func TestOrderedDeckTopFirst(t *testing.T) {
 
 func TestStageCardsHaveTheirDeckAsHome(t *testing.T) {
 	table := mustScenarioTable(t, "twice")
-	scheme, sideScheme := table.Cards[cardOfCode(t, table, "10003")], table.Cards[cardOfCode(t, table, "10006")]
+	scheme, sideScheme := table.Cards[cardWithCode(t, table, "10003").ID], table.Cards[cardWithCode(t, table, "10006").ID]
 	if scheme.Home != "enc:da" || sideScheme.Home != "sdeck:db" {
 		t.Errorf("homes of the side schemes = %q, %q, want enc:da, sdeck:db", scheme.Home, sideScheme.Home)
 	}
-	if v := table.Cards[cardOfCode(t, table, "10001")]; v.Home != "enc:da" {
+	if v := table.Cards[cardWithCode(t, table, "10001").ID]; v.Home != "enc:da" {
 		t.Errorf("stage card home = %q, want enc:da", v.Home)
 	}
-	if m := table.Cards[cardOfCode(t, table, "10010")]; m.Home != PileEncounter {
+	if m := table.Cards[cardWithCode(t, table, "10010").ID]; m.Home != PileEncounter {
 		t.Errorf("stage card without a deck has home %q, want %q", m.Home, PileEncounter)
 	}
 
 	// A card tucked under the side scheme leaves with it.
-	tucked := table.Cards[cardOfCode(t, table, "10006")]
+	tucked := table.Cards[cardWithCode(t, table, "10006").ID]
 	tucked.Parent, tucked.X, tucked.Y = scheme.ID, scheme.X, scheme.Y
 	mustApply(t, table, Action{Kind: ActDiscard, Card: scheme.ID})
 	if got := table.Piles["encd:da"].Cards; !slices.Equal(got, []string{scheme.ID}) {

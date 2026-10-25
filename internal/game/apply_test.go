@@ -246,7 +246,8 @@ func TestToDeckShuffle(t *testing.T) {
 	if got := table.Piles["deck:p0"].Cards; !slices.Equal(got, []string{"nc6", "nc3", "nc4", "nc5"}) {
 		t.Errorf("deck = %v", got)
 	}
-	if _, ok := table.Cards["c3"]; ok || table.Cards["nc3"] == nil || table.Cards["nc3"].ID != "nc3" || table.Cards["nc3"].Pile != "deck:p0" {
+	nc3 := table.Cards["nc3"]
+	if _, ok := table.Cards["c3"]; ok || nc3 == nil || nc3.ID != "nc3" || nc3.Pile != "deck:p0" {
 		t.Error("c3 was not renamed to nc3 in the deck")
 	}
 }

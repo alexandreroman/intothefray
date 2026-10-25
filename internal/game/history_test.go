@@ -54,18 +54,6 @@ func (f *doFixture) villain() string {
 	return f.g.Table.stage(pileKeyVillain).Current
 }
 
-// identity returns the id of p0's identity card.
-func (f *doFixture) identity(t *testing.T) string {
-	t.Helper()
-	for id, c := range f.g.Table.Cards {
-		if c.Zone == ZoneTable && c.Owner == 0 {
-			return id
-		}
-	}
-	t.Fatal("p0 has no identity on the table")
-	return ""
-}
-
 // nameOf returns the name of the face 0 of card id.
 func (f *doFixture) nameOf(t *testing.T, id string) string {
 	t.Helper()
@@ -177,7 +165,7 @@ func TestMergeNeedsTheLastLine(t *testing.T) {
 
 func TestFlipBackRemovesLine(t *testing.T) {
 	f := newDoFixture(t)
-	identity := f.identity(t)
+	identity := identityOf(t, f.g, 0)
 	lines := len(f.g.Log)
 
 	f.mustDo(t, "h", Action{Kind: ActFlip, Card: identity}, at(0))
@@ -516,7 +504,8 @@ func TestCloseViewWithShuffleIsLoggedNotUndoable(t *testing.T) {
 		t.Error("the view is still open")
 	}
 	shuffledOrder := f.g.Table.Piles["deck:p0"].Cards
-	if len(shuffledOrder) != len(order) || slices.ContainsFunc(shuffledOrder, func(id string) bool { return slices.Contains(order, id) }) {
+	keptAnID := slices.ContainsFunc(shuffledOrder, func(id string) bool { return slices.Contains(order, id) })
+	if len(shuffledOrder) != len(order) || keptAnID {
 		t.Errorf("deck %v keeps ids of %v", shuffledOrder, order)
 	}
 	if got, want := f.lastLog().Text, "shuffled their deck"; got != want {
@@ -802,7 +791,7 @@ func TestUndoKeepsReorderedPile(t *testing.T) {
 func TestUndoOfStageChangeKeepsAttachmentsRight(t *testing.T) {
 	f := newDoFixture(t)
 	stage := f.g.Table.stage(pileKeyVillain)
-	rhino, identity := stage.Current, f.identity(t)
+	rhino, identity := stage.Current, identityOf(t, f.g, 0)
 	f.mustDo(t, "h", Action{Kind: ActAttach, Card: identity, Target: rhino}, at(1))
 	f.mustDo(t, "h", Action{Kind: ActChooseStage, Stage: stage.Key, Card: stage.Cards[1]}, at(2))
 
@@ -1006,7 +995,7 @@ func TestPlayFromPileThroughDo(t *testing.T) {
 
 func TestPlayUnderACardIsOneUndoableStep(t *testing.T) {
 	f := newDoFixture(t)
-	hero := f.identity(t)
+	hero := identityOf(t, f.g, 0)
 	f.mustDo(t, "h", Action{Kind: ActDraw, N: 1}, at(1))
 	card := f.g.Table.Hands["p0"][0]
 	lines := len(f.g.Log)
@@ -1046,7 +1035,7 @@ func TestPlayUnderACardIsOneUndoableStep(t *testing.T) {
 
 func TestPlayUnderACardReplays(t *testing.T) {
 	f := newDoFixture(t)
-	hero := f.identity(t)
+	hero := identityOf(t, f.g, 0)
 	f.mustDo(t, "h", Action{Kind: ActDraw, N: 2}, at(1))
 	hand := slices.Clone(f.g.Table.Hands["p0"])
 	f.mustDo(t, "h", Action{Kind: ActPlay, Card: hand[0], Target: hero}, at(2))
@@ -1216,7 +1205,7 @@ func TestStagesEndWhereTheirOwnersLeftThem(t *testing.T) {
 func TestUndoAfterReshuffleKeepsLaterActions(t *testing.T) {
 	f := newDoFixture(t)
 	f.mustDo(t, "h", Action{Kind: ActExhaust, Card: f.villain()}, at(1))
-	f.mustDo(t, "h", Action{Kind: ActExhaust, Card: f.identity(t)}, at(20))
+	f.mustDo(t, "h", Action{Kind: ActExhaust, Card: identityOf(t, f.g, 0)}, at(20))
 	f.mustDo(t, "h", Action{Kind: ActShuffle, Pile: PileEncounter}, at(40))
 	f.mustDo(t, "h", Action{Kind: ActUndo}, at(41))
 	f.mustDo(t, "b", Action{Kind: ActReveal}, at(42))
@@ -1287,7 +1276,7 @@ func TestMoveReplacesTheSamePlayersLastMove(t *testing.T) {
 func TestArrangingActionsAreUntrackedEvents(t *testing.T) {
 	f := newDoFixture(t)
 	f.mustDo(t, "h", Action{Kind: ActDraw, N: 2}, at(1))
-	rhino, identity := f.villain(), f.identity(t)
+	rhino, identity := f.villain(), identityOf(t, f.g, 0)
 	hand := slices.Clone(f.g.Table.Hands["p0"])
 	slices.Reverse(hand)
 	top := topCards(f.g.Table.Piles["deck:p0"], 2)
@@ -1308,7 +1297,8 @@ func TestArrangingActionsAreUntrackedEvents(t *testing.T) {
 
 		last := f.g.History.Events[len(f.g.History.Events)-1]
 		if last.Action.Kind != a.Kind || last.Tracked || last.Log != -1 || len(f.g.Log) != lines {
-			t.Errorf("%s recorded %+v with %d new lines, want an untracked event without a line", a.Kind, last, len(f.g.Log)-lines)
+			t.Errorf("%s recorded %+v with %d new lines, want an untracked event without a line",
+				a.Kind, last, len(f.g.Log)-lines)
 		}
 	}
 	checkHistory(t, f.g)
@@ -1352,7 +1342,7 @@ func TestUndoKeepsAnotherPlayersReady(t *testing.T) {
 // flipped: Host's undo must leave it on the side Bob chose.
 func TestUndoKeepsAnotherPlayersFlip(t *testing.T) {
 	f := newDoFixture(t)
-	identity := f.identity(t)
+	identity := identityOf(t, f.g, 0)
 	start := f.g.Table.Cards[identity].Face
 	f.mustDo(t, "h", Action{Kind: ActFlip, Card: identity}, at(1))
 	f.mustDo(t, "b", Action{Kind: ActFlip, Card: identity}, at(2))

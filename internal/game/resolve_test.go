@@ -242,7 +242,8 @@ func TestResolvePlayFromDeckTakesItsTopCard(t *testing.T) {
 	top := topCards(f.g.Table.Piles["deck:p0"], 1)[0]
 
 	// The client cannot pick a card of its deck: the top card is played, whatever it names.
-	got, err := resolve(f.g, f.g.actorOf(0), Action{Kind: ActPlay, Pile: "deck:p0", Card: f.hand, X: 400, Y: 200}, newTestRNG())
+	play := Action{Kind: ActPlay, Pile: "deck:p0", Card: f.hand, X: 400, Y: 200}
+	got, err := resolve(f.g, f.g.actorOf(0), play, newTestRNG())
 	if err != nil {
 		t.Fatal(err)
 	}
