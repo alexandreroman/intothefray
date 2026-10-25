@@ -1,4 +1,5 @@
 import type { ActionReturn } from 'svelte/action';
+import { prefersReducedMotion } from './screen';
 
 /** The selected option of a switch: a pressed button, or a checked radio. */
 const SELECTED = '[aria-pressed="true"], [aria-checked="true"]';
@@ -62,8 +63,4 @@ function indicatorOf(node: HTMLElement): HTMLElement {
     throw new Error('selectionIndicator: the control has no [data-indicator] child');
   }
   return indicator;
-}
-
-function prefersReducedMotion(): boolean {
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
