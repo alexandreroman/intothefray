@@ -27,15 +27,24 @@ type: project
   and FR Google Drive folders of the OCTGN plugin; card images are named
   by the card's `octgn_id`, which marvelcdb and mc4db records carry.
 - Format: AVIF only.
+- Single origin: the app loads every image (card faces, localized faces,
+  scenario images, backs, first player token) from
+  `https://img.intothefray.xyz` only. A CDN image that fails stays
+  missing; the browser never requests Cerebro, marvelcdb or mc4db.
 
 **Why:** French scans were unavailable from any hotlinkable host, and one
 host with immutable, optimized images cuts the preload weight several
-times over. A separate private repo keeps the credentials and the
-download-heavy pipeline out of the public app and its CI.
+times over. One origin of immutable, never-deleted objects keeps players'
+browsers free of third-party requests. A separate private repo keeps the
+credentials and the download-heavy pipeline out of the public app and
+its CI.
 
 **How to apply:** new or corrected cards need `make publish` in
 intothefray-img, then a commit of the app diff (release and rollback in
-[[project_deployment]]); design and plan in
+[[project_deployment]]); a missing image is fixed the same way, never by
+a client fallback. `TestEmbeddedImagesOnCDN` in `packs/packs_test.go`
+fails on any non-CDN image URL in the embedded catalog once
+`packs/images/manifest.json` exists; design and plan in
 `docs/superpowers/specs/2026-10-25-image-cdn-design.md` and
 `docs/superpowers/plans/2026-10-25-image-cdn.md`. See
 [[project_constraints]], [[reference_card_sources]].
