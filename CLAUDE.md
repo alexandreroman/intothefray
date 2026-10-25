@@ -14,8 +14,8 @@ See [README.md](README.md) for full documentation.
   leases, pub/sub)
 - Frontend: TypeScript, Svelte 5 + Vite, static SPA served
   separately (GitHub Pages)
-- Card data: per-pack JSON files generated from marvelcdb and
-  Cerebro, plus hand-curated scenario files
+- Card data: per-pack JSON files generated from marvelcdb, Cerebro,
+  mc4db and fr.marvelcdb, plus hand-curated scenario files
 
 ## Build & run
 
@@ -45,12 +45,13 @@ make web-build    # production build into web/dist/
 - `internal/store/` — Redis game store, connection leases and game
   event pub/sub
 - `internal/pack/` — card pack schema (types) and catalog
-- `internal/packgen/` — generator internals (fetch, marvelcdb, cerebro,
-  build, images, curated, report, write)
+- `internal/packgen/` — generator internals (fetch, marvelcdb, mc4db,
+  cerebro, build, images, curated, report, write)
 - `packs/` — `curated/` hand-written scenarios, card overrides and set
   data (`sets.json`: cards a set starts in play, sets kept out of the
   lobby, hero side decks, cards a hero sets aside), `dist/` generated JSON
-  (committed, never edited by hand), and the `embed` package that loads it
+  (committed, never edited by hand), and the `packs` Go package
+  (`packs.go`) that embeds it
 - `web/` — Svelte 5 + Vite SPA (standalone pnpm project; screens, lib,
   components, table: the table with its rendering, interactions,
   boxes, presence and animations)
