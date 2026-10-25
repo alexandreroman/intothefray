@@ -399,14 +399,11 @@ func applyAttach(t *Table, a Action) error {
 	if err != nil {
 		return err
 	}
-	if c == target {
-		return invalid("card %q cannot be attached to itself", c.ID)
-	}
-	children := t.descendants(c.ID)
-	if slices.Contains(children, target) {
-		return invalid("card %q is tucked under %q", target.ID, c.ID)
+	if err := t.checkTuckTarget(c, target); err != nil {
+		return err
 	}
 
+	children := t.descendants(c.ID)
 	x, y, z := tuckedPlace(target, a)
 	dx, dy, dz := x-c.X, y-c.Y, z-c.Z
 	for _, child := range children {
@@ -417,6 +414,18 @@ func applyAttach(t *Table, a Action) error {
 	c.Parent = target.ID
 	c.OnPile = ""
 	c.X, c.Y, c.Z = x, y, z
+	return nil
+}
+
+// checkTuckTarget refuses to tuck c under target when target is c itself or a
+// card tucked beneath c: either would make a cycle of attachments.
+func (t *Table) checkTuckTarget(c, target *Card) error {
+	if c == target {
+		return invalid("card %q cannot be attached to itself", c.ID)
+	}
+	if slices.Contains(t.descendants(c.ID), target) {
+		return invalid("card %q is tucked under %q", target.ID, c.ID)
+	}
 	return nil
 }
 
@@ -584,8 +593,12 @@ func applyPlay(t *Table, a Action) error {
 	}
 	var target *Card
 	if a.Target != "" {
-		// The played card is not on the table yet: it cannot be its own target.
+		// A revealed card is on the table already, its attachments too: it
+		// cannot be tucked under itself or one of them.
 		if target, err = t.tableCard(a.Target); err != nil {
+			return err
+		}
+		if err := t.checkTuckTarget(c, target); err != nil {
 			return err
 		}
 	}

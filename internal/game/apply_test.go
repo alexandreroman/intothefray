@@ -410,6 +410,28 @@ func TestPlayUnderRefusesATargetOffTheTable(t *testing.T) {
 	}
 }
 
+// A card revealed on a deck is on the table already: played under itself or
+// under a card tucked beneath it, it would make a cycle, as an attach would.
+func TestPlayOfARevealedCardRefusesItselfOrItsAttachmentsAsTarget(t *testing.T) {
+	for _, target := range []string{"c7", "c9"} {
+		table := newTestTable()
+		table.Cards["c7"].OnPile = PileEncounter
+		table.Cards["c9"] = &Card{
+			ID: "c9", Owner: NoOwner, Home: PileEncounter, Zone: ZoneTable, X: 600, Y: 40, Z: 5, Parent: "c7",
+		}
+		before := table.Clone()
+
+		err := apply(table, Action{Kind: ActPlay, Card: "c7", Target: target})
+
+		if !errors.Is(err, ErrInvalid) {
+			t.Errorf("target %s: err = %v, want ErrInvalid", target, err)
+		}
+		if !reflect.DeepEqual(before, table) {
+			t.Errorf("target %s: table changed by a rejected action", target)
+		}
+	}
+}
+
 func TestPlayRefusesCardsOutsideHandAndPiles(t *testing.T) {
 	table := newStageTable()
 
