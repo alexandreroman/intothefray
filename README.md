@@ -52,14 +52,14 @@ Everything below works today, except where noted.
 - **Undo** — take back your own last actions, across all your decks
 - **Keyboard shortcuts** — press `?` at the table for the full sheet
 - **Themes** — official, minimal or green felt, per viewer
-- **French cards** — the card data carries French names and images,
-  but Options does not offer French while mc4db serves no French images;
-  the cards show in English
+- **French cards** — Options offers French: the cards show their French
+  names and French scans, served from `img.intothefray.xyz`, and fall back
+  to English where a card has no French scan
 - **Fair play** — each player receives only what they may see
   (no peeking at hands, deck order or face-down cards)
 - **The whole card range** — expansions are added as data files, card images
-  load from their public sources. *Partly there:* the player cards of every pack
-  are in, a few scenarios only so far (Rhino, Klaw, Ultron, Kingpin, Risky
+  load from `img.intothefray.xyz`. *Partly there:* the player cards of every
+  pack are in, a few scenarios only so far (Rhino, Klaw, Ultron, Kingpin, Risky
   Business, Mutagen Formula, Wrecking Crew)
 
 ## Prerequisites
@@ -108,6 +108,7 @@ make web-check  # type-check, lint and test the web app
 make web-build  # build the web app into web/dist
 make build      # build bin/intothefray
 make packs      # regenerate the card packs in packs/dist
+make sources    # write the card image sources, packs/images/sources.json
 make infra-down # stop Redis and Caddy
 make app-up     # build the web app, then start Caddy, server and Redis
 make app-logs   # follow the logs of the containerised stack
@@ -177,15 +178,34 @@ run at the same time, each with its own compose project. A `PORT` or an
 `.env.casper` holds the compose project name, the ports, `REDIS_URL` and
 the instance name.
 
-`make packs` downloads the card data from marvelcdb and Cerebro, the
-French names from fr.marvelcdb.com and the French image paths from
-[mc4db](https://mc4db.merlindumesnil.net) (all cached in
-`packs/.cache`), keeps only the image URLs that answer, merges the
-hand-written files of `packs/curated/`, and writes the result to
-`packs/dist/`. Commit the regenerated files with the change that caused
-them. The answers to image checks are cached in `packs/.cache/images.json`
-for good: delete it to pick up images published since, such as new French
-scans. The curated files are the scenarios (`scenarios/`), card overrides
+### Card packs
+
+`make packs` downloads the card data from marvelcdb, Cerebro and
+[mc4db](https://mc4db.merlindumesnil.net), and the French names from
+fr.marvelcdb.com (all cached in `packs/.cache`), merges the hand-written
+files of `packs/curated/`, takes the card images from the image manifest,
+and writes the result to `packs/dist/`. Commit the regenerated files with
+the change that caused them.
+
+The card images are served from `https://img.intothefray.xyz`, a
+Cloudflare R2 bucket filled by the private `intothefray-img` repository.
+Two committed files link the repositories:
+
+- `packs/images/sources.json`, written by `make sources`, lists every
+  face the generator builds, with its candidate images (Cerebro image,
+  image of the source record, OCTGN image name), before any card is
+  dropped;
+- `packs/images/manifest.json`, written by `make publish` in
+  `intothefray-img`, gives each face its English and French image on the
+  CDN. Its URLs are content-addressed, so they never change content.
+
+To add images, run `make sources`, commit `sources.json`, run
+`make publish` in `intothefray-img`, then `make packs`. `make packs`
+fails when the manifest is missing, and drops a card with a face that has
+no English image ("no image" in the report). The report prints how many
+faces the manifest covers, per language.
+
+The curated files are the scenarios (`scenarios/`), card overrides
 (`cards.json`: face sizes, the Cerebro image ids of the identities whose
 Cerebro images are swapped, and the cards a deck containing a card puts aside
 at setup, such as Specialized Training's Specialists, listed on the card's code
@@ -223,7 +243,8 @@ completes it from mc4db, which shares marvelcdb's schema:
   `_by_ffg` (`thor_by_ffg` is `thor`), and set codes drop `_by_ffg`
   (`daredevil_by_ffg_nemesis` is `daredevil_nemesis`); a pack marvelcdb
   lacks is added under its mc4db code without `_by_ffg`;
-- the images of an added card are its Cerebro image, then its mc4db scan.
+- the image sources of an added card are its Cerebro image and its mc4db
+  scan.
 
 The report lists the records taken from mc4db, per pack. Cerebro is not
 a card-list source: it holds no official card that both marvelcdb and
@@ -361,7 +382,7 @@ graph TD
     B -->|WebSocket + REST| S[Go server instances]
     S --> R[(Redis: game state, connection leases, pub/sub)]
     S -->|decks| M[marvelcdb.com API]
-    B -->|card images| I[marvelcdb / Cerebro / mc4db images]
+    B -->|card images| I[img.intothefray.xyz: Cloudflare R2]
 ```
 
 The server embeds every card pack. The frontend publishes only the
@@ -384,7 +405,7 @@ time it appears (not when the browser asks to save data).
 | `internal/version/` | Commit the binary was built from               |
 | `internal/store/`   | Redis game store, connection leases, pub/sub   |
 | `internal/pack/`    | Card pack schema and catalog                   |
-| `internal/packgen/` | Generator internals (fetch, build, images...)  |
+| `internal/packgen/` | Generator internals (fetch, build, cdn...)     |
 | `packs/`            | Curated files, generated and committed `dist/` |
 | `web/`              | Svelte frontend (Vite, pnpm, Caddyfile)        |
 | `mise.toml`         | Node.js and pnpm versions                      |

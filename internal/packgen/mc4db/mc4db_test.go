@@ -81,14 +81,3 @@ func TestFetchPacks(t *testing.T) {
 		t.Errorf("packs = %+v, want %+v", got, want)
 	}
 }
-
-func TestFrenchImageURLs(t *testing.T) {
-	if got, want := FrenchImageURL("/bundles/cards/EN/core/01004.webp"),
-		"https://mc4db.merlindumesnil.net/bundles/cards/FR/core/01004.webp"; got != want {
-		t.Errorf("FrenchImageURL = %q, want %q", got, want)
-	}
-	if got, want := DirectFrenchImageURL("core", "01097a"),
-		"https://mc4db.merlindumesnil.net/bundles/cards/FR/core/01097a.webp"; got != want {
-		t.Errorf("DirectFrenchImageURL = %q, want %q", got, want)
-	}
-}

@@ -1,6 +1,9 @@
 // Command packgen regenerates the card-pack files from marvelcdb, completed
 // with the official mc4db cards it lacks, and Cerebro, with the French names of
-// fr.marvelcdb and the French images of mc4db.
+// fr.marvelcdb. The card images come from the image manifest of the image CDN.
+//
+// With -sources-only, it writes instead the image sources of every face, which
+// the intothefray-img pipeline turns into that manifest.
 package main
 
 import (
@@ -9,6 +12,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/fs"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -16,30 +20,40 @@ import (
 	"strings"
 
 	"github.com/alexandreroman/intothefray/internal/packgen/build"
+	"github.com/alexandreroman/intothefray/internal/packgen/cdn"
 	"github.com/alexandreroman/intothefray/internal/packgen/cerebro"
 	"github.com/alexandreroman/intothefray/internal/packgen/curated"
 	"github.com/alexandreroman/intothefray/internal/packgen/fetch"
-	"github.com/alexandreroman/intothefray/internal/packgen/images"
 	"github.com/alexandreroman/intothefray/internal/packgen/marvelcdb"
 	"github.com/alexandreroman/intothefray/internal/packgen/mc4db"
 	"github.com/alexandreroman/intothefray/internal/packgen/report"
 	"github.com/alexandreroman/intothefray/internal/packgen/write"
 )
 
-// userAgent identifies the generator to the source and image hosts, which may
-// throttle anonymous clients.
+// userAgent identifies the generator to the source hosts, which may throttle
+// anonymous clients.
 const userAgent = "intothefray-packgen (+https://github.com/alexandreroman/intothefray)"
 
 // lang is the language of the generated packs; the other languages are
 // overrides inside them.
 const lang = "en"
 
+// manifestLangs are the languages the manifest coverage is reported for.
+var manifestLangs = []string{"en", "fr"}
+
 type options struct {
-	out        string
-	cache      string
-	curatedDir string
-	refresh    bool
+	out         string
+	cache       string
+	curatedDir  string
+	sources     string
+	manifest    string
+	refresh     bool
+	sourcesOnly bool
 }
+
+// inputsFunc gathers the source data of the packs. Tests replace the network
+// fetch with fixtures.
+type inputsFunc func(ctx context.Context, opts options) (build.Inputs, error)
 
 func main() {
 	os.Exit(execute())
@@ -49,43 +63,68 @@ func main() {
 func execute() int {
 	var opts options
 	flag.StringVar(&opts.out, "out", "packs/dist", "output root")
-	flag.StringVar(&opts.cache, "cache", "packs/.cache", "source and image-check cache")
+	flag.StringVar(&opts.cache, "cache", "packs/.cache", "source data cache")
 	flag.StringVar(&opts.curatedDir, "curated", "packs/curated", "curated files")
+	flag.StringVar(&opts.sources, "sources", "packs/images/sources.json", "image sources written by -sources-only")
+	flag.StringVar(&opts.manifest, "manifest", "packs/images/manifest.json", "image manifest written by intothefray-img")
 	flag.BoolVar(&opts.refresh, "refresh", false, "ignore cached source data")
+	flag.BoolVar(&opts.sourcesOnly, "sources-only", false, "write the image sources only, not the packs")
 	flag.Parse()
 
 	logger := slog.New(slog.NewTextHandler(os.Stderr, nil))
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
-	if err := run(ctx, logger, opts); err != nil {
+	if err := run(ctx, logger, os.Stdout, opts, fetchInputs); err != nil {
 		logger.Error("packgen failed", "error", err)
 		return 1
 	}
 	return 0
 }
 
-func run(ctx context.Context, logger *slog.Logger, opts options) error {
+func run(ctx context.Context, logger *slog.Logger, stdout io.Writer, opts options, inputs inputsFunc) error {
+	if opts.sourcesOnly {
+		return writeSources(ctx, logger, opts, inputs)
+	}
+	return writePacks(ctx, logger, stdout, opts, inputs)
+}
+
+// writeSources writes the image sources of every face, and leaves the packs as
+// they are.
+func writeSources(ctx context.Context, logger *slog.Logger, opts options, inputs inputsFunc) error {
 	logger.Info("fetching sources")
-	inputs, err := fetchInputs(ctx, opts)
+	in, err := inputs(ctx, opts)
+	if err != nil {
+		return err
+	}
+	faces := build.Sources(in)
+	if err := cdn.WriteSources(opts.sources, faces); err != nil {
+		return err
+	}
+	logger.Info("image sources written", "path", opts.sources, "faces", len(faces))
+	return nil
+}
+
+// writePacks builds the packs with the images of the manifest and writes them.
+func writePacks(ctx context.Context, logger *slog.Logger, stdout io.Writer, opts options, inputs inputsFunc) error {
+	// Loaded before the slow fetch, so a missing manifest fails at once. Building
+	// without one would drop every card for lack of an image.
+	manifest, err := cdn.LoadManifest(opts.manifest)
+	if errors.Is(err, fs.ErrNotExist) {
+		return fmt.Errorf("no image manifest, run make publish in intothefray-img first: %w", err)
+	}
 	if err != nil {
 		return err
 	}
 
-	urls := build.ImageURLs(inputs)
-	logger.Info("checking images", "urls", len(urls))
-	checker := &images.Checker{CachePath: filepath.Join(opts.cache, "images.json"), UserAgent: userAgent}
-	// Nothing is written when some checks stay inconclusive: dropping their
-	// cards would silently shrink the packs.
-	inputs.Alive, err = checker.Check(ctx, urls)
+	logger.Info("fetching sources")
+	in, err := inputs(ctx, opts)
 	if err != nil {
-		if errors.Is(err, images.ErrInconclusive) {
-			return fmt.Errorf("image checks incomplete, rerun later: %w", err)
-		}
-		return fmt.Errorf("check images: %w", err)
+		return err
 	}
+	in.Manifest = manifest
 
-	result, err := build.Build(inputs)
+	result, err := build.Build(in)
 	if err != nil {
 		return fmt.Errorf("build packs: %w", err)
 	}
@@ -94,7 +133,8 @@ func run(ctx context.Context, logger *slog.Logger, opts options) error {
 	}
 	logger.Info("packs written", "dir", filepath.Join(opts.out, lang))
 
-	printReport(os.Stdout, result)
+	printReport(stdout, result)
+	printManifestCoverage(stdout, manifest, build.Sources(in))
 	return nil
 }
 
@@ -162,6 +202,22 @@ func printReport(w io.Writer, result build.Result) {
 	}
 	for _, entry := range result.Report {
 		_, _ = fmt.Fprintf(w, "unsupported %s %q (%s): %s\n", entry.Code, entry.Name, entry.Pack, entry.Reason)
+	}
+}
+
+// printManifestCoverage prints, per language, how many of the faces the
+// manifest has an image for, e.g. "manifest fr: 4100/4198 faces". A face
+// without an English image drops its card, so a low English count shows a
+// partial manifest.
+func printManifestCoverage(w io.Writer, manifest cdn.Manifest, faces []cdn.SourceFace) {
+	for _, manifestLang := range manifestLangs {
+		covered := 0
+		for _, face := range faces {
+			if _, found := manifest.Image(face.Code, manifestLang); found {
+				covered++
+			}
+		}
+		_, _ = fmt.Fprintf(w, "manifest %s: %d/%d faces\n", manifestLang, covered, len(faces))
 	}
 }
 

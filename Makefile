@@ -85,8 +85,12 @@ web-build: web-install ## Build the web app into web/dist/
 ##@ Data
 
 .PHONY: packs
-packs: ## Regenerate card packs from marvelcdb, mc4db and Cerebro
+packs: ## Regenerate card packs from marvelcdb, mc4db, Cerebro and the image manifest
 	go run ./cmd/packgen
+
+.PHONY: sources
+sources: ## Write the card image sources (packs/images/sources.json) for intothefray-img
+	go run ./cmd/packgen -sources-only
 
 ##@ Quality
 
