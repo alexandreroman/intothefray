@@ -1,3 +1,4 @@
+import { mutationsDelivered } from './mutations.testing';
 import { selectionIndicator } from './selectionIndicator';
 
 afterEach(() => {
@@ -24,11 +25,6 @@ function swatches(count: number): {
   });
   document.body.append(group);
   return { group, indicator, radios };
-}
-
-/** MutationObserver callbacks run as microtasks. */
-function mutationsDelivered(): Promise<void> {
-  return new Promise((resolve) => queueMicrotask(resolve));
 }
 
 describe('selectionIndicator', () => {

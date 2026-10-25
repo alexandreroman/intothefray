@@ -3,6 +3,7 @@ import { tick } from 'svelte';
 import TopBar from './TopBar.svelte';
 import { route } from '../lib/router.svelte';
 import { cutShort } from '../lib/overflowTip.testing';
+import { setFullscreenElement } from '../lib/fullscreen.testing';
 import { DESKTOP, LANDSCAPE_PHONE, mockScreen, PHONE, TABLET } from '../lib/screen.testing';
 
 // jsdom has no Fullscreen API: each test installs the one it needs, as own
@@ -29,14 +30,6 @@ function refused(): { promise: Promise<void>; caught: ReturnType<typeof vi.fn> }
   const promise = Promise.reject(new Error('denied'));
   const caught = vi.spyOn(promise, 'catch');
   return { promise, caught };
-}
-
-/** Sets what the document reports as its fullscreen element, under the standard or the WebKit name. */
-function setFullscreenElement(
-  name: 'fullscreenElement' | 'webkitFullscreenElement',
-  value: Element | null,
-): void {
-  Object.defineProperty(document, name, { value, configurable: true });
 }
 
 describe('TopBar', () => {

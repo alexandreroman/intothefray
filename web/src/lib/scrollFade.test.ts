@@ -1,4 +1,5 @@
 import { fireEvent } from '@testing-library/svelte';
+import { mutationsDelivered } from './mutations.testing';
 import { scrollFade } from './scrollFade';
 
 afterEach(() => {
@@ -25,11 +26,6 @@ function list(): HTMLElement {
   setScroll(element, { top: 0, height: 600, client: 200 });
   document.body.append(element);
   return element;
-}
-
-/** MutationObserver callbacks run as microtasks. */
-function mutationsDelivered(): Promise<void> {
-  return Promise.resolve();
 }
 
 describe('scrollFade', () => {

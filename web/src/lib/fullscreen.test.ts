@@ -1,5 +1,6 @@
 import { fireEvent } from '@testing-library/svelte';
 import { installEscapeLock } from './fullscreen';
+import { setFullscreenElement } from './fullscreen.testing';
 
 // jsdom has neither the Fullscreen API nor the Keyboard Lock API: each test
 // installs what it needs, as own properties deleted afterwards.
@@ -19,14 +20,6 @@ afterEach(() => {
   }
   Reflect.deleteProperty(navigator, 'keyboard');
 });
-
-/** Sets what the document reports as its fullscreen element, under the standard or the WebKit name. */
-function setFullscreenElement(
-  name: 'fullscreenElement' | 'webkitFullscreenElement',
-  value: Element | null,
-): void {
-  Object.defineProperty(document, name, { value, configurable: true });
-}
 
 /** A Keyboard Lock API whose lock resolves, or rejects when refused, or else settles as told. */
 function mockKeyboard(refused = false, lock?: Promise<void>) {
