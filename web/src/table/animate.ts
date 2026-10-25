@@ -1,8 +1,9 @@
-// What changed on the table between two views, as the animations to play
-// (spec 5.2, 5.5, 5.6): cards that moved, changed, turned in, flew to a pile
-// or entered the table from one, cards drawn into a hand or taken into one
-// the viewer does not see, piles that were shuffled, and the first player
-// markers moved. Pure: the table plays the list (motion.svelte.ts).
+// What changed on the table between two views, as the animations to play:
+// cards that moved, changed, turned in, flew to a pile or entered the table
+// from one, cards drawn into a hand or taken into one the viewer does not
+// see, piles that were shuffled, and the markers (the first player token,
+// the active counter) moved. Pure: the table plays the list
+// (motion.svelte.ts).
 
 import {
   MARKERS,
@@ -24,14 +25,14 @@ import type { Landing } from './interaction.svelte';
 import { ownSeats, seatHero, seatOf, seatPlayer } from './seats';
 
 /** Where a card lies in a view: its zone, and its spot when it is on the table. */
-export interface Box {
+interface Spot {
   zone: Zone;
   x: number;
   y: number;
 }
 
 export type Anim =
-  | { kind: 'move'; id: string; from: Box; to: Box }
+  | { kind: 'move'; id: string; from: Spot; to: Spot }
   | { kind: 'glow'; id: string; color: number }
   | { kind: 'turnIn'; id: string }
   /**
@@ -234,7 +235,7 @@ function isPlaced(card: CardView): boolean {
   return card.zone === 'table' || card.zone === 'hand';
 }
 
-function boxOf(card: CardView): Box {
+function spotOf(card: CardView): Spot {
   return { zone: card.zone, x: card.x, y: card.y };
 }
 
@@ -245,7 +246,7 @@ function travelOf(was: CardView, card: CardView, before: TableView, after: Table
   }
   if (isPlaced(card)) {
     const moved = was.zone !== card.zone || was.x !== card.x || was.y !== card.y;
-    return moved ? { kind: 'move', id: card.id, from: boxOf(was), to: boxOf(card) } : null;
+    return moved ? { kind: 'move', id: card.id, from: spotOf(was), to: spotOf(card) } : null;
   }
   const pile = after.piles.find((p) => p.cards?.includes(card.id));
   return pile ? flyOf(card.id, pile.id, undefined, before, after) : null;

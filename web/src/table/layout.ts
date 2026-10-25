@@ -1,7 +1,5 @@
 import type { CardView, PileKind, PileView, Size } from '../lib/types';
 
-export type { Size };
-
 /** Table units are multiples of this. */
 export const GRID = 10;
 
@@ -15,8 +13,7 @@ export interface Box {
   rotated: boolean;
 }
 
-// Table cards are 40 % larger than the 100 × 140 they used to be on the table; the hand and the
-// preview keep their own sizes.
+// A card on the table, by size, in table units. The hand and the preview have their own sizes.
 const SIZES: Record<Size, { w: number; h: number }> = {
   std: { w: 140, h: 196 },
   land: { w: 196, h: 140 },

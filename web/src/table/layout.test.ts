@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { CardView, PileView } from '../lib/types';
+import type { CardView, PileView, Size } from '../lib/types';
 import {
   cardBox,
   contentWidth,
@@ -22,7 +22,6 @@ import {
   smallHandDrop,
   surfaceSize,
   visualBox,
-  type Size,
 } from './layout';
 
 function card(overrides: Partial<CardView> = {}): CardView {

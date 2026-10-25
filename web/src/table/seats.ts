@@ -122,7 +122,7 @@ export function seatHero(view: View, seat: number): string {
 }
 
 /** How an owner reads and shows: its name and the CSS colour of its frame and name. */
-export interface OwnerLook {
+interface OwnerLook {
   /** "Villain", the seat's full label ("Sam · Ant-Man"), or "Player 3" for an empty seat. */
   name: string;
   /** The seat's colour, the villain's for the encounter (owner -1), muted for an empty seat. */

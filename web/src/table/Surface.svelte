@@ -2,8 +2,8 @@
   The table's one surface, where every card and pile lies, in table units:
   the dot grid, a framed box around each owner's deck and discard pile, with
   the chips opening that owner's out-of-play piles, the piles, the cards and
-  the first player token. The table scrolls it both ways and zooms it as a
-  whole.
+  the markers (the first player token, the active counter). The table scrolls
+  it both ways and zooms it as a whole.
 -->
 <script lang="ts" module>
   import type { TableElement } from './actions';
