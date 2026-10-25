@@ -425,11 +425,7 @@ func (n narrator) drawText(a Action) string {
 		text = "drew 1 card"
 	}
 	// resolveDraw sends the cards to the hand of the deck's owner.
-	deckID := "deck:" + string(a.Area)
-	if a.Pile != "" {
-		deckID = a.Pile
-	}
-	deck := n.before.Piles[deckID]
+	deck := n.before.Piles[drawDeckID(a, a.Area)]
 	if deck == nil {
 		return text
 	}

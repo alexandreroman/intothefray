@@ -180,7 +180,7 @@ func discardPileID(c *Card) string {
 	if c.Owner == NoOwner {
 		return PileEncounterDiscard
 	}
-	return "disc:" + string(PlayerArea(c.Owner))
+	return playerDiscardID(PlayerArea(c.Owner))
 }
 
 // tuckedDestination returns the pile a card tucked under a card leaving the
@@ -552,7 +552,7 @@ func applyToPile(t *Table, a Action) error {
 // the victory display or a set-aside pile. No deck or discard pile is one, so
 // a side deck card never lands in a regular deck or discard pile this way.
 func isPlainTargetPile(id string) bool {
-	return id == PileVictory || id == PileScenarioAside || strings.HasPrefix(id, "aside:")
+	return id == PileVictory || id == PileScenarioAside || strings.HasPrefix(id, asidePrefix)
 }
 
 // landsFaceDown reports whether a card dropped out of pile lands face down: a
@@ -872,11 +872,7 @@ func applyDraw(t *Table, a Action) error {
 	if !validArea(a.Area) {
 		return invalid("area %q has no hand", a.Area)
 	}
-	deckID := "deck:" + string(a.Area)
-	if a.Pile != "" {
-		deckID = a.Pile
-	}
-	deck, err := t.pile(deckID)
+	deck, err := t.pile(drawDeckID(a, a.Area))
 	if err != nil {
 		return err
 	}
@@ -1005,10 +1001,7 @@ func (t *Table) coveredFor(a Action, hand Area) (*Table, error) {
 func (t *Table) actedDeck(a Action, hand Area) string {
 	switch a.Kind {
 	case ActDraw:
-		if a.Pile != "" {
-			return a.Pile
-		}
-		return "deck:" + string(hand)
+		return drawDeckID(a, hand)
 	case ActDiscardTop, ActReorderTop, ActShuffle:
 		return a.Pile
 	case ActDeal:
@@ -1058,43 +1051,39 @@ func applyDeal(t *Table, a Action) error {
 	return nil
 }
 
+// deckDiscardPrefixes pairs the id prefix of each kind of deck pile, but the
+// classic encounter deck, with the id prefix of its discard pile.
+var deckDiscardPrefixes = []struct{ deck, discard string }{
+	{scenarioEncounterPrefix, scenarioEncounterDiscardPrefix},
+	{scenarioDeckPrefix, scenarioDiscardPrefix},
+	{deckPrefix, discardPrefix},
+	{sideDeckPrefix, sideDiscardPrefix},
+}
+
 // deckOfDiscard returns the id of the deck a discard pile shuffles back into.
 func deckOfDiscard(discardID string) (string, bool) {
 	if discardID == PileEncounterDiscard {
 		return PileEncounter, true
 	}
-	if key, ok := strings.CutPrefix(discardID, scenarioEncounterDiscardPrefix); ok {
-		return scenarioEncounterPrefix + key, true
-	}
-	if key, ok := strings.CutPrefix(discardID, scenarioDiscardPrefix); ok {
-		return scenarioDeckPrefix + key, true
-	}
-	if owner, ok := strings.CutPrefix(discardID, "disc:"); ok {
-		return "deck:" + owner, true
-	}
-	if side, ok := strings.CutPrefix(discardID, sideDiscardPrefix); ok {
-		return sideDeckPrefix + side, true
+	for _, prefixes := range deckDiscardPrefixes {
+		if rest, ok := strings.CutPrefix(discardID, prefixes.discard); ok {
+			return prefixes.deck + rest, true
+		}
 	}
 	return "", false
 }
 
 // discardPileOf returns the id of the discard pile of a deck pile. A side
-// deck or scenario deck may have no discard pile: the id it returns then names no pile.
+// deck or scenario deck may have no discard pile: the id it returns then
+// names no pile.
 func discardPileOf(deckID string) (string, bool) {
 	if deckID == PileEncounter {
 		return PileEncounterDiscard, true
 	}
-	if key, ok := strings.CutPrefix(deckID, scenarioEncounterPrefix); ok {
-		return scenarioEncounterDiscardPrefix + key, true
-	}
-	if key, ok := strings.CutPrefix(deckID, scenarioDeckPrefix); ok {
-		return scenarioDiscardPrefix + key, true
-	}
-	if owner, ok := strings.CutPrefix(deckID, "deck:"); ok {
-		return "disc:" + owner, true
-	}
-	if side, ok := strings.CutPrefix(deckID, sideDeckPrefix); ok {
-		return sideDiscardPrefix + side, true
+	for _, prefixes := range deckDiscardPrefixes {
+		if rest, ok := strings.CutPrefix(deckID, prefixes.deck); ok {
+			return prefixes.discard + rest, true
+		}
 	}
 	return "", false
 }

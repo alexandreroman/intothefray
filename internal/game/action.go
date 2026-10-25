@@ -515,11 +515,7 @@ func resolveDraw(t *Table, who actor, a Action) (Action, error) {
 	if err := checkCount(a.N); err != nil {
 		return a, err
 	}
-	deckID := "deck:" + string(PlayerArea(who.seat))
-	if a.Pile != "" {
-		deckID = a.Pile
-	}
-	deck, err := ownPile(t, who, deckID)
+	deck, err := ownPile(t, who, drawDeckID(a, PlayerArea(who.seat)))
 	if err != nil {
 		return a, err
 	}

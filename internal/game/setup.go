@@ -218,9 +218,9 @@ func newEmptyTable(seatCount int) *Table {
 	for seat := range seatCount {
 		area := PlayerArea(seat)
 		y := rowY(playerRow(seat))
-		t.addPile("deck:"+string(area), KindDeck, seat, deckX, y)
-		t.addPile("disc:"+string(area), KindDiscard, seat, discardX, y)
-		t.addPile("aside:"+string(area), KindAside, seat, outOfPlayX, y)
+		t.addPile(playerDeckID(area), KindDeck, seat, deckX, y)
+		t.addPile(playerDiscardID(area), KindDiscard, seat, discardX, y)
+		t.addPile(playerAsideID(area), KindAside, seat, outOfPlayX, y)
 		t.Hands[area] = []string{}
 	}
 	return t
@@ -689,7 +689,7 @@ func (b *tableBuilder) setupPlayer(seat int, deck *DeckChoice) error {
 		return invalid("the deck has no hero")
 	}
 	area := PlayerArea(seat)
-	deckID := "deck:" + string(area)
+	deckID := playerDeckID(area)
 
 	identity, identityDef, err := b.newCard(deck.Hero, seat, deckID)
 	if err != nil {
@@ -717,7 +717,7 @@ func (b *tableBuilder) setupPlayer(seat int, deck *DeckChoice) error {
 		b.pushToPile(PileEncounter, c)
 	}
 	if hero.Nemesis != "" && !b.selfContained {
-		if err := b.addSetToPile(hero.Nemesis, "aside:"+string(area), nil); err != nil {
+		if err := b.addSetToPile(hero.Nemesis, playerAsideID(area), nil); err != nil {
 			return err
 		}
 	}
@@ -853,7 +853,7 @@ func (b *tableBuilder) setupSideCards(seat int, deck *DeckChoice) error {
 		b.shuffle(pileID)
 	}
 
-	area := string(PlayerArea(seat))
+	area := PlayerArea(seat)
 	setAside, err := b.setAsideCodes(hero, deck)
 	if err != nil {
 		return err
@@ -864,12 +864,12 @@ func (b *tableBuilder) setupSideCards(seat int, deck *DeckChoice) error {
 			return fmt.Errorf("%w: %w", ErrInvalid, err)
 		}
 		for range def.Quantity {
-			c, _, err := b.newCard(code, seat, "deck:"+area)
+			c, _, err := b.newCard(code, seat, playerDeckID(area))
 			if err != nil {
 				return err
 			}
 			c.IdentityVersion = isIdentityCard(def)
-			b.pushToPile("aside:"+area, c)
+			b.pushToPile(playerAsideID(area), c)
 		}
 	}
 	return nil
