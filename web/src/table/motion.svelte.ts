@@ -23,11 +23,14 @@ import { prefersReducedMotion } from '../lib/screen';
 import type { Anim, Turn } from './animate';
 import { unknownTopId } from './drag';
 import { pileBack, pileCaption } from './face';
+import { EXHAUST_DEGREES } from './layout';
 import { tableCard, tablePile } from './screen';
 
 /** A card moving to its new place (FLIP). */
 const MOVE_MS = 250;
 const MOVE_EASING = 'cubic-bezier(.2, .8, .2, 1)';
+/** A card exhausted or readied tilts to its new angle where it lies, briefly. */
+const TILT_MS = 180;
 /** A stage card just chosen turns in like a card being put down. */
 const TURN_IN_MS = 420;
 /** A card turned over: its old side turns away edge-on, then its new side turns in. */
@@ -254,6 +257,12 @@ function hasMoved(was: Measured, now: Measured): boolean {
     Math.abs(was.w - now.w) > 0.5 ||
     Math.abs(was.h - now.h) > 0.5
   );
+}
+
+/** What is left of a tilt still playing on a card, in degrees (its rotate property): 0 at rest. */
+function playingTilt(element: HTMLElement): number {
+  const angle = Number.parseFloat(getComputedStyle(element).rotate);
+  return Number.isFinite(angle) ? angle : 0;
 }
 
 function measure(element: HTMLElement, zoom: number): Measured {
@@ -616,6 +625,18 @@ class TableMotion {
         }
       }
     }
+    // A card caught mid-tilt tilts again from the angle it shows (#tilt).
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    const tilting = new Map<string, number>();
+    for (const anim of shown) {
+      if (anim.kind !== 'tilt') {
+        continue;
+      }
+      const element = root?.querySelector<HTMLElement>(tableCard(anim.id));
+      if (element) {
+        tilting.set(anim.id, playingTilt(element));
+      }
+    }
     this.#stopFor(shown, tables.after);
     const generation = ++this.#generation;
     if (!root || shown.length === 0) {
@@ -684,6 +705,9 @@ class TableMotion {
           break;
         case 'marker':
           this.#moveMarker(root, anim.name, markersBefore.get(anim.name), zoom);
+          break;
+        case 'tilt':
+          this.#tilt(root, anim.id, anim.exhausted, tilting.get(anim.id) ?? 0);
           break;
         case 'turnIn':
           this.#turnIn(root, anim.id);
@@ -1030,6 +1054,28 @@ class TableMotion {
       { duration: MOVE_MS, easing: MOVE_EASING },
       subject,
       moves,
+    );
+  }
+
+  /**
+   * Tilts a card exhausted or readied from the angle it showed: its old tilt,
+   * and playing, in degrees, what was left of a tilt it was caught in. The new
+   * view has already turned it: its rotate property, which leaves its own
+   * transform (the tilt) and a move's translate and scale alone, plays the
+   * difference down to nothing. It turns about its centre, where the arrows
+   * end: they need not follow it.
+   */
+  #tilt(root: HTMLElement, id: string, exhausted: boolean, playing: number): void {
+    const element = root.querySelector<HTMLElement>(tableCard(id));
+    const from = (exhausted ? -EXHAUST_DEGREES : EXHAUST_DEGREES) + playing;
+    if (!element || Math.abs(from) < 0.1) {
+      return;
+    }
+    this.#run(
+      element,
+      [{ rotate: `${from}deg` }, { rotate: '0deg' }],
+      { duration: TILT_MS, easing: MOVE_EASING },
+      cardSubject(id),
     );
   }
 

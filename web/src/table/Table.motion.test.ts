@@ -1820,6 +1820,107 @@ describe('Table animations', () => {
     await waitFor(() => expect(runningOn(cardA)).toHaveLength(1));
     expect(runningOn(cardA)[0]?.keyframes[0]).toMatchObject({ translate: '-200px 0px' });
   });
+
+  describe('an exhausted or readied card', () => {
+    const cardA = '.surface .card[data-id="a"]';
+
+    /** The tilts started on the card, as [keyframes, options]: they play its rotate property. */
+    function tiltsOfA(): [Keyframe[], KeyframeAnimationOptions][] {
+      return animationsOf(cardA).filter(([keyframes]) => keyframes[0]?.rotate !== undefined);
+    }
+
+    it('tilts from upright to its new angle as it is exhausted', async () => {
+      const session = fakeSession();
+      const { rerender } = render(Table, { session, view: makeView([card('a', { x: 40 })]) });
+      await settle();
+
+      await rerender({
+        session,
+        view: makeView([card('a', { x: 40, exhausted: true })], {
+          log: [START, line('exhausted Spider-Man')],
+        }),
+      });
+      await waitFor(() => expect(tiltsOfA()).toHaveLength(1));
+      const [[keyframes, options]] = tiltsOfA() as [[Keyframe[], KeyframeAnimationOptions]];
+      // The card is drawn tilted already: the offset turns it back upright, then plays down to nothing.
+      expect(keyframes).toEqual([{ rotate: '-15deg' }, { rotate: '0deg' }]);
+      expect(options).toMatchObject({ duration: 180, easing: 'cubic-bezier(.2, .8, .2, 1)' });
+    });
+
+    it('tilts from its old angle back upright as it is readied', async () => {
+      const session = fakeSession();
+      const { rerender } = render(Table, {
+        session,
+        view: makeView([card('a', { x: 40, exhausted: true })]),
+      });
+      await settle();
+
+      await rerender({
+        session,
+        view: makeView([card('a', { x: 40 })], { log: [START, line('readied Spider-Man')] }),
+      });
+      await waitFor(() => expect(tiltsOfA()).toHaveLength(1));
+      expect(tiltsOfA()[0]?.[0]).toEqual([{ rotate: '15deg' }, { rotate: '0deg' }]);
+    });
+
+    it('caught mid-tilt, tilts back from the angle it shows', async () => {
+      const session = fakeSession();
+      const { rerender, container } = render(Table, {
+        session,
+        view: makeView([card('a', { x: 40 })]),
+      });
+      await settle();
+      await rerender({
+        session,
+        view: makeView([card('a', { x: 40, exhausted: true })], {
+          log: [START, line('exhausted Spider-Man')],
+        }),
+      });
+      await waitFor(() => expect(tiltsOfA()).toHaveLength(1));
+      const first = started.find((animation) => animation.keyframes[0]?.rotate !== undefined)!;
+
+      // Half-way, it shows at 7.5°: from there back upright.
+      const element = container.querySelector(cardA)!;
+      const computed = window.getComputedStyle;
+      const spy = vi
+        .spyOn(window, 'getComputedStyle')
+        .mockImplementation((target, pseudo) =>
+          target === element
+            ? ({ rotate: '-7.5deg' } as CSSStyleDeclaration)
+            : computed(target, pseudo),
+        );
+      try {
+        await rerender({
+          session,
+          view: makeView([card('a', { x: 40 })], {
+            log: [START, line('exhausted Spider-Man'), line('readied Spider-Man')],
+          }),
+        });
+        await waitFor(() => expect(tiltsOfA()).toHaveLength(2));
+      } finally {
+        spy.mockRestore();
+      }
+      expect(first.cancelled).toBe(true);
+      expect(tiltsOfA()[1]?.[0]).toEqual([{ rotate: '7.5deg' }, { rotate: '0deg' }]);
+    });
+
+    it('does not tilt with reduced motion, it only glows', async () => {
+      await withReducedMotion(async () => {
+        const session = fakeSession();
+        const { rerender } = render(Table, { session, view: makeView([card('a', { x: 40 })]) });
+        await settle();
+
+        await rerender({
+          session,
+          view: makeView([card('a', { x: 40, exhausted: true })], {
+            log: [START, line('exhausted Spider-Man')],
+          }),
+        });
+        await waitFor(() => expect(animationsOf(cardA)).toHaveLength(1));
+        expect(tiltsOfA()).toEqual([]);
+      });
+    });
+  });
 });
 
 describe('the hover under a pointer at rest', () => {

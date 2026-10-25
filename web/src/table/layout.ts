@@ -97,8 +97,9 @@ export interface Footprint {
   exhausted?: boolean;
 }
 
-/** Keep in step with --exhaust-angle (tokens.css). */
-const EXHAUST_RADIANS = (15 * Math.PI) / 180;
+/** How far an exhausted card is turned, in degrees. Keep in step with --exhaust-angle (tokens.css). */
+export const EXHAUST_DEGREES = 15;
+const EXHAUST_RADIANS = (EXHAUST_DEGREES * Math.PI) / 180;
 
 /**
  * The left, right and bottom edges an item shows, as the prototype's

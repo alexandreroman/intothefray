@@ -39,6 +39,12 @@ type: project
   keys follow its new face at once, for every viewer. Edge-on, it is out
   of reach of the pointer, so the rehover after a view and the card's
   `pointerleave` leave it hovered while it turns (`motion.isTurning`).
+- A card exhausted or readied on the table tilts to its new angle
+  (`tilt`, 180 ms) through the same diff, so a view after a reconnection
+  gap, or under reduced motion, plays nothing. The tilt plays on the CSS
+  `rotate` property, apart from the `transform` the flip turns and the
+  `translate` a move slides. A card that comes onto the table exhausted
+  lands tilted.
 
 **Why:** decided with the user: players follow what happened
 at the table without reading the history.
@@ -46,5 +52,5 @@ at the table without reading the history.
 **How to apply:** a new way for a card to change place needs its motion in
 `animate.ts` and `motion.svelte.ts`, reusing the kinds of `Anim` (`move`,
 `fly`, `enter`, `draw`, `drawAway`, `under`, `away`, `arrive`, `flip`,
-`turnIn`, `reveal`, `shuffle`, `marker`, `glow`) and the existing timing
+`tilt`, `turnIn`, `reveal`, `shuffle`, `marker`, `glow`) and the existing timing
 constants. Spec 5.5 ("Every change of place animates") holds the rule.

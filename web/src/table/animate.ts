@@ -35,6 +35,8 @@ export type Anim =
   /** Moved on the table or between it and a hand; was is the id it had before, when it got a new one (freshIdOf). */
   | { kind: 'move'; id: string; from: Spot; to: Spot; was?: string }
   | { kind: 'glow'; id: string; color: number }
+  /** Exhausted or readied on the table: it tilts to its new angle. */
+  | { kind: 'tilt'; id: string; exhausted: boolean }
   | { kind: 'turnIn'; id: string }
   /**
    * Turned over on the table: flipped, another face shown, or a hidden card come face up; or
@@ -159,6 +161,10 @@ export function diffViews(prev: View, next: View, ownDrop?: OwnDrop, apart = 0):
       continue;
     }
     const travel = travelOf(was, card, before, after);
+    // An exhausted or readied card tilts, moved or not; the viewer's own drop too, as the drop did not exhaust it.
+    if (isTilted(was, card)) {
+      anims.push({ kind: 'tilt', id: card.id, exhausted: !!card.exhausted });
+    }
     // The viewer's own drop already lies where it went on the table or in the hand.
     if (dropped.has(card.id)) {
       if (travel?.kind === 'fly') {
@@ -816,6 +822,15 @@ function showsFace(id: string, table: TableView): boolean {
     return false;
   }
   return isPlaced(card) || table.piles.some((pile) => pile.cards?.includes(id));
+}
+
+/**
+ * A card exhausted or readied where it lay on the table. One come onto the
+ * table already exhausted, or exhausted in a hand or a pile, which draw it
+ * upright, does not tilt.
+ */
+function isTilted(was: CardView, card: CardView): boolean {
+  return was.zone === 'table' && card.zone === 'table' && !!was.exhausted !== !!card.exhausted;
 }
 
 /** Exhausted or readied, flipped, turned face up, or its tokens, statuses or modifiers changed. */

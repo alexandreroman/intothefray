@@ -184,12 +184,112 @@ describe('diffViews', () => {
     });
 
     expect(diffViews(prev, next)).toEqual([
+      // Exhausted: it also tilts.
+      { kind: 'tilt', id: 'a', exhausted: true },
       { kind: 'glow', id: 'a', color: 1 },
       // Turned face up: it also turns over.
       { kind: 'flip', id: 'b' },
       { kind: 'glow', id: 'b', color: 1 },
       { kind: 'glow', id: 'c', color: 1 },
     ]);
+  });
+
+  describe('an exhausted or readied card', () => {
+    it('tilts to its new angle where it lies on the table', () => {
+      const prev = view({ cards: [card('a'), card('b', { exhausted: true })] });
+      const next = view({
+        cards: [card('a', { exhausted: true }), card('b')],
+        log: [OLD_LINE, line('exhausted Spider-Man')],
+      });
+
+      expect(diffViews(prev, next)).toEqual([
+        { kind: 'tilt', id: 'a', exhausted: true },
+        { kind: 'glow', id: 'a', color: 1 },
+        { kind: 'tilt', id: 'b', exhausted: false },
+        { kind: 'glow', id: 'b', color: 1 },
+      ]);
+    });
+
+    it('tilts back as the change is undone', () => {
+      const prev = view({ cards: [card('a', { exhausted: true })] });
+      const next = view({
+        cards: [card('a')],
+        log: [OLD_LINE, line('undid “exhausted Spider-Man”')],
+      });
+
+      expect(diffViews(prev, next)).toContainEqual({ kind: 'tilt', id: 'a', exhausted: false });
+    });
+
+    it('does not tilt when it comes onto the table already exhausted', () => {
+      const prev = view({
+        cards: [card('h', { zone: 'hand', exhausted: true }), card('p', { zone: 'pile' })],
+        piles: [pile('disc:p0', { kind: 'discard', x: 720, count: 1, cards: ['p'] })],
+      });
+      const next = view({
+        cards: [card('h', { x: 100, exhausted: true }), card('p', { x: 200, exhausted: true })],
+        piles: [pile('disc:p0', { kind: 'discard', x: 720, count: 0, cards: [] })],
+        log: [OLD_LINE, line('played Spider-Man')],
+      });
+
+      expect(diffViews(prev, next).filter((anim) => anim.kind === 'tilt')).toEqual([]);
+    });
+
+    it('does not tilt when it is new in the view, exhausted', () => {
+      const prev = view({ cards: [] });
+      const next = view({ cards: [card('a', { exhausted: true })] });
+
+      expect(diffViews(prev, next).filter((anim) => anim.kind === 'tilt')).toEqual([]);
+    });
+
+    it('moves without tilting when it stays exhausted', () => {
+      const prev = view({ cards: [card('a', { x: 0, exhausted: true })] });
+      const next = view({ cards: [card('a', { x: 300, exhausted: true })] });
+
+      expect(diffViews(prev, next)).toEqual([
+        {
+          kind: 'move',
+          id: 'a',
+          from: { zone: 'table', x: 0, y: 0 },
+          to: { zone: 'table', x: 300, y: 0 },
+        },
+      ]);
+    });
+
+    it('moves and tilts when it is exhausted as it moves', () => {
+      const prev = view({ cards: [card('a', { x: 0 })] });
+      const next = view({ cards: [card('a', { x: 300, exhausted: true })] });
+
+      expect(diffViews(prev, next)).toEqual([
+        { kind: 'tilt', id: 'a', exhausted: true },
+        {
+          kind: 'move',
+          id: 'a',
+          from: { zone: 'table', x: 0, y: 0 },
+          to: { zone: 'table', x: 300, y: 0 },
+        },
+      ]);
+    });
+
+    it("tilts when it is the viewer's own drop, which lies where it went", () => {
+      const prev = view({ cards: [card('a', { x: 0 })] });
+      const next = view({
+        cards: [card('a', { x: 300, exhausted: true })],
+        log: [OLD_LINE, line('exhausted Spider-Man')],
+      });
+
+      expect(diffViews(prev, next, droppedCard('a'))).toEqual([
+        { kind: 'tilt', id: 'a', exhausted: true },
+      ]);
+    });
+
+    it('does not tilt in a hand or onto a pile', () => {
+      const prev = view({ cards: [card('h', { zone: 'hand' }), card('t', { exhausted: true })] });
+      const next = view({
+        cards: [card('h', { zone: 'hand', exhausted: true }), card('t', { zone: 'hand' })],
+      });
+
+      expect(diffViews(prev, next).filter((anim) => anim.kind === 'tilt')).toEqual([]);
+    });
   });
 
   it('a modifier change glows too', () => {
