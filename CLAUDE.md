@@ -84,6 +84,15 @@ plugin) for all code tasks:
 - **code-reviewer** — for read-only code review
   before merging or when investigating issues.
 
+## Skills
+
+Project skills live in `.claude/skills/`:
+
+- **full-review** — complete review of the repository
+  with every fix applied; delegated to a new Casper
+  workspace when Casper is available, in the
+  foreground otherwise.
+
 ## Memory
 
 At the start of every conversation, read
