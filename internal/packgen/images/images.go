@@ -23,12 +23,12 @@ import (
 )
 
 const (
-	defaultConcurrency = 16
-	defaultTimeout     = 15 * time.Second
-	reasonNoImage      = "no image"
-	maxAttempts        = 3
-	defaultBackoff     = 500 * time.Millisecond
-	maxBackoff         = 10 * time.Second
+	maxConcurrent  = 16 // parallel requests
+	defaultTimeout = 15 * time.Second
+	reasonNoImage  = "no image"
+	maxAttempts    = 3
+	defaultBackoff = 500 * time.Millisecond
+	maxBackoff     = 10 * time.Second
 )
 
 // Checker verifies image URLs with HEAD requests.
@@ -37,8 +37,6 @@ type Checker struct {
 	HTTP *http.Client
 	// CachePath is a JSON file mapping URL to liveness. Empty disables caching.
 	CachePath string
-	// Concurrency bounds parallel requests; 16 when zero.
-	Concurrency int
 	// UserAgent identifies the requests; Go's default is sent when empty.
 	// Some hosts, such as mc4db, throttle Go's default with 429 answers.
 	UserAgent string
@@ -85,7 +83,7 @@ func (c *Checker) Check(ctx context.Context, urls []string) (map[string]bool, er
 	var mu sync.Mutex // guards result, cache and inconclusive
 	var inconclusive []string
 	group, groupCtx := errgroup.WithContext(ctx)
-	group.SetLimit(c.concurrency())
+	group.SetLimit(maxConcurrent)
 	for _, url := range pending {
 		group.Go(func() error {
 			v := c.probeWithRetries(groupCtx, url)
@@ -196,13 +194,6 @@ func (c *Checker) httpClient() *http.Client {
 		return c.HTTP
 	}
 	return &http.Client{Timeout: defaultTimeout}
-}
-
-func (c *Checker) concurrency() int {
-	if c.Concurrency > 0 {
-		return c.Concurrency
-	}
-	return defaultConcurrency
 }
 
 func (c *Checker) loadCache() (map[string]bool, error) {

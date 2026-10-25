@@ -15,13 +15,10 @@ type Unsupported struct {
 	Reason string
 }
 
-// Fallback is a record taken from a fallback source because marvelcdb lacks
-// its card.
+// Fallback is a record taken from mc4db because marvelcdb lacks its card.
 type Fallback struct {
-	Source string // e.g. "mc4db"
-	Pack   string // marvelcdb pack code
-	Code   string
-	Name   string
+	Pack string // marvelcdb pack code
+	Code string
 }
 
 // Coverage counts the faces of the generated packs that have data in one

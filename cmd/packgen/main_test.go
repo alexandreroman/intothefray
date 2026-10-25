@@ -9,9 +9,9 @@ import (
 
 func TestPrintFallback(t *testing.T) {
 	entries := []report.Fallback{
-		{Source: "mc4db", Pack: "fne", Code: "60065", Name: "A"},
-		{Source: "mc4db", Pack: "fne", Code: "60066", Name: "B"},
-		{Source: "mc4db", Pack: "thor", Code: "06099", Name: "C"},
+		{Pack: "fne", Code: "60065"},
+		{Pack: "fne", Code: "60066"},
+		{Pack: "thor", Code: "06099"},
 	}
 
 	var out strings.Builder

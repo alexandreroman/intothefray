@@ -35,7 +35,7 @@ func TestFetchCards(t *testing.T) {
 		 "linked_to_code":"60159b","stage":"A1","quantity":1,"base_threat":null}
 	]`)
 
-	got, err := fetchCards(context.Background(), client, base)
+	got, err := FetchCards(context.Background(), client, base)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -68,14 +68,14 @@ func TestFetchPacks(t *testing.T) {
 		{"name":"Mighty Thor","code":"mighty_thor_by_rainy","position":2021,"creator":"Rainy"}
 	]`)
 
-	got, err := fetchPacks(context.Background(), client, base)
+	got, err := FetchPacks(context.Background(), client, base)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	want := []Pack{
-		{Code: "fear_no_evil_by_ffg", Name: "Fear No Evil", Position: 60, Creator: "FFG"},
-		{Code: "mighty_thor_by_rainy", Name: "Mighty Thor", Position: 2021, Creator: "Rainy"},
+	want := []marvelcdb.Pack{
+		{Code: "fear_no_evil_by_ffg", Name: "Fear No Evil", Position: 60},
+		{Code: "mighty_thor_by_rainy", Name: "Mighty Thor", Position: 2021},
 	}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("packs = %+v, want %+v", got, want)

@@ -33,7 +33,7 @@ type Inputs struct {
 	// looked for. With MC4DBPacks, it also completes MC and MCPacks with the
 	// official cards marvelcdb lacks (see withFallback).
 	MC4DB      []mc4db.Card
-	MC4DBPacks []mc4db.Pack
+	MC4DBPacks []marvelcdb.Pack
 	// Alive maps each image URL to its liveness; a missing URL counts as dead.
 	Alive map[string]bool
 }
@@ -44,8 +44,7 @@ type Result struct {
 	// Index.Lang is left empty: the writer sets it.
 	Index  pack.Index
 	Report []report.Unsupported
-	// Fallback lists the records taken from mc4db, sorted by source, pack and
-	// code.
+	// Fallback lists the records taken from mc4db, sorted by pack and code.
 	Fallback []report.Fallback
 	// Coverage counts the localized faces, one entry per language.
 	Coverage []report.Coverage

@@ -28,12 +28,12 @@ func fallbackInputs(t *testing.T) Inputs {
 			{Code: "fne", Name: "Fear no Evil", Position: 60},
 		},
 		MC4DB: readJSON[mc4db.Card](t, "testdata/fallback_mc4db.json"),
-		MC4DBPacks: []mc4db.Pack{
-			{Code: "thor", Name: "Thor", Position: 6, Creator: "FFG"},
-			{Code: "thor_by_ffg", Name: "Thor Hero Pack", Position: 6, Creator: "FFG"},
-			{Code: "fear_no_evil_by_ffg", Name: "Fear No Evil", Position: 60, Creator: "FFG"},
-			{Code: "next_box_by_ffg", Name: "Next Box", Position: 61, Creator: "FFG"},
-			{Code: "mighty_thor_by_rainy", Name: "Mighty Thor", Position: 2021, Creator: "Rainy"},
+		MC4DBPacks: []marvelcdb.Pack{
+			{Code: "thor", Name: "Thor", Position: 6},
+			{Code: "thor_by_ffg", Name: "Thor Hero Pack", Position: 6},
+			{Code: "fear_no_evil_by_ffg", Name: "Fear No Evil", Position: 60},
+			{Code: "next_box_by_ffg", Name: "Next Box", Position: 61},
+			{Code: "mighty_thor_by_rainy", Name: "Mighty Thor", Position: 2021},
 		},
 	}
 }
@@ -101,21 +101,18 @@ func TestWithFallbackPacksAndReport(t *testing.T) {
 		t.Errorf("marvelcdb packs changed to %+v", in.MCPacks)
 	}
 
-	fallback := func(packCode, code, name string) report.Fallback {
-		return report.Fallback{Source: "mc4db", Pack: packCode, Code: code, Name: name}
-	}
 	wantAdded := []report.Fallback{
-		fallback("fne", "60030", "Bullseye"),
-		fallback("fne", "60159a", "Kingpin"),
-		fallback("fne", "60159b", "Kingpin"),
-		fallback("fne", "60161a", "The King's Gambit"),
-		fallback("fne", "60161b", "The King's Gambit"),
-		fallback("fne", "60163a", "Public Support"),
-		fallback("fne", "60163b", "Public Support"),
-		fallback("fne", "60164", "Bear Hug"),
-		fallback("next_box", "61001", "Next Villain"),
-		fallback("thor", "06098", "Other Thor Card"),
-		fallback("thor", "06099", "Lost Thor Card"),
+		{Pack: "fne", Code: "60030"},
+		{Pack: "fne", Code: "60159a"},
+		{Pack: "fne", Code: "60159b"},
+		{Pack: "fne", Code: "60161a"},
+		{Pack: "fne", Code: "60161b"},
+		{Pack: "fne", Code: "60163a"},
+		{Pack: "fne", Code: "60163b"},
+		{Pack: "fne", Code: "60164"},
+		{Pack: "next_box", Code: "61001"},
+		{Pack: "thor", Code: "06098"},
+		{Pack: "thor", Code: "06099"},
 	}
 	if !reflect.DeepEqual(added, wantAdded) {
 		t.Errorf("got report %+v, want %+v", added, wantAdded)
