@@ -21,6 +21,11 @@ function faceOf(card: TableCard): PackFace | null {
   return name ? { name, type: 'event', size: 'std', images: [`${card.code}.png`] } : null;
 }
 
+/** No card in these hands has a captioned back. */
+function captionOf(): string | undefined {
+  return undefined;
+}
+
 const CARDS = [handCard('h1', '01003'), handCard('h2', '01005'), handCard('h3', '01088')];
 
 function handList(): HTMLElement {
@@ -45,7 +50,7 @@ afterEach(() => {
 
 describe('Hand', () => {
   it('renders one card per hand id in order', () => {
-    render(Hand, { cards: CARDS, faceOf });
+    render(Hand, { cards: CARDS, faceOf, captionOf });
 
     const names = handCards().map((item) => within(item).getByRole('img').getAttribute('alt'));
     expect(names).toEqual(['Backflip', 'Swinging Web Kick', 'Energy']);
@@ -60,7 +65,7 @@ describe('Hand', () => {
   it('lays the resting fan out for the base cards, and spreads it for the raised ones', async () => {
     vi.spyOn(Element.prototype, 'clientWidth', 'get').mockReturnValue(1200);
     const raised = { w: 238, h: 333 };
-    const props = { cards: CARDS, faceOf, cardSize: raised, restCardSize: HAND_CARD };
+    const props = { cards: CARDS, faceOf, captionOf, cardSize: raised, restCardSize: HAND_CARD };
     const { rerender } = render(Hand, props);
     const xs = () => handCards().map((item) => item.style.getPropertyValue('--x'));
 
@@ -76,16 +81,22 @@ describe('Hand', () => {
   });
 
   it('draws the resting hand as large as its base card at HAND_REST_SCALE', async () => {
-    const { rerender } = render(Hand, { cards: CARDS, faceOf });
+    const { rerender } = render(Hand, { cards: CARDS, faceOf, captionOf });
     expect(handList().style.getPropertyValue('--rest-scale')).toBe(`${HAND_REST_SCALE}`);
 
-    await rerender({ cards: CARDS, faceOf, cardSize: { w: 238, h: 333 }, restCardSize: HAND_CARD });
+    await rerender({
+      cards: CARDS,
+      faceOf,
+      captionOf,
+      cardSize: { w: 238, h: 333 },
+      restCardSize: HAND_CARD,
+    });
     expect(Number(handList().style.getPropertyValue('--rest-scale'))).toBeCloseTo(0.6374, 4);
   });
 
   it('lays the cards out on the fan of the measured width', () => {
     vi.spyOn(Element.prototype, 'clientWidth', 'get').mockReturnValue(1200);
-    render(Hand, { cards: CARDS, faceOf });
+    render(Hand, { cards: CARDS, faceOf, captionOf });
 
     // The card size comes from one place: the layout.
     expect(handList().style.getPropertyValue('--card-w')).toBe(`${HAND_CARD.w}px`);
@@ -109,7 +120,7 @@ describe('Hand', () => {
     vi.spyOn(Element.prototype, 'getBoundingClientRect').mockReturnValue(
       DOMRect.fromRect({ x: 600, y: 700, width: 132, height: 185 }),
     );
-    const { container } = render(Hand, { cards: CARDS, faceOf });
+    const { container } = render(Hand, { cards: CARDS, faceOf, captionOf });
     const hand = handList();
     const veil = container.querySelector('.veil');
     const isOpen = () => hand.classList.contains('open');
@@ -147,7 +158,7 @@ describe('Hand', () => {
       }
       return DOMRect.fromRect({ x: 600, y: 700, width: 132, height: 185 });
     });
-    render(Hand, { cards: CARDS, faceOf });
+    render(Hand, { cards: CARDS, faceOf, captionOf });
     const isOpen = () => handList().classList.contains('open');
 
     await fireEvent.pointerMove(window, { clientX: 650, clientY: 800 });
@@ -173,7 +184,7 @@ describe('Hand', () => {
       const id = this.closest<HTMLElement>('.hcard')?.dataset.id ?? '';
       return DOMRect.fromRect({ x: lefts[id] ?? 0, y: 700, width: 132, height: 185 });
     });
-    const { rerender } = render(Hand, { cards: CARDS, faceOf });
+    const { rerender } = render(Hand, { cards: CARDS, faceOf, captionOf });
     const isOpen = () => handList().classList.contains('open');
 
     // Over the last card, then on its outer part: the open band is 576..956.
@@ -183,7 +194,7 @@ describe('Hand', () => {
 
     // Discarded with a key: the new band (626..906) leaves the resting pointer out.
     lefts = { h1: 650, h2: 750 };
-    await rerender({ cards: CARDS.slice(0, 2), faceOf });
+    await rerender({ cards: CARDS.slice(0, 2), faceOf, captionOf });
     // The band is measured again once the hand has settled.
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(handCards().map((item) => item.dataset.id)).toEqual(['h1', 'h2']);
@@ -205,7 +216,7 @@ describe('Hand', () => {
       return DOMRect.fromRect({ x, y: 700, width: 132, height: 185 });
     });
     motion.drawing.add('h1');
-    render(Hand, { cards: CARDS, faceOf });
+    render(Hand, { cards: CARDS, faceOf, captionOf });
     expect(handCards()[0]?.classList).toContain('arriving');
 
     await fireEvent.pointerMove(window, { clientX: 650, clientY: 800 });
@@ -233,7 +244,7 @@ describe('Hand', () => {
       value: () => [new FakeTransition()],
     });
     try {
-      render(Hand, { cards: CARDS, faceOf });
+      render(Hand, { cards: CARDS, faceOf, captionOf });
 
       await fireEvent.pointerMove(window, { clientX: 650, clientY: 800 });
       expect(handList().classList).toContain('open');
@@ -249,7 +260,7 @@ describe('Hand', () => {
     vi.spyOn(Element.prototype, 'getBoundingClientRect').mockReturnValue(
       DOMRect.fromRect({ x: 600, y: 700, width: 132, height: 185 }),
     );
-    render(Hand, { cards: CARDS, faceOf });
+    render(Hand, { cards: CARDS, faceOf, captionOf });
 
     await fireEvent.pointerMove(window, { clientX: 650, clientY: 800 });
     expect(handList().classList).toContain('open');
@@ -259,14 +270,14 @@ describe('Hand', () => {
   });
 
   it('an empty hand never opens', async () => {
-    render(Hand, { cards: [], faceOf });
+    render(Hand, { cards: [], faceOf, captionOf });
 
     await fireEvent.pointerMove(window, { clientX: 0, clientY: 0 });
     expect(handList().classList).not.toContain('open');
   });
 
   it('hovering a card hovers it, with no preview', async () => {
-    render(Hand, { cards: CARDS, faceOf });
+    render(Hand, { cards: CARDS, faceOf, captionOf });
 
     await fireEvent.pointerEnter(handCards()[1] as HTMLElement);
     expect(interaction.hovered).toEqual({ kind: 'hand', id: 'h2' });
@@ -274,7 +285,7 @@ describe('Hand', () => {
   });
 
   it('picks the hovered card from its place at rest, which the pop never moves', () => {
-    render(Hand, { cards: CARDS, faceOf });
+    render(Hand, { cards: CARDS, faceOf, captionOf });
     for (const card of handCards()) {
       // The hit area comes before the drawn card, which lets the pointer through to it.
       expect([...card.children].map((child) => child.className.split(' ')[0])).toEqual([
@@ -310,7 +321,7 @@ describe('Hand', () => {
     } as unknown as PointerEvent);
     interaction.lift('h1', ['h1']);
     interaction.handGap = 1;
-    const { container } = render(Hand, { cards: CARDS, faceOf });
+    const { container } = render(Hand, { cards: CARDS, faceOf, captionOf });
 
     const cards = handCards();
     expect(cards.map((card) => card.dataset.id)).toEqual(['h2', 'h3']);
@@ -335,7 +346,7 @@ describe('Hand', () => {
       const face = faceOf(card);
       return face && { ...face, size: 'land' };
     };
-    render(Hand, { cards: [handCard('h1', '01003')], faceOf: landscape });
+    render(Hand, { cards: [handCard('h1', '01003')], faceOf: landscape, captionOf });
 
     const image = within(handList()).getByRole('img', { name: 'Backflip' });
     expect(image.closest('.land-in-portrait')).not.toBeNull();
@@ -344,7 +355,7 @@ describe('Hand', () => {
   it('shows the back of a card it may not read', () => {
     localStorage.setItem('itf-theme', 'minimal');
     try {
-      render(Hand, { cards: [{ ...handCard('h1', '01003'), faceDown: true }], faceOf });
+      render(Hand, { cards: [{ ...handCard('h1', '01003'), faceDown: true }], faceOf, captionOf });
       expect(within(handList()).getByRole('img', { name: 'Player card back' })).toBeTruthy();
     } finally {
       localStorage.clear();
@@ -354,7 +365,7 @@ describe('Hand', () => {
 
 describe('Hand raised by a tap', () => {
   it('Escape lowers it and takes the key (preventDefault); lowered, it leaves the key alone', async () => {
-    render(Hand, { cards: CARDS, faceOf });
+    render(Hand, { cards: CARDS, faceOf, captionOf });
     const hand = handList();
     const [first] = handCards();
     await fireEvent.pointerDown(first!, { pointerType: 'touch' });

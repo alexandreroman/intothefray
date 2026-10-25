@@ -20,12 +20,12 @@
 
   let {
     faceOf,
-    captionOf = () => undefined,
+    captionOf,
   }: {
     /** The catalog face a card shows, null while unknown or hidden. */
     faceOf: (card: TableCard | undefined) => PackFace | null;
     /** The caption of a card's back (backCaption): its side deck's label, if any. */
-    captionOf?: (card: TableCard) => string | undefined;
+    captionOf: (card: TableCard) => string | undefined;
   } = $props();
 </script>
 
