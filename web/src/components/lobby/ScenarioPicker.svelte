@@ -115,20 +115,35 @@
     return { packName: packName.getBoundingClientRect().height, tile: tileHeight };
   }
 
-  // A tile's height follows its width: measured again whenever the list is resized. A filter that
-  // matches nothing leaves no tile to measure: the last sizes stay.
+  // A tile's height follows its width: measured again whenever the first tile or pack name is
+  // resized. The sizes set the list's height, so the list itself is not observed, and they are
+  // applied in the next frame: resizing the list while the observers are notified, scrollFade's
+  // among them, would be a ResizeObserver loop. A filter that matches nothing leaves no tile to
+  // measure: the last sizes stay.
   $effect(() => {
     const list = villains;
     if (!list || !isHost) {
       return;
     }
-    // Read so that a new filter, with another first pack, observes the list anew.
+    // Read so that a new filter, with another first pack, observes its name and tile.
     void groups;
+    let frame = 0;
     const observer = new ResizeObserver(() => {
-      listSizes = measureList(list) ?? listSizes;
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        listSizes = measureList(list) ?? listSizes;
+      });
     });
-    observer.observe(list);
-    return () => observer.disconnect();
+    const packName = list.querySelector('.pkname');
+    const tile = list.querySelector('.vil');
+    if (packName && tile) {
+      observer.observe(packName);
+      observer.observe(tile);
+    }
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(frame);
+    };
   });
 
   // The settings take their room from the list: the villain the host just chose may have slipped
