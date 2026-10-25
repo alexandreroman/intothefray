@@ -9,7 +9,7 @@
   import { loadIndex } from '../lib/catalog';
   import { playerColorVar } from '../lib/playerColor';
   import type { GameSession } from '../lib/session.svelte';
-  import type { Index, View } from '../lib/types';
+  import { hostName, MAX_SEATS, seatCount, type Index, type View } from '../lib/types';
 
   let { session, view }: { session: GameSession; view: View } = $props();
 
@@ -22,13 +22,9 @@
       .catch(() => (indexError = true));
   });
 
-  const MAX_DECKS = 4;
-
-  const hostName = $derived(view.players.find((p) => p.host)?.name ?? 'the host');
   const me = $derived(
     view.you.role === 'player' ? view.players.find((p) => p.color === view.you.color) : undefined,
   );
-  const deckCount = $derived(view.players.reduce((sum, p) => sum + p.decks.length, 0));
   // "your deck", "Sam's deck", "Jo's 2 decks": one phrase per player still missing a deck.
   const missingDecks = $derived(
     view.players.flatMap((p) => {
@@ -60,16 +56,16 @@
     if (view.config.scenario === '') {
       return view.you.host
         ? 'Choose a scenario first.'
-        : `Waiting for ${hostName} to choose a scenario.`;
+        : `Waiting for ${hostName(view)} to choose a scenario.`;
     }
     if (missingModular) {
       return view.you.host
         ? 'Choose at least one modular set.'
-        : `Waiting for ${hostName} to choose at least one modular set.`;
+        : `Waiting for ${hostName(view)} to choose at least one modular set.`;
     }
     return view.you.host
       ? 'Everyone is ready.'
-      : `Everyone is ready: waiting for ${hostName} to set up the table.`;
+      : `Everyone is ready: waiting for ${hostName(view)} to set up the table.`;
   });
 
   const intro = $derived.by(() => {
@@ -77,9 +73,9 @@
       return 'You are the host: you choose the scenario, and everyone sees it. Each player brings their own deck.';
     }
     if (view.you.role === 'spectator') {
-      return `You are watching: ${hostName} chooses the scenario, and each player brings their own deck.`;
+      return `You are watching: ${hostName(view)} chooses the scenario, and each player brings their own deck.`;
     }
-    return `${hostName} is the host: they choose the scenario, and everyone sees it. Bring your own deck.`;
+    return `${hostName(view)} is the host: they choose the scenario, and everyone sees it. Bring your own deck.`;
   });
 
   // A failed deck import shows under the field of the slot it was loading; anything else in the start bar.
@@ -196,7 +192,7 @@
                 />
               {/each}
             {/key}
-            {#if deckCount < MAX_DECKS}
+            {#if seatCount(view) < MAX_SEATS}
               <div class="sect add-deck">
                 <button class="btn add" aria-disabled={session.deckLoading} onclick={addDeck}>
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>

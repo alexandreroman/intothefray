@@ -9,7 +9,14 @@
   import CardArt from '../CardArt.svelte';
   import Icon from '../Icon.svelte';
   import Segmented from '../Segmented.svelte';
-  import type { Difficulty, Index, LobbyConfig, ScenarioRef, View } from '../../lib/types';
+  import {
+    hostName,
+    type Difficulty,
+    type Index,
+    type LobbyConfig,
+    type ScenarioRef,
+    type View,
+  } from '../../lib/types';
 
   let {
     view,
@@ -33,7 +40,6 @@
   let menuOpen = $state(false);
 
   const isHost = $derived(view.you.host);
-  const hostName = $derived(view.players.find((p) => p.host)?.name ?? 'the host');
   const config = $derived(view.config);
   const chosen = $derived(index.scenarios.find((s) => s.id === config.scenario));
   const difficulty = $derived<Difficulty>(config.difficulty === 'expert' ? 'expert' : 'standard');
@@ -225,7 +231,7 @@
   <div class="bhead">
     <h2>Scenario</h2>
     {#if !isHost}
-      <span class="aside">chosen by {hostName} (host)</span>
+      <span class="aside">chosen by {hostName(view)} (host)</span>
     {/if}
   </div>
 
@@ -279,7 +285,7 @@
         </div>
       {:else}
         <div class="none">
-          {isHost ? 'No scenario matches.' : `${hostName} has not chosen a scenario yet.`}
+          {isHost ? 'No scenario matches.' : `${hostName(view)} has not chosen a scenario yet.`}
         </div>
       {/each}
     </div>

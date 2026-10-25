@@ -284,6 +284,22 @@ export interface View {
   canUndo?: boolean;
 }
 
+/**
+ * The deck slots of a game across all its players, so the heroes at the table. Mirrors maxSeats in
+ * internal/game/lobby.go.
+ */
+export const MAX_SEATS = 4;
+
+/** The seats taken: a seat is one deck slot, so a player with two decks takes two. */
+export function seatCount(view: View): number {
+  return view.players.reduce((sum, player) => sum + player.decks.length, 0);
+}
+
+/** The host's name, or "the host" while no player holds the role. */
+export function hostName(view: View): string {
+  return view.players.find((player) => player.host)?.name ?? 'the host';
+}
+
 // ---- Actions ----
 
 export type ActionKind =

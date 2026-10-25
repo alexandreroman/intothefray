@@ -3,7 +3,7 @@
   import Icon from '../Icon.svelte';
   import { playerColorVar } from '../../lib/playerColor';
   import { href } from '../../lib/router.svelte';
-  import type { PlayerView, View } from '../../lib/types';
+  import { MAX_SEATS, seatCount, type PlayerView, type View } from '../../lib/types';
   import DeckNames from './DeckNames.svelte';
   import HeroThumb from './HeroThumb.svelte';
 
@@ -19,19 +19,16 @@
     ontakeseat: () => void;
   } = $props();
 
-  const MAX_SEATS = 4;
   const COPIED_MS = 1500;
 
   // Built from the game id, so no token or other state leaks into the link.
   const inviteUrl = $derived(`${location.origin}${href(`/g/${encodeURIComponent(view.id)}`)}`);
   const isSpectator = $derived(view.you.role === 'spectator');
-  // A seat is one deck slot: a player with two decks takes two seats.
-  const deckCount = $derived(view.players.reduce((sum, p) => sum + p.decks.length, 0));
   // A newcomer takes the lowest colour no player uses.
   const freeColors = $derived(
     [0, 1, 2, 3]
       .filter((c) => !view.players.some((p) => p.color === c))
-      .slice(0, Math.max(0, MAX_SEATS - deckCount)),
+      .slice(0, Math.max(0, MAX_SEATS - seatCount(view))),
   );
 
   let copied = $state(false);
