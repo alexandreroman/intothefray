@@ -1,6 +1,7 @@
 // Wire types. They mirror the Go JSON: internal/pack/types.go,
-// internal/game/{game,state,view,action}.go. Fields the Go side marks
-// omitempty are optional here.
+// internal/game/{game,state,view,action}.go, internal/decks and
+// internal/server/protocol.go. Fields the Go side marks omitempty are
+// optional here.
 
 // ---- Card packs (internal/pack) ----
 
@@ -104,8 +105,9 @@ export type PileKind =
   | 'scenarioDiscard';
 
 /**
- * A seat: "p0".."p3" for the player seated at that index. It says whose hand
- * or whose view, never a place on the table: the table is one surface.
+ * A seat, "p0".."p3": one deck at the table, so a player holding several decks
+ * has several seats. It says whose hand or whose view, never a place on the
+ * table: the table is one surface.
  */
 export type Area = `p${number}`;
 
@@ -130,8 +132,9 @@ export interface CardView {
   stage?: string;
   identity?: boolean; // a player's hero or alter-ego card: it never leaves the table
   /**
-   * The pile id of a card whose home is a side deck: sent with its code, and
-   * always for a card of a side deck with its own back, which names that deck.
+   * The pile id of the side deck or scenario deck a card of one returns to,
+   * sent whatever its face: everyone sees which deck a card came from. Absent
+   * for every other card, whose home the client infers.
    */
   home?: string;
 }
@@ -144,7 +147,7 @@ export interface PileView {
   y: number;
   count: number;
   cards?: string[]; // bottom to top, public piles only; a topFaceUp side deck lists its top card alone
-  /** The name of a side deck and of its discard pile: "Invocation". */
+  /** The name of a side deck or a scenario deck and of its discard pile: "Invocation". */
   label?: string;
   /** A side deck whose top card everyone sees. */
   topFaceUp?: boolean;
@@ -196,7 +199,7 @@ export interface LogPart {
 
 export interface LogView {
   who: string;
-  color: number; // -1 for system lines
+  color: number; // the colour of the player who wrote the line
   text: string;
   at: string; // RFC 3339
   undone?: boolean;
@@ -263,7 +266,7 @@ export interface TableView {
 
 export interface LobbyConfig {
   scenario: string;
-  difficulty: Difficulty;
+  difficulty: Difficulty | ''; // empty until the host picks a first scenario
   standard: string;
   expert: string;
   modulars: string[];
@@ -320,8 +323,9 @@ export type ActionKind =
  * An action as a client sends it. Which fields matter depends on `kind`.
  *
  * Left out on purpose, because the server fills them while resolving the
- * action: `renames` (shuffles), `seat` (acting seat), `exhausted` and
- * `faceDown` (outcome of an exhaust or a flip).
+ * action: `renames` (shuffles), `seat` and `seats` (acting seats, for arrows),
+ * `exhausted`, `faceDown` and `face` (outcome of an exhaust or a flip), and
+ * `area` of a draw (the hand of the deck drawn from).
  */
 export interface Action {
   kind: ActionKind;
@@ -332,7 +336,7 @@ export interface Action {
    * side deck, without it the encounter deck.
    */
   pile?: string;
-  area?: Area; // whose hand (draw, handOrder), or who is dealt a card (deal)
+  area?: Area; // whose hand (handOrder), or who is dealt a card (deal)
   x?: number;
   y?: number;
   /** A card tucked under `target` (attach, play) lies at `x`, `y`, where it was dropped. */
@@ -352,10 +356,7 @@ export interface Action {
 // ---- Live session (internal/server/protocol.go) ----
 
 /** A spot of the table, in table units: where a cursor is, or what a ping points at. */
-export interface PresencePoint {
-  x: number;
-  y: number;
-}
+export type PresencePoint = Point;
 
 /**
  * A drag in progress: the cards dragged, or a marker, and where
