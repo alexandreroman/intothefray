@@ -215,6 +215,12 @@ func (t *Table) shuffledIntoDeck(c *Card, deck *Pile) []string {
 	return append(cards, c.ID)
 }
 
+// byZThenID orders cards from the lowest Z to the highest, by id when two
+// share a Z, so that the order never depends on map iteration.
+func byZThenID(a, b *Card) int {
+	return cmp.Or(cmp.Compare(a.Z, b.Z), cmp.Compare(a.ID, b.ID))
+}
+
 // descendants returns every card tucked under id, directly or not, from the
 // lowest Z to the highest.
 func (t *Table) descendants(id string) []*Card {
@@ -232,9 +238,7 @@ func (t *Table) descendants(id string) []*Card {
 			}
 		}
 	}
-	slices.SortFunc(found, func(a, b *Card) int {
-		return cmp.Or(cmp.Compare(a.Z, b.Z), cmp.Compare(a.ID, b.ID))
-	})
+	slices.SortFunc(found, byZThenID)
 	return found
 }
 
@@ -447,14 +451,18 @@ func applyToHand(t *Table, a Action) error {
 	}
 
 	t.leave(c)
-	area := PlayerArea(c.Owner)
+	t.addToHand(PlayerArea(c.Owner), c)
+	return nil
+}
+
+// addToHand puts c, which has just left its place, last in the hand of area.
+func (t *Table) addToHand(area Area, c *Card) {
 	if t.Hands == nil {
 		t.Hands = map[Area][]string{}
 	}
 	t.Hands[area] = append(t.Hands[area], c.ID)
 	c.Zone = ZoneHand
 	c.Pile = ""
-	return nil
 }
 
 func applyToDeck(t *Table, a Action) error {
@@ -522,8 +530,7 @@ func applyDiscard(t *Table, a Action) error {
 		return err
 	}
 
-	t.leave(c)
-	t.pushOnPile(pile, c)
+	t.putOnPile(pile, c)
 	return nil
 }
 
@@ -543,8 +550,7 @@ func applyToPile(t *Table, a Action) error {
 		return err
 	}
 
-	t.leave(c)
-	t.pushOnPile(pile, c)
+	t.putOnPile(pile, c)
 	return nil
 }
 
@@ -598,16 +604,15 @@ func applyPlay(t *Table, a Action) error {
 	if c.IdentityVersion {
 		t.takeOverIdentity(c)
 	}
-	c.Zone = ZoneTable
-	c.Pile = ""
 	c.FaceDown = faceDown && !c.Identity
-	if target != nil {
-		c.Parent = target.ID
-		c.X, c.Y, c.Z = tuckedPlace(target, a)
+	if target == nil {
+		t.placeOnTable(c, snap(a.X), snap(a.Y))
 		return nil
 	}
-	c.X, c.Y = snap(a.X), snap(a.Y)
-	c.Z = t.nextZ()
+	c.Zone = ZoneTable
+	c.Pile = ""
+	c.Parent = target.ID
+	c.X, c.Y, c.Z = tuckedPlace(target, a)
 	return nil
 }
 
@@ -883,15 +888,10 @@ func applyDraw(t *Table, a Action) error {
 		return err
 	}
 
-	if t.Hands == nil {
-		t.Hands = map[Area][]string{}
-	}
 	for _, id := range a.Cards {
 		c := t.Cards[id]
 		t.leave(c)
-		t.Hands[a.Area] = append(t.Hands[a.Area], id)
-		c.Zone = ZoneHand
-		c.Pile = ""
+		t.addToHand(a.Area, c)
 	}
 	return nil
 }
@@ -950,9 +950,7 @@ func (t *Table) revealedOn(id string) []*Card {
 			found = append(found, c)
 		}
 	}
-	slices.SortFunc(found, func(a, b *Card) int {
-		return cmp.Or(cmp.Compare(a.Z, b.Z), cmp.Compare(a.ID, b.ID))
-	})
+	slices.SortFunc(found, byZThenID)
 	return found
 }
 
