@@ -15,7 +15,8 @@ import (
 	"github.com/alexandreroman/intothefray/internal/pack"
 )
 
-// CardOverride replaces values derived from the sources for one face code.
+// CardOverride replaces values derived from the sources for one card or face
+// code.
 type CardOverride struct {
 	Size pack.Size `json:"size,omitempty"`
 	// Cerebro is the Cerebro image id to use for the face instead of the one

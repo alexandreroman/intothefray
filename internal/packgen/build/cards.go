@@ -1,4 +1,5 @@
-// Package build turns raw marvelcdb and Cerebro records into pack cards.
+// Package build derives the packs and their index from the marvelcdb, mc4db
+// and Cerebro records, the French names of fr.marvelcdb and the curated data.
 package build
 
 import (
