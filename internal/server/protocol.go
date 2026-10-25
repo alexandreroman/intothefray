@@ -107,8 +107,8 @@ type clientMessage struct {
 	Ping    *presencePoint  `json:"ping"`
 }
 
-// welcomeMessage answers a successful hello. It is the only message that
-// carries a token, sent to its owner alone.
+// welcomeMessage answers a successful hello. It carries the viewer's token
+// and goes to that viewer alone.
 type welcomeMessage struct {
 	Type  string    `json:"type"`
 	Token string    `json:"token"`
@@ -160,8 +160,8 @@ type updatedEvent struct {
 }
 
 // onlineEvent is published on a game's channel after a viewer connects or
-// disconnects, so that every instance sends its viewers the new count of
-// connected spectators.
+// disconnects, so that every instance sends its viewers who is connected now:
+// the online players and the count of connected spectators.
 type onlineEvent struct {
 	Kind string `json:"kind"`
 }
@@ -194,8 +194,8 @@ type presenceFields struct {
 }
 
 // presenceEvent is published on a game's channel for the viewers of every
-// instance. From identifies the sender's connection without revealing its
-// token; it never reaches a client.
+// instance. From identifies the sender's token by a hash of it, so that no
+// connection of that token gets the event back; it never reaches a client.
 type presenceEvent struct {
 	Kind  string `json:"kind"`
 	From  string `json:"from"`
