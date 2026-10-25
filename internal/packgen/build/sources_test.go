@@ -16,6 +16,17 @@ import (
 
 const cerebroImages = "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/"
 
+// sourcesOf returns the source faces of in, sorted by code.
+func sourcesOf(t *testing.T, in Inputs) []cdn.SourceFace {
+	t.Helper()
+	faces, err := Sources(in)
+	if err != nil {
+		t.Fatal(err)
+	}
+	slices.SortFunc(faces, func(a, b cdn.SourceFace) int { return strings.Compare(a.Code, b.Code) })
+	return faces
+}
+
 // sourceOf returns the source face of a code.
 func sourceOf(t *testing.T, faces []cdn.SourceFace, code string) cdn.SourceFace {
 	t.Helper()
@@ -34,7 +45,7 @@ func TestSourcesListsEveryFace(t *testing.T) {
 		CB: cerebroCards(t),
 	}
 
-	got := Sources(in)
+	got := sourcesOf(t, in)
 
 	// The summary record 01097 is no face of the card.
 	want := []cdn.SourceFace{
@@ -64,29 +75,61 @@ func TestSourcesListsEveryFace(t *testing.T) {
 	}
 }
 
-func TestSourcesBeforeDrop(t *testing.T) {
-	in := withManifest(Inputs{MC: setsFixture(t), MCPacks: corePacks})
-	delete(in.Manifest.Faces, "01097")
+func TestSourcesOctgnStem(t *testing.T) {
+	in := Inputs{MC: []marvelcdb.Card{
+		// Distinct cards sharing a number: each has an OCTGN id of its own,
+		// which names its image without a suffix.
+		{Code: "01043a", TypeCode: "attachment", PackCode: "core", OctgnID: "9e348b42"},
+		{Code: "01043b", TypeCode: "attachment", PackCode: "core", OctgnID: "9129d847"},
+		{Code: "01043c", TypeCode: "attachment", PackCode: "core", OctgnID: "4b88f8df"},
+		// The two faces of one card share an OCTGN id: the back adds ".b".
+		{Code: "05001a", TypeCode: "hero", PackCode: "core", OctgnID: "be1d47ec", LinkedTo: "05001b"},
+		{Code: "05001b", TypeCode: "alter_ego", PackCode: "core", OctgnID: "be1d47ec"},
+	}}
 
-	result, err := Build(in)
-	if err != nil {
-		t.Fatal(err)
+	faces := sourcesOf(t, in)
+
+	want := map[string]string{
+		"01043a": "9e348b42",
+		"01043b": "9129d847",
+		"01043c": "4b88f8df",
+		"05001a": "be1d47ec",
+		"05001b": "be1d47ec.b",
 	}
-	for _, card := range result.Packs[0].Cards {
-		if card.Code == "01097" {
-			t.Fatal("card 01097 has no English image but was kept")
+	for code, stem := range want {
+		if got := sourceOf(t, faces, code).Octgn; got != stem {
+			t.Errorf("face %s OCTGN stem = %q, want %q", code, got, stem)
 		}
 	}
+}
 
-	faces := Sources(in)
+func TestSourcesBeforeDrop(t *testing.T) {
+	in := withManifest(t, Inputs{MC: setsFixture(t), MCPacks: corePacks})
+	// Build drops card 01097 for lack of an English image
+	// (TestBuildMissingEnglishDrops), yet the pipeline needs its sources to
+	// find it one.
+	delete(in.Manifest.Faces, "01097")
+
+	faces := sourcesOf(t, in)
+
 	if got := sourceOf(t, faces, "01097"); got.Record != "https://marvelcdb.com/bundles/cards/01097.png" {
 		t.Errorf("got record image %q for the dropped card", got.Record)
 	}
-	if len(faces) != len(in.MC) {
-		t.Errorf("got %d faces, want one per record (%d)", len(faces), len(in.MC))
+}
+
+func TestSourcesUnknownCerebroOverride(t *testing.T) {
+	in := Inputs{
+		MC: marvelcdbCards(t, "01097a", "01097b"),
+		CB: []cerebro.Card{{ID: "01097A"}, {ID: "01097B"}},
+		Curated: curated.Curated{Cards: map[string]curated.CardOverride{
+			"01097a": {Cerebro: "99999Z"},
+		}},
 	}
-	if !slices.IsSortedFunc(faces, func(a, b cdn.SourceFace) int { return strings.Compare(a.Code, b.Code) }) {
-		t.Error("faces are not sorted by code")
+
+	_, err := Sources(in)
+
+	if err == nil || !strings.Contains(err.Error(), "99999Z") {
+		t.Fatalf("Sources error = %v, want the unknown Cerebro image 99999Z refused", err)
 	}
 }
 
@@ -102,7 +145,7 @@ func TestSourcesCerebroOverride(t *testing.T) {
 		}},
 	}
 
-	faces := Sources(in)
+	faces := sourcesOf(t, in)
 
 	if got := sourceOf(t, faces, "01097a").Cerebro; got != cerebroImages+"01097B.jpg" {
 		t.Errorf("01097a Cerebro image = %q, want the one of 01097B", got)
@@ -126,7 +169,7 @@ func TestSourcesLandscape(t *testing.T) {
 		}},
 	}
 
-	faces := Sources(in)
+	faces := sourcesOf(t, in)
 
 	want := map[string]bool{"01001": false, "01002": true, "01003": true, "01004": false}
 	for code, landscape := range want {
@@ -157,7 +200,7 @@ func TestSourcesRecordImage(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			faces := Sources(Inputs{MC: []marvelcdb.Card{tt.entry}})
+			faces := sourcesOf(t, Inputs{MC: []marvelcdb.Card{tt.entry}})
 			if got := sourceOf(t, faces, tt.entry.Code).Record; got != tt.want {
 				t.Errorf("record image = %q, want %q", got, tt.want)
 			}
@@ -166,7 +209,7 @@ func TestSourcesRecordImage(t *testing.T) {
 }
 
 func TestSourcesIncludeFallbackRecords(t *testing.T) {
-	faces := Sources(fallbackInputs(t))
+	faces := sourcesOf(t, fallbackInputs(t))
 
 	got := sourceOf(t, faces, "60164")
 	if want := "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60164.webp"; got.Record != want {

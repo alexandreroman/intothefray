@@ -15,19 +15,24 @@ func TestOctgnStem(t *testing.T) {
 		name     string
 		octgnID  string
 		faceCode string
+		sharedID bool
 		want     string
 	}{
-		{"no suffix", id, "01004", id},
-		{"suffix a", id, "12001a", id},
-		{"suffix b", id, "12001b", id + ".b"},
-		{"suffix c", id, "12001c", id + ".c"},
-		{"no octgn id", "", "01004", ""},
-		{"no octgn id on a back face", "", "12001b", ""},
+		{"no suffix", id, "01004", false, id},
+		{"shared id, suffix a", id, "12001a", true, id},
+		{"shared id, suffix b", id, "12001b", true, id + ".b"},
+		{"shared id, suffix c", id, "12001c", true, id + ".c"},
+		// Distinct cards sharing a number, such as 01043a-d, each have an OCTGN id of their own.
+		{"own id, suffix b", id, "01043b", false, id},
+		{"own id, suffix d", id, "01043d", false, id},
+		{"no octgn id", "", "01004", false, ""},
+		{"no octgn id on a back face", "", "12001b", true, ""},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := OctgnStem(tt.octgnID, tt.faceCode); got != tt.want {
-				t.Errorf("OctgnStem(%q, %q) = %q, want %q", tt.octgnID, tt.faceCode, got, tt.want)
+			t.Parallel()
+			if got := OctgnStem(tt.octgnID, tt.faceCode, tt.sharedID); got != tt.want {
+				t.Errorf("OctgnStem(%q, %q, %v) = %q, want %q", tt.octgnID, tt.faceCode, tt.sharedID, got, tt.want)
 			}
 		})
 	}
@@ -61,6 +66,26 @@ func TestLoadManifestMissingBase(t *testing.T) {
 	path := writeFile(t, `{"version": 1, "faces": {}}`)
 	if _, err := LoadManifest(path); err == nil {
 		t.Fatal("LoadManifest accepted a manifest without a base URL")
+	}
+}
+
+func TestLoadManifestBaseWithoutSlash(t *testing.T) {
+	path := writeFile(t, `{"version": 1, "base": "https://img.intothefray.xyz", "faces": {}}`)
+	_, err := LoadManifest(path)
+	if err == nil || !strings.Contains(err.Error(), "does not end with /") {
+		t.Fatalf("LoadManifest error = %v, want a base without a trailing slash refused", err)
+	}
+}
+
+func TestLoadManifestEmptyKey(t *testing.T) {
+	path := writeFile(t, `{
+  "version": 1,
+  "base": "https://img.intothefray.xyz/",
+  "faces": {"12001a": {"en": {"key": "en/12001a.3f9ac2e1b0d4.avif"}, "fr": {"key": ""}}}
+}`)
+	_, err := LoadManifest(path)
+	if err == nil || !strings.Contains(err.Error(), "face 12001a has an empty fr key") {
+		t.Fatalf("LoadManifest error = %v, want the empty key of 12001a refused", err)
 	}
 }
 

@@ -144,7 +144,7 @@ func TestBuildSupportsScenarioOverFallbackSet(t *testing.T) {
 		Start: map[pack.Difficulty]pack.Start{pack.Standard: start, pack.Expert: start},
 	}}
 
-	result, err := Build(withManifest(in))
+	result, err := Build(withManifest(t, in))
 	if err != nil {
 		t.Fatal(err)
 	}

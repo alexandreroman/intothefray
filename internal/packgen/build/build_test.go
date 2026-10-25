@@ -31,7 +31,7 @@ func addImage(manifest cdn.Manifest, code, lang string) {
 	if manifest.Faces[code] == nil {
 		manifest.Faces[code] = make(map[string]cdn.ManifestImage)
 	}
-	manifest.Faces[code][lang] = cdn.ManifestImage{Key: imageKey(code, lang), From: "cerebro"}
+	manifest.Faces[code][lang] = cdn.ManifestImage{Key: imageKey(code, lang)}
 }
 
 // manifestFor gives every record an English image.
@@ -44,9 +44,10 @@ func manifestFor(records []marvelcdb.Card) cdn.Manifest {
 }
 
 // withManifest gives every face of the inputs an English image.
-func withManifest(in Inputs) Inputs {
+func withManifest(t *testing.T, in Inputs) Inputs {
+	t.Helper()
 	in.Manifest = cdn.Manifest{Version: 1, Base: cdnBase, Faces: make(map[string]map[string]cdn.ManifestImage)}
-	for _, face := range Sources(in) {
+	for _, face := range sourcesOf(t, in) {
 		addImage(in.Manifest, face.Code, "en")
 	}
 	return in
@@ -62,7 +63,7 @@ func villainCard(code, packCode, setCode string) marvelcdb.Card {
 
 func TestBuildIndexOrder(t *testing.T) {
 	// The pack with the lowest card code comes last in the release order.
-	in := withManifest(Inputs{
+	in := withManifest(t, Inputs{
 		MC: []marvelcdb.Card{
 			villainCard("01001", "late", "v_late"),
 			villainCard("02001", "early", "v_early"),
@@ -109,7 +110,7 @@ func TestBuildSetsInIndex(t *testing.T) {
 		})
 	}
 
-	result, err := Build(withManifest(Inputs{MC: mc, MCPacks: corePacks}))
+	result, err := Build(withManifest(t, Inputs{MC: mc, MCPacks: corePacks}))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -128,7 +129,7 @@ func TestBuildSetsInIndex(t *testing.T) {
 }
 
 func TestBuildManifestImages(t *testing.T) {
-	in := withManifest(Inputs{MC: setsFixture(t), MCPacks: corePacks})
+	in := withManifest(t, Inputs{MC: setsFixture(t), MCPacks: corePacks})
 	addImage(in.Manifest, "01001a", "fr")
 
 	result, err := Build(in)
@@ -154,7 +155,7 @@ func TestBuildManifestImages(t *testing.T) {
 }
 
 func TestBuildMissingEnglishDrops(t *testing.T) {
-	in := withManifest(Inputs{MC: setsFixture(t), MCPacks: corePacks})
+	in := withManifest(t, Inputs{MC: setsFixture(t), MCPacks: corePacks})
 	// The identity card of the hero and the Rhino scheme have no English
 	// image. A French one never saves a card without an English image.
 	delete(in.Manifest.Faces, "01001a")
@@ -190,7 +191,7 @@ func TestBuildMissingEnglishDrops(t *testing.T) {
 }
 
 func TestBuildClearsMissingObligation(t *testing.T) {
-	in := withManifest(Inputs{MC: setsFixture(t), MCPacks: corePacks})
+	in := withManifest(t, Inputs{MC: setsFixture(t), MCPacks: corePacks})
 	delete(in.Manifest.Faces, "01165")
 
 	result, err := Build(in)
@@ -214,7 +215,7 @@ func TestBuildRejectsScenarioWithInvalidFace(t *testing.T) {
 	start := def.Start[pack.Standard]
 	start.Top = map[string]pack.FaceRef{"villain": {Card: "01094", Face: 3}}
 	def.Start = map[pack.Difficulty]pack.Start{pack.Standard: start}
-	in := withManifest(Inputs{
+	in := withManifest(t, Inputs{
 		MC:      setsFixture(t),
 		MCPacks: corePacks,
 		Curated: curated.Curated{Scenarios: []curated.ScenarioDef{def}},
@@ -241,7 +242,7 @@ func TestBuildRejectsScenarioWithInvalidFace(t *testing.T) {
 }
 
 func TestBuildKeepsValidScenario(t *testing.T) {
-	in := withManifest(Inputs{
+	in := withManifest(t, Inputs{
 		MC:      setsFixture(t),
 		MCPacks: corePacks,
 		Curated: curated.Curated{Scenarios: []curated.ScenarioDef{rhinoDef()}},
@@ -288,7 +289,7 @@ func standardSetsInputs(t *testing.T, defs map[string]curated.SetDef) Inputs {
 		standardCard("09004", "standard_ii", ""),
 		standardCard("09005", "standard_pvp", ""),
 	)
-	return withManifest(Inputs{MC: mc, MCPacks: corePacks, Curated: curated.Curated{Sets: defs}})
+	return withManifest(t, Inputs{MC: mc, MCPacks: corePacks, Curated: curated.Curated{Sets: defs}})
 }
 
 func TestBuildMergesCuratedSets(t *testing.T) {
@@ -373,7 +374,7 @@ func heroSetsInputs(t *testing.T, defs map[string]curated.SetDef) Inputs {
 		heroCard("09012", "spider_man_tech_deck", "hero_special"),
 		heroCard("09013", "spider_man", "hero"),
 	)
-	return withManifest(Inputs{MC: mc, MCPacks: corePacks, Curated: curated.Curated{Sets: defs}})
+	return withManifest(t, Inputs{MC: mc, MCPacks: corePacks, Curated: curated.Curated{Sets: defs}})
 }
 
 func TestBuildMergesSideDecksAndSetAsideCards(t *testing.T) {
@@ -500,15 +501,16 @@ func TestBuildRejectsSideDeckWithoutHero(t *testing.T) {
 }
 
 func TestBuildRejectsUnknownCerebroOverride(t *testing.T) {
-	in := withManifest(Inputs{
+	in := withManifest(t, Inputs{
 		MC:      setsFixture(t),
 		MCPacks: corePacks,
 		CB:      []cerebro.Card{{ID: "01001A"}, {ID: "01001B"}},
-		Curated: curated.Curated{Cards: map[string]curated.CardOverride{
-			"01001a": {Cerebro: "01001B"},
-			"01001b": {Cerebro: "01001C"},
-		}},
 	})
+	// Set after withManifest, whose Sources call refuses the unknown image too.
+	in.Curated = curated.Curated{Cards: map[string]curated.CardOverride{
+		"01001a": {Cerebro: "01001B"},
+		"01001b": {Cerebro: "01001C"},
+	}}
 
 	_, err := Build(in)
 	if err == nil || !strings.Contains(err.Error(), "curated card 01001b: Cerebro image 01001C is not a Cerebro card") {

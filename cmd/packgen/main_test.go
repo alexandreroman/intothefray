@@ -7,13 +7,17 @@ import (
 	"io"
 	"io/fs"
 	"log/slog"
+	"net/http"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/alexandreroman/intothefray/internal/packgen/build"
 	"github.com/alexandreroman/intothefray/internal/packgen/cdn"
+	"github.com/alexandreroman/intothefray/internal/packgen/fetch"
 	"github.com/alexandreroman/intothefray/internal/packgen/marvelcdb"
 	"github.com/alexandreroman/intothefray/internal/packgen/report"
 )
@@ -140,7 +144,7 @@ func TestRunWritesPacksFromManifest(t *testing.T) {
 		Version: 1,
 		Base:    "https://img.intothefray.xyz/",
 		Faces: map[string]map[string]cdn.ManifestImage{
-			"01094": {"en": {Key: "en/01094.0123456789ab.avif", From: "cerebro"}},
+			"01094": {"en": {Key: "en/01094.0123456789ab.avif"}},
 		},
 	}
 	writeManifest(t, opts.manifest, manifest)
@@ -180,5 +184,53 @@ func TestPrintManifestCoverage(t *testing.T) {
 	want := "manifest en: 2/3 faces\nmanifest fr: 1/3 faces\n"
 	if got := out.String(); got != want {
 		t.Errorf("got %q, want %q", got, want)
+	}
+}
+
+// emptyListTransport answers every request with an empty JSON list, and
+// records the hosts it was asked for.
+type emptyListTransport struct {
+	mu    sync.Mutex
+	hosts []string
+}
+
+func (et *emptyListTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	et.mu.Lock()
+	et.hosts = append(et.hosts, req.URL.Host)
+	et.mu.Unlock()
+	return &http.Response{
+		StatusCode: http.StatusOK,
+		Status:     "200 OK",
+		Header:     make(http.Header),
+		Body:       io.NopCloser(strings.NewReader("[]")),
+		Request:    req,
+	}, nil
+}
+
+func TestFetchInputsFrenchOnlyForPacks(t *testing.T) {
+	tests := []struct {
+		name        string
+		sourcesOnly bool
+		wantFrench  bool
+	}{
+		{"packs", false, true},
+		{"sources only", true, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			transport := &emptyListTransport{}
+			client := &fetch.Client{HTTP: &http.Client{Transport: transport}, CacheDir: t.TempDir()}
+			opts := options{curatedDir: t.TempDir(), sourcesOnly: tt.sourcesOnly}
+
+			if _, err := fetchInputsWith(context.Background(), client, opts); err != nil {
+				t.Fatal(err)
+			}
+
+			fetchedFrench := slices.Contains(transport.hosts, "fr.marvelcdb.com")
+			if fetchedFrench != tt.wantFrench {
+				t.Errorf("fetched fr.marvelcdb = %v, want %v (hosts %v)", fetchedFrench, tt.wantFrench, transport.hosts)
+			}
+		})
 	}
 }

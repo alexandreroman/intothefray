@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 	"slices"
+	"strings"
 
 	"github.com/alexandreroman/intothefray/internal/packgen/fetch"
 )
@@ -25,16 +26,12 @@ type Manifest struct {
 	Base    string `json:"base"`
 	// Faces maps a face code to its images, keyed by language ("en", "fr").
 	Faces map[string]map[string]ManifestImage `json:"faces"`
-	// Assets maps an asset name (such as "back-player") to its key.
-	Assets map[string]string `json:"assets"`
 }
 
 // ManifestImage is one published image of a face.
 type ManifestImage struct {
 	// Key is the object key under Manifest.Base, such as "fr/12001a.9b1d07c4e2aa.avif".
 	Key string `json:"key"`
-	// From names the source the image came from: "cerebro", "octgn" or "record".
-	From string `json:"from"`
 }
 
 // SourceFace lists the candidate image sources of one card face.
@@ -52,10 +49,12 @@ type sourcesFile struct {
 	Faces   []SourceFace `json:"faces"`
 }
 
-// OctgnStem returns the OCTGN image file stem of a face: the card's OCTGN id, plus ".<letter>" for an alternate
-// face (suffix b, c, ...). It returns "" when the card has no OCTGN id.
-func OctgnStem(octgnID string, faceCode string) string {
-	if octgnID == "" || faceCode == "" {
+// OctgnStem returns the OCTGN image file stem of a face. The OCTGN packs name the image of a face after its OCTGN
+// id. When several faces of a card share one id (sharedID), the first face keeps the bare id and the others add
+// ".<letter>" (suffix b, c, ...). A face with an id of its own always has the bare id, whatever its letter. It
+// returns "" when the face has no OCTGN id.
+func OctgnStem(octgnID string, faceCode string, sharedID bool) string {
+	if octgnID == "" || faceCode == "" || !sharedID {
 		return octgnID
 	}
 	suffix := faceCode[len(faceCode)-1]
@@ -78,9 +77,20 @@ func LoadManifest(path string) (Manifest, error) {
 	if m.Version != manifestVersion {
 		return Manifest{}, fmt.Errorf("image manifest %s: unsupported manifest version %d", path, m.Version)
 	}
-	// Without a base every image URL would be a bare key, so refuse the file rather than build broken packs.
+	// Image URLs are the base and the key put end to end, so a base without a trailing slash, or an empty key,
+	// would give broken URLs: refuse the file rather than build broken packs.
 	if m.Base == "" {
 		return Manifest{}, fmt.Errorf("image manifest %s: no base URL", path)
+	}
+	if !strings.HasSuffix(m.Base, "/") {
+		return Manifest{}, fmt.Errorf("image manifest %s: base URL %q does not end with /", path, m.Base)
+	}
+	for faceCode, images := range m.Faces {
+		for lang, image := range images {
+			if image.Key == "" {
+				return Manifest{}, fmt.Errorf("image manifest %s: face %s has an empty %s key", path, faceCode, lang)
+			}
+		}
 	}
 	return m, nil
 }

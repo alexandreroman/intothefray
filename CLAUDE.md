@@ -15,7 +15,8 @@ See [README.md](README.md) for full documentation.
 - Frontend: TypeScript, Svelte 5 + Vite, static SPA served
   separately (GitHub Pages)
 - Card data: per-pack JSON files generated from marvelcdb, Cerebro,
-  mc4db and fr.marvelcdb, plus hand-curated scenario files
+  mc4db and fr.marvelcdb, plus hand-curated scenario files; card images
+  from the image manifest written by intothefray-img
 
 ## Build & run
 
@@ -27,6 +28,8 @@ make build        # bin/intothefray
 make web-install  # pnpm install --frozen-lockfile in web/
 make web-check    # svelte-check, eslint + prettier, vitest
 make web-build    # production build into web/dist/
+make sources      # card image sources, packs/images/sources.json
+make packs        # card packs; needs packs/images/manifest.json
 ```
 
 ## Modules

@@ -2,12 +2,12 @@ package build
 
 import (
 	"reflect"
-	"slices"
 	"testing"
 
 	"github.com/alexandreroman/intothefray/internal/pack"
 	"github.com/alexandreroman/intothefray/internal/packgen/curated"
 	"github.com/alexandreroman/intothefray/internal/packgen/marvelcdb"
+	"github.com/alexandreroman/intothefray/internal/packgen/report"
 )
 
 // faceOf returns one face of a built card.
@@ -79,7 +79,7 @@ func frenchInputs(t *testing.T) Inputs {
 		{Code: "01109", Name: "Alerte à la Bombe", SetCode: "bomb_scare", SetName: "Alerte à la Bombe"},
 		{Code: "01113", Name: "Klaw", SetCode: "klaw", SetName: "Klaw (FR)"},
 	}
-	return withManifest(Inputs{
+	return withManifest(t, Inputs{
 		MC:            mc,
 		MCPacks:       corePacks,
 		FrenchMC:      frenchMC,
@@ -187,12 +187,6 @@ func TestBuildReportsFrenchCoverage(t *testing.T) {
 		Code: "02001", Name: "Other", TypeCode: "ally", PackCode: "other", ImageSrc: "/02001.png",
 	})
 	addImage(in.Manifest, "02001", "en")
-	// Every face has a French scan but the scheme and the card of "other".
-	for _, record := range in.MC {
-		if record.Code != "01097" && record.Code != "02001" {
-			addImage(in.Manifest, record.Code, "fr")
-		}
-	}
 
 	result, err := Build(in)
 	if err != nil {
@@ -207,10 +201,7 @@ func TestBuildReportsFrenchCoverage(t *testing.T) {
 	if len(got) != 1 {
 		t.Fatalf("coverage = %+v, want one language", got)
 	}
-	if got[0].Lang != "fr" || got[0].Faces != faces || got[0].Names != translated || got[0].Images != faces-2 {
-		t.Errorf("coverage = %+v, want fr with %d faces, %d names and %d images", got[0], faces, translated, faces-2)
-	}
-	if want := []string{"other"}; !slices.Equal(got[0].PacksWithoutImages, want) {
-		t.Errorf("packs without images = %v, want %v", got[0].PacksWithoutImages, want)
+	if want := (report.Coverage{Lang: "fr", Faces: faces, Names: translated}); got[0] != want {
+		t.Errorf("coverage = %+v, want %+v", got[0], want)
 	}
 }

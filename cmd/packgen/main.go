@@ -97,7 +97,10 @@ func writeSources(ctx context.Context, logger *slog.Logger, opts options, inputs
 	if err != nil {
 		return err
 	}
-	faces := build.Sources(in)
+	faces, err := build.Sources(in)
+	if err != nil {
+		return fmt.Errorf("list image sources: %w", err)
+	}
 	if err := cdn.WriteSources(opts.sources, faces); err != nil {
 		return err
 	}
@@ -128,19 +131,28 @@ func writePacks(ctx context.Context, logger *slog.Logger, stdout io.Writer, opts
 	if err != nil {
 		return fmt.Errorf("build packs: %w", err)
 	}
+	faces, err := build.Sources(in)
+	if err != nil {
+		return fmt.Errorf("list image sources: %w", err)
+	}
 	if err := write.Dist(opts.out, lang, result); err != nil {
 		return fmt.Errorf("write packs: %w", err)
 	}
 	logger.Info("packs written", "dir", filepath.Join(opts.out, lang))
 
 	printReport(stdout, result)
-	printManifestCoverage(stdout, manifest, build.Sources(in))
+	printManifestCoverage(stdout, manifest, faces)
 	return nil
 }
 
 func fetchInputs(ctx context.Context, opts options) (build.Inputs, error) {
 	client := &fetch.Client{CacheDir: opts.cache, Refresh: opts.refresh, UserAgent: userAgent}
+	return fetchInputsWith(ctx, client, opts)
+}
 
+// fetchInputsWith gathers the source data with client. The French data of
+// fr.marvelcdb only localizes the packs, so -sources-only does not fetch it.
+func fetchInputsWith(ctx context.Context, client *fetch.Client, opts options) (build.Inputs, error) {
 	var in build.Inputs
 	var err error
 	if in.MC, err = marvelcdb.FetchCards(ctx, client, marvelcdb.BaseURL); err != nil {
@@ -149,11 +161,13 @@ func fetchInputs(ctx context.Context, opts options) (build.Inputs, error) {
 	if in.MCPacks, err = marvelcdb.FetchPacks(ctx, client, marvelcdb.BaseURL); err != nil {
 		return in, err
 	}
-	if in.FrenchMC, err = marvelcdb.FetchCards(ctx, client, marvelcdb.FrenchBaseURL); err != nil {
-		return in, err
-	}
-	if in.FrenchMCPacks, err = marvelcdb.FetchPacks(ctx, client, marvelcdb.FrenchBaseURL); err != nil {
-		return in, err
+	if !opts.sourcesOnly {
+		if in.FrenchMC, err = marvelcdb.FetchCards(ctx, client, marvelcdb.FrenchBaseURL); err != nil {
+			return in, err
+		}
+		if in.FrenchMCPacks, err = marvelcdb.FetchPacks(ctx, client, marvelcdb.FrenchBaseURL); err != nil {
+			return in, err
+		}
 	}
 	if in.MC4DB, err = mc4db.FetchCards(ctx, client, mc4db.BaseURL); err != nil {
 		return in, err
@@ -196,9 +210,6 @@ func printReport(w io.Writer, result build.Result) {
 	printFallback(w, result.Fallback)
 	for _, coverage := range result.Coverage {
 		_, _ = fmt.Fprintln(w, coverage)
-		if len(coverage.PacksWithoutImages) > 0 {
-			_, _ = fmt.Fprintf(w, "%s: no image in packs %s\n", coverage.Lang, strings.Join(coverage.PacksWithoutImages, ", "))
-		}
 	}
 	for _, entry := range result.Report {
 		_, _ = fmt.Fprintf(w, "unsupported %s %q (%s): %s\n", entry.Code, entry.Name, entry.Pack, entry.Reason)

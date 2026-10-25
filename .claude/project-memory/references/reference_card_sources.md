@@ -47,9 +47,14 @@ type: reference
 - For each face, the generator lists the candidate image sources in
   `packs/images/sources.json` (`make sources`): the Cerebro image, the
   source record's image (marvelcdb, or mc4db for fallback cards), the
-  OCTGN file stem (`octgn_id`, plus `.b`, `.c`… for an alternate face)
-  and whether the face is landscape. intothefray-img picks and publishes
-  the images from it.
+  OCTGN file stem and whether the face is landscape. intothefray-img
+  picks and publishes the images from it.
+- OCTGN file stems: the OCTGN packs name an image after the face's
+  `octgn_id`. When faces of one base code share an `octgn_id` (the faces
+  of one card: 05001a/b, 12001a/b/c, 01097a/b), the first face takes the
+  bare id and the others add their letter (`<id>.b`, `<id>.c`). Distinct
+  cards sharing a number (01043a-d, 01144a-c, 47007a-c) each have their
+  own `octgn_id`, and their stem is the bare id whatever their letter.
 - Cerebro swaps the A/B images of some identities (Groot, Rocket and the
   X-Men wave: Colossus, Shadowcat, Cyclops, Phoenix, Wolverine, Storm,
   Gambit, Rogue): its `XXXXXA.jpg` shows the alter-ego. `cerebro`
