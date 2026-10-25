@@ -1,13 +1,14 @@
 package game
 
 import (
+	"maps"
 	"math/rand/v2"
 	"slices"
 )
 
 // Card ids are opaque on purpose: an id that followed setup order, or that
-// survived a shuffle or a trip through a hand or a deck (see freshID), would
-// let a player recognise a face-down card.
+// survived a shuffle or a trip through a hand or a deck (see
+// renamedOnTheWay), would let a player recognise a face-down card.
 const (
 	idAlphabet = "abcdefghjkmnpqrstuvwxyz23456789"
 	idLength   = 8
@@ -38,41 +39,128 @@ func randomCardID(rng *rand.Rand) string {
 // order. It does not change t.
 func reidentify(t *Table, ids []string, rng *rand.Rand) (renames map[string]string, order []string) {
 	renames = make(map[string]string, len(ids))
-	fresh := make(map[string]bool, len(ids))
+	addFreshIDs(t, renames, ids, rng)
 	order = make([]string, 0, len(ids))
 	for _, old := range ids {
-		id := newCardID(t, rng, fresh)
-		fresh[id] = true
-		renames[old] = id
-		order = append(order, id)
+		order = append(order, renames[old])
 	}
 	rng.Shuffle(len(order), func(i, j int) { order[i], order[j] = order[j], order[i] })
 	return renames, order
 }
 
-// freshID gives c, on its way into a hand or a deck, a new id when the other
-// players cannot tell it apart where it lies: in a hand, or face down on the
-// table. Keeping its id would let them tie the card that comes out later to
-// the one they saw before it went in. It returns the renames to record, nil
-// for a card everybody sees go.
-func freshID(t *Table, c *Card, rng *rand.Rand) map[string]string {
-	inHand := c.Zone == ZoneHand
-	faceDownOnTable := c.Zone == ZoneTable && c.FaceDown
-	if !inHand && !faceDownOnTable {
-		return nil
+// addFreshIDs adds to renames a new id for each of ids, in order: one used
+// neither in t nor by renames already, so that the new ids of one action are
+// all distinct. It does not change t.
+func addFreshIDs(t *Table, renames map[string]string, ids []string, rng *rand.Rand) {
+	taken := make(map[string]bool, len(renames)+len(ids))
+	for _, id := range renames {
+		taken[id] = true
 	}
-	renames, _ := reidentify(t, []string{c.ID}, rng)
-	return renames
+	for _, old := range ids {
+		id := newCardID(t, rng, taken)
+		taken[id] = true
+		renames[old] = id
+	}
 }
 
-// checkFreshID checks the new id resolve gave the card a moves into a hand or
-// a deck, if any (see freshID).
-func checkFreshID(t *Table, a Action) error {
-	if a.Renames == nil {
+// renamedOnTheWay returns the cards a gives new ids as it takes a.Card out
+// of its place, so that nobody can tie the card that comes out later to the
+// one they saw go: every card a sends onto a deck, but one that lands on top
+// of a side deck that shows it, and a card taken into a hand out of a hand or
+// face down off the table. That covers the cards tucked under a card leaving
+// the table that go to the bottom of a deck (see tuckedDestination). The
+// cards a shuffle into a deck gathers are left out: the shuffle renames them
+// (see reidentify).
+func (t *Table) renamedOnTheWay(a Action) []string {
+	c, ok := t.Cards[a.Card]
+	if !ok {
 		return nil
 	}
-	_, err := checkFreshIDs(t, a.Renames, []string{a.Card})
-	return err
+	var ids []string
+	switch a.Kind {
+	case ActToDeck:
+		// On a side deck that shows its top card, a card put on top, or under
+		// no card, lies in everybody's sight.
+		home, ok := t.Piles[c.Home]
+		inSight := ok && home.TopFaceUp && (a.Where == whereTop || len(home.Cards) == 0)
+		if a.Where != whereShuffle && !inSight {
+			ids = append(ids, c.ID)
+		}
+	case ActToHand:
+		if c.Zone == ZoneHand || c.Zone == ZoneTable && c.FaceDown {
+			ids = append(ids, c.ID)
+		}
+	case ActFlip:
+		// A revealed card turned face down goes back on top of its deck (see
+		// applyFlip); any other flip leaves the card where it is.
+		if a.FaceDown == nil || !*a.FaceDown || c.OnPile == "" {
+			return nil
+		}
+		ids = append(ids, c.ID)
+	case ActDiscard, ActToPile, ActPlay:
+	default:
+		return nil
+	}
+	return append(ids, t.sentUnderDecks(c, a)...)
+}
+
+// sentUnderDecks returns the cards tucked under c that go to the bottom of a
+// deck when a takes c off the table (see tuckedDestination), but those a
+// shuffle into c's deck gathers.
+func (t *Table) sentUnderDecks(c *Card, a Action) []string {
+	if c.Zone != ZoneTable {
+		return nil
+	}
+	var shuffled []string
+	if deck, ok := t.Piles[c.Home]; ok && a.Kind == ActToDeck && a.Where == whereShuffle {
+		shuffled = t.shuffledIntoDeck(c, deck)
+	}
+	var ids []string
+	for _, child := range t.descendants(c.ID) {
+		_, bottom, ok := t.tuckedDestination(child)
+		if ok && bottom && !slices.Contains(shuffled, child.ID) {
+			ids = append(ids, child.ID)
+		}
+	}
+	return ids
+}
+
+// checkRenamedOnTheWay checks the new ids resolve gave the cards a takes out
+// of sight, if any (see renamedOnTheWay), and returns them for apply to give
+// once a is performed. It returns none for an action that renames no card on
+// its way, nor for a shuffle into a deck, which checks its renames itself
+// (see applyToDeck).
+func (t *Table) checkRenamedOnTheWay(a Action) (map[string]string, error) {
+	if a.Renames == nil || !takesAway[a.Kind] || producesShuffle(a) {
+		return nil, nil
+	}
+	if _, err := checkFreshIDs(t, a.Renames, t.renamedOnTheWay(a)); err != nil {
+		return nil, err
+	}
+	return a.Renames, nil
+}
+
+// takesAway are the kinds that may take a card out of its place, and with it
+// the cards tucked under it (see renamedOnTheWay).
+var takesAway = map[Kind]bool{
+	ActToDeck:  true,
+	ActToHand:  true,
+	ActFlip:    true,
+	ActDiscard: true,
+	ActToPile:  true,
+	ActPlay:    true,
+}
+
+// redrawTaken gives every card of renames whose new id is in taken another
+// fresh one, in id order, and adds the new ids to taken: the sub-actions of a
+// group, each resolved on the table as it stands, never give one id twice.
+func redrawTaken(t *Table, renames map[string]string, taken map[string]bool, rng *rand.Rand) {
+	for _, old := range slices.Sorted(maps.Keys(renames)) {
+		if taken[renames[old]] {
+			renames[old] = newCardID(t, rng, taken)
+		}
+		taken[renames[old]] = true
+	}
 }
 
 // checkRenames checks the renames of a shuffle: they must cover exactly the
@@ -116,7 +204,7 @@ func checkFreshIDs(t *Table, renames map[string]string, expected []string) ([]st
 }
 
 // renameCards gives cards new ids and rewrites every reference to them. The
-// renames were checked beforehand (see checkRenames and checkFreshID). Open
+// renames were checked beforehand (see checkRenames and checkFreshIDs). Open
 // views drop the renamed cards: their ids are gone.
 func renameCards(t *Table, renames map[string]string) {
 	for old, id := range renames {

@@ -2,6 +2,8 @@ package game
 
 import (
 	"errors"
+	"math/rand/v2"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -175,46 +177,220 @@ func TestGroupGivesFreshIDs(t *testing.T) {
 	}
 }
 
-// A card everybody sees go keeps its id: nothing is hidden on its way.
-func TestFaceUpCardKeepsItsID(t *testing.T) {
+// A face-up card everybody sees go into its owner's hand keeps its id.
+func TestFaceUpCardTakenIntoHandKeepsItsID(t *testing.T) {
+	f := newDoFixture(t)
+	played := f.playCards(t, "h", "p0", 1)[0]
+
+	f.mustDo(t, "h", Action{Kind: ActToHand, Card: played}, at(2))
+
+	if _, ok := f.g.Table.Cards[played]; !ok {
+		t.Errorf("card %s lost its id", played)
+	}
+	if e := f.lastEvent(t); e.Action.Renames != nil {
+		t.Errorf("event renames %v, want none", e.Action.Renames)
+	}
+}
+
+// Every card going onto a deck gets a new id, a face-up one too: once the
+// owner reorders or searches the deck, its old id would tell where it lies.
+func TestFaceUpCardPutOnTheDeckGetsAFreshID(t *testing.T) {
+	f := newDoFixture(t)
+	played := f.playCards(t, "h", "p0", 1)[0]
+	f.mustDo(t, "h", Action{Kind: ActToDeck, Card: played, Where: whereTop}, at(2))
+	top := topCards(f.g.Table.Piles["deck:p0"], 2)
+	f.mustDo(t, "h", Action{Kind: ActReorderTop, Pile: "deck:p0", Cards: []string{top[1], top[0]}}, at(3))
+	f.mustDo(t, "h", Action{Kind: ActSearch, Pile: "deck:p0"}, at(4))
+
+	// Dragged out of the Search box, it lands face down.
+	f.mustDo(t, "h", Action{Kind: ActPlay, Card: top[0], X: 600, Y: 400}, at(5))
+
+	if !f.g.Table.Cards[top[0]].FaceDown {
+		t.Fatalf("card %s dragged out of the Search box lies face up", top[0])
+	}
+	checkNeverSeenAgain(t, f.g, "b", played)
+	checkIntegrity(t, f.g.Table)
+	checkHistory(t, f.g)
+	checkReplay(t, f)
+}
+
+func TestCardPutOnTheDeckOutOfAPileGetsAFreshID(t *testing.T) {
+	f := newDoFixture(t)
+	played := f.playCards(t, "h", "p0", 1)[0]
+	f.mustDo(t, "h", Action{Kind: ActDiscard, Card: played}, at(2))
+
+	f.mustDo(t, "h", Action{Kind: ActToDeck, Card: played, Where: whereBottom}, at(3))
+
+	if _, ok := f.g.Table.Cards[played]; ok {
+		t.Errorf("card %s keeps its id", played)
+	}
+	checkIntegrity(t, f.g.Table)
+	checkHistory(t, f.g)
+	checkReplay(t, f)
+}
+
+// A revealed card turned face down goes back on top of its deck: onto a deck.
+func TestRevealedCardTurnedFaceDownGetsAFreshID(t *testing.T) {
+	f := newDoFixture(t)
+	id := f.revealTop(t, "h", "deck:p0", 1)
+
+	f.mustDo(t, "h", Action{Kind: ActFlip, Card: id}, at(2))
+
+	if _, ok := f.g.Table.Cards[id]; ok {
+		t.Errorf("revealed card %s keeps its id back in the deck", id)
+	}
+	checkIntegrity(t, f.g.Table)
+	checkHistory(t, f.g)
+	checkReplay(t, f)
+}
+
+// A card tucked under one leaving the table goes to the bottom of its side
+// deck when that deck has no discard pile (tuckedDestination): onto a deck.
+func TestTuckedCardSentUnderItsDeckGetsAFreshID(t *testing.T) {
 	tests := []struct {
 		name string
-		move func(id string) Action
+		// host returns the card the Sense card is tucked under, on the table.
+		host  func(t *testing.T, f *doFixture) string
+		leave func(host string) Action
 	}{
-		{"taken into hand", func(id string) Action { return Action{Kind: ActToHand, Card: id} }},
-		{"put on the deck", func(id string) Action { return Action{Kind: ActToDeck, Card: id, Where: whereTop} }},
-		{"put under the deck", func(id string) Action { return Action{Kind: ActToDeck, Card: id, Where: whereBottom} }},
+		{"discarded host", revealedEnemy, func(host string) Action {
+			return Action{Kind: ActDiscard, Card: host}
+		}},
+		{"host to the victory display", revealedEnemy, func(host string) Action {
+			return Action{Kind: ActToPile, Card: host, Target: PileVictory}
+		}},
+		{"host taken into hand", playedFromDeck, func(host string) Action {
+			return Action{Kind: ActToHand, Card: host}
+		}},
+		{"host shuffled into its deck", playedFromDeck, func(host string) Action {
+			return Action{Kind: ActToDeck, Card: host, Where: whereShuffle}
+		}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			f := newDoFixture(t)
-			played := f.playCards(t, "h", "p0", 1)[0]
-
-			f.mustDo(t, "h", tt.move(played), at(2))
-
-			if _, ok := f.g.Table.Cards[played]; !ok {
-				t.Errorf("card %s lost its id", played)
+			f, sense := tuckedSenseFixture(t)
+			host := tt.host(t, f)
+			f.mustDo(t, "h", Action{Kind: ActPlay, Card: sense, Target: host}, at(3))
+			f.mustDo(t, "h", Action{Kind: ActFlip, Card: sense}, at(4))
+			if !f.g.Table.Cards[sense].FaceDown {
+				t.Fatalf("the tucked Sense card %s lies face up", sense)
 			}
-			if e := f.lastEvent(t); e.Action.Renames != nil {
-				t.Errorf("event renames %v, want none", e.Action.Renames)
+
+			f.mustDo(t, "h", tt.leave(host), at(10))
+
+			if _, ok := f.g.Table.Cards[sense]; ok {
+				t.Errorf("tucked card %s keeps its id under its deck", sense)
 			}
+			if got := len(f.g.Table.Piles["side:p0:0"].Cards); got != 5 {
+				t.Errorf("Sense deck holds %d cards, want 5", got)
+			}
+			checkIntegrity(t, f.g.Table)
+			checkHistory(t, f.g)
+			checkReplay(t, f)
 		})
 	}
 }
 
-// A hand card put on top of a side deck that shows its top card stays in
-// everybody's sight, and its line names it.
-func TestHandCardOnAFaceUpSideDeckKeepsItsID(t *testing.T) {
-	f := sideDeckFixture(t)
-	id := drawSide(t, f, "h", invocationDeck, 1)
+// revealedEnemy reveals the top card of the encounter deck and returns it.
+func revealedEnemy(t *testing.T, f *doFixture) string {
+	t.Helper()
+	f.mustDo(t, "h", Action{Kind: ActReveal}, at(2))
+	return f.g.Table.revealedOn(PileEncounter)[0].ID
+}
 
-	f.mustDo(t, "h", Action{Kind: ActToDeck, Card: id, Where: whereTop}, at(2))
+// playedFromDeck plays the top card of p0's deck face up and returns it.
+func playedFromDeck(t *testing.T, f *doFixture) string {
+	t.Helper()
+	top := topCards(f.g.Table.Piles["deck:p0"], 1)[0]
+	f.mustDo(t, "h", Action{Kind: ActPlay, Pile: "deck:p0", X: 800, Y: 500, FaceUp: true}, at(2))
+	return top
+}
 
-	if top := topCards(f.g.Table.Piles[invocationDeck], 1)[0]; top != id {
-		t.Errorf("top of the Invocation deck = %s, want %s", top, id)
+// repeatingRNG returns a random stream whose first two card ids are the same.
+func repeatingRNG() *rand.Rand {
+	source := rand.NewPCG(7, 7)
+	first := make([]uint64, idLength)
+	for i := range first {
+		first[i] = source.Uint64()
 	}
-	if want := "put " + f.nameOf(t, id) + " on top of their Invocation deck"; f.lastLog().Text != want {
-		t.Errorf("line = %q, want %q", f.lastLog().Text, want)
+	return rand.New(&replaySource{values: slices.Concat(first, first), rest: rand.NewPCG(1, 2)}) //nolint:gosec // deterministic test
+}
+
+// replaySource returns its values, then those of rest.
+type replaySource struct {
+	values []uint64
+	rest   rand.Source
+}
+
+func (s *replaySource) Uint64() uint64 {
+	if len(s.values) == 0 {
+		return s.rest.Uint64()
+	}
+	v := s.values[0]
+	s.values = s.values[1:]
+	return v
+}
+
+func TestFreshIDsOfOneActionAreDistinct(t *testing.T) {
+	table := newTestTable()
+	renames := map[string]string{}
+
+	addFreshIDs(table, renames, []string{"c3", "c4"}, repeatingRNG())
+
+	if renames["c3"] == renames["c4"] {
+		t.Errorf("renames %v give one id twice", renames)
+	}
+}
+
+func TestFreshIDsOfOneGroupAreDistinct(t *testing.T) {
+	f := newDoFixture(t)
+	f.mustDo(t, "h", Action{Kind: ActDraw, N: 2}, at(1))
+	hand := f.g.Table.Hands["p0"]
+	a := groupOf(ActToDeck, whereTop, "", hand...)
+
+	resolved, err := resolve(f.g, f.g.actorOf(0), a, repeatingRNG())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	first, second := resolved.Actions[0].Renames[hand[0]], resolved.Actions[1].Renames[hand[1]]
+	if first == "" || first == second {
+		t.Fatalf("the group gives ids %q and %q", first, second)
+	}
+	if err := apply(f.g.Table, resolved); err != nil {
+		t.Errorf("apply = %v", err)
+	}
+}
+
+// A hand card that lands on top of a side deck that shows its top card stays
+// in everybody's sight, and its line names it: put on top, or under a deck
+// left empty.
+func TestHandCardOnAFaceUpSideDeckKeepsItsID(t *testing.T) {
+	tests := []struct {
+		where string
+		draws int // the cards drawn out of the Invocation deck
+		line  string
+	}{
+		{whereTop, 1, "put <name> on top of their Invocation deck"},
+		{whereBottom, 5, "put <name> at the bottom of their Invocation deck"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.where, func(t *testing.T) {
+			f := sideDeckFixture(t)
+			var id string
+			for i := range tt.draws {
+				id = drawSide(t, f, "h", invocationDeck, 1+i)
+			}
+
+			f.mustDo(t, "h", Action{Kind: ActToDeck, Card: id, Where: tt.where}, at(10))
+
+			if top := topCards(f.g.Table.Piles[invocationDeck], 1)[0]; top != id {
+				t.Errorf("top of the Invocation deck = %s, want %s", top, id)
+			}
+			if want := strings.ReplaceAll(tt.line, "<name>", f.nameOf(t, id)); f.lastLog().Text != want {
+				t.Errorf("line = %q, want %q", f.lastLog().Text, want)
+			}
+		})
 	}
 }
 

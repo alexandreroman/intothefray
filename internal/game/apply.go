@@ -38,8 +38,22 @@ func apply(t *Table, a Action) error {
 	return nil
 }
 
-// applyAction performs a on t, as apply does, on the table as a sees it.
+// applyAction performs a on t, as apply does, on the table as a sees it. The
+// cards it takes out of sight get their new ids last (see renamedOnTheWay).
 func applyAction(t *Table, a Action) error {
+	renames, err := t.checkRenamedOnTheWay(a)
+	if err != nil {
+		return err
+	}
+	if err := applyKind(t, a); err != nil {
+		return err
+	}
+	renameCards(t, renames)
+	return nil
+}
+
+// applyKind performs a on t, the part that depends on its kind.
+func applyKind(t *Table, a Action) error {
 	switch a.Kind {
 	case ActMove:
 		return applyMove(t, a)
@@ -449,13 +463,9 @@ func applyToHand(t *Table, a Action) error {
 	if err := t.checkLeave(c); err != nil {
 		return err
 	}
-	if err := checkFreshID(t, a); err != nil {
-		return err
-	}
 
 	t.leave(c)
 	t.addToHand(PlayerArea(c.Owner), c)
-	renameCards(t, a.Renames)
 	return nil
 }
 
@@ -483,21 +493,23 @@ func applyToDeck(t *Table, a Action) error {
 	}
 
 	switch a.Where {
-	case whereTop, whereBottom:
-		if err := checkFreshID(t, a); err != nil {
-			return err
-		}
+	case whereTop:
 		t.leave(c)
-		if a.Where == whereTop {
-			deck.Cards = append(deck.Cards, c.ID)
-		} else {
-			deck.Cards = slices.Insert(deck.Cards, 0, c.ID)
-		}
-		renameCards(t, a.Renames)
+		deck.Cards = append(deck.Cards, c.ID)
+	case whereBottom:
+		t.leave(c)
+		deck.Cards = slices.Insert(deck.Cards, 0, c.ID)
 	case whereShuffle:
-		// The caller resolved the shuffle: Cards is the whole new pile.
-		if err := checkRenames(t, a, t.shuffledIntoDeck(c, deck)); err != nil {
+		// The caller resolved the shuffle: Cards is the whole new pile, and
+		// Renames also covers the cards tucked under c that go to the bottom
+		// of another deck (see renamedOnTheWay).
+		shuffled := t.shuffledIntoDeck(c, deck)
+		newIDs, err := checkFreshIDs(t, a.Renames, slices.Concat(shuffled, t.renamedOnTheWay(a)))
+		if err != nil {
 			return err
+		}
+		if !samePermutation(newIDs[:len(shuffled)], a.Cards) {
+			return invalid("shuffle order is not a permutation of the renamed cards")
 		}
 		t.leave(c)
 		renameCards(t, a.Renames)

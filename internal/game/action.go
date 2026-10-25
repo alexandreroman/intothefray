@@ -75,9 +75,8 @@ type Action struct {
 	// can follow them. A shuffle renames every card of the shuffled pile,
 	// Cards then holding the new order in new ids. A reorder of the top that
 	// takes a revealed card back renames the reordered cards, its Cards
-	// staying in their old ids (see resolveReorderTop). A card going into a
-	// hand or a deck out of a hand or face down off the table gets a new id
-	// too (see freshID).
+	// staying in their old ids (see resolveReorderTop). The cards an action
+	// takes out of sight on their way get new ids too (see renamedOnTheWay).
 	Renames map[string]string `json:"renames,omitempty"`
 	Seat    int               `json:"seat,omitempty"` // acting seat, filled server-side (arrows)
 	// Seats is filled by an arrow clear of a player holding several decks:
@@ -163,14 +162,32 @@ func resolve(g *Game, who actor, a Action, rng *rand.Rand) (Action, error) {
 
 // resolveOnTable resolves a, any kind but a group, on the table as apply
 // will see it: with the cards revealed on the deck a acts on back in it (see
-// coveredFor), so that the recorded cards are those apply takes. A rebuild
-// resolves its shuffles again here too (see replayEvent).
+// coveredFor), so that the recorded cards are those apply takes. It picks
+// every new id, a client choosing none: those of a shuffle, and those of the
+// cards a takes out of sight (see renamedOnTheWay). A rebuild resolves its
+// shuffles again here too (see replayEvent).
 func resolveOnTable(original *Table, who actor, a Action, rng *rand.Rand) (Action, error) {
 	t, err := original.coveredFor(a, PlayerArea(who.seat))
 	if err != nil {
 		return Action{}, err
 	}
+	a.Renames = nil
+	resolved, err := resolveKind(original, t, who, a, rng)
+	if err != nil {
+		return resolved, err
+	}
+	if ids := t.renamedOnTheWay(resolved); len(ids) > 0 {
+		if resolved.Renames == nil {
+			resolved.Renames = make(map[string]string, len(ids))
+		}
+		addFreshIDs(t, resolved.Renames, ids, rng)
+	}
+	return resolved, nil
+}
 
+// resolveKind resolves a on t, the table as apply will see it (see
+// resolveOnTable); original is the table before covering.
+func resolveKind(original, t *Table, who actor, a Action, rng *rand.Rand) (Action, error) {
 	switch a.Kind {
 	case ActMove, ActToken, ActStatus, ActModifier, ActChooseStage, ActDiscard:
 		return a, checkCards(t, who, a.Card)
@@ -185,7 +202,7 @@ func resolveOnTable(original *Table, who actor, a Action, rng *rand.Rand) (Actio
 	case ActPlay:
 		return resolvePlay(t, who, a)
 	case ActToHand:
-		return resolveToHand(t, who, a, rng)
+		return resolveToHand(t, who, a)
 	case ActToDeck:
 		return resolveToDeck(t, who, a, rng)
 	case ActToPile:
@@ -238,9 +255,10 @@ var groupableKinds = map[Kind]bool{
 }
 
 // resolveGroup checks a group: 2 to maxCount sub-actions of one groupable
-// kind and one place, each on its own card, none tucked under another's. Every sub-action
-// is resolved for who against the table as it stands, and the first error
-// rejects the whole group.
+// kind and one place, each on its own card, none tucked under another's. Every
+// sub-action is resolved for who against the table as it stands, and the
+// first error rejects the whole group. A new id an earlier sub-action picked
+// is drawn again (see redrawTaken).
 func resolveGroup(g *Game, who actor, a Action, rng *rand.Rand) (Action, error) {
 	if len(a.Actions) < 2 || len(a.Actions) > maxCount {
 		return a, invalid("a group holds 2 to %d actions, not %d", maxCount, len(a.Actions))
@@ -277,11 +295,13 @@ func resolveGroup(g *Game, who actor, a Action, rng *rand.Rand) (Action, error) 
 	}
 
 	resolved := make([]Action, 0, len(a.Actions))
+	taken := map[string]bool{}
 	for _, sub := range a.Actions {
 		r, err := resolve(g, who, sub, rng)
 		if err != nil {
 			return a, err
 		}
+		redrawTaken(t, r.Renames, taken, rng)
 		resolved = append(resolved, r)
 	}
 	a.Actions = resolved
@@ -463,7 +483,7 @@ func usableTableCard(t *Table, who actor, id string) (*Card, error) {
 	return c, nil
 }
 
-func resolveToHand(t *Table, who actor, a Action, rng *rand.Rand) (Action, error) {
+func resolveToHand(t *Table, who actor, a Action) (Action, error) {
 	c, err := usableCard(t, who, a.Card)
 	if err != nil {
 		return a, err
@@ -474,7 +494,6 @@ func resolveToHand(t *Table, who actor, a Action, rng *rand.Rand) (Action, error
 	if !who.owns(c.Owner) {
 		return a, forbidden("card %q belongs to another player", c.ID)
 	}
-	a.Renames = freshID(t, c, rng)
 	return a, nil
 }
 
@@ -503,12 +522,6 @@ func resolveToDeck(t *Table, who actor, a Action, rng *rand.Rand) (Action, error
 	}
 	switch a.Where {
 	case whereTop, whereBottom:
-		// On top of a side deck that shows its top card, the card stays in
-		// everybody's sight.
-		a.Renames = nil
-		if a.Where == whereBottom || !deck.TopFaceUp {
-			a.Renames = freshID(t, c, rng)
-		}
 	case whereShuffle:
 		a.Renames, a.Cards = reidentify(t, t.shuffledIntoDeck(c, deck), rng)
 	default:
@@ -618,7 +631,6 @@ func resolveReorderTop(t *Table, who actor, a Action, rng *rand.Rand) (Action, e
 	if _, err := ownPile(t, who, a.Pile); err != nil {
 		return a, err
 	}
-	a.Renames = nil
 	if len(t.revealedOn(a.Pile)) > 0 {
 		a.Renames, _ = reidentify(t, a.Cards, rng)
 	}
