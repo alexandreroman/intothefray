@@ -563,16 +563,14 @@
   const preview = $derived(interaction.band ? null : previewOf(interaction.previewed));
 
   // The preview fades in as it shows and out as it goes; another card swaps in at once. While
-  // it fades out, the last one stays drawn, out of the accessibility tree.
-  const PREVIEW_FADE_MS = 110;
+  // it fades out, the last one stays drawn, out of the accessibility tree, until its fade-out
+  // animation ends.
   let fading = $state<Preview | null>(null);
   let lastPreview: Preview | null = null;
-  let fadeTimer: ReturnType<typeof setTimeout> | undefined;
 
   $effect.pre(() => {
     const current = preview;
     untrack(() => {
-      clearTimeout(fadeTimer);
       if (current) {
         fading = null;
         lastPreview = current;
@@ -580,13 +578,17 @@
       }
       if (lastPreview && !prefersReducedMotion.current) {
         fading = lastPreview;
-        fadeTimer = setTimeout(() => (fading = null), PREVIEW_FADE_MS);
       }
       lastPreview = null;
     });
   });
 
-  $effect(() => () => clearTimeout(fadeTimer));
+  /** Drops the faded preview; the fade-in of a shown one ends here too, and keeps it. */
+  function onPreviewAnimationEnd() {
+    if (!preview) {
+      fading = null;
+    }
+  }
 
   const drawnPreview = $derived(preview ?? fading);
 
@@ -1965,6 +1967,7 @@
         class:land={drawnPreview.landscape}
         class:leaving={!preview}
         style:margin={focusMargin(focusCorner)}
+        onanimationend={onPreviewAnimationEnd}
         bind:offsetWidth={focusWidth}
         bind:offsetHeight={focusHeight}
       >
@@ -2398,7 +2401,7 @@
     align-self: end;
   }
 
-  /* It fades in as it shows, or at its new corner, and out as it goes (PREVIEW_FADE_MS). */
+  /* It fades in as it shows, or at its new corner, and out as it goes (onPreviewAnimationEnd). */
   .peek {
     animation: focus-in 0.11s ease-out;
   }

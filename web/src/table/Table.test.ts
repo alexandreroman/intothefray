@@ -791,19 +791,16 @@ describe('Table', () => {
     await fireEvent.pointerEnter(surface().querySelector('.card[data-id="b"]') as HTMLElement);
     expect(preview().closest('.peek')).toBe(panel);
 
-    vi.useFakeTimers();
-    try {
-      interaction.release();
-      await tick();
-      // Still drawn while it fades out, though no longer a preview for assistive technologies.
-      expect(noPreview()).toBe(true);
-      expect(document.querySelector('.peek')?.classList).toContain('leaving');
-      expect(document.querySelector('.peek .frame')?.getAttribute('aria-hidden')).toBe('true');
-      await vi.advanceTimersByTimeAsync(110);
-      expect(document.querySelector('.peek')).toBeNull();
-    } finally {
-      vi.useRealTimers();
-    }
+    interaction.release();
+    await tick();
+    // Still drawn while it fades out, though no longer a preview for assistive technologies.
+    expect(noPreview()).toBe(true);
+    const leaving = document.querySelector('.peek') as HTMLElement;
+    expect(leaving.classList).toContain('leaving');
+    expect(leaving.querySelector('.frame')?.getAttribute('aria-hidden')).toBe('true');
+    // Gone once its fade-out ends.
+    await fireEvent.animationEnd(leaving);
+    expect(document.querySelector('.peek')).toBeNull();
   });
 
   it('hovering a history line rings its cards on the table', async () => {
