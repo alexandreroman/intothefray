@@ -81,13 +81,10 @@ type LobbyConfig struct {
 	Modulars   []string        `json:"modulars"`
 }
 
-// SystemColor is the Color of log lines that no player wrote.
-const SystemColor = -1
-
 // LogEntry is one line of the game history.
 type LogEntry struct {
 	Who    string    `json:"who"`
-	Color  int       `json:"color"` // SystemColor for system lines
+	Color  int       `json:"color"`
 	Text   string    `json:"text"`
 	At     time.Time `json:"at"`
 	Undone bool      `json:"undone,omitempty"`

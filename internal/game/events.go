@@ -203,7 +203,7 @@ func replayEvent(t *Table, e *Event, actorOf func(seat int) actor, rng *rand.Ran
 		return
 	}
 	if producesShuffle(e.Action) {
-		fresh, err := resolveShuffleKind(t, actorOf(e.Seat), e.Action, rng)
+		fresh, err := resolveOnTable(t, actorOf(e.Seat), e.Action, rng)
 		if err == nil && apply(t, fresh) == nil {
 			e.Action = fresh
 			return

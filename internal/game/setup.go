@@ -86,7 +86,6 @@ const (
 
 	// A scenario deck is compact, and its discard pile lies compactDiscardStepX right of it.
 	compactWidth        = 100
-	compactHeight       = 140
 	compactDiscardStepX = 120
 
 	sidePileStepX = 160

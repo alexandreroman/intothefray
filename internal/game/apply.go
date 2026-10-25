@@ -475,34 +475,26 @@ func applyToDeck(t *Table, a Action) error {
 		return err
 	}
 
-	var newOrder []string
 	switch a.Where {
-	case whereTop, whereBottom:
+	case whereTop:
+		t.leave(c)
+		deck.Cards = append(deck.Cards, c.ID)
+	case whereBottom:
+		t.leave(c)
+		deck.Cards = slices.Insert(deck.Cards, 0, c.ID)
 	case whereShuffle:
 		// The caller resolved the shuffle: Cards is the whole new pile.
 		if err := checkRenames(t, a, t.shuffledIntoDeck(c, deck)); err != nil {
 			return err
 		}
-		newOrder = cardList(a.Cards)
+		t.leave(c)
+		renameCards(t, a.Renames)
+		deck.Cards = cardList(a.Cards)
 	default:
 		return invalid("unknown position %q", a.Where)
 	}
-
-	t.leave(c)
-	switch a.Where {
-	case whereTop:
-		deck.Cards = append(deck.Cards, c.ID)
-	case whereBottom:
-		deck.Cards = slices.Insert(deck.Cards, 0, c.ID)
-	case whereShuffle:
-		deck.Cards = append(deck.Cards, c.ID)
-	}
 	c.Zone = ZonePile
 	c.Pile = deck.ID
-	if a.Where == whereShuffle {
-		renameCards(t, a.Renames)
-		deck.Cards = newOrder
-	}
 	return nil
 }
 
@@ -1161,7 +1153,11 @@ func applyShuffleBack(t *Table, a Action) error {
 }
 
 func applyShuffleIn(t *Table, a Action) error {
-	if !isPlainTargetPile(a.Pile) || a.Pile == PileVictory {
+	source, err := t.pile(a.Pile)
+	if err != nil {
+		return err
+	}
+	if source.Kind != KindAside {
 		return invalid("pile %q is not a set-aside pile", a.Pile)
 	}
 	deckID := cmp.Or(a.Target, PileEncounter)

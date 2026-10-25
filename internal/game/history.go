@@ -60,9 +60,7 @@ func (g *Game) Do(token string, seat int, a Action, cat *pack.Catalog, now time.
 	if seat < 0 {
 		seat = g.homeSeat(index)
 	}
-	// A player without any seat, only found in games stored before deck
-	// slots, has no seat to act from.
-	if seat < 0 || g.seatPlayer(seat) != index {
+	if g.seatPlayer(seat) != index {
 		return forbidden("seat %d is not yours", seat)
 	}
 	return g.do(g.actorOf(seat), a, cat, now)

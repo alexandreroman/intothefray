@@ -161,7 +161,7 @@ func resolve(g *Game, who actor, a Action, rng *rand.Rand) (Action, error) {
 // resolveOnTable resolves a, any kind but a group, on the table as apply
 // will see it: with the cards revealed on the deck a acts on back in it (see
 // coveredFor), so that the recorded cards are those apply takes. A rebuild
-// resolves its shuffles again here too (see resolveShuffleKind).
+// resolves its shuffles again here too (see replayEvent).
 func resolveOnTable(original *Table, who actor, a Action, rng *rand.Rand) (Action, error) {
 	t, err := original.coveredFor(a, PlayerArea(who.seat))
 	if err != nil {
@@ -652,15 +652,6 @@ func resolveHandOrder(who actor, a Action) (Action, error) {
 		return a, forbidden("hand %q belongs to another player", a.Area)
 	}
 	return a, nil
-}
-
-// resolveShuffleKind resolves a shuffle-producing action (see producesShuffle)
-// on t. A rebuild uses it when the recorded outcome no longer fits.
-func resolveShuffleKind(t *Table, who actor, a Action, rng *rand.Rand) (Action, error) {
-	if !producesShuffle(a) {
-		return a, invalid("%q does not shuffle", a.Kind)
-	}
-	return resolveOnTable(t, who, a, rng)
 }
 
 func resolveShuffle(t *Table, who actor, a Action, rng *rand.Rand) (Action, error) {
