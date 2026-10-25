@@ -7,6 +7,7 @@
 -->
 <script lang="ts">
   import { tick, untrack } from 'svelte';
+  import Icon from '../components/Icon.svelte';
   import { modal } from '../components/modal.svelte';
   import { prefersReducedMotion } from 'svelte/motion';
   import { MediaQuery } from 'svelte/reactivity';
@@ -16,6 +17,7 @@
   import { gameCards, knownCard, loadGameCards, loadIndex } from '../lib/catalog';
   import { storedLang } from '../lib/lang';
   import { localizedFace, localizedName } from '../lib/localize';
+  import { playerColorVar } from '../lib/playerColor';
   import { getPref, setPref } from '../lib/prefs';
   import { SMALL_SCREEN_QUERY } from '../lib/screen';
   import { selectionIndicator } from '../lib/selectionIndicator';
@@ -23,13 +25,13 @@
   import type {
     Action,
     CardView as TableCard,
-    DeckView,
     FaceRef,
     Index,
     LobbyConfig,
     MarkerName,
     PackFace,
     PileView,
+    Point,
     Size,
     View,
   } from '../lib/types';
@@ -60,7 +62,7 @@
     type ContextHeader,
   } from './contextItems';
   import DragLayer from './DragLayer.svelte';
-  import { DRAG_THRESHOLD, intersect, sourceOf, type Point, type Rect } from './drag';
+  import { DRAG_THRESHOLD, intersect, sourceOf, type Rect } from './drag';
   import Flights from './Flights.svelte';
   import { backCaption, isHidden } from './face';
   import Hand from './Hand.svelte';
@@ -73,6 +75,7 @@
     HAND_CARD_NARROW,
     HAND_REST_DROP,
     handRestDrop,
+    isLandscape,
     isOutOfPlay,
     chipsByFrame,
     ownerFrames,
@@ -94,15 +97,17 @@
   import { motion } from './motion.svelte';
   import Presence from './Presence.svelte';
   import {
+    areaOf,
     creditedSeat,
     creditedSeatAmong,
     ownerLook,
     ownSeats,
     seatColor,
+    seatDeck,
     seatFullLabel,
     seatOf,
-    seatPlayer,
   } from './seats';
+  import { tableCard, tablePile } from './screen';
   import { cardsInBand, isFree } from './selection';
   import TokenPill from './TokenPill.svelte';
   import CardPreview, { type Preview } from './CardPreview.svelte';
@@ -254,16 +259,6 @@
     pickedDeck !== null && own.includes(pickedDeck) ? pickedDeck : (own[0] ?? null),
   );
 
-  /** The deck sitting at the seat, if anyone sits there. */
-  function deckAt(seat: number): DeckView | undefined {
-    return seatPlayer(view, seat)?.decks.find((deck) => deck.area === `p${seat}`);
-  }
-
-  /** Shows the hand of the viewer's next deck, round their decks (Q). */
-  function selectNextDeck(): void {
-    stepOwnDeck(1);
-  }
-
   // Ready all has something to ready: an exhausted card on the table, whoever owns it, not locked.
   const canReadyAll = $derived(
     cards.some((card) => card.zone === 'table' && card.exhausted === true && !isLocked(card)),
@@ -332,7 +327,9 @@
     return selected !== null && seats.includes(selected) ? selected : (seats[0] ?? null);
   });
 
-  // With one player, "All" already shows the villain and that player: there is no choice to make.
+  // "Villain + player", when there is a choice to make: with one player, "All" already shows the
+  // villain and that player. The player selector at the bottom left, listing every seat, shows only
+  // then: "All" already shows every hero.
   const focused = $derived(viewMode === 'focus' && seats.length > 1 && shownSeat !== null);
 
   // The selected deck's hand, unless "Villain + player" shows another player's row: then no hand shows,
@@ -342,7 +339,7 @@
   );
   const handCards = $derived(
     handSeat !== null
-      ? (view.table?.hands?.[`p${handSeat}`] ?? []).flatMap((id) => {
+      ? (view.table?.hands?.[areaOf(handSeat)] ?? []).flatMap((id) => {
           const card = cardsById.get(id);
           return card ? [card] : [];
         })
@@ -355,9 +352,6 @@
       : ALL_ROWS,
   );
 
-  // The player selector at the bottom left lists every seat, in "Villain + player" only: "All" already
-  // shows every hero.
-  const pickerShown = $derived(focused);
   // Shift + ← / → steps through the selector's heroes; in "All", through the viewer's own decks.
   const canStepHero = $derived(focused || own.length > 1);
 
@@ -429,7 +423,7 @@
       const { name: ownerName, color } = ownerLook(view, frame.owner);
       const name = frame.label ?? ownerName;
       // Only a seated deck has a hand: neither the villain nor an empty seat.
-      const deck = deckAt(frame.owner);
+      const deck = seatDeck(view, frame.owner);
       if (!deck) {
         return { frame, name, color, outOfPlay };
       }
@@ -554,7 +548,7 @@
     return {
       images: face?.images ?? [],
       name: face?.name ?? '',
-      landscape: face?.size === 'land' || face?.size === 'dland',
+      landscape: face ? isLandscape(face.size) : false,
     };
   }
 
@@ -563,16 +557,14 @@
   const preview = $derived(interaction.band ? null : previewOf(interaction.previewed));
 
   // The preview fades in as it shows and out as it goes; another card swaps in at once. While
-  // it fades out, the last one stays drawn, out of the accessibility tree.
-  const PREVIEW_FADE_MS = 110;
+  // it fades out, the last one stays drawn, out of the accessibility tree, until its fade-out
+  // animation ends.
   let fading = $state<Preview | null>(null);
   let lastPreview: Preview | null = null;
-  let fadeTimer: ReturnType<typeof setTimeout> | undefined;
 
   $effect.pre(() => {
     const current = preview;
     untrack(() => {
-      clearTimeout(fadeTimer);
       if (current) {
         fading = null;
         lastPreview = current;
@@ -580,13 +572,17 @@
       }
       if (lastPreview && !prefersReducedMotion.current) {
         fading = lastPreview;
-        fadeTimer = setTimeout(() => (fading = null), PREVIEW_FADE_MS);
       }
       lastPreview = null;
     });
   });
 
-  $effect(() => () => clearTimeout(fadeTimer));
+  /** Drops the faded preview; the fade-in of a shown one ends here too, and keeps it. */
+  function onPreviewAnimationEnd() {
+    if (!preview) {
+      fading = null;
+    }
+  }
 
   const drawnPreview = $derived(preview ?? fading);
 
@@ -650,8 +646,7 @@
     if (!hovered || hovered.kind === 'hand' || !app) {
       return null;
     }
-    const id = CSS.escape(hovered.id);
-    const selector = `.surface ${hovered.kind === 'pile' ? '.pile' : '.card:not(.pile)'}[data-id="${id}"]`;
+    const selector = hovered.kind === 'pile' ? tablePile(hovered.id) : tableCard(hovered.id);
     return app.querySelector(selector)?.getBoundingClientRect() ?? null;
   }
 
@@ -682,7 +677,7 @@
       hovered: focusHovered,
       controls: homeControls,
       // The player selector at the bottom left.
-      taken: pickerShown ? ['bottom-left'] : [],
+      taken: focused ? ['bottom-left'] : [],
     });
     focusCorner = next;
   }
@@ -706,7 +701,7 @@
       visibleHeight,
       focusWidth,
       focusHeight,
-      pickerShown,
+      focused,
       homeControls,
       barRoom,
     ];
@@ -850,7 +845,7 @@
       case 'card':
         return cardsById.get(element.id)?.zone === 'table';
       case 'hand':
-        return own.some((seat) => view.table?.hands?.[`p${seat}`]?.includes(element.id));
+        return own.some((seat) => view.table?.hands?.[areaOf(seat)]?.includes(element.id));
       case 'pile':
         return piles.some((pile) => pile.id === element.id);
     }
@@ -897,9 +892,7 @@
     if (from === null || !wrap) {
       return null;
     }
-    return wrap.querySelector<HTMLElement>(
-      `.surface .card:not(.pile)[data-id="${CSS.escape(from)}"]`,
-    );
+    return wrap.querySelector<HTMLElement>(tableCard(from));
   }
 
   // ---- The token pill ----
@@ -1484,7 +1477,7 @@
       run: runItem,
       act: (action) => send(action, targetOfKey(action)),
       showKeys: showKeySheet,
-      selectNextDeck,
+      selectNextDeck: () => stepOwnDeck(1),
       canStepHero,
       stepHero,
       canReadyAll,
@@ -1617,7 +1610,7 @@
   readers and in its tooltip only, as the name already shows above the player's deck.
 -->
 {#snippet seatPicker(current: number)}
-  <div class="seatpick">
+  <div class="seatpick floatbar">
     {#if seatedDecks.length > 2}
       <button
         class="btn-ghost step"
@@ -1639,12 +1632,12 @@
         class="ring"
         data-indicator
         aria-hidden="true"
-        style:--seat="var(--p{(seatColor(view, current) ?? 0) + 1})"
+        style:--seat={playerColorVar(seatColor(view, current) ?? 0)}
       ></span>
       {#each seatedDecks as { seat, name, color } (seat)}
         <button
           class="seat"
-          style:--seat="var(--p{color + 1})"
+          style:--seat={playerColorVar(color)}
           role="radio"
           aria-label={name}
           data-tip={name}
@@ -1684,12 +1677,11 @@
   class:arrowing={interaction.arrowFrom !== null}
   class:dragging={interaction.dragging !== null}
   class:history-collapsed={historyCollapsed && !narrow.current}
-  class:bar-over={small.current}
   class:banding={interaction.band !== null}
   class:compact={small.current}
   class:touch={touchMode.current}
   style:--z={zoom}
-  style:--you="var(--p{view.you.color + 1})"
+  style:--you={playerColorVar(view.you.color)}
   style:--edge="{TABLE_EDGE}px"
   style:--edge-bottom="{TABLE_EDGE_BOTTOM}px"
   style:--controls-bottom="{controlsBottom}px"
@@ -1784,12 +1776,12 @@
   -->
   <div
     class="corner"
-    class:compact={small.current}
+    class:floatbar={small.current}
     bind:this={cornerBox}
     bind:clientHeight={cornerHeight}
   >
     {#if narrow.current}
-      <div class="undo">
+      <div class="undo floatbar">
         <!-- aria-disabled rather than disabled, so that the tooltip saying why still shows. -->
         <button
           class="btn-ghost"
@@ -1802,23 +1794,11 @@
             }
           }}
         >
-          <!-- A hooked arrow going back. -->
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M9 14L4 9l5-5" />
-            <path d="M4 9h11a5 5 0 0 1 0 10h-3" />
-          </svg>
+          <Icon name="undo" />
         </button>
       </div>
       {#if small.current}
-        <span class="sep" aria-hidden="true"></span>
+        <span class="floatbar-sep" aria-hidden="true"></span>
       {/if}
     {/if}
     <!--
@@ -1835,7 +1815,7 @@
     />
   </div>
 
-  {#if pickerShown && shownSeat !== null}
+  {#if focused && shownSeat !== null}
     {@render seatPicker(shownSeat)}
   {/if}
 
@@ -1965,10 +1945,11 @@
         class:land={drawnPreview.landscape}
         class:leaving={!preview}
         style:margin={focusMargin(focusCorner)}
+        onanimationend={onPreviewAnimationEnd}
         bind:offsetWidth={focusWidth}
         bind:offsetHeight={focusHeight}
       >
-        <CardPreview preview={drawnPreview} snug hidden={!preview} />
+        <CardPreview preview={drawnPreview} hidden={!preview} />
       </div>
     {/key}
   {/if}
@@ -2189,11 +2170,6 @@
     display: flex;
     align-items: center;
     gap: 4px;
-    padding: 4px;
-    background: #141a28eb;
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    box-shadow: 0 6px 16px #0008;
   }
 
   /*
@@ -2210,7 +2186,7 @@
     padding: 0 8px;
     border: none;
     border-radius: 8px;
-    color: #c9cfdf;
+    color: var(--text-soft);
   }
 
   /* A round swatch of the seat colour; the player shown is ringed. */
@@ -2264,38 +2240,17 @@
     A small screen: Undo and the zoom control share one bar, above the resting hand's strip
     (--controls-bottom), so that neither covers the hand.
   */
-  .corner.compact {
+  .app.compact .corner {
     margin-bottom: var(--controls-bottom);
     gap: 2px;
-    padding: 4px;
-    background: #141a28eb;
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    box-shadow: 0 6px 16px #0008;
   }
 
-  .corner.compact .undo,
-  .corner.compact :global(.zoomctl) {
+  .app.compact .corner .undo,
+  .app.compact .corner :global(.zoomctl) {
     padding: 0;
     background: none;
     border: none;
     box-shadow: none;
-  }
-
-  /* As the zoom control's own separator. */
-  .corner .sep {
-    width: 1px;
-    height: 20px;
-    margin: 0 2px;
-    background: var(--line-strong);
-  }
-
-  .undo {
-    padding: 4px;
-    background: #141a28eb;
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    box-shadow: 0 6px 16px #0008;
   }
 
   .undo button {
@@ -2307,12 +2262,13 @@
     justify-content: center;
     border: none;
     border-radius: 8px;
-    color: #c9cfdf;
+    color: var(--text-soft);
   }
 
-  .undo svg {
+  .undo :global(svg) {
     width: 18px;
     height: 18px;
+    stroke-width: 2;
   }
 
   @media (max-width: 900px) {
@@ -2331,12 +2287,12 @@
     from the top of the window: the bar floats over the play area only, its icons on the play
     area's edge.
   */
-  .app.bar-over {
+  .app.compact {
     grid-template-rows: minmax(0, 1fr);
     grid-template-areas: 'table side';
   }
 
-  .app.bar-over .top {
+  .app.compact .top {
     --bar-gutter-end: var(--content-gutter);
     grid-area: table;
     align-self: start;
@@ -2344,11 +2300,11 @@
 
   /* Without the history column, the bar spans the window, its icons close to the window's edge. */
   @media (max-width: 900px) {
-    .app.bar-over {
+    .app.compact {
       grid-template-areas: 'table';
     }
 
-    .app.bar-over .top {
+    .app.compact .top {
       --bar-gutter-end: 8px;
     }
   }
@@ -2382,7 +2338,7 @@
     transition: margin-top 0.2s ease;
   }
 
-  /* A landscape card: 420 px wide. */
+  /* A landscape card: 418 px wide. */
   .peek.land {
     width: min(440px, 45%);
   }
@@ -2398,7 +2354,7 @@
     align-self: end;
   }
 
-  /* It fades in as it shows, or at its new corner, and out as it goes (PREVIEW_FADE_MS). */
+  /* It fades in as it shows, or at its new corner, and out as it goes (onPreviewAnimationEnd). */
   .peek {
     animation: focus-in 0.11s ease-out;
   }

@@ -3,6 +3,7 @@ import { tick } from 'svelte';
 import TopBar from './TopBar.svelte';
 import { route } from '../lib/router.svelte';
 import { cutShort } from '../lib/overflowTip.testing';
+import { setFullscreenElement } from '../lib/fullscreen.testing';
 import { DESKTOP, LANDSCAPE_PHONE, mockScreen, PHONE, TABLET } from '../lib/screen.testing';
 
 // jsdom has no Fullscreen API: each test installs the one it needs, as own
@@ -29,14 +30,6 @@ function refused(): { promise: Promise<void>; caught: ReturnType<typeof vi.fn> }
   const promise = Promise.reject(new Error('denied'));
   const caught = vi.spyOn(promise, 'catch');
   return { promise, caught };
-}
-
-/** Sets what the document reports as its fullscreen element, under the standard or the WebKit name. */
-function setFullscreenElement(
-  name: 'fullscreenElement' | 'webkitFullscreenElement',
-  value: Element | null,
-): void {
-  Object.defineProperty(document, name, { value, configurable: true });
 }
 
 describe('TopBar', () => {
@@ -343,32 +336,25 @@ describe('TopBar logo', () => {
 });
 
 describe('TopBar on scroll', () => {
-  // The page scrolls up to 1200 px.
+  // The page is 2000 px tall: each test's screen gives the window its height.
   const PAGE_HEIGHT = 2000;
-  const WINDOW_HEIGHT = 800;
   const scrollY = Object.getOwnPropertyDescriptor(window, 'scrollY');
-  const innerHeight = Object.getOwnPropertyDescriptor(window, 'innerHeight');
 
   beforeEach(() => {
     Object.defineProperty(document.documentElement, 'scrollHeight', {
       value: PAGE_HEIGHT,
       configurable: true,
     });
-    Object.defineProperty(window, 'innerHeight', { value: WINDOW_HEIGHT, configurable: true });
     // jsdom does not scroll: the calls are only recorded.
     vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
     Reflect.deleteProperty(document.documentElement, 'scrollHeight');
-    for (const [name, descriptor] of [
-      ['scrollY', scrollY],
-      ['innerHeight', innerHeight],
-    ] as const) {
-      if (descriptor) {
-        Object.defineProperty(window, name, descriptor);
-      }
+    if (scrollY) {
+      Object.defineProperty(window, 'scrollY', scrollY);
     }
   });
 

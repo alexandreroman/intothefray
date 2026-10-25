@@ -86,7 +86,6 @@ const (
 
 	// A scenario deck is compact, and its discard pile lies compactDiscardStepX right of it.
 	compactWidth        = 100
-	compactHeight       = 140
 	compactDiscardStepX = 120
 
 	sidePileStepX = 160
@@ -130,11 +129,11 @@ func (g *Game) Start(hostToken string, cat *pack.Catalog, seed uint64, now time.
 		return err
 	}
 	if g.Config.Scenario == "" {
-		return fmt.Errorf("%w: no scenario is configured", ErrInvalid)
+		return invalid("no scenario is configured")
 	}
 	for _, p := range g.Players {
 		if !p.ready() {
-			return fmt.Errorf("%w: %s is missing a deck", ErrInvalid, p.Name)
+			return invalid("%s is missing a deck", p.Name)
 		}
 	}
 
@@ -154,9 +153,9 @@ func (g *Game) Start(hostToken string, cat *pack.Catalog, seed uint64, now time.
 	if b.table.Piles[PileEncounter] != nil {
 		b.shuffle(PileEncounter)
 	}
-	// Side decks and set-aside cards come last, so that a game without
-	// them draws the same random numbers as before they existed: its table
-	// and card ids stay the same for the same seed.
+	// Side decks and set-aside cards draw their random numbers after the
+	// main decks and the encounter deck, so that they leave the order and
+	// the card ids of everything else the same for a seed.
 	for i, p := range g.Players {
 		for slot, seat := range g.seatsOf(i) {
 			if err := b.setupSideCards(seat, p.Decks[slot]); err != nil {
@@ -165,7 +164,7 @@ func (g *Game) Start(hostToken string, cat *pack.Catalog, seed uint64, now time.
 		}
 	}
 
-	// The scenario decks come after everything else, for the same reason.
+	// The scenario decks draw theirs last, for the same reason.
 	if err := b.setupScenarioDecks(scenario); err != nil {
 		return err
 	}
@@ -194,7 +193,7 @@ func setNames(cat *pack.Catalog, codes []string) ([]string, error) {
 	for _, code := range codes {
 		set, ok := cat.Set(code)
 		if !ok {
-			return nil, fmt.Errorf("%w: unknown set %q", ErrInvalid, code)
+			return nil, invalid("unknown set %q", code)
 		}
 		names = append(names, set.Name)
 	}
@@ -219,9 +218,9 @@ func newEmptyTable(seatCount int) *Table {
 	for seat := range seatCount {
 		area := PlayerArea(seat)
 		y := rowY(playerRow(seat))
-		t.addPile("deck:"+string(area), KindDeck, seat, deckX, y)
-		t.addPile("disc:"+string(area), KindDiscard, seat, discardX, y)
-		t.addPile("aside:"+string(area), KindAside, seat, outOfPlayX, y)
+		t.addPile(playerDeckID(area), KindDeck, seat, deckX, y)
+		t.addPile(playerDiscardID(area), KindDiscard, seat, discardX, y)
+		t.addPile(playerAsideID(area), KindAside, seat, outOfPlayX, y)
 		t.Hands[area] = []string{}
 	}
 	return t
@@ -254,9 +253,9 @@ type tableBuilder struct {
 // newCard creates one card instance. The code may be any alias; the card
 // gets the canonical code. It is not placed anywhere yet.
 func (b *tableBuilder) newCard(code string, owner int, home string) (*Card, pack.Card, error) {
-	def, _, err := b.cat.Card(code)
+	def, err := b.def(code)
 	if err != nil {
-		return nil, pack.Card{}, fmt.Errorf("%w: %w", ErrInvalid, err)
+		return nil, pack.Card{}, err
 	}
 	c := &Card{
 		ID:    newCardID(b.table, b.rng, nil),
@@ -273,18 +272,6 @@ func (b *tableBuilder) newCard(code string, owner int, home string) (*Card, pack
 // newEncounterCard creates a card of the encounter deck's owner: nobody.
 func (b *tableBuilder) newEncounterCard(code string) (*Card, pack.Card, error) {
 	return b.newCard(code, NoOwner, PileEncounter)
-}
-
-// stageHome returns the home of the cards of a stage: the id of its scenario deck, if it has one, else the
-// classic encounter deck.
-func stageHome(scenario pack.Scenario, pile pack.Pile) string {
-	if pile.Deck != "" {
-		if i := slices.IndexFunc(scenario.Decks, func(d pack.ScenarioDeck) bool { return d.Key == pile.Deck }); i >= 0 {
-			deckID, _ := scenarioDeckIDs(pile.Deck, scenario.Decks[i].Encounter)
-			return deckID
-		}
-	}
-	return PileEncounter
 }
 
 // pushToPile puts a new card on top of a pile.
@@ -310,12 +297,19 @@ func (b *tableBuilder) addSetToPile(setCode, pileID string, skip map[string]bool
 func (b *tableBuilder) addSetCards(setCode string, owner int, home, pileID string, skip map[string]bool) error {
 	set, ok := b.cat.Set(setCode)
 	if !ok {
-		return fmt.Errorf("%w: unknown set %q", ErrInvalid, setCode)
+		return invalid("unknown set %q", setCode)
 	}
-	for _, code := range set.Cards {
-		def, _, err := b.cat.Card(code)
+	return b.addCards(set.Cards, owner, home, pileID, skip)
+}
+
+// addCards creates every copy of the cards codes lists, with the given owner
+// and home, and puts them on pileID in that order. Cards whose canonical code
+// is in skip are left out.
+func (b *tableBuilder) addCards(codes []string, owner int, home, pileID string, skip map[string]bool) error {
+	for _, code := range codes {
+		def, err := b.def(code)
 		if err != nil {
-			return fmt.Errorf("%w: %w", ErrInvalid, err)
+			return err
 		}
 		if skip[def.Code] {
 			continue
@@ -331,11 +325,20 @@ func (b *tableBuilder) addSetCards(setCode string, owner int, home, pileID strin
 	return nil
 }
 
-// canonical returns the canonical code of any card alias.
-func (b *tableBuilder) canonical(code string) (string, error) {
+// def returns the catalog card of any card alias, or an ErrInvalid error.
+func (b *tableBuilder) def(code string) (pack.Card, error) {
 	def, _, err := b.cat.Card(code)
 	if err != nil {
-		return "", fmt.Errorf("%w: %w", ErrInvalid, err)
+		return pack.Card{}, fmt.Errorf("%w: %w", ErrInvalid, err)
+	}
+	return def, nil
+}
+
+// canonical returns the canonical code of any card alias.
+func (b *tableBuilder) canonical(code string) (string, error) {
+	def, err := b.def(code)
+	if err != nil {
+		return "", err
 	}
 	return def.Code, nil
 }
@@ -347,11 +350,11 @@ func (b *tableBuilder) canonical(code string) (string, error) {
 func (b *tableBuilder) setupScenario(cfg LobbyConfig) (pack.Scenario, error) {
 	scenario, ok := b.cat.Scenario(cfg.Scenario)
 	if !ok {
-		return pack.Scenario{}, fmt.Errorf("%w: unsupported scenario %q", ErrInvalid, cfg.Scenario)
+		return pack.Scenario{}, invalid("unsupported scenario %q", cfg.Scenario)
 	}
 	start, ok := scenario.Start[cfg.Difficulty]
 	if !ok {
-		return pack.Scenario{}, fmt.Errorf("%w: scenario %q has no %s setup", ErrInvalid, scenario.ID, cfg.Difficulty)
+		return pack.Scenario{}, invalid("scenario %q has no %s setup", scenario.ID, cfg.Difficulty)
 	}
 
 	// Cards that are set up by hand and so stay out of the encounter deck.
@@ -376,14 +379,18 @@ func (b *tableBuilder) setupScenario(cfg LobbyConfig) (pack.Scenario, error) {
 	}
 	inPlay := make([]bool, len(start.InPlay))
 	for _, pile := range scenario.Piles {
+		// The cards of a stage are at home in its scenario deck, if it has
+		// one, else in the classic encounter deck.
+		home := PileEncounter
 		if pile.Deck != "" {
 			i := slices.IndexFunc(scenario.Decks, func(d pack.ScenarioDeck) bool { return d.Key == pile.Deck })
 			if i < 0 {
-				return pack.Scenario{}, fmt.Errorf("%w: stage %q has no deck %q", ErrInvalid, pile.Key, pile.Deck)
+				return pack.Scenario{}, invalid("stage %q has no deck %q", pile.Key, pile.Deck)
 			}
-			b.addDeckGroup(scenario.Decks[i])
+			deck := scenario.Decks[i]
+			b.addDeckGroup(deck)
+			home, _ = scenarioDeckIDs(deck.Key, deck.Encounter)
 		}
-		home := stageHome(scenario, pile)
 		stageCard, err := b.setupStage(pile, home, start.Top[pile.Key], apart)
 		if err != nil {
 			return pack.Scenario{}, err
@@ -407,14 +414,14 @@ func (b *tableBuilder) setupScenario(cfg LobbyConfig) (pack.Scenario, error) {
 		}
 	}
 	if scenario.Active != "" && b.table.Active == nil {
-		return pack.Scenario{}, fmt.Errorf("%w: no stage %q for the active counter", ErrInvalid, scenario.Active)
+		return pack.Scenario{}, invalid("no stage %q for the active counter", scenario.Active)
 	}
 	for i, ref := range start.InPlay {
 		if inPlay[i] {
 			continue
 		}
 		if ref.With != "" {
-			return pack.Scenario{}, fmt.Errorf("%w: card %s is with no stage %q", ErrInvalid, ref.Card, ref.With)
+			return pack.Scenario{}, invalid("card %s is with no stage %q", ref.Card, ref.With)
 		}
 		c, err := b.putInPlay(ref, PileEncounter)
 		if err != nil {
@@ -467,7 +474,7 @@ func (b *tableBuilder) setupScenario(cfg LobbyConfig) (pack.Scenario, error) {
 func (b *tableBuilder) requireNoVillainLeftover(setCode string) error {
 	set, ok := b.cat.Set(setCode)
 	if !ok {
-		return fmt.Errorf("%w: unknown set %q", ErrInvalid, setCode)
+		return invalid("unknown set %q", setCode)
 	}
 	for _, code := range set.Cards {
 		canonical, err := b.canonical(code)
@@ -475,8 +482,7 @@ func (b *tableBuilder) requireNoVillainLeftover(setCode string) error {
 			return err
 		}
 		if !b.apart[canonical] {
-			return fmt.Errorf("%w: card %s of set %q has no place, the scenario has no encounter deck",
-				ErrInvalid, canonical, setCode)
+			return invalid("card %s of set %q has no place, the scenario has no encounter deck", canonical, setCode)
 		}
 	}
 	return nil
@@ -526,21 +532,8 @@ func (b *tableBuilder) setupScenarioDecks(scenario pack.Scenario) error {
 				return err
 			}
 		}
-		for _, code := range deck.Cards {
-			def, _, err := b.cat.Card(code)
-			if err != nil {
-				return fmt.Errorf("%w: %w", ErrInvalid, err)
-			}
-			if b.apart[def.Code] {
-				continue
-			}
-			for range def.Quantity {
-				c, _, err := b.newCard(def.Code, NoOwner, deckID)
-				if err != nil {
-					return err
-				}
-				b.pushToPile(deckID, c)
-			}
+		if err := b.addCards(deck.Cards, NoOwner, deckID, deckID, b.apart); err != nil {
+			return err
 		}
 		if deck.Ordered {
 			slices.Reverse(b.table.Piles[deckID].Cards)
@@ -558,7 +551,7 @@ func (b *tableBuilder) setupScenarioDecks(scenario pack.Scenario) error {
 func (b *tableBuilder) putSetInPlay(setCode string, difficulty pack.Difficulty) (map[string]bool, error) {
 	set, ok := b.cat.Set(setCode)
 	if !ok {
-		return nil, fmt.Errorf("%w: unknown set %q", ErrInvalid, setCode)
+		return nil, invalid("unknown set %q", setCode)
 	}
 
 	placed := map[string]bool{}
@@ -610,7 +603,7 @@ func (b *tableBuilder) setupStage(pile pack.Pile, home string, top pack.FaceRef,
 		current = c
 	}
 	if current == nil {
-		return nil, fmt.Errorf("%w: stage %q has no card %s", ErrInvalid, pile.Key, top.Card)
+		return nil, invalid("stage %q has no card %s", pile.Key, top.Card)
 	}
 	b.table.Stages = append(b.table.Stages, stage)
 	return current, nil
@@ -619,7 +612,7 @@ func (b *tableBuilder) setupStage(pile pack.Pile, home string, top pack.FaceRef,
 // slotFor is slot for the given face of a card.
 func (b *tableBuilder) slotFor(def pack.Card, face, gap, first int) (int, error) {
 	if face < 0 || face >= len(def.Faces) {
-		return 0, fmt.Errorf("%w: card %s has no face %d", ErrInvalid, def.Code, face)
+		return 0, invalid("card %s has no face %d", def.Code, face)
 	}
 	return b.slot(cardWidth(def.Faces[face].Size), gap, first), nil
 }
@@ -665,7 +658,7 @@ func ceilToGrid(v int) int {
 // face, with the starting threat that face prints, if any.
 func (b *tableBuilder) placeFace(c *Card, def pack.Card, face, x, y int) error {
 	if face < 0 || face >= len(def.Faces) {
-		return fmt.Errorf("%w: card %s has no face %d", ErrInvalid, def.Code, face)
+		return invalid("card %s has no face %d", def.Code, face)
 	}
 	b.placeOnTable(c, face, x, y)
 
@@ -688,10 +681,10 @@ func (b *tableBuilder) placeFace(c *Card, def pack.Card, face, x, y int) error {
 // piles and the set-aside cards come later (see setupSideCards).
 func (b *tableBuilder) setupPlayer(seat int, deck *DeckChoice) error {
 	if deck.Hero == "" {
-		return fmt.Errorf("%w: the deck has no hero", ErrInvalid)
+		return invalid("the deck has no hero")
 	}
 	area := PlayerArea(seat)
-	deckID := "deck:" + string(area)
+	deckID := playerDeckID(area)
 
 	identity, identityDef, err := b.newCard(deck.Hero, seat, deckID)
 	if err != nil {
@@ -700,7 +693,7 @@ func (b *tableBuilder) setupPlayer(seat int, deck *DeckChoice) error {
 	identity.Identity = true
 	hero, ok := b.cat.HeroByIdentity(deck.Hero)
 	if !ok {
-		return fmt.Errorf("%w: %s is not a hero identity", ErrInvalid, deck.Hero)
+		return invalid("%s is not a hero identity", deck.Hero)
 	}
 	sidePiles, err := b.addSidePiles(seat, hero)
 	if err != nil {
@@ -719,7 +712,7 @@ func (b *tableBuilder) setupPlayer(seat int, deck *DeckChoice) error {
 		b.pushToPile(PileEncounter, c)
 	}
 	if hero.Nemesis != "" && !b.selfContained {
-		if err := b.addSetToPile(hero.Nemesis, "aside:"+string(area), nil); err != nil {
+		if err := b.addSetToPile(hero.Nemesis, playerAsideID(area), nil); err != nil {
 			return err
 		}
 	}
@@ -770,7 +763,7 @@ func (b *tableBuilder) addSidePiles(seat int, hero pack.Hero) (int, error) {
 	for i, setCode := range hero.SideDecks {
 		set, ok := b.cat.Set(setCode)
 		if !ok || set.Side == nil {
-			return 0, fmt.Errorf("%w: %q is not a side deck", ErrInvalid, setCode)
+			return 0, invalid("%q is not a side deck", setCode)
 		}
 		// Side piles come after the deck and the discard pile.
 		deck := b.table.addPile(sideDeckID(seat, i), KindSideDeck, seat, pileX(2+count), y)
@@ -797,9 +790,9 @@ func (b *tableBuilder) setAsideCodes(hero pack.Hero, deck *DeckChoice) ([]string
 		listed = append(listed, set.SetAside...)
 	}
 	for _, entry := range deck.Cards {
-		def, _, err := b.cat.Card(entry.Code)
+		def, err := b.def(entry.Code)
 		if err != nil {
-			return nil, fmt.Errorf("%w: %w", ErrInvalid, err)
+			return nil, err
 		}
 		listed = append(listed, def.SetAside...)
 	}
@@ -823,7 +816,7 @@ func (b *tableBuilder) sideDeckCodes(hero pack.Hero) ([]string, error) {
 	for _, setCode := range hero.SideDecks {
 		set, ok := b.cat.Set(setCode)
 		if !ok {
-			return nil, fmt.Errorf("%w: unknown set %q", ErrInvalid, setCode)
+			return nil, invalid("unknown set %q", setCode)
 		}
 		for _, code := range set.Cards {
 			canonical, err := b.canonical(code)
@@ -845,7 +838,7 @@ func (b *tableBuilder) sideDeckCodes(hero pack.Hero) ([]string, error) {
 func (b *tableBuilder) setupSideCards(seat int, deck *DeckChoice) error {
 	hero, ok := b.cat.HeroByIdentity(deck.Hero)
 	if !ok {
-		return fmt.Errorf("%w: %s is not a hero identity", ErrInvalid, deck.Hero)
+		return invalid("%s is not a hero identity", deck.Hero)
 	}
 	for i, setCode := range hero.SideDecks {
 		pileID := sideDeckID(seat, i)
@@ -855,23 +848,23 @@ func (b *tableBuilder) setupSideCards(seat int, deck *DeckChoice) error {
 		b.shuffle(pileID)
 	}
 
-	area := string(PlayerArea(seat))
+	area := PlayerArea(seat)
 	setAside, err := b.setAsideCodes(hero, deck)
 	if err != nil {
 		return err
 	}
 	for _, code := range setAside {
-		def, _, err := b.cat.Card(code)
+		def, err := b.def(code)
 		if err != nil {
-			return fmt.Errorf("%w: %w", ErrInvalid, err)
+			return err
 		}
 		for range def.Quantity {
-			c, _, err := b.newCard(code, seat, "deck:"+area)
+			c, _, err := b.newCard(code, seat, playerDeckID(area))
 			if err != nil {
 				return err
 			}
 			c.IdentityVersion = isIdentityCard(def)
-			b.pushToPile("aside:"+area, c)
+			b.pushToPile(playerAsideID(area), c)
 		}
 	}
 	return nil

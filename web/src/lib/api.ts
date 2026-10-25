@@ -7,6 +7,15 @@ export function apiUrl(): string {
   return (configured ?? '').replace(/\/+$/, '');
 }
 
+/** Fetches `url` and parses its JSON body. An error status rejects with the status code. */
+export async function fetchJSON<T>(url: string): Promise<T> {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Request failed (${response.status})`);
+  }
+  return (await response.json()) as T;
+}
+
 /** Creates a game hosted by `name`. The token is the host's credential. */
 export async function createGame(name: string): Promise<{ id: string; token: string }> {
   const response = await fetch(`${apiUrl()}/api/games`, {

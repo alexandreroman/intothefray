@@ -13,12 +13,14 @@ type: project
   handles concurrency, priorities and caching. No progress indicator.
 - Nothing is preloaded when `navigator.connection.saveData` is on.
   Leaving the table clears the `src` of the images still loading.
-- The image hosts send no `Cache-Control` (Cerebro R2 and marvelcdb: only
-  `ETag` and `Last-Modified`), so the browser cache relies on heuristic
-  freshness (about 10% of the file's age), enough for a game.
+- Cerebro R2 and marvelcdb send no `Cache-Control` (only `ETag` and
+  `Last-Modified`), so the browser cache relies on heuristic freshness
+  (about 10% of the file's age), enough for a game. mc4db's French image
+  URLs answer a placeholder with `Cache-Control: no-store`, one reason
+  French is not offered (see [[project_localized_cards]]).
 
-**Why:** cards flickered empty the first time they showed while their
-image downloaded. The simplest, browser-native solution is preferred over
+**Why:** a card whose image is not cached shows empty until it downloads.
+The simplest, browser-native solution is preferred over
 a custom queue, priority batches or a registry of failed URLs.
 
 **How to apply:** keep the preload to plain `Image` objects; a face whose

@@ -5,8 +5,9 @@ import menuSource from './ContextMenu.svelte?raw';
 import tableSource from './Table.svelte?raw';
 import { interaction, LONG_PRESS_MS } from './interaction.svelte';
 import { TOUCH_MODE_QUERY } from './touch';
-import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
-import type { CardView as TableCard, PackFace, PileView, PresenceState, View } from '../lib/types';
+import { knownCard, loadGameCards } from '../lib/catalog';
+import type { CardView as TableCard, PackFace, PileView, View } from '../lib/types';
+import { card, pile, fakeSession, infoFrom, placed } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -25,39 +26,7 @@ const FACES: Record<string, Partial<PackFace>[]> = {
   '01099': [{ name: 'Black Cat', type: 'ally' }],
 };
 
-function infoOf(code: string): CardInfo | null {
-  const faces = FACES[code];
-  if (!faces) {
-    return null;
-  }
-  const full = faces.map((face): PackFace => ({
-    name: '',
-    type: '',
-    size: 'std',
-    images: [`${code}.png`],
-    ...face,
-  }));
-  return { card: { code, faces: full, back: 'player', quantity: 1 }, face: 0 };
-}
-
-function card(id: string, extra: Partial<TableCard> = {}): TableCard {
-  return {
-    id,
-    code: '01001',
-    face: 0,
-    back: 'player',
-    owner: 0,
-    zone: 'table',
-    x: 0,
-    y: 0,
-    z: 1,
-    ...extra,
-  };
-}
-
-function pile(id: string, extra: Partial<PileView>): PileView {
-  return { id, kind: 'deck', owner: -1, x: 0, y: 0, count: 30, ...extra };
-}
+const infoOf = infoFrom(FACES);
 
 /** Rhino with Alex (p0, the viewer) and Sam (p1). */
 function makeView(extra: { cards?: TableCard[]; piles?: PileView[] } = {}): View {
@@ -105,25 +74,6 @@ function makeView(extra: { cards?: TableCard[]; piles?: PileView[] } = {}): View
     },
     log: [],
   };
-}
-
-function fakeSession() {
-  return {
-    act: vi.fn(() => 1),
-    lobby: vi.fn(() => true),
-    lastError: null,
-    presence: new Map<number, PresenceState>(),
-    sendPresence: vi.fn(),
-    viewGap: 0,
-  };
-}
-
-function placed(id: string): HTMLElement {
-  const element = document.querySelector<HTMLElement>(`.surface [data-id="${id}"]`);
-  if (!element) {
-    throw new Error(`no ${id} on the table`);
-  }
-  return element;
 }
 
 function rect(left: number, top: number, width: number, height: number): DOMRect {

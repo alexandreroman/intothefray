@@ -52,10 +52,9 @@ Everything below works today, except where noted.
 - **Undo** — take back your own last actions, across all your decks
 - **Keyboard shortcuts** — press `?` at the table for the full sheet
 - **Themes** — official, minimal or green felt, per viewer
-- **French cards** — in Options, Language set to Français shows the
-  French card names and images (table, history, lobby names) where
-  they exist, and the English ones otherwise; the interface stays in
-  English
+- **French cards** — the card data carries French names and images,
+  but Options does not offer French while mc4db serves no French images;
+  the cards show in English
 - **Fair play** — each player receives only what they may see
   (no peeking at hands, deck order or face-down cards)
 - **The whole card range** — expansions are added as data files, card images
@@ -75,14 +74,13 @@ Everything below works today, except where noted.
 
 ## Getting Started
 
-Clone the repository, install the frontend dependencies, and start
-the stack with hot reload. Redis and Caddy (the web server) start in
-containers first.
+Clone the repository and start the stack with hot reload: it starts
+Redis and Caddy (the web server) in containers, installs the frontend
+dependencies, then runs the server and the web build.
 
 ```bash
 git clone https://github.com/alexandreroman/intothefray.git
 cd intothefray
-make web-install
 make dev
 ```
 
@@ -104,7 +102,7 @@ Run `make` to list every available target. The most common ones:
 
 ```bash
 make dev        # start Redis and Caddy, then the server and the web build
-make test       # run the test suite (race detector on)
+make test       # run the Go tests (race detector on)
 make check      # run the tests, the web checks, then golangci-lint
 make web-check  # type-check, lint and test the web app
 make web-build  # build the web app into web/dist
@@ -116,8 +114,8 @@ make app-logs   # follow the logs of the containerised stack
 make app-down   # stop and remove the containerised stack
 ```
 
-`make dev` and `make check` need the frontend dependencies: run
-`make web-install` once on a fresh clone first.
+`make check` needs the frontend dependencies: run `make web-install`
+once on a fresh clone (`make dev` and `make web-build` install them).
 
 `make dev` runs Redis and Caddy in containers, so it needs a running
 container engine: Docker, or Podman with its Docker-compatible
@@ -173,12 +171,11 @@ both listing the workspace URLs in the Casper info panel:
 Run stops its stack and both clear the panel when the command ends.
 They bind the same server port, so run one at a time. Several workspaces can
 run at the same time, each with its own compose project. A `PORT` or an
-`APP_INSTANCE` set in `.env` or `.env.local` overrides `.env.casper`.
+`APP_INSTANCE` set in `.env` overrides `.env.casper`; one set in
+`.env.local` does so for Dev only.
 
-`.env.casper` holds only the ports and the instance name. In a worktree
-whose `.env.casper` still sets `VITE_API_URL` or `ALLOWED_ORIGINS`, re-run
-`scripts/casper.sh setup`: a stale file breaks the container flow
-(`casper run`) and makes the dev flow bypass Caddy.
+`.env.casper` holds the compose project name, the ports, `REDIS_URL` and
+the instance name.
 
 `make packs` downloads the card data from marvelcdb and Cerebro, the
 French names from fr.marvelcdb.com and the French image paths from
@@ -222,7 +219,8 @@ completes it from mc4db, which shares marvelcdb's schema:
   sources;
 - mc4db codes are mapped to marvelcdb ones: a pack goes to the marvelcdb
   pack of the same code, else of the same name
-  (`fear_no_evil_by_ffg` is `fne`), and set codes drop `_by_ffg`
+  (`fear_no_evil_by_ffg` is `fne`), else of the same code without
+  `_by_ffg` (`thor_by_ffg` is `thor`), and set codes drop `_by_ffg`
   (`daredevil_by_ffg_nemesis` is `daredevil_nemesis`); a pack marvelcdb
   lacks is added under its mc4db code without `_by_ffg`;
 - the images of an added card are its Cerebro image, then its mc4db scan.
@@ -259,9 +257,6 @@ versions. Production and GitHub Pages builds leave it unset. Set it in
 targets such as `make dev`, so `make web-build` and `make app-up` read it
 from `.env`.
 
-`make` loads `.env` when it exists, and `.env.local` for the
-development targets.
-
 The web port is read from `WEB_PORT` (default `8080`) and the Redis
 host port of the compose stack from `REDIS_PORT` (default `6379`).
 
@@ -270,12 +265,13 @@ host port of the compose stack from `REDIS_PORT` (default `6379`).
 The `CI` workflow runs on every pull request and every push to `main`.
 Three jobs check every run:
 
-- `go`: build, `go vet`, tests with the race detector, golangci-lint;
+- `go`: build, tests with the race detector, golangci-lint;
 - `web`: svelte-check, ESLint and Prettier, Vitest, production build;
 - `docker`: image build (not pushed), validation of `compose.yaml` and
   of the Caddyfile.
 
-They run the same checks as `make check` and `make build`. They do not
+They run the same checks as `make check`, `make build` and
+`make web-build`. They do not
 regenerate `packs/dist`: the generator needs marvelcdb, Cerebro and
 mc4db over the network, so the committed files are used as they are.
 
@@ -369,7 +365,7 @@ graph TD
 ```
 
 The server embeds every card pack. The frontend publishes only the
-pack index (`packs/<lang>/index.json`), which the lobby reads to
+pack index (`packs/en/index.json`), which the lobby reads to
 pick a scenario. Once the table is set up, the client downloads the
 game's card pool from `GET /api/games/{id}/cards`: the definitions
 of the cards in that game only, cached by the browser (`ETag`,

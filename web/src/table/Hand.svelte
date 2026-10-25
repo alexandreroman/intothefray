@@ -26,7 +26,7 @@
   let {
     cards,
     faceOf,
-    captionOf = () => undefined,
+    captionOf,
     cardSize = HAND_CARD,
     restCardSize,
     restDrop = HAND_REST_DROP,
@@ -37,7 +37,7 @@
     /** The catalog face a card shows, null while unknown. */
     faceOf: (card: TableCard) => PackFace | null;
     /** The caption of a card's back (backCaption): its side deck's label, if any. */
-    captionOf?: (card: TableCard) => string | undefined;
+    captionOf: (card: TableCard) => string | undefined;
     /** The size of a card in the raised hand, in px (Table.svelte). */
     cardSize?: { w: number; h: number };
     /**
@@ -133,7 +133,12 @@
   /**
    * Decided from the pointer position rather than :hover: as the hand rises,
    * its cards move away from a pointer resting at the bottom of the screen,
-   * and :hover would flip on and off.
+   * and :hover would flip on and off. In the capture phase, so that outside a
+   * drag the hand has risen or lowered before every other window listener sees
+   * the move: Presence tells the others about the cursor only while the hand
+   * is down. During a drag, the hand follows the drop target that DragLayer
+   * sets later in the same move, so one cursor point may go out before
+   * Presence sends `cursor: null`.
    */
   function followPointer(event: PointerEvent): void {
     pointer = { x: event.clientX, y: event.clientY };
@@ -397,7 +402,7 @@
 </script>
 
 <svelte:window
-  onpointermove={followPointer}
+  onpointermovecapture={followPointer}
   onpointerdowncapture={onPress}
   onpointerup={onRelease}
   onpointercancel={onRelease}
@@ -551,10 +556,6 @@
   }
 
   /* Where a dragged card would slot back in. */
-  .hcard.gap {
-    pointer-events: none;
-  }
-
   .hcard.gap .fan {
     border: 2px dashed #49c6ff88;
     border-radius: 9px;

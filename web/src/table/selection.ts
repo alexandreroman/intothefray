@@ -7,6 +7,12 @@ import type { Action, CardView, View } from '../lib/types';
 import { pileTargets, sourceOf, type PileTarget, type Rect } from './drag';
 import { TABLE_LIMIT } from './layout';
 
+/**
+ * Mirrors maxCount in internal/game/action.go: the most cards one action
+ * takes, and the most sub-actions a group holds (resolveGroup).
+ */
+export const MAX_COUNT = 99;
+
 /** Whether the two boxes overlap, edges included: a band that grazes a card selects it. */
 function touches(a: Rect, b: Rect): boolean {
   return a.left <= b.right && b.left <= a.right && a.top <= b.bottom && b.top <= a.bottom;
@@ -61,7 +67,8 @@ export function groupUnits(selected: ReadonlySet<string>, cards: readonly CardVi
  * the same pile, deck or hand. A drop over a card moves the group there,
  * tucked under nothing. The delta is cut short so that every unit stays
  * within the table, offsets kept. One unit sends its own action; null when
- * the drop does nothing for a group (a play, a deal) or moves nothing.
+ * the drop does nothing for a group (a play, a deal), moves nothing, or
+ * carries more units than the server takes in one group.
  */
 export function groupAction(
   units: readonly string[],
@@ -84,7 +91,7 @@ export function groupAction(
     default:
       actions = null;
   }
-  if (actions === null) {
+  if (actions === null || actions.length > MAX_COUNT) {
     return null;
   }
   if (actions.length > 1) {

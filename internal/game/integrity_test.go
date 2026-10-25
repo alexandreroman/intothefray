@@ -139,7 +139,7 @@ func TestIntegrityAfterActions(t *testing.T) {
 	f := newDoFixture(t)
 	scheme := f.g.Table.stage(pileKeyScheme)
 	villain := f.g.Table.stage(pileKeyVillain)
-	identity := f.identity(t)
+	identity := identityOf(t, f.g, 0)
 
 	f.mustDo(t, "h", Action{Kind: ActDraw, N: 3}, at(1))
 	f.mustDo(t, "b", Action{Kind: ActDraw, N: 2}, at(2))
@@ -177,7 +177,7 @@ func TestGameJSONRoundTrip(t *testing.T) {
 	f.mustDo(t, "h", Action{Kind: ActExhaust, Card: f.villain()}, at(1))
 	f.mustDo(t, "b", Action{Kind: ActDraw, N: 2}, at(2))
 	f.mustDo(t, "b", Action{Kind: ActSearch, Pile: PileEncounter}, at(3))
-	f.mustDo(t, "h", Action{Kind: ActArrowAdd, Card: f.villain(), Target: f.identity(t)}, at(4))
+	f.mustDo(t, "h", Action{Kind: ActArrowAdd, Card: f.villain(), Target: identityOf(t, f.g, 0)}, at(4))
 
 	data := mustJSON(t, f.g)
 	decoded := &Game{}
@@ -201,9 +201,6 @@ func TestGameJSONRoundTrip(t *testing.T) {
 	checkIntegrity(t, f.g.Table)
 }
 
-// doOnlyKinds are handled by Do itself and never reach resolve.
-var doOnlyKinds = []Kind{ActLook, ActSearch, ActCloseView, ActUndo}
-
 // TestEveryResolvableKindIsDescribedOrArranging reads the Kind constants and
 // the cases of narrator.describe from the source, so that a new action kind
 // cannot silently fall into the untracked default.
@@ -215,7 +212,8 @@ func TestEveryResolvableKindIsDescribedOrArranging(t *testing.T) {
 	}
 
 	for name, kind := range kinds {
-		if slices.Contains(doOnlyKinds, kind) {
+		// Do handles these itself: they never reach resolve.
+		if notReplayedKinds[kind] {
 			continue
 		}
 		isDescribed, isArranging := described[name], arrangingKinds[kind]

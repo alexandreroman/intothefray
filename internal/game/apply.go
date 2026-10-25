@@ -2,7 +2,6 @@ package game
 
 import (
 	"cmp"
-	"fmt"
 	"math"
 	"slices"
 	"strings"
@@ -39,8 +38,22 @@ func apply(t *Table, a Action) error {
 	return nil
 }
 
-// applyAction performs a on t, as apply does, on the table as a sees it.
+// applyAction performs a on t, as apply does, on the table as a sees it. The
+// cards it takes out of sight get their new ids last (see renamedOnTheWay).
 func applyAction(t *Table, a Action) error {
+	renames, err := t.checkRenamedOnTheWay(a)
+	if err != nil {
+		return err
+	}
+	if err := applyKind(t, a); err != nil {
+		return err
+	}
+	renameCards(t, renames)
+	return nil
+}
+
+// applyKind performs a on t, the part that depends on its kind.
+func applyKind(t *Table, a Action) error {
 	switch a.Kind {
 	case ActMove:
 		return applyMove(t, a)
@@ -97,7 +110,7 @@ func applyAction(t *Table, a Action) error {
 	case ActGroup:
 		return applyGroup(t, a)
 	default:
-		return fmt.Errorf("%w: unknown action kind %q", ErrInvalid, a.Kind)
+		return invalid("unknown action kind %q", a.Kind)
 	}
 }
 
@@ -113,10 +126,6 @@ func applyGroup(t *Table, a Action) error {
 	}
 	*t = *next
 	return nil
-}
-
-func invalid(format string, args ...any) error {
-	return fmt.Errorf("%w: %s", ErrInvalid, fmt.Sprintf(format, args...))
 }
 
 // card returns the card with the given id, or an ErrInvalid error.
@@ -185,7 +194,7 @@ func discardPileID(c *Card) string {
 	if c.Owner == NoOwner {
 		return PileEncounterDiscard
 	}
-	return "disc:" + string(PlayerArea(c.Owner))
+	return playerDiscardID(PlayerArea(c.Owner))
 }
 
 // tuckedDestination returns the pile a card tucked under a card leaving the
@@ -220,6 +229,12 @@ func (t *Table) shuffledIntoDeck(c *Card, deck *Pile) []string {
 	return append(cards, c.ID)
 }
 
+// byZThenID orders cards from the lowest Z to the highest, by id when two
+// share a Z, so that the order never depends on map iteration.
+func byZThenID(a, b *Card) int {
+	return cmp.Or(cmp.Compare(a.Z, b.Z), cmp.Compare(a.ID, b.ID))
+}
+
 // descendants returns every card tucked under id, directly or not, from the
 // lowest Z to the highest.
 func (t *Table) descendants(id string) []*Card {
@@ -237,9 +252,7 @@ func (t *Table) descendants(id string) []*Card {
 			}
 		}
 	}
-	slices.SortFunc(found, func(a, b *Card) int {
-		return cmp.Or(cmp.Compare(a.Z, b.Z), cmp.Compare(a.ID, b.ID))
-	})
+	slices.SortFunc(found, byZThenID)
 	return found
 }
 
@@ -399,14 +412,11 @@ func applyAttach(t *Table, a Action) error {
 	if err != nil {
 		return err
 	}
-	if c == target {
-		return invalid("card %q cannot be attached to itself", c.ID)
-	}
-	children := t.descendants(c.ID)
-	if slices.Contains(children, target) {
-		return invalid("card %q is tucked under %q", target.ID, c.ID)
+	if err := t.checkTuckTarget(c, target); err != nil {
+		return err
 	}
 
+	children := t.descendants(c.ID)
 	x, y, z := tuckedPlace(target, a)
 	dx, dy, dz := x-c.X, y-c.Y, z-c.Z
 	for _, child := range children {
@@ -417,6 +427,18 @@ func applyAttach(t *Table, a Action) error {
 	c.Parent = target.ID
 	c.OnPile = ""
 	c.X, c.Y, c.Z = x, y, z
+	return nil
+}
+
+// checkTuckTarget refuses to tuck c under target when target is c itself or a
+// card tucked beneath c: either would make a cycle of attachments.
+func (t *Table) checkTuckTarget(c, target *Card) error {
+	if c == target {
+		return invalid("card %q cannot be attached to itself", c.ID)
+	}
+	if slices.Contains(t.descendants(c.ID), target) {
+		return invalid("card %q is tucked under %q", target.ID, c.ID)
+	}
 	return nil
 }
 
@@ -443,14 +465,18 @@ func applyToHand(t *Table, a Action) error {
 	}
 
 	t.leave(c)
-	area := PlayerArea(c.Owner)
+	t.addToHand(PlayerArea(c.Owner), c)
+	return nil
+}
+
+// addToHand puts c, which has just left its place, last in the hand of area.
+func (t *Table) addToHand(area Area, c *Card) {
 	if t.Hands == nil {
 		t.Hands = map[Area][]string{}
 	}
 	t.Hands[area] = append(t.Hands[area], c.ID)
 	c.Zone = ZoneHand
 	c.Pile = ""
-	return nil
 }
 
 func applyToDeck(t *Table, a Action) error {
@@ -466,34 +492,33 @@ func applyToDeck(t *Table, a Action) error {
 		return err
 	}
 
-	var newOrder []string
 	switch a.Where {
-	case whereTop, whereBottom:
+	case whereTop:
+		t.leave(c)
+		deck.Cards = append(deck.Cards, c.ID)
+	case whereBottom:
+		t.leave(c)
+		deck.Cards = slices.Insert(deck.Cards, 0, c.ID)
 	case whereShuffle:
-		// The caller resolved the shuffle: Cards is the whole new pile.
-		if err := checkRenames(t, a, t.shuffledIntoDeck(c, deck)); err != nil {
+		// The caller resolved the shuffle: Cards is the whole new pile, and
+		// Renames also covers the cards tucked under c that go to the bottom
+		// of another deck (see renamedOnTheWay).
+		shuffled := t.shuffledIntoDeck(c, deck)
+		newIDs, err := checkFreshIDs(t, a.Renames, slices.Concat(shuffled, t.renamedOnTheWay(a)))
+		if err != nil {
 			return err
 		}
-		newOrder = cardList(a.Cards)
+		if !samePermutation(newIDs[:len(shuffled)], a.Cards) {
+			return invalid("shuffle order is not a permutation of the renamed cards")
+		}
+		t.leave(c)
+		renameCards(t, a.Renames)
+		deck.Cards = cardList(a.Cards)
 	default:
 		return invalid("unknown position %q", a.Where)
 	}
-
-	t.leave(c)
-	switch a.Where {
-	case whereTop:
-		deck.Cards = append(deck.Cards, c.ID)
-	case whereBottom:
-		deck.Cards = slices.Insert(deck.Cards, 0, c.ID)
-	case whereShuffle:
-		deck.Cards = append(deck.Cards, c.ID)
-	}
 	c.Zone = ZonePile
 	c.Pile = deck.ID
-	if a.Where == whereShuffle {
-		renameCards(t, a.Renames)
-		deck.Cards = newOrder
-	}
 	return nil
 }
 
@@ -526,8 +551,7 @@ func applyDiscard(t *Table, a Action) error {
 		return err
 	}
 
-	t.leave(c)
-	t.pushOnPile(pile, c)
+	t.putOnPile(pile, c)
 	return nil
 }
 
@@ -547,8 +571,7 @@ func applyToPile(t *Table, a Action) error {
 		return err
 	}
 
-	t.leave(c)
-	t.pushOnPile(pile, c)
+	t.putOnPile(pile, c)
 	return nil
 }
 
@@ -556,7 +579,7 @@ func applyToPile(t *Table, a Action) error {
 // the victory display or a set-aside pile. No deck or discard pile is one, so
 // a side deck card never lands in a regular deck or discard pile this way.
 func isPlainTargetPile(id string) bool {
-	return id == PileVictory || id == PileScenarioAside || strings.HasPrefix(id, "aside:")
+	return id == PileVictory || id == PileScenarioAside || strings.HasPrefix(id, asidePrefix)
 }
 
 // landsFaceDown reports whether a card dropped out of pile lands face down: a
@@ -584,8 +607,12 @@ func applyPlay(t *Table, a Action) error {
 	}
 	var target *Card
 	if a.Target != "" {
-		// The played card is not on the table yet: it cannot be its own target.
+		// A revealed card is on the table already, its attachments too: it
+		// cannot be tucked under itself or one of them.
 		if target, err = t.tableCard(a.Target); err != nil {
+			return err
+		}
+		if err := t.checkTuckTarget(c, target); err != nil {
 			return err
 		}
 	}
@@ -598,16 +625,15 @@ func applyPlay(t *Table, a Action) error {
 	if c.IdentityVersion {
 		t.takeOverIdentity(c)
 	}
-	c.Zone = ZoneTable
-	c.Pile = ""
 	c.FaceDown = faceDown && !c.Identity
-	if target != nil {
-		c.Parent = target.ID
-		c.X, c.Y, c.Z = tuckedPlace(target, a)
+	if target == nil {
+		t.placeOnTable(c, snap(a.X), snap(a.Y))
 		return nil
 	}
-	c.X, c.Y = snap(a.X), snap(a.Y)
-	c.Z = t.nextZ()
+	c.Zone = ZoneTable
+	c.Pile = ""
+	c.Parent = target.ID
+	c.X, c.Y, c.Z = tuckedPlace(target, a)
 	return nil
 }
 
@@ -867,17 +893,12 @@ func (t *Table) placeOnTable(c *Card, x, y int) {
 // applyDraw moves the recorded cards from the deck to the hand, in the recorded
 // order. Resolve records the top cards, but an undo may have put other cards
 // above them since: they are taken wherever they are in the deck. The deck is
-// the one a.Pile names, or the deck of the hand's seat when it names none, as
-// in the draws recorded before a draw could name its deck.
+// the one a.Pile names, or the deck of the hand's seat when it names none.
 func applyDraw(t *Table, a Action) error {
 	if !validArea(a.Area) {
 		return invalid("area %q has no hand", a.Area)
 	}
-	deckID := "deck:" + string(a.Area)
-	if a.Pile != "" {
-		deckID = a.Pile
-	}
-	deck, err := t.pile(deckID)
+	deck, err := t.pile(drawDeckID(a, a.Area))
 	if err != nil {
 		return err
 	}
@@ -888,22 +909,16 @@ func applyDraw(t *Table, a Action) error {
 		return err
 	}
 
-	if t.Hands == nil {
-		t.Hands = map[Area][]string{}
-	}
 	for _, id := range a.Cards {
 		c := t.Cards[id]
 		t.leave(c)
-		t.Hands[a.Area] = append(t.Hands[a.Area], id)
-		c.Zone = ZoneHand
-		c.Pile = ""
+		t.addToHand(a.Area, c)
 	}
 	return nil
 }
 
 // applyReveal reveals the recorded card wherever it is in its deck (see
-// applyDraw): the deck a.Pile names, or the encounter deck when it names none,
-// as in the reveals recorded before a player's deck could be revealed.
+// applyDraw): the deck a.Pile names, or the encounter deck when it names none.
 func applyReveal(t *Table, a Action) error {
 	deck, err := t.pile(cmp.Or(a.Pile, PileEncounter))
 	if err != nil {
@@ -956,9 +971,7 @@ func (t *Table) revealedOn(id string) []*Card {
 			found = append(found, c)
 		}
 	}
-	slices.SortFunc(found, func(a, b *Card) int {
-		return cmp.Or(cmp.Compare(a.Z, b.Z), cmp.Compare(a.ID, b.ID))
-	})
+	slices.SortFunc(found, byZThenID)
 	return found
 }
 
@@ -1007,10 +1020,7 @@ func (t *Table) coveredFor(a Action, hand Area) (*Table, error) {
 func (t *Table) actedDeck(a Action, hand Area) string {
 	switch a.Kind {
 	case ActDraw:
-		if a.Pile != "" {
-			return a.Pile
-		}
-		return "deck:" + string(hand)
+		return drawDeckID(a, hand)
 	case ActDiscardTop, ActReorderTop, ActShuffle:
 		return a.Pile
 	case ActDeal:
@@ -1060,43 +1070,39 @@ func applyDeal(t *Table, a Action) error {
 	return nil
 }
 
+// deckDiscardPrefixes pairs the id prefix of each kind of deck pile, but the
+// classic encounter deck, with the id prefix of its discard pile.
+var deckDiscardPrefixes = []struct{ deck, discard string }{
+	{scenarioEncounterPrefix, scenarioEncounterDiscardPrefix},
+	{scenarioDeckPrefix, scenarioDiscardPrefix},
+	{deckPrefix, discardPrefix},
+	{sideDeckPrefix, sideDiscardPrefix},
+}
+
 // deckOfDiscard returns the id of the deck a discard pile shuffles back into.
 func deckOfDiscard(discardID string) (string, bool) {
 	if discardID == PileEncounterDiscard {
 		return PileEncounter, true
 	}
-	if key, ok := strings.CutPrefix(discardID, scenarioEncounterDiscardPrefix); ok {
-		return scenarioEncounterPrefix + key, true
-	}
-	if key, ok := strings.CutPrefix(discardID, scenarioDiscardPrefix); ok {
-		return scenarioDeckPrefix + key, true
-	}
-	if owner, ok := strings.CutPrefix(discardID, "disc:"); ok {
-		return "deck:" + owner, true
-	}
-	if side, ok := strings.CutPrefix(discardID, sideDiscardPrefix); ok {
-		return sideDeckPrefix + side, true
+	for _, prefixes := range deckDiscardPrefixes {
+		if rest, ok := strings.CutPrefix(discardID, prefixes.discard); ok {
+			return prefixes.deck + rest, true
+		}
 	}
 	return "", false
 }
 
 // discardPileOf returns the id of the discard pile of a deck pile. A side
-// deck or scenario deck may have no discard pile: the id it returns then names no pile.
+// deck or scenario deck may have no discard pile: the id it returns then
+// names no pile.
 func discardPileOf(deckID string) (string, bool) {
 	if deckID == PileEncounter {
 		return PileEncounterDiscard, true
 	}
-	if key, ok := strings.CutPrefix(deckID, scenarioEncounterPrefix); ok {
-		return scenarioEncounterDiscardPrefix + key, true
-	}
-	if key, ok := strings.CutPrefix(deckID, scenarioDeckPrefix); ok {
-		return scenarioDiscardPrefix + key, true
-	}
-	if owner, ok := strings.CutPrefix(deckID, "deck:"); ok {
-		return "disc:" + owner, true
-	}
-	if side, ok := strings.CutPrefix(deckID, sideDeckPrefix); ok {
-		return sideDiscardPrefix + side, true
+	for _, prefixes := range deckDiscardPrefixes {
+		if rest, ok := strings.CutPrefix(deckID, prefixes.deck); ok {
+			return prefixes.discard + rest, true
+		}
 	}
 	return "", false
 }
@@ -1148,7 +1154,11 @@ func applyShuffleBack(t *Table, a Action) error {
 }
 
 func applyShuffleIn(t *Table, a Action) error {
-	if !isPlainTargetPile(a.Pile) || a.Pile == PileVictory {
+	source, err := t.pile(a.Pile)
+	if err != nil {
+		return err
+	}
+	if source.Kind != KindAside {
 		return invalid("pile %q is not a set-aside pile", a.Pile)
 	}
 	deckID := cmp.Or(a.Target, PileEncounter)

@@ -185,7 +185,7 @@
       aria-disabled={inFlight}
       onclick={removeSlot}
     >
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+      <Icon name="cross" />
     </button>
   {/if}
 {/snippet}
@@ -259,16 +259,6 @@
     }
   }
 
-  /* Out of sight and taking no room, yet read by screen readers. */
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-
   .loaded {
     display: flex;
     gap: 8px;
@@ -311,20 +301,17 @@
     font-size: 12px;
   }
 
-  .remove svg {
+  .remove :global(svg) {
     width: 14px;
     height: 14px;
-    fill: none;
-    stroke: currentColor;
     stroke-width: 2.2;
-    stroke-linecap: round;
   }
 
   .err {
     margin: 10px 0 0;
     border: 1px solid #6a2e3a;
     background: #2a1520;
-    color: #ffb3c0;
+    color: var(--error-text);
     border-radius: 10px;
     padding: 8px 10px;
     font-size: 12px;

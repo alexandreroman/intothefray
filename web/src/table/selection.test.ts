@@ -4,24 +4,10 @@ import type { Rect } from './drag';
 import { interaction } from './interaction.svelte';
 import { TABLE_LIMIT } from './layout';
 import { cardsInBand, groupAction, groupPileTargets, groupUnits } from './selection';
+import { card } from './fixtures.testing';
 
 function rect(left: number, top: number, width: number, height: number): Rect {
   return { left, top, right: left + width, bottom: top + height };
-}
-
-function card(id: string, extra: Partial<CardView> = {}): CardView {
-  return {
-    id,
-    code: '01001',
-    face: 0,
-    back: 'player',
-    owner: 0,
-    zone: 'table',
-    x: 0,
-    y: 0,
-    z: 1,
-    ...extra,
-  };
 }
 
 function pile(id: string, extra: Partial<PileView> = {}): PileView {
@@ -167,6 +153,17 @@ describe('groupAction', () => {
     const deal: Action = { kind: 'deal', area: 'p0', x: 200, y: 200 };
     expect(groupAction(['a', 'b'], 'a', play, cards)).toBeNull();
     expect(groupAction(['a', 'b'], 'a', deal, cards)).toBeNull();
+  });
+
+  it('sends nothing for more units than the server takes in one group', () => {
+    const many = Array.from({ length: 100 }, (_, i) => card(`u${i}`, { x: i, y: 100 }));
+    const units = many.map((unit) => unit.id);
+    const move: Action = { kind: 'move', card: 'u0', x: 0, y: 200 };
+    const discard: Action = { kind: 'discard', card: 'u0' };
+    expect(groupAction(units, 'u0', move, many)).toBeNull();
+    expect(groupAction(units, 'u0', discard, many)).toBeNull();
+    // 99 units are still one group.
+    expect(groupAction(units.slice(0, 99), 'u0', discard, many)).toMatchObject({ kind: 'group' });
   });
 
   it('oneUnitReturnsSingle', () => {

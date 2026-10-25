@@ -14,11 +14,10 @@ type: project
   −/+ pill, which a tap pins until a tap elsewhere or Esc. A hovered
   token's pill holds while the pointer stays in the box spanning the
   token's bounding box and the pill (an exhausted card's 15° tilt leaves
-  a gap below the pill); out of that box, it goes after the 100 ms linger.
-  In touch mode
-  (no hover, coarse pointer) nothing is ever previewed. Under a coarse
-  pointer, menu entries, chips and pill buttons have at least 44 px hit
-  areas.
+  a gap below the pill); out of that box, it goes after the 100 ms
+  linger. In touch mode (no hover, coarse pointer) nothing is ever
+  previewed. Under a coarse pointer, menu entries, chips and pill buttons
+  have at least 44 px hit areas.
 - The menu's title is an eyebrow in the owner's colour (card type and
   stage, or the pile's owner) above the card name, or the pile kind with
   its count pill, which counts a card revealed on the deck.
@@ -38,8 +37,8 @@ type: project
   A card dropped anywhere on its home deck (player deck, side deck or
   encounter deck) goes on top of it, as Move to ▾ "Top of deck" does;
   Bottom of deck is a Move to ▾ entry (B) only, never a drop target.
-  Labels are short; only a refused entry has a tooltip (its reason). The stage
-  choice reads "Change card…".
+  Labels are short; only a refused entry has a tooltip (its reason). The
+  stage choice reads "Change card…".
 - A hero side deck has the own deck's entries, Draw 1 and Draw X drawing
   from it; Reveal only when it hides its top card (Labor, Gift, Weather;
   see [[project_deck_reveal]]); Discard 1 and Discard X only when it has a
@@ -56,17 +55,21 @@ type: project
 - Another player's deck or side deck shows "Belongs to …" in its menu
   instead of entries. A click on a selected card opens that card's menu
   and keeps the group selection.
-- Hand cards are played by dragging, P, and X or Backspace to discard. On touch,
-  a tap on the lowered hand raises and pins it; a tap on a card then
+- Hand cards are played by dragging, P, and X or Backspace to discard. On
+  touch, a tap on the lowered hand raises and pins it; a tap on a card then
   selects (lifts) it; a tap on the table, Esc, a downward swipe, a drop on
   the table or a dialog lowers it.
 - Tokens come from the submenus, the keys and the token pill.
 - Out-of-play piles (victory display, set-aside) are reached from chips
   (icon and count) at the right of the owner frame's name line; an
   empty chip is dimmed and inert.
+- Spectators get no card menu, stage cards included: the "Change card…"
+  box is for players only and always offers the choice
+  (`spectatorActions` returns nothing for cards in play). Public piles
+  offer them Browse… only.
 
-**Why:** a UX review against DragnCards and OCTGN, then the user's
-choice that one complete, labelled menu replaces the bars.
+**Why:** a UX review against DragnCards and OCTGN; the user chose one
+complete, labelled menu per card, pile and box tile.
 
 **How to apply:** new actions go into `actionsFor` (keys and menu read
 it); the review and its steps are in

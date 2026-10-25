@@ -18,9 +18,12 @@ import {
   type PileView,
   type TableView,
 } from '../lib/types';
+import { playerColorToken } from '../lib/playerColor';
+import { prefersReducedMotion } from '../lib/screen';
 import type { Anim, Turn } from './animate';
 import { unknownTopId } from './drag';
 import { pileBack, pileCaption } from './face';
+import { tableCard, tablePile } from './screen';
 
 /** A card moving to its new place (FLIP). */
 const MOVE_MS = 250;
@@ -29,6 +32,7 @@ const MOVE_EASING = 'cubic-bezier(.2, .8, .2, 1)';
 const TURN_IN_MS = 420;
 /** A card turned over: its old side turns away edge-on, then its new side turns in. */
 const FLIP_MS = 360;
+/** The depth from which a card turning about its vertical axis is seen: turned over, or turning in. */
 const FLIP_PERSPECTIVE = 'perspective(700px)';
 /** The soft flash on a card that just changed. */
 const GLOW_MS = 1100;
@@ -154,13 +158,11 @@ interface ArriveFlight extends UnseenHandFlight {
 
 type Flight = PileFlight | DrawFlight | AwayFlight | ArriveFlight;
 
-const tableCard = (id: string) => `.surface .card:not(.pile)[data-id="${CSS.escape(id)}"]`;
 const handCard = (id: string) => `.hand .hcard[data-id="${CSS.escape(id)}"]`;
 /** A card another player drags, or has just let go of (Presence.svelte). */
 const remoteGhost = (id: string) => `.presence .card.ghost[data-id="${CSS.escape(id)}"]`;
 /** The viewer's own drop, lying where it landed until the view shows it (DragLayer.svelte). */
 const ownGhost = (id: string) => `.draglayer .card.ghost.landed[data-id="${CSS.escape(id)}"]`;
-const tablePile = (id: string) => `.surface .pile[data-id="${CSS.escape(id)}"]`;
 /**
  * A pile where it shows: drawn on the table, or, out of play, the chip on its
  * owner's frame (Surface.svelte). A pile is never both.
@@ -236,17 +238,10 @@ function scaleOf(element: HTMLElement, zoom: number): number {
  * (.fan) shows. Lowered or raised, the hand is where it shows now.
  */
 function measureSlot(card: HTMLElement): { slot: Measured; angle: number } {
-  const rest = card.querySelector<HTMLElement>('.hit') ?? card;
-  const rect = rest.getBoundingClientRect();
-  // The card itself is never tilted: its rect gives the hand's scale.
-  const scale = scaleOf(card, 1);
+  const rest = (card.querySelector<HTMLElement>('.hit') ?? card).getBoundingClientRect();
   return {
-    slot: {
-      cx: rect.left + rect.width / 2,
-      cy: rect.top + rect.height / 2,
-      w: card.offsetWidth ? card.offsetWidth * scale : rect.width,
-      h: card.offsetHeight ? card.offsetHeight * scale : rect.height,
-    },
+    // Its size is the card's own, never tilted; its centre is the slot's.
+    slot: { ...measure(card, 1), cx: rest.left + rest.width / 2, cy: rest.top + rest.height / 2 },
     angle: Number.parseFloat(card.style.getPropertyValue('--rot')) || 0,
   };
 }
@@ -275,15 +270,17 @@ function measure(element: HTMLElement, zoom: number): Measured {
 
 /**
  * What a card about to travel shows on now: another player's ghost of it,
- * where they let it go; else its place on the table or in the hand, or the
- * pile it leaves. The viewer's own drop slipping under a pile, or flying to
- * one, lies where it landed.
+ * where they let it go; else its place on the table or in the hand, under the
+ * id it had there for a card that got a new one, or the pile it leaves. The
+ * viewer's own drop slipping under a pile, or flying to one, lies where it
+ * landed.
  */
 function originOf(root: HTMLElement, anim: Anim, piles: readonly PileView[]): HTMLElement | null {
   const find = (selector: string) => root.querySelector<HTMLElement>(selector);
   const placed = (id: string) => `${tableCard(id)}, ${handCard(id)}`;
   switch (anim.kind) {
     case 'move':
+      return find(remoteGhost(anim.id)) ?? find(placed(anim.was ?? anim.id));
     case 'away':
       return find(remoteGhost(anim.id)) ?? find(placed(anim.id));
     case 'under':
@@ -334,14 +331,10 @@ function backOf(pile: PileView | undefined): Pick<UnseenHandFlight, 'back' | 'ca
   return { back: pile ? pileBack(pile) : 'player', caption: pile ? pileCaption(pile) : undefined };
 }
 
-function prefersReducedMotion(): boolean {
-  return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
-}
-
 /** A player colour (styles/tokens.css) as the keyframes need it: a value, not a var(). */
 function playerColor(color: number): string {
   const value = getComputedStyle(document.documentElement)
-    .getPropertyValue(`--p${color + 1}`)
+    .getPropertyValue(playerColorToken(color))
     .trim();
   return value || '#ffffff';
 }
@@ -1039,7 +1032,7 @@ class TableMotion {
     }
     const tilt = getComputedStyle(element).transform;
     const rest = tilt && tilt !== 'none' ? tilt : 'none';
-    const turned = `perspective(700px) rotateY(90deg) scale(1.05)${rest === 'none' ? '' : ` ${rest}`}`;
+    const turned = `${FLIP_PERSPECTIVE} rotateY(90deg) scale(1.05)${rest === 'none' ? '' : ` ${rest}`}`;
     this.#run(
       element,
       [{ transform: turned }, { transform: rest }],

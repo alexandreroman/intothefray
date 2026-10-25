@@ -1,13 +1,15 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import DeckLoader from '../components/lobby/DeckLoader.svelte';
+  import Icon from '../components/Icon.svelte';
   import ScenarioPicker from '../components/lobby/ScenarioPicker.svelte';
   import Seats from '../components/lobby/Seats.svelte';
   import Tooltip from '../components/Tooltip.svelte';
   import TopBar from '../components/TopBar.svelte';
   import { loadIndex } from '../lib/catalog';
+  import { playerColorVar } from '../lib/playerColor';
   import type { GameSession } from '../lib/session.svelte';
-  import type { Index, View } from '../lib/types';
+  import { hostName, MAX_SEATS, seatCount, type Index, type View } from '../lib/types';
 
   let { session, view }: { session: GameSession; view: View } = $props();
 
@@ -20,13 +22,9 @@
       .catch(() => (indexError = true));
   });
 
-  const MAX_DECKS = 4;
-
-  const hostName = $derived(view.players.find((p) => p.host)?.name ?? 'the host');
   const me = $derived(
     view.you.role === 'player' ? view.players.find((p) => p.color === view.you.color) : undefined,
   );
-  const deckCount = $derived(view.players.reduce((sum, p) => sum + p.decks.length, 0));
   // "your deck", "Sam's deck", "Jo's 2 decks": one phrase per player still missing a deck.
   const missingDecks = $derived(
     view.players.flatMap((p) => {
@@ -58,16 +56,16 @@
     if (view.config.scenario === '') {
       return view.you.host
         ? 'Choose a scenario first.'
-        : `Waiting for ${hostName} to choose a scenario.`;
+        : `Waiting for ${hostName(view)} to choose a scenario.`;
     }
     if (missingModular) {
       return view.you.host
         ? 'Choose at least one modular set.'
-        : `Waiting for ${hostName} to choose at least one modular set.`;
+        : `Waiting for ${hostName(view)} to choose at least one modular set.`;
     }
     return view.you.host
       ? 'Everyone is ready.'
-      : `Everyone is ready: waiting for ${hostName} to set up the table.`;
+      : `Everyone is ready: waiting for ${hostName(view)} to set up the table.`;
   });
 
   const intro = $derived.by(() => {
@@ -75,9 +73,9 @@
       return 'You are the host: you choose the scenario, and everyone sees it. Each player brings their own deck.';
     }
     if (view.you.role === 'spectator') {
-      return `You are watching: ${hostName} chooses the scenario, and each player brings their own deck.`;
+      return `You are watching: ${hostName(view)} chooses the scenario, and each player brings their own deck.`;
     }
-    return `${hostName} is the host: they choose the scenario, and everyone sees it. Bring your own deck.`;
+    return `${hostName(view)} is the host: they choose the scenario, and everyone sees it. Bring your own deck.`;
   });
 
   // A failed deck import shows under the field of the slot it was loading; anything else in the start bar.
@@ -174,7 +172,7 @@
         />
         {#if me}
           {@const several = me.decks.length > 1}
-          <section class="card-box decks" style:--pc="var(--p{me.color + 1})">
+          <section class="card-box decks" style:--pc={playerColorVar(me.color)}>
             <div class="bhead"><h2>Your decks</h2></div>
             <!-- The slots have no identity but their index: a new slot count remounts them, so that
                  a link typed for a removed deck does not stay in the slot that takes its place. -->
@@ -194,7 +192,7 @@
                 />
               {/each}
             {/key}
-            {#if deckCount < MAX_DECKS}
+            {#if seatCount(view) < MAX_SEATS}
               <div class="sect add-deck">
                 <button class="btn add" aria-disabled={session.deckLoading} onclick={addDeck}>
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
@@ -218,7 +216,7 @@
       {#if view.you.host}
         <button class="btn-primary go" disabled={!canStart} onclick={() => session.lobby('start')}>
           Set up the table
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+          <Icon name="arrow-right" />
         </button>
       {/if}
     </div>
@@ -265,12 +263,6 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
-  }
-
-  h1 {
-    margin: 0;
-    font-size: 56px;
-    line-height: 0.9;
   }
 
   .intro p {
@@ -445,7 +437,7 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    color: #c9cfdf;
+    color: var(--text-soft);
   }
 
   .why i {
@@ -461,7 +453,7 @@
   }
 
   .why.error {
-    color: #ffb3c0;
+    color: var(--error-text);
   }
 
   .add svg {
@@ -479,13 +471,9 @@
     gap: 12px;
   }
 
-  .go svg {
+  .go :global(svg) {
     width: 18px;
     height: 18px;
-    fill: none;
-    stroke: currentColor;
     stroke-width: 2.4;
-    stroke-linecap: round;
-    stroke-linejoin: round;
   }
 </style>

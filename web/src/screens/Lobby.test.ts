@@ -347,29 +347,48 @@ describe('Lobby', () => {
       const list = document.querySelector<HTMLElement>('.villains')!;
       expect(list.style.getPropertyValue('--pack-name-height')).toBe('');
       expect(list.style.getPropertyValue('--tile-height')).toBe('');
-      const resizeList = async () => {
+      const resize = async (element: Element | null) => {
         for (const { callback, targets } of observed) {
-          if (targets.includes(list)) {
+          if (element && targets.includes(element)) {
             callback([], {} as ResizeObserver);
           }
         }
         await tick();
       };
+      const nextFrame = async () => {
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+        await tick();
+      };
 
       const sized = (height: number) => () => new DOMRect(0, 0, 200, height);
-      list.querySelector<HTMLElement>('.pkname')!.getBoundingClientRect = sized(41);
-      list.querySelector<HTMLElement>('.vil')!.getBoundingClientRect = sized(112.5);
-      await resizeList();
+      const packName = list.querySelector<HTMLElement>('.pkname')!;
+      const tile = list.querySelector<HTMLElement>('.vil')!;
+      packName.getBoundingClientRect = sized(41);
+      tile.getBoundingClientRect = sized(112.5);
 
+      // The sizes set the list's floor, so a resize of the list itself measures nothing.
+      await resize(list);
+      await nextFrame();
+      expect(list.style.getPropertyValue('--tile-height')).toBe('');
+
+      // The sizes resize the list, which other observers watch (scrollFade): they wait for the
+      // next frame, as a resize within the observers' delivery is a ResizeObserver loop.
+      await resize(tile);
+      expect(list.style.getPropertyValue('--tile-height')).toBe('');
+      await nextFrame();
       // The rows themselves add up in CSS, which jsdom does not lay out.
       expect(list.style.getPropertyValue('--pack-name-height')).toBe('41px');
       expect(list.style.getPropertyValue('--tile-height')).toBe('112.5px');
 
-      // A filter that matches nothing keeps the last sizes.
-      await fireEvent.input(screen.getByLabelText('Filter by scenario or pack'), {
-        target: { value: 'nobody' },
-      });
-      await resizeList();
+      packName.getBoundingClientRect = sized(44);
+      await resize(packName);
+      await nextFrame();
+      expect(list.style.getPropertyValue('--pack-name-height')).toBe('44px');
+
+      // A hidden list lays out nothing: its zero-height tile keeps the last sizes.
+      tile.getBoundingClientRect = sized(0);
+      await resize(tile);
+      await nextFrame();
       expect(list.style.getPropertyValue('--tile-height')).toBe('112.5px');
     } finally {
       vi.unstubAllGlobals();

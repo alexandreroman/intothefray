@@ -4,7 +4,7 @@
 // ContextMenu.svelte draws it.
 
 import type { CardView, PackFace, PileView, View } from '../lib/types';
-import { arrowItem, deckCount, sideLabel, type ActionItem, type TableElement } from './actions';
+import { arrowItem, deckCount, pileName, type ActionItem, type TableElement } from './actions';
 import { pileLabel, stageLabel, type TileAction } from './boxes';
 import { isHidden } from './face';
 import { ownerLook } from './seats';
@@ -133,58 +133,6 @@ export interface ContextHeader {
   label: string;
 }
 
-/** How the eyebrow names the card types; any other type is spelt from its code (typeLabel). */
-const TYPE_LABELS: Record<string, string> = {
-  villain: 'Villain',
-  main_scheme: 'Main scheme',
-  side_scheme: 'Side scheme',
-  minion: 'Minion',
-  hero: 'Hero',
-  alter_ego: 'Alter ego',
-  ally: 'Ally',
-  upgrade: 'Upgrade',
-  support: 'Support',
-  event: 'Event',
-  resource: 'Resource',
-  treachery: 'Treachery',
-  attachment: 'Attachment',
-  environment: 'Environment',
-  obligation: 'Obligation',
-};
-
-/** How the header names a pile's kind: the pile's owner is in the eyebrow. */
-const PILE_NAMES: Record<
-  Exclude<PileView['kind'], 'sideDeck' | 'sideDiscard' | 'scenarioDeck' | 'scenarioDiscard'>,
-  string
-> = {
-  deck: 'Deck',
-  discard: 'Discard',
-  encounter: 'Encounter deck',
-  encounterDiscard: 'Encounter discard',
-  victory: 'Victory display',
-  aside: 'Set-aside cards',
-};
-
-/** How the header names a pile: a side pile after its side deck, "Invocation deck". */
-function pileName(pile: PileView): string {
-  switch (pile.kind) {
-    case 'sideDeck':
-      return `${sideLabel(pile)} deck`;
-    case 'sideDiscard':
-      return `${sideLabel(pile)} discard`;
-    case 'scenarioDeck':
-      return `${pile.label} deck`;
-    case 'scenarioDiscard':
-      return `${pile.label} discard`;
-    case 'encounter':
-      return pile.label ? `${pile.label} deck` : PILE_NAMES.encounter;
-    case 'encounterDiscard':
-      return pile.label ? `${pile.label} discard` : PILE_NAMES.encounterDiscard;
-    default:
-      return PILE_NAMES[pile.kind];
-  }
-}
-
 /**
  * The header of a card's menu, in its owner's colour: its type and stage over
  * its name in the viewer's language ("Villain · Stage I" over "Rhino"), as the
@@ -231,12 +179,8 @@ export function pileHeader(pile: PileView, view: View): ContextHeader {
   };
 }
 
-/** A card type as the eyebrow says it: "Main scheme"; an unknown one from its code, "Player side scheme". */
+/** A card type as the eyebrow says it, spelt from its code: "main_scheme" is "Main scheme". */
 function typeLabel(type: string): string {
-  const known = TYPE_LABELS[type];
-  if (known) {
-    return known;
-  }
   const spelt = capitalize(type.replaceAll('_', ' '));
   return spelt === '' ? 'Card' : spelt;
 }

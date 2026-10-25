@@ -100,7 +100,7 @@ func TestLinePartsFlagCardNames(t *testing.T) {
 		want   []string
 	}{
 		{"exhaust", Action{Kind: ActExhaust, Card: f.villain()}, []string{"Rhino"}},
-		{"flip", Action{Kind: ActFlip, Card: f.identity(t)}, []string{"Peter Parker", "Spider-Man"}},
+		{"flip", Action{Kind: ActFlip, Card: identityOf(t, f.g, 0)}, []string{"Peter Parker", "Spider-Man"}},
 		{"discard", Action{Kind: ActDiscard, Card: discarded}, []string{f.nameOf(t, discarded)}},
 		{"move", Action{Kind: ActToPile, Card: moved, Target: PileVictory}, []string{f.nameOf(t, moved)}},
 	}
@@ -257,7 +257,7 @@ func TestCardPartsReferToTheNamedFace(t *testing.T) {
 			return []pack.FaceRef{f.faceRefOf(t, card)}
 		}},
 		{"flip", func(t *testing.T, f *doFixture) []pack.FaceRef {
-			f.mustDo(t, "h", Action{Kind: ActFlip, Card: f.identity(t)}, at(1))
+			f.mustDo(t, "h", Action{Kind: ActFlip, Card: identityOf(t, f.g, 0)}, at(1))
 			return []pack.FaceRef{peterParker, spiderMan}
 		}},
 		{"flip the main scheme", func(t *testing.T, f *doFixture) []pack.FaceRef {

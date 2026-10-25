@@ -315,6 +315,7 @@ func TestFaceDownPlayerCardLeavesTheTableFaceUp(t *testing.T) {
 			leave := tt.leave
 			leave.Card = id
 			f.mustDo(t, "h", leave, at(30))
+			id = f.renamedID(t, id)
 			c := f.g.Table.Cards[id]
 			if c.FaceDown {
 				t.Errorf("card = %+v, want face up off the table", c)

@@ -7,8 +7,10 @@
   the card under it.
 -->
 <script lang="ts">
+  import { playerColorVar } from '../lib/playerColor';
   import type { View } from '../lib/types';
   import { interaction } from './interaction.svelte';
+  import { tableCard } from './screen';
   import { seatColor } from './seats';
 
   let {
@@ -54,7 +56,7 @@
   let frame = 0;
 
   function colourOf(color: number | null): string {
-    return color === null ? 'var(--muted)' : `var(--p${color + 1})`;
+    return color === null ? 'var(--muted)' : playerColorVar(color);
   }
 
   function markerOf(color: number | null): string {
@@ -67,8 +69,7 @@
       return null;
     }
     return (
-      root.querySelector(`.draglayer .card[data-id="${id}"]`) ??
-      root.querySelector(`.surface .card:not(.pile)[data-id="${id}"]`)
+      root.querySelector(`.draglayer .card[data-id="${id}"]`) ?? root.querySelector(tableCard(id))
     );
   }
 

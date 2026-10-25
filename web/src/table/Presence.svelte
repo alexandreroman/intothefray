@@ -1,23 +1,24 @@
 <!--
-  The other players at the table (spec 5.8): their cursors, the card each one
-  previews, their pings and their drags, drawn over the table (the table
-  cards or the first player token they drag hidden in their places
-  meanwhile). It also tells them about the viewer's own cursor, preview and
-  pings; DragLayer tells them about the viewer's drags. While the viewer is
-  away from the table (hand raised, dialog open), their cursor is hidden from
-  the others: nothing tells where the pointer goes in the hand or in the
-  dialog. Spectators send nothing, as no player draws them (ruling P5c-R2:
-  the server refuses their presence).
+  The other players at the table: their cursors, the card each one previews,
+  their pings and their drags, drawn over the table (the table cards or the
+  markers they drag hidden in their places meanwhile). It also tells them
+  about the viewer's own cursor, preview and pings; DragLayer tells them about
+  the viewer's drags. While the viewer is away from the table (hand raised,
+  dialog open), their cursor is hidden from the others: nothing tells where
+  the pointer goes in the hand or in the dialog. Spectators send nothing, as
+  no player draws them: the server refuses their presence.
 
   Spots travel as table units of the surface (screen.ts). Messages can come in
   floods: the session keeps only the latest state of each player, and the
   layer draws them all in one pass per animation frame. Moves come once per
-  throttle interval at most (session.svelte.ts): cursors and drags glide
-  between them over that interval, but follow the table at once as it
-  scrolls, zooms or resizes.
+  throttle interval at most (session.svelte.ts, and the "Presence message
+  budget" project memory note): cursors and drags glide between them over
+  that interval, but follow the table at once as it scrolls, zooms or
+  resizes.
 -->
 <script lang="ts">
   import { untrack } from 'svelte';
+  import { playerColorVar } from '../lib/playerColor';
   import { PRESENCE_INTERVAL_MS } from '../lib/session.svelte';
   import type {
     CardView as TableCard,
@@ -35,7 +36,7 @@
   import { contains } from './drag';
   import MarkerToken from './MarkerToken.svelte';
   import { backCaption, pileBack } from './face';
-  import { interaction } from './interaction.svelte';
+  import { interaction, LANDING_MS } from './interaction.svelte';
   import { ALL_ROWS, type RowMap } from './rows';
   import { scrollerRect, surfaceRect, toScreen, toTable } from './screen';
 
@@ -76,13 +77,6 @@
   const LOST_MS = 60_000;
   /** How long a ping's rings expand. */
   const PING_MS = 1200;
-  /**
-   * How long a drag that ended keeps its ghost where it was let go, its cards
-   * hidden in their places, waiting for the view that shows where they went.
-   * Without one, it was cancelled or refused: the cards show in their places
-   * again.
-   */
-  const LANDING_MS = 2000;
   // The prototype's room at the table's edges for a cursor scrolled out of view. At the right and
   // bottom edges, the room keeps the pointer and its name label in view.
   const EDGE_IN = 8;
@@ -177,10 +171,6 @@
 
   const isPlayer = $derived(view.you.role === 'player');
 
-  function colourOf(color: number): string {
-    return `var(--p${color + 1})`;
-  }
-
   // ---- The viewer's own presence ----
 
   /** The spot of the table under a point of the screen. Null outside the table. */
@@ -203,14 +193,14 @@
     if (!cursor) {
       return;
     }
-    // Decided once every handler of the move has run: the hand (Hand.svelte) handles it after
-    // this layer, and the move that raises it must not tell the others where the pointer went,
-    // while the move that lowers it shows the cursor again.
-    queueMicrotask(() => {
-      if (!away) {
-        send({ cursor });
-      }
-    });
+    // Outside a drag, the hand (Hand.svelte) has already decided on this move, in the capture
+    // phase that runs before this listener: the move that raises it must not tell the others where
+    // the pointer went, while the move that lowers it shows the cursor again. During a drag, the
+    // hand follows the drop target that DragLayer sets in a later listener, so the move that
+    // raises it may still send one cursor point before the effect below sends `cursor: null`.
+    if (!away) {
+      send({ cursor });
+    }
   }
 
   /**
@@ -355,6 +345,9 @@
         }
       } else if (dragging) {
         draggings.delete(color);
+        // A drag that ended keeps its ghost where it was let go, its cards hidden in their places,
+        // waiting for the view that shows where they went. Without one, it was cancelled or
+        // refused: the cards show in their places again.
         if (!hasMoved(dragging)) {
           landings.set(color, { ...dragging, until: now + LANDING_MS, view });
         }
@@ -415,8 +408,9 @@
   }
 
   /**
-   * A card of the viewer cannot see (from a hand), or the encounter deck's
-   * unknown top card, whose pile id the drag carries: face down.
+   * A card the viewer cannot see (from a hand), or the unknown top card of a
+   * deck (the encounter deck, a scenario deck, or one of the dragging player's
+   * own decks), whose pile id the drag carries: face down.
    */
   function hiddenCard(id: string, x: number, y: number): TableCard {
     const pile = view.table?.piles.find((p) => p.id === id);
@@ -677,7 +671,7 @@
     {#each ['a', 'b'] as ring (ring)}
       <div
         class="ping {ring}"
-        style:--c={colourOf(pinged.color)}
+        style:--c={playerColorVar(pinged.color)}
         style:left="{pinged.x}px"
         style:top="{pinged.y}px"
       ></div>
@@ -693,13 +687,13 @@
       <svg width="22" height="28" viewBox="0 0 22 28"
         ><path
           d="M3 2.5 L18 12 L11 13.5 L7.5 20 Z"
-          style:fill={colourOf(cursor.color)}
+          style:fill={playerColorVar(cursor.color)}
           stroke="#07090f"
           stroke-width="1.5"
           stroke-linejoin="round"
           stroke-linecap="round"
         /></svg
-      ><span style:background={colourOf(cursor.color)}>{cursor.name}{cursor.side}</span>
+      ><span style:background={playerColorVar(cursor.color)}>{cursor.name}{cursor.side}</span>
     </div>
   {/each}
 </div>

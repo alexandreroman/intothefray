@@ -20,7 +20,6 @@ type Set struct {
 	ID         string   `json:"Id"`
 	Name       string   `json:"Name"`
 	Type       string   `json:"Type"`
-	PackID     string   `json:"PackId"`
 	Recommends []string `json:"Recommends"`
 }
 

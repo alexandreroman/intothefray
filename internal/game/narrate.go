@@ -425,11 +425,7 @@ func (n narrator) drawText(a Action) string {
 		text = "drew 1 card"
 	}
 	// resolveDraw sends the cards to the hand of the deck's owner.
-	deckID := "deck:" + string(a.Area)
-	if a.Pile != "" {
-		deckID = a.Pile
-	}
-	deck := n.before.Piles[deckID]
+	deck := n.before.Piles[drawDeckID(a, a.Area)]
 	if deck == nil {
 		return text
 	}
@@ -452,11 +448,13 @@ func (n narrator) faceDownPlayEvent(a Action) logLine {
 }
 
 func (n narrator) flipEvent(a Action) logLine {
-	old, cur := n.before.Cards[a.Card], n.after.Cards[a.Card]
-	if cur.Zone == ZonePile {
-		// Turned face down, a revealed card went back on top of its deck
-		// (see applyFlip). Like a card put on a deck, the line does not follow it there.
-		return logLine{text: join(words("put "), n.name(a.Card), words(" back on top of "), n.pile(cur.Pile))}
+	old := n.before.Cards[a.Card]
+	cur, kept := n.after.Cards[a.Card]
+	if !kept {
+		// Turned face down, a revealed card went back on top of its deck,
+		// under a new id (see applyFlip and renamedOnTheWay). Like a card
+		// put on a deck, the line does not follow it there.
+		return logLine{text: join(words("put "), n.name(a.Card), words(" back on top of "), n.pile(old.OnPile))}
 	}
 	var text phrase
 	switch {

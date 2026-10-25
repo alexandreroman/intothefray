@@ -1,5 +1,6 @@
 // Package pack defines the JSON schema of the card-pack files generated from
-// marvelcdb and Cerebro, and of the index that lists them.
+// marvelcdb, mc4db and Cerebro and of the index that lists them, and the
+// catalog that loads them.
 package pack
 
 // Size is the physical format of a card face.
@@ -132,7 +133,7 @@ type Pile struct {
 }
 
 // ScenarioDeck is a named deck a scenario owns, apart from the classic
-// encounter deck (spec section 1).
+// encounter deck.
 type ScenarioDeck struct {
 	Key   string `json:"key"`
 	Label string `json:"label"`
@@ -175,7 +176,7 @@ type Scenario struct {
 
 // PackFile is the content of one generated pack file.
 //
-//nolint:revive // PackFile is the schema name fixed by the plan.
+//nolint:revive // pack.File would read as a file of the file system.
 type PackFile struct {
 	Code      string     `json:"code"`
 	Name      string     `json:"name"`
@@ -188,7 +189,7 @@ type PackFile struct {
 
 // PackRef is an index entry locating a pack file.
 //
-//nolint:revive // PackRef is the schema name fixed by the plan.
+//nolint:revive // PackRef is also the name of this entry in the web app's types.
 type PackRef struct {
 	Code     string `json:"code"`
 	Name     string `json:"name"`

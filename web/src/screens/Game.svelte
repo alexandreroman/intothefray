@@ -71,13 +71,6 @@
     font-size: 16px;
   }
 
-  /* A link drawn as the primary button. */
-  .btn-primary {
-    display: inline-flex;
-    align-items: center;
-    text-decoration: none;
-  }
-
   .status {
     position: fixed;
     top: 12px;

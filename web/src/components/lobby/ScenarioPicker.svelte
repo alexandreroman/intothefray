@@ -7,8 +7,16 @@
   import { overflowTip } from '../../lib/overflowTip';
   import { scrollFade } from '../../lib/scrollFade';
   import CardArt from '../CardArt.svelte';
+  import Icon from '../Icon.svelte';
   import Segmented from '../Segmented.svelte';
-  import type { Difficulty, Index, LobbyConfig, ScenarioRef, View } from '../../lib/types';
+  import {
+    hostName,
+    type Difficulty,
+    type Index,
+    type LobbyConfig,
+    type ScenarioRef,
+    type View,
+  } from '../../lib/types';
 
   let {
     view,
@@ -32,7 +40,6 @@
   let menuOpen = $state(false);
 
   const isHost = $derived(view.you.host);
-  const hostName = $derived(view.players.find((p) => p.host)?.name ?? 'the host');
   const config = $derived(view.config);
   const chosen = $derived(index.scenarios.find((s) => s.id === config.scenario));
   const difficulty = $derived<Difficulty>(config.difficulty === 'expert' ? 'expert' : 'standard');
@@ -115,20 +122,35 @@
     return { packName: packName.getBoundingClientRect().height, tile: tileHeight };
   }
 
-  // A tile's height follows its width: measured again whenever the list is resized. A filter that
-  // matches nothing leaves no tile to measure: the last sizes stay.
+  // A tile's height follows its width: measured again whenever the first tile or pack name is
+  // resized. The sizes set the list's height, so the list itself is not observed, and they are
+  // applied in the next frame: resizing the list while the observers are notified, scrollFade's
+  // among them, would be a ResizeObserver loop. A filter that matches nothing leaves no tile to
+  // measure: the last sizes stay.
   $effect(() => {
     const list = villains;
     if (!list || !isHost) {
       return;
     }
-    // Read so that a new filter, with another first pack, observes the list anew.
+    // Read so that a new filter, with another first pack, observes its name and tile.
     void groups;
+    let frame = 0;
     const observer = new ResizeObserver(() => {
-      listSizes = measureList(list) ?? listSizes;
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        listSizes = measureList(list) ?? listSizes;
+      });
     });
-    observer.observe(list);
-    return () => observer.disconnect();
+    const packName = list.querySelector('.pkname');
+    const tile = list.querySelector('.vil');
+    if (packName && tile) {
+      observer.observe(packName);
+      observer.observe(tile);
+    }
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(frame);
+    };
   });
 
   // The settings take their room from the list: the villain the host just chose may have slipped
@@ -185,16 +207,12 @@
     configure({ modulars: config.modulars.filter((m) => m !== code) });
   }
 
+  // A click on the Add a set button or in its menu is not outside: the button toggles the menu.
   function closeMenuOnOutsideClick(event: MouseEvent): void {
-    if (event.target instanceof Element && event.target.closest('.menu')) {
+    if (event.target instanceof Element && event.target.closest('.add-wrap')) {
       return;
     }
     menuOpen = false;
-  }
-
-  function toggleMenu(event: MouseEvent): void {
-    event.stopPropagation(); // The window click handler would close it again.
-    menuOpen = !menuOpen;
   }
 </script>
 
@@ -213,7 +231,7 @@
   <div class="bhead">
     <h2>Scenario</h2>
     {#if !isHost}
-      <span class="aside">chosen by {hostName} (host)</span>
+      <span class="aside">chosen by {hostName(view)} (host)</span>
     {/if}
   </div>
 
@@ -254,9 +272,7 @@
                 {/if}
                 {#if selected}
                   <span class="check">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"
-                      ><path d="M5 12.5l4.5 4.5L19 7.5" /></svg
-                    >
+                    <Icon name="check" />
                   </span>
                 {/if}
                 {#if !scenario.supported}
@@ -269,7 +285,7 @@
         </div>
       {:else}
         <div class="none">
-          {isHost ? 'No scenario matches.' : `${hostName} has not chosen a scenario yet.`}
+          {isHost ? 'No scenario matches.' : `${hostName(view)} has not chosen a scenario yet.`}
         </div>
       {/each}
     </div>
@@ -349,9 +365,7 @@
                     aria-label="Remove {setName(code)}"
                     onclick={() => removeModular(code)}
                   >
-                    <svg viewBox="0 0 24 24" aria-hidden="true"
-                      ><path d="M6 6l12 12M18 6 6 18" /></svg
-                    >
+                    <Icon name="cross" />
                   </button>
                 {/if}
               </span>
@@ -362,7 +376,7 @@
             {/each}
             {#if isHost}
               <span class="add-wrap">
-                <button class="add" aria-expanded={menuOpen} onclick={toggleMenu}
+                <button class="add" aria-expanded={menuOpen} onclick={() => (menuOpen = !menuOpen)}
                   >+ Add a set</button
                 >
                 {#if menuOpen}
@@ -441,7 +455,7 @@
     gap: 10px;
     padding: 14px 0 10px;
     background: var(--bg);
-    color: #c9cfdf;
+    color: var(--text-soft);
     font-size: 13px;
     font-weight: 700;
   }
@@ -529,7 +543,7 @@
     place-items: center;
   }
 
-  .check svg {
+  .check :global(svg) {
     width: 14px;
     height: 14px;
     stroke-width: 3;
@@ -542,7 +556,7 @@
     padding: 3px 8px;
     border-radius: 6px;
     background: var(--table-bg);
-    color: #c9cfdf;
+    color: var(--text-soft);
     font-size: 11px;
     font-weight: 700;
   }
@@ -551,13 +565,6 @@
     color: var(--muted);
     text-align: center;
     padding: 30px 0;
-  }
-
-  svg {
-    fill: none;
-    stroke: currentColor;
-    stroke-linecap: round;
-    stroke-linejoin: round;
   }
 
   .settings {
@@ -661,7 +668,7 @@
     place-items: center;
   }
 
-  .chip .x svg {
+  .chip .x :global(svg) {
     width: 12px;
     height: 12px;
     stroke-width: 2.6;

@@ -5,6 +5,8 @@
 -->
 <script lang="ts">
   import { tick } from 'svelte';
+  import Icon from '../components/Icon.svelte';
+  import { playerColorVar } from '../lib/playerColor';
   import type { FaceRef, LogPart, LogView } from '../lib/types';
   import { mergedLines } from './animate';
   import { interaction } from './interaction.svelte';
@@ -24,10 +26,10 @@
     onundo: () => void;
     /** Only a strip shows: the buttons to expand it and to undo. */
     collapsed?: boolean;
-    /** Collapses or expands the panel; without it, the panel has no such button. */
-    ontoggle?: () => void;
+    /** Collapses or expands the panel. */
+    ontoggle: () => void;
     /** The id of the element that collapses (aria-controls). */
-    controls?: string;
+    controls: string;
     /** The name of a face in the viewer's language; without it, or when unknown, the English text shows. */
     nameOf?: (ref: FaceRef) => string | undefined;
   } = $props();
@@ -40,9 +42,6 @@
 
   // The button pressed goes with the side it was on: the focus moves to the one that takes its place.
   async function toggle(): Promise<void> {
-    if (!ontoggle) {
-      return;
-    }
     leaveLine();
     ontoggle();
     await tick();
@@ -88,11 +87,6 @@
   function partsOf(entry: LogView): Part[] {
     const pieces = entry.parts ?? [{ text: entry.text }];
     return pieces.flatMap((piece) => splitAsides(textOf(piece), piece.card === true));
-  }
-
-  /** The player colour; system lines (colour -1) keep the text colour. */
-  function nameColor(entry: LogView): string | undefined {
-    return entry.color >= 0 ? `var(--p${entry.color + 1})` : undefined;
   }
 
   function timeOf(at: string): string {
@@ -166,25 +160,9 @@
 
 {#snippet lineText(entry: LogView, parts: Part[])}
   <!-- The line break between the name and the text renders as one space. -->
-  <span class="w" style:color={nameColor(entry)}>{entry.who}</span>
+  <span class="w" style:color={playerColorVar(entry.color)}>{entry.who}</span>
   {#each parts as part, i (i)}{#if part.card}<b class="card" class:aside={part.aside}>{part.text}</b
       >{:else if part.aside}<span class="aside">{part.text}</span>{:else}{part.text}{/if}{/each}
-{/snippet}
-
-{#snippet undoIcon()}
-  <!-- A hooked arrow going back. -->
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-    aria-hidden="true"
-  >
-    <path d="M9 14L4 9l5-5" />
-    <path d="M4 9h11a5 5 0 0 1 0 10h-3" />
-  </svg>
 {/snippet}
 
 {#snippet panelIcon()}
@@ -225,26 +203,24 @@
         aria-disabled={!canUndo}
         onclick={undo}
       >
-        {@render undoIcon()}
+        <Icon name="undo" />
       </button>
     </div>
   </div>
 {:else}
   <div class="loghead">
     <h2 id="history-title">History</h2>
-    {#if ontoggle}
-      <button
-        class="btn-ghost toggle"
-        aria-label="Collapse history"
-        data-tip="Collapse history"
-        aria-expanded="true"
-        aria-controls={controls}
-        bind:this={collapseButton}
-        onclick={toggle}
-      >
-        {@render panelIcon()}
-      </button>
-    {/if}
+    <button
+      class="btn-ghost toggle"
+      aria-label="Collapse history"
+      data-tip="Collapse history"
+      aria-expanded="true"
+      aria-controls={controls}
+      bind:this={collapseButton}
+      onclick={toggle}
+    >
+      {@render panelIcon()}
+    </button>
   </div>
 
   <ul class="log" aria-labelledby="history-title" bind:this={list}>
@@ -276,7 +252,7 @@
       data-tip={canUndo ? undefined : NOTHING_TO_UNDO}
       onclick={undo}
     >
-      {@render undoIcon()}
+      <Icon name="undo" />
       {UNDO_TIP}
     </button>
   </div>
@@ -346,12 +322,13 @@
     align-items: center;
     justify-content: center;
     border-radius: 8px;
-    color: #c9cfdf;
+    color: var(--text-soft);
   }
 
-  .strip-undo svg {
+  .strip-undo :global(svg) {
     width: 16px;
     height: 16px;
+    stroke-width: 2;
   }
 
   .log {
@@ -462,10 +439,10 @@
     font-size: 13px;
   }
 
-  .undo svg {
+  .undo :global(svg) {
     width: 16px;
     height: 16px;
-    flex: none;
+    stroke-width: 2;
   }
 
   @keyframes slidein {

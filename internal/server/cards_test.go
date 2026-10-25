@@ -3,7 +3,6 @@ package server
 import (
 	"bytes"
 	"encoding/json"
-	"io"
 	"maps"
 	"net/http"
 	"net/http/httptest"
@@ -14,6 +13,7 @@ import (
 	"time"
 
 	"github.com/alexandreroman/intothefray/internal/game"
+	"github.com/alexandreroman/intothefray/packs"
 )
 
 const cardsHostToken = "host-token" //nolint:gosec // test fixture
@@ -45,7 +45,7 @@ func newCardsServer(t *testing.T) (ts *httptest.Server, started *game.Game, lobb
 func newCardsGame(t *testing.T, id string) *game.Game {
 	t.Helper()
 
-	cat, err := testCatalog()
+	cat, err := packs.Catalog()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -78,8 +78,6 @@ func newCardsGame(t *testing.T, id string) *game.Game {
 }
 
 // getCards fetches the card pool of a game with the given request headers.
-// The client never asks for compression on its own nor decompresses: the
-// test sees the request headers and the body exactly as sent.
 func getCards(t *testing.T, ts *httptest.Server, id string, header map[string]string) reply {
 	t.Helper()
 
@@ -90,19 +88,7 @@ func getCards(t *testing.T, ts *httptest.Server, id string, header map[string]st
 	for name, value := range header {
 		req.Header.Set(name, value)
 	}
-	client := &http.Client{Transport: &http.Transport{DisableCompression: true}}
-	t.Cleanup(client.CloseIdleConnections)
-
-	resp, err := client.Do(req)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func() { _ = resp.Body.Close() }()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return reply{status: resp.StatusCode, header: resp.Header, body: body}
+	return send(t, req)
 }
 
 func TestGameCards(t *testing.T) {
@@ -242,5 +228,51 @@ func TestGameCardsUncompressed(t *testing.T) {
 	}
 	if !json.Valid(resp.body) {
 		t.Errorf("body is not plain JSON: %.100q", resp.body)
+	}
+}
+
+func TestGameCardsVaryOrigin(t *testing.T) {
+	ts, started, _ := newCardsServer(t)
+	etag := getCards(t, ts, started.ID, nil).header.Get("ETag")
+
+	origins := []struct {
+		name   string
+		origin string
+	}{
+		{"no origin", ""},
+		{"refused origin", "http://evil.test"},
+		{"allowed origin", allowedOrigin},
+	}
+	replies := []struct {
+		name        string
+		ifNoneMatch string
+		wantStatus  int
+	}{
+		{"full reply", "", http.StatusOK},
+		{"not modified", etag, http.StatusNotModified},
+	}
+	for _, o := range origins {
+		for _, r := range replies {
+			t.Run(o.name+"/"+r.name, func(t *testing.T) {
+				header := map[string]string{}
+				if o.origin != "" {
+					header["Origin"] = o.origin
+				}
+				if r.ifNoneMatch != "" {
+					header["If-None-Match"] = r.ifNoneMatch
+				}
+
+				resp := getCards(t, ts, started.ID, header)
+
+				if resp.status != r.wantStatus {
+					t.Fatalf("status = %d, want %d", resp.status, r.wantStatus)
+				}
+				// A shared cache must not serve a reply stored for one origin
+				// to another: the CORS headers differ between them.
+				if got := resp.header.Values("Vary"); !slices.Contains(got, "Origin") {
+					t.Errorf("Vary = %q, want Origin among them", got)
+				}
+			})
+		}
 	}
 }

@@ -4,11 +4,34 @@
 // action is credited to, and how a seat reads and shows.
 
 import type { TableElement } from './actions';
+import { playerColorVar } from '../lib/playerColor';
 import type { Area, DeckView, PlayerView, View } from '../lib/types';
 
 /** The seat index of a seat area: "p1" is seat 1. */
 export function seatOf(area: Area): number {
   return Number(area.slice(1));
+}
+
+/** The area of a seat: seat 1 is "p1". */
+export function areaOf(seat: number): Area {
+  return `p${seat}`;
+}
+
+// The ids of a seat's own piles, as the server names them (internal/game/state.go).
+
+/** The id of the seat's deck: "deck:p1". */
+export function deckId(seat: number): string {
+  return `deck:${areaOf(seat)}`;
+}
+
+/** The id of the seat's discard pile: "disc:p1". */
+export function discardId(seat: number): string {
+  return `disc:${areaOf(seat)}`;
+}
+
+/** The id of the seat's set-aside pile: "aside:p1". */
+export function asideId(seat: number): string {
+  return `aside:${areaOf(seat)}`;
 }
 
 /** The viewer's own seats, in order; none for a spectator or an unknown token. */
@@ -73,7 +96,7 @@ function ownerOf(target: TableElement, view: View): number | undefined {
 
 /** The player sitting at the seat, with the deck that seat is, if anyone sits there. */
 function seatAt(view: View, seat: number): { player: PlayerView; deck: DeckView } | undefined {
-  const area: Area = `p${seat}`;
+  const area = areaOf(seat);
   for (const player of view.players) {
     const deck = player.decks.find((d) => d.area === area);
     if (deck) {
@@ -86,6 +109,11 @@ function seatAt(view: View, seat: number): { player: PlayerView; deck: DeckView 
 /** The player sitting at the seat, if anyone sits there. */
 export function seatPlayer(view: View, seat: number): PlayerView | undefined {
   return seatAt(view, seat)?.player;
+}
+
+/** The deck sitting at the seat, if anyone sits there. */
+export function seatDeck(view: View, seat: number): DeckView | undefined {
+  return seatAt(view, seat)?.deck;
 }
 
 /** The colour of the player owning the seat; null for a seat nobody sits at. */
@@ -122,7 +150,7 @@ export function seatHero(view: View, seat: number): string {
 }
 
 /** How an owner reads and shows: its name and the CSS colour of its frame and name. */
-export interface OwnerLook {
+interface OwnerLook {
   /** "Villain", the seat's full label ("Sam · Ant-Man"), or "Player 3" for an empty seat. */
   name: string;
   /** The seat's colour, the villain's for the encounter (owner -1), muted for an empty seat. */
@@ -141,5 +169,5 @@ export function ownerLook(view: View, owner: number): OwnerLook {
   if (color === null) {
     return { name: `Player ${owner + 1}`, color: 'var(--muted)' };
   }
-  return { name: seatFullLabel(view, owner), color: `var(--p${color + 1})` };
+  return { name: seatFullLabel(view, owner), color: playerColorVar(color) };
 }

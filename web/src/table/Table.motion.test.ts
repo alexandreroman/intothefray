@@ -17,6 +17,7 @@ import type {
   Stage,
   View,
 } from '../lib/types';
+import { card, fakeSession } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -31,21 +32,6 @@ function infoOf(code: string): CardInfo {
   const size: Size = code === SIDE_SCHEME ? 'land' : 'std';
   const face = { name: 'Spider-Man', type: 'hero', size, images: [`${code}.png`] };
   return { card: { code, faces: [face], back: 'player', quantity: 1 }, face: 0 };
-}
-
-function card(id: string, extra: Partial<TableCard>): TableCard {
-  return {
-    id,
-    code: '01001',
-    face: 0,
-    back: 'player',
-    owner: 0,
-    zone: 'table',
-    x: 0,
-    y: 0,
-    z: 1,
-    ...extra,
-  };
 }
 
 const PILES: PileView[] = [
@@ -112,17 +98,6 @@ function makeView(
       ...(extra.hands && { hands: extra.hands }),
     },
     log: extra.log ?? [START],
-  };
-}
-
-function fakeSession(viewGap = 0) {
-  return {
-    act: vi.fn(() => 1),
-    lobby: vi.fn(() => true),
-    lastError: null,
-    presence: new Map<number, PresenceState>(),
-    sendPresence: vi.fn(),
-    viewGap,
   };
 }
 
@@ -1520,7 +1495,7 @@ describe('Table animations', () => {
   });
 
   it('nothing animates across a reconnection gap over 2 s', async () => {
-    const session = fakeSession(2500);
+    const session = { ...fakeSession(), viewGap: 2500 };
     const { rerender } = render(Table, {
       session,
       view: makeView([card('a', { x: 0 })]),
@@ -1682,6 +1657,37 @@ describe('Table animations', () => {
     } finally {
       spy.mockRestore();
     }
+  });
+
+  it('a card taken face down into the hand under a new id slides there from the table and turns', async () => {
+    const session = fakeSession();
+    const { rerender } = render(Table, {
+      session,
+      view: makeView([card('d', { owner: 1, x: 300, faceDown: true, code: undefined })], {
+        hands: { p1: [] },
+      }),
+    });
+    await settle();
+
+    // The server gave the card a new id on its way (freshID in internal/game/ids.go).
+    await rerender({
+      session,
+      view: makeView([card('n', { owner: 1, zone: 'hand' })], {
+        hands: { p1: ['n'] },
+        log: [START, line('took a card into hand', { who: 'Sam', color: 1 })],
+      }),
+    });
+    const frames = () => animationsOf('.hand .hcard[data-id="n"]').map(([keyframes]) => keyframes);
+    await waitFor(() =>
+      expect(frames()).toContainEqual([
+        expect.objectContaining({ translate: expect.stringMatching(/px/) }),
+        expect.objectContaining({ translate: '0px 0px' }),
+      ]),
+    );
+    expect(frames()).toContainEqual([
+      { transform: expect.stringContaining('rotateY(90deg)') },
+      { transform: expect.stringContaining('rotateY(0deg)') },
+    ]);
   });
 
   it('an exhausted card turned over on the table keeps its tilt after the turn', async () => {

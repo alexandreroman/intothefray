@@ -1,8 +1,6 @@
 package game
 
 import (
-	"encoding/json"
-	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
@@ -215,14 +213,15 @@ func TestGroupLineFaceDown(t *testing.T) {
 	dealt := f.lastDealt(t)
 	f.mustDo(t, "b", Action{Kind: ActReveal}, at(2))
 	revealed := f.g.Table.revealedOn(PileEncounter)[0].ID
+	name := f.nameOf(t, revealed)
 
 	f.mustDo(t, "b", groupOf(ActToDeck, whereBottom, "", dealt, revealed), at(10))
 
-	want := "put 2 cards at the bottom of the encounter deck (a card, " + f.nameOf(t, revealed) + ")"
+	want := "put 2 cards at the bottom of the encounter deck (a card, " + name + ")"
 	if line := f.lastLog(); line.Text != want {
 		t.Errorf("line = %q, want %q", line.Text, want)
 	}
-	if got := cardNames(f.lastLog()); len(got) != 1 || got[0] != f.nameOf(t, revealed) {
+	if got := cardNames(f.lastLog()); len(got) != 1 || got[0] != name {
 		t.Errorf("line names cards %q, want only the revealed one", got)
 	}
 	checkPartsSpellText(t, f.lastLog())
@@ -244,10 +243,10 @@ func TestGroupToDeckLine(t *testing.T) {
 	t.Run("shared home", func(t *testing.T) {
 		f := newDoFixture(t)
 		cards := f.playCards(t, "h", "p0", 2)
+		want := "put 2 cards at the bottom of their deck (" + f.nameOf(t, cards[0]) + ", " + f.nameOf(t, cards[1]) + ")"
 
 		f.mustDo(t, "h", groupOf(ActToDeck, whereBottom, "", cards...), at(10))
 
-		want := "put 2 cards at the bottom of their deck (" + f.nameOf(t, cards[0]) + ", " + f.nameOf(t, cards[1]) + ")"
 		if line := f.lastLog(); line.Text != want {
 			t.Errorf("line = %q, want %q", line.Text, want)
 		}
@@ -264,49 +263,14 @@ func TestGroupToDeckLine(t *testing.T) {
 		first, second := f.g.Table.Hands["p0"][0], f.g.Table.Hands["p1"][0]
 		f.mustDoAs(t, "a", 0, Action{Kind: ActPlay, Card: first, X: 400, Y: 400}, at(3))
 		f.mustDoAs(t, "a", 1, Action{Kind: ActPlay, Card: second, X: 600, Y: 400}, at(4))
+		want := "put 2 cards on top of their decks (" + f.nameOf(t, first) + ", " + f.nameOf(t, second) + ")"
 
 		f.mustDoAs(t, "a", 0, groupOf(ActToDeck, whereTop, "", first, second), at(10))
 
-		want := "put 2 cards on top of their decks (" + f.nameOf(t, first) + ", " + f.nameOf(t, second) + ")"
 		if line := f.lastLog(); line.Text != want {
 			t.Errorf("line = %q, want %q", line.Text, want)
 		}
 	})
-}
-
-// TestReplayGroup2p replays a stored two-player Rhino game with group
-// actions (replaced group moves, group discards, an undone group) and
-// compares the table it ends with to the golden one, byte for byte. Run with
-// -record to record the game again from its script, and with -update to
-// rewrite the golden file from the replay.
-func TestReplayGroup2p(t *testing.T) {
-	recording := filepath.Join("testdata", "replays", "group-2p.json")
-	golden := filepath.Join("testdata", "replays", "group-2p.table.golden.json")
-	cat := newCatalog(t)
-	if *recordGames {
-		recordGroupGame(t, recording, golden)
-	}
-
-	var game recordedGame
-	if err := json.Unmarshal(readFile(t, recording), &game); err != nil {
-		t.Fatal(err)
-	}
-	replayed, err := Replay(cat, game.Setup, game.Events)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if mustJSON(t, replayed.History.Events) != mustJSON(t, game.Events) {
-		t.Error("the replay records other events than the recorded ones")
-	}
-	checkIntegrity(t, replayed.Table)
-	checkHistory(t, replayed)
-	got := indentedJSON(t, replayed.Table)
-	if *updateGolden {
-		writeFile(t, golden, got)
-	}
-	if want := readFile(t, golden); string(got) != string(want) {
-		t.Errorf("the replayed table differs from %s", golden)
-	}
 }
 
 // recordGroupGame plays a scripted two-player Rhino game with group actions

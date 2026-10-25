@@ -10,8 +10,8 @@ include .env
 export
 endif
 
-# Local overrides, loaded only for dev/test targets so that
-# deploy/release targets see the canonical .env values only.
+# Local overrides, loaded only for the development targets of DEV_TARGETS:
+# the stack (app-*), build, web-build and packs targets read .env only.
 # Sequential include means later assignments win.
 DEV_TARGETS := dev test check web-install web-check infra-up infra-down infra-logs
 GOALS := $(or $(MAKECMDGOALS),$(.DEFAULT_GOAL))
@@ -62,8 +62,7 @@ app-logs: ## Follow logs from the full stack
 .PHONY: dev
 dev: infra-up web-install ## Start infra, then run the API (hot reload) and the web build (reload the page)
 	# Trap reaps the whole process group (kill 0) on exit or signal, so no
-	# orphaned processes survive Ctrl-C or a child crash. For multiple dev
-	# processes, background each as `( cmd; kill 0 ) &` before the wait.
+	# orphaned processes survive Ctrl-C or a child crash.
 	@trap 'kill 0' EXIT INT TERM; \
 		( air; kill 0 ) & \
 		( cd web && pnpm watch; kill 0 ) & \
@@ -86,18 +85,18 @@ web-build: web-install ## Build the web app into web/dist/
 ##@ Data
 
 .PHONY: packs
-packs: ## Regenerate card packs from marvelcdb and Cerebro
-	go run ./cmd/packgen -out packs/dist -cache packs/.cache -curated packs/curated
+packs: ## Regenerate card packs from marvelcdb, mc4db and Cerebro
+	go run ./cmd/packgen
 
 ##@ Quality
 
 .PHONY: test
-test: ## Run the test suite
+test: ## Run the Go tests (race detector)
 	go test -race -shuffle=on ./...
 
 .PHONY: check
 check: test web-check ## Run tests and static checks
-	golangci-lint run ./...
+	golangci-lint run
 
 ##@ Build
 

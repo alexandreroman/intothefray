@@ -457,6 +457,6 @@ func (s *Server) forgetClosed(ctx context.Context, gameID string, conns []store.
 		forgotten = true
 	}
 	if forgotten {
-		s.publishOnline(ctx, gameID)
+		s.publish(ctx, gameID, onlineEvent{Kind: eventOnline})
 	}
 }

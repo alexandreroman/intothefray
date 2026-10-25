@@ -15,6 +15,7 @@
     CardView as TableCard,
     MarkerName,
     PackFace,
+    Point,
     PresenceDrag,
     SessionError,
     Size,
@@ -43,7 +44,6 @@
     type DragSource,
     type DropRect,
     type PileDrop,
-    type Point,
     type Rect,
     type TableRect,
   } from './drag';
@@ -51,8 +51,8 @@
   import { interaction, type DropOn, type Held, type Pressable } from './interaction.svelte';
   import { ACTIVE_COUNTER_BOX, cardBox, FIRST_PLAYER_BOX, HAND_CARD, type Box } from './layout';
   import { ALL_ROWS, type RowMap } from './rows';
-  import { surfaceRect, toScreen, toTable } from './screen';
-  import { ownSeats, seatOf, seatPlayer } from './seats';
+  import { surfaceRect, tableCard, tablePile, toScreen, toTable } from './screen';
+  import { areaOf, seatHero, seatOf } from './seats';
   import { groupAction, groupPileTargets, groupUnits } from './selection';
 
   let {
@@ -119,7 +119,7 @@
     null,
   );
 
-  // The server relays no more cards in one drag.
+  // The server relays no more cards in one drag: it mirrors maxDragCards in internal/server/presence.go.
   const MAX_DRAG_CARDS = 50;
   // What the other players are told of a card hidden from them (ruling P5c-R9): its real id
   // would let them follow it once it is played.
@@ -401,8 +401,8 @@
     return { x: lead.x + first.x - moved.x, y: lead.y + first.y - moved.y };
   }
 
-  function placedRect(selector: string, id: string): DOMRect | undefined {
-    return root?.querySelector(`.surface ${selector}[data-id="${id}"]`)?.getBoundingClientRect();
+  function placedRect(selector: string): DOMRect | undefined {
+    return root?.querySelector(selector)?.getBoundingClientRect();
   }
 
   /** Everything the dragged thing can be dropped on, measured on the screen. */
@@ -438,7 +438,7 @@
     // Out-of-play piles are not drawn: they cannot be measured, and take no drop.
     const piles = units.length > 0 ? groupPileTargets(units, view) : pileTargets(from, view);
     for (const target of piles) {
-      const rect = placedRect('.pile', target.pile);
+      const rect = placedRect(tablePile(target.pile));
       if (rect) {
         targets.push({ kind: 'pile', ...target, rect });
       }
@@ -449,7 +449,7 @@
       if (card.zone !== 'table' || lifted.includes(card.id)) {
         continue;
       }
-      const rect = placedRect('.card:not(.pile)', card.id);
+      const rect = placedRect(tableCard(card.id));
       if (rect) {
         targets.push({ kind: 'card', card: card.id, z: card.z, rect });
       }
@@ -482,7 +482,7 @@
     const spot = surface ? toTable(cornerOf(from, at), surface, zoom) : { x: 0, y: 0 };
     // An encounter card goes to the player whose row the pointer is in.
     const pointed = surface ? onTable(at, surface) : { x: 0, y: 0 };
-    const dealTo = dealRecipient(view.table?.piles ?? [], pointed.y, `p${selected}`);
+    const dealTo = dealRecipient(view.table?.piles ?? [], pointed.y, areaOf(selected));
     const single = dropAction(from, target, spot, dealTo, rowMap);
     return { target, action: grouped(from, single) };
   }
@@ -507,7 +507,7 @@
     interaction.handGap = found?.target.kind === 'hand' ? found.target.index : null;
     // Only what a drop would change is outlined: not the pile a card came from.
     const target = found?.action ? found.target : null;
-    const handArea = source ? handAreaOf(source, view) : null;
+    const handArea = handAreaOf(source, view);
     if (target?.kind === 'toHand' && handArea) {
       const label = { glyph: HAND_GLYPH, text: handName(handArea), tuck: false };
       showHint({ kind: 'hand', id: handArea }, label, target.rect);
@@ -526,9 +526,8 @@
 
   /** "Hand", or with several decks the hero's: "Spider-Man's hand". */
   function handName(area: Area): string {
-    const seat = seatOf(area);
-    const hero = seatPlayer(view, seat)?.decks.find((deck) => deck.area === area)?.heroName;
-    return ownSeats(view).length > 1 && hero ? `${hero}'s hand` : 'Hand';
+    const hero = seatHero(view, seatOf(area));
+    return hero ? `${hero}'s hand` : 'Hand';
   }
 
   function showHint(

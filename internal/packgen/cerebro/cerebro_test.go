@@ -26,7 +26,6 @@ func TestDecodeCerebroSet(t *testing.T) {
 		ID:         "ea7258fb-8521-4bb5-afda-cd207ed9782f",
 		Name:       "Rhino",
 		Type:       "Villain Set",
-		PackID:     "25ab9c3e-d172-4501-87b6-40e3768cb267",
 		Recommends: []string{"cefd4238-88b7-47d4-aff8-b955b86c7247"},
 	}
 	if !reflect.DeepEqual(got, want) {

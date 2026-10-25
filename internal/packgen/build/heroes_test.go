@@ -1,6 +1,7 @@
 package build
 
 import (
+	"maps"
 	"reflect"
 	"slices"
 	"testing"
@@ -17,7 +18,7 @@ func setsFixture(t *testing.T) []marvelcdb.Card {
 var corePacks = []marvelcdb.Pack{{Code: "core", Name: "Core Set", Position: 1}}
 
 func TestBuildHeroesDerivesObligationAndNemesis(t *testing.T) {
-	heroes := BuildHeroes(setsFixture(t))
+	heroes := buildHeroes(setsFixture(t))
 
 	want := []pack.Hero{{
 		Identity:   "01001",
@@ -33,7 +34,7 @@ func TestBuildHeroesDerivesObligationAndNemesis(t *testing.T) {
 func TestBuildHeroesOmitsMissingNemesisAndObligation(t *testing.T) {
 	hero := marvelcdb.Card{Code: "02001a", TypeCode: "hero", PackCode: "gamma", SetCode: "hulk"}
 
-	heroes := BuildHeroes([]marvelcdb.Card{hero})
+	heroes := buildHeroes([]marvelcdb.Card{hero})
 
 	want := []pack.Hero{{Identity: "02001", Set: "hulk"}}
 	if !reflect.DeepEqual(heroes["gamma"], want) {
@@ -42,7 +43,7 @@ func TestBuildHeroesOmitsMissingNemesisAndObligation(t *testing.T) {
 }
 
 func TestBuildSetsListsEachCardOnce(t *testing.T) {
-	sets := BuildSets(setsFixture(t), corePacks)
+	sets := buildSets(setsFixture(t), corePacks)
 
 	var rhino pack.Set
 	for _, set := range sets["core"] {
@@ -65,20 +66,10 @@ func TestBuildSetsListsEachCardOnce(t *testing.T) {
 }
 
 func TestBuildSetsIgnoresUnknownPacks(t *testing.T) {
-	sets := BuildSets(setsFixture(t), []marvelcdb.Pack{{Code: "other", Position: 2}})
+	sets := buildSets(setsFixture(t), []marvelcdb.Pack{{Code: "other", Position: 2}})
 
 	if len(sets) != 0 {
-		t.Errorf("got sets for %v, want none", slices.Collect(keys(sets)))
-	}
-}
-
-func keys[V any](m map[string]V) func(func(string) bool) {
-	return func(yield func(string) bool) {
-		for key := range m {
-			if !yield(key) {
-				return
-			}
-		}
+		t.Errorf("got sets for %v, want none", slices.Collect(maps.Keys(sets)))
 	}
 }
 
@@ -88,7 +79,7 @@ func TestBuildHeroesEmitsOneHeroWhenBothFacesAreHeroCards(t *testing.T) {
 		{Code: "12001b", TypeCode: "hero", PackCode: "ant", SetCode: "ant_man"},
 	}
 
-	heroes := BuildHeroes(cards)
+	heroes := buildHeroes(cards)
 
 	want := []pack.Hero{{Identity: "12001", Set: "ant_man"}}
 	if !reflect.DeepEqual(heroes["ant"], want) {
@@ -103,7 +94,7 @@ func TestBuildSetsListsLetteredDistinctCards(t *testing.T) {
 		{Code: "01044", PackCode: "core", SetCode: "ultron", SetName: "Ultron", SetType: "villain"},
 	}
 
-	sets := BuildSets(cards, corePacks)
+	sets := buildSets(cards, corePacks)
 
 	want := []string{"01043a", "01043d", "01044"}
 	if got := sets["core"][0].Cards; !slices.Equal(got, want) {
@@ -119,7 +110,7 @@ func TestBuildHeroesUsesCanonicalCodes(t *testing.T) {
 		{Code: "03020b", TypeCode: "obligation", PackCode: "gamma", SetCode: "hulk"},
 	}
 
-	heroes := BuildHeroes(cards)
+	heroes := buildHeroes(cards)
 
 	want := []pack.Hero{{Identity: "03001", Set: "hulk", Obligation: "03020a"}}
 	if !reflect.DeepEqual(heroes["gamma"], want) {

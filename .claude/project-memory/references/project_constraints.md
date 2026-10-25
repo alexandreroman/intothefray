@@ -1,23 +1,29 @@
 ---
 name: "Product constraints"
-description: "Anti-cheat views, no image hosting, no persistence, pack scope, accepted v1 limits"
+description: "Anti-cheat views, no image hosting, no persistence, pack scope, accepted limits"
 type: project
 ---
 
 # Product constraints
 
 - Anti-cheat: the server sends each viewer only what they may see (no
-  other hands, deck order, face-down cards).
+  other hands, deck order, face-down cards). Card ids are opaque and
+  never let a viewer follow a card out of sight: a card gets a new id
+  (`Action.Renames`, `renamedOnTheWay` in internal/game) when it goes
+  onto a deck, unless it lands as the shown top card of a face-up side
+  deck, and when it goes into a hand out of a hand or face down off the
+  table; tucked cards that drop under a deck too. The new ids of one
+  action or group are distinct.
 - Card images are never stored or proxied; the browser loads them from
   marvelcdb / Cerebro / mc4db URLs.
 - No accounts and no long-term persistence; a game with nobody connected
   expires after 24 hours; only the host can "End game".
-- Card packs are additive data files; scenarios need a hand-curated file
-  and the first release covers the Core Set plus a few packs, the rest
-  listed as "not supported yet".
-- Lost seats (lost token) and host transfer are not handled in v1.
+- Card packs are additive data files and hold every pack's player cards;
+  a scenario needs a hand-curated file, and the lobby lists the others as
+  "Not supported yet".
+- A lost token loses its seat, and the host role never transfers.
 - The backend runs on an OVH VPS at `api.intothefray.xyz` (see
-  `project_deployment.md`); it stays portable.
+  [[project_deployment]]); it stays portable.
 
 **Why:** decided during the design.
 

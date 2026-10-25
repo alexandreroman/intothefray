@@ -9,16 +9,9 @@ import pillSource from './TokenPill.svelte?raw';
 import handSource from './Hand.svelte?raw';
 import dialogSource from '../components/Dialog.svelte?raw';
 import { interaction } from './interaction.svelte';
-import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
-import type {
-  Action,
-  Arrow,
-  CardView as TableCard,
-  PackFace,
-  PresenceState,
-  SessionError,
-  View,
-} from '../lib/types';
+import { knownCard, loadGameCards } from '../lib/catalog';
+import type { Arrow, CardView as TableCard, PackFace, View } from '../lib/types';
+import { card, fakeSession, infoFrom, placed, domRect } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -26,34 +19,12 @@ vi.mock('../lib/catalog', async (importOriginal) => ({
   loadGameCards: vi.fn(),
 }));
 
-const FACES: Record<string, Partial<PackFace>> = {
-  '01001': { name: 'Spider-Man' },
-  '01094': { name: 'Rhino', stage: 'I' },
+const FACES: Record<string, Partial<PackFace>[]> = {
+  '01001': [{ name: 'Spider-Man' }],
+  '01094': [{ name: 'Rhino', stage: 'I' }],
 };
 
-function infoOf(code: string): CardInfo | null {
-  const face = FACES[code];
-  if (!face) {
-    return null;
-  }
-  const full: PackFace = { name: '', type: '', size: 'std', images: [`${code}.png`], ...face };
-  return { card: { code, faces: [full], back: 'player', quantity: 1 }, face: 0 };
-}
-
-function card(id: string, extra: Partial<TableCard> = {}): TableCard {
-  return {
-    id,
-    code: '01001',
-    face: 0,
-    back: 'player',
-    owner: 0,
-    zone: 'table',
-    x: 0,
-    y: 0,
-    z: 1,
-    ...extra,
-  };
-}
+const infoOf = infoFrom(FACES);
 
 // The villain's row at the top, then Alex's, then Sam's, 300 apart.
 const CARDS = [
@@ -110,31 +81,6 @@ function makeView(
   };
 }
 
-function fakeSession() {
-  return {
-    act: vi.fn((_action: Action): number | null => 1),
-    lobby: vi.fn(() => true),
-    lastError: null as SessionError | null,
-    presence: new Map<number, PresenceState>(),
-    sendPresence: vi.fn(),
-    viewGap: 0,
-  };
-}
-
-function domRect(left: number, top: number, width: number, height: number): DOMRect {
-  return {
-    left,
-    top,
-    width,
-    height,
-    right: left + width,
-    bottom: top + height,
-    x: left,
-    y: top,
-    toJSON: () => ({}),
-  } as DOMRect;
-}
-
 // The screen, at zoom 1: the table's scroller fills it, the surface 20 px in and 40 px down
 // until it is scrolled. The arrows layer starts 10 px below the top of the screen.
 const SURFACE = { left: 20, top: 40 };
@@ -188,14 +134,6 @@ async function renderTable(view: View = makeView()) {
   };
 }
 
-function placed(id: string): HTMLElement {
-  const element = document.querySelector<HTMLElement>(`.surface .card[data-id="${id}"]`);
-  if (!element) {
-    throw new Error(`no ${id} on the table`);
-  }
-  return element;
-}
-
 function surface(): HTMLElement {
   const element = document.querySelector<HTMLElement>('.tablewrap .surface');
   if (!element) {
@@ -232,7 +170,7 @@ function endOf(path: SVGPathElement): number[] {
 /** The card element found under the pointer, for the rubber band and the drop of a Shift + drag. */
 function pointAt(id: string | null): void {
   vi.spyOn(document, 'elementFromPoint').mockImplementation(() =>
-    id === null ? null : placed(id),
+    id === null ? null : placed(id, '.card'),
   );
 }
 
@@ -325,7 +263,7 @@ describe('arrows', () => {
     expect(startOf(shafts()[0]!)).toEqual([70, 400]);
 
     // While dragged, the arrow follows the card's ghost.
-    await fireEvent.pointerDown(placed('mine'), { clientX: 50, clientY: 400 });
+    await fireEvent.pointerDown(placed('mine', '.card'), { clientX: 50, clientY: 400 });
     await fireEvent.pointerMove(window, { clientX: 300, clientY: 450, buttons: 1 });
     await fireEvent.pointerMove(window, { clientX: 310, clientY: 460, buttons: 1 });
     await waitFor(() => expect(startOf(shafts()[0]!)).toEqual(GHOST_MIDDLE));
@@ -340,7 +278,7 @@ describe('arrows', () => {
     const layer = document.querySelector('.arrows')!;
     expect(layer.classList).not.toContain('raised');
 
-    await fireEvent.pointerDown(placed('mine'), { clientX: 50, clientY: 400 });
+    await fireEvent.pointerDown(placed('mine', '.card'), { clientX: 50, clientY: 400 });
     await fireEvent.pointerMove(window, { clientX: 300, clientY: 450, buttons: 1 });
     expect(layer.classList).toContain('raised');
 
@@ -379,7 +317,7 @@ describe('arrows', () => {
   it('shows a rubber band from the source card in arrow mode', async () => {
     await renderTable();
     pointAt(null);
-    await fireEvent.pointerEnter(placed('mine'), { clientX: 50, clientY: 400 });
+    await fireEvent.pointerEnter(placed('mine', '.card'), { clientX: 50, clientY: 400 });
     await fireEvent.keyDown(window, { key: 'a' });
     expect(interaction.arrowFrom).toBe('mine');
 
@@ -403,7 +341,11 @@ describe('arrows', () => {
 describe('Shift + drag', () => {
   it('draws an arrow from the pressed card to the card it is released on', async () => {
     const { session } = await renderTable();
-    await fireEvent.pointerDown(placed('mine'), { clientX: 50, clientY: 400, shiftKey: true });
+    await fireEvent.pointerDown(placed('mine', '.card'), {
+      clientX: 50,
+      clientY: 400,
+      shiftKey: true,
+    });
     expect(interaction.arrowFrom).toBe('mine');
 
     // The card itself does not move.
@@ -418,11 +360,19 @@ describe('Shift + drag', () => {
 
   it('released on no other card, it draws nothing', async () => {
     const { session } = await renderTable();
-    await fireEvent.pointerDown(placed('mine'), { clientX: 50, clientY: 400, shiftKey: true });
+    await fireEvent.pointerDown(placed('mine', '.card'), {
+      clientX: 50,
+      clientY: 400,
+      shiftKey: true,
+    });
     pointAt(null);
     await fireEvent.pointerUp(window, { clientX: 900, clientY: 800 });
 
-    await fireEvent.pointerDown(placed('mine'), { clientX: 50, clientY: 400, shiftKey: true });
+    await fireEvent.pointerDown(placed('mine', '.card'), {
+      clientX: 50,
+      clientY: 400,
+      shiftKey: true,
+    });
     pointAt('mine');
     await fireEvent.pointerUp(window, { clientX: 60, clientY: 410 });
 
@@ -432,7 +382,11 @@ describe('Shift + drag', () => {
 
   it('a spectator draws no arrow', async () => {
     const { session } = await renderTable(makeView({ spectator: true }));
-    await fireEvent.pointerDown(placed('mine'), { clientX: 50, clientY: 400, shiftKey: true });
+    await fireEvent.pointerDown(placed('mine', '.card'), {
+      clientX: 50,
+      clientY: 400,
+      shiftKey: true,
+    });
     expect(interaction.arrowFrom).toBeNull();
 
     pointAt('v');
@@ -447,8 +401,8 @@ describe('a click on an empty spot', () => {
       makeView({ arrows: [{ from: 'mine', to: 'v', seat: 0 }] }),
     );
     // A touch tap opened a card's menu: the same tap on an empty spot closes it too.
-    await fireEvent.pointerDown(placed('other'), { pointerType: 'touch' });
-    await fireEvent.click(placed('other'));
+    await fireEvent.pointerDown(placed('other', '.card'), { pointerType: 'touch' });
+    await fireEvent.click(placed('other', '.card'));
     expect(interaction.contextMenu).not.toBeNull();
 
     await fireEvent.pointerDown(surface(), { pointerType: 'touch' });
@@ -513,7 +467,7 @@ describe('a click on an empty spot', () => {
     const { session } = await renderTable(
       makeView({ arrows: [{ from: 'mine', to: 'v', seat: 0 }] }),
     );
-    await fireEvent.pointerEnter(placed('mine'), { clientX: 50, clientY: 400 });
+    await fireEvent.pointerEnter(placed('mine', '.card'), { clientX: 50, clientY: 400 });
     await fireEvent.keyDown(window, { key: 'a' });
     await fireEvent.pointerDown(surface());
 

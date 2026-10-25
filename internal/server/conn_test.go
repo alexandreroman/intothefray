@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io"
 	"log/slog"
+	"maps"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -20,6 +21,7 @@ import (
 
 	"github.com/alexandreroman/intothefray/internal/decks"
 	"github.com/alexandreroman/intothefray/internal/game"
+	"github.com/alexandreroman/intothefray/packs"
 )
 
 const (
@@ -127,9 +129,7 @@ func (c *testClient) hello(token, name string) (received, received) {
 func (c *testClient) lobby(op string, fields map[string]any) {
 	c.t.Helper()
 	msg := map[string]any{"type": "lobby", "op": op}
-	for k, v := range fields {
-		msg[k] = v
-	}
+	maps.Copy(msg, fields)
 	c.send(msg)
 }
 
@@ -153,7 +153,8 @@ func (c *testClient) setDeck(fields map[string]any) (received, received) {
 	return view, ack
 }
 
-// stubMarvelcdb serves deck as decklist 1 and names card 99999.
+// stubMarvelcdb serves deck as decklist 1 and spiderManDeck as decklist 2,
+// and names card 99999.
 func stubMarvelcdb(t *testing.T, deck string) *decks.Importer {
 	t.Helper()
 
@@ -161,7 +162,9 @@ func stubMarvelcdb(t *testing.T, deck string) *decks.Importer {
 		w.Header().Set("Content-Type", "application/json")
 		switch r.URL.Path {
 		case "/api/public/decklist/1":
-			_, _ = w.Write([]byte(deck))
+			_, _ = io.WriteString(w, deck)
+		case "/api/public/decklist/2":
+			_, _ = io.WriteString(w, spiderManDeck)
 		case "/api/public/card/99999":
 			_, _ = w.Write([]byte(`{"name":"Mystery Card","pack_name":"Future Pack"}`))
 		default:
@@ -374,7 +377,7 @@ func TestDeckLinkError(t *testing.T) {
 }
 
 func TestSetDeckHeroTaken(t *testing.T) {
-	ts, _ := newTestServerWith(t, func(s *Server) { s.deps.Decks = stubDecklists(t) })
+	ts, _ := newTestServerWith(t, func(s *Server) { s.deps.Decks = stubMarvelcdb(t, blackPantherDeck) })
 	created := createGame(t, ts, "Alex")
 	host := connect(t, ts, created.ID)
 	host.hello(created.Token, "Alex")
@@ -432,7 +435,7 @@ func TestSetDeckAcknowledged(t *testing.T) {
 
 func TestStartThenAct(t *testing.T) {
 	ts, _ := newTestServerWith(t, func(s *Server) { s.deps.Decks = stubMarvelcdb(t, blackPantherDeck) })
-	cat, err := testCatalog()
+	cat, err := packs.Catalog()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -671,7 +674,7 @@ func drain(t *testing.T, ws *websocket.Conn) (int, error) {
 func startSolo(t *testing.T, host *testClient) received {
 	t.Helper()
 
-	cat, err := testCatalog()
+	cat, err := packs.Catalog()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -757,8 +760,8 @@ func TestActionSeatAbsent(t *testing.T) {
 }
 
 func TestActionSeatForeign(t *testing.T) {
-	ts, _ := newTestServerWith(t, func(s *Server) { s.deps.Decks = stubDecklists(t) })
-	cat, err := testCatalog()
+	ts, _ := newTestServerWith(t, func(s *Server) { s.deps.Decks = stubMarvelcdb(t, blackPantherDeck) })
+	cat, err := packs.Catalog()
 	if err != nil {
 		t.Fatal(err)
 	}

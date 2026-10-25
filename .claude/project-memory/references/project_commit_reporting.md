@@ -10,9 +10,9 @@ type: project
   the commit at startup. `internal/version` reads the `-X` link-time value
   (the `COMMIT` Docker build arg, set to `github.sha` by CI), else the Go
   VCS stamp (with `-dirty` for a modified checkout), else `dev`.
-- The frontend reads `VITE_COMMIT` (set to `github.sha` by the `web` job of `ci.yml`).
-  When it is unset, `web/vite.config.ts` fills it from `git rev-parse HEAD`
-  (with `-dirty` when `git status --porcelain` is non-empty), outside
+- The frontend reads `VITE_COMMIT` (set to `github.sha` by the `web` job of
+  `ci.yml`). When it is unset, `web/vite.config.ts` fills it from `git rev-parse
+  HEAD` (with `-dirty` when `git status --porcelain` is non-empty), outside
   vitest; without Git, the app reports `dev`.
 - The Options screen shows one small, faint, right-aligned lowercase line
   of plain short SHAs (full value in a tooltip, no link): `version <app>`

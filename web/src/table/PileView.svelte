@@ -3,6 +3,7 @@
   otherwise its back, with a count pill. An empty pile is a dashed slot.
 -->
 <script lang="ts">
+  import { playerColorVar } from '../lib/playerColor';
   import type { PackFace, CardView as TableCard, PileView } from '../lib/types';
   import CardBack from './CardBack.svelte';
   import CardFace from './CardFace.svelte';
@@ -98,7 +99,7 @@
   {/if}
 
   {#if previewer !== undefined}
-    <div class="rring" style:--c="var(--p{previewer + 1})"></div>
+    <div class="rring" style:--c={playerColorVar(previewer)}></div>
   {/if}
 </div>
 

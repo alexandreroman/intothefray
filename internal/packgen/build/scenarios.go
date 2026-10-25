@@ -26,14 +26,12 @@ type villainSet struct {
 	firstCard *pack.Card // lowest-code card whose first face is a villain or leader, if any
 }
 
-// BuildScenarios lists a scenario for every villain or leader set and merges
+// buildScenarios lists a scenario for every villain or leader set and merges
 // the curated definitions into the ones whose cards all exist. A definition
 // absorbs the sets it covers: they are not listed separately. cards and sets
 // are keyed by pack code. The scenario of a set belongs to the pack of that set.
 // The references are ordered by the code of the first villain card of the set.
-//
-//nolint:revive // BuildScenarios is the name fixed by the plan.
-func BuildScenarios(
+func buildScenarios(
 	defs []curated.ScenarioDef,
 	cards map[string][]pack.Card,
 	sets map[string][]pack.Set,
@@ -43,6 +41,12 @@ func BuildScenarios(
 	for _, packCards := range cards {
 		for _, card := range packCards {
 			cardsByCode[card.Code] = card
+		}
+	}
+	setCodes := make(map[string]bool)
+	for _, packSets := range sets {
+		for _, set := range packSets {
+			setCodes[set.Code] = true
 		}
 	}
 	villains := villainSetsOf(sets, cardsByCode)
@@ -59,7 +63,9 @@ func BuildScenarios(
 
 	scenarios = make(map[string][]pack.Scenario)
 	for _, villain := range villains {
-		if covered[villain.set.Code] && !isDefinedSet(defsBySet, villain.set.Code) {
+		// A covered set keeps its entry when a definition has it as its own
+		// villain set.
+		if _, defined := defsBySet[villain.set.Code]; covered[villain.set.Code] && !defined {
 			continue
 		}
 		ref := pack.ScenarioRef{
@@ -85,7 +91,16 @@ func BuildScenarios(
 					Reason: fmt.Sprintf("scenario %s names unknown card %s", def.ID, code),
 				})
 			}
-			if len(missing) == 0 {
+			missingSets := missingDeckSets(def, setCodes)
+			for _, code := range missingSets {
+				problems = append(problems, report.Unsupported{
+					Code:   code,
+					Name:   villain.set.Name,
+					Pack:   villain.pack,
+					Reason: fmt.Sprintf("scenario %s names unknown set %s", def.ID, code),
+				})
+			}
+			if len(missing) == 0 && len(missingSets) == 0 {
 				ref.Supported = true
 				scenarios[villain.pack] = append(scenarios[villain.pack], pack.Scenario{
 					ID:            def.ID,
@@ -130,13 +145,6 @@ func coveredVillainCard(def curated.ScenarioDef, villains []villainSet) *pack.Ca
 		}
 	}
 	return lowest
-}
-
-// isDefinedSet reports whether a definition has the set as its own villain set,
-// which then keeps its entry even when another definition covers it.
-func isDefinedSet(defsBySet map[string]curated.ScenarioDef, code string) bool {
-	_, found := defsBySet[code]
-	return found
 }
 
 // villainSetsOf returns the villain and leader sets ordered by the code of their first
@@ -200,12 +208,30 @@ func missingCards(def curated.ScenarioDef, cardsByCode map[string]pack.Card) []s
 		}
 	}
 	named = append(named, def.SetAside...)
+	for _, deck := range def.Decks {
+		named = append(named, deck.Cards...)
+	}
 
 	slices.Sort(named)
 	named = slices.Compact(named)
 	return slices.DeleteFunc(named, func(code string) bool {
 		_, found := cardsByCode[code]
 		return found
+	})
+}
+
+// missingDeckSets returns the sorted set codes the decks of the definition
+// name that are not in the catalog.
+func missingDeckSets(def curated.ScenarioDef, setCodes map[string]bool) []string {
+	var named []string
+	for _, deck := range def.Decks {
+		named = append(named, deck.Sets...)
+	}
+
+	slices.Sort(named)
+	named = slices.Compact(named)
+	return slices.DeleteFunc(named, func(code string) bool {
+		return setCodes[code]
 	})
 }
 

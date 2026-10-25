@@ -19,9 +19,8 @@ const (
 	cardPoolVersion = 1
 	// cardPoolCacheControl lets the pool be cached for as long as a game
 	// may live: no action creates a card, so the pool of a game never
-	// changes once its table is set up. Not "public": withCORS adds
-	// "Vary: Origin" only for allowed origins, so a shared cache could
-	// serve a reply without Access-Control-Allow-Origin to them.
+	// changes once its table is set up. Every reply varies on Origin (see
+	// withCORS), so a shared cache keeps one copy per origin.
 	cardPoolCacheControl = "max-age=86400, immutable"
 	// etagBytes is how much of the SHA-256 of the body goes into the ETag.
 	etagBytes = 16

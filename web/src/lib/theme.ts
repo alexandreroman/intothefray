@@ -1,4 +1,6 @@
-import { getPref } from './prefs';
+import { getPref, setPref } from './prefs';
+
+const THEME_KEY = 'itf-theme';
 
 export type Theme = 'official' | 'minimal' | 'felt';
 
@@ -9,8 +11,12 @@ function isTheme(value: string | null): value is Theme {
 }
 
 export function storedTheme(): Theme {
-  const stored = getPref('itf-theme');
+  const stored = getPref(THEME_KEY);
   return isTheme(stored) ? stored : 'official';
+}
+
+export function saveTheme(theme: Theme): void {
+  setPref(THEME_KEY, theme);
 }
 
 export function applyTheme(theme: Theme): void {

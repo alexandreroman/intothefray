@@ -18,7 +18,7 @@ type readyFixture struct {
 func newReadyFixture(t *testing.T) *readyFixture {
 	t.Helper()
 	f := &readyFixture{doFixture: newDoFixture(t)}
-	f.identity = f.doFixture.identity(t)
+	f.identity = identityOf(t, f.g, 0)
 	f.mustDo(t, "h", Action{Kind: ActDraw, N: 1}, at(1))
 	f.played = f.g.Table.Hands["p0"][0]
 	f.mustDo(t, "h", Action{Kind: ActPlay, Card: f.played, X: 900, Y: 400}, at(2))
@@ -90,7 +90,7 @@ func TestReadyAllRefusedWithNothingToReady(t *testing.T) {
 
 func TestLockedCardIsExhaustedButNeverReadied(t *testing.T) {
 	f := newDoFixture(t)
-	id := f.identity(t)
+	id := identityOf(t, f.g, 0)
 	f.mustDo(t, "h", Action{Kind: ActStatus, Card: id, Name: statusLocked, Delta: 1}, at(1))
 	if got, want := f.lastLog().Text, "added 1 locked status to "; !strings.HasPrefix(got, want) {
 		t.Errorf("last line = %q, want it to start with %q", got, want)

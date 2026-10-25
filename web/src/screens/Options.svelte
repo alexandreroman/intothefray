@@ -1,12 +1,18 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { isLang, LANGS, setLang, storedLang } from '../lib/lang';
-  import { cleanName, MAX_NAME_LENGTH, randomName, savePlayerName, stripEmoji } from '../lib/names';
-  import { getPref, setPref } from '../lib/prefs';
+  import { isLang, OFFERED_LANGS, setLang, storedLang } from '../lib/lang';
+  import {
+    MAX_NAME_LENGTH,
+    randomName,
+    savePlayerName,
+    storedName,
+    stripEmoji,
+  } from '../lib/names';
   import { go } from '../lib/router.svelte';
   import { selectionIndicator } from '../lib/selectionIndicator';
-  import { applyTheme, storedTheme, THEMES, type Theme } from '../lib/theme';
+  import { applyTheme, saveTheme, storedTheme, THEMES, type Theme } from '../lib/theme';
   import { appCommit, fetchServerCommit, shortCommit } from '../lib/version';
+  import Icon from '../components/Icon.svelte';
   import TopBar from '../components/TopBar.svelte';
   import CardBack from '../table/CardBack.svelte';
   import FirstPlayerArt from '../table/FirstPlayerArt.svelte';
@@ -21,7 +27,7 @@
     felt: 'Green felt',
   };
 
-  let name = $state(cleanName(getPref('itf-name') ?? ''));
+  let name = $state(storedName());
   let theme = $state(storedTheme());
   let lang = $state(storedLang());
 
@@ -51,7 +57,7 @@
 
   function chooseTheme(next: Theme): void {
     theme = next;
-    setPref('itf-theme', next);
+    saveTheme(next);
     applyTheme(next);
   }
 
@@ -138,9 +144,7 @@
               {THEME_LABELS[key]}
               {#if selected}
                 <span class="check">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"
-                    ><path d="M5 12.5l4.5 4.5L19 7.5" /></svg
-                  >
+                  <Icon name="check" />
                 </span>
               {:else}
                 <span class="ring"></span>
@@ -151,19 +155,22 @@
       </div>
     </div>
 
-    <div class="row">
-      <div class="about">
-        <label for="lang">Language</label>
-        <p>Card names and images. The interface stays in English.</p>
+    <!-- No choice to make while a single language is offered. -->
+    {#if OFFERED_LANGS.length > 1}
+      <div class="row">
+        <div class="about">
+          <label for="lang">Language</label>
+          <p>Card names and images. The interface stays in English.</p>
+        </div>
+        <div class="control">
+          <select id="lang" value={lang} onchange={(e) => chooseLang(e.currentTarget.value)}>
+            {#each OFFERED_LANGS as option (option.code)}
+              <option value={option.code} lang={option.code}>{option.label}</option>
+            {/each}
+          </select>
+        </div>
       </div>
-      <div class="control">
-        <select id="lang" value={lang} onchange={(e) => chooseLang(e.currentTarget.value)}>
-          {#each LANGS as option (option.code)}
-            <option value={option.code} lang={option.code}>{option.label}</option>
-          {/each}
-        </select>
-      </div>
-    </div>
+    {/if}
 
     <p class="version" class:mismatch={mismatchedServer !== undefined}>
       version
@@ -204,13 +211,6 @@
     animation: rise 0.25s ease-out;
   }
 
-  @keyframes rise {
-    from {
-      opacity: 0;
-      transform: translateY(8px);
-    }
-  }
-
   .head {
     display: flex;
     flex-wrap: wrap;
@@ -225,12 +225,6 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
-  }
-
-  h1 {
-    margin: 0;
-    font-size: 56px;
-    line-height: 0.9;
   }
 
   .note {
@@ -420,14 +414,10 @@
     justify-content: center;
   }
 
-  .check svg {
+  .check :global(svg) {
     width: 13px;
     height: 13px;
-    fill: none;
-    stroke: currentColor;
     stroke-width: 3;
-    stroke-linecap: round;
-    stroke-linejoin: round;
   }
 
   /* As tall as the check, so that the labels line up. */

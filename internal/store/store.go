@@ -76,8 +76,9 @@ type Store struct {
 	ttl time.Duration
 }
 
-// New returns a Store whose games expire after ttl without a write.
-// An ended game expires after one hour instead.
+// New returns a Store whose games expire ttl after their last write or
+// Touch: the server touches a game as long as somebody views it. An ended
+// game expires after one hour instead.
 func New(rdb *redis.Client, ttl time.Duration) *Store {
 	return &Store{rdb: rdb, ttl: ttl}
 }

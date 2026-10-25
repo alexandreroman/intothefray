@@ -117,13 +117,18 @@ export function savePlayerName(name: string): void {
   setPref(NAME_KEY, cleanName(name));
 }
 
+/** The stored player name, or '' without one. */
+export function storedName(): string {
+  // A stored name may break the rules of cleanName (too long, emojis): it is cleaned on read.
+  return cleanName(getPref(NAME_KEY) ?? '');
+}
+
 /**
  * Returns the stored player name. Without one, a random name is generated and stored,
  * so that the player keeps it next time and can change it in the options.
  */
 export function playerName(): string {
-  // A name stored under older, looser rules (longer, with emojis) is cleaned on read.
-  const stored = cleanName(getPref(NAME_KEY) ?? '');
+  const stored = storedName();
   if (stored) {
     return stored;
   }

@@ -207,13 +207,23 @@ func TestToHandRefusesEncounterCard(t *testing.T) {
 	}
 }
 
+// renamedTo completes a the way resolve does for the cards it takes out of
+// sight (see renamedOnTheWay): each of ids is renamed "n"+id.
+func renamedTo(a Action, ids ...string) Action {
+	a.Renames = map[string]string{}
+	for _, id := range ids {
+		a.Renames[id] = "n" + id
+	}
+	return a
+}
+
 func TestToDeckTopBottom(t *testing.T) {
 	table := newTestTable()
 
-	mustApply(t, table, Action{Kind: ActToDeck, Card: "c3", Where: "top"})
-	mustApply(t, table, Action{Kind: ActToDeck, Card: "c1", Where: "bottom"})
+	mustApply(t, table, renamedTo(Action{Kind: ActToDeck, Card: "c3", Where: "top"}, "c3"))
+	mustApply(t, table, renamedTo(Action{Kind: ActToDeck, Card: "c1", Where: "bottom"}, "c1"))
 
-	want := []string{"c1", "c4", "c5", "c6", "c3"}
+	want := []string{"nc1", "c4", "c5", "c6", "nc3"}
 	if got := table.Piles["deck:p0"].Cards; !slices.Equal(got, want) {
 		t.Errorf("deck = %v, want %v", got, want)
 	}
@@ -246,7 +256,8 @@ func TestToDeckShuffle(t *testing.T) {
 	if got := table.Piles["deck:p0"].Cards; !slices.Equal(got, []string{"nc6", "nc3", "nc4", "nc5"}) {
 		t.Errorf("deck = %v", got)
 	}
-	if _, ok := table.Cards["c3"]; ok || table.Cards["nc3"] == nil || table.Cards["nc3"].ID != "nc3" || table.Cards["nc3"].Pile != "deck:p0" {
+	nc3 := table.Cards["nc3"]
+	if _, ok := table.Cards["c3"]; ok || nc3 == nil || nc3.ID != "nc3" || nc3.Pile != "deck:p0" {
 		t.Error("c3 was not renamed to nc3 in the deck")
 	}
 }
@@ -400,6 +411,28 @@ func TestPlayUnderRefusesATargetOffTheTable(t *testing.T) {
 		before := table.Clone()
 
 		err := apply(table, Action{Kind: ActPlay, Card: "c5", Target: target})
+
+		if !errors.Is(err, ErrInvalid) {
+			t.Errorf("target %s: err = %v, want ErrInvalid", target, err)
+		}
+		if !reflect.DeepEqual(before, table) {
+			t.Errorf("target %s: table changed by a rejected action", target)
+		}
+	}
+}
+
+// A card revealed on a deck is on the table already: played under itself or
+// under a card tucked beneath it, it would make a cycle, as an attach would.
+func TestPlayOfARevealedCardRefusesItselfOrItsAttachmentsAsTarget(t *testing.T) {
+	for _, target := range []string{"c7", "c9"} {
+		table := newTestTable()
+		table.Cards["c7"].OnPile = PileEncounter
+		table.Cards["c9"] = &Card{
+			ID: "c9", Owner: NoOwner, Home: PileEncounter, Zone: ZoneTable, X: 600, Y: 40, Z: 5, Parent: "c7",
+		}
+		before := table.Clone()
+
+		err := apply(table, Action{Kind: ActPlay, Card: "c7", Target: target})
 
 		if !errors.Is(err, ErrInvalid) {
 			t.Errorf("target %s: err = %v, want ErrInvalid", target, err)
@@ -1015,8 +1048,8 @@ func TestIdentityCardStaysOnTheTable(t *testing.T) {
 	}{
 		{"discard", nil, Action{Kind: ActDiscard, Card: "c1"}},
 		{"to hand", nil, Action{Kind: ActToHand, Card: "c1"}},
-		{"to deck top", nil, Action{Kind: ActToDeck, Card: "c1", Where: whereTop}},
-		{"to deck bottom", nil, Action{Kind: ActToDeck, Card: "c1", Where: whereBottom}},
+		{"to deck top", nil, renamedTo(Action{Kind: ActToDeck, Card: "c1", Where: whereTop}, "c1")},
+		{"to deck bottom", nil, renamedTo(Action{Kind: ActToDeck, Card: "c1", Where: whereBottom}, "c1")},
 		{
 			"shuffled into deck",
 			nil,

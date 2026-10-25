@@ -13,8 +13,9 @@ type: project
 - A card the viewer cannot see travels as a back: out of a face-down pile
   it leaves on its back and turns to its face where it lands face up; a
   card that lands face down stays a back. A card taken face down off the
-  table into the viewer's hand turns face up there. The client only
-  animates what the view holds, so nothing leaks.
+  table into the viewer's hand turns face up there, followed under its
+  new id (`freshIdOf` in `animate.ts`). The client only animates what
+  the view holds, so nothing leaks.
 - A card flying to a pile turns over on its way when it lands on
   another side than it showed (`turnOf` in `animate.ts`): a face-up
   card put on a deck turns face down, a face-down card or a deck's
@@ -38,6 +39,7 @@ type: project
 at the table without reading the history.
 
 **How to apply:** a new way for a card to change place needs its motion in
-`animate.ts` and `motion.svelte.ts`, reusing the kinds `move`, `fly`,
-`enter`, `draw`, `under`, `away`, `arrive`, `flip` and the existing timing
+`animate.ts` and `motion.svelte.ts`, reusing the kinds of `Anim` (`move`,
+`fly`, `enter`, `draw`, `drawAway`, `under`, `away`, `arrive`, `flip`,
+`turnIn`, `reveal`, `shuffle`, `marker`, `glow`) and the existing timing
 constants. Spec 5.5 ("Every change of place animates") holds the rule.

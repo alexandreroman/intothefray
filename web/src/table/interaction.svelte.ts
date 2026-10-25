@@ -11,14 +11,14 @@ export const LINGER_MS = 100;
 export const LANDING_MS = 2000;
 
 /** A token, status or modifier of a table card, found again by its names after every redraw. */
-export interface CounterTarget {
+interface CounterTarget {
   card: string;
   kind: CounterKind;
   name: string;
 }
 
 /** A card of the viewer's hand: the only element a tap selects. */
-export type HandCard = Extract<TableElement, { kind: 'hand' }>;
+type HandCard = Extract<TableElement, { kind: 'hand' }>;
 
 /** What a press can drag: a table element, or a marker (the first player token, the active counter). */
 export type Pressable = TableElement | { kind: 'marker'; name: MarkerName };
@@ -66,7 +66,7 @@ export interface DropOn {
 }
 
 /** A table card or pile whose context menu is open, and the point of the screen it opens at. */
-export interface ContextMenuAt {
+interface ContextMenuAt {
   element: TableElement;
   at: { x: number; y: number };
 }
@@ -272,7 +272,7 @@ class TableInteraction {
     return this.held?.moved ? this.held : null;
   }
 
-  /** A press on a card, a pile, a hand card or the token, with the main button or a finger. */
+  /** A press on a card, a pile, a hand card or a marker, with the main button or a finger. */
   press(element: Pressable, event: PointerEvent): void {
     // A second finger does not take over a drag; a dialog freezes the table.
     if (event.button !== 0 || this.dragging !== null || modal.open) {
@@ -696,7 +696,7 @@ class TableInteraction {
   #changePreview(element: TableElement, preview: PreviewChange): void {
     if (preview === 'clear' || element.kind === 'hand' || this.touchMode) {
       this.previewed = null;
-    } else if (preview === 'show') {
+    } else {
       this.previewed = element;
     }
   }

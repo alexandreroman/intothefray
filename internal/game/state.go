@@ -1,6 +1,7 @@
 package game
 
 import (
+	"cmp"
 	"fmt"
 	"maps"
 	"slices"
@@ -42,7 +43,7 @@ type Card struct {
 	FaceDown  bool           `json:"faceDown,omitempty"`
 	Back      pack.Back      `json:"back"`
 	Owner     int            `json:"owner"` // seat, or NoOwner
-	Home      string         `json:"home"`  // id of the pile it returns to: "deck:p0" or "enc"
+	Home      string         `json:"home"`  // id of the pile it returns to: a deck, side deck, scenario deck or "enc"
 	Zone      Zone           `json:"zone"`
 	X         int            `json:"x"`
 	Y         int            `json:"y"`
@@ -92,12 +93,19 @@ const (
 
 // Well-known pile ids. Per-player piles are "deck:pN", "disc:pN", "aside:pN",
 // and for the side decks of a hero "side:pN:I" and "sided:pN:I" (see
-// sideDeckID).
+// playerDeckID and sideDeckID).
 const (
 	PileEncounter        = "enc"
 	PileEncounterDiscard = "encd"
 	PileVictory          = "vic"
 	PileScenarioAside    = "saside"
+)
+
+// Prefixes of the ids of a player's deck, discard and set-aside piles.
+const (
+	deckPrefix    = "deck:"
+	discardPrefix = "disc:"
+	asidePrefix   = "aside:"
 )
 
 // Prefixes of the ids of side piles.
@@ -114,6 +122,28 @@ const (
 	scenarioDeckPrefix             = "sdeck:"
 	scenarioDiscardPrefix          = "sdisc:"
 )
+
+// playerDeckID returns the id of the deck of the seat whose area is area:
+// "deck:p0".
+func playerDeckID(area Area) string {
+	return deckPrefix + string(area)
+}
+
+// playerDiscardID returns the id of the discard pile of that seat: "disc:p0".
+func playerDiscardID(area Area) string {
+	return discardPrefix + string(area)
+}
+
+// playerAsideID returns the id of the set-aside pile of that seat: "aside:p0".
+func playerAsideID(area Area) string {
+	return asidePrefix + string(area)
+}
+
+// drawDeckID returns the id of the deck the draw a takes from: the pile it
+// names, or else the deck of the seat whose hand is hand.
+func drawDeckID(a Action, hand Area) string {
+	return cmp.Or(a.Pile, playerDeckID(hand))
+}
 
 // sideDeckID returns the id of the side deck of seat at index i of its
 // hero's side decks: "side:p0:0".

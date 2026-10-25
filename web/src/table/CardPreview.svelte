@@ -1,7 +1,6 @@
 <!--
-  The large picture of the hovered card's face (a card back has none).
-  Without a card, the frame is empty and says how to fill it. Shown over the
-  table, in a corner of the play area.
+  The large picture of the hovered card's face, in the card's own shape, landscape included.
+  Shown over the table, in a corner of the play area.
 -->
 <script lang="ts" module>
   /** The face the preview frame shows. */
@@ -17,12 +16,9 @@
 
   let {
     preview,
-    snug = false,
     hidden = false,
   }: {
-    preview: Preview | null;
-    /** The frame takes the card's own shape, landscape included, rather than a portrait slot. */
-    snug?: boolean;
+    preview: Preview;
     /** Drawn as it fades out: no longer content, out of the accessibility tree. */
     hidden?: boolean;
   } = $props();
@@ -30,45 +26,20 @@
 
 <div
   class="frame"
-  class:empty={!preview}
-  class:snug
   aria-label={hidden ? undefined : 'Card preview'}
   role={hidden ? undefined : 'figure'}
   aria-hidden={hidden || undefined}
 >
-  {#if !preview}
-    <div class="hint">Hover a card<br />to see it here</div>
-  {:else}
-    <div class="art" class:land={preview.landscape}>
-      <CardFace images={preview.images} name={preview.name} landscape={preview.landscape} />
-    </div>
-  {/if}
+  <div class="art" class:land={preview.landscape}>
+    <CardFace images={preview.images} name={preview.name} landscape={preview.landscape} />
+  </div>
 </div>
 
 <style>
-  /* Fixed size: a portrait card fills it, a landscape one sits in its middle. */
   .frame {
     width: 100%;
-    aspect-ratio: 5 / 7;
     display: grid;
     place-items: center;
-    border-radius: 14px;
-  }
-
-  .frame.snug {
-    aspect-ratio: auto;
-  }
-
-  /* Only the empty frame is outlined: a shown card keeps its cut corners clear. */
-  .frame.empty {
-    border: 1px dashed var(--line-strong);
-  }
-
-  .hint {
-    color: var(--faint);
-    font-size: 13px;
-    text-align: center;
-    padding: 12px;
   }
 
   .art {

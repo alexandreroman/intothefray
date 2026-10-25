@@ -1,11 +1,8 @@
-root = "."
-tmp_dir = "tmp"
-
 [build]
   cmd = "go build -o ./tmp/intothefray ./cmd/intothefray"
   bin = "./tmp/intothefray"
   include_ext = ["go"]
-  exclude_dir = ["tmp", "web", "docs", "packs/.cache", "node_modules"]
+  exclude_dir = ["tmp", "web", "docs", "packs/.cache"]
   delay = 200
   # Give the server time to drain connections during graceful shutdown.
   kill_delay = "500ms"

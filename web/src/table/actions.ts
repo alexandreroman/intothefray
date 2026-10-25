@@ -7,8 +7,8 @@ import { knownCard } from '../lib/catalog';
 import type { Lang } from '../lib/lang';
 import { localizedFace } from '../lib/localize';
 import { isOutOfPlay } from './layout';
-import { seatOf, seatPlayer } from './seats';
-import { groupUnits } from './selection';
+import { asideId, deckId, discardId, seatOf, seatPlayer } from './seats';
+import { groupUnits, MAX_COUNT } from './selection';
 import type { Action, Area, CardView, PileView, Role, Stage, TableView, View } from '../lib/types';
 
 /**
@@ -71,12 +71,9 @@ export interface ActionItem {
   run?: () => Action | { ask: CountQuestion } | LocalAction;
 }
 
-/** Mirrors maxCount in internal/game/action.go: the most cards one action takes. */
-const MAX_COUNT = 99;
-
-// Groups of a card in play, in menu order: Exhaust, Flip and, on the card a
-// stage shows, its card choice turn the card, the token, status and modifier
-// submenus mark it, Discard and Move to take it away.
+// Groups of a card in play, in menu order: Exhaust and Flip (or the stage
+// choice) turn the card, the token, status and modifier submenus mark it,
+// Discard and Move to take it away.
 const GROUP_TURN = 0;
 const GROUP_MARK = 1;
 const GROUP_LEAVE = 2;
@@ -98,15 +95,23 @@ interface Counter {
   key?: string;
 }
 
-/** Mirrors tokenNames in internal/game/apply.go. */
-const TOKENS: readonly Counter[] = [
+const TOKEN_LIST = [
   { name: 'dmg', label: 'Damage', key: 'D' },
   { name: 'thr', label: 'Threat', key: 'T' },
   { name: 'gen', label: 'Counter', key: 'N' },
   { name: 'acc', label: 'Acceleration' },
-];
+] as const;
 
-const STATUSES: readonly Counter[] = [
+export type TokenName = (typeof TOKEN_LIST)[number]['name'];
+
+/** The tokens a card carries, in menu order, with the key that adds one. Mirrors tokenNames in internal/game/apply.go. */
+export const TOKENS: readonly Counter[] = TOKEN_LIST;
+
+/**
+ * The statuses a card carries, in menu and tab order, with the key that adds one. Mirrors statusNames in
+ * internal/game/apply.go.
+ */
+export const STATUSES: readonly Counter[] = [
   { name: 'stunned', label: 'Stunned', key: 'S' },
   { name: 'confused', label: 'Confused', key: 'C' },
   { name: 'tough', label: 'Tough', key: 'G' },
@@ -214,8 +219,9 @@ export function actionsFor(
 }
 
 /**
- * A spectator's read-only actions (ruling P5c-R2): Browse… on the piles whose
- * cards everyone sees. Cards in play, the villain and main scheme included, get none.
+ * A spectator's read-only actions: Browse… on the piles whose cards everyone
+ * sees. Cards in play, the villain and main scheme included, get none (see the
+ * "Action menu organisation" project memory note).
  */
 function spectatorActions(el: TableElement, table: TableView): ActionItem[] {
   switch (el.kind) {
@@ -232,10 +238,7 @@ function spectatorActions(el: TableElement, table: TableView): ActionItem[] {
       if (pile.cards === undefined || pile.kind === 'sideDeck') {
         return [];
       }
-      // No key: spectators get no game keys (P5b-R6).
-      const browse = browseItem(pile);
-      delete browse.key;
-      return [browse];
+      return [browseItem(pile)];
     }
     case 'hand':
       return [];
@@ -501,8 +504,8 @@ function isInStackOf(id: string, root: string, table: TableView): boolean {
  * Discard and Move to for a selected group: one group action over every unit,
  * as a group drop sends (selection.ts, groupAction). An entry shows only when
  * every unit could take it alone, and none shuffles: the server refuses to
- * shuffle a group (resolveGroup). Disabled while a unit is, or holds, a card
- * that stays on the table.
+ * shuffle a group (resolveGroup). Disabled for more units than one group
+ * takes, or while a unit is, or holds, a card that stays on the table.
  */
 function groupLeaveItems(units: readonly CardView[], context: Context): ActionItem[] {
   const discard: ActionItem = {
@@ -522,6 +525,10 @@ function groupLeaveItems(units: readonly CardView[], context: Context): ActionIt
 
   const discardable = units.every((unit) => discardPileOf(unit, context.table.piles) !== null);
   const items = discardable ? [discard, moveTo] : [moveTo];
+  if (units.length > MAX_COUNT) {
+    const reason = `A group moves ${MAX_COUNT} cards at most`;
+    return items.map((item) => ({ ...item, disabled: true, reason }));
+  }
   for (const unit of units) {
     const reason = staysOnTable(unit, context.table);
     if (reason) {
@@ -602,14 +609,10 @@ function groupOf(units: readonly CardView[], actionOf: (unit: CardView) => Actio
   return { kind: 'group', actions: units.map(actionOf) };
 }
 
-/** How Move to names a deck: "deck", or a side deck's "Sense deck". */
+/** How Move to names a deck: "deck", or a deck with a name of its own, "Sense deck", "Wrecker deck". */
 export function deckName(home: PileView): string {
-  if (home.kind === 'sideDeck') {
-    return `${sideLabel(home)} deck`;
-  }
-  return home.kind === 'scenarioDeck' || (home.kind === 'encounter' && home.label)
-    ? `${home.label} deck`
-    : 'deck';
+  const plain = home.kind === 'deck' || (home.kind === 'encounter' && !home.label);
+  return plain ? 'deck' : pileName(home);
 }
 
 function moveMenu(card: CardView, context: Context): ActionItem[] {
@@ -701,7 +704,7 @@ export function homeDeckOf(card: CardView): string {
   if (card.home !== undefined) {
     return card.home;
   }
-  return card.owner === -1 ? 'enc' : `deck:p${card.owner}`;
+  return card.owner === -1 ? 'enc' : deckId(card.owner);
 }
 
 /**
@@ -711,18 +714,11 @@ export function homeDeckOf(card: CardView): string {
  */
 export function discardPileOf(card: CardView, piles: readonly PileView[]): string | null {
   const home = homeDeckOf(card);
-  if (isSideDeckId(home)) {
+  if (isSideDeckId(home) || isScenarioDeckId(home)) {
     const discard = deckDiscardOf(home);
     return piles.some((pile) => pile.id === discard) ? discard : null;
   }
-  if (isScenarioDeckId(home)) {
-    const discard = deckDiscardOf(home);
-    if (piles.some((pile) => pile.id === discard)) {
-      return discard;
-    }
-    return null;
-  }
-  const discard = card.owner === -1 ? 'encd' : `disc:p${card.owner}`;
+  const discard = card.owner === -1 ? 'encd' : discardId(card.owner);
   return card.owner === -1 && !piles.some((pile) => pile.id === discard) ? null : discard;
 }
 
@@ -763,9 +759,38 @@ export function sideLabel(pile: PileView): string {
   return pile.label ?? 'side';
 }
 
+/**
+ * A pile's name without its owner: "Deck", "Encounter discard", a side pile after its side deck
+ * ("Invocation deck"), a scenario pile after its deck ("Wrecker discard").
+ */
+export function pileName(pile: PileView): string {
+  switch (pile.kind) {
+    case 'deck':
+      return 'Deck';
+    case 'discard':
+      return 'Discard';
+    case 'encounter':
+      return pile.label ? `${pile.label} deck` : 'Encounter deck';
+    case 'encounterDiscard':
+      return pile.label ? `${pile.label} discard` : 'Encounter discard';
+    case 'scenarioDeck':
+      return `${pile.label} deck`;
+    case 'scenarioDiscard':
+      return `${pile.label} discard`;
+    case 'sideDeck':
+      return `${sideLabel(pile)} deck`;
+    case 'sideDiscard':
+      return `${sideLabel(pile)} discard`;
+    case 'victory':
+      return 'Victory display';
+    case 'aside':
+      return 'Set-aside cards';
+  }
+}
+
 /** The set-aside pile for a card: its deck's own for the viewer's cards, the scenario's for any other. */
-export function asidePileOf(card: CardView, seats: readonly number[]): string {
-  return seats.includes(card.owner) ? `aside:p${card.owner}` : 'saside';
+function asidePileOf(card: CardView, seats: readonly number[]): string {
+  return seats.includes(card.owner) ? asideId(card.owner) : 'saside';
 }
 
 function toDeck(card: CardView, where: 'top' | 'bottom' | 'shuffle'): Action {
@@ -905,7 +930,6 @@ function drawCountItem(pile: PileView, table: TableView): ActionItem {
  * which names no pile for the classic one; a player's deck or side deck draws by default, and names itself.
  */
 function revealItem(pile: PileView, context: Context): ActionItem {
-  // The encounter deck's main action; the classic one names no pile, a scenario deck names itself.
   const encounter = pile.kind === 'encounter' || pile.kind === 'scenarioDeck';
   const reveal: ActionItem = {
     id: 'reveal',
@@ -1034,13 +1058,15 @@ function shuffleBackItem(pile: PileView): ActionItem {
   };
 }
 
-/** Browse… needs no server: public piles are face up, their cards listed. */
+/**
+ * Browse… needs no server: public piles are face up, their cards listed. It
+ * has no key: it is a spectator's only action on a pile, and spectators get
+ * no game keys.
+ */
 function browseItem(pile: PileView): ActionItem {
   return {
     id: 'browse',
     label: 'Browse…',
-    key: 'K',
-    // A spectator's only action on a pile.
     default: true,
     group: GROUP_LOOK,
     run: () => ({ local: 'browseBox', pile: pile.id }),

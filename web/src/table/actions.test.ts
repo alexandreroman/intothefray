@@ -7,8 +7,9 @@ import {
   type ActionItem,
   type TableElement,
 } from './actions';
-import { knownCard, type CardInfo } from '../lib/catalog';
+import { knownCard } from '../lib/catalog';
 import type { Action, Area, CardView, PackFace, PileView, Role, View } from '../lib/types';
+import { card, infoFrom } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -35,35 +36,7 @@ const FACES: Record<string, Partial<PackFace>[]> = {
   ],
 };
 
-function infoOf(code: string): CardInfo | null {
-  const faces = FACES[code];
-  if (!faces) {
-    return null;
-  }
-  const full = faces.map((face): PackFace => ({
-    name: '',
-    type: '',
-    size: 'std',
-    images: [],
-    ...face,
-  }));
-  return { card: { code, faces: full, back: 'player', quantity: 1 }, face: 0 };
-}
-
-function card(id: string, extra: Partial<CardView> = {}): CardView {
-  return {
-    id,
-    code: '01001',
-    face: 0,
-    back: 'player',
-    owner: 0,
-    zone: 'table',
-    x: 0,
-    y: 0,
-    z: 1,
-    ...extra,
-  };
-}
+const infoOf = infoFrom(FACES);
 
 function pile(id: string, extra: Partial<PileView>): PileView {
   return { id, kind: 'deck', owner: -1, x: 0, y: 0, count: 5, ...extra };
@@ -1257,6 +1230,19 @@ describe('a selected group', () => {
     const reason = 'The identity card stays on the table';
     expect(item(items, 'discard')).toMatchObject({ disabled: true, reason });
     expect(item(items, 'moveTo')).toMatchObject({ disabled: true, reason });
+  });
+
+  it('more units than the server takes in one group disable Discard and Move to', () => {
+    const many = Array.from({ length: 100 }, (_, i) => card(`m${i}`, { z: i }));
+    const view = makeView({ cards: many });
+    const ids = many.map((unit) => unit.id);
+    const result = actionsFor({ kind: 'card', id: 'm0' }, view, ALEX, 'en', new Set(ids));
+    if (!Array.isArray(result)) {
+      throw new Error(`expected items, got the text "${result.text}"`);
+    }
+    const reason = 'A group moves 99 cards at most';
+    expect(item(result, 'discard')).toMatchObject({ disabled: true, reason });
+    expect(item(result, 'moveTo')).toMatchObject({ disabled: true, reason });
   });
 
   it('offers no shuffle into a deck', () => {

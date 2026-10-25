@@ -10,10 +10,12 @@ import (
 	"github.com/alexandreroman/intothefray/internal/pack"
 )
 
+// MaxCopies is the most copies of one card a deck may hold.
+const MaxCopies = 20
+
 const (
 	maxSeats     = 4 // deck slots across all players, so heroes at the table
 	maxNameRunes = 16
-	maxCopies    = 20 // copies of one card in a deck
 
 	standardVersionI = "standard"
 )
@@ -39,7 +41,7 @@ func NewGame(id, hostToken, hostName string, now time.Time) (*Game, error) {
 // current role back.
 func (g *Game) Join(token, name string) (Role, error) {
 	if token == "" {
-		return "", fmt.Errorf("%w: empty token", ErrInvalid)
+		return "", invalid("empty token")
 	}
 	if g.player(token) != nil {
 		return RolePlayer, nil
@@ -50,7 +52,7 @@ func (g *Game) Join(token, name string) (Role, error) {
 
 	name = cleanName(name)
 	if name == "" {
-		return "", fmt.Errorf("%w: empty name", ErrInvalid)
+		return "", invalid("empty name")
 	}
 
 	if g.Phase == PhaseLobby && g.seatCount() < maxSeats {
@@ -73,7 +75,7 @@ func (g *Game) Leave(token string) error {
 		return fmt.Errorf("%w: unknown participant", ErrNotFound)
 	}
 	if player.Host {
-		return fmt.Errorf("%w: the host cannot leave", ErrForbidden)
+		return forbidden("the host cannot leave")
 	}
 	if err := g.requireLobby(); err != nil {
 		return err
@@ -96,7 +98,7 @@ func (g *Game) TakeSeat(token string) error {
 		return err
 	}
 	if g.seatCount() >= maxSeats {
-		return fmt.Errorf("%w: all seats are taken", ErrInvalid)
+		return invalid("all seats are taken")
 	}
 	g.Spectators = slices.DeleteFunc(g.Spectators, func(s *Spectator) bool { return s == spectator })
 	g.Players = append(g.Players, &Player{
@@ -122,7 +124,7 @@ func (g *Game) RemovePlayer(hostToken, playerToken string) error {
 		return fmt.Errorf("%w: unknown player", ErrNotFound)
 	}
 	if player.Host {
-		return fmt.Errorf("%w: the host cannot be removed", ErrForbidden)
+		return forbidden("the host cannot be removed")
 	}
 	g.demote(player)
 	return nil
@@ -158,10 +160,10 @@ func (g *Game) AddDeck(token string) error {
 	}
 	player := g.player(token)
 	if player == nil {
-		return fmt.Errorf("%w: only players have decks", ErrForbidden)
+		return forbidden("only players have decks")
 	}
 	if g.seatCount() >= maxSeats {
-		return fmt.Errorf("%w: all seats are taken", ErrInvalid)
+		return invalid("all seats are taken")
 	}
 	player.Decks = append(player.Decks, nil)
 	return nil
@@ -176,13 +178,13 @@ func (g *Game) RemoveDeck(token string, deck int) error {
 	}
 	player := g.player(token)
 	if player == nil {
-		return fmt.Errorf("%w: only players have decks", ErrForbidden)
+		return forbidden("only players have decks")
 	}
 	if !player.hasSlot(deck) {
-		return fmt.Errorf("%w: %s has no deck slot %d", ErrInvalid, player.Name, deck)
+		return invalid("%s has no deck slot %d", player.Name, deck)
 	}
 	if len(player.Decks) == 1 {
-		return fmt.Errorf("%w: a player keeps at least one deck", ErrInvalid)
+		return invalid("a player keeps at least one deck")
 	}
 	player.Decks = slices.Delete(player.Decks, deck, deck+1)
 	return nil
@@ -212,10 +214,10 @@ func (g *Game) SetDeck(token string, deck int, choice DeckChoice, cat *pack.Cata
 	}
 	player := g.player(token)
 	if player == nil {
-		return fmt.Errorf("%w: only players have decks", ErrForbidden)
+		return forbidden("only players have decks")
 	}
 	if !player.hasSlot(deck) {
-		return fmt.Errorf("%w: %s has no deck slot %d", ErrInvalid, player.Name, deck)
+		return invalid("%s has no deck slot %d", player.Name, deck)
 	}
 
 	var unknown []string
@@ -223,15 +225,15 @@ func (g *Game) SetDeck(token string, deck int, choice DeckChoice, cat *pack.Cata
 		unknown = append(unknown, choice.Hero)
 	}
 	for _, entry := range choice.Cards {
-		if entry.Qty < 1 || entry.Qty > maxCopies {
-			return fmt.Errorf("%w: card %s has quantity %d, want 1 to %d", ErrInvalid, entry.Code, entry.Qty, maxCopies)
+		if entry.Qty < 1 || entry.Qty > MaxCopies {
+			return invalid("card %s has quantity %d, want 1 to %d", entry.Code, entry.Qty, MaxCopies)
 		}
 		if !knownCard(cat, entry.Code) {
 			unknown = append(unknown, entry.Code)
 		}
 	}
 	if len(unknown) > 0 {
-		return fmt.Errorf("%w: unknown card codes: %s", ErrInvalid, strings.Join(unknown, ", "))
+		return invalid("unknown card codes: %s", strings.Join(unknown, ", "))
 	}
 	if err := g.requireFreeHero(player, deck, choice.Hero, cat); err != nil {
 		return err
@@ -278,7 +280,7 @@ func DefaultConfig(cat *pack.Catalog, scenario string) LobbyConfig {
 
 func validateConfig(cfg LobbyConfig, cat *pack.Catalog) error {
 	if _, ok := cat.Scenario(cfg.Scenario); !ok {
-		return fmt.Errorf("%w: unsupported scenario %q", ErrInvalid, cfg.Scenario)
+		return invalid("unsupported scenario %q", cfg.Scenario)
 	}
 	// An empty Standard or Expert set means the game plays without it, as
 	// some scenarios allow.
@@ -291,7 +293,7 @@ func validateConfig(cfg LobbyConfig, cat *pack.Catalog) error {
 	switch cfg.Difficulty {
 	case pack.Standard:
 		if cfg.Expert != "" {
-			return fmt.Errorf("%w: expert set %q without expert difficulty", ErrInvalid, cfg.Expert)
+			return invalid("expert set %q without expert difficulty", cfg.Expert)
 		}
 	case pack.Expert:
 		if cfg.Expert != "" {
@@ -300,12 +302,12 @@ func validateConfig(cfg LobbyConfig, cat *pack.Catalog) error {
 			}
 		}
 	default:
-		return fmt.Errorf("%w: unknown difficulty %q", ErrInvalid, cfg.Difficulty)
+		return invalid("unknown difficulty %q", cfg.Difficulty)
 	}
 
 	for i, code := range cfg.Modulars {
 		if slices.Contains(cfg.Modulars[:i], code) {
-			return fmt.Errorf("%w: duplicate modular set %q", ErrInvalid, code)
+			return invalid("duplicate modular set %q", code)
 		}
 		if err := requireSetKind(cat, code, "modular"); err != nil {
 			return err
@@ -318,10 +320,10 @@ func validateConfig(cfg LobbyConfig, cat *pack.Catalog) error {
 func requireSetKind(cat *pack.Catalog, code, kind string) error {
 	set, ok := cat.Set(code)
 	if !ok || set.Kind != kind {
-		return fmt.Errorf("%w: %q is not a %s set", ErrInvalid, code, kind)
+		return invalid("%q is not a %s set", code, kind)
 	}
 	if set.Unlisted {
-		return fmt.Errorf("%w: set %q is not offered by the lobby", ErrInvalid, code)
+		return invalid("set %q is not offered by the lobby", code)
 	}
 	return nil
 }
@@ -477,6 +479,14 @@ func (g *Game) demote(player *Player) {
 	g.Spectators = append(g.Spectators, &Spectator{Token: player.Token, Name: player.Name})
 }
 
+// TakesPart reports whether token is the token of a player or a spectator.
+func (g *Game) TakesPart(token string) bool {
+	if token == "" {
+		return false
+	}
+	return g.player(token) != nil || g.spectator(token) != nil
+}
+
 func (g *Game) player(token string) *Player {
 	for _, p := range g.Players {
 		if p.Token == token {
@@ -498,7 +508,7 @@ func (g *Game) spectator(token string) *Spectator {
 func (g *Game) requireHost(token string) error {
 	player := g.player(token)
 	if player == nil || !player.Host {
-		return fmt.Errorf("%w: host only", ErrForbidden)
+		return forbidden("host only")
 	}
 	return nil
 }

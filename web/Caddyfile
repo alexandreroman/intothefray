@@ -6,7 +6,7 @@
 
 http://:8080 {
 	root * /srv
-	encode zstd gzip
+	encode
 
 	# Health probe independent of the build output (web/dist may be empty)
 	respond /healthz 200

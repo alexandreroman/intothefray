@@ -1,4 +1,5 @@
-// Package build turns raw marvelcdb and Cerebro records into pack cards.
+// Package build derives the packs and their index from the marvelcdb, mc4db
+// and Cerebro records, the French names of fr.marvelcdb and the curated data.
 package build
 
 import (
@@ -21,13 +22,11 @@ const (
 	baseCodeLength  = 5 // digits of a code, without its face letter
 )
 
-// BuildCards groups the marvelcdb entries into cards and returns them by pack
+// buildCards groups the marvelcdb entries into cards and returns them by pack
 // code, sorted by code. A card is one base code with its faces, except for
 // lettered codes that are distinct cards (see splitGroup). Cards that cannot be displayed
 // are returned as unsupported instead.
-//
-//nolint:revive // BuildCards is the name fixed by the plan.
-func BuildCards(
+func buildCards(
 	mc []marvelcdb.Card,
 	cb []cerebro.Card,
 	overrides map[string]curated.CardOverride,
@@ -97,10 +96,10 @@ func checkCerebroOverrides(overrides map[string]curated.CardOverride, cb []cereb
 	return nil
 }
 
-// CanonicalCodes maps the code of each marvelcdb record that is a card or a
+// canonicalCodes maps the code of each marvelcdb record that is a card or a
 // face of a card to the canonical code of that card. Reprints and summary
 // records of distinct lettered cards are not mapped.
-func CanonicalCodes(mc []marvelcdb.Card) map[string]string {
+func canonicalCodes(mc []marvelcdb.Card) map[string]string {
 	_, codes, _ := groupEntries(mc)
 	return codes
 }
@@ -225,10 +224,9 @@ func rootOf(
 	if !found {
 		return "", "original not found"
 	}
-	// The catalog maps an alias with a face letter to the face of that letter,
-	// so a letter beyond the faces of a multi-face card cannot be loaded. The
-	// catalog maps any letter of a single-face card to its only face.
-	if len(faces) > 1 && len(reprint.Code) > baseCodeLength && int(reprint.Code[baseCodeLength]-'a') >= len(faces) {
+	// The reprint code becomes an alias of the original card, which the
+	// catalog could not load if it named a face the card does not have.
+	if _, err := pack.AliasFace(strings.ToLower(reprint.Code), len(faces)); err != nil {
 		return "", "reprint face missing from original"
 	}
 	return root, ""

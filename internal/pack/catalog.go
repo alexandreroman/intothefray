@@ -110,7 +110,7 @@ func (c *Catalog) addCard(card Card) error {
 	}
 	for _, alias := range card.Aliases {
 		alias = strings.ToLower(alias)
-		face, err := aliasFace(alias, len(card.Faces))
+		face, err := AliasFace(alias, len(card.Faces))
 		if err != nil {
 			return err
 		}
@@ -129,12 +129,13 @@ func (c *Catalog) addAlias(alias string, target aliasTarget) error {
 	return nil
 }
 
-// aliasFace returns the face named by an alias made of five digits and a
-// letter (a is face 0, b is face 1...), whatever the digits: a reprint keeps
-// the face letters of the original card. Any other alias names face 0, and so
-// does any alias of a single-face card: its letter then only tells the
-// reprint apart from the other cards sharing its number.
-func aliasFace(alias string, faceCount int) (int, error) {
+// AliasFace returns the face named by a lower-case alias made of five digits
+// and a letter (a is face 0, b is face 1...), whatever the digits: a reprint
+// keeps the face letters of the original card. Any other alias names face 0,
+// and so does any alias of a single-face card: its letter then only tells the
+// reprint apart from the other cards sharing its number. An alias naming a
+// face the card does not have is an error.
+func AliasFace(alias string, faceCount int) (int, error) {
 	if faceCount == 1 || !isFaceCode(alias) {
 		return 0, nil
 	}

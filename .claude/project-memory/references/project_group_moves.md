@@ -11,17 +11,18 @@ type: project
   native scrolling. Esc, a click on an empty spot, or a press on an
   unselected card, a pile, a hand card or the token clears the selection;
   it only holds cards drawn on the table.
-- Dragging a selected card carries every selected unit, relative
-  positions intact, each stack following its top card (see "Moving card
-  stacks"). It drops on the table (no tuck over a card), onto a pile
-  valid for every card, or into the hand when every card is the player's
-  own.
+- Dragging a selected card carries every selected unit, relative positions
+  intact, each stack following its top card (see [[project_stack_moves]]). It
+  drops on the table (no tuck over a card), onto a pile valid for every card, or
+  into the hand when every card is the player's own.
 - On a selected card of a group of 2 or more units, the action menu's
   Discard and Move to entries (Hand, Top / Bottom of deck, Victory
   display, Set aside) and their keys (X / Backspace, H, B) act on every
   unit, offered only when valid for each one. Shuffle into deck is not
   offered for a group, as the engine's group never shuffles. Every other
-  entry (exhaust, flip, tokens, arrow) acts on the one card.
+  entry (exhaust, flip, tokens, arrow) acts on the one card. A selection
+  of more than 99 units greys Discard and Move to ("A group moves 99
+  cards at most"), and a drag of it sends nothing.
 - The engine has one atomic `group` action: 2 to 99 sub-actions of one
   kind among move, toHand, toDeck (top or bottom), discard and toPile,
   all or nothing. It is one event, one undo step and one history line

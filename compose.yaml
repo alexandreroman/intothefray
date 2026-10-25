@@ -2,7 +2,7 @@ services:
   redis:
     image: redis:8.10-alpine
     # In-memory only: game state is short-lived by design (no persistence)
-    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    command: ["redis-server", "--save", ""]
     ports:
       - "${REDIS_PORT:-6379}:6379"
     healthcheck:

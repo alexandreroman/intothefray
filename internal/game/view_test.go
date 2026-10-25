@@ -597,7 +597,7 @@ func TestLobbyView(t *testing.T) {
 
 func TestCanUndoFollowsOwnStack(t *testing.T) {
 	f := newViewFixture(t)
-	id := f.identity(t)
+	id := identityOf(t, f.g, 0)
 	f.mustDo(t, hostToken, Action{Kind: ActExhaust, Card: id}, at(1))
 
 	host := f.g.ViewFor(hostToken)

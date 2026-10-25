@@ -10,8 +10,8 @@ type: project
   whose count is the card's Retaliate value X: several sources add up,
   as the keyword does in the game. Bookkeeping only: no rules effect.
 - Status order: stunned, confused, tough, retaliate, locked, in
-  `statusNames` (internal/game/apply.go) and both `STATUSES` lists
-  (web/src/table/actions.ts, CardView.svelte).
+  `statusNames` (internal/game/apply.go) and `STATUSES`
+  (web/src/table/actions.ts, which CardView and KeysSheet read).
 - R on a card in play adds one, Shift + R takes one off; the keys sheet
   lists it with the other statuses. R on a pile is Reveal.
 - Its teal tab always shows the value: "Retaliate 1", "Retaliate 2";

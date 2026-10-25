@@ -3,18 +3,20 @@ import { tick } from 'svelte';
 import Table from './Table.svelte';
 import { interaction, LINGER_MS } from './interaction.svelte';
 import { knownCard, loadGameCards, loadIndex, type CardInfo } from '../lib/catalog';
-import { setLang } from '../lib/lang';
+import type { Lang } from '../lib/lang';
 import surfaceSource from './Surface.svelte?raw';
 import { cutShort } from '../lib/overflowTip.testing';
 import { clearPrefMemory } from '../lib/prefs';
-import type {
-  CardView as TableCard,
-  Index,
-  PackFace,
-  PileView,
-  PresenceState,
-  View,
-} from '../lib/types';
+import type { CardView as TableCard, Index, PackFace, PileView, View } from '../lib/types';
+import { fakeSession, infoFrom } from './fixtures.testing';
+
+// The card language, as each test chooses: Options does not offer French, so no stored choice gives it.
+const cardLang = vi.hoisted(() => ({ current: 'en' as Lang }));
+
+vi.mock('../lib/lang', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../lib/lang')>()),
+  storedLang: () => cardLang.current,
+}));
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -22,6 +24,10 @@ vi.mock('../lib/catalog', async (importOriginal) => ({
   loadGameCards: vi.fn(),
   loadIndex: vi.fn(),
 }));
+
+afterEach(() => {
+  cardLang.current = 'en';
+});
 
 /**
  * Svelte's size bindings (bind:clientHeight) share one ResizeObserver, made on
@@ -66,21 +72,14 @@ const FIRST_PLAYER_TOKEN =
   'https://card-table.app/images/table/first_player_token_marvelchampions.png';
 
 // The catalog of the fixture: code -> face 0.
-const FACES: Record<string, Partial<PackFace>> = {
-  '01094': { name: 'Rhino', type: 'villain', stage: 'I' },
-  '01097': { name: 'The Break-In!', type: 'main_scheme', size: 'land' },
-  '01001': { name: 'Spider-Man', type: 'hero' },
-  '01010': { name: 'Giant form', type: 'hero', size: 'dstd' },
+const FACES: Record<string, Partial<PackFace>[]> = {
+  '01094': [{ name: 'Rhino', type: 'villain', stage: 'I' }],
+  '01097': [{ name: 'The Break-In!', type: 'main_scheme', size: 'land' }],
+  '01001': [{ name: 'Spider-Man', type: 'hero' }],
+  '01010': [{ name: 'Giant form', type: 'hero', size: 'dstd' }],
 };
 
-function infoOf(code: string): CardInfo | null {
-  const face = FACES[code];
-  if (!face) {
-    return null;
-  }
-  const full: PackFace = { name: '', type: '', size: 'std', images: [`${code}.png`], ...face };
-  return { card: { code, faces: [full], back: 'player', quantity: 1 }, face: 0 };
-}
+const infoOf = infoFrom(FACES);
 
 function card(id: string, extra: Partial<TableCard>): TableCard {
   return { id, face: 0, back: 'player', owner: -1, zone: 'table', x: 0, y: 0, z: 1, ...extra };
@@ -88,17 +87,6 @@ function card(id: string, extra: Partial<TableCard>): TableCard {
 
 function pile(id: string, extra: Partial<PileView>): PileView {
   return { id, kind: 'deck', owner: -1, x: 0, y: 0, count: 3, ...extra };
-}
-
-function fakeSession() {
-  return {
-    act: vi.fn(() => 1),
-    lobby: vi.fn(() => true),
-    lastError: null,
-    presence: new Map<number, PresenceState>(),
-    sendPresence: vi.fn(),
-    viewGap: 0,
-  };
 }
 
 /**
@@ -254,20 +242,6 @@ afterEach(() => {
   vi.mocked(loadIndex).mockReset();
 });
 
-beforeEach(() => {
-  localStorage.clear();
-  vi.mocked(loadGameCards).mockResolvedValue();
-  vi.mocked(knownCard).mockImplementation(infoOf);
-  vi.mocked(loadIndex).mockResolvedValue(INDEX);
-});
-
-afterEach(() => {
-  vi.useRealTimers();
-  interaction.reset();
-  vi.mocked(loadGameCards).mockReset();
-  vi.mocked(knownCard).mockReset();
-  vi.mocked(loadIndex).mockReset();
-});
 describe('Table', () => {
   it('draws every table card and pile on one surface; the hand is not on the table', async () => {
     render(Table, { session: fakeSession(), view: makeView() });
@@ -791,19 +765,16 @@ describe('Table', () => {
     await fireEvent.pointerEnter(surface().querySelector('.card[data-id="b"]') as HTMLElement);
     expect(preview().closest('.peek')).toBe(panel);
 
-    vi.useFakeTimers();
-    try {
-      interaction.release();
-      await tick();
-      // Still drawn while it fades out, though no longer a preview for assistive technologies.
-      expect(noPreview()).toBe(true);
-      expect(document.querySelector('.peek')?.classList).toContain('leaving');
-      expect(document.querySelector('.peek .frame')?.getAttribute('aria-hidden')).toBe('true');
-      await vi.advanceTimersByTimeAsync(110);
-      expect(document.querySelector('.peek')).toBeNull();
-    } finally {
-      vi.useRealTimers();
-    }
+    interaction.release();
+    await tick();
+    // Still drawn while it fades out, though no longer a preview for assistive technologies.
+    expect(noPreview()).toBe(true);
+    const leaving = document.querySelector('.peek') as HTMLElement;
+    expect(leaving.classList).toContain('leaving');
+    expect(leaving.querySelector('.frame')?.getAttribute('aria-hidden')).toBe('true');
+    // Gone once its fade-out ends.
+    await fireEvent.animationEnd(leaving);
+    expect(document.querySelector('.peek')).toBeNull();
   });
 
   it('hovering a history line rings its cards on the table', async () => {
@@ -943,7 +914,7 @@ describe('Table', () => {
   });
 
   it('shows card names, images, history and crumbs in French when chosen', async () => {
-    setLang('fr');
+    cardLang.current = 'fr';
     // Built once, as the catalog keeps its cards: a localized face is made once per face.
     const english = infoOf('01094')!;
     const rhino: CardInfo = {

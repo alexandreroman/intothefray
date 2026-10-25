@@ -5,6 +5,7 @@ import (
 	"embed"
 	"fmt"
 	"io/fs"
+	"sync"
 
 	"github.com/alexandreroman/intothefray/internal/pack"
 )
@@ -14,11 +15,13 @@ import (
 //go:embed dist
 var FS embed.FS
 
-// Catalog loads the English packs from the embedded files.
-func Catalog() (*pack.Catalog, error) {
+// Catalog returns the English packs decoded from the embedded files. It
+// decodes them on the first call only: every caller shares the same catalog,
+// which is read-only and must never be modified.
+var Catalog = sync.OnceValues(func() (*pack.Catalog, error) {
 	dist, err := fs.Sub(FS, "dist")
 	if err != nil {
 		return nil, fmt.Errorf("open embedded packs: %w", err)
 	}
 	return pack.Load(dist, "en")
-}
+})

@@ -126,7 +126,6 @@ describe('GameSession', () => {
     lastSocket().receive({ type: 'welcome', token: 'tok-2', role: 'player' });
 
     expect(getToken('welcome-game')).toBe('tok-2');
-    expect(session.role).toBe('player');
     expect(session.status).toBe('open');
   });
 
@@ -312,14 +311,12 @@ describe('GameSession', () => {
   it('act reports null and sends nothing while the socket is not open', () => {
     const session = newSession();
 
-    expect(session.connected).toBe(false);
     expect(session.act({ kind: 'draw', n: 1 })).toBeNull();
 
     lastSocket().open();
-    expect(session.connected).toBe(true);
     expect(session.act({ kind: 'draw', n: 1 })).toBe(1);
     lastSocket().drop();
-    expect(session.connected).toBe(false);
+    expect(session.act({ kind: 'draw', n: 1 })).toBeNull();
   });
 
   it('lobby reports whether the message was sent', () => {

@@ -36,7 +36,7 @@ func (g *Game) ReplaySetup() (ReplaySetup, error) {
 		rp := ReplayPlayer{Name: p.Name, Color: p.Color}
 		for _, deck := range p.Decks {
 			if deck == nil {
-				return ReplaySetup{}, fmt.Errorf("%w: %s is missing a deck", ErrInvalid, p.Name)
+				return ReplaySetup{}, invalid("%s is missing a deck", p.Name)
 			}
 			rp.Decks = append(rp.Decks, *deck)
 		}
@@ -67,10 +67,10 @@ func Replay(cat *pack.Catalog, setup ReplaySetup, events []Event) (*Game, error)
 
 	for i, e := range events {
 		if e.Seat < 0 || e.Seat >= g.seatCount() {
-			return nil, fmt.Errorf("%w: event %d is by unknown seat %d", ErrInvalid, i, e.Seat)
+			return nil, invalid("event %d is by unknown seat %d", i, e.Seat)
 		}
 		if e.Seq <= g.History.LastSeq {
-			return nil, fmt.Errorf("%w: event %d has sequence number %d, after %d", ErrInvalid, i, e.Seq, g.History.LastSeq)
+			return nil, invalid("event %d has sequence number %d, after %d", i, e.Seq, g.History.LastSeq)
 		}
 		// Moves that replaced one another leave gaps in the numbering.
 		g.History.LastSeq = e.Seq - 1
@@ -86,22 +86,22 @@ func Replay(cat *pack.Catalog, setup ReplaySetup, events []Event) (*Game, error)
 // and maxSeats decks at most in all.
 func checkReplayPlayers(players []ReplayPlayer) error {
 	if len(players) == 0 || len(players) > maxSeats {
-		return fmt.Errorf("%w: a replay needs 1 to %d players, not %d", ErrInvalid, maxSeats, len(players))
+		return invalid("a replay needs 1 to %d players, not %d", maxSeats, len(players))
 	}
 	taken := map[int]bool{}
 	decks := 0
 	for _, p := range players {
 		if p.Color < 0 || p.Color >= maxSeats || taken[p.Color] {
-			return fmt.Errorf("%w: %s has colour %d, which is out of range or taken", ErrInvalid, p.Name, p.Color)
+			return invalid("%s has colour %d, which is out of range or taken", p.Name, p.Color)
 		}
 		taken[p.Color] = true
 		if len(p.Decks) == 0 {
-			return fmt.Errorf("%w: %s has no deck", ErrInvalid, p.Name)
+			return invalid("%s has no deck", p.Name)
 		}
 		decks += len(p.Decks)
 	}
 	if decks > maxSeats {
-		return fmt.Errorf("%w: a replay holds %d decks, more than %d", ErrInvalid, decks, maxSeats)
+		return invalid("a replay holds %d decks, more than %d", decks, maxSeats)
 	}
 	return nil
 }

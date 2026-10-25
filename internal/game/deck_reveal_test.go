@@ -444,6 +444,7 @@ func TestPutOnTopOfTheDeckCoversTheRevealedCard(t *testing.T) {
 
 	f.mustDo(t, "h", Action{Kind: ActToDeck, Card: drawn, Where: whereTop}, at(3))
 
+	drawn = f.renamedID(t, drawn)
 	if got := topCards(f.g.Table.Piles["deck:p0"], 2); !slices.Equal(got, []string{drawn, id}) {
 		t.Errorf("top = %v, want [%s %s]", got, drawn, id)
 	}
@@ -457,6 +458,7 @@ func TestRevealedCardPutOnTopOfItsDeckGoesBackThere(t *testing.T) {
 
 	f.mustDo(t, "h", Action{Kind: ActToDeck, Card: id, Where: whereTop}, at(2))
 
+	id = f.renamedID(t, id)
 	if got := topCards(f.g.Table.Piles["deck:p0"], 1); !slices.Equal(got, []string{id}) {
 		t.Errorf("top = %v, want [%s]", got, id)
 	}
@@ -513,15 +515,18 @@ func TestFlipFaceDownPutsTheRevealedCardBack(t *testing.T) {
 
 			f.mustDo(t, "h", Action{Kind: ActFlip, Card: id}, at(30))
 
-			c := f.g.Table.Cards[id]
-			if c.Zone != ZonePile || c.Pile != deck.pile || c.OnPile != "" || c.FaceDown {
-				t.Errorf("flipped card = %+v, want it back in %s", c, deck.pile)
+			// Back in its deck, the card goes by a new id.
+			back := f.renamedID(t, id)
+			c := f.g.Table.Cards[back]
+			if back == id || c.Zone != ZonePile || c.Pile != deck.pile || c.OnPile != "" || c.FaceDown {
+				t.Errorf("flipped card %s = %+v, want it back in %s under a new id", back, c, deck.pile)
 			}
-			if got := topCards(f.g.Table.Piles[deck.pile], 1)[0]; got != id || len(f.g.Table.Piles[deck.pile].Cards) != count+1 {
-				t.Errorf("top of %s = %s, want %s on top of %d cards", deck.pile, got, id, count)
+			pile := f.g.Table.Piles[deck.pile]
+			if got := topCards(pile, 1)[0]; got != back || len(pile.Cards) != count+1 {
+				t.Errorf("top of %s = %s, want %s on top of %d cards", deck.pile, got, back, count)
 			}
 			name := f.g.pileName(f.g.actorOf(0), deck.pile)
-			if got, want := f.lastLog().Text, "put "+f.nameOf(t, id)+" back on top of "+name; got != want {
+			if got, want := f.lastLog().Text, "put "+f.nameOf(t, back)+" back on top of "+name; got != want {
 				t.Errorf("line = %q, want %q", got, want)
 			}
 			if got := f.lastLog().Cards; len(got) != 0 {

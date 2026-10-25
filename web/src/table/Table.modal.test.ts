@@ -6,15 +6,9 @@
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import Table from './Table.svelte';
 import { interaction } from './interaction.svelte';
-import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
-import type {
-  Action,
-  CardView as TableCard,
-  PackFace,
-  PileView,
-  PresenceState,
-  View,
-} from '../lib/types';
+import { knownCard, loadGameCards } from '../lib/catalog';
+import type { Action, PackFace, View } from '../lib/types';
+import { card, pile, fakeSession, infoFrom, placed } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -22,35 +16,12 @@ vi.mock('../lib/catalog', async (importOriginal) => ({
   loadGameCards: vi.fn(),
 }));
 
-const NAMES: Record<string, string> = { '01001': 'Spider-Man', '01094': 'Rhino' };
+const FACES: Record<string, Partial<PackFace>[]> = {
+  '01001': [{ name: 'Spider-Man' }],
+  '01094': [{ name: 'Rhino' }],
+};
 
-function infoOf(code: string): CardInfo | null {
-  const name = NAMES[code];
-  if (!name) {
-    return null;
-  }
-  const face: PackFace = { name, type: '', size: 'std', images: [`${code}.png`] };
-  return { card: { code, faces: [face], back: 'player', quantity: 1 }, face: 0 };
-}
-
-function card(id: string, extra: Partial<TableCard> = {}): TableCard {
-  return {
-    id,
-    code: '01001',
-    face: 0,
-    back: 'player',
-    owner: 0,
-    zone: 'table',
-    x: 0,
-    y: 0,
-    z: 1,
-    ...extra,
-  };
-}
-
-function pile(id: string, extra: Partial<PileView>): PileView {
-  return { id, kind: 'deck', owner: -1, x: 0, y: 0, count: 30, ...extra };
-}
+const infoOf = infoFrom(FACES);
 
 /** Rhino with Alex (p0, the viewer and host) alone: a card, the villain, a deck and a discard pile. */
 function makeView(): View {
@@ -85,21 +56,6 @@ function makeView(): View {
     },
     log: [],
   };
-}
-
-function fakeSession() {
-  return {
-    act: vi.fn(() => 1),
-    lobby: vi.fn(() => true),
-    lastError: null,
-    presence: new Map<number, PresenceState>(),
-    sendPresence: vi.fn(),
-    viewGap: 0,
-  };
-}
-
-function placed(id: string): HTMLElement {
-  return document.querySelector<HTMLElement>(`.surface [data-id="${id}"]`)!;
 }
 
 function contextMenu(): HTMLElement | null {

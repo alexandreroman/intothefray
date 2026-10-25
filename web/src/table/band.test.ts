@@ -1,17 +1,9 @@
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import Table from './Table.svelte';
 import { interaction } from './interaction.svelte';
-import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
-import type {
-  Action,
-  Arrow,
-  CardView as TableCard,
-  PackFace,
-  PileView,
-  PresenceState,
-  SessionError,
-  View,
-} from '../lib/types';
+import { knownCard, loadGameCards } from '../lib/catalog';
+import type { Arrow, CardView as TableCard, PackFace, PileView, View } from '../lib/types';
+import { card, fakeSession, infoFrom, placed, domRect } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -19,34 +11,12 @@ vi.mock('../lib/catalog', async (importOriginal) => ({
   loadGameCards: vi.fn(),
 }));
 
-const FACES: Record<string, Partial<PackFace>> = {
-  '01001': { name: 'Spider-Man' },
-  '01094': { name: 'Rhino', stage: 'I' },
+const FACES: Record<string, Partial<PackFace>[]> = {
+  '01001': [{ name: 'Spider-Man' }],
+  '01094': [{ name: 'Rhino', stage: 'I' }],
 };
 
-function infoOf(code: string): CardInfo | null {
-  const face = FACES[code];
-  if (!face) {
-    return null;
-  }
-  const full: PackFace = { name: '', type: '', size: 'std', images: [`${code}.png`], ...face };
-  return { card: { code, faces: [full], back: 'player', quantity: 1 }, face: 0 };
-}
-
-function card(id: string, extra: Partial<TableCard> = {}): TableCard {
-  return {
-    id,
-    code: '01001',
-    face: 0,
-    back: 'player',
-    owner: 0,
-    zone: 'table',
-    x: 0,
-    y: 0,
-    z: 1,
-    ...extra,
-  };
-}
+const infoOf = infoFrom(FACES);
 
 // The villain's row at the top, then Alex's, then Sam's, 300 apart.
 const CARDS = [
@@ -99,31 +69,6 @@ function makeView(
   };
 }
 
-function fakeSession() {
-  return {
-    act: vi.fn((_action: Action): number | null => 1),
-    lobby: vi.fn(() => true),
-    lastError: null as SessionError | null,
-    presence: new Map<number, PresenceState>(),
-    sendPresence: vi.fn(),
-    viewGap: 0,
-  };
-}
-
-function domRect(left: number, top: number, width: number, height: number): DOMRect {
-  return {
-    left,
-    top,
-    width,
-    height,
-    right: left + width,
-    bottom: top + height,
-    x: left,
-    y: top,
-    toJSON: () => ({}),
-  } as DOMRect;
-}
-
 // The screen, at zoom 1: the table's scroller spans 1000 × 900, the surface starts 20 px in and
 // 40 px down; every card is 100 × 140. "mine" spans 20-120 × 340-480, "other" 420-520 × 340-480.
 const SURFACE = { left: 20, top: 40 };
@@ -159,14 +104,6 @@ async function renderTable(view: View = makeView()) {
       await result.rerender({ session, view: next });
     },
   };
-}
-
-function placed(id: string): HTMLElement {
-  const element = document.querySelector<HTMLElement>(`.surface .card[data-id="${id}"]`);
-  if (!element) {
-    throw new Error(`no ${id} on the table`);
-  }
-  return element;
 }
 
 function surface(): HTMLElement {
@@ -387,8 +324,8 @@ describe('the rubber band', () => {
     interaction.setGroup(new Set(['mine']));
     await Promise.resolve();
 
-    expect(placed('mine').querySelector('.sring')).not.toBeNull();
-    expect(placed('other').querySelector('.sring')).toBeNull();
+    expect(placed('mine', '.card').querySelector('.sring')).not.toBeNull();
+    expect(placed('other', '.card').querySelector('.sring')).toBeNull();
     expect(document.querySelector<HTMLElement>('.app')?.style.getPropertyValue('--you')).toBe(
       'var(--p3)',
     );
@@ -423,7 +360,7 @@ describe('the chips of an owner frame', () => {
   it('a press on a chip is no empty spot: no band, the selection, the hover and the arrows stay', async () => {
     const { session } = await renderTable(makeView({ piles: PILES, arrows: [OWN_ARROW] }));
     interaction.setGroup(new Set(['mine']));
-    await fireEvent.pointerEnter(placed('other'), { clientX: 450, clientY: 400 });
+    await fireEvent.pointerEnter(placed('other', '.card'), { clientX: 450, clientY: 400 });
 
     await pressChip();
     await moveTo(450, 500);

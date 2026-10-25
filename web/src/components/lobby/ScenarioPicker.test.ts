@@ -1,7 +1,15 @@
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import ScenarioPicker from './ScenarioPicker.svelte';
-import { setLang } from '../../lib/lang';
+import type { Lang } from '../../lib/lang';
 import type { Index, LobbyConfig, View, YouView } from '../../lib/types';
+
+// The card language, as each test chooses: Options does not offer French, so no stored choice gives it.
+const cardLang = vi.hoisted(() => ({ current: 'en' as Lang }));
+
+vi.mock('../../lib/lang', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../lib/lang')>()),
+  storedLang: () => cardLang.current,
+}));
 
 // Whether the viewer prefers reduced motion, as each test chooses.
 const motion = vi.hoisted(() => ({ reduced: false }));
@@ -189,11 +197,11 @@ describe('ScenarioPicker in French', () => {
   };
 
   afterEach(() => {
-    localStorage.clear();
+    cardLang.current = 'en';
   });
 
   function renderFrench(config: LobbyConfig) {
-    setLang('fr');
+    cardLang.current = 'fr';
     return render(ScenarioPicker, { view: viewOf(config), index: french, onconfigure: vi.fn() });
   }
 

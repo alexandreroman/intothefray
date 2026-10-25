@@ -9,11 +9,11 @@
   let starting = $state(false);
   let error = $state('');
 
-  async function startGame(name: string): Promise<void> {
+  async function startGame(): Promise<void> {
     starting = true;
     error = '';
     try {
-      const game = await createGame(name);
+      const game = await createGame(playerName());
       setToken(game.id, game.token);
       go(`/g/${encodeURIComponent(game.id)}`);
     } catch (e) {
@@ -21,10 +21,6 @@
     } finally {
       starting = false;
     }
-  }
-
-  function onStart(): void {
-    void startGame(playerName());
   }
 </script>
 
@@ -45,18 +41,8 @@
 
       <div class="start">
         <div class="actions">
-          <button class="btn-primary" disabled={starting} onclick={onStart}>
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M5 12h14M13 6l6 6-6 6" />
-            </svg>
+          <button class="btn-primary" disabled={starting} onclick={startGame}>
+            <Icon name="arrow-right" />
             Start a game
           </button>
           <button class="secondary" onclick={() => go('/options')}
@@ -163,13 +149,6 @@
     animation: rise 0.25s ease-out;
   }
 
-  @keyframes rise {
-    from {
-      opacity: 0;
-      transform: translateY(8px);
-    }
-  }
-
   .intro {
     flex: 1 1 520px;
     min-width: 0;
@@ -231,9 +210,10 @@
     clip-path: polygon(14px 0, 100% 0, calc(100% - 14px) 100%, 0 100%);
   }
 
-  .btn-primary svg {
+  .btn-primary :global(svg) {
     width: 20px;
     height: 20px;
+    stroke-width: 2.2;
   }
 
   .secondary {

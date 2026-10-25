@@ -14,8 +14,8 @@ type: project
   History API path routes (`/`, `/options`, `/g/<id>`) under the build's
   base path. Caddy falls back to `index.html` for app routes; GitHub
   Pages serves a `404.html` copy of it, and the workflow takes the base
-  path from `actions/configure-pages`. Hash URLs (`#/…`) are not
-  supported: there is no compatibility redirect.
+  path from `actions/configure-pages`. Routes are path URLs only, with no
+  hash routing.
 - Real time over WebSocket; clients send intents, the server applies them.
 
 **Why:** Go, Redis, TypeScript and separate static hosting are the user's

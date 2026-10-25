@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { apiUrl, createGame, wsUrl } from './api';
+import { apiUrl, createGame, fetchJSON, wsUrl } from './api';
 
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -50,5 +50,22 @@ describe('createGame', () => {
       '/api/games',
       expect.objectContaining({ method: 'POST' }),
     );
+  });
+});
+
+describe('fetchJSON', () => {
+  it('parses the JSON body', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response(JSON.stringify({ commit: 'abc' }))),
+    );
+
+    await expect(fetchJSON('/api/version')).resolves.toEqual({ commit: 'abc' });
+  });
+
+  it('rejects with the status of an error answer', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('', { status: 503 })));
+
+    await expect(fetchJSON('/api/version')).rejects.toThrow('Request failed (503)');
   });
 });

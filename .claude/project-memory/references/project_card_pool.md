@@ -16,13 +16,13 @@ type: project
   cards are fixed once its table is set up).
 - The response is uncompressed; the proxy or CDN compresses it (see
   [[project_no_backend_compression]]).
-- The SPA publishes only `packs/<lang>/index.json`, for the lobby's
-  scenario picker. Lobby hero thumbnails come from `PlayerView.heroImage`,
-  which `Game.SetDeck` fills from the catalog.
+- The SPA publishes only `packs/en/index.json`, for the lobby's scenario
+  picker. Lobby hero thumbnails come from `DeckView.heroImage`, which
+  `Game.SetDeck` fills from the catalog.
 
-**Why:** bandwidth. All 64 pack files weigh about 150 KB on the wire once
-compressed (1.9 MB raw); a game's pool weighs 2 to 5 KB compressed for 1 to
-4 players.
+**Why:** bandwidth. The 63 pack files and the index weigh about 220 KB on
+the wire once compressed (3 MB raw); a game's pool weighs 2 to 5 KB
+compressed for 1 to 4 players.
 
 **How to apply:** a feature that needs card data on the client reads it
 from the pool or the lobby view, never from static pack files; a feature

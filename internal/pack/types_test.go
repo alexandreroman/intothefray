@@ -76,7 +76,8 @@ func TestPackFileRoundTrip(t *testing.T) {
 		// A set without curated setup data keeps its original shape.
 		`{"code":"rhino","name":"Rhino","kind":"villain","cards":["01097"]}`,
 		// Empty overrides, such as the subname here, are left out.
-		`"localized":{"fr":{"name":"Le Rhino","images":["https://mc4db.merlindumesnil.net/bundles/cards/FR/core/01097.webp"]}}`,
+		`"localized":{"fr":{"name":"Le Rhino",` +
+			`"images":["https://mc4db.merlindumesnil.net/bundles/cards/FR/core/01097.webp"]}}`,
 		`"side":{"label":"Weather"}`,
 		`"setAside":["25002"]`,
 		`"sideDecks":["doctor_strange_invocation_deck"]`,

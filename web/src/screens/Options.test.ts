@@ -135,27 +135,11 @@ describe('Options', () => {
     expect(minimal.querySelector('svg[aria-label="First player"]')).not.toBeNull();
   });
 
-  it('offers English and French, English first by default', () => {
+  it('hides the Language section while English is the only language offered', () => {
     render(Options);
-    const select = screen.getByLabelText<HTMLSelectElement>('Language');
 
-    expect([...select.options].map((option) => option.textContent)).toEqual([
-      'English',
-      'Français',
-    ]);
-    expect(select.value).toBe('en');
-    expect(screen.getByText('Card names and images. The interface stays in English.')).toBeTruthy();
-  });
-
-  it('stores the chosen language and shows it next time', async () => {
-    const { unmount } = render(Options);
-
-    await fireEvent.change(screen.getByLabelText('Language'), { target: { value: 'fr' } });
-
-    expect(getPref('itf-lang')).toBe('fr');
-    unmount();
-    render(Options);
-    expect(screen.getByLabelText<HTMLSelectElement>('Language').value).toBe('fr');
+    expect(screen.queryByLabelText('Language')).toBeNull();
+    expect(screen.queryByText('Card names and images. The interface stays in English.')).toBeNull();
   });
 
   it('shows the title and where the options are saved', () => {

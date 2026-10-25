@@ -26,21 +26,9 @@ type Card struct {
 	PackCreator string `json:"pack_creator"`
 }
 
-// Pack describes an mc4db pack, official or fan-made.
-type Pack struct {
-	Code     string `json:"code"`
-	Name     string `json:"name"`
-	Position int    `json:"position"`
-	Creator  string `json:"creator"` // e.g. "FFG" for the official packs
-}
-
-// FetchCards returns the cards of every pack, encounter cards included.
-func FetchCards(ctx context.Context, c *fetch.Client) ([]Card, error) {
-	return fetchCards(ctx, c, BaseURL)
-}
-
-// The base URL is a parameter so tests can target a local server.
-func fetchCards(ctx context.Context, c *fetch.Client, base string) ([]Card, error) {
+// FetchCards returns the cards of every pack, encounter cards included, from
+// the mc4db site at base, i.e. BaseURL.
+func FetchCards(ctx context.Context, c *fetch.Client, base string) ([]Card, error) {
 	var cards []Card
 	if err := c.JSON(ctx, base+"/api/public/cards/?encounter=1", &cards); err != nil {
 		return nil, fmt.Errorf("fetch mc4db cards: %w", err)
@@ -48,13 +36,10 @@ func fetchCards(ctx context.Context, c *fetch.Client, base string) ([]Card, erro
 	return cards, nil
 }
 
-// FetchPacks returns every pack, fan-made ones included.
-func FetchPacks(ctx context.Context, c *fetch.Client) ([]Pack, error) {
-	return fetchPacks(ctx, c, BaseURL)
-}
-
-func fetchPacks(ctx context.Context, c *fetch.Client, base string) ([]Pack, error) {
-	var packs []Pack
+// FetchPacks returns every pack, fan-made ones included, from the mc4db site at
+// base. mc4db packs share the marvelcdb schema, but not all their codes.
+func FetchPacks(ctx context.Context, c *fetch.Client, base string) ([]marvelcdb.Pack, error) {
+	var packs []marvelcdb.Pack
 	if err := c.JSON(ctx, base+"/api/public/packs/", &packs); err != nil {
 		return nil, fmt.Errorf("fetch mc4db packs: %w", err)
 	}

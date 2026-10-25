@@ -9,8 +9,8 @@ on:
 permissions:
   contents: read
 
-# A new push to a pull request cancels its superseded run; runs on main all
-# finish.
+# A new push to a PR cancels its superseded run; on main, a running run always
+# finishes and a newer one replaces any pending one.
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
@@ -32,15 +32,8 @@ jobs:
         with:
           go-version-file: go.mod
 
-      # go build ./... also compiles the commands make build leaves out
-      # (cmd/packgen).
       - name: Build
-        run: |
-          go build ./...
-          make build
-
-      - name: Vet
-        run: go vet ./...
+        run: make build
 
       - name: Test
         run: make test
@@ -79,20 +72,10 @@ jobs:
           restore-keys: pnpm-store-${{ runner.os }}-
 
       - name: Install dependencies
-        working-directory: web
-        run: pnpm install --frozen-lockfile
+        run: make web-install
 
-      - name: Type-check
-        working-directory: web
-        run: pnpm check
-
-      - name: Lint
-        working-directory: web
-        run: pnpm lint
-
-      - name: Test
-        working-directory: web
-        run: pnpm test
+      - name: Check
+        run: make web-check
 
       # No VITE_API_URL: the app then calls the API on its own origin. A release
       # run skips it: the build for Pages below replaces it.
@@ -156,11 +139,9 @@ jobs:
         run: docker compose config --quiet
 
       # Runs in the compose web service so that the Caddy version stays pinned
-      # in compose.yaml only. web/dist must exist for its bind mount.
+      # in compose.yaml only.
       - name: Validate the Caddyfile
-        run: |
-          mkdir -p web/dist
-          docker compose run --rm --no-deps -T web caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+        run: docker compose run --rm --no-deps -T web caddy validate --config /etc/caddy/Caddyfile
 
   # Publishes the image only once every check of the commit has passed.
   publish:
@@ -202,7 +183,7 @@ jobs:
   # Deploys the frontend the web job built. It goes out once its image is
   # published, so the release order stays image, frontend, then backend.
   pages:
-    needs: [publish, web]
+    needs: publish
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
@@ -211,10 +192,6 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    # One deployment at a time; a newer deployment supersedes a queued one.
-    concurrency:
-      group: pages
-      cancel-in-progress: false
     steps:
       - id: deployment
         uses: actions/deploy-pages@v5

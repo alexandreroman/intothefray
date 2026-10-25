@@ -5,6 +5,8 @@
   --panel-2: #1c2436;
   --line-strong: #2b3550;
   --text: #eef1f8;
+  /* Secondary text that must stay easy to read: between the text and the muted grey. */
+  --text-soft: #c9cfdf;
   --muted: #9aa4bf;
   --faint: #737d99;
 
@@ -22,6 +24,8 @@
   --sel: #49c6ff;
   --ok: #57c78a;
   --warn: #f2b51d;
+  /* The text of an error message, a pale red that reads on the ink. */
+  --error-text: #ffb3c0;
 
   /* One colour per seat, indexed by the player colour 0..3: the four aspects of the game
      (Leadership, Aggression, Protection, Justice), tuned for the ink grounds. The red leans
@@ -277,6 +281,13 @@ select:focus {
     inset 0 -5px var(--bg);
 }
 
+/* A link drawn as the primary button. */
+a.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
 /* A section's narration box, as in a comic panel. */
 .caption {
   display: inline-block;
@@ -292,11 +303,32 @@ select:focus {
   clip-path: polygon(0 0, 100% 0, calc(100% - 7px) 100%, 0 100%);
 }
 
-/* The titles: condensed, heavy and leaning forward. */
+/* The screen titles: condensed, heavy and leaning forward. A screen may size its own. */
 .display {
+  margin: 0;
+  font-size: 56px;
+  line-height: 0.9;
   font-stretch: 62%;
   font-weight: 900;
   font-style: italic;
+}
+
+/* Screens enter by rising into place. */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* Out of sight and taking no room, yet read by screen readers. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 /* The table's dots, one every grid step (table/layout.ts): on the table itself, and under .table-bg. */
@@ -309,4 +341,21 @@ select:focus {
 /* The empty table: dotted felt, shared by the screens outside a game and the theme previews. */
 .table-bg {
   background-color: var(--table-bg);
+}
+
+/* A bar floating over the table (zoom control, Undo, player selector): its buttons on a raised panel. */
+.floatbar {
+  padding: 4px;
+  background: #141a28eb;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 6px 16px #0008;
+}
+
+/* The thin rule between two groups of buttons of a floating bar. */
+.floatbar-sep {
+  width: 1px;
+  height: 20px;
+  margin: 0 2px;
+  background: var(--line-strong);
 }

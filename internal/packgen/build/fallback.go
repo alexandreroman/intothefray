@@ -11,9 +11,7 @@ import (
 )
 
 const (
-	// mc4dbSource names mc4db in the fallback report.
-	mc4dbSource = "mc4db"
-	// officialCreator is the mc4db creator of the official cards and packs.
+	// officialCreator is the mc4db pack_creator of the official cards.
 	officialCreator = "FFG"
 	// officialTag marks the mc4db codes of the official packs and sets, which
 	// marvelcdb spells without it: fear_no_evil_by_ffg is fne,
@@ -23,7 +21,7 @@ const (
 
 // withFallback completes the marvelcdb records and packs with the official
 // mc4db records of the cards marvelcdb lacks. It lists the records it adds,
-// sorted by source, pack and code, and the candidates it cannot add, sorted by
+// sorted by pack and code, and the candidates it cannot add, sorted by
 // code. Its arguments are left unchanged.
 //
 // A card's faces never mix sources: the mc4db records of a base code are all
@@ -41,7 +39,7 @@ func withFallback(
 	mc []marvelcdb.Card,
 	mcPacks []marvelcdb.Pack,
 	mc4dbCards []mc4db.Card,
-	mc4dbPacks []mc4db.Pack,
+	mc4dbPacks []marvelcdb.Pack,
 ) (cards []marvelcdb.Card, packs []marvelcdb.Pack, added []report.Fallback, unsupported []report.Unsupported) {
 	knownBases := make(map[string]bool, len(mc))
 	for _, card := range mc {
@@ -73,16 +71,11 @@ func withFallback(
 		record.SetCode = strings.ReplaceAll(record.SetCode, officialTag, "")
 		record.ImageHost = mc4db.BaseURL
 		cards = append(cards, record)
-		added = append(added, report.Fallback{
-			Source: mc4dbSource,
-			Pack:   packCode,
-			Code:   record.Code,
-			Name:   record.Name,
-		})
+		added = append(added, report.Fallback{Pack: packCode, Code: record.Code})
 	}
 
 	slices.SortFunc(added, func(a, b report.Fallback) int {
-		return cmp.Or(cmp.Compare(a.Source, b.Source), cmp.Compare(a.Pack, b.Pack), cmp.Compare(a.Code, b.Code))
+		return cmp.Or(cmp.Compare(a.Pack, b.Pack), cmp.Compare(a.Code, b.Code))
 	})
 	slices.SortFunc(unsupported, func(a, b report.Unsupported) int { return cmp.Compare(a.Code, b.Code) })
 	return cards, mapper.packs, added, unsupported
@@ -92,16 +85,16 @@ func withFallback(
 // packs the ones marvelcdb lacks as they are needed.
 type packMapper struct {
 	packs      []marvelcdb.Pack
-	codes      map[string]bool       // marvelcdb pack codes
-	byName     map[string]string     // marvelcdb pack code by lower-case name
-	mc4dbPacks map[string]mc4db.Pack // by mc4db code
+	codes      map[string]bool           // marvelcdb pack codes
+	byName     map[string]string         // marvelcdb pack code by lower-case name
+	mc4dbPacks map[string]marvelcdb.Pack // by mc4db code
 }
 
-func newPackMapper(mcPacks []marvelcdb.Pack, mc4dbPacks []mc4db.Pack) *packMapper {
+func newPackMapper(mcPacks, mc4dbPacks []marvelcdb.Pack) *packMapper {
 	mapper := &packMapper{
 		codes:      make(map[string]bool, len(mcPacks)),
 		byName:     make(map[string]string, len(mcPacks)),
-		mc4dbPacks: make(map[string]mc4db.Pack, len(mc4dbPacks)),
+		mc4dbPacks: make(map[string]marvelcdb.Pack, len(mc4dbPacks)),
 	}
 	for _, mcPack := range mcPacks {
 		mapper.add(mcPack)

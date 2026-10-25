@@ -30,12 +30,15 @@ import (
 // throttle anonymous clients.
 const userAgent = "intothefray-packgen (+https://github.com/alexandreroman/intothefray)"
 
+// lang is the language of the generated packs; the other languages are
+// overrides inside them.
+const lang = "en"
+
 type options struct {
 	out        string
 	cache      string
 	curatedDir string
 	refresh    bool
-	lang       string
 }
 
 func main() {
@@ -49,7 +52,6 @@ func execute() int {
 	flag.StringVar(&opts.cache, "cache", "packs/.cache", "source and image-check cache")
 	flag.StringVar(&opts.curatedDir, "curated", "packs/curated", "curated files")
 	flag.BoolVar(&opts.refresh, "refresh", false, "ignore cached source data")
-	flag.StringVar(&opts.lang, "lang", "en", "language")
 	flag.Parse()
 
 	logger := slog.New(slog.NewTextHandler(os.Stderr, nil))
@@ -87,10 +89,10 @@ func run(ctx context.Context, logger *slog.Logger, opts options) error {
 	if err != nil {
 		return fmt.Errorf("build packs: %w", err)
 	}
-	if err := write.Dist(opts.out, opts.lang, result); err != nil {
+	if err := write.Dist(opts.out, lang, result); err != nil {
 		return fmt.Errorf("write packs: %w", err)
 	}
-	logger.Info("packs written", "dir", filepath.Join(opts.out, opts.lang))
+	logger.Info("packs written", "dir", filepath.Join(opts.out, lang))
 
 	printReport(os.Stdout, result)
 	return nil
@@ -113,10 +115,10 @@ func fetchInputs(ctx context.Context, opts options) (build.Inputs, error) {
 	if in.FrenchMCPacks, err = marvelcdb.FetchPacks(ctx, client, marvelcdb.FrenchBaseURL); err != nil {
 		return in, err
 	}
-	if in.MC4DB, err = mc4db.FetchCards(ctx, client); err != nil {
+	if in.MC4DB, err = mc4db.FetchCards(ctx, client, mc4db.BaseURL); err != nil {
 		return in, err
 	}
-	if in.MC4DBPacks, err = mc4db.FetchPacks(ctx, client); err != nil {
+	if in.MC4DBPacks, err = mc4db.FetchPacks(ctx, client, mc4db.BaseURL); err != nil {
 		return in, err
 	}
 	if in.CB, err = cerebro.FetchCards(ctx, client); err != nil {
@@ -163,15 +165,15 @@ func printReport(w io.Writer, result build.Result) {
 	}
 }
 
-// printFallback prints one line per source and pack with the records taken
-// from that source, e.g. "from mc4db (fne): 2 records: 60065, 60066". The
-// entries are sorted by source, pack and code.
+// printFallback prints one line per pack with the records taken from mc4db,
+// e.g. "from mc4db (fne): 2 records: 60065, 60066". The entries are sorted by
+// pack and code.
 func printFallback(w io.Writer, entries []report.Fallback) {
 	for len(entries) > 0 {
 		first := entries[0]
 		var codes []string
 		for _, entry := range entries {
-			if entry.Source != first.Source || entry.Pack != first.Pack {
+			if entry.Pack != first.Pack {
 				break
 			}
 			codes = append(codes, entry.Code)
@@ -180,8 +182,7 @@ func printFallback(w io.Writer, entries []report.Fallback) {
 		if len(codes) == 1 {
 			noun = "record"
 		}
-		_, _ = fmt.Fprintf(w, "from %s (%s): %d %s: %s\n",
-			first.Source, first.Pack, len(codes), noun, strings.Join(codes, ", "))
+		_, _ = fmt.Fprintf(w, "from mc4db (%s): %d %s: %s\n", first.Pack, len(codes), noun, strings.Join(codes, ", "))
 		entries = entries[len(codes):]
 	}
 }

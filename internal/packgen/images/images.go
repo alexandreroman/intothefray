@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"path/filepath"
 	"slices"
 	"strconv"
 	"strings"
@@ -19,16 +18,17 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/alexandreroman/intothefray/internal/pack"
+	"github.com/alexandreroman/intothefray/internal/packgen/fetch"
 	"github.com/alexandreroman/intothefray/internal/packgen/report"
 )
 
 const (
-	defaultConcurrency = 16
-	defaultTimeout     = 15 * time.Second
-	reasonNoImage      = "no image"
-	maxAttempts        = 3
-	defaultBackoff     = 500 * time.Millisecond
-	maxBackoff         = 10 * time.Second
+	maxConcurrent  = 16 // parallel requests
+	defaultTimeout = 15 * time.Second
+	reasonNoImage  = "no image"
+	maxAttempts    = 3
+	defaultBackoff = 500 * time.Millisecond
+	maxBackoff     = 10 * time.Second
 )
 
 // Checker verifies image URLs with HEAD requests.
@@ -37,8 +37,6 @@ type Checker struct {
 	HTTP *http.Client
 	// CachePath is a JSON file mapping URL to liveness. Empty disables caching.
 	CachePath string
-	// Concurrency bounds parallel requests; 16 when zero.
-	Concurrency int
 	// UserAgent identifies the requests; Go's default is sent when empty.
 	// Some hosts, such as mc4db, throttle Go's default with 429 answers.
 	UserAgent string
@@ -85,7 +83,7 @@ func (c *Checker) Check(ctx context.Context, urls []string) (map[string]bool, er
 	var mu sync.Mutex // guards result, cache and inconclusive
 	var inconclusive []string
 	group, groupCtx := errgroup.WithContext(ctx)
-	group.SetLimit(c.concurrency())
+	group.SetLimit(maxConcurrent)
 	for _, url := range pending {
 		group.Go(func() error {
 			v := c.probeWithRetries(groupCtx, url)
@@ -198,13 +196,6 @@ func (c *Checker) httpClient() *http.Client {
 	return &http.Client{Timeout: defaultTimeout}
 }
 
-func (c *Checker) concurrency() int {
-	if c.Concurrency > 0 {
-		return c.Concurrency
-	}
-	return defaultConcurrency
-}
-
 func (c *Checker) loadCache() (map[string]bool, error) {
 	cache := map[string]bool{}
 	if c.CachePath == "" {
@@ -223,8 +214,8 @@ func (c *Checker) loadCache() (map[string]bool, error) {
 	return cache, nil
 }
 
-// saveCache writes through a temp file and a rename, so an interrupted run
-// never leaves a truncated cache behind.
+// saveCache writes the cache atomically, so an interrupted run never leaves a
+// truncated cache behind.
 func (c *Checker) saveCache(cache map[string]bool) error {
 	if c.CachePath == "" {
 		return nil
@@ -233,24 +224,7 @@ func (c *Checker) saveCache(cache map[string]bool) error {
 	if err != nil {
 		return fmt.Errorf("encode image cache: %w", err)
 	}
-	dir := filepath.Dir(c.CachePath)
-	if err := os.MkdirAll(dir, 0o750); err != nil {
-		return fmt.Errorf("write image cache: %w", err)
-	}
-	tmp, err := os.CreateTemp(dir, ".tmp-*")
-	if err != nil {
-		return fmt.Errorf("write image cache: %w", err)
-	}
-	defer func() { _ = os.Remove(tmp.Name()) }() // no-op once renamed
-
-	if _, err := tmp.Write(data); err != nil {
-		_ = tmp.Close()
-		return fmt.Errorf("write image cache: %w", err)
-	}
-	if err := tmp.Close(); err != nil {
-		return fmt.Errorf("write image cache: %w", err)
-	}
-	if err := os.Rename(tmp.Name(), c.CachePath); err != nil {
+	if err := fetch.WriteFileAtomic(c.CachePath, data); err != nil {
 		return fmt.Errorf("write image cache: %w", err)
 	}
 	return nil

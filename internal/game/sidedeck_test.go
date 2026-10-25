@@ -310,6 +310,7 @@ func TestSideDeckRoutes(t *testing.T) {
 		f := sideDeckFixture(t)
 		id := drawSide(t, f, "b", senseDeck, 1)
 		f.mustDo(t, "b", Action{Kind: ActToDeck, Card: id, Where: whereBottom}, at(2))
+		id = f.renamedID(t, id)
 		if bottom := f.g.Table.Piles[senseDeck].Cards[0]; bottom != id {
 			t.Errorf("bottom of the Sense deck = %s, want %s", bottom, id)
 		}
@@ -326,6 +327,7 @@ func TestSideDeckRoutes(t *testing.T) {
 			{Kind: ActToDeck, Card: first, Where: whereBottom},
 			{Kind: ActToDeck, Card: second, Where: whereBottom},
 		}}, at(3))
+		first, second = f.renamedID(t, first), f.renamedID(t, second)
 		if got := f.g.Table.Piles[senseDeck].Cards[:2]; !slices.Equal(got, []string{second, first}) {
 			t.Errorf("bottom of the Sense deck = %v, want [%s %s]", got, second, first)
 		}
@@ -512,6 +514,7 @@ func TestTuckedSideCardWithoutDiscardGoesUnderItsDeck(t *testing.T) {
 	f.mustDo(t, "h", Action{Kind: ActPlay, Card: sense, Target: enemy}, at(3))
 
 	f.mustDo(t, "h", Action{Kind: ActDiscard, Card: enemy}, at(4))
+	sense = f.renamedID(t, sense)
 
 	if c := f.g.Table.Cards[enemy]; c.Pile != PileEncounterDiscard {
 		t.Errorf("enemy in %q, want %s", c.Pile, PileEncounterDiscard)
@@ -535,6 +538,7 @@ func TestTuckedSideCardWithoutDiscardGoesUnderItsDeckInAGroup(t *testing.T) {
 		{Kind: ActDiscard, Card: hosts[0]},
 		{Kind: ActDiscard, Card: hosts[1]},
 	}}, at(5))
+	sense = f.renamedID(t, sense)
 
 	if got := f.g.Table.Piles["disc:p0"].Cards; !slices.Equal(got, hosts) {
 		t.Errorf("discard pile = %v, want %v", got, hosts)
@@ -556,6 +560,7 @@ func TestShuffleIntoSideDeckTakesTheTuckedSideCards(t *testing.T) {
 			f.mustDo(t, "h", Action{Kind: ActPlay, Card: tucked, Target: host}, at(4))
 
 			f.mustDo(t, "h", Action{Kind: ActToDeck, Card: host, Where: where}, at(5))
+			host, tucked = f.renamedID(t, host), f.renamedID(t, tucked)
 
 			deck := f.g.Table.Piles["side:p0:0"]
 			if len(deck.Cards) != 5 {

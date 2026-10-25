@@ -1,6 +1,5 @@
 <script lang="ts" module>
   export type IconName =
-    | 'cards'
     | 'sliders'
     | 'back'
     | 'eye'
@@ -9,13 +8,20 @@
     | 'cross'
     | 'pencil'
     | 'rows-all'
-    | 'rows-focus';
+    | 'rows-focus'
+    | 'check'
+    | 'arrow-right'
+    | 'undo'
+    | 'ready-all'
+    | 'trophy'
+    | 'hourglass';
 </script>
 
 <script lang="ts">
   let { name }: { name: IconName } = $props();
 
-  // Stroke icons on a 24x24 grid, drawn with currentColor.
+  // Stroke icons on a 24x24 grid, drawn with currentColor. A caller changes their size and stroke width
+  // with CSS: the stroke-width attribute gives way to any style.
 </script>
 
 <svg
@@ -27,10 +33,7 @@
   stroke-linejoin="round"
   aria-hidden="true"
 >
-  {#if name === 'cards'}
-    <rect x="3" y="5" width="9" height="13" rx="1.5" transform="rotate(-8 7.5 11.5)" />
-    <rect x="11" y="5" width="9" height="13" rx="1.5" transform="rotate(8 15.5 11.5)" />
-  {:else if name === 'sliders'}
+  {#if name === 'sliders'}
     <path d="M4 7h10M18 7h2M4 17h4M12 17h8" />
     <circle cx="16" cy="7" r="2" />
     <circle cx="10" cy="17" r="2" />
@@ -57,6 +60,51 @@
     <!-- The villain's row, and one player's row under it. -->
     <rect x="4" y="5" width="16" height="5" rx="1" fill="currentColor" fill-opacity=".25" />
     <rect x="4" y="14" width="16" height="5" rx="1" />
+  {:else if name === 'check'}
+    <path d="M5 12.5l4.5 4.5L19 7.5" />
+  {:else if name === 'arrow-right'}
+    <path d="M5 12h14M13 6l6 6-6 6" />
+  {:else if name === 'undo'}
+    <!-- A hooked arrow going back. -->
+    <path d="M9 14L4 9l5-5" />
+    <path d="M4 9h11a5 5 0 0 1 0 10h-3" />
+  {:else if name === 'ready-all'}
+    <!--
+      Exhaust the other way round: the card tilted to the right as exhausted (faint, dashed) turns
+      back to the left, counter-clockwise, and stands filled; a second card behind it says "all".
+    -->
+    <rect
+      x="13"
+      y="8.5"
+      width="8"
+      height="11.5"
+      rx="1.5"
+      transform="rotate(25 17 14.25)"
+      stroke-dasharray="2 2.2"
+      opacity=".55"
+    />
+    <rect x="6" y="3.5" width="8.5" height="12.5" rx="1.5" opacity=".55" />
+    <rect x="3" y="6.5" width="8.5" height="12.5" rx="1.5" fill="currentColor" fill-opacity=".18" />
+    <path d="M20.5 6.5Q18.5 2.2 14 2.6" />
+    <path d="M15.8 1 14 2.6 15.6 4.4" />
+  {:else if name === 'trophy'}
+    <!-- A cup on a stand: the victory display. -->
+    <path d="M8 4h8v5a4 4 0 0 1-8 0V4z" fill="currentColor" fill-opacity=".18" />
+    <path d="M8 6H5a2 2 0 0 0 2 4h1" />
+    <path d="M16 6h3a2 2 0 0 1-2 4h-1" />
+    <path d="M12 13v4" />
+    <path d="M8 20h8" />
+    <path d="M10 17h4" />
+  {:else if name === 'hourglass'}
+    <!-- An hourglass, its sand run down: set-aside cards wait to come into play later. -->
+    <path
+      d="M11 12C11 15.5 7 16.5 7 21h10c0-4.5-4-5.5-4-9z"
+      fill="currentColor"
+      fill-opacity=".18"
+      stroke="none"
+    />
+    <path d="M6 3h12M6 21h12" />
+    <path d="M7 3C7 7.5 11 8.5 11 12S7 16.5 7 21M17 3c0 4.5-4 5.5-4 9s4 4.5 4 9" />
   {:else}
     <!-- An arrow pointing left. -->
     <path d="M19 12H5M11 6l-6 6 6 6" />

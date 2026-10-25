@@ -15,17 +15,17 @@
   import CardBack from './CardBack.svelte';
   import CardFace from './CardFace.svelte';
   import { isHidden } from './face';
-  import { cardBox } from './layout';
+  import { cardBox, isLandscape } from './layout';
   import { motion } from './motion.svelte';
 
   let {
     faceOf,
-    captionOf = () => undefined,
+    captionOf,
   }: {
     /** The catalog face a card shows, null while unknown or hidden. */
     faceOf: (card: TableCard | undefined) => PackFace | null;
     /** The caption of a card's back (backCaption): its side deck's label, if any. */
-    captionOf?: (card: TableCard) => string | undefined;
+    captionOf: (card: TableCard) => string | undefined;
   } = $props();
 </script>
 
@@ -45,7 +45,7 @@
   <CardFace
     images={face?.images ?? []}
     name={face?.name ?? ''}
-    landscape={face?.size === 'land' || face?.size === 'dland'}
+    landscape={face ? isLandscape(face.size) : false}
   />
 {/snippet}
 

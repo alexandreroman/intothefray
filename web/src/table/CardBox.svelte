@@ -12,7 +12,7 @@
   import { tick, untrack } from 'svelte';
   import Dialog from '../components/Dialog.svelte';
   import { scrollFade } from '../lib/scrollFade';
-  import type { Action, CardView, PackFace, PileView, Size, View } from '../lib/types';
+  import type { Action, CardView, PackFace, PileView, Point, Size, View } from '../lib/types';
   import {
     canShuffleIn,
     compareCardNumbers,
@@ -27,10 +27,10 @@
   import CardFace from './CardFace.svelte';
   import ContextMenu from './ContextMenu.svelte';
   import { tileEntries, type ContextHeader } from './contextItems';
-  import type { Point } from './drag';
+  import { DRAG_THRESHOLD } from './drag';
   import { isLongTouchClick, isTouchContextMenu, LANDING_MS } from './interaction.svelte';
-  import { isOutOfPlay } from './layout';
-  import { ownerLook, ownSeats, seatPlayer } from './seats';
+  import { isLandscape, isOutOfPlay } from './layout';
+  import { ownerLook, ownSeats, seatHero } from './seats';
 
   let {
     box,
@@ -56,15 +56,10 @@
     onclose: (shuffle: boolean) => void;
   } = $props();
 
-  // The prototype's values: a press becomes a drag past this distance, and the
-  // grid scrolls by this step when a dragged tile nears its edge.
-  const DRAG_THRESHOLD = 5;
+  // The prototype's values: the grid scrolls by this step when a dragged tile nears its edge.
   const EDGE_SCROLL = 40;
   const SCROLL_STEP = 12;
-  // Tiles are at least this wide, about the preview's card, which does not show while a box is
-  // open: the cards are read in the box. A card is 1.4 times as high as wide. The stylesheet's
-  // --min-tile says it (narrower on a phone), this when it is not read.
-  const MIN_TILE = 220;
+  // A card is 1.4 times as high as wide.
   const CARD_RATIO = 1.4;
   // Never wider than the window: the box keeps inside it, its grid scrolls.
   const BOX_WIDTH = 'min(1200px, 100%)';
@@ -107,7 +102,7 @@
             face: index,
             name: stageFaceName(face, index),
             images: face.images,
-            landscape: isLandscape(face),
+            landscape: isLandscape(face.size),
             badge: onTable ? 'On the table' : undefined,
             shown: onTable,
           };
@@ -129,17 +124,13 @@
           face: card.face,
           name: face?.name ?? '',
           images: face?.images ?? [],
-          landscape: face ? isLandscape(face) : false,
+          landscape: face ? isLandscape(face.size) : false,
           badge: byNumber ? undefined : `#${index + 1}`,
           shown: false,
         },
       ];
     });
     return byNumber ? pileTiles.sort((a, b) => compareCardNumbers(a.card, b.card)) : pileTiles;
-  }
-
-  function isLandscape(face: PackFace): boolean {
-    return face.size === 'land' || face.size === 'dland';
   }
 
   const tiles = $derived(tilesOf(box));
@@ -178,12 +169,7 @@
    */
   function boxPileLabel(pile: PileView): string {
     const label = pileLabel(pile, view);
-    const seats = ownSeats(view);
-    if (seats.length < 2 || !seats.includes(pile.owner)) {
-      return label;
-    }
-    const area = `p${pile.owner}`;
-    const hero = seatPlayer(view, pile.owner)?.decks.find((deck) => deck.area === area)?.heroName;
+    const hero = ownSeats(view).includes(pile.owner) ? seatHero(view, pile.owner) : '';
     return hero ? label.replace(/^Your /, `Your ${hero} `) : label;
   }
 
@@ -335,7 +321,7 @@
 
   function sizeGrid(element: HTMLElement): void {
     const style = getComputedStyle(element);
-    const gap = parseFloat(style.columnGap) || 14;
+    const gap = parseFloat(style.columnGap);
     const padX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
     const padY = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
     const inner = element.clientWidth - padX;
@@ -343,7 +329,7 @@
     if (inner <= 0) {
       return;
     }
-    const minTile = parseFloat(style.getPropertyValue('--min-tile')) || MIN_TILE;
+    const minTile = parseFloat(style.getPropertyValue('--min-tile'));
     const columns = Math.max(1, Math.floor((inner + gap) / (minTile + gap)));
     const columnWidth = (inner - gap * (columns - 1)) / columns;
     gridHeight = Math.min(
@@ -764,7 +750,8 @@
   }
 
   .mgrid {
-    /* A tile's least width (MIN_TILE). */
+    /* A tile's least width, about the preview's card, which does not show while a box is open:
+       the cards are read in the box. */
     --min-tile: 220px;
     position: relative;
     display: grid;

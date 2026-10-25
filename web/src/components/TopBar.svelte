@@ -1,16 +1,19 @@
 <script lang="ts">
   import ConfirmDialog from './ConfirmDialog.svelte';
-  import { on } from 'svelte/events';
   import { MediaQuery } from 'svelte/reactivity';
   import Icon from './Icon.svelte';
-  import Icons from '../table/Icons.svelte';
   import Logo from './Logo.svelte';
   import { href } from '../lib/router.svelte';
   import Segmented from './Segmented.svelte';
   import { overflowTip } from '../lib/overflowTip';
   import { ScrollAutoHide } from '../lib/autoHide.svelte';
   import { SMALL_SCREEN_QUERY } from '../lib/screen';
-  import { canFullscreen, isFullscreen, toggleFullscreen } from '../lib/fullscreen';
+  import {
+    canFullscreen,
+    isFullscreen,
+    onFullscreenChange,
+    toggleFullscreen,
+  } from '../lib/fullscreen';
 
   let {
     spectators = 0,
@@ -104,15 +107,8 @@
     fullscreen = isFullscreen();
   }
 
-  // The WebKit event has no <svelte:document> attribute, so both are listened to here.
-  $effect(() => {
-    const offStandard = on(document, 'fullscreenchange', syncFullscreen);
-    const offWebkit = on(document, 'webkitfullscreenchange', syncFullscreen);
-    return () => {
-      offStandard();
-      offWebkit();
-    };
-  });
+  // The WebKit event has no <svelte:document> attribute: lib/fullscreen listens to both.
+  $effect(() => onFullscreenChange(syncFullscreen));
 </script>
 
 <!-- Hidden, it stays focusable: a tab into it brings it back. -->
@@ -164,7 +160,7 @@
           }}
         >
           <!-- The action bar's family: Exhaust, the other way round. -->
-          <Icons name="ready-all" />
+          <Icon name="ready-all" />
         </button>
       {/if}
       {#if fullscreenSupported}
@@ -326,7 +322,7 @@
     justify-content: center;
     background: var(--panel);
     border-color: var(--line);
-    color: #c9cfdf;
+    color: var(--text-soft);
   }
 
   .icon-button.active {

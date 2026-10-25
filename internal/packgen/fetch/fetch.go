@@ -47,7 +47,7 @@ func (c *Client) JSON(ctx context.Context, url string, v any) error {
 	if err := decode(url, body, v); err != nil {
 		return err
 	}
-	if err := writeFileAtomic(path, body); err != nil {
+	if err := WriteFileAtomic(path, body); err != nil {
 		return fmt.Errorf("cache %s: %w", url, err)
 	}
 	return nil
@@ -109,9 +109,10 @@ func (c *Client) download(ctx context.Context, url string) ([]byte, error) {
 	return body, nil
 }
 
-// writeFileAtomic writes through a temp file and a rename, so an interrupted
-// run never leaves a truncated cache entry behind.
-func writeFileAtomic(path string, data []byte) error {
+// WriteFileAtomic writes data to path through a temp file and a rename, so an
+// interrupted run never leaves a truncated cache file behind. It creates the
+// directory of path when missing.
+func WriteFileAtomic(path string, data []byte) error {
 	dir := filepath.Dir(path)
 	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return err

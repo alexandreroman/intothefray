@@ -220,7 +220,8 @@ func TestSetupStages(t *testing.T) {
 	if got := codesOf(table, table.Stages[0].Cards); !slices.Equal(got, []string{"01094", "01095", "01096"}) {
 		t.Errorf("villain stage cards = %v", got)
 	}
-	if villain.Owner != NoOwner || villain.Home != PileEncounter || villain.Faces != 1 || villain.Back != pack.BackVillain {
+	if villain.Owner != NoOwner || villain.Home != PileEncounter || villain.Faces != 1 ||
+		villain.Back != pack.BackVillain {
 		t.Errorf("Rhino I owner/home/faces/back = %d %q %d %q", villain.Owner, villain.Home, villain.Faces, villain.Back)
 	}
 }

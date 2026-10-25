@@ -1,7 +1,9 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
+  import Icon from '../Icon.svelte';
+  import { playerColorVar } from '../../lib/playerColor';
   import { href } from '../../lib/router.svelte';
-  import type { PlayerView, View } from '../../lib/types';
+  import { MAX_SEATS, seatCount, type PlayerView, type View } from '../../lib/types';
   import DeckNames from './DeckNames.svelte';
   import HeroThumb from './HeroThumb.svelte';
 
@@ -17,19 +19,16 @@
     ontakeseat: () => void;
   } = $props();
 
-  const MAX_SEATS = 4;
   const COPIED_MS = 1500;
 
   // Built from the game id, so no token or other state leaks into the link.
   const inviteUrl = $derived(`${location.origin}${href(`/g/${encodeURIComponent(view.id)}`)}`);
   const isSpectator = $derived(view.you.role === 'spectator');
-  // A seat is one deck slot: a player with two decks takes two seats.
-  const deckCount = $derived(view.players.reduce((sum, p) => sum + p.decks.length, 0));
   // A newcomer takes the lowest colour no player uses.
   const freeColors = $derived(
     [0, 1, 2, 3]
       .filter((c) => !view.players.some((p) => p.color === c))
-      .slice(0, Math.max(0, MAX_SEATS - deckCount)),
+      .slice(0, Math.max(0, MAX_SEATS - seatCount(view))),
   );
 
   let copied = $state(false);
@@ -68,10 +67,6 @@
     }
     return parts.join(' · ');
   }
-
-  function colorVar(color: number): string {
-    return `var(--p${color + 1})`;
-  }
 </script>
 
 <section class="card-box">
@@ -85,7 +80,7 @@
       <input id={inviteId} type="text" readonly value={inviteUrl} bind:this={inviteInput} />
       <button class="btn" onclick={copyInvite}>
         {#if copied}
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+          <Icon name="check" />
           Copied
         {:else}
           <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -100,7 +95,7 @@
   </div>
   <div class="sect seats">
     {#each view.players as player (player.color)}
-      <div class="seat" style:--pc={colorVar(player.color)}>
+      <div class="seat" style:--pc={playerColorVar(player.color)}>
         <div class="head">
           <div class="who">
             <b>{player.name}</b>
@@ -116,7 +111,7 @@
               aria-label={tip}
               onclick={() => onremove(player.color)}
             >
-              {@render cross()}
+              <Icon name="cross" />
             </button>
           {:else if !view.you.host && isMe(player)}
             <button
@@ -125,7 +120,7 @@
               aria-label="Leave your seat"
               onclick={onleave}
             >
-              {@render cross()}
+              <Icon name="cross" />
             </button>
           {/if}
         </div>
@@ -146,21 +141,17 @@
     {/each}
     {#each freeColors as color (color)}
       {#if isSpectator}
-        <button class="btn-ghost free" style:--pc={colorVar(color)} onclick={ontakeseat}>
+        <button class="btn-ghost free" style:--pc={playerColorVar(color)} onclick={ontakeseat}>
           <i></i>Take this seat
         </button>
       {:else}
-        <div class="free" style:--pc={colorVar(color)}>
+        <div class="free" style:--pc={playerColorVar(color)}>
           <i></i>Free seat: share the invite link
         </div>
       {/if}
     {/each}
   </div>
 </section>
-
-{#snippet cross()}
-  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
-{/snippet}
 
 <style>
   .invite {
@@ -170,7 +161,7 @@
 
   .invite input {
     min-width: 0;
-    color: #c9cfdf;
+    color: var(--text-soft);
   }
 
   /* Room for "Copied": the field doesn't jump. */
@@ -183,7 +174,7 @@
     margin: 8px 0 0;
   }
 
-  svg {
+  .invite :global(svg) {
     width: 16px;
     height: 16px;
     fill: none;
@@ -286,7 +277,7 @@
     justify-content: center;
   }
 
-  .kick svg {
+  .kick :global(svg) {
     width: 14px;
     height: 14px;
     stroke-width: 2.2;

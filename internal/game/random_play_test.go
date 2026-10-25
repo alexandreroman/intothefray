@@ -29,7 +29,8 @@ type randomPlay struct {
 }
 
 func newRandomPlay(f *doFixture, seed uint64) *randomPlay {
-	return &randomPlay{f: f, r: rand.New(rand.NewPCG(seed, 99)), now: testNow, last: map[int]Action{}} //nolint:gosec // deterministic test
+	r := rand.New(rand.NewPCG(seed, 99)) //nolint:gosec // deterministic test
+	return &randomPlay{f: f, r: r, now: testNow, last: map[int]Action{}}
 }
 
 // step performs one random action for a random player, and reports whether
@@ -100,7 +101,8 @@ func randomAction(r *rand.Rand, t *Table, seat int) Action {
 	case 7:
 		return Action{Kind: ActToken, Card: pick(onTable), Name: oneOf("dmg", "thr"), Delta: 1 - 2*r.IntN(2)}
 	case 8:
-		return Action{Kind: ActStatus, Card: pick(onTable), Name: oneOf("tough", "retaliate", statusLocked), Delta: 1 - 2*r.IntN(2)}
+		card := pick(onTable)
+		return Action{Kind: ActStatus, Card: card, Name: oneOf("tough", "retaliate", statusLocked), Delta: 1 - 2*r.IntN(2)}
 	case 9:
 		return Action{Kind: ActReveal, Pile: oneOf("", deck)}
 	case 10:
@@ -116,7 +118,8 @@ func randomAction(r *rand.Rand, t *Table, seat int) Action {
 	case 16:
 		return Action{Kind: ActToDeck, Card: pick(hand), Where: oneOf(whereTop, whereBottom, whereShuffle)}
 	case 17:
-		return Action{Kind: ActToPile, Card: pick(onTable), Target: oneOf(PileVictory, PileScenarioAside, "aside:"+string(area))}
+		card := pick(onTable)
+		return Action{Kind: ActToPile, Card: card, Target: oneOf(PileVictory, PileScenarioAside, "aside:"+string(area))}
 	case 18:
 		stage := t.Stages[r.IntN(len(t.Stages))]
 		return Action{Kind: ActChooseStage, Stage: stage.Key, Card: pick(stage.Cards), Face: r.IntN(2)}
@@ -147,7 +150,8 @@ func randomAction(r *rand.Rand, t *Table, seat int) Action {
 		if t.Views[area] != nil {
 			return Action{Kind: ActCloseView, Where: oneOf("", whereShuffle)}
 		}
-		return Action{Kind: Kind(oneOf(string(ActLook), string(ActSearch))), Pile: oneOf(deck, PileEncounter, PileEncounterDiscard), N: 3}
+		kind := Kind(oneOf(string(ActLook), string(ActSearch)))
+		return Action{Kind: kind, Pile: oneOf(deck, PileEncounter, PileEncounterDiscard), N: 3}
 	case 26:
 		return Action{Kind: ActModifier, Card: pick(onTable), Name: oneOf("atk", "def", "hp"), Delta: 1 - 2*r.IntN(2)}
 	default:
@@ -164,7 +168,8 @@ func checkReplay(t *testing.T, f *doFixture) {
 		t.Fatal(err)
 	}
 	var stored recordedGame
-	if err := json.Unmarshal([]byte(mustJSON(t, recordedGame{Setup: setup, Events: f.g.History.Events})), &stored); err != nil {
+	data := mustJSON(t, recordedGame{Setup: setup, Events: f.g.History.Events})
+	if err := json.Unmarshal([]byte(data), &stored); err != nil {
 		t.Fatal(err)
 	}
 	replayed, err := Replay(f.cat, stored.Setup, stored.Events)
@@ -344,35 +349,50 @@ type recordedGame struct {
 	Events []Event     `json:"events"`
 }
 
-// TestReplayRecordedGame replays a stored two-player Rhino game and compares
-// the table it ends with to the golden one, byte for byte. Run with -record
-// to record the game again from random play (its golden file is then the live
-// table), and with -update to rewrite the golden file from the replay.
-func TestReplayRecordedGame(t *testing.T) {
-	recording := filepath.Join("testdata", "replays", "rhino-2p.json")
-	golden := filepath.Join("testdata", "replays", "rhino-2p.table.golden.json")
-	cat := newCatalog(t)
-	if *recordGames {
-		recordRandomGame(t, recording, golden)
+// TestReplayRecordedGames replays each stored game and compares the table it
+// ends with to its golden one, byte for byte: a two-player Rhino game recorded
+// from random play, and a scripted one with group actions (replaced group
+// moves, group discards, an undone group). Run with -record to record the
+// games again (their golden files are then the live tables), and with -update
+// to rewrite the golden files from the replays.
+func TestReplayRecordedGames(t *testing.T) {
+	tests := []struct {
+		name   string
+		record func(t *testing.T, recording, golden string)
+	}{
+		{"rhino-2p", recordRandomGame},
+		{"group-2p", recordGroupGame},
 	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			recording := filepath.Join("testdata", "replays", tt.name+".json")
+			golden := filepath.Join("testdata", "replays", tt.name+".table.golden.json")
+			cat := newCatalog(t)
+			if *recordGames {
+				tt.record(t, recording, golden)
+			}
 
-	var game recordedGame
-	if err := json.Unmarshal(readFile(t, recording), &game); err != nil {
-		t.Fatal(err)
-	}
-	replayed, err := Replay(cat, game.Setup, game.Events)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if mustJSON(t, replayed.History.Events) != mustJSON(t, game.Events) {
-		t.Error("the replay records other events than the recorded ones")
-	}
-	got := indentedJSON(t, replayed.Table)
-	if *updateGolden {
-		writeFile(t, golden, got)
-	}
-	if want := readFile(t, golden); string(got) != string(want) {
-		t.Errorf("the replayed table differs from %s", golden)
+			var game recordedGame
+			if err := json.Unmarshal(readFile(t, recording), &game); err != nil {
+				t.Fatal(err)
+			}
+			replayed, err := Replay(cat, game.Setup, game.Events)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if mustJSON(t, replayed.History.Events) != mustJSON(t, game.Events) {
+				t.Error("the replay records other events than the recorded ones")
+			}
+			checkIntegrity(t, replayed.Table)
+			checkHistory(t, replayed)
+			got := indentedJSON(t, replayed.Table)
+			if *updateGolden {
+				writeFile(t, golden, got)
+			}
+			if want := readFile(t, golden); string(got) != string(want) {
+				t.Errorf("the replayed table differs from %s", golden)
+			}
+		})
 	}
 }
 

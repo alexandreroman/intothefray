@@ -7,6 +7,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import Dialog from '../components/Dialog.svelte';
+  import { STATUSES, TOKENS } from './actions';
 
   let {
     anchor,
@@ -71,16 +72,10 @@
     ],
     [
       'Tokens (Shift removes)',
-      [
-        { what: 'Damage', keys: ['D'] },
-        { what: 'Threat', keys: ['T'] },
-        { what: 'Counter', keys: ['N'] },
-        { what: 'Stunned', keys: ['S'] },
-        { what: 'Confused', keys: ['C'] },
-        { what: 'Tough', keys: ['G'] },
-        { what: 'Retaliate', keys: ['R'] },
-        { what: 'Locked', keys: ['L'] },
-      ],
+      // A counter without a key (Acceleration) is only reached from the menu.
+      [...TOKENS, ...STATUSES].flatMap(({ label, key }) =>
+        key ? [{ what: label, keys: [key] }] : [],
+      ),
     ],
     [
       'Card in your hand',

@@ -11,7 +11,8 @@ import (
 )
 
 // Action kinds that only Do handles: they act on a player's private view or
-// on the history, not on the shared table, so resolve and apply ignore them.
+// on the history, not on the shared table, so they never reach resolve or
+// apply.
 const (
 	ActLook      Kind = "look"
 	ActSearch    Kind = "search"
@@ -60,9 +61,7 @@ func (g *Game) Do(token string, seat int, a Action, cat *pack.Catalog, now time.
 	if seat < 0 {
 		seat = g.homeSeat(index)
 	}
-	// A player without any seat, only found in games stored before deck
-	// slots, has no seat to act from.
-	if seat < 0 || g.seatPlayer(seat) != index {
+	if g.seatPlayer(seat) != index {
 		return forbidden("seat %d is not yours", seat)
 	}
 	return g.do(g.actorOf(seat), a, cat, now)
@@ -322,8 +321,8 @@ func (g *Game) openView(who actor, a Action, now time.Time) error {
 		return err
 	}
 	// Decks and side decks are private to their owner; every other pile is
-	// either the shared encounter deck or face up, so anyone may look
-	// through it.
+	// either a shared deck (the encounter deck or a scenario deck) or face
+	// up, so anyone may look through it.
 	private := pile.Kind == KindDeck || pile.Kind == KindSideDeck
 	if private && !who.owns(pile.Owner) {
 		return forbidden("pile %q belongs to another player", pile.ID)

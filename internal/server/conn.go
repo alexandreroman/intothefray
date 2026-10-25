@@ -375,7 +375,7 @@ func (s *Server) hello(ctx context.Context, c *conn, msg clientMessage) error {
 	var role game.Role
 	err = s.update(ctx, c.gameID, func(g *game.Game) error {
 		token = msg.Token
-		if !takesPart(g, token) {
+		if !g.TakesPart(token) {
 			token = fresh
 		}
 		var joinErr error
@@ -407,7 +407,7 @@ func (s *Server) hello(ctx context.Context, c *conn, msg clientMessage) error {
 	}
 	c.sendView(g, version, s.onlineAudience(ctx, g))
 	// The other viewers count c from now on.
-	s.publishOnline(ctx, c.gameID)
+	s.publish(ctx, c.gameID, onlineEvent{Kind: eventOnline})
 	return nil
 }
 
@@ -422,7 +422,7 @@ func (s *Server) setOffline(ctx context.Context, c *conn) {
 		// Its lease passes in time: the count corrects itself then.
 		s.deps.Logger.Warn("set connection offline", "game_id", c.gameID, "error", err)
 	}
-	s.publishOnline(ctx, c.gameID)
+	s.publish(ctx, c.gameID, onlineEvent{Kind: eventOnline})
 }
 
 func (s *Server) lobby(ctx context.Context, c *conn, msg clientMessage) error {
@@ -551,38 +551,21 @@ func (s *Server) updateVersion(ctx context.Context, gameID string, change func(*
 		return 0, err
 	}
 	s.hub.broadcast(g, version, s.onlineAudience(ctx, g))
-	s.publishUpdated(ctx, gameID, version)
+	s.publish(ctx, gameID, updatedEvent{Kind: eventUpdated, Version: version})
 	return version, nil
 }
 
-// publishUpdated tells the other instances that a game changed. The change
-// is stored already, so a failure is only logged: their viewers catch up
-// with the next change.
-func (s *Server) publishUpdated(ctx context.Context, gameID string, version int64) {
-	payload, err := json.Marshal(updatedEvent{Kind: eventUpdated, Version: version})
+// publish sends event, encoded as JSON, to the viewers of the game on every
+// instance, this one included. A failure is only logged: a game change is
+// stored already and the viewers catch up with the next one, the lease rounds
+// send the online count again, and presence is cosmetic.
+func (s *Server) publish(ctx context.Context, gameID string, event any) {
+	payload, err := json.Marshal(event)
 	if err != nil {
-		s.deps.Logger.Error("encode game update", "game_id", gameID, "error", err)
+		s.deps.Logger.Error("encode game event", "game_id", gameID, "error", err)
 		return
 	}
-	s.publish(ctx, gameID, payload)
-}
 
-// publishOnline tells every instance that a viewer of the game connected or
-// disconnected. A failure is only logged: the lease rounds send the count
-// again.
-func (s *Server) publishOnline(ctx context.Context, gameID string) {
-	payload, err := json.Marshal(onlineEvent{Kind: eventOnline})
-	if err != nil {
-		s.deps.Logger.Error("encode online event", "game_id", gameID, "error", err)
-		return
-	}
-	s.publish(ctx, gameID, payload)
-}
-
-// publish sends an event to the viewers of the game on every instance,
-// this one included. A failure is only logged: game changes are stored
-// already and presence is cosmetic.
-func (s *Server) publish(ctx context.Context, gameID string, payload []byte) {
 	// The viewer leaving must not keep the others from hearing of a change
 	// that is stored already.
 	ctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), publishTimeout)
@@ -616,16 +599,6 @@ func errorCode(err error) string {
 	default:
 		return codeInternal
 	}
-}
-
-// takesPart reports whether token is the token of a player or a spectator.
-func takesPart(g *game.Game, token string) bool {
-	if token == "" {
-		return false
-	}
-	isPlayer := slices.ContainsFunc(g.Players, func(p *game.Player) bool { return p.Token == token })
-	isSpectator := slices.ContainsFunc(g.Spectators, func(sp *game.Spectator) bool { return sp.Token == token })
-	return isPlayer || isSpectator
 }
 
 func playerWithColor(g *game.Game, color int) *game.Player {

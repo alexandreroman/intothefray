@@ -1,6 +1,6 @@
+import { CARD_ASPECT } from '../lib/cardArt';
 import type { CardView, PileKind, PileView, Size } from '../lib/types';
-
-export type { Size };
+import { asideId } from './seats';
 
 /** Table units are multiples of this. */
 export const GRID = 10;
@@ -15,14 +15,18 @@ export interface Box {
   rotated: boolean;
 }
 
-// Table cards are 40 % larger than the 100 × 140 they used to be on the table; the hand and the
-// preview keep their own sizes.
+// A card on the table, by size, in table units. The hand and the preview have their own sizes.
 const SIZES: Record<Size, { w: number; h: number }> = {
   std: { w: 140, h: 196 },
   land: { w: 196, h: 140 },
   dstd: { w: 196, h: 280 },
   dland: { w: 280, h: 196 },
 };
+
+/** Whether a card of that size lies landscape: wider than tall. */
+export function isLandscape(size: Size): boolean {
+  return size === 'land' || size === 'dland';
+}
 
 /** A portrait card on the table, in table units. */
 export const PORTRAIT_CARD = SIZES.std;
@@ -262,7 +266,7 @@ export function outOfPlayChips(owner: number, piles: readonly PileView[]): OutOf
   const wanted =
     owner === -1
       ? [victory, { ...setAside, pile: 'saside' }]
-      : [{ ...setAside, pile: `aside:p${owner}` }];
+      : [{ ...setAside, pile: asideId(owner) }];
   return wanted.flatMap((chip) => {
     const pile = piles.find((p) => p.id === chip.pile);
     return pile ? [{ ...chip, count: pile.count }] : [];
@@ -374,7 +378,6 @@ const PREVIEW_AREA_SHARE = 0.45;
 const PREVIEW_ROOM_Y = 200;
 const PREVIEW_PADDING = 10;
 const PREVIEW_BORDER = 1;
-const PORTRAIT_RATIO = 5 / 7;
 
 /** The raised hand's cards are this share of the preview's card. */
 const RAISED_HAND_SHARE = 0.8;
@@ -386,7 +389,7 @@ const RAISED_HAND_SHARE = 0.8;
  */
 export function previewCardWidth(area: { w: number; h: number }): number {
   // The CSS adds the padding only to the width the height allows, not the border.
-  const fromHeight = (area.h - PREVIEW_ROOM_Y) * PORTRAIT_RATIO + 2 * PREVIEW_PADDING;
+  const fromHeight = (area.h - PREVIEW_ROOM_Y) * CARD_ASPECT + 2 * PREVIEW_PADDING;
   const frame = Math.min(PREVIEW_MAX_W, area.w * PREVIEW_AREA_SHARE, fromHeight);
   return Math.max(0, frame - 2 * (PREVIEW_PADDING + PREVIEW_BORDER));
 }

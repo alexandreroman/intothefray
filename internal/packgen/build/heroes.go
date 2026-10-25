@@ -16,19 +16,17 @@ const (
 	heroSpecialKind = "hero_special"
 )
 
-// BuildSets groups the marvelcdb cards into their sets and returns them by
+// buildSets groups the marvelcdb cards into their sets and returns them by
 // pack code, sorted by set code. A set belongs to the pack of its lowest-code
 // card, and lists each card once under its canonical code. Cards of packs
 // missing from mcPacks are ignored.
-//
-//nolint:revive // BuildSets is the name fixed by the plan.
-func BuildSets(mc []marvelcdb.Card, mcPacks []marvelcdb.Pack) map[string][]pack.Set {
+func buildSets(mc []marvelcdb.Card, mcPacks []marvelcdb.Pack) map[string][]pack.Set {
 	knownPacks := make(map[string]bool, len(mcPacks))
 	for _, mcPack := range mcPacks {
 		knownPacks[mcPack.Code] = true
 	}
 
-	canonical := CanonicalCodes(mc)
+	canonical := canonicalCodes(mc)
 	setsByCode := make(map[string]*pack.Set)
 	packOf := make(map[string]string)
 	for _, card := range sortedByCode(mc) {
@@ -58,12 +56,10 @@ func BuildSets(mc []marvelcdb.Card, mcPacks []marvelcdb.Pack) map[string][]pack.
 	return sets
 }
 
-// BuildHeroes derives one hero per card having a hero face and returns them by
+// buildHeroes derives one hero per card having a hero face and returns them by
 // the pack code of that card, sorted by identity code.
-//
-//nolint:revive // BuildHeroes is the name fixed by the plan.
-func BuildHeroes(mc []marvelcdb.Card) map[string][]pack.Hero {
-	canonical := CanonicalCodes(mc)
+func buildHeroes(mc []marvelcdb.Card) map[string][]pack.Hero {
+	canonical := canonicalCodes(mc)
 	obligations := make(map[string]string) // set code -> lowest obligation code
 	existingSets := make(map[string]bool)
 	for _, card := range sortedByCode(mc) {

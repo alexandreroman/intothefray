@@ -12,7 +12,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"sync"
 	"testing"
 	"time"
 
@@ -67,7 +66,7 @@ func newServerOn(t *testing.T, mr *miniredis.Miniredis) *Server {
 func newServerWithConfig(t *testing.T, mr *miniredis.Miniredis, cfg config.Config) *Server {
 	t.Helper()
 
-	cat, err := testCatalog()
+	cat, err := packs.Catalog()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -84,9 +83,6 @@ func newServerWithConfig(t *testing.T, mr *miniredis.Miniredis, cfg config.Confi
 	})
 }
 
-// testCatalog loads the embedded packs once for the whole test binary.
-var testCatalog = sync.OnceValues(packs.Catalog)
-
 // reply is a fully read HTTP response.
 type reply struct {
 	status int
@@ -94,10 +90,15 @@ type reply struct {
 	body   []byte
 }
 
+// testHTTPClient never asks for compression on its own nor decompresses: a
+// test sees the request headers and the body exactly as sent.
+var testHTTPClient = &http.Client{Transport: &http.Transport{DisableCompression: true}}
+
+// send performs req with testHTTPClient and reads the whole response.
 func send(t *testing.T, req *http.Request) reply {
 	t.Helper()
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := testHTTPClient.Do(req)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -257,7 +258,7 @@ func TestOriginChecks(t *testing.T) {
 	t.Run("websocket from a disallowed origin", func(t *testing.T) {
 		t.Parallel()
 
-		id := createGameID(t, ts)
+		id := createGame(t, ts, "Alex").ID
 
 		_, status, err := dial(t, wsURL(ts, id), "http://evil.test")
 
@@ -272,7 +273,7 @@ func TestOriginChecks(t *testing.T) {
 	t.Run("websocket from an allowed origin", func(t *testing.T) {
 		t.Parallel()
 
-		id := createGameID(t, ts)
+		id := createGame(t, ts, "Alex").ID
 
 		conn, _, err := dial(t, wsURL(ts, id), allowedOrigin)
 		if err != nil {
@@ -322,7 +323,7 @@ func TestSameOriginPost(t *testing.T) {
 func TestSameOriginWebSocket(t *testing.T) {
 	ts := newSameOriginServer(t)
 
-	conn, status, err := dial(t, wsURL(ts, createGameID(t, ts)), ts.URL)
+	conn, status, err := dial(t, wsURL(ts, createGame(t, ts, "Alex").ID), ts.URL)
 	if err != nil {
 		t.Fatalf("websocket dial: status = %d, err = %v", status, err)
 	}
@@ -365,7 +366,7 @@ func TestCORSAndWebSocketAgree(t *testing.T) {
 					resp.header.Get("Access-Control-Allow-Origin"), tt.allowed)
 			}
 
-			conn, status, err := dial(t, wsURL(ts, createGameID(t, ts)), tt.origin)
+			conn, status, err := dial(t, wsURL(ts, createGame(t, ts, "Alex").ID), tt.origin)
 			if got := err == nil; got != tt.allowed {
 				t.Errorf("websocket dial: status = %d, err = %v, want allowed = %v", status, err, tt.allowed)
 			}
@@ -475,11 +476,6 @@ func TestVersion(t *testing.T) {
 	if want := version.Commit(); body.Commit != want {
 		t.Errorf("commit = %q, want %q", body.Commit, want)
 	}
-}
-
-func createGameID(t *testing.T, ts *httptest.Server) string {
-	t.Helper()
-	return createGame(t, ts, "Alex").ID
 }
 
 // createGame creates a game hosted by hostName and returns its id and the

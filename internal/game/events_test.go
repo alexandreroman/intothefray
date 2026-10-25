@@ -220,7 +220,8 @@ func TestRebuildLeavesTheHistoryAlone(t *testing.T) {
 		t.Errorf("rebuild returned events %d undone = %t and %d snapshots", 12, rebuilt[12].Undone, len(snapshots))
 	}
 	// c1 starts with 2 damage, and one of the 25 tokens is undone.
-	if live, at20 := table.Cards["c1"].Tokens["dmg"], snapshots[1].Table.Cards["c1"].Tokens["dmg"]; live != 26 || at20 != 21 {
+	live, at20 := table.Cards["c1"].Tokens["dmg"], snapshots[1].Table.Cards["c1"].Tokens["dmg"]
+	if live != 26 || at20 != 21 {
 		t.Errorf("c1 has %d damage live and %d after 20 events, want 26 and 21", live, at20)
 	}
 }

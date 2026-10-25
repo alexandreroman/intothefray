@@ -24,8 +24,6 @@ const (
 	importTimeout = 20 * time.Second
 	// maxCardLookups caps the requests made to name unsupported cards.
 	maxCardLookups = 20
-	// maxQty is the engine's limit of copies of one card.
-	maxQty = 20
 	// maxSlots is far above any real deck and bounds the work per import.
 	maxSlots = 200
 	// maxBodyBytes bounds what we read from marvelcdb; real decks are a few KiB.
@@ -43,8 +41,8 @@ var ErrNotFound = errors.New("deck not found or not public")
 // ErrInvalidDeck is returned when the deck has an impossible shape.
 var ErrInvalidDeck = errors.New("invalid deck")
 
-// defaultClient is used when Importer.HTTP is nil.
-var defaultClient = &http.Client{Timeout: requestTimeout}
+// httpClient sends every marvelcdb request.
+var httpClient = &http.Client{Timeout: requestTimeout}
 
 // Unsupported is a deck card missing from the card catalog.
 type Unsupported struct {
@@ -65,8 +63,7 @@ func (e *UnsupportedError) Error() string {
 
 // Importer fetches decks from marvelcdb.
 type Importer struct {
-	BaseURL string       // e.g. https://marvelcdb.com
-	HTTP    *http.Client // defaults to a client with a 10 s timeout
+	BaseURL string // e.g. https://marvelcdb.com
 }
 
 // deckPayload is the part of a marvelcdb deck we use.
@@ -197,7 +194,7 @@ func validateSlots(slots map[string]int) error {
 		return fmt.Errorf("%w: %d slots", ErrInvalidDeck, len(slots))
 	}
 	for code, qty := range slots {
-		if qty < 1 || qty > maxQty {
+		if qty < 1 || qty > game.MaxCopies {
 			return fmt.Errorf("%w: card %s has quantity %d", ErrInvalidDeck, code, qty)
 		}
 	}
@@ -257,7 +254,7 @@ func (im *Importer) get(ctx context.Context, path string) ([]byte, int, error) {
 	}
 	req.Header.Set("Accept", "application/json")
 
-	resp, err := im.client().Do(req)
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -273,11 +270,4 @@ func (im *Importer) get(ctx context.Context, path string) ([]byte, int, error) {
 // baseURL is BaseURL without a trailing slash, ready to take a path.
 func (im *Importer) baseURL() string {
 	return strings.TrimSuffix(im.BaseURL, "/")
-}
-
-func (im *Importer) client() *http.Client {
-	if im.HTTP != nil {
-		return im.HTTP
-	}
-	return defaultClient
 }

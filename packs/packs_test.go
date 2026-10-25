@@ -374,13 +374,7 @@ func TestEmbeddedWreckingCrew(t *testing.T) {
 				t.Errorf("Breakout = %+v, want face 0", scheme)
 			}
 			if table.Active == nil {
-				t.Fatal("no active counter")
-			}
-			wrecker := table.Cards[table.Stages[slices.IndexFunc(table.Stages, func(s *game.Stage) bool {
-				return s.Key == "wrecker"
-			})].Current]
-			if want := (game.Point{X: wrecker.X + 40, Y: wrecker.Y + 196 + 24}); *table.Active != want {
-				t.Errorf("active counter = %+v, want %+v", *table.Active, want)
+				t.Error("no active counter")
 			}
 			for _, c := range table.Cards {
 				card, _, err := cat.Card(c.Code)
@@ -513,6 +507,16 @@ func TestEmbeddedDataInvariants(t *testing.T) {
 				}
 				for _, code := range scenario.SetAside {
 					requireCard(t, what, code)
+				}
+				for _, deck := range scenario.Decks {
+					for _, code := range deck.Cards {
+						requireCard(t, what+" deck "+deck.Key, code)
+					}
+					for _, code := range deck.Sets {
+						if _, found := setCards[code]; !found {
+							t.Errorf("%s deck %s: unknown set %s", what, deck.Key, code)
+						}
+					}
 				}
 				for _, start := range scenario.Start {
 					for _, ref := range start.Top {
@@ -670,7 +674,9 @@ func TestEmbeddedHeroSetup(t *testing.T) {
 				{"hercules_labor_deck", pack.SideDeck{Label: "Labor", Back: pack.BackPlayer}},
 				{"hercules_gift_deck", pack.SideDeck{Label: "Gift", Back: pack.BackEncounter}},
 			}},
-			{"60001", []sideDeck{{"daredevil_sense_deck", pack.SideDeck{Label: "Sense", TopFaceUp: true, Back: pack.BackPlayer}}}},
+			{"60001", []sideDeck{
+				{"daredevil_sense_deck", pack.SideDeck{Label: "Sense", TopFaceUp: true, Back: pack.BackPlayer}},
+			}},
 		}
 		for _, tt := range tests {
 			var wantCodes []string

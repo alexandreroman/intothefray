@@ -2,8 +2,8 @@
   The table's one surface, where every card and pile lies, in table units:
   the dot grid, a framed box around each owner's deck and discard pile, with
   the chips opening that owner's out-of-play piles, the piles, the cards and
-  the first player token. The table scrolls it both ways and zooms it as a
-  whole.
+  the markers (the first player token, the active counter). The table scrolls
+  it both ways and zooms it as a whole.
 -->
 <script lang="ts" module>
   import type { TableElement } from './actions';
@@ -24,6 +24,7 @@
 </script>
 
 <script lang="ts">
+  import Icon from '../components/Icon.svelte';
   import type {
     MarkerName,
     PackFace,
@@ -35,7 +36,6 @@
   import CardView from './CardView.svelte';
   import { backCaption } from './face';
   import MarkerToken from './MarkerToken.svelte';
-  import Icons from './Icons.svelte';
   import { overflowTip } from '../lib/overflowTip';
   import { interaction } from './interaction.svelte';
   import PileView from './PileView.svelte';
@@ -140,7 +140,7 @@
             aria-disabled={chip.count === 0}
             onclick={() => openChip(chip)}
           >
-            <Icons name={chip.kind === 'victory' ? 'trophy' : 'hourglass'} />
+            <Icon name={chip.kind === 'victory' ? 'trophy' : 'hourglass'} />
             <span class="n">{chip.count}</span>
           </button>
         {/each}
@@ -272,6 +272,11 @@
     pointer-events: auto;
   }
 
+  .chip :global(svg) {
+    width: 20px;
+    height: 20px;
+  }
+
   /*
     A finger needs 44 px, whatever the zoom: on touch, an invisible hit area around each chip, 44
     screen px a side (44px / --z in table units, which the surface's zoom brings back to 44px).
@@ -311,14 +316,5 @@
     background: var(--hover);
     border-color: var(--owner);
     color: var(--text);
-  }
-
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
   }
 </style>

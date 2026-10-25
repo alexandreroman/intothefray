@@ -4,16 +4,9 @@
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import Table from './Table.svelte';
 import { interaction } from './interaction.svelte';
-import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
-import type {
-  Action,
-  CardView as TableCard,
-  PackFace,
-  PileView,
-  PresenceState,
-  SessionError,
-  View,
-} from '../lib/types';
+import { knownCard, loadGameCards } from '../lib/catalog';
+import type { CardView as TableCard, PackFace, View } from '../lib/types';
+import { card, pile, fakeSession, infoFrom, placed } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -21,38 +14,12 @@ vi.mock('../lib/catalog', async (importOriginal) => ({
   loadGameCards: vi.fn(),
 }));
 
-const FACES: Record<string, Partial<PackFace>> = {
-  '01001': { name: 'Spider-Man' },
-  '01094': { name: 'Rhino', stage: 'I' },
+const FACES: Record<string, Partial<PackFace>[]> = {
+  '01001': [{ name: 'Spider-Man' }],
+  '01094': [{ name: 'Rhino', stage: 'I' }],
 };
 
-function infoOf(code: string): CardInfo | null {
-  const face = FACES[code];
-  if (!face) {
-    return null;
-  }
-  const full: PackFace = { name: '', type: '', size: 'std', images: [`${code}.png`], ...face };
-  return { card: { code, faces: [full], back: 'player', quantity: 1 }, face: 0 };
-}
-
-function card(id: string, extra: Partial<TableCard> = {}): TableCard {
-  return {
-    id,
-    code: '01001',
-    face: 0,
-    back: 'player',
-    owner: 0,
-    zone: 'table',
-    x: 0,
-    y: 0,
-    z: 1,
-    ...extra,
-  };
-}
-
-function pile(id: string, extra: Partial<PileView>): PileView {
-  return { id, kind: 'deck', owner: -1, x: 0, y: 0, count: 30, ...extra };
-}
+const infoOf = infoFrom(FACES);
 
 // The villain's row at the top, Alex's 300 below it: "mine" and "other" are Alex's cards.
 const CARDS = [
@@ -99,18 +66,6 @@ function makeView(cards: TableCard[] = CARDS): View {
   };
 }
 
-/** A session whose actions all go out, the first one as action 1; nothing answers them. */
-function fakeSession() {
-  return {
-    act: vi.fn((_action: Action): number | null => 1),
-    lobby: vi.fn(() => true),
-    lastError: null as SessionError | null,
-    presence: new Map<number, PresenceState>(),
-    sendPresence: vi.fn(),
-    viewGap: 0,
-  };
-}
-
 // A real DOMRect, as a browser measures it: its sides are getters on its prototype, which a
 // spread of the rect loses.
 function domRect(left: number, top: number, width: number, height: number): DOMRect {
@@ -146,14 +101,6 @@ function layOut(view: () => View): void {
     }
     return domRect(0, 0, 0, 0);
   });
-}
-
-function placed(id: string): HTMLElement {
-  const element = document.querySelector<HTMLElement>(`.surface [data-id="${id}"]`);
-  if (!element) {
-    throw new Error(`no ${id} on the table`);
-  }
-  return element;
 }
 
 /** The ghosts drawn in the drag layer: their ids and corners. */
