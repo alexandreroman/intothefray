@@ -16,7 +16,8 @@ type: project
 - Cerebro R2 and marvelcdb send no `Cache-Control` (only `ETag` and
   `Last-Modified`), so the browser cache relies on heuristic freshness
   (about 10% of the file's age), enough for a game. mc4db's French image
-  URLs answer `Cache-Control: no-store`.
+  URLs answer a placeholder with `Cache-Control: no-store`, one reason
+  French is not offered (see [[project_localized_cards]]).
 
 **Why:** a card whose image is not cached shows empty until it downloads.
 The simplest, browser-native solution is preferred over

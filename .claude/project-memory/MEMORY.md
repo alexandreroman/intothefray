@@ -47,7 +47,7 @@
 - [Animated switches and card art thumbnails](references/project_switches_card_art.md) — switches slide (selectionIndicator); thumbnails use CardArt
 - [CI scope](references/project_ci_scope.md) — ci.yml checks Go, web, Docker; on main: image, Pages, backend; no packs sync, no Dependabot
 - [Moving several cards as a group](references/project_group_moves.md) — rubber band; drag or menu acts on the group; one atomic group action
-- [Localized card names and images](references/project_localized_cards.md) — localized overrides per face and index entry; English default
+- [Localized card names and images](references/project_localized_cards.md) — localized overrides per face and index; Options offers no French
 - [Fear No Evil scenarios](references/project_fear_no_evil_scenarios.md) — Kingpin curated; chosen-Underling scenarios unsupported
 - [Green Goblin scenarios](references/project_green_goblin_scenarios.md) — Risky Business, Mutagen Formula curated; Goblin Thralls by hand
 - [Scenario decks and several villains](references/project_scenario_decks.md) — curated decks, several villains, manual active counter; Wrecking Crew

@@ -52,10 +52,9 @@ Everything below works today, except where noted.
 - **Undo** — take back your own last actions, across all your decks
 - **Keyboard shortcuts** — press `?` at the table for the full sheet
 - **Themes** — official, minimal or green felt, per viewer
-- **French cards** — in Options, Language set to Français shows the
-  French card names and images (table, history, lobby names) where
-  they exist, and the English ones otherwise; the interface stays in
-  English
+- **French cards** — the card data carries French names and images,
+  but Options does not offer French while mc4db serves no French images;
+  the cards show in English
 - **Fair play** — each player receives only what they may see
   (no peeking at hands, deck order or face-down cards)
 - **The whole card range** — expansions are added as data files, card images
