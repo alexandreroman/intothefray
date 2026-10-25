@@ -1,4 +1,4 @@
-import { apiUrl } from './api';
+import { apiUrl, fetchJSON } from './api';
 import type { CardPool, Index, PackCard } from './types';
 
 export interface CardInfo {
@@ -19,14 +19,6 @@ let pool: { gameId: string; promise: Promise<void> } | null = null;
 const cards = new Map<string, CardInfo>();
 // The cards of the pool, each once.
 let poolCards: PackCard[] = [];
-
-async function fetchJSON<T>(url: string): Promise<T> {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`fetch ${url}: ${response.status}`);
-  }
-  return (await response.json()) as T;
-}
 
 export function loadIndex(): Promise<Index> {
   indexPromise ??= fetchJSON<Index>(INDEX_URL).catch((error: unknown) => {

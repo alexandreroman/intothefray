@@ -1,9 +1,12 @@
-import { apiUrl } from './api';
+import { apiUrl, fetchJSON } from './api';
 
 const SHORT_LENGTH = 7;
 const FULL_SHA = /^[0-9a-f]{40}$/;
 
-/** The commit the app was built from: VITE_COMMIT, set by the Pages build, or "dev". */
+/**
+ * The commit the app was built from: VITE_COMMIT, passed by the Pages build or else filled from Git
+ * by vite.config.ts for a local build, or "dev".
+ */
 export function appCommit(): string {
   const configured = import.meta.env.VITE_COMMIT as string | undefined;
   return configured || 'dev';
@@ -11,11 +14,7 @@ export function appCommit(): string {
 
 /** The commit the server runs, from GET /api/version. */
 export async function fetchServerCommit(): Promise<string> {
-  const response = await fetch(`${apiUrl()}/api/version`);
-  if (!response.ok) {
-    throw new Error(`Request failed (${response.status})`);
-  }
-  const body = (await response.json()) as { commit?: string };
+  const body = await fetchJSON<{ commit?: string }>(`${apiUrl()}/api/version`);
   if (!body.commit) {
     throw new Error('No commit in the reply');
   }
