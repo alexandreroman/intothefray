@@ -36,7 +36,7 @@
   import { contains } from './drag';
   import MarkerToken from './MarkerToken.svelte';
   import { backCaption, pileBack } from './face';
-  import { interaction } from './interaction.svelte';
+  import { interaction, LANDING_MS } from './interaction.svelte';
   import { ALL_ROWS, type RowMap } from './rows';
   import { scrollerRect, surfaceRect, toScreen, toTable } from './screen';
 
@@ -77,13 +77,6 @@
   const LOST_MS = 60_000;
   /** How long a ping's rings expand. */
   const PING_MS = 1200;
-  /**
-   * How long a drag that ended keeps its ghost where it was let go, its cards
-   * hidden in their places, waiting for the view that shows where they went.
-   * Without one, it was cancelled or refused: the cards show in their places
-   * again.
-   */
-  const LANDING_MS = 2000;
   // The prototype's room at the table's edges for a cursor scrolled out of view. At the right and
   // bottom edges, the room keeps the pointer and its name label in view.
   const EDGE_IN = 8;
@@ -350,6 +343,9 @@
         }
       } else if (dragging) {
         draggings.delete(color);
+        // A drag that ended keeps its ghost where it was let go, its cards hidden in their places,
+        // waiting for the view that shows where they went. Without one, it was cancelled or
+        // refused: the cards show in their places again.
         if (!hasMoved(dragging)) {
           landings.set(color, { ...dragging, until: now + LANDING_MS, view });
         }

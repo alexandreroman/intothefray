@@ -12,7 +12,7 @@
   import { tick, untrack } from 'svelte';
   import Dialog from '../components/Dialog.svelte';
   import { scrollFade } from '../lib/scrollFade';
-  import type { Action, CardView, PackFace, PileView, Size, View } from '../lib/types';
+  import type { Action, CardView, PackFace, PileView, Point, Size, View } from '../lib/types';
   import {
     canShuffleIn,
     compareCardNumbers,
@@ -27,9 +27,9 @@
   import CardFace from './CardFace.svelte';
   import ContextMenu from './ContextMenu.svelte';
   import { tileEntries, type ContextHeader } from './contextItems';
-  import { DRAG_THRESHOLD, type Point } from './drag';
+  import { DRAG_THRESHOLD } from './drag';
   import { isLongTouchClick, isTouchContextMenu, LANDING_MS } from './interaction.svelte';
-  import { isOutOfPlay } from './layout';
+  import { isLandscape, isOutOfPlay } from './layout';
   import { ownerLook, ownSeats, seatHero } from './seats';
 
   let {
@@ -102,7 +102,7 @@
             face: index,
             name: stageFaceName(face, index),
             images: face.images,
-            landscape: isLandscape(face),
+            landscape: isLandscape(face.size),
             badge: onTable ? 'On the table' : undefined,
             shown: onTable,
           };
@@ -124,17 +124,13 @@
           face: card.face,
           name: face?.name ?? '',
           images: face?.images ?? [],
-          landscape: face ? isLandscape(face) : false,
+          landscape: face ? isLandscape(face.size) : false,
           badge: byNumber ? undefined : `#${index + 1}`,
           shown: false,
         },
       ];
     });
     return byNumber ? pileTiles.sort((a, b) => compareCardNumbers(a.card, b.card)) : pileTiles;
-  }
-
-  function isLandscape(face: PackFace): boolean {
-    return face.size === 'land' || face.size === 'dland';
   }
 
   const tiles = $derived(tilesOf(box));

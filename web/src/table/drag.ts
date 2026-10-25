@@ -9,6 +9,7 @@ import {
   type CardView,
   type MarkerName,
   type PileView,
+  type Point,
   type View,
 } from '../lib/types';
 import {
@@ -46,11 +47,6 @@ const PILE_MARGIN = 20;
 const HAND_SIDE_ROOM = 140;
 const HAND_TOP_ROOM = 20;
 const EMPTY_HAND_ROOM = 140;
-
-export interface Point {
-  x: number;
-  y: number;
-}
 
 /** A box on the screen. A DOMRect is one. */
 export interface Rect {

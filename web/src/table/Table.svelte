@@ -31,6 +31,7 @@
     MarkerName,
     PackFace,
     PileView,
+    Point,
     Size,
     View,
   } from '../lib/types';
@@ -61,7 +62,7 @@
     type ContextHeader,
   } from './contextItems';
   import DragLayer from './DragLayer.svelte';
-  import { DRAG_THRESHOLD, intersect, sourceOf, type Point, type Rect } from './drag';
+  import { DRAG_THRESHOLD, intersect, sourceOf, type Rect } from './drag';
   import Flights from './Flights.svelte';
   import { backCaption, isHidden } from './face';
   import Hand from './Hand.svelte';
@@ -74,6 +75,7 @@
     HAND_CARD_NARROW,
     HAND_REST_DROP,
     handRestDrop,
+    isLandscape,
     isOutOfPlay,
     chipsByFrame,
     ownerFrames,
@@ -105,6 +107,7 @@
     seatFullLabel,
     seatOf,
   } from './seats';
+  import { tableCard, tablePile } from './screen';
   import { cardsInBand, isFree } from './selection';
   import TokenPill from './TokenPill.svelte';
   import CardPreview, { type Preview } from './CardPreview.svelte';
@@ -545,7 +548,7 @@
     return {
       images: face?.images ?? [],
       name: face?.name ?? '',
-      landscape: face?.size === 'land' || face?.size === 'dland',
+      landscape: face ? isLandscape(face.size) : false,
     };
   }
 
@@ -643,8 +646,7 @@
     if (!hovered || hovered.kind === 'hand' || !app) {
       return null;
     }
-    const id = CSS.escape(hovered.id);
-    const selector = `.surface ${hovered.kind === 'pile' ? '.pile' : '.card:not(.pile)'}[data-id="${id}"]`;
+    const selector = hovered.kind === 'pile' ? tablePile(hovered.id) : tableCard(hovered.id);
     return app.querySelector(selector)?.getBoundingClientRect() ?? null;
   }
 
@@ -890,9 +892,7 @@
     if (from === null || !wrap) {
       return null;
     }
-    return wrap.querySelector<HTMLElement>(
-      `.surface .card:not(.pile)[data-id="${CSS.escape(from)}"]`,
-    );
+    return wrap.querySelector<HTMLElement>(tableCard(from));
   }
 
   // ---- The token pill ----

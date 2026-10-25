@@ -10,6 +10,7 @@
   import { playerColorVar } from '../lib/playerColor';
   import type { View } from '../lib/types';
   import { interaction } from './interaction.svelte';
+  import { tableCard } from './screen';
   import { seatColor } from './seats';
 
   let {
@@ -68,8 +69,7 @@
       return null;
     }
     return (
-      root.querySelector(`.draglayer .card[data-id="${id}"]`) ??
-      root.querySelector(`.surface .card:not(.pile)[data-id="${id}"]`)
+      root.querySelector(`.draglayer .card[data-id="${id}"]`) ?? root.querySelector(tableCard(id))
     );
   }
 

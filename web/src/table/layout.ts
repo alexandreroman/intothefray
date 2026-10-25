@@ -1,3 +1,4 @@
+import { CARD_ASPECT } from '../lib/cardArt';
 import type { CardView, PileKind, PileView, Size } from '../lib/types';
 import { asideId } from './seats';
 
@@ -21,6 +22,11 @@ const SIZES: Record<Size, { w: number; h: number }> = {
   dstd: { w: 196, h: 280 },
   dland: { w: 280, h: 196 },
 };
+
+/** Whether a card of that size lies landscape: wider than tall. */
+export function isLandscape(size: Size): boolean {
+  return size === 'land' || size === 'dland';
+}
 
 /** A portrait card on the table, in table units. */
 export const PORTRAIT_CARD = SIZES.std;
@@ -372,7 +378,6 @@ const PREVIEW_AREA_SHARE = 0.45;
 const PREVIEW_ROOM_Y = 200;
 const PREVIEW_PADDING = 10;
 const PREVIEW_BORDER = 1;
-const PORTRAIT_RATIO = 5 / 7;
 
 /** The raised hand's cards are this share of the preview's card. */
 const RAISED_HAND_SHARE = 0.8;
@@ -384,7 +389,7 @@ const RAISED_HAND_SHARE = 0.8;
  */
 export function previewCardWidth(area: { w: number; h: number }): number {
   // The CSS adds the padding only to the width the height allows, not the border.
-  const fromHeight = (area.h - PREVIEW_ROOM_Y) * PORTRAIT_RATIO + 2 * PREVIEW_PADDING;
+  const fromHeight = (area.h - PREVIEW_ROOM_Y) * CARD_ASPECT + 2 * PREVIEW_PADDING;
   const frame = Math.min(PREVIEW_MAX_W, area.w * PREVIEW_AREA_SHARE, fromHeight);
   return Math.max(0, frame - 2 * (PREVIEW_PADDING + PREVIEW_BORDER));
 }

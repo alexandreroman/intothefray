@@ -15,6 +15,7 @@
     CardView as TableCard,
     MarkerName,
     PackFace,
+    Point,
     PresenceDrag,
     SessionError,
     Size,
@@ -43,7 +44,6 @@
     type DragSource,
     type DropRect,
     type PileDrop,
-    type Point,
     type Rect,
     type TableRect,
   } from './drag';
@@ -51,7 +51,7 @@
   import { interaction, type DropOn, type Held, type Pressable } from './interaction.svelte';
   import { ACTIVE_COUNTER_BOX, cardBox, FIRST_PLAYER_BOX, HAND_CARD, type Box } from './layout';
   import { ALL_ROWS, type RowMap } from './rows';
-  import { surfaceRect, toScreen, toTable } from './screen';
+  import { surfaceRect, tableCard, tablePile, toScreen, toTable } from './screen';
   import { areaOf, seatHero, seatOf } from './seats';
   import { groupAction, groupPileTargets, groupUnits } from './selection';
 
@@ -401,8 +401,8 @@
     return { x: lead.x + first.x - moved.x, y: lead.y + first.y - moved.y };
   }
 
-  function placedRect(selector: string, id: string): DOMRect | undefined {
-    return root?.querySelector(`.surface ${selector}[data-id="${id}"]`)?.getBoundingClientRect();
+  function placedRect(selector: string): DOMRect | undefined {
+    return root?.querySelector(selector)?.getBoundingClientRect();
   }
 
   /** Everything the dragged thing can be dropped on, measured on the screen. */
@@ -438,7 +438,7 @@
     // Out-of-play piles are not drawn: they cannot be measured, and take no drop.
     const piles = units.length > 0 ? groupPileTargets(units, view) : pileTargets(from, view);
     for (const target of piles) {
-      const rect = placedRect('.pile', target.pile);
+      const rect = placedRect(tablePile(target.pile));
       if (rect) {
         targets.push({ kind: 'pile', ...target, rect });
       }
@@ -449,7 +449,7 @@
       if (card.zone !== 'table' || lifted.includes(card.id)) {
         continue;
       }
-      const rect = placedRect('.card:not(.pile)', card.id);
+      const rect = placedRect(tableCard(card.id));
       if (rect) {
         targets.push({ kind: 'card', card: card.id, z: card.z, rect });
       }

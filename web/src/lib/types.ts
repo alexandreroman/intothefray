@@ -229,7 +229,7 @@ export interface Arrow {
   seat: number;
 }
 
-/** A spot of the table, in table units. */
+/** A spot of the table in table units, or of the screen in px. */
 export interface Point {
   x: number;
   y: number;
