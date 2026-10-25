@@ -211,8 +211,9 @@ export function actionsFor(
 }
 
 /**
- * A spectator's read-only actions (ruling P5c-R2): Browse… on the piles whose
- * cards everyone sees. Cards in play, the villain and main scheme included, get none.
+ * A spectator's read-only actions: Browse… on the piles whose cards everyone
+ * sees. Cards in play, the villain and main scheme included, get none (see the
+ * "Spectators cannot change the stage card" project memory note).
  */
 function spectatorActions(el: TableElement, table: TableView): ActionItem[] {
   switch (el.kind) {
@@ -229,10 +230,7 @@ function spectatorActions(el: TableElement, table: TableView): ActionItem[] {
       if (pile.cards === undefined || pile.kind === 'sideDeck') {
         return [];
       }
-      // No key: spectators get no game keys (P5b-R6).
-      const browse = browseItem(pile);
-      delete browse.key;
-      return [browse];
+      return [browseItem(pile)];
     }
     case 'hand':
       return [];
@@ -712,16 +710,9 @@ export function homeDeckOf(card: CardView): string {
  */
 export function discardPileOf(card: CardView, piles: readonly PileView[]): string | null {
   const home = homeDeckOf(card);
-  if (isSideDeckId(home)) {
+  if (isSideDeckId(home) || isScenarioDeckId(home)) {
     const discard = deckDiscardOf(home);
     return piles.some((pile) => pile.id === discard) ? discard : null;
-  }
-  if (isScenarioDeckId(home)) {
-    const discard = deckDiscardOf(home);
-    if (piles.some((pile) => pile.id === discard)) {
-      return discard;
-    }
-    return null;
   }
   const discard = card.owner === -1 ? 'encd' : `disc:p${card.owner}`;
   return card.owner === -1 && !piles.some((pile) => pile.id === discard) ? null : discard;
@@ -765,7 +756,7 @@ export function sideLabel(pile: PileView): string {
 }
 
 /** The set-aside pile for a card: its deck's own for the viewer's cards, the scenario's for any other. */
-export function asidePileOf(card: CardView, seats: readonly number[]): string {
+function asidePileOf(card: CardView, seats: readonly number[]): string {
   return seats.includes(card.owner) ? `aside:p${card.owner}` : 'saside';
 }
 
@@ -906,7 +897,6 @@ function drawCountItem(pile: PileView, table: TableView): ActionItem {
  * which names no pile for the classic one; a player's deck or side deck draws by default, and names itself.
  */
 function revealItem(pile: PileView, context: Context): ActionItem {
-  // The encounter deck's main action; the classic one names no pile, a scenario deck names itself.
   const encounter = pile.kind === 'encounter' || pile.kind === 'scenarioDeck';
   const reveal: ActionItem = {
     id: 'reveal',
@@ -1035,13 +1025,15 @@ function shuffleBackItem(pile: PileView): ActionItem {
   };
 }
 
-/** Browse… needs no server: public piles are face up, their cards listed. */
+/**
+ * Browse… needs no server: public piles are face up, their cards listed. It
+ * has no key: it is a spectator's only action on a pile, and spectators get
+ * no game keys.
+ */
 function browseItem(pile: PileView): ActionItem {
   return {
     id: 'browse',
     label: 'Browse…',
-    key: 'K',
-    // A spectator's only action on a pile.
     default: true,
     group: GROUP_LOOK,
     run: () => ({ local: 'browseBox', pile: pile.id }),

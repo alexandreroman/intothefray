@@ -1,8 +1,7 @@
 <!--
   The other players at the table (spec 5.8): their cursors, the card each one
   previews, their pings and their drags, drawn over the table (the table
-  cards or the first player token they drag hidden in their places
-  meanwhile). It also tells them about the viewer's own cursor, preview and
+  cards or the markers they drag hidden in their places meanwhile). It also tells them about the viewer's own cursor, preview and
   pings; DragLayer tells them about the viewer's drags. While the viewer is
   away from the table (hand raised, dialog open), their cursor is hidden from
   the others: nothing tells where the pointer goes in the hand or in the
@@ -12,9 +11,10 @@
   Spots travel as table units of the surface (screen.ts). Messages can come in
   floods: the session keeps only the latest state of each player, and the
   layer draws them all in one pass per animation frame. Moves come once per
-  throttle interval at most (session.svelte.ts): cursors and drags glide
-  between them over that interval, but follow the table at once as it
-  scrolls, zooms or resizes.
+  throttle interval at most (session.svelte.ts, and the "Presence message
+  budget" project memory note): cursors and drags glide between them over
+  that interval, but follow the table at once as it scrolls, zooms or
+  resizes.
 -->
 <script lang="ts">
   import { untrack } from 'svelte';
@@ -413,8 +413,9 @@
   }
 
   /**
-   * A card of the viewer cannot see (from a hand), or the encounter deck's
-   * unknown top card, whose pile id the drag carries: face down.
+   * A card the viewer cannot see (from a hand), or the unknown top card of a
+   * deck (the encounter deck, a scenario deck, or one of the dragging player's
+   * own decks), whose pile id the drag carries: face down.
    */
   function hiddenCard(id: string, x: number, y: number): TableCard {
     const pile = view.table?.piles.find((p) => p.id === id);

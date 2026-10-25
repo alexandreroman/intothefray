@@ -119,7 +119,7 @@
     null,
   );
 
-  // The server relays no more cards in one drag.
+  // The server relays no more cards in one drag: it mirrors maxDragCards in internal/server/presence.go.
   const MAX_DRAG_CARDS = 50;
   // What the other players are told of a card hidden from them (ruling P5c-R9): its real id
   // would let them follow it once it is played.
@@ -507,7 +507,7 @@
     interaction.handGap = found?.target.kind === 'hand' ? found.target.index : null;
     // Only what a drop would change is outlined: not the pile a card came from.
     const target = found?.action ? found.target : null;
-    const handArea = source ? handAreaOf(source, view) : null;
+    const handArea = handAreaOf(source, view);
     if (target?.kind === 'toHand' && handArea) {
       const label = { glyph: HAND_GLYPH, text: handName(handArea), tuck: false };
       showHint({ kind: 'hand', id: handArea }, label, target.rect);

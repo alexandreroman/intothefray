@@ -72,7 +72,8 @@ export function handleKey(event: KeyboardEvent, table: KeyTable): void {
     return;
   }
   // Escape lets go of the table, even from a field, as in the prototype. What
-  // it dropped takes the key, so that fullscreen stays (lib/fullscreen).
+  // it dropped takes the key, so that fullscreen stays (lib/fullscreen, and the
+  // "Escape in fullscreen" project memory note).
   if (event.key === 'Escape') {
     if (!event.repeat && interaction.escape()) {
       event.preventDefault();

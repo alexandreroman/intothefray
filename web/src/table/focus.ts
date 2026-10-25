@@ -14,7 +14,7 @@ export const HOME: Corner = 'bottom-right';
  * The corners in the order they are tried: home first, then the facing corner
  * on the same edge, then the top left and the top right.
  */
-export const CORNERS: readonly Corner[] = [HOME, 'bottom-left', 'top-left', 'top-right'];
+const CORNERS: readonly Corner[] = [HOME, 'bottom-left', 'top-left', 'top-right'];
 
 /**
  * The room between the play area's right and bottom edges and what floats in

@@ -174,7 +174,8 @@
    * Escape closes the open submenu, then the menu, wherever the focus is: in
    * the capture phase of the window, before anything else sees the key, so
    * that it does nothing more (a card box under the menu stays open, the
-   * table's selection stays).
+   * table's selection stays). Taking the key keeps fullscreen (see the
+   * "Escape in fullscreen" project memory note).
    */
   function onWindowKeyDown(event: KeyboardEvent): void {
     if (event.key !== 'Escape' || event.defaultPrevented) {

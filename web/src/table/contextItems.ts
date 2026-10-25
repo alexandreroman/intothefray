@@ -133,25 +133,6 @@ export interface ContextHeader {
   label: string;
 }
 
-/** How the eyebrow names the card types; any other type is spelt from its code (typeLabel). */
-const TYPE_LABELS: Record<string, string> = {
-  villain: 'Villain',
-  main_scheme: 'Main scheme',
-  side_scheme: 'Side scheme',
-  minion: 'Minion',
-  hero: 'Hero',
-  alter_ego: 'Alter ego',
-  ally: 'Ally',
-  upgrade: 'Upgrade',
-  support: 'Support',
-  event: 'Event',
-  resource: 'Resource',
-  treachery: 'Treachery',
-  attachment: 'Attachment',
-  environment: 'Environment',
-  obligation: 'Obligation',
-};
-
 /** How the header names a pile's kind: the pile's owner is in the eyebrow. */
 const PILE_NAMES: Record<
   Exclude<PileView['kind'], 'sideDeck' | 'sideDiscard' | 'scenarioDeck' | 'scenarioDiscard'>,
@@ -231,12 +212,8 @@ export function pileHeader(pile: PileView, view: View): ContextHeader {
   };
 }
 
-/** A card type as the eyebrow says it: "Main scheme"; an unknown one from its code, "Player side scheme". */
+/** A card type as the eyebrow says it, spelt from its code: "main_scheme" is "Main scheme". */
 function typeLabel(type: string): string {
-  const known = TYPE_LABELS[type];
-  if (known) {
-    return known;
-  }
   const spelt = capitalize(type.replaceAll('_', ' '));
   return spelt === '' ? 'Card' : spelt;
 }

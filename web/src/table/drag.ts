@@ -100,6 +100,7 @@ export type DragSource =
   | { kind: 'marker'; name: MarkerName; x: number; y: number };
 
 // A row of the table starts this far above its owner's deck: the owner's name lies there.
+// It mirrors rowContentY in internal/game/setup.go.
 const ROW_LABEL_ROOM = 30;
 
 export function snap(v: number): number {
@@ -456,15 +457,7 @@ export function pileTargets(drag: DragSource, view: View): PileTarget[] {
     return [];
   }
   const exists = (target: PileTarget) => table.piles.some((p) => p.id === target.pile);
-  if (drag.kind === 'encounter') {
-    const encounterDiscard: PileTarget = {
-      pile: deckDiscardOf(drag.pile),
-      drop: 'discard',
-      label: 'Discard',
-    };
-    return [encounterDiscard].filter(exists);
-  }
-  if (drag.kind === 'deck') {
+  if (drag.kind === 'encounter' || drag.kind === 'deck') {
     const discard: PileTarget = {
       pile: deckDiscardOf(drag.pile),
       drop: 'discard',
