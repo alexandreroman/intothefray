@@ -2,8 +2,10 @@ package packs_test
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/fs"
+	"maps"
 	"slices"
 	"strings"
 	"testing"
@@ -11,6 +13,7 @@ import (
 
 	"github.com/alexandreroman/intothefray/internal/game"
 	"github.com/alexandreroman/intothefray/internal/pack"
+	"github.com/alexandreroman/intothefray/internal/packgen/cdn"
 	"github.com/alexandreroman/intothefray/packs"
 )
 
@@ -774,4 +777,65 @@ func findNull(doc any, path string) (string, bool) {
 		}
 	}
 	return "", false
+}
+
+// TestEmbeddedImagesOnCDN guards that every image the app shows comes from the image CDN. The committed packs move
+// to the CDN with the first `make publish` in intothefray-img, so the guard only enforces once its manifest exists.
+func TestEmbeddedImagesOnCDN(t *testing.T) {
+	manifest, err := cdn.LoadManifest("images/manifest.json")
+	if errors.Is(err, fs.ErrNotExist) {
+		t.Skip("no packs/images/manifest.json: the guard enforces after `make publish` in intothefray-img")
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+	catalog, err := packs.Catalog()
+	if err != nil {
+		t.Fatalf("Catalog() error = %v", err)
+	}
+
+	type offender struct{ where, url string }
+	var offenders []offender
+	check := func(where string, urls ...string) {
+		for _, url := range urls {
+			// An empty image means the entry has none, as for a scenario whose villain has no image.
+			if url != "" && !strings.HasPrefix(url, manifest.Base) {
+				offenders = append(offenders, offender{where, url})
+			}
+		}
+	}
+	checkLocalized := func(where string, localized map[string]pack.Localized) {
+		for _, lang := range slices.Sorted(maps.Keys(localized)) {
+			check(where+" "+lang, localized[lang].Images...)
+		}
+	}
+
+	for _, file := range loadPackFiles(t) {
+		for _, card := range file.Cards {
+			for i, face := range card.Faces {
+				where := fmt.Sprintf("card %s face %d", card.Code, i)
+				check(where, face.Images...)
+				checkLocalized(where, face.Localized)
+			}
+		}
+	}
+	index := catalog.Index()
+	for _, ref := range index.Packs {
+		checkLocalized("pack "+ref.Code, ref.Localized)
+	}
+	for _, ref := range index.Scenarios {
+		check("scenario "+ref.ID, ref.Image)
+		checkLocalized("scenario "+ref.ID, ref.Localized)
+	}
+	for _, ref := range index.Sets {
+		checkLocalized("set "+ref.Code, ref.Localized)
+	}
+
+	const shown = 5
+	for _, o := range offenders[:min(len(offenders), shown)] {
+		t.Errorf("%s: image %s is not under %s", o.where, o.url, manifest.Base)
+	}
+	if len(offenders) > shown {
+		t.Errorf("and %d more images off the CDN", len(offenders)-shown)
+	}
 }

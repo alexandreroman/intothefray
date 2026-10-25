@@ -203,7 +203,8 @@ To add images, run `make sources`, commit `sources.json`, run
 `make publish` in `intothefray-img`, then `make packs`. `make packs`
 fails when the manifest is missing, and drops a card with a face that has
 no English image ("no image" in the report). The report prints how many
-faces the manifest covers, per language.
+faces the manifest covers, per language. Once the manifest exists, a
+`packs/` test fails when an embedded image is not under its base URL.
 
 The curated files are the scenarios (`scenarios/`), card overrides
 (`cards.json`: face sizes, the Cerebro image ids of the identities whose
