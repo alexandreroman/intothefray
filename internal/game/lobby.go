@@ -10,10 +10,12 @@ import (
 	"github.com/alexandreroman/intothefray/internal/pack"
 )
 
+// MaxCopies is the most copies of one card a deck may hold.
+const MaxCopies = 20
+
 const (
 	maxSeats     = 4 // deck slots across all players, so heroes at the table
 	maxNameRunes = 16
-	maxCopies    = 20 // copies of one card in a deck
 
 	standardVersionI = "standard"
 )
@@ -223,8 +225,8 @@ func (g *Game) SetDeck(token string, deck int, choice DeckChoice, cat *pack.Cata
 		unknown = append(unknown, choice.Hero)
 	}
 	for _, entry := range choice.Cards {
-		if entry.Qty < 1 || entry.Qty > maxCopies {
-			return invalid("card %s has quantity %d, want 1 to %d", entry.Code, entry.Qty, maxCopies)
+		if entry.Qty < 1 || entry.Qty > MaxCopies {
+			return invalid("card %s has quantity %d, want 1 to %d", entry.Code, entry.Qty, MaxCopies)
 		}
 		if !knownCard(cat, entry.Code) {
 			unknown = append(unknown, entry.Code)
@@ -475,6 +477,14 @@ func (p *Player) ready() bool {
 func (g *Game) demote(player *Player) {
 	g.Players = slices.DeleteFunc(g.Players, func(p *Player) bool { return p == player })
 	g.Spectators = append(g.Spectators, &Spectator{Token: player.Token, Name: player.Name})
+}
+
+// TakesPart reports whether token is the token of a player or a spectator.
+func (g *Game) TakesPart(token string) bool {
+	if token == "" {
+		return false
+	}
+	return g.player(token) != nil || g.spectator(token) != nil
 }
 
 func (g *Game) player(token string) *Player {

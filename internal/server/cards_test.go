@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/alexandreroman/intothefray/internal/game"
+	"github.com/alexandreroman/intothefray/packs"
 )
 
 const cardsHostToken = "host-token" //nolint:gosec // test fixture
@@ -44,7 +45,7 @@ func newCardsServer(t *testing.T) (ts *httptest.Server, started *game.Game, lobb
 func newCardsGame(t *testing.T, id string) *game.Game {
 	t.Helper()
 
-	cat, err := testCatalog()
+	cat, err := packs.Catalog()
 	if err != nil {
 		t.Fatal(err)
 	}

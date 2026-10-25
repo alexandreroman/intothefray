@@ -375,7 +375,7 @@ func (s *Server) hello(ctx context.Context, c *conn, msg clientMessage) error {
 	var role game.Role
 	err = s.update(ctx, c.gameID, func(g *game.Game) error {
 		token = msg.Token
-		if !takesPart(g, token) {
+		if !g.TakesPart(token) {
 			token = fresh
 		}
 		var joinErr error
@@ -599,16 +599,6 @@ func errorCode(err error) string {
 	default:
 		return codeInternal
 	}
-}
-
-// takesPart reports whether token is the token of a player or a spectator.
-func takesPart(g *game.Game, token string) bool {
-	if token == "" {
-		return false
-	}
-	isPlayer := slices.ContainsFunc(g.Players, func(p *game.Player) bool { return p.Token == token })
-	isSpectator := slices.ContainsFunc(g.Spectators, func(sp *game.Spectator) bool { return sp.Token == token })
-	return isPlayer || isSpectator
 }
 
 func playerWithColor(g *game.Game, color int) *game.Player {

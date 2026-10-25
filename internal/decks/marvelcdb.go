@@ -24,8 +24,6 @@ const (
 	importTimeout = 20 * time.Second
 	// maxCardLookups caps the requests made to name unsupported cards.
 	maxCardLookups = 20
-	// maxQty is the engine's limit of copies of one card.
-	maxQty = 20
 	// maxSlots is far above any real deck and bounds the work per import.
 	maxSlots = 200
 	// maxBodyBytes bounds what we read from marvelcdb; real decks are a few KiB.
@@ -196,7 +194,7 @@ func validateSlots(slots map[string]int) error {
 		return fmt.Errorf("%w: %d slots", ErrInvalidDeck, len(slots))
 	}
 	for code, qty := range slots {
-		if qty < 1 || qty > maxQty {
+		if qty < 1 || qty > game.MaxCopies {
 			return fmt.Errorf("%w: card %s has quantity %d", ErrInvalidDeck, code, qty)
 		}
 	}

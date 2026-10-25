@@ -18,6 +18,7 @@ import (
 
 	"github.com/alexandreroman/intothefray/internal/game"
 	"github.com/alexandreroman/intothefray/internal/store"
+	"github.com/alexandreroman/intothefray/packs"
 )
 
 const (
@@ -146,7 +147,7 @@ type twoPlayerGame struct {
 func startTwoPlayerGame(t *testing.T) *twoPlayerGame {
 	t.Helper()
 
-	cat, err := testCatalog()
+	cat, err := packs.Catalog()
 	if err != nil {
 		t.Fatal(err)
 	}

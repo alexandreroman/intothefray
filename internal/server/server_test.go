@@ -12,7 +12,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"sync"
 	"testing"
 	"time"
 
@@ -67,7 +66,7 @@ func newServerOn(t *testing.T, mr *miniredis.Miniredis) *Server {
 func newServerWithConfig(t *testing.T, mr *miniredis.Miniredis, cfg config.Config) *Server {
 	t.Helper()
 
-	cat, err := testCatalog()
+	cat, err := packs.Catalog()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -83,9 +82,6 @@ func newServerWithConfig(t *testing.T, mr *miniredis.Miniredis, cfg config.Confi
 		Logger:  slog.New(slog.NewTextHandler(io.Discard, nil)),
 	})
 }
-
-// testCatalog loads the embedded packs once for the whole test binary.
-var testCatalog = sync.OnceValues(packs.Catalog)
 
 // reply is a fully read HTTP response.
 type reply struct {

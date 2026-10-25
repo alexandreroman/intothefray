@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"slices"
 	"strings"
-	"sync"
 	"testing"
 	"time"
 
@@ -15,13 +14,9 @@ import (
 
 var testNow = time.Date(2026, 10, 18, 12, 0, 0, 0, time.UTC)
 
-// sharedCatalog loads the embedded catalog once for every test: decoding it
-// per test made the race-enabled suite slow, and tests only read it.
-var sharedCatalog = sync.OnceValues(packs.Catalog)
-
 func newCatalog(t *testing.T) *pack.Catalog {
 	t.Helper()
-	cat, err := sharedCatalog()
+	cat, err := packs.Catalog()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -63,6 +58,29 @@ func TestJoinSeatsThenSpectators(t *testing.T) {
 	}
 	if len(g.Players) != 4 || len(g.Spectators) != 1 {
 		t.Errorf("got %d players, %d spectators; want 4 and 1", len(g.Players), len(g.Spectators))
+	}
+}
+
+func TestTakesPart(t *testing.T) {
+	g := lobbyOfFour(t)
+	if _, err := g.Join("e", "Fifth"); err != nil {
+		t.Fatal(err)
+	}
+
+	tests := []struct {
+		token string
+		want  bool
+	}{
+		{"h", true},  // host
+		{"b", true},  // player
+		{"e", true},  // spectator
+		{"x", false}, // stranger
+		{"", false},
+	}
+	for _, tt := range tests {
+		if got := g.TakesPart(tt.token); got != tt.want {
+			t.Errorf("TakesPart(%q) = %t, want %t", tt.token, got, tt.want)
+		}
 	}
 }
 
@@ -344,8 +362,8 @@ func TestSetDeckRejectsQuantities(t *testing.T) {
 		{-1, true},
 		{0, true},
 		{1, false},
-		{maxCopies, false},
-		{maxCopies + 1, true},
+		{MaxCopies, false},
+		{MaxCopies + 1, true},
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("qty %d", tt.qty), func(t *testing.T) {
