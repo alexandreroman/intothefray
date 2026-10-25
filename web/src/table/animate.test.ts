@@ -1121,6 +1121,33 @@ describe('diffViews', () => {
         ]);
       });
 
+      it('a face-up card put on the deck out of a discard pile flies there, turning face down', () => {
+        const prev = view({ cards: [onPile('c9')], piles: [deck(10), discard(['c9'])] });
+        const next = view({
+          piles: [deck(11), discard([])],
+          log: [OLD_LINE, line('put Web-Shooter on top of their deck', alex)],
+        });
+
+        expect(diffViews(prev, next)).toEqual([
+          { kind: 'fly', id: 'c9', toPile: 'deck:p0', fromPile: 'disc:p0', turns: 'down' },
+        ]);
+      });
+
+      it('a revealed card turned face down flies back onto its deck, turning face down', () => {
+        const prev = view({
+          cards: [card('r', { code: '01001', onPile: 'deck:p0', x: 600 })],
+          piles: [deck(9)],
+        });
+        const next = view({
+          piles: [deck(10)],
+          log: [OLD_LINE, line('put Web-Shooter back on top of their deck', alex)],
+        });
+
+        expect(diffViews(prev, next)).toEqual([
+          { kind: 'fly', id: 'r', toPile: 'deck:p0', turns: 'down' },
+        ]);
+      });
+
       it("a face-down card taken into another player's hand goes away", () => {
         const prev = seenBySam(
           view({ cards: [card('d', { faceDown: true })], handCounts: [5, 0] }),
