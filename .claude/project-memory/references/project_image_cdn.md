@@ -34,7 +34,8 @@ times over. A separate private repo keeps the credentials and the
 download-heavy pipeline out of the public app and its CI.
 
 **How to apply:** new or corrected cards need `make publish` in
-intothefray-img, then a commit of the app diff; design and plan in
+intothefray-img, then a commit of the app diff (release and rollback in
+[[project_deployment]]); design and plan in
 `docs/superpowers/specs/2026-10-25-image-cdn-design.md` and
 `docs/superpowers/plans/2026-10-25-image-cdn.md`. See
 [[project_constraints]], [[reference_card_sources]].

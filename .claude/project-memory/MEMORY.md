@@ -26,7 +26,7 @@
 - [Tech stack choices](references/project_tech_stack.md) — Go + Redis backend, Svelte SPA on GitHub Pages, path routes, why
 - [Product constraints](references/project_constraints.md) — anti-cheat, images on img.intothefray.xyz, 24 h expiry, pack scope, accepted limits
 - [Card image CDN](references/project_image_cdn.md) — R2 at img.intothefray.xyz, filled by intothefray-img `make publish`; AVIF, OCTGN FR
-- [Card data sources](references/reference_card_sources.md) — marvelcdb primary, mc4db fallback cards; Cerebro, fr.marvelcdb, mc4db image URLs
+- [Card data sources](references/reference_card_sources.md) — marvelcdb primary, mc4db fallback; fr.marvelcdb names; image sources.json
 - [Automated setup scope](references/project_setup_scope.md) — scheme on 1A, environments and printed side schemes placed; players resolve Setup
 - [Replayable board state](references/project_replayable_state.md) — seed at start, full action history, snapshots every 10 actions
 - [Moving card stacks](references/project_stack_moves.md) — top card moves the whole stack; a tucked card detaches; new tucks go under the stack
@@ -37,7 +37,7 @@
 - [Standard and Expert set setup](references/project_set_setup.md) — Setup-keyword set cards start in play via sets.json; Standard PvP unlisted
 - [Hero side decks](references/project_hero_side_decks.md) — curated side decks, only Invocation has a discard; set-aside hero cards
 - [Per-game card pool](references/project_card_pool.md) — table loads GET /api/games/{id}/cards; SPA ships pack index only
-- [Card image preload](references/project_image_preload.md) — browser-native: low-priority Image per pool face, no custom queue
+- [Card image preload](references/project_image_preload.md) — browser-native: low-priority Image per pool face; immutable CDN cache
 - [Compression: HTTP by the proxy, WebSocket by the backend](references/project_no_backend_compression.md) — WebSocket deflate, no context takeover
 - [Visual identity](references/project_visual_identity.md) — Ink & Signal: Archivo, ink palette, split-card logo, full wordmark in bars
 - [Table layout](references/project_table_layout.md) — rows, owner frames, out-of-play chips; small scenario decks in one villain row; markers
@@ -48,7 +48,7 @@
 - [Animated switches and card art thumbnails](references/project_switches_card_art.md) — switches slide (selectionIndicator); thumbnails use CardArt
 - [CI scope](references/project_ci_scope.md) — ci.yml checks Go, web, Docker; on main: image, Pages, backend; no packs sync, no Dependabot
 - [Moving several cards as a group](references/project_group_moves.md) — rubber band; drag or menu acts on the group; one atomic group action
-- [Localized card names and images](references/project_localized_cards.md) — localized overrides per face and index; Options offers no French
+- [Localized card names and images](references/project_localized_cards.md) — localized overrides per face and index; Options offers French (CDN)
 - [Fear No Evil scenarios](references/project_fear_no_evil_scenarios.md) — Kingpin curated; chosen-Underling scenarios unsupported
 - [Green Goblin scenarios](references/project_green_goblin_scenarios.md) — Risky Business, Mutagen Formula curated; Goblin Thralls by hand
 - [Scenario decks and several villains](references/project_scenario_decks.md) — curated decks, several villains, manual active counter; Wrecking Crew
@@ -57,7 +57,7 @@
 - [Compact top bar hides on scroll](references/project_top_bar_auto_hide.md) — ≤600px wide or ≤500px tall: hides on scroll down, back on scroll up
 - [Every change of place animates](references/project_card_move_animations.md) — cards travel, turn to their landing side, tilt; hover survives turns
 - [Presence message budget](references/project_presence_budget.md) — none while alone; 150 ms throttle, 3-unit dead zone, events at once
-- [Deployment architecture](references/project_deployment.md) — Pages at intothefray.xyz, VPS at api.intothefray.xyz; CI: image, Pages, backend
+- [Deployment architecture](references/project_deployment.md) — Pages, VPS at api.intothefray.xyz; CI: image, Pages, backend; images after publish
 - [Commit reporting](references/project_commit_reporting.md) — GET /api/version, VITE_COMMIT, Options shows app and server commits
 - [Cards set aside by a deck card](references/project_deck_set_aside.md) — curated `setAside` in cards.json (Specialized Training → Specialists)
 - [Escape in fullscreen](references/project_escape_in_fullscreen.md) — Escape-closing layers preventDefault; lib/fullscreen locks Escape (Chromium)
