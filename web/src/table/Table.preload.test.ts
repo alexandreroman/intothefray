@@ -5,9 +5,17 @@ import { render } from '@testing-library/svelte';
 import { tick } from 'svelte';
 import Table from './Table.svelte';
 import { gameCards, loadGameCards, loadIndex } from '../lib/catalog';
-import { setLang } from '../lib/lang';
+import type { Lang } from '../lib/lang';
 import type { PackCard, PackFace, View } from '../lib/types';
 import { fakeSession } from './fixtures.testing';
+
+// The card language, as each test chooses: Options does not offer French, so no stored choice gives it.
+const cardLang = vi.hoisted(() => ({ current: 'en' as Lang }));
+
+vi.mock('../lib/lang', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../lib/lang')>()),
+  storedLang: () => cardLang.current,
+}));
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -81,7 +89,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  localStorage.clear();
+  cardLang.current = 'en';
   vi.unstubAllGlobals();
   vi.clearAllMocks();
   document.body.replaceChildren();
@@ -99,7 +107,7 @@ describe('Table preload', () => {
   });
 
   it('fetches the French image of a face that has one when French is chosen', async () => {
-    setLang('fr');
+    cardLang.current = 'fr';
     render(Table, { session: fakeSession(), view: makeView() });
 
     await settle();

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { isLang, LANGS, setLang, storedLang } from '../lib/lang';
+  import { isLang, OFFERED_LANGS, setLang, storedLang } from '../lib/lang';
   import {
     MAX_NAME_LENGTH,
     randomName,
@@ -155,19 +155,22 @@
       </div>
     </div>
 
-    <div class="row">
-      <div class="about">
-        <label for="lang">Language</label>
-        <p>Card names and images. The interface stays in English.</p>
+    <!-- No choice to make while a single language is offered. -->
+    {#if OFFERED_LANGS.length > 1}
+      <div class="row">
+        <div class="about">
+          <label for="lang">Language</label>
+          <p>Card names and images. The interface stays in English.</p>
+        </div>
+        <div class="control">
+          <select id="lang" value={lang} onchange={(e) => chooseLang(e.currentTarget.value)}>
+            {#each OFFERED_LANGS as option (option.code)}
+              <option value={option.code} lang={option.code}>{option.label}</option>
+            {/each}
+          </select>
+        </div>
       </div>
-      <div class="control">
-        <select id="lang" value={lang} onchange={(e) => chooseLang(e.currentTarget.value)}>
-          {#each LANGS as option (option.code)}
-            <option value={option.code} lang={option.code}>{option.label}</option>
-          {/each}
-        </select>
-      </div>
-    </div>
+    {/if}
 
     <p class="version" class:mismatch={mismatchedServer !== undefined}>
       version

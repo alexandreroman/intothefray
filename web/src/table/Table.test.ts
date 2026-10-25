@@ -3,12 +3,20 @@ import { tick } from 'svelte';
 import Table from './Table.svelte';
 import { interaction, LINGER_MS } from './interaction.svelte';
 import { knownCard, loadGameCards, loadIndex, type CardInfo } from '../lib/catalog';
-import { setLang } from '../lib/lang';
+import type { Lang } from '../lib/lang';
 import surfaceSource from './Surface.svelte?raw';
 import { cutShort } from '../lib/overflowTip.testing';
 import { clearPrefMemory } from '../lib/prefs';
 import type { CardView as TableCard, Index, PackFace, PileView, View } from '../lib/types';
 import { fakeSession, infoFrom } from './fixtures.testing';
+
+// The card language, as each test chooses: Options does not offer French, so no stored choice gives it.
+const cardLang = vi.hoisted(() => ({ current: 'en' as Lang }));
+
+vi.mock('../lib/lang', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../lib/lang')>()),
+  storedLang: () => cardLang.current,
+}));
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -16,6 +24,10 @@ vi.mock('../lib/catalog', async (importOriginal) => ({
   loadGameCards: vi.fn(),
   loadIndex: vi.fn(),
 }));
+
+afterEach(() => {
+  cardLang.current = 'en';
+});
 
 /**
  * Svelte's size bindings (bind:clientHeight) share one ResizeObserver, made on
@@ -916,7 +928,7 @@ describe('Table', () => {
   });
 
   it('shows card names, images, history and crumbs in French when chosen', async () => {
-    setLang('fr');
+    cardLang.current = 'fr';
     // Built once, as the catalog keeps its cards: a localized face is made once per face.
     const english = infoOf('01094')!;
     const rhino: CardInfo = {
