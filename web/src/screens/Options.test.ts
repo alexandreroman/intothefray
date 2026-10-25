@@ -3,8 +3,7 @@ import Options from './Options.svelte';
 import { getPref, setPref } from '../lib/prefs';
 import { applyTheme } from '../lib/theme';
 
-const CEREBRO = 'https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/';
-const FIRST_PLAYER = 'https://card-table.app/images/table/first_player_token_marvelchampions.png';
+const ASSETS = 'https://img.intothefray.xyz/assets/';
 
 const APP_SHA = '0123456789abcdef0123456789abcdef01234567';
 const SERVER_SHA = 'fedcba9876543210fedcba9876543210fedcba98';
@@ -122,7 +121,7 @@ describe('Options', () => {
 
     const official = screen.getByRole('button', { name: 'Official' });
     const sources = [...official.querySelectorAll('img')].map((img) => img.getAttribute('src'));
-    expect(sources).toEqual([CEREBRO + 'HeroBack.jpg', FIRST_PLAYER]);
+    expect(sources).toEqual([ASSETS + 'back-player.avif', ASSETS + 'first-player.avif']);
   });
 
   it('previews the drawn back and token of the minimal theme while the official one is stored', () => {
@@ -135,11 +134,27 @@ describe('Options', () => {
     expect(minimal.querySelector('svg[aria-label="First player"]')).not.toBeNull();
   });
 
-  it('hides the Language section while English is the only language offered', () => {
+  it('offers English and French, English first by default', () => {
     render(Options);
+    const select = screen.getByLabelText<HTMLSelectElement>('Language');
 
-    expect(screen.queryByLabelText('Language')).toBeNull();
-    expect(screen.queryByText('Card names and images. The interface stays in English.')).toBeNull();
+    expect([...select.options].map((option) => option.textContent)).toEqual([
+      'English',
+      'Français',
+    ]);
+    expect(select.value).toBe('en');
+    expect(screen.getByText('Card names and images. The interface stays in English.')).toBeTruthy();
+  });
+
+  it('stores the chosen language and shows it next time', async () => {
+    const { unmount } = render(Options);
+
+    await fireEvent.change(screen.getByLabelText('Language'), { target: { value: 'fr' } });
+
+    expect(getPref('itf-lang')).toBe('fr');
+    unmount();
+    render(Options);
+    expect(screen.getByLabelText<HTMLSelectElement>('Language').value).toBe('fr');
   });
 
   it('shows the title and where the options are saved', () => {
