@@ -133,7 +133,9 @@
   /**
    * Decided from the pointer position rather than :hover: as the hand rises,
    * its cards move away from a pointer resting at the bottom of the screen,
-   * and :hover would flip on and off.
+   * and :hover would flip on and off. In the capture phase, so that the hand
+   * has risen or lowered before every other window listener sees the move:
+   * Presence tells the others about the cursor only while the hand is down.
    */
   function followPointer(event: PointerEvent): void {
     pointer = { x: event.clientX, y: event.clientY };
@@ -397,7 +399,7 @@
 </script>
 
 <svelte:window
-  onpointermove={followPointer}
+  onpointermovecapture={followPointer}
   onpointerdowncapture={onPress}
   onpointerup={onRelease}
   onpointercancel={onRelease}

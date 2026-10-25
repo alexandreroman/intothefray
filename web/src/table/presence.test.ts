@@ -295,6 +295,16 @@ describe("the viewer's own presence", () => {
     expect(sent()).toEqual([]);
   });
 
+  it('sends the cursor during the move itself, before any microtask', async () => {
+    const { sent } = await renderTable();
+
+    // A browser runs microtasks between the listeners of a move it dispatches: a cursor sent from
+    // one would go out before the hand had decided whether the move raises it.
+    const moved = fireEvent.pointerMove(window, { clientX: 220, clientY: 480 });
+    expect(sent()).toEqual([{ cursor: { x: 200, y: 400 } }]);
+    await moved;
+  });
+
   it('hides the cursor while the hand is raised, never telling where the pointer goes in it', async () => {
     const { sent } = await renderTable();
     await fireEvent.pointerMove(window, { clientX: 220, clientY: 480 });

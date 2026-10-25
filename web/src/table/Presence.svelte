@@ -203,14 +203,12 @@
     if (!cursor) {
       return;
     }
-    // Decided once every handler of the move has run: the hand (Hand.svelte) handles it after
-    // this layer, and the move that raises it must not tell the others where the pointer went,
-    // while the move that lowers it shows the cursor again.
-    queueMicrotask(() => {
-      if (!away) {
-        send({ cursor });
-      }
-    });
+    // The hand (Hand.svelte) has already decided on this move, in the capture phase that runs
+    // before this listener: the move that raises it must not tell the others where the pointer
+    // went, while the move that lowers it shows the cursor again.
+    if (!away) {
+      send({ cursor });
+    }
   }
 
   /**
