@@ -73,6 +73,9 @@ type conn struct {
 	pendingView  []byte
 	lastVersion  int64
 	lastAudience game.Audience
+	// minVersion is the version that joined the viewer to the game: older
+	// views show the game without the viewer, and are never sent.
+	minVersion int64
 	// you is who the viewer is in the last view sent, which presence
 	// messages are signed with.
 	you game.YouView
@@ -121,7 +124,8 @@ func (c *conn) sendPresence(data []byte) {
 // who is connected, or the last audience sent when it is nil: the
 // connections could not be read. The viewer gets a version newer than the
 // last one sent, or the same version when the audience changed: viewers come
-// and go without the game changing.
+// and go without the game changing. It never gets a version older than its
+// join (see refuseBefore).
 func (c *conn) sendView(g *game.Game, version int64, audience *game.Audience) {
 	c.viewMu.Lock()
 	defer c.viewMu.Unlock()
@@ -129,6 +133,9 @@ func (c *conn) sendView(g *game.Game, version int64, audience *game.Audience) {
 	current := c.lastAudience
 	if audience != nil {
 		current = *audience
+	}
+	if version < c.minVersion {
+		return
 	}
 	if version < c.lastVersion || (version == c.lastVersion && current.Equal(c.lastAudience)) {
 		return
@@ -147,6 +154,15 @@ func (c *conn) sendView(g *game.Game, version int64, audience *game.Audience) {
 	case c.viewReady <- struct{}{}:
 	default: // already signalled
 	}
+}
+
+// refuseBefore keeps the views older than version, the one that joined the
+// viewer to the game, from the viewer. It is kept apart from the last version
+// sent: the first view of that version goes through whatever its audience.
+func (c *conn) refuseBefore(version int64) {
+	c.viewMu.Lock()
+	defer c.viewMu.Unlock()
+	c.minVersion = version
 }
 
 // online returns the connection as the store records it. The connection must
@@ -373,7 +389,7 @@ func (s *Server) hello(ctx context.Context, c *conn, msg clientMessage) error {
 
 	var token string
 	var role game.Role
-	err = s.update(ctx, c.gameID, func(g *game.Game) error {
+	joinVersion, err := s.updateVersion(ctx, c.gameID, func(g *game.Game) error {
 		token = msg.Token
 		if !g.TakesPart(token) {
 			token = fresh
@@ -394,6 +410,10 @@ func (s *Server) hello(ctx context.Context, c *conn, msg clientMessage) error {
 	// any view the event loop relays to the others meanwhile, already show
 	// the newcomer online, so the views come in a set order.
 	s.keepOnline(ctx, c.gameID, []store.Connection{c.online()})
+	// The event loop may still hold a version loaded before the join, and
+	// broadcast it once c is registered: it would show the viewer outside
+	// the game, ahead of its own first view.
+	c.refuseBefore(joinVersion)
 	s.hub.register(c)
 	// Loading after registering leaves no gap: an update made since the join
 	// is either in this view or broadcast to c.

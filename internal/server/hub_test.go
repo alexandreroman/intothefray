@@ -9,6 +9,7 @@ import (
 	"slices"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -846,6 +847,96 @@ func TestSlowTouchDoesNotDelayPresence(t *testing.T) {
 
 	if got := alex.expect("presence"); got.Name != "Bob" {
 		t.Errorf("presence = %s, want Bob's", got.raw)
+	}
+}
+
+// loadBlocker is a Redis hook that holds every GET, the one a game load
+// sends, once a first lease is recorded (a pipeline holding a ZADD), until
+// release is closed.
+type loadBlocker struct {
+	leased      atomic.Bool
+	entered     chan struct{}
+	enteredOnce sync.Once
+	release     chan struct{}
+}
+
+func (b *loadBlocker) DialHook(next redis.DialHook) redis.DialHook { return next }
+
+func (b *loadBlocker) ProcessPipelineHook(next redis.ProcessPipelineHook) redis.ProcessPipelineHook {
+	return func(ctx context.Context, cmds []redis.Cmder) error {
+		err := next(ctx, cmds)
+		if slices.ContainsFunc(cmds, func(cmd redis.Cmder) bool { return cmd.Name() == "zadd" }) {
+			b.leased.Store(true)
+		}
+		return err
+	}
+}
+
+func (b *loadBlocker) ProcessHook(next redis.ProcessHook) redis.ProcessHook {
+	return func(ctx context.Context, cmd redis.Cmder) error {
+		if cmd.Name() == "get" && b.leased.Load() {
+			b.enteredOnce.Do(func() { close(b.entered) })
+			<-b.release
+		}
+		return next(ctx, cmd)
+	}
+}
+
+func TestViewFromBeforeJoinNotSent(t *testing.T) {
+	mr := miniredis.RunT(t)
+	first := startInstance(t, mr, nil)
+	blocker := &loadBlocker{entered: make(chan struct{}), release: make(chan struct{})}
+	var srv *Server
+	second := startInstance(t, mr, func(s *Server) {
+		rdb := redis.NewClient(&redis.Options{Addr: mr.Addr()})
+		rdb.AddHook(blocker)
+		t.Cleanup(func() { _ = rdb.Close() })
+		s.deps.Store = store.New(rdb, time.Hour)
+		srv = s
+	})
+	release := sync.OnceFunc(func() { close(blocker.release) })
+	// Registered after startInstance, so it runs first and lets Run stop.
+	t.Cleanup(release)
+
+	created := createGame(t, first, "Alex")
+	alex := connect(t, first, created.ID)
+	alex.hello(created.Token, "Alex")
+	stale, staleVersion, err := srv.deps.Store.Load(t.Context(), created.ID)
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+
+	// Bob is the only viewer of the second instance: the first lease
+	// recorded there is his, and every load that follows comes once he is
+	// registered.
+	bob := connect(t, second, created.ID)
+	bob.send(map[string]any{"type": "hello", "token": "", "name": "Bob"})
+	select {
+	case <-blocker.entered:
+	case <-time.After(waitTimeout):
+		t.Fatal("Bob's join loaded no game")
+	}
+
+	// The event loop broadcasts the game it loaded before Bob's join, while
+	// his first view is held up.
+	srv.hub.broadcast(stale, staleVersion, srv.onlineAudience(t.Context(), stale))
+	srv.hub.mu.Lock()
+	bobConns := slices.Collect(maps.Keys(srv.hub.games[created.ID].conns))
+	srv.hub.mu.Unlock()
+	// A view left pending would be replaced unseen by the first view: the
+	// write loop takes it before the load goes on.
+	waitFor(t, "no view of Bob is pending", func() bool {
+		bobConns[0].viewMu.Lock()
+		defer bobConns[0].viewMu.Unlock()
+		return bobConns[0].pendingView == nil
+	})
+	release()
+
+	bob.expect("welcome")
+	view := bob.expect("view")
+	if view.Version <= staleVersion || view.View.You.Role != game.RolePlayer {
+		t.Errorf("first view = version %d, role %q; want a version after %d, role %q",
+			view.Version, view.View.You.Role, staleVersion, game.RolePlayer)
 	}
 }
 
