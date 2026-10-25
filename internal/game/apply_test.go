@@ -473,6 +473,7 @@ func TestTokenAndStatusRejectBadInput(t *testing.T) {
 		{Kind: ActToken, Card: "c1", Name: "stunned", Delta: 1},
 		{Kind: ActToken, Card: "c1", Name: "bogus", Delta: 1},
 		{Kind: ActStatus, Card: "c1", Name: "dmg", Delta: 1},
+		{Kind: ActStatus, Card: "c1", Name: "acc", Delta: 1},
 		{Kind: ActToken, Card: "c3", Name: "dmg", Delta: 1}, // in hand
 		{Kind: ActStatus, Card: "c999", Name: "tough", Delta: 1},
 	}

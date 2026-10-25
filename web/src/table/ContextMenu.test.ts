@@ -317,7 +317,7 @@ describe('the context menu', () => {
 
     await fireEvent.click(menuItem(contextMenu()!, 'Add a token'));
     const submenu = screen.getByRole('menu', { name: 'Add a token' });
-    expect(labels(submenu)).toEqual(['Damage (6)', 'Threat', 'Counter']);
+    expect(labels(submenu)).toEqual(['Damage (6)', 'Threat', 'Counter', 'Acceleration']);
     // Right of the menu.
     expect(submenu.style.left).toBe('320px');
 

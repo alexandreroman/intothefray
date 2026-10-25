@@ -223,6 +223,8 @@ describe('contextItems', () => {
       'Damage (6) [D]',
       'Threat [T]',
       'Counter [N]',
+      // No key to show.
+      'Acceleration',
     ]);
     expect(texts(submenu(entries, 'Add a status').entries)).toEqual([
       'Stunned (1) [S]',

@@ -51,7 +51,7 @@ type Card struct {
 	Pile      string         `json:"pile,omitempty"`   // pile id while Zone == ZonePile
 	OnPile    string         `json:"onPile,omitempty"` // revealed on top of this pile (Zone table)
 	Exhausted bool           `json:"exhausted,omitempty"`
-	Tokens    map[string]int `json:"tokens,omitempty"` // "dmg", "thr", "gen"
+	Tokens    map[string]int `json:"tokens,omitempty"` // "dmg", "thr", "gen", "acc"
 	// Status counts the statuses ("stunned", "confused", "tough", "retaliate",
 	// "locked"); the count of "retaliate" is the card's Retaliate value.
 	Status map[string]int `json:"status,omitempty"`
