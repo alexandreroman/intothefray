@@ -39,7 +39,7 @@ func TestLocalizeCardsNames(t *testing.T) {
 		{Code: "01094", Name: "Rhino"},
 		{Code: "01050", Name: "Hulk", Subname: "Bruce Banner (FR)"},
 	}})
-	cards, _ := BuildCards(mc, nil, nil)
+	cards, _ := buildCards(mc, nil, nil)
 
 	localizeCards(cards, faceCodesOf(mc), fr)
 
@@ -97,7 +97,7 @@ func TestFrenchImageCandidates(t *testing.T) {
 
 func TestLocalizeCardsWithoutMC4DB(t *testing.T) {
 	mc := []marvelcdb.Card{{Code: "01004", Name: "Enhanced Spider-Sense", PackCode: "core", ImageSrc: "/a.png"}}
-	cards, _ := BuildCards(mc, nil, nil)
+	cards, _ := buildCards(mc, nil, nil)
 
 	localizeCards(cards, faceCodesOf(mc), frenchSourcesOf(Inputs{}))
 
@@ -183,8 +183,9 @@ func TestBuildLocalizesIndex(t *testing.T) {
 	}
 
 	index := result.Index
-	if got, want := index.Packs[0].Localized, map[string]pack.Localized{"fr": {Name: "Boîte de base"}}; !reflect.DeepEqual(got, want) {
-		t.Errorf("pack localized = %+v, want %+v", got, want)
+	wantPack := map[string]pack.Localized{"fr": {Name: "Boîte de base"}}
+	if got := index.Packs[0].Localized; !reflect.DeepEqual(got, wantPack) {
+		t.Errorf("pack localized = %+v, want %+v", got, wantPack)
 	}
 	for _, ref := range index.Sets {
 		want := map[string]pack.Localized(nil)

@@ -26,14 +26,12 @@ type villainSet struct {
 	firstCard *pack.Card // lowest-code card whose first face is a villain or leader, if any
 }
 
-// BuildScenarios lists a scenario for every villain or leader set and merges
+// buildScenarios lists a scenario for every villain or leader set and merges
 // the curated definitions into the ones whose cards all exist. A definition
 // absorbs the sets it covers: they are not listed separately. cards and sets
 // are keyed by pack code. The scenario of a set belongs to the pack of that set.
 // The references are ordered by the code of the first villain card of the set.
-//
-//nolint:revive // BuildScenarios is the name fixed by the plan.
-func BuildScenarios(
+func buildScenarios(
 	defs []curated.ScenarioDef,
 	cards map[string][]pack.Card,
 	sets map[string][]pack.Set,

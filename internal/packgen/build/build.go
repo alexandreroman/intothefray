@@ -89,25 +89,25 @@ func Build(in Inputs) (Result, error) {
 	problems = append(problems, dropped...)
 
 	cardCodes := cardCodesOf(cards)
-	if err := checkCardSetAside(in.Curated.Cards, CanonicalCodes(in.MC), cardCodes); err != nil {
+	if err := checkCardSetAside(in.Curated.Cards, canonicalCodes(in.MC), cardCodes); err != nil {
 		return Result{}, err
 	}
 	faceCounts := faceCountsOf(cards)
-	sets := pruneSets(BuildSets(in.MC, in.MCPacks), cardCodes)
+	sets := pruneSets(buildSets(in.MC, in.MCPacks), cardCodes)
 	if err := applySetDefs(sets, in.Curated.Sets, cardCodes, faceCounts); err != nil {
 		return Result{}, err
 	}
 	applySideBacks(cards, sets)
 	// Side decks are linked before the heroes are checked, so that a hero
 	// dropped for a missing image is reported rather than failing the build.
-	allHeroes := BuildHeroes(in.MC)
+	allHeroes := buildHeroes(in.MC)
 	if err := linkSideDecks(allHeroes, sets); err != nil {
 		return Result{}, err
 	}
 	heroes, heroProblems := checkHeroes(allHeroes, cardCodes)
 	problems = append(problems, heroProblems...)
 
-	scenarios, refs, scenarioProblems := BuildScenarios(in.Curated.Scenarios, cards, sets, in.CBSets)
+	scenarios, refs, scenarioProblems := buildScenarios(in.Curated.Scenarios, cards, sets, in.CBSets)
 	problems = append(problems, scenarioProblems...)
 	scenarios, refs, faceProblems := dropInvalidFaceRefs(scenarios, refs, faceCounts)
 	problems = append(problems, faceProblems...)
@@ -135,7 +135,7 @@ func Build(in Inputs) (Result, error) {
 // localizedCards builds the cards of the records of in, already merged with
 // their fallback, and adds their French overrides, images still unchecked.
 func localizedCards(in Inputs, fr frenchSources) (map[string][]pack.Card, []report.Unsupported) {
-	cards, problems := BuildCards(in.MC, in.CB, in.Curated.Cards)
+	cards, problems := buildCards(in.MC, in.CB, in.Curated.Cards)
 	localizeCards(cards, faceCodesOf(in.MC), fr)
 	return cards, problems
 }
@@ -284,7 +284,7 @@ func checkSetAside(set pack.Set, setAside []string, cardCodes map[string]bool) e
 
 // checkCardSetAside makes sure the cards a curated card sets aside exist in
 // the catalog and do not include the card itself, which belongs in the deck,
-// and that they are listed on the code of a card, the only one BuildCards
+// and that they are listed on the code of a card, the only one buildCards
 // reads them from: on a face code they would be silently ignored.
 func checkCardSetAside(
 	overrides map[string]curated.CardOverride,

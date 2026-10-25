@@ -21,13 +21,11 @@ const (
 	baseCodeLength  = 5 // digits of a code, without its face letter
 )
 
-// BuildCards groups the marvelcdb entries into cards and returns them by pack
+// buildCards groups the marvelcdb entries into cards and returns them by pack
 // code, sorted by code. A card is one base code with its faces, except for
 // lettered codes that are distinct cards (see splitGroup). Cards that cannot be displayed
 // are returned as unsupported instead.
-//
-//nolint:revive // BuildCards is the name fixed by the plan.
-func BuildCards(
+func buildCards(
 	mc []marvelcdb.Card,
 	cb []cerebro.Card,
 	overrides map[string]curated.CardOverride,
@@ -97,10 +95,10 @@ func checkCerebroOverrides(overrides map[string]curated.CardOverride, cb []cereb
 	return nil
 }
 
-// CanonicalCodes maps the code of each marvelcdb record that is a card or a
+// canonicalCodes maps the code of each marvelcdb record that is a card or a
 // face of a card to the canonical code of that card. Reprints and summary
 // records of distinct lettered cards are not mapped.
-func CanonicalCodes(mc []marvelcdb.Card) map[string]string {
+func canonicalCodes(mc []marvelcdb.Card) map[string]string {
 	_, codes, _ := groupEntries(mc)
 	return codes
 }

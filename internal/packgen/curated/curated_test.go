@@ -74,7 +74,8 @@ func TestLoadRejectsUnknownField(t *testing.T) {
 	if err := os.Mkdir(scenarios, 0o750); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(scenarios, "bad.json"), []byte(`{"id":"x","villianSet":"x"}`), 0o600); err != nil {
+	content := []byte(`{"id":"x","villianSet":"x"}`)
+	if err := os.WriteFile(filepath.Join(scenarios, "bad.json"), content, 0o600); err != nil {
 		t.Fatal(err)
 	}
 
@@ -125,7 +126,11 @@ func TestLoadRejectsInvalidSets(t *testing.T) {
 		content string
 		want    string
 	}{
-		{"unknown difficulty", `{"standard_ii":{"inPlay":{"heroic":[{"card":"24049","face":0}]}}}`, `unknown difficulty "heroic"`},
+		{
+			"unknown difficulty",
+			`{"standard_ii":{"inPlay":{"heroic":[{"card":"24049","face":0}]}}}`,
+			`unknown difficulty "heroic"`,
+		},
 		{"unknown field", `{"standard_pvp":{"hidden":true}}`, `unknown field "hidden"`},
 		{
 			"side deck without label",
