@@ -139,7 +139,7 @@ export function diffViews(prev: View, next: View, ownDrop?: OwnDrop, apart = 0):
   }
   const previous = new Map(before.cards.map((card) => [card.id, card]));
   const lines = changedLines(prev.log, next.log);
-  // The glow takes the colour of whoever wrote the latest line; system lines have none.
+  // The glow takes the colour of whoever wrote the latest line; without a new line, nothing glows.
   const actor = lines.at(-1)?.color ?? -1;
   const turned = turnedIn(before, after);
   const shrunk = shrunkHiddenPiles(before, after);
