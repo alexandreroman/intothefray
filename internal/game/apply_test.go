@@ -118,9 +118,10 @@ func TestAttach(t *testing.T) {
 
 	mustApply(t, table, Action{Kind: ActAttach, Card: "c7", Target: "c1"})
 
+	// c1 already carries c2 at (100,220): c7 goes beneath it.
 	c7 := table.Cards["c7"]
-	if c7.Parent != "c1" || c7.X != 100 || c7.Y != 220 || c7.Z >= table.Cards["c1"].Z {
-		t.Errorf("c7 = %+v, want tucked under c1 at (100,220)", c7)
+	if c7.Parent != "c1" || c7.X != 100 || c7.Y != 240 || c7.Z >= table.Cards["c2"].Z {
+		t.Errorf("c7 = %+v, want tucked under c1, beneath c2, at (100,240)", c7)
 	}
 }
 
@@ -151,6 +152,161 @@ func TestAttachRejectsCycle(t *testing.T) {
 	if !reflect.DeepEqual(before, table) {
 		t.Error("table changed by a rejected action")
 	}
+}
+
+// putOnTable adds a loose encounter card id to the table at (x, y, z).
+func putOnTable(table *Table, id string, x, y, z int) {
+	table.Cards[id] = &Card{ID: id, Owner: NoOwner, Home: PileEncounter, Zone: ZoneTable, X: x, Y: y, Z: z}
+}
+
+// checkAt fails when card id does not lie at (x, y).
+func checkAt(t *testing.T, table *Table, id string, x, y int) {
+	t.Helper()
+	if c := table.Cards[id]; c.X != x || c.Y != y {
+		t.Errorf("%s at (%d,%d), want (%d,%d)", id, c.X, c.Y, x, y)
+	}
+}
+
+// checkZOrder fails when the cards ids are not stacked in that order, the
+// lowest first.
+func checkZOrder(t *testing.T, table *Table, ids ...string) {
+	t.Helper()
+	for i := 1; i < len(ids); i++ {
+		below, above := table.Cards[ids[i-1]], table.Cards[ids[i]]
+		if below.Z >= above.Z {
+			t.Errorf("%s.Z = %d, want below %s.Z = %d", below.ID, below.Z, above.ID, above.Z)
+		}
+	}
+}
+
+// checkUniqueZ fails when two cards on the table share a Z or one has a Z
+// below 1: the web app renders a card's Z as its z-index.
+func checkUniqueZ(t *testing.T, table *Table) {
+	t.Helper()
+	owner := map[int]string{}
+	for _, c := range table.Cards {
+		if c.Zone != ZoneTable {
+			continue
+		}
+		if c.Z < 1 {
+			t.Errorf("%s.Z = %d, want positive", c.ID, c.Z)
+		}
+		if other, ok := owner[c.Z]; ok {
+			t.Errorf("%s and %s share Z %d", c.ID, other, c.Z)
+		}
+		owner[c.Z] = c.ID
+	}
+}
+
+func TestAttachTwoUnderTheSameHost(t *testing.T) {
+	table := newTestTable()
+	putOnTable(table, "c9", 300, 400, 7)
+	putOnTable(table, "c10", 320, 420, 8)
+
+	mustApply(t, table, Action{Kind: ActAttach, Card: "c9", Target: "c7"})
+	mustApply(t, table, Action{Kind: ActAttach, Card: "c10", Target: "c7"})
+
+	// c10 goes beneath c9, its bottom edge showing below c9's.
+	checkAt(t, table, "c9", 600, 40)
+	checkAt(t, table, "c10", 600, 60)
+	checkZOrder(t, table, "c10", "c9", "c7")
+	checkUniqueZ(t, table)
+}
+
+func TestAttachTwoWhereDroppedUnderTheSameHost(t *testing.T) {
+	table := newTestTable()
+	putOnTable(table, "c9", 300, 400, 7)
+	putOnTable(table, "c10", 320, 420, 8)
+
+	mustApply(t, table, Action{Kind: ActAttach, Card: "c9", Target: "c7", X: 700, Y: 100, Placed: true})
+	mustApply(t, table, Action{Kind: ActAttach, Card: "c10", Target: "c7", X: 650, Y: 80, Placed: true})
+
+	checkAt(t, table, "c9", 700, 100)
+	checkAt(t, table, "c10", 650, 80)
+	checkZOrder(t, table, "c10", "c9", "c7")
+	checkUniqueZ(t, table)
+}
+
+func TestGroupOfTwoAttachesUnderTheSameHost(t *testing.T) {
+	table := newTestTable()
+	putOnTable(table, "c9", 300, 400, 7)
+	putOnTable(table, "c10", 320, 420, 8)
+
+	mustApply(t, table, group(
+		Action{Kind: ActAttach, Card: "c9", Target: "c7"},
+		Action{Kind: ActAttach, Card: "c10", Target: "c7"},
+	))
+
+	checkAt(t, table, "c9", 600, 40)
+	checkAt(t, table, "c10", 600, 60)
+	checkZOrder(t, table, "c10", "c9", "c7")
+	checkUniqueZ(t, table)
+}
+
+func TestPlayUnderAHostWithAnAttachment(t *testing.T) {
+	table := newTestTable()
+
+	// c1 already carries c2 at (100,220).
+	mustApply(t, table, Action{Kind: ActPlay, Card: "c3", Target: "c1"})
+	mustApply(t, table, Action{Kind: ActPlay, Card: "c6", Target: "c1"})
+
+	checkAt(t, table, "c2", 100, 220)
+	checkAt(t, table, "c3", 100, 240)
+	checkAt(t, table, "c6", 100, 260)
+	checkZOrder(t, table, "c6", "c3", "c2", "c1")
+	checkUniqueZ(t, table)
+}
+
+func TestAttachAStackUnderAHostWithAnAttachment(t *testing.T) {
+	table := newTestTable()
+	putOnTable(table, "c9", 300, 400, 7)
+	mustApply(t, table, Action{Kind: ActAttach, Card: "c9", Target: "c7"})
+
+	// c1 carries c2: both go beneath c9, in their own order.
+	mustApply(t, table, Action{Kind: ActAttach, Card: "c1", Target: "c7"})
+
+	checkAt(t, table, "c9", 600, 40)
+	checkAt(t, table, "c1", 600, 60)
+	checkAt(t, table, "c2", 600, 80)
+	checkZOrder(t, table, "c2", "c1", "c9", "c7")
+	checkUniqueZ(t, table)
+}
+
+func TestAttachUnderATuckedCard(t *testing.T) {
+	table := newTestTable()
+	putOnTable(table, "c9", 300, 400, 7)
+	putOnTable(table, "c10", 320, 420, 8)
+	putOnTable(table, "c11", 340, 440, 9)
+	// c7 carries c9, then c1 (with c2), then c10, each beneath the previous.
+	mustApply(t, table, Action{Kind: ActAttach, Card: "c9", Target: "c7"})
+	mustApply(t, table, Action{Kind: ActAttach, Card: "c1", Target: "c7"})
+	mustApply(t, table, Action{Kind: ActAttach, Card: "c10", Target: "c7"})
+	checkZOrder(t, table, "c10", "c2", "c1", "c9", "c7")
+
+	// c11 goes beneath c1's stack, above c10 which lay below that stack.
+	mustApply(t, table, Action{Kind: ActAttach, Card: "c11", Target: "c1"})
+
+	c1 := table.Cards["c1"]
+	checkAt(t, table, "c11", c1.X, table.Cards["c2"].Y+attachOffsetY)
+	if got := table.Cards["c11"].Parent; got != "c1" {
+		t.Errorf("c11 parent = %q, want c1", got)
+	}
+	checkZOrder(t, table, "c10", "c11", "c2", "c1", "c9", "c7")
+	checkUniqueZ(t, table)
+}
+
+func TestReattachToItsOwnHost(t *testing.T) {
+	table := newTestTable()
+	mustApply(t, table, Action{Kind: ActAttach, Card: "c7", Target: "c1"})
+	checkZOrder(t, table, "c7", "c2", "c1")
+
+	// c2 goes beneath c7, the rest of c1's stack; its own place does not count.
+	mustApply(t, table, Action{Kind: ActAttach, Card: "c2", Target: "c1"})
+
+	checkAt(t, table, "c7", 100, 240)
+	checkAt(t, table, "c2", 100, 260)
+	checkZOrder(t, table, "c2", "c7", "c1")
+	checkUniqueZ(t, table)
 }
 
 func TestLeavingPlayDiscardsAttachments(t *testing.T) {
@@ -378,10 +534,11 @@ func TestPlayUnderACardFromAPile(t *testing.T) {
 
 	mustApply(t, table, Action{Kind: ActPlay, Card: "c6", Target: "c1"})
 
+	// c1 already carries c2 at (100,220): c6 goes beneath it.
 	c6 := table.Cards["c6"]
 	if c6.Zone != ZoneTable || c6.Pile != "" || !c6.FaceDown || c6.Parent != "c1" ||
-		c6.X != 100 || c6.Y != 220 {
-		t.Errorf("c6 = %+v, want face down under c1 at (100,220)", c6)
+		c6.X != 100 || c6.Y != 240 {
+		t.Errorf("c6 = %+v, want face down under c1 at (100,240)", c6)
 	}
 	if got := table.Piles["deck:p0"].Cards; !slices.Equal(got, []string{"c4", "c5"}) {
 		t.Errorf("deck = %v, want [c4 c5]", got)

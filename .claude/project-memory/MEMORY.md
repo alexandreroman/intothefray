@@ -28,7 +28,7 @@
 - [Card data sources](references/reference_card_sources.md) — marvelcdb primary, mc4db fallback cards; Cerebro, fr.marvelcdb, mc4db image URLs
 - [Automated setup scope](references/project_setup_scope.md) — scheme on 1A, environments and printed side schemes placed; players resolve Setup
 - [Replayable board state](references/project_replayable_state.md) — seed at start, full action history, snapshots every 10 actions
-- [Moving card stacks](references/project_stack_moves.md) — top card moves the whole stack; a tucked card detaches
+- [Moving card stacks](references/project_stack_moves.md) — top card moves the whole stack; a tucked card detaches; new tucks go under the stack
 - [Optional Casper support](references/project_casper_optional.md) — wiring only in .casper.json and scripts/casper.sh; APP_INSTANCE names the tab
 - [Caddy as the local web server](references/project_caddy_entry_point.md) — Caddy serves web/dist from disk, single local entry point
 - [mise pins the frontend toolchain](references/project_mise_versions.md) — root mise.toml is the only node/pnpm version source
