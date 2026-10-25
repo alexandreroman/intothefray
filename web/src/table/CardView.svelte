@@ -96,7 +96,7 @@
     onpointerenter={(event) => interaction.enterCounter(target, event)}
     onpointerleave={() => interaction.leaveCounter()}
     >{#if k === 'acc'}<svg class="chevrons" viewBox="0 0 8 8" aria-hidden="true"
-        ><path d="M1 1.5 3.5 4 1 6.5M4.5 1.5 7 4 4.5 6.5" /></svg
+        ><path d="M1.5 7.25 4 4.75 6.5 7.25M1.5 3.25 4 0.75 6.5 3.25" /></svg
       >{/if}{card.tokens?.[k]}</span
   >
 {/snippet}
@@ -363,7 +363,8 @@
 
   /*
     Acceleration is in the Fray red, brighter than damage, and marked with a double chevron
-    before its count.
+    pointing up before its count. The two chevrons stand 4 units apart, so their strokes keep a
+    gap at 7px; their round ends may reach past the 8 × 8 box.
   */
   .tok.acc {
     --hi: #ffab9f;
@@ -379,6 +380,7 @@
   .tok.acc .chevrons {
     width: 7px;
     height: 7px;
+    overflow: visible;
     fill: none;
     stroke: currentColor;
     stroke-width: 1.8;

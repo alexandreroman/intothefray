@@ -1,6 +1,6 @@
 ---
 name: "Acceleration token"
-description: "Token \"acc\": manual, stacking, menu and pill only, Fray red chip with a double chevron beside the threat"
+description: "Token \"acc\": manual, stacking, menu and pill only, Fray red chip with an upward double chevron beside the threat"
 type: project
 ---
 
@@ -14,10 +14,11 @@ type: project
   (internal/game/apply.go) and `TOKENS` (web/src/table/actions.ts).
 - It has no keyboard shortcut and no keys sheet entry: the "Add a token"
   submenu ("Acceleration (2)") and the − / + token pill reach it.
-- Its chip is Fray red (#FF4438), brighter than damage, with a double
-  chevron before its count. It sits beside the threat: to its left in a
-  scheme's top right corner (threat in the corner), to its right in the
-  middle of any other card; without threat it takes the threat's place.
+- Its chip is Fray red (#FF4438), brighter than damage, with an upward
+  double chevron before its count. It sits beside the threat: to its left
+  in a scheme's top right corner (threat in the corner), to its right in
+  the middle of any other card; without threat it takes the threat's
+  place.
 - History, naming the card: "added 2 acceleration tokens to …", "removed
   1 acceleration token from …"; merged: "set acceleration tokens on … to
   3".

@@ -300,7 +300,7 @@ describe('CardView', () => {
     });
     const acceleration = container.querySelector('.tok.acc');
     expect(acceleration?.textContent).toBe('3');
-    // Its double chevron is drawn, not read.
+    // Its upward double chevron is drawn, not read.
     expect(acceleration?.querySelector('svg.chevrons')?.getAttribute('aria-hidden')).toBe('true');
   });
 
