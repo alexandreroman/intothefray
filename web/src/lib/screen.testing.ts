@@ -4,7 +4,7 @@
 import { tick } from 'svelte';
 
 /** A window's size, in px. */
-export interface ScreenSize {
+interface ScreenSize {
   width: number;
   height: number;
 }
@@ -14,7 +14,7 @@ export interface ScreenSize {
  * understood, joined by `and` within a query and by commas between queries: a query with
  * neither, as a preference, never matches.
  */
-export function matchesScreen(media: string, size: ScreenSize): boolean {
+function matchesScreen(media: string, size: ScreenSize): boolean {
   return media.split(',').some((query) => matchesOneQuery(query, size));
 }
 
@@ -30,7 +30,7 @@ function matchesOneQuery(query: string, size: ScreenSize): boolean {
 }
 
 /** A media query list for a window of some size, which can be resized. */
-export class FakeMediaQueryList extends EventTarget {
+class FakeMediaQueryList extends EventTarget {
   onchange = null;
   matches: boolean;
 
@@ -75,8 +75,6 @@ export async function resizeScreen(lists: FakeMediaQueryList[], size: ScreenSize
 export const PHONE: ScreenSize = { width: 390, height: 844 };
 /** A phone on its side (iPhone 16): short, and narrower than the history column needs. */
 export const LANDSCAPE_PHONE: ScreenSize = { width: 852, height: 393 };
-/** A large phone on its side (iPhone 16 Pro Max): short, and wide enough for the history column. */
-export const LANDSCAPE_LARGE_PHONE: ScreenSize = { width: 932, height: 430 };
 /** A tablet upright: neither narrow enough nor short enough for the compact top bar. */
 export const TABLET: ScreenSize = { width: 768, height: 1024 };
 export const DESKTOP: ScreenSize = { width: 1280, height: 800 };

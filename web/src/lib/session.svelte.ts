@@ -14,9 +14,9 @@ import type {
 } from './types';
 import { wsUrl } from './api';
 
-export type Status = 'connecting' | 'open' | 'reconnecting' | 'closed';
+type Status = 'connecting' | 'open' | 'reconnecting' | 'closed';
 
-export type LobbyOp =
+type LobbyOp =
   | 'configure'
   | 'setDeck'
   | 'addDeck'
@@ -28,8 +28,8 @@ export type LobbyOp =
   | 'end';
 
 /** The fields a lobby operation carries; which ones matter depends on the operation. */
-export interface LobbyPayload {
-  url?: string; // setDeck: the marvelcdb deck link
+interface LobbyPayload {
+  url?: string; // setDeck: the deck link
   deck?: number; // setDeck, removeDeck: the caller's deck slot, 0 when absent
   config?: LobbyConfig; // configure
   color?: number; // removePlayer: the colour of the player to remove
@@ -73,7 +73,6 @@ const CLOSE_GAME_NOT_FOUND = 4404;
  */
 export class GameSession {
   view = $state<View | null>(null);
-  role = $state<Role | null>(null);
   status = $state<Status>('connecting');
   lastError = $state<SessionError | null>(null);
   deckError = $state<UnsupportedCard[] | null>(null);
@@ -172,11 +171,6 @@ export class GameSession {
 
   close(): void {
     this.#stop(null);
-  }
-
-  /** Whether the socket is open, so that messages can go out. */
-  get connected(): boolean {
-    return this.status === 'open';
   }
 
   /** Returns false when the message was not sent because the socket is not open. */
@@ -400,7 +394,6 @@ export class GameSession {
     switch (message.type) {
       case 'welcome':
         setToken(this.#gameId, message.token);
-        this.role = message.role;
         break;
       case 'view':
         this.#handleView(message.version, message.view);

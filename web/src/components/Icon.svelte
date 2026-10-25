@@ -1,6 +1,5 @@
 <script lang="ts" module>
   export type IconName =
-    | 'cards'
     | 'sliders'
     | 'back'
     | 'eye'
@@ -27,10 +26,7 @@
   stroke-linejoin="round"
   aria-hidden="true"
 >
-  {#if name === 'cards'}
-    <rect x="3" y="5" width="9" height="13" rx="1.5" transform="rotate(-8 7.5 11.5)" />
-    <rect x="11" y="5" width="9" height="13" rx="1.5" transform="rotate(8 15.5 11.5)" />
-  {:else if name === 'sliders'}
+  {#if name === 'sliders'}
     <path d="M4 7h10M18 7h2M4 17h4M12 17h8" />
     <circle cx="16" cy="7" r="2" />
     <circle cx="10" cy="17" r="2" />

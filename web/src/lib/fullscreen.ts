@@ -43,7 +43,7 @@ export function canFullscreen(): boolean {
 }
 
 /** The element shown fullscreen, if any. */
-export function fullscreenElement(): Element | null {
+function fullscreenElement(): Element | null {
   return document.fullscreenElement ?? webkitDocument().webkitFullscreenElement ?? null;
 }
 
@@ -52,7 +52,7 @@ export function isFullscreen(): boolean {
 }
 
 /** Leaves fullscreen; a refusal changes nothing. */
-export function exitFullscreen(): void {
+function exitFullscreen(): void {
   ignoreRefusal(document.exitFullscreen?.() ?? webkitDocument().webkitExitFullscreen?.());
 }
 
