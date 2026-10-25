@@ -20,6 +20,8 @@ const FACES: Record<string, Partial<PackFace>[]> = {
   '01001': [{ name: 'Spider-Man' }],
   '01002': [{ name: 'Peter Parker' }, { name: 'Spider-Man' }],
   '01094': [{ name: 'Rhino', stage: 'I' }],
+  '01095': [{ name: 'Rhino', stage: 'II' }],
+  '01096': [{ name: 'Rhino', stage: 'III' }],
   '01097': [
     { name: 'The Break-In!', size: 'land' },
     { name: 'The Break-In!', size: 'land' },
@@ -121,6 +123,23 @@ function makeView(extra: { cards?: CardView[]; piles?: PileView[] } = {}): View 
     },
     log: [],
   };
+}
+
+/** Rhino on the given stage card, his three stages listed out of card number order. */
+function villainStages(current: string): View {
+  const view = makeView({
+    cards: [
+      card('v1', { code: '01094', owner: -1, back: 'villain', stage: 'villain' }),
+      card('v2', { code: '01095', owner: -1, back: 'villain', stage: 'villain' }),
+      card('v3', { code: '01096', owner: -1, back: 'villain', stage: 'villain' }),
+    ],
+  });
+  const table = view.table!;
+  for (const c of table.cards) {
+    c.zone = c.id === current ? 'table' : 'stage';
+  }
+  table.stages = [{ key: 'villain', label: 'Villain', current, cards: ['v3', 'v1', 'v2'] }];
+  return view;
 }
 
 const ALEX: { areas: Area[]; role: Role } = { areas: ['p0'], role: 'player' };
@@ -448,19 +467,76 @@ describe('actionsFor', () => {
     expect(actionOf(item(items, 'flip'))).toEqual({ kind: 'flip', card: 'played' });
   });
 
-  it('stage top card shows choose instead of flip', () => {
-    // The main scheme has two faces, yet its card choice replaces Flip.
+  it('stage top card shows Flip, then its card choice', () => {
     const items = itemsFor({ kind: 'card', id: 's' });
 
     expect(groups(items)).toEqual([
-      ['exhaust', 'stage'],
+      ['exhaust', 'flip', 'stage'],
       ['tokens', 'statuses', 'modifiers'],
       ['discard', 'moveTo'],
     ]);
+    expect(item(items, 'flip')).toMatchObject({ label: 'Flip', key: 'F' });
     const stage = item(items, 'stage');
     expect(stage).toMatchObject({ label: 'Change card…', key: 'V' });
     expect(stage.run?.()).toEqual({ local: 'stageBox' });
     expect(item(itemsFor({ kind: 'card', id: 'v' }), 'stage').label).toBe('Change card…');
+  });
+
+  it('Flip shows the next face of a main scheme, back to the first after the last', () => {
+    const onA = itemsFor({ kind: 'card', id: 's' });
+    expect(actionOf(item(onA, 'flip'))).toEqual({
+      kind: 'chooseStage',
+      stage: 'main',
+      card: 's',
+      face: 1,
+    });
+
+    const view = makeView();
+    const scheme = view.table!.cards.find((c) => c.id === 's')!;
+    scheme.face = 1;
+    const onB = itemsFor({ kind: 'card', id: 's' }, view);
+    expect(actionOf(item(onB, 'flip'))).toEqual({
+      kind: 'chooseStage',
+      stage: 'main',
+      card: 's',
+      face: 0,
+    });
+  });
+
+  it("Flip on a villain's stage shows the next stage card, by card number", () => {
+    const onI = itemsFor({ kind: 'card', id: 'v1' }, villainStages('v1'));
+    expect(actionOf(item(onI, 'flip'))).toEqual({
+      kind: 'chooseStage',
+      stage: 'villain',
+      card: 'v2',
+      face: 0,
+    });
+
+    const onII = itemsFor({ kind: 'card', id: 'v2' }, villainStages('v2'));
+    expect(actionOf(item(onII, 'flip'))).toEqual({
+      kind: 'chooseStage',
+      stage: 'villain',
+      card: 'v3',
+      face: 0,
+    });
+  });
+
+  it("a villain's last stage card has no Flip, only its card choice", () => {
+    const items = itemsFor({ kind: 'card', id: 'v3' }, villainStages('v3'));
+
+    expect(groups(items)[0]).toEqual(['exhaust', 'stage']);
+    // The default fixture's villain is alone in his stage: his last card too.
+    expect(groups(itemsFor({ kind: 'card', id: 'v' }))[0]).toEqual(['exhaust', 'stage']);
+  });
+
+  it('a stage card the catalog does not know yet has no Flip', () => {
+    vi.mocked(knownCard).mockReturnValue(null);
+
+    expect(groups(itemsFor({ kind: 'card', id: 's' }))[0]).toEqual(['exhaust', 'stage']);
+    expect(groups(itemsFor({ kind: 'card', id: 'v1' }, villainStages('v1')))[0]).toEqual([
+      'exhaust',
+      'stage',
+    ]);
   });
 
   it('a stage top card cannot leave the table', () => {
@@ -834,6 +910,10 @@ describe('actionsFor', () => {
 
     expect(actionsFor({ kind: 'card', id: 'v' }, view, spectator, 'en')).toEqual([]);
     expect(actionsFor({ kind: 'card', id: 's' }, view, spectator, 'en')).toEqual([]);
+    // Not even Flip, on a stage that has a next card to show.
+    const stages = villainStages('v1');
+    stages.you = view.you;
+    expect(actionsFor({ kind: 'card', id: 'v1' }, stages, spectator, 'en')).toEqual([]);
   });
 
   it('hand card gets no actions', () => {

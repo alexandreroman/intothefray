@@ -26,6 +26,7 @@ const FACES: Record<string, Partial<PackFace>[]> = {
   '01001': [{ name: 'Spider-Man' }],
   '01010': [{ name: 'Giant form', size: 'dstd' }],
   '01094': [{ name: 'Rhino', stage: 'I' }],
+  '01095': [{ name: 'Rhino', stage: 'II' }],
 };
 
 function infoOf(code: string): CardInfo | null {
@@ -525,6 +526,36 @@ describe('keys on the table', () => {
     await fireEvent.pointerEnter(placed('enemy'));
     await press('b');
     expect(session.act).not.toHaveBeenCalled();
+  });
+
+  it("F shows the villain's next stage card, and does nothing on his last one", async () => {
+    const cards = [
+      card('v', { code: '01094', owner: -1, back: 'villain' }),
+      card('v2', { code: '01095', owner: -1, back: 'villain', zone: 'stage' }),
+    ];
+    const view = makeView({ cards });
+    view.table!.stages = [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v', 'v2'] }];
+    const { session, rerender } = await renderTable(view);
+
+    await fireEvent.pointerEnter(placed('v'));
+    await press('f');
+    expect(session.act).toHaveBeenLastCalledWith(
+      { kind: 'chooseStage', stage: 'villain', card: 'v2', face: 0 },
+      0,
+    );
+
+    // Stage II on the table: the last card of the stage, which F leaves as it is.
+    const onII = makeView({
+      cards: [
+        card('v', { code: '01094', owner: -1, back: 'villain', zone: 'stage' }),
+        card('v2', { code: '01095', owner: -1, back: 'villain' }),
+      ],
+    });
+    onII.table!.stages = [{ key: 'villain', label: 'Villain', current: 'v2', cards: ['v', 'v2'] }];
+    await rerender({ view: onII });
+    await fireEvent.pointerEnter(placed('v2'));
+    await press('f');
+    expect(session.act).toHaveBeenCalledTimes(1);
   });
 
   it('V opens the card choice of the villain card, and does nothing elsewhere', async () => {
