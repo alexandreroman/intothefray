@@ -71,10 +71,13 @@ type Action struct {
 	Where  string   `json:"where,omitempty"` // "top" | "bottom" | "shuffle"
 	Stage  string   `json:"stage,omitempty"`
 	Cards  []string `json:"cards,omitempty"` // resolved: ids taken from a pile top (top first), new orders
-	// Renames is filled by shuffles: the old id → new id of every card of the
-	// shuffled pile. Cards then holds the new order, in new ids. A reorder of
-	// the top that takes a revealed card back renames the reordered cards
-	// too, its Cards staying in their old ids (see resolveReorderTop).
+	// Renames maps old ids to the new ids resolve gave cards so that nobody
+	// can follow them. A shuffle renames every card of the shuffled pile,
+	// Cards then holding the new order in new ids. A reorder of the top that
+	// takes a revealed card back renames the reordered cards, its Cards
+	// staying in their old ids (see resolveReorderTop). A card going into a
+	// hand or a deck out of a hand or face down off the table gets a new id
+	// too (see freshID).
 	Renames map[string]string `json:"renames,omitempty"`
 	Seat    int               `json:"seat,omitempty"` // acting seat, filled server-side (arrows)
 	// Seats is filled by an arrow clear of a player holding several decks:
@@ -182,7 +185,7 @@ func resolveOnTable(original *Table, who actor, a Action, rng *rand.Rand) (Actio
 	case ActPlay:
 		return resolvePlay(t, who, a)
 	case ActToHand:
-		return resolveToHand(t, who, a)
+		return resolveToHand(t, who, a, rng)
 	case ActToDeck:
 		return resolveToDeck(t, who, a, rng)
 	case ActToPile:
@@ -460,7 +463,7 @@ func usableTableCard(t *Table, who actor, id string) (*Card, error) {
 	return c, nil
 }
 
-func resolveToHand(t *Table, who actor, a Action) (Action, error) {
+func resolveToHand(t *Table, who actor, a Action, rng *rand.Rand) (Action, error) {
 	c, err := usableCard(t, who, a.Card)
 	if err != nil {
 		return a, err
@@ -471,6 +474,7 @@ func resolveToHand(t *Table, who actor, a Action) (Action, error) {
 	if !who.owns(c.Owner) {
 		return a, forbidden("card %q belongs to another player", c.ID)
 	}
+	a.Renames = freshID(t, c, rng)
 	return a, nil
 }
 
@@ -499,6 +503,12 @@ func resolveToDeck(t *Table, who actor, a Action, rng *rand.Rand) (Action, error
 	}
 	switch a.Where {
 	case whereTop, whereBottom:
+		// On top of a side deck that shows its top card, the card stays in
+		// everybody's sight.
+		a.Renames = nil
+		if a.Where == whereBottom || !deck.TopFaceUp {
+			a.Renames = freshID(t, c, rng)
+		}
 	case whereShuffle:
 		a.Renames, a.Cards = reidentify(t, t.shuffledIntoDeck(c, deck), rng)
 	default:

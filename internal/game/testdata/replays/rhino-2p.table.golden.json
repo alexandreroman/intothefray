@@ -165,6 +165,20 @@
       "z": 0,
       "pile": "enc"
     },
+    "c6j5v2csn": {
+      "id": "c6j5v2csn",
+      "code": "01009",
+      "face": 0,
+      "faces": 1,
+      "back": "player",
+      "owner": 0,
+      "home": "deck:p0",
+      "zone": "pile",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "pile": "deck:p0"
+    },
     "c793ru285": {
       "id": "c793ru285",
       "code": "01050",
@@ -622,20 +636,6 @@
       "y": 0,
       "z": 0,
       "pile": "deck:p1"
-    },
-    "cjth2th77": {
-      "id": "cjth2th77",
-      "code": "01009",
-      "face": 0,
-      "faces": 1,
-      "back": "player",
-      "owner": 0,
-      "home": "deck:p0",
-      "zone": "pile",
-      "x": 0,
-      "y": 0,
-      "z": 0,
-      "pile": "deck:p0"
     },
     "cjyqcketf": {
       "id": "cjyqcketf",
@@ -1202,7 +1202,7 @@
       "x": 0,
       "y": 500,
       "cards": [
-        "cjth2th77",
+        "c6j5v2csn",
         "ccak7dtd9",
         "cv2gum4sw",
         "chxsz54vn",

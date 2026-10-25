@@ -310,6 +310,7 @@ func TestSideDeckRoutes(t *testing.T) {
 		f := sideDeckFixture(t)
 		id := drawSide(t, f, "b", senseDeck, 1)
 		f.mustDo(t, "b", Action{Kind: ActToDeck, Card: id, Where: whereBottom}, at(2))
+		id = f.renamedID(t, id)
 		if bottom := f.g.Table.Piles[senseDeck].Cards[0]; bottom != id {
 			t.Errorf("bottom of the Sense deck = %s, want %s", bottom, id)
 		}
@@ -326,6 +327,7 @@ func TestSideDeckRoutes(t *testing.T) {
 			{Kind: ActToDeck, Card: first, Where: whereBottom},
 			{Kind: ActToDeck, Card: second, Where: whereBottom},
 		}}, at(3))
+		first, second = f.renamedID(t, first), f.renamedID(t, second)
 		if got := f.g.Table.Piles[senseDeck].Cards[:2]; !slices.Equal(got, []string{second, first}) {
 			t.Errorf("bottom of the Sense deck = %v, want [%s %s]", got, second, first)
 		}

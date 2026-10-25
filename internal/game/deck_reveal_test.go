@@ -444,6 +444,7 @@ func TestPutOnTopOfTheDeckCoversTheRevealedCard(t *testing.T) {
 
 	f.mustDo(t, "h", Action{Kind: ActToDeck, Card: drawn, Where: whereTop}, at(3))
 
+	drawn = f.renamedID(t, drawn)
 	if got := topCards(f.g.Table.Piles["deck:p0"], 2); !slices.Equal(got, []string{drawn, id}) {
 		t.Errorf("top = %v, want [%s %s]", got, drawn, id)
 	}

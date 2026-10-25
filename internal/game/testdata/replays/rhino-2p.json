@@ -538,7 +538,10 @@
       "action": {
         "kind": "toDeck",
         "card": "cryahddaw",
-        "where": "top"
+        "where": "top",
+        "renames": {
+          "cryahddaw": "ckp6mnw8j"
+        }
       },
       "tracked": true,
       "log": 11,
@@ -794,7 +797,7 @@
         "pile": "deck:p0",
         "cards": [
           "cy9y8chnb",
-          "cryahddaw"
+          "ckp6mnw8j"
         ]
       },
       "log": -1,
@@ -806,7 +809,10 @@
       "action": {
         "kind": "toDeck",
         "card": "c7mucxf5b",
-        "where": "top"
+        "where": "top",
+        "renames": {
+          "c7mucxf5b": "c9p8jabds"
+        }
       },
       "tracked": true,
       "log": 18,
@@ -961,9 +967,9 @@
           "c92e77kve": "chxsz54vn",
           "cb3cuqvpp": "cedq5xre8",
           "cdgvjtgjt": "cmhpfzh49",
+          "ckp6mnw8j": "ck78jkx8z",
           "cpaavspaf": "c5vrtms9y",
           "cps64jqzr": "c7edczms4",
-          "cryahddaw": "ck78jkx8z",
           "cs82wv276": "c8rah8xcp",
           "cvgzafqyy": "cv2gum4sw",
           "cvvdq2sfu": "cy8eunrp6",
@@ -1283,7 +1289,10 @@
       "action": {
         "kind": "toDeck",
         "card": "cjth2th77",
-        "where": "bottom"
+        "where": "bottom",
+        "renames": {
+          "cjth2th77": "c6j5v2csn"
+        }
       },
       "tracked": true,
       "log": 35,

@@ -6,7 +6,8 @@ import (
 )
 
 // Card ids are opaque on purpose: an id that followed setup order, or that
-// survived a shuffle, would let a player recognise a face-down card.
+// survived a shuffle or a trip through a hand or a deck (see freshID), would
+// let a player recognise a face-down card.
 const (
 	idAlphabet = "abcdefghjkmnpqrstuvwxyz23456789"
 	idLength   = 8
@@ -47,6 +48,31 @@ func reidentify(t *Table, ids []string, rng *rand.Rand) (renames map[string]stri
 	}
 	rng.Shuffle(len(order), func(i, j int) { order[i], order[j] = order[j], order[i] })
 	return renames, order
+}
+
+// freshID gives c, on its way into a hand or a deck, a new id when the other
+// players cannot tell it apart where it lies: in a hand, or face down on the
+// table. Keeping its id would let them tie the card that comes out later to
+// the one they saw before it went in. It returns the renames to record, nil
+// for a card everybody sees go.
+func freshID(t *Table, c *Card, rng *rand.Rand) map[string]string {
+	inHand := c.Zone == ZoneHand
+	faceDownOnTable := c.Zone == ZoneTable && c.FaceDown
+	if !inHand && !faceDownOnTable {
+		return nil
+	}
+	renames, _ := reidentify(t, []string{c.ID}, rng)
+	return renames
+}
+
+// checkFreshID checks the new id resolve gave the card a moves into a hand or
+// a deck, if any (see freshID).
+func checkFreshID(t *Table, a Action) error {
+	if a.Renames == nil {
+		return nil
+	}
+	_, err := checkFreshIDs(t, a.Renames, []string{a.Card})
+	return err
 }
 
 // checkRenames checks the renames of a shuffle: they must cover exactly the
@@ -90,8 +116,8 @@ func checkFreshIDs(t *Table, renames map[string]string, expected []string) ([]st
 }
 
 // renameCards gives cards new ids and rewrites every reference to them. The
-// renames were checked beforehand (see checkRenames). Open views drop the
-// renamed cards: their ids are gone.
+// renames were checked beforehand (see checkRenames and checkFreshID). Open
+// views drop the renamed cards: their ids are gone.
 func renameCards(t *Table, renames map[string]string) {
 	for old, id := range renames {
 		c := t.Cards[old]
@@ -113,8 +139,13 @@ func renameCards(t *Table, renames map[string]string) {
 			pile.Cards[i] = rename(id)
 		}
 	}
-	// Stage cards never sit in a shuffled pile; rewriting them anyway keeps
-	// the stages right should that ever change.
+	for _, hand := range t.Hands {
+		for i, id := range hand {
+			hand[i] = rename(id)
+		}
+	}
+	// Stage cards are never renamed; rewriting them anyway keeps the stages
+	// right should that ever change.
 	for _, stage := range t.Stages {
 		stage.Current = rename(stage.Current)
 		for i, id := range stage.Cards {

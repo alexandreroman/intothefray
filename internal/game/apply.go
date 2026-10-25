@@ -449,9 +449,13 @@ func applyToHand(t *Table, a Action) error {
 	if err := t.checkLeave(c); err != nil {
 		return err
 	}
+	if err := checkFreshID(t, a); err != nil {
+		return err
+	}
 
 	t.leave(c)
 	t.addToHand(PlayerArea(c.Owner), c)
+	renameCards(t, a.Renames)
 	return nil
 }
 
@@ -479,12 +483,17 @@ func applyToDeck(t *Table, a Action) error {
 	}
 
 	switch a.Where {
-	case whereTop:
+	case whereTop, whereBottom:
+		if err := checkFreshID(t, a); err != nil {
+			return err
+		}
 		t.leave(c)
-		deck.Cards = append(deck.Cards, c.ID)
-	case whereBottom:
-		t.leave(c)
-		deck.Cards = slices.Insert(deck.Cards, 0, c.ID)
+		if a.Where == whereTop {
+			deck.Cards = append(deck.Cards, c.ID)
+		} else {
+			deck.Cards = slices.Insert(deck.Cards, 0, c.ID)
+		}
+		renameCards(t, a.Renames)
 	case whereShuffle:
 		// The caller resolved the shuffle: Cards is the whole new pile.
 		if err := checkRenames(t, a, t.shuffledIntoDeck(c, deck)); err != nil {
