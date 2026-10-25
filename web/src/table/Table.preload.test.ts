@@ -6,7 +6,8 @@ import { tick } from 'svelte';
 import Table from './Table.svelte';
 import { gameCards, loadGameCards, loadIndex } from '../lib/catalog';
 import { setLang } from '../lib/lang';
-import type { PackCard, PackFace, PresenceState, View } from '../lib/types';
+import type { PackCard, PackFace, View } from '../lib/types';
+import { fakeSession } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -47,17 +48,6 @@ const POOL: PackCard[] = [
     quantity: 1,
   },
 ];
-
-function fakeSession() {
-  return {
-    act: vi.fn(() => 1),
-    lobby: vi.fn(() => true),
-    lastError: null,
-    presence: new Map<number, PresenceState>(),
-    sendPresence: vi.fn(),
-    viewGap: 0,
-  };
-}
 
 function makeView(): View {
   return {

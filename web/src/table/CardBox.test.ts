@@ -5,15 +5,9 @@ import boxSource from './CardBox.svelte?raw';
 import { compareCardNumbers, pileLabel, tileActions, type TileAction } from './boxes';
 import { DRAG_THRESHOLD } from './drag';
 import { interaction, LONG_PRESS_MS } from './interaction.svelte';
-import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
-import type {
-  CardView as TableCard,
-  PackFace,
-  PileView,
-  PresenceState,
-  PrivateView,
-  View,
-} from '../lib/types';
+import { knownCard, loadGameCards } from '../lib/catalog';
+import type { CardView as TableCard, PackFace, PileView, PrivateView, View } from '../lib/types';
+import { card, pile, fakeSession, infoFrom, placed, domRect } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -40,39 +34,7 @@ const FACES: Record<string, Partial<PackFace>[]> = {
   '01100': [{ name: 'Hard to Keep Down' }],
 };
 
-function infoOf(code: string): CardInfo | null {
-  const faces = FACES[code];
-  if (!faces) {
-    return null;
-  }
-  const full = faces.map((face): PackFace => ({
-    name: '',
-    type: '',
-    size: 'std',
-    images: [`${code}.png`],
-    ...face,
-  }));
-  return { card: { code, faces: full, back: 'player', quantity: 1 }, face: 0 };
-}
-
-function card(id: string, extra: Partial<TableCard> = {}): TableCard {
-  return {
-    id,
-    code: '01001',
-    face: 0,
-    back: 'player',
-    owner: 0,
-    zone: 'table',
-    x: 0,
-    y: 0,
-    z: 1,
-    ...extra,
-  };
-}
-
-function pile(id: string, extra: Partial<PileView>): PileView {
-  return { id, kind: 'deck', owner: -1, x: 0, y: 0, count: 30, ...extra };
-}
+const infoOf = infoFrom(FACES);
 
 /** Three cards of Alex's deck, top first: Web-Shooter, Swinging Web Kick, Backflip. */
 const DECK_TOP = ['c1', 'c2', 'c3'];
@@ -141,17 +103,6 @@ function asSpectator(view: View): View {
   return { ...view, you: { role: 'spectator', name: 'Kim', color: -1, host: false } };
 }
 
-function fakeSession() {
-  return {
-    act: vi.fn(() => 1),
-    lobby: vi.fn(() => true),
-    lastError: null,
-    presence: new Map<number, PresenceState>(),
-    sendPresence: vi.fn(),
-    viewGap: 0,
-  };
-}
-
 async function renderTable(view = makeView()) {
   const session = fakeSession();
   const result = render(Table, { session, view });
@@ -162,14 +113,6 @@ async function renderTable(view = makeView()) {
     rerender: (next: View) => result.rerender({ session, view: next }),
     unmount: () => result.unmount(),
   };
-}
-
-function placed(id: string): HTMLElement {
-  const element = document.querySelector<HTMLElement>(`.surface [data-id="${id}"]`);
-  if (!element) {
-    throw new Error(`no ${id} on the table`);
-  }
-  return element;
 }
 
 /** The chip opening an out-of-play pile, on its owner's frame (-1: the villain's). */
@@ -268,20 +211,6 @@ function menuItem(label: string): HTMLElement {
 
 const SEARCH: PrivateView = { pile: 'deck:p0', mode: 'search', cards: DECK_TOP };
 const LOOK: PrivateView = { pile: 'deck:p0', mode: 'top', cards: DECK_TOP };
-
-function domRect(left: number, top: number, width: number, height: number): DOMRect {
-  return {
-    left,
-    top,
-    width,
-    height,
-    right: left + width,
-    bottom: top + height,
-    x: left,
-    y: top,
-    toJSON: () => ({}),
-  };
-}
 
 /** Lays the tiles out on one row, 150 apart: the n-th tile of the grid spans 150 n to 150 n + 132. */
 function layOutTiles(): void {

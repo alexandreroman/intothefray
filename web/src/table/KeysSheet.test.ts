@@ -3,7 +3,8 @@ import KeysSheet from './KeysSheet.svelte';
 import Table from './Table.svelte';
 import { interaction } from './interaction.svelte';
 import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
-import type { CardView as TableCard, PresenceState, View } from '../lib/types';
+import type { CardView as TableCard, View } from '../lib/types';
+import { fakeSession } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -53,17 +54,6 @@ function makeView(): View {
       firstPlayer: { x: 860, y: 40 },
     },
     log: [],
-  };
-}
-
-function fakeSession() {
-  return {
-    act: vi.fn(() => 1),
-    lobby: vi.fn(() => true),
-    lastError: null,
-    presence: new Map<number, PresenceState>(),
-    sendPresence: vi.fn(),
-    viewGap: 0,
   };
 }
 

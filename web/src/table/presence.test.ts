@@ -1,9 +1,10 @@
 import { fireEvent, render } from '@testing-library/svelte';
 import Table from './Table.svelte';
 import { interaction } from './interaction.svelte';
-import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
+import { knownCard, loadGameCards } from '../lib/catalog';
 import { GameSession } from '../lib/session.svelte';
 import type { Arrow, CardView as TableCard, PackFace, PileView, View } from '../lib/types';
+import { card, infoFrom, placed, domRect } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -11,34 +12,12 @@ vi.mock('../lib/catalog', async (importOriginal) => ({
   loadGameCards: vi.fn(),
 }));
 
-const FACES: Record<string, Partial<PackFace>> = {
-  '01001': { name: 'Spider-Man' },
-  '01094': { name: 'Rhino', stage: 'I' },
+const FACES: Record<string, Partial<PackFace>[]> = {
+  '01001': [{ name: 'Spider-Man' }],
+  '01094': [{ name: 'Rhino', stage: 'I' }],
 };
 
-function infoOf(code: string): CardInfo | null {
-  const face = FACES[code];
-  if (!face) {
-    return null;
-  }
-  const full: PackFace = { name: '', type: '', size: 'std', images: [`${code}.png`], ...face };
-  return { card: { code, faces: [full], back: 'player', quantity: 1 }, face: 0 };
-}
-
-function card(id: string, extra: Partial<TableCard> = {}): TableCard {
-  return {
-    id,
-    code: '01001',
-    face: 0,
-    back: 'player',
-    owner: 0,
-    zone: 'table',
-    x: 0,
-    y: 0,
-    z: 1,
-    ...extra,
-  };
-}
+const infoOf = infoFrom(FACES);
 
 // The villain's row at the top, then Alex's, then Sam's, 300 apart.
 const CARDS = [
@@ -123,20 +102,6 @@ class FakeWebSocket {
   }
 }
 
-function domRect(left: number, top: number, width: number, height: number): DOMRect {
-  return {
-    left,
-    top,
-    width,
-    height,
-    right: left + width,
-    bottom: top + height,
-    x: left,
-    y: top,
-    toJSON: () => ({}),
-  } as DOMRect;
-}
-
 // The screen: the table starts 40 px below the top of the window, under the top
 // bar, and the presence layer covers it exactly. The surface lies 20 px in and
 // 40 px down from the table's top until it is scrolled. Positions inside it are
@@ -218,14 +183,6 @@ function surface(): HTMLElement {
   const element = document.querySelector<HTMLElement>('.tablewrap .surface');
   if (!element) {
     throw new Error('no surface');
-  }
-  return element;
-}
-
-function placed(id: string): HTMLElement {
-  const element = document.querySelector<HTMLElement>(`.surface .card[data-id="${id}"]`);
-  if (!element) {
-    throw new Error(`no ${id} on the table`);
   }
   return element;
 }
@@ -356,10 +313,10 @@ describe("the viewer's own presence", () => {
   it('sends the card previewed, and an empty preview once it is cleared', async () => {
     const { sent } = await renderTable();
 
-    await fireEvent.pointerEnter(placed('mine'), { clientX: 30, clientY: 400 });
+    await fireEvent.pointerEnter(placed('mine', '.card'), { clientX: 30, clientY: 400 });
     expect(sent()).toEqual([{ preview: 'mine' }]);
 
-    await fireEvent.pointerLeave(placed('mine'));
+    await fireEvent.pointerLeave(placed('mine', '.card'));
     await vi.advanceTimersByTimeAsync(300);
     expect(sent()).toEqual([{ preview: 'mine' }, { preview: '' }]);
   });
@@ -415,7 +372,7 @@ describe("the viewer's own presence", () => {
   it('sends a drag while it moves, and its end', async () => {
     const { sent } = await renderTable();
 
-    await fireEvent.pointerDown(placed('mine'), { clientX: 30, clientY: 400, button: 0 });
+    await fireEvent.pointerDown(placed('mine', '.card'), { clientX: 30, clientY: 400, button: 0 });
     await fireEvent.pointerMove(window, { clientX: 530, clientY: 400, buttons: 1 });
     await vi.advanceTimersByTimeAsync(50);
     // The card's corner, grabbed 10 px in and 20 px down.
@@ -578,7 +535,7 @@ describe("other players' presence", () => {
     expect(ring).toBeDefined();
     expect(ring!.style.getPropertyValue('--c')).toBe('var(--p2)');
     // Drawn by Rhino itself, never measured over it.
-    expect(ring!.parentElement).toBe(placed('v'));
+    expect(ring!.parentElement).toBe(placed('v', '.card'));
     expect(document.querySelector('.presence .rring')).toBeNull();
 
     receive({ color: 1, name: 'Sam', preview: '' });
@@ -590,7 +547,7 @@ describe("other players' presence", () => {
     const { receive, show } = await renderTable(makeView({ spectator: true }));
     receive({ color: 1, name: 'Sam', preview: 'sam' });
     await nextFrame();
-    expect(rings().map((ring) => ring.parentElement)).toEqual([placed('sam')]);
+    expect(rings().map((ring) => ring.parentElement)).toEqual([placed('sam', '.card')]);
 
     // Sam moved the card: the ring is still drawn by it, wherever it flies, turns or tilts.
     const view = makeView({ spectator: true });
@@ -598,8 +555,8 @@ describe("other players' presence", () => {
       card.id === 'sam' ? { ...card, x: card.x + 500, exhausted: true } : card,
     );
     await show({ ...view, table: { ...view.table!, cards: moved } });
-    expect(placed('sam').style.left).toBe('700px');
-    expect(rings().map((ring) => ring.parentElement)).toEqual([placed('sam')]);
+    expect(placed('sam', '.card').style.left).toBe('700px');
+    expect(rings().map((ring) => ring.parentElement)).toEqual([placed('sam', '.card')]);
   });
 
   it('draws one ring on a card several players preview, and none on the ghost of a drag', async () => {
@@ -609,7 +566,7 @@ describe("other players' presence", () => {
     receive({ color: 1, name: 'Sam', preview: 'sam', drag: { cards: ['sam'], x: 500, y: 320 } });
     await nextFrame();
     expect(rings()).toHaveLength(1);
-    expect(rings()[0]!.parentElement).toBe(placed('sam'));
+    expect(rings()[0]!.parentElement).toBe(placed('sam', '.card'));
   });
 
   it('shows the ping of another player for 1.2 s', async () => {
@@ -733,7 +690,7 @@ describe("other players' presence", () => {
   it('hides the cards another player drags in their places, the whole stack, until it lands', async () => {
     const { receive, show } = await renderTable();
     const hidden = () =>
-      ['mine', 'v', 'sam'].filter((id) => placed(id).classList.contains('lifted'));
+      ['mine', 'v', 'sam'].filter((id) => placed(id, '.card').classList.contains('lifted'));
 
     // Sam drags a stack of two table cards, and a card of their hand.
     receive({ color: 1, name: 'Sam', drag: { cards: ['sam', 'mine', 'secret'], x: 500, y: 320 } });
@@ -772,9 +729,9 @@ describe("other players' presence", () => {
     // A view that does not move it (someone else acted) does not end the landing.
     await show(makeView());
     await vi.advanceTimersByTimeAsync(1_900);
-    expect(placed('sam').classList).toContain('lifted');
+    expect(placed('sam', '.card').classList).toContain('lifted');
     await vi.advanceTimersByTimeAsync(200);
-    expect(placed('sam').classList).not.toContain('lifted');
+    expect(placed('sam', '.card').classList).not.toContain('lifted');
   });
 
   it('shows them where they went when the view came before the drag ended', async () => {
@@ -788,11 +745,11 @@ describe("other players' presence", () => {
     );
     await show({ ...view, table: { ...view.table!, cards: moved } });
     // Still dragged as far as the others know: hidden where it went, its ghost there.
-    expect(placed('sam').classList).toContain('lifted');
+    expect(placed('sam', '.card').classList).toContain('lifted');
 
     receive({ color: 1, name: 'Sam', drag: null });
     await nextFrame();
-    expect(placed('sam').classList).not.toContain('lifted');
+    expect(placed('sam', '.card').classList).not.toContain('lifted');
     expect(document.querySelector('.presence .card')).toBeNull();
   });
 
@@ -835,7 +792,7 @@ describe("other players' presence", () => {
       const drawn = card('drawn', { owner: 1, x: 500, y: 320 });
       await show(withPiles(start, [...start.table!.cards, drawn]));
       expect(document.querySelector('.presence .card')).toBeNull();
-      expect(placed('drawn').classList).not.toContain('lifted');
+      expect(placed('drawn', '.card').classList).not.toContain('lifted');
     });
 
     it('shows a card of a discard pile on the next view, with no wait', async () => {
@@ -852,7 +809,7 @@ describe("other players' presence", () => {
       );
       await show(withPiles(start, cards));
       expect(document.querySelector('.presence .card')).toBeNull();
-      expect(placed('old').classList).not.toContain('lifted');
+      expect(placed('old', '.card').classList).not.toContain('lifted');
     });
 
     it('lets go of the ghost when the view came before the drag ended', async () => {
@@ -874,7 +831,7 @@ describe("other players' presence", () => {
 
     receive({ color: 1, name: 'Sam', drag: { cards: ['sam'], x: 500, y: 320 } });
     await nextFrame();
-    expect(placed('sam').classList).toContain('lifted');
+    expect(placed('sam', '.card').classList).toContain('lifted');
   });
 
   it('shows them again when the drag is lost: no message for 60 s, or a reconnection', async () => {
@@ -883,17 +840,17 @@ describe("other players' presence", () => {
     receive({ color: 1, name: 'Sam', drag: { cards: ['sam'], x: 500, y: 320 } });
     await nextFrame();
     await vi.advanceTimersByTimeAsync(59_000);
-    expect(placed('sam').classList).toContain('lifted');
+    expect(placed('sam', '.card').classList).toContain('lifted');
     await vi.advanceTimersByTimeAsync(1_100);
-    expect(placed('sam').classList).not.toContain('lifted');
+    expect(placed('sam', '.card').classList).not.toContain('lifted');
 
     receive({ color: 1, name: 'Sam', drag: { cards: ['sam'], x: 500, y: 320 } });
     await nextFrame();
-    expect(placed('sam').classList).toContain('lifted');
+    expect(placed('sam', '.card').classList).toContain('lifted');
     // The connection drops: what was known of the others goes with it.
     socket.onclose?.({ code: 1006 });
     await nextFrame();
-    expect(placed('sam').classList).not.toContain('lifted');
+    expect(placed('sam', '.card').classList).not.toContain('lifted');
   });
 
   it('draws a hostile message without throwing, skipping what the view does not know', async () => {

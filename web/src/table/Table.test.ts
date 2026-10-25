@@ -7,14 +7,8 @@ import { setLang } from '../lib/lang';
 import surfaceSource from './Surface.svelte?raw';
 import { cutShort } from '../lib/overflowTip.testing';
 import { clearPrefMemory } from '../lib/prefs';
-import type {
-  CardView as TableCard,
-  Index,
-  PackFace,
-  PileView,
-  PresenceState,
-  View,
-} from '../lib/types';
+import type { CardView as TableCard, Index, PackFace, PileView, View } from '../lib/types';
+import { fakeSession, infoFrom } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -66,21 +60,14 @@ const FIRST_PLAYER_TOKEN =
   'https://card-table.app/images/table/first_player_token_marvelchampions.png';
 
 // The catalog of the fixture: code -> face 0.
-const FACES: Record<string, Partial<PackFace>> = {
-  '01094': { name: 'Rhino', type: 'villain', stage: 'I' },
-  '01097': { name: 'The Break-In!', type: 'main_scheme', size: 'land' },
-  '01001': { name: 'Spider-Man', type: 'hero' },
-  '01010': { name: 'Giant form', type: 'hero', size: 'dstd' },
+const FACES: Record<string, Partial<PackFace>[]> = {
+  '01094': [{ name: 'Rhino', type: 'villain', stage: 'I' }],
+  '01097': [{ name: 'The Break-In!', type: 'main_scheme', size: 'land' }],
+  '01001': [{ name: 'Spider-Man', type: 'hero' }],
+  '01010': [{ name: 'Giant form', type: 'hero', size: 'dstd' }],
 };
 
-function infoOf(code: string): CardInfo | null {
-  const face = FACES[code];
-  if (!face) {
-    return null;
-  }
-  const full: PackFace = { name: '', type: '', size: 'std', images: [`${code}.png`], ...face };
-  return { card: { code, faces: [full], back: 'player', quantity: 1 }, face: 0 };
-}
+const infoOf = infoFrom(FACES);
 
 function card(id: string, extra: Partial<TableCard>): TableCard {
   return { id, face: 0, back: 'player', owner: -1, zone: 'table', x: 0, y: 0, z: 1, ...extra };
@@ -88,17 +75,6 @@ function card(id: string, extra: Partial<TableCard>): TableCard {
 
 function pile(id: string, extra: Partial<PileView>): PileView {
   return { id, kind: 'deck', owner: -1, x: 0, y: 0, count: 3, ...extra };
-}
-
-function fakeSession() {
-  return {
-    act: vi.fn(() => 1),
-    lobby: vi.fn(() => true),
-    lastError: null,
-    presence: new Map<number, PresenceState>(),
-    sendPresence: vi.fn(),
-    viewGap: 0,
-  };
 }
 
 /**

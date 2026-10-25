@@ -17,24 +17,10 @@ import {
   type Rect,
 } from './drag';
 import { focusRows } from './rows';
+import { card } from './fixtures.testing';
 
 function rect(left: number, top: number, width: number, height: number): Rect {
   return { left, top, right: left + width, bottom: top + height };
-}
-
-function card(id: string, extra: Partial<CardView> = {}): CardView {
-  return {
-    id,
-    code: '01001',
-    face: 0,
-    back: 'player',
-    owner: 0,
-    zone: 'table',
-    x: 0,
-    y: 0,
-    z: 1,
-    ...extra,
-  };
 }
 
 function pile(id: string, extra: Partial<PileView> = {}): PileView {

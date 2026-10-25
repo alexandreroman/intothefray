@@ -23,13 +23,14 @@ import {
   type TestScreen,
 } from '../lib/screen.testing';
 import { knownCard, loadGameCards, loadIndex } from '../lib/catalog';
-import type { CardView as TableCard, PileView, PresenceState, View } from '../lib/types';
+import type { CardView as TableCard, PileView, View } from '../lib/types';
 import tableSource from './Table.svelte?raw';
 import sidePanelSource from './SidePanel.svelte?raw';
 import zoomSource from './ZoomControl.svelte?raw';
 import menuSource from './ContextMenu.svelte?raw';
 import surfaceSource from './Surface.svelte?raw';
 import handSource from './Hand.svelte?raw';
+import { fakeSession } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -178,17 +179,6 @@ function makeWideView(): View {
 /** The % label: it fits the width on a small screen, and is back to 100 % on a wider one. */
 function zoomLabel(): string | undefined {
   return screen.getByRole('button', { name: /^(Fit to width|Back to 100%)$/ }).textContent?.trim();
-}
-
-function fakeSession() {
-  return {
-    act: vi.fn(() => 1),
-    lobby: vi.fn(() => true),
-    lastError: null,
-    presence: new Map<number, PresenceState>(),
-    sendPresence: vi.fn(),
-    viewGap: 0,
-  };
 }
 
 function sidePanel(): HTMLElement | null {
