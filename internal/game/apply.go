@@ -2,7 +2,6 @@ package game
 
 import (
 	"cmp"
-	"fmt"
 	"math"
 	"slices"
 	"strings"
@@ -97,7 +96,7 @@ func applyAction(t *Table, a Action) error {
 	case ActGroup:
 		return applyGroup(t, a)
 	default:
-		return fmt.Errorf("%w: unknown action kind %q", ErrInvalid, a.Kind)
+		return invalid("unknown action kind %q", a.Kind)
 	}
 }
 
@@ -113,10 +112,6 @@ func applyGroup(t *Table, a Action) error {
 	}
 	*t = *next
 	return nil
-}
-
-func invalid(format string, args ...any) error {
-	return fmt.Errorf("%w: %s", ErrInvalid, fmt.Sprintf(format, args...))
 }
 
 // card returns the card with the given id, or an ErrInvalid error.

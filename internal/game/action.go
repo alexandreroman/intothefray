@@ -295,10 +295,6 @@ func (g *Game) seatedArea(area Area) bool {
 	return false
 }
 
-func forbidden(format string, args ...any) error {
-	return fmt.Errorf("%w: %s", ErrForbidden, fmt.Sprintf(format, args...))
-}
-
 // checkLimits rejects numbers outside the ranges a client may send.
 func checkLimits(a Action) error {
 	if a.X < 0 || a.X > maxCoordinate || a.Y < 0 || a.Y > maxCoordinate {

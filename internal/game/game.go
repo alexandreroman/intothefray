@@ -4,6 +4,7 @@ package game
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/alexandreroman/intothefray/internal/pack"
@@ -19,6 +20,16 @@ var (
 	// ErrNotFound reports a reference to an unknown card, pile or player.
 	ErrNotFound = errors.New("game: not found")
 )
+
+// invalid returns an ErrInvalid error with the formatted reason.
+func invalid(format string, args ...any) error {
+	return fmt.Errorf("%w: %s", ErrInvalid, fmt.Sprintf(format, args...))
+}
+
+// forbidden returns an ErrForbidden error with the formatted reason.
+func forbidden(format string, args ...any) error {
+	return fmt.Errorf("%w: %s", ErrForbidden, fmt.Sprintf(format, args...))
+}
 
 // Phase is the stage of a game's life.
 type Phase string
