@@ -30,9 +30,8 @@ if (!process.env.VITE_COMMIT && !process.env.VITEST) {
 }
 
 export default defineConfig({
-  // Absolute base: routes are real paths (/g/<id>), so assets must not resolve
-  // against them. The GitHub Pages build passes its sub-path with --base.
-  base: '/',
+  // The base stays absolute (Vite's default '/', never './'): routes are real paths (/g/<id>), so
+  // assets must not resolve against them. The GitHub Pages build passes its sub-path with --base.
   // Besides the VITE_* variables, expose the instance name shown in the tab title (see lib/title.ts).
   envPrefix: ['VITE_', 'APP_INSTANCE'],
   plugins: [svelte(), svelteTesting()],
