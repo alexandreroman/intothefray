@@ -320,7 +320,7 @@ func TestStageCardsHaveTheirDeckAsHome(t *testing.T) {
 	// A card tucked under the side scheme leaves with it.
 	tucked := table.Cards[cardWithCode(t, table, "10006").ID]
 	tucked.Parent, tucked.X, tucked.Y = scheme.ID, scheme.X, scheme.Y
-	mustApply(t, table, Action{Kind: ActDiscard, Card: scheme.ID})
+	mustApply(t, table, renamedTo(Action{Kind: ActDiscard, Card: scheme.ID}, tucked.ID))
 	if got := table.Piles["encd:da"].Cards; !slices.Equal(got, []string{scheme.ID}) {
 		t.Errorf("encd:da = %v, want [%s]", got, scheme.ID)
 	}

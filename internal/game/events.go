@@ -193,8 +193,9 @@ func refreshSnapshot(snapshots []Snapshot, n int, table *Table) {
 // replayEvent re-applies e to t during a rebuild. A shuffle whose recorded
 // outcome no longer fits t (its pile changed) is resolved again with rng, on
 // behalf of the actor actorOf returns for e's seat, and e keeps the new outcome
-// so that later rebuilds stay stable. Any other event that fails is marked
-// Dropped.
+// so that later rebuilds stay stable. So does an event whose cards taken out
+// of sight changed (the cards tucked under the card it moves), renamed again
+// with rng (see renamedAgain). Any other event that fails is marked Dropped.
 func replayEvent(t *Table, e *Event, actorOf func(seat int) actor, rng *rand.Rand) {
 	if !e.live() || notReplayedKinds[e.Action.Kind] {
 		return
@@ -208,6 +209,9 @@ func replayEvent(t *Table, e *Event, actorOf func(seat int) actor, rng *rand.Ran
 			e.Action = fresh
 			return
 		}
+	} else if renamed, err := renamedAgain(t, e.Action, rng); err == nil && apply(t, renamed) == nil {
+		e.Action = renamed
+		return
 	}
 	e.Dropped = true
 }

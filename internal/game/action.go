@@ -256,9 +256,9 @@ var groupableKinds = map[Kind]bool{
 
 // resolveGroup checks a group: 2 to maxCount sub-actions of one groupable
 // kind and one place, each on its own card, none tucked under another's. Every
-// sub-action is resolved for who against the table as it stands, and the
-// first error rejects the whole group. A new id an earlier sub-action picked
-// is drawn again (see redrawTaken).
+// sub-action is resolved for who on the table the previous ones leave, as
+// applyGroup performs them, so that its new ids are those apply expects and
+// differ from those picked before. The first error rejects the whole group.
 func resolveGroup(g *Game, who actor, a Action, rng *rand.Rand) (Action, error) {
 	if len(a.Actions) < 2 || len(a.Actions) > maxCount {
 		return a, invalid("a group holds 2 to %d actions, not %d", maxCount, len(a.Actions))
@@ -294,14 +294,18 @@ func resolveGroup(g *Game, who actor, a Action, rng *rand.Rand) (Action, error) 
 		}
 	}
 
+	staged := *g
+	staged.Table = t.Clone()
 	resolved := make([]Action, 0, len(a.Actions))
-	taken := map[string]bool{}
 	for _, sub := range a.Actions {
-		r, err := resolve(g, who, sub, rng)
+		r, err := resolve(&staged, who, sub, rng)
 		if err != nil {
 			return a, err
 		}
-		redrawTaken(t, r.Renames, taken, rng)
+		// A sub-action apply refuses leaves the staged table as it was (apply
+		// is all-or-nothing): applying the group refuses it then, after every
+		// sub-action passed the checks of resolve.
+		_ = apply(staged.Table, r)
 		resolved = append(resolved, r)
 	}
 	a.Actions = resolved

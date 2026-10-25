@@ -3,6 +3,7 @@ package game
 import (
 	"errors"
 	"math/rand/v2"
+	"reflect"
 	"slices"
 	"strings"
 	"testing"
@@ -291,6 +292,109 @@ func TestTuckedCardSentUnderItsDeckGetsAFreshID(t *testing.T) {
 	}
 }
 
+// senseUnderEnemy is the side-deck fixture where Bob drew a Sense card and
+// played it under the enemy Host revealed: it returns both cards.
+func senseUnderEnemy(t *testing.T) (f *doFixture, sense, enemy string) {
+	t.Helper()
+	f = sideDeckFixture(t)
+	sense = drawSide(t, f, "b", senseDeck, 1)
+	f.mustDo(t, "h", Action{Kind: ActReveal}, at(2))
+	enemy = f.g.Table.revealedOn(PileEncounter)[0].ID
+	f.mustDo(t, "b", Action{Kind: ActPlay, Card: sense, Target: enemy}, at(3))
+	return f, sense, enemy
+}
+
+// checkNoneDropped fails when an undo dropped an event.
+func checkNoneDropped(t *testing.T, g *Game) {
+	t.Helper()
+	for _, e := range g.History.Events {
+		if e.Dropped {
+			t.Errorf("event %d (%s) is dropped", e.Seq, e.Action.Kind)
+		}
+	}
+}
+
+// Bob's undo takes the Sense card back from under the enemy Host discarded
+// since: the discard renames nothing any more, and stays.
+func TestUndoKeepsAnotherPlayersDiscardOfACardHoldingATuckedOne(t *testing.T) {
+	f, sense, enemy := senseUnderEnemy(t)
+	f.mustDo(t, "h", Action{Kind: ActDiscard, Card: enemy}, at(10))
+
+	f.mustDo(t, "b", Action{Kind: ActUndo}, at(11))
+
+	checkNoneDropped(t, f.g)
+	if c := f.g.Table.Cards[enemy]; c.Pile != PileEncounterDiscard {
+		t.Errorf("enemy in %q, want %s", c.Pile, PileEncounterDiscard)
+	}
+	if c, ok := f.g.Table.Cards[sense]; !ok || c.Zone != ZoneHand {
+		t.Errorf("Sense card %s = %+v, want it back in Bob's hand", sense, c)
+	}
+	checkIntegrity(t, f.g.Table)
+	checkHistory(t, f.g)
+	checkReplay(t, f)
+}
+
+// Bob's undo tucks the Sense card under the enemy again, which Host
+// discarded since: the card goes under its deck with a new id.
+func TestUndoThatTucksACardBackRenamesItUnderItsDeck(t *testing.T) {
+	f, sense, enemy := senseUnderEnemy(t)
+	code := f.g.Table.Cards[sense].Code
+	f.mustDo(t, "b", Action{Kind: ActToHand, Card: sense}, at(4))
+	f.mustDo(t, "h", Action{Kind: ActDiscard, Card: enemy}, at(10))
+
+	f.mustDo(t, "b", Action{Kind: ActUndo}, at(11))
+
+	checkNoneDropped(t, f.g)
+	if c := f.g.Table.Cards[enemy]; c.Pile != PileEncounterDiscard {
+		t.Errorf("enemy in %q, want %s", c.Pile, PileEncounterDiscard)
+	}
+	if _, ok := f.g.Table.Cards[sense]; ok {
+		t.Errorf("Sense card %s keeps its id under its deck", sense)
+	}
+	if bottom := f.g.Table.Cards[f.g.Table.Piles[senseDeck].Cards[0]]; bottom.Code != code {
+		t.Errorf("bottom of the Sense deck = %+v, want the Sense card %s", bottom, code)
+	}
+	checkIntegrity(t, f.g.Table)
+	checkHistory(t, f.g)
+	checkReplay(t, f)
+}
+
+// Put under their emptied deck as one group, the first Sense card lands in
+// everybody's sight, the second under it, out of sight.
+func TestGroupOfSenseCardsUnderTheirEmptiedDeck(t *testing.T) {
+	f, first := tuckedSenseFixture(t)
+	for i := range 4 {
+		drawSide(t, f, "h", "side:p0:0", 2+i)
+	}
+	second := f.g.Table.Hands["p0"][len(f.g.Table.Hands["p0"])-1]
+	f.mustDo(t, "h", Action{Kind: ActPlay, Card: first, X: 800, Y: 500}, at(6))
+	f.mustDo(t, "h", Action{Kind: ActPlay, Card: second, X: 1000, Y: 500}, at(7))
+
+	f.mustDo(t, "h", groupOf(ActToDeck, whereBottom, "", first, second), at(10))
+
+	deck := f.g.Table.Piles["side:p0:0"].Cards
+	if len(deck) != 2 || deck[1] != first {
+		t.Errorf("Sense deck = %v, want %s on top", deck, first)
+	}
+	if _, ok := f.g.Table.Cards[second]; ok {
+		t.Errorf("card %s keeps its id under %s", second, first)
+	}
+	checkIntegrity(t, f.g.Table)
+	checkHistory(t, f.g)
+	checkReplay(t, f)
+}
+
+func TestApplyRefusesAMissingFreshID(t *testing.T) {
+	table := newTestTable()
+	before := table.Clone()
+
+	err := apply(table, Action{Kind: ActToDeck, Card: "c3", Where: whereTop})
+
+	if !errors.Is(err, ErrInvalid) || !reflect.DeepEqual(table, before) {
+		t.Errorf("apply = %v, want ErrInvalid and the table untouched", err)
+	}
+}
+
 // revealedEnemy reveals the top card of the encounter deck and returns it.
 func revealedEnemy(t *testing.T, f *doFixture) string {
 	t.Helper()
@@ -308,12 +412,13 @@ func playedFromDeck(t *testing.T, f *doFixture) string {
 
 // repeatingRNG returns a random stream whose first two card ids are the same.
 func repeatingRNG() *rand.Rand {
-	source := rand.NewPCG(7, 7)
+	var source rand.Source = rand.NewPCG(7, 7)
 	first := make([]uint64, idLength)
 	for i := range first {
 		first[i] = source.Uint64()
 	}
-	return rand.New(&replaySource{values: slices.Concat(first, first), rest: rand.NewPCG(1, 2)}) //nolint:gosec // deterministic test
+	source = &replaySource{values: slices.Concat(first, first), rest: rand.NewPCG(1, 2)}
+	return rand.New(source) //nolint:gosec // deterministic test
 }
 
 // replaySource returns its values, then those of rest.

@@ -207,13 +207,23 @@ func TestToHandRefusesEncounterCard(t *testing.T) {
 	}
 }
 
+// renamedTo completes a the way resolve does for the cards it takes out of
+// sight (see renamedOnTheWay): each of ids is renamed "n"+id.
+func renamedTo(a Action, ids ...string) Action {
+	a.Renames = map[string]string{}
+	for _, id := range ids {
+		a.Renames[id] = "n" + id
+	}
+	return a
+}
+
 func TestToDeckTopBottom(t *testing.T) {
 	table := newTestTable()
 
-	mustApply(t, table, Action{Kind: ActToDeck, Card: "c3", Where: "top"})
-	mustApply(t, table, Action{Kind: ActToDeck, Card: "c1", Where: "bottom"})
+	mustApply(t, table, renamedTo(Action{Kind: ActToDeck, Card: "c3", Where: "top"}, "c3"))
+	mustApply(t, table, renamedTo(Action{Kind: ActToDeck, Card: "c1", Where: "bottom"}, "c1"))
 
-	want := []string{"c1", "c4", "c5", "c6", "c3"}
+	want := []string{"nc1", "c4", "c5", "c6", "nc3"}
 	if got := table.Piles["deck:p0"].Cards; !slices.Equal(got, want) {
 		t.Errorf("deck = %v, want %v", got, want)
 	}
@@ -1038,8 +1048,8 @@ func TestIdentityCardStaysOnTheTable(t *testing.T) {
 	}{
 		{"discard", nil, Action{Kind: ActDiscard, Card: "c1"}},
 		{"to hand", nil, Action{Kind: ActToHand, Card: "c1"}},
-		{"to deck top", nil, Action{Kind: ActToDeck, Card: "c1", Where: whereTop}},
-		{"to deck bottom", nil, Action{Kind: ActToDeck, Card: "c1", Where: whereBottom}},
+		{"to deck top", nil, renamedTo(Action{Kind: ActToDeck, Card: "c1", Where: whereTop}, "c1")},
+		{"to deck bottom", nil, renamedTo(Action{Kind: ActToDeck, Card: "c1", Where: whereBottom}, "c1")},
 		{
 			"shuffled into deck",
 			nil,

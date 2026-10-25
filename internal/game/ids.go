@@ -1,7 +1,6 @@
 package game
 
 import (
-	"maps"
 	"math/rand/v2"
 	"slices"
 )
@@ -125,19 +124,67 @@ func (t *Table) sentUnderDecks(c *Card, a Action) []string {
 	return ids
 }
 
-// checkRenamedOnTheWay checks the new ids resolve gave the cards a takes out
-// of sight, if any (see renamedOnTheWay), and returns them for apply to give
-// once a is performed. It returns none for an action that renames no card on
-// its way, nor for a shuffle into a deck, which checks its renames itself
-// (see applyToDeck).
+// checkRenamedOnTheWay checks that a gives a new id to exactly the cards it
+// takes out of sight (see renamedOnTheWay), and returns the renames for apply
+// to give once a is performed. It returns none for an action that renames no
+// card on its way, nor for a shuffle into a deck, which checks its renames
+// itself (see applyToDeck).
 func (t *Table) checkRenamedOnTheWay(a Action) (map[string]string, error) {
-	if a.Renames == nil || !takesAway[a.Kind] || producesShuffle(a) {
+	if !takesAway[a.Kind] || producesShuffle(a) {
 		return nil, nil
 	}
 	if _, err := checkFreshIDs(t, a.Renames, t.renamedOnTheWay(a)); err != nil {
 		return nil, err
 	}
 	return a.Renames, nil
+}
+
+// renamedAgain returns a, recorded on another table, with the new ids of the
+// cards it takes out of sight on t (see renamedOnTheWay): a card still among
+// them keeps the new id it was given, so that later events still name it,
+// and a card now among them gets one from rng. The sub-actions of a group
+// are each renamed on the table the previous ones leave, as applyGroup
+// performs them. A rebuild uses it for an event whose cards tucked under the
+// card it moves changed (see replayEvent).
+func renamedAgain(t *Table, a Action, rng *rand.Rand) (Action, error) {
+	if a.Kind == ActGroup {
+		staged := t.Clone()
+		subs := make([]Action, 0, len(a.Actions))
+		for _, sub := range a.Actions {
+			renamed, err := renamedAgain(staged, sub, rng)
+			if err != nil {
+				return a, err
+			}
+			if err := apply(staged, renamed); err != nil {
+				return a, err
+			}
+			subs = append(subs, renamed)
+		}
+		a.Actions = subs
+		return a, nil
+	}
+	if !takesAway[a.Kind] || producesShuffle(a) {
+		return a, nil
+	}
+	covered, err := t.coveredFor(a, a.Area)
+	if err != nil {
+		return a, err
+	}
+	renames := map[string]string{}
+	var added []string
+	for _, id := range covered.renamedOnTheWay(a) {
+		if renamed, ok := a.Renames[id]; ok {
+			renames[id] = renamed
+		} else {
+			added = append(added, id)
+		}
+	}
+	addFreshIDs(covered, renames, added, rng)
+	a.Renames = nil
+	if len(renames) > 0 {
+		a.Renames = renames
+	}
+	return a, nil
 }
 
 // takesAway are the kinds that may take a card out of its place, and with it
@@ -149,18 +196,6 @@ var takesAway = map[Kind]bool{
 	ActDiscard: true,
 	ActToPile:  true,
 	ActPlay:    true,
-}
-
-// redrawTaken gives every card of renames whose new id is in taken another
-// fresh one, in id order, and adds the new ids to taken: the sub-actions of a
-// group, each resolved on the table as it stands, never give one id twice.
-func redrawTaken(t *Table, renames map[string]string, taken map[string]bool, rng *rand.Rand) {
-	for _, old := range slices.Sorted(maps.Keys(renames)) {
-		if taken[renames[old]] {
-			renames[old] = newCardID(t, rng, taken)
-		}
-		taken[renames[old]] = true
-	}
 }
 
 // checkRenames checks the renames of a shuffle: they must cover exactly the

@@ -521,7 +521,8 @@ func TestFlipFaceDownPutsTheRevealedCardBack(t *testing.T) {
 			if back == id || c.Zone != ZonePile || c.Pile != deck.pile || c.OnPile != "" || c.FaceDown {
 				t.Errorf("flipped card %s = %+v, want it back in %s under a new id", back, c, deck.pile)
 			}
-			if got := topCards(f.g.Table.Piles[deck.pile], 1)[0]; got != back || len(f.g.Table.Piles[deck.pile].Cards) != count+1 {
+			pile := f.g.Table.Piles[deck.pile]
+			if got := topCards(pile, 1)[0]; got != back || len(pile.Cards) != count+1 {
 				t.Errorf("top of %s = %s, want %s on top of %d cards", deck.pile, got, back, count)
 			}
 			name := f.g.pileName(f.g.actorOf(0), deck.pile)
