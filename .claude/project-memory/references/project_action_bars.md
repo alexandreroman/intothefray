@@ -46,10 +46,10 @@ type: project
   side discard pile (Invocation), which has a discard pile's entries. A
   side card's Move to names its deck ("Top of Sense deck"); without a
   side discard it has no Discard, and X and Backspace do nothing on it.
-- Card keys beside the menu: E exhaust, F flip (a stage card too), X
-  discard (Backspace too), H hand, B bottom of deck (a side card's side
-  deck), V change card (villain / main scheme), A arrow; C stays
-  Confused.
+- Card keys beside the menu: E exhaust, F flip (a stage card with
+  several faces too), X discard (Backspace too), H hand, B bottom of
+  deck (a side card's side deck), V change card (villain / main
+  scheme), A arrow; C stays Confused.
   A card revealed on a deck has no Exhaust (E) and no token, status or
   modifier entries; on an own deck, W draws it (see
   [[project_deck_reveal]]).
