@@ -2,21 +2,24 @@ package build
 
 import (
 	"github.com/alexandreroman/intothefray/internal/pack"
+	"github.com/alexandreroman/intothefray/internal/packgen/cdn"
 	"github.com/alexandreroman/intothefray/internal/packgen/curated"
 	"github.com/alexandreroman/intothefray/internal/packgen/marvelcdb"
-	"github.com/alexandreroman/intothefray/internal/packgen/mc4db"
 	"github.com/alexandreroman/intothefray/internal/packgen/report"
 )
 
-// french is the language code of the French overrides.
-const french = "fr"
+// Language codes of the image manifest and of the localized overrides.
+const (
+	english = "en"
+	french  = "fr"
+)
 
 // frenchSources indexes the French sources for the build.
 type frenchSources struct {
-	cards     map[string]faceNames  // by marvelcdb face code
-	images    map[string]mc4db.Card // by mc4db code; nil when no mc4db card was given
-	packNames map[string]string     // by pack code
-	setNames  map[string]string     // by set code
+	cards     map[string]faceNames // by marvelcdb face code
+	images    cdn.Manifest         // the French scans, by face code
+	packNames map[string]string    // by pack code
+	setNames  map[string]string    // by set code
 }
 
 // faceNames holds the names of a face in one language.
@@ -28,6 +31,7 @@ type faceNames struct {
 func frenchSourcesOf(in Inputs) frenchSources {
 	sources := frenchSources{
 		cards:     make(map[string]faceNames, len(in.FrenchMC)),
+		images:    in.Manifest,
 		packNames: make(map[string]string, len(in.FrenchMCPacks)),
 		setNames:  make(map[string]string),
 	}
@@ -42,26 +46,20 @@ func frenchSourcesOf(in Inputs) frenchSources {
 	for _, mcPack := range in.FrenchMCPacks {
 		sources.packNames[mcPack.Code] = mcPack.Name
 	}
-	if len(in.MC4DB) > 0 {
-		sources.images = make(map[string]mc4db.Card, len(in.MC4DB))
-		for _, card := range in.MC4DB {
-			sources.images[card.Code] = card
-		}
-	}
 	return sources
 }
 
 // localizeCards adds the French overrides to the faces of the cards, which are
-// keyed by pack code: the names that differ from English, and the image
-// candidate, still unchecked. faceCodes maps a card code to the marvelcdb code
-// of each of its faces.
+// keyed by pack code: the names that differ from English, and the French scan
+// of the manifest. faceCodes maps a card code to the marvelcdb code of each of
+// its faces.
 func localizeCards(cards map[string][]pack.Card, faceCodes map[string][]string, fr frenchSources) {
-	for packCode, packCards := range cards {
+	for _, packCards := range cards {
 		for _, card := range packCards {
 			codes := faceCodes[card.Code]
 			for i := range card.Faces {
 				face := &card.Faces[i]
-				override := fr.faceOverride(*face, codes[i], i, packCode)
+				override := fr.faceOverride(*face, codes[i])
 				if !override.IsZero() {
 					face.Localized = map[string]pack.Localized{french: override}
 				}
@@ -71,8 +69,8 @@ func localizeCards(cards map[string][]pack.Card, faceCodes map[string][]string, 
 }
 
 // faceOverride returns the French override of one face, empty when the face
-// has no French data.
-func (fr frenchSources) faceOverride(face pack.Face, faceCode string, faceIndex int, packCode string) pack.Localized {
+// has no French data. Without a French scan, the face shows its English image.
+func (fr frenchSources) faceOverride(face pack.Face, faceCode string) pack.Localized {
 	var override pack.Localized
 	if names, found := fr.cards[faceCode]; found {
 		if names.name != face.Name {
@@ -82,29 +80,10 @@ func (fr frenchSources) faceOverride(face pack.Face, faceCode string, faceIndex 
 			override.Subname = names.subname
 		}
 	}
-	if fr.images != nil {
-		override.Images = []string{fr.imageOf(faceCode, faceIndex, packCode)}
+	if image, found := fr.images.Image(faceCode, french); found {
+		override.Images = []string{image}
 	}
 	return override
-}
-
-// imageOf returns where mc4db stores the French scan of a face, if anywhere:
-// the path mc4db lists for the face code; else, for a double-sided card that
-// mc4db lists under its base code, the front path for the first face and the
-// back path for the second; else the direct path under the pack of the card.
-func (fr frenchSources) imageOf(faceCode string, faceIndex int, packCode string) string {
-	if card, found := fr.images[faceCode]; found && card.ImageSrc != "" {
-		return mc4db.FrenchImageURL(card.ImageSrc)
-	}
-	if card, found := fr.images[baseCode(faceCode)]; found && card.BackImageSrc != "" {
-		if faceIndex == 0 && card.ImageSrc != "" {
-			return mc4db.FrenchImageURL(card.ImageSrc)
-		}
-		if faceIndex == 1 {
-			return mc4db.FrenchImageURL(card.BackImageSrc)
-		}
-	}
-	return mc4db.DirectFrenchImageURL(packCode, faceCode)
 }
 
 // faceCodesOf maps each card code to the marvelcdb codes of its faces, in face
@@ -158,31 +137,22 @@ func localizedName(english, frenchName string) map[string]pack.Localized {
 	return map[string]pack.Localized{french: {Name: frenchName}}
 }
 
-// frenchCoverage counts the faces of the packs that have French data. A face
+// frenchCoverage counts the faces of the packs whose name is translated. A face
 // counts as translated only when it has a French name override: fr.marvelcdb
 // lists untranslated cards under their English name, so counting the faces it
 // lists would say nothing. A name that French keeps as is, e.g. "Rhino", is
-// not counted either, so the figure is a lower bound.
+// not counted either, so the figure is a lower bound. The French images are
+// counted against the manifest, by the generator's report.
 func frenchCoverage(packs []pack.PackFile) report.Coverage {
 	coverage := report.Coverage{Lang: french}
 	for _, packFile := range packs {
-		faces, images := 0, 0
 		for _, card := range packFile.Cards {
 			for _, face := range card.Faces {
-				faces++
-				override := face.Localized[french]
-				if override.Name != "" {
+				coverage.Faces++
+				if face.Localized[french].Name != "" {
 					coverage.Names++
 				}
-				if len(override.Images) > 0 {
-					images++
-				}
 			}
-		}
-		coverage.Faces += faces
-		coverage.Images += images
-		if faces > 0 && images == 0 {
-			coverage.PacksWithoutImages = append(coverage.PacksWithoutImages, packFile.Code)
 		}
 	}
 	return coverage

@@ -12,13 +12,12 @@
           "stage": "I",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55001.jpg",
-            "https://marvelcdb.com/bundles/cards/55001.jpg"
+            "https://img.intothefray.xyz/cards/en/55001.7ec371478083.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55001.webp"
+                "https://img.intothefray.xyz/cards/fr/55001.79db0a57f0ff.avif"
               ]
             }
           }
@@ -37,13 +36,12 @@
           "stage": "II",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55002.jpg",
-            "https://marvelcdb.com/bundles/cards/55002.jpg"
+            "https://img.intothefray.xyz/cards/en/55002.1b4e18c8b057.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55002.webp"
+                "https://img.intothefray.xyz/cards/fr/55002.918df461d740.avif"
               ]
             }
           }
@@ -62,13 +60,12 @@
           "stage": "III",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55003.jpg",
-            "https://marvelcdb.com/bundles/cards/55003.jpg"
+            "https://img.intothefray.xyz/cards/en/55003.e47e776b9642.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55003.webp"
+                "https://img.intothefray.xyz/cards/fr/55003.95a8d51fa41e.avif"
               ]
             }
           }
@@ -87,12 +84,12 @@
           "stage": "1A",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55004A.jpg"
+            "https://img.intothefray.xyz/cards/en/55004a.e8c6713f2ff6.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55004a.webp"
+                "https://img.intothefray.xyz/cards/fr/55004a.2b23768e470f.avif"
               ]
             }
           }
@@ -103,7 +100,7 @@
           "stage": "1B",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55004B.jpg"
+            "https://img.intothefray.xyz/cards/en/55004b.d27ca57f7a36.avif"
           ],
           "startingThreat": {
             "value": 1,
@@ -112,7 +109,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55004b.webp"
+                "https://img.intothefray.xyz/cards/fr/55004b.b490744e04d6.avif"
               ]
             }
           }
@@ -135,12 +132,12 @@
           "stage": "2A",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55005A.jpg"
+            "https://img.intothefray.xyz/cards/en/55005a.af586922b0d2.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55005a.webp"
+                "https://img.intothefray.xyz/cards/fr/55005a.eec261e52bf9.avif"
               ]
             }
           }
@@ -151,7 +148,7 @@
           "stage": "2B",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55005B.jpg"
+            "https://img.intothefray.xyz/cards/en/55005b.f7c1271f682e.avif"
           ],
           "startingThreat": {
             "value": 2,
@@ -160,7 +157,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55005b.webp"
+                "https://img.intothefray.xyz/cards/fr/55005b.fbd17048935c.avif"
               ]
             }
           }
@@ -182,8 +179,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55006.jpg",
-            "https://marvelcdb.com/bundles/cards/55006.jpg"
+            "https://img.intothefray.xyz/cards/en/55006.4d3953793c24.avif"
           ],
           "startingThreat": {
             "value": 2,
@@ -192,7 +188,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55006.webp"
+                "https://img.intothefray.xyz/cards/fr/55006.969a4f12fd37.avif"
               ]
             }
           }
@@ -210,12 +206,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55007A.jpg"
+            "https://img.intothefray.xyz/cards/en/55007a.1194e9b344e7.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55007a.webp"
+                "https://img.intothefray.xyz/cards/fr/55007a.2695fe808cca.avif"
               ]
             }
           }
@@ -225,12 +221,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55007B.jpg"
+            "https://img.intothefray.xyz/cards/en/55007b.350525206e0a.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55007b.webp"
+                "https://img.intothefray.xyz/cards/fr/55007b.57b23460f79d.avif"
               ]
             }
           }
@@ -252,12 +248,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55008A.jpg"
+            "https://img.intothefray.xyz/cards/en/55008a.1194e9b344e7.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55008a.webp"
+                "https://img.intothefray.xyz/cards/fr/55008a.f7dae47b2f92.avif"
               ]
             }
           }
@@ -267,12 +263,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55008B.jpg"
+            "https://img.intothefray.xyz/cards/en/55008b.23e29f4f561c.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55008b.webp"
+                "https://img.intothefray.xyz/cards/fr/55008b.cf1be8d84f7b.avif"
               ]
             }
           }
@@ -294,12 +290,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55009A.jpg"
+            "https://img.intothefray.xyz/cards/en/55009a.1194e9b344e7.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55009a.webp"
+                "https://img.intothefray.xyz/cards/fr/55009a.0fdaddc07772.avif"
               ]
             }
           }
@@ -309,12 +305,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55009B.jpg"
+            "https://img.intothefray.xyz/cards/en/55009b.5e747f340c92.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55009b.webp"
+                "https://img.intothefray.xyz/cards/fr/55009b.b073bb288561.avif"
               ]
             }
           }
@@ -336,12 +332,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55010A.jpg"
+            "https://img.intothefray.xyz/cards/en/55010a.1194e9b344e7.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55010a.webp"
+                "https://img.intothefray.xyz/cards/fr/55010a.0fdaddc07772.avif"
               ]
             }
           }
@@ -351,12 +347,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55010B.jpg"
+            "https://img.intothefray.xyz/cards/en/55010b.6b1977315db0.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55010b.webp"
+                "https://img.intothefray.xyz/cards/fr/55010b.3b91a502cf87.avif"
               ]
             }
           }
@@ -378,12 +374,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55011A.jpg"
+            "https://img.intothefray.xyz/cards/en/55011a.1194e9b344e7.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55011a.webp"
+                "https://img.intothefray.xyz/cards/fr/55011a.0fdaddc07772.avif"
               ]
             }
           }
@@ -393,12 +389,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55011B.jpg"
+            "https://img.intothefray.xyz/cards/en/55011b.796d03af78fb.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55011b.webp"
+                "https://img.intothefray.xyz/cards/fr/55011b.874b315fe5dd.avif"
               ]
             }
           }
@@ -420,13 +416,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55012.jpg",
-            "https://marvelcdb.com/bundles/cards/55012.jpg"
+            "https://img.intothefray.xyz/cards/en/55012.0c3ba9fef78d.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55012.webp"
+                "https://img.intothefray.xyz/cards/fr/55012.e83ecd66af3f.avif"
               ]
             }
           }
@@ -444,13 +439,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55013.jpg",
-            "https://marvelcdb.com/bundles/cards/55013.jpg"
+            "https://img.intothefray.xyz/cards/en/55013.41039f9dc79f.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55013.webp"
+                "https://img.intothefray.xyz/cards/fr/55013.3d9a80676515.avif"
               ]
             }
           }
@@ -468,13 +462,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55014.jpg",
-            "https://marvelcdb.com/bundles/cards/55014.jpg"
+            "https://img.intothefray.xyz/cards/en/55014.853bc052cab2.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55014.webp"
+                "https://img.intothefray.xyz/cards/fr/55014.ba3de0d8806f.avif"
               ]
             }
           }
@@ -492,12 +485,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://marvelcdb.com/bundles/cards/55015.jpg"
+            "https://img.intothefray.xyz/cards/en/55015.f3d1f9e5c282.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55015.webp"
+                "https://img.intothefray.xyz/cards/fr/55015.8ce6604a59db.avif"
               ]
             }
           }
@@ -515,13 +508,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55016.jpg",
-            "https://marvelcdb.com/bundles/cards/55016.jpg"
+            "https://img.intothefray.xyz/cards/en/55016.4915162f8c6f.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55016.webp"
+                "https://img.intothefray.xyz/cards/fr/55016.f23e8a94b5b2.avif"
               ]
             }
           }
@@ -539,13 +531,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55017.jpg",
-            "https://marvelcdb.com/bundles/cards/55017.jpg"
+            "https://img.intothefray.xyz/cards/en/55017.905cfe53d4f7.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55017.webp"
+                "https://img.intothefray.xyz/cards/fr/55017.7cff234103a3.avif"
               ]
             }
           }
@@ -563,13 +554,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55018.jpg",
-            "https://marvelcdb.com/bundles/cards/55018.jpg"
+            "https://img.intothefray.xyz/cards/en/55018.8f6b061df5b0.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55018.webp"
+                "https://img.intothefray.xyz/cards/fr/55018.936c2691eb0c.avif"
               ]
             }
           }
@@ -587,13 +577,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55019.jpg",
-            "https://marvelcdb.com/bundles/cards/55019.jpg"
+            "https://img.intothefray.xyz/cards/en/55019.2c5221aa230b.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55019.webp"
+                "https://img.intothefray.xyz/cards/fr/55019.0909fe533fb5.avif"
               ]
             }
           }
@@ -611,13 +600,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55020.jpg",
-            "https://marvelcdb.com/bundles/cards/55020.jpg"
+            "https://img.intothefray.xyz/cards/en/55020.61d49f332eb0.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55020.webp"
+                "https://img.intothefray.xyz/cards/fr/55020.05fdc240793f.avif"
               ]
             }
           }
@@ -635,8 +623,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55021.jpg",
-            "https://marvelcdb.com/bundles/cards/55021.jpg"
+            "https://img.intothefray.xyz/cards/en/55021.b15f8f406960.avif"
           ],
           "startingThreat": {
             "value": 2,
@@ -645,7 +632,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55021.webp"
+                "https://img.intothefray.xyz/cards/fr/55021.4dbd0913cf85.avif"
               ]
             }
           }
@@ -663,8 +650,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55022.jpg",
-            "https://marvelcdb.com/bundles/cards/55022.jpg"
+            "https://img.intothefray.xyz/cards/en/55022.661e766b201d.avif"
           ],
           "startingThreat": {
             "value": 4,
@@ -673,7 +659,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55022.webp"
+                "https://img.intothefray.xyz/cards/fr/55022.1192ad9d6f9d.avif"
               ]
             }
           }
@@ -691,13 +677,12 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55023.jpg",
-            "https://marvelcdb.com/bundles/cards/55023.jpg"
+            "https://img.intothefray.xyz/cards/en/55023.d228b3f062a9.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55023.webp"
+                "https://img.intothefray.xyz/cards/fr/55023.77e63dc709b8.avif"
               ]
             }
           }
@@ -715,13 +700,12 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55024.jpg",
-            "https://marvelcdb.com/bundles/cards/55024.jpg"
+            "https://img.intothefray.xyz/cards/en/55024.0c52c7057ffc.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55024.webp"
+                "https://img.intothefray.xyz/cards/fr/55024.4b86679fa07e.avif"
               ]
             }
           }
@@ -739,13 +723,12 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55025.jpg",
-            "https://marvelcdb.com/bundles/cards/55025.jpg"
+            "https://img.intothefray.xyz/cards/en/55025.f9e336477bac.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55025.webp"
+                "https://img.intothefray.xyz/cards/fr/55025.2550035d4afa.avif"
               ]
             }
           }
@@ -763,13 +746,12 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55026.jpg",
-            "https://marvelcdb.com/bundles/cards/55026.jpg"
+            "https://img.intothefray.xyz/cards/en/55026.0aa8c998dc1a.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55026.webp"
+                "https://img.intothefray.xyz/cards/fr/55026.4c52b3897b5c.avif"
               ]
             }
           }
@@ -788,12 +770,12 @@
           "stage": "1",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55027A.jpg"
+            "https://img.intothefray.xyz/cards/en/55027a.788c7e18579c.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55027a.webp"
+                "https://img.intothefray.xyz/cards/fr/55027a.19fbda5fc965.avif"
               ]
             }
           }
@@ -804,12 +786,12 @@
           "stage": "2",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55027B.jpg"
+            "https://img.intothefray.xyz/cards/en/55027b.f542f828fde1.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55027b.webp"
+                "https://img.intothefray.xyz/cards/fr/55027b.b05a96f79065.avif"
               ]
             }
           }
@@ -832,12 +814,12 @@
           "stage": "A",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55028A.jpg"
+            "https://img.intothefray.xyz/cards/en/55028a.92a22952ab76.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55028a.webp"
+                "https://img.intothefray.xyz/cards/fr/55028a.e322305ce616.avif"
               ]
             }
           }
@@ -848,12 +830,12 @@
           "stage": "B",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55028B.jpg"
+            "https://img.intothefray.xyz/cards/en/55028b.6f411d70bb3d.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55028b.webp"
+                "https://img.intothefray.xyz/cards/fr/55028b.ac30160dbc0c.avif"
               ]
             }
           }
@@ -876,12 +858,12 @@
           "stage": "A1",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55029A.jpg"
+            "https://img.intothefray.xyz/cards/en/55029a.9ecd962e44ec.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55029a.webp"
+                "https://img.intothefray.xyz/cards/fr/55029a.ed48cf6dc3d2.avif"
               ]
             }
           }
@@ -892,12 +874,12 @@
           "stage": "A2",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55029B.jpg"
+            "https://img.intothefray.xyz/cards/en/55029b.488a0d3b657d.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55029b.webp"
+                "https://img.intothefray.xyz/cards/fr/55029b.ce5d15abecc0.avif"
               ]
             }
           }
@@ -920,12 +902,12 @@
           "stage": "B1",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55030A.jpg"
+            "https://img.intothefray.xyz/cards/en/55030a.70c9490c857a.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55030a.webp"
+                "https://img.intothefray.xyz/cards/fr/55030a.d8fbac51025f.avif"
               ]
             }
           }
@@ -936,12 +918,12 @@
           "stage": "B2",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55030B.jpg"
+            "https://img.intothefray.xyz/cards/en/55030b.4e31abec0eea.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55030b.webp"
+                "https://img.intothefray.xyz/cards/fr/55030b.49c4139af71d.avif"
               ]
             }
           }
@@ -964,12 +946,12 @@
           "stage": "C1",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55031A.jpg"
+            "https://img.intothefray.xyz/cards/en/55031a.1611ebf776d2.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55031a.webp"
+                "https://img.intothefray.xyz/cards/fr/55031a.deb38cc31848.avif"
               ]
             }
           }
@@ -980,12 +962,12 @@
           "stage": "C2",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55031B.jpg"
+            "https://img.intothefray.xyz/cards/en/55031b.65a574df4d49.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55031b.webp"
+                "https://img.intothefray.xyz/cards/fr/55031b.15b2cb950779.avif"
               ]
             }
           }
@@ -1008,12 +990,12 @@
           "stage": "D1",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55032A.jpg"
+            "https://img.intothefray.xyz/cards/en/55032a.aab5a0aa3b06.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55032a.webp"
+                "https://img.intothefray.xyz/cards/fr/55032a.eb586a834b2d.avif"
               ]
             }
           }
@@ -1024,12 +1006,12 @@
           "stage": "D2",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55032B.jpg"
+            "https://img.intothefray.xyz/cards/en/55032b.a87e370c33b1.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55032b.webp"
+                "https://img.intothefray.xyz/cards/fr/55032b.1584c97d1f36.avif"
               ]
             }
           }
@@ -1052,12 +1034,12 @@
           "stage": "1A",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55033A.jpg"
+            "https://img.intothefray.xyz/cards/en/55033a.60cab0723111.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55033a.webp"
+                "https://img.intothefray.xyz/cards/fr/55033a.31f597978eaf.avif"
               ]
             }
           }
@@ -1068,7 +1050,7 @@
           "stage": "1B",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55033B.jpg"
+            "https://img.intothefray.xyz/cards/en/55033b.949229b3ed85.avif"
           ],
           "startingThreat": {
             "value": 0,
@@ -1077,7 +1059,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55033b.webp"
+                "https://img.intothefray.xyz/cards/fr/55033b.70f7731b7b74.avif"
               ]
             }
           }
@@ -1099,12 +1081,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55034A.jpg"
+            "https://img.intothefray.xyz/cards/en/55034a.df1e8121f0e1.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55034a.webp"
+                "https://img.intothefray.xyz/cards/fr/55034a.08d4e233cf61.avif"
               ]
             }
           }
@@ -1114,12 +1096,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55034B.jpg"
+            "https://img.intothefray.xyz/cards/en/55034b.ac44370e1d12.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55034b.webp"
+                "https://img.intothefray.xyz/cards/fr/55034b.7d0d0c68a566.avif"
               ]
             }
           }
@@ -1141,13 +1123,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55035.jpg",
-            "https://marvelcdb.com/bundles/cards/55035.jpg"
+            "https://img.intothefray.xyz/cards/en/55035.a0228f8b8516.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55035.webp"
+                "https://img.intothefray.xyz/cards/fr/55035.1c772d9584c5.avif"
               ]
             }
           }
@@ -1165,13 +1146,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55036.jpg",
-            "https://marvelcdb.com/bundles/cards/55036.jpg"
+            "https://img.intothefray.xyz/cards/en/55036.7ffcb244a83b.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55036.webp"
+                "https://img.intothefray.xyz/cards/fr/55036.9b782ed9d179.avif"
               ]
             }
           }
@@ -1189,13 +1169,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55037.jpg",
-            "https://marvelcdb.com/bundles/cards/55037.jpg"
+            "https://img.intothefray.xyz/cards/en/55037.3805e5fc1e5a.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55037.webp"
+                "https://img.intothefray.xyz/cards/fr/55037.b0357771097b.avif"
               ]
             }
           }
@@ -1213,13 +1192,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55038.jpg",
-            "https://marvelcdb.com/bundles/cards/55038.jpg"
+            "https://img.intothefray.xyz/cards/en/55038.6f8a708ac447.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55038.webp"
+                "https://img.intothefray.xyz/cards/fr/55038.74fa5e8749f3.avif"
               ]
             }
           }
@@ -1237,13 +1215,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55039.jpg",
-            "https://marvelcdb.com/bundles/cards/55039.jpg"
+            "https://img.intothefray.xyz/cards/en/55039.39c5281d9b47.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55039.webp"
+                "https://img.intothefray.xyz/cards/fr/55039.6e75059e1604.avif"
               ]
             }
           }
@@ -1261,13 +1238,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55040.jpg",
-            "https://marvelcdb.com/bundles/cards/55040.jpg"
+            "https://img.intothefray.xyz/cards/en/55040.fb98719e2868.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55040.webp"
+                "https://img.intothefray.xyz/cards/fr/55040.334d5f199481.avif"
               ]
             }
           }
@@ -1285,13 +1261,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55041.jpg",
-            "https://marvelcdb.com/bundles/cards/55041.jpg"
+            "https://img.intothefray.xyz/cards/en/55041.b4fd857116d5.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55041.webp"
+                "https://img.intothefray.xyz/cards/fr/55041.656e6603d61e.avif"
               ]
             }
           }
@@ -1309,13 +1284,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55042.jpg",
-            "https://marvelcdb.com/bundles/cards/55042.jpg"
+            "https://img.intothefray.xyz/cards/en/55042.f74a17264ee3.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55042.webp"
+                "https://img.intothefray.xyz/cards/fr/55042.ff402932c91a.avif"
               ]
             }
           }
@@ -1333,13 +1307,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55043.jpg",
-            "https://marvelcdb.com/bundles/cards/55043.jpg"
+            "https://img.intothefray.xyz/cards/en/55043.921676df518a.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55043.webp"
+                "https://img.intothefray.xyz/cards/fr/55043.1cd7fd286dbe.avif"
               ]
             }
           }
@@ -1357,13 +1330,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55044.jpg",
-            "https://marvelcdb.com/bundles/cards/55044.jpg"
+            "https://img.intothefray.xyz/cards/en/55044.9e84631e4eec.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55044.webp"
+                "https://img.intothefray.xyz/cards/fr/55044.7b7dd4df4fd8.avif"
               ]
             }
           }
@@ -1381,8 +1353,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55045.jpg",
-            "https://marvelcdb.com/bundles/cards/55045.jpg"
+            "https://img.intothefray.xyz/cards/en/55045.4300a1d58922.avif"
           ],
           "startingThreat": {
             "value": 4,
@@ -1391,7 +1362,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55045.webp"
+                "https://img.intothefray.xyz/cards/fr/55045.9e115f07923c.avif"
               ]
             }
           }
@@ -1409,8 +1380,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55046.jpg",
-            "https://marvelcdb.com/bundles/cards/55046.jpg"
+            "https://img.intothefray.xyz/cards/en/55046.627f5779fdcf.avif"
           ],
           "startingThreat": {
             "value": 7,
@@ -1419,7 +1389,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55046.webp"
+                "https://img.intothefray.xyz/cards/fr/55046.0e1bf105bb55.avif"
               ]
             }
           }
@@ -1437,8 +1407,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55047.jpg",
-            "https://marvelcdb.com/bundles/cards/55047.jpg"
+            "https://img.intothefray.xyz/cards/en/55047.9c64d1ef4ac9.avif"
           ],
           "startingThreat": {
             "value": 5,
@@ -1447,7 +1416,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55047.webp"
+                "https://img.intothefray.xyz/cards/fr/55047.983da674d693.avif"
               ]
             }
           }
@@ -1465,8 +1434,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55048.jpg",
-            "https://marvelcdb.com/bundles/cards/55048.jpg"
+            "https://img.intothefray.xyz/cards/en/55048.054722ea1884.avif"
           ],
           "startingThreat": {
             "value": 6,
@@ -1475,7 +1443,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55048.webp"
+                "https://img.intothefray.xyz/cards/fr/55048.463665d56e55.avif"
               ]
             }
           }
@@ -1493,13 +1461,12 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55049.jpg",
-            "https://marvelcdb.com/bundles/cards/55049.jpg"
+            "https://img.intothefray.xyz/cards/en/55049.af01b69fa787.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55049.webp"
+                "https://img.intothefray.xyz/cards/fr/55049.fecc5bedc9eb.avif"
               ]
             }
           }
@@ -1517,13 +1484,12 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55050.jpg",
-            "https://marvelcdb.com/bundles/cards/55050.jpg"
+            "https://img.intothefray.xyz/cards/en/55050.cfd0373ec1be.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55050.webp"
+                "https://img.intothefray.xyz/cards/fr/55050.2fa0089a2f43.avif"
               ]
             }
           }
@@ -1541,13 +1507,12 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55051.jpg",
-            "https://marvelcdb.com/bundles/cards/55051.jpg"
+            "https://img.intothefray.xyz/cards/en/55051.be9e6e73b50c.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55051.webp"
+                "https://img.intothefray.xyz/cards/fr/55051.b748618e9805.avif"
               ]
             }
           }
@@ -1565,13 +1530,12 @@
           "type": "environment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55052.jpg",
-            "https://marvelcdb.com/bundles/cards/55052.jpg"
+            "https://img.intothefray.xyz/cards/en/55052.5e9e2ebad1bc.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55052.webp"
+                "https://img.intothefray.xyz/cards/fr/55052.bada4178b9c3.avif"
               ]
             }
           }
@@ -1589,13 +1553,12 @@
           "type": "environment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55053.jpg",
-            "https://marvelcdb.com/bundles/cards/55053.jpg"
+            "https://img.intothefray.xyz/cards/en/55053.b3a9ebea0086.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55053.webp"
+                "https://img.intothefray.xyz/cards/fr/55053.11a55c021857.avif"
               ]
             }
           }
@@ -1613,13 +1576,12 @@
           "type": "environment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55054.jpg",
-            "https://marvelcdb.com/bundles/cards/55054.jpg"
+            "https://img.intothefray.xyz/cards/en/55054.2dbc95bb4d95.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55054.webp"
+                "https://img.intothefray.xyz/cards/fr/55054.37ebb0a3cd63.avif"
               ]
             }
           }
@@ -1637,13 +1599,12 @@
           "type": "environment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55055.jpg",
-            "https://marvelcdb.com/bundles/cards/55055.jpg"
+            "https://img.intothefray.xyz/cards/en/55055.aea0f0dd8ccb.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55055.webp"
+                "https://img.intothefray.xyz/cards/fr/55055.38f5b41a3544.avif"
               ]
             }
           }
@@ -1661,13 +1622,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55056.jpg",
-            "https://marvelcdb.com/bundles/cards/55056.jpg"
+            "https://img.intothefray.xyz/cards/en/55056.1b1c0cafc265.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55056.webp"
+                "https://img.intothefray.xyz/cards/fr/55056.2b5200693ade.avif"
               ]
             }
           }
@@ -1685,13 +1645,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55057.jpg",
-            "https://marvelcdb.com/bundles/cards/55057.jpg"
+            "https://img.intothefray.xyz/cards/en/55057.51e09a685f03.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55057.webp"
+                "https://img.intothefray.xyz/cards/fr/55057.675d18d58948.avif"
               ]
             }
           }
@@ -1709,13 +1668,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55058.jpg",
-            "https://marvelcdb.com/bundles/cards/55058.jpg"
+            "https://img.intothefray.xyz/cards/en/55058.21a53dfed1a2.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55058.webp"
+                "https://img.intothefray.xyz/cards/fr/55058.bf7ab306fea7.avif"
               ]
             }
           }
@@ -1733,13 +1691,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55059.jpg",
-            "https://marvelcdb.com/bundles/cards/55059.jpg"
+            "https://img.intothefray.xyz/cards/en/55059.a6a6f369858b.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55059.webp"
+                "https://img.intothefray.xyz/cards/fr/55059.74653593d8ec.avif"
               ]
             }
           }
@@ -1757,8 +1714,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55060.jpg",
-            "https://marvelcdb.com/bundles/cards/55060.jpg"
+            "https://img.intothefray.xyz/cards/en/55060.0b4315432ba5.avif"
           ],
           "startingThreat": {
             "value": 4,
@@ -1767,7 +1723,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55060.webp"
+                "https://img.intothefray.xyz/cards/fr/55060.ffbfec05c2c3.avif"
               ]
             }
           }
@@ -1785,8 +1741,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55061.jpg",
-            "https://marvelcdb.com/bundles/cards/55061.jpg"
+            "https://img.intothefray.xyz/cards/en/55061.51ab151b585e.avif"
           ],
           "startingThreat": {
             "value": 2,
@@ -1795,7 +1750,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55061.webp"
+                "https://img.intothefray.xyz/cards/fr/55061.5b76cf715db5.avif"
               ]
             }
           }
@@ -1813,13 +1768,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55062.jpg",
-            "https://marvelcdb.com/bundles/cards/55062.jpg"
+            "https://img.intothefray.xyz/cards/en/55062.5d5ebb398717.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55062.webp"
+                "https://img.intothefray.xyz/cards/fr/55062.1b1268a2450d.avif"
               ]
             }
           }
@@ -1838,13 +1792,12 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55063.jpg",
-            "https://marvelcdb.com/bundles/cards/55063.jpg"
+            "https://img.intothefray.xyz/cards/en/55063.3e788c68ca98.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55063.webp"
+                "https://img.intothefray.xyz/cards/fr/55063.b333e4cf0156.avif"
               ]
             }
           }
@@ -1863,13 +1816,12 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55064.jpg",
-            "https://marvelcdb.com/bundles/cards/55064.jpg"
+            "https://img.intothefray.xyz/cards/en/55064.a7e52c8cada3.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55064.webp"
+                "https://img.intothefray.xyz/cards/fr/55064.4622a14602f5.avif"
               ]
             }
           }
@@ -1888,13 +1840,12 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55065.jpg",
-            "https://marvelcdb.com/bundles/cards/55065.jpg"
+            "https://img.intothefray.xyz/cards/en/55065.7d7033e85ff6.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55065.webp"
+                "https://img.intothefray.xyz/cards/fr/55065.8bbf4185e474.avif"
               ]
             }
           }
@@ -1912,13 +1863,12 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55066.jpg",
-            "https://marvelcdb.com/bundles/cards/55066.jpg"
+            "https://img.intothefray.xyz/cards/en/55066.4dfc62971ccd.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/tt/55066.webp"
+                "https://img.intothefray.xyz/cards/fr/55066.527939846c2f.avif"
               ]
             }
           }

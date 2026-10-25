@@ -11,14 +11,13 @@
           "type": "hero",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60001A.jpg",
-            "https://marvelcdb.com/bundles/cards/60001a.png"
+            "https://img.intothefray.xyz/cards/en/60001a.bcb594d8f783.avif"
           ],
           "handSize": 5,
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60001a.webp"
+                "https://img.intothefray.xyz/cards/fr/60001a.e3f637267cc0.avif"
               ]
             }
           }
@@ -28,14 +27,13 @@
           "type": "alter_ego",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60001B.jpg",
-            "https://marvelcdb.com/bundles/cards/60001b.png"
+            "https://img.intothefray.xyz/cards/en/60001b.5d337eb0c268.avif"
           ],
           "handSize": 6,
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60001b.webp"
+                "https://img.intothefray.xyz/cards/fr/60001b.8440926a9211.avif"
               ]
             }
           }
@@ -57,13 +55,12 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60002.jpg",
-            "https://marvelcdb.com/bundles/cards/60002.jpg"
+            "https://img.intothefray.xyz/cards/en/60002.37d5ad49c6d8.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60002.webp"
+                "https://img.intothefray.xyz/cards/fr/60002.8580c7ef4d9a.avif"
               ]
             }
           }
@@ -81,13 +78,12 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60003.jpg",
-            "https://marvelcdb.com/bundles/cards/60003.jpg"
+            "https://img.intothefray.xyz/cards/en/60003.5340893f03bf.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60003.webp"
+                "https://img.intothefray.xyz/cards/fr/60003.e5349c644890.avif"
               ]
             }
           }
@@ -105,13 +101,12 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60004.jpg",
-            "https://marvelcdb.com/bundles/cards/60004.jpg"
+            "https://img.intothefray.xyz/cards/en/60004.1fe6c184ca8e.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60004.webp"
+                "https://img.intothefray.xyz/cards/fr/60004.b441d6357939.avif"
               ]
             }
           }
@@ -129,13 +124,12 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60005.jpg",
-            "https://marvelcdb.com/bundles/cards/60005.jpg"
+            "https://img.intothefray.xyz/cards/en/60005.75a39398281c.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60005.webp"
+                "https://img.intothefray.xyz/cards/fr/60005.91ad46e42be4.avif"
               ]
             }
           }
@@ -153,13 +147,12 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60006.jpg",
-            "https://marvelcdb.com/bundles/cards/60006.jpg"
+            "https://img.intothefray.xyz/cards/en/60006.5c0cb0bb5f9a.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60006.webp"
+                "https://img.intothefray.xyz/cards/fr/60006.28a8497c70b2.avif"
               ]
             }
           }
@@ -178,13 +171,12 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60007.jpg",
-            "https://marvelcdb.com/bundles/cards/60007.jpg"
+            "https://img.intothefray.xyz/cards/en/60007.bf0b1ba7ac0a.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60007.webp"
+                "https://img.intothefray.xyz/cards/fr/60007.0bf7f51a9930.avif"
               ]
             }
           }
@@ -202,13 +194,12 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60008.jpg",
-            "https://marvelcdb.com/bundles/cards/60008.jpg"
+            "https://img.intothefray.xyz/cards/en/60008.fe55a3d78df8.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60008.webp"
+                "https://img.intothefray.xyz/cards/fr/60008.b22562d2be88.avif"
               ]
             }
           }
@@ -226,13 +217,12 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60009.jpg",
-            "https://marvelcdb.com/bundles/cards/60009.jpg"
+            "https://img.intothefray.xyz/cards/en/60009.e9f01948e927.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60009.webp"
+                "https://img.intothefray.xyz/cards/fr/60009.0fe95dffde26.avif"
               ]
             }
           }
@@ -250,13 +240,12 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60010.jpg",
-            "https://marvelcdb.com/bundles/cards/60010.jpg"
+            "https://img.intothefray.xyz/cards/en/60010.9c9d1bebdece.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60010.webp"
+                "https://img.intothefray.xyz/cards/fr/60010.b93ca1ad951e.avif"
               ]
             }
           }
@@ -274,13 +263,12 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60011.jpg",
-            "https://marvelcdb.com/bundles/cards/60011.jpg"
+            "https://img.intothefray.xyz/cards/en/60011.6fd9b4da4a0f.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60011.webp"
+                "https://img.intothefray.xyz/cards/fr/60011.327b2dab99ef.avif"
               ]
             }
           }
@@ -298,8 +286,7 @@
           "type": "player_side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60012.jpg",
-            "https://marvelcdb.com/bundles/cards/60012.jpg"
+            "https://img.intothefray.xyz/cards/en/60012.729c7edb3b72.avif"
           ],
           "startingThreat": {
             "value": 4,
@@ -308,7 +295,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60012.webp"
+                "https://img.intothefray.xyz/cards/fr/60012.dfbff00c5d7b.avif"
               ]
             }
           }
@@ -326,13 +313,12 @@
           "type": "support",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60013.jpg",
-            "https://marvelcdb.com/bundles/cards/60013.jpg"
+            "https://img.intothefray.xyz/cards/en/60013.b0bee4f010d4.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60013.webp"
+                "https://img.intothefray.xyz/cards/fr/60013.2b82340b9720.avif"
               ]
             }
           }
@@ -350,13 +336,12 @@
           "type": "support",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60014.jpg",
-            "https://marvelcdb.com/bundles/cards/60014.jpg"
+            "https://img.intothefray.xyz/cards/en/60014.6ef50338718b.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60014.webp"
+                "https://img.intothefray.xyz/cards/fr/60014.77731667a70a.avif"
               ]
             }
           }
@@ -374,13 +359,12 @@
           "type": "support",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60015.jpg",
-            "https://marvelcdb.com/bundles/cards/60015.jpg"
+            "https://img.intothefray.xyz/cards/en/60015.1be513483b3f.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60015.webp"
+                "https://img.intothefray.xyz/cards/fr/60015.23afeb9d18e3.avif"
               ]
             }
           }
@@ -398,13 +382,12 @@
           "type": "support",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60016.jpg",
-            "https://marvelcdb.com/bundles/cards/60016.jpg"
+            "https://img.intothefray.xyz/cards/en/60016.c5d27fbedd9d.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60016.webp"
+                "https://img.intothefray.xyz/cards/fr/60016.56d02678da10.avif"
               ]
             }
           }
@@ -422,13 +405,12 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60017.jpg",
-            "https://marvelcdb.com/bundles/cards/60017.jpg"
+            "https://img.intothefray.xyz/cards/en/60017.37e4f5eace2e.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60017.webp"
+                "https://img.intothefray.xyz/cards/fr/60017.c648352b1e83.avif"
               ]
             }
           }
@@ -446,13 +428,12 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60018.jpg",
-            "https://marvelcdb.com/bundles/cards/60018.jpg"
+            "https://img.intothefray.xyz/cards/en/60018.b0d90e25c3ee.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60018.webp"
+                "https://img.intothefray.xyz/cards/fr/60018.f5c9991fcf62.avif"
               ]
             }
           }
@@ -471,13 +452,12 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60019.jpg",
-            "https://marvelcdb.com/bundles/cards/60019.jpg"
+            "https://img.intothefray.xyz/cards/en/60019.9347014db5fe.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60019.webp"
+                "https://img.intothefray.xyz/cards/fr/60019.768d70daee9b.avif"
               ]
             }
           }
@@ -495,13 +475,12 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60020.jpg",
-            "https://marvelcdb.com/bundles/cards/60020.jpg"
+            "https://img.intothefray.xyz/cards/en/60020.300c64af5fc7.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60020.webp"
+                "https://img.intothefray.xyz/cards/fr/60020.7eb1611036b5.avif"
               ]
             }
           }
@@ -519,13 +498,12 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60021.jpg",
-            "https://marvelcdb.com/bundles/cards/60021.jpg"
+            "https://img.intothefray.xyz/cards/en/60021.8402bc018666.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60021.webp"
+                "https://img.intothefray.xyz/cards/fr/60021.c52861406ccc.avif"
               ]
             }
           }
@@ -543,13 +521,12 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60022.jpg",
-            "https://marvelcdb.com/bundles/cards/60022.jpg"
+            "https://img.intothefray.xyz/cards/en/60022.5f826d9de6b3.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60022.webp"
+                "https://img.intothefray.xyz/cards/fr/60022.70334e1dd6cb.avif"
               ]
             }
           }
@@ -566,13 +543,12 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60023.jpg",
-            "https://marvelcdb.com/bundles/cards/60023.jpg"
+            "https://img.intothefray.xyz/cards/en/60023.f962ec2c00fa.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60023.webp"
+                "https://img.intothefray.xyz/cards/fr/60023.0e6dbf251fc8.avif"
               ]
             }
           }
@@ -589,8 +565,7 @@
           "type": "player_side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60024.jpg",
-            "https://marvelcdb.com/bundles/cards/60024.jpg"
+            "https://img.intothefray.xyz/cards/en/60024.90b5923a1003.avif"
           ],
           "startingThreat": {
             "value": 4,
@@ -599,7 +574,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60024.webp"
+                "https://img.intothefray.xyz/cards/fr/60024.c5fa866db8ed.avif"
               ]
             }
           }
@@ -616,13 +591,12 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60026.jpg",
-            "https://marvelcdb.com/bundles/cards/60026.jpg"
+            "https://img.intothefray.xyz/cards/en/60026.2b8c062a917a.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60026.webp"
+                "https://img.intothefray.xyz/cards/fr/60026.78ed3265d8da.avif"
               ]
             }
           }
@@ -639,13 +613,12 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60027.jpg",
-            "https://marvelcdb.com/bundles/cards/60027.jpg"
+            "https://img.intothefray.xyz/cards/en/60027.9f64c06a2d69.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60027.webp"
+                "https://img.intothefray.xyz/cards/fr/60027.f9541f0eda90.avif"
               ]
             }
           }
@@ -662,13 +635,12 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60028.jpg",
-            "https://marvelcdb.com/bundles/cards/60028.jpg"
+            "https://img.intothefray.xyz/cards/en/60028.c3ae9c288ef0.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60028.webp"
+                "https://img.intothefray.xyz/cards/fr/60028.9d447c23a319.avif"
               ]
             }
           }
@@ -685,13 +657,12 @@
           "type": "support",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60029.jpg",
-            "https://marvelcdb.com/bundles/cards/60029.jpg"
+            "https://img.intothefray.xyz/cards/en/60029.c5472d6dd722.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60029.webp"
+                "https://img.intothefray.xyz/cards/fr/60029.fc4497d7122b.avif"
               ]
             }
           }
@@ -708,13 +679,12 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60030.jpg",
-            "https://marvelcdb.com/bundles/cards/60030.jpg"
+            "https://img.intothefray.xyz/cards/en/60030.f7b4b7485795.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60030.webp"
+                "https://img.intothefray.xyz/cards/fr/60030.de75d608462f.avif"
               ]
             }
           }
@@ -731,13 +701,12 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60031.jpg",
-            "https://marvelcdb.com/bundles/cards/60031.jpg"
+            "https://img.intothefray.xyz/cards/en/60031.d1391d4b4c96.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60031.webp"
+                "https://img.intothefray.xyz/cards/fr/60031.2466d68fcb52.avif"
               ]
             }
           }
@@ -754,13 +723,12 @@
           "type": "obligation",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60032.jpg",
-            "https://marvelcdb.com/bundles/cards/60032.jpg"
+            "https://img.intothefray.xyz/cards/en/60032.2db2135a3523.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60032.webp"
+                "https://img.intothefray.xyz/cards/fr/60032.a9cd845fe9b4.avif"
               ]
             }
           }
@@ -778,13 +746,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60033.jpg",
-            "https://marvelcdb.com/bundles/cards/60033.jpg"
+            "https://img.intothefray.xyz/cards/en/60033.5e085cb84077.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60033.webp"
+                "https://img.intothefray.xyz/cards/fr/60033.d8e65a8cd82b.avif"
               ]
             }
           }
@@ -802,8 +769,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60034.jpg",
-            "https://marvelcdb.com/bundles/cards/60034.jpg"
+            "https://img.intothefray.xyz/cards/en/60034.6dcd47655d4f.avif"
           ],
           "startingThreat": {
             "value": 5,
@@ -812,7 +778,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60034.webp"
+                "https://img.intothefray.xyz/cards/fr/60034.f77436c11544.avif"
               ]
             }
           }
@@ -830,13 +796,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60035.jpg",
-            "https://marvelcdb.com/bundles/cards/60035.jpg"
+            "https://img.intothefray.xyz/cards/en/60035.5affa6abd22a.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60035.webp"
+                "https://img.intothefray.xyz/cards/fr/60035.1a925cd57c22.avif"
               ]
             }
           }
@@ -854,13 +819,12 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60036.jpg",
-            "https://marvelcdb.com/bundles/cards/60036.jpg"
+            "https://img.intothefray.xyz/cards/en/60036.a809f8aaf9ed.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60036.webp"
+                "https://img.intothefray.xyz/cards/fr/60036.cb390499d9cd.avif"
               ]
             }
           }
@@ -878,14 +842,13 @@
           "type": "hero",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60037A.jpg",
-            "https://marvelcdb.com/bundles/cards/60037a.png"
+            "https://img.intothefray.xyz/cards/en/60037a.567d7dc9698e.avif"
           ],
           "handSize": 5,
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60037a.webp"
+                "https://img.intothefray.xyz/cards/fr/60037a.b48c70e948a7.avif"
               ]
             }
           }
@@ -895,14 +858,13 @@
           "type": "alter_ego",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60037B.jpg",
-            "https://marvelcdb.com/bundles/cards/60037b.png"
+            "https://img.intothefray.xyz/cards/en/60037b.12bdc42c06d8.avif"
           ],
           "handSize": 6,
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60037b.webp"
+                "https://img.intothefray.xyz/cards/fr/60037b.e433594b67c8.avif"
               ]
             }
           }
@@ -924,13 +886,12 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60038.jpg",
-            "https://marvelcdb.com/bundles/cards/60038.jpg"
+            "https://img.intothefray.xyz/cards/en/60038.83f548b21b9c.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60038.webp"
+                "https://img.intothefray.xyz/cards/fr/60038.85845a8bb1c8.avif"
               ]
             }
           }
@@ -948,13 +909,12 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60039.jpg",
-            "https://marvelcdb.com/bundles/cards/60039.jpg"
+            "https://img.intothefray.xyz/cards/en/60039.fec6619959ad.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60039.webp"
+                "https://img.intothefray.xyz/cards/fr/60039.c4fc296a21e8.avif"
               ]
             }
           }
@@ -972,12 +932,12 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60040A.jpg"
+            "https://img.intothefray.xyz/cards/en/60040a.8b1106d1b130.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60040a.webp"
+                "https://img.intothefray.xyz/cards/fr/60040a.e1814752778a.avif"
               ]
             }
           }
@@ -995,15 +955,8 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60040B.jpg"
-          ],
-          "localized": {
-            "fr": {
-              "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60040b.webp"
-              ]
-            }
-          }
+            "https://img.intothefray.xyz/cards/en/60040b.178141d9ff99.avif"
+          ]
         }
       ],
       "set": "echo",
@@ -1018,15 +971,8 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60040C.jpg"
-          ],
-          "localized": {
-            "fr": {
-              "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60040c.webp"
-              ]
-            }
-          }
+            "https://img.intothefray.xyz/cards/en/60040c.d90fc435cc5d.avif"
+          ]
         }
       ],
       "set": "echo",
@@ -1041,13 +987,12 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60041.jpg",
-            "https://marvelcdb.com/bundles/cards/60041.jpg"
+            "https://img.intothefray.xyz/cards/en/60041.a8774cee1913.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60041.webp"
+                "https://img.intothefray.xyz/cards/fr/60041.fa2522f11173.avif"
               ]
             }
           }
@@ -1065,13 +1010,12 @@
           "type": "support",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60042.jpg",
-            "https://marvelcdb.com/bundles/cards/60042.jpg"
+            "https://img.intothefray.xyz/cards/en/60042.51aa1a90c8a8.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60042.webp"
+                "https://img.intothefray.xyz/cards/fr/60042.a9f6578756c0.avif"
               ]
             }
           }
@@ -1089,13 +1033,12 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60043.jpg",
-            "https://marvelcdb.com/bundles/cards/60043.jpg"
+            "https://img.intothefray.xyz/cards/en/60043.56eb61c76c02.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60043.webp"
+                "https://img.intothefray.xyz/cards/fr/60043.96768940ea14.avif"
               ]
             }
           }
@@ -1113,13 +1056,12 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60044.jpg",
-            "https://marvelcdb.com/bundles/cards/60044.jpg"
+            "https://img.intothefray.xyz/cards/en/60044.04e78e6298de.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60044.webp"
+                "https://img.intothefray.xyz/cards/fr/60044.24678fedefca.avif"
               ]
             }
           }
@@ -1137,13 +1079,12 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60045.jpg",
-            "https://marvelcdb.com/bundles/cards/60045.jpg"
+            "https://img.intothefray.xyz/cards/en/60045.829ac9310319.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60045.webp"
+                "https://img.intothefray.xyz/cards/fr/60045.8b20d2fd0d25.avif"
               ]
             }
           }
@@ -1161,13 +1102,12 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60046.jpg",
-            "https://marvelcdb.com/bundles/cards/60046.jpg"
+            "https://img.intothefray.xyz/cards/en/60046.31d261e76b1b.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60046.webp"
+                "https://img.intothefray.xyz/cards/fr/60046.7565823d7eaa.avif"
               ]
             }
           }
@@ -1185,13 +1125,12 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60047.jpg",
-            "https://marvelcdb.com/bundles/cards/60047.jpg"
+            "https://img.intothefray.xyz/cards/en/60047.e3db68be1ae1.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60047.webp"
+                "https://img.intothefray.xyz/cards/fr/60047.c6188e99f006.avif"
               ]
             }
           }
@@ -1209,13 +1148,12 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60048.jpg",
-            "https://marvelcdb.com/bundles/cards/60048.jpg"
+            "https://img.intothefray.xyz/cards/en/60048.96b00ce9de21.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60048.webp"
+                "https://img.intothefray.xyz/cards/fr/60048.5cf084b0fc37.avif"
               ]
             }
           }
@@ -1232,13 +1170,12 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60049.jpg",
-            "https://marvelcdb.com/bundles/cards/60049.jpg"
+            "https://img.intothefray.xyz/cards/en/60049.27902530a556.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60049.webp"
+                "https://img.intothefray.xyz/cards/fr/60049.3f237b08e16e.avif"
               ]
             }
           }
@@ -1255,13 +1192,12 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60050.jpg",
-            "https://marvelcdb.com/bundles/cards/60050.jpg"
+            "https://img.intothefray.xyz/cards/en/60050.1636ba691072.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60050.webp"
+                "https://img.intothefray.xyz/cards/fr/60050.027f2cdb7288.avif"
               ]
             }
           }
@@ -1278,13 +1214,12 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60052.jpg",
-            "https://marvelcdb.com/bundles/cards/60052.jpg"
+            "https://img.intothefray.xyz/cards/en/60052.b33740c830f5.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60052.webp"
+                "https://img.intothefray.xyz/cards/fr/60052.37d56e510ef7.avif"
               ]
             }
           }
@@ -1301,13 +1236,12 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60053.jpg",
-            "https://marvelcdb.com/bundles/cards/60053.jpg"
+            "https://img.intothefray.xyz/cards/en/60053.f63c7749d3ec.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60053.webp"
+                "https://img.intothefray.xyz/cards/fr/60053.f6eb07604e0c.avif"
               ]
             }
           }
@@ -1324,13 +1258,12 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60054.jpg",
-            "https://marvelcdb.com/bundles/cards/60054.jpg"
+            "https://img.intothefray.xyz/cards/en/60054.a8f005914ae8.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60054.webp"
+                "https://img.intothefray.xyz/cards/fr/60054.4d1ebd37dcdc.avif"
               ]
             }
           }
@@ -1347,13 +1280,12 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60055.jpg",
-            "https://marvelcdb.com/bundles/cards/60055.jpg"
+            "https://img.intothefray.xyz/cards/en/60055.0df1ea72c604.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60055.webp"
+                "https://img.intothefray.xyz/cards/fr/60055.644a975a7792.avif"
               ]
             }
           }
@@ -1370,13 +1302,12 @@
           "type": "obligation",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60060.jpg",
-            "https://marvelcdb.com/bundles/cards/60060.jpg"
+            "https://img.intothefray.xyz/cards/en/60060.1ff425aad064.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60060.webp"
+                "https://img.intothefray.xyz/cards/fr/60060.63ab206e5332.avif"
               ]
             }
           }
@@ -1394,13 +1325,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60061.jpg",
-            "https://marvelcdb.com/bundles/cards/60061.jpg"
+            "https://img.intothefray.xyz/cards/en/60061.ada7ceeb20a1.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60061.webp"
+                "https://img.intothefray.xyz/cards/fr/60061.0e8d6263403a.avif"
               ]
             }
           }
@@ -1418,8 +1348,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60062.jpg",
-            "https://marvelcdb.com/bundles/cards/60062.jpg"
+            "https://img.intothefray.xyz/cards/en/60062.bc5203edeac2.avif"
           ],
           "startingThreat": {
             "value": 2,
@@ -1428,7 +1357,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60062.webp"
+                "https://img.intothefray.xyz/cards/fr/60062.2cf190f9649c.avif"
               ]
             }
           }
@@ -1446,13 +1375,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60063.jpg",
-            "https://marvelcdb.com/bundles/cards/60063.jpg"
+            "https://img.intothefray.xyz/cards/en/60063.61b9903bca7f.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60063.webp"
+                "https://img.intothefray.xyz/cards/fr/60063.732f0710fa97.avif"
               ]
             }
           }
@@ -1470,13 +1398,12 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60064.jpg",
-            "https://marvelcdb.com/bundles/cards/60064.jpg"
+            "https://img.intothefray.xyz/cards/en/60064.483290f622a3.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60064.webp"
+                "https://img.intothefray.xyz/cards/fr/60064.f822486c83ef.avif"
               ]
             }
           }
@@ -1495,13 +1422,12 @@
           "stage": "I",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60065.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60065.webp"
+            "https://img.intothefray.xyz/cards/en/60065.c764ea9b3bfd.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60065.webp"
+                "https://img.intothefray.xyz/cards/fr/60065.1402a55b53cc.avif"
               ]
             }
           }
@@ -1520,13 +1446,12 @@
           "stage": "II",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60066.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60066.webp"
+            "https://img.intothefray.xyz/cards/en/60066.31746cda9ef1.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60066.webp"
+                "https://img.intothefray.xyz/cards/fr/60066.1e2b63b5816d.avif"
               ]
             }
           }
@@ -1545,13 +1470,12 @@
           "stage": "III",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60067.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60067.webp"
+            "https://img.intothefray.xyz/cards/en/60067.125d56ba4413.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60067.webp"
+                "https://img.intothefray.xyz/cards/fr/60067.0144ebb121c0.avif"
               ]
             }
           }
@@ -1569,13 +1493,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60068A.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60068a.webp"
+            "https://img.intothefray.xyz/cards/en/60068a.fd457363c39c.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60068a.webp"
+                "https://img.intothefray.xyz/cards/fr/60068a.f0c044d4a562.avif"
               ]
             }
           }
@@ -1585,13 +1508,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60068B.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60068b.webp"
+            "https://img.intothefray.xyz/cards/en/60068b.d4d8c406bae6.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60068b.webp"
+                "https://img.intothefray.xyz/cards/fr/60068b.fa9ac962ee83.avif"
               ]
             }
           }
@@ -1613,13 +1535,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60069.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60069.webp"
+            "https://img.intothefray.xyz/cards/en/60069.6362990759d7.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60069.webp"
+                "https://img.intothefray.xyz/cards/fr/60069.b3a611217a26.avif"
               ]
             }
           }
@@ -1637,13 +1558,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60070.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60070.webp"
+            "https://img.intothefray.xyz/cards/en/60070.650bc236d45f.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60070.webp"
+                "https://img.intothefray.xyz/cards/fr/60070.85630fc51fed.avif"
               ]
             }
           }
@@ -1661,13 +1581,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60071.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60071.webp"
+            "https://img.intothefray.xyz/cards/en/60071.abace2336fbe.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60071.webp"
+                "https://img.intothefray.xyz/cards/fr/60071.1088aa1f793e.avif"
               ]
             }
           }
@@ -1685,13 +1604,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60072.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60072.webp"
+            "https://img.intothefray.xyz/cards/en/60072.868fae5bc627.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60072.webp"
+                "https://img.intothefray.xyz/cards/fr/60072.59730241ecd0.avif"
               ]
             }
           }
@@ -1709,8 +1627,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60073.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60073.webp"
+            "https://img.intothefray.xyz/cards/en/60073.c7f0602392c8.avif"
           ],
           "startingThreat": {
             "value": 4,
@@ -1719,7 +1636,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60073.webp"
+                "https://img.intothefray.xyz/cards/fr/60073.49a36c3e6939.avif"
               ]
             }
           }
@@ -1737,13 +1654,12 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60074.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60074.webp"
+            "https://img.intothefray.xyz/cards/en/60074.5528b86885ff.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60074.webp"
+                "https://img.intothefray.xyz/cards/fr/60074.f408d962e73e.avif"
               ]
             }
           }
@@ -1761,13 +1677,12 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60075.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60075.webp"
+            "https://img.intothefray.xyz/cards/en/60075.3083e1947b1f.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60075.webp"
+                "https://img.intothefray.xyz/cards/fr/60075.af98b52b0fe8.avif"
               ]
             }
           }
@@ -1786,13 +1701,12 @@
           "stage": "I",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60076.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60076.webp"
+            "https://img.intothefray.xyz/cards/en/60076.9ad4cbe10c54.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60076.webp"
+                "https://img.intothefray.xyz/cards/fr/60076.d9e330fa61fd.avif"
               ]
             }
           }
@@ -1811,13 +1725,12 @@
           "stage": "II",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60077.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60077.webp"
+            "https://img.intothefray.xyz/cards/en/60077.bd7a0a6a36e8.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60077.webp"
+                "https://img.intothefray.xyz/cards/fr/60077.ff8179458d3d.avif"
               ]
             }
           }
@@ -1836,13 +1749,12 @@
           "stage": "III",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60078.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60078.webp"
+            "https://img.intothefray.xyz/cards/en/60078.41844042c4d7.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60078.webp"
+                "https://img.intothefray.xyz/cards/fr/60078.1c568305f726.avif"
               ]
             }
           }
@@ -1860,13 +1772,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60079.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60079.webp"
+            "https://img.intothefray.xyz/cards/en/60079.3108f904b37c.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60079.webp"
+                "https://img.intothefray.xyz/cards/fr/60079.94f7e7724466.avif"
               ]
             }
           }
@@ -1884,13 +1795,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60080.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60080.webp"
+            "https://img.intothefray.xyz/cards/en/60080.85d489e4ce29.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60080.webp"
+                "https://img.intothefray.xyz/cards/fr/60080.0ba247bee638.avif"
               ]
             }
           }
@@ -1908,13 +1818,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60081.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60081.webp"
+            "https://img.intothefray.xyz/cards/en/60081.e5a68f46f257.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60081.webp"
+                "https://img.intothefray.xyz/cards/fr/60081.d755931dca65.avif"
               ]
             }
           }
@@ -1932,8 +1841,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60082.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60082.webp"
+            "https://img.intothefray.xyz/cards/en/60082.a76e782c7b15.avif"
           ],
           "startingThreat": {
             "value": 6,
@@ -1942,7 +1850,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60082.webp"
+                "https://img.intothefray.xyz/cards/fr/60082.65b30f6ef599.avif"
               ]
             }
           }
@@ -1960,13 +1868,12 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60083.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60083.webp"
+            "https://img.intothefray.xyz/cards/en/60083.7493855734b9.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60083.webp"
+                "https://img.intothefray.xyz/cards/fr/60083.0a72751a1408.avif"
               ]
             }
           }
@@ -1984,13 +1891,12 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60084.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60084.webp"
+            "https://img.intothefray.xyz/cards/en/60084.8d22d7a9df69.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60084.webp"
+                "https://img.intothefray.xyz/cards/fr/60084.1fec93bb73ee.avif"
               ]
             }
           }
@@ -2008,13 +1914,12 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60085.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60085.webp"
+            "https://img.intothefray.xyz/cards/en/60085.1b67dca46632.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60085.webp"
+                "https://img.intothefray.xyz/cards/fr/60085.bb3590ea4ebb.avif"
               ]
             }
           }
@@ -2033,13 +1938,12 @@
           "stage": "I",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60086.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60086.webp"
+            "https://img.intothefray.xyz/cards/en/60086.186f711673be.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60086.webp"
+                "https://img.intothefray.xyz/cards/fr/60086.6a92d340d206.avif"
               ]
             }
           }
@@ -2058,13 +1962,12 @@
           "stage": "II",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60087.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60087.webp"
+            "https://img.intothefray.xyz/cards/en/60087.c58a77155e9f.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60087.webp"
+                "https://img.intothefray.xyz/cards/fr/60087.aee459881f71.avif"
               ]
             }
           }
@@ -2083,13 +1986,12 @@
           "stage": "III",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60088.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60088.webp"
+            "https://img.intothefray.xyz/cards/en/60088.4acb9a83104e.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60088.webp"
+                "https://img.intothefray.xyz/cards/fr/60088.92222cf80925.avif"
               ]
             }
           }
@@ -2107,13 +2009,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60089.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60089.webp"
+            "https://img.intothefray.xyz/cards/en/60089.00837afb4a32.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60089.webp"
+                "https://img.intothefray.xyz/cards/fr/60089.d85ebf2be291.avif"
               ]
             }
           }
@@ -2131,13 +2032,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60090.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60090.webp"
+            "https://img.intothefray.xyz/cards/en/60090.e966dc86cd50.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60090.webp"
+                "https://img.intothefray.xyz/cards/fr/60090.fd38ce155c27.avif"
               ]
             }
           }
@@ -2155,13 +2055,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60091.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60091.webp"
+            "https://img.intothefray.xyz/cards/en/60091.a3eb8e3eae9f.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60091.webp"
+                "https://img.intothefray.xyz/cards/fr/60091.fe83c608d501.avif"
               ]
             }
           }
@@ -2179,13 +2078,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60092.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60092.webp"
+            "https://img.intothefray.xyz/cards/en/60092.20cfcc01ea2e.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60092.webp"
+                "https://img.intothefray.xyz/cards/fr/60092.f846c8640ddd.avif"
               ]
             }
           }
@@ -2203,13 +2101,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60093.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60093.webp"
+            "https://img.intothefray.xyz/cards/en/60093.4a15738ef9d6.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60093.webp"
+                "https://img.intothefray.xyz/cards/fr/60093.fa757101bd76.avif"
               ]
             }
           }
@@ -2227,8 +2124,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60094.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60094.webp"
+            "https://img.intothefray.xyz/cards/en/60094.7a628ab9a340.avif"
           ],
           "startingThreat": {
             "value": 6,
@@ -2237,7 +2133,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60094.webp"
+                "https://img.intothefray.xyz/cards/fr/60094.aeddc7ed97c2.avif"
               ]
             }
           }
@@ -2255,8 +2151,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60095.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60095.webp"
+            "https://img.intothefray.xyz/cards/en/60095.53d08a013f58.avif"
           ],
           "startingThreat": {
             "value": 5,
@@ -2265,7 +2160,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60095.webp"
+                "https://img.intothefray.xyz/cards/fr/60095.f6cb0f6f3cab.avif"
               ]
             }
           }
@@ -2283,13 +2178,12 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60096.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60096.webp"
+            "https://img.intothefray.xyz/cards/en/60096.4cb70eeaf28d.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60096.webp"
+                "https://img.intothefray.xyz/cards/fr/60096.74d174314022.avif"
               ]
             }
           }
@@ -2308,13 +2202,12 @@
           "stage": "I",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60097.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60097.webp"
+            "https://img.intothefray.xyz/cards/en/60097.a45fc983bc8e.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60097.webp"
+                "https://img.intothefray.xyz/cards/fr/60097.2b5820ced618.avif"
               ]
             }
           }
@@ -2333,13 +2226,12 @@
           "stage": "II",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60098.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60098.webp"
+            "https://img.intothefray.xyz/cards/en/60098.431070375d4b.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60098.webp"
+                "https://img.intothefray.xyz/cards/fr/60098.426e90d94218.avif"
               ]
             }
           }
@@ -2358,13 +2250,12 @@
           "stage": "III",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60099.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60099.webp"
+            "https://img.intothefray.xyz/cards/en/60099.a52cae22dbaf.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60099.webp"
+                "https://img.intothefray.xyz/cards/fr/60099.6cf35363e486.avif"
               ]
             }
           }
@@ -2382,13 +2273,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60100.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60100.webp"
+            "https://img.intothefray.xyz/cards/en/60100.09ff39641222.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60100.webp"
+                "https://img.intothefray.xyz/cards/fr/60100.537316a6ed5b.avif"
               ]
             }
           }
@@ -2406,13 +2296,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60101.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60101.webp"
+            "https://img.intothefray.xyz/cards/en/60101.39a38496047e.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60101.webp"
+                "https://img.intothefray.xyz/cards/fr/60101.0066f75c45a3.avif"
               ]
             }
           }
@@ -2430,13 +2319,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60102.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60102.webp"
+            "https://img.intothefray.xyz/cards/en/60102.ddd5614a7724.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60102.webp"
+                "https://img.intothefray.xyz/cards/fr/60102.8d85c7269dd4.avif"
               ]
             }
           }
@@ -2454,13 +2342,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60103.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60103.webp"
+            "https://img.intothefray.xyz/cards/en/60103.f599988268d9.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60103.webp"
+                "https://img.intothefray.xyz/cards/fr/60103.c5ef71605222.avif"
               ]
             }
           }
@@ -2478,13 +2365,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60104.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60104.webp"
+            "https://img.intothefray.xyz/cards/en/60104.de4279e2783d.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60104.webp"
+                "https://img.intothefray.xyz/cards/fr/60104.12c1ccb76b27.avif"
               ]
             }
           }
@@ -2502,13 +2388,12 @@
           "type": "obligation",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60105.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60105.webp"
+            "https://img.intothefray.xyz/cards/en/60105.f2846849929b.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60105.webp"
+                "https://img.intothefray.xyz/cards/fr/60105.87281aec1bd2.avif"
               ]
             }
           }
@@ -2526,13 +2411,12 @@
           "type": "obligation",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60106.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60106.webp"
+            "https://img.intothefray.xyz/cards/en/60106.306e602e99a5.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60106.webp"
+                "https://img.intothefray.xyz/cards/fr/60106.e10d67106201.avif"
               ]
             }
           }
@@ -2550,13 +2434,12 @@
           "type": "obligation",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60107.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60107.webp"
+            "https://img.intothefray.xyz/cards/en/60107.5fb4e6ee10b7.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60107.webp"
+                "https://img.intothefray.xyz/cards/fr/60107.a89955d07cd4.avif"
               ]
             }
           }
@@ -2574,8 +2457,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60108.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60108.webp"
+            "https://img.intothefray.xyz/cards/en/60108.654b76429c78.avif"
           ],
           "startingThreat": {
             "value": 2,
@@ -2584,7 +2466,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60108.webp"
+                "https://img.intothefray.xyz/cards/fr/60108.d075eef1763d.avif"
               ]
             }
           }
@@ -2602,13 +2484,12 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60109.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60109.webp"
+            "https://img.intothefray.xyz/cards/en/60109.257a672fde5e.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60109.webp"
+                "https://img.intothefray.xyz/cards/fr/60109.88b0434ce39b.avif"
               ]
             }
           }
@@ -2627,13 +2508,12 @@
           "stage": "A",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60110A.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60110a.webp"
+            "https://img.intothefray.xyz/cards/en/60110a.17c0ad095a6b.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60110a.webp"
+                "https://img.intothefray.xyz/cards/fr/60110a.5fc5711fa33c.avif"
               ]
             }
           }
@@ -2644,13 +2524,12 @@
           "stage": "A",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60110B.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60110b.webp"
+            "https://img.intothefray.xyz/cards/en/60110b.92443f5240f1.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60110b.webp"
+                "https://img.intothefray.xyz/cards/fr/60110b.cfb4e1def186.avif"
               ]
             }
           }
@@ -2673,13 +2552,12 @@
           "stage": "B",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60111A.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60111a.webp"
+            "https://img.intothefray.xyz/cards/en/60111a.821d5054c66b.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60111a.webp"
+                "https://img.intothefray.xyz/cards/fr/60111a.46e7736848ec.avif"
               ]
             }
           }
@@ -2690,13 +2568,12 @@
           "stage": "B",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60111B.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60111b.webp"
+            "https://img.intothefray.xyz/cards/en/60111b.971c7fbd408c.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60111b.webp"
+                "https://img.intothefray.xyz/cards/fr/60111b.577784ea0a77.avif"
               ]
             }
           }
@@ -2718,13 +2595,12 @@
           "type": "environment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60112.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60112.webp"
+            "https://img.intothefray.xyz/cards/en/60112.60e4aae5f860.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60112.webp"
+                "https://img.intothefray.xyz/cards/fr/60112.249f3996a527.avif"
               ]
             }
           }
@@ -2742,8 +2618,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60113A.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60113a.webp"
+            "https://img.intothefray.xyz/cards/en/60113a.a976d0ff91b1.avif"
           ],
           "startingThreat": {
             "value": 8,
@@ -2752,7 +2627,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60113a.webp"
+                "https://img.intothefray.xyz/cards/fr/60113a.da77885e73c3.avif"
               ]
             }
           }
@@ -2762,13 +2637,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60113B.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60113b.webp"
+            "https://img.intothefray.xyz/cards/en/60113b.ad994f208cd2.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60113b.webp"
+                "https://img.intothefray.xyz/cards/fr/60113b.57e11f38965f.avif"
               ]
             }
           }
@@ -2790,13 +2664,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60114.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60114.webp"
+            "https://img.intothefray.xyz/cards/en/60114.83d99d41b055.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60114.webp"
+                "https://img.intothefray.xyz/cards/fr/60114.3154f45f71b2.avif"
               ]
             }
           }
@@ -2814,13 +2687,12 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60115.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60115.webp"
+            "https://img.intothefray.xyz/cards/en/60115.d33898f05b2e.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60115.webp"
+                "https://img.intothefray.xyz/cards/fr/60115.7643b7cc3692.avif"
               ]
             }
           }
@@ -2838,13 +2710,12 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60116.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60116.webp"
+            "https://img.intothefray.xyz/cards/en/60116.0eeab2cf9b7c.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60116.webp"
+                "https://img.intothefray.xyz/cards/fr/60116.8afb0fe5df0e.avif"
               ]
             }
           }
@@ -2862,13 +2733,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60117.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60117.webp"
+            "https://img.intothefray.xyz/cards/en/60117.1a918aaeb783.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60117.webp"
+                "https://img.intothefray.xyz/cards/fr/60117.efb7b9cd13c8.avif"
               ]
             }
           }
@@ -2886,13 +2756,12 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60118.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60118.webp"
+            "https://img.intothefray.xyz/cards/en/60118.c7be2604fe6d.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60118.webp"
+                "https://img.intothefray.xyz/cards/fr/60118.9246a039dc33.avif"
               ]
             }
           }
@@ -2910,13 +2779,12 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60119.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60119.webp"
+            "https://img.intothefray.xyz/cards/en/60119.c0913df4e003.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60119.webp"
+                "https://img.intothefray.xyz/cards/fr/60119.0ece3931ba38.avif"
               ]
             }
           }
@@ -2934,13 +2802,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60120.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60120.webp"
+            "https://img.intothefray.xyz/cards/en/60120.e49b721190e7.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60120.webp"
+                "https://img.intothefray.xyz/cards/fr/60120.fd17cfbe487e.avif"
               ]
             }
           }
@@ -2959,13 +2826,12 @@
           "stage": "1A",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60121A.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60121a.webp"
+            "https://img.intothefray.xyz/cards/en/60121a.f0b367259fcc.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60121a.webp"
+                "https://img.intothefray.xyz/cards/fr/60121a.6c7d491a7a42.avif"
               ]
             }
           }
@@ -2976,8 +2842,7 @@
           "stage": "1B",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60121B.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60121b.webp"
+            "https://img.intothefray.xyz/cards/en/60121b.4cc9060d6221.avif"
           ],
           "startingThreat": {
             "value": 1,
@@ -2986,7 +2851,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60121b.webp"
+                "https://img.intothefray.xyz/cards/fr/60121b.200c2405ad36.avif"
               ]
             }
           }
@@ -3008,13 +2873,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60122.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60122.webp"
+            "https://img.intothefray.xyz/cards/en/60122.c0cb22027d35.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60122.webp"
+                "https://img.intothefray.xyz/cards/fr/60122.b53169b20c1b.avif"
               ]
             }
           }
@@ -3032,13 +2896,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60123.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60123.webp"
+            "https://img.intothefray.xyz/cards/en/60123.eb2ff14f6082.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60123.webp"
+                "https://img.intothefray.xyz/cards/fr/60123.b5df9182e3b3.avif"
               ]
             }
           }
@@ -3056,13 +2919,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60124.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60124.webp"
+            "https://img.intothefray.xyz/cards/en/60124.87e112b6ed0f.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60124.webp"
+                "https://img.intothefray.xyz/cards/fr/60124.118a2ccaae1b.avif"
               ]
             }
           }
@@ -3080,13 +2942,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60125.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60125.webp"
+            "https://img.intothefray.xyz/cards/en/60125.e425718c40ed.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60125.webp"
+                "https://img.intothefray.xyz/cards/fr/60125.1189cb3008d5.avif"
               ]
             }
           }
@@ -3104,13 +2965,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60126.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60126.webp"
+            "https://img.intothefray.xyz/cards/en/60126.80527c0a2e51.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60126.webp"
+                "https://img.intothefray.xyz/cards/fr/60126.34bd9fb53c79.avif"
               ]
             }
           }
@@ -3128,13 +2988,12 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60127.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60127.webp"
+            "https://img.intothefray.xyz/cards/en/60127.c235fcee10b6.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60127.webp"
+                "https://img.intothefray.xyz/cards/fr/60127.0fed21363a0d.avif"
               ]
             }
           }
@@ -3153,13 +3012,12 @@
           "stage": "1A",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60128A.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60128a.webp"
+            "https://img.intothefray.xyz/cards/en/60128a.f216421d6a73.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60128a.webp"
+                "https://img.intothefray.xyz/cards/fr/60128a.cd56d1d352a3.avif"
               ]
             }
           }
@@ -3170,8 +3028,7 @@
           "stage": "1B",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60128B.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60128b.webp"
+            "https://img.intothefray.xyz/cards/en/60128b.2efa8b1b83f0.avif"
           ],
           "startingThreat": {
             "value": 2,
@@ -3180,7 +3037,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60128b.webp"
+                "https://img.intothefray.xyz/cards/fr/60128b.d5ff4cfed94b.avif"
               ]
             }
           }
@@ -3202,13 +3059,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60129A.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60129a.webp"
+            "https://img.intothefray.xyz/cards/en/60129a.5bb917183974.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60129a.webp"
+                "https://img.intothefray.xyz/cards/fr/60129a.8172ba9035b5.avif"
               ]
             }
           }
@@ -3218,13 +3074,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60129B.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60129b.webp"
+            "https://img.intothefray.xyz/cards/en/60129b.2ecfdae337c1.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60129b.webp"
+                "https://img.intothefray.xyz/cards/fr/60129b.504b89f7b55e.avif"
               ]
             }
           }
@@ -3246,13 +3101,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60130.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60130.webp"
+            "https://img.intothefray.xyz/cards/en/60130.0080bb6f03fa.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60130.webp"
+                "https://img.intothefray.xyz/cards/fr/60130.f4c15e8af590.avif"
               ]
             }
           }
@@ -3270,8 +3124,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60131.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60131.webp"
+            "https://img.intothefray.xyz/cards/en/60131.f7bfb585c471.avif"
           ],
           "startingThreat": {
             "value": 2,
@@ -3280,7 +3133,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60131.webp"
+                "https://img.intothefray.xyz/cards/fr/60131.b187161513f8.avif"
               ]
             }
           }
@@ -3298,13 +3151,12 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60132.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60132.webp"
+            "https://img.intothefray.xyz/cards/en/60132.65f1788b19a3.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60132.webp"
+                "https://img.intothefray.xyz/cards/fr/60132.6c215cc36e57.avif"
               ]
             }
           }
@@ -3322,13 +3174,12 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60133.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60133.webp"
+            "https://img.intothefray.xyz/cards/en/60133.263872569b9e.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60133.webp"
+                "https://img.intothefray.xyz/cards/fr/60133.6b43762f0474.avif"
               ]
             }
           }
@@ -3347,13 +3198,12 @@
           "stage": "1A",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60134A.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60134a.webp"
+            "https://img.intothefray.xyz/cards/en/60134a.dd77f1671879.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60134a.webp"
+                "https://img.intothefray.xyz/cards/fr/60134a.3589bd85f1d0.avif"
               ]
             }
           }
@@ -3364,8 +3214,7 @@
           "stage": "1B",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60134B.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60134b.webp"
+            "https://img.intothefray.xyz/cards/en/60134b.5459d4464c1f.avif"
           ],
           "startingThreat": {
             "value": 0,
@@ -3374,7 +3223,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60134b.webp"
+                "https://img.intothefray.xyz/cards/fr/60134b.71a729d1d5e3.avif"
               ]
             }
           }
@@ -3397,13 +3246,12 @@
           "stage": "1A",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60135A.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60135a.webp"
+            "https://img.intothefray.xyz/cards/en/60135a.dd77f1671879.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60135a.webp"
+                "https://img.intothefray.xyz/cards/fr/60135a.82d1086f78a2.avif"
               ]
             }
           }
@@ -3414,8 +3262,7 @@
           "stage": "1B",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60135B.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60135b.webp"
+            "https://img.intothefray.xyz/cards/en/60135b.049c92c21941.avif"
           ],
           "startingThreat": {
             "value": 0,
@@ -3424,7 +3271,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60135b.webp"
+                "https://img.intothefray.xyz/cards/fr/60135b.297c9f4b05c9.avif"
               ]
             }
           }
@@ -3447,13 +3294,12 @@
           "stage": "1A",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60136A.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60136a.webp"
+            "https://img.intothefray.xyz/cards/en/60136a.dd77f1671879.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60136a.webp"
+                "https://img.intothefray.xyz/cards/fr/60136a.9d938b8b8d3e.avif"
               ]
             }
           }
@@ -3464,8 +3310,7 @@
           "stage": "1B",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60136B.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60136b.webp"
+            "https://img.intothefray.xyz/cards/en/60136b.f6b678a5cbbf.avif"
           ],
           "startingThreat": {
             "value": 0,
@@ -3474,7 +3319,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60136b.webp"
+                "https://img.intothefray.xyz/cards/fr/60136b.a26feea81a9b.avif"
               ]
             }
           }
@@ -3497,13 +3342,12 @@
           "stage": "1A",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60137A.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60137a.webp"
+            "https://img.intothefray.xyz/cards/en/60137a.dd77f1671879.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60137a.webp"
+                "https://img.intothefray.xyz/cards/fr/60137a.8df77a4178a0.avif"
               ]
             }
           }
@@ -3514,8 +3358,7 @@
           "stage": "1B",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60137B.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60137b.webp"
+            "https://img.intothefray.xyz/cards/en/60137b.02ae564c0d58.avif"
           ],
           "startingThreat": {
             "value": 0,
@@ -3524,7 +3367,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60137b.webp"
+                "https://img.intothefray.xyz/cards/fr/60137b.2da73953a0b9.avif"
               ]
             }
           }
@@ -3547,13 +3390,12 @@
           "stage": "1A",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60138A.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60138a.webp"
+            "https://img.intothefray.xyz/cards/en/60138a.dd77f1671879.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60138a.webp"
+                "https://img.intothefray.xyz/cards/fr/60138a.f3d8499e793b.avif"
               ]
             }
           }
@@ -3564,8 +3406,7 @@
           "stage": "1B",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60138B.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60138b.webp"
+            "https://img.intothefray.xyz/cards/en/60138b.58362df19a90.avif"
           ],
           "startingThreat": {
             "value": 0,
@@ -3574,7 +3415,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60138b.webp"
+                "https://img.intothefray.xyz/cards/fr/60138b.cc7d7c7c19eb.avif"
               ]
             }
           }
@@ -3596,13 +3437,12 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60139.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60139.webp"
+            "https://img.intothefray.xyz/cards/en/60139.ca06f87fc27d.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60139.webp"
+                "https://img.intothefray.xyz/cards/fr/60139.d086583238ec.avif"
               ]
             }
           }
@@ -3620,13 +3460,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60140.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60140.webp"
+            "https://img.intothefray.xyz/cards/en/60140.0bf355354e31.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60140.webp"
+                "https://img.intothefray.xyz/cards/fr/60140.b51124ecccda.avif"
               ]
             }
           }
@@ -3644,13 +3483,12 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60141.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60141.webp"
+            "https://img.intothefray.xyz/cards/en/60141.3e6b280e6053.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60141.webp"
+                "https://img.intothefray.xyz/cards/fr/60141.d3587335c9a5.avif"
               ]
             }
           }
@@ -3669,13 +3507,12 @@
           "stage": "1A",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60142A.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60142a.webp"
+            "https://img.intothefray.xyz/cards/en/60142a.418d45d3949d.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60142a.webp"
+                "https://img.intothefray.xyz/cards/fr/60142a.a2b0aaef1092.avif"
               ]
             }
           }
@@ -3686,8 +3523,7 @@
           "stage": "1B",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60142B.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60142b.webp"
+            "https://img.intothefray.xyz/cards/en/60142b.c519fc6da034.avif"
           ],
           "startingThreat": {
             "value": 2,
@@ -3696,7 +3532,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60142b.webp"
+                "https://img.intothefray.xyz/cards/fr/60142b.e28d8c15bfee.avif"
               ]
             }
           }
@@ -3718,13 +3554,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60143.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60143.webp"
+            "https://img.intothefray.xyz/cards/en/60143.14c15b5a2acd.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60143.webp"
+                "https://img.intothefray.xyz/cards/fr/60143.bc5463a990a5.avif"
               ]
             }
           }
@@ -3742,13 +3577,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60144.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60144.webp"
+            "https://img.intothefray.xyz/cards/en/60144.36a4bef87820.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60144.webp"
+                "https://img.intothefray.xyz/cards/fr/60144.70498cefa44e.avif"
               ]
             }
           }
@@ -3766,13 +3600,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60145.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60145.webp"
+            "https://img.intothefray.xyz/cards/en/60145.3e4c258132f6.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60145.webp"
+                "https://img.intothefray.xyz/cards/fr/60145.3150a46088c1.avif"
               ]
             }
           }
@@ -3790,13 +3623,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60146.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60146.webp"
+            "https://img.intothefray.xyz/cards/en/60146.5b5ccfe6048c.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60146.webp"
+                "https://img.intothefray.xyz/cards/fr/60146.f6b5e145300c.avif"
               ]
             }
           }
@@ -3814,13 +3646,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60147.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60147.webp"
+            "https://img.intothefray.xyz/cards/en/60147.91d7039178bb.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60147.webp"
+                "https://img.intothefray.xyz/cards/fr/60147.d78694994233.avif"
               ]
             }
           }
@@ -3838,13 +3669,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60148.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60148.webp"
+            "https://img.intothefray.xyz/cards/en/60148.d03617f50798.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60148.webp"
+                "https://img.intothefray.xyz/cards/fr/60148.34a87ed47a88.avif"
               ]
             }
           }
@@ -3862,13 +3692,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60149.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60149.webp"
+            "https://img.intothefray.xyz/cards/en/60149.9ff59f1f67fa.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60149.webp"
+                "https://img.intothefray.xyz/cards/fr/60149.6372898a16dd.avif"
               ]
             }
           }
@@ -3886,13 +3715,12 @@
           "type": "obligation",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60150.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60150.webp"
+            "https://img.intothefray.xyz/cards/en/60150.7b42677017b3.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60150.webp"
+                "https://img.intothefray.xyz/cards/fr/60150.c7e3798e1acd.avif"
               ]
             }
           }
@@ -3911,13 +3739,12 @@
           "stage": "1A",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60151A.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60151a.webp"
+            "https://img.intothefray.xyz/cards/en/60151a.bb7ec6e88e3e.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60151a.webp"
+                "https://img.intothefray.xyz/cards/fr/60151a.deb6e3d23484.avif"
               ]
             }
           }
@@ -3928,8 +3755,7 @@
           "stage": "1B",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60151B.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60151b.webp"
+            "https://img.intothefray.xyz/cards/en/60151b.a01a51413403.avif"
           ],
           "startingThreat": {
             "value": 1,
@@ -3938,7 +3764,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60151b.webp"
+                "https://img.intothefray.xyz/cards/fr/60151b.9383d0c3f362.avif"
               ]
             }
           }
@@ -3960,13 +3786,12 @@
           "type": "environment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60152.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60152.webp"
+            "https://img.intothefray.xyz/cards/en/60152.3e839393de60.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60152.webp"
+                "https://img.intothefray.xyz/cards/fr/60152.056494b719f8.avif"
               ]
             }
           }
@@ -3984,13 +3809,12 @@
           "type": "support",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60153.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60153.webp"
+            "https://img.intothefray.xyz/cards/en/60153.df8f6f20bb41.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60153.webp"
+                "https://img.intothefray.xyz/cards/fr/60153.8e882d0d1a6a.avif"
               ]
             }
           }
@@ -4008,13 +3832,12 @@
           "type": "support",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60154.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60154.webp"
+            "https://img.intothefray.xyz/cards/en/60154.9460a69cd491.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60154.webp"
+                "https://img.intothefray.xyz/cards/fr/60154.35c03732b537.avif"
               ]
             }
           }
@@ -4032,13 +3855,12 @@
           "type": "support",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60155.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60155.webp"
+            "https://img.intothefray.xyz/cards/en/60155.be193cf25472.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60155.webp"
+                "https://img.intothefray.xyz/cards/fr/60155.95726d41bf5f.avif"
               ]
             }
           }
@@ -4056,13 +3878,12 @@
           "type": "support",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60156.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60156.webp"
+            "https://img.intothefray.xyz/cards/en/60156.7e26285003fe.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60156.webp"
+                "https://img.intothefray.xyz/cards/fr/60156.805384fdedbe.avif"
               ]
             }
           }
@@ -4080,8 +3901,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60157.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60157.webp"
+            "https://img.intothefray.xyz/cards/en/60157.b8c704f4060e.avif"
           ],
           "startingThreat": {
             "value": 6,
@@ -4090,7 +3910,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60157.webp"
+                "https://img.intothefray.xyz/cards/fr/60157.4479ff919e7a.avif"
               ]
             }
           }
@@ -4108,13 +3928,12 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60158.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60158.webp"
+            "https://img.intothefray.xyz/cards/en/60158.53a89e867cad.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60158.webp"
+                "https://img.intothefray.xyz/cards/fr/60158.0faac2ae0af1.avif"
               ]
             }
           }
@@ -4133,13 +3952,12 @@
           "stage": "A1",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60159A.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60159a.webp"
+            "https://img.intothefray.xyz/cards/en/60159a.20897433d3d7.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60159a.webp"
+                "https://img.intothefray.xyz/cards/fr/60159a.53fc6f2ce833.avif"
               ]
             }
           }
@@ -4150,13 +3968,12 @@
           "stage": "A2",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60159B.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60159b.webp"
+            "https://img.intothefray.xyz/cards/en/60159b.39cf7cee9b4a.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60159b.webp"
+                "https://img.intothefray.xyz/cards/fr/60159b.1e99e30b9143.avif"
               ]
             }
           }
@@ -4179,13 +3996,12 @@
           "stage": "B1",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60160A.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60160a.webp"
+            "https://img.intothefray.xyz/cards/en/60160a.47a6b8e1a8a8.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60160a.webp"
+                "https://img.intothefray.xyz/cards/fr/60160a.ebf5aeddb882.avif"
               ]
             }
           }
@@ -4196,13 +4012,12 @@
           "stage": "B2",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60160B.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60160b.webp"
+            "https://img.intothefray.xyz/cards/en/60160b.3c3c1642e5ab.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60160b.webp"
+                "https://img.intothefray.xyz/cards/fr/60160b.a360a13d74c9.avif"
               ]
             }
           }
@@ -4225,13 +4040,12 @@
           "stage": "1A",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60161A.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60161a.webp"
+            "https://img.intothefray.xyz/cards/en/60161a.15497cdc8602.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60161a.webp"
+                "https://img.intothefray.xyz/cards/fr/60161a.cf8ca2886fe6.avif"
               ]
             }
           }
@@ -4242,8 +4056,7 @@
           "stage": "1B",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60161B.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60161b.webp"
+            "https://img.intothefray.xyz/cards/en/60161b.2f9bdff28c15.avif"
           ],
           "startingThreat": {
             "value": 3,
@@ -4252,7 +4065,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60161b.webp"
+                "https://img.intothefray.xyz/cards/fr/60161b.be8c457a03c9.avif"
               ]
             }
           }
@@ -4275,13 +4088,12 @@
           "stage": "2A",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60162A.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60162a.webp"
+            "https://img.intothefray.xyz/cards/en/60162a.10a7efc4128f.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60162a.webp"
+                "https://img.intothefray.xyz/cards/fr/60162a.9730109451c0.avif"
               ]
             }
           }
@@ -4292,8 +4104,7 @@
           "stage": "2B",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60162B.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60162b.webp"
+            "https://img.intothefray.xyz/cards/en/60162b.c948e7f48712.avif"
           ],
           "startingThreat": {
             "value": 0,
@@ -4302,7 +4113,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60162b.webp"
+                "https://img.intothefray.xyz/cards/fr/60162b.588d493de155.avif"
               ]
             }
           }
@@ -4324,13 +4135,12 @@
           "type": "environment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60163A.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60163a.webp"
+            "https://img.intothefray.xyz/cards/en/60163a.44d92d41004f.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60163a.webp"
+                "https://img.intothefray.xyz/cards/fr/60163a.c4d82b03204b.avif"
               ]
             }
           }
@@ -4340,13 +4150,12 @@
           "type": "environment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60163B.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60163b.webp"
+            "https://img.intothefray.xyz/cards/en/60163b.e3f3c56ded45.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60163b.webp"
+                "https://img.intothefray.xyz/cards/fr/60163b.f2c6c9336287.avif"
               ]
             }
           }
@@ -4368,13 +4177,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60164.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60164.webp"
+            "https://img.intothefray.xyz/cards/en/60164.16ef97535c08.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60164.webp"
+                "https://img.intothefray.xyz/cards/fr/60164.0dce976ebb69.avif"
               ]
             }
           }
@@ -4392,13 +4200,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60165.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60165.webp"
+            "https://img.intothefray.xyz/cards/en/60165.5d26e294d623.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60165.webp"
+                "https://img.intothefray.xyz/cards/fr/60165.77e2513546b9.avif"
               ]
             }
           }
@@ -4416,13 +4223,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60166.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60166.webp"
+            "https://img.intothefray.xyz/cards/en/60166.554c314ab7ed.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60166.webp"
+                "https://img.intothefray.xyz/cards/fr/60166.a75f14e0057c.avif"
               ]
             }
           }
@@ -4440,13 +4246,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60167.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60167.webp"
+            "https://img.intothefray.xyz/cards/en/60167.2b239de282af.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60167.webp"
+                "https://img.intothefray.xyz/cards/fr/60167.4702b261552b.avif"
               ]
             }
           }
@@ -4464,13 +4269,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60168.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60168.webp"
+            "https://img.intothefray.xyz/cards/en/60168.fda786a1d7d1.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60168.webp"
+                "https://img.intothefray.xyz/cards/fr/60168.e5c1e9c2d993.avif"
               ]
             }
           }
@@ -4488,13 +4292,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60169.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60169.webp"
+            "https://img.intothefray.xyz/cards/en/60169.eccf4d9e663c.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60169.webp"
+                "https://img.intothefray.xyz/cards/fr/60169.1fbb3a69d2f9.avif"
               ]
             }
           }
@@ -4512,13 +4315,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60170.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60170.webp"
+            "https://img.intothefray.xyz/cards/en/60170.57a41789d8ec.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60170.webp"
+                "https://img.intothefray.xyz/cards/fr/60170.d16ecaf84edc.avif"
               ]
             }
           }
@@ -4536,13 +4338,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60171.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60171.webp"
+            "https://img.intothefray.xyz/cards/en/60171.128f28d7126c.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60171.webp"
+                "https://img.intothefray.xyz/cards/fr/60171.6a10da6863e6.avif"
               ]
             }
           }
@@ -4560,13 +4361,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60172.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60172.webp"
+            "https://img.intothefray.xyz/cards/en/60172.60f704c2265a.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60172.webp"
+                "https://img.intothefray.xyz/cards/fr/60172.b2e3df8a8ca2.avif"
               ]
             }
           }
@@ -4584,8 +4384,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60173.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60173.webp"
+            "https://img.intothefray.xyz/cards/en/60173.bc5dfa56b6e0.avif"
           ],
           "startingThreat": {
             "value": 2,
@@ -4594,7 +4393,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60173.webp"
+                "https://img.intothefray.xyz/cards/fr/60173.e0e38148839f.avif"
               ]
             }
           }
@@ -4612,8 +4411,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60174.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60174.webp"
+            "https://img.intothefray.xyz/cards/en/60174.56e0a40622f1.avif"
           ],
           "startingThreat": {
             "value": 3,
@@ -4622,7 +4420,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60174.webp"
+                "https://img.intothefray.xyz/cards/fr/60174.8c7e00364fcb.avif"
               ]
             }
           }
@@ -4640,13 +4438,12 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60175.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60175.webp"
+            "https://img.intothefray.xyz/cards/en/60175.7a0ce6f51235.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60175.webp"
+                "https://img.intothefray.xyz/cards/fr/60175.3540549d85cf.avif"
               ]
             }
           }
@@ -4664,13 +4461,12 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60176.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60176.webp"
+            "https://img.intothefray.xyz/cards/en/60176.6987ef18cddc.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60176.webp"
+                "https://img.intothefray.xyz/cards/fr/60176.6201fde915d1.avif"
               ]
             }
           }
@@ -4688,13 +4484,12 @@
           "type": "environment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60177.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60177.webp"
+            "https://img.intothefray.xyz/cards/en/60177.3d2e3189484b.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60177.webp"
+                "https://img.intothefray.xyz/cards/fr/60177.19d23fa93c84.avif"
               ]
             }
           }
@@ -4712,13 +4507,12 @@
           "type": "environment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60178.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60178.webp"
+            "https://img.intothefray.xyz/cards/en/60178.9ac823417dd7.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60178.webp"
+                "https://img.intothefray.xyz/cards/fr/60178.16d14e4f6407.avif"
               ]
             }
           }
@@ -4736,13 +4530,12 @@
           "type": "environment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60179.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60179.webp"
+            "https://img.intothefray.xyz/cards/en/60179.130d64ba044d.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60179.webp"
+                "https://img.intothefray.xyz/cards/fr/60179.df011efb960d.avif"
               ]
             }
           }
@@ -4760,8 +4553,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60180.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60180.webp"
+            "https://img.intothefray.xyz/cards/en/60180.b70c55eeb4f6.avif"
           ],
           "startingThreat": {
             "value": 1,
@@ -4770,7 +4562,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60180.webp"
+                "https://img.intothefray.xyz/cards/fr/60180.292801440c8b.avif"
               ]
             }
           }
@@ -4788,13 +4580,12 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60181.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60181.webp"
+            "https://img.intothefray.xyz/cards/en/60181.bc124f096e19.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60181.webp"
+                "https://img.intothefray.xyz/cards/fr/60181.896baead386c.avif"
               ]
             }
           }
@@ -4812,13 +4603,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60182.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60182.webp"
+            "https://img.intothefray.xyz/cards/en/60182.4297bac92234.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60182.webp"
+                "https://img.intothefray.xyz/cards/fr/60182.44f6bf0e36dd.avif"
               ]
             }
           }
@@ -4836,13 +4626,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60183.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60183.webp"
+            "https://img.intothefray.xyz/cards/en/60183.7b32e05d891d.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60183.webp"
+                "https://img.intothefray.xyz/cards/fr/60183.0635a08a0fc0.avif"
               ]
             }
           }
@@ -4860,13 +4649,12 @@
           "type": "obligation",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60184.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60184.webp"
+            "https://img.intothefray.xyz/cards/en/60184.f7d6c2faca79.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60184.webp"
+                "https://img.intothefray.xyz/cards/fr/60184.ed2ed0200daa.avif"
               ]
             }
           }
@@ -4884,8 +4672,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60185.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60185.webp"
+            "https://img.intothefray.xyz/cards/en/60185.a23384e31a64.avif"
           ],
           "startingThreat": {
             "value": 3,
@@ -4894,7 +4681,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60185.webp"
+                "https://img.intothefray.xyz/cards/fr/60185.ffe3db616c6a.avif"
               ]
             }
           }
@@ -4912,13 +4699,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60186.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60186.webp"
+            "https://img.intothefray.xyz/cards/en/60186.50b5c9f72330.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60186.webp"
+                "https://img.intothefray.xyz/cards/fr/60186.dca53cf45cfd.avif"
               ]
             }
           }
@@ -4936,13 +4722,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60187.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60187.webp"
+            "https://img.intothefray.xyz/cards/en/60187.3fb88fcd1f35.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60187.webp"
+                "https://img.intothefray.xyz/cards/fr/60187.3ccb67c6a932.avif"
               ]
             }
           }
@@ -4960,13 +4745,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60188.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60188.webp"
+            "https://img.intothefray.xyz/cards/en/60188.ed0fc30ac581.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60188.webp"
+                "https://img.intothefray.xyz/cards/fr/60188.100cc973eb1f.avif"
               ]
             }
           }
@@ -4984,8 +4768,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60189.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60189.webp"
+            "https://img.intothefray.xyz/cards/en/60189.adace53fec69.avif"
           ],
           "startingThreat": {
             "value": 2,
@@ -4994,7 +4777,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60189.webp"
+                "https://img.intothefray.xyz/cards/fr/60189.ab6b89d981d3.avif"
               ]
             }
           }
@@ -5012,13 +4795,12 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60190.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60190.webp"
+            "https://img.intothefray.xyz/cards/en/60190.7c5c2c715e27.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60190.webp"
+                "https://img.intothefray.xyz/cards/fr/60190.1f179fc7c22a.avif"
               ]
             }
           }
@@ -5036,13 +4818,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60191.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60191.webp"
+            "https://img.intothefray.xyz/cards/en/60191.4ec65e9ba5ed.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60191.webp"
+                "https://img.intothefray.xyz/cards/fr/60191.cdba26cedac1.avif"
               ]
             }
           }
@@ -5060,13 +4841,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60192.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60192.webp"
+            "https://img.intothefray.xyz/cards/en/60192.9989381160b5.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60192.webp"
+                "https://img.intothefray.xyz/cards/fr/60192.e45ab50098a3.avif"
               ]
             }
           }
@@ -5084,13 +4864,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60193.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60193.webp"
+            "https://img.intothefray.xyz/cards/en/60193.59b3e6b3a235.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60193.webp"
+                "https://img.intothefray.xyz/cards/fr/60193.270397dc560f.avif"
               ]
             }
           }
@@ -5108,13 +4887,12 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60194.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60194.webp"
+            "https://img.intothefray.xyz/cards/en/60194.a12b6d1beb66.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60194.webp"
+                "https://img.intothefray.xyz/cards/fr/60194.adae1a9419ad.avif"
               ]
             }
           }
@@ -5132,13 +4910,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60195.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60195.webp"
+            "https://img.intothefray.xyz/cards/en/60195.5ae5f32e7945.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60195.webp"
+                "https://img.intothefray.xyz/cards/fr/60195.65345a0dd759.avif"
               ]
             }
           }
@@ -5156,13 +4933,12 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60196.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60196.webp"
+            "https://img.intothefray.xyz/cards/en/60196.18543e669614.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60196.webp"
+                "https://img.intothefray.xyz/cards/fr/60196.8e68794ca359.avif"
               ]
             }
           }
@@ -5181,13 +4957,12 @@
           "stage": "5",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60197.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60197.webp"
+            "https://img.intothefray.xyz/cards/en/60197.79db943447cd.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60197.webp"
+                "https://img.intothefray.xyz/cards/fr/60197.0d1d59e4785f.avif"
               ]
             }
           }
@@ -5205,13 +4980,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60198.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60198.webp"
+            "https://img.intothefray.xyz/cards/en/60198.9bc6da08db81.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60198.webp"
+                "https://img.intothefray.xyz/cards/fr/60198.d6e3f63eef8d.avif"
               ]
             }
           }
@@ -5229,8 +5003,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60199.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60199.webp"
+            "https://img.intothefray.xyz/cards/en/60199.569df78b4757.avif"
           ],
           "startingThreat": {
             "value": 3,
@@ -5239,7 +5012,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60199.webp"
+                "https://img.intothefray.xyz/cards/fr/60199.2cff895039a8.avif"
               ]
             }
           }
@@ -5257,13 +5030,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60200.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60200.webp"
+            "https://img.intothefray.xyz/cards/en/60200.66e217ba21a1.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60200.webp"
+                "https://img.intothefray.xyz/cards/fr/60200.aa84f9b87d92.avif"
               ]
             }
           }
@@ -5281,13 +5053,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60201.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60201.webp"
+            "https://img.intothefray.xyz/cards/en/60201.ed4bd418a515.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60201.webp"
+                "https://img.intothefray.xyz/cards/fr/60201.8c38fd3b4bd1.avif"
               ]
             }
           }
@@ -5305,13 +5076,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60202.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60202.webp"
+            "https://img.intothefray.xyz/cards/en/60202.c5442f67dfa9.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60202.webp"
+                "https://img.intothefray.xyz/cards/fr/60202.58d1484d4cb0.avif"
               ]
             }
           }
@@ -5329,13 +5099,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60203.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60203.webp"
+            "https://img.intothefray.xyz/cards/en/60203.2a67afc07c49.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60203.webp"
+                "https://img.intothefray.xyz/cards/fr/60203.9ab749308d67.avif"
               ]
             }
           }
@@ -5353,8 +5122,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60204.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60204.webp"
+            "https://img.intothefray.xyz/cards/en/60204.162deefa498f.avif"
           ],
           "startingThreat": {
             "value": 3,
@@ -5363,7 +5131,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60204.webp"
+                "https://img.intothefray.xyz/cards/fr/60204.f21245514b06.avif"
               ]
             }
           }
@@ -5381,13 +5149,12 @@
           "type": "environment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60205A.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60205a.webp"
+            "https://img.intothefray.xyz/cards/en/60205a.26d535618b34.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60205a.webp"
+                "https://img.intothefray.xyz/cards/fr/60205a.fabb5dd39490.avif"
               ]
             }
           }
@@ -5397,13 +5164,12 @@
           "type": "environment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60205B.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60205b.webp"
+            "https://img.intothefray.xyz/cards/en/60205b.892cf8ac09e0.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60205b.webp"
+                "https://img.intothefray.xyz/cards/fr/60205b.dd3c0611501f.avif"
               ]
             }
           }
@@ -5425,13 +5191,12 @@
           "type": "environment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60206A.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60206a.webp"
+            "https://img.intothefray.xyz/cards/en/60206a.c82db24ec85c.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60206a.webp"
+                "https://img.intothefray.xyz/cards/fr/60206a.cc1fc9b13662.avif"
               ]
             }
           }
@@ -5441,13 +5206,12 @@
           "type": "environment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60206B.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60206b.webp"
+            "https://img.intothefray.xyz/cards/en/60206b.ff64e7536b30.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60206b.webp"
+                "https://img.intothefray.xyz/cards/fr/60206b.11c5d7d0e41f.avif"
               ]
             }
           }
@@ -5469,13 +5233,12 @@
           "type": "environment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60207A.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60207a.webp"
+            "https://img.intothefray.xyz/cards/en/60207a.ae77e19fad1f.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60207a.webp"
+                "https://img.intothefray.xyz/cards/fr/60207a.79aec664f60f.avif"
               ]
             }
           }
@@ -5485,13 +5248,12 @@
           "type": "environment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60207B.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60207b.webp"
+            "https://img.intothefray.xyz/cards/en/60207b.fd190c855bef.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60207b.webp"
+                "https://img.intothefray.xyz/cards/fr/60207b.eba1b814ab5c.avif"
               ]
             }
           }
@@ -5513,13 +5275,12 @@
           "type": "environment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60208A.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60208a.webp"
+            "https://img.intothefray.xyz/cards/en/60208a.a944ec87764f.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60208a.webp"
+                "https://img.intothefray.xyz/cards/fr/60208a.ce22ce2369ca.avif"
               ]
             }
           }
@@ -5529,13 +5290,12 @@
           "type": "environment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60208B.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60208b.webp"
+            "https://img.intothefray.xyz/cards/en/60208b.130dc6a3e743.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60208b.webp"
+                "https://img.intothefray.xyz/cards/fr/60208b.c58bb5f15e62.avif"
               ]
             }
           }
@@ -5557,13 +5317,12 @@
           "type": "environment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60209A.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60209a.webp"
+            "https://img.intothefray.xyz/cards/en/60209a.9d5cb5d6f25c.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60209a.webp"
+                "https://img.intothefray.xyz/cards/fr/60209a.4a16f1e7a8cf.avif"
               ]
             }
           }
@@ -5573,13 +5332,12 @@
           "type": "environment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60209B.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60209b.webp"
+            "https://img.intothefray.xyz/cards/en/60209b.1cd32478c300.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60209b.webp"
+                "https://img.intothefray.xyz/cards/fr/60209b.7d835f9e44f9.avif"
               ]
             }
           }
@@ -5602,13 +5360,12 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60210A.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60210a.webp"
+            "https://img.intothefray.xyz/cards/en/60210a.50d21450e3ef.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60210a.webp"
+                "https://img.intothefray.xyz/cards/fr/60210a.1566767a9880.avif"
               ]
             }
           }
@@ -5619,13 +5376,12 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60210B.jpg",
-            "https://mc4db.merlindumesnil.net/bundles/cards/EN/fear_no_evil_by_ffg/60210b.webp"
+            "https://img.intothefray.xyz/cards/en/60210b.0f97fd98f9a4.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/fear_no_evil_by_ffg/60210b.webp"
+                "https://img.intothefray.xyz/cards/fr/60210b.d13ef2bfccc4.avif"
               ]
             }
           }

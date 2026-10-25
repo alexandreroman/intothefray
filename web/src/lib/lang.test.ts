@@ -26,11 +26,9 @@ describe('lang', () => {
     expect(storedLang()).toBe('en');
   });
 
-  it('falls back to English for a stored language not offered, and keeps it stored', () => {
+  it('reads French when it is stored', () => {
     setPref('itf-lang', 'fr');
-
-    expect(storedLang()).toBe('en');
-    expect(getPref('itf-lang')).toBe('fr');
+    expect(storedLang()).toBe('fr');
   });
 
   it('knows English and French under their own names', () => {
@@ -40,8 +38,8 @@ describe('lang', () => {
     ]);
   });
 
-  it('offers English only', () => {
-    expect(OFFERED_LANGS.map((lang) => lang.code)).toEqual(['en']);
+  it('offers English and French', () => {
+    expect(OFFERED_LANGS.map((lang) => lang.code)).toEqual(['en', 'fr']);
   });
 
   it('survives a throwing storage', () => {

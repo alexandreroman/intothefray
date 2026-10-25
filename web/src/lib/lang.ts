@@ -6,9 +6,7 @@ export type Lang = 'en' | 'fr';
 /** Every language of the card data; Options offers only those marked `offered`. */
 export const LANGS: readonly { code: Lang; label: string; offered: boolean }[] = [
   { code: 'en', label: 'English', offered: true },
-  // Not offered: mc4db answers every French image URL with a placeholder picture. Its data and code
-  // stay in place, so setting `offered` to true is all it takes to offer French again.
-  { code: 'fr', label: 'Français', offered: false },
+  { code: 'fr', label: 'Français', offered: true },
 ];
 
 /** The languages a player can choose in Options. */

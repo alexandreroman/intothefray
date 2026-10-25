@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/svelte';
 import CardBack from './CardBack.svelte';
 
-const CEREBRO = 'https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/';
+const ASSETS = 'https://img.intothefray.xyz/assets/';
 
 beforeEach(() => {
   localStorage.clear();
@@ -11,7 +11,7 @@ describe('CardBack', () => {
   it('shows the theme image of a back', () => {
     render(CardBack, { back: 'player' });
     expect(screen.getByRole('img', { name: 'Player card back' }).getAttribute('src')).toBe(
-      CEREBRO + 'HeroBack.jpg',
+      ASSETS + 'back-player.avif',
     );
   });
 
@@ -27,7 +27,7 @@ describe('CardBack', () => {
     localStorage.setItem('itf-theme', 'minimal');
     render(CardBack, { back: 'player', theme: 'official' });
     expect(screen.getByRole('img', { name: 'Player card back' }).getAttribute('src')).toBe(
-      CEREBRO + 'HeroBack.jpg',
+      ASSETS + 'back-player.avif',
     );
   });
 
@@ -40,7 +40,7 @@ describe('CardBack', () => {
   it("captions a side deck's own back at its bottom, over the theme image", () => {
     render(CardBack, { back: 'encounter', caption: 'Gift' });
     const back = screen.getByRole('img', { name: 'Gift card back' });
-    expect(back.querySelector('img')?.getAttribute('src')).toBe(CEREBRO + 'EncounterBack.jpg');
+    expect(back.querySelector('img')?.getAttribute('src')).toBe(ASSETS + 'back-encounter.avif');
     expect(back.querySelector('.caption')?.textContent).toBe('GIFT');
     // One name for the whole back: the image and the caption say nothing more.
     expect(screen.getAllByRole('img')).toHaveLength(1);

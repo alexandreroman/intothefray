@@ -910,7 +910,9 @@ describe("dragging the top card of the viewer's deck", () => {
     await moveTo(300, 450);
     const [ghost] = ghosts();
     const back = ghost?.querySelector('[aria-label="Gift card back"]');
-    expect(back?.querySelector('img')?.getAttribute('src')).toContain('EncounterBack.jpg');
+    expect(back?.querySelector('img')?.getAttribute('src')).toBe(
+      'https://img.intothefray.xyz/assets/back-encounter.avif',
+    );
     expect(back?.querySelector('.caption')?.textContent).toBe('GIFT');
     await release(300, 450);
   });

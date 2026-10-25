@@ -2,8 +2,11 @@ package packs_test
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/fs"
+	"maps"
+	"os"
 	"slices"
 	"strings"
 	"testing"
@@ -11,6 +14,7 @@ import (
 
 	"github.com/alexandreroman/intothefray/internal/game"
 	"github.com/alexandreroman/intothefray/internal/pack"
+	"github.com/alexandreroman/intothefray/internal/packgen/cdn"
 	"github.com/alexandreroman/intothefray/packs"
 )
 
@@ -71,6 +75,16 @@ func TestEmbeddedCoreSet(t *testing.T) {
 	})
 
 	t.Run("swapped Cerebro images", func(t *testing.T) {
+		// Cerebro labels Storm's faces the wrong way round, so sources.json takes the hero image from 36001B and the
+		// alter ego image from 36001A; the packs then show the manifest image of each face.
+		manifest, err := cdn.LoadManifest("images/manifest.json")
+		if errors.Is(err, fs.ErrNotExist) {
+			t.Skip("no packs/images/manifest.json: Storm's images are checked after `make publish` in intothefray-img")
+		}
+		if err != nil {
+			t.Fatal(err)
+		}
+		sources := loadImageSources(t)
 		card, _, err := catalog.Card("36001")
 		if err != nil {
 			t.Fatalf("Card(36001) error = %v", err)
@@ -78,16 +92,24 @@ func TestEmbeddedCoreSet(t *testing.T) {
 		tests := []struct {
 			face     int
 			faceType string
-			image    string
+			code     string
+			cerebro  string
 		}{
-			{0, "hero", "/36001B.jpg"},
-			{1, "alter_ego", "/36001A.jpg"},
+			{0, "hero", "36001a", "/36001B.jpg"},
+			{1, "alter_ego", "36001b", "/36001A.jpg"},
 		}
 		for _, tt := range tests {
+			if got := sources[tt.code].Cerebro; !strings.HasSuffix(got, tt.cerebro) {
+				t.Errorf("sources.json Cerebro image of %s = %q, want one ending in %s", tt.code, got, tt.cerebro)
+			}
+			want, ok := manifest.Image(tt.code, "en")
+			if !ok {
+				t.Fatalf("manifest has no en image of %s", tt.code)
+			}
 			face := card.Faces[tt.face]
-			if face.Type != tt.faceType || !strings.HasSuffix(face.Images[0], tt.image) {
-				t.Errorf("Storm face %d = %s with first image %s, want %s ending in %s",
-					tt.face, face.Type, face.Images[0], tt.faceType, tt.image)
+			if face.Type != tt.faceType || len(face.Images) == 0 || face.Images[0] != want {
+				t.Errorf("Storm face %d = %s with images %v, want %s with first image %s",
+					tt.face, face.Type, face.Images, tt.faceType, want)
 			}
 		}
 	})
@@ -282,7 +304,7 @@ func TestEmbeddedWreckingCrew(t *testing.T) {
 				t.Errorf("scenario entry %s should be merged into wrecking_crew", ref.ID)
 			case "wrecking_crew":
 				found = true
-				if !ref.Supported || !ref.SelfContained || !strings.HasSuffix(ref.Image, "07002.jpg") {
+				if !ref.Supported || !ref.SelfContained || !strings.Contains(ref.Image, "/cards/en/07002.") {
 					t.Errorf("wrecking_crew ref = %+v, want supported, self-contained, image 07002", ref)
 				}
 			}
@@ -774,4 +796,89 @@ func findNull(doc any, path string) (string, bool) {
 		}
 	}
 	return "", false
+}
+
+// loadImageSources reads the committed packs/images/sources.json, keyed by face code. It skips the test when the
+// file is absent.
+func loadImageSources(t *testing.T) map[string]cdn.SourceFace {
+	t.Helper()
+	data, err := os.ReadFile("images/sources.json")
+	if errors.Is(err, fs.ErrNotExist) {
+		t.Skip("no packs/images/sources.json: run `make sources` to write it")
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+	var file struct {
+		Faces []cdn.SourceFace `json:"faces"`
+	}
+	if err := json.Unmarshal(data, &file); err != nil {
+		t.Fatalf("decode images/sources.json: %v", err)
+	}
+	sources := make(map[string]cdn.SourceFace, len(file.Faces))
+	for _, face := range file.Faces {
+		sources[face.Code] = face
+	}
+	return sources
+}
+
+// TestEmbeddedImagesOnCDN guards that every image the app shows comes from the image CDN. The committed packs move
+// to the CDN with the first `make publish` in intothefray-img, so the guard only enforces once its manifest exists.
+func TestEmbeddedImagesOnCDN(t *testing.T) {
+	manifest, err := cdn.LoadManifest("images/manifest.json")
+	if errors.Is(err, fs.ErrNotExist) {
+		t.Skip("no packs/images/manifest.json: the guard enforces after `make publish` in intothefray-img")
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+	catalog, err := packs.Catalog()
+	if err != nil {
+		t.Fatalf("Catalog() error = %v", err)
+	}
+
+	type offender struct{ where, url string }
+	var offenders []offender
+	check := func(where string, urls ...string) {
+		for _, url := range urls {
+			// An empty image means the entry has none, as for a scenario whose villain has no image.
+			if url != "" && !strings.HasPrefix(url, manifest.Base) {
+				offenders = append(offenders, offender{where, url})
+			}
+		}
+	}
+	checkLocalized := func(where string, localized map[string]pack.Localized) {
+		for _, lang := range slices.Sorted(maps.Keys(localized)) {
+			check(where+" "+lang, localized[lang].Images...)
+		}
+	}
+
+	for _, file := range loadPackFiles(t) {
+		for _, card := range file.Cards {
+			for i, face := range card.Faces {
+				where := fmt.Sprintf("card %s face %d", card.Code, i)
+				check(where, face.Images...)
+				checkLocalized(where, face.Localized)
+			}
+		}
+	}
+	index := catalog.Index()
+	for _, ref := range index.Packs {
+		checkLocalized("pack "+ref.Code, ref.Localized)
+	}
+	for _, ref := range index.Scenarios {
+		check("scenario "+ref.ID, ref.Image)
+		checkLocalized("scenario "+ref.ID, ref.Localized)
+	}
+	for _, ref := range index.Sets {
+		checkLocalized("set "+ref.Code, ref.Localized)
+	}
+
+	const shown = 5
+	for _, o := range offenders[:min(len(offenders), shown)] {
+		t.Errorf("%s: image %s is not under %s", o.where, o.url, manifest.Base)
+	}
+	if len(offenders) > shown {
+		t.Errorf("and %d more images off the CDN", len(offenders)-shown)
+	}
 }

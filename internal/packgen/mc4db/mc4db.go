@@ -5,14 +5,13 @@ package mc4db
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/alexandreroman/intothefray/internal/packgen/fetch"
 	"github.com/alexandreroman/intothefray/internal/packgen/marvelcdb"
 )
 
-// BaseURL is the mc4db site. It is a small shared host: the packs link to its
-// images and never copy them.
+// BaseURL is the mc4db site. It is a small shared host: the packs never link to
+// its images, which reach the image CDN through the intothefray-img pipeline.
 const BaseURL = "https://mc4db.merlindumesnil.net"
 
 // Card holds the mc4db card fields used by the pack build. mc4db shares the
@@ -44,16 +43,4 @@ func FetchPacks(ctx context.Context, c *fetch.Client, base string) ([]marvelcdb.
 		return nil, fmt.Errorf("fetch mc4db packs: %w", err)
 	}
 	return packs, nil
-}
-
-// FrenchImageURL turns the path of an English scan into the URL of the French
-// scan, which mc4db stores under FR instead of EN.
-func FrenchImageURL(path string) string {
-	return BaseURL + strings.Replace(path, "/EN/", "/FR/", 1)
-}
-
-// DirectFrenchImageURL is where mc4db stores the French scan of a card it does
-// not list, when it has one.
-func DirectFrenchImageURL(packCode, code string) string {
-	return BaseURL + "/bundles/cards/FR/" + packCode + "/" + code + ".webp"
 }

@@ -34,6 +34,9 @@ type Card struct {
 	HandSize        int    `json:"hand_size"`
 	BaseThreat      *int   `json:"base_threat"`
 	BaseThreatFixed bool   `json:"base_threat_fixed"`
+	// OctgnID names the card's images in the OCTGN image packs. The faces of a
+	// card, and its reprints, share it.
+	OctgnID string `json:"octgn_id"`
 	// ImageHost is the host ImageSrc is relative to, BaseURL when empty. A
 	// record taken from another source keeps the host of that source.
 	ImageHost string `json:"-"`

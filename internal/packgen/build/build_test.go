@@ -7,17 +7,48 @@ import (
 	"testing"
 
 	"github.com/alexandreroman/intothefray/internal/pack"
+	"github.com/alexandreroman/intothefray/internal/packgen/cdn"
 	"github.com/alexandreroman/intothefray/internal/packgen/cerebro"
 	"github.com/alexandreroman/intothefray/internal/packgen/curated"
 	"github.com/alexandreroman/intothefray/internal/packgen/marvelcdb"
 	"github.com/alexandreroman/intothefray/internal/packgen/report"
 )
 
-// allAlive marks every image of the inputs as live.
-func allAlive(in Inputs) Inputs {
-	in.Alive = make(map[string]bool)
-	for _, url := range ImageURLs(in) {
-		in.Alive[url] = true
+const cdnBase = "https://img.intothefray.xyz/"
+
+// imageKey is the manifest key the tests give the image of a face.
+func imageKey(code, lang string) string {
+	return "cards/" + lang + "/" + code + ".0123456789ab.avif"
+}
+
+// imageURL is the CDN URL of imageKey.
+func imageURL(code, lang string) string {
+	return cdnBase + imageKey(code, lang)
+}
+
+// addImage gives a face of the manifest an image in a language.
+func addImage(manifest cdn.Manifest, code, lang string) {
+	if manifest.Faces[code] == nil {
+		manifest.Faces[code] = make(map[string]cdn.ManifestImage)
+	}
+	manifest.Faces[code][lang] = cdn.ManifestImage{Key: imageKey(code, lang)}
+}
+
+// manifestFor gives every record an English image.
+func manifestFor(records []marvelcdb.Card) cdn.Manifest {
+	manifest := cdn.Manifest{Version: 1, Base: cdnBase, Faces: make(map[string]map[string]cdn.ManifestImage)}
+	for _, record := range records {
+		addImage(manifest, record.Code, "en")
+	}
+	return manifest
+}
+
+// withManifest gives every face of the inputs an English image.
+func withManifest(t *testing.T, in Inputs) Inputs {
+	t.Helper()
+	in.Manifest = cdn.Manifest{Version: 1, Base: cdnBase, Faces: make(map[string]map[string]cdn.ManifestImage)}
+	for _, face := range sourcesOf(t, in) {
+		addImage(in.Manifest, face.Code, "en")
 	}
 	return in
 }
@@ -32,7 +63,7 @@ func villainCard(code, packCode, setCode string) marvelcdb.Card {
 
 func TestBuildIndexOrder(t *testing.T) {
 	// The pack with the lowest card code comes last in the release order.
-	in := allAlive(Inputs{
+	in := withManifest(t, Inputs{
 		MC: []marvelcdb.Card{
 			villainCard("01001", "late", "v_late"),
 			villainCard("02001", "early", "v_early"),
@@ -79,7 +110,7 @@ func TestBuildSetsInIndex(t *testing.T) {
 		})
 	}
 
-	result, err := Build(allAlive(Inputs{MC: mc, MCPacks: corePacks}))
+	result, err := Build(withManifest(t, Inputs{MC: mc, MCPacks: corePacks}))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -97,11 +128,39 @@ func TestBuildSetsInIndex(t *testing.T) {
 	}
 }
 
-func TestBuildDropsDeadCardsFromSetsAndHeroes(t *testing.T) {
-	in := allAlive(Inputs{MC: setsFixture(t), MCPacks: corePacks})
-	// The identity card of the hero and the Rhino scheme lose their images.
-	delete(in.Alive, "https://marvelcdb.com/bundles/cards/01001a.png")
-	delete(in.Alive, "https://marvelcdb.com/bundles/cards/01097.png")
+func TestBuildManifestImages(t *testing.T) {
+	in := withManifest(t, Inputs{MC: setsFixture(t), MCPacks: corePacks})
+	addImage(in.Manifest, "01001a", "fr")
+
+	result, err := Build(in)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	front := faceOf(t, result.Packs, "01001", 0)
+	if want := []string{imageURL("01001a", "en")}; !slices.Equal(front.Images, want) {
+		t.Errorf("front images = %v, want %v", front.Images, want)
+	}
+	if want := []string{imageURL("01001a", "fr")}; !slices.Equal(front.Localized["fr"].Images, want) {
+		t.Errorf("front French images = %v, want %v", front.Localized["fr"].Images, want)
+	}
+	back := faceOf(t, result.Packs, "01001", 1)
+	if want := []string{imageURL("01001b", "en")}; !slices.Equal(back.Images, want) {
+		t.Errorf("back images = %v, want %v", back.Images, want)
+	}
+	// Without a French scan, the face falls back to English.
+	if back.Localized != nil {
+		t.Errorf("back localized = %+v, want none", back.Localized)
+	}
+}
+
+func TestBuildMissingEnglishDrops(t *testing.T) {
+	in := withManifest(t, Inputs{MC: setsFixture(t), MCPacks: corePacks})
+	// The identity card of the hero and the Rhino scheme have no English
+	// image. A French one never saves a card without an English image.
+	delete(in.Manifest.Faces, "01001a")
+	delete(in.Manifest.Faces, "01097")
+	addImage(in.Manifest, "01097", "fr")
 
 	result, err := Build(in)
 	if err != nil {
@@ -132,8 +191,8 @@ func TestBuildDropsDeadCardsFromSetsAndHeroes(t *testing.T) {
 }
 
 func TestBuildClearsMissingObligation(t *testing.T) {
-	in := allAlive(Inputs{MC: setsFixture(t), MCPacks: corePacks})
-	delete(in.Alive, "https://marvelcdb.com/bundles/cards/01165.png")
+	in := withManifest(t, Inputs{MC: setsFixture(t), MCPacks: corePacks})
+	delete(in.Manifest.Faces, "01165")
 
 	result, err := Build(in)
 	if err != nil {
@@ -156,7 +215,7 @@ func TestBuildRejectsScenarioWithInvalidFace(t *testing.T) {
 	start := def.Start[pack.Standard]
 	start.Top = map[string]pack.FaceRef{"villain": {Card: "01094", Face: 3}}
 	def.Start = map[pack.Difficulty]pack.Start{pack.Standard: start}
-	in := allAlive(Inputs{
+	in := withManifest(t, Inputs{
 		MC:      setsFixture(t),
 		MCPacks: corePacks,
 		Curated: curated.Curated{Scenarios: []curated.ScenarioDef{def}},
@@ -183,7 +242,7 @@ func TestBuildRejectsScenarioWithInvalidFace(t *testing.T) {
 }
 
 func TestBuildKeepsValidScenario(t *testing.T) {
-	in := allAlive(Inputs{
+	in := withManifest(t, Inputs{
 		MC:      setsFixture(t),
 		MCPacks: corePacks,
 		Curated: curated.Curated{Scenarios: []curated.ScenarioDef{rhinoDef()}},
@@ -205,6 +264,14 @@ func TestBuildFailsWithoutAnyPack(t *testing.T) {
 	}
 }
 
+func TestBuildFailsWithEmptyManifest(t *testing.T) {
+	in := Inputs{MC: setsFixture(t), MCPacks: corePacks}
+
+	if _, err := Build(in); err == nil || !strings.Contains(err.Error(), "no card") {
+		t.Errorf("got error %v, want one telling no card was built", err)
+	}
+}
+
 // standardSetsInputs returns the core fixture plus a standard set whose
 // two-sided card 09003 starts in play, and a PvP standard set.
 func standardSetsInputs(t *testing.T, defs map[string]curated.SetDef) Inputs {
@@ -222,7 +289,7 @@ func standardSetsInputs(t *testing.T, defs map[string]curated.SetDef) Inputs {
 		standardCard("09004", "standard_ii", ""),
 		standardCard("09005", "standard_pvp", ""),
 	)
-	return allAlive(Inputs{MC: mc, MCPacks: corePacks, Curated: curated.Curated{Sets: defs}})
+	return withManifest(t, Inputs{MC: mc, MCPacks: corePacks, Curated: curated.Curated{Sets: defs}})
 }
 
 func TestBuildMergesCuratedSets(t *testing.T) {
@@ -307,7 +374,7 @@ func heroSetsInputs(t *testing.T, defs map[string]curated.SetDef) Inputs {
 		heroCard("09012", "spider_man_tech_deck", "hero_special"),
 		heroCard("09013", "spider_man", "hero"),
 	)
-	return allAlive(Inputs{MC: mc, MCPacks: corePacks, Curated: curated.Curated{Sets: defs}})
+	return withManifest(t, Inputs{MC: mc, MCPacks: corePacks, Curated: curated.Curated{Sets: defs}})
 }
 
 func TestBuildMergesSideDecksAndSetAsideCards(t *testing.T) {
@@ -434,15 +501,16 @@ func TestBuildRejectsSideDeckWithoutHero(t *testing.T) {
 }
 
 func TestBuildRejectsUnknownCerebroOverride(t *testing.T) {
-	in := allAlive(Inputs{
+	in := withManifest(t, Inputs{
 		MC:      setsFixture(t),
 		MCPacks: corePacks,
 		CB:      []cerebro.Card{{ID: "01001A"}, {ID: "01001B"}},
-		Curated: curated.Curated{Cards: map[string]curated.CardOverride{
-			"01001a": {Cerebro: "01001B"},
-			"01001b": {Cerebro: "01001C"},
-		}},
 	})
+	// Set after withManifest, whose Sources call refuses the unknown image too.
+	in.Curated = curated.Curated{Cards: map[string]curated.CardOverride{
+		"01001a": {Cerebro: "01001B"},
+		"01001b": {Cerebro: "01001C"},
+	}}
 
 	_, err := Build(in)
 	if err == nil || !strings.Contains(err.Error(), "curated card 01001b: Cerebro image 01001C is not a Cerebro card") {

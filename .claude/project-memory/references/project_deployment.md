@@ -44,6 +44,13 @@ type: project
      `INFRA_DISPATCH_TOKEN` (fine-grained PAT on `intothefray-infra`,
      Contents: read and write); a missing secret logs a warning and
      succeeds. The infra repository sends no event back.
+- Card images (see [[project_image_cdn]]): an app commit that changes
+  images carries `packs/images/sources.json`, `packs/images/manifest.json`
+  and the regenerated `packs/dist`, and is pushed only after
+  `make publish` in intothefray-img has uploaded every key of the
+  manifest. CI then deploys the server, whose embedded catalog serves the
+  CDN URLs in the card pool, and the Pages app. Rollback: revert that
+  commit; the bucket is left as is, its keys never deleted.
 - Memory budget on the 2 GB VPS (measured): Go server about
   25-50 MB; a game in Redis about 30 KB at start, 350 KB after 1,000
   actions, 700 KB after 3,000 (one seat), two to three times that with

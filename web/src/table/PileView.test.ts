@@ -5,8 +5,7 @@ import pileSource from './PileView.svelte?raw';
 import tableSource from './Table.svelte?raw';
 import type { CardView as TableCard, PackFace, PileView as Pile } from '../lib/types';
 
-const ENCOUNTER_BACK =
-  'https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/EncounterBack.jpg';
+const ENCOUNTER_BACK = 'https://img.intothefray.xyz/assets/back-encounter.avif';
 
 function pile(extra: Partial<Pile> = {}): Pile {
   return {

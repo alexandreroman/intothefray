@@ -11,34 +11,18 @@
           "type": "hero",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62001A.jpg",
-            "https://marvelcdb.com/bundles/cards/62001a.png"
+            "https://img.intothefray.xyz/cards/en/62001a.0650949d9204.avif"
           ],
-          "handSize": 5,
-          "localized": {
-            "fr": {
-              "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62001a.webp"
-              ]
-            }
-          }
+          "handSize": 5
         },
         {
           "name": "Luke Cage",
           "type": "alter_ego",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62001B.jpg",
-            "https://marvelcdb.com/bundles/cards/62001b.png"
+            "https://img.intothefray.xyz/cards/en/62001b.2205dc2d8e84.avif"
           ],
-          "handSize": 6,
-          "localized": {
-            "fr": {
-              "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62001b.webp"
-              ]
-            }
-          }
+          "handSize": 6
         }
       ],
       "set": "luke_cage",
@@ -57,15 +41,8 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62002.jpg"
-          ],
-          "localized": {
-            "fr": {
-              "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62002.webp"
-              ]
-            }
-          }
+            "https://img.intothefray.xyz/cards/en/62002.5b36a849989c.avif"
+          ]
         }
       ],
       "set": "luke_cage",
@@ -80,15 +57,8 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62003.jpg"
-          ],
-          "localized": {
-            "fr": {
-              "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62003.webp"
-              ]
-            }
-          }
+            "https://img.intothefray.xyz/cards/en/62003.72d5e5b8419e.avif"
+          ]
         }
       ],
       "set": "luke_cage",
@@ -103,15 +73,8 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62004.jpg"
-          ],
-          "localized": {
-            "fr": {
-              "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62004.webp"
-              ]
-            }
-          }
+            "https://img.intothefray.xyz/cards/en/62004.f25a609b5244.avif"
+          ]
         }
       ],
       "set": "luke_cage",
@@ -126,15 +89,8 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62005.jpg"
-          ],
-          "localized": {
-            "fr": {
-              "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62005.webp"
-              ]
-            }
-          }
+            "https://img.intothefray.xyz/cards/en/62005.4b23b0d2f10b.avif"
+          ]
         }
       ],
       "set": "luke_cage",
@@ -149,15 +105,8 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62006.jpg"
-          ],
-          "localized": {
-            "fr": {
-              "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62006.webp"
-              ]
-            }
-          }
+            "https://img.intothefray.xyz/cards/en/62006.c699a3696faf.avif"
+          ]
         }
       ],
       "set": "luke_cage",
@@ -172,15 +121,8 @@
           "type": "support",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62007.jpg"
-          ],
-          "localized": {
-            "fr": {
-              "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62007.webp"
-              ]
-            }
-          }
+            "https://img.intothefray.xyz/cards/en/62007.56513ec4ed18.avif"
+          ]
         }
       ],
       "set": "luke_cage",
@@ -195,15 +137,8 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62008.jpg"
-          ],
-          "localized": {
-            "fr": {
-              "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62008.webp"
-              ]
-            }
-          }
+            "https://img.intothefray.xyz/cards/en/62008.a2e5e42baf9e.avif"
+          ]
         }
       ],
       "set": "luke_cage",
@@ -218,15 +153,8 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62009.jpg"
-          ],
-          "localized": {
-            "fr": {
-              "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62009.webp"
-              ]
-            }
-          }
+            "https://img.intothefray.xyz/cards/en/62009.c15d13219fdd.avif"
+          ]
         }
       ],
       "set": "luke_cage",
@@ -241,15 +169,8 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62010.jpg"
-          ],
-          "localized": {
-            "fr": {
-              "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62010.webp"
-              ]
-            }
-          }
+            "https://img.intothefray.xyz/cards/en/62010.3d1f3850a161.avif"
+          ]
         }
       ],
       "set": "luke_cage",
@@ -264,15 +185,8 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62011.jpg"
-          ],
-          "localized": {
-            "fr": {
-              "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62011.webp"
-              ]
-            }
-          }
+            "https://img.intothefray.xyz/cards/en/62011.fd6451283ba2.avif"
+          ]
         }
       ],
       "set": "luke_cage",
@@ -288,15 +202,8 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62012.jpg"
-          ],
-          "localized": {
-            "fr": {
-              "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62012.webp"
-              ]
-            }
-          }
+            "https://img.intothefray.xyz/cards/en/62012.d892cae7af26.avif"
+          ]
         }
       ],
       "back": "player",
@@ -310,15 +217,8 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62013.jpg"
-          ],
-          "localized": {
-            "fr": {
-              "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62013.webp"
-              ]
-            }
-          }
+            "https://img.intothefray.xyz/cards/en/62013.ed9aa04b8504.avif"
+          ]
         }
       ],
       "back": "player",
@@ -333,15 +233,8 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62014.jpg"
-          ],
-          "localized": {
-            "fr": {
-              "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62014.webp"
-              ]
-            }
-          }
+            "https://img.intothefray.xyz/cards/en/62014.4a023b0e2239.avif"
+          ]
         }
       ],
       "back": "player",
@@ -355,15 +248,8 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62015.jpg"
-          ],
-          "localized": {
-            "fr": {
-              "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62015.webp"
-              ]
-            }
-          }
+            "https://img.intothefray.xyz/cards/en/62015.cdd014e6a1ad.avif"
+          ]
         }
       ],
       "back": "player",
@@ -377,15 +263,8 @@
           "type": "support",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62018.jpg"
-          ],
-          "localized": {
-            "fr": {
-              "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62018.webp"
-              ]
-            }
-          }
+            "https://img.intothefray.xyz/cards/en/62018.33d20ea69c0c.avif"
+          ]
         }
       ],
       "back": "player",
@@ -399,15 +278,8 @@
           "type": "support",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62019.jpg"
-          ],
-          "localized": {
-            "fr": {
-              "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62019.webp"
-              ]
-            }
-          }
+            "https://img.intothefray.xyz/cards/en/62019.86e039cd244a.avif"
+          ]
         }
       ],
       "back": "player",
@@ -422,15 +294,8 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62020.jpg"
-          ],
-          "localized": {
-            "fr": {
-              "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62020.webp"
-              ]
-            }
-          }
+            "https://img.intothefray.xyz/cards/en/62020.2078fa29a4b9.avif"
+          ]
         }
       ],
       "back": "player",
@@ -445,15 +310,8 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62021.jpg"
-          ],
-          "localized": {
-            "fr": {
-              "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62021.webp"
-              ]
-            }
-          }
+            "https://img.intothefray.xyz/cards/en/62021.b4db228ae61b.avif"
+          ]
         }
       ],
       "back": "player",
@@ -467,15 +325,8 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62022.jpg"
-          ],
-          "localized": {
-            "fr": {
-              "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62022.webp"
-              ]
-            }
-          }
+            "https://img.intothefray.xyz/cards/en/62022.04dcf60fe712.avif"
+          ]
         }
       ],
       "back": "player",
@@ -489,15 +340,8 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62023.jpg"
-          ],
-          "localized": {
-            "fr": {
-              "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62023.webp"
-              ]
-            }
-          }
+            "https://img.intothefray.xyz/cards/en/62023.5dfdad9ef6e7.avif"
+          ]
         }
       ],
       "back": "player",
@@ -511,15 +355,8 @@
           "type": "obligation",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62028.jpg"
-          ],
-          "localized": {
-            "fr": {
-              "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62028.webp"
-              ]
-            }
-          }
+            "https://img.intothefray.xyz/cards/en/62028.8382e5cfa66e.avif"
+          ]
         }
       ],
       "set": "luke_cage",
@@ -534,15 +371,8 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62029.jpg"
-          ],
-          "localized": {
-            "fr": {
-              "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62029.webp"
-              ]
-            }
-          }
+            "https://img.intothefray.xyz/cards/en/62029.7c59f75aef3c.avif"
+          ]
         }
       ],
       "set": "luke_cage_nemesis",
@@ -557,18 +387,11 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62030.jpg"
+            "https://img.intothefray.xyz/cards/en/62030.bffeb37881ef.avif"
           ],
           "startingThreat": {
             "value": 3,
             "perPlayer": true
-          },
-          "localized": {
-            "fr": {
-              "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62030.webp"
-              ]
-            }
           }
         }
       ],
@@ -584,15 +407,8 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62031.jpg"
-          ],
-          "localized": {
-            "fr": {
-              "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62031.webp"
-              ]
-            }
-          }
+            "https://img.intothefray.xyz/cards/en/62031.1111df9021bd.avif"
+          ]
         }
       ],
       "set": "luke_cage_nemesis",
@@ -607,15 +423,8 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62032.jpg"
-          ],
-          "localized": {
-            "fr": {
-              "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62032.webp"
-              ]
-            }
-          }
+            "https://img.intothefray.xyz/cards/en/62032.8aff2346be21.avif"
+          ]
         }
       ],
       "set": "luke_cage_nemesis",
@@ -630,15 +439,8 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62033.jpg"
-          ],
-          "localized": {
-            "fr": {
-              "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62033.webp"
-              ]
-            }
-          }
+            "https://img.intothefray.xyz/cards/en/62033.eb2d360361b1.avif"
+          ]
         }
       ],
       "set": "luke_cage_nemesis",
@@ -653,15 +455,8 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62034.jpg"
-          ],
-          "localized": {
-            "fr": {
-              "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62034.webp"
-              ]
-            }
-          }
+            "https://img.intothefray.xyz/cards/en/62034.df93a1e52624.avif"
+          ]
         }
       ],
       "back": "player",
@@ -675,15 +470,8 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62035.jpg"
-          ],
-          "localized": {
-            "fr": {
-              "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62035.webp"
-              ]
-            }
-          }
+            "https://img.intothefray.xyz/cards/en/62035.6b70e271513a.avif"
+          ]
         }
       ],
       "back": "player",
@@ -697,15 +485,8 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62036.jpg"
-          ],
-          "localized": {
-            "fr": {
-              "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62036.webp"
-              ]
-            }
-          }
+            "https://img.intothefray.xyz/cards/en/62036.3941d733bdfb.avif"
+          ]
         }
       ],
       "back": "player",
@@ -719,15 +500,8 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/62037.jpg"
-          ],
-          "localized": {
-            "fr": {
-              "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/luke_cage_by_ffg/62037.webp"
-              ]
-            }
-          }
+            "https://img.intothefray.xyz/cards/en/62037.264d8e8f9201.avif"
+          ]
         }
       ],
       "back": "player",

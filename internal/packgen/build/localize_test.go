@@ -2,16 +2,13 @@ package build
 
 import (
 	"reflect"
-	"slices"
 	"testing"
 
 	"github.com/alexandreroman/intothefray/internal/pack"
 	"github.com/alexandreroman/intothefray/internal/packgen/curated"
 	"github.com/alexandreroman/intothefray/internal/packgen/marvelcdb"
-	"github.com/alexandreroman/intothefray/internal/packgen/mc4db"
+	"github.com/alexandreroman/intothefray/internal/packgen/report"
 )
-
-const frenchImages = "https://mc4db.merlindumesnil.net/bundles/cards/FR/"
 
 // faceOf returns one face of a built card.
 func faceOf(t *testing.T, packs []pack.PackFile, code string, faceIndex int) pack.Face {
@@ -39,7 +36,7 @@ func TestLocalizeCardsNames(t *testing.T) {
 		{Code: "01094", Name: "Rhino"},
 		{Code: "01050", Name: "Hulk", Subname: "Bruce Banner (FR)"},
 	}})
-	cards, _ := buildCards(mc, nil, nil)
+	cards, _ := buildCards(mc, nil, manifestFor(mc))
 
 	localizeCards(cards, faceCodesOf(mc), fr)
 
@@ -60,44 +57,9 @@ func TestLocalizeCardsNames(t *testing.T) {
 	}
 }
 
-func TestFrenchImageCandidates(t *testing.T) {
-	fr := frenchSourcesOf(Inputs{MC4DB: []mc4db.Card{
-		{Code: "01004", ImageSrc: "/bundles/cards/EN/core/01004.webp"},
-		// A reprint stored with the image of its original.
-		{Code: "16015", ImageSrc: "/bundles/cards/EN/core/01079.webp"},
-		{Code: "01043b"},
-		{
-			Code:     "26002",
-			ImageSrc: "/bundles/cards/EN/vision/26002.webp", BackImageSrc: "/bundles/cards/EN/vision/26002b.webp",
-		},
-	}})
-
-	tests := []struct {
-		name      string
-		faceCode  string
-		faceIndex int
-		packCode  string
-		want      string
-	}{
-		{"listed face", "01004", 0, "core", frenchImages + "core/01004.webp"},
-		{"listed face with another path", "16015", 0, "gmw", frenchImages + "core/01079.webp"},
-		{"listed face without image", "01043b", 0, "core", frenchImages + "core/01043b.webp"},
-		{"front of a double-sided card", "26002a", 0, "vision", frenchImages + "vision/26002.webp"},
-		{"back of a double-sided card", "26002b", 1, "vision", frenchImages + "vision/26002b.webp"},
-		{"unlisted face", "01097a", 0, "core", frenchImages + "core/01097a.webp"},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := fr.imageOf(tt.faceCode, tt.faceIndex, tt.packCode); got != tt.want {
-				t.Errorf("imageOf(%s, %d) = %q, want %q", tt.faceCode, tt.faceIndex, got, tt.want)
-			}
-		})
-	}
-}
-
-func TestLocalizeCardsWithoutMC4DB(t *testing.T) {
+func TestLocalizeCardsWithoutFrench(t *testing.T) {
 	mc := []marvelcdb.Card{{Code: "01004", Name: "Enhanced Spider-Sense", PackCode: "core", ImageSrc: "/a.png"}}
-	cards, _ := buildCards(mc, nil, nil)
+	cards, _ := buildCards(mc, nil, manifestFor(mc))
 
 	localizeCards(cards, faceCodesOf(mc), frenchSourcesOf(Inputs{}))
 
@@ -107,7 +69,7 @@ func TestLocalizeCardsWithoutMC4DB(t *testing.T) {
 }
 
 // frenchInputs returns the core fixture with French names for the Rhino
-// scheme, the pack and the sets, and mc4db paths for every card.
+// scheme, the pack and the sets, and an English image for every face.
 func frenchInputs(t *testing.T) Inputs {
 	t.Helper()
 	mc := setsFixture(t)
@@ -117,35 +79,25 @@ func frenchInputs(t *testing.T) Inputs {
 		{Code: "01109", Name: "Alerte à la Bombe", SetCode: "bomb_scare", SetName: "Alerte à la Bombe"},
 		{Code: "01113", Name: "Klaw", SetCode: "klaw", SetName: "Klaw (FR)"},
 	}
-	var mc4dbCards []mc4db.Card
-	for _, card := range mc {
-		mc4dbCards = append(mc4dbCards, mc4db.Card{
-			Code: card.Code, ImageSrc: "/bundles/cards/EN/core/" + card.Code + ".webp",
-		})
-	}
-	return Inputs{
+	return withManifest(t, Inputs{
 		MC:            mc,
 		MCPacks:       corePacks,
 		FrenchMC:      frenchMC,
 		FrenchMCPacks: []marvelcdb.Pack{{Code: "core", Name: "Boîte de base", Position: 1}},
-		MC4DB:         mc4dbCards,
 		Curated: curated.Curated{Scenarios: []curated.ScenarioDef{
 			{ID: "rhino", VillainSet: "rhino"},
 			{ID: "klaw_scenario", VillainSet: "klaw"},
 		}},
-	}
+	})
 }
 
 func TestBuildLocalizesFaces(t *testing.T) {
-	in := allAlive(frenchInputs(t))
-	if url := frenchImages + "core/01097.webp"; !slices.Contains(ImageURLs(in), url) {
-		t.Fatalf("ImageURLs lacks the French candidate %s", url)
+	in := frenchInputs(t)
+	// The scheme has no French scan, and the Klaw villain card no English one.
+	for _, code := range []string{"01094", "01109", "01113"} {
+		addImage(in.Manifest, code, "fr")
 	}
-	// The French scan of the scheme is missing, and so is the English one of
-	// the Klaw villain card.
-	in.Alive[frenchImages+"core/01097.webp"] = false
-	in.Alive[frenchImages+"core/01098.webp"] = false
-	in.Alive["https://marvelcdb.com/bundles/cards/01113.png"] = false
+	delete(in.Manifest.Faces["01113"], "en")
 
 	result, err := Build(in)
 	if err != nil {
@@ -156,11 +108,11 @@ func TestBuildLocalizesFaces(t *testing.T) {
 		code string
 		want map[string]pack.Localized
 	}{
-		{"01094", map[string]pack.Localized{"fr": {Images: []string{frenchImages + "core/01094.webp"}}}},
+		{"01094", map[string]pack.Localized{"fr": {Images: []string{imageURL("01094", "fr")}}}},
 		{"01097", map[string]pack.Localized{"fr": {Name: "L'Effraction !"}}},
 		{"01098", nil},
 		{"01109", map[string]pack.Localized{"fr": {
-			Name: "Alerte à la Bombe", Images: []string{frenchImages + "core/01109.webp"},
+			Name: "Alerte à la Bombe", Images: []string{imageURL("01109", "fr")},
 		}}},
 	}
 	for _, tt := range tests {
@@ -168,7 +120,7 @@ func TestBuildLocalizesFaces(t *testing.T) {
 			t.Errorf("card %s localized = %+v, want %+v", tt.code, got, tt.want)
 		}
 	}
-	// A live French image never saves a card without English image.
+	// A French image never saves a card without English image.
 	for _, card := range result.Packs[0].Cards {
 		if card.Code == "01113" {
 			t.Error("card 01113 has no English image but was kept")
@@ -176,8 +128,27 @@ func TestBuildLocalizesFaces(t *testing.T) {
 	}
 }
 
+func TestBuildNoFrenchKeepsNames(t *testing.T) {
+	result, err := Build(frenchInputs(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	want := map[string]pack.Localized{"fr": {Name: "L'Effraction !"}}
+	if got := faceOf(t, result.Packs, "01097", 0).Localized; !reflect.DeepEqual(got, want) {
+		t.Errorf("scheme localized = %+v, want %+v", got, want)
+	}
+	for _, card := range result.Packs[0].Cards {
+		for _, face := range card.Faces {
+			if images := face.Localized["fr"].Images; len(images) > 0 {
+				t.Errorf("card %s has French images %v without a French scan", card.Code, images)
+			}
+		}
+	}
+}
+
 func TestBuildLocalizesIndex(t *testing.T) {
-	result, err := Build(allAlive(frenchInputs(t)))
+	result, err := Build(frenchInputs(t))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -215,9 +186,7 @@ func TestBuildReportsFrenchCoverage(t *testing.T) {
 	in.MC = append(in.MC, marvelcdb.Card{
 		Code: "02001", Name: "Other", TypeCode: "ally", PackCode: "other", ImageSrc: "/02001.png",
 	})
-	in = allAlive(in)
-	in.Alive[frenchImages+"core/01097.webp"] = false
-	in.Alive[frenchImages+"other/02001.webp"] = false
+	addImage(in.Manifest, "02001", "en")
 
 	result, err := Build(in)
 	if err != nil {
@@ -232,10 +201,7 @@ func TestBuildReportsFrenchCoverage(t *testing.T) {
 	if len(got) != 1 {
 		t.Fatalf("coverage = %+v, want one language", got)
 	}
-	if got[0].Lang != "fr" || got[0].Faces != faces || got[0].Names != translated || got[0].Images != faces-2 {
-		t.Errorf("coverage = %+v, want fr with %d faces, %d names and %d images", got[0], faces, translated, faces-2)
-	}
-	if want := []string{"other"}; !slices.Equal(got[0].PacksWithoutImages, want) {
-		t.Errorf("packs without images = %v, want %v", got[0].PacksWithoutImages, want)
+	if want := (report.Coverage{Lang: "fr", Faces: faces, Names: translated}); got[0] != want {
+		t.Errorf("coverage = %+v, want %+v", got[0], want)
 	}
 }

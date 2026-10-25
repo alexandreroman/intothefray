@@ -5,19 +5,14 @@ import (
 	"os"
 	"reflect"
 	"slices"
-	"strings"
 	"testing"
 
 	"github.com/alexandreroman/intothefray/internal/pack"
+	"github.com/alexandreroman/intothefray/internal/packgen/cdn"
 	"github.com/alexandreroman/intothefray/internal/packgen/cerebro"
 	"github.com/alexandreroman/intothefray/internal/packgen/curated"
 	"github.com/alexandreroman/intothefray/internal/packgen/marvelcdb"
 	"github.com/alexandreroman/intothefray/internal/packgen/report"
-)
-
-const (
-	cerebroImageB = "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/01097B.jpg"
-	marvelcdbB    = "https://marvelcdb.com/bundles/cards/01097b.png"
 )
 
 func readJSON[T any](t *testing.T, path string) []T {
@@ -67,7 +62,7 @@ func findCard(t *testing.T, cards map[string][]pack.Card, packCode, code string)
 func TestGroupPrefersSuffixedEntries(t *testing.T) {
 	entries := marvelcdbCards(t, "01097", "01097a", "01097b")
 
-	cards, unsupported := buildCards(entries, cerebroCards(t), nil)
+	cards, unsupported := buildCards(entries, nil, manifestFor(entries))
 
 	if len(unsupported) != 0 {
 		t.Fatalf("unsupported = %+v", unsupported)
@@ -99,7 +94,7 @@ func TestGroupPrefersSuffixedEntries(t *testing.T) {
 func TestReprintBecomesAlias(t *testing.T) {
 	entries := marvelcdbCards(t, "27049", "52022")
 
-	cards, unsupported := buildCards(entries, nil, nil)
+	cards, unsupported := buildCards(entries, nil, manifestFor(entries))
 
 	if len(unsupported) != 0 {
 		t.Fatalf("unsupported = %+v", unsupported)
@@ -122,7 +117,8 @@ func TestReprintFaceKeepsItsLetter(t *testing.T) {
 		Code: "99001b", Name: "Scott Lang", TypeCode: "alter_ego", PackCode: "other", DuplicateOf: "12001b",
 	}
 
-	cards, _ := buildCards(append(entries, reprint), nil, nil)
+	entries = append(entries, reprint)
+	cards, _ := buildCards(entries, nil, manifestFor(entries))
 
 	card := findCard(t, cards, "ant", "12001")
 	if !slices.Contains(card.Aliases, "99001b") {
@@ -133,26 +129,14 @@ func TestReprintFaceKeepsItsLetter(t *testing.T) {
 	}
 }
 
-func TestImagesPreferCerebro(t *testing.T) {
-	entries := marvelcdbCards(t, "01097a", "01097b")
-
-	cards, _ := buildCards(entries, cerebroCards(t), nil)
-
-	faces := findCard(t, cards, "core", "01097").Faces
-	if want := []string{cerebroImageB, marvelcdbB}; !reflect.DeepEqual(faces[1].Images, want) {
-		t.Errorf("images = %v, want %v", faces[1].Images, want)
-	}
-	// 01097a has no marvelcdb image: Cerebro is the only source.
-	if len(faces[0].Images) != 1 {
-		t.Errorf("images = %v, want only the Cerebro URL", faces[0].Images)
-	}
-}
-
 func TestCardWithoutImagesIsUnsupported(t *testing.T) {
 	entries := marvelcdbCards(t, "27049")
-	entries[0].ImageSrc = ""
+	manifest := manifestFor(entries)
+	// A French image alone is not enough.
+	delete(manifest.Faces, "27049")
+	addImage(manifest, "27049", "fr")
 
-	cards, unsupported := buildCards(entries, nil, nil)
+	cards, unsupported := buildCards(entries, nil, manifest)
 
 	if len(cards["sm"]) != 0 {
 		t.Errorf("cards = %+v, want none", cards)
@@ -167,7 +151,7 @@ func TestSizeOverride(t *testing.T) {
 	entries := marvelcdbCards(t, "12001a", "12001b", "12001c")
 	overrides := map[string]curated.CardOverride{"12001c": {Size: pack.SizeDoubleStd}}
 
-	cards, _ := buildCards(entries, nil, overrides)
+	cards, _ := buildCards(entries, overrides, manifestFor(entries))
 
 	faces := findCard(t, cards, "ant", "12001").Faces
 	if len(faces) != 3 {
@@ -178,28 +162,9 @@ func TestSizeOverride(t *testing.T) {
 	}
 }
 
-func TestCerebroOverride(t *testing.T) {
-	entries := marvelcdbCards(t, "01097a", "01097b")
-	cb := []cerebro.Card{{ID: "01097A"}, {ID: "01097B"}}
-	// Cerebro swaps the images of some identities: each face takes the other's.
-	overrides := map[string]curated.CardOverride{
-		"01097a": {Cerebro: "01097B"},
-		"01097b": {Cerebro: "01097a"}, // matched whatever its case
-	}
-
-	cards, _ := buildCards(entries, cb, overrides)
-
-	faces := findCard(t, cards, "core", "01097").Faces
-	wantImages := []string{"01097B.jpg", "01097A.jpg"}
-	for i, want := range wantImages {
-		if got := faces[i].Images[0]; !strings.HasSuffix(got, "/"+want) {
-			t.Errorf("face %d first image = %s, want one ending in %s", i, got, want)
-		}
-	}
-}
-
 func TestStartingThreatAndHandSize(t *testing.T) {
-	cards, _ := buildCards(marvelcdbCards(t, "01097a", "01097b"), cerebroCards(t), nil)
+	records := marvelcdbCards(t, "01097a", "01097b")
+	cards, _ := buildCards(records, nil, manifestFor(records))
 	faces := findCard(t, cards, "core", "01097").Faces
 
 	if want := (&pack.Threat{Value: 0, PerPlayer: false}); !reflect.DeepEqual(faces[1].StartingThreat, want) {
@@ -209,7 +174,8 @@ func TestStartingThreatAndHandSize(t *testing.T) {
 		t.Errorf("01097a threat = %+v, want nil", faces[0].StartingThreat)
 	}
 
-	heroCards, _ := buildCards(marvelcdbCards(t, "12001a", "12001b", "12001c"), nil, nil)
+	heroRecords := marvelcdbCards(t, "12001a", "12001b", "12001c")
+	heroCards, _ := buildCards(heroRecords, nil, manifestFor(heroRecords))
 	heroFaces := findCard(t, heroCards, "ant", "12001").Faces
 	if heroFaces[0].HandSize != 5 || heroFaces[1].HandSize != 6 {
 		t.Errorf("hand sizes = %d, %d, want 5, 6", heroFaces[0].HandSize, heroFaces[1].HandSize)
@@ -256,7 +222,8 @@ func TestBackRules(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			tt.card.Code, tt.card.Name, tt.card.PackCode, tt.card.ImageSrc = "00001", "X", "p", "/x.png"
-			cards, _ := buildCards([]marvelcdb.Card{tt.card}, nil, nil)
+			records := []marvelcdb.Card{tt.card}
+			cards, _ := buildCards(records, nil, manifestFor(records))
 			if got := cards["p"][0].Back; got != tt.want {
 				t.Errorf("back = %q, want %q", got, tt.want)
 			}
@@ -270,7 +237,7 @@ func TestCardsSortedByCode(t *testing.T) {
 		{Code: "00003", Name: "A", TypeCode: "ally", PackCode: "p", ImageSrc: "/a.png"},
 	}
 
-	cards, _ := buildCards(entries, nil, nil)
+	cards, _ := buildCards(entries, nil, manifestFor(entries))
 
 	if cards["p"][0].Code != "00003" || cards["p"][1].Code != "00020" {
 		t.Errorf("cards = %+v, want sorted by code", cards["p"])
@@ -281,7 +248,8 @@ func TestReprintChainAttachesToRoot(t *testing.T) {
 	entries := marvelcdbCards(t, "27049", "52022")
 	chained := marvelcdb.Card{Code: "43027", Name: "Spider-Man", PackCode: "other", DuplicateOf: "52022"}
 
-	cards, unsupported := buildCards(append(entries, chained), nil, nil)
+	entries = append(entries, chained)
+	cards, unsupported := buildCards(entries, nil, manifestFor(entries))
 
 	if len(unsupported) != 0 {
 		t.Fatalf("unsupported = %+v", unsupported)
@@ -304,7 +272,8 @@ func TestUnattachableReprintsAreReported(t *testing.T) {
 		{Code: "50004c", Name: "Extra face", PackCode: "p", DuplicateOf: "40001a"},
 	}
 
-	cards, unsupported := buildCards(append(entries, reprints...), nil, nil)
+	entries = append(entries, reprints...)
+	cards, unsupported := buildCards(entries, nil, manifestFor(entries))
 
 	want := []report.Unsupported{
 		{Code: "50001", Name: "Lost", Pack: "p", Reason: "original not found"},
@@ -326,7 +295,7 @@ func TestUnlinkedLetteredGroupIsDistinctCards(t *testing.T) {
 		{Code: "01043d", Name: "Wakanda Forever!", TypeCode: "event", PackCode: "core", Quantity: 2, ImageSrc: "/d.png"},
 	}
 
-	cards, unsupported := buildCards(entries, nil, nil)
+	cards, unsupported := buildCards(entries, nil, manifestFor(entries))
 
 	if len(unsupported) != 0 {
 		t.Fatalf("unsupported = %+v", unsupported)
@@ -349,7 +318,7 @@ func TestUnlinkedExtraFormJoinsLinkedCard(t *testing.T) {
 	}
 	entries[0].LinkedTo = "12001b"
 
-	cards, _ := buildCards(entries, nil, nil)
+	cards, _ := buildCards(entries, nil, manifestFor(entries))
 
 	card := findCard(t, cards, "ant", "12001")
 	if len(card.Faces) != 3 || len(cards["ant"]) != 1 {
@@ -367,7 +336,8 @@ func TestReprintOfDistinctLetteredCard(t *testing.T) {
 		{Code: "99002b", Name: "W", PackCode: "other", DuplicateOf: "01043b"},
 	}
 
-	cards, unsupported := buildCards(append(entries, reprints...), nil, nil)
+	entries = append(entries, reprints...)
+	cards, unsupported := buildCards(entries, nil, manifestFor(entries))
 
 	// A reprint letter on a single-face card names its only face.
 	want := []string{"99001", "99002b"}
@@ -386,7 +356,7 @@ func TestReprintsOfUnsupportedRootAreReported(t *testing.T) {
 		{Code: "80001", Name: "No art", PackCode: "r", DuplicateOf: "70001"},
 	}
 
-	_, unsupported := buildCards(cards, nil, nil)
+	_, unsupported := buildCards(cards, nil, cdn.Manifest{})
 
 	want := []report.Unsupported{
 		{Code: "60001", Name: "No art", Pack: "p", Reason: "no image"},

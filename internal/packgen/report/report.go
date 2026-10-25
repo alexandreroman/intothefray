@@ -21,24 +21,17 @@ type Fallback struct {
 	Code string
 }
 
-// Coverage counts the faces of the generated packs that have data in one
-// language.
+// Coverage counts the faces of the generated packs whose name is translated
+// in one language.
 type Coverage struct {
-	Lang   string
-	Faces  int // faces of every pack
-	Names  int // faces whose name is translated, i.e. differs from English
-	Images int // faces with at least one image in the language
-	// PacksWithoutImages lists, in release order, the packs that have faces
-	// but no image in the language.
-	PacksWithoutImages []string
+	Lang  string
+	Faces int // faces of every pack
+	Names int // faces whose name is translated, i.e. differs from English
 }
 
-// String formats the counts, e.g. "fr: names 2,437/4,027 faces translated,
-// images 4,017/4,027 faces".
+// String formats the counts, e.g. "fr: names 2,437/4,027 faces translated".
 func (c Coverage) String() string {
-	faces := thousands(c.Faces)
-	return fmt.Sprintf("%s: names %s/%s faces translated, images %s/%s faces",
-		c.Lang, thousands(c.Names), faces, thousands(c.Images), faces)
+	return fmt.Sprintf("%s: names %s/%s faces translated", c.Lang, thousands(c.Names), thousands(c.Faces))
 }
 
 // thousands formats a non-negative count with comma separators.

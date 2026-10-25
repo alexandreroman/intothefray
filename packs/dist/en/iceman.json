@@ -11,15 +11,14 @@
           "type": "hero",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46001A.jpg",
-            "https://marvelcdb.com/bundles/cards/46001a.png"
+            "https://img.intothefray.xyz/cards/en/46001a.0c4045cd6f62.avif"
           ],
           "handSize": 5,
           "localized": {
             "fr": {
               "name": "Iceberg",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/iceman/46001a.webp"
+                "https://img.intothefray.xyz/cards/fr/46001a.9e9472a0ad1a.avif"
               ]
             }
           }
@@ -29,14 +28,13 @@
           "type": "alter_ego",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46001B.jpg",
-            "https://marvelcdb.com/bundles/cards/46001b.png"
+            "https://img.intothefray.xyz/cards/en/46001b.fa57143c132a.avif"
           ],
           "handSize": 6,
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/iceman/46001b.webp"
+                "https://img.intothefray.xyz/cards/fr/46001b.9a41a96392c3.avif"
               ]
             }
           }
@@ -58,14 +56,13 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46002.jpg",
-            "https://marvelcdb.com/bundles/cards/46002.jpg"
+            "https://img.intothefray.xyz/cards/en/46002.7d6b140d1058.avif"
           ],
           "localized": {
             "fr": {
               "name": "Pris Dans la Glace",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/iceman/46002.webp"
+                "https://img.intothefray.xyz/cards/fr/46002.a2d8e7dde701.avif"
               ]
             }
           }
@@ -83,14 +80,13 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46003.jpg",
-            "https://marvelcdb.com/bundles/cards/46003.jpg"
+            "https://img.intothefray.xyz/cards/en/46003.38eb01fc6665.avif"
           ],
           "localized": {
             "fr": {
               "name": "Clone de Neige",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/iceman/46003.webp"
+                "https://img.intothefray.xyz/cards/fr/46003.14bb677e18dc.avif"
               ]
             }
           }
@@ -108,14 +104,13 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46004.jpg",
-            "https://marvelcdb.com/bundles/cards/46004.jpg"
+            "https://img.intothefray.xyz/cards/en/46004.0964e0e85b22.avif"
           ],
           "localized": {
             "fr": {
               "name": "Ceinture d'Inhibition",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/iceman/46004.webp"
+                "https://img.intothefray.xyz/cards/fr/46004.a1ffb72ccebc.avif"
               ]
             }
           }
@@ -133,14 +128,13 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46005.jpg",
-            "https://marvelcdb.com/bundles/cards/46005.jpg"
+            "https://img.intothefray.xyz/cards/en/46005.44272642e472.avif"
           ],
           "localized": {
             "fr": {
               "name": "Perception Cryokinétique",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/iceman/46005.webp"
+                "https://img.intothefray.xyz/cards/fr/46005.59cb55d9560c.avif"
               ]
             }
           }
@@ -158,14 +152,13 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46006.jpg",
-            "https://marvelcdb.com/bundles/cards/46006.jpg"
+            "https://img.intothefray.xyz/cards/en/46006.853dfdaa5bb7.avif"
           ],
           "localized": {
             "fr": {
               "name": "Surf sur Glace",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/iceman/46006.webp"
+                "https://img.intothefray.xyz/cards/fr/46006.a0a7234f5f95.avif"
               ]
             }
           }
@@ -183,14 +176,13 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46007.jpg",
-            "https://marvelcdb.com/bundles/cards/46007.jpg"
+            "https://img.intothefray.xyz/cards/en/46007.a680c0968077.avif"
           ],
           "localized": {
             "fr": {
               "name": "Gelé sur Place",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/iceman/46007.webp"
+                "https://img.intothefray.xyz/cards/fr/46007.bc3090b51117.avif"
               ]
             }
           }
@@ -208,14 +200,13 @@
           "type": "support",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46008.jpg",
-            "https://marvelcdb.com/bundles/cards/46008.jpg"
+            "https://img.intothefray.xyz/cards/en/46008.907b06654025.avif"
           ],
           "localized": {
             "fr": {
               "name": "Mur de Glace",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/iceman/46008.webp"
+                "https://img.intothefray.xyz/cards/fr/46008.cd646617dee6.avif"
               ]
             }
           }
@@ -233,14 +224,13 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46009.jpg",
-            "https://marvelcdb.com/bundles/cards/46009.jpg"
+            "https://img.intothefray.xyz/cards/en/46009.4a3dc621b07a.avif"
           ],
           "localized": {
             "fr": {
               "name": "Attaque Arctique",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/iceman/46009.webp"
+                "https://img.intothefray.xyz/cards/fr/46009.c8b294607aec.avif"
               ]
             }
           }
@@ -258,14 +248,13 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46010.jpg",
-            "https://marvelcdb.com/bundles/cards/46010.jpg"
+            "https://img.intothefray.xyz/cards/en/46010.1720dc43ea74.avif"
           ],
           "localized": {
             "fr": {
               "name": "Projection de Glace",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/iceman/46010.webp"
+                "https://img.intothefray.xyz/cards/fr/46010.850fa308f442.avif"
               ]
             }
           }
@@ -283,14 +272,13 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46011.jpg",
-            "https://marvelcdb.com/bundles/cards/46011.jpg"
+            "https://img.intothefray.xyz/cards/en/46011.e29635304356.avif"
           ],
           "localized": {
             "fr": {
               "name": "On se Calme et On Boit Frais !",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/iceman/46011.webp"
+                "https://img.intothefray.xyz/cards/fr/46011.1bcdb4f662b8.avif"
               ]
             }
           }
@@ -309,13 +297,12 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46012.jpg",
-            "https://marvelcdb.com/bundles/cards/46012.jpg"
+            "https://img.intothefray.xyz/cards/en/46012.12e668cf122a.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/iceman/46012.webp"
+                "https://img.intothefray.xyz/cards/fr/46012.4a9df2ce3c6c.avif"
               ]
             }
           }
@@ -333,13 +320,12 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46013.jpg",
-            "https://marvelcdb.com/bundles/cards/46013.jpg"
+            "https://img.intothefray.xyz/cards/en/46013.b6efe0b7d831.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/iceman/46013.webp"
+                "https://img.intothefray.xyz/cards/fr/46013.4ae5e6e88777.avif"
               ]
             }
           }
@@ -356,14 +342,13 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46014.jpg",
-            "https://marvelcdb.com/bundles/cards/46014.jpg"
+            "https://img.intothefray.xyz/cards/en/46014.bb6eac8725be.avif"
           ],
           "localized": {
             "fr": {
               "name": "Tir de Suppression",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/iceman/46014.webp"
+                "https://img.intothefray.xyz/cards/fr/46014.fdd1b629c0f3.avif"
               ]
             }
           }
@@ -383,14 +368,13 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46015.jpg",
-            "https://marvelcdb.com/bundles/cards/46015.jpg"
+            "https://img.intothefray.xyz/cards/en/46015.099582f019e4.avif"
           ],
           "localized": {
             "fr": {
               "name": "Attaque Inattendue",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/iceman/46015.webp"
+                "https://img.intothefray.xyz/cards/fr/46015.bd28aca2d28f.avif"
               ]
             }
           }
@@ -407,14 +391,13 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46016.jpg",
-            "https://marvelcdb.com/bundles/cards/46016.jpg"
+            "https://img.intothefray.xyz/cards/en/46016.e160731c6548.avif"
           ],
           "localized": {
             "fr": {
               "name": "Prends Ça !",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/iceman/46016.webp"
+                "https://img.intothefray.xyz/cards/fr/46016.01bd69ad8dbb.avif"
               ]
             }
           }
@@ -431,8 +414,7 @@
           "type": "player_side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46018.jpg",
-            "https://marvelcdb.com/bundles/cards/46018.jpg"
+            "https://img.intothefray.xyz/cards/en/46018.920f55e98dc7.avif"
           ],
           "startingThreat": {
             "value": 2,
@@ -442,7 +424,7 @@
             "fr": {
               "name": "Maintenir la Pression",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/iceman/46018.webp"
+                "https://img.intothefray.xyz/cards/fr/46018.39ab5ab37c3a.avif"
               ]
             }
           }
@@ -460,13 +442,12 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46019.jpg",
-            "https://marvelcdb.com/bundles/cards/46019.jpg"
+            "https://img.intothefray.xyz/cards/en/46019.54578f386a08.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/iceman/46019.webp"
+                "https://img.intothefray.xyz/cards/fr/46019.dedce4f7d79f.avif"
               ]
             }
           }
@@ -484,14 +465,13 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46020.jpg",
-            "https://marvelcdb.com/bundles/cards/46020.jpg"
+            "https://img.intothefray.xyz/cards/en/46020.9478c8b2882c.avif"
           ],
           "localized": {
             "fr": {
               "name": "Le Bec",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/iceman/46020.webp"
+                "https://img.intothefray.xyz/cards/fr/46020.f262161b1122.avif"
               ]
             }
           }
@@ -508,14 +488,13 @@
           "type": "obligation",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46024.jpg",
-            "https://marvelcdb.com/bundles/cards/46024.jpg"
+            "https://img.intothefray.xyz/cards/en/46024.d10cfae849ec.avif"
           ],
           "localized": {
             "fr": {
               "name": "Tête Brûlée",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/iceman/46024.webp"
+                "https://img.intothefray.xyz/cards/fr/46024.1677a6daec28.avif"
               ]
             }
           }
@@ -533,13 +512,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46025.jpg",
-            "https://marvelcdb.com/bundles/cards/46025.jpg"
+            "https://img.intothefray.xyz/cards/en/46025.844e9e9e4c91.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/iceman/46025.webp"
+                "https://img.intothefray.xyz/cards/fr/46025.304c9618a5be.avif"
               ]
             }
           }
@@ -557,8 +535,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46026.jpg",
-            "https://marvelcdb.com/bundles/cards/46026.jpg"
+            "https://img.intothefray.xyz/cards/en/46026.f1a2a8460b34.avif"
           ],
           "startingThreat": {
             "value": 3,
@@ -568,7 +545,7 @@
             "fr": {
               "name": "Jouer avec le Feu",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/iceman/46026.webp"
+                "https://img.intothefray.xyz/cards/fr/46026.6262a6496d70.avif"
               ]
             }
           }
@@ -586,14 +563,13 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46027.jpg",
-            "https://marvelcdb.com/bundles/cards/46027.jpg"
+            "https://img.intothefray.xyz/cards/en/46027.e627a69ab6ad.avif"
           ],
           "localized": {
             "fr": {
               "name": "Lance-Flammes de Pyro",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/iceman/46027.webp"
+                "https://img.intothefray.xyz/cards/fr/46027.5b6ae6ccc7f8.avif"
               ]
             }
           }
@@ -611,14 +587,13 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46028.jpg",
-            "https://marvelcdb.com/bundles/cards/46028.jpg"
+            "https://img.intothefray.xyz/cards/en/46028.d3c946475754.avif"
           ],
           "localized": {
             "fr": {
               "name": "Brûle !",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/iceman/46028.webp"
+                "https://img.intothefray.xyz/cards/fr/46028.1f8a72281660.avif"
               ]
             }
           }
@@ -636,13 +611,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46029.jpg",
-            "https://marvelcdb.com/bundles/cards/46029.jpg"
+            "https://img.intothefray.xyz/cards/en/46029.383482284583.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/iceman/46029.webp"
+                "https://img.intothefray.xyz/cards/fr/46029.ae9db788a809.avif"
               ]
             }
           }
@@ -660,8 +634,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46030.jpg",
-            "https://marvelcdb.com/bundles/cards/46030.jpg"
+            "https://img.intothefray.xyz/cards/en/46030.71cf38276d51.avif"
           ],
           "startingThreat": {
             "value": 3,
@@ -671,7 +644,7 @@
             "fr": {
               "name": "Sauron est Vivant !",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/iceman/46030.webp"
+                "https://img.intothefray.xyz/cards/fr/46030.db2fd3a47b99.avif"
               ]
             }
           }
@@ -689,14 +662,13 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46031.jpg",
-            "https://marvelcdb.com/bundles/cards/46031.jpg"
+            "https://img.intothefray.xyz/cards/en/46031.9de1b68c26e6.avif"
           ],
           "localized": {
             "fr": {
               "name": "Drain de Vie",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/iceman/46031.webp"
+                "https://img.intothefray.xyz/cards/fr/46031.45458df8f4c1.avif"
               ]
             }
           }
@@ -714,14 +686,13 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/46032.jpg",
-            "https://marvelcdb.com/bundles/cards/46032.jpg"
+            "https://img.intothefray.xyz/cards/en/46032.5b070f921af5.avif"
           ],
           "localized": {
             "fr": {
               "name": "L'Œil de Sauron",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/iceman/46032.webp"
+                "https://img.intothefray.xyz/cards/fr/46032.3a146c7c460e.avif"
               ]
             }
           }

@@ -126,43 +126,6 @@ func TestWithFallbackPacksAndReport(t *testing.T) {
 	}
 }
 
-func TestImagesOf(t *testing.T) {
-	cerebroIDs := map[string]string{"60159A": "60159A"}
-	tests := []struct {
-		name  string
-		entry marvelcdb.Card
-		want  []string
-	}{
-		{
-			"marvelcdb record",
-			marvelcdb.Card{Code: "01097", ImageSrc: "/bundles/cards/01097.png"},
-			[]string{"https://marvelcdb.com/bundles/cards/01097.png"},
-		},
-		{
-			"mc4db record",
-			marvelcdb.Card{Code: "60164", ImageSrc: "/bundles/cards/EN/fne/60164.webp", ImageHost: mc4db.BaseURL},
-			[]string{"https://mc4db.merlindumesnil.net/bundles/cards/EN/fne/60164.webp"},
-		},
-		{
-			"mc4db record with a Cerebro image",
-			marvelcdb.Card{Code: "60159a", ImageSrc: "/bundles/cards/EN/fne/60159a.webp", ImageHost: mc4db.BaseURL},
-			[]string{
-				"https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60159A.jpg",
-				"https://mc4db.merlindumesnil.net/bundles/cards/EN/fne/60159a.webp",
-			},
-		},
-		{"no image", marvelcdb.Card{Code: "01098", ImageHost: mc4db.BaseURL}, nil},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			if got := imagesOf(tt.entry, cerebroIDs, ""); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("imagesOf = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestBuildSupportsScenarioOverFallbackSet(t *testing.T) {
 	villain := pack.FaceRef{Card: "60159", Face: 0}
 	scheme := pack.FaceRef{Card: "60161", Face: 0}
@@ -181,7 +144,7 @@ func TestBuildSupportsScenarioOverFallbackSet(t *testing.T) {
 		Start: map[pack.Difficulty]pack.Start{pack.Standard: start, pack.Expert: start},
 	}}
 
-	result, err := Build(allAlive(in))
+	result, err := Build(withManifest(t, in))
 	if err != nil {
 		t.Fatal(err)
 	}

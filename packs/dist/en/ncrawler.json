@@ -11,15 +11,14 @@
           "type": "hero",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48001A.jpg",
-            "https://marvelcdb.com/bundles/cards/48001a.png"
+            "https://img.intothefray.xyz/cards/en/48001a.a11cc17fbb87.avif"
           ],
           "handSize": 5,
           "localized": {
             "fr": {
               "name": "Diablo",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48001a.webp"
+                "https://img.intothefray.xyz/cards/fr/48001a.8e8ef380d402.avif"
               ]
             }
           }
@@ -29,14 +28,13 @@
           "type": "alter_ego",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48001B.jpg",
-            "https://marvelcdb.com/bundles/cards/48001b.png"
+            "https://img.intothefray.xyz/cards/en/48001b.42b7bf0e53c2.avif"
           ],
           "handSize": 6,
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48001b.webp"
+                "https://img.intothefray.xyz/cards/fr/48001b.c968038d5bf5.avif"
               ]
             }
           }
@@ -59,13 +57,12 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48002.jpg",
-            "https://marvelcdb.com/bundles/cards/48002.jpg"
+            "https://img.intothefray.xyz/cards/en/48002.391f16e4eb44.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48002.webp"
+                "https://img.intothefray.xyz/cards/fr/48002.ca7f797a4e57.avif"
               ]
             }
           }
@@ -83,14 +80,13 @@
           "type": "support",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48003.jpg",
-            "https://marvelcdb.com/bundles/cards/48003.jpg"
+            "https://img.intothefray.xyz/cards/en/48003.88a43b6b1098.avif"
           ],
           "localized": {
             "fr": {
               "name": "Chapelle de Kurt",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48003.webp"
+                "https://img.intothefray.xyz/cards/fr/48003.45547e07d4e1.avif"
               ]
             }
           }
@@ -108,14 +104,13 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48004.jpg",
-            "https://marvelcdb.com/bundles/cards/48004.jpg"
+            "https://img.intothefray.xyz/cards/en/48004.dabe658e3f41.avif"
           ],
           "localized": {
             "fr": {
               "name": "Sabres de Kurt",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48004.webp"
+                "https://img.intothefray.xyz/cards/fr/48004.b32cab3db83c.avif"
               ]
             }
           }
@@ -133,14 +128,13 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48005.jpg",
-            "https://marvelcdb.com/bundles/cards/48005.jpg"
+            "https://img.intothefray.xyz/cards/en/48005.90eca67729aa.avif"
           ],
           "localized": {
             "fr": {
               "name": "Queue Préhensible",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48005.webp"
+                "https://img.intothefray.xyz/cards/fr/48005.c937a6e19ea6.avif"
               ]
             }
           }
@@ -158,13 +152,12 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48006.jpg",
-            "https://marvelcdb.com/bundles/cards/48006.jpg"
+            "https://img.intothefray.xyz/cards/en/48006.b48bf3bd1cd6.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48006.webp"
+                "https://img.intothefray.xyz/cards/fr/48006.a7f3a640bf1c.avif"
               ]
             }
           }
@@ -182,14 +175,13 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48007.jpg",
-            "https://marvelcdb.com/bundles/cards/48007.jpg"
+            "https://img.intothefray.xyz/cards/en/48007.cf9ce1b8c4d0.avif"
           ],
           "localized": {
             "fr": {
               "name": "Gnon et Téléportation",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48007.webp"
+                "https://img.intothefray.xyz/cards/fr/48007.84b02ce82169.avif"
               ]
             }
           }
@@ -207,14 +199,13 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48008.jpg",
-            "https://marvelcdb.com/bundles/cards/48008.jpg"
+            "https://img.intothefray.xyz/cards/en/48008.44c34f8c0219.avif"
           ],
           "localized": {
             "fr": {
               "name": "Téléporté, Lâché",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48008.webp"
+                "https://img.intothefray.xyz/cards/fr/48008.91acae75e0f6.avif"
               ]
             }
           }
@@ -232,14 +223,13 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48009.jpg",
-            "https://marvelcdb.com/bundles/cards/48009.jpg"
+            "https://img.intothefray.xyz/cards/en/48009.05c3daea9f59.avif"
           ],
           "localized": {
             "fr": {
               "name": "En Éclaireur",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48009.webp"
+                "https://img.intothefray.xyz/cards/fr/48009.a0db644f64cc.avif"
               ]
             }
           }
@@ -257,14 +247,13 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48010.jpg",
-            "https://marvelcdb.com/bundles/cards/48010.jpg"
+            "https://img.intothefray.xyz/cards/en/48010.b3029d9d43d5.avif"
           ],
           "localized": {
             "fr": {
               "name": "Fuite Téléportée",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48010.webp"
+                "https://img.intothefray.xyz/cards/fr/48010.4dcfe34e0114.avif"
               ]
             }
           }
@@ -282,14 +271,13 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48011.jpg",
-            "https://marvelcdb.com/bundles/cards/48011.jpg"
+            "https://img.intothefray.xyz/cards/en/48011.61a0088f3a43.avif"
           ],
           "localized": {
             "fr": {
               "name": "Taïaut !",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48011.webp"
+                "https://img.intothefray.xyz/cards/fr/48011.dd3926e2ec09.avif"
               ]
             }
           }
@@ -308,14 +296,13 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48012.jpg",
-            "https://marvelcdb.com/bundles/cards/48012.jpg"
+            "https://img.intothefray.xyz/cards/en/48012.aab9ccac0e14.avif"
           ],
           "localized": {
             "fr": {
               "name": "Malicia",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48012.webp"
+                "https://img.intothefray.xyz/cards/fr/48012.fddfedf11652.avif"
               ]
             }
           }
@@ -333,14 +320,13 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48013.jpg",
-            "https://marvelcdb.com/bundles/cards/48013.jpg"
+            "https://img.intothefray.xyz/cards/en/48013.111bb099440a.avif"
           ],
           "localized": {
             "fr": {
               "name": "Véga",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48013.webp"
+                "https://img.intothefray.xyz/cards/fr/48013.e2436e35f88a.avif"
               ]
             }
           }
@@ -357,14 +343,13 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48014.jpg",
-            "https://marvelcdb.com/bundles/cards/48014.jpg"
+            "https://img.intothefray.xyz/cards/en/48014.f2680de9b551.avif"
           ],
           "localized": {
             "fr": {
               "name": "Revers de Fortune",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48014.webp"
+                "https://img.intothefray.xyz/cards/fr/48014.c75bd721c84c.avif"
               ]
             }
           }
@@ -381,14 +366,13 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48015.jpg",
-            "https://marvelcdb.com/bundles/cards/48015.jpg"
+            "https://img.intothefray.xyz/cards/en/48015.34a93d15b984.avif"
           ],
           "localized": {
             "fr": {
               "name": "Sous mon Contrôle",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48015.webp"
+                "https://img.intothefray.xyz/cards/fr/48015.cc8807c09169.avif"
               ]
             }
           }
@@ -405,14 +389,13 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48016.jpg",
-            "https://marvelcdb.com/bundles/cards/48016.jpg"
+            "https://img.intothefray.xyz/cards/en/48016.ed1afad2d866.avif"
           ],
           "localized": {
             "fr": {
               "name": "\"Viens Par Là, Mon Pote !\"",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48016.webp"
+                "https://img.intothefray.xyz/cards/fr/48016.afceb92c53e7.avif"
               ]
             }
           }
@@ -429,13 +412,12 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48018.jpg",
-            "https://marvelcdb.com/bundles/cards/48018.jpg"
+            "https://img.intothefray.xyz/cards/en/48018.aed78476ec4a.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48018.webp"
+                "https://img.intothefray.xyz/cards/fr/48018.f7a70eaee030.avif"
               ]
             }
           }
@@ -452,8 +434,7 @@
           "type": "player_side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48020.jpg",
-            "https://marvelcdb.com/bundles/cards/48020.jpg"
+            "https://img.intothefray.xyz/cards/en/48020.5e53b5cfc13a.avif"
           ],
           "startingThreat": {
             "value": 5,
@@ -463,7 +444,7 @@
             "fr": {
               "name": "Étonnants X-Men",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48020.webp"
+                "https://img.intothefray.xyz/cards/fr/48020.ea9f7529f9d2.avif"
               ]
             }
           }
@@ -481,14 +462,13 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48021.jpg",
-            "https://marvelcdb.com/bundles/cards/48021.jpg"
+            "https://img.intothefray.xyz/cards/en/48021.461421c53d3a.avif"
           ],
           "localized": {
             "fr": {
               "subname": "Rémy Lebeau",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48021.webp"
+                "https://img.intothefray.xyz/cards/fr/48021.921f3f490ad9.avif"
               ]
             }
           }
@@ -505,14 +485,13 @@
           "type": "obligation",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48026.jpg",
-            "https://marvelcdb.com/bundles/cards/48026.jpg"
+            "https://img.intothefray.xyz/cards/en/48026.a4a05e950890.avif"
           ],
           "localized": {
             "fr": {
               "name": "Perdre la Foi",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48026.webp"
+                "https://img.intothefray.xyz/cards/fr/48026.877841b99780.avif"
               ]
             }
           }
@@ -530,13 +509,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48027.jpg",
-            "https://marvelcdb.com/bundles/cards/48027.jpg"
+            "https://img.intothefray.xyz/cards/en/48027.f3e41e25a712.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48027.webp"
+                "https://img.intothefray.xyz/cards/fr/48027.eaeb3ce4dfdd.avif"
               ]
             }
           }
@@ -554,8 +532,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48028.jpg",
-            "https://marvelcdb.com/bundles/cards/48028.jpg"
+            "https://img.intothefray.xyz/cards/en/48028.8f7dda2822a7.avif"
           ],
           "startingThreat": {
             "value": 5,
@@ -565,7 +542,7 @@
             "fr": {
               "name": "Dimension Brimstone",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48028.webp"
+                "https://img.intothefray.xyz/cards/fr/48028.e6028c0e9a9f.avif"
               ]
             }
           }
@@ -583,14 +560,13 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48029.jpg",
-            "https://marvelcdb.com/bundles/cards/48029.jpg"
+            "https://img.intothefray.xyz/cards/en/48029.169935a7e569.avif"
           ],
           "localized": {
             "fr": {
               "name": "Épée d'Azazel",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48029.webp"
+                "https://img.intothefray.xyz/cards/fr/48029.2c0e3324c9da.avif"
               ]
             }
           }
@@ -608,14 +584,13 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48030.jpg",
-            "https://marvelcdb.com/bundles/cards/48030.jpg"
+            "https://img.intothefray.xyz/cards/en/48030.b7a2bf7e1a78.avif"
           ],
           "localized": {
             "fr": {
               "name": "Frappe de Brimstone",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48030.webp"
+                "https://img.intothefray.xyz/cards/fr/48030.ef7301dcc89d.avif"
               ]
             }
           }
@@ -633,14 +608,13 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48031.jpg",
-            "https://marvelcdb.com/bundles/cards/48031.jpg"
+            "https://img.intothefray.xyz/cards/en/48031.5091778b02b7.avif"
           ],
           "localized": {
             "fr": {
               "name": "Forces Combinées",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48031.webp"
+                "https://img.intothefray.xyz/cards/fr/48031.03d9841a6da2.avif"
               ]
             }
           }
@@ -657,14 +631,13 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48032.jpg",
-            "https://marvelcdb.com/bundles/cards/48032.jpg"
+            "https://img.intothefray.xyz/cards/en/48032.852fb1dc4acf.avif"
           ],
           "localized": {
             "fr": {
               "name": "Diplomatie au Bout du Fusil",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48032.webp"
+                "https://img.intothefray.xyz/cards/fr/48032.4105ef8d4b87.avif"
               ]
             }
           }
@@ -681,8 +654,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48033.jpg",
-            "https://marvelcdb.com/bundles/cards/48033.jpg"
+            "https://img.intothefray.xyz/cards/en/48033.a4a04cdc57d6.avif"
           ],
           "startingThreat": {
             "value": 2,
@@ -692,7 +664,7 @@
             "fr": {
               "name": "Le Crazy Gang",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48033.webp"
+                "https://img.intothefray.xyz/cards/fr/48033.25a23c4cd600.avif"
               ]
             }
           }
@@ -710,14 +682,13 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48034.jpg",
-            "https://marvelcdb.com/bundles/cards/48034.jpg"
+            "https://img.intothefray.xyz/cards/en/48034.a0008717200f.avif"
           ],
           "localized": {
             "fr": {
               "name": "La Reine de Cœur",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48034.webp"
+                "https://img.intothefray.xyz/cards/fr/48034.f0924e05d09e.avif"
               ]
             }
           }
@@ -735,14 +706,13 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48035.jpg",
-            "https://marvelcdb.com/bundles/cards/48035.jpg"
+            "https://img.intothefray.xyz/cards/en/48035.05c36477a485.avif"
           ],
           "localized": {
             "fr": {
               "name": "Le Clown",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48035.webp"
+                "https://img.intothefray.xyz/cards/fr/48035.d5201d31f843.avif"
               ]
             }
           }
@@ -760,14 +730,13 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48036.jpg",
-            "https://marvelcdb.com/bundles/cards/48036.jpg"
+            "https://img.intothefray.xyz/cards/en/48036.2cad708a882c.avif"
           ],
           "localized": {
             "fr": {
               "name": "L'Exécuteur",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48036.webp"
+                "https://img.intothefray.xyz/cards/fr/48036.d5232df6e3a3.avif"
               ]
             }
           }
@@ -785,13 +754,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48037.jpg",
-            "https://marvelcdb.com/bundles/cards/48037.jpg"
+            "https://img.intothefray.xyz/cards/en/48037.942122bb864a.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48037.webp"
+                "https://img.intothefray.xyz/cards/fr/48037.bb473fb44090.avif"
               ]
             }
           }
@@ -809,14 +777,13 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/48038.jpg",
-            "https://marvelcdb.com/bundles/cards/48038.jpg"
+            "https://img.intothefray.xyz/cards/en/48038.aeddbc3683ef.avif"
           ],
           "localized": {
             "fr": {
               "name": "\"Qu'on lui coupe la tête !\"",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ncrawler/48038.webp"
+                "https://img.intothefray.xyz/cards/fr/48038.977da0880872.avif"
               ]
             }
           }

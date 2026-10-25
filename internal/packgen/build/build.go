@@ -8,9 +8,9 @@ import (
 	"slices"
 
 	"github.com/alexandreroman/intothefray/internal/pack"
+	"github.com/alexandreroman/intothefray/internal/packgen/cdn"
 	"github.com/alexandreroman/intothefray/internal/packgen/cerebro"
 	"github.com/alexandreroman/intothefray/internal/packgen/curated"
-	"github.com/alexandreroman/intothefray/internal/packgen/images"
 	"github.com/alexandreroman/intothefray/internal/packgen/marvelcdb"
 	"github.com/alexandreroman/intothefray/internal/packgen/mc4db"
 	"github.com/alexandreroman/intothefray/internal/packgen/report"
@@ -29,13 +29,13 @@ type Inputs struct {
 	// French names.
 	FrenchMC      []marvelcdb.Card
 	FrenchMCPacks []marvelcdb.Pack
-	// MC4DB lists the image paths of mc4db; without it, no French image is
-	// looked for. With MC4DBPacks, it also completes MC and MCPacks with the
-	// official cards marvelcdb lacks (see withFallback).
+	// MC4DB and MC4DBPacks complete MC and MCPacks with the official cards
+	// marvelcdb lacks (see withFallback).
 	MC4DB      []mc4db.Card
 	MC4DBPacks []marvelcdb.Pack
-	// Alive maps each image URL to its liveness; a missing URL counts as dead.
-	Alive map[string]bool
+	// Manifest holds the image of each face on the image CDN, per language. A
+	// card with a face lacking an English image is left out.
+	Manifest cdn.Manifest
 }
 
 // Result is the generated content of one language.
@@ -50,32 +50,10 @@ type Result struct {
 	Coverage []report.Coverage
 }
 
-// ImageURLs returns the sorted, distinct image URLs of every face of every
-// card, localized images included, i.e. the URLs whose liveness Build expects
-// in Inputs.Alive.
-func ImageURLs(in Inputs) []string {
-	in.MC, in.MCPacks, _, _ = withFallback(in.MC, in.MCPacks, in.MC4DB, in.MC4DBPacks)
-	cards, _ := localizedCards(in, frenchSourcesOf(in))
-
-	var urls []string
-	for _, packCards := range cards {
-		for _, card := range packCards {
-			for _, face := range card.Faces {
-				urls = append(urls, face.Images...)
-				for _, override := range face.Localized {
-					urls = append(urls, override.Images...)
-				}
-			}
-		}
-	}
-	slices.Sort(urls)
-	return slices.Compact(urls)
-}
-
 // Build derives the packs and the index from the sources. Content that
 // cannot be displayed is left out and listed in the report.
 func Build(in Inputs) (Result, error) {
-	// Every step below sees the merged records, as ImageURLs does.
+	// Every step below sees the merged records, as Sources does.
 	var fallback []report.Fallback
 	var fallbackProblems []report.Unsupported
 	in.MC, in.MCPacks, fallback, fallbackProblems = withFallback(in.MC, in.MCPacks, in.MC4DB, in.MC4DBPacks)
@@ -83,12 +61,16 @@ func Build(in Inputs) (Result, error) {
 		return Result{}, err
 	}
 	fr := frenchSourcesOf(in)
-	cards, problems := localizedCards(in, fr)
+	cards, problems := buildCards(in.MC, in.Curated.Cards, in.Manifest)
+	localizeCards(cards, faceCodesOf(in.MC), fr)
 	problems = append(problems, fallbackProblems...)
-	cards, dropped := dropDeadImages(cards, in.Alive)
-	problems = append(problems, dropped...)
 
 	cardCodes := cardCodesOf(cards)
+	// Without any card, the packs would still be written with their sets
+	// emptied: an empty manifest must fail the build rather than ship them.
+	if len(cardCodes) == 0 {
+		return Result{}, errors.New("build produced no card: the image manifest has no English image for any face")
+	}
 	if err := checkCardSetAside(in.Curated.Cards, canonicalCodes(in.MC), cardCodes); err != nil {
 		return Result{}, err
 	}
@@ -130,32 +112,6 @@ func Build(in Inputs) (Result, error) {
 		Fallback: fallback,
 		Coverage: []report.Coverage{frenchCoverage(packs)},
 	}, nil
-}
-
-// localizedCards builds the cards of the records of in, already merged with
-// their fallback, and adds their French overrides, images still unchecked.
-func localizedCards(in Inputs, fr frenchSources) (map[string][]pack.Card, []report.Unsupported) {
-	cards, problems := buildCards(in.MC, in.CB, in.Curated.Cards)
-	localizeCards(cards, faceCodesOf(in.MC), fr)
-	return cards, problems
-}
-
-// dropDeadImages applies images.DropDead to every pack.
-func dropDeadImages(
-	cards map[string][]pack.Card,
-	alive map[string]bool,
-) (kept map[string][]pack.Card, problems []report.Unsupported) {
-	kept = make(map[string][]pack.Card, len(cards))
-	for packCode, packCards := range cards {
-		var dropped []report.Unsupported
-		kept[packCode], dropped = images.DropDead(packCards, alive)
-		for _, entry := range dropped {
-			entry.Pack = packCode
-			problems = append(problems, entry)
-		}
-	}
-	slices.SortFunc(problems, func(a, b report.Unsupported) int { return cmp.Compare(a.Code, b.Code) })
-	return kept, problems
 }
 
 func cardCodesOf(cards map[string][]pack.Card) map[string]bool {
