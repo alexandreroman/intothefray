@@ -11,6 +11,28 @@ export function seatOf(area: Area): number {
   return Number(area.slice(1));
 }
 
+/** The area of a seat: seat 1 is "p1". */
+export function areaOf(seat: number): Area {
+  return `p${seat}`;
+}
+
+// The ids of a seat's own piles, as the server names them (internal/game/state.go).
+
+/** The id of the seat's deck: "deck:p1". */
+export function deckId(seat: number): string {
+  return `deck:${areaOf(seat)}`;
+}
+
+/** The id of the seat's discard pile: "disc:p1". */
+export function discardId(seat: number): string {
+  return `disc:${areaOf(seat)}`;
+}
+
+/** The id of the seat's set-aside pile: "aside:p1". */
+export function asideId(seat: number): string {
+  return `aside:${areaOf(seat)}`;
+}
+
 /** The viewer's own seats, in order; none for a spectator or an unknown token. */
 export function ownSeats(view: View): number[] {
   if (view.you.role !== 'player') {
@@ -73,7 +95,7 @@ function ownerOf(target: TableElement, view: View): number | undefined {
 
 /** The player sitting at the seat, with the deck that seat is, if anyone sits there. */
 function seatAt(view: View, seat: number): { player: PlayerView; deck: DeckView } | undefined {
-  const area: Area = `p${seat}`;
+  const area = areaOf(seat);
   for (const player of view.players) {
     const deck = player.decks.find((d) => d.area === area);
     if (deck) {
@@ -86,6 +108,11 @@ function seatAt(view: View, seat: number): { player: PlayerView; deck: DeckView 
 /** The player sitting at the seat, if anyone sits there. */
 export function seatPlayer(view: View, seat: number): PlayerView | undefined {
   return seatAt(view, seat)?.player;
+}
+
+/** The deck sitting at the seat, if anyone sits there. */
+export function seatDeck(view: View, seat: number): DeckView | undefined {
+  return seatAt(view, seat)?.deck;
 }
 
 /** The colour of the player owning the seat; null for a seat nobody sits at. */

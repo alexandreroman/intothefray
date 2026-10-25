@@ -52,7 +52,7 @@
   import { ACTIVE_COUNTER_BOX, cardBox, FIRST_PLAYER_BOX, HAND_CARD, type Box } from './layout';
   import { ALL_ROWS, type RowMap } from './rows';
   import { surfaceRect, toScreen, toTable } from './screen';
-  import { ownSeats, seatOf, seatPlayer } from './seats';
+  import { areaOf, seatHero, seatOf } from './seats';
   import { groupAction, groupPileTargets, groupUnits } from './selection';
 
   let {
@@ -482,7 +482,7 @@
     const spot = surface ? toTable(cornerOf(from, at), surface, zoom) : { x: 0, y: 0 };
     // An encounter card goes to the player whose row the pointer is in.
     const pointed = surface ? onTable(at, surface) : { x: 0, y: 0 };
-    const dealTo = dealRecipient(view.table?.piles ?? [], pointed.y, `p${selected}`);
+    const dealTo = dealRecipient(view.table?.piles ?? [], pointed.y, areaOf(selected));
     const single = dropAction(from, target, spot, dealTo, rowMap);
     return { target, action: grouped(from, single) };
   }
@@ -526,9 +526,8 @@
 
   /** "Hand", or with several decks the hero's: "Spider-Man's hand". */
   function handName(area: Area): string {
-    const seat = seatOf(area);
-    const hero = seatPlayer(view, seat)?.decks.find((deck) => deck.area === area)?.heroName;
-    return ownSeats(view).length > 1 && hero ? `${hero}'s hand` : 'Hand';
+    const hero = seatHero(view, seatOf(area));
+    return hero ? `${hero}'s hand` : 'Hand';
   }
 
   function showHint(

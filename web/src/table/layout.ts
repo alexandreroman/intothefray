@@ -1,4 +1,5 @@
 import type { CardView, PileKind, PileView, Size } from '../lib/types';
+import { asideId } from './seats';
 
 /** Table units are multiples of this. */
 export const GRID = 10;
@@ -259,7 +260,7 @@ export function outOfPlayChips(owner: number, piles: readonly PileView[]): OutOf
   const wanted =
     owner === -1
       ? [victory, { ...setAside, pile: 'saside' }]
-      : [{ ...setAside, pile: `aside:p${owner}` }];
+      : [{ ...setAside, pile: asideId(owner) }];
   return wanted.flatMap((chip) => {
     const pile = piles.find((p) => p.id === chip.pile);
     return pile ? [{ ...chip, count: pile.count }] : [];

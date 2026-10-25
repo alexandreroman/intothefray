@@ -30,7 +30,7 @@
   import { DRAG_THRESHOLD, type Point } from './drag';
   import { isLongTouchClick, isTouchContextMenu, LANDING_MS } from './interaction.svelte';
   import { isOutOfPlay } from './layout';
-  import { ownerLook, ownSeats, seatPlayer } from './seats';
+  import { ownerLook, ownSeats, seatHero } from './seats';
 
   let {
     box,
@@ -173,12 +173,7 @@
    */
   function boxPileLabel(pile: PileView): string {
     const label = pileLabel(pile, view);
-    const seats = ownSeats(view);
-    if (seats.length < 2 || !seats.includes(pile.owner)) {
-      return label;
-    }
-    const area = `p${pile.owner}`;
-    const hero = seatPlayer(view, pile.owner)?.decks.find((deck) => deck.area === area)?.heroName;
+    const hero = ownSeats(view).includes(pile.owner) ? seatHero(view, pile.owner) : '';
     return hero ? label.replace(/^Your /, `Your ${hero} `) : label;
   }
 

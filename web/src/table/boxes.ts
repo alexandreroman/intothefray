@@ -14,7 +14,7 @@ import type {
   TableView,
   View,
 } from '../lib/types';
-import { discardPileOf, homeDeckOf, sideLabel, type TableElement } from './actions';
+import { discardPileOf, homeDeckOf, pileName, type TableElement } from './actions';
 import { freeSlot } from './keys';
 import { isOutOfPlay } from './layout';
 import { creditedSeatAmong, ownSeats, seatPlayer } from './seats';
@@ -104,27 +104,19 @@ export interface TileContext {
  */
 export function pileLabel(pile: PileView, view: View): string {
   switch (pile.kind) {
-    case 'encounter':
-      return pile.label ? `${pile.label} deck` : 'Encounter deck';
-    case 'encounterDiscard':
-      return pile.label ? `${pile.label} discard` : 'Encounter discard';
-    case 'scenarioDeck':
-      return `${pile.label} deck`;
-    case 'scenarioDiscard':
-      return `${pile.label} discard`;
-    case 'victory':
-      return 'Victory display';
     case 'deck':
       return `${ownerOf(pile, view)} deck`;
     case 'discard':
       return `${ownerOf(pile, view)} discard`;
     case 'sideDeck':
-      return `${ownerOf(pile, view)} ${sideLabel(pile)} deck`;
     case 'sideDiscard':
-      return `${ownerOf(pile, view)} ${sideLabel(pile)} discard`;
+      return `${ownerOf(pile, view)} ${pileName(pile)}`;
     case 'aside':
       // The scenario's own set-aside cards belong to nobody.
-      return pile.owner === -1 ? 'Set-aside cards' : `${ownerOf(pile, view)} set-aside cards`;
+      return pile.owner === -1 ? pileName(pile) : `${ownerOf(pile, view)} set-aside cards`;
+    default:
+      // The encounter and scenario piles and the victory display are shared: nobody's.
+      return pileName(pile);
   }
 }
 

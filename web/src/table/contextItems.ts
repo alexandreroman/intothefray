@@ -4,7 +4,7 @@
 // ContextMenu.svelte draws it.
 
 import type { CardView, PackFace, PileView, View } from '../lib/types';
-import { arrowItem, deckCount, sideLabel, type ActionItem, type TableElement } from './actions';
+import { arrowItem, deckCount, pileName, type ActionItem, type TableElement } from './actions';
 import { pileLabel, stageLabel, type TileAction } from './boxes';
 import { isHidden } from './face';
 import { ownerLook } from './seats';
@@ -131,39 +131,6 @@ export interface ContextHeader {
   color: string;
   /** The menu's accessible name, the header in one line: "Rhino, Villain, stage I", "Your deck, 34 cards". */
   label: string;
-}
-
-/** How the header names a pile's kind: the pile's owner is in the eyebrow. */
-const PILE_NAMES: Record<
-  Exclude<PileView['kind'], 'sideDeck' | 'sideDiscard' | 'scenarioDeck' | 'scenarioDiscard'>,
-  string
-> = {
-  deck: 'Deck',
-  discard: 'Discard',
-  encounter: 'Encounter deck',
-  encounterDiscard: 'Encounter discard',
-  victory: 'Victory display',
-  aside: 'Set-aside cards',
-};
-
-/** How the header names a pile: a side pile after its side deck, "Invocation deck". */
-function pileName(pile: PileView): string {
-  switch (pile.kind) {
-    case 'sideDeck':
-      return `${sideLabel(pile)} deck`;
-    case 'sideDiscard':
-      return `${sideLabel(pile)} discard`;
-    case 'scenarioDeck':
-      return `${pile.label} deck`;
-    case 'scenarioDiscard':
-      return `${pile.label} discard`;
-    case 'encounter':
-      return pile.label ? `${pile.label} deck` : PILE_NAMES.encounter;
-    case 'encounterDiscard':
-      return pile.label ? `${pile.label} discard` : PILE_NAMES.encounterDiscard;
-    default:
-      return PILE_NAMES[pile.kind];
-  }
 }
 
 /**

@@ -22,7 +22,7 @@ import {
 import type { Pressable } from './interaction.svelte';
 import { GRID, TABLE_LIMIT } from './layout';
 import { ALL_ROWS, type RowMap } from './rows';
-import { ownSeats } from './seats';
+import { areaOf, ownSeats } from './seats';
 
 /** A press turns into a drag once the pointer has moved this far, in screen pixels. */
 export const DRAG_THRESHOLD = 4;
@@ -341,7 +341,7 @@ export function dealRecipient(piles: readonly PileView[], y: number, viewer: Are
     const top = pile.y - ROW_LABEL_ROOM;
     if (pile.kind === 'deck' && top <= y && top > rowTop) {
       rowTop = top;
-      recipient = `p${pile.owner}`;
+      recipient = areaOf(pile.owner);
     }
   }
   return recipient;
@@ -375,7 +375,7 @@ export function sourceOf(element: Pressable, view: View, taken?: string): DragSo
     }
     case 'hand': {
       for (const seat of seats) {
-        const area: Area = `p${seat}`;
+        const area = areaOf(seat);
         const hand = table.hands?.[area] ?? [];
         if (hand.includes(element.id)) {
           return { kind: 'hand', card: element.id, hand, area };
@@ -430,7 +430,7 @@ export function handAreaOf(drag: DragSource, view: View): Area | null {
   if (owner === undefined || !ownSeats(view).includes(owner)) {
     return null;
   }
-  return `p${owner}`;
+  return areaOf(owner);
 }
 
 /** A pile a drag can go onto, and what the drop does there. */

@@ -16,7 +16,7 @@ import {
   PORTRAIT_CARD,
   visualBox,
 } from './layout';
-import { ownSeats } from './seats';
+import { areaOf, ownSeats } from './seats';
 import { ZOOM_STEP } from './zoom';
 
 // The free slot of a player's row: room for the played card with 50 free on
@@ -293,7 +293,7 @@ function handKey(key: string, id: string, table: KeyTable): boolean {
 
 /** The own seat whose hand holds the card, if any. */
 function handSeatOf(id: string, view: View): number | undefined {
-  return ownSeats(view).find((seat) => view.table?.hands?.[`p${seat}`]?.includes(id));
+  return ownSeats(view).find((seat) => view.table?.hands?.[areaOf(seat)]?.includes(id));
 }
 
 /**

@@ -23,7 +23,6 @@
   import type {
     Action,
     CardView as TableCard,
-    DeckView,
     FaceRef,
     Index,
     LobbyConfig,
@@ -94,14 +93,15 @@
   import { motion } from './motion.svelte';
   import Presence from './Presence.svelte';
   import {
+    areaOf,
     creditedSeat,
     creditedSeatAmong,
     ownerLook,
     ownSeats,
     seatColor,
+    seatDeck,
     seatFullLabel,
     seatOf,
-    seatPlayer,
   } from './seats';
   import { cardsInBand, isFree } from './selection';
   import TokenPill from './TokenPill.svelte';
@@ -254,11 +254,6 @@
     pickedDeck !== null && own.includes(pickedDeck) ? pickedDeck : (own[0] ?? null),
   );
 
-  /** The deck sitting at the seat, if anyone sits there. */
-  function deckAt(seat: number): DeckView | undefined {
-    return seatPlayer(view, seat)?.decks.find((deck) => deck.area === `p${seat}`);
-  }
-
   // Ready all has something to ready: an exhausted card on the table, whoever owns it, not locked.
   const canReadyAll = $derived(
     cards.some((card) => card.zone === 'table' && card.exhausted === true && !isLocked(card)),
@@ -339,7 +334,7 @@
   );
   const handCards = $derived(
     handSeat !== null
-      ? (view.table?.hands?.[`p${handSeat}`] ?? []).flatMap((id) => {
+      ? (view.table?.hands?.[areaOf(handSeat)] ?? []).flatMap((id) => {
           const card = cardsById.get(id);
           return card ? [card] : [];
         })
@@ -423,7 +418,7 @@
       const { name: ownerName, color } = ownerLook(view, frame.owner);
       const name = frame.label ?? ownerName;
       // Only a seated deck has a hand: neither the villain nor an empty seat.
-      const deck = deckAt(frame.owner);
+      const deck = seatDeck(view, frame.owner);
       if (!deck) {
         return { frame, name, color, outOfPlay };
       }
@@ -846,7 +841,7 @@
       case 'card':
         return cardsById.get(element.id)?.zone === 'table';
       case 'hand':
-        return own.some((seat) => view.table?.hands?.[`p${seat}`]?.includes(element.id));
+        return own.some((seat) => view.table?.hands?.[areaOf(seat)]?.includes(element.id));
       case 'pile':
         return piles.some((pile) => pile.id === element.id);
     }

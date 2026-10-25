@@ -7,7 +7,7 @@ import { knownCard } from '../lib/catalog';
 import type { Lang } from '../lib/lang';
 import { localizedFace } from '../lib/localize';
 import { isOutOfPlay } from './layout';
-import { seatOf, seatPlayer } from './seats';
+import { asideId, deckId, discardId, seatOf, seatPlayer } from './seats';
 import { groupUnits, MAX_COUNT } from './selection';
 import type { Action, Area, CardView, PileView, Role, Stage, TableView, View } from '../lib/types';
 
@@ -609,14 +609,10 @@ function groupOf(units: readonly CardView[], actionOf: (unit: CardView) => Actio
   return { kind: 'group', actions: units.map(actionOf) };
 }
 
-/** How Move to names a deck: "deck", or a side deck's "Sense deck". */
+/** How Move to names a deck: "deck", or a deck with a name of its own, "Sense deck", "Wrecker deck". */
 export function deckName(home: PileView): string {
-  if (home.kind === 'sideDeck') {
-    return `${sideLabel(home)} deck`;
-  }
-  return home.kind === 'scenarioDeck' || (home.kind === 'encounter' && home.label)
-    ? `${home.label} deck`
-    : 'deck';
+  const plain = home.kind === 'deck' || (home.kind === 'encounter' && !home.label);
+  return plain ? 'deck' : pileName(home);
 }
 
 function moveMenu(card: CardView, context: Context): ActionItem[] {
@@ -708,7 +704,7 @@ export function homeDeckOf(card: CardView): string {
   if (card.home !== undefined) {
     return card.home;
   }
-  return card.owner === -1 ? 'enc' : `deck:p${card.owner}`;
+  return card.owner === -1 ? 'enc' : deckId(card.owner);
 }
 
 /**
@@ -722,7 +718,7 @@ export function discardPileOf(card: CardView, piles: readonly PileView[]): strin
     const discard = deckDiscardOf(home);
     return piles.some((pile) => pile.id === discard) ? discard : null;
   }
-  const discard = card.owner === -1 ? 'encd' : `disc:p${card.owner}`;
+  const discard = card.owner === -1 ? 'encd' : discardId(card.owner);
   return card.owner === -1 && !piles.some((pile) => pile.id === discard) ? null : discard;
 }
 
@@ -763,9 +759,38 @@ export function sideLabel(pile: PileView): string {
   return pile.label ?? 'side';
 }
 
+/**
+ * A pile's name without its owner: "Deck", "Encounter discard", a side pile after its side deck
+ * ("Invocation deck"), a scenario pile after its deck ("Wrecker discard").
+ */
+export function pileName(pile: PileView): string {
+  switch (pile.kind) {
+    case 'deck':
+      return 'Deck';
+    case 'discard':
+      return 'Discard';
+    case 'encounter':
+      return pile.label ? `${pile.label} deck` : 'Encounter deck';
+    case 'encounterDiscard':
+      return pile.label ? `${pile.label} discard` : 'Encounter discard';
+    case 'scenarioDeck':
+      return `${pile.label} deck`;
+    case 'scenarioDiscard':
+      return `${pile.label} discard`;
+    case 'sideDeck':
+      return `${sideLabel(pile)} deck`;
+    case 'sideDiscard':
+      return `${sideLabel(pile)} discard`;
+    case 'victory':
+      return 'Victory display';
+    case 'aside':
+      return 'Set-aside cards';
+  }
+}
+
 /** The set-aside pile for a card: its deck's own for the viewer's cards, the scenario's for any other. */
 function asidePileOf(card: CardView, seats: readonly number[]): string {
-  return seats.includes(card.owner) ? `aside:p${card.owner}` : 'saside';
+  return seats.includes(card.owner) ? asideId(card.owner) : 'saside';
 }
 
 function toDeck(card: CardView, where: 'top' | 'bottom' | 'shuffle'): Action {
