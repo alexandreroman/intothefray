@@ -22,22 +22,17 @@ describe('ActiveCounterArt', () => {
     expect(arcWords()).toEqual([]);
   });
 
-  it('draws the comic bubble of an explicit theme over the stored one', () => {
-    localStorage.setItem('itf-theme', 'minimal');
-    render(ActiveCounterArt, { theme: 'felt' });
-    expect(token().textContent).toContain('ACTIVE');
-    expect(arcWords()).toEqual([]);
-  });
-
   it('draws the ink roundel, ACTIVE above and VILLAIN below, on a theme without images', () => {
-    render(ActiveCounterArt, { theme: 'minimal' });
+    localStorage.setItem('itf-theme', 'minimal');
+    render(ActiveCounterArt);
     expect(token().tagName.toLowerCase()).toBe('svg');
     expect(arcWords()).toEqual(['ACTIVE', 'VILLAIN']);
   });
 
   it('names the defs of each token apart, so that two can show at once', () => {
-    for (const theme of ['official', 'official', 'minimal', 'minimal'] as const) {
-      render(ActiveCounterArt, { theme });
+    for (const theme of ['official', 'official', 'minimal', 'minimal']) {
+      localStorage.setItem('itf-theme', theme);
+      render(ActiveCounterArt);
     }
     const ids = [...document.querySelectorAll('[id]')].map((element) => element.id);
     expect(new Set(ids).size).toBe(ids.length);

@@ -7,15 +7,7 @@
   so that it stands out on the table. It fills its box (MarkerToken.svelte).
 -->
 <script lang="ts">
-  import type { Theme } from '../lib/theme';
   import { firstPlayerUrl } from './theme';
-
-  let {
-    theme,
-  }: {
-    /** The theme to draw it in; the stored one by default. */
-    theme?: Theme;
-  } = $props();
 
   // Several tokens can show at once (the table's and a ghost): each names its own defs.
   const uid = $props.id();
@@ -27,8 +19,8 @@
   const rimId = `${uid}-rim`;
   const letterId = `${uid}-letter`;
 
-  // The comic bubble goes with the printed first player token, whose style it copies.
-  const comic = $derived(firstPlayerUrl(theme) !== null);
+  // The comic bubble goes with the stored theme's printed first player token, whose style it copies.
+  const comic = firstPlayerUrl() !== null;
 
   // The bubble's outline, the outer edge of its purple rim: an ellipse around the interior's,
   // with a tail at its bottom left. The blue border is its stroke.
