@@ -1,18 +1,8 @@
-.git
-.gitignore
-.claude
-.superpowers
-docs/
-.env
-.env.*
-*.md
-bin/
-tmp/
-dist/
-*.test
-*.out
-.air.toml
-packs/.cache/
-web/node_modules/
-web/dist/
-web/public/packs/
+# Allowlist: the image only builds ./cmd/intothefray, which embeds packs/dist.
+*
+!go.mod
+!go.sum
+!cmd/
+!internal/
+!packs/packs.go
+!packs/dist/
