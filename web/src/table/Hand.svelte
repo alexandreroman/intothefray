@@ -26,7 +26,7 @@
   let {
     cards,
     faceOf,
-    captionOf = () => undefined,
+    captionOf,
     cardSize = HAND_CARD,
     restCardSize,
     restDrop = HAND_REST_DROP,
@@ -37,7 +37,7 @@
     /** The catalog face a card shows, null while unknown. */
     faceOf: (card: TableCard) => PackFace | null;
     /** The caption of a card's back (backCaption): its side deck's label, if any. */
-    captionOf?: (card: TableCard) => string | undefined;
+    captionOf: (card: TableCard) => string | undefined;
     /** The size of a card in the raised hand, in px (Table.svelte). */
     cardSize?: { w: number; h: number };
     /**
@@ -553,10 +553,6 @@
   }
 
   /* Where a dragged card would slot back in. */
-  .hcard.gap {
-    pointer-events: none;
-  }
-
   .hcard.gap .fan {
     border: 2px dashed #49c6ff88;
     border-radius: 9px;
