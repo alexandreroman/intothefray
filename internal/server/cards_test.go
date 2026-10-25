@@ -3,7 +3,6 @@ package server
 import (
 	"bytes"
 	"encoding/json"
-	"io"
 	"maps"
 	"net/http"
 	"net/http/httptest"
@@ -78,8 +77,6 @@ func newCardsGame(t *testing.T, id string) *game.Game {
 }
 
 // getCards fetches the card pool of a game with the given request headers.
-// The client never asks for compression on its own nor decompresses: the
-// test sees the request headers and the body exactly as sent.
 func getCards(t *testing.T, ts *httptest.Server, id string, header map[string]string) reply {
 	t.Helper()
 
@@ -90,19 +87,7 @@ func getCards(t *testing.T, ts *httptest.Server, id string, header map[string]st
 	for name, value := range header {
 		req.Header.Set(name, value)
 	}
-	client := &http.Client{Transport: &http.Transport{DisableCompression: true}}
-	t.Cleanup(client.CloseIdleConnections)
-
-	resp, err := client.Do(req)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func() { _ = resp.Body.Close() }()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return reply{status: resp.StatusCode, header: resp.Header, body: body}
+	return send(t, req)
 }
 
 func TestGameCards(t *testing.T) {

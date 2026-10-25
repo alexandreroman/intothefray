@@ -4,7 +4,7 @@ import (
 	"context"
 	"io"
 	"log/slog"
-	"net/http"
+	"maps"
 	"net/http/httptest"
 	"slices"
 	"strings"
@@ -16,7 +16,6 @@ import (
 	"github.com/coder/websocket"
 	"github.com/redis/go-redis/v9"
 
-	"github.com/alexandreroman/intothefray/internal/decks"
 	"github.com/alexandreroman/intothefray/internal/game"
 	"github.com/alexandreroman/intothefray/internal/store"
 )
@@ -34,26 +33,6 @@ const (
 	waitTimeout = 5 * time.Second
 )
 
-// stubDecklists serves blackPantherDeck as decklist 1 and spiderManDeck as
-// decklist 2.
-func stubDecklists(t *testing.T) *decks.Importer {
-	t.Helper()
-
-	stub := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		switch r.URL.Path {
-		case "/api/public/decklist/1":
-			_, _ = io.WriteString(w, blackPantherDeck)
-		case "/api/public/decklist/2":
-			_, _ = io.WriteString(w, spiderManDeck)
-		default:
-			http.NotFound(w, r)
-		}
-	}))
-	t.Cleanup(stub.Close)
-	return &decks.Importer{BaseURL: stub.URL}
-}
-
 // startInstance starts a server instance backed by mr, with its background
 // work running, and returns its HTTP test server. configure, when not nil,
 // adjusts the server before it starts.
@@ -61,7 +40,7 @@ func startInstance(t *testing.T, mr *miniredis.Miniredis, configure func(*Server
 	t.Helper()
 
 	srv := newServerOn(t, mr)
-	srv.deps.Decks = stubDecklists(t)
+	srv.deps.Decks = stubMarvelcdb(t, blackPantherDeck)
 	if configure != nil {
 		configure(srv)
 	}
@@ -312,40 +291,27 @@ func TestPresenceRelayed(t *testing.T) {
 }
 
 func TestMarkerDragRelayed(t *testing.T) {
-	mr := miniredis.RunT(t)
-	first := startInstance(t, mr, nil)
-	second := startInstance(t, mr, nil)
-	created := createGame(t, first, "Alex")
-	alex := connect(t, first, created.ID)
-	alex.hello(created.Token, "Alex")
-	bob := connect(t, second, created.ID)
-	bob.hello("", "Bob")
-	alex.awaitView(bothSeatedOnline)
+	for _, marker := range []string{game.MarkerFirstPlayer, game.MarkerActive} {
+		t.Run(marker, func(t *testing.T) {
+			mr := miniredis.RunT(t)
+			first := startInstance(t, mr, nil)
+			second := startInstance(t, mr, nil)
+			created := createGame(t, first, "Alex")
+			alex := connect(t, first, created.ID)
+			alex.hello(created.Token, "Alex")
+			bob := connect(t, second, created.ID)
+			bob.hello("", "Bob")
+			alex.awaitView(bothSeatedOnline)
 
-	// A marker carries no card: the drag tells only where its corner is.
-	alex.send(map[string]any{"type": "presence", "drag": map[string]any{"token": "firstPlayer", "x": 160, "y": 640}})
+			// A marker carries no card: the drag tells only where its corner is.
+			alex.send(map[string]any{"type": "presence", "drag": map[string]any{"token": marker, "x": 160, "y": 640}})
 
-	got := bob.expect("presence")
-	if want := `"drag":{"cards":[],"token":"firstPlayer","x":160,"y":640}`; !strings.Contains(string(got.raw), want) {
-		t.Errorf("presence = %s, want it to contain %s", got.raw, want)
-	}
-}
-
-func TestActiveMarkerDragRelayed(t *testing.T) {
-	mr := miniredis.RunT(t)
-	ts := startInstance(t, mr, nil)
-	created := createGame(t, ts, "Alex")
-	alex := connect(t, ts, created.ID)
-	alex.hello(created.Token, "Alex")
-	bob := connect(t, ts, created.ID)
-	bob.hello("", "Bob")
-	alex.awaitView(bothSeatedOnline)
-
-	alex.send(map[string]any{"type": "presence", "drag": map[string]any{"token": "active", "x": 160, "y": 640}})
-
-	got := bob.expect("presence")
-	if want := `"drag":{"cards":[],"token":"active","x":160,"y":640}`; !strings.Contains(string(got.raw), want) {
-		t.Errorf("presence = %s, want it to contain %s", got.raw, want)
+			got := bob.expect("presence")
+			want := `"drag":{"cards":[],"token":"` + marker + `","x":160,"y":640}`
+			if !strings.Contains(string(got.raw), want) {
+				t.Errorf("presence = %s, want it to contain %s", got.raw, want)
+			}
+		})
 	}
 }
 
@@ -396,9 +362,7 @@ func TestSpectatorPresence(t *testing.T) {
 	}
 	for _, tt := range tests {
 		msg := map[string]any{"type": "presence"}
-		for k, v := range tt.msg {
-			msg[k] = v
-		}
+		maps.Copy(msg, tt.msg)
 		guest.send(msg)
 		if reply := guest.expect("error"); reply.Code != "forbidden" {
 			t.Errorf("spectator %s: error = %s, want code forbidden", tt.name, reply.raw)
@@ -474,9 +438,7 @@ func TestPresenceValidation(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			msg := map[string]any{"type": "presence"}
-			for k, v := range tt.msg {
-				msg[k] = v
-			}
+			maps.Copy(msg, tt.msg)
 			host.send(msg)
 			// A draw in the lobby is answered with a phase error: when it
 			// comes first, the presence message got no answer.
