@@ -8,7 +8,7 @@ type: project
 
 - Storage: Cloudflare R2 bucket `intothefray-img`, custom domain
   `img.intothefray.xyz` (r2.dev stays off). Keys are content-addressed,
-  `<lang>/<code>.<sha256 hex[:12]>.avif`, uploaded with
+  `cards/<lang>/<code>.<sha256 hex[:12]>.avif`, uploaded with
   `Cache-Control: public, max-age=31536000, immutable` and never deleted,
   so every past commit's URLs keep working. Backs and the first player
   token have fixed keys, `assets/<name>.avif`.

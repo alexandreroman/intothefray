@@ -18,7 +18,7 @@ const cdnBase = "https://img.intothefray.xyz/"
 
 // imageKey is the manifest key the tests give the image of a face.
 func imageKey(code, lang string) string {
-	return lang + "/" + code + ".0123456789ab.avif"
+	return "cards/" + lang + "/" + code + ".0123456789ab.avif"
 }
 
 // imageURL is the CDN URL of imageKey.

@@ -81,7 +81,7 @@ func TestLoadManifestEmptyKey(t *testing.T) {
 	path := writeFile(t, `{
   "version": 1,
   "base": "https://img.intothefray.xyz/",
-  "faces": {"12001a": {"en": {"key": "en/12001a.3f9ac2e1b0d4.avif"}, "fr": {"key": ""}}}
+  "faces": {"12001a": {"en": {"key": "cards/en/12001a.3f9ac2e1b0d4.avif"}, "fr": {"key": ""}}}
 }`)
 	_, err := LoadManifest(path)
 	if err == nil || !strings.Contains(err.Error(), "face 12001a has an empty fr key") {
@@ -102,11 +102,11 @@ func TestManifestImage(t *testing.T) {
   "base": "https://img.intothefray.xyz/",
   "faces": {
     "12001a": {
-      "en": {"key": "en/12001a.3f9ac2e1b0d4.avif", "from": "cerebro"},
-      "fr": {"key": "fr/12001a.9b1d07c4e2aa.avif", "from": "octgn"}
+      "en": {"key": "cards/en/12001a.3f9ac2e1b0d4.avif", "from": "cerebro"},
+      "fr": {"key": "cards/fr/12001a.9b1d07c4e2aa.avif", "from": "octgn"}
     },
     "62001a": {
-      "en": {"key": "en/62001a.0123456789ab.avif", "from": "cerebro"}
+      "en": {"key": "cards/en/62001a.0123456789ab.avif", "from": "cerebro"}
     }
   },
   "assets": {"back-player": "assets/back-player.avif"}
@@ -122,8 +122,8 @@ func TestManifestImage(t *testing.T) {
 		wantURL  string
 		wantOK   bool
 	}{
-		{"12001a", "fr", "https://img.intothefray.xyz/fr/12001a.9b1d07c4e2aa.avif", true},
-		{"12001a", "en", "https://img.intothefray.xyz/en/12001a.3f9ac2e1b0d4.avif", true},
+		{"12001a", "fr", "https://img.intothefray.xyz/cards/fr/12001a.9b1d07c4e2aa.avif", true},
+		{"12001a", "en", "https://img.intothefray.xyz/cards/en/12001a.3f9ac2e1b0d4.avif", true},
 		{"62001a", "fr", "", false},
 		{"99999a", "en", "", false},
 	}

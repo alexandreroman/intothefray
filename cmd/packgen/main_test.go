@@ -144,7 +144,7 @@ func TestRunWritesPacksFromManifest(t *testing.T) {
 		Version: 1,
 		Base:    "https://img.intothefray.xyz/",
 		Faces: map[string]map[string]cdn.ManifestImage{
-			"01094": {"en": {Key: "en/01094.0123456789ab.avif"}},
+			"01094": {"en": {Key: "cards/en/01094.0123456789ab.avif"}},
 		},
 	}
 	writeManifest(t, opts.manifest, manifest)
@@ -159,7 +159,7 @@ func TestRunWritesPacksFromManifest(t *testing.T) {
 	if err != nil {
 		t.Fatalf("pack not written: %v", err)
 	}
-	if !strings.Contains(string(data), "https://img.intothefray.xyz/en/01094.0123456789ab.avif") {
+	if !strings.Contains(string(data), "https://img.intothefray.xyz/cards/en/01094.0123456789ab.avif") {
 		t.Errorf("pack lacks the CDN image URL:\n%s", data)
 	}
 	if !strings.Contains(stdout.String(), "manifest en: 1/1 faces\n") {
@@ -172,8 +172,8 @@ func TestPrintManifestCoverage(t *testing.T) {
 		Version: 1,
 		Base:    "https://img.intothefray.xyz/",
 		Faces: map[string]map[string]cdn.ManifestImage{
-			"01094": {"en": {Key: "en/01094.0123456789ab.avif"}, "fr": {Key: "fr/01094.0123456789ab.avif"}},
-			"01095": {"en": {Key: "en/01095.0123456789ab.avif"}},
+			"01094": {"en": {Key: "cards/en/01094.0123456789ab.avif"}, "fr": {Key: "cards/fr/01094.0123456789ab.avif"}},
+			"01095": {"en": {Key: "cards/en/01095.0123456789ab.avif"}},
 		},
 	}
 	faces := []cdn.SourceFace{{Code: "01094"}, {Code: "01095"}, {Code: "01096"}}

@@ -30,7 +30,7 @@ type Manifest struct {
 
 // ManifestImage is one published image of a face.
 type ManifestImage struct {
-	// Key is the object key under Manifest.Base, such as "fr/12001a.9b1d07c4e2aa.avif".
+	// Key is the object key under Manifest.Base, such as "cards/fr/12001a.9b1d07c4e2aa.avif".
 	Key string `json:"key"`
 }
 
