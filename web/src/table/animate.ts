@@ -32,7 +32,8 @@ interface Spot {
 }
 
 export type Anim =
-  | { kind: 'move'; id: string; from: Spot; to: Spot }
+  /** Moved on the table or between it and a hand; was is the id it had before, when it got a new one (freshIdOf). */
+  | { kind: 'move'; id: string; from: Spot; to: Spot; was?: string }
   | { kind: 'glow'; id: string; color: number }
   | { kind: 'turnIn'; id: string }
   /**
@@ -117,11 +118,13 @@ const UNDID = 'undid ';
  * (GameSession.viewGap).
  */
 export function diffViews(prev: View, next: View, ownDrop?: OwnDrop, apart = 0): Anim[] {
-  const before = prev.table;
   const after = next.table;
-  if (!before || !after || apart > MAX_APART_MS) {
+  if (!prev.table || !after || apart > MAX_APART_MS) {
     return [];
   }
+  // The card that got a new id is followed under that id from the start.
+  const fresh = freshIdOf(prev.table, after);
+  const before = fresh ? withFreshId(prev.table, fresh) : prev.table;
 
   const droppedCard = ownDrop?.card;
   const dropped = new Set(ownDrop?.lifted);
@@ -130,6 +133,9 @@ export function diffViews(prev: View, next: View, ownDrop?: OwnDrop, apart = 0):
     for (const id of stackOf(droppedCard, after.cards)) {
       dropped.add(id);
     }
+  }
+  if (fresh && dropped.has(fresh.was)) {
+    dropped.add(fresh.id);
   }
   const previous = new Map(before.cards.map((card) => [card.id, card]));
   const lines = changedLines(prev.log, next.log);
@@ -159,6 +165,10 @@ export function diffViews(prev: View, next: View, ownDrop?: OwnDrop, apart = 0):
         anims.push({ ...travel, dropped: true });
       }
       continue;
+    }
+    if (travel?.kind === 'move' && card.id === fresh?.id) {
+      // The screen still shows it under its old id.
+      travel.was = fresh.was;
     }
     if (travel) {
       anims.push(travel);
@@ -228,6 +238,48 @@ export function mergedLines(prev: readonly LogView[], next: readonly LogView[]):
 function changedLines(prev: readonly LogView[], next: readonly LogView[]): LogView[] {
   const merged = new Set(mergedLines(prev, next));
   return next.filter((_, i) => i >= prev.length || merged.has(i));
+}
+
+/** A card the server gave a new id: the id it had, and the one it has. */
+interface FreshId {
+  was: string;
+  id: string;
+}
+
+/**
+ * The card the server just gave a new id, so that the other players cannot
+ * follow it (freshID in internal/game/ids.go), when the viewer can: a
+ * face-down table card taken into the viewer's hand, or that move undone.
+ * Exactly one card left the view and one card came into it, the one from the
+ * table face down and the other in the hand, or the other way round, with no
+ * hidden pile losing a card: they are the same card. Null for any other
+ * change.
+ */
+function freshIdOf(before: TableView, after: TableView): FreshId | null {
+  const previous = new Set(before.cards.map((card) => card.id));
+  const current = new Set(after.cards.map((card) => card.id));
+  const gone = before.cards.filter((card) => !current.has(card.id));
+  const come = after.cards.filter((card) => !previous.has(card.id));
+  const was = gone[0];
+  const card = come[0];
+  if (gone.length !== 1 || come.length !== 1 || !was || !card || was.owner !== card.owner) {
+    return null;
+  }
+  if (shrunkHiddenPiles(before, after).length > 0) {
+    return null;
+  }
+  const faceDownOnTable = (c: CardView) => c.zone === 'table' && !!c.faceDown;
+  const takenIntoHand = faceDownOnTable(was) && card.zone === 'hand';
+  const putBackOnTable = was.zone === 'hand' && faceDownOnTable(card);
+  return takenIntoHand || putBackOnTable ? { was: was.id, id: card.id } : null;
+}
+
+/** A table with the card that got a new id listed under that id. */
+function withFreshId(table: TableView, fresh: FreshId): TableView {
+  const cards = table.cards.map((card) =>
+    card.id === fresh.was ? { ...card, id: fresh.id } : card,
+  );
+  return { ...table, cards };
 }
 
 /** Drawn where its place can be measured: on the table, or in the viewer's hand. */

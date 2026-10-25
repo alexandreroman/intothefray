@@ -1044,6 +1044,93 @@ describe('diffViews', () => {
       };
     }
 
+    // The server gives a card a new id when it goes into a hand or a deck out of a hand or face down
+    // off the table, so that the other players cannot follow it (freshID in internal/game/ids.go).
+    describe('a card that gets a new id on its way', () => {
+      it('taken face down into the hand moves there under its new id and turns face up', () => {
+        const prev = view({ cards: [card('d', { faceDown: true, x: 100 })], hands: { p0: [] } });
+        const next = view({
+          cards: [card('n', { code: '01002', zone: 'hand' })],
+          hands: { p0: ['n'] },
+          log: [OLD_LINE, line('took a card into hand', alex)],
+        });
+
+        expect(diffViews(prev, next)).toEqual([
+          {
+            kind: 'move',
+            id: 'n',
+            from: { zone: 'table', x: 100, y: 0 },
+            to: { zone: 'hand', x: 0, y: 0 },
+            was: 'd',
+          },
+          { kind: 'flip', id: 'n' },
+        ]);
+        // The viewer's own drop already lies in the hand.
+        expect(diffViews(prev, next, droppedCard('d'))).toEqual([]);
+      });
+
+      it('put back face down on the table by an undo moves there under its new id', () => {
+        const prev = view({
+          cards: [card('n', { code: '01002', zone: 'hand' })],
+          hands: { p0: ['n'] },
+        });
+        const next = view({
+          cards: [card('d', { faceDown: true, x: 100 })],
+          hands: { p0: [] },
+          log: [OLD_LINE, line('undid “took a card into hand”', alex)],
+        });
+
+        expect(diffViews(prev, next)).toEqual([
+          {
+            kind: 'move',
+            id: 'd',
+            from: { zone: 'hand', x: 0, y: 0 },
+            to: { zone: 'table', x: 100, y: 0 },
+            was: 'n',
+          },
+        ]);
+      });
+
+      it('a card played face down from the deck is not a hand card renamed', () => {
+        const prev = view({
+          cards: [card('h', { code: '01002', zone: 'hand' })],
+          piles: [deck(10)],
+        });
+        const next = view({
+          cards: [card('played', { faceDown: true, x: 300 })],
+          piles: [deck(9)],
+        });
+
+        expect(diffViews(prev, next)).not.toContainEqual(expect.objectContaining({ kind: 'move' }));
+      });
+
+      it("the viewer's hand card put on top of their deck flies there, turning face down", () => {
+        const prev = view({
+          cards: [card('h', { code: '01001', zone: 'hand' })],
+          piles: [deck(10)],
+          hands: { p0: ['h'] },
+        });
+        const next = view({
+          piles: [deck(11)],
+          hands: { p0: [] },
+          log: [OLD_LINE, line('put a card on top of their deck', alex)],
+        });
+
+        expect(diffViews(prev, next)).toEqual([
+          { kind: 'fly', id: 'h', toPile: 'deck:p0', turns: 'down' },
+        ]);
+      });
+
+      it("a face-down card taken into another player's hand goes away", () => {
+        const prev = seenBySam(
+          view({ cards: [card('d', { faceDown: true })], handCounts: [5, 0] }),
+        );
+        const next = seenBySam(view({ handCounts: [6, 0] }));
+
+        expect(diffViews(prev, next)).toEqual([{ kind: 'away', id: 'd' }]);
+      });
+    });
+
     it('the top card of a discard pile played on the table enters from it', () => {
       const prev = view({ cards: [onPile('c9')], piles: [deck(10), discard(['c9'])] });
       const next = view({

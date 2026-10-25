@@ -1684,6 +1684,37 @@ describe('Table animations', () => {
     }
   });
 
+  it('a card taken face down into the hand under a new id slides there from the table and turns', async () => {
+    const session = fakeSession();
+    const { rerender } = render(Table, {
+      session,
+      view: makeView([card('d', { owner: 1, x: 300, faceDown: true, code: undefined })], {
+        hands: { p1: [] },
+      }),
+    });
+    await settle();
+
+    // The server gave the card a new id on its way (freshID in internal/game/ids.go).
+    await rerender({
+      session,
+      view: makeView([card('n', { owner: 1, zone: 'hand' })], {
+        hands: { p1: ['n'] },
+        log: [START, line('took a card into hand', { who: 'Sam', color: 1 })],
+      }),
+    });
+    const frames = () => animationsOf('.hand .hcard[data-id="n"]').map(([keyframes]) => keyframes);
+    await waitFor(() =>
+      expect(frames()).toContainEqual([
+        expect.objectContaining({ translate: expect.stringMatching(/px/) }),
+        expect.objectContaining({ translate: '0px 0px' }),
+      ]),
+    );
+    expect(frames()).toContainEqual([
+      { transform: expect.stringContaining('rotateY(90deg)') },
+      { transform: expect.stringContaining('rotateY(0deg)') },
+    ]);
+  });
+
   it('an exhausted card turned over on the table keeps its tilt after the turn', async () => {
     const tilt = 'matrix(0.97, 0.26, -0.26, 0.97, 0, 0)';
     const spy = stubTransform('.card.exhausted', tilt);

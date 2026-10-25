@@ -323,7 +323,7 @@ export type ActionKind =
  * An action as a client sends it. Which fields matter depends on `kind`.
  *
  * Left out on purpose, because the server fills them while resolving the
- * action: `renames` (shuffles), `seat` and `seats` (acting seats, for arrows),
+ * action: `renames` (new card ids), `seat` and `seats` (acting seats, for arrows),
  * `exhausted`, `faceDown` and `face` (outcome of an exhaust or a flip), and
  * `area` of a draw (the hand of the deck drawn from).
  */

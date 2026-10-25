@@ -275,15 +275,17 @@ function measure(element: HTMLElement, zoom: number): Measured {
 
 /**
  * What a card about to travel shows on now: another player's ghost of it,
- * where they let it go; else its place on the table or in the hand, or the
- * pile it leaves. The viewer's own drop slipping under a pile, or flying to
- * one, lies where it landed.
+ * where they let it go; else its place on the table or in the hand, under the
+ * id it had there for a card that got a new one, or the pile it leaves. The
+ * viewer's own drop slipping under a pile, or flying to one, lies where it
+ * landed.
  */
 function originOf(root: HTMLElement, anim: Anim, piles: readonly PileView[]): HTMLElement | null {
   const find = (selector: string) => root.querySelector<HTMLElement>(selector);
   const placed = (id: string) => `${tableCard(id)}, ${handCard(id)}`;
   switch (anim.kind) {
     case 'move':
+      return find(remoteGhost(anim.id)) ?? find(placed(anim.was ?? anim.id));
     case 'away':
       return find(remoteGhost(anim.id)) ?? find(placed(anim.id));
     case 'under':
