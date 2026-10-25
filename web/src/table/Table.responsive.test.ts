@@ -869,14 +869,13 @@ describe('Table on a small screen', () => {
     const { container } = render(Table, { session: fakeSession(), view: makeView() });
 
     const bar = corner(container);
-    expect(bar.classList).toContain('compact');
     expect(within(bar).getByRole('button', { name: 'Undo last action' })).toBeTruthy();
     expect(within(bar).getByRole('button', { name: 'Zoom in' })).toBeTruthy();
     // 8 px above the strip the resting hand shows.
     const app = container.querySelector<HTMLElement>('.app')!;
     expect(app.classList).toContain('compact');
     expect(app.style.getPropertyValue('--controls-bottom')).toBe(`${restingStrip(136, 74) + 8}px`);
-    const rule = /\n {2}\.corner\.compact \{([^}]*)\}/.exec(tableSource)?.[1];
+    const rule = /\n {2}\.app\.compact \.corner \{([^}]*)\}/.exec(tableSource)?.[1];
     expect(rule).toMatch(/margin-bottom: var\(--controls-bottom\);/);
   });
 
@@ -886,8 +885,8 @@ describe('Table on a small screen', () => {
     view.you = { role: 'spectator', name: 'Kim', color: -1, host: false };
     const { container } = render(Table, { session: fakeSession(), view });
 
-    expect(corner(container).classList).toContain('compact');
     const app = container.querySelector<HTMLElement>('.app')!;
+    expect(app.classList).toContain('compact');
     expect(app.style.getPropertyValue('--controls-bottom')).toBe(`${TABLE_EDGE_BOTTOM}px`);
   });
 
@@ -895,8 +894,8 @@ describe('Table on a small screen', () => {
     mockScreen(NARROW);
     const { container } = render(Table, { session: fakeSession(), view: makeView() });
 
-    expect(corner(container).classList).not.toContain('compact');
     const app = container.querySelector<HTMLElement>('.app')!;
+    expect(app.classList).not.toContain('compact');
     expect(app.style.getPropertyValue('--controls-bottom')).toBe(`${TABLE_EDGE_BOTTOM}px`);
   });
 });
@@ -971,7 +970,7 @@ describe('Table under a compact top bar', () => {
     const { container } = render(Table, { session: fakeSession(), view: makeView() });
     const app = container.querySelector<HTMLElement>('.app')!;
     const wrap = container.querySelector<HTMLElement>('.tablewrap')!;
-    expect(app.classList).toContain('bar-over');
+    expect(app.classList).toContain('compact');
     expect(app.style.getPropertyValue('--bar-start')).toBe(`${TOP_BAR_HEIGHT}px`);
     expect(app.style.getPropertyValue('--bar-room')).toBe(`${TOP_BAR_HEIGHT}px`);
 
@@ -1066,7 +1065,7 @@ describe('Table under a compact top bar', () => {
     mockScreen(PHONE_SIDEWAYS);
     const { container } = render(Table, { session: fakeSession(), view: makeView() });
     const app = container.querySelector<HTMLElement>('.app')!;
-    expect(app.classList).toContain('bar-over');
+    expect(app.classList).toContain('compact');
     expect(app.style.getPropertyValue('--bar-start')).toBe(`${TOP_BAR_HEIGHT}px`);
     expect(app.style.getPropertyValue('--bar-room')).toBe(`${TOP_BAR_HEIGHT}px`);
     // The narrow layout: no history, Undo floating over the table.
@@ -1084,16 +1083,16 @@ describe('Table under a compact top bar', () => {
     mockScreen(LARGE_PHONE_SIDEWAYS);
     const { container } = render(Table, { session: fakeSession(), view: makeView() });
     const app = container.querySelector<HTMLElement>('.app')!;
-    expect(app.classList).toContain('bar-over');
+    expect(app.classList).toContain('compact');
     expect(app.style.getPropertyValue('--bar-start')).toBe(`${TOP_BAR_HEIGHT}px`);
     expect(sidePanel()).not.toBeNull();
 
     // jsdom applies no stylesheet: the rules themselves are checked. The history column stays
     // beside the play area, and goes with the narrow layout.
-    const barOverRule = /\n {2}\.app\.bar-over \{([^}]*)\}/.exec(tableSource)?.[1];
-    expect(barOverRule).toMatch(/grid-template-areas: 'table side';/);
-    expect(barOverRule).not.toMatch(/grid-template-columns/);
-    const narrowRule = /@media \(max-width: 900px\) \{\s*\.app\.bar-over \{([^}]*)\}/.exec(
+    const compactRule = /\n {2}\.app\.compact \{([^}]*)\}/.exec(tableSource)?.[1];
+    expect(compactRule).toMatch(/grid-template-areas: 'table side';/);
+    expect(compactRule).not.toMatch(/grid-template-columns/);
+    const narrowRule = /@media \(max-width: 900px\) \{\s*\.app\.compact \{([^}]*)\}/.exec(
       tableSource,
     )?.[1];
     expect(narrowRule).toMatch(/grid-template-areas: 'table';/);
@@ -1103,7 +1102,7 @@ describe('Table under a compact top bar', () => {
     mockScreen(NARROW);
     const { container } = render(Table, { session: fakeSession(), view: makeView() });
     const app = container.querySelector<HTMLElement>('.app')!;
-    expect(app.classList).not.toContain('bar-over');
+    expect(app.classList).not.toContain('compact');
     expect(app.style.getPropertyValue('--bar-start')).toBe('0px');
     expect(app.style.getPropertyValue('--bar-room')).toBe('0px');
     expect(sidePanel()).toBeNull();
@@ -1113,7 +1112,7 @@ describe('Table under a compact top bar', () => {
     mockScreen(WIDE);
     const { container } = render(Table, { session: fakeSession(), view: makeView() });
     const app = container.querySelector<HTMLElement>('.app')!;
-    expect(app.classList).not.toContain('bar-over');
+    expect(app.classList).not.toContain('compact');
     expect(app.style.getPropertyValue('--bar-start')).toBe('0px');
     expect(app.style.getPropertyValue('--bar-room')).toBe('0px');
   });

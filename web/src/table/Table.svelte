@@ -1686,7 +1686,6 @@
   class:arrowing={interaction.arrowFrom !== null}
   class:dragging={interaction.dragging !== null}
   class:history-collapsed={historyCollapsed && !narrow.current}
-  class:bar-over={small.current}
   class:banding={interaction.band !== null}
   class:compact={small.current}
   class:touch={touchMode.current}
@@ -1784,12 +1783,7 @@
     Undo floats there, left of the zoom control. On a small screen, both share one bar above the
     resting hand.
   -->
-  <div
-    class="corner"
-    class:compact={small.current}
-    bind:this={cornerBox}
-    bind:clientHeight={cornerHeight}
-  >
+  <div class="corner" bind:this={cornerBox} bind:clientHeight={cornerHeight}>
     {#if narrow.current}
       <div class="undo">
         <!-- aria-disabled rather than disabled, so that the tooltip saying why still shows. -->
@@ -2267,7 +2261,7 @@
     A small screen: Undo and the zoom control share one bar, above the resting hand's strip
     (--controls-bottom), so that neither covers the hand.
   */
-  .corner.compact {
+  .app.compact .corner {
     margin-bottom: var(--controls-bottom);
     gap: 2px;
     padding: 4px;
@@ -2277,8 +2271,8 @@
     box-shadow: 0 6px 16px #0008;
   }
 
-  .corner.compact .undo,
-  .corner.compact :global(.zoomctl) {
+  .app.compact .corner .undo,
+  .app.compact .corner :global(.zoomctl) {
     padding: 0;
     background: none;
     border: none;
@@ -2334,12 +2328,12 @@
     from the top of the window: the bar floats over the play area only, its icons on the play
     area's edge.
   */
-  .app.bar-over {
+  .app.compact {
     grid-template-rows: minmax(0, 1fr);
     grid-template-areas: 'table side';
   }
 
-  .app.bar-over .top {
+  .app.compact .top {
     --bar-gutter-end: var(--content-gutter);
     grid-area: table;
     align-self: start;
@@ -2347,11 +2341,11 @@
 
   /* Without the history column, the bar spans the window, its icons close to the window's edge. */
   @media (max-width: 900px) {
-    .app.bar-over {
+    .app.compact {
       grid-template-areas: 'table';
     }
 
-    .app.bar-over .top {
+    .app.compact .top {
       --bar-gutter-end: 8px;
     }
   }
