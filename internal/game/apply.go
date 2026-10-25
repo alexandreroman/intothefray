@@ -416,17 +416,7 @@ func applyAttach(t *Table, a Action) error {
 		return err
 	}
 
-	children := t.descendants(c.ID)
-	x, y, z := tuckedPlace(target, a)
-	dx, dy, dz := x-c.X, y-c.Y, z-c.Z
-	for _, child := range children {
-		child.X += dx
-		child.Y += dy
-		child.Z += dz
-	}
-	c.Parent = target.ID
-	c.OnPile = ""
-	c.X, c.Y, c.Z = x, y, z
+	t.tuckUnder(c, target, a)
 	return nil
 }
 
@@ -442,14 +432,64 @@ func (t *Table) checkTuckTarget(c, target *Card) error {
 	return nil
 }
 
-// tuckedPlace returns where a card tucked under target by a lies, one Z
-// lower than target: where it was dropped (Action.Placed), snapped to the
-// grid, or else just below target, so that its bottom edge shows.
-func tuckedPlace(target *Card, a Action) (x, y, z int) {
-	if a.Placed {
-		return snap(a.X), snap(a.Y), target.Z - 1
+// tuckUnder tucks c, with the cards tucked under it, beneath the stack of
+// target: target and every card tucked under it, directly or not. c lies as
+// tuckedPlace says, the cards under it keeping their offsets to it, and the
+// tree target belongs to takes fresh Zs (see restack).
+func (t *Table) tuckUnder(c, target *Card, a Action) {
+	moving := append(t.descendants(c.ID), c)
+	slices.SortFunc(moving, byZThenID)
+	// c may already lie in that stack, when it is attached to its own host again.
+	stack := withoutCards(append(t.descendants(target.ID), target), moving)
+
+	x, y := tuckedPlace(target, stack, a)
+	dx, dy := x-c.X, y-c.Y
+	for _, m := range moving {
+		m.X += dx
+		m.Y += dy
 	}
-	return target.X, target.Y + attachOffsetY, target.Z - 1
+	c.Parent = target.ID
+	c.OnPile = ""
+	t.restack(target, stack, moving)
+}
+
+// tuckedPlace returns where a card tucked under target by a lies: where it
+// was dropped (Action.Placed), snapped to the grid, or else in target's
+// column, just below the lowest card of stack (target and the cards tucked
+// under it), so that its bottom edge shows and every card stays readable.
+func tuckedPlace(target *Card, stack []*Card, a Action) (x, y int) {
+	if a.Placed {
+		return snap(a.X), snap(a.Y)
+	}
+	bottom := target.Y
+	for _, c := range stack {
+		bottom = max(bottom, c.Y)
+	}
+	return target.X, bottom + attachOffsetY
+}
+
+// restack gives fresh Zs, from nextZ, to the whole tree target belongs to,
+// with the moving cards tucked into it just beneath stack (see tuckUnder).
+// The other cards keep their order, the root on top of them all. Fresh Zs
+// keep every Z unique and positive, and bring the tree to the top of the
+// table, as a move does.
+func (t *Table) restack(target *Card, stack, moving []*Card) {
+	root := target
+	for root.Parent != "" {
+		root = t.Cards[root.Parent]
+	}
+	tree := withoutCards(append(t.descendants(root.ID), root), moving)
+	slices.SortFunc(tree, byZThenID)
+
+	lowest := slices.IndexFunc(tree, func(c *Card) bool { return slices.Contains(stack, c) })
+	for _, c := range slices.Concat(tree[:lowest], moving, tree[lowest:]) {
+		c.Z = t.nextZ()
+	}
+}
+
+// withoutCards returns cards, dropping those in removed.
+func withoutCards(cards, removed []*Card) []*Card {
+	return slices.DeleteFunc(cards, func(c *Card) bool { return slices.Contains(removed, c) })
 }
 
 func applyToHand(t *Table, a Action) error {
@@ -632,8 +672,7 @@ func applyPlay(t *Table, a Action) error {
 	}
 	c.Zone = ZoneTable
 	c.Pile = ""
-	c.Parent = target.ID
-	c.X, c.Y, c.Z = tuckedPlace(target, a)
+	t.tuckUnder(c, target, a)
 	return nil
 }
 
