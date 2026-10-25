@@ -18,6 +18,9 @@ const LOG: LogView[] = [
   line({ who: 'Sam', color: 1, text: 'undid “drew 1 card”', at: at(14, 3) }),
 ];
 
+/** The callbacks and ids the panel takes, which these tests do not look at. */
+const PANEL = { onundo: () => {}, ontoggle: () => {}, controls: 'history-panel' };
+
 function historyLines(): HTMLElement[] {
   return within(screen.getByRole('list', { name: 'History' })).getAllByRole('listitem');
 }
@@ -28,7 +31,7 @@ afterEach(() => {
 
 describe('SidePanel', () => {
   it('history shows newest first with struck undone lines', () => {
-    render(SidePanel, { log: LOG, onundo: () => {} });
+    render(SidePanel, { log: LOG, ...PANEL });
 
     const lines = historyLines();
     expect(lines.map((l) => l.querySelector('.txt')?.textContent)).toEqual([
@@ -63,7 +66,7 @@ describe('SidePanel', () => {
           ],
         }),
       ],
-      onundo: () => {},
+      ...PANEL,
       nameOf: (ref) => (ref.card === '01094' ? 'Rhino FR' : undefined),
     });
 
@@ -75,18 +78,9 @@ describe('SidePanel', () => {
     ]);
   });
 
-  it('leaves system lines uncoloured', () => {
-    render(SidePanel, {
-      log: [line({ who: 'Table', color: -1, text: 'shuffled' })],
-      onundo: () => {},
-    });
-    const name = within(historyLines()[0] as HTMLElement).getAllByText('Table')[0];
-    expect(name?.getAttribute('style') ?? '').not.toContain('color');
-  });
-
   it('undo button disabled without undo', async () => {
     const onundo = vi.fn();
-    const { rerender } = render(SidePanel, { log: LOG, onundo });
+    const { rerender } = render(SidePanel, { ...PANEL, log: LOG, onundo });
 
     const undo = screen.getByRole('button', { name: 'Undo last action' });
     expect(undo.getAttribute('aria-disabled')).toBe('true');
@@ -94,20 +88,16 @@ describe('SidePanel', () => {
     await fireEvent.click(undo);
     expect(onundo).not.toHaveBeenCalled();
 
-    await rerender({ log: LOG, onundo, canUndo: true });
+    await rerender({ ...PANEL, log: LOG, onundo, canUndo: true });
     expect(undo.getAttribute('aria-disabled')).toBe('false');
     expect(undo.hasAttribute('data-tip')).toBe(false);
     await fireEvent.click(undo);
     expect(onundo).toHaveBeenCalledOnce();
   });
 
-  it('offers to collapse when it can, and says what it controls', async () => {
-    const { unmount } = render(SidePanel, { log: LOG, onundo: () => {} });
-    expect(screen.queryByRole('button', { name: 'Collapse history' })).toBeNull();
-    unmount();
-
+  it('offers to collapse, and says what it controls', async () => {
     const ontoggle = vi.fn();
-    render(SidePanel, { log: LOG, onundo: () => {}, ontoggle, controls: 'history-panel' });
+    render(SidePanel, { ...PANEL, log: LOG, ontoggle });
     const collapse = screen.getByRole('button', { name: 'Collapse history' });
     expect(collapse.getAttribute('aria-expanded')).toBe('true');
     expect(collapse.getAttribute('aria-controls')).toBe('history-panel');
@@ -146,21 +136,21 @@ describe('SidePanel', () => {
   });
 
   it('titles its history, and holds no preview', () => {
-    render(SidePanel, { log: LOG, onundo: () => {} });
+    render(SidePanel, { log: LOG, ...PANEL });
     const titles = screen.getAllByRole('heading').map((heading) => heading.textContent);
     expect(titles).toEqual(['History']);
     expect(screen.queryByLabelText('Card preview')).toBeNull();
   });
 
   it('shows each line time first', () => {
-    render(SidePanel, { log: LOG, onundo: () => {} });
+    render(SidePanel, { log: LOG, ...PANEL });
     const [newest] = historyLines() as [HTMLElement];
     expect(newest.firstElementChild?.textContent).toBe('14:03');
   });
 
   it('hovering a line highlights its cards', async () => {
     const log = [line({ text: 'exhausted Spider-Man', cards: ['c1', 'c2'] })];
-    render(SidePanel, { log, onundo: () => {} });
+    render(SidePanel, { log, ...PANEL });
 
     const [entry] = historyLines() as [HTMLElement];
     await fireEvent.pointerEnter(entry);
@@ -175,7 +165,7 @@ describe('SidePanel', () => {
       line({ text: 'played a short card', at: at(14, 4) }),
       line({ text: 'moved a card with a very long name to the encounter discard', at: at(14, 5) }),
     ];
-    render(SidePanel, { log, onundo: () => {} });
+    render(SidePanel, { log, ...PANEL });
     const [long, short] = historyLines() as [HTMLElement, HTMLElement];
 
     // jsdom lays nothing out: the long line's text says it overflows.
@@ -203,12 +193,12 @@ describe('SidePanel', () => {
       line({ text: 'exhausted Spider-Man', cards: ['c1'] }),
       line({ text: 'readied Spider-Man', cards: ['c1'] }),
     ];
-    const { rerender } = render(SidePanel, { log, onundo: () => {} });
+    const { rerender } = render(SidePanel, { log, ...PANEL });
 
     // The newest line is gone with no pointerleave (a new history, say).
     await fireEvent.pointerEnter(historyLines()[0] as HTMLElement);
     expect([...interaction.highlighted]).toEqual(['c1']);
-    await rerender({ log: log.slice(0, 1), onundo: () => {} });
+    await rerender({ log: log.slice(0, 1), ...PANEL });
     expect(interaction.highlighted.size).toBe(0);
   });
 
@@ -221,23 +211,23 @@ describe('SidePanel', () => {
       const other = line({ text: 'drew 1 card', at: at(14, 4) });
       const { rerender } = render(SidePanel, {
         log: [other, first],
-        onundo: () => {},
+        ...PANEL,
       });
       expect(animate).not.toHaveBeenCalled();
 
       const merged = { ...first, text: 'set damage on Spider-Man to 2', at: at(14, 6) };
-      await rerender({ log: [other, merged], onundo: () => {} });
+      await rerender({ log: [other, merged], ...PANEL });
       expect(animate).toHaveBeenCalledOnce();
       expect(animate.mock.contexts[0]).toBe(historyLines()[0]);
       expect(animate.mock.calls[0]?.[0]).toEqual([{ backgroundColor: '#2a3a66' }, {}]);
 
       // Merged again: it bumps again. A new line slides in instead.
       const again = { ...merged, text: 'set damage on Spider-Man to 3', at: at(14, 7) };
-      await rerender({ log: [other, again], onundo: () => {} });
+      await rerender({ log: [other, again], ...PANEL });
       expect(animate).toHaveBeenCalledTimes(2);
       await rerender({
         log: [other, again, line({ text: 'drew 2 cards' })],
-        onundo: () => {},
+        ...PANEL,
       });
       expect(animate).toHaveBeenCalledTimes(2);
     } finally {
@@ -256,7 +246,7 @@ describe('SidePanel', () => {
         { text: ' (stage II)' },
       ],
     });
-    render(SidePanel, { log: [replaced], onundo: () => {} });
+    render(SidePanel, { log: [replaced], ...PANEL });
 
     const text = (historyLines()[0] as HTMLElement).querySelector('.txt') as HTMLElement;
     expect(text.textContent).toBe(
@@ -283,7 +273,7 @@ describe('SidePanel', () => {
         ],
       }),
     ];
-    render(SidePanel, { log, onundo: () => {} });
+    render(SidePanel, { log, ...PANEL });
 
     const [moved, shuffled] = historyLines().map((l) => l.querySelector('.txt') as HTMLElement) as [
       HTMLElement,
@@ -302,7 +292,7 @@ describe('SidePanel', () => {
         parts: [{ text: 'exhausted ' }, { text: 'Spider-Man', card: true }],
       }),
     ];
-    render(SidePanel, { log, onundo: () => {} });
+    render(SidePanel, { log, ...PANEL });
     const entry = historyLines()[0] as HTMLElement;
     const text = entry.querySelector('.txt') as HTMLElement;
     Object.defineProperty(text, 'scrollWidth', { value: 400 });

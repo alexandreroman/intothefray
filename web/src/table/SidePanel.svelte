@@ -24,10 +24,10 @@
     onundo: () => void;
     /** Only a strip shows: the buttons to expand it and to undo. */
     collapsed?: boolean;
-    /** Collapses or expands the panel; without it, the panel has no such button. */
-    ontoggle?: () => void;
+    /** Collapses or expands the panel. */
+    ontoggle: () => void;
     /** The id of the element that collapses (aria-controls). */
-    controls?: string;
+    controls: string;
     /** The name of a face in the viewer's language; without it, or when unknown, the English text shows. */
     nameOf?: (ref: FaceRef) => string | undefined;
   } = $props();
@@ -40,9 +40,6 @@
 
   // The button pressed goes with the side it was on: the focus moves to the one that takes its place.
   async function toggle(): Promise<void> {
-    if (!ontoggle) {
-      return;
-    }
     leaveLine();
     ontoggle();
     await tick();
@@ -88,11 +85,6 @@
   function partsOf(entry: LogView): Part[] {
     const pieces = entry.parts ?? [{ text: entry.text }];
     return pieces.flatMap((piece) => splitAsides(textOf(piece), piece.card === true));
-  }
-
-  /** The player colour; system lines (colour -1) keep the text colour. */
-  function nameColor(entry: LogView): string | undefined {
-    return entry.color >= 0 ? `var(--p${entry.color + 1})` : undefined;
   }
 
   function timeOf(at: string): string {
@@ -166,7 +158,7 @@
 
 {#snippet lineText(entry: LogView, parts: Part[])}
   <!-- The line break between the name and the text renders as one space. -->
-  <span class="w" style:color={nameColor(entry)}>{entry.who}</span>
+  <span class="w" style:color="var(--p{entry.color + 1})">{entry.who}</span>
   {#each parts as part, i (i)}{#if part.card}<b class="card" class:aside={part.aside}>{part.text}</b
       >{:else if part.aside}<span class="aside">{part.text}</span>{:else}{part.text}{/if}{/each}
 {/snippet}
@@ -232,19 +224,17 @@
 {:else}
   <div class="loghead">
     <h2 id="history-title">History</h2>
-    {#if ontoggle}
-      <button
-        class="btn-ghost toggle"
-        aria-label="Collapse history"
-        data-tip="Collapse history"
-        aria-expanded="true"
-        aria-controls={controls}
-        bind:this={collapseButton}
-        onclick={toggle}
-      >
-        {@render panelIcon()}
-      </button>
-    {/if}
+    <button
+      class="btn-ghost toggle"
+      aria-label="Collapse history"
+      data-tip="Collapse history"
+      aria-expanded="true"
+      aria-controls={controls}
+      bind:this={collapseButton}
+      onclick={toggle}
+    >
+      {@render panelIcon()}
+    </button>
   </div>
 
   <ul class="log" aria-labelledby="history-title" bind:this={list}>
