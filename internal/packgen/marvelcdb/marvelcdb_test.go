@@ -37,6 +37,7 @@ func TestDecodeMarvelcdbCard(t *testing.T) {
 		Quantity:        1,
 		BaseThreat:      &zero,
 		BaseThreatFixed: true,
+		OctgnID:         "1687b8a9-9630-4800-b297-03c5001e8ee9",
 	}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("card = %+v, want %+v", got, want)

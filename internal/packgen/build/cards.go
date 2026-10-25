@@ -1,5 +1,7 @@
 // Package build derives the packs and their index from the marvelcdb, mc4db
-// and Cerebro records, the French names of fr.marvelcdb and the curated data.
+// and Cerebro records, the French names of fr.marvelcdb, the curated data and
+// the image manifest, and lists the image sources of every face for the image
+// pipeline that writes that manifest.
 package build
 
 import (
@@ -10,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/alexandreroman/intothefray/internal/pack"
+	"github.com/alexandreroman/intothefray/internal/packgen/cdn"
 	"github.com/alexandreroman/intothefray/internal/packgen/cerebro"
 	"github.com/alexandreroman/intothefray/internal/packgen/curated"
 	"github.com/alexandreroman/intothefray/internal/packgen/marvelcdb"
@@ -24,14 +27,15 @@ const (
 
 // buildCards groups the marvelcdb entries into cards and returns them by pack
 // code, sorted by code. A card is one base code with its faces, except for
-// lettered codes that are distinct cards (see splitGroup). Cards that cannot be displayed
-// are returned as unsupported instead.
+// lettered codes that are distinct cards (see splitGroup). A face shows its
+// English image of the manifest; a card with a face the manifest has no
+// English image for cannot be displayed, and is returned as unsupported
+// instead.
 func buildCards(
 	mc []marvelcdb.Card,
-	cb []cerebro.Card,
 	overrides map[string]curated.CardOverride,
+	manifest cdn.Manifest,
 ) (cards map[string][]pack.Card, unsupported []report.Unsupported) {
-	cerebroIDs := cerebroIDsOf(cb)
 	entriesByCard, _, reprints := groupEntries(mc)
 	reprintsByCard, unresolved := resolveReprints(reprints, entriesByCard)
 	unsupported = append(unsupported, unresolved...)
@@ -39,7 +43,7 @@ func buildCards(
 	cards = make(map[string][]pack.Card)
 	for code, entries := range entriesByCard {
 		first := entries[0]
-		faces, ok := buildFaces(entries, cerebroIDs, overrides)
+		faces, ok := buildFaces(entries, overrides, manifest)
 		if !ok {
 			unsupported = append(unsupported, report.Unsupported{
 				Code:   code,
@@ -243,23 +247,17 @@ func baseCode(code string) string {
 	return code
 }
 
-// buildFaces returns false when a face has no image to display.
+// buildFaces returns false when the manifest has no English image for a face.
 func buildFaces(
 	entries []marvelcdb.Card,
-	cerebroIDs map[string]string,
 	overrides map[string]curated.CardOverride,
+	manifest cdn.Manifest,
 ) ([]pack.Face, bool) {
 	faces := make([]pack.Face, 0, len(entries))
 	for _, entry := range entries {
-		override := overrides[entry.Code]
-		images := imagesOf(entry, cerebroIDs, override.Cerebro)
-		if len(images) == 0 {
+		image, found := manifest.Image(entry.Code, english)
+		if !found {
 			return nil, false
-		}
-
-		size := sizeOf(entry.TypeCode)
-		if override.Size != "" {
-			size = override.Size
 		}
 
 		face := pack.Face{
@@ -267,8 +265,8 @@ func buildFaces(
 			Subname:  entry.Subname,
 			Type:     entry.TypeCode,
 			Stage:    entry.Stage,
-			Size:     size,
-			Images:   images,
+			Size:     faceSize(entry, overrides[entry.Code]),
+			Images:   []string{image},
 			HandSize: entry.HandSize,
 		}
 		if entry.BaseThreat != nil {
@@ -279,25 +277,39 @@ func buildFaces(
 	return faces, true
 }
 
-// imagesOf returns the image candidates of a face: the Cerebro image matching
-// its code, or cerebroID when set, then the image of its source record.
-func imagesOf(entry marvelcdb.Card, cerebroIDs map[string]string, cerebroID string) []string {
+// cerebroImage returns the Cerebro image of a face: the one matching its code,
+// or cerebroID when set. It is empty when Cerebro has no such image.
+func cerebroImage(entry marvelcdb.Card, cerebroID string, cerebroIDs map[string]string) string {
 	if cerebroID == "" {
 		cerebroID = entry.Code
 	}
+	id, found := cerebroIDs[strings.ToUpper(cerebroID)]
+	if !found {
+		return ""
+	}
+	return fmt.Sprintf(cerebroImageURL, id)
+}
 
-	var images []string
-	if id, found := cerebroIDs[strings.ToUpper(cerebroID)]; found {
-		images = append(images, fmt.Sprintf(cerebroImageURL, id))
+// recordImage returns the image of the source record of a face, empty when the
+// record has none.
+func recordImage(entry marvelcdb.Card) string {
+	if entry.ImageSrc == "" {
+		return ""
 	}
-	if entry.ImageSrc != "" {
-		host := entry.ImageHost
-		if host == "" {
-			host = marvelcdbHost
-		}
-		images = append(images, host+entry.ImageSrc)
+	host := entry.ImageHost
+	if host == "" {
+		host = marvelcdbHost
 	}
-	return images
+	return host + entry.ImageSrc
+}
+
+// faceSize returns the size of a face: the curated one when set, else the one
+// of its card type.
+func faceSize(entry marvelcdb.Card, override curated.CardOverride) pack.Size {
+	if override.Size != "" {
+		return override.Size
+	}
+	return sizeOf(entry.TypeCode)
 }
 
 func sizeOf(typeCode string) pack.Size {

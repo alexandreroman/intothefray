@@ -39,7 +39,7 @@ type scenarioFixture struct {
 func newScenarioFixture(t *testing.T) scenarioFixture {
 	t.Helper()
 	records := setsFixture(t)
-	cards, unsupported := buildCards(records, nil, nil)
+	cards, unsupported := buildCards(records, nil, manifestFor(records))
 	if len(unsupported) != 0 {
 		t.Fatalf("fixture cards unsupported: %+v", unsupported)
 	}
@@ -74,7 +74,7 @@ func TestScenarioSupportedWithCuratedDef(t *testing.T) {
 		ID:          "rhino",
 		Name:        "Rhino",
 		Pack:        "core",
-		Image:       "https://marvelcdb.com/bundles/cards/01094.png",
+		Image:       imageURL("01094", "en"),
 		Supported:   true,
 		Recommended: []string{"bomb_scare"},
 	}
