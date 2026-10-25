@@ -66,6 +66,19 @@ export function toggleFullscreen(): void {
 }
 
 /**
+ * Calls listener each time the page enters or leaves fullscreen. Older Safari only fires the
+ * WebKit-prefixed event: both are listened to. Returns what stops listening.
+ */
+export function onFullscreenChange(listener: () => void): () => void {
+  const offStandard = on(document, 'fullscreenchange', listener);
+  const offWebkit = on(document, 'webkitfullscreenchange', listener);
+  return () => {
+    offStandard();
+    offWebkit();
+  };
+}
+
+/**
  * A request can be refused (no user gesture, a policy of the embedding page):
  * nothing changes then.
  */
@@ -116,14 +129,11 @@ export function installEscapeLock(): () => void {
     }, 0);
   }
 
-  // Older Safari only fires the WebKit-prefixed event: both are listened to.
-  const offStandard = on(document, 'fullscreenchange', syncLock);
-  const offWebkit = on(document, 'webkitfullscreenchange', syncLock);
+  const offFullscreenChange = onFullscreenChange(syncLock);
   // In the capture phase: a layer that stops the event's propagation must not hide it.
   const offKeydown = on(window, 'keydown', onKeydown, { capture: true });
   return () => {
-    offStandard();
-    offWebkit();
+    offFullscreenChange();
     offKeydown();
     // Unconditionally: a lock still pending would otherwise outlive the install.
     locked = false;
