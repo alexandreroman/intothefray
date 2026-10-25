@@ -2373,7 +2373,7 @@
     transition: margin-top 0.2s ease;
   }
 
-  /* A landscape card: 420 px wide. */
+  /* A landscape card: 418 px wide. */
   .peek.land {
     width: min(440px, 45%);
   }
