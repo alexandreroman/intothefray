@@ -11,6 +11,7 @@
   import { isHidden } from './face';
   import { interaction } from './interaction.svelte';
   import { cardBox } from './layout';
+  import { motion } from './motion.svelte';
 
   let {
     card,
@@ -121,7 +122,12 @@
   style:height="{box.h}px"
   style:z-index={card.z}
   onpointerenter={(event) => interaction.enter(element, event)}
-  onpointerleave={() => interaction.leave()}
+  onpointerleave={() => {
+    // Edge-on as it turns, the card slips from under the pointer, which still rests on it.
+    if (!motion.isTurning(card.id)) {
+      interaction.leave();
+    }
+  }}
   onpointerdown={(event) => interaction.press(element, event)}
 >
   {#if hidden}

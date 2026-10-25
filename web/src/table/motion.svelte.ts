@@ -558,6 +558,8 @@ class TableMotion {
   #running = new Map<Animation, Subject>();
   // The animations that move cards on the screen, which the frame counter follows.
   #moving = new Set<Animation>();
+  // The table cards turned over (#flip) or turned in (#turnIn), by the animation that turns each one.
+  #turning = new Map<Animation, string>();
   // The riffle copies added to piles, with their pile.
   #copies = new Map<HTMLElement, Subject>();
   #raf = 0;
@@ -910,6 +912,11 @@ class TableMotion {
     );
   }
 
+  /** Whether a table card is turned over or turned in: edge-on for a while, out of reach of the pointer. */
+  isTurning(id: string): boolean {
+    return [...this.#turning.values()].includes(id);
+  }
+
   /** Resolves once every animation playing now has finished, or was stopped. */
   async settled(): Promise<void> {
     await Promise.allSettled([...this.#running.keys()].map((animation) => animation.finished));
@@ -935,6 +942,7 @@ class TableMotion {
         animation.cancel();
         this.#running.delete(animation);
         this.#moving.delete(animation);
+        this.#turning.delete(animation);
       }
     }
     this.#cardsMoving = this.#moving.size > 0;
@@ -1033,13 +1041,16 @@ class TableMotion {
     const tilt = getComputedStyle(element).transform;
     const rest = tilt && tilt !== 'none' ? tilt : 'none';
     const turned = `${FLIP_PERSPECTIVE} rotateY(90deg) scale(1.05)${rest === 'none' ? '' : ` ${rest}`}`;
-    this.#run(
+    const turn = this.#run(
       element,
       [{ transform: turned }, { transform: rest }],
       { duration: TURN_IN_MS, easing: MOVE_EASING },
       cardSubject(id),
       true,
     );
+    if (turn) {
+      this.#turning.set(turn, id);
+    }
   }
 
   /**
@@ -1098,7 +1109,15 @@ class TableMotion {
           { transform: flat, offset: 1 },
         ]
       : [{ transform: edgeOn }, { transform: flat }];
-    this.#run(element, keyframes, { duration: oldSide ? FLIP_MS : half }, cardSubject(id));
+    const turn = this.#run(
+      element,
+      keyframes,
+      { duration: oldSide ? FLIP_MS : half },
+      cardSubject(id),
+    );
+    if (turn && onTable) {
+      this.#turning.set(turn, id);
+    }
   }
 
   /**
@@ -1320,6 +1339,7 @@ class TableMotion {
     const done = () => {
       this.#running.delete(animation);
       this.#moving.delete(animation);
+      this.#turning.delete(animation);
       this.#cardsMoving = this.#moving.size > 0;
     };
     animation.finished.then(done, done);

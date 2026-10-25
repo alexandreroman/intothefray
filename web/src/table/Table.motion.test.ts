@@ -1,9 +1,9 @@
-import { fireEvent, render, waitFor } from '@testing-library/svelte';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
 import { tick } from 'svelte';
 import { SvelteMap } from 'svelte/reactivity';
 import Table from './Table.svelte';
 import { DECK_TOP_ID } from './drag';
-import { interaction } from './interaction.svelte';
+import { interaction, LINGER_MS } from './interaction.svelte';
 import { motion } from './motion.svelte';
 import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
 import type {
@@ -17,7 +17,7 @@ import type {
   Stage,
   View,
 } from '../lib/types';
-import { card, fakeSession } from './fixtures.testing';
+import { card, fakeSession, infoFrom } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -1872,6 +1872,140 @@ describe('the hover under a pointer at rest', () => {
       await waitFor(() => expect(interaction.hovered).toEqual({ kind: 'hand', id: 'b' }));
     } finally {
       underPointer.mockRestore();
+    }
+  });
+
+  /** Two-faced cards: a hero, and a main scheme. */
+  const twoFaced = infoFrom({
+    '01002': [{ name: 'Peter Parker' }, { name: 'Spider-Man' }],
+    '01097': [
+      { name: 'Scheme 1A', size: 'land' },
+      { name: 'Scheme 1B', size: 'land' },
+    ],
+  });
+
+  /** The pointer comes to rest on a table card, entering it. */
+  async function restOn(element: HTMLElement): Promise<void> {
+    await fireEvent.pointerMove(window, { clientX: 50, clientY: 50 });
+    await fireEvent.pointerEnter(element, { clientX: 50, clientY: 50 });
+    expect(interaction.hovered).toEqual({ kind: 'card', id: element.dataset.id });
+    expect(interaction.previewed).toEqual({ kind: 'card', id: element.dataset.id });
+  }
+
+  /** The hit-test under the pointer: nothing while the card turns edge-on, the card once flat. */
+  function hitTest(placed: () => HTMLElement) {
+    const state = { flat: false };
+    const spy = vi
+      .spyOn(document, 'elementFromPoint')
+      .mockImplementation(() => (state.flat ? placed() : null));
+    return { state, restore: () => spy.mockRestore() };
+  }
+
+  it('stays on the card turned over under it, out of reach while edge-on', async () => {
+    vi.mocked(knownCard).mockImplementation(twoFaced);
+    const session = fakeSession();
+    const { rerender, container } = render(Table, {
+      session,
+      view: makeView([card('a', { code: '01002', x: 40 })]),
+    });
+    await settle();
+    const placed = () => container.querySelector<HTMLElement>('.surface .card[data-id="a"]')!;
+    await restOn(placed());
+    const underPointer = hitTest(placed);
+
+    try {
+      await rerender({
+        session,
+        view: makeView([card('a', { code: '01002', x: 40, face: 1 })], {
+          log: [START, line('flipped Peter Parker')],
+        }),
+      });
+      await waitFor(() => expect(runningOn(placed())).not.toHaveLength(0));
+      await settle();
+      expect(interaction.hovered).toEqual({ kind: 'card', id: 'a' });
+      expect(interaction.previewed).toEqual({ kind: 'card', id: 'a' });
+      const preview = screen.getByLabelText('Card preview');
+      expect(within(preview).getByRole('img', { name: 'Spider-Man' })).toBeTruthy();
+
+      underPointer.state.flat = true;
+      for (const animation of started) {
+        animation.finish();
+      }
+      await settle();
+      expect(interaction.hovered).toEqual({ kind: 'card', id: 'a' });
+      expect(interaction.previewed).toEqual({ kind: 'card', id: 'a' });
+    } finally {
+      underPointer.restore();
+    }
+  });
+
+  it('stays on the stage card turned in under it, out of reach while edge-on', async () => {
+    vi.mocked(knownCard).mockImplementation(twoFaced);
+    const session = fakeSession();
+    const stages: Stage[] = [{ key: 'main', label: 'Main scheme', current: 'm', cards: ['m'] }];
+    const scheme = (face: number) => card('m', { code: '01097', owner: -1, back: 'villain', face });
+    const { rerender, container } = render(Table, {
+      session,
+      view: makeView([scheme(0)], { stages }),
+    });
+    await settle();
+    const placed = () => container.querySelector<HTMLElement>('.surface .card[data-id="m"]')!;
+    await restOn(placed());
+    const underPointer = hitTest(placed);
+
+    try {
+      await rerender({
+        session,
+        view: makeView([scheme(1)], { stages, log: [START, line('turned the main scheme')] }),
+      });
+      await waitFor(() => expect(runningOn(placed())).not.toHaveLength(0));
+      await settle();
+      expect(interaction.hovered).toEqual({ kind: 'card', id: 'm' });
+      expect(interaction.previewed).toEqual({ kind: 'card', id: 'm' });
+      const preview = screen.getByLabelText('Card preview');
+      expect(within(preview).getByRole('img', { name: 'Scheme 1B' })).toBeTruthy();
+
+      underPointer.state.flat = true;
+      for (const animation of started) {
+        animation.finish();
+      }
+      await settle();
+      expect(interaction.hovered).toEqual({ kind: 'card', id: 'm' });
+    } finally {
+      underPointer.restore();
+    }
+  });
+
+  // The browser leaves the card as it goes edge-on under the resting pointer. A card that does
+  // not turn still leaves once the hover has lingered (Table.hover.test.ts).
+  it('stays on the card turned over under it as it goes edge-on and the pointer leaves it', async () => {
+    vi.mocked(knownCard).mockImplementation(twoFaced);
+    const session = fakeSession();
+    const { rerender, container } = render(Table, {
+      session,
+      view: makeView([card('a', { code: '01002', x: 40 })]),
+    });
+    await settle();
+    const placed = () => container.querySelector<HTMLElement>('.surface .card[data-id="a"]')!;
+    await restOn(placed());
+    const underPointer = hitTest(placed);
+
+    try {
+      await rerender({
+        session,
+        view: makeView([card('a', { code: '01002', x: 40, face: 1 })], {
+          log: [START, line('flipped Peter Parker')],
+        }),
+      });
+      await waitFor(() => expect(runningOn(placed())).not.toHaveLength(0));
+      vi.useFakeTimers();
+      await fireEvent.pointerLeave(placed(), { clientX: 50, clientY: 50 });
+      await vi.advanceTimersByTimeAsync(LINGER_MS * 2);
+      expect(interaction.hovered).toEqual({ kind: 'card', id: 'a' });
+      expect(interaction.previewed).toEqual({ kind: 'card', id: 'a' });
+    } finally {
+      vi.useRealTimers();
+      underPointer.restore();
     }
   });
 });
