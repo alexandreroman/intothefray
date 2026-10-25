@@ -27,7 +27,7 @@
   import CardFace from './CardFace.svelte';
   import ContextMenu from './ContextMenu.svelte';
   import { tileEntries, type ContextHeader } from './contextItems';
-  import type { Point } from './drag';
+  import { DRAG_THRESHOLD, type Point } from './drag';
   import { isLongTouchClick, isTouchContextMenu, LANDING_MS } from './interaction.svelte';
   import { isOutOfPlay } from './layout';
   import { ownerLook, ownSeats, seatPlayer } from './seats';
@@ -56,15 +56,10 @@
     onclose: (shuffle: boolean) => void;
   } = $props();
 
-  // The prototype's values: a press becomes a drag past this distance, and the
-  // grid scrolls by this step when a dragged tile nears its edge.
-  const DRAG_THRESHOLD = 5;
+  // The prototype's values: the grid scrolls by this step when a dragged tile nears its edge.
   const EDGE_SCROLL = 40;
   const SCROLL_STEP = 12;
-  // Tiles are at least this wide, about the preview's card, which does not show while a box is
-  // open: the cards are read in the box. A card is 1.4 times as high as wide. The stylesheet's
-  // --min-tile says it (narrower on a phone), this when it is not read.
-  const MIN_TILE = 220;
+  // A card is 1.4 times as high as wide.
   const CARD_RATIO = 1.4;
   // Never wider than the window: the box keeps inside it, its grid scrolls.
   const BOX_WIDTH = 'min(1200px, 100%)';
@@ -335,7 +330,7 @@
 
   function sizeGrid(element: HTMLElement): void {
     const style = getComputedStyle(element);
-    const gap = parseFloat(style.columnGap) || 14;
+    const gap = parseFloat(style.columnGap);
     const padX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
     const padY = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
     const inner = element.clientWidth - padX;
@@ -343,7 +338,7 @@
     if (inner <= 0) {
       return;
     }
-    const minTile = parseFloat(style.getPropertyValue('--min-tile')) || MIN_TILE;
+    const minTile = parseFloat(style.getPropertyValue('--min-tile'));
     const columns = Math.max(1, Math.floor((inner + gap) / (minTile + gap)));
     const columnWidth = (inner - gap * (columns - 1)) / columns;
     gridHeight = Math.min(
@@ -764,7 +759,8 @@
   }
 
   .mgrid {
-    /* A tile's least width (MIN_TILE). */
+    /* A tile's least width, about the preview's card, which does not show while a box is open:
+       the cards are read in the box. */
     --min-tile: 220px;
     position: relative;
     display: grid;

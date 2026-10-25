@@ -3,6 +3,7 @@ import { tick } from 'svelte';
 import Table from './Table.svelte';
 import boxSource from './CardBox.svelte?raw';
 import { compareCardNumbers, pileLabel, tileActions, type TileAction } from './boxes';
+import { DRAG_THRESHOLD } from './drag';
 import { interaction, LONG_PRESS_MS } from './interaction.svelte';
 import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
 import type {
@@ -342,7 +343,6 @@ describe('CardBox', () => {
       /grid-template-columns: repeat\(auto-fill, minmax\(var\(--min-tile\), 1fr\)\);/,
     );
     expect(grid).toMatch(/overflow-y: auto;/);
-    expect(boxSource).toMatch(/const MIN_TILE = 220;/);
   });
 
   it('shows two columns of tiles on a phone', () => {
@@ -406,6 +406,25 @@ describe('CardBox', () => {
     expect(document.querySelector('.tile-ghost')).toBeNull();
     // The new order stays while the server answers.
     expect(tileNames()).toEqual(['Swinging Web Kick', 'Backflip', 'Web-Shooter']);
+  });
+
+  it('a reorder starts past the table drag threshold', async () => {
+    await renderTable(makeView({ private: LOOK }));
+    layOutTiles();
+
+    const image = tile('c1').querySelector<HTMLElement>('.img') as HTMLElement;
+    await fireEvent.pointerDown(image, { clientX: 60, clientY: 150, button: 0 });
+    await fireEvent.pointerMove(window, {
+      clientX: 60 + DRAG_THRESHOLD - 1,
+      clientY: 150,
+      buttons: 1,
+    });
+    expect(document.querySelector('.tile-ghost')).toBeNull();
+
+    // As on the table, DRAG_THRESHOLD pixels make a drag.
+    await fireEvent.pointerMove(window, { clientX: 60 + DRAG_THRESHOLD, clientY: 150, buttons: 1 });
+    expect(document.querySelector('.tile-ghost')).not.toBeNull();
+    await fireEvent.pointerUp(window, { clientX: 60 + DRAG_THRESHOLD, clientY: 150 });
   });
 
   it('a card that leaves during a reorder is not sent', async () => {
