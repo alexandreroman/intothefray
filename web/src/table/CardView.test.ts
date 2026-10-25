@@ -286,6 +286,40 @@ describe('CardView', () => {
     expect(tokenGroups(container)).toEqual({ 'top-right': ['token:thr'] });
   });
 
+  it.each([
+    ['a portrait side scheme', 'side_scheme', 'std'],
+    ['a landscape main scheme', 'main_scheme', 'land'],
+  ] as const)('puts acceleration beside the threat, top right, on %s', (_, type, size) => {
+    const card = tableCard({ tokens: { dmg: 1, thr: 2, acc: 3 } });
+    const { container } = render(CardView, { card, face: face({ type, size }) });
+
+    expect(tokenGroups(container)).toEqual({
+      'bottom-right': ['token:dmg'],
+      // The threat first, which stays in the corner.
+      'top-right': ['token:thr', 'token:acc'],
+    });
+    const acceleration = container.querySelector('.tok.acc');
+    expect(acceleration?.textContent).toBe('3');
+    // Its upward double chevron is drawn, not read.
+    expect(acceleration?.querySelector('svg.chevrons')?.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('puts acceleration beside the threat in the middle of any other card', () => {
+    const card = tableCard({ tokens: { thr: 2, acc: 1 } });
+    const { container } = render(CardView, { card, face: face({ type: 'villain' }) });
+    expect(tokenGroups(container)).toEqual({ middle: ['token:thr', 'token:acc'] });
+  });
+
+  it.each([
+    ['on a scheme', 'main_scheme', 'top-right'],
+    ['on any other card', 'villain', 'middle'],
+  ] as const)('shows acceleration without threat %s, in the threat place', (_, type, where) => {
+    const card = tableCard({ tokens: { acc: 2 } });
+    const { container } = render(CardView, { card, face: face({ type }) });
+    expect(tokenGroups(container)).toEqual({ [where]: ['token:acc'] });
+    expect(container.querySelector('.tok.thr')).toBeNull();
+  });
+
   it('a face-down scheme is not known to be one: its tokens sit in the middle', () => {
     const card = tableCard({ faceDown: true, tokens: { thr: 3 } });
     const { container } = render(CardView, { card, face: face({ type: 'side_scheme' }) });

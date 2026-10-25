@@ -32,11 +32,13 @@
     caption?: string;
   } = $props();
 
-  type TokenKind = 'dmg' | 'thr' | 'gen';
+  type TokenKind = 'dmg' | 'thr' | 'gen' | 'acc';
 
-  // The tokens piled up from the bottom right corner, damage first, on every card. The threat
-  // goes to the top right corner of a scheme, to the middle of any other card.
+  // The tokens piled up from the bottom right corner, damage first, on every card.
   const CORNER_TOKENS: readonly TokenKind[] = ['dmg', 'gen'];
+  // The threat, then the acceleration beside it: in the top right corner of a scheme, in the
+  // middle of any other card. The first one takes the threat's place.
+  const THREAT_TOKENS: readonly TokenKind[] = ['thr', 'acc'];
   const SCHEME_TYPES: readonly string[] = ['main_scheme', 'side_scheme', 'player_side_scheme'];
   const STATUSES = [
     ['stunned', 'Stunned'],
@@ -53,8 +55,7 @@
   const scheme = $derived(!hidden && SCHEME_TYPES.includes(face?.type ?? ''));
   const hasToken = (k: TokenKind) => (card.tokens?.[k] ?? 0) > 0;
   const cornerTokens = $derived(CORNER_TOKENS.filter(hasToken));
-  const middleThreat = $derived(!scheme && hasToken('thr'));
-  const cornerThreat = $derived(scheme && hasToken('thr'));
+  const threatTokens = $derived(THREAT_TOKENS.filter(hasToken));
   const statuses = $derived(STATUSES.filter(([k]) => (card.status?.[k] ?? 0) > 0));
 
   /**
@@ -93,7 +94,10 @@
     data-counter="token:{k}"
     role="presentation"
     onpointerenter={(event) => interaction.enterCounter(target, event)}
-    onpointerleave={() => interaction.leaveCounter()}>{card.tokens?.[k]}</span
+    onpointerleave={() => interaction.leaveCounter()}
+    >{#if k === 'acc'}<svg class="chevrons" viewBox="0 0 8 8" aria-hidden="true"
+        ><path d="M1.5 7.25 4 4.75 6.5 7.25M1.5 3.25 4 0.75 6.5 3.25" /></svg
+      >{/if}{card.tokens?.[k]}</span
   >
 {/snippet}
 
@@ -137,9 +141,11 @@
     />
   {/if}
 
-  {#if middleThreat}
-    <div class="tokens middle">
-      {@render token('thr')}
+  {#if threatTokens.length > 0}
+    <div class="tokens {scheme ? 'top-right' : 'middle'}">
+      {#each threatTokens as k (k)}
+        {@render token(k)}
+      {/each}
     </div>
   {/if}
 
@@ -148,12 +154,6 @@
       {#each cornerTokens as k (k)}
         {@render token(k)}
       {/each}
-    </div>
-  {/if}
-
-  {#if cornerThreat}
-    <div class="tokens top-right">
-      {@render token('thr')}
     </div>
   {/if}
 
@@ -251,9 +251,12 @@
   /*
     Tokens sit inside the card. Damage and counters pile up from the bottom right corner, damage
     in the corner. The threat sits in the top right corner of a scheme, clear of its printed
-    threat values, and in the middle of any other card. The status tabs end above the middle,
-    or lie along the top of a landscape card: clear of both, and of the corner pile, which is
-    at most two tokens high.
+    threat values, and in the middle of any other card. The acceleration sits beside it, on the
+    same line: on a scheme, to its left along the top edge, above the modifiers on the right
+    edge and clear of the status tabs on the left edge; on any other card, to its right, away
+    from the modifiers along the left edge. Without threat, it takes the threat's place. The
+    status tabs end above the middle, or lie along the top of a landscape card: clear of both,
+    and of the corner pile, which is at most two tokens high.
   */
   .tokens {
     position: absolute;
@@ -262,10 +265,11 @@
     gap: 3px;
   }
 
+  /* The first token, the threat, is centred: the acceleration goes to its right. */
   .tokens.middle {
-    left: 50%;
+    left: calc(50% - 13px);
     top: 50%;
-    transform: translate(-50%, -50%);
+    transform: translateY(-50%);
   }
 
   .tokens.bottom-right {
@@ -275,9 +279,11 @@
     align-items: flex-end;
   }
 
+  /* The first token, the threat, is in the corner: the acceleration goes to its left. */
   .tokens.top-right {
     right: 6px;
     top: 6px;
+    flex-direction: row-reverse;
   }
 
   /* Tokens look like small cardboard chips: lit from the top left, a thin inner ring, a rim and a shadow. */
@@ -356,6 +362,34 @@
   }
 
   /*
+    Acceleration is in the Fray red, brighter than damage, and marked with a double chevron
+    pointing up before its count. The two chevrons stand 4 units apart, so their strokes keep a
+    gap at 7px; their round ends may reach past the 8 × 8 box.
+  */
+  .tok.acc {
+    --hi: #ffab9f;
+    --base: #ff4438;
+    --lo: #901812;
+    --rim: #5c0e0b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+  }
+
+  .tok.acc .chevrons {
+    width: 7px;
+    height: 7px;
+    overflow: visible;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    filter: drop-shadow(0 1px 1px #0008);
+  }
+
+  /*
     Status cards: small tabs sticking out of the right edge, like real cards tucked under. They
     end just above the middle, so the tokens there never cover them: half a token (13px) and a
     3px gap. Above that, a portrait card has room for four tabs (17px high, 3px apart): a fifth
@@ -394,7 +428,8 @@
 
   /*
     On a scheme, the right corners hold the tokens: the tabs stick out of the left edge, from
-    the top, where a portrait scheme has room for all five.
+    the top, where a portrait scheme has room for all five. The acceleration beside the threat
+    ends 61px from the right edge, past the widest tab.
   */
   .card.scheme .statuses {
     top: 6px;
@@ -461,10 +496,12 @@
   /*
     Stat modifiers: tabs like the statuses, on the edge the statuses leave free. On a portrait
     card, they stick out of the left edge from the bottom, clear of the stats printed along the
-    top left, of the corner pile and of the middle threat, which is narrower than the card.
+    top left, of the corner pile and of the middle threat, which is narrower than the card and
+    has the acceleration to its right.
     Anchored at the bottom, the column grows upwards and still reads ATK to REC top to bottom.
     On a portrait scheme, whose left edge holds the statuses, they stick out of the right edge
-    between the threat in the top corner and the corner pile, at most two tokens high (61px).
+    between the threat in the top corner (the acceleration lies to its left, along the top) and
+    the corner pile, at most two tokens high (61px).
     That room holds five tabs (17px high, 3px apart): a column holds no more, which also keeps
     it clear of the stats on a portrait card. With all six stats, HP starts a second column
     inside the card, beside the bottom tab: higher up, it would cover the middle threat of a

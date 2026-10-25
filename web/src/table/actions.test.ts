@@ -232,6 +232,8 @@ describe('actionsFor', () => {
       ['dmg', 'Damage', 'D'],
       ['thr', 'Threat', 'T'],
       ['gen', 'Counter', 'N'],
+      // Acceleration has no key: the menu and the token pill reach it.
+      ['acc', 'Acceleration', undefined],
     ]);
     expect(item(items, 'statuses').label).toBe('Add a status');
     const statuses = menuOf(items, 'statuses');
@@ -246,6 +248,12 @@ describe('actionsFor', () => {
       kind: 'token',
       card: 'mine',
       name: 'thr',
+      delta: 1,
+    });
+    expect(actionOf(item(tokens, 'acc'))).toEqual({
+      kind: 'token',
+      card: 'mine',
+      name: 'acc',
       delta: 1,
     });
     expect(actionOf(item(statuses, 'tough'))).toEqual({
@@ -345,7 +353,11 @@ describe('actionsFor', () => {
   it('an exhausted card shows ready and the counter submenus give the counts', () => {
     const view = makeView({
       cards: [
-        card('mine', { exhausted: true, tokens: { dmg: 2 }, status: { stunned: 1, retaliate: 2 } }),
+        card('mine', {
+          exhausted: true,
+          tokens: { dmg: 2, acc: 3 },
+          status: { stunned: 1, retaliate: 2 },
+        }),
       ],
     });
     const items = itemsFor({ kind: 'card', id: 'mine' }, view);
@@ -355,6 +367,7 @@ describe('actionsFor', () => {
       'Damage (2)',
       'Threat',
       'Counter',
+      'Acceleration (3)',
     ]);
     expect(menuOf(items, 'statuses').map((it) => it.label)).toEqual([
       'Stunned (1)',
@@ -1353,6 +1366,7 @@ describe('keyLabel', () => {
 describe('counterName', () => {
   it('names a token or status in lower case, a modifier by its stat', () => {
     expect(counterName('token', 'dmg')).toBe('damage');
+    expect(counterName('token', 'acc')).toBe('acceleration');
     expect(counterName('status', 'stunned')).toBe('stunned');
     expect(counterName('modifier', 'def')).toBe('DEF modifier');
   });

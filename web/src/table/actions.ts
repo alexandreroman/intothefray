@@ -91,13 +91,22 @@ const GROUP_MORE = 2;
 
 const SEPARATOR: ActionItem = { id: 'sep', label: '-', group: 0 };
 
-const TOKENS = [
+/** A token or status of the card menu's submenus; a counter without a key is only reached from the menu. */
+interface Counter {
+  name: string;
+  label: string;
+  key?: string;
+}
+
+/** Mirrors tokenNames in internal/game/apply.go. */
+const TOKENS: readonly Counter[] = [
   { name: 'dmg', label: 'Damage', key: 'D' },
   { name: 'thr', label: 'Threat', key: 'T' },
   { name: 'gen', label: 'Counter', key: 'N' },
+  { name: 'acc', label: 'Acceleration' },
 ];
 
-const STATUSES = [
+const STATUSES: readonly Counter[] = [
   { name: 'stunned', label: 'Stunned', key: 'S' },
   { name: 'confused', label: 'Confused', key: 'C' },
   { name: 'tough', label: 'Tough', key: 'G' },
@@ -381,7 +390,7 @@ function flipItem(card: CardView): ActionItem {
 
 /**
  * "Add a token" or "Add a status": a submenu whose items each add one of
- * their counter, its current count in brackets.
+ * their counter, its current count in brackets. Acceleration has no key.
  */
 function counterMenu(card: CardView, kind: 'token' | 'status'): ActionItem {
   const counters = kind === 'token' ? TOKENS : STATUSES;
@@ -406,7 +415,7 @@ function counterMenu(card: CardView, kind: 'token' | 'status'): ActionItem {
 
 /**
  * "Add a modifier": a submenu that gives the card +1 to a stat, then, past a
- * separator, −1. Unlike the token and status items, these have no keys.
+ * separator, −1. Unlike most token and status items, these have no keys.
  */
 function modifierMenu(card: CardView): ActionItem {
   const step = (delta: 1 | -1) =>

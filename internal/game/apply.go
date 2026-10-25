@@ -631,7 +631,10 @@ const statusLocked = "locked"
 
 // Counter names a card can carry.
 var (
-	tokenNames = []string{"dmg", "thr", "gen"}
+	// tokenNames are the tokens a card can carry: damage, threat, generic
+	// counters and acceleration, which players put on the main scheme when the
+	// encounter deck runs out (bookkeeping only, like the others).
+	tokenNames = []string{"dmg", "thr", "gen", "acc"}
 	// statusNames are the statuses a card can carry, each with a count. The
 	// count of "retaliate" is the card's Retaliate value: sources add up.
 	statusNames = []string{"stunned", "confused", "tough", "retaliate", statusLocked}

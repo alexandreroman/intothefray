@@ -205,6 +205,7 @@ var counterNouns = map[string]counterNoun{
 	"dmg":       {"damage", "damage"},
 	"thr":       {"threat", "threat"},
 	"gen":       {"counter", "counters"},
+	"acc":       {"acceleration token", "acceleration tokens"},
 	"stunned":   {"stunned status", "stunned statuses"},
 	"confused":  {"confused status", "confused statuses"},
 	"tough":     {"tough status", "tough statuses"},
