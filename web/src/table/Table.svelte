@@ -7,6 +7,7 @@
 -->
 <script lang="ts">
   import { tick, untrack } from 'svelte';
+  import Icon from '../components/Icon.svelte';
   import { modal } from '../components/modal.svelte';
   import { prefersReducedMotion } from 'svelte/motion';
   import { MediaQuery } from 'svelte/reactivity';
@@ -1788,19 +1789,7 @@
             }
           }}
         >
-          <!-- A hooked arrow going back. -->
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M9 14L4 9l5-5" />
-            <path d="M4 9h11a5 5 0 0 1 0 10h-3" />
-          </svg>
+          <Icon name="undo" />
         </button>
       </div>
       {#if small.current}
@@ -2297,9 +2286,10 @@
     color: #c9cfdf;
   }
 
-  .undo svg {
+  .undo :global(svg) {
     width: 18px;
     height: 18px;
+    stroke-width: 2;
   }
 
   @media (max-width: 900px) {

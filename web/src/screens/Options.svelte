@@ -12,6 +12,7 @@
   import { selectionIndicator } from '../lib/selectionIndicator';
   import { applyTheme, saveTheme, storedTheme, THEMES, type Theme } from '../lib/theme';
   import { appCommit, fetchServerCommit, shortCommit } from '../lib/version';
+  import Icon from '../components/Icon.svelte';
   import TopBar from '../components/TopBar.svelte';
   import CardBack from '../table/CardBack.svelte';
   import FirstPlayerArt from '../table/FirstPlayerArt.svelte';
@@ -143,9 +144,7 @@
               {THEME_LABELS[key]}
               {#if selected}
                 <span class="check">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"
-                    ><path d="M5 12.5l4.5 4.5L19 7.5" /></svg
-                  >
+                  <Icon name="check" />
                 </span>
               {:else}
                 <span class="ring"></span>
@@ -412,14 +411,10 @@
     justify-content: center;
   }
 
-  .check svg {
+  .check :global(svg) {
     width: 13px;
     height: 13px;
-    fill: none;
-    stroke: currentColor;
     stroke-width: 3;
-    stroke-linecap: round;
-    stroke-linejoin: round;
   }
 
   /* As tall as the check, so that the labels line up. */

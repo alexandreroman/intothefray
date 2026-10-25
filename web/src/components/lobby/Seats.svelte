@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
+  import Icon from '../Icon.svelte';
   import { playerColorVar } from '../../lib/playerColor';
   import { href } from '../../lib/router.svelte';
   import type { PlayerView, View } from '../../lib/types';
@@ -82,7 +83,7 @@
       <input id={inviteId} type="text" readonly value={inviteUrl} bind:this={inviteInput} />
       <button class="btn" onclick={copyInvite}>
         {#if copied}
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+          <Icon name="check" />
           Copied
         {:else}
           <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -113,7 +114,7 @@
               aria-label={tip}
               onclick={() => onremove(player.color)}
             >
-              {@render cross()}
+              <Icon name="cross" />
             </button>
           {:else if !view.you.host && isMe(player)}
             <button
@@ -122,7 +123,7 @@
               aria-label="Leave your seat"
               onclick={onleave}
             >
-              {@render cross()}
+              <Icon name="cross" />
             </button>
           {/if}
         </div>
@@ -155,10 +156,6 @@
   </div>
 </section>
 
-{#snippet cross()}
-  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
-{/snippet}
-
 <style>
   .invite {
     display: flex;
@@ -180,7 +177,7 @@
     margin: 8px 0 0;
   }
 
-  svg {
+  .invite :global(svg) {
     width: 16px;
     height: 16px;
     fill: none;
@@ -283,7 +280,7 @@
     justify-content: center;
   }
 
-  .kick svg {
+  .kick :global(svg) {
     width: 14px;
     height: 14px;
     stroke-width: 2.2;

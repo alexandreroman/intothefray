@@ -3,7 +3,6 @@
   import { on } from 'svelte/events';
   import { MediaQuery } from 'svelte/reactivity';
   import Icon from './Icon.svelte';
-  import Icons from '../table/Icons.svelte';
   import Logo from './Logo.svelte';
   import { href } from '../lib/router.svelte';
   import Segmented from './Segmented.svelte';
@@ -164,7 +163,7 @@
           }}
         >
           <!-- The action bar's family: Exhaust, the other way round. -->
-          <Icons name="ready-all" />
+          <Icon name="ready-all" />
         </button>
       {/if}
       {#if fullscreenSupported}

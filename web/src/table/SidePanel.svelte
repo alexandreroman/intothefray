@@ -5,6 +5,7 @@
 -->
 <script lang="ts">
   import { tick } from 'svelte';
+  import Icon from '../components/Icon.svelte';
   import { playerColorVar } from '../lib/playerColor';
   import type { FaceRef, LogPart, LogView } from '../lib/types';
   import { mergedLines } from './animate';
@@ -164,22 +165,6 @@
       >{:else if part.aside}<span class="aside">{part.text}</span>{:else}{part.text}{/if}{/each}
 {/snippet}
 
-{#snippet undoIcon()}
-  <!-- A hooked arrow going back. -->
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-    aria-hidden="true"
-  >
-    <path d="M9 14L4 9l5-5" />
-    <path d="M4 9h11a5 5 0 0 1 0 10h-3" />
-  </svg>
-{/snippet}
-
 {#snippet panelIcon()}
   <!-- The panel's edge, and a chevron pushing it to the right (drawn flipped to expand). -->
   <svg
@@ -218,7 +203,7 @@
         aria-disabled={!canUndo}
         onclick={undo}
       >
-        {@render undoIcon()}
+        <Icon name="undo" />
       </button>
     </div>
   </div>
@@ -267,7 +252,7 @@
       data-tip={canUndo ? undefined : NOTHING_TO_UNDO}
       onclick={undo}
     >
-      {@render undoIcon()}
+      <Icon name="undo" />
       {UNDO_TIP}
     </button>
   </div>
@@ -340,9 +325,10 @@
     color: #c9cfdf;
   }
 
-  .strip-undo svg {
+  .strip-undo :global(svg) {
     width: 16px;
     height: 16px;
+    stroke-width: 2;
   }
 
   .log {
@@ -453,10 +439,10 @@
     font-size: 13px;
   }
 
-  .undo svg {
+  .undo :global(svg) {
     width: 16px;
     height: 16px;
-    flex: none;
+    stroke-width: 2;
   }
 
   @keyframes slidein {

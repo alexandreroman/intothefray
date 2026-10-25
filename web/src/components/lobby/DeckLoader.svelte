@@ -185,7 +185,7 @@
       aria-disabled={inFlight}
       onclick={removeSlot}
     >
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+      <Icon name="cross" />
     </button>
   {/if}
 {/snippet}
@@ -301,13 +301,10 @@
     font-size: 12px;
   }
 
-  .remove svg {
+  .remove :global(svg) {
     width: 14px;
     height: 14px;
-    fill: none;
-    stroke: currentColor;
     stroke-width: 2.2;
-    stroke-linecap: round;
   }
 
   .err {

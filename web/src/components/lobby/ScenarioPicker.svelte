@@ -7,6 +7,7 @@
   import { overflowTip } from '../../lib/overflowTip';
   import { scrollFade } from '../../lib/scrollFade';
   import CardArt from '../CardArt.svelte';
+  import Icon from '../Icon.svelte';
   import Segmented from '../Segmented.svelte';
   import type { Difficulty, Index, LobbyConfig, ScenarioRef, View } from '../../lib/types';
 
@@ -265,9 +266,7 @@
                 {/if}
                 {#if selected}
                   <span class="check">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"
-                      ><path d="M5 12.5l4.5 4.5L19 7.5" /></svg
-                    >
+                    <Icon name="check" />
                   </span>
                 {/if}
                 {#if !scenario.supported}
@@ -360,9 +359,7 @@
                     aria-label="Remove {setName(code)}"
                     onclick={() => removeModular(code)}
                   >
-                    <svg viewBox="0 0 24 24" aria-hidden="true"
-                      ><path d="M6 6l12 12M18 6 6 18" /></svg
-                    >
+                    <Icon name="cross" />
                   </button>
                 {/if}
               </span>
@@ -540,7 +537,7 @@
     place-items: center;
   }
 
-  .check svg {
+  .check :global(svg) {
     width: 14px;
     height: 14px;
     stroke-width: 3;
@@ -562,13 +559,6 @@
     color: var(--muted);
     text-align: center;
     padding: 30px 0;
-  }
-
-  svg {
-    fill: none;
-    stroke: currentColor;
-    stroke-linecap: round;
-    stroke-linejoin: round;
   }
 
   .settings {
@@ -672,7 +662,7 @@
     place-items: center;
   }
 
-  .chip .x svg {
+  .chip .x :global(svg) {
     width: 12px;
     height: 12px;
     stroke-width: 2.6;

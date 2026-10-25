@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import DeckLoader from '../components/lobby/DeckLoader.svelte';
+  import Icon from '../components/Icon.svelte';
   import ScenarioPicker from '../components/lobby/ScenarioPicker.svelte';
   import Seats from '../components/lobby/Seats.svelte';
   import Tooltip from '../components/Tooltip.svelte';
@@ -219,7 +220,7 @@
       {#if view.you.host}
         <button class="btn-primary go" disabled={!canStart} onclick={() => session.lobby('start')}>
           Set up the table
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+          <Icon name="arrow-right" />
         </button>
       {/if}
     </div>
@@ -474,13 +475,9 @@
     gap: 12px;
   }
 
-  .go svg {
+  .go :global(svg) {
     width: 18px;
     height: 18px;
-    fill: none;
-    stroke: currentColor;
     stroke-width: 2.4;
-    stroke-linecap: round;
-    stroke-linejoin: round;
   }
 </style>

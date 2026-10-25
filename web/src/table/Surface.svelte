@@ -24,6 +24,7 @@
 </script>
 
 <script lang="ts">
+  import Icon from '../components/Icon.svelte';
   import type {
     MarkerName,
     PackFace,
@@ -35,7 +36,6 @@
   import CardView from './CardView.svelte';
   import { backCaption } from './face';
   import MarkerToken from './MarkerToken.svelte';
-  import Icons from './Icons.svelte';
   import { overflowTip } from '../lib/overflowTip';
   import { interaction } from './interaction.svelte';
   import PileView from './PileView.svelte';
@@ -140,7 +140,7 @@
             aria-disabled={chip.count === 0}
             onclick={() => openChip(chip)}
           >
-            <Icons name={chip.kind === 'victory' ? 'trophy' : 'hourglass'} />
+            <Icon name={chip.kind === 'victory' ? 'trophy' : 'hourglass'} />
             <span class="n">{chip.count}</span>
           </button>
         {/each}
@@ -270,6 +270,11 @@
     font-weight: 700;
     font-variant-numeric: tabular-nums;
     pointer-events: auto;
+  }
+
+  .chip :global(svg) {
+    width: 20px;
+    height: 20px;
   }
 
   /*

@@ -42,17 +42,7 @@
       <div class="start">
         <div class="actions">
           <button class="btn-primary" disabled={starting} onclick={startGame}>
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M5 12h14M13 6l6 6-6 6" />
-            </svg>
+            <Icon name="arrow-right" />
             Start a game
           </button>
           <button class="secondary" onclick={() => go('/options')}
@@ -220,9 +210,10 @@
     clip-path: polygon(14px 0, 100% 0, calc(100% - 14px) 100%, 0 100%);
   }
 
-  .btn-primary svg {
+  .btn-primary :global(svg) {
     width: 20px;
     height: 20px;
+    stroke-width: 2.2;
   }
 
   .secondary {
