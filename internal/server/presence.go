@@ -17,8 +17,8 @@ const (
 	maxPresenceText = 64
 	// maxDragCards bounds the cards of one drag.
 	maxDragCards = 50
-	// maxPresencePerSecond is how many presence messages a player may send
-	// per second; the others are dropped. The web client sends its
+	// maxPresencePerSecond is how many presence messages a connection may
+	// send per second; the others are dropped. The web client sends its
 	// continuous moves at most once per PRESENCE_INTERVAL_MS (web
 	// session.svelte.ts), and its discrete events (pings, previews, drag
 	// start and end, a hidden cursor) at once: the limit leaves room for a
@@ -49,17 +49,13 @@ func (s *Server) presence(ctx context.Context, c *conn, msg clientMessage) error
 		return err
 	}
 
-	payload, err := json.Marshal(presenceEvent{
+	s.publish(ctx, c.gameID, presenceEvent{
 		Kind:           eventPresence,
 		From:           c.presenceID,
 		Color:          you.Color,
 		Name:           you.Name,
 		presenceFields: fields,
 	})
-	if err != nil {
-		return err
-	}
-	s.publish(ctx, c.gameID, payload)
 	return nil
 }
 

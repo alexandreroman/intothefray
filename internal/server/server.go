@@ -168,7 +168,7 @@ func isSameOrigin(origin, host string) bool {
 
 func (s *Server) handleCreateGame(w http.ResponseWriter, r *http.Request) {
 	req, err := s.readCreateRequest(w, r)
-	if err != nil || req.Name == "" {
+	if err != nil {
 		writeError(w, http.StatusBadRequest, "a name is required")
 		return
 	}
