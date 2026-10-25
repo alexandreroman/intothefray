@@ -169,6 +169,17 @@ describe('groupAction', () => {
     expect(groupAction(['a', 'b'], 'a', deal, cards)).toBeNull();
   });
 
+  it('sends nothing for more units than the server takes in one group', () => {
+    const many = Array.from({ length: 100 }, (_, i) => card(`u${i}`, { x: i, y: 100 }));
+    const units = many.map((unit) => unit.id);
+    const move: Action = { kind: 'move', card: 'u0', x: 0, y: 200 };
+    const discard: Action = { kind: 'discard', card: 'u0' };
+    expect(groupAction(units, 'u0', move, many)).toBeNull();
+    expect(groupAction(units, 'u0', discard, many)).toBeNull();
+    // 99 units are still one group.
+    expect(groupAction(units.slice(0, 99), 'u0', discard, many)).toMatchObject({ kind: 'group' });
+  });
+
   it('oneUnitReturnsSingle', () => {
     const move: Action = { kind: 'move', card: 'a', x: 200, y: 200 };
     const discard: Action = { kind: 'discard', card: 'a' };

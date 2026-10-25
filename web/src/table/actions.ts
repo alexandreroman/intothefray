@@ -8,7 +8,7 @@ import type { Lang } from '../lib/lang';
 import { localizedFace } from '../lib/localize';
 import { isOutOfPlay } from './layout';
 import { seatOf, seatPlayer } from './seats';
-import { groupUnits } from './selection';
+import { groupUnits, MAX_COUNT } from './selection';
 import type { Action, Area, CardView, PileView, Role, Stage, TableView, View } from '../lib/types';
 
 /**
@@ -71,12 +71,9 @@ export interface ActionItem {
   run?: () => Action | { ask: CountQuestion } | LocalAction;
 }
 
-/** Mirrors maxCount in internal/game/action.go: the most cards one action takes. */
-const MAX_COUNT = 99;
-
-// Groups of a card in play, in menu order: Exhaust, Flip and, on the card a
-// stage shows, its card choice turn the card, the token, status and modifier
-// submenus mark it, Discard and Move to take it away.
+// Groups of a card in play, in menu order: Exhaust and Flip (or the stage
+// choice) turn the card, the token, status and modifier submenus mark it,
+// Discard and Move to take it away.
 const GROUP_TURN = 0;
 const GROUP_MARK = 1;
 const GROUP_LEAVE = 2;
@@ -501,8 +498,8 @@ function isInStackOf(id: string, root: string, table: TableView): boolean {
  * Discard and Move to for a selected group: one group action over every unit,
  * as a group drop sends (selection.ts, groupAction). An entry shows only when
  * every unit could take it alone, and none shuffles: the server refuses to
- * shuffle a group (resolveGroup). Disabled while a unit is, or holds, a card
- * that stays on the table.
+ * shuffle a group (resolveGroup). Disabled for more units than one group
+ * takes, or while a unit is, or holds, a card that stays on the table.
  */
 function groupLeaveItems(units: readonly CardView[], context: Context): ActionItem[] {
   const discard: ActionItem = {
@@ -522,6 +519,10 @@ function groupLeaveItems(units: readonly CardView[], context: Context): ActionIt
 
   const discardable = units.every((unit) => discardPileOf(unit, context.table.piles) !== null);
   const items = discardable ? [discard, moveTo] : [moveTo];
+  if (units.length > MAX_COUNT) {
+    const reason = `A group moves ${MAX_COUNT} cards at most`;
+    return items.map((item) => ({ ...item, disabled: true, reason }));
+  }
   for (const unit of units) {
     const reason = staysOnTable(unit, context.table);
     if (reason) {
