@@ -1,6 +1,6 @@
 ---
 name: "Product constraints"
-description: "Anti-cheat views, no image hosting, no persistence, pack scope, accepted limits"
+description: "Anti-cheat views, card images served by img.intothefray.xyz, no persistence, pack scope, accepted limits"
 type: project
 ---
 
@@ -14,8 +14,10 @@ type: project
   deck, and when it goes into a hand out of a hand or face down off the
   table; tucked cards that drop under a deck too. The new ids of one
   action or group are distinct.
-- Card images are never stored or proxied; the browser loads them from
-  marvelcdb / Cerebro / mc4db URLs.
+- Card images, card backs and theme images are stored in a Cloudflare R2
+  bucket and served by `https://img.intothefray.xyz`, the only image host
+  the browser loads from (see [[project_image_cdn]]). The user accepts that
+  this redistributes FFG/Marvel scans publicly.
 - No accounts and no long-term persistence; a game with nobody connected
   expires after 24 hours; only the host can "End game".
 - Card packs are additive data files and hold every pack's player cards;

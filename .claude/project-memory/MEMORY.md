@@ -24,7 +24,8 @@
 - [Project objective](references/project_objective.md) — browser sandbox table for Marvel Champions, no rules
 - [Name and license](references/project_name_license.md) — intothefray, Go module path, Apache-2.0
 - [Tech stack choices](references/project_tech_stack.md) — Go + Redis backend, Svelte SPA on GitHub Pages, path routes, why
-- [Product constraints](references/project_constraints.md) — anti-cheat, images never stored or proxied, 24 h expiry, pack scope, accepted limits
+- [Product constraints](references/project_constraints.md) — anti-cheat, images on img.intothefray.xyz, 24 h expiry, pack scope, accepted limits
+- [Card image CDN](references/project_image_cdn.md) — R2 at img.intothefray.xyz, filled by intothefray-img `make publish`; AVIF, OCTGN FR
 - [Card data sources](references/reference_card_sources.md) — marvelcdb primary, mc4db fallback cards; Cerebro, fr.marvelcdb, mc4db image URLs
 - [Automated setup scope](references/project_setup_scope.md) — scheme on 1A, environments and printed side schemes placed; players resolve Setup
 - [Replayable board state](references/project_replayable_state.md) — seed at start, full action history, snapshots every 10 actions
