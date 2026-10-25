@@ -872,8 +872,7 @@ func (t *Table) placeOnTable(c *Card, x, y int) {
 // applyDraw moves the recorded cards from the deck to the hand, in the recorded
 // order. Resolve records the top cards, but an undo may have put other cards
 // above them since: they are taken wherever they are in the deck. The deck is
-// the one a.Pile names, or the deck of the hand's seat when it names none, as
-// in the draws recorded before a draw could name its deck.
+// the one a.Pile names, or the deck of the hand's seat when it names none.
 func applyDraw(t *Table, a Action) error {
 	if !validArea(a.Area) {
 		return invalid("area %q has no hand", a.Area)
@@ -907,8 +906,7 @@ func applyDraw(t *Table, a Action) error {
 }
 
 // applyReveal reveals the recorded card wherever it is in its deck (see
-// applyDraw): the deck a.Pile names, or the encounter deck when it names none,
-// as in the reveals recorded before a player's deck could be revealed.
+// applyDraw): the deck a.Pile names, or the encounter deck when it names none.
 func applyReveal(t *Table, a Action) error {
 	deck, err := t.pile(cmp.Or(a.Pile, PileEncounter))
 	if err != nil {

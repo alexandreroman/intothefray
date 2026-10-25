@@ -31,7 +31,7 @@ type Event struct {
 	// shuffle, can be undone.
 	Tracked bool `json:"tracked,omitempty"`
 	// Burst is shared by the events merged into one history line (token,
-	// status and flip bursts); 0 for an event that was never merged.
+	// status, modifier and flip bursts); 0 for an event that was never merged.
 	Burst   int       `json:"burst,omitempty"`
 	Log     int       `json:"log"` // index in Game.Log, -1 when none
 	Undone  bool      `json:"undone,omitempty"`
@@ -115,10 +115,10 @@ func withoutViews(t *Table) *Table {
 
 // undoableBursts returns the bursts a player holding seats can undo, newest
 // first; each is the ascending list of its event indices. They are taken
-// among the last maxUndoDepth tracked bursts credited to any of the seats, undone ones included so that undoing never
-// reaches further back. Shuffles never count (P2-R17): undoing one would bring
-// back an order a player may have seen. Nor do bursts cancelled by flipping
-// back, which changed nothing.
+// among the last maxUndoDepth tracked bursts credited to any of the seats,
+// undone ones included so that undoing never reaches further back. Shuffles
+// never count: undoing one would bring back an order a player may have seen.
+// Nor do bursts cancelled by flipping back, which changed nothing.
 func (h *History) undoableBursts(seats ...int) [][]int {
 	var bursts [][]int
 	for i := len(h.Events) - 1; i >= 0; i-- {

@@ -198,8 +198,8 @@ func resolveOnTable(original *Table, who actor, a Action, rng *rand.Rand) (Actio
 		return a, nil
 	case ActArrowClear:
 		// A player's arrows are credited to any of their seats. Seat alone
-		// tells the seat of a one-deck player, whose events then stay as
-		// they were recorded before Seats existed.
+		// tells the seat of a one-deck player: only a player with several
+		// records them.
 		if len(who.seats) > 1 {
 			a.Seats = slices.Clone(who.seats)
 		}

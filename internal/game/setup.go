@@ -153,9 +153,9 @@ func (g *Game) Start(hostToken string, cat *pack.Catalog, seed uint64, now time.
 	if b.table.Piles[PileEncounter] != nil {
 		b.shuffle(PileEncounter)
 	}
-	// Side decks and set-aside cards come last, so that a game without
-	// them draws the same random numbers as before they existed: its table
-	// and card ids stay the same for the same seed.
+	// Side decks and set-aside cards draw their random numbers after the
+	// main decks and the encounter deck, so that they leave the order and
+	// the card ids of everything else the same for a seed.
 	for i, p := range g.Players {
 		for slot, seat := range g.seatsOf(i) {
 			if err := b.setupSideCards(seat, p.Decks[slot]); err != nil {
@@ -164,7 +164,7 @@ func (g *Game) Start(hostToken string, cat *pack.Catalog, seed uint64, now time.
 		}
 	}
 
-	// The scenario decks come after everything else, for the same reason.
+	// The scenario decks draw theirs last, for the same reason.
 	if err := b.setupScenarioDecks(scenario); err != nil {
 		return err
 	}

@@ -169,7 +169,7 @@ func (g *Game) ViewFor(token string) View {
 type Audience struct {
 	// Spectators is the number of connected spectators.
 	Spectators int
-	// Players holds the colours of the connected players, in seat order.
+	// Players holds the colours of the connected players, in arrival order.
 	Players []int
 }
 
@@ -363,8 +363,8 @@ func (t *Table) privateView(area Area) *PrivateView {
 }
 
 // public reports whether everybody may see the cards of a pile of this kind:
-// every kind but decks, side decks and the encounter deck, which are face
-// down.
+// every kind but decks, side decks, the encounter deck and scenario decks,
+// which are face down.
 func (k PileKind) public() bool {
 	return k != KindDeck && k != KindSideDeck && k != KindEncounter && k != KindScenarioDeck
 }
