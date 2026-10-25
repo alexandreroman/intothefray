@@ -6,6 +6,7 @@
   import Tooltip from '../components/Tooltip.svelte';
   import TopBar from '../components/TopBar.svelte';
   import { loadIndex } from '../lib/catalog';
+  import { playerColorVar } from '../lib/playerColor';
   import type { GameSession } from '../lib/session.svelte';
   import type { Index, View } from '../lib/types';
 
@@ -174,7 +175,7 @@
         />
         {#if me}
           {@const several = me.decks.length > 1}
-          <section class="card-box decks" style:--pc="var(--p{me.color + 1})">
+          <section class="card-box decks" style:--pc={playerColorVar(me.color)}>
             <div class="bhead"><h2>Your decks</h2></div>
             <!-- The slots have no identity but their index: a new slot count remounts them, so that
                  a link typed for a removed deck does not stay in the slot that takes its place. -->

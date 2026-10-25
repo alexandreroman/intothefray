@@ -4,6 +4,7 @@
 // action is credited to, and how a seat reads and shows.
 
 import type { TableElement } from './actions';
+import { playerColorVar } from '../lib/playerColor';
 import type { Area, DeckView, PlayerView, View } from '../lib/types';
 
 /** The seat index of a seat area: "p1" is seat 1. */
@@ -168,5 +169,5 @@ export function ownerLook(view: View, owner: number): OwnerLook {
   if (color === null) {
     return { name: `Player ${owner + 1}`, color: 'var(--muted)' };
   }
-  return { name: seatFullLabel(view, owner), color: `var(--p${color + 1})` };
+  return { name: seatFullLabel(view, owner), color: playerColorVar(color) };
 }

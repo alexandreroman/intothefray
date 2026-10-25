@@ -18,6 +18,7 @@
 -->
 <script lang="ts">
   import { untrack } from 'svelte';
+  import { playerColorVar } from '../lib/playerColor';
   import { PRESENCE_INTERVAL_MS } from '../lib/session.svelte';
   import type {
     CardView as TableCard,
@@ -176,10 +177,6 @@
   const landings = new Map<number, Landing>();
 
   const isPlayer = $derived(view.you.role === 'player');
-
-  function colourOf(color: number): string {
-    return `var(--p${color + 1})`;
-  }
 
   // ---- The viewer's own presence ----
 
@@ -676,7 +673,7 @@
     {#each ['a', 'b'] as ring (ring)}
       <div
         class="ping {ring}"
-        style:--c={colourOf(pinged.color)}
+        style:--c={playerColorVar(pinged.color)}
         style:left="{pinged.x}px"
         style:top="{pinged.y}px"
       ></div>
@@ -692,13 +689,13 @@
       <svg width="22" height="28" viewBox="0 0 22 28"
         ><path
           d="M3 2.5 L18 12 L11 13.5 L7.5 20 Z"
-          style:fill={colourOf(cursor.color)}
+          style:fill={playerColorVar(cursor.color)}
           stroke="#07090f"
           stroke-width="1.5"
           stroke-linejoin="round"
           stroke-linecap="round"
         /></svg
-      ><span style:background={colourOf(cursor.color)}>{cursor.name}{cursor.side}</span>
+      ><span style:background={playerColorVar(cursor.color)}>{cursor.name}{cursor.side}</span>
     </div>
   {/each}
 </div>

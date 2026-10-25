@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
+  import { playerColorVar } from '../../lib/playerColor';
   import { href } from '../../lib/router.svelte';
   import type { PlayerView, View } from '../../lib/types';
   import DeckNames from './DeckNames.svelte';
@@ -68,10 +69,6 @@
     }
     return parts.join(' · ');
   }
-
-  function colorVar(color: number): string {
-    return `var(--p${color + 1})`;
-  }
 </script>
 
 <section class="card-box">
@@ -100,7 +97,7 @@
   </div>
   <div class="sect seats">
     {#each view.players as player (player.color)}
-      <div class="seat" style:--pc={colorVar(player.color)}>
+      <div class="seat" style:--pc={playerColorVar(player.color)}>
         <div class="head">
           <div class="who">
             <b>{player.name}</b>
@@ -146,11 +143,11 @@
     {/each}
     {#each freeColors as color (color)}
       {#if isSpectator}
-        <button class="btn-ghost free" style:--pc={colorVar(color)} onclick={ontakeseat}>
+        <button class="btn-ghost free" style:--pc={playerColorVar(color)} onclick={ontakeseat}>
           <i></i>Take this seat
         </button>
       {:else}
-        <div class="free" style:--pc={colorVar(color)}>
+        <div class="free" style:--pc={playerColorVar(color)}>
           <i></i>Free seat: share the invite link
         </div>
       {/if}

@@ -16,6 +16,7 @@
   import { gameCards, knownCard, loadGameCards, loadIndex } from '../lib/catalog';
   import { storedLang } from '../lib/lang';
   import { localizedFace, localizedName } from '../lib/localize';
+  import { playerColorVar } from '../lib/playerColor';
   import { getPref, setPref } from '../lib/prefs';
   import { SMALL_SCREEN_QUERY } from '../lib/screen';
   import { selectionIndicator } from '../lib/selectionIndicator';
@@ -1630,12 +1631,12 @@
         class="ring"
         data-indicator
         aria-hidden="true"
-        style:--seat="var(--p{(seatColor(view, current) ?? 0) + 1})"
+        style:--seat={playerColorVar(seatColor(view, current) ?? 0)}
       ></span>
       {#each seatedDecks as { seat, name, color } (seat)}
         <button
           class="seat"
-          style:--seat="var(--p{color + 1})"
+          style:--seat={playerColorVar(color)}
           role="radio"
           aria-label={name}
           data-tip={name}
@@ -1679,7 +1680,7 @@
   class:compact={small.current}
   class:touch={touchMode.current}
   style:--z={zoom}
-  style:--you="var(--p{view.you.color + 1})"
+  style:--you={playerColorVar(view.you.color)}
   style:--edge="{TABLE_EDGE}px"
   style:--edge-bottom="{TABLE_EDGE_BOTTOM}px"
   style:--controls-bottom="{controlsBottom}px"

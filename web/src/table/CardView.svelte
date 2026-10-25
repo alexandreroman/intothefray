@@ -3,6 +3,7 @@
   table units, with its tokens, statuses and stat modifiers.
 -->
 <script lang="ts">
+  import { playerColorVar } from '../lib/playerColor';
   import type { PackFace, CardView as TableCard } from '../lib/types';
   import { MODIFIERS, STATUSES, withSign, type TokenName } from './actions';
   import CardBack from './CardBack.svelte';
@@ -193,7 +194,7 @@
   {/if}
 
   {#if previewer !== undefined}
-    <div class="rring" style:--c="var(--p{previewer + 1})"></div>
+    <div class="rring" style:--c={playerColorVar(previewer)}></div>
   {/if}
 </div>
 

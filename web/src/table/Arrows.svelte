@@ -7,6 +7,7 @@
   the card under it.
 -->
 <script lang="ts">
+  import { playerColorVar } from '../lib/playerColor';
   import type { View } from '../lib/types';
   import { interaction } from './interaction.svelte';
   import { seatColor } from './seats';
@@ -54,7 +55,7 @@
   let frame = 0;
 
   function colourOf(color: number | null): string {
-    return color === null ? 'var(--muted)' : `var(--p${color + 1})`;
+    return color === null ? 'var(--muted)' : playerColorVar(color);
   }
 
   function markerOf(color: number | null): string {

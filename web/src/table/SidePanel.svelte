@@ -5,6 +5,7 @@
 -->
 <script lang="ts">
   import { tick } from 'svelte';
+  import { playerColorVar } from '../lib/playerColor';
   import type { FaceRef, LogPart, LogView } from '../lib/types';
   import { mergedLines } from './animate';
   import { interaction } from './interaction.svelte';
@@ -158,7 +159,7 @@
 
 {#snippet lineText(entry: LogView, parts: Part[])}
   <!-- The line break between the name and the text renders as one space. -->
-  <span class="w" style:color="var(--p{entry.color + 1})">{entry.who}</span>
+  <span class="w" style:color={playerColorVar(entry.color)}>{entry.who}</span>
   {#each parts as part, i (i)}{#if part.card}<b class="card" class:aside={part.aside}>{part.text}</b
       >{:else if part.aside}<span class="aside">{part.text}</span>{:else}{part.text}{/if}{/each}
 {/snippet}
