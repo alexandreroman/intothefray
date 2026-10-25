@@ -221,7 +221,7 @@ export function actionsFor(
 /**
  * A spectator's read-only actions: Browse… on the piles whose cards everyone
  * sees. Cards in play, the villain and main scheme included, get none (see the
- * "Spectators cannot change the stage card" project memory note).
+ * "Action menu organisation" project memory note).
  */
 function spectatorActions(el: TableElement, table: TableView): ActionItem[] {
   switch (el.kind) {

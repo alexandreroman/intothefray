@@ -133,9 +133,12 @@
   /**
    * Decided from the pointer position rather than :hover: as the hand rises,
    * its cards move away from a pointer resting at the bottom of the screen,
-   * and :hover would flip on and off. In the capture phase, so that the hand
-   * has risen or lowered before every other window listener sees the move:
-   * Presence tells the others about the cursor only while the hand is down.
+   * and :hover would flip on and off. In the capture phase, so that outside a
+   * drag the hand has risen or lowered before every other window listener sees
+   * the move: Presence tells the others about the cursor only while the hand
+   * is down. During a drag, the hand follows the drop target that DragLayer
+   * sets later in the same move, so one cursor point may go out before
+   * Presence sends `cursor: null`.
    */
   function followPointer(event: PointerEvent): void {
     pointer = { x: event.clientX, y: event.clientY };

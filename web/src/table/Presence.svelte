@@ -1,12 +1,12 @@
 <!--
-  The other players at the table (spec 5.8): their cursors, the card each one
-  previews, their pings and their drags, drawn over the table (the table
-  cards or the markers they drag hidden in their places meanwhile). It also tells them about the viewer's own cursor, preview and
-  pings; DragLayer tells them about the viewer's drags. While the viewer is
-  away from the table (hand raised, dialog open), their cursor is hidden from
-  the others: nothing tells where the pointer goes in the hand or in the
-  dialog. Spectators send nothing, as no player draws them (ruling P5c-R2:
-  the server refuses their presence).
+  The other players at the table: their cursors, the card each one previews,
+  their pings and their drags, drawn over the table (the table cards or the
+  markers they drag hidden in their places meanwhile). It also tells them
+  about the viewer's own cursor, preview and pings; DragLayer tells them about
+  the viewer's drags. While the viewer is away from the table (hand raised,
+  dialog open), their cursor is hidden from the others: nothing tells where
+  the pointer goes in the hand or in the dialog. Spectators send nothing, as
+  no player draws them: the server refuses their presence.
 
   Spots travel as table units of the surface (screen.ts). Messages can come in
   floods: the session keeps only the latest state of each player, and the
@@ -193,9 +193,11 @@
     if (!cursor) {
       return;
     }
-    // The hand (Hand.svelte) has already decided on this move, in the capture phase that runs
-    // before this listener: the move that raises it must not tell the others where the pointer
-    // went, while the move that lowers it shows the cursor again.
+    // Outside a drag, the hand (Hand.svelte) has already decided on this move, in the capture
+    // phase that runs before this listener: the move that raises it must not tell the others where
+    // the pointer went, while the move that lowers it shows the cursor again. During a drag, the
+    // hand follows the drop target that DragLayer sets in a later listener, so the move that
+    // raises it may still send one cursor point before the effect below sends `cursor: null`.
     if (!away) {
       send({ cursor });
     }
