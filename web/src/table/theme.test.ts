@@ -11,12 +11,12 @@ describe('table theme assets', () => {
     expect(backUrl('player', 'official')).toBe(ASSETS + 'back-player.avif');
     expect(backUrl('encounter', 'official')).toBe(ASSETS + 'back-encounter.avif');
     expect(backUrl('villain', 'official')).toBe(ASSETS + 'back-villain.avif');
-    expect(firstPlayerUrl('official')).toBe(ASSETS + 'first-player.avif');
+    expect(firstPlayerUrl('official')).toBe(ASSETS + 'first-player-v2.avif');
   });
 
   it('felt keeps the official images', () => {
     expect(backUrl('encounter', 'felt')).toBe(ASSETS + 'back-encounter.avif');
-    expect(firstPlayerUrl('felt')).toBe(ASSETS + 'first-player.avif');
+    expect(firstPlayerUrl('felt')).toBe(ASSETS + 'first-player-v2.avif');
   });
 
   it('minimal uses no images', () => {

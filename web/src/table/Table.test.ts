@@ -68,7 +68,7 @@ const INDEX: Index = {
   ],
 };
 
-const FIRST_PLAYER_TOKEN = 'https://img.intothefray.xyz/assets/first-player.avif';
+const FIRST_PLAYER_TOKEN = 'https://img.intothefray.xyz/assets/first-player-v2.avif';
 
 // The catalog of the fixture: code -> face 0.
 const FACES: Record<string, Partial<PackFace>[]> = {

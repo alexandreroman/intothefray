@@ -22,7 +22,7 @@ const OFFICIAL_BACKS: Record<Back, string> = {
   villain: ASSETS + 'back-villain.avif',
 };
 
-const FIRST_PLAYER_TOKEN = ASSETS + 'first-player.avif';
+const FIRST_PLAYER_TOKEN = ASSETS + 'first-player-v2.avif';
 
 const THEME_ASSETS: Record<Theme, ThemeAssets> = {
   official: { backs: OFFICIAL_BACKS, firstPlayer: FIRST_PLAYER_TOKEN },
