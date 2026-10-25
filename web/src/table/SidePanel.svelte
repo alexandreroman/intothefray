@@ -322,7 +322,7 @@
     align-items: center;
     justify-content: center;
     border-radius: 8px;
-    color: #c9cfdf;
+    color: var(--text-soft);
   }
 
   .strip-undo :global(svg) {

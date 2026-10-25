@@ -28,7 +28,7 @@
   } = $props();
 </script>
 
-<div class="zoomctl">
+<div class="zoomctl floatbar">
   <button
     class="btn-ghost"
     data-tip="Zoom out"
@@ -59,7 +59,7 @@
     onclick={() => onzoom(zoom + ZOOM_STEP)}>+</button
   >
   {#if onkeys}
-    <span class="sep"></span>
+    <span class="floatbar-sep"></span>
     <button
       class="btn-ghost keys"
       data-tip="Keyboard shortcuts"
@@ -95,11 +95,6 @@
     display: flex;
     align-items: center;
     gap: 2px;
-    padding: 4px;
-    background: #141a28eb;
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    box-shadow: 0 6px 16px #0008;
   }
 
   button {
@@ -109,7 +104,7 @@
     padding: 0 8px;
     border: none;
     border-radius: 8px;
-    color: #c9cfdf;
+    color: var(--text-soft);
     font-weight: 700;
   }
 
@@ -117,13 +112,6 @@
     min-width: 54px;
     font-size: 12px;
     font-variant-numeric: tabular-nums;
-  }
-
-  .sep {
-    width: 1px;
-    height: 20px;
-    margin: 0 2px;
-    background: var(--line-strong);
   }
 
   .keys {

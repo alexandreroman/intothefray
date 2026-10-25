@@ -342,3 +342,20 @@ a.btn-primary {
 .table-bg {
   background-color: var(--table-bg);
 }
+
+/* A bar floating over the table (zoom control, Undo, player selector): its buttons on a raised panel. */
+.floatbar {
+  padding: 4px;
+  background: #141a28eb;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 6px 16px #0008;
+}
+
+/* The thin rule between two groups of buttons of a floating bar. */
+.floatbar-sep {
+  width: 1px;
+  height: 20px;
+  margin: 0 2px;
+  background: var(--line-strong);
+}

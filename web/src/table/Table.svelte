@@ -1610,7 +1610,7 @@
   readers and in its tooltip only, as the name already shows above the player's deck.
 -->
 {#snippet seatPicker(current: number)}
-  <div class="seatpick">
+  <div class="seatpick floatbar">
     {#if seatedDecks.length > 2}
       <button
         class="btn-ghost step"
@@ -1774,9 +1774,14 @@
     Undo floats there, left of the zoom control. On a small screen, both share one bar above the
     resting hand.
   -->
-  <div class="corner" bind:this={cornerBox} bind:clientHeight={cornerHeight}>
+  <div
+    class="corner"
+    class:floatbar={small.current}
+    bind:this={cornerBox}
+    bind:clientHeight={cornerHeight}
+  >
     {#if narrow.current}
-      <div class="undo">
+      <div class="undo floatbar">
         <!-- aria-disabled rather than disabled, so that the tooltip saying why still shows. -->
         <button
           class="btn-ghost"
@@ -1793,7 +1798,7 @@
         </button>
       </div>
       {#if small.current}
-        <span class="sep" aria-hidden="true"></span>
+        <span class="floatbar-sep" aria-hidden="true"></span>
       {/if}
     {/if}
     <!--
@@ -2165,11 +2170,6 @@
     display: flex;
     align-items: center;
     gap: 4px;
-    padding: 4px;
-    background: #141a28eb;
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    box-shadow: 0 6px 16px #0008;
   }
 
   /*
@@ -2186,7 +2186,7 @@
     padding: 0 8px;
     border: none;
     border-radius: 8px;
-    color: #c9cfdf;
+    color: var(--text-soft);
   }
 
   /* A round swatch of the seat colour; the player shown is ringed. */
@@ -2243,11 +2243,6 @@
   .app.compact .corner {
     margin-bottom: var(--controls-bottom);
     gap: 2px;
-    padding: 4px;
-    background: #141a28eb;
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    box-shadow: 0 6px 16px #0008;
   }
 
   .app.compact .corner .undo,
@@ -2256,22 +2251,6 @@
     background: none;
     border: none;
     box-shadow: none;
-  }
-
-  /* As the zoom control's own separator. */
-  .corner .sep {
-    width: 1px;
-    height: 20px;
-    margin: 0 2px;
-    background: var(--line-strong);
-  }
-
-  .undo {
-    padding: 4px;
-    background: #141a28eb;
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    box-shadow: 0 6px 16px #0008;
   }
 
   .undo button {
@@ -2283,7 +2262,7 @@
     justify-content: center;
     border: none;
     border-radius: 8px;
-    color: #c9cfdf;
+    color: var(--text-soft);
   }
 
   .undo :global(svg) {
