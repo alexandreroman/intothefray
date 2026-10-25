@@ -385,11 +385,9 @@ describe('Lobby', () => {
       await nextFrame();
       expect(list.style.getPropertyValue('--pack-name-height')).toBe('44px');
 
-      // A filter that matches nothing keeps the last sizes.
-      await fireEvent.input(screen.getByLabelText('Filter by scenario or pack'), {
-        target: { value: 'nobody' },
-      });
-      await resize(list.querySelector('.vil'));
+      // A hidden list lays out nothing: its zero-height tile keeps the last sizes.
+      tile.getBoundingClientRect = sized(0);
+      await resize(tile);
       await nextFrame();
       expect(list.style.getPropertyValue('--tile-height')).toBe('112.5px');
     } finally {
