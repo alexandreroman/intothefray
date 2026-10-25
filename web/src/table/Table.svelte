@@ -1971,7 +1971,7 @@
         bind:offsetWidth={focusWidth}
         bind:offsetHeight={focusHeight}
       >
-        <CardPreview preview={drawnPreview} snug hidden={!preview} />
+        <CardPreview preview={drawnPreview} hidden={!preview} />
       </div>
     {/key}
   {/if}
