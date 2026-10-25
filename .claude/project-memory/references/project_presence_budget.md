@@ -7,8 +7,8 @@ type: project
 # Presence message budget
 
 Every presence message a client sends costs one Redis PUBLISH on the server,
-and the backend may run on Redis Cloud's free tier (100 ops/s). The web client
-therefore sends cursor and drag moves at most once per 150 ms
+and the backend stays portable to a small managed Redis tier (Redis Cloud's
+free tier allows 100 ops/s). The web client therefore sends cursor and drag moves at most once per 150 ms
 (`PRESENCE_INTERVAL_MS`), holds moves shorter than 3 table units until the
 pointer settles, and sends events (ping, preview, cursor leaving, drag start
 and end) at once, merged with any waiting move; a drag's end follows its last

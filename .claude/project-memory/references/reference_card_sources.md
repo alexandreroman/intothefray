@@ -21,23 +21,33 @@ type: reference
   `https://mc4db.merlindumesnil.net/bundles/cards/FR/{pack}/{code}.webp`
   (uppercase `FR`). Its bulk API `/api/public/cards/?encounter=1` gives
   each card's English `imagesrc`/`backimagesrc`; the French path swaps
-  `/EN/` for `/FR/`. The bulk API ignores the locale, so a French image
-  exists only once a HEAD check says so. Pack folders follow mc4db's own
-  paths (e.g. `fear_no_evil_by_ffg/`), not always the marvelcdb pack
-  code. Nearly every face has a French image (4,017 of 4,027).
+  `/EN/` for `/FR/`. The bulk API ignores the locale, so the generator
+  keeps a French path only when a HEAD check answers it. Pack folders
+  follow mc4db's own paths (e.g. `fear_no_evil_by_ffg/`), not always the
+  marvelcdb pack code. All but about ten faces have a French path.
+- mc4db answers every French image path it holds with HTTP 200 and one
+  placeholder picture (`image/png`, 46,376 bytes, `Cache-Control:
+  no-store`) saying that French images are no longer available on mc4db;
+  a path it does not hold answers 404. A HEAD check cannot tell a French
+  scan from the placeholder.
 - mc4db is also the fallback card source: marvelcdb is primary, and the
   generator adds the mc4db records of official cards (card `pack_creator`
   `FFG`) whose base code marvelcdb lacks, all faces of a card from one
   source. mc4db codes map to marvelcdb ones: pack by code, else by name
-  (`fear_no_evil_by_ffg` is `fne`), set codes without `_by_ffg`; their
-  images are relative to the mc4db host. Packs list: `/api/public/packs/`
-  (`creator`). The report lists the records taken from mc4db per pack.
+  (`fear_no_evil_by_ffg` is `fne`), else by code without `_by_ffg`
+  (`thor_by_ffg` is `thor`); set codes without `_by_ffg`; their images
+  are relative to the mc4db host. Packs list: `/api/public/packs/` (names
+  and positions of the packs marvelcdb lacks). The report lists the
+  records taken from mc4db per pack.
   Fear No Evil is the pack it completes (171 records).
 - Cerebro is not a card-list source: it holds no official card that both
   marvelcdb and mc4db lack.
 - mc4db answers 429 to Go's default User-Agent; the generator sends
   `intothefray-packgen (+https://github.com/alexandreroman/intothefray)`.
 - Cerebro has no French images.
+- The official theme's first player token image is hotlinked from
+  `https://card-table.app/images/table/first_player_token_marvelchampions.png`
+  (`web/src/table/theme.ts`); it is not a card image.
 - Cerebro swaps the A/B images of some identities (Groot, Rocket and the
   X-Men wave: Colossus, Shadowcat, Cyclops, Phoenix, Wolverine, Storm,
   Gambit, Rogue): its `XXXXXA.jpg` shows the alter-ego. `cerebro`

@@ -10,7 +10,7 @@ The technical name is `intothefray` (display name "Into The Fray"). The Go
 module path is `github.com/alexandreroman/intothefray`. The license is
 Apache-2.0.
 
-**Why:** chosen at project initialisation.
+**Why:** the user's choice for the project identity.
 
 **How to apply:** use `intothefray` for binaries, images and the module;
 "Into The Fray" in the UI and docs.

@@ -7,7 +7,7 @@ type: project
 # CI scope
 
 `.github/workflows/ci.yml` runs on pull requests and pushes to `main`.
-Three jobs check every run: `go` (build, vet, race tests, golangci-lint
+Three jobs check every run: `go` (build, race tests, golangci-lint
 pinned to the local version), `web` (svelte-check, lint, vitest, build)
 and `docker` (`linux/amd64` image build without push, `compose.yaml` and
 Caddyfile validation).
@@ -25,10 +25,10 @@ Caddyfile validation).
   after the web checks, so the frontend is verified once per commit.
   `ci.yml` is the only workflow; a manual run of it on `main`
   republishes everything.
-- The game tests share one pack catalog (`sharedCatalog`, a
-  `sync.OnceValues` in `internal/game/lobby_test.go`): decoding the
-  embedded packs per test made the race-enabled suite take minutes.
-  Tests only read the catalog.
+- `packs.Catalog` decodes the embedded packs once (a `sync.OnceValues`
+  in `packs/packs.go`), and every caller, server and tests alike, shares
+  that read-only catalog: decoding it once keeps the race-enabled suite
+  fast. No caller modifies the catalog.
 - CI does not compare `packs/dist` with `packs/curated`: packgen fetches
   marvelcdb and Cerebro over the network (`packs/.cache` is gitignored).
 - The Caddyfile is validated through the compose `web` service, so the

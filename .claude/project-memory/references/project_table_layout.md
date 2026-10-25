@@ -39,35 +39,36 @@ type: project
   encounter piles; the deck's name for a scenario deck); the frame's
   tooltip gives that player's hand count.
 - Out-of-play piles (victory display, set-aside) are not drawn on the
-  table: chips on their owner's frame open them (see "Action menu
-  organisation"); the villain's chips sit on the first villain frame.
+  table: chips on their owner's frame open them (see
+  [[project_action_bars]]); the villain's chips sit on the first villain
+  frame.
 - A portrait table card is 140×196 table units, chosen for readability;
   the hand and the preview have their own sizes. Tokens sit inside the
   card: damage and counters on its lower part, threat on its right side.
 - On a wide screen the history panel shows at the right; it can be
   collapsed to a slim strip that keeps Undo, remembered per viewer
-  (`itf-history-collapsed`). On a narrow screen the preview is an overlay,
-  the history is hidden and a floating button offers Undo ("Undo last
-  action").
-- Cards and piles act through their action menu (see "Action menu
-  organisation").
+  (`itf-history-collapsed`). The card preview floats over the play area at
+  every width. On a narrow screen the history is hidden and a floating
+  button offers Undo ("Undo last action").
+- Cards and piles act through their action menu (see
+  [[project_action_bars]]).
 - While the viewer has not chosen a zoom (`itf-zoom`), screens ≤ 600 px
   wide fit the content width (never above 100%) and wider screens show
   100%, following the width live. The % button reads "Fit to width" at
   ≤ 600 px and "Back to 100%" (key 0) elsewhere. Minimum zoom 30% at
   ≤ 600 px wide, else 50%. Owner names and chips keep ≥ 11 px text at
-  any zoom. At ≤ 600 px wide or
-  ≤ 500 px tall, Undo and the zoom control form one bar at the bottom
-  right above the resting hand, and hand cards are sized from the window.
+  any zoom. At ≤ 600 px wide or ≤ 500 px tall, Undo and the zoom control
+  form one bar at the bottom right above the resting hand, and hand cards
+  are sized from the window.
 - Touch mode (no hover, coarse pointer) shows no card preview and no
   keyboard-shortcuts button; bar buttons are 44 px.
 
-**Why:** decided with the user: players add cards as they
-play, so fixed things sit on the left and play grows right; zones and
-their splits added complexity without value. One long villain row with
+**Why:** decided with the user: players add cards as they play, so fixed
+things sit on the left and play grows right; one shared surface without
+per-player zones keeps the layout simple. One long villain row with
 smaller scenario decks keeps every villain on the same band, as the user
 chose for several villains.
 
 **How to apply:** new fixed table elements go at the start of their
-owner's row (server setup positions); never reintroduce per-player zones.
+owner's row (server setup positions); the table has no per-player zones.
 See [[project_scenario_decks]].

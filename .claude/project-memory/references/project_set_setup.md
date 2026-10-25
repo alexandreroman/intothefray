@@ -17,7 +17,7 @@ offer it and lobby validation rejects it.
 **Why:** these rules come from the card text (marvelcdb); the PvP set
 belongs to Civil War's player-vs-player mode, which the co-op table does not
 model. A scenario's own "Setup:" instructions stay manual (see
-`project_setup_scope.md`).
+[[project_setup_scope]]).
 
 **How to apply:** add set-level setup cards or lobby exclusions as curated
 data in `sets.json`, never as code, and verify each against the card text.

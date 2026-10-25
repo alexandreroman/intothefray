@@ -1,6 +1,6 @@
 ---
 name: "Product constraints"
-description: "Anti-cheat views, no image hosting, no persistence, pack scope, accepted v1 limits"
+description: "Anti-cheat views, no image hosting, no persistence, pack scope, accepted limits"
 type: project
 ---
 
@@ -12,12 +12,12 @@ type: project
   marvelcdb / Cerebro / mc4db URLs.
 - No accounts and no long-term persistence; a game with nobody connected
   expires after 24 hours; only the host can "End game".
-- Card packs are additive data files; scenarios need a hand-curated file
-  and the first release covers the Core Set plus a few packs, the rest
-  listed as "not supported yet".
-- Lost seats (lost token) and host transfer are not handled in v1.
+- Card packs are additive data files and hold every pack's player cards;
+  a scenario needs a hand-curated file, and the lobby lists the others as
+  "Not supported yet".
+- A lost token loses its seat, and the host role never transfers.
 - The backend runs on an OVH VPS at `api.intothefray.xyz` (see
-  `project_deployment.md`); it stays portable.
+  [[project_deployment]]); it stays portable.
 
 **Why:** decided during the design.
 

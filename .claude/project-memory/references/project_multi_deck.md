@@ -29,8 +29,8 @@ type: project
   swatches, round them, and in "All" through the viewer's own decks (with
   2 or more; otherwise the keys do nothing there).
   Selector swatches and owner frames always name the hero ("Sam · Captain
-  Marvel"); history lines and box titles add the hero ("Alex · Spider-Man")
-  only when the player has several decks.
+  Marvel"); history lines ("… to Alex (Spider-Man)") and box titles ("Your
+  Spider-Man deck") name it only when the player has several decks.
 
 **Why:** decided with the user: one person can play a
 multi-handed game alone or alongside friends, and per-deck rules stay

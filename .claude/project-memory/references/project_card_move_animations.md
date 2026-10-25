@@ -38,6 +38,7 @@ type: project
 at the table without reading the history.
 
 **How to apply:** a new way for a card to change place needs its motion in
-`animate.ts` and `motion.svelte.ts`, reusing the kinds `move`, `fly`,
-`enter`, `draw`, `under`, `away`, `arrive`, `flip` and the existing timing
+`animate.ts` and `motion.svelte.ts`, reusing the kinds of `Anim` (`move`,
+`fly`, `enter`, `draw`, `drawAway`, `under`, `away`, `arrive`, `flip`,
+`turnIn`, `reveal`, `shuffle`, `marker`, `glow`) and the existing timing
 constants. Spec 5.5 ("Every change of place animates") holds the rule.

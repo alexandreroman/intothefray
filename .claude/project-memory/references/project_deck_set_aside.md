@@ -7,7 +7,8 @@ type: project
 # Cards set aside by a deck card
 
 A player card can list, in `packs/curated/cards.json` (`setAside`, keyed by
-the card's code, not a face code), the cards a deck containing it puts aside at setup.
+the card's code, not a face code), the cards a deck containing it puts
+aside at setup.
 Specialized Training (43021) lists the four Specialist upgrades
 (43034-43037). Setup puts every catalog copy of them on the seat's
 set-aside pile, owned by the seat and at home in its deck, whether or not
