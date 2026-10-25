@@ -74,9 +74,9 @@ export interface ActionItem {
 /** Mirrors maxCount in internal/game/action.go: the most cards one action takes. */
 const MAX_COUNT = 99;
 
-// Groups of a card in play, in menu order: Exhaust and Flip (or the stage
-// choice) turn the card, the token, status and modifier submenus mark it,
-// Discard and Move to take it away.
+// Groups of a card in play, in menu order: Exhaust, Flip and, on the card a
+// stage shows, its card choice turn the card, the token, status and modifier
+// submenus mark it, Discard and Move to take it away.
 const GROUP_TURN = 0;
 const GROUP_MARK = 1;
 const GROUP_LEAVE = 2;
@@ -265,8 +265,12 @@ function cardActions(card: CardView, context: Context, units: CardView[] | null)
   } else if (drawsRevealed(card, context)) {
     items.push(drawRevealedItem(card));
   }
-  const shownByStage = context.table.stages.some((stage) => stage.current === card.id);
-  if (shownByStage) {
+  const stage = context.table.stages.find((s) => s.current === card.id);
+  if (stage) {
+    const flip = stageFlipItem(card, stage);
+    if (flip) {
+      items.push(flip);
+    }
     items.push(stageItem());
   } else if (canFlip(card)) {
     items.push(flipItem(card));
@@ -316,8 +320,9 @@ function exhaustItem(card: CardView): ActionItem {
 }
 
 /**
- * The card a stage shows has no Flip: its card choice lists every face instead. One short
- * label for the villain and the main scheme alike: the box it opens names its stage.
+ * The card choice of the card a stage shows: it lists every face of the stage's cards, and is
+ * the only way to show another card. One short label for the villain and the main scheme alike:
+ * the box it opens names its stage.
  */
 function stageItem(): ActionItem {
   return {
@@ -326,6 +331,27 @@ function stageItem(): ActionItem {
     key: 'V',
     group: GROUP_TURN,
     run: () => ({ local: 'stageBox' }),
+  };
+}
+
+/**
+ * Flip on the card a stage shows turns it over, never changes it: a card with several faces (a
+ * main scheme's 1A and 1B, a villain such as Spiral) shows its next face, back to the first after
+ * the last, through the card choice's action (applyChooseStage). It never turns face down, so a
+ * single-faced card has no Flip, nor a card the catalog does not know yet.
+ */
+function stageFlipItem(card: CardView, stage: Stage): ActionItem | null {
+  const faces = card.code ? (knownCard(card.code)?.card.faces.length ?? 1) : 1;
+  if (faces < 2) {
+    return null;
+  }
+  const face = (card.face + 1) % faces;
+  return {
+    id: 'flip',
+    label: 'Flip',
+    key: 'F',
+    group: GROUP_TURN,
+    run: () => ({ kind: 'chooseStage', stage: stage.key, card: card.id, face }),
   };
 }
 

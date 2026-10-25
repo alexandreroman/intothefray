@@ -26,6 +26,11 @@ const FACES: Record<string, Partial<PackFace>[]> = {
   '01001': [{ name: 'Spider-Man' }],
   '01010': [{ name: 'Giant form', size: 'dstd' }],
   '01094': [{ name: 'Rhino', stage: 'I' }],
+  '01095': [{ name: 'Rhino', stage: 'II' }],
+  '01097': [
+    { name: 'The Break-In!', size: 'land' },
+    { name: 'The Break-In!', size: 'land' },
+  ],
 };
 
 function infoOf(code: string): CardInfo | null {
@@ -525,6 +530,32 @@ describe('keys on the table', () => {
     await fireEvent.pointerEnter(placed('enemy'));
     await press('b');
     expect(session.act).not.toHaveBeenCalled();
+  });
+
+  it('F turns a two-faced main scheme over, and does nothing on a single-faced villain stage', async () => {
+    const cards = [
+      card('v', { code: '01094', owner: -1, back: 'villain' }),
+      card('v2', { code: '01095', owner: -1, back: 'villain', zone: 'stage' }),
+      card('s', { code: '01097', owner: -1, back: 'encounter', x: 560 }),
+    ];
+    const view = makeView({ cards });
+    view.table!.stages = [
+      { key: 'villain', label: 'Villain', current: 'v', cards: ['v', 'v2'] },
+      { key: 'main', label: 'Main scheme', current: 's', cards: ['s'] },
+    ];
+    const { session } = await renderTable(view);
+
+    // Stage II waits in the stage zone, yet F never changes the card: Change card… (V) does.
+    await fireEvent.pointerEnter(placed('v'));
+    await press('f');
+    expect(session.act).not.toHaveBeenCalled();
+
+    await fireEvent.pointerEnter(placed('s'));
+    await press('f');
+    expect(session.act).toHaveBeenLastCalledWith(
+      { kind: 'chooseStage', stage: 'main', card: 's', face: 1 },
+      0,
+    );
   });
 
   it('V opens the card choice of the villain card, and does nothing elsewhere', async () => {
