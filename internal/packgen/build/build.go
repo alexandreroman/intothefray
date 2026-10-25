@@ -55,8 +55,7 @@ type Result struct {
 // in Inputs.Alive.
 func ImageURLs(in Inputs) []string {
 	in.MC, in.MCPacks, _, _ = withFallback(in.MC, in.MCPacks, in.MC4DB, in.MC4DBPacks)
-	cards, _ := BuildCards(in.MC, in.CB, in.Curated.Cards)
-	localizeCards(cards, faceCodesOf(in.MC), frenchSourcesOf(in))
+	cards, _ := localizedCards(in, frenchSourcesOf(in))
 
 	var urls []string
 	for _, packCards := range cards {
@@ -84,10 +83,8 @@ func Build(in Inputs) (Result, error) {
 		return Result{}, err
 	}
 	fr := frenchSourcesOf(in)
-	faceCodes := faceCodesOf(in.MC)
-	cards, problems := BuildCards(in.MC, in.CB, in.Curated.Cards)
+	cards, problems := localizedCards(in, fr)
 	problems = append(problems, fallbackProblems...)
-	localizeCards(cards, faceCodes, fr)
 	cards, dropped := dropDeadImages(cards, in.Alive)
 	problems = append(problems, dropped...)
 
@@ -133,6 +130,14 @@ func Build(in Inputs) (Result, error) {
 		Fallback: fallback,
 		Coverage: []report.Coverage{frenchCoverage(packs)},
 	}, nil
+}
+
+// localizedCards builds the cards of the records of in, already merged with
+// their fallback, and adds their French overrides, images still unchecked.
+func localizedCards(in Inputs, fr frenchSources) (map[string][]pack.Card, []report.Unsupported) {
+	cards, problems := BuildCards(in.MC, in.CB, in.Curated.Cards)
+	localizeCards(cards, faceCodesOf(in.MC), fr)
+	return cards, problems
 }
 
 // dropDeadImages applies images.DropDead to every pack.
@@ -318,7 +323,7 @@ func checkInPlay(set pack.Set, inPlay map[pack.Difficulty][]pack.FaceRef, faceCo
 			if !slices.Contains(set.Cards, ref.Card) {
 				return fmt.Errorf("%s in-play card %s is not in the set", difficulty, ref.Card)
 			}
-			if ref.Face < 0 || ref.Face >= faceCounts[ref.Card] {
+			if !hasFace(ref, faceCounts) {
 				return fmt.Errorf("%s in-play card %s has no face %d", difficulty, ref.Card, ref.Face)
 			}
 		}
@@ -396,7 +401,7 @@ func dropInvalidFaceRefs(
 func invalidFaceRefs(scenario pack.Scenario, faceCounts map[string]int) []pack.FaceRef {
 	var bad []pack.FaceRef
 	check := func(ref pack.FaceRef) {
-		if ref.Face < 0 || ref.Face >= faceCounts[ref.Card] {
+		if !hasFace(ref, faceCounts) {
 			bad = append(bad, ref)
 		}
 	}
@@ -409,6 +414,11 @@ func invalidFaceRefs(scenario pack.Scenario, faceCounts map[string]int) []pack.F
 		}
 	}
 	return bad
+}
+
+// hasFace reports whether the card of ref has the face ref points at.
+func hasFace(ref pack.FaceRef, faceCounts map[string]int) bool {
+	return ref.Face >= 0 && ref.Face < faceCounts[ref.Card]
 }
 
 // assemblePacks returns one file per marvelcdb pack that has some content,

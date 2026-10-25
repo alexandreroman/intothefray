@@ -65,7 +65,9 @@ func BuildScenarios(
 
 	scenarios = make(map[string][]pack.Scenario)
 	for _, villain := range villains {
-		if covered[villain.set.Code] && !isDefinedSet(defsBySet, villain.set.Code) {
+		// A covered set keeps its entry when a definition has it as its own
+		// villain set.
+		if _, defined := defsBySet[villain.set.Code]; covered[villain.set.Code] && !defined {
 			continue
 		}
 		ref := pack.ScenarioRef{
@@ -145,13 +147,6 @@ func coveredVillainCard(def curated.ScenarioDef, villains []villainSet) *pack.Ca
 		}
 	}
 	return lowest
-}
-
-// isDefinedSet reports whether a definition has the set as its own villain set,
-// which then keeps its entry even when another definition covers it.
-func isDefinedSet(defsBySet map[string]curated.ScenarioDef, code string) bool {
-	_, found := defsBySet[code]
-	return found
 }
 
 // villainSetsOf returns the villain and leader sets ordered by the code of their first

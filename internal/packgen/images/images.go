@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"path/filepath"
 	"slices"
 	"strconv"
 	"strings"
@@ -19,6 +18,7 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/alexandreroman/intothefray/internal/pack"
+	"github.com/alexandreroman/intothefray/internal/packgen/fetch"
 	"github.com/alexandreroman/intothefray/internal/packgen/report"
 )
 
@@ -214,8 +214,8 @@ func (c *Checker) loadCache() (map[string]bool, error) {
 	return cache, nil
 }
 
-// saveCache writes through a temp file and a rename, so an interrupted run
-// never leaves a truncated cache behind.
+// saveCache writes the cache atomically, so an interrupted run never leaves a
+// truncated cache behind.
 func (c *Checker) saveCache(cache map[string]bool) error {
 	if c.CachePath == "" {
 		return nil
@@ -224,24 +224,7 @@ func (c *Checker) saveCache(cache map[string]bool) error {
 	if err != nil {
 		return fmt.Errorf("encode image cache: %w", err)
 	}
-	dir := filepath.Dir(c.CachePath)
-	if err := os.MkdirAll(dir, 0o750); err != nil {
-		return fmt.Errorf("write image cache: %w", err)
-	}
-	tmp, err := os.CreateTemp(dir, ".tmp-*")
-	if err != nil {
-		return fmt.Errorf("write image cache: %w", err)
-	}
-	defer func() { _ = os.Remove(tmp.Name()) }() // no-op once renamed
-
-	if _, err := tmp.Write(data); err != nil {
-		_ = tmp.Close()
-		return fmt.Errorf("write image cache: %w", err)
-	}
-	if err := tmp.Close(); err != nil {
-		return fmt.Errorf("write image cache: %w", err)
-	}
-	if err := os.Rename(tmp.Name(), c.CachePath); err != nil {
+	if err := fetch.WriteFileAtomic(c.CachePath, data); err != nil {
 		return fmt.Errorf("write image cache: %w", err)
 	}
 	return nil

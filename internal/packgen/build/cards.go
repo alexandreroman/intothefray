@@ -225,10 +225,9 @@ func rootOf(
 	if !found {
 		return "", "original not found"
 	}
-	// The catalog maps an alias with a face letter to the face of that letter,
-	// so a letter beyond the faces of a multi-face card cannot be loaded. The
-	// catalog maps any letter of a single-face card to its only face.
-	if len(faces) > 1 && len(reprint.Code) > baseCodeLength && int(reprint.Code[baseCodeLength]-'a') >= len(faces) {
+	// The reprint code becomes an alias of the original card, which the
+	// catalog could not load if it named a face the card does not have.
+	if _, err := pack.AliasFace(strings.ToLower(reprint.Code), len(faces)); err != nil {
 		return "", "reprint face missing from original"
 	}
 	return root, ""
