@@ -133,8 +133,10 @@ func (s *Server) withCORS(next http.Handler) http.Handler {
 		allowed := slices.Contains(s.deps.Config.AllowedOrigins, origin)
 		sameOrigin := isSameOrigin(origin, r.Host)
 
+		// Every reply varies on Origin, whether CORS headers are added or not:
+		// a shared cache must not hand a reply stored for one origin to another.
+		w.Header().Add("Vary", "Origin")
 		if allowed {
-			w.Header().Add("Vary", "Origin")
 			w.Header().Set("Access-Control-Allow-Origin", origin)
 		}
 

@@ -244,3 +244,49 @@ func TestGameCardsUncompressed(t *testing.T) {
 		t.Errorf("body is not plain JSON: %.100q", resp.body)
 	}
 }
+
+func TestGameCardsVaryOrigin(t *testing.T) {
+	ts, started, _ := newCardsServer(t)
+	etag := getCards(t, ts, started.ID, nil).header.Get("ETag")
+
+	origins := []struct {
+		name   string
+		origin string
+	}{
+		{"no origin", ""},
+		{"refused origin", "http://evil.test"},
+		{"allowed origin", allowedOrigin},
+	}
+	replies := []struct {
+		name        string
+		ifNoneMatch string
+		wantStatus  int
+	}{
+		{"full reply", "", http.StatusOK},
+		{"not modified", etag, http.StatusNotModified},
+	}
+	for _, o := range origins {
+		for _, r := range replies {
+			t.Run(o.name+"/"+r.name, func(t *testing.T) {
+				header := map[string]string{}
+				if o.origin != "" {
+					header["Origin"] = o.origin
+				}
+				if r.ifNoneMatch != "" {
+					header["If-None-Match"] = r.ifNoneMatch
+				}
+
+				resp := getCards(t, ts, started.ID, header)
+
+				if resp.status != r.wantStatus {
+					t.Fatalf("status = %d, want %d", resp.status, r.wantStatus)
+				}
+				// A shared cache must not serve a reply stored for one origin
+				// to another: the CORS headers differ between them.
+				if got := resp.header.Values("Vary"); !slices.Contains(got, "Origin") {
+					t.Errorf("Vary = %q, want Origin among them", got)
+				}
+			})
+		}
+	}
+}
