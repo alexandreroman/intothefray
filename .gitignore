@@ -3,10 +3,9 @@
 docs/
 tmp/
 bin/
-.env.local
+.env*
 /intothefray
 packs/.cache/
 web/node_modules/
 web/dist/
 web/public/packs/
-.env.casper
