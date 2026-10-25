@@ -290,6 +290,33 @@ func TestPresenceRelayed(t *testing.T) {
 	}
 }
 
+func TestPresenceNotRelayedToSendersOtherTab(t *testing.T) {
+	mr := miniredis.RunT(t)
+	first := startInstance(t, mr, nil)
+	second := startInstance(t, mr, nil)
+	created := createGame(t, first, "Alex")
+	alex := connect(t, first, created.ID)
+	alex.hello(created.Token, "Alex")
+	alexOtherTab := connect(t, second, created.ID)
+	alexOtherTab.hello(created.Token, "Alex")
+	bob := connect(t, first, created.ID)
+	bob.hello("", "Bob")
+	alex.awaitView(bothSeatedOnline)
+
+	alex.send(map[string]any{"type": "presence", "cursor": map[string]any{"x": 120, "y": 340}})
+	if got := bob.awaitPresence(); got.Name != "Alex" {
+		t.Fatalf("Bob got presence %s, want Alex's", got.raw)
+	}
+
+	// Bob answers after receiving Alex's cursor, so on every instance his
+	// presence comes after Alex's: the first presence Alex's other tab gets
+	// must be his.
+	bob.send(map[string]any{"type": "presence", "preview": "c1"})
+	if got := alexOtherTab.awaitPresence(); got.Name != "Bob" {
+		t.Errorf("Alex's other tab got presence %s, want Bob's and never Alex's own", got.raw)
+	}
+}
+
 func TestMarkerDragRelayed(t *testing.T) {
 	for _, marker := range []string{game.MarkerFirstPlayer, game.MarkerActive} {
 		t.Run(marker, func(t *testing.T) {
