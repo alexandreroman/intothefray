@@ -11,8 +11,12 @@ type: project
 - A card with several faces turns face up on its current face when face
   down, and shows its next face when face up.
 - An identity card and the card a stage shows never turn face down: a
-  single-faced identity has no Flip (the server treats it as a no-op),
-  and a stage card's card choice replaces Flip.
+  single-faced identity has no Flip (the server treats it as a no-op).
+  Flip on the card a stage shows sends the stage choice: a card with
+  several faces (a main scheme's 1A/1B) shows its next face on the same
+  card; a single-faced one (a villain stage) gives way to the stage's
+  next card by card number, and the last one has no Flip. "Change
+  card…" (V) sits beside it.
 - Any player may flip any card in play (the server checks no owner for a
   table card); spectators get no card actions. Exhaust stays the default
   action, face down or not.

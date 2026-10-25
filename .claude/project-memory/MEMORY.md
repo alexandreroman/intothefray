@@ -68,7 +68,7 @@
 - [Scrolling lists fade at their edges](references/project_scroll_fade.md) — card box lists, lobby villain list: {@attach scrollFade}
 - [Lobby columns share one height](references/project_lobby_columns.md) — side by side, Scenario box fills its column; settings slide in
 - [Close is the main button of a card box](references/project_card_box_close.md) — Close is primary in every card box footer; other buttons secondary
-- [Face-down cards](references/project_face_down_cards.md) — Flip toggles single-faced cards; Play from a hidden deck lands face up, a drag face down
+- [Face-down cards](references/project_face_down_cards.md) — Flip toggles single-faced cards, steps stage cards; Play from a hidden deck lands face up
 - [Revealed card is its deck's top card](references/project_deck_reveal.md) — own hidden decks reveal; deck actions take it first
 - [No compatibility for games in progress](references/feedback_no_live_game_compat.md) — action changes ignore stored histories; simplest design
 - [Memory notes carry no dates](references/feedback_timeless_memory.md) — timeless notes: decisions and reasons, no dates
