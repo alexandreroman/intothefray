@@ -95,15 +95,23 @@ interface Counter {
   key?: string;
 }
 
-/** Mirrors tokenNames in internal/game/apply.go. */
-const TOKENS: readonly Counter[] = [
+const TOKEN_LIST = [
   { name: 'dmg', label: 'Damage', key: 'D' },
   { name: 'thr', label: 'Threat', key: 'T' },
   { name: 'gen', label: 'Counter', key: 'N' },
   { name: 'acc', label: 'Acceleration' },
-];
+] as const;
 
-const STATUSES: readonly Counter[] = [
+export type TokenName = (typeof TOKEN_LIST)[number]['name'];
+
+/** The tokens a card carries, in menu order, with the key that adds one. Mirrors tokenNames in internal/game/apply.go. */
+export const TOKENS: readonly Counter[] = TOKEN_LIST;
+
+/**
+ * The statuses a card carries, in menu and tab order, with the key that adds one. Mirrors statusNames in
+ * internal/game/apply.go.
+ */
+export const STATUSES: readonly Counter[] = [
   { name: 'stunned', label: 'Stunned', key: 'S' },
   { name: 'confused', label: 'Confused', key: 'C' },
   { name: 'tough', label: 'Tough', key: 'G' },

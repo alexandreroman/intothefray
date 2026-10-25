@@ -4,7 +4,7 @@
 -->
 <script lang="ts">
   import type { PackFace, CardView as TableCard } from '../lib/types';
-  import { MODIFIERS, withSign } from './actions';
+  import { MODIFIERS, STATUSES, withSign, type TokenName } from './actions';
   import CardBack from './CardBack.svelte';
   import CardFace from './CardFace.svelte';
   import { isHidden } from './face';
@@ -32,31 +32,22 @@
     caption?: string;
   } = $props();
 
-  type TokenKind = 'dmg' | 'thr' | 'gen' | 'acc';
-
   // The tokens piled up from the bottom right corner, damage first, on every card.
-  const CORNER_TOKENS: readonly TokenKind[] = ['dmg', 'gen'];
+  const CORNER_TOKENS: readonly TokenName[] = ['dmg', 'gen'];
   // The threat, then the acceleration beside it: in the top right corner of a scheme, in the
   // middle of any other card. The first one takes the threat's place.
-  const THREAT_TOKENS: readonly TokenKind[] = ['thr', 'acc'];
+  const THREAT_TOKENS: readonly TokenName[] = ['thr', 'acc'];
   const SCHEME_TYPES: readonly string[] = ['main_scheme', 'side_scheme', 'player_side_scheme'];
-  const STATUSES = [
-    ['stunned', 'Stunned'],
-    ['confused', 'Confused'],
-    ['tough', 'Tough'],
-    ['retaliate', 'Retaliate'],
-    ['locked', 'Locked'],
-  ] as const;
 
   const hidden = $derived(isHidden(card));
   const box = $derived(cardBox(face?.size ?? 'std', { faceDown: hidden, onPile: !!card.onPile }));
   const landscape = $derived(!box.rotated && box.w > box.h);
   // A hidden card has no face: it is not known to be a scheme.
   const scheme = $derived(!hidden && SCHEME_TYPES.includes(face?.type ?? ''));
-  const hasToken = (k: TokenKind) => (card.tokens?.[k] ?? 0) > 0;
+  const hasToken = (k: TokenName) => (card.tokens?.[k] ?? 0) > 0;
   const cornerTokens = $derived(CORNER_TOKENS.filter(hasToken));
   const threatTokens = $derived(THREAT_TOKENS.filter(hasToken));
-  const statuses = $derived(STATUSES.filter(([k]) => (card.status?.[k] ?? 0) > 0));
+  const statuses = $derived(STATUSES.filter(({ name }) => (card.status?.[name] ?? 0) > 0));
 
   /**
    * What a status tab reads: "Tough", or "Tough ×2" for several. The count of Retaliate is its
@@ -86,7 +77,7 @@
   const selected = $derived(!ghost && interaction.group.has(card.id));
 </script>
 
-{#snippet token(k: TokenKind)}
+{#snippet token(k: TokenName)}
   {@const target = { card: card.id, kind: 'token', name: k } as const}
   <span
     class="tok {k}"
@@ -159,7 +150,7 @@
 
   {#if statuses.length > 0}
     <div class="statuses">
-      {#each statuses as [k, label] (k)}
+      {#each statuses as { name: k, label } (k)}
         {@const n = card.status?.[k] ?? 0}
         {@const target = { card: card.id, kind: 'status', name: k } as const}
         <span
