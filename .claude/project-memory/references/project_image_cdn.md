@@ -11,7 +11,8 @@ type: project
   `cards/<lang>/<code>.<sha256 hex[:12]>.avif`, uploaded with
   `Cache-Control: public, max-age=31536000, immutable` and never deleted,
   so every past commit's URLs keep working. Backs and the first player
-  token have fixed keys, `assets/<name>.avif`.
+  token have fixed keys, `assets/<name>.avif`; a corrected asset gets a
+  new name (`assets/first-player-v2.avif`), never an overwrite.
 - Automation: the private repository `alexandreroman/intothefray-img`
   (`~/Projects/personal/infra/intothefray-img`), run from the user's
   machine with `make publish`; no CI job. It reads

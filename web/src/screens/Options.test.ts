@@ -121,7 +121,7 @@ describe('Options', () => {
 
     const official = screen.getByRole('button', { name: 'Official' });
     const sources = [...official.querySelectorAll('img')].map((img) => img.getAttribute('src'));
-    expect(sources).toEqual([ASSETS + 'back-player.avif', ASSETS + 'first-player.avif']);
+    expect(sources).toEqual([ASSETS + 'back-player.avif', ASSETS + 'first-player-v2.avif']);
   });
 
   it('previews the drawn back and token of the minimal theme while the official one is stored', () => {

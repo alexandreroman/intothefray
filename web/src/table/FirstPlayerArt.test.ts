@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import FirstPlayerArt from './FirstPlayerArt.svelte';
 
-const FIRST_PLAYER = 'https://img.intothefray.xyz/assets/first-player.avif';
+const FIRST_PLAYER = 'https://img.intothefray.xyz/assets/first-player-v2.avif';
 
 beforeEach(() => {
   localStorage.clear();
