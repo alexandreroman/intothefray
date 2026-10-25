@@ -267,12 +267,6 @@
     gap: 12px;
   }
 
-  h1 {
-    margin: 0;
-    font-size: 56px;
-    line-height: 0.9;
-  }
-
   .intro p {
     max-width: 420px;
     color: var(--muted);
@@ -445,7 +439,7 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    color: #c9cfdf;
+    color: var(--text-soft);
   }
 
   .why i {
@@ -461,7 +455,7 @@
   }
 
   .why.error {
-    color: #ffb3c0;
+    color: var(--error-text);
   }
 
   .add svg {

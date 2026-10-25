@@ -185,16 +185,12 @@
     configure({ modulars: config.modulars.filter((m) => m !== code) });
   }
 
+  // A click on the Add a set button or in its menu is not outside: the button toggles the menu.
   function closeMenuOnOutsideClick(event: MouseEvent): void {
-    if (event.target instanceof Element && event.target.closest('.menu')) {
+    if (event.target instanceof Element && event.target.closest('.add-wrap')) {
       return;
     }
     menuOpen = false;
-  }
-
-  function toggleMenu(event: MouseEvent): void {
-    event.stopPropagation(); // The window click handler would close it again.
-    menuOpen = !menuOpen;
   }
 </script>
 
@@ -362,7 +358,7 @@
             {/each}
             {#if isHost}
               <span class="add-wrap">
-                <button class="add" aria-expanded={menuOpen} onclick={toggleMenu}
+                <button class="add" aria-expanded={menuOpen} onclick={() => (menuOpen = !menuOpen)}
                   >+ Add a set</button
                 >
                 {#if menuOpen}
@@ -441,7 +437,7 @@
     gap: 10px;
     padding: 14px 0 10px;
     background: var(--bg);
-    color: #c9cfdf;
+    color: var(--text-soft);
     font-size: 13px;
     font-weight: 700;
   }
@@ -542,7 +538,7 @@
     padding: 3px 8px;
     border-radius: 6px;
     background: var(--table-bg);
-    color: #c9cfdf;
+    color: var(--text-soft);
     font-size: 11px;
     font-weight: 700;
   }

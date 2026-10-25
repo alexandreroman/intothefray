@@ -23,22 +23,12 @@
     text-align: center;
   }
 
-  h1 {
-    margin: 0;
-    font-size: 56px;
-    line-height: 0.9;
-  }
-
   p {
     margin: 0;
     color: var(--muted);
   }
 
-  /* The primary panel, as a link. */
   a {
-    display: inline-flex;
-    align-items: center;
     margin-top: 12px;
-    text-decoration: none;
   }
 </style>

@@ -1,11 +1,16 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { isLang, LANGS, setLang, storedLang } from '../lib/lang';
-  import { cleanName, MAX_NAME_LENGTH, randomName, savePlayerName, stripEmoji } from '../lib/names';
-  import { getPref, setPref } from '../lib/prefs';
+  import {
+    MAX_NAME_LENGTH,
+    randomName,
+    savePlayerName,
+    storedName,
+    stripEmoji,
+  } from '../lib/names';
   import { go } from '../lib/router.svelte';
   import { selectionIndicator } from '../lib/selectionIndicator';
-  import { applyTheme, storedTheme, THEMES, type Theme } from '../lib/theme';
+  import { applyTheme, saveTheme, storedTheme, THEMES, type Theme } from '../lib/theme';
   import { appCommit, fetchServerCommit, shortCommit } from '../lib/version';
   import TopBar from '../components/TopBar.svelte';
   import CardBack from '../table/CardBack.svelte';
@@ -21,7 +26,7 @@
     felt: 'Green felt',
   };
 
-  let name = $state(cleanName(getPref('itf-name') ?? ''));
+  let name = $state(storedName());
   let theme = $state(storedTheme());
   let lang = $state(storedLang());
 
@@ -51,7 +56,7 @@
 
   function chooseTheme(next: Theme): void {
     theme = next;
-    setPref('itf-theme', next);
+    saveTheme(next);
     applyTheme(next);
   }
 
@@ -204,13 +209,6 @@
     animation: rise 0.25s ease-out;
   }
 
-  @keyframes rise {
-    from {
-      opacity: 0;
-      transform: translateY(8px);
-    }
-  }
-
   .head {
     display: flex;
     flex-wrap: wrap;
@@ -225,12 +223,6 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
-  }
-
-  h1 {
-    margin: 0;
-    font-size: 56px;
-    line-height: 0.9;
   }
 
   .note {

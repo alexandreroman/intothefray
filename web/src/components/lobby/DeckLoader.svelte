@@ -259,16 +259,6 @@
     }
   }
 
-  /* Out of sight and taking no room, yet read by screen readers. */
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-
   .loaded {
     display: flex;
     gap: 8px;
@@ -324,7 +314,7 @@
     margin: 10px 0 0;
     border: 1px solid #6a2e3a;
     background: #2a1520;
-    color: #ffb3c0;
+    color: var(--error-text);
     border-radius: 10px;
     padding: 8px 10px;
     font-size: 12px;

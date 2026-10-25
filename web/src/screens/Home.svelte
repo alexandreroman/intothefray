@@ -9,11 +9,11 @@
   let starting = $state(false);
   let error = $state('');
 
-  async function startGame(name: string): Promise<void> {
+  async function startGame(): Promise<void> {
     starting = true;
     error = '';
     try {
-      const game = await createGame(name);
+      const game = await createGame(playerName());
       setToken(game.id, game.token);
       go(`/g/${encodeURIComponent(game.id)}`);
     } catch (e) {
@@ -21,10 +21,6 @@
     } finally {
       starting = false;
     }
-  }
-
-  function onStart(): void {
-    void startGame(playerName());
   }
 </script>
 
@@ -45,7 +41,7 @@
 
       <div class="start">
         <div class="actions">
-          <button class="btn-primary" disabled={starting} onclick={onStart}>
+          <button class="btn-primary" disabled={starting} onclick={startGame}>
             <svg
               viewBox="0 0 24 24"
               fill="none"
@@ -161,13 +157,6 @@
     align-items: center;
     gap: 48px 64px;
     animation: rise 0.25s ease-out;
-  }
-
-  @keyframes rise {
-    from {
-      opacity: 0;
-      transform: translateY(8px);
-    }
   }
 
   .intro {

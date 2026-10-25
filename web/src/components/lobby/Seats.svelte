@@ -170,7 +170,7 @@
 
   .invite input {
     min-width: 0;
-    color: #c9cfdf;
+    color: var(--text-soft);
   }
 
   /* Room for "Copied": the field doesn't jump. */

@@ -326,7 +326,7 @@
     justify-content: center;
     background: var(--panel);
     border-color: var(--line);
-    color: #c9cfdf;
+    color: var(--text-soft);
   }
 
   .icon-button.active {
