@@ -11,13 +11,13 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://marvelcdb.com/bundles/cards/90001.png"
+            "https://img.intothefray.xyz/cards/en/90001.9da0bdf7d56f.avif"
           ],
           "localized": {
             "fr": {
               "name": "Ronan l'Accusateur",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ron/90001.webp"
+                "https://img.intothefray.xyz/cards/fr/90001.e112e723620b.avif"
               ]
             }
           }
@@ -35,7 +35,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://marvelcdb.com/bundles/cards/90002.png"
+            "https://img.intothefray.xyz/cards/en/90002.e6dc47c57898.avif"
           ],
           "startingThreat": {
             "value": 3,
@@ -45,7 +45,7 @@
             "fr": {
               "name": "Juge, Juré et Bourreau",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ron/90002.webp"
+                "https://img.intothefray.xyz/cards/fr/90002.618b775d0414.avif"
               ]
             }
           }
@@ -63,13 +63,13 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://marvelcdb.com/bundles/cards/90003.png"
+            "https://img.intothefray.xyz/cards/en/90003.dce9ef056b54.avif"
           ],
           "localized": {
             "fr": {
               "name": "L'Accusé",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ron/90003.webp"
+                "https://img.intothefray.xyz/cards/fr/90003.4afbd42742fb.avif"
               ]
             }
           }
@@ -87,13 +87,13 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://marvelcdb.com/bundles/cards/90004.png"
+            "https://img.intothefray.xyz/cards/en/90004.5b657eb24e6f.avif"
           ],
           "localized": {
             "fr": {
               "name": "Rendre son Jugement",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ron/90004.webp"
+                "https://img.intothefray.xyz/cards/fr/90004.1721a4f3de5e.avif"
               ]
             }
           }
@@ -111,13 +111,13 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://marvelcdb.com/bundles/cards/90005.png"
+            "https://img.intothefray.xyz/cards/en/90005.5af9087916d7.avif"
           ],
           "localized": {
             "fr": {
               "name": "\"Vous Osez me Défier ?\"",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/ron/90005.webp"
+                "https://img.intothefray.xyz/cards/fr/90005.b88f340f3a64.avif"
               ]
             }
           }

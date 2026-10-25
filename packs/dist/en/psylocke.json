@@ -11,14 +11,13 @@
           "type": "hero",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41001A.jpg",
-            "https://marvelcdb.com/bundles/cards/41001a.png"
+            "https://img.intothefray.xyz/cards/en/41001a.240f8160acc6.avif"
           ],
           "handSize": 4,
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41001a.webp"
+                "https://img.intothefray.xyz/cards/fr/41001a.e8c6594b18bf.avif"
               ]
             }
           }
@@ -28,14 +27,13 @@
           "type": "alter_ego",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41001B.jpg",
-            "https://marvelcdb.com/bundles/cards/41001b.png"
+            "https://img.intothefray.xyz/cards/en/41001b.d4bf5124b170.avif"
           ],
           "handSize": 6,
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41001b.webp"
+                "https://img.intothefray.xyz/cards/fr/41001b.4a5f54f66e1e.avif"
               ]
             }
           }
@@ -57,13 +55,13 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41002A.jpg"
+            "https://img.intothefray.xyz/cards/en/41002a.ed4075d69804.avif"
           ],
           "localized": {
             "fr": {
               "name": "Psi-Couteau",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41002a.webp"
+                "https://img.intothefray.xyz/cards/fr/41002a.5eabcc46ee38.avif"
               ]
             }
           }
@@ -73,12 +71,12 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41002B.jpg"
+            "https://img.intothefray.xyz/cards/en/41002b.4364de0545a1.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41002b.webp"
+                "https://img.intothefray.xyz/cards/fr/41002b.52f1d732a9a0.avif"
               ]
             }
           }
@@ -101,13 +99,12 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41003.jpg",
-            "https://marvelcdb.com/bundles/cards/41003.png"
+            "https://img.intothefray.xyz/cards/en/41003.8355d3a381c9.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41003.webp"
+                "https://img.intothefray.xyz/cards/fr/41003.b73da4a9de2d.avif"
               ]
             }
           }
@@ -125,14 +122,13 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41004.jpg",
-            "https://marvelcdb.com/bundles/cards/41004.png"
+            "https://img.intothefray.xyz/cards/en/41004.9e2b00fae262.avif"
           ],
           "localized": {
             "fr": {
               "name": "Lames en Rafales",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41004.webp"
+                "https://img.intothefray.xyz/cards/fr/41004.3d5fb8f9d042.avif"
               ]
             }
           }
@@ -150,14 +146,13 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41005.jpg",
-            "https://marvelcdb.com/bundles/cards/41005.png"
+            "https://img.intothefray.xyz/cards/en/41005.a2079065f3cc.avif"
           ],
           "localized": {
             "fr": {
               "name": "Détection Mentale",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41005.webp"
+                "https://img.intothefray.xyz/cards/fr/41005.f2dc33ef4dc1.avif"
               ]
             }
           }
@@ -175,14 +170,13 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41006.jpg",
-            "https://marvelcdb.com/bundles/cards/41006.png"
+            "https://img.intothefray.xyz/cards/en/41006.d10e23dbd0df.avif"
           ],
           "localized": {
             "fr": {
               "name": "Redirection Psionique",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41006.webp"
+                "https://img.intothefray.xyz/cards/fr/41006.e4ac8e819981.avif"
               ]
             }
           }
@@ -200,14 +194,13 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41007.jpg",
-            "https://marvelcdb.com/bundles/cards/41007.png"
+            "https://img.intothefray.xyz/cards/en/41007.df90f03f103c.avif"
           ],
           "localized": {
             "fr": {
               "name": "Suggestion Télépathique",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41007.webp"
+                "https://img.intothefray.xyz/cards/fr/41007.3e8b51059cde.avif"
               ]
             }
           }
@@ -225,14 +218,13 @@
           "type": "support",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41008.jpg",
-            "https://marvelcdb.com/bundles/cards/41008.png"
+            "https://img.intothefray.xyz/cards/en/41008.e0ae2b7688f0.avif"
           ],
           "localized": {
             "fr": {
               "name": "Entraînement Rigoureux",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41008.webp"
+                "https://img.intothefray.xyz/cards/fr/41008.0eae9d29003a.avif"
               ]
             }
           }
@@ -250,14 +242,13 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41009.jpg",
-            "https://marvelcdb.com/bundles/cards/41009.png"
+            "https://img.intothefray.xyz/cards/en/41009.dbccdea9b960.avif"
           ],
           "localized": {
             "fr": {
               "name": "Entraînement aux Arts Martiaux",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41009.webp"
+                "https://img.intothefray.xyz/cards/fr/41009.0796b7a2bcfb.avif"
               ]
             }
           }
@@ -275,14 +266,13 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41010.jpg",
-            "https://marvelcdb.com/bundles/cards/41010.png"
+            "https://img.intothefray.xyz/cards/en/41010.3cfabed089f7.avif"
           ],
           "localized": {
             "fr": {
               "name": "Entraînement Psionique",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41010.webp"
+                "https://img.intothefray.xyz/cards/fr/41010.8074711d46b9.avif"
               ]
             }
           }
@@ -300,14 +290,13 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41011.jpg",
-            "https://marvelcdb.com/bundles/cards/41011.png"
+            "https://img.intothefray.xyz/cards/en/41011.4383d36243ff.avif"
           ],
           "localized": {
             "fr": {
               "name": "Entraînement aux Armes",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41011.webp"
+                "https://img.intothefray.xyz/cards/fr/41011.33b2d3f0b1ae.avif"
               ]
             }
           }
@@ -326,13 +315,12 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41012.jpg",
-            "https://marvelcdb.com/bundles/cards/41012.png"
+            "https://img.intothefray.xyz/cards/en/41012.dc1e093b3aa1.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41012.webp"
+                "https://img.intothefray.xyz/cards/fr/41012.dca6c620a91d.avif"
               ]
             }
           }
@@ -350,13 +338,12 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41013.jpg",
-            "https://marvelcdb.com/bundles/cards/41013.png"
+            "https://img.intothefray.xyz/cards/en/41013.8bd663d572f7.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41013.webp"
+                "https://img.intothefray.xyz/cards/fr/41013.dafa3ce0e919.avif"
               ]
             }
           }
@@ -373,14 +360,13 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41015.jpg",
-            "https://marvelcdb.com/bundles/cards/41015.png"
+            "https://img.intothefray.xyz/cards/en/41015.85d1ecb49f64.avif"
           ],
           "localized": {
             "fr": {
               "name": "Dans la Tête",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41015.webp"
+                "https://img.intothefray.xyz/cards/fr/41015.a32f680b2ae7.avif"
               ]
             }
           }
@@ -397,8 +383,7 @@
           "type": "player_side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41016.jpg",
-            "https://marvelcdb.com/bundles/cards/41016.png"
+            "https://img.intothefray.xyz/cards/en/41016.b063bda10e8d.avif"
           ],
           "startingThreat": {
             "value": 3,
@@ -408,7 +393,7 @@
             "fr": {
               "name": "Tendre un Piège",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41016.webp"
+                "https://img.intothefray.xyz/cards/fr/41016.04a6b6a95d94.avif"
               ]
             }
           }
@@ -428,14 +413,13 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41017.jpg",
-            "https://marvelcdb.com/bundles/cards/41017.png"
+            "https://img.intothefray.xyz/cards/en/41017.32d2cf8a8d47.avif"
           ],
           "localized": {
             "fr": {
               "name": "Vole Comme un Papillon",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41017.webp"
+                "https://img.intothefray.xyz/cards/fr/41017.95ba6d4e46d5.avif"
               ]
             }
           }
@@ -452,13 +436,12 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41018.jpg",
-            "https://marvelcdb.com/bundles/cards/41018.png"
+            "https://img.intothefray.xyz/cards/en/41018.c92f4f4fb0e8.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41018.webp"
+                "https://img.intothefray.xyz/cards/fr/41018.404e08d8d348.avif"
               ]
             }
           }
@@ -475,14 +458,13 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41019.jpg",
-            "https://marvelcdb.com/bundles/cards/41019.png"
+            "https://img.intothefray.xyz/cards/en/41019.041227a5f515.avif"
           ],
           "localized": {
             "fr": {
               "name": "Concentrer ses Forces",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41019.webp"
+                "https://img.intothefray.xyz/cards/fr/41019.8838e1b1d06f.avif"
               ]
             }
           }
@@ -499,14 +481,13 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41020.jpg",
-            "https://marvelcdb.com/bundles/cards/41020.png"
+            "https://img.intothefray.xyz/cards/en/41020.12f9a6e5b065.avif"
           ],
           "localized": {
             "fr": {
               "name": "Deux Cœurs s'Envolent",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41020.webp"
+                "https://img.intothefray.xyz/cards/fr/41020.70802ad5fec5.avif"
               ]
             }
           }
@@ -526,13 +507,12 @@
           "type": "support",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41022.jpg",
-            "https://marvelcdb.com/bundles/cards/41022.png"
+            "https://img.intothefray.xyz/cards/en/41022.f3eebd56bee4.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41022.webp"
+                "https://img.intothefray.xyz/cards/fr/41022.ef9d1ac86816.avif"
               ]
             }
           }
@@ -552,13 +532,12 @@
           "type": "support",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41023.jpg",
-            "https://marvelcdb.com/bundles/cards/41023.png"
+            "https://img.intothefray.xyz/cards/en/41023.c134cdf5a4f6.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41023.webp"
+                "https://img.intothefray.xyz/cards/fr/41023.6e3d7d95097f.avif"
               ]
             }
           }
@@ -578,14 +557,13 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41024.jpg",
-            "https://marvelcdb.com/bundles/cards/41024.png"
+            "https://img.intothefray.xyz/cards/en/41024.3f60fabc2b3d.avif"
           ],
           "localized": {
             "fr": {
               "name": "Télépathie",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41024.webp"
+                "https://img.intothefray.xyz/cards/fr/41024.32b2c53fc7b4.avif"
               ]
             }
           }
@@ -602,14 +580,13 @@
           "type": "obligation",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41025.jpg",
-            "https://marvelcdb.com/bundles/cards/41025.png"
+            "https://img.intothefray.xyz/cards/en/41025.62c7cb4b26d4.avif"
           ],
           "localized": {
             "fr": {
               "name": "Changement de Corps",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41025.webp"
+                "https://img.intothefray.xyz/cards/fr/41025.4619f5ab0afe.avif"
               ]
             }
           }
@@ -627,13 +604,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41026.jpg",
-            "https://marvelcdb.com/bundles/cards/41026.png"
+            "https://img.intothefray.xyz/cards/en/41026.65dfb7052015.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41026.webp"
+                "https://img.intothefray.xyz/cards/fr/41026.88cc1a306cf1.avif"
               ]
             }
           }
@@ -651,8 +627,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41027.jpg",
-            "https://marvelcdb.com/bundles/cards/41027.png"
+            "https://img.intothefray.xyz/cards/en/41027.8024175884a2.avif"
           ],
           "startingThreat": {
             "value": 2,
@@ -662,7 +637,7 @@
             "fr": {
               "name": "Pillage Interdimensionnel",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41027.webp"
+                "https://img.intothefray.xyz/cards/fr/41027.cffd44d43369.avif"
               ]
             }
           }
@@ -680,14 +655,13 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41028.jpg",
-            "https://marvelcdb.com/bundles/cards/41028.png"
+            "https://img.intothefray.xyz/cards/en/41028.36d57aa611db.avif"
           ],
           "localized": {
             "fr": {
               "name": "Illusion Psionique",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41028.webp"
+                "https://img.intothefray.xyz/cards/fr/41028.9c51828c7a10.avif"
               ]
             }
           }
@@ -705,14 +679,13 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41029.jpg",
-            "https://marvelcdb.com/bundles/cards/41029.png"
+            "https://img.intothefray.xyz/cards/en/41029.53888a4c3c8b.avif"
           ],
           "localized": {
             "fr": {
               "name": "Dragon Télékinétique",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41029.webp"
+                "https://img.intothefray.xyz/cards/fr/41029.ff492211649d.avif"
               ]
             }
           }
@@ -730,14 +703,13 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41030.jpg",
-            "https://marvelcdb.com/bundles/cards/41030.png"
+            "https://img.intothefray.xyz/cards/en/41030.b903c8f7c66d.avif"
           ],
           "localized": {
             "fr": {
               "name": "Attaque au Psi-Arc",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41030.webp"
+                "https://img.intothefray.xyz/cards/fr/41030.f88c3f8808c3.avif"
               ]
             }
           }
@@ -755,13 +727,12 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41031.jpg",
-            "https://marvelcdb.com/bundles/cards/41031.png"
+            "https://img.intothefray.xyz/cards/en/41031.28d7139f2ff9.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41031.webp"
+                "https://img.intothefray.xyz/cards/fr/41031.94534f8d2469.avif"
               ]
             }
           }
@@ -778,14 +749,13 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41032.jpg",
-            "https://marvelcdb.com/bundles/cards/41032.png"
+            "https://img.intothefray.xyz/cards/en/41032.709dfe667b00.avif"
           ],
           "localized": {
             "fr": {
               "name": "Attaque au Psi-Fléau",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41032.webp"
+                "https://img.intothefray.xyz/cards/fr/41032.492fcce92e73.avif"
               ]
             }
           }
@@ -802,14 +772,13 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/41033.jpg",
-            "https://marvelcdb.com/bundles/cards/41033.png"
+            "https://img.intothefray.xyz/cards/en/41033.eafdaea35028.avif"
           ],
           "localized": {
             "fr": {
               "name": "Télékinésie",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/psylocke/41033.webp"
+                "https://img.intothefray.xyz/cards/fr/41033.e9bf4229f8a1.avif"
               ]
             }
           }

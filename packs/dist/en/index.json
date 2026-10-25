@@ -511,7 +511,7 @@
       "id": "rhino",
       "name": "Rhino",
       "pack": "core",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/01094.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/01094.a30a89851ada.avif",
       "supported": true,
       "recommended": [
         "bomb_scare"
@@ -521,7 +521,7 @@
       "id": "klaw",
       "name": "Klaw",
       "pack": "core",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/01113.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/01113.45c1983af411.avif",
       "supported": true,
       "recommended": [
         "masters_of_evil"
@@ -531,7 +531,7 @@
       "id": "ultron",
       "name": "Ultron",
       "pack": "core",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/01134.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/01134.7b3c73e3d7a6.avif",
       "supported": true,
       "recommended": [
         "under_attack"
@@ -541,7 +541,7 @@
       "id": "risky_business",
       "name": "Risky Business",
       "pack": "gob",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02001A.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/02001a.65b317a25dfc.avif",
       "supported": true,
       "recommended": [
         "goblin_gimmicks"
@@ -556,7 +556,7 @@
       "id": "mutagen_formula",
       "name": "Mutagen Formula",
       "pack": "gob",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/02014.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/02014.1d8a82381ab5.avif",
       "supported": true,
       "recommended": [
         "goblin_gimmicks"
@@ -571,7 +571,7 @@
       "id": "wrecking_crew",
       "name": "Wrecking Crew",
       "pack": "twc",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/07002.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/07002.27759b12fe5d.avif",
       "supported": true,
       "recommended": [],
       "selfContained": true,
@@ -585,7 +585,7 @@
       "id": "crossbones",
       "name": "Crossbones",
       "pack": "trors",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/04058.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/04058.fbecd4eb32ef.avif",
       "supported": false,
       "recommended": [
         "hydra_assault",
@@ -597,7 +597,7 @@
       "id": "absorbing_man",
       "name": "Absorbing Man",
       "pack": "trors",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/04076.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/04076.a282bd9e86a9.avif",
       "supported": false,
       "recommended": [
         "hydra_patrol"
@@ -612,7 +612,7 @@
       "id": "taskmaster",
       "name": "Taskmaster",
       "pack": "trors",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/04093.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/04093.fbcd1bb19907.avif",
       "supported": false,
       "recommended": [
         "weap_master"
@@ -622,7 +622,7 @@
       "id": "zola",
       "name": "Zola",
       "pack": "trors",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/04109.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/04109.1d65b99ee188.avif",
       "supported": false,
       "recommended": [
         "under_attack"
@@ -632,7 +632,7 @@
       "id": "red_skull",
       "name": "Red Skull",
       "pack": "trors",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/04125.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/04125.e8ed8e43e145.avif",
       "supported": false,
       "recommended": [
         "hydra_assault",
@@ -648,7 +648,7 @@
       "id": "kang",
       "name": "Kang",
       "pack": "toafk",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11001.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/11001.8efcd2e43016.avif",
       "supported": false,
       "recommended": [
         "temporal"
@@ -658,7 +658,7 @@
       "id": "brotherhood_of_badoon",
       "name": "Brotherhood Of Badoon",
       "pack": "gmw",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16058.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/16058.3591114b204d.avif",
       "supported": false,
       "recommended": [
         "band_of_badoon"
@@ -673,7 +673,7 @@
       "id": "infiltrate_the_museum",
       "name": "Infiltrate the Museum",
       "pack": "gmw",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16070.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/16070.bb985b7bc03a.avif",
       "supported": false,
       "recommended": [
         "menagerie_medley"
@@ -683,7 +683,7 @@
       "id": "escape_the_museum",
       "name": "Escape the Museum",
       "pack": "gmw",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16080A.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/16080a.f1a0e9b60f4a.avif",
       "supported": false,
       "recommended": [
         "menagerie_medley"
@@ -693,7 +693,7 @@
       "id": "nebula",
       "name": "Nebula",
       "pack": "gmw",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16088.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/16088.35679678c380.avif",
       "supported": false,
       "recommended": [
         "space_pirates"
@@ -703,7 +703,7 @@
       "id": "ronan",
       "name": "Ronan the Accuser",
       "pack": "gmw",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/16103.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/16103.97852bcc6462.avif",
       "supported": false,
       "recommended": [
         "kree_militant"
@@ -718,7 +718,7 @@
       "id": "ebony_maw",
       "name": "Ebony Maw",
       "pack": "mts",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/21071.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/21071.f5dc8101ffbc.avif",
       "supported": false,
       "recommended": [
         "armies_of_titan",
@@ -734,7 +734,7 @@
       "id": "tower_defense",
       "name": "Tower Defense",
       "pack": "mts",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/21092.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/21092.0a70339ebaff.avif",
       "supported": false,
       "recommended": [
         "armies_of_titan"
@@ -749,7 +749,7 @@
       "id": "thanos",
       "name": "Thanos",
       "pack": "mts",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/21111.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/21111.8252aff93173.avif",
       "supported": false,
       "recommended": [
         "black_order",
@@ -760,7 +760,7 @@
       "id": "hela",
       "name": "Hela",
       "pack": "mts",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/21136A.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/21136a.d0ce7407b31a.avif",
       "supported": false,
       "recommended": [
         "frost_giants",
@@ -771,7 +771,7 @@
       "id": "loki",
       "name": "Loki",
       "pack": "mts",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/21160.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/21160.0e0488f50a07.avif",
       "supported": false,
       "recommended": [
         "enchantress",
@@ -782,7 +782,7 @@
       "id": "the_hood",
       "name": "The Hood",
       "pack": "hood",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/24001.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/24001.ba906996704b.avif",
       "supported": false,
       "recommended": []
     },
@@ -790,7 +790,7 @@
       "id": "sandman",
       "name": "Sandman",
       "pack": "sm",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/27061.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/27061.ea80ea133427.avif",
       "supported": false,
       "recommended": [
         "down_to_earth"
@@ -805,7 +805,7 @@
       "id": "venom",
       "name": "Venom",
       "pack": "sm",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/27073.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/27073.0e717d3755d2.avif",
       "supported": false,
       "recommended": [
         "down_to_earth"
@@ -815,7 +815,7 @@
       "id": "mysterio",
       "name": "Mysterio",
       "pack": "sm",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/27084.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/27084.7f66f1753184.avif",
       "supported": false,
       "recommended": [
         "whispers_of_paranoia"
@@ -825,7 +825,7 @@
       "id": "sinister_six",
       "name": "The Sinister Six",
       "pack": "sm",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/27094.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/27094.0b27d78d3ffd.avif",
       "supported": false,
       "recommended": [],
       "localized": {
@@ -838,7 +838,7 @@
       "id": "venom_goblin",
       "name": "Venom Goblin",
       "pack": "sm",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/27113.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/27113.5e4a9be0388a.avif",
       "supported": false,
       "recommended": [
         "goblin_gear"
@@ -853,7 +853,7 @@
       "id": "sabretooth",
       "name": "Sabretooth",
       "pack": "mut_gen",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/32060.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/32060.e10af01b7e91.avif",
       "supported": false,
       "recommended": [
         "brotherhood",
@@ -869,7 +869,7 @@
       "id": "project_wideawake",
       "name": "Project Wideawake",
       "pack": "mut_gen",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/32084.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/32084.dcb9529be6ea.avif",
       "supported": false,
       "recommended": [
         "sentinels"
@@ -884,7 +884,7 @@
       "id": "master_mold",
       "name": "Master Mold",
       "pack": "mut_gen",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/32109.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/32109.6fd23e92ad5e.avif",
       "supported": false,
       "recommended": [
         "zero_tolerance"
@@ -899,7 +899,7 @@
       "id": "mansion_attack",
       "name": "Mansion Attack",
       "pack": "mut_gen",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/32121A.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/32121a.4722f8d46746.avif",
       "supported": false,
       "recommended": [
         "mystique"
@@ -914,7 +914,7 @@
       "id": "magneto_villain",
       "name": "Magneto",
       "pack": "mut_gen",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/32138.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/32138.3a88178c9338.avif",
       "supported": false,
       "recommended": [
         "acolytes"
@@ -929,7 +929,7 @@
       "id": "magog",
       "name": "Magog",
       "pack": "mojo",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39001A.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/39001a.40bc46db963d.avif",
       "supported": false,
       "recommended": [],
       "localized": {
@@ -942,7 +942,7 @@
       "id": "spiral",
       "name": "Spiral",
       "pack": "mojo",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39012A.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/39012a.7d6947381918.avif",
       "supported": false,
       "recommended": [],
       "localized": {
@@ -955,7 +955,7 @@
       "id": "mojo",
       "name": "Mojo",
       "pack": "mojo",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/39022.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/39022.c62348c3805a.avif",
       "supported": false,
       "recommended": []
     },
@@ -963,7 +963,7 @@
       "id": "marauders",
       "name": "Marauders",
       "pack": "next_evol",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/40070A.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/40070a.150ea81581cf.avif",
       "supported": false,
       "recommended": [],
       "localized": {
@@ -976,7 +976,7 @@
       "id": "juggernaut",
       "name": "Juggernaut",
       "pack": "next_evol",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/40118.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/40118.227c3e13c182.avif",
       "supported": false,
       "recommended": [
         "black_tom_cassidy"
@@ -991,7 +991,7 @@
       "id": "mister_sinister",
       "name": "Mister Sinister",
       "pack": "next_evol",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/40136.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/40136.aa5a23d89976.avif",
       "supported": false,
       "recommended": [
         "nasty_boys"
@@ -1006,7 +1006,7 @@
       "id": "stryfe",
       "name": "Stryfe",
       "pack": "next_evol",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/40163.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/40163.7dd22cd8070b.avif",
       "supported": false,
       "recommended": [
         "extreme_measures",
@@ -1049,7 +1049,7 @@
       "id": "unus",
       "name": "Unus",
       "pack": "aoa",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/45059.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/45059.207777ef290c.avif",
       "supported": false,
       "recommended": [
         "infinites",
@@ -1060,7 +1060,7 @@
       "id": "four_horsemen",
       "name": "Four Horsemen",
       "pack": "aoa",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/45081A.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/45081a.30150ead7969.avif",
       "supported": false,
       "recommended": [
         "dystopian_nightmare",
@@ -1076,7 +1076,7 @@
       "id": "apocalypse",
       "name": "Apocalypse",
       "pack": "aoa",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/45101A.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/45101a.455d39a76ed0.avif",
       "supported": false,
       "recommended": [
         "dark_riders",
@@ -1087,7 +1087,7 @@
       "id": "dark_beast",
       "name": "Dark Beast",
       "pack": "aoa",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/45118.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/45118.04bc8ecee6d2.avif",
       "supported": false,
       "recommended": [
         "dystopian_nightmare"
@@ -1102,7 +1102,7 @@
       "id": "en_sabah_nur",
       "name": "En Sabah Nur",
       "pack": "aoa",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/45184A.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/45184a.36850f720107.avif",
       "supported": false,
       "recommended": [
         "celestial_tech",
@@ -1113,7 +1113,7 @@
       "id": "black_widow_villain",
       "name": "Black Widow",
       "pack": "aos",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50064.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/50064.0295d1607346.avif",
       "supported": false,
       "recommended": [
         "a.i.m._abduction",
@@ -1124,7 +1124,7 @@
       "id": "batroc",
       "name": "Batroc",
       "pack": "aos",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50086A.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/50086a.3aca90a4d50a.avif",
       "supported": false,
       "recommended": [
         "a.i.m._science",
@@ -1135,7 +1135,7 @@
       "id": "m.o.d.o.k.",
       "name": "M.O.D.O.K",
       "pack": "aos",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50103A.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/50103a.d76630cc3384.avif",
       "supported": false,
       "recommended": []
     },
@@ -1143,7 +1143,7 @@
       "id": "thunderbolts",
       "name": "Thunderbolts",
       "pack": "aos",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50129A.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/50129a.9435b866a073.avif",
       "supported": false,
       "recommended": []
     },
@@ -1151,7 +1151,7 @@
       "id": "baron_zemo",
       "name": "Baron Zemo",
       "pack": "aos",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/50165A.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/50165a.bcbe24eb4a89.avif",
       "supported": false,
       "recommended": [
         "s.h.i.e.l.d.",
@@ -1162,7 +1162,7 @@
       "id": "enchantress_villain",
       "name": "Enchantress",
       "pack": "tt",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55001.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/55001.7ec371478083.avif",
       "supported": false,
       "recommended": [
         "trickster_magic"
@@ -1172,7 +1172,7 @@
       "id": "god_of_lies",
       "name": "God of Lies",
       "pack": "tt",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/55027A.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/55027a.788c7e18579c.avif",
       "supported": false,
       "recommended": [
         "trickster_magic"
@@ -1182,7 +1182,7 @@
       "id": "iron_man_leader",
       "name": "Iron Man",
       "pack": "cw",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56059.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/56059.a3212a95a75a.avif",
       "supported": false,
       "recommended": []
     },
@@ -1190,7 +1190,7 @@
       "id": "captain_marvel_leader",
       "name": "Captain Marvel",
       "pack": "cw",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56092.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/56092.18ff6e4555e6.avif",
       "supported": false,
       "recommended": []
     },
@@ -1198,7 +1198,7 @@
       "id": "captain_america_leader",
       "name": "Captain America",
       "pack": "cw",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56137.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/56137.4725fc9ec582.avif",
       "supported": false,
       "recommended": []
     },
@@ -1206,7 +1206,7 @@
       "id": "spider_woman_leader",
       "name": "Spider Woman",
       "pack": "cw",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/56168.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/56168.ecb1207326c1.avif",
       "supported": false,
       "recommended": []
     },
@@ -1214,7 +1214,7 @@
       "id": "she_hulk_leader",
       "name": "She-Hulk",
       "pack": "synthezoid",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57001.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/57001.37e4200e7586.avif",
       "supported": false,
       "recommended": []
     },
@@ -1222,7 +1222,7 @@
       "id": "vision_leader",
       "name": "Vision",
       "pack": "synthezoid",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/57040.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/57040.8b2cce23c161.avif",
       "supported": false,
       "recommended": []
     },
@@ -1230,7 +1230,7 @@
       "id": "kingpin",
       "name": "Kingpin",
       "pack": "fne",
-      "image": "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/60159A.jpg",
+      "image": "https://img.intothefray.xyz/cards/en/60159a.20897433d3d7.avif",
       "supported": true,
       "recommended": [
         "tombstone",

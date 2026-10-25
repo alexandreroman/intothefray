@@ -11,14 +11,13 @@
           "type": "hero",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58001A.jpg",
-            "https://marvelcdb.com/bundles/cards/58001a.png"
+            "https://img.intothefray.xyz/cards/en/58001a.7acf60a9c366.avif"
           ],
           "handSize": 5,
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58001a.webp"
+                "https://img.intothefray.xyz/cards/fr/58001a.f4cad64f3855.avif"
               ]
             }
           }
@@ -28,14 +27,13 @@
           "type": "alter_ego",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58001B.jpg",
-            "https://marvelcdb.com/bundles/cards/58001b.png"
+            "https://img.intothefray.xyz/cards/en/58001b.bc787163dbf1.avif"
           ],
           "handSize": 6,
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58001b.webp"
+                "https://img.intothefray.xyz/cards/fr/58001b.75be5511290b.avif"
               ]
             }
           }
@@ -57,13 +55,12 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58002.jpg",
-            "https://marvelcdb.com/bundles/cards/58002.jpg"
+            "https://img.intothefray.xyz/cards/en/58002.b15a58c973bb.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58002.webp"
+                "https://img.intothefray.xyz/cards/fr/58002.e2ecdd3c3a35.avif"
               ]
             }
           }
@@ -81,13 +78,12 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58003.jpg",
-            "https://marvelcdb.com/bundles/cards/58003.jpg"
+            "https://img.intothefray.xyz/cards/en/58003.a6ccc8c37208.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58003.webp"
+                "https://img.intothefray.xyz/cards/fr/58003.131f94a1add2.avif"
               ]
             }
           }
@@ -105,13 +101,12 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58004.jpg",
-            "https://marvelcdb.com/bundles/cards/58004.jpg"
+            "https://img.intothefray.xyz/cards/en/58004.2702adb648ca.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58004.webp"
+                "https://img.intothefray.xyz/cards/fr/58004.d0bae17895c9.avif"
               ]
             }
           }
@@ -129,13 +124,12 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58005.jpg",
-            "https://marvelcdb.com/bundles/cards/58005.jpg"
+            "https://img.intothefray.xyz/cards/en/58005.f02d1510b5fe.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58005.webp"
+                "https://img.intothefray.xyz/cards/fr/58005.7ac2d4dc7af8.avif"
               ]
             }
           }
@@ -153,13 +147,12 @@
           "type": "resource",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58006.jpg",
-            "https://marvelcdb.com/bundles/cards/58006.jpg"
+            "https://img.intothefray.xyz/cards/en/58006.909f704e55be.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58006.webp"
+                "https://img.intothefray.xyz/cards/fr/58006.dcaa154a6082.avif"
               ]
             }
           }
@@ -177,13 +170,12 @@
           "type": "support",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58007.jpg",
-            "https://marvelcdb.com/bundles/cards/58007.jpg"
+            "https://img.intothefray.xyz/cards/en/58007.83accd28f110.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58007.webp"
+                "https://img.intothefray.xyz/cards/fr/58007.0dd8f5c89b63.avif"
               ]
             }
           }
@@ -201,13 +193,12 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58008.jpg",
-            "https://marvelcdb.com/bundles/cards/58008.jpg"
+            "https://img.intothefray.xyz/cards/en/58008.3248a626b566.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58008.webp"
+                "https://img.intothefray.xyz/cards/fr/58008.5512f556d55d.avif"
               ]
             }
           }
@@ -225,13 +216,12 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58009.jpg",
-            "https://marvelcdb.com/bundles/cards/58009.jpg"
+            "https://img.intothefray.xyz/cards/en/58009.a6becb768ccc.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58009.webp"
+                "https://img.intothefray.xyz/cards/fr/58009.2e20020df04b.avif"
               ]
             }
           }
@@ -249,13 +239,12 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58010.jpg",
-            "https://marvelcdb.com/bundles/cards/58010.jpg"
+            "https://img.intothefray.xyz/cards/en/58010.b2a1dedb212a.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58010.webp"
+                "https://img.intothefray.xyz/cards/fr/58010.244b8de4f615.avif"
               ]
             }
           }
@@ -273,13 +262,12 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58011.jpg",
-            "https://marvelcdb.com/bundles/cards/58011.jpg"
+            "https://img.intothefray.xyz/cards/en/58011.3bc017cbd8f2.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58011.webp"
+                "https://img.intothefray.xyz/cards/fr/58011.c5372c6db9a0.avif"
               ]
             }
           }
@@ -298,13 +286,12 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58012.jpg",
-            "https://marvelcdb.com/bundles/cards/58012.jpg"
+            "https://img.intothefray.xyz/cards/en/58012.69b1118f6aa7.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58012.webp"
+                "https://img.intothefray.xyz/cards/fr/58012.9c076c46e0f2.avif"
               ]
             }
           }
@@ -322,13 +309,12 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58013.jpg",
-            "https://marvelcdb.com/bundles/cards/58013.jpg"
+            "https://img.intothefray.xyz/cards/en/58013.de0d09bf154c.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58013.webp"
+                "https://img.intothefray.xyz/cards/fr/58013.8d78dc30e443.avif"
               ]
             }
           }
@@ -346,13 +332,12 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58014.jpg",
-            "https://marvelcdb.com/bundles/cards/58014.jpg"
+            "https://img.intothefray.xyz/cards/en/58014.a0dc8e7f6325.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58014.webp"
+                "https://img.intothefray.xyz/cards/fr/58014.35b409f87074.avif"
               ]
             }
           }
@@ -370,13 +355,12 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58015.jpg",
-            "https://marvelcdb.com/bundles/cards/58015.jpg"
+            "https://img.intothefray.xyz/cards/en/58015.ec322fa3454d.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58015.webp"
+                "https://img.intothefray.xyz/cards/fr/58015.515670ec390c.avif"
               ]
             }
           }
@@ -393,13 +377,12 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58016.jpg",
-            "https://marvelcdb.com/bundles/cards/58016.jpg"
+            "https://img.intothefray.xyz/cards/en/58016.636bfbf2321c.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58016.webp"
+                "https://img.intothefray.xyz/cards/fr/58016.3d1434576290.avif"
               ]
             }
           }
@@ -416,13 +399,12 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58018.jpg",
-            "https://marvelcdb.com/bundles/cards/58018.jpg"
+            "https://img.intothefray.xyz/cards/en/58018.1be0a7d93c6e.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58018.webp"
+                "https://img.intothefray.xyz/cards/fr/58018.308b56708a07.avif"
               ]
             }
           }
@@ -439,13 +421,12 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58019.jpg",
-            "https://marvelcdb.com/bundles/cards/58019.jpg"
+            "https://img.intothefray.xyz/cards/en/58019.e57e52de1009.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58019.webp"
+                "https://img.intothefray.xyz/cards/fr/58019.de36881ca7c5.avif"
               ]
             }
           }
@@ -462,13 +443,12 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58020.jpg",
-            "https://marvelcdb.com/bundles/cards/58020.jpg"
+            "https://img.intothefray.xyz/cards/en/58020.ac63326320df.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58020.webp"
+                "https://img.intothefray.xyz/cards/fr/58020.4579b3d7e023.avif"
               ]
             }
           }
@@ -485,13 +465,12 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58021.jpg",
-            "https://marvelcdb.com/bundles/cards/58021.jpg"
+            "https://img.intothefray.xyz/cards/en/58021.51541fe959fe.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58021.webp"
+                "https://img.intothefray.xyz/cards/fr/58021.9a4899bc9bed.avif"
               ]
             }
           }
@@ -509,13 +488,12 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58022.jpg",
-            "https://marvelcdb.com/bundles/cards/58022.jpg"
+            "https://img.intothefray.xyz/cards/en/58022.ffd291416d9d.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58022.webp"
+                "https://img.intothefray.xyz/cards/fr/58022.9873680f439c.avif"
               ]
             }
           }
@@ -532,13 +510,12 @@
           "type": "support",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58024.jpg",
-            "https://marvelcdb.com/bundles/cards/58024.jpg"
+            "https://img.intothefray.xyz/cards/en/58024.8244eac5b14e.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58024.webp"
+                "https://img.intothefray.xyz/cards/fr/58024.afa533cd018b.avif"
               ]
             }
           }
@@ -555,13 +532,12 @@
           "type": "obligation",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58025.jpg",
-            "https://marvelcdb.com/bundles/cards/58025.jpg"
+            "https://img.intothefray.xyz/cards/en/58025.5d382ce4fff2.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58025.webp"
+                "https://img.intothefray.xyz/cards/fr/58025.50f9fdebed98.avif"
               ]
             }
           }
@@ -579,13 +555,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58026.jpg",
-            "https://marvelcdb.com/bundles/cards/58026.jpg"
+            "https://img.intothefray.xyz/cards/en/58026.571a91668417.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58026.webp"
+                "https://img.intothefray.xyz/cards/fr/58026.69c85551d8f5.avif"
               ]
             }
           }
@@ -603,8 +578,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58027.jpg",
-            "https://marvelcdb.com/bundles/cards/58027.jpg"
+            "https://img.intothefray.xyz/cards/en/58027.18cf608cdfa8.avif"
           ],
           "startingThreat": {
             "value": 2,
@@ -613,7 +587,7 @@
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58027.webp"
+                "https://img.intothefray.xyz/cards/fr/58027.f26b58a99c84.avif"
               ]
             }
           }
@@ -631,13 +605,12 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58028.jpg",
-            "https://marvelcdb.com/bundles/cards/58028.jpg"
+            "https://img.intothefray.xyz/cards/en/58028.9641d745edca.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58028.webp"
+                "https://img.intothefray.xyz/cards/fr/58028.6fa5e3f69453.avif"
               ]
             }
           }
@@ -655,13 +628,12 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58029.jpg",
-            "https://marvelcdb.com/bundles/cards/58029.jpg"
+            "https://img.intothefray.xyz/cards/en/58029.47ec532212bd.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58029.webp"
+                "https://img.intothefray.xyz/cards/fr/58029.fdd16ce3eaaa.avif"
               ]
             }
           }
@@ -679,13 +651,12 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58030.jpg",
-            "https://marvelcdb.com/bundles/cards/58030.jpg"
+            "https://img.intothefray.xyz/cards/en/58030.10056869f16a.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58030.webp"
+                "https://img.intothefray.xyz/cards/fr/58030.a7c967727640.avif"
               ]
             }
           }
@@ -702,13 +673,12 @@
           "type": "support",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58031.jpg",
-            "https://marvelcdb.com/bundles/cards/58031.jpg"
+            "https://img.intothefray.xyz/cards/en/58031.eee260fe1748.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58031.webp"
+                "https://img.intothefray.xyz/cards/fr/58031.a5fd6f8a172e.avif"
               ]
             }
           }
@@ -725,13 +695,12 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58032.jpg",
-            "https://marvelcdb.com/bundles/cards/58032.jpg"
+            "https://img.intothefray.xyz/cards/en/58032.63010261ea6f.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58032.webp"
+                "https://img.intothefray.xyz/cards/fr/58032.3d2d8ec1fca8.avif"
               ]
             }
           }
@@ -748,13 +717,12 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58033.jpg",
-            "https://marvelcdb.com/bundles/cards/58033.jpg"
+            "https://img.intothefray.xyz/cards/en/58033.777fbaf007fd.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58033.webp"
+                "https://img.intothefray.xyz/cards/fr/58033.ebf058406455.avif"
               ]
             }
           }
@@ -771,13 +739,12 @@
           "type": "support",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/58034.jpg",
-            "https://marvelcdb.com/bundles/cards/58034.jpg"
+            "https://img.intothefray.xyz/cards/en/58034.03079e2e197d.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/wonder_man/58034.webp"
+                "https://img.intothefray.xyz/cards/fr/58034.1bfbdcd1cddd.avif"
               ]
             }
           }

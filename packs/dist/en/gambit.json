@@ -11,14 +11,13 @@
           "type": "hero",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37001B.jpg",
-            "https://marvelcdb.com/bundles/cards/37001a.png"
+            "https://img.intothefray.xyz/cards/en/37001a.abb282e9124d.avif"
           ],
           "handSize": 5,
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gambit/37001a.webp"
+                "https://img.intothefray.xyz/cards/fr/37001a.9b79e510cd39.avif"
               ]
             }
           }
@@ -28,14 +27,13 @@
           "type": "alter_ego",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37001A.jpg",
-            "https://marvelcdb.com/bundles/cards/37001b.png"
+            "https://img.intothefray.xyz/cards/en/37001b.7122a316e906.avif"
           ],
           "handSize": 6,
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gambit/37001b.webp"
+                "https://img.intothefray.xyz/cards/fr/37001b.26d6ab766511.avif"
               ]
             }
           }
@@ -58,14 +56,13 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37002.jpg",
-            "https://marvelcdb.com/bundles/cards/37002.png"
+            "https://img.intothefray.xyz/cards/en/37002.3dd82a6f29b9.avif"
           ],
           "localized": {
             "fr": {
               "name": "Malicia",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gambit/37002.webp"
+                "https://img.intothefray.xyz/cards/fr/37002.def9c753da5e.avif"
               ]
             }
           }
@@ -83,14 +80,13 @@
           "type": "support",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37003.jpg",
-            "https://marvelcdb.com/bundles/cards/37003.png"
+            "https://img.intothefray.xyz/cards/en/37003.bde8ec19b33a.avif"
           ],
           "localized": {
             "fr": {
               "name": "La Guilde des Voleurs",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gambit/37003.webp"
+                "https://img.intothefray.xyz/cards/fr/37003.ce8d7cd4e175.avif"
               ]
             }
           }
@@ -108,14 +104,13 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37004.jpg",
-            "https://marvelcdb.com/bundles/cards/37004.png"
+            "https://img.intothefray.xyz/cards/en/37004.896ba72b0af8.avif"
           ],
           "localized": {
             "fr": {
               "name": "Bâton de Gambit",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gambit/37004.webp"
+                "https://img.intothefray.xyz/cards/fr/37004.ad72b9c302e2.avif"
               ]
             }
           }
@@ -133,14 +128,13 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37005.jpg",
-            "https://marvelcdb.com/bundles/cards/37005.png"
+            "https://img.intothefray.xyz/cards/en/37005.742423c834e4.avif"
           ],
           "localized": {
             "fr": {
               "name": "Armure de Guilde de Gambit",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gambit/37005.webp"
+                "https://img.intothefray.xyz/cards/fr/37005.975eb9b9a5d0.avif"
               ]
             }
           }
@@ -158,14 +152,13 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37006.jpg",
-            "https://marvelcdb.com/bundles/cards/37006.png"
+            "https://img.intothefray.xyz/cards/en/37006.ee9d697981f8.avif"
           ],
           "localized": {
             "fr": {
               "name": "Carte Chargée",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gambit/37006.webp"
+                "https://img.intothefray.xyz/cards/fr/37006.649c3ea93dfc.avif"
               ]
             }
           }
@@ -183,14 +176,13 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37007.jpg",
-            "https://marvelcdb.com/bundles/cards/37007.png"
+            "https://img.intothefray.xyz/cards/en/37007.60b1cbab5bc3.avif"
           ],
           "localized": {
             "fr": {
               "name": "Flush Royale",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gambit/37007.webp"
+                "https://img.intothefray.xyz/cards/fr/37007.94013a88e5f5.avif"
               ]
             }
           }
@@ -208,14 +200,13 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37008.jpg",
-            "https://marvelcdb.com/bundles/cards/37008.png"
+            "https://img.intothefray.xyz/cards/en/37008.8b2f7f3119c5.avif"
           ],
           "localized": {
             "fr": {
               "name": "Agilité Naturelle",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gambit/37008.webp"
+                "https://img.intothefray.xyz/cards/fr/37008.35494fcdab6c.avif"
               ]
             }
           }
@@ -233,14 +224,13 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37009.jpg",
-            "https://marvelcdb.com/bundles/cards/37009.png"
+            "https://img.intothefray.xyz/cards/en/37009.fc1a2abd6da9.avif"
           ],
           "localized": {
             "fr": {
               "name": "Charmeur Créole",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gambit/37009.webp"
+                "https://img.intothefray.xyz/cards/fr/37009.bf800bd728ac.avif"
               ]
             }
           }
@@ -258,14 +248,13 @@
           "type": "resource",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37010.jpg",
-            "https://marvelcdb.com/bundles/cards/37010.png"
+            "https://img.intothefray.xyz/cards/en/37010.a5eb154118a0.avif"
           ],
           "localized": {
             "fr": {
               "name": "Accélération Moléculaire",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gambit/37010.webp"
+                "https://img.intothefray.xyz/cards/fr/37010.5e608a5d3b06.avif"
               ]
             }
           }
@@ -284,13 +273,12 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37011.jpg",
-            "https://marvelcdb.com/bundles/cards/37011.png"
+            "https://img.intothefray.xyz/cards/en/37011.8b518456cec3.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gambit/37011.webp"
+                "https://img.intothefray.xyz/cards/fr/37011.8d767cbb73ac.avif"
               ]
             }
           }
@@ -308,13 +296,12 @@
           "type": "ally",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37012.jpg",
-            "https://marvelcdb.com/bundles/cards/37012.png"
+            "https://img.intothefray.xyz/cards/en/37012.6ac6b739aad9.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gambit/37012.webp"
+                "https://img.intothefray.xyz/cards/fr/37012.7bfb288b38a2.avif"
               ]
             }
           }
@@ -331,14 +318,13 @@
           "type": "upgrade",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37013.jpg",
-            "https://marvelcdb.com/bundles/cards/37013.png"
+            "https://img.intothefray.xyz/cards/en/37013.4d8012422434.avif"
           ],
           "localized": {
             "fr": {
               "name": "Compétences Opérationnelles",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gambit/37013.webp"
+                "https://img.intothefray.xyz/cards/fr/37013.6b021ccf6101.avif"
               ]
             }
           }
@@ -355,14 +341,13 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37015.jpg",
-            "https://marvelcdb.com/bundles/cards/37015.png"
+            "https://img.intothefray.xyz/cards/en/37015.446c3ee419a0.avif"
           ],
           "localized": {
             "fr": {
               "name": "Par Effraction",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gambit/37015.webp"
+                "https://img.intothefray.xyz/cards/fr/37015.29cd6c3f04bb.avif"
               ]
             }
           }
@@ -379,14 +364,13 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37019.jpg",
-            "https://marvelcdb.com/bundles/cards/37019.png"
+            "https://img.intothefray.xyz/cards/en/37019.c94200b5c98e.avif"
           ],
           "localized": {
             "fr": {
               "name": "La Belle et Le Bellâtre",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gambit/37019.webp"
+                "https://img.intothefray.xyz/cards/fr/37019.135df7f3fd0f.avif"
               ]
             }
           }
@@ -406,14 +390,13 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37021.jpg",
-            "https://marvelcdb.com/bundles/cards/37021.png"
+            "https://img.intothefray.xyz/cards/en/37021.0c964c27f615.avif"
           ],
           "localized": {
             "fr": {
               "name": "À l'École des Mutants",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gambit/37021.webp"
+                "https://img.intothefray.xyz/cards/fr/37021.0c94d17e20cc.avif"
               ]
             }
           }
@@ -430,14 +413,13 @@
           "type": "obligation",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37025.jpg",
-            "https://marvelcdb.com/bundles/cards/37025.png"
+            "https://img.intothefray.xyz/cards/en/37025.a5b325b262ca.avif"
           ],
           "localized": {
             "fr": {
               "name": "Les Affaires de la Guilde",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gambit/37025.webp"
+                "https://img.intothefray.xyz/cards/fr/37025.8851d5bbb62d.avif"
               ]
             }
           }
@@ -455,13 +437,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37026.jpg",
-            "https://marvelcdb.com/bundles/cards/37026.png"
+            "https://img.intothefray.xyz/cards/en/37026.4b2038294527.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gambit/37026.webp"
+                "https://img.intothefray.xyz/cards/fr/37026.d4629bf9e06d.avif"
               ]
             }
           }
@@ -479,8 +460,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37027.jpg",
-            "https://marvelcdb.com/bundles/cards/37027.png"
+            "https://img.intothefray.xyz/cards/en/37027.cd68e70c6c6c.avif"
           ],
           "startingThreat": {
             "value": 4,
@@ -490,7 +470,7 @@
             "fr": {
               "name": "La Guilde des Assassins",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gambit/37027.webp"
+                "https://img.intothefray.xyz/cards/fr/37027.489f0bef3995.avif"
               ]
             }
           }
@@ -508,14 +488,13 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37028.jpg",
-            "https://marvelcdb.com/bundles/cards/37028.png"
+            "https://img.intothefray.xyz/cards/en/37028.92712c491c3f.avif"
           ],
           "localized": {
             "fr": {
               "name": "Assassin de la Guilde",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gambit/37028.webp"
+                "https://img.intothefray.xyz/cards/fr/37028.b44dd9a1f61e.avif"
               ]
             }
           }
@@ -533,14 +512,13 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37029.jpg",
-            "https://marvelcdb.com/bundles/cards/37029.png"
+            "https://img.intothefray.xyz/cards/en/37029.6707713f51f2.avif"
           ],
           "localized": {
             "fr": {
               "name": "Tentative d'Assassinat",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gambit/37029.webp"
+                "https://img.intothefray.xyz/cards/fr/37029.7e600f7592bb.avif"
               ]
             }
           }
@@ -558,14 +536,13 @@
           "type": "support",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37030.jpg",
-            "https://marvelcdb.com/bundles/cards/37030.png"
+            "https://img.intothefray.xyz/cards/en/37030.5212b9717b04.avif"
           ],
           "localized": {
             "fr": {
               "name": "Salle de Crise",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gambit/37030.webp"
+                "https://img.intothefray.xyz/cards/fr/37030.9f3406fb462a.avif"
               ]
             }
           }
@@ -582,14 +559,13 @@
           "type": "event",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37031.jpg",
-            "https://marvelcdb.com/bundles/cards/37031.png"
+            "https://img.intothefray.xyz/cards/en/37031.6c1427c645b4.avif"
           ],
           "localized": {
             "fr": {
               "name": "Enseignement des X-Men",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gambit/37031.webp"
+                "https://img.intothefray.xyz/cards/fr/37031.e985b6066863.avif"
               ]
             }
           }
@@ -606,13 +582,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37032.jpg",
-            "https://marvelcdb.com/bundles/cards/37032.png"
+            "https://img.intothefray.xyz/cards/en/37032.42ec75028db8.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gambit/37032.webp"
+                "https://img.intothefray.xyz/cards/fr/37032.9d074471ca8c.avif"
               ]
             }
           }
@@ -630,8 +605,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37033.jpg",
-            "https://marvelcdb.com/bundles/cards/37033.png"
+            "https://img.intothefray.xyz/cards/en/37033.61087ec6ce32.avif"
           ],
           "startingThreat": {
             "value": 6,
@@ -641,7 +615,7 @@
             "fr": {
               "name": "Héraut d'Avalon",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gambit/37033.webp"
+                "https://img.intothefray.xyz/cards/fr/37033.2e6aad7dbf53.avif"
               ]
             }
           }
@@ -659,14 +633,13 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37034.jpg",
-            "https://marvelcdb.com/bundles/cards/37034.png"
+            "https://img.intothefray.xyz/cards/en/37034.12a85aaec7a0.avif"
           ],
           "localized": {
             "fr": {
               "name": "Bouclier Psionique",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gambit/37034.webp"
+                "https://img.intothefray.xyz/cards/fr/37034.d686c7741018.avif"
               ]
             }
           }
@@ -684,14 +657,13 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/37035.jpg",
-            "https://marvelcdb.com/bundles/cards/37035.png"
+            "https://img.intothefray.xyz/cards/en/37035.92e7c53bdd52.avif"
           ],
           "localized": {
             "fr": {
               "name": "Submergé par les Acolytes",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/gambit/37035.webp"
+                "https://img.intothefray.xyz/cards/fr/37035.74098722c5a0.avif"
               ]
             }
           }

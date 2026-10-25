@@ -12,14 +12,13 @@
           "stage": "I",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11001.jpg",
-            "https://marvelcdb.com/bundles/cards/11001.png"
+            "https://img.intothefray.xyz/cards/en/11001.8efcd2e43016.avif"
           ],
           "localized": {
             "fr": {
               "name": "Kang (Le Conquérant)",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11001.webp"
+                "https://img.intothefray.xyz/cards/fr/11001.787bd8733e37.avif"
               ]
             }
           }
@@ -38,13 +37,12 @@
           "stage": "II",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11002.jpg",
-            "https://marvelcdb.com/bundles/cards/11002.png"
+            "https://img.intothefray.xyz/cards/en/11002.f3d7befded92.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11002.webp"
+                "https://img.intothefray.xyz/cards/fr/11002.e3e28b5eb192.avif"
               ]
             }
           }
@@ -63,13 +61,12 @@
           "stage": "II",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11003.jpg",
-            "https://marvelcdb.com/bundles/cards/11003.png"
+            "https://img.intothefray.xyz/cards/en/11003.150f037be1bb.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11003.webp"
+                "https://img.intothefray.xyz/cards/fr/11003.167185c3c79a.avif"
               ]
             }
           }
@@ -88,13 +85,12 @@
           "stage": "II",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11004.jpg",
-            "https://marvelcdb.com/bundles/cards/11004.png"
+            "https://img.intothefray.xyz/cards/en/11004.3eb7aa8b2c32.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11004.webp"
+                "https://img.intothefray.xyz/cards/fr/11004.be651d14e7c0.avif"
               ]
             }
           }
@@ -113,14 +109,13 @@
           "stage": "II",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11005.jpg",
-            "https://marvelcdb.com/bundles/cards/11005.png"
+            "https://img.intothefray.xyz/cards/en/11005.0ed31ad136d9.avif"
           ],
           "localized": {
             "fr": {
               "name": "Kang (Le Centurion Écarlate)",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11005.webp"
+                "https://img.intothefray.xyz/cards/fr/11005.c43e3b3d4787.avif"
               ]
             }
           }
@@ -139,14 +134,13 @@
           "stage": "III",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11006.jpg",
-            "https://marvelcdb.com/bundles/cards/11006.png"
+            "https://img.intothefray.xyz/cards/en/11006.64cce650a077.avif"
           ],
           "localized": {
             "fr": {
               "name": "Kang (Le Conquérant)",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11006.webp"
+                "https://img.intothefray.xyz/cards/fr/11006.ff0f31217945.avif"
               ]
             }
           }
@@ -165,14 +159,13 @@
           "stage": "1A",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11007A.jpg",
-            "https://marvelcdb.com/bundles/cards/11007a.png"
+            "https://img.intothefray.xyz/cards/en/11007a.a6a2cdfd74ea.avif"
           ],
           "localized": {
             "fr": {
               "name": "L'Arrivée de Kang",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11007a.webp"
+                "https://img.intothefray.xyz/cards/fr/11007a.8d3b44124f00.avif"
               ]
             }
           }
@@ -183,7 +176,7 @@
           "stage": "1B",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11007B.jpg"
+            "https://img.intothefray.xyz/cards/en/11007b.31f27c4a8a62.avif"
           ],
           "startingThreat": {
             "value": 0,
@@ -193,7 +186,7 @@
             "fr": {
               "name": "L'Arrivée de Kang",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11007b.webp"
+                "https://img.intothefray.xyz/cards/fr/11007b.f547b4a78d02.avif"
               ]
             }
           }
@@ -216,14 +209,13 @@
           "stage": "2A",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11008A.jpg",
-            "https://marvelcdb.com/bundles/cards/11008a.png"
+            "https://img.intothefray.xyz/cards/en/11008a.d0298e264d82.avif"
           ],
           "localized": {
             "fr": {
               "name": "Le Maître du Temps",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11008a.webp"
+                "https://img.intothefray.xyz/cards/fr/11008a.4db7de99b2bd.avif"
               ]
             }
           }
@@ -234,13 +226,13 @@
           "stage": "2B",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11008B.jpg"
+            "https://img.intothefray.xyz/cards/en/11008b.901a199254f3.avif"
           ],
           "localized": {
             "fr": {
               "name": "Le Maître du Temps",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11008b.webp"
+                "https://img.intothefray.xyz/cards/fr/11008b.5fa16b300c48.avif"
               ]
             }
           }
@@ -263,14 +255,13 @@
           "stage": "3A",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11009A.jpg",
-            "https://marvelcdb.com/bundles/cards/11009a.png"
+            "https://img.intothefray.xyz/cards/en/11009a.d85d62ce0d7e.avif"
           ],
           "localized": {
             "fr": {
               "name": "Chronopolis",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11009a.webp"
+                "https://img.intothefray.xyz/cards/fr/11009a.7a4a8af80763.avif"
               ]
             }
           }
@@ -281,7 +272,7 @@
           "stage": "3B",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11009B.jpg"
+            "https://img.intothefray.xyz/cards/en/11009b.cde65c1814ab.avif"
           ],
           "startingThreat": {
             "value": 0,
@@ -291,7 +282,7 @@
             "fr": {
               "name": "Chronopolis",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11009b.webp"
+                "https://img.intothefray.xyz/cards/fr/11009b.4bc013bd8f90.avif"
               ]
             }
           }
@@ -314,14 +305,13 @@
           "stage": "3A",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11010A.jpg",
-            "https://marvelcdb.com/bundles/cards/11010a.png"
+            "https://img.intothefray.xyz/cards/en/11010a.7bb90b94b51e.avif"
           ],
           "localized": {
             "fr": {
               "name": "Destin Inéluctable",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11010a.webp"
+                "https://img.intothefray.xyz/cards/fr/11010a.6dc4039e7822.avif"
               ]
             }
           }
@@ -332,8 +322,7 @@
           "stage": "3B",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11010B.jpg",
-            "https://marvelcdb.com/bundles/cards/11010b.png"
+            "https://img.intothefray.xyz/cards/en/11010b.157533310191.avif"
           ],
           "startingThreat": {
             "value": 1,
@@ -343,7 +332,7 @@
             "fr": {
               "name": "Destin Inéluctable",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11010b.webp"
+                "https://img.intothefray.xyz/cards/fr/11010b.0e96b265111f.avif"
               ]
             }
           }
@@ -366,14 +355,13 @@
           "stage": "3A",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11011A.jpg",
-            "https://marvelcdb.com/bundles/cards/11011a.png"
+            "https://img.intothefray.xyz/cards/en/11011a.5ac6f7de8f41.avif"
           ],
           "localized": {
             "fr": {
               "name": "Le Royaume de Rama-Tut",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11011a.webp"
+                "https://img.intothefray.xyz/cards/fr/11011a.ec097c8b72e5.avif"
               ]
             }
           }
@@ -384,8 +372,7 @@
           "stage": "3B",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11011B.jpg",
-            "https://marvelcdb.com/bundles/cards/11011b.png"
+            "https://img.intothefray.xyz/cards/en/11011b.8892bb643638.avif"
           ],
           "startingThreat": {
             "value": 1,
@@ -395,7 +382,7 @@
             "fr": {
               "name": "Le Royaume de Rama-Tut",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11011b.webp"
+                "https://img.intothefray.xyz/cards/fr/11011b.b38d290c8268.avif"
               ]
             }
           }
@@ -418,14 +405,13 @@
           "stage": "3A",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11012A.jpg",
-            "https://marvelcdb.com/bundles/cards/11012a.png"
+            "https://img.intothefray.xyz/cards/en/11012a.6ace28f55544.avif"
           ],
           "localized": {
             "fr": {
               "name": "La Guerre Présent-Futur",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11012a.webp"
+                "https://img.intothefray.xyz/cards/fr/11012a.fe9697650840.avif"
               ]
             }
           }
@@ -436,8 +422,7 @@
           "stage": "3B",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11012B.jpg",
-            "https://marvelcdb.com/bundles/cards/11012b.png"
+            "https://img.intothefray.xyz/cards/en/11012b.1cba5690bfd9.avif"
           ],
           "startingThreat": {
             "value": 2,
@@ -447,7 +432,7 @@
             "fr": {
               "name": "La Guerre Présent-Futur",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11012b.webp"
+                "https://img.intothefray.xyz/cards/fr/11012b.f3f2fd5823fc.avif"
               ]
             }
           }
@@ -470,14 +455,13 @@
           "stage": "4A",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11013A.jpg",
-            "https://marvelcdb.com/bundles/cards/11013a.png"
+            "https://img.intothefray.xyz/cards/en/11013a.98d171188399.avif"
           ],
           "localized": {
             "fr": {
               "name": "La Colère de Kang",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11013a.webp"
+                "https://img.intothefray.xyz/cards/fr/11013a.4e1b65fc28ee.avif"
               ]
             }
           }
@@ -488,8 +472,7 @@
           "stage": "4B",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11013B.jpg",
-            "https://marvelcdb.com/bundles/cards/11013b.png"
+            "https://img.intothefray.xyz/cards/en/11013b.3fb948f170a0.avif"
           ],
           "startingThreat": {
             "value": 0,
@@ -499,7 +482,7 @@
             "fr": {
               "name": "La Colère de Kang",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11013b.webp"
+                "https://img.intothefray.xyz/cards/fr/11013b.1d4b39c98508.avif"
               ]
             }
           }
@@ -521,14 +504,13 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11014.jpg",
-            "https://marvelcdb.com/bundles/cards/11014.png"
+            "https://img.intothefray.xyz/cards/en/11014.7af862755f6b.avif"
           ],
           "localized": {
             "fr": {
               "name": "Bouclier Temporel",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11014.webp"
+                "https://img.intothefray.xyz/cards/fr/11014.f745bf99bd5a.avif"
               ]
             }
           }
@@ -546,14 +528,13 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11015.jpg",
-            "https://marvelcdb.com/bundles/cards/11015.png"
+            "https://img.intothefray.xyz/cards/en/11015.45bc4872f739.avif"
           ],
           "localized": {
             "fr": {
               "name": "Arme Futuriste",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11015.webp"
+                "https://img.intothefray.xyz/cards/fr/11015.bf691a76f107.avif"
               ]
             }
           }
@@ -571,14 +552,13 @@
           "type": "attachment",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11016.jpg",
-            "https://marvelcdb.com/bundles/cards/11016.png"
+            "https://img.intothefray.xyz/cards/en/11016.a8f9625033db.avif"
           ],
           "localized": {
             "fr": {
               "name": "Figé dans le Temps",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11016.webp"
+                "https://img.intothefray.xyz/cards/fr/11016.750b28ac604a.avif"
               ]
             }
           }
@@ -596,13 +576,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11017.jpg",
-            "https://marvelcdb.com/bundles/cards/11017.png"
+            "https://img.intothefray.xyz/cards/en/11017.24134577f719.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11017.webp"
+                "https://img.intothefray.xyz/cards/fr/11017.cbf4b67f8d96.avif"
               ]
             }
           }
@@ -620,14 +599,13 @@
           "type": "obligation",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11018.jpg",
-            "https://marvelcdb.com/bundles/cards/11018.png"
+            "https://img.intothefray.xyz/cards/en/11018.a45fa06dd14e.avif"
           ],
           "localized": {
             "fr": {
               "name": "Affaibli",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11018.webp"
+                "https://img.intothefray.xyz/cards/fr/11018.5e04319ac800.avif"
               ]
             }
           }
@@ -645,14 +623,13 @@
           "type": "obligation",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11019.jpg",
-            "https://marvelcdb.com/bundles/cards/11019.png"
+            "https://img.intothefray.xyz/cards/en/11019.85d9aeb0ef2c.avif"
           ],
           "localized": {
             "fr": {
               "name": "Souvenir Dérobés",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11019.webp"
+                "https://img.intothefray.xyz/cards/fr/11019.757b58fd2a6a.avif"
               ]
             }
           }
@@ -670,14 +647,13 @@
           "type": "obligation",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11020.jpg",
-            "https://marvelcdb.com/bundles/cards/11020.png"
+            "https://img.intothefray.xyz/cards/en/11020.68bb1a4537d5.avif"
           ],
           "localized": {
             "fr": {
               "name": "Réduit à l'Impuissance",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11020.webp"
+                "https://img.intothefray.xyz/cards/fr/11020.9ab705ac050b.avif"
               ]
             }
           }
@@ -695,14 +671,13 @@
           "type": "obligation",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11021.jpg",
-            "https://marvelcdb.com/bundles/cards/11021.png"
+            "https://img.intothefray.xyz/cards/en/11021.527566086ada.avif"
           ],
           "localized": {
             "fr": {
               "name": "Facéties Temporelles",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11021.webp"
+                "https://img.intothefray.xyz/cards/fr/11021.b7f874463d6d.avif"
               ]
             }
           }
@@ -720,8 +695,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11022.jpg",
-            "https://marvelcdb.com/bundles/cards/11022.png"
+            "https://img.intothefray.xyz/cards/en/11022.880dcd508254.avif"
           ],
           "startingThreat": {
             "value": 2,
@@ -731,7 +705,7 @@
             "fr": {
               "name": "Flux Temporel Perverti",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11022.webp"
+                "https://img.intothefray.xyz/cards/fr/11022.0302779a1bfe.avif"
               ]
             }
           }
@@ -749,8 +723,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11023.jpg",
-            "https://marvelcdb.com/bundles/cards/11023.png"
+            "https://img.intothefray.xyz/cards/en/11023.393dde0c3854.avif"
           ],
           "startingThreat": {
             "value": 3,
@@ -760,7 +733,7 @@
             "fr": {
               "name": "Empire de Kang",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11023.webp"
+                "https://img.intothefray.xyz/cards/fr/11023.b4004dc6aad1.avif"
               ]
             }
           }
@@ -778,8 +751,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11024.jpg",
-            "https://marvelcdb.com/bundles/cards/11024.png"
+            "https://img.intothefray.xyz/cards/en/11024.3e01e7b759fc.avif"
           ],
           "startingThreat": {
             "value": 2,
@@ -789,7 +761,7 @@
             "fr": {
               "name": "Cloués au Sol",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11024.webp"
+                "https://img.intothefray.xyz/cards/fr/11024.88b493df362e.avif"
               ]
             }
           }
@@ -807,8 +779,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11025.jpg",
-            "https://marvelcdb.com/bundles/cards/11025.png"
+            "https://img.intothefray.xyz/cards/en/11025.9bcbaeac3cdb.avif"
           ],
           "startingThreat": {
             "value": 4,
@@ -818,7 +789,7 @@
             "fr": {
               "name": "Dévastation",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11025.webp"
+                "https://img.intothefray.xyz/cards/fr/11025.d934a532d6e9.avif"
               ]
             }
           }
@@ -836,14 +807,13 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11026.jpg",
-            "https://marvelcdb.com/bundles/cards/11026.png"
+            "https://img.intothefray.xyz/cards/en/11026.0b3476640d49.avif"
           ],
           "localized": {
             "fr": {
               "name": "Rayon Énergétique",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11026.webp"
+                "https://img.intothefray.xyz/cards/fr/11026.aeba3e866891.avif"
               ]
             }
           }
@@ -861,14 +831,13 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11027.jpg",
-            "https://marvelcdb.com/bundles/cards/11027.png"
+            "https://img.intothefray.xyz/cards/en/11027.824344632623.avif"
           ],
           "localized": {
             "fr": {
               "name": "Flux Temporel Manipulé",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11027.webp"
+                "https://img.intothefray.xyz/cards/fr/11027.3f0a84a5b400.avif"
               ]
             }
           }
@@ -886,14 +855,13 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11028.jpg",
-            "https://marvelcdb.com/bundles/cards/11028.png"
+            "https://img.intothefray.xyz/cards/en/11028.64f950b18b7b.avif"
           ],
           "localized": {
             "fr": {
               "name": "Maîtrise du Voyage Temporel",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11028.webp"
+                "https://img.intothefray.xyz/cards/fr/11028.c0a3595049aa.avif"
               ]
             }
           }
@@ -911,14 +879,13 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11029.jpg",
-            "https://marvelcdb.com/bundles/cards/11029.png"
+            "https://img.intothefray.xyz/cards/en/11029.ede54dd43144.avif"
           ],
           "localized": {
             "fr": {
               "name": "Machinations du Passé",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11029.webp"
+                "https://img.intothefray.xyz/cards/fr/11029.facfa2d60d7b.avif"
               ]
             }
           }
@@ -936,13 +903,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11030.jpg",
-            "https://marvelcdb.com/bundles/cards/11030.png"
+            "https://img.intothefray.xyz/cards/en/11030.ab767b926d2a.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11030.webp"
+                "https://img.intothefray.xyz/cards/fr/11030.732628425931.avif"
               ]
             }
           }
@@ -960,14 +926,13 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11031.jpg",
-            "https://marvelcdb.com/bundles/cards/11031.png"
+            "https://img.intothefray.xyz/cards/en/11031.d407ae7bbaa1.avif"
           ],
           "localized": {
             "fr": {
               "name": "Soldat Chitauri",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11031.webp"
+                "https://img.intothefray.xyz/cards/fr/11031.f7836fe1661e.avif"
               ]
             }
           }
@@ -985,14 +950,13 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11032.jpg",
-            "https://marvelcdb.com/bundles/cards/11032.png"
+            "https://img.intothefray.xyz/cards/en/11032.061ca2c250a3.avif"
           ],
           "localized": {
             "fr": {
               "name": "Tyrannosaure Rex",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11032.webp"
+                "https://img.intothefray.xyz/cards/fr/11032.b89d899a24ad.avif"
               ]
             }
           }
@@ -1010,8 +974,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11033.jpg",
-            "https://marvelcdb.com/bundles/cards/11033.png"
+            "https://img.intothefray.xyz/cards/en/11033.50dba5da24c6.avif"
           ],
           "startingThreat": {
             "value": 2,
@@ -1021,7 +984,7 @@
             "fr": {
               "name": "Portail Temporel",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11033.webp"
+                "https://img.intothefray.xyz/cards/fr/11033.215b8ccb3778.avif"
               ]
             }
           }
@@ -1040,14 +1003,13 @@
           "stage": "I",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11034.jpg",
-            "https://marvelcdb.com/bundles/cards/11034.png"
+            "https://img.intothefray.xyz/cards/en/11034.3e9917d7163b.avif"
           ],
           "localized": {
             "fr": {
               "name": "Kang (Le Conquérant)",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11034.webp"
+                "https://img.intothefray.xyz/cards/fr/11034.5df02b0d61f4.avif"
               ]
             }
           }
@@ -1066,13 +1028,12 @@
           "stage": "II",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11035.jpg",
-            "https://marvelcdb.com/bundles/cards/11035.png"
+            "https://img.intothefray.xyz/cards/en/11035.6fcf2016cb41.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11035.webp"
+                "https://img.intothefray.xyz/cards/fr/11035.399b685d7252.avif"
               ]
             }
           }
@@ -1091,13 +1052,12 @@
           "stage": "II",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11036.jpg",
-            "https://marvelcdb.com/bundles/cards/11036.png"
+            "https://img.intothefray.xyz/cards/en/11036.4ee60fd00e64.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11036.webp"
+                "https://img.intothefray.xyz/cards/fr/11036.4c217f8dbc1f.avif"
               ]
             }
           }
@@ -1116,13 +1076,12 @@
           "stage": "II",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11037.jpg",
-            "https://marvelcdb.com/bundles/cards/11037.png"
+            "https://img.intothefray.xyz/cards/en/11037.c9548005e551.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11037.webp"
+                "https://img.intothefray.xyz/cards/fr/11037.764f4c61a628.avif"
               ]
             }
           }
@@ -1141,14 +1100,13 @@
           "stage": "II",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11038.jpg",
-            "https://marvelcdb.com/bundles/cards/11038.png"
+            "https://img.intothefray.xyz/cards/en/11038.45593cd3df5b.avif"
           ],
           "localized": {
             "fr": {
               "name": "Kang (Le Centurion Écarlate)",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11038.webp"
+                "https://img.intothefray.xyz/cards/fr/11038.bf6833679ac8.avif"
               ]
             }
           }
@@ -1167,14 +1125,13 @@
           "stage": "III",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11039.jpg",
-            "https://marvelcdb.com/bundles/cards/11039.png"
+            "https://img.intothefray.xyz/cards/en/11039.95238c8039d7.avif"
           ],
           "localized": {
             "fr": {
               "name": "Kang (Le Conquérant)",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11039.webp"
+                "https://img.intothefray.xyz/cards/fr/11039.1de9b44f6e88.avif"
               ]
             }
           }
@@ -1192,14 +1149,13 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11040.jpg",
-            "https://marvelcdb.com/bundles/cards/11040.png"
+            "https://img.intothefray.xyz/cards/en/11040.f988ad59aa7d.avif"
           ],
           "localized": {
             "fr": {
               "name": "Apocryphe",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11040.webp"
+                "https://img.intothefray.xyz/cards/fr/11040.04f61d898bf2.avif"
               ]
             }
           }
@@ -1217,13 +1173,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11041.jpg",
-            "https://marvelcdb.com/bundles/cards/11041.png"
+            "https://img.intothefray.xyz/cards/en/11041.95b323dbe57f.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11041.webp"
+                "https://img.intothefray.xyz/cards/fr/11041.9d22eaed9660.avif"
               ]
             }
           }
@@ -1241,13 +1196,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11042.jpg",
-            "https://marvelcdb.com/bundles/cards/11042.png"
+            "https://img.intothefray.xyz/cards/en/11042.152661b1c636.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11042.webp"
+                "https://img.intothefray.xyz/cards/fr/11042.44637d0114c4.avif"
               ]
             }
           }
@@ -1265,13 +1219,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11043.jpg",
-            "https://marvelcdb.com/bundles/cards/11043.png"
+            "https://img.intothefray.xyz/cards/en/11043.48c7e8941797.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11043.webp"
+                "https://img.intothefray.xyz/cards/fr/11043.22a6e12fe209.avif"
               ]
             }
           }
@@ -1289,13 +1242,12 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11044.jpg",
-            "https://marvelcdb.com/bundles/cards/11044.png"
+            "https://img.intothefray.xyz/cards/en/11044.38c4285302c5.avif"
           ],
           "localized": {
             "fr": {
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11044.webp"
+                "https://img.intothefray.xyz/cards/fr/11044.b83d0374a1b4.avif"
               ]
             }
           }
@@ -1313,8 +1265,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11045.jpg",
-            "https://marvelcdb.com/bundles/cards/11045.png"
+            "https://img.intothefray.xyz/cards/en/11045.d4765703300f.avif"
           ],
           "startingThreat": {
             "value": 3,
@@ -1324,7 +1275,7 @@
             "fr": {
               "name": "Les Anachronautes",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11045.webp"
+                "https://img.intothefray.xyz/cards/fr/11045.6367fe6e03b2.avif"
               ]
             }
           }
@@ -1342,14 +1293,13 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11046.jpg",
-            "https://marvelcdb.com/bundles/cards/11046.png"
+            "https://img.intothefray.xyz/cards/en/11046.c8f9764c22db.avif"
           ],
           "localized": {
             "fr": {
               "name": "L'Élu de Kang",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11046.webp"
+                "https://img.intothefray.xyz/cards/fr/11046.51a6dc66aa96.avif"
               ]
             }
           }
@@ -1367,14 +1317,13 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11047.jpg",
-            "https://marvelcdb.com/bundles/cards/11047.png"
+            "https://img.intothefray.xyz/cards/en/11047.e244a8674163.avif"
           ],
           "localized": {
             "fr": {
               "name": "Kang (Le Maître du Temps)",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11047.webp"
+                "https://img.intothefray.xyz/cards/fr/11047.332c666f825d.avif"
               ]
             }
           }
@@ -1392,14 +1341,13 @@
           "type": "minion",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11048.jpg",
-            "https://marvelcdb.com/bundles/cards/11048.png"
+            "https://img.intothefray.xyz/cards/en/11048.f189dc5a5ba8.avif"
           ],
           "localized": {
             "fr": {
               "name": "Soldat Chrono-Déplacé",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11048.webp"
+                "https://img.intothefray.xyz/cards/fr/11048.eedc7b2c4861.avif"
               ]
             }
           }
@@ -1417,14 +1365,13 @@
           "type": "obligation",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11049.jpg",
-            "https://marvelcdb.com/bundles/cards/11049.png"
+            "https://img.intothefray.xyz/cards/en/11049.091cb24d859b.avif"
           ],
           "localized": {
             "fr": {
               "name": "Peur de Kang",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11049.webp"
+                "https://img.intothefray.xyz/cards/fr/11049.7740c22f6700.avif"
               ]
             }
           }
@@ -1442,8 +1389,7 @@
           "type": "side_scheme",
           "size": "land",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11050.jpg",
-            "https://marvelcdb.com/bundles/cards/11050.png"
+            "https://img.intothefray.xyz/cards/en/11050.1b5c3c4d0d4e.avif"
           ],
           "startingThreat": {
             "value": 3,
@@ -1453,7 +1399,7 @@
             "fr": {
               "name": "Lueur des Sphères Séculaires",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11050.webp"
+                "https://img.intothefray.xyz/cards/fr/11050.865203b22924.avif"
               ]
             }
           }
@@ -1471,14 +1417,13 @@
           "type": "treachery",
           "size": "std",
           "images": [
-            "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/11051.jpg",
-            "https://marvelcdb.com/bundles/cards/11051.png"
+            "https://img.intothefray.xyz/cards/en/11051.b1ed9dd48dfc.avif"
           ],
           "localized": {
             "fr": {
               "name": "Antique Rancune",
               "images": [
-                "https://mc4db.merlindumesnil.net/bundles/cards/FR/toafk/11051.webp"
+                "https://img.intothefray.xyz/cards/fr/11051.c3e65f265996.avif"
               ]
             }
           }
