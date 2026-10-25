@@ -45,6 +45,12 @@ func BuildScenarios(
 			cardsByCode[card.Code] = card
 		}
 	}
+	setCodes := make(map[string]bool)
+	for _, packSets := range sets {
+		for _, set := range packSets {
+			setCodes[set.Code] = true
+		}
+	}
 	villains := villainSetsOf(sets, cardsByCode)
 	modularCodes := modularCodesByName(sets)
 	cerebroNames := cerebroNamesByID(cb)
@@ -85,7 +91,16 @@ func BuildScenarios(
 					Reason: fmt.Sprintf("scenario %s names unknown card %s", def.ID, code),
 				})
 			}
-			if len(missing) == 0 {
+			missingSets := missingDeckSets(def, setCodes)
+			for _, code := range missingSets {
+				problems = append(problems, report.Unsupported{
+					Code:   code,
+					Name:   villain.set.Name,
+					Pack:   villain.pack,
+					Reason: fmt.Sprintf("scenario %s names unknown set %s", def.ID, code),
+				})
+			}
+			if len(missing) == 0 && len(missingSets) == 0 {
 				ref.Supported = true
 				scenarios[villain.pack] = append(scenarios[villain.pack], pack.Scenario{
 					ID:            def.ID,
@@ -200,12 +215,30 @@ func missingCards(def curated.ScenarioDef, cardsByCode map[string]pack.Card) []s
 		}
 	}
 	named = append(named, def.SetAside...)
+	for _, deck := range def.Decks {
+		named = append(named, deck.Cards...)
+	}
 
 	slices.Sort(named)
 	named = slices.Compact(named)
 	return slices.DeleteFunc(named, func(code string) bool {
 		_, found := cardsByCode[code]
 		return found
+	})
+}
+
+// missingDeckSets returns the sorted set codes the decks of the definition
+// name that are not in the catalog.
+func missingDeckSets(def curated.ScenarioDef, setCodes map[string]bool) []string {
+	var named []string
+	for _, deck := range def.Decks {
+		named = append(named, deck.Sets...)
+	}
+
+	slices.Sort(named)
+	named = slices.Compact(named)
+	return slices.DeleteFunc(named, func(code string) bool {
+		return setCodes[code]
 	})
 }
 

@@ -115,7 +115,8 @@ func Load(dir string) (Curated, error) {
 	return curated, nil
 }
 
-// checkScenarioDef rejects the decks and stage links that setup could not lay out.
+// checkScenarioDef rejects the decks, stages and starting layouts that setup
+// could not lay out.
 func checkScenarioDef(def ScenarioDef) error {
 	decks := make(map[string]bool, len(def.Decks))
 	encounter := false
@@ -137,9 +138,12 @@ func checkScenarioDef(def ScenarioDef) error {
 		return errors.New("an encounter deck needs a selfContained scenario")
 	}
 
-	stages := make(map[string]bool, len(def.Piles))
+	stages := make(map[string]pack.Pile, len(def.Piles))
 	for _, pile := range def.Piles {
-		stages[pile.Key] = true
+		if _, taken := stages[pile.Key]; taken {
+			return fmt.Errorf("duplicate stage key %q", pile.Key)
+		}
+		stages[pile.Key] = pile
 	}
 	linked := make(map[string]string)
 	for _, pile := range def.Piles {
@@ -154,15 +158,47 @@ func checkScenarioDef(def ScenarioDef) error {
 		}
 		linked[pile.Deck] = pile.Key
 	}
-	for _, difficulty := range slices.Sorted(maps.Keys(def.Start)) {
-		for _, ref := range def.Start[difficulty].InPlay {
-			if ref.With != "" && !stages[ref.With] {
+	if _, found := stages[def.Active]; def.Active != "" && !found {
+		return fmt.Errorf("active names unknown stage %q", def.Active)
+	}
+	return checkStarts(def.Start, def.Piles, stages)
+}
+
+// checkStarts makes sure the scenario has a Standard and an Expert setup and
+// nothing else, the only difficulties the lobby offers, and that each setup
+// starts every stage on one of its own cards and puts in-play cards with
+// existing stages.
+func checkStarts(starts map[pack.Difficulty]pack.Start, piles []pack.Pile, stages map[string]pack.Pile) error {
+	for _, difficulty := range slices.Sorted(maps.Keys(starts)) {
+		if difficulty != pack.Standard && difficulty != pack.Expert {
+			return fmt.Errorf("unknown difficulty %q", difficulty)
+		}
+	}
+	for _, difficulty := range []pack.Difficulty{pack.Standard, pack.Expert} {
+		start, found := starts[difficulty]
+		if !found {
+			return fmt.Errorf("no %s setup", difficulty)
+		}
+		for _, pile := range piles {
+			if _, found := start.Top[pile.Key]; !found {
+				return fmt.Errorf("%s setup has no top card for stage %q", difficulty, pile.Key)
+			}
+		}
+		for _, key := range slices.Sorted(maps.Keys(start.Top)) {
+			top := start.Top[key]
+			stage, found := stages[key]
+			if !found {
+				return fmt.Errorf("%s top card %s names unknown stage %q", difficulty, top.Card, key)
+			}
+			if !slices.Contains(stage.Cards, top.Card) {
+				return fmt.Errorf("%s top card %s is not in stage %q", difficulty, top.Card, key)
+			}
+		}
+		for _, ref := range start.InPlay {
+			if _, found := stages[ref.With]; ref.With != "" && !found {
 				return fmt.Errorf("in-play card %q (%s) is with unknown stage %q", ref.Card, difficulty, ref.With)
 			}
 		}
-	}
-	if def.Active != "" && !stages[def.Active] {
-		return fmt.Errorf("active names unknown stage %q", def.Active)
 	}
 	return nil
 }

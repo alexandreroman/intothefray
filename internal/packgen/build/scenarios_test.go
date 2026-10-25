@@ -287,3 +287,39 @@ func TestScenarioImageFromCoveredVillain(t *testing.T) {
 		t.Errorf("got image %q, want the one of 07002", got)
 	}
 }
+
+func TestScenarioWithUnknownDeckCardIsUnsupported(t *testing.T) {
+	f := newScenarioFixture(t)
+	def := rhinoDef()
+	def.Decks = []pack.ScenarioDeck{{Key: "d", Label: "D", Cards: []string{"01098", "55555"}}}
+
+	scenarios, refs, problems := BuildScenarios([]curated.ScenarioDef{def}, f.cards, f.sets, f.cb)
+
+	if findRef(t, refs, "rhino").Supported {
+		t.Error("rhino is supported despite an unknown deck card")
+	}
+	if len(scenarios) != 0 {
+		t.Errorf("got scenarios %v, want none", scenarios)
+	}
+	if len(problems) != 1 || !strings.Contains(problems[0].Reason, "55555") {
+		t.Errorf("got problems %+v, want one mentioning 55555", problems)
+	}
+}
+
+func TestScenarioWithUnknownDeckSetIsUnsupported(t *testing.T) {
+	f := newScenarioFixture(t)
+	def := rhinoDef()
+	def.Decks = []pack.ScenarioDeck{{Key: "d", Label: "D", Sets: []string{"rhino", "nowhere"}}}
+
+	scenarios, refs, problems := BuildScenarios([]curated.ScenarioDef{def}, f.cards, f.sets, f.cb)
+
+	if findRef(t, refs, "rhino").Supported {
+		t.Error("rhino is supported despite an unknown deck set")
+	}
+	if len(scenarios) != 0 {
+		t.Errorf("got scenarios %v, want none", scenarios)
+	}
+	if len(problems) != 1 || problems[0].Code != "nowhere" || !strings.Contains(problems[0].Reason, "unknown set nowhere") {
+		t.Errorf("got problems %+v, want one about the unknown set nowhere", problems)
+	}
+}

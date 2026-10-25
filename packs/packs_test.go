@@ -514,6 +514,16 @@ func TestEmbeddedDataInvariants(t *testing.T) {
 				for _, code := range scenario.SetAside {
 					requireCard(t, what, code)
 				}
+				for _, deck := range scenario.Decks {
+					for _, code := range deck.Cards {
+						requireCard(t, what+" deck "+deck.Key, code)
+					}
+					for _, code := range deck.Sets {
+						if _, found := setCards[code]; !found {
+							t.Errorf("%s deck %s: unknown set %s", what, deck.Key, code)
+						}
+					}
+				}
 				for _, start := range scenario.Start {
 					for _, ref := range start.Top {
 						requireFace(t, what, ref)

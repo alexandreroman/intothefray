@@ -90,8 +90,8 @@ func TestLoadRejectsDuplicateDefs(t *testing.T) {
 		second string
 		want   string
 	}{
-		{"same id", `{"id":"one","villainSet":"other"}`, `scenario id "one"`},
-		{"same villain set", `{"id":"other","villainSet":"one_set"}`, `villain set "one_set"`},
+		{"same id", `{"id":"one","villainSet":"other",` + emptyStart + `}`, `scenario id "one"`},
+		{"same villain set", `{"id":"other","villainSet":"one_set",` + emptyStart + `}`, `villain set "one_set"`},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -101,7 +101,7 @@ func TestLoadRejectsDuplicateDefs(t *testing.T) {
 				t.Fatal(err)
 			}
 			files := map[string]string{
-				"a.json": `{"id":"one","villainSet":"one_set"}`,
+				"a.json": `{"id":"one","villainSet":"one_set",` + emptyStart + `}`,
 				"b.json": tt.second,
 			}
 			for name, content := range files {
@@ -180,20 +180,28 @@ func wantScenarioError(t *testing.T, content, want string) {
 	}
 }
 
-const deckA = `{"key":"a","label":"A","sets":["s"]}`
+const (
+	deckA = `{"key":"a","label":"A","sets":["s"]}`
+	// emptyStart is the setup of a scenario without stages.
+	emptyStart = `"start":{"standard":{"top":{}},"expert":{"top":{}}}`
+	// stageV is a stage whose top card is 1 in Standard and 2 in Expert, as startV sets it up.
+	stageV = `{"key":"v","label":"V","cards":["1","2"]}`
+	startV = `"start":{"standard":{"top":{"v":{"card":"1","face":0}}},"expert":{"top":{"v":{"card":"2","face":0}}}}`
+)
 
 func TestLoadRejectsEncounterDeckNotSelfContained(t *testing.T) {
 	wantScenarioError(t, `{"id":"x","villainSet":"x","decks":[{"key":"a","label":"A","sets":["s"],"encounter":true}]}`,
 		"selfContained")
 	if err := loadScenario(t, `{"id":"x","villainSet":"x","selfContained":true,`+
-		`"decks":[{"key":"a","label":"A","sets":["s"],"encounter":true}]}`); err != nil {
+		`"decks":[{"key":"a","label":"A","sets":["s"],"encounter":true}],`+emptyStart+`}`); err != nil {
 		t.Fatalf("got error %v, want none for a self-contained scenario", err)
 	}
 }
 
 func TestLoadRejectsUnknownWith(t *testing.T) {
-	wantScenarioError(t, `{"id":"x","villainSet":"x","piles":[{"key":"v","label":"V","cards":[]}],`+
-		`"start":{"expert":{"top":{},"inPlay":[{"card":"1","face":0,"with":"nobody"}]}}}`, `"nobody"`)
+	wantScenarioError(t, `{"id":"x","villainSet":"x","piles":[`+stageV+`],"start":{`+
+		`"standard":{"top":{"v":{"card":"1","face":0}}},`+
+		`"expert":{"top":{"v":{"card":"2","face":0}},"inPlay":[{"card":"3","face":0,"with":"nobody"}]}}}`, `"nobody"`)
 }
 
 func TestLoadRejectsBadDecks(t *testing.T) {
@@ -214,6 +222,53 @@ func TestLoadRejectsBadDecks(t *testing.T) {
 			`deck "a" is named by`,
 		},
 		{"active naming no stage", `{"id":"x","villainSet":"x","active":"nobody"}`, `unknown stage "nobody"`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) { wantScenarioError(t, tt.content, tt.want) })
+	}
+}
+
+func TestLoadRejectsBadStarts(t *testing.T) {
+	topV := `{"top":{"v":{"card":"1","face":0}}}`
+	tests := []struct{ name, content, want string }{
+		{
+			"duplicate stage key",
+			`{"id":"x","villainSet":"x","piles":[` + stageV + `,` + stageV + `],` + startV + `}`,
+			`duplicate stage key "v"`,
+		},
+		{
+			"no standard setup",
+			`{"id":"x","villainSet":"x","piles":[` + stageV + `],"start":{"expert":` + topV + `}}`,
+			"no standard setup",
+		},
+		{
+			"no expert setup",
+			`{"id":"x","villainSet":"x","piles":[` + stageV + `],"start":{"standard":` + topV + `}}`,
+			"no expert setup",
+		},
+		{
+			"unknown difficulty",
+			`{"id":"x","villainSet":"x","piles":[` + stageV + `],` +
+				`"start":{"standard":` + topV + `,"expert":` + topV + `,"heroic":` + topV + `}}`,
+			`unknown difficulty "heroic"`,
+		},
+		{
+			"stage without top card",
+			`{"id":"x","villainSet":"x","piles":[` + stageV + `,{"key":"w","label":"W","cards":["3"]}],` + startV + `}`,
+			`standard setup has no top card for stage "w"`,
+		},
+		{
+			"top card of no stage",
+			`{"id":"x","villainSet":"x","piles":[` + stageV + `],"start":{"standard":` + topV + `,` +
+				`"expert":{"top":{"v":{"card":"2","face":0},"z":{"card":"2","face":0}}}}}`,
+			`expert top card 2 names unknown stage "z"`,
+		},
+		{
+			"top card out of its stage",
+			`{"id":"x","villainSet":"x","piles":[` + stageV + `],"start":{"standard":` + topV + `,` +
+				`"expert":{"top":{"v":{"card":"9","face":0}}}}}`,
+			`expert top card 9 is not in stage "v"`,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) { wantScenarioError(t, tt.content, tt.want) })
