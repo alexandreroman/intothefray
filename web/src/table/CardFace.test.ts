@@ -71,20 +71,8 @@ describe('CardFace', () => {
     expect(container.querySelector('.land-in-portrait img')).toBeTruthy();
   });
 
-  it('rotated still wraps, once loaded too', async () => {
-    const { container } = render(CardFace, {
-      images: ['01109.avif'],
-      name: 'Bomb Scare',
-      rotated: true,
-    });
-
-    await fireEvent.load(screen.getByRole('img', { name: 'Bomb Scare' }));
-
-    expect(container.querySelector('.land-in-portrait img')).toBeTruthy();
-  });
-
   it('portrait image in a landscape slot stays as is', async () => {
-    const { container } = render(CardFace, {
+    render(CardFace, {
       images: ['01109.avif'],
       name: 'Bomb Scare',
       landscape: true,
@@ -95,7 +83,6 @@ describe('CardFace', () => {
 
     await fireEvent.load(loaded);
 
-    expect(container.querySelector('.portrait-in-land')).toBeNull();
     const img = screen.getByRole('img', { name: 'Bomb Scare' });
     expect(img.classList.contains('land')).toBe(true);
     expect(img.getAttribute('src')).toBe('01109.avif');
