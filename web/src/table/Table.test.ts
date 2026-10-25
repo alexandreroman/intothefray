@@ -242,20 +242,6 @@ afterEach(() => {
   vi.mocked(loadIndex).mockReset();
 });
 
-beforeEach(() => {
-  localStorage.clear();
-  vi.mocked(loadGameCards).mockResolvedValue();
-  vi.mocked(knownCard).mockImplementation(infoOf);
-  vi.mocked(loadIndex).mockResolvedValue(INDEX);
-});
-
-afterEach(() => {
-  vi.useRealTimers();
-  interaction.reset();
-  vi.mocked(loadGameCards).mockReset();
-  vi.mocked(knownCard).mockReset();
-  vi.mocked(loadIndex).mockReset();
-});
 describe('Table', () => {
   it('draws every table card and pile on one surface; the hand is not on the table', async () => {
     render(Table, { session: fakeSession(), view: makeView() });
