@@ -68,8 +68,7 @@ const INDEX: Index = {
   ],
 };
 
-const FIRST_PLAYER_TOKEN =
-  'https://card-table.app/images/table/first_player_token_marvelchampions.png';
+const FIRST_PLAYER_TOKEN = 'https://img.intothefray.xyz/assets/first-player.avif';
 
 // The catalog of the fixture: code -> face 0.
 const FACES: Record<string, Partial<PackFace>[]> = {

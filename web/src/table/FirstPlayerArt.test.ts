@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import FirstPlayerArt from './FirstPlayerArt.svelte';
 
-const FIRST_PLAYER = 'https://card-table.app/images/table/first_player_token_marvelchampions.png';
+const FIRST_PLAYER = 'https://img.intothefray.xyz/assets/first-player.avif';
 
 beforeEach(() => {
   localStorage.clear();

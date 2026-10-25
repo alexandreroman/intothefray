@@ -13,16 +13,16 @@ interface ThemeAssets {
   firstPlayer: string | null;
 }
 
-const CEREBRO = 'https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/';
+// Fixed keys on the image CDN: a changed asset gets a new name, so no manifest is read here.
+const ASSETS = 'https://img.intothefray.xyz/assets/';
 
 const OFFICIAL_BACKS: Record<Back, string> = {
-  player: CEREBRO + 'HeroBack.jpg',
-  encounter: CEREBRO + 'EncounterBack.jpg',
-  villain: CEREBRO + 'VillainBack.jpg',
+  player: ASSETS + 'back-player.avif',
+  encounter: ASSETS + 'back-encounter.avif',
+  villain: ASSETS + 'back-villain.avif',
 };
 
-const FIRST_PLAYER_TOKEN =
-  'https://card-table.app/images/table/first_player_token_marvelchampions.png';
+const FIRST_PLAYER_TOKEN = ASSETS + 'first-player.avif';
 
 const THEME_ASSETS: Record<Theme, ThemeAssets> = {
   official: { backs: OFFICIAL_BACKS, firstPlayer: FIRST_PLAYER_TOKEN },

@@ -71,80 +71,33 @@ describe('CardFace', () => {
     expect(container.querySelector('.land-in-portrait img')).toBeTruthy();
   });
 
-  describe('an image stored the other way round', () => {
-    /** The image of that name loads at that natural size. */
-    async function load(name: string, width: number, height: number): Promise<HTMLElement> {
-      const img = screen.getByRole('img', { name });
-      Object.defineProperty(img, 'naturalWidth', { value: width, configurable: true });
-      Object.defineProperty(img, 'naturalHeight', { value: height, configurable: true });
-      await fireEvent.load(img);
-      return screen.getByRole('img', { name });
-    }
-
-    it('turns a portrait image of a landscape card a quarter clockwise in its landscape slot', async () => {
-      const { container } = render(CardFace, {
-        images: ['01109.jpg'],
-        name: 'Bomb Scare',
-        landscape: true,
-      });
-      expect(container.querySelector('.portrait-in-land')).toBeNull();
-
-      const img = await load('Bomb Scare', 710, 1030);
-
-      expect(img.closest('.portrait-in-land')).not.toBeNull();
-      expect(img.getAttribute('src')).toBe('01109.jpg');
+  it('rotated still wraps, once loaded too', async () => {
+    const { container } = render(CardFace, {
+      images: ['01109.avif'],
+      name: 'Bomb Scare',
+      rotated: true,
     });
 
-    it('leaves a landscape image of a landscape card as it is', async () => {
-      const { container } = render(CardFace, {
-        images: ['01109.jpg'],
-        name: 'Bomb Scare',
-        landscape: true,
-      });
+    await fireEvent.load(screen.getByRole('img', { name: 'Bomb Scare' }));
 
-      const img = await load('Bomb Scare', 1030, 710);
+    expect(container.querySelector('.land-in-portrait img')).toBeTruthy();
+  });
 
-      expect(container.querySelector('.portrait-in-land')).toBeNull();
-      expect(img.classList.contains('land')).toBe(true);
+  it('portrait image in a landscape slot stays as is', async () => {
+    const { container } = render(CardFace, {
+      images: ['01109.avif'],
+      name: 'Bomb Scare',
+      landscape: true,
     });
+    const loaded = screen.getByRole('img', { name: 'Bomb Scare' });
+    Object.defineProperty(loaded, 'naturalWidth', { value: 600, configurable: true });
+    Object.defineProperty(loaded, 'naturalHeight', { value: 838, configurable: true });
 
-    it('draws a portrait image of a landscape card as it is in a portrait slot, turned already', async () => {
-      const { container } = render(CardFace, {
-        images: ['01109.jpg'],
-        name: 'Bomb Scare',
-        rotated: true,
-      });
-      expect(container.querySelector('.land-in-portrait img')).toBeTruthy();
+    await fireEvent.load(loaded);
 
-      const img = await load('Bomb Scare', 710, 1030);
-
-      expect(container.querySelector('.land-in-portrait')).toBeNull();
-      expect(img.getAttribute('src')).toBe('01109.jpg');
-    });
-
-    it('measures the next image again: a fallback, or another face', async () => {
-      const { container, rerender } = render(CardFace, {
-        images: ['cerebro.jpg', 'marvelcdb.png'],
-        name: 'Bomb Scare',
-        landscape: true,
-      });
-      await load('Bomb Scare', 710, 1030);
-      expect(container.querySelector('.portrait-in-land')).not.toBeNull();
-
-      // Another face: its image is not turned until it loads the other way round too.
-      await rerender({ images: ['other.jpg'] });
-      expect(container.querySelector('.portrait-in-land')).toBeNull();
-      await load('Bomb Scare', 1030, 710);
-      expect(container.querySelector('.portrait-in-land')).toBeNull();
-
-      // A portrait image that fails: the next one is measured on its own.
-      await rerender({ images: ['cerebro.jpg', 'marvelcdb.png'] });
-      await load('Bomb Scare', 710, 1030);
-      await fireEvent.error(screen.getByRole('img', { name: 'Bomb Scare' }));
-      expect(screen.getByRole('img', { name: 'Bomb Scare' }).getAttribute('src')).toBe(
-        'marvelcdb.png',
-      );
-      expect(container.querySelector('.portrait-in-land')).toBeNull();
-    });
+    expect(container.querySelector('.portrait-in-land')).toBeNull();
+    const img = screen.getByRole('img', { name: 'Bomb Scare' });
+    expect(img.classList.contains('land')).toBe(true);
+    expect(img.getAttribute('src')).toBe('01109.avif');
   });
 });

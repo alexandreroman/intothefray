@@ -3,7 +3,7 @@ import CardView from './CardView.svelte';
 import type { CardView as TableCard, PackFace } from '../lib/types';
 import { cardBox } from './layout';
 
-const HERO_BACK = 'https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/HeroBack.jpg';
+const HERO_BACK = 'https://img.intothefray.xyz/assets/back-player.avif';
 
 function tableCard(extra: Partial<TableCard> = {}): TableCard {
   return {
