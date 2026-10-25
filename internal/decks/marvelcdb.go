@@ -43,8 +43,8 @@ var ErrNotFound = errors.New("deck not found or not public")
 // ErrInvalidDeck is returned when the deck has an impossible shape.
 var ErrInvalidDeck = errors.New("invalid deck")
 
-// defaultClient is used when Importer.HTTP is nil.
-var defaultClient = &http.Client{Timeout: requestTimeout}
+// httpClient sends every marvelcdb request.
+var httpClient = &http.Client{Timeout: requestTimeout}
 
 // Unsupported is a deck card missing from the card catalog.
 type Unsupported struct {
@@ -65,8 +65,7 @@ func (e *UnsupportedError) Error() string {
 
 // Importer fetches decks from marvelcdb.
 type Importer struct {
-	BaseURL string       // e.g. https://marvelcdb.com
-	HTTP    *http.Client // defaults to a client with a 10 s timeout
+	BaseURL string // e.g. https://marvelcdb.com
 }
 
 // deckPayload is the part of a marvelcdb deck we use.
@@ -257,7 +256,7 @@ func (im *Importer) get(ctx context.Context, path string) ([]byte, int, error) {
 	}
 	req.Header.Set("Accept", "application/json")
 
-	resp, err := im.client().Do(req)
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -273,11 +272,4 @@ func (im *Importer) get(ctx context.Context, path string) ([]byte, int, error) {
 // baseURL is BaseURL without a trailing slash, ready to take a path.
 func (im *Importer) baseURL() string {
 	return strings.TrimSuffix(im.BaseURL, "/")
-}
-
-func (im *Importer) client() *http.Client {
-	if im.HTTP != nil {
-		return im.HTTP
-	}
-	return defaultClient
 }

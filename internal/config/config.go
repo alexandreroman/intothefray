@@ -66,7 +66,11 @@ func Load(getenv func(string) string) (Config, error) {
 // is valid: it means no cross-origin frontend.
 func parseOrigins(value string) ([]string, error) {
 	var origins []string
-	for _, entry := range splitList(value) {
+	for entry := range strings.SplitSeq(value, ",") {
+		entry = strings.TrimSpace(entry)
+		if entry == "" {
+			continue
+		}
 		origin, err := parseOrigin(entry)
 		if err != nil {
 			return nil, err
@@ -93,16 +97,4 @@ func parseOrigin(entry string) (string, error) {
 		return "", fmt.Errorf("origin %q: only scheme://host[:port] is allowed", entry)
 	}
 	return u.Scheme + "://" + strings.ToLower(u.Host), nil
-}
-
-// splitList splits a comma-separated list, trimming entries and dropping
-// empty ones.
-func splitList(value string) []string {
-	var items []string
-	for _, item := range strings.Split(value, ",") {
-		if item = strings.TrimSpace(item); item != "" {
-			items = append(items, item)
-		}
-	}
-	return items
 }
