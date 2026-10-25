@@ -75,9 +75,9 @@ Everything below works today, except where noted.
 
 ## Getting Started
 
-Clone the repository and start the stack with hot reload: it installs
-the frontend dependencies, then starts Redis and Caddy (the web server)
-in containers first.
+Clone the repository and start the stack with hot reload: it starts
+Redis and Caddy (the web server) in containers, installs the frontend
+dependencies, then runs the server and the web build.
 
 ```bash
 git clone https://github.com/alexandreroman/intothefray.git

@@ -6,16 +6,16 @@ type: project
 
 # Presence message budget
 
-Every presence message a client sends costs one Redis PUBLISH on the server,
-and the backend stays portable to a small managed Redis tier (Redis Cloud's
-free tier allows 100 ops/s). The web client therefore sends cursor and drag moves at most once per 150 ms
-(`PRESENCE_INTERVAL_MS`), holds moves shorter than 3 table units until the
-pointer settles, and sends events (ping, preview, cursor leaving, drag start
-and end) at once, merged with any waiting move; a drag's end follows its last
-move in a message of its own, so the landing ghost sits where the drag ended.
-Remote cursors and drag ghosts glide linearly over the same interval when a
-message moves them, and follow the table at once when it scrolls, zooms or
-resizes. The server refuses all presence from spectators.
+Every presence message a client sends costs one Redis PUBLISH on the server, and
+the backend stays portable to a small managed Redis tier (Redis Cloud's free
+tier allows 100 ops/s). The web client therefore sends cursor and drag moves at
+most once per 150 ms (`PRESENCE_INTERVAL_MS`), holds moves shorter than 3 table
+units until the pointer settles, and sends events (ping, preview, cursor
+leaving, drag start and end) at once, merged with any waiting move; a drag's end
+follows its last move in a message of its own, so the landing ghost sits where
+the drag ended. Remote cursors and drag ghosts glide linearly over the same
+interval when a message moves them, and follow the table at once when it
+scrolls, zooms or resizes. The server refuses all presence from spectators.
 
 The client sends no presence at all while no other viewer is connected: the
 others are the online players of another colour (`PlayerView.online`) and the

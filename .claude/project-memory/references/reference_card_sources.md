@@ -26,10 +26,9 @@ type: reference
   follow mc4db's own paths (e.g. `fear_no_evil_by_ffg/`), not always the
   marvelcdb pack code. All but about ten faces have a French path.
 - mc4db answers every French image path it holds with HTTP 200 and one
-  placeholder picture (`image/png`, 46,376 bytes, `Cache-Control:
-  no-store`) saying that French images are no longer available on mc4db;
-  a path it does not hold answers 404. A HEAD check cannot tell a French
-  scan from the placeholder.
+  placeholder picture (`image/png`, 46,376 bytes, `Cache-Control: no-store`)
+  stating that mc4db serves no French images; a path it does not hold answers
+  404. A HEAD check cannot tell a French scan from the placeholder.
 - mc4db is also the fallback card source: marvelcdb is primary, and the
   generator adds the mc4db records of official cards (card `pack_creator`
   `FFG`) whose base code marvelcdb lacks, all faces of a card from one
