@@ -17,9 +17,8 @@ type: project
 - Its teal tab always shows the value: "Retaliate 1", "Retaliate 2";
   the other statuses read "Tough", "Tough ×2".
 - All five status tabs stay on the card: a portrait card's column holds
-  four above the middle, the fifth starts a second column inward; a
-  landscape card's row wraps downwards; a portrait scheme's left column
-  holds all five.
+  all five above the corner pile; a landscape card's row wraps
+  downwards; a portrait scheme's left column holds all five.
 - History: "added 1 retaliate to Rhino"; merged: "set retaliate on Rhino
   to 2".
 

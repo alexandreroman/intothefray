@@ -33,10 +33,10 @@
     caption?: string;
   } = $props();
 
-  // The tokens piled up from the bottom right corner, damage first, on every card.
+  // The tokens piled up from the bottom right corner on every card: damage in the corner, counters on top.
   const CORNER_TOKENS: readonly TokenName[] = ['dmg', 'gen'];
-  // The threat, then the acceleration beside it: in the top right corner of a scheme, in the
-  // middle of any other card. The first one takes the threat's place.
+  // The threat, then the acceleration to its left: in the top right corner of a scheme, between
+  // damage and counters in the corner pile of any other card. The first one takes the threat's place.
   const THREAT_TOKENS: readonly TokenName[] = ['thr', 'acc'];
   const SCHEME_TYPES: readonly string[] = ['main_scheme', 'side_scheme', 'player_side_scheme'];
 
@@ -48,6 +48,8 @@
   const hasToken = (k: TokenName) => (card.tokens?.[k] ?? 0) > 0;
   const cornerTokens = $derived(CORNER_TOKENS.filter(hasToken));
   const threatTokens = $derived(THREAT_TOKENS.filter(hasToken));
+  const threatInCorner = $derived(scheme && threatTokens.length > 0);
+  const threatInPile = $derived(!scheme && threatTokens.length > 0);
   const statuses = $derived(STATUSES.filter(({ name }) => (card.status?.[name] ?? 0) > 0));
 
   /**
@@ -133,19 +135,30 @@
     />
   {/if}
 
-  {#if threatTokens.length > 0}
-    <div class="tokens {scheme ? 'top-right' : 'middle'}">
+  {#if threatInCorner}
+    <div class="tokens top-right">
       {#each threatTokens as k (k)}
         {@render token(k)}
       {/each}
     </div>
   {/if}
 
-  {#if cornerTokens.length > 0}
+  <!-- In the order the tokens pile up from the corner: damage, the threat row, counters. -->
+  {#if cornerTokens.length > 0 || threatInPile}
     <div class="tokens bottom-right">
-      {#each cornerTokens as k (k)}
-        {@render token(k)}
-      {/each}
+      {#if hasToken('dmg')}
+        {@render token('dmg')}
+      {/if}
+      {#if threatInPile}
+        <div class="threat-row">
+          {#each threatTokens as k (k)}
+            {@render token(k)}
+          {/each}
+        </div>
+      {/if}
+      {#if hasToken('gen')}
+        {@render token('gen')}
+      {/if}
     </div>
   {/if}
 
@@ -241,14 +254,15 @@
   }
 
   /*
-    Tokens sit inside the card. Damage and counters pile up from the bottom right corner, damage
-    in the corner. The threat sits in the top right corner of a scheme, clear of its printed
-    threat values, and in the middle of any other card. The acceleration sits beside it, on the
-    same line: on a scheme, to its left along the top edge, above the modifiers on the right
-    edge and clear of the status tabs on the left edge; on any other card, to its right, away
-    from the modifiers along the left edge. Without threat, it takes the threat's place. The
-    status tabs end above the middle, or lie along the top of a landscape card: clear of both,
-    and of the corner pile, which is at most two tokens high.
+    Tokens sit inside the card. Damage, threat and counters pile up from the bottom right
+    corner, damage in the corner, the threat above it and counters on top. The acceleration
+    sits beside the threat, on the same row, to its left; without threat, it takes the threat's
+    place in the pile. On a scheme, the threat sits in the top right corner instead, clear of
+    its printed threat values, with the acceleration to its left along the top edge, above the
+    modifiers on the right edge and clear of the status tabs on the left edge. The corner pile
+    is at most three tokens high (84px) and two wide (55px) on any other card, and two tokens
+    high (61px) on a scheme: the status tabs end above it, or lie along the top of a landscape
+    card, clear of it.
   */
   .tokens {
     position: absolute;
@@ -257,18 +271,18 @@
     gap: 3px;
   }
 
-  /* The first token, the threat, is centred: the acceleration goes to its right. */
-  .tokens.middle {
-    left: calc(50% - 13px);
-    top: 50%;
-    transform: translateY(-50%);
-  }
-
   .tokens.bottom-right {
     right: 6px;
     bottom: 6px;
     flex-direction: column-reverse;
     align-items: flex-end;
+  }
+
+  /* The first token, the threat, stays in the pile's column: the acceleration goes to its left. */
+  .threat-row {
+    display: flex;
+    flex-direction: row-reverse;
+    gap: 3px;
   }
 
   /* The first token, the threat, is in the corner: the acceleration goes to its left. */
@@ -383,36 +397,32 @@
 
   /*
     Status cards: small tabs sticking out of the right edge, like real cards tucked under. They
-    end just above the middle, so the tokens there never cover them: half a token (13px) and a
-    3px gap. Above that, a portrait card has room for four tabs (17px high, 3px apart): a fifth
-    starts a second column inside the card, beside the bottom tab, clear of the title and of the
-    middle threat. The column still reads top to bottom, then on to the second one.
+    end just above the corner pile at its highest, so its tokens never cover them: 6px in, three
+    tokens (84px) and a 3px gap. Above that, a portrait card has room for all five tabs (17px
+    high, 3px apart) in one column, which reads top to bottom.
   */
   .statuses {
     position: absolute;
     right: -8px;
-    bottom: calc(50% + 16px);
+    bottom: 93px;
     z-index: 4;
     display: flex;
     flex-direction: column;
-    /* The second column goes to the left; wrap-reverse swaps the cross axis: flex-start is right. */
-    flex-wrap: wrap-reverse;
     justify-content: flex-end;
     align-items: flex-start;
     gap: 3px;
-    max-height: 77px;
   }
 
   /*
-    A landscape card is too low for three tabs above its middle: they lie side by side along its
-    top instead, the last one sticking out of the right edge. A row too long for the card wraps
-    downwards, its first tabs on the top row, clear of the middle threat.
+    A landscape card is too low for a column above the corner pile: the tabs lie side by side
+    along its top instead, the last one sticking out of the right edge. A row too long for the
+    card wraps downwards, its first tabs on the top row: the two rows end 43px from the top,
+    clear of the corner pile, which starts 50px from it.
   */
   .card.land .statuses {
     top: 6px;
     bottom: auto;
     max-width: calc(100% + 2px);
-    max-height: none;
     flex-direction: row;
     flex-wrap: wrap;
     align-items: flex-start;
@@ -429,9 +439,7 @@
     bottom: auto;
     left: -8px;
     max-width: none;
-    max-height: none;
     flex-direction: column;
-    flex-wrap: nowrap;
     align-items: flex-start;
   }
 
@@ -488,16 +496,15 @@
   /*
     Stat modifiers: tabs like the statuses, on the edge the statuses leave free. On a portrait
     card, they stick out of the left edge from the bottom, clear of the stats printed along the
-    top left, of the corner pile and of the middle threat, which is narrower than the card and
-    has the acceleration to its right.
+    top left and of the corner pile on the right, at most two tokens wide.
     Anchored at the bottom, the column grows upwards and still reads ATK to REC top to bottom.
     On a portrait scheme, whose left edge holds the statuses, they stick out of the right edge
     between the threat in the top corner (the acceleration lies to its left, along the top) and
     the corner pile, at most two tokens high (61px).
     That room holds five tabs (17px high, 3px apart): a column holds no more, which also keeps
     it clear of the stats on a portrait card. With all six stats, HP starts a second column
-    inside the card, beside the bottom tab: higher up, it would cover the middle threat of a
-    portrait card or the statuses of a scheme.
+    inside the card, beside the bottom tab: higher up, it would cover the stats of a portrait
+    card or the statuses of a scheme.
   */
   .mods {
     position: absolute;
@@ -525,20 +532,27 @@
 
   /*
     A landscape card, scheme or not, is too low for a column: they lie in a row along the bottom
-    from the left corner, stopping short of the corner pile (26px wide, 6px in) and wrapping
-    upwards.
+    from the left corner, wrapping upwards, and stop 12px short of the corner pile, which sits
+    6px in. On a landscape card other than a scheme it is up to two tokens wide (55px), where the
+    acceleration sits beside the threat. On a landscape scheme the threat and the acceleration
+    sit top right, so it is one token wide (26px): the wider row there stays two rows high, under
+    the four status tabs of the scheme's left column.
   */
   .card.land .mods {
     top: auto;
     right: auto;
     bottom: 6px;
     left: 6px;
-    max-width: calc(100% - 44px);
+    max-width: calc(100% - 73px);
     max-height: none;
     justify-content: flex-start;
     flex-direction: row;
     flex-wrap: wrap-reverse;
     align-items: flex-end;
+  }
+
+  .card.land.scheme .mods {
+    max-width: calc(100% - 44px);
   }
 
   .mod {

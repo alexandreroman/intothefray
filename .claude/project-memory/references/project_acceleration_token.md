@@ -15,10 +15,10 @@ type: project
 - It has no keyboard shortcut and no keys sheet entry: the "Add a token"
   submenu ("Acceleration (2)") and the − / + token pill reach it.
 - Its chip is Fray red (#FF4438), brighter than damage, with an upward
-  double chevron before its count. It sits beside the threat: to its left
-  in a scheme's top right corner (threat in the corner), to its right in
-  the middle of any other card; without threat it takes the threat's
-  place.
+  double chevron before its count. It sits beside the threat, to its
+  left: in a scheme's top right corner (threat in the corner), and in the
+  bottom right corner pile of any other card, between damage and
+  counters; without threat it takes the threat's place.
 - History, naming the card: "added 2 acceleration tokens to …", "removed
   1 acceleration token from …"; merged: "set acceleration tokens on … to
   3".
