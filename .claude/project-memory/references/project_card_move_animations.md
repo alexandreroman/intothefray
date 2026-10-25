@@ -13,8 +13,9 @@ type: project
 - A card the viewer cannot see travels as a back: out of a face-down pile
   it leaves on its back and turns to its face where it lands face up; a
   card that lands face down stays a back. A card taken face down off the
-  table into the viewer's hand turns face up there. The client only
-  animates what the view holds, so nothing leaks.
+  table into the viewer's hand turns face up there, followed under its
+  new id (`freshIdOf` in `animate.ts`). The client only animates what
+  the view holds, so nothing leaks.
 - A card flying to a pile turns over on its way when it lands on
   another side than it showed (`turnOf` in `animate.ts`): a face-up
   card put on a deck turns face down, a face-down card or a deck's

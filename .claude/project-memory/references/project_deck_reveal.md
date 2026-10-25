@@ -38,8 +38,8 @@ type: project
   which takes the revealed card. Other players, and a card revealed on
   the encounter deck, get no Draw.
 - A Flip that turns a revealed card face down puts it back on top of its
-  deck ("put X back on top of their deck"); a flip to another face keeps
-  it revealed.
+  deck under a new id ("put X back on top of their deck"); a flip to
+  another face keeps it revealed.
 - History: "revealed Rhino" on the encounter deck; "revealed X from their
   deck" / "… from their Labor deck" on a player's deck.
 

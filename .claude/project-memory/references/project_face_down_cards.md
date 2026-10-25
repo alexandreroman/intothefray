@@ -32,7 +32,8 @@ type: project
 - Face down, a card's code leaves every view, its owner's included, and
   every history line that named it loses its card id (`logViews`).
 - A card leaving the table loses its face-down state wherever it goes:
-  a hand, a deck, a discard pile, an out-of-play pile.
+  a hand, a deck, a discard pile, an out-of-play pile. Into a hand or
+  onto a deck it also gets a new id (see [[project_constraints]]).
 - History: "turned Hydra Soldier face down", "turned Hydra Soldier face
   up", "played a card face down from their deck" (with a target: "…
   under Rhino"); flipping back within one burst removes the line.
