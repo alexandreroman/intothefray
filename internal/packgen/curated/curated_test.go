@@ -320,6 +320,14 @@ func TestLoadRejectsBadMainSchemes(t *testing.T) {
 			`{"id":"x","villainSet":"x","selfContained":true,"mainSchemes":["a"],` + emptyStart + `}`,
 			"main scheme sets need a scenario that is not selfContained",
 		},
+		{
+			"stage under the main scheme stage key",
+			`{"id":"x","villainSet":"x","mainSchemes":["a"],` +
+				`"piles":[{"key":"scheme","label":"S","cards":["1","2"]}],` +
+				`"start":{"standard":{"top":{"scheme":{"card":"1","face":0}}},` +
+				`"expert":{"top":{"scheme":{"card":"2","face":0}}}}}`,
+			`main scheme sets need a scenario without a stage "scheme"`,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) { wantScenarioError(t, tt.content, tt.want) })

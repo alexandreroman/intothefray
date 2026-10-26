@@ -177,6 +177,11 @@ type Scenario struct {
 	MainSchemes []string `json:"mainSchemes,omitempty"`
 }
 
+// MainSchemeStage is the key of the stage setup makes of the main scheme of
+// the chosen main scheme set; a scenario with main schemes has no pile of its
+// own under that key.
+const MainSchemeStage = "scheme"
+
 // PackFile is the content of one generated pack file.
 //
 //nolint:revive // pack.File would read as a file of the file system.

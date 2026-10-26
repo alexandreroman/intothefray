@@ -145,17 +145,26 @@ func TestSetupMainSchemeStage(t *testing.T) {
 	}
 }
 
-func TestSetupMainSchemeStageOfSeveralSchemes(t *testing.T) {
+func TestSetupSetsAsideSeveralMainSchemes(t *testing.T) {
 	table := startedGame(t, underlingConfig("hammerhead", "protection_racket")).Table
 
-	schemes := stageWithKey(t, table, "scheme")
-	want := []string{"60134", "60135", "60136", "60137", "60138"}
-	if got := stageCodes(table, schemes); !slices.Equal(got, want) {
-		t.Errorf("scheme stage = %v, want %v", got, want)
+	// Each player puts one in play by hand: no stage holds them.
+	if slices.ContainsFunc(table.Stages, func(s *Stage) bool { return s.Key == "scheme" }) {
+		t.Error("got a scheme stage, want none")
 	}
-	top := cardWithCode(t, table, "60134")
-	if schemes.Current != top.ID || top.Zone != ZoneTable || top.Face != 0 {
-		t.Errorf("60134 = %+v, want the current scheme, face 0", top)
+	aside := table.Piles[PileScenarioAside].Cards
+	var got []string
+	for _, id := range aside {
+		got = append(got, table.Cards[id].Code)
+	}
+	want := []string{"60134", "60135", "60136", "60137", "60138"}
+	if !slices.Equal(got, want) {
+		t.Errorf("scenario set-aside pile = %v, want %v", got, want)
+	}
+	for _, id := range aside {
+		if c := table.Cards[id]; c.Face != 0 || c.Home != PileEncounter {
+			t.Errorf("%s = %+v, want face 0, at home in the encounter deck", c.Code, c)
+		}
 	}
 	for _, code := range want {
 		if n := encounterCount(table, code); n != 0 {
@@ -191,5 +200,110 @@ func TestStartLogsTheMainScheme(t *testing.T) {
 	want := "started the game (Bullseye, Art Museum Heist, Cops, The Owl)"
 	if len(g.Log) != 1 || g.Log[0].Text != want {
 		t.Errorf("log = %v, want %q", g.Log, want)
+	}
+}
+
+func TestStartUnderlingAtExpert(t *testing.T) {
+	cfg := underlingConfig("bullseye", "art_museum_heist", "cops", "the_owl")
+	cfg.Difficulty = pack.Expert
+	cfg.Expert = "expert"
+	table := startedGame(t, cfg).Table
+
+	villains := stageWithKey(t, table, "villain")
+	if villain := cardWithCode(t, table, "60065"); villains.Current != villain.ID || villain.Face != 0 {
+		t.Errorf("Bullseye I = %+v, want the current villain, face 0", villain)
+	}
+	schemes := stageWithKey(t, table, "scheme")
+	if scheme := cardWithCode(t, table, "60121"); schemes.Current != scheme.ID || scheme.Face != 0 {
+		t.Errorf("Art Museum Heist = %+v, want the current scheme, face 0", scheme)
+	}
+	expert, ok := newCatalog(t).Set("expert")
+	if !ok {
+		t.Fatal("no set expert")
+	}
+	for _, code := range expert.Cards {
+		if encounterCount(table, code) == 0 {
+			t.Errorf("expert card %s is missing from the encounter deck", code)
+		}
+	}
+}
+
+// recommendedWith returns the modular sets recommended with a main scheme set.
+func recommendedWith(t *testing.T, cat *pack.Catalog, code string) []string {
+	t.Helper()
+	i := slices.IndexFunc(cat.Index().Sets, func(ref pack.SetRef) bool { return ref.Code == code })
+	if i < 0 {
+		t.Fatalf("no set %q in the index", code)
+	}
+	return cat.Index().Sets[i].Recommended
+}
+
+// TestSetupEveryUnderlingScenario starts every Underling with every main
+// scheme set and its recommended modular sets, at both difficulties: every
+// card of the encounter sets is on the table exactly as many times as the set
+// holds it, each in one place.
+func TestSetupEveryUnderlingScenario(t *testing.T) {
+	cat := newCatalog(t)
+	var underlings []pack.ScenarioRef
+	for _, ref := range cat.Index().Scenarios {
+		if len(ref.MainSchemes) > 0 {
+			underlings = append(underlings, ref)
+		}
+	}
+	if len(underlings) < 5 {
+		t.Fatalf("got %d scenarios with main schemes, want the five Underlings", len(underlings))
+	}
+
+	for _, underling := range underlings {
+		for _, scheme := range underling.MainSchemes {
+			for _, difficulty := range []pack.Difficulty{pack.Standard, pack.Expert} {
+				name := underling.ID + "/" + scheme + "/" + string(difficulty)
+				t.Run(name, func(t *testing.T) {
+					t.Parallel()
+					cfg := underlingConfig(underling.ID, append([]string{scheme}, recommendedWith(t, cat, scheme)...)...)
+					cfg.Difficulty = difficulty
+					if difficulty == pack.Expert {
+						cfg.Expert = "expert"
+					}
+					table := startedGame(t, cfg).Table
+
+					scenario, ok := cat.Scenario(underling.ID)
+					if !ok {
+						t.Fatalf("no scenario %q", underling.ID)
+					}
+					sets := append([]string{scenario.VillainSet, cfg.Standard}, cfg.Modulars...)
+					if cfg.Expert != "" {
+						sets = append(sets, cfg.Expert)
+					}
+					checkSetCopies(t, cat, table, sets)
+					checkIntegrity(t, table)
+				})
+			}
+		}
+	}
+}
+
+// checkSetCopies verifies that every card of the given sets is on the table
+// exactly as many times as its quantity.
+func checkSetCopies(t *testing.T, cat *pack.Catalog, table *Table, setCodes []string) {
+	t.Helper()
+	counts := map[string]int{}
+	for _, c := range table.Cards {
+		counts[c.Code]++
+	}
+	for _, setCode := range setCodes {
+		set, ok := cat.Set(setCode)
+		if !ok {
+			t.Fatalf("no set %q", setCode)
+		}
+		for _, code := range set.Cards {
+			card, _, err := cat.Card(code)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got := counts[card.Code]; got != card.Quantity {
+				t.Errorf("set %s: %d copies of %s, want %d", setCode, got, card.Code, card.Quantity)
+			}
+		}
 	}
 }

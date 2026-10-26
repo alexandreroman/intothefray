@@ -346,6 +346,11 @@ func TestBuildRejectsInvalidCuratedSets(t *testing.T) {
 		{"unknown card", map[string]curated.SetDef{"standard_ii": inPlay("09999", 0)}, "09999 is not in the set"},
 		{"face out of range", map[string]curated.SetDef{"standard_ii": inPlay("09003", 2)}, "09003 has no face 2"},
 		{"negative face", map[string]curated.SetDef{"standard_ii": inPlay("09004", -1)}, "09004 has no face -1"},
+		{
+			"main scheme set without main scheme",
+			map[string]curated.SetDef{"standard_ii": {MainScheme: true}},
+			"standard_ii: main scheme set has no main scheme card",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

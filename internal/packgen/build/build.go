@@ -76,7 +76,7 @@ func Build(in Inputs) (Result, error) {
 	}
 	faceCounts := faceCountsOf(cards)
 	sets := pruneSets(buildSets(in.MC, in.MCPacks), cardCodes)
-	if err := applySetDefs(sets, in.Curated.Sets, cardCodes, faceCounts); err != nil {
+	if err := applySetDefs(sets, in.Curated.Sets, cardCodes, faceCounts, mainSchemeCardsOf(cards)); err != nil {
 		return Result{}, err
 	}
 	applySideBacks(cards, sets)
@@ -124,6 +124,20 @@ func cardCodesOf(cards map[string][]pack.Card) map[string]bool {
 	return codes
 }
 
+// mainSchemeCardsOf returns the codes of the cards whose first face is a main
+// scheme.
+func mainSchemeCardsOf(cards map[string][]pack.Card) map[string]bool {
+	codes := make(map[string]bool)
+	for _, packCards := range cards {
+		for _, card := range packCards {
+			if len(card.Faces) > 0 && card.Faces[0].Type == mainSchemeKind {
+				codes[card.Code] = true
+			}
+		}
+	}
+	return codes
+}
+
 // faceCountsOf maps each card code to the number of faces of the card.
 func faceCountsOf(cards map[string][]pack.Card) map[string]int {
 	counts := make(map[string]int)
@@ -150,12 +164,14 @@ func pruneSets(sets map[string][]pack.Set, cardCodes map[string]bool) map[string
 // applySetDefs merges the curated set data into the generated sets. Unlike a
 // broken scenario, which is only reported as unsupported, a definition that
 // does not match the catalog fails the build: the set it completes would
-// otherwise be set up wrongly.
+// otherwise be set up wrongly. mainSchemeCards holds the codes of the cards
+// whose first face is a main scheme.
 func applySetDefs(
 	sets map[string][]pack.Set,
 	defs map[string]curated.SetDef,
 	cardCodes map[string]bool,
 	faceCounts map[string]int,
+	mainSchemeCards map[string]bool,
 ) error {
 	setsByCode := make(map[string]*pack.Set)
 	for _, packSets := range sets {
@@ -177,6 +193,9 @@ func applySetDefs(
 			return fmt.Errorf("curated set %s: %w", code, err)
 		}
 		if err := checkSetAside(*set, def.SetAside, cardCodes); err != nil {
+			return fmt.Errorf("curated set %s: %w", code, err)
+		}
+		if err := checkMainScheme(*set, def.MainScheme, mainSchemeCards); err != nil {
 			return fmt.Errorf("curated set %s: %w", code, err)
 		}
 		if def.MainScheme {
@@ -219,6 +238,18 @@ func applySideBacks(cards map[string][]pack.Card, sets map[string][]pack.Set) {
 func checkSide(set pack.Set, side *pack.SideDeck) error {
 	if side != nil && set.Kind != heroSpecialKind {
 		return fmt.Errorf("side deck needs a %s set, not a %s set", heroSpecialKind, set.Kind)
+	}
+	return nil
+}
+
+// checkMainScheme makes sure a main scheme set has a card whose first face is
+// a main scheme: setup takes the main scheme of the game from it.
+func checkMainScheme(set pack.Set, mainScheme bool, mainSchemeCards map[string]bool) error {
+	if !mainScheme {
+		return nil
+	}
+	if !slices.ContainsFunc(set.Cards, func(code string) bool { return mainSchemeCards[code] }) {
+		return errors.New("main scheme set has no main scheme card")
 	}
 	return nil
 }

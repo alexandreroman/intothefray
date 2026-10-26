@@ -20,8 +20,10 @@ type: project
   modulars, and the game does not start without it.
 - Setup: every villain card of the Underling in the villain pile, the first
   (stage I, card A) on top at both difficulties; the scheme set's main
-  schemes in a "Main scheme" stage, the first on 1A (Protection Racket's
-  five together); its other cards in the encounter deck. Typhoid Mary starts
+  scheme in a "Main scheme" stage on 1A, or, for a set of several main
+  schemes (Protection Racket's five), all of them in the scenario's
+  set-aside pile, where each player takes one; its other cards in the
+  encounter deck. Typhoid Mary starts
   with Disturbed Psyche and Establish Trust in play, Stop The Presses! with
   the Daily Bugle. Players do the rest by hand: the Underling's stage,
   Typhoid Mary's random side, the Protection Racket schemes per player, the

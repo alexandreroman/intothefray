@@ -174,11 +174,19 @@ func checkScenarioDef(def ScenarioDef) error {
 	return checkStarts(def.Start, def.Piles, stages)
 }
 
-// checkMainSchemes rejects the main scheme sets listed twice, and those of a
-// self-contained scenario, which is played without any set picked in the lobby.
+// checkMainSchemes rejects the main scheme sets listed twice, those of a
+// self-contained scenario, which is played without any set picked in the lobby,
+// and those of a scenario with a stage under the key setup gives the stage of
+// the chosen main scheme.
 func checkMainSchemes(def ScenarioDef) error {
-	if len(def.MainSchemes) > 0 && def.SelfContained {
+	if len(def.MainSchemes) == 0 {
+		return nil
+	}
+	if def.SelfContained {
 		return errors.New("main scheme sets need a scenario that is not selfContained")
+	}
+	if slices.ContainsFunc(def.Piles, func(pile pack.Pile) bool { return pile.Key == pack.MainSchemeStage }) {
+		return fmt.Errorf("main scheme sets need a scenario without a stage %q", pack.MainSchemeStage)
 	}
 	listed := make(map[string]bool, len(def.MainSchemes))
 	for _, code := range def.MainSchemes {
