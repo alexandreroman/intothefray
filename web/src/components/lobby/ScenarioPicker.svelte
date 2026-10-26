@@ -698,9 +698,11 @@
     display: contents;
   }
 
+  /* The side padding goes through --select-pad, so the drawn arrow keeps the same inset. */
   .set select {
+    --select-pad: 8px;
     width: auto;
-    padding: 4px 8px;
+    padding-block: 4px;
     font-size: 13px;
   }
 
