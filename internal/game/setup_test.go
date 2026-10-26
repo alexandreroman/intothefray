@@ -522,9 +522,10 @@ func TestSetupPlayers(t *testing.T) {
 		}
 	}
 
-	// The first player token lies under the deck of the first player, seat 0.
-	if table.FirstPlayer != (Point{X: 30, Y: 720}) {
-		t.Errorf("first player = %+v", table.FirstPlayer)
+	// The first player token lies right of the identity of the first player,
+	// seat 0, centred on its height to the nearest grid line.
+	if table.FirstPlayer != (Point{X: 550, Y: 560}) {
+		t.Errorf("first player = %+v, want (550, 560)", table.FirstPlayer)
 	}
 }
 
@@ -711,8 +712,17 @@ func TestStartRowsPerSeat(t *testing.T) {
 			t.Errorf("identity of seat %d = %+v, want on row %d", seat, identity, playerRow(seat))
 		}
 	}
-	if table.FirstPlayer != (Point{X: firstPlayerX, Y: rowY(playerRow(0)) + portraitHeight + firstPlayerGap}) {
-		t.Errorf("first player = %+v, want under the deck of seat 0", table.FirstPlayer)
+	// The first player token lies inPlayGap right of the identity of seat 0,
+	// clear of it even exhausted, and so well past the deck.
+	first := identities[0]
+	if first == nil {
+		t.Fatal("seat 0 has no identity")
+	}
+	if want := (Point{X: first.X + portraitWidth + inPlayGap, Y: first.Y + 60}); table.FirstPlayer != want {
+		t.Errorf("first player = %+v, want %+v, right of the identity of seat 0", table.FirstPlayer, want)
+	}
+	if deck := table.Piles["deck:p0"]; table.FirstPlayer.X < deck.X+portraitWidth {
+		t.Errorf("first player at x %d, want past the deck of seat 0 at %d", table.FirstPlayer.X, deck.X)
 	}
 
 	// Starting threat per player counts the seats, one per hero.
@@ -843,9 +853,11 @@ func TestSetupLeavesRoomUnderTheVillainRow(t *testing.T) {
 			if deck.Y%10 != 0 || table.FirstPlayer.Y%10 != 0 {
 				t.Errorf("first player row at y %d (token %d), want on the 10-unit grid", deck.Y, table.FirstPlayer.Y)
 			}
-			// The first player token lies under the first player's deck, inside the row.
-			if want := deck.Y + portraitHeight + firstPlayerGap; table.FirstPlayer.Y != want {
-				t.Errorf("first player token at y %d, want under the first player's deck at %d", table.FirstPlayer.Y, want)
+			// The first player token lies beside the first player's identity, centred on its height
+			// (63 below its top) to the nearest grid line, inside the row.
+			if want := deck.Y + 60; table.FirstPlayer.Y != want {
+				t.Errorf("first player token at y %d, want beside the first player's identity at %d",
+					table.FirstPlayer.Y, want)
 			}
 			const tokenHeight = 70 // FIRST_PLAYER_BOX (web/src/table/layout.ts)
 			if bottom := table.FirstPlayer.Y + tokenHeight; bottom > firstRowTop+rowHeight {

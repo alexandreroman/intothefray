@@ -27,15 +27,16 @@ import (
 // after what precedes it; a stage card pileZoneGap after piles and inPlayGap
 // after a card; cards in play inPlayGap apart. The classic scenarios have no
 // deck group: the villain lies at 360, the main scheme at 550 and the first
-// card in play at 800. The active counter lies under its stage card, as the
-// first player token does under the first player's deck.
+// card in play at 800. The active counter lies under its stage card,
+// activeGap below it.
 //
 // In a player's row, the villain's place is the identity's. A
 // hero with side decks lays them out after its discard pile, each followed by
 // its own discard pile if it has one, sidePileStepX apart as the deck and the
 // discard pile are. The identity then lies pileZoneGap after the end of the
 // last pile: without side piles, it sits at identityX. The first player token
-// lies under the first player's deck, in the empty bottom of their row.
+// lies right of the first player's identity, inPlayGap past it, centred on its
+// height (firstPlayerSpot).
 // Things sit rowContentY below the top of their row, leaving room for the
 // client's owner label above the piles. Out-of-play piles (victory display, set-aside cards) keep
 // a position for the model, on the first villain pile, but the client never draws them.
@@ -65,13 +66,15 @@ const (
 	// a portrait card reaches about 23 further on each side: 50 lets two
 	// neighbours both be exhausted without overlapping.
 	inPlayGap = 50
-	// The first player token, 84 by 70 (web/src/table/layout.ts), lies
-	// centred under the deck, 28 taken to the grid, and firstPlayerGap below
-	// it, on the grid: 14 units clear of the client's owner frame, which
-	// reaches 10 units past the piles. It ends 10 units above the bottom of
-	// the row.
-	firstPlayerX   = 30
-	firstPlayerGap = 24
+	// The first player token is 84 by 70 (FIRST_PLAYER_BOX,
+	// web/src/table/layout.ts): firstPlayerTokenHeight is its height.
+	firstPlayerTokenHeight = 70
+	// activeGap is the room between the bottom of a stage card and the
+	// active counter under it, 70 by 70 (web/src/table/layout.ts). It puts
+	// the counter's top on the grid, 14 units clear of the owner frame of
+	// the encounter piles, which reaches 10 units past them, and leaves the
+	// counter in the empty band of the villain's row.
+	activeGap = 24
 	// activeOffsetX takes the centre of the active counter under its stage card to the grid: 40 on a 140 wide card
 	// puts the 70 wide counter's centre at 75, not 70.
 	activeOffsetX = 40
@@ -210,13 +213,13 @@ func setNames(cat *pack.Catalog, codes []string) ([]string, error) {
 }
 
 // newEmptyTable returns a table with every pile of the villain and of every
-// seat, all empty.
+// seat, all empty. The first player token is left at the origin until
+// setupPlayer places it beside the identity of seat 0.
 func newEmptyTable(seatCount int) *Table {
 	t := &Table{
-		Cards:       map[string]*Card{},
-		Piles:       map[string]*Pile{},
-		Hands:       map[Area][]string{},
-		FirstPlayer: Point{X: firstPlayerX, Y: rowY(playerRow(0)) + portraitHeight + firstPlayerGap},
+		Cards: map[string]*Card{},
+		Piles: map[string]*Pile{},
+		Hands: map[Area][]string{},
 	}
 	villainY := rowY(villainRow)
 	t.addPile(PileEncounter, KindEncounter, NoOwner, deckX, villainY)
@@ -413,7 +416,7 @@ func (b *tableBuilder) setupScenario(cfg LobbyConfig) (pack.Scenario, error) {
 		if pile.Key == scenario.Active {
 			b.table.Active = &Point{
 				X: stageCard.X + activeOffsetX,
-				Y: rowY(villainRow) + portraitHeight + firstPlayerGap,
+				Y: rowY(villainRow) + portraitHeight + activeGap,
 			}
 		}
 		for i, ref := range start.InPlay {
@@ -726,6 +729,34 @@ func cardWidth(size pack.Size) int {
 	}
 }
 
+// cardHeight returns the height of a card face on the table, as the client
+// draws it (web/src/table/layout.ts).
+func cardHeight(size pack.Size) int {
+	switch size {
+	case pack.SizeLand:
+		// A landscape card is a portrait one turned a quarter.
+		return portraitWidth
+	case pack.SizeDoubleStd:
+		return 280
+	default:
+		// A double-size landscape card is as tall as a portrait one.
+		return portraitHeight
+	}
+}
+
+// firstPlayerSpot returns where the first player token starts, beside the
+// first player's identity lying at (x, y) on a face of the given size:
+// inPlayGap past its right edge, as a card in play would lie, so that the
+// token stays clear of the identity even when it is exhausted, and centred on
+// its height. x is taken up to the grid as a card in play's is, y to the
+// nearest grid line: on a portrait identity, 60 below its top.
+func firstPlayerSpot(identitySize pack.Size, x, y int) Point {
+	return Point{
+		X: ceilToGrid(x + cardWidth(identitySize) + inPlayGap),
+		Y: snap(y + (cardHeight(identitySize)-firstPlayerTokenHeight)/2),
+	}
+}
+
 // ceilToGrid rounds a positive table coordinate up to the grid.
 func ceilToGrid(v int) int {
 	return (v + gridSize - 1) / gridSize * gridSize
@@ -776,10 +807,18 @@ func (b *tableBuilder) setupPlayer(seat int, deck *DeckChoice) error {
 	if err != nil {
 		return err
 	}
+	face := alterEgoFace(identityDef)
+	if face >= len(identityDef.Faces) {
+		return invalid("card %s has no face", identityDef.Code)
+	}
 	// The identity follows the last pile: the discard pile (index 1) or the
 	// last side pile.
 	x := pileX(1+sidePiles) + portraitWidth + pileZoneGap
-	b.placeOnTable(identity, alterEgoFace(identityDef), x, rowY(playerRow(seat)))
+	y := rowY(playerRow(seat))
+	b.placeOnTable(identity, face, x, y)
+	if seat == 0 {
+		b.table.FirstPlayer = firstPlayerSpot(identityDef.Faces[face].Size, x, y)
+	}
 
 	if hero.Obligation != "" && !b.selfContained {
 		c, _, err := b.newEncounterCard(hero.Obligation)

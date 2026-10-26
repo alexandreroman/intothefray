@@ -27,10 +27,12 @@ type: project
   cards it puts in play with the same 50 gap from each card's width. 50
   lets two neighbouring portrait cards both be exhausted (turned 15°)
   without overlapping.
-- The first player token starts under the first player's deck (x 30, 24
-  below the deck), in the empty bottom of that row; the active counter
-  starts under its villain card (40 right of the card's left edge, 24
-  below it). A played card avoids every marker.
+- The first player token starts right of the first player's identity,
+  50 units past its right edge (clear of it when exhausted), centred on
+  its height to the grid: (550, 560) on a row without side piles. The
+  active counter starts under its villain card (40 right of the card's
+  left edge, 24 below it). A played card avoids every marker, so the first
+  player's first played card lands past the token.
 - The villain's row is taller (470 units, player rows 330): about 1.2
   portrait card heights (244 units, rows on the 10-unit grid) lie empty
   between its cards and the first player's row, so the two read apart.
