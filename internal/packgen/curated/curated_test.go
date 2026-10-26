@@ -279,3 +279,49 @@ func TestLoadRejectsBadStarts(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) { wantScenarioError(t, tt.content, tt.want) })
 	}
 }
+
+func TestLoadReadsMainSchemes(t *testing.T) {
+	dir := t.TempDir()
+	scenarios := filepath.Join(dir, "scenarios")
+	if err := os.Mkdir(scenarios, 0o750); err != nil {
+		t.Fatal(err)
+	}
+	files := map[string]string{
+		filepath.Join(scenarios, "x.json"): `{"id":"x","villainSet":"x","mainSchemes":["a","b"],` + emptyStart + `}`,
+		filepath.Join(dir, "sets.json"):    `{"a":{"mainScheme":true}}`,
+	}
+	for path, content := range files {
+		if err := os.WriteFile(path, []byte(content), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	loaded, err := Load(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := loaded.Scenarios[0].MainSchemes; !reflect.DeepEqual(got, []string{"a", "b"}) {
+		t.Errorf("got main schemes %v, want [a b]", got)
+	}
+	if !loaded.Sets["a"].MainScheme {
+		t.Errorf("got set a %+v, want a main scheme set", loaded.Sets["a"])
+	}
+}
+
+func TestLoadRejectsBadMainSchemes(t *testing.T) {
+	tests := []struct{ name, content, want string }{
+		{
+			"duplicate main scheme set",
+			`{"id":"x","villainSet":"x","mainSchemes":["a","b","a"],` + emptyStart + `}`,
+			`duplicate main scheme set "a"`,
+		},
+		{
+			"self-contained scenario",
+			`{"id":"x","villainSet":"x","selfContained":true,"mainSchemes":["a"],` + emptyStart + `}`,
+			"main scheme sets need a scenario that is not selfContained",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) { wantScenarioError(t, tt.content, tt.want) })
+	}
+}

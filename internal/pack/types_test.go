@@ -112,15 +112,27 @@ func TestIndexRoundTrip(t *testing.T) {
 			{Code: "core", Name: "Core Set", File: "core.json", Position: 1, Localized: french},
 			{Code: "gob", Name: "Green Goblin", File: "gob.json", Position: 2},
 		},
-		Scenarios: []ScenarioRef{{
-			ID: "rhino", Name: "Rhino", Pack: "core", Image: "https://example.com/rhino.png",
-			Supported: true, Recommended: []string{"bomb_scare"},
-			Localized: map[string]Localized{"fr": {Name: "Le Rhino"}},
-		}},
-		Sets: []SetRef{{
-			Code: "bomb_scare", Name: "Bomb Scare", Pack: "core", Kind: "modular",
-			Localized: map[string]Localized{"fr": {Name: "Alerte à la bombe"}},
-		}},
+		Scenarios: []ScenarioRef{
+			{
+				ID: "rhino", Name: "Rhino", Pack: "core", Image: "https://example.com/rhino.png",
+				Supported: true, Recommended: []string{"bomb_scare"},
+				Localized: map[string]Localized{"fr": {Name: "Le Rhino"}},
+			},
+			{
+				ID: "bullseye", Name: "Bullseye", Pack: "fne", Image: "https://example.com/bullseye.png",
+				Supported: true, Recommended: []string{}, MainSchemes: []string{"art_museum_heist"},
+			},
+		},
+		Sets: []SetRef{
+			{
+				Code: "bomb_scare", Name: "Bomb Scare", Pack: "core", Kind: "modular",
+				Localized: map[string]Localized{"fr": {Name: "Alerte à la bombe"}},
+			},
+			{
+				Code: "art_museum_heist", Name: "Art Museum Heist", Pack: "fne", Kind: "main_scheme",
+				Recommended: []string{"cops", "the_owl"},
+			},
+		},
 	}
 
 	data, err := json.Marshal(want)
@@ -134,6 +146,12 @@ func TestIndexRoundTrip(t *testing.T) {
 		`"localized":{"fr":{"name":"Alerte à la bombe"}}`,
 		// An entry without overrides emits no localized key.
 		`"position":2}`,
+		`"recommended":[],"mainSchemes":["art_museum_heist"]}`,
+		`"kind":"main_scheme","recommended":["cops","the_owl"]}`,
+		// A scenario without main scheme sets and a set without
+		// recommendations keep their original shape.
+		`"recommended":["bomb_scare"],"localized"`,
+		`"kind":"modular","localized"`,
 	}
 	for _, fragment := range fragments {
 		if !strings.Contains(string(data), fragment) {

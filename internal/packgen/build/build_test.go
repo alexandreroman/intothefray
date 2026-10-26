@@ -357,6 +357,42 @@ func TestBuildRejectsInvalidCuratedSets(t *testing.T) {
 	}
 }
 
+func TestBuildMakesCuratedMainSchemeSets(t *testing.T) {
+	in := withManifest(t, Inputs{
+		MC:      setsFixture(t),
+		MCPacks: corePacks,
+		CBSets:  readJSON[cerebro.Set](t, "testdata/sets_cerebro.json"),
+		Curated: curated.Curated{Sets: map[string]curated.SetDef{"rhino": {MainScheme: true}}},
+	})
+
+	result, err := Build(in)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	index := slices.IndexFunc(result.Packs[0].Sets, func(set pack.Set) bool { return set.Code == "rhino" })
+	if got := result.Packs[0].Sets[index].Kind; got != "main_scheme" {
+		t.Errorf("got rhino kind %q, want main_scheme", got)
+	}
+	// A main scheme set is offered in the lobby with the modular sets Cerebro
+	// recommends for it, rather than listed as a scenario.
+	want := pack.SetRef{
+		Code: "rhino", Name: "Rhino", Pack: "core", Kind: "main_scheme", Recommended: []string{"bomb_scare"},
+	}
+	if !slices.ContainsFunc(result.Index.Sets, func(ref pack.SetRef) bool { return reflect.DeepEqual(ref, want) }) {
+		t.Errorf("got index sets %+v, want %+v among them", result.Index.Sets, want)
+	}
+	if slices.ContainsFunc(result.Index.Scenarios, func(ref pack.ScenarioRef) bool { return ref.ID == "rhino" }) {
+		t.Errorf("got scenario refs %+v, want no rhino", result.Index.Scenarios)
+	}
+	// A modular set carries no recommendation.
+	for _, ref := range result.Index.Sets {
+		if ref.Kind == "modular" && ref.Recommended != nil {
+			t.Errorf("got modular set %+v, want no recommended sets", ref)
+		}
+	}
+}
+
 // heroSetsInputs returns the core fixture plus two hero_special sets of
 // Spider-Man and a card of his hero set, for the side-deck and set-aside data.
 func heroSetsInputs(t *testing.T, defs map[string]curated.SetDef) Inputs {

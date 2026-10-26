@@ -103,7 +103,7 @@ func Build(in Inputs) (Result, error) {
 	for _, packFile := range packs {
 		positions[packFile.Code] = packFile.Position
 	}
-	index := buildIndex(packs, refs, positions)
+	index := buildIndex(packs, refs, positions, mainSchemeRecommendations(sets, in.CBSets))
 	localizeIndex(&index, in.Curated.Scenarios, fr)
 	return Result{
 		Packs:    packs,
@@ -178,6 +178,9 @@ func applySetDefs(
 		}
 		if err := checkSetAside(*set, def.SetAside, cardCodes); err != nil {
 			return fmt.Errorf("curated set %s: %w", code, err)
+		}
+		if def.MainScheme {
+			set.Kind = mainSchemeKind
 		}
 		set.InPlay = def.InPlay
 		set.Unlisted = def.Unlisted
@@ -416,7 +419,15 @@ func nonNil[T any](items []T) []T {
 	return items
 }
 
-func buildIndex(packs []pack.PackFile, refs []pack.ScenarioRef, positions map[string]int) pack.Index {
+// buildIndex lists the packs, the scenarios and the sets the lobby can offer.
+// recommendations maps a main scheme set code to the modular sets recommended
+// with it.
+func buildIndex(
+	packs []pack.PackFile,
+	refs []pack.ScenarioRef,
+	positions map[string]int,
+	recommendations map[string][]string,
+) pack.Index {
 	index := pack.Index{
 		Version:   indexVersion,
 		Packs:     []pack.PackRef{},
@@ -434,6 +445,7 @@ func buildIndex(packs []pack.PackFile, refs []pack.ScenarioRef, positions map[st
 			if isLobbyKind(set.Kind) && !set.Unlisted {
 				index.Sets = append(index.Sets, pack.SetRef{
 					Code: set.Code, Name: set.Name, Pack: packFile.Code, Kind: set.Kind,
+					Recommended: recommendations[set.Code],
 				})
 			}
 		}
@@ -447,5 +459,5 @@ func buildIndex(packs []pack.PackFile, refs []pack.ScenarioRef, positions map[st
 // isLobbyKind tells whether the lobby can offer sets of this kind. Unlisted
 // sets stay out of the lobby whatever their kind.
 func isLobbyKind(kind string) bool {
-	return kind == modularKind || kind == "standard" || kind == "expert"
+	return kind == modularKind || kind == "standard" || kind == "expert" || kind == mainSchemeKind
 }

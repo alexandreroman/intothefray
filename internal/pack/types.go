@@ -172,6 +172,9 @@ type Scenario struct {
 	// Active is the key of the stage the active counter starts under; empty
 	// when the scenario has no active counter.
 	Active string `json:"active,omitempty"`
+	// MainSchemes lists the main scheme sets the scenario is played with, one
+	// of which the host picks; empty when the scenario has its own main scheme.
+	MainSchemes []string `json:"mainSchemes,omitempty"`
 }
 
 // PackFile is the content of one generated pack file.
@@ -209,6 +212,8 @@ type ScenarioRef struct {
 	Recommended []string `json:"recommended"`
 	// SelfContained scenarios use only their own cards.
 	SelfContained bool `json:"selfContained,omitempty"`
+	// MainSchemes lists the main scheme sets the scenario is played with.
+	MainSchemes []string `json:"mainSchemes,omitempty"`
 	// Localized holds the overrides of the entry per language code, e.g. "fr".
 	Localized map[string]Localized `json:"localized,omitempty"`
 }
@@ -219,6 +224,8 @@ type SetRef struct {
 	Name string `json:"name"`
 	Pack string `json:"pack"`
 	Kind string `json:"kind"`
+	// Recommended lists the modular sets recommended with a main scheme set.
+	Recommended []string `json:"recommended,omitempty"`
 	// Localized holds the overrides of the entry per language code, e.g. "fr".
 	Localized map[string]Localized `json:"localized,omitempty"`
 }
@@ -229,5 +236,5 @@ type Index struct {
 	Lang      string        `json:"lang"`
 	Packs     []PackRef     `json:"packs"`
 	Scenarios []ScenarioRef `json:"scenarios"` // the whole range, release order, Supported=false when not curated
-	Sets      []SetRef      `json:"sets"`      // modular, standard and expert sets the lobby can offer
+	Sets      []SetRef      `json:"sets"`      // modular, standard, expert and main scheme sets the lobby can offer
 }

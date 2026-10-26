@@ -324,3 +324,96 @@ func TestScenarioWithUnknownDeckSetIsUnsupported(t *testing.T) {
 		t.Errorf("got problems %+v, want one about the unknown set nowhere", problems)
 	}
 }
+
+// underlingFixture has an underling set with two villain cards and a main
+// scheme set, in pack p.
+func underlingFixture() (map[string][]pack.Card, map[string][]pack.Set) {
+	card := func(code, set, kind string) pack.Card {
+		return pack.Card{Code: code, Set: set, Faces: []pack.Face{{Type: kind, Images: []string{"https://x/" + code}}}}
+	}
+	cards := map[string][]pack.Card{"p": {
+		card("60065", "bullseye", "villain"), card("60066", "bullseye", "villain"),
+		card("60121", "heist", "main_scheme"),
+	}}
+	sets := map[string][]pack.Set{"p": {
+		{Code: "bullseye", Name: "Bullseye", Kind: "underling", Cards: []string{"60065", "60066"}},
+		{Code: "heist", Name: "Heist", Kind: "main_scheme", Cards: []string{"60121"}},
+	}}
+	return cards, sets
+}
+
+func underlingDef() curated.ScenarioDef {
+	villain := pack.FaceRef{Card: "60065", Face: 0}
+	return curated.ScenarioDef{
+		ID:         "bullseye",
+		VillainSet: "bullseye",
+		Piles:      []pack.Pile{{Key: "villain", Label: "Villain", Cards: []string{"60065", "60066"}}},
+		Start: map[pack.Difficulty]pack.Start{
+			pack.Standard: {Top: map[string]pack.FaceRef{"villain": villain}},
+			pack.Expert:   {Top: map[string]pack.FaceRef{"villain": villain}},
+		},
+		MainSchemes: []string{"heist"},
+	}
+}
+
+func TestScenarioListsUnderlingSetsButNotMainSchemeSets(t *testing.T) {
+	cards, sets := underlingFixture()
+
+	_, refs, _ := buildScenarios(nil, cards, sets, nil)
+
+	if len(refs) != 1 || refs[0].ID != "bullseye" || refs[0].Supported || refs[0].Image != "https://x/60065" {
+		t.Errorf("got refs %+v, want only the unsupported bullseye with the image of 60065", refs)
+	}
+}
+
+func TestScenarioWithMainSchemes(t *testing.T) {
+	cards, sets := underlingFixture()
+	// Cerebro recommends a modular set for the villain: the main scheme set
+	// brings the scenario's modular sets instead.
+	sets["p"] = append(sets["p"], pack.Set{Code: "bomb_scare", Name: "Bomb Scare", Kind: "modular"})
+	cb := []cerebro.Set{
+		{ID: "b", Name: "Bomb Scare", Type: "Modular Set"},
+		{ID: "u", Name: "Bullseye", Type: "Villain Set", Recommends: []string{"b"}},
+	}
+
+	scenarios, refs, problems := buildScenarios([]curated.ScenarioDef{underlingDef()}, cards, sets, cb)
+
+	if len(problems) != 0 {
+		t.Fatalf("got problems %+v, want none", problems)
+	}
+	ref := findRef(t, refs, "bullseye")
+	if !ref.Supported || !reflect.DeepEqual(ref.MainSchemes, []string{"heist"}) ||
+		ref.Recommended == nil || len(ref.Recommended) != 0 {
+		t.Errorf("got ref %+v, want supported with main scheme heist and an empty recommended list", ref)
+	}
+	got := scenarios["p"]
+	if len(got) != 1 || !reflect.DeepEqual(got[0].MainSchemes, []string{"heist"}) || len(got[0].Recommended) != 0 {
+		t.Errorf("got scenarios %+v, want bullseye with main scheme heist and no recommended set", got)
+	}
+}
+
+func TestScenarioWithBadMainSchemeIsUnsupported(t *testing.T) {
+	cards, sets := underlingFixture()
+	def := underlingDef()
+	// bullseye is a set of the catalog, but not a main scheme set.
+	def.MainSchemes = []string{"heist", "nowhere", "bullseye"}
+
+	scenarios, refs, problems := buildScenarios([]curated.ScenarioDef{def}, cards, sets, nil)
+
+	if findRef(t, refs, "bullseye").Supported {
+		t.Error("bullseye is supported despite bad main scheme sets")
+	}
+	if len(scenarios) != 0 {
+		t.Errorf("got scenarios %v, want none", scenarios)
+	}
+	var codes []string
+	for _, problem := range problems {
+		codes = append(codes, problem.Code)
+		if !strings.Contains(problem.Reason, "is not a main scheme set") {
+			t.Errorf("got problem %+v, want one about a set that is not a main scheme set", problem)
+		}
+	}
+	if want := []string{"bullseye", "nowhere"}; !reflect.DeepEqual(codes, want) {
+		t.Errorf("got problem codes %v, want %v", codes, want)
+	}
+}
