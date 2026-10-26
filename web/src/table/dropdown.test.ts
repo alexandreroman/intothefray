@@ -1,4 +1,4 @@
-import { MENU_EDGE, MENU_INSET, placeAtPoint, placeSubmenu } from './dropdown';
+import { MENU_EDGE, MENU_INSET, placeAtPoint, placeSubmenu, placeUnder } from './dropdown';
 
 // A 1000 × 800 room at the top left of the screen, and a 200 × 300 menu.
 const ROOM = { left: 0, top: 0, right: 1000, bottom: 800 };
@@ -74,5 +74,55 @@ describe('placeSubmenu', () => {
       top: MENU_EDGE,
       maxHeight: 800 - 2 * MENU_EDGE,
     });
+  });
+});
+
+describe('placeUnder', () => {
+  // A 100 × 30 button, and the gap between it and its menu.
+  const GAP = 4;
+  function button(left: number, top: number) {
+    return { left, top, right: left + 100, bottom: top + 30 };
+  }
+
+  it('opens under its button, their left edges lined up', () => {
+    expect(placeUnder(button(400, 200), SIZE, ROOM, GAP)).toEqual({
+      left: 400,
+      top: 200 + 30 + GAP,
+      maxHeight: null,
+    });
+  });
+
+  it('opens above its button when there is no room below', () => {
+    expect(placeUnder(button(400, 600), SIZE, ROOM, GAP)).toEqual({
+      left: 400,
+      top: 600 - GAP - 300,
+      maxHeight: null,
+    });
+  });
+
+  it('is cut to the roomier side when it fits neither way', () => {
+    const tall = { w: 200, h: 700 };
+    expect(placeUnder(button(400, 300), tall, ROOM, GAP)).toEqual({
+      left: 400,
+      top: 300 + 30 + GAP,
+      maxHeight: 800 - MENU_EDGE - (300 + 30 + GAP),
+    });
+    expect(placeUnder(button(400, 500), tall, ROOM, GAP)).toEqual({
+      left: 400,
+      top: MENU_EDGE,
+      maxHeight: 500 - GAP - MENU_EDGE,
+    });
+  });
+
+  it('lines up with the right edge of its button near the right edge of the room', () => {
+    expect(placeUnder(button(850, 200), SIZE, ROOM, GAP).left).toBe(850 + 100 - 200);
+  });
+
+  it('stays inside the room when it fits on neither side of its button', () => {
+    const narrow = { left: 0, top: 0, right: 300, bottom: 800 };
+    expect(placeUnder(button(100, 200), SIZE, narrow, GAP).left).toBe(300 - MENU_EDGE - 200);
+    // Wider than the room, it keeps its left side in.
+    const wide = { w: 400, h: 300 };
+    expect(placeUnder(button(100, 200), wide, narrow, GAP).left).toBe(MENU_EDGE);
   });
 });

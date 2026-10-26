@@ -1,0 +1,40 @@
+{
+  "id": "electro",
+  "villainSet": "electro",
+  "piles": [
+    {
+      "key": "villain",
+      "label": "Villain",
+      "cards": [
+        "60076",
+        "60077",
+        "60078"
+      ]
+    }
+  ],
+  "start": {
+    "standard": {
+      "top": {
+        "villain": {
+          "card": "60076",
+          "face": 0
+        }
+      }
+    },
+    "expert": {
+      "top": {
+        "villain": {
+          "card": "60076",
+          "face": 0
+        }
+      }
+    }
+  },
+  "mainSchemes": [
+    "art_museum_heist",
+    "the_getaway",
+    "protection_racket",
+    "stop_the_presses",
+    "the_raft_breakout"
+  ]
+}

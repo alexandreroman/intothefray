@@ -49,7 +49,7 @@
 - [CI scope](references/project_ci_scope.md) — ci.yml checks Go, web, Docker; on main: image, Pages, backend; no packs sync, no Dependabot
 - [Moving several cards as a group](references/project_group_moves.md) — rubber band; drag or menu acts on the group; one atomic group action
 - [Localized card names and images](references/project_localized_cards.md) — localized overrides per face and index; Options offers French (CDN)
-- [Fear No Evil scenarios](references/project_fear_no_evil_scenarios.md) — Kingpin curated; chosen-Underling scenarios unsupported
+- [Fear No Evil scenarios](references/project_fear_no_evil_scenarios.md) — Kingpin, Underlings as villains; scenario = main scheme set
 - [Green Goblin scenarios](references/project_green_goblin_scenarios.md) — Risky Business, Mutagen Formula curated; Goblin Thralls by hand
 - [Scenario decks and several villains](references/project_scenario_decks.md) — curated decks, several villains, manual active counter; Wrecking Crew
 - [Action menu organisation](references/project_action_bars.md) — click opens the action menu; hand plays by drag and keys; out-of-play chips
@@ -68,6 +68,7 @@
 - [Hand card sizes](references/project_hand_sizes.md) — raised: 80 % of the preview card; resting: base card at 82 %, its fan and height
 - [Scrolling lists fade at their edges](references/project_scroll_fade.md) — card box lists, lobby villain list: {@attach scrollFade}
 - [Lobby columns share one height](references/project_lobby_columns.md) — side by side, Scenario box fills its column; settings slide in
+- [Add a set menu groups by pack](references/project_modular_menu.md) — modular sets under sticky pack names; ★ sets stay in their pack
 - [Close is the main button of a card box](references/project_card_box_close.md) — Close is primary in every card box footer; other buttons secondary
 - [Face-down cards](references/project_face_down_cards.md) — Flip toggles single-faced cards, turns stage cards over; hidden-deck Play lands face up
 - [Revealed card is its deck's top card](references/project_deck_reveal.md) — own hidden decks reveal; deck actions take it first

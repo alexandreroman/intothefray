@@ -346,6 +346,11 @@ func TestBuildRejectsInvalidCuratedSets(t *testing.T) {
 		{"unknown card", map[string]curated.SetDef{"standard_ii": inPlay("09999", 0)}, "09999 is not in the set"},
 		{"face out of range", map[string]curated.SetDef{"standard_ii": inPlay("09003", 2)}, "09003 has no face 2"},
 		{"negative face", map[string]curated.SetDef{"standard_ii": inPlay("09004", -1)}, "09004 has no face -1"},
+		{
+			"main scheme set without main scheme",
+			map[string]curated.SetDef{"standard_ii": {MainScheme: true}},
+			"standard_ii: main scheme set has no main scheme card",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -354,6 +359,42 @@ func TestBuildRejectsInvalidCuratedSets(t *testing.T) {
 				t.Fatalf("got error %v, want one containing %q", err, tt.want)
 			}
 		})
+	}
+}
+
+func TestBuildMakesCuratedMainSchemeSets(t *testing.T) {
+	in := withManifest(t, Inputs{
+		MC:      setsFixture(t),
+		MCPacks: corePacks,
+		CBSets:  readJSON[cerebro.Set](t, "testdata/sets_cerebro.json"),
+		Curated: curated.Curated{Sets: map[string]curated.SetDef{"rhino": {MainScheme: true}}},
+	})
+
+	result, err := Build(in)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	index := slices.IndexFunc(result.Packs[0].Sets, func(set pack.Set) bool { return set.Code == "rhino" })
+	if got := result.Packs[0].Sets[index].Kind; got != "main_scheme" {
+		t.Errorf("got rhino kind %q, want main_scheme", got)
+	}
+	// A main scheme set is offered in the lobby with the modular sets Cerebro
+	// recommends for it, rather than listed as a scenario.
+	want := pack.SetRef{
+		Code: "rhino", Name: "Rhino", Pack: "core", Kind: "main_scheme", Recommended: []string{"bomb_scare"},
+	}
+	if !slices.ContainsFunc(result.Index.Sets, func(ref pack.SetRef) bool { return reflect.DeepEqual(ref, want) }) {
+		t.Errorf("got index sets %+v, want %+v among them", result.Index.Sets, want)
+	}
+	if slices.ContainsFunc(result.Index.Scenarios, func(ref pack.ScenarioRef) bool { return ref.ID == "rhino" }) {
+		t.Errorf("got scenario refs %+v, want no rhino", result.Index.Scenarios)
+	}
+	// A modular set carries no recommendation.
+	for _, ref := range result.Index.Sets {
+		if ref.Kind == "modular" && ref.Recommended != nil {
+			t.Errorf("got modular set %+v, want no recommended sets", ref)
+		}
 	}
 }
 

@@ -228,12 +228,34 @@ button[aria-disabled='true'] {
 input[type='text'],
 select {
   width: 100%;
-  background: var(--bg);
+  background-color: var(--bg);
   color: var(--text);
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 8px 10px;
   font: inherit;
+}
+
+/*
+  The native arrow sits against the border wherever the browser puts it, so it is drawn here: a
+  small triangle of two half squares, in theme colours (an SVG image could not use the tokens).
+  Its right edge is inset as far as the text is from the left; a smaller select sets --select-pad.
+*/
+select {
+  --select-pad: 10px;
+  --select-arrow: 5px;
+  --select-arrow-gap: 8px;
+  appearance: none;
+  padding-inline: var(--select-pad)
+    calc(var(--select-pad) + 2 * var(--select-arrow) + var(--select-arrow-gap));
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+    linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+  background-position:
+    right calc(var(--select-pad) + var(--select-arrow)) center,
+    right var(--select-pad) center;
+  background-size: var(--select-arrow) var(--select-arrow);
+  background-repeat: no-repeat;
 }
 
 input[type='text']:focus,

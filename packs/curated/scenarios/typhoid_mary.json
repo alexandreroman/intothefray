@@ -1,0 +1,59 @@
+{
+  "id": "typhoid_mary",
+  "villainSet": "typhoid_mary",
+  "piles": [
+    {
+      "key": "villain",
+      "label": "Villain",
+      "cards": [
+        "60110",
+        "60111"
+      ]
+    }
+  ],
+  "start": {
+    "standard": {
+      "top": {
+        "villain": {
+          "card": "60110",
+          "face": 0
+        }
+      },
+      "inPlay": [
+        {
+          "card": "60112",
+          "face": 0
+        },
+        {
+          "card": "60113",
+          "face": 0
+        }
+      ]
+    },
+    "expert": {
+      "top": {
+        "villain": {
+          "card": "60110",
+          "face": 0
+        }
+      },
+      "inPlay": [
+        {
+          "card": "60112",
+          "face": 0
+        },
+        {
+          "card": "60113",
+          "face": 0
+        }
+      ]
+    }
+  },
+  "mainSchemes": [
+    "art_museum_heist",
+    "the_getaway",
+    "protection_racket",
+    "stop_the_presses",
+    "the_raft_breakout"
+  ]
+}

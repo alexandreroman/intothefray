@@ -76,7 +76,7 @@ func Build(in Inputs) (Result, error) {
 	}
 	faceCounts := faceCountsOf(cards)
 	sets := pruneSets(buildSets(in.MC, in.MCPacks), cardCodes)
-	if err := applySetDefs(sets, in.Curated.Sets, cardCodes, faceCounts); err != nil {
+	if err := applySetDefs(sets, in.Curated.Sets, cardCodes, faceCounts, mainSchemeCardsOf(cards)); err != nil {
 		return Result{}, err
 	}
 	applySideBacks(cards, sets)
@@ -103,7 +103,7 @@ func Build(in Inputs) (Result, error) {
 	for _, packFile := range packs {
 		positions[packFile.Code] = packFile.Position
 	}
-	index := buildIndex(packs, refs, positions)
+	index := buildIndex(packs, refs, positions, mainSchemeRecommendations(sets, in.CBSets))
 	localizeIndex(&index, in.Curated.Scenarios, fr)
 	return Result{
 		Packs:    packs,
@@ -119,6 +119,20 @@ func cardCodesOf(cards map[string][]pack.Card) map[string]bool {
 	for _, packCards := range cards {
 		for _, card := range packCards {
 			codes[card.Code] = true
+		}
+	}
+	return codes
+}
+
+// mainSchemeCardsOf returns the codes of the cards whose first face is a main
+// scheme.
+func mainSchemeCardsOf(cards map[string][]pack.Card) map[string]bool {
+	codes := make(map[string]bool)
+	for _, packCards := range cards {
+		for _, card := range packCards {
+			if len(card.Faces) > 0 && card.Faces[0].Type == mainSchemeKind {
+				codes[card.Code] = true
+			}
 		}
 	}
 	return codes
@@ -150,12 +164,14 @@ func pruneSets(sets map[string][]pack.Set, cardCodes map[string]bool) map[string
 // applySetDefs merges the curated set data into the generated sets. Unlike a
 // broken scenario, which is only reported as unsupported, a definition that
 // does not match the catalog fails the build: the set it completes would
-// otherwise be set up wrongly.
+// otherwise be set up wrongly. mainSchemeCards holds the codes of the cards
+// whose first face is a main scheme.
 func applySetDefs(
 	sets map[string][]pack.Set,
 	defs map[string]curated.SetDef,
 	cardCodes map[string]bool,
 	faceCounts map[string]int,
+	mainSchemeCards map[string]bool,
 ) error {
 	setsByCode := make(map[string]*pack.Set)
 	for _, packSets := range sets {
@@ -178,6 +194,12 @@ func applySetDefs(
 		}
 		if err := checkSetAside(*set, def.SetAside, cardCodes); err != nil {
 			return fmt.Errorf("curated set %s: %w", code, err)
+		}
+		if err := checkMainScheme(*set, def.MainScheme, mainSchemeCards); err != nil {
+			return fmt.Errorf("curated set %s: %w", code, err)
+		}
+		if def.MainScheme {
+			set.Kind = mainSchemeKind
 		}
 		set.InPlay = def.InPlay
 		set.Unlisted = def.Unlisted
@@ -216,6 +238,18 @@ func applySideBacks(cards map[string][]pack.Card, sets map[string][]pack.Set) {
 func checkSide(set pack.Set, side *pack.SideDeck) error {
 	if side != nil && set.Kind != heroSpecialKind {
 		return fmt.Errorf("side deck needs a %s set, not a %s set", heroSpecialKind, set.Kind)
+	}
+	return nil
+}
+
+// checkMainScheme makes sure a main scheme set has a card whose first face is
+// a main scheme: setup takes the main scheme of the game from it.
+func checkMainScheme(set pack.Set, mainScheme bool, mainSchemeCards map[string]bool) error {
+	if !mainScheme {
+		return nil
+	}
+	if !slices.ContainsFunc(set.Cards, func(code string) bool { return mainSchemeCards[code] }) {
+		return errors.New("main scheme set has no main scheme card")
 	}
 	return nil
 }
@@ -416,7 +450,15 @@ func nonNil[T any](items []T) []T {
 	return items
 }
 
-func buildIndex(packs []pack.PackFile, refs []pack.ScenarioRef, positions map[string]int) pack.Index {
+// buildIndex lists the packs, the scenarios and the sets the lobby can offer.
+// recommendations maps a main scheme set code to the modular sets recommended
+// with it.
+func buildIndex(
+	packs []pack.PackFile,
+	refs []pack.ScenarioRef,
+	positions map[string]int,
+	recommendations map[string][]string,
+) pack.Index {
 	index := pack.Index{
 		Version:   indexVersion,
 		Packs:     []pack.PackRef{},
@@ -434,6 +476,7 @@ func buildIndex(packs []pack.PackFile, refs []pack.ScenarioRef, positions map[st
 			if isLobbyKind(set.Kind) && !set.Unlisted {
 				index.Sets = append(index.Sets, pack.SetRef{
 					Code: set.Code, Name: set.Name, Pack: packFile.Code, Kind: set.Kind,
+					Recommended: recommendations[set.Code],
 				})
 			}
 		}
@@ -447,5 +490,5 @@ func buildIndex(packs []pack.PackFile, refs []pack.ScenarioRef, positions map[st
 // isLobbyKind tells whether the lobby can offer sets of this kind. Unlisted
 // sets stay out of the lobby whatever their kind.
 func isLobbyKind(kind string) bool {
-	return kind == modularKind || kind == "standard" || kind == "expert"
+	return kind == modularKind || kind == "standard" || kind == "expert" || kind == mainSchemeKind
 }

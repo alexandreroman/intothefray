@@ -279,7 +279,8 @@ func DefaultConfig(cat *pack.Catalog, scenario string) LobbyConfig {
 }
 
 func validateConfig(cfg LobbyConfig, cat *pack.Catalog) error {
-	if _, ok := cat.Scenario(cfg.Scenario); !ok {
+	scenario, ok := cat.Scenario(cfg.Scenario)
+	if !ok {
 		return invalid("unsupported scenario %q", cfg.Scenario)
 	}
 	// An empty Standard or Expert set means the game plays without it, as
@@ -305,15 +306,46 @@ func validateConfig(cfg LobbyConfig, cat *pack.Catalog) error {
 		return invalid("unknown difficulty %q", cfg.Difficulty)
 	}
 
+	// The main scheme set of a scenario played with one is chosen among the
+	// modular sets, so the modular entries hold it too.
+	mainSchemes := 0
 	for i, code := range cfg.Modulars {
 		if slices.Contains(cfg.Modulars[:i], code) {
 			return invalid("duplicate modular set %q", code)
+		}
+		if isMainSchemeSet(cat, code) {
+			if !slices.Contains(scenario.MainSchemes, code) {
+				return invalid("%q is not a main scheme set of scenario %q", code, scenario.ID)
+			}
+			mainSchemes++
+			if mainSchemes > 1 {
+				return invalid("more than one main scheme set")
+			}
+			continue
 		}
 		if err := requireSetKind(cat, code, "modular"); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+// isMainSchemeSet reports whether code names a main scheme set, which sets
+// the main scheme of a scenario played with main schemes.
+func isMainSchemeSet(cat *pack.Catalog, code string) bool {
+	set, ok := cat.Set(code)
+	return ok && set.Kind == setKindMainScheme
+}
+
+// mainSchemeSet returns the main scheme set among the modular sets of cfg,
+// or "" if none is chosen.
+func mainSchemeSet(cat *pack.Catalog, cfg LobbyConfig) string {
+	for _, code := range cfg.Modulars {
+		if isMainSchemeSet(cat, code) {
+			return code
+		}
+	}
+	return ""
 }
 
 // requireSetKind accepts only the sets of this kind the lobby offers.

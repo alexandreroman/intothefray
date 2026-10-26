@@ -155,8 +155,8 @@ func TestEmbeddedCoreSet(t *testing.T) {
 				supported++
 			}
 		}
-		if supported != 7 {
-			t.Errorf("supported scenarios = %d, want 7", supported)
+		if supported != 12 {
+			t.Errorf("supported scenarios = %d, want 12", supported)
 		}
 	})
 }
@@ -208,6 +208,89 @@ func TestEmbeddedFearNoEvil(t *testing.T) {
 		}
 		if set.Kind != "underling" {
 			t.Errorf("bullseye kind = %q, want underling", set.Kind)
+		}
+	})
+
+	mainSchemes := []string{
+		"art_museum_heist", "the_getaway", "protection_racket", "stop_the_presses", "the_raft_breakout",
+	}
+
+	t.Run("underling scenarios", func(t *testing.T) {
+		tests := []struct {
+			id      string
+			villain pack.FaceRef
+			inPlay  []pack.FaceRef
+		}{
+			{id: "bullseye", villain: pack.FaceRef{Card: "60065", Face: 0}},
+			{id: "electro", villain: pack.FaceRef{Card: "60076", Face: 0}},
+			{id: "hammerhead", villain: pack.FaceRef{Card: "60086", Face: 0}},
+			{id: "purple_man", villain: pack.FaceRef{Card: "60097", Face: 0}},
+			{
+				id:      "typhoid_mary",
+				villain: pack.FaceRef{Card: "60110", Face: 0},
+				inPlay:  []pack.FaceRef{{Card: "60112", Face: 0}, {Card: "60113", Face: 0}},
+			},
+		}
+		for _, tt := range tests {
+			index := slices.IndexFunc(catalog.Index().Scenarios, func(ref pack.ScenarioRef) bool {
+				return ref.ID == tt.id
+			})
+			if index < 0 {
+				t.Errorf("scenario ref %s not found", tt.id)
+				continue
+			}
+			ref := catalog.Index().Scenarios[index]
+			if !ref.Supported || ref.Pack != "fne" || len(ref.Recommended) != 0 ||
+				!slices.Equal(ref.MainSchemes, mainSchemes) {
+				t.Errorf("%s ref = %+v, want supported in pack fne, no recommended set, main schemes %v",
+					tt.id, ref, mainSchemes)
+			}
+			scenario, ok := catalog.Scenario(tt.id)
+			if !ok {
+				t.Errorf("scenario %s not found", tt.id)
+				continue
+			}
+			for _, difficulty := range []pack.Difficulty{pack.Standard, pack.Expert} {
+				start := scenario.Start[difficulty]
+				if got := start.Top["villain"]; got != tt.villain {
+					t.Errorf("%s %s villain = %+v, want %+v", tt.id, difficulty, got, tt.villain)
+				}
+				if !slices.Equal(start.InPlay, tt.inPlay) {
+					t.Errorf("%s %s in play = %v, want %v", tt.id, difficulty, start.InPlay, tt.inPlay)
+				}
+			}
+		}
+	})
+
+	t.Run("main scheme sets", func(t *testing.T) {
+		recommended := map[string][]string{
+			"art_museum_heist":  {"cops", "the_owl"},
+			"the_getaway":       {"cops", "drive"},
+			"protection_racket": {"disasters", "tracksuit_mafia"},
+			"stop_the_presses":  {"tombstone", "tracksuit_mafia"},
+			"the_raft_breakout": {"the_owl", "tombstone"},
+		}
+		for _, code := range mainSchemes {
+			if slices.ContainsFunc(catalog.Index().Scenarios, func(ref pack.ScenarioRef) bool { return ref.ID == code }) {
+				t.Errorf("main scheme set %s is listed as a scenario", code)
+			}
+			index := slices.IndexFunc(catalog.Index().Sets, func(ref pack.SetRef) bool { return ref.Code == code })
+			if index < 0 {
+				t.Errorf("main scheme set %s is not in the index", code)
+				continue
+			}
+			ref := catalog.Index().Sets[index]
+			if ref.Kind != "main_scheme" || !slices.Equal(ref.Recommended, recommended[code]) {
+				t.Errorf("set ref %s = %+v, want kind main_scheme, recommended %v", code, ref, recommended[code])
+			}
+		}
+
+		set, _ := catalog.Set("stop_the_presses")
+		daily := []pack.FaceRef{{Card: "60152", Face: 0}}
+		for _, difficulty := range []pack.Difficulty{pack.Standard, pack.Expert} {
+			if got := set.InPlay[difficulty]; !slices.Equal(got, daily) {
+				t.Errorf("stop_the_presses %s in play = %v, want %v", difficulty, got, daily)
+			}
 		}
 	})
 }
@@ -553,12 +636,19 @@ func TestEmbeddedDataInvariants(t *testing.T) {
 	})
 
 	// Players resolve the stage 1A "Setup:" text themselves, so the main
-	// scheme starts on its first face, never already advanced to 1B.
+	// scheme starts on its first face, never already advanced to 1B. A
+	// scenario played with a main scheme set has none of its own.
 	t.Run("main schemes start on their first face", func(t *testing.T) {
 		for _, file := range files {
 			for _, scenario := range file.Scenarios {
 				for difficulty, start := range scenario.Start {
 					scheme, ok := start.Top["scheme"]
+					if len(scenario.MainSchemes) > 0 {
+						if ok {
+							t.Errorf("scenario %s %s has a main scheme and main scheme sets", scenario.ID, difficulty)
+						}
+						continue
+					}
 					if !ok {
 						t.Errorf("scenario %s %s has no main scheme", scenario.ID, difficulty)
 						continue
@@ -589,6 +679,21 @@ func TestEmbeddedDataInvariants(t *testing.T) {
 							t.Errorf("scenario %s %s starts %s face %d in play, a %s, want an environment or a side scheme",
 								scenario.ID, difficulty, ref.Card, ref.Face, got)
 						}
+					}
+				}
+			}
+		}
+	})
+
+	t.Run("scenario main scheme sets are offered", func(t *testing.T) {
+		for _, file := range files {
+			for _, scenario := range file.Scenarios {
+				for _, code := range scenario.MainSchemes {
+					listed := slices.ContainsFunc(catalog.Index().Sets, func(ref pack.SetRef) bool {
+						return ref.Code == code && ref.Kind == "main_scheme"
+					})
+					if !listed {
+						t.Errorf("scenario %s names main scheme set %s, which the index does not offer", scenario.ID, code)
 					}
 				}
 			}

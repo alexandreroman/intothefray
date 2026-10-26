@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/svelte';
+import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import ScenarioPicker from './ScenarioPicker.svelte';
 import type { Lang } from '../../lib/lang';
 import type { Index, LobbyConfig, View, YouView } from '../../lib/types';
@@ -242,6 +242,107 @@ describe('ScenarioPicker Add a set menu', () => {
   });
 });
 
+describe('ScenarioPicker Add a set menu groups', () => {
+  // Several packs, sets listed out of pack order: the menu follows the packs, then the sets' own order.
+  const packed: Index = {
+    ...index,
+    packs: [
+      { code: 'core', name: 'Core Set', file: 'core.json', position: 1 },
+      { code: 'gob', name: 'Green Goblin', file: 'gob.json', position: 2 },
+      { code: 'spw', name: 'Spider-Woman', file: 'spw.json', position: 3 },
+      { code: 'rrs', name: 'The Rise of Red Skull', file: 'rrs.json', position: 4 },
+    ],
+    scenarios: [
+      {
+        id: 'rhino',
+        name: 'Rhino',
+        pack: 'core',
+        image: '',
+        supported: true,
+        recommended: ['masters_of_evil'],
+      },
+    ],
+    sets: [
+      { code: 'standard', name: 'Standard', pack: 'core', kind: 'standard' },
+      { code: 'goblin_gimmicks', name: 'Goblin Gimmicks', pack: 'gob', kind: 'modular' },
+      { code: 'under_attack', name: 'Under Attack', pack: 'core', kind: 'modular' },
+      { code: 'hydra_assault', name: 'Hydra Assault', pack: 'rrs', kind: 'modular' },
+      { code: 'bomb_scare', name: 'Bomb Scare', pack: 'core', kind: 'modular' },
+      { code: 'a_mess_of_things', name: 'A Mess of Things', pack: 'gob', kind: 'modular' },
+      { code: 'masters_of_evil', name: 'Masters of Evil', pack: 'core', kind: 'modular' },
+    ],
+  };
+  // The host removed the recommended set and added the Red Skull pack's only one.
+  const config: LobbyConfig = { ...rhino, modulars: ['hydra_assault'] };
+
+  async function openMenu() {
+    const onconfigure = vi.fn();
+    const { container } = render(ScenarioPicker, {
+      view: viewOf(config),
+      index: packed,
+      onconfigure,
+    });
+    await fireEvent.click(screen.getByRole('button', { name: '+ Add a set' }));
+    return { onconfigure, container };
+  }
+
+  /** The pack names heading the menu's groups, in the order they show. */
+  function packNames(container: HTMLElement): string[] {
+    return [...container.querySelectorAll('.menu .mpk')].map(
+      (heading) => heading.textContent ?? '',
+    );
+  }
+
+  function setLabels(group: HTMLElement): string[] {
+    return within(group)
+      .getAllByRole('button')
+      .map((button) => (button.textContent ?? '').replace(/\s+/g, ' ').trim());
+  }
+
+  it('groups the sets under their pack names, packs in release order, sets in index order', async () => {
+    const { container } = await openMenu();
+
+    expect(packNames(container)).toEqual(['Core Set', 'Green Goblin']);
+    expect(setLabels(screen.getByRole('group', { name: 'Core Set' }))).toEqual([
+      'Under Attack',
+      'Bomb Scare',
+      'Masters of Evil ★ recommended',
+    ]);
+    expect(setLabels(screen.getByRole('group', { name: 'Green Goblin' }))).toEqual([
+      'Goblin Gimmicks',
+      'A Mess of Things',
+    ]);
+  });
+
+  it('marks a recommended set in its own pack, not on top of the menu', async () => {
+    await openMenu();
+
+    const core = screen.getByRole('group', { name: 'Core Set' });
+    const recommended = within(core).getByRole('button', { name: /Masters of Evil/ });
+    expect(within(recommended).getByText('★ recommended')).toBeTruthy();
+    expect(screen.queryByRole('group', { name: /recommended/i })).toBeNull();
+  });
+
+  it('shows no group for a pack whose sets are all chosen, nor for a pack without any', async () => {
+    await openMenu();
+
+    expect(screen.queryByRole('group', { name: 'The Rise of Red Skull' })).toBeNull();
+    expect(screen.queryByRole('group', { name: 'Spider-Woman' })).toBeNull();
+  });
+
+  it('adds the set the host clicks after the chosen ones', async () => {
+    const { onconfigure } = await openMenu();
+
+    const goblin = screen.getByRole('group', { name: 'Green Goblin' });
+    await fireEvent.click(within(goblin).getByRole('button', { name: 'A Mess of Things' }));
+
+    expect(onconfigure).toHaveBeenCalledWith({
+      ...config,
+      modulars: ['hydra_assault', 'a_mess_of_things'],
+    });
+  });
+});
+
 describe('ScenarioPicker settings', () => {
   const noScenario: LobbyConfig = { ...rhino, scenario: '', standard: '', modulars: [] };
 
@@ -348,5 +449,168 @@ describe('ScenarioPicker self-contained scenario', () => {
       expert: '',
       modulars: [],
     });
+  });
+});
+
+describe('ScenarioPicker main scheme sets', () => {
+  // An Underling is played with one of its main scheme sets; Civil War's scheme set belongs to no
+  // scenario of this index.
+  const fne: Index = {
+    ...index,
+    packs: [
+      { code: 'core', name: 'Core Set', file: 'core.json', position: 1 },
+      { code: 'fne', name: 'Fear No Evil', file: 'fne.json', position: 2 },
+    ],
+    scenarios: [
+      ...index.scenarios,
+      {
+        id: 'bullseye',
+        name: 'Bullseye',
+        pack: 'fne',
+        image: '',
+        supported: true,
+        recommended: [],
+        mainSchemes: ['art_museum_heist', 'the_getaway'],
+      },
+      {
+        id: 'kingpin',
+        name: 'Kingpin',
+        pack: 'core',
+        image: '',
+        supported: true,
+        recommended: ['bomb_scare'],
+      },
+    ],
+    sets: [
+      ...index.sets,
+      { code: 'cops', name: 'Cops', pack: 'fne', kind: 'modular' },
+      {
+        code: 'art_museum_heist',
+        name: 'Art Museum Heist',
+        pack: 'fne',
+        kind: 'main_scheme',
+        recommended: ['cops', 'bomb_scare'],
+      },
+      {
+        code: 'the_getaway',
+        name: 'The Getaway',
+        pack: 'fne',
+        kind: 'main_scheme',
+        recommended: ['cops'],
+      },
+      {
+        code: 'civil_war',
+        name: 'Civil War',
+        pack: 'fne',
+        kind: 'main_scheme',
+        recommended: [],
+      },
+    ],
+  };
+  const bullseye: LobbyConfig = { ...rhino, scenario: 'bullseye', modulars: [] };
+
+  function renderFne(config: LobbyConfig, you: YouView = asHost) {
+    const onconfigure = vi.fn();
+    const result = render(ScenarioPicker, { view: viewOf(config, you), index: fne, onconfigure });
+    return { onconfigure, ...result };
+  }
+
+  async function openMenu() {
+    await fireEvent.click(screen.getByRole('button', { name: '+ Add a set' }));
+  }
+
+  function menuLabels(pack: string): string[] {
+    return within(screen.getByRole('group', { name: pack }))
+      .getAllByRole('button')
+      .map((button) => (button.textContent ?? '').replace(/\s+/g, ' ').trim());
+  }
+
+  it("offers the scenario's main scheme sets in their pack, in index order, never another", async () => {
+    renderFne(bullseye);
+    await openMenu();
+
+    expect(menuLabels('Fear No Evil')).toEqual([
+      'Cops',
+      'Art Museum Heist main scheme',
+      'The Getaway main scheme',
+    ]);
+  });
+
+  it('offers no other main scheme set once one is chosen, and stars its recommended sets', async () => {
+    renderFne({ ...bullseye, modulars: ['art_museum_heist'] });
+    await openMenu();
+
+    expect(menuLabels('Fear No Evil')).toEqual(['Cops ★ recommended']);
+  });
+
+  it('offers no main scheme set for a scenario without any', async () => {
+    renderFne(rhino);
+    await openMenu();
+
+    expect(menuLabels('Fear No Evil')).toEqual(['Cops']);
+  });
+
+  it('adds a main scheme set, then its recommended sets not chosen yet', async () => {
+    const { onconfigure } = renderFne({ ...bullseye, modulars: ['bomb_scare'] });
+    await openMenu();
+
+    await fireEvent.click(screen.getByRole('button', { name: /Art Museum Heist/ }));
+
+    expect(onconfigure).toHaveBeenCalledWith({
+      ...bullseye,
+      modulars: ['bomb_scare', 'art_museum_heist', 'cops'],
+    });
+  });
+
+  it('marks a chosen main scheme chip, and removes it alone', async () => {
+    const { onconfigure, container } = renderFne({
+      ...bullseye,
+      modulars: ['art_museum_heist', 'cops', 'bomb_scare'],
+    });
+
+    const chips = [...container.querySelectorAll('.chip')];
+    expect(chips.map((chip) => chip.querySelector('.scheme') !== null)).toEqual([
+      true,
+      false,
+      false,
+    ]);
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Remove Art Museum Heist' }));
+
+    expect(onconfigure).toHaveBeenCalledWith({ ...bullseye, modulars: ['cops', 'bomb_scare'] });
+  });
+
+  it('asks for a main scheme set in the hint until one is chosen', async () => {
+    const { rerender } = renderFne(bullseye);
+
+    expect(screen.getByText('Add a main scheme set: it sets the scenario.')).toBeTruthy();
+
+    await rerender({ view: viewOf({ ...bullseye, modulars: ['the_getaway'] }) });
+
+    expect(screen.queryByText('Add a main scheme set: it sets the scenario.')).toBeNull();
+    expect(screen.getByText(/recommended sets \(★\) are added for you/)).toBeTruthy();
+  });
+
+  it('drops the main scheme set for another villain, and asks for one again back on an Underling', async () => {
+    const withScheme: LobbyConfig = { ...bullseye, modulars: ['art_museum_heist', 'cops'] };
+    const { onconfigure, rerender } = renderFne(withScheme);
+
+    await fireEvent.click(screen.getByRole('button', { name: /Kingpin/ }));
+
+    const kingpin: LobbyConfig = { ...withScheme, scenario: 'kingpin', modulars: ['bomb_scare'] };
+    expect(onconfigure).toHaveBeenLastCalledWith(kingpin);
+
+    await rerender({ view: viewOf(kingpin) });
+    await fireEvent.click(screen.getByRole('button', { name: /Bullseye/ }));
+
+    expect(onconfigure).toHaveBeenLastCalledWith({
+      ...kingpin,
+      scenario: 'bullseye',
+      modulars: [],
+    });
+
+    await rerender({ view: viewOf({ ...kingpin, scenario: 'bullseye', modulars: [] }) });
+
+    expect(screen.getByText('Add a main scheme set: it sets the scenario.')).toBeTruthy();
   });
 });

@@ -1227,6 +1227,81 @@
       "recommended": []
     },
     {
+      "id": "bullseye",
+      "name": "Bullseye",
+      "pack": "fne",
+      "image": "https://img.intothefray.xyz/cards/en/60065.c764ea9b3bfd.avif",
+      "supported": true,
+      "recommended": [],
+      "mainSchemes": [
+        "art_museum_heist",
+        "the_getaway",
+        "protection_racket",
+        "stop_the_presses",
+        "the_raft_breakout"
+      ]
+    },
+    {
+      "id": "electro",
+      "name": "Electro",
+      "pack": "fne",
+      "image": "https://img.intothefray.xyz/cards/en/60076.9ad4cbe10c54.avif",
+      "supported": true,
+      "recommended": [],
+      "mainSchemes": [
+        "art_museum_heist",
+        "the_getaway",
+        "protection_racket",
+        "stop_the_presses",
+        "the_raft_breakout"
+      ]
+    },
+    {
+      "id": "hammerhead",
+      "name": "Hammerhead",
+      "pack": "fne",
+      "image": "https://img.intothefray.xyz/cards/en/60086.186f711673be.avif",
+      "supported": true,
+      "recommended": [],
+      "mainSchemes": [
+        "art_museum_heist",
+        "the_getaway",
+        "protection_racket",
+        "stop_the_presses",
+        "the_raft_breakout"
+      ]
+    },
+    {
+      "id": "purple_man",
+      "name": "Purple Man",
+      "pack": "fne",
+      "image": "https://img.intothefray.xyz/cards/en/60097.a45fc983bc8e.avif",
+      "supported": true,
+      "recommended": [],
+      "mainSchemes": [
+        "art_museum_heist",
+        "the_getaway",
+        "protection_racket",
+        "stop_the_presses",
+        "the_raft_breakout"
+      ]
+    },
+    {
+      "id": "typhoid_mary",
+      "name": "Typhoid Mary",
+      "pack": "fne",
+      "image": "https://img.intothefray.xyz/cards/en/60110a.17c0ad095a6b.avif",
+      "supported": true,
+      "recommended": [],
+      "mainSchemes": [
+        "art_museum_heist",
+        "the_getaway",
+        "protection_racket",
+        "stop_the_presses",
+        "the_raft_breakout"
+      ]
+    },
+    {
       "id": "kingpin",
       "name": "Kingpin",
       "pack": "fne",
@@ -1235,61 +1310,6 @@
       "recommended": [
         "tombstone",
         "tracksuit_mafia"
-      ]
-    },
-    {
-      "id": "art_museum_heist",
-      "name": "Art Museum Heist",
-      "pack": "fne",
-      "image": "",
-      "supported": false,
-      "recommended": [
-        "cops",
-        "the_owl"
-      ]
-    },
-    {
-      "id": "protection_racket",
-      "name": "Protection Racket",
-      "pack": "fne",
-      "image": "",
-      "supported": false,
-      "recommended": [
-        "disasters",
-        "tracksuit_mafia"
-      ]
-    },
-    {
-      "id": "stop_the_presses",
-      "name": "Stop The Presses!",
-      "pack": "fne",
-      "image": "",
-      "supported": false,
-      "recommended": [
-        "tombstone",
-        "tracksuit_mafia"
-      ]
-    },
-    {
-      "id": "the_getaway",
-      "name": "The Getaway",
-      "pack": "fne",
-      "image": "",
-      "supported": false,
-      "recommended": [
-        "cops",
-        "drive"
-      ]
-    },
-    {
-      "id": "the_raft_breakout",
-      "name": "The Raft Breakout",
-      "pack": "fne",
-      "image": "",
-      "supported": false,
-      "recommended": [
-        "the_owl",
-        "tombstone"
       ]
     }
   ],
@@ -2666,6 +2686,18 @@
       "kind": "modular"
     },
     {
+      "code": "registration",
+      "name": "Registration",
+      "pack": "cw",
+      "kind": "main_scheme"
+    },
+    {
+      "code": "resistance",
+      "name": "Resistance",
+      "pack": "cw",
+      "kind": "main_scheme"
+    },
+    {
       "code": "secret_avengers",
       "name": "Secret Avengers",
       "pack": "cw",
@@ -2714,6 +2746,18 @@
       "kind": "modular"
     },
     {
+      "code": "synthezoid_registration",
+      "name": "Registration",
+      "pack": "synthezoid",
+      "kind": "main_scheme"
+    },
+    {
+      "code": "synthezoid_resistance",
+      "name": "Resistance",
+      "pack": "synthezoid",
+      "kind": "main_scheme"
+    },
+    {
       "code": "taskmaster_modular",
       "name": "Taskmaster",
       "pack": "synthezoid",
@@ -2738,6 +2782,16 @@
       "kind": "modular"
     },
     {
+      "code": "art_museum_heist",
+      "name": "Art Museum Heist",
+      "pack": "fne",
+      "kind": "main_scheme",
+      "recommended": [
+        "cops",
+        "the_owl"
+      ]
+    },
+    {
       "code": "cops",
       "name": "Cops",
       "pack": "fne",
@@ -2756,10 +2810,50 @@
       "kind": "modular"
     },
     {
+      "code": "protection_racket",
+      "name": "Protection Racket",
+      "pack": "fne",
+      "kind": "main_scheme",
+      "recommended": [
+        "disasters",
+        "tracksuit_mafia"
+      ]
+    },
+    {
+      "code": "stop_the_presses",
+      "name": "Stop The Presses!",
+      "pack": "fne",
+      "kind": "main_scheme",
+      "recommended": [
+        "tombstone",
+        "tracksuit_mafia"
+      ]
+    },
+    {
+      "code": "the_getaway",
+      "name": "The Getaway",
+      "pack": "fne",
+      "kind": "main_scheme",
+      "recommended": [
+        "cops",
+        "drive"
+      ]
+    },
+    {
       "code": "the_owl",
       "name": "The Owl",
       "pack": "fne",
       "kind": "modular"
+    },
+    {
+      "code": "the_raft_breakout",
+      "name": "The Raft Breakout",
+      "pack": "fne",
+      "kind": "main_scheme",
+      "recommended": [
+        "the_owl",
+        "tombstone"
+      ]
     },
     {
       "code": "tombstone",

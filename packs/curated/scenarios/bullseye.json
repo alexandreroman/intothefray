@@ -1,0 +1,40 @@
+{
+  "id": "bullseye",
+  "villainSet": "bullseye",
+  "piles": [
+    {
+      "key": "villain",
+      "label": "Villain",
+      "cards": [
+        "60065",
+        "60066",
+        "60067"
+      ]
+    }
+  ],
+  "start": {
+    "standard": {
+      "top": {
+        "villain": {
+          "card": "60065",
+          "face": 0
+        }
+      }
+    },
+    "expert": {
+      "top": {
+        "villain": {
+          "card": "60065",
+          "face": 0
+        }
+      }
+    }
+  },
+  "mainSchemes": [
+    "art_museum_heist",
+    "the_getaway",
+    "protection_racket",
+    "stop_the_presses",
+    "the_raft_breakout"
+  ]
+}

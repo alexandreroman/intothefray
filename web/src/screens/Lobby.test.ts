@@ -525,6 +525,86 @@ describe('Lobby', () => {
     expect((start as HTMLButtonElement).disabled).toBe(false);
   });
 
+  describe('with a scenario played with main scheme sets', () => {
+    const underlings: Index = {
+      ...index,
+      scenarios: [
+        ...index.scenarios,
+        {
+          id: 'bullseye',
+          name: 'Bullseye',
+          pack: 'core',
+          image: '',
+          supported: true,
+          recommended: [],
+          mainSchemes: ['art_museum_heist'],
+        },
+      ],
+      sets: [
+        ...index.sets,
+        {
+          code: 'art_museum_heist',
+          name: 'Art Museum Heist',
+          pack: 'core',
+          kind: 'main_scheme',
+          recommended: ['bomb_scare'],
+        },
+      ],
+    };
+    const bullseye: LobbyConfig = { ...noScenario, scenario: 'bullseye', standard: 'standard' };
+
+    beforeEach(() => {
+      vi.mocked(loadIndex).mockResolvedValue(underlings);
+    });
+
+    it('start disabled until a main scheme set is chosen, even with a modular set', async () => {
+      renderLobby({
+        players: [{ ...alex, decks: [spiderMan] }],
+        config: { ...bullseye, modulars: ['bomb_scare'] },
+      });
+
+      expect(await screen.findByText('Choose a main scheme set.')).toBeTruthy();
+      const start = screen.getByRole('button', { name: 'Set up the table' });
+      expect((start as HTMLButtonElement).disabled).toBe(true);
+    });
+
+    it('tells a guest the host has yet to choose a main scheme set', async () => {
+      renderLobby({
+        you: asSam,
+        players: [
+          { ...alex, decks: [spiderMan] },
+          { ...sam, decks: [captainMarvel] },
+        ],
+        config: bullseye,
+      });
+
+      expect(await screen.findByText('Waiting for Alex to choose a main scheme set.')).toBeTruthy();
+    });
+
+    it('start disabled with a main scheme set but no modular set', async () => {
+      renderLobby({
+        players: [{ ...alex, decks: [spiderMan] }],
+        config: { ...bullseye, modulars: ['art_museum_heist'] },
+      });
+
+      expect(await screen.findByText('Choose at least one modular set.')).toBeTruthy();
+      const start = screen.getByRole('button', { name: 'Set up the table' });
+      expect((start as HTMLButtonElement).disabled).toBe(true);
+    });
+
+    it('start enabled once a main scheme set and a modular set are chosen', async () => {
+      renderLobby({
+        players: [{ ...alex, decks: [spiderMan] }],
+        config: { ...bullseye, modulars: ['art_museum_heist', 'bomb_scare'] },
+      });
+
+      await screen.findByRole('button', { name: /Bullseye/ });
+      expect(screen.getByText('Everyone is ready.')).toBeTruthy();
+      const start = screen.getByRole('button', { name: 'Set up the table' });
+      expect((start as HTMLButtonElement).disabled).toBe(false);
+    });
+  });
+
   it('guest sees no remove buttons except leave on own row', async () => {
     const session = renderLobby({ you: asSam, players: [alex, sam, jo] });
 

@@ -5400,7 +5400,7 @@
     {
       "code": "art_museum_heist",
       "name": "Art Museum Heist",
-      "kind": "villain",
+      "kind": "main_scheme",
       "cards": [
         "60121",
         "60122",
@@ -5620,7 +5620,7 @@
     {
       "code": "protection_racket",
       "name": "Protection Racket",
-      "kind": "villain",
+      "kind": "main_scheme",
       "cards": [
         "60134",
         "60135",
@@ -5655,7 +5655,7 @@
     {
       "code": "stop_the_presses",
       "name": "Stop The Presses!",
-      "kind": "villain",
+      "kind": "main_scheme",
       "cards": [
         "60151",
         "60152",
@@ -5665,12 +5665,26 @@
         "60156",
         "60157",
         "60158"
-      ]
+      ],
+      "inPlay": {
+        "expert": [
+          {
+            "card": "60152",
+            "face": 0
+          }
+        ],
+        "standard": [
+          {
+            "card": "60152",
+            "face": 0
+          }
+        ]
+      }
     },
     {
       "code": "the_getaway",
       "name": "The Getaway",
-      "kind": "villain",
+      "kind": "main_scheme",
       "cards": [
         "60128",
         "60129",
@@ -5694,7 +5708,7 @@
     {
       "code": "the_raft_breakout",
       "name": "The Raft Breakout",
-      "kind": "villain",
+      "kind": "main_scheme",
       "cards": [
         "60142",
         "60143",
@@ -5768,6 +5782,235 @@
     }
   ],
   "scenarios": [
+    {
+      "id": "bullseye",
+      "name": "Bullseye",
+      "pack": "fne",
+      "villainSet": "bullseye",
+      "piles": [
+        {
+          "key": "villain",
+          "label": "Villain",
+          "cards": [
+            "60065",
+            "60066",
+            "60067"
+          ]
+        }
+      ],
+      "start": {
+        "expert": {
+          "top": {
+            "villain": {
+              "card": "60065",
+              "face": 0
+            }
+          }
+        },
+        "standard": {
+          "top": {
+            "villain": {
+              "card": "60065",
+              "face": 0
+            }
+          }
+        }
+      },
+      "mainSchemes": [
+        "art_museum_heist",
+        "the_getaway",
+        "protection_racket",
+        "stop_the_presses",
+        "the_raft_breakout"
+      ]
+    },
+    {
+      "id": "electro",
+      "name": "Electro",
+      "pack": "fne",
+      "villainSet": "electro",
+      "piles": [
+        {
+          "key": "villain",
+          "label": "Villain",
+          "cards": [
+            "60076",
+            "60077",
+            "60078"
+          ]
+        }
+      ],
+      "start": {
+        "expert": {
+          "top": {
+            "villain": {
+              "card": "60076",
+              "face": 0
+            }
+          }
+        },
+        "standard": {
+          "top": {
+            "villain": {
+              "card": "60076",
+              "face": 0
+            }
+          }
+        }
+      },
+      "mainSchemes": [
+        "art_museum_heist",
+        "the_getaway",
+        "protection_racket",
+        "stop_the_presses",
+        "the_raft_breakout"
+      ]
+    },
+    {
+      "id": "hammerhead",
+      "name": "Hammerhead",
+      "pack": "fne",
+      "villainSet": "hammerhead",
+      "piles": [
+        {
+          "key": "villain",
+          "label": "Villain",
+          "cards": [
+            "60086",
+            "60087",
+            "60088"
+          ]
+        }
+      ],
+      "start": {
+        "expert": {
+          "top": {
+            "villain": {
+              "card": "60086",
+              "face": 0
+            }
+          }
+        },
+        "standard": {
+          "top": {
+            "villain": {
+              "card": "60086",
+              "face": 0
+            }
+          }
+        }
+      },
+      "mainSchemes": [
+        "art_museum_heist",
+        "the_getaway",
+        "protection_racket",
+        "stop_the_presses",
+        "the_raft_breakout"
+      ]
+    },
+    {
+      "id": "purple_man",
+      "name": "Purple Man",
+      "pack": "fne",
+      "villainSet": "purple_man",
+      "piles": [
+        {
+          "key": "villain",
+          "label": "Villain",
+          "cards": [
+            "60097",
+            "60098",
+            "60099"
+          ]
+        }
+      ],
+      "start": {
+        "expert": {
+          "top": {
+            "villain": {
+              "card": "60097",
+              "face": 0
+            }
+          }
+        },
+        "standard": {
+          "top": {
+            "villain": {
+              "card": "60097",
+              "face": 0
+            }
+          }
+        }
+      },
+      "mainSchemes": [
+        "art_museum_heist",
+        "the_getaway",
+        "protection_racket",
+        "stop_the_presses",
+        "the_raft_breakout"
+      ]
+    },
+    {
+      "id": "typhoid_mary",
+      "name": "Typhoid Mary",
+      "pack": "fne",
+      "villainSet": "typhoid_mary",
+      "piles": [
+        {
+          "key": "villain",
+          "label": "Villain",
+          "cards": [
+            "60110",
+            "60111"
+          ]
+        }
+      ],
+      "start": {
+        "expert": {
+          "top": {
+            "villain": {
+              "card": "60110",
+              "face": 0
+            }
+          },
+          "inPlay": [
+            {
+              "card": "60112",
+              "face": 0
+            },
+            {
+              "card": "60113",
+              "face": 0
+            }
+          ]
+        },
+        "standard": {
+          "top": {
+            "villain": {
+              "card": "60110",
+              "face": 0
+            }
+          },
+          "inPlay": [
+            {
+              "card": "60112",
+              "face": 0
+            },
+            {
+              "card": "60113",
+              "face": 0
+            }
+          ]
+        }
+      },
+      "mainSchemes": [
+        "art_museum_heist",
+        "the_getaway",
+        "protection_racket",
+        "stop_the_presses",
+        "the_raft_breakout"
+      ]
+    },
     {
       "id": "kingpin",
       "name": "Kingpin",

@@ -1,0 +1,40 @@
+{
+  "id": "purple_man",
+  "villainSet": "purple_man",
+  "piles": [
+    {
+      "key": "villain",
+      "label": "Villain",
+      "cards": [
+        "60097",
+        "60098",
+        "60099"
+      ]
+    }
+  ],
+  "start": {
+    "standard": {
+      "top": {
+        "villain": {
+          "card": "60097",
+          "face": 0
+        }
+      }
+    },
+    "expert": {
+      "top": {
+        "villain": {
+          "card": "60097",
+          "face": 0
+        }
+      }
+    }
+  },
+  "mainSchemes": [
+    "art_museum_heist",
+    "the_getaway",
+    "protection_racket",
+    "stop_the_presses",
+    "the_raft_breakout"
+  ]
+}

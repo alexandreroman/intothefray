@@ -45,6 +45,9 @@ type ScenarioDef struct {
 	SelfContained bool `json:"selfContained,omitempty"`
 	// Active is the key of the stage the active counter starts under.
 	Active string `json:"active,omitempty"`
+	// MainSchemes lists the main scheme sets the scenario is played with, for
+	// a scenario whose villain set has no main scheme of its own.
+	MainSchemes []string `json:"mainSchemes,omitempty"`
 }
 
 // SetDef completes a generated set with hand-written setup data.
@@ -58,6 +61,9 @@ type SetDef struct {
 	Side *pack.SideDeck `json:"side,omitempty"`
 	// SetAside lists the cards a hero set puts aside, out of play, at setup.
 	SetAside []string `json:"setAside,omitempty"`
+	// MainScheme makes the set a main scheme set, which the sources list as a
+	// villain set although it has no villain card.
+	MainScheme bool `json:"mainScheme,omitempty"`
 }
 
 // Curated is the content of a curated data directory.
@@ -138,6 +144,9 @@ func checkScenarioDef(def ScenarioDef) error {
 	if encounter && !def.SelfContained {
 		return errors.New("an encounter deck needs a selfContained scenario")
 	}
+	if err := checkMainSchemes(def); err != nil {
+		return err
+	}
 
 	stages := make(map[string]pack.Pile, len(def.Piles))
 	for _, pile := range def.Piles {
@@ -163,6 +172,30 @@ func checkScenarioDef(def ScenarioDef) error {
 		return fmt.Errorf("active names unknown stage %q", def.Active)
 	}
 	return checkStarts(def.Start, def.Piles, stages)
+}
+
+// checkMainSchemes rejects the main scheme sets listed twice, those of a
+// self-contained scenario, which is played without any set picked in the lobby,
+// and those of a scenario with a stage under the key setup gives the stage of
+// the chosen main scheme.
+func checkMainSchemes(def ScenarioDef) error {
+	if len(def.MainSchemes) == 0 {
+		return nil
+	}
+	if def.SelfContained {
+		return errors.New("main scheme sets need a scenario that is not selfContained")
+	}
+	if slices.ContainsFunc(def.Piles, func(pile pack.Pile) bool { return pile.Key == pack.MainSchemeStage }) {
+		return fmt.Errorf("main scheme sets need a scenario without a stage %q", pack.MainSchemeStage)
+	}
+	listed := make(map[string]bool, len(def.MainSchemes))
+	for _, code := range def.MainSchemes {
+		if listed[code] {
+			return fmt.Errorf("duplicate main scheme set %q", code)
+		}
+		listed[code] = true
+	}
+	return nil
 }
 
 // checkStarts makes sure the scenario has a Standard and an Expert setup and

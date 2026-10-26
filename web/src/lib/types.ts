@@ -58,6 +58,7 @@ export interface ScenarioRef {
   supported: boolean;
   recommended: string[];
   selfContained?: boolean;
+  mainSchemes?: string[]; // the main scheme sets it is played with, one chosen as a modular set
   localized?: Record<string, PackLocalized>; // name only, by language code
 }
 
@@ -66,6 +67,7 @@ export interface SetRef {
   name: string;
   pack: string;
   kind: string;
+  recommended?: string[]; // modular sets added with it, for a main scheme set
   localized?: Record<string, PackLocalized>; // name only, by language code
 }
 

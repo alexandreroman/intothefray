@@ -289,23 +289,19 @@
   input,
   select {
     height: 48px;
-    padding: 0 14px;
     border-radius: 12px;
     font-size: 15px;
   }
 
-  /* The native arrow, drawn as a chevron of two triangles. */
+  input {
+    padding: 0 14px;
+  }
+
+  /* The side padding goes through --select-pad, so the drawn arrow keeps the same inset. */
   select {
+    --select-pad: 14px;
     max-width: 280px;
-    appearance: none;
-    background-image:
-      linear-gradient(45deg, transparent 50%, var(--muted) 50%),
-      linear-gradient(135deg, var(--muted) 50%, transparent 50%);
-    background-position:
-      calc(100% - 20px) 21px,
-      calc(100% - 15px) 21px;
-    background-size: 5px 5px;
-    background-repeat: no-repeat;
+    padding-block: 0;
   }
 
   .name {

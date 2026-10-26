@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"maps"
 	"math/rand/v2"
 	"slices"
 	"strings"
@@ -116,6 +117,14 @@ const (
 	faceTypeHero     = "hero"
 	faceTypeAlterEgo = "alter_ego"
 )
+
+// setKindMainScheme is the kind of a main scheme set, which the host picks
+// among the modular sets for a scenario with main schemes.
+const setKindMainScheme = "main_scheme"
+
+// mainSchemeStageLabel labels the stage of the chosen main scheme set, keyed
+// pack.MainSchemeStage.
+const mainSchemeStageLabel = "Main scheme"
 
 // Start builds the table with the standard setup and begins the game. No
 // opening hand is drawn: players draw their own, since some heroes and cards
@@ -356,6 +365,12 @@ func (b *tableBuilder) setupScenario(cfg LobbyConfig) (pack.Scenario, error) {
 	if !ok {
 		return pack.Scenario{}, invalid("scenario %q has no %s setup", scenario.ID, cfg.Difficulty)
 	}
+	// A scenario played with main schemes takes its main scheme from the
+	// chosen main scheme set.
+	schemeSet := mainSchemeSet(b.cat, cfg)
+	if len(scenario.MainSchemes) > 0 && schemeSet == "" {
+		return pack.Scenario{}, invalid("no main scheme set is chosen")
+	}
 
 	// Cards that are set up by hand and so stay out of the encounter deck.
 	apart := map[string]bool{}
@@ -416,6 +431,17 @@ func (b *tableBuilder) setupScenario(cfg LobbyConfig) (pack.Scenario, error) {
 	if scenario.Active != "" && b.table.Active == nil {
 		return pack.Scenario{}, invalid("no stage %q for the active counter", scenario.Active)
 	}
+	// The chosen main scheme set, if any, sets the main scheme, after the
+	// curated stages. Only such scenarios draw the ids of its cards here, so
+	// the others keep the same card ids for a seed.
+	var schemes map[string]bool
+	if schemeSet != "" {
+		var err error
+		schemes, err = b.setupMainScheme(schemeSet)
+		if err != nil {
+			return pack.Scenario{}, err
+		}
+	}
 	for i, ref := range start.InPlay {
 		if inPlay[i] {
 			continue
@@ -448,12 +474,16 @@ func (b *tableBuilder) setupScenario(cfg LobbyConfig) (pack.Scenario, error) {
 	}
 
 	// Cards each set leaves out of the encounter deck, by set code. The
-	// scenario setup only takes cards from the villain set.
+	// scenario setup only takes cards from the villain set, and from the main
+	// scheme set its main schemes.
 	skips := map[string]map[string]bool{scenario.VillainSet: apart}
 	for _, setCode := range encounterSets[1:] {
 		placed, err := b.putSetInPlay(setCode, cfg.Difficulty)
 		if err != nil {
 			return pack.Scenario{}, err
+		}
+		if setCode == schemeSet {
+			maps.Copy(placed, schemes)
 		}
 		skips[setCode] = placed
 	}
@@ -467,6 +497,53 @@ func (b *tableBuilder) setupScenario(cfg LobbyConfig) (pack.Scenario, error) {
 		}
 	}
 	return scenario, nil
+}
+
+// setupMainScheme sets up the main scheme cards of a main scheme set, in set
+// order. A single main scheme makes a stage, on its face 0 on the table.
+// Several main schemes, which the players place in their play areas (one
+// each, for Protection Racket), go on their face 0 to the scenario's set-aside
+// pile instead: a stage card that is not current cannot leave its stage. It
+// returns the canonical codes of the main schemes, which stay out of the
+// encounter deck.
+func (b *tableBuilder) setupMainScheme(setCode string) (map[string]bool, error) {
+	set, ok := b.cat.Set(setCode)
+	if !ok {
+		return nil, invalid("unknown set %q", setCode)
+	}
+	var codes []string
+	for _, code := range set.Cards {
+		def, err := b.def(code)
+		if err != nil {
+			return nil, err
+		}
+		if len(def.Faces) > 0 && def.Faces[0].Type == faceTypeMainScheme {
+			codes = append(codes, def.Code)
+		}
+	}
+	if len(codes) == 0 {
+		return nil, invalid("set %q has no main scheme", setCode)
+	}
+
+	schemes := map[string]bool{}
+	if len(codes) > 1 {
+		for _, code := range codes {
+			c, _, err := b.newEncounterCard(code)
+			if err != nil {
+				return nil, err
+			}
+			b.pushToPile(PileScenarioAside, c)
+			schemes[c.Code] = true
+		}
+		return schemes, nil
+	}
+
+	pile := pack.Pile{Key: pack.MainSchemeStage, Label: mainSchemeStageLabel, Cards: codes}
+	top := pack.FaceRef{Card: codes[0], Face: 0}
+	if _, err := b.setupStage(pile, PileEncounter, top, schemes); err != nil {
+		return nil, err
+	}
+	return schemes, nil
 }
 
 // requireNoVillainLeftover fails if the villain set has a card the scenario

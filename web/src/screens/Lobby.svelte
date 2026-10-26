@@ -10,6 +10,7 @@
   import { playerColorVar } from '../lib/playerColor';
   import type { GameSession } from '../lib/session.svelte';
   import { hostName, MAX_SEATS, seatCount, type Index, type View } from '../lib/types';
+  import type { Rect } from '../table/drag';
 
   let { session, view }: { session: GameSession; view: View } = $props();
 
@@ -36,17 +37,38 @@
       return [missing === 1 ? `${owner} deck` : `${owner} ${missing} decks`];
     }),
   );
-  // A scenario that recommends no modular set, like Wrecking Crew, may start without one. While the
-  // index is unknown, the scenario is taken to need one.
   const chosenScenario = $derived(index?.scenarios.find((s) => s.id === view.config.scenario));
-  // A self-contained scenario never takes one.
+  // A scenario played with main scheme sets, like a Fear No Evil Underling, needs one: it is the
+  // scenario.
+  const mainSchemes = $derived(chosenScenario?.mainSchemes ?? []);
+  const missingMainScheme = $derived(
+    mainSchemes.length > 0 && !view.config.modulars.some((code) => mainSchemes.includes(code)),
+  );
+  // Such a scenario recommends no modular set, yet needs one besides its main scheme set. Any other
+  // scenario that recommends none, like Wrecking Crew, may start without one. While the index is
+  // unknown, the scenario is taken to need one. A self-contained scenario never takes one.
   const needsModular = $derived(
     chosenScenario === undefined ||
+      mainSchemes.length > 0 ||
       (!chosenScenario.selfContained && chosenScenario.recommended.length > 0),
   );
-  const missingModular = $derived(needsModular && view.config.modulars.length === 0);
+  const missingModular = $derived(needsModular && chosenModularCount() === 0);
+
+  /** The number of chosen modular sets. Beside a main scheme set, only a set of kind modular counts. */
+  function chosenModularCount(): number {
+    if (mainSchemes.length === 0) {
+      return view.config.modulars.length;
+    }
+    return view.config.modulars.filter(
+      (code) => index?.sets.find((s) => s.code === code)?.kind === 'modular',
+    ).length;
+  }
+
   const canStart = $derived(
-    missingDecks.length === 0 && view.config.scenario !== '' && !missingModular,
+    missingDecks.length === 0 &&
+      view.config.scenario !== '' &&
+      !missingModular &&
+      !missingMainScheme,
   );
 
   const reason = $derived.by(() => {
@@ -57,6 +79,11 @@
       return view.you.host
         ? 'Choose a scenario first.'
         : `Waiting for ${hostName(view)} to choose a scenario.`;
+    }
+    if (missingMainScheme) {
+      return view.you.host
+        ? 'Choose a main scheme set.'
+        : `Waiting for ${hostName(view)} to choose a main scheme set.`;
     }
     if (missingModular) {
       return view.you.host
@@ -116,6 +143,22 @@
     }
   }
 
+  let topBar = $state<HTMLElement>();
+  let startBar = $state<HTMLElement>();
+
+  // The room the scenario's Add a set menu stays within: the window, less what the top bar covers
+  // at the top (nothing once it is slid or scrolled away) and the start bar at the bottom.
+  function menuRoom(): Rect {
+    const topBarBottom = topBar?.firstElementChild?.getBoundingClientRect().bottom ?? 0;
+    const startBarTop = startBar?.getBoundingClientRect().top ?? window.innerHeight;
+    return {
+      left: 0,
+      top: Math.max(0, topBarBottom),
+      right: window.innerWidth,
+      bottom: Math.min(window.innerHeight, startBarTop),
+    };
+  }
+
   function removeDeck(slot: number): void {
     addingFrom = null;
     loadingSlot = null;
@@ -124,13 +167,15 @@
 </script>
 
 <div class="screen">
-  <TopBar
-    spectators={view.spectators}
-    onend={view.you.host ? () => session.lobby('end') : undefined}
-    endLabel="Close the lobby"
-    endQuestion="Close the lobby?"
-    endDetail="This ends the game for everyone."
-  />
+  <div class="topbar" bind:this={topBar}>
+    <TopBar
+      spectators={view.spectators}
+      onend={view.you.host ? () => session.lobby('end') : undefined}
+      endLabel="Close the lobby"
+      endQuestion="Close the lobby?"
+      endDetail="This ends the game for everyone."
+    />
+  </div>
 
   <main class="lobby">
     <header class="intro">
@@ -148,6 +193,7 @@
             {view}
             {index}
             onconfigure={(config) => session.lobby('configure', { config })}
+            room={menuRoom}
           />
         {:else}
           <section class="card-box">
@@ -206,7 +252,7 @@
     </div>
   </main>
 
-  <div class="startbar">
+  <div class="startbar" bind:this={startBar}>
     <div class="startbar-inner">
       {#if otherError}
         <span class="why error" role="alert">{otherError}</span>
@@ -237,6 +283,12 @@
     display: flex;
     flex-direction: column;
     background: var(--table-bg);
+  }
+
+  /* Holds the top bar only to reach its box: it has none of its own, so the bar stays sticky to
+     the screen on a small one. */
+  .topbar {
+    display: contents;
   }
 
   .lobby {

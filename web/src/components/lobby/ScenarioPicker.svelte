@@ -9,12 +9,15 @@
   import CardArt from '../CardArt.svelte';
   import Icon from '../Icon.svelte';
   import Segmented from '../Segmented.svelte';
+  import type { Rect } from '../../table/drag';
+  import { placeUnder, type DropdownPlace } from '../../table/dropdown';
   import {
     hostName,
     type Difficulty,
     type Index,
     type LobbyConfig,
     type ScenarioRef,
+    type SetRef,
     type View,
   } from '../../lib/types';
 
@@ -22,7 +25,14 @@
     view,
     index,
     onconfigure,
-  }: { view: View; index: Index; onconfigure: (config: LobbyConfig) => void } = $props();
+    room = windowRoom,
+  }: {
+    view: View;
+    index: Index;
+    onconfigure: (config: LobbyConfig) => void;
+    /** The part of the window the Add a set menu stays within, in viewport coordinates. */
+    room?: () => Rect;
+  } = $props();
 
   // Version I of each set, the default (spec 4.3).
   const DEFAULT_STANDARD = 'standard';
@@ -32,6 +42,9 @@
     { value: 'expert', label: 'Expert' },
   ];
   const SETTINGS_SLIDE_MS = 250;
+  // The Add a set menu's gap under its button, and its height cap, as .menu's max-height.
+  const MENU_GAP = 4;
+  const MENU_MAX_HEIGHT = 320;
 
   // Pack, scenario and set names in the language chosen in Options, a separate route: read once.
   const lang = storedLang();
@@ -61,16 +74,43 @@
   const showExpertSet = $derived(
     isHost && !selfContained && difficulty === 'expert' && expertSets.length > 0,
   );
-  const recommended = $derived(chosen?.recommended ?? []);
+  // A scenario played with a main scheme set, as a Fear No Evil Underling is, takes one of them
+  // among its modular sets: that set is the scenario.
+  const mainSchemes = $derived(chosen?.mainSchemes ?? []);
+  const chosenMainScheme = $derived(
+    index.sets.find((s) => mainSchemes.includes(s.code) && config.modulars.includes(s.code)),
+  );
+  // The chosen main scheme set's recommendations are the scenario's.
+  const recommended = $derived([
+    ...(chosen?.recommended ?? []),
+    ...(chosenMainScheme?.recommended ?? []),
+  ]);
   // Guests see the chosen level only, read only.
   const levels = $derived(isHost ? LEVELS : LEVELS.filter((level) => level.value === difficulty));
 
-  // Recommended sets come first: the full list is long.
-  const addableModulars = $derived(
-    index.sets
-      .filter((s) => s.kind === 'modular' && !config.modulars.includes(s.code))
-      .sort((a, b) => Number(recommended.includes(b.code)) - Number(recommended.includes(a.code))),
+  /** Whether the Add a set menu offers the set: a modular set, or one main scheme set at most. */
+  function isAddable(set: SetRef): boolean {
+    if (config.modulars.includes(set.code)) {
+      return false;
+    }
+    if (set.kind === 'main_scheme') {
+      return mainSchemes.includes(set.code) && chosenMainScheme === undefined;
+    }
+    return set.kind === 'modular';
+  }
+
+  // The full list is long: the Add a set menu groups it by pack, in release order as the villain
+  // list does. A recommended set stays in its own pack, where its star marks it.
+  const modularGroups = $derived(
+    index.packs
+      .map((pack) => ({
+        pack,
+        sets: index.sets.filter((s) => s.pack === pack.code && isAddable(s)),
+      }))
+      .filter((group) => group.sets.length > 0),
   );
+  // Each group of the menu is labelled by its pack's name.
+  const uid = $props.id();
 
   function packName(code: string): string {
     return packNames.get(code) ?? code;
@@ -198,14 +238,55 @@
     configure({ difficulty: next, expert: next === 'expert' ? expertSet : '' });
   }
 
-  function addModular(code: string): void {
+  // A main scheme set brings its recommended sets, as a villain does, after the chosen ones.
+  function addModular(set: SetRef): void {
     menuOpen = false;
-    configure({ modulars: [...config.modulars, code] });
+    const added = [set.code, ...(set.recommended ?? [])];
+    configure({ modulars: [...new Set([...config.modulars, ...added])] });
   }
 
   function removeModular(code: string): void {
     configure({ modulars: config.modulars.filter((m) => m !== code) });
   }
+
+  function windowRoom(): Rect {
+    return { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight };
+  }
+
+  let addWrap = $state<HTMLElement>();
+  let addButton = $state<HTMLElement>();
+  let menu = $state<HTMLElement>();
+  let menuPlace = $state<DropdownPlace | null>(null);
+
+  /**
+   * Places the open Add a set menu inside the room, under its button or above it. placeUnder
+   * works in viewport coordinates; the menu stays positioned in .add-wrap, so it scrolls with the
+   * page.
+   */
+  function placeMenu(): void {
+    if (!menu || !addWrap || !addButton) {
+      return;
+    }
+    // Its whole size, even while it is cut to scroll: the content's height, and the borders.
+    const borders = menu.offsetHeight - menu.clientHeight;
+    const size = {
+      w: menu.getBoundingClientRect().width,
+      h: Math.min(menu.scrollHeight + borders, MENU_MAX_HEIGHT),
+    };
+    const place = placeUnder(addButton.getBoundingClientRect(), size, room(), MENU_GAP);
+    const origin = addWrap.getBoundingClientRect();
+    menuPlace = { ...place, left: place.left - origin.left, top: place.top - origin.top };
+  }
+
+  // Placed as it opens, and again when its sets change; unplaced, and so unseen, while closed.
+  $effect(() => {
+    void modularGroups;
+    if (menu) {
+      placeMenu();
+    } else {
+      menuPlace = null;
+    }
+  });
 
   // A click on the Add a set button or in its menu is not outside: the button toggles the menu.
   function closeMenuOnOutsideClick(event: MouseEvent): void {
@@ -218,6 +299,7 @@
 
 <svelte:window
   onclick={closeMenuOnOutsideClick}
+  onresize={placeMenu}
   onkeydown={(event) => {
     // Closing takes the key, so that fullscreen stays (lib/fullscreen).
     if (event.key === 'Escape' && menuOpen) {
@@ -359,6 +441,9 @@
                 {#if recommended.includes(code)}
                   <span class="rec" title="Recommended for this scenario">★</span>
                 {/if}
+                {#if code === chosenMainScheme?.code}
+                  <span class="scheme">main scheme</span>
+                {/if}
                 {#if isHost}
                   <button
                     class="btn-ghost x"
@@ -375,19 +460,40 @@
               {/if}
             {/each}
             {#if isHost}
-              <span class="add-wrap">
-                <button class="add" aria-expanded={menuOpen} onclick={() => (menuOpen = !menuOpen)}
-                  >+ Add a set</button
+              <span class="add-wrap" bind:this={addWrap}>
+                <button
+                  class="add"
+                  aria-expanded={menuOpen}
+                  bind:this={addButton}
+                  onclick={() => (menuOpen = !menuOpen)}>+ Add a set</button
                 >
                 {#if menuOpen}
-                  <div class="menu">
-                    {#each addableModulars as set (set.code)}
-                      <button class="btn-ghost" onclick={() => addModular(set.code)}>
-                        {localizedName(set, lang)}
-                        {#if recommended.includes(set.code)}
-                          <span class="rec">★ recommended</span>
-                        {/if}
-                      </button>
+                  <div
+                    class="menu"
+                    class:placed={menuPlace !== null}
+                    bind:this={menu}
+                    style:left="{menuPlace?.left ?? 0}px"
+                    style:top="{menuPlace?.top ?? 0}px"
+                    style:max-height={menuPlace?.maxHeight == null
+                      ? undefined
+                      : `${menuPlace.maxHeight}px`}
+                  >
+                    {#each modularGroups as group (group.pack.code)}
+                      {@const headingId = `${uid}-pack-${group.pack.code}`}
+                      <div role="group" aria-labelledby={headingId}>
+                        <div class="mpk" id={headingId}>{localizedName(group.pack, lang)}</div>
+                        {#each group.sets as set (set.code)}
+                          <button class="btn-ghost" onclick={() => addModular(set)}>
+                            {localizedName(set, lang)}
+                            {#if recommended.includes(set.code)}
+                              <span class="rec">★ recommended</span>
+                            {/if}
+                            {#if set.kind === 'main_scheme'}
+                              <span class="scheme">main scheme</span>
+                            {/if}
+                          </button>
+                        {/each}
+                      </div>
                     {/each}
                   </div>
                 {/if}
@@ -396,7 +502,11 @@
           </div>
           {#if isHost}
             <p class="hint">
-              The scenario's recommended sets (★) are added for you; change them freely.
+              {#if mainSchemes.length > 0 && chosenMainScheme === undefined}
+                Add a main scheme set: it sets the scenario.
+              {:else}
+                The scenario's recommended sets (★) are added for you; change them freely.
+              {/if}
             </p>
           {/if}
         </div>
@@ -567,7 +677,11 @@
     padding: 30px 0;
   }
 
+  /* The set row and the modulars hint share one height, so they centre on each other whatever
+     the select's native height (it differs between browsers); it fits the tallest of them. */
   .settings {
+    --set-row-height: 28px;
+    --set-row-top: 6px;
     display: flex;
     flex-wrap: wrap;
     gap: 24px 40px;
@@ -601,12 +715,13 @@
   /* One grid for both set rows so their selects share a left edge whatever the label widths;
      each label flattens into the grid but still wraps its select for accessibility. */
   .sets {
-    margin-top: 10px;
+    margin-top: var(--set-row-top);
     display: grid;
     grid-template-columns: auto auto;
+    grid-auto-rows: minmax(var(--set-row-height), auto);
     justify-content: start;
     align-items: center;
-    gap: 10px 8px;
+    gap: 2px 8px;
     color: var(--muted);
     font-size: 12px;
   }
@@ -615,9 +730,11 @@
     display: contents;
   }
 
+  /* The side padding goes through --select-pad, so the drawn arrow keeps the same inset. */
   .set select {
+    --select-pad: 8px;
     width: auto;
-    padding: 4px 8px;
+    padding-block: 4px;
     font-size: 13px;
   }
 
@@ -631,6 +748,15 @@
   .modulars {
     flex: 1;
     min-width: 240px;
+  }
+
+  /* Centred on the first set row: same top and height as that row. The extra .settings class
+     outranks the lobby's shared hint rule (.lobby :global(.hint)), which would else win on order. */
+  .settings .modulars .hint {
+    display: flex;
+    align-items: center;
+    min-height: var(--set-row-height);
+    margin-top: var(--set-row-top);
   }
 
   .chips {
@@ -674,7 +800,8 @@
     stroke-width: 2.6;
   }
 
-  .rec {
+  .rec,
+  .scheme {
     color: var(--spark);
     font-size: 11px;
   }
@@ -692,10 +819,11 @@
     font-size: 13px;
   }
 
+  /* Measured before it is placed: unseen until then. */
   .menu {
     position: absolute;
     z-index: 10;
-    margin-top: 4px;
+    visibility: hidden;
     max-height: 320px;
     overflow-y: auto;
     background: var(--panel-2);
@@ -704,6 +832,10 @@
     padding: 4px;
     box-shadow: 0 12px 30px #000c;
     min-width: 220px;
+  }
+
+  .menu.placed {
+    visibility: visible;
   }
 
   .menu button {
@@ -716,7 +848,32 @@
     font-weight: 400;
   }
 
-  .menu .rec {
+  .menu .rec,
+  .menu .scheme {
     margin-left: auto;
+  }
+
+  /* A pack's name, then a rule to the edge, as in the villain list but sized to the menu. It stays
+     on top while its sets scroll under it, so it takes the menu's background. */
+  .menu .mpk {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px 4px;
+    background: var(--panel-2);
+    color: var(--text-soft);
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  /* The villain list's rule color is the menu's background: the menu's border color shows. */
+  .menu .mpk::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--line-strong);
   }
 </style>

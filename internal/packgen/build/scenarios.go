@@ -13,21 +13,24 @@ import (
 )
 
 const (
-	villainKind = "villain"
-	leaderKind  = "leader"
-	modularKind = "modular"
+	villainKind    = "villain"
+	leaderKind     = "leader"
+	underlingKind  = "underling"
+	modularKind    = "modular"
+	mainSchemeKind = "main_scheme"
 )
 
-// villainSet is a scenario candidate, a villain or leader set, with the pack it
-// belongs to.
+// villainSet is a scenario candidate, a villain, leader or underling set, with
+// the pack it belongs to.
 type villainSet struct {
 	set       pack.Set
 	pack      string
 	firstCard *pack.Card // lowest-code card whose first face is a villain or leader, if any
 }
 
-// buildScenarios lists a scenario for every villain or leader set and merges
-// the curated definitions into the ones whose cards all exist. A definition
+// buildScenarios lists a scenario for every villain, leader or underling set
+// and merges the curated definitions into the ones whose cards all exist, and
+// whose main scheme sets, if any, are main scheme sets. A definition
 // absorbs the sets it covers: they are not listed separately. cards and sets
 // are keyed by pack code. The scenario of a set belongs to the pack of that set.
 // The references are ordered by the code of the first villain card of the set.
@@ -43,10 +46,10 @@ func buildScenarios(
 			cardsByCode[card.Code] = card
 		}
 	}
-	setCodes := make(map[string]bool)
+	setKinds := make(map[string]string)
 	for _, packSets := range sets {
 		for _, set := range packSets {
-			setCodes[set.Code] = true
+			setKinds[set.Code] = set.Kind
 		}
 	}
 	villains := villainSetsOf(sets, cardsByCode)
@@ -79,6 +82,11 @@ func buildScenarios(
 		if def, found := defsBySet[villain.set.Code]; found {
 			ref.ID = def.ID
 			ref.SelfContained = def.SelfContained
+			ref.MainSchemes = def.MainSchemes
+			// The modular sets come with the main scheme set the host picks.
+			if len(def.MainSchemes) > 0 {
+				ref.Recommended = []string{}
+			}
 			if villain.firstCard == nil {
 				ref.Image = imageOf(coveredVillainCard(def, villains))
 			}
@@ -91,7 +99,7 @@ func buildScenarios(
 					Reason: fmt.Sprintf("scenario %s names unknown card %s", def.ID, code),
 				})
 			}
-			missingSets := missingDeckSets(def, setCodes)
+			missingSets := missingDeckSets(def, setKinds)
 			for _, code := range missingSets {
 				problems = append(problems, report.Unsupported{
 					Code:   code,
@@ -100,7 +108,16 @@ func buildScenarios(
 					Reason: fmt.Sprintf("scenario %s names unknown set %s", def.ID, code),
 				})
 			}
-			if len(missing) == 0 && len(missingSets) == 0 {
+			badSchemes := badMainSchemes(def, setKinds)
+			for _, code := range badSchemes {
+				problems = append(problems, report.Unsupported{
+					Code:   code,
+					Name:   villain.set.Name,
+					Pack:   villain.pack,
+					Reason: fmt.Sprintf("scenario %s names %s, which is not a main scheme set", def.ID, code),
+				})
+			}
+			if len(missing) == 0 && len(missingSets) == 0 && len(badSchemes) == 0 {
 				ref.Supported = true
 				scenarios[villain.pack] = append(scenarios[villain.pack], pack.Scenario{
 					ID:            def.ID,
@@ -114,6 +131,7 @@ func buildScenarios(
 					SelfContained: def.SelfContained,
 					Active:        def.Active,
 					Recommended:   ref.Recommended,
+					MainSchemes:   def.MainSchemes,
 				})
 			}
 		}
@@ -147,13 +165,13 @@ func coveredVillainCard(def curated.ScenarioDef, villains []villainSet) *pack.Ca
 	return lowest
 }
 
-// villainSetsOf returns the villain and leader sets ordered by the code of their first
-// villain card. A set without villain card sorts by its set code.
+// villainSetsOf returns the villain, leader and underling sets ordered by the code of
+// their first villain card. A set without villain card sorts by its set code.
 func villainSetsOf(sets map[string][]pack.Set, cardsByCode map[string]pack.Card) []villainSet {
 	var villains []villainSet
 	for packCode, packSets := range sets {
 		for _, set := range packSets {
-			if set.Kind != villainKind && set.Kind != leaderKind {
+			if set.Kind != villainKind && set.Kind != leaderKind && set.Kind != underlingKind {
 				continue
 			}
 			villains = append(villains, villainSet{
@@ -221,8 +239,8 @@ func missingCards(def curated.ScenarioDef, cardsByCode map[string]pack.Card) []s
 }
 
 // missingDeckSets returns the sorted set codes the decks of the definition
-// name that are not in the catalog.
-func missingDeckSets(def curated.ScenarioDef, setCodes map[string]bool) []string {
+// name that are not in the catalog. setKinds maps a set code to its kind.
+func missingDeckSets(def curated.ScenarioDef, setKinds map[string]string) []string {
 	var named []string
 	for _, deck := range def.Decks {
 		named = append(named, deck.Sets...)
@@ -231,7 +249,17 @@ func missingDeckSets(def curated.ScenarioDef, setCodes map[string]bool) []string
 	slices.Sort(named)
 	named = slices.Compact(named)
 	return slices.DeleteFunc(named, func(code string) bool {
-		return setCodes[code]
+		_, found := setKinds[code]
+		return found
+	})
+}
+
+// badMainSchemes returns the sorted main scheme set codes of the definition
+// that name no main scheme set of the catalog. setKinds maps a set code to its
+// kind.
+func badMainSchemes(def curated.ScenarioDef, setKinds map[string]string) []string {
+	return slices.DeleteFunc(slices.Sorted(slices.Values(def.MainSchemes)), func(code string) bool {
+		return setKinds[code] == mainSchemeKind
 	})
 }
 
@@ -252,6 +280,23 @@ func modularCodesByName(sets map[string][]pack.Set) map[string]string {
 		}
 	}
 	return codes
+}
+
+// mainSchemeRecommendations maps the code of every main scheme set to the
+// modular sets Cerebro recommends with it. Cerebro lists main scheme sets as
+// villain sets, so the lookup is the one of a villain.
+func mainSchemeRecommendations(sets map[string][]pack.Set, cb []cerebro.Set) map[string][]string {
+	modularCodes := modularCodesByName(sets)
+	cerebroNames := cerebroNamesByID(cb)
+	recommendations := make(map[string][]string)
+	for _, packSets := range sets {
+		for _, set := range packSets {
+			if set.Kind == mainSchemeKind {
+				recommendations[set.Code] = recommendedOf(set.Name, cb, cerebroNames, modularCodes)
+			}
+		}
+	}
+	return recommendations
 }
 
 func cerebroNamesByID(cb []cerebro.Set) map[string]string {

@@ -1,7 +1,8 @@
-// Where the context menu opens: at the pointer, and its submenus beside their
-// row, always whole inside the room it is given (its bounds, within the
-// window), scrolling inside when it fits neither way. Pure: ContextMenu.svelte
-// measures and calls it.
+// Where a menu opens: the context menu at the pointer and its submenus beside
+// their row, the lobby's Add a set menu under its button, always whole inside
+// the room it is given (its bounds, within the window), scrolling inside when
+// it fits neither way. Pure: ContextMenu.svelte and ScenarioPicker.svelte
+// measure and call it.
 
 import type { Rect } from './drag';
 
@@ -33,18 +34,38 @@ export function placeAtPoint(
   size: { w: number; h: number },
   room: Rect,
 ): DropdownPlace {
-  const left = flip(point.x, point.x - size.w, size.w, room.left, room.right);
+  // A point is an anchor of no size, the menu right against it.
+  const anchor = { left: point.x, top: point.y, right: point.x, bottom: point.y };
+  return placeUnder(anchor, size, room, 0);
+}
 
-  const roomBelow = room.bottom - MENU_EDGE - point.y;
-  const roomAbove = point.y - (room.top + MENU_EDGE);
+/**
+ * Where a menu opens under its anchor (a button): `gap` below it, its left
+ * edge lined up with the anchor's, or its right edge when there is no room on
+ * the right; above the anchor when there is no room below. When it fits
+ * neither below nor above, it goes to the roomier side, cut to its height;
+ * when it fits on neither side of the anchor, it is moved inside the room.
+ */
+export function placeUnder(
+  anchor: Rect,
+  size: { w: number; h: number },
+  room: Rect,
+  gap: number,
+): DropdownPlace {
+  const left = flip(anchor.left, anchor.right - size.w, size.w, room.left, room.right);
+
+  const below = anchor.bottom + gap;
+  const above = anchor.top - gap;
+  const roomBelow = room.bottom - MENU_EDGE - below;
+  const roomAbove = above - (room.top + MENU_EDGE);
   if (size.h <= roomBelow) {
-    return { left, top: point.y, maxHeight: null };
+    return { left, top: below, maxHeight: null };
   }
   if (size.h <= roomAbove) {
-    return { left, top: point.y - size.h, maxHeight: null };
+    return { left, top: above - size.h, maxHeight: null };
   }
   if (roomBelow >= roomAbove) {
-    return { left, top: point.y, maxHeight: Math.max(0, roomBelow) };
+    return { left, top: below, maxHeight: Math.max(0, roomBelow) };
   }
   return { left, top: room.top + MENU_EDGE, maxHeight: Math.max(0, roomAbove) };
 }
@@ -74,7 +95,7 @@ export function placeSubmenu(
 
 /**
  * The left edge of a box of that width: at `wanted` when it fits there, never
- * closer than MENU_EDGE to the room's left edge (a pointer right by it), else
+ * closer than MENU_EDGE to the room's left edge (an anchor right by it), else
  * at `flipped` (the other side of its anchor) when that fits, else as far
  * right as fits, its left side kept in when it is wider than the room.
  */
