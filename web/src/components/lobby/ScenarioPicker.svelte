@@ -9,6 +9,8 @@
   import CardArt from '../CardArt.svelte';
   import Icon from '../Icon.svelte';
   import Segmented from '../Segmented.svelte';
+  import type { Rect } from '../../table/drag';
+  import { placeUnder, type DropdownPlace } from '../../table/dropdown';
   import {
     hostName,
     type Difficulty,
@@ -22,7 +24,14 @@
     view,
     index,
     onconfigure,
-  }: { view: View; index: Index; onconfigure: (config: LobbyConfig) => void } = $props();
+    room = windowRoom,
+  }: {
+    view: View;
+    index: Index;
+    onconfigure: (config: LobbyConfig) => void;
+    /** The part of the window the Add a set menu stays within, in viewport coordinates. */
+    room?: () => Rect;
+  } = $props();
 
   // Version I of each set, the default (spec 4.3).
   const DEFAULT_STANDARD = 'standard';
@@ -32,6 +41,9 @@
     { value: 'expert', label: 'Expert' },
   ];
   const SETTINGS_SLIDE_MS = 250;
+  // The Add a set menu's gap under its button, and its height cap, as .menu's max-height.
+  const MENU_GAP = 4;
+  const MENU_MAX_HEIGHT = 320;
 
   // Pack, scenario and set names in the language chosen in Options, a separate route: read once.
   const lang = storedLang();
@@ -215,6 +227,45 @@
     configure({ modulars: config.modulars.filter((m) => m !== code) });
   }
 
+  function windowRoom(): Rect {
+    return { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight };
+  }
+
+  let addWrap = $state<HTMLElement>();
+  let addButton = $state<HTMLElement>();
+  let menu = $state<HTMLElement>();
+  let menuPlace = $state<DropdownPlace | null>(null);
+
+  /**
+   * Places the open Add a set menu inside the room, under its button or above it. placeUnder
+   * works in viewport coordinates; the menu stays positioned in .add-wrap, so it scrolls with the
+   * page.
+   */
+  function placeMenu(): void {
+    if (!menu || !addWrap || !addButton) {
+      return;
+    }
+    // Its whole size, even while it is cut to scroll: the content's height, and the borders.
+    const borders = menu.offsetHeight - menu.clientHeight;
+    const size = {
+      w: menu.getBoundingClientRect().width,
+      h: Math.min(menu.scrollHeight + borders, MENU_MAX_HEIGHT),
+    };
+    const place = placeUnder(addButton.getBoundingClientRect(), size, room(), MENU_GAP);
+    const origin = addWrap.getBoundingClientRect();
+    menuPlace = { ...place, left: place.left - origin.left, top: place.top - origin.top };
+  }
+
+  // Placed as it opens, and again when its sets change; unplaced, and so unseen, while closed.
+  $effect(() => {
+    void modularGroups;
+    if (menu) {
+      placeMenu();
+    } else {
+      menuPlace = null;
+    }
+  });
+
   // A click on the Add a set button or in its menu is not outside: the button toggles the menu.
   function closeMenuOnOutsideClick(event: MouseEvent): void {
     if (event.target instanceof Element && event.target.closest('.add-wrap')) {
@@ -226,6 +277,7 @@
 
 <svelte:window
   onclick={closeMenuOnOutsideClick}
+  onresize={placeMenu}
   onkeydown={(event) => {
     // Closing takes the key, so that fullscreen stays (lib/fullscreen).
     if (event.key === 'Escape' && menuOpen) {
@@ -383,12 +435,24 @@
               {/if}
             {/each}
             {#if isHost}
-              <span class="add-wrap">
-                <button class="add" aria-expanded={menuOpen} onclick={() => (menuOpen = !menuOpen)}
-                  >+ Add a set</button
+              <span class="add-wrap" bind:this={addWrap}>
+                <button
+                  class="add"
+                  aria-expanded={menuOpen}
+                  bind:this={addButton}
+                  onclick={() => (menuOpen = !menuOpen)}>+ Add a set</button
                 >
                 {#if menuOpen}
-                  <div class="menu">
+                  <div
+                    class="menu"
+                    class:placed={menuPlace !== null}
+                    bind:this={menu}
+                    style:left="{menuPlace?.left ?? 0}px"
+                    style:top="{menuPlace?.top ?? 0}px"
+                    style:max-height={menuPlace?.maxHeight == null
+                      ? undefined
+                      : `${menuPlace.maxHeight}px`}
+                  >
                     {#each modularGroups as group (group.pack.code)}
                       {@const headingId = `${uid}-pack-${group.pack.code}`}
                       <div role="group" aria-labelledby={headingId}>
@@ -706,10 +770,11 @@
     font-size: 13px;
   }
 
+  /* Measured before it is placed: unseen until then. */
   .menu {
     position: absolute;
     z-index: 10;
-    margin-top: 4px;
+    visibility: hidden;
     max-height: 320px;
     overflow-y: auto;
     background: var(--panel-2);
@@ -718,6 +783,10 @@
     padding: 4px;
     box-shadow: 0 12px 30px #000c;
     min-width: 220px;
+  }
+
+  .menu.placed {
+    visibility: visible;
   }
 
   .menu button {

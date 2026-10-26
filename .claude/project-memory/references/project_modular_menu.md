@@ -1,6 +1,6 @@
 ---
 name: "Add a set menu groups modular sets by pack"
-description: "Lobby Add a set menu: modular sets under sticky pack names, release order; recommended sets in their pack"
+description: "Lobby Add a set menu: sets under sticky pack names, release order; ★ sets in their pack; stays on screen"
 type: project
 ---
 
@@ -17,6 +17,11 @@ type: project
   focusable items.
 - The scenario's recommended sets sit in their own pack, marked
   "★ recommended"; the menu has no group or ordering of its own for them.
+- The menu stays whole inside the visible page: between the top bar and
+  the lobby's start bar (`room` prop from `Lobby.svelte`), under its button
+  or above it when only that side fits, else on the roomier side cut to
+  scroll; shifted to stay inside the window (`placeUnder` in
+  `web/src/table/dropdown.ts`).
 
 **Why:** user decision: the full list is long, and the pack is how players
 find a set; the star is enough to spot a recommendation.

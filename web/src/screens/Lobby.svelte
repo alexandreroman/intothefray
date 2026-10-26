@@ -10,6 +10,7 @@
   import { playerColorVar } from '../lib/playerColor';
   import type { GameSession } from '../lib/session.svelte';
   import { hostName, MAX_SEATS, seatCount, type Index, type View } from '../lib/types';
+  import type { Rect } from '../table/drag';
 
   let { session, view }: { session: GameSession; view: View } = $props();
 
@@ -116,6 +117,22 @@
     }
   }
 
+  let topBar = $state<HTMLElement>();
+  let startBar = $state<HTMLElement>();
+
+  // The room the scenario's Add a set menu stays within: the window, less what the top bar covers
+  // at the top (nothing once it is slid or scrolled away) and the start bar at the bottom.
+  function menuRoom(): Rect {
+    const topBarBottom = topBar?.firstElementChild?.getBoundingClientRect().bottom ?? 0;
+    const startBarTop = startBar?.getBoundingClientRect().top ?? window.innerHeight;
+    return {
+      left: 0,
+      top: Math.max(0, topBarBottom),
+      right: window.innerWidth,
+      bottom: Math.min(window.innerHeight, startBarTop),
+    };
+  }
+
   function removeDeck(slot: number): void {
     addingFrom = null;
     loadingSlot = null;
@@ -124,13 +141,15 @@
 </script>
 
 <div class="screen">
-  <TopBar
-    spectators={view.spectators}
-    onend={view.you.host ? () => session.lobby('end') : undefined}
-    endLabel="Close the lobby"
-    endQuestion="Close the lobby?"
-    endDetail="This ends the game for everyone."
-  />
+  <div class="topbar" bind:this={topBar}>
+    <TopBar
+      spectators={view.spectators}
+      onend={view.you.host ? () => session.lobby('end') : undefined}
+      endLabel="Close the lobby"
+      endQuestion="Close the lobby?"
+      endDetail="This ends the game for everyone."
+    />
+  </div>
 
   <main class="lobby">
     <header class="intro">
@@ -148,6 +167,7 @@
             {view}
             {index}
             onconfigure={(config) => session.lobby('configure', { config })}
+            room={menuRoom}
           />
         {:else}
           <section class="card-box">
@@ -206,7 +226,7 @@
     </div>
   </main>
 
-  <div class="startbar">
+  <div class="startbar" bind:this={startBar}>
     <div class="startbar-inner">
       {#if otherError}
         <span class="why error" role="alert">{otherError}</span>
@@ -237,6 +257,12 @@
     display: flex;
     flex-direction: column;
     background: var(--table-bg);
+  }
+
+  /* Holds the top bar only to reach its box: it has none of its own, so the bar stays sticky to
+     the screen on a small one. */
+  .topbar {
+    display: contents;
   }
 
   .lobby {
