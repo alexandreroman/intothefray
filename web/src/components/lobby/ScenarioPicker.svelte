@@ -645,7 +645,11 @@
     padding: 30px 0;
   }
 
+  /* The set row and the modulars hint share one height, so they centre on each other whatever
+     the select's native height (it differs between browsers); it fits the tallest of them. */
   .settings {
+    --set-row-height: 28px;
+    --set-row-top: 6px;
     display: flex;
     flex-wrap: wrap;
     gap: 24px 40px;
@@ -679,12 +683,13 @@
   /* One grid for both set rows so their selects share a left edge whatever the label widths;
      each label flattens into the grid but still wraps its select for accessibility. */
   .sets {
-    margin-top: 10px;
+    margin-top: var(--set-row-top);
     display: grid;
     grid-template-columns: auto auto;
+    grid-auto-rows: minmax(var(--set-row-height), auto);
     justify-content: start;
     align-items: center;
-    gap: 10px 8px;
+    gap: 2px 8px;
     color: var(--muted);
     font-size: 12px;
   }
@@ -709,6 +714,15 @@
   .modulars {
     flex: 1;
     min-width: 240px;
+  }
+
+  /* Centred on the first set row: same top and height as that row. The extra .settings class
+     outranks the lobby's shared hint rule (.lobby :global(.hint)), which would else win on order. */
+  .settings .modulars .hint {
+    display: flex;
+    align-items: center;
+    min-height: var(--set-row-height);
+    margin-top: var(--set-row-top);
   }
 
   .chips {
