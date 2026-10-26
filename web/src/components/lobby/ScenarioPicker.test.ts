@@ -472,6 +472,14 @@ describe('ScenarioPicker main scheme sets', () => {
         recommended: [],
         mainSchemes: ['art_museum_heist', 'the_getaway'],
       },
+      {
+        id: 'kingpin',
+        name: 'Kingpin',
+        pack: 'core',
+        image: '',
+        supported: true,
+        recommended: ['bomb_scare'],
+      },
     ],
     sets: [
       ...index.sets,
@@ -581,5 +589,28 @@ describe('ScenarioPicker main scheme sets', () => {
 
     expect(screen.queryByText('Add a main scheme set: it sets the scenario.')).toBeNull();
     expect(screen.getByText(/recommended sets \(★\) are added for you/)).toBeTruthy();
+  });
+
+  it('drops the main scheme set for another villain, and asks for one again back on an Underling', async () => {
+    const withScheme: LobbyConfig = { ...bullseye, modulars: ['art_museum_heist', 'cops'] };
+    const { onconfigure, rerender } = renderFne(withScheme);
+
+    await fireEvent.click(screen.getByRole('button', { name: /Kingpin/ }));
+
+    const kingpin: LobbyConfig = { ...withScheme, scenario: 'kingpin', modulars: ['bomb_scare'] };
+    expect(onconfigure).toHaveBeenLastCalledWith(kingpin);
+
+    await rerender({ view: viewOf(kingpin) });
+    await fireEvent.click(screen.getByRole('button', { name: /Bullseye/ }));
+
+    expect(onconfigure).toHaveBeenLastCalledWith({
+      ...kingpin,
+      scenario: 'bullseye',
+      modulars: [],
+    });
+
+    await rerender({ view: viewOf({ ...kingpin, scenario: 'bullseye', modulars: [] }) });
+
+    expect(screen.getByText('Add a main scheme set: it sets the scenario.')).toBeTruthy();
   });
 });

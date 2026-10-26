@@ -37,21 +37,33 @@
       return [missing === 1 ? `${owner} deck` : `${owner} ${missing} decks`];
     }),
   );
-  // A scenario that recommends no modular set, like Wrecking Crew, may start without one. While the
-  // index is unknown, the scenario is taken to need one.
   const chosenScenario = $derived(index?.scenarios.find((s) => s.id === view.config.scenario));
-  // A self-contained scenario never takes one.
-  const needsModular = $derived(
-    chosenScenario === undefined ||
-      (!chosenScenario.selfContained && chosenScenario.recommended.length > 0),
-  );
-  const missingModular = $derived(needsModular && view.config.modulars.length === 0);
   // A scenario played with main scheme sets, like a Fear No Evil Underling, needs one: it is the
   // scenario.
   const mainSchemes = $derived(chosenScenario?.mainSchemes ?? []);
   const missingMainScheme = $derived(
     mainSchemes.length > 0 && !view.config.modulars.some((code) => mainSchemes.includes(code)),
   );
+  // Such a scenario recommends no modular set, yet needs one besides its main scheme set. Any other
+  // scenario that recommends none, like Wrecking Crew, may start without one. While the index is
+  // unknown, the scenario is taken to need one. A self-contained scenario never takes one.
+  const needsModular = $derived(
+    chosenScenario === undefined ||
+      mainSchemes.length > 0 ||
+      (!chosenScenario.selfContained && chosenScenario.recommended.length > 0),
+  );
+  const missingModular = $derived(needsModular && chosenModularCount() === 0);
+
+  /** The number of chosen modular sets. Beside a main scheme set, only a set of kind modular counts. */
+  function chosenModularCount(): number {
+    if (mainSchemes.length === 0) {
+      return view.config.modulars.length;
+    }
+    return view.config.modulars.filter(
+      (code) => index?.sets.find((s) => s.code === code)?.kind === 'modular',
+    ).length;
+  }
+
   const canStart = $derived(
     missingDecks.length === 0 &&
       view.config.scenario !== '' &&
@@ -68,15 +80,15 @@
         ? 'Choose a scenario first.'
         : `Waiting for ${hostName(view)} to choose a scenario.`;
     }
-    if (missingModular) {
-      return view.you.host
-        ? 'Choose at least one modular set.'
-        : `Waiting for ${hostName(view)} to choose at least one modular set.`;
-    }
     if (missingMainScheme) {
       return view.you.host
         ? 'Choose a main scheme set.'
         : `Waiting for ${hostName(view)} to choose a main scheme set.`;
+    }
+    if (missingModular) {
+      return view.you.host
+        ? 'Choose at least one modular set.'
+        : `Waiting for ${hostName(view)} to choose at least one modular set.`;
     }
     return view.you.host
       ? 'Everyone is ready.'
