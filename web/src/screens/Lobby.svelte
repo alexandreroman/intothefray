@@ -46,8 +46,17 @@
       (!chosenScenario.selfContained && chosenScenario.recommended.length > 0),
   );
   const missingModular = $derived(needsModular && view.config.modulars.length === 0);
+  // A scenario played with main scheme sets, like a Fear No Evil Underling, needs one: it is the
+  // scenario.
+  const mainSchemes = $derived(chosenScenario?.mainSchemes ?? []);
+  const missingMainScheme = $derived(
+    mainSchemes.length > 0 && !view.config.modulars.some((code) => mainSchemes.includes(code)),
+  );
   const canStart = $derived(
-    missingDecks.length === 0 && view.config.scenario !== '' && !missingModular,
+    missingDecks.length === 0 &&
+      view.config.scenario !== '' &&
+      !missingModular &&
+      !missingMainScheme,
   );
 
   const reason = $derived.by(() => {
@@ -63,6 +72,11 @@
       return view.you.host
         ? 'Choose at least one modular set.'
         : `Waiting for ${hostName(view)} to choose at least one modular set.`;
+    }
+    if (missingMainScheme) {
+      return view.you.host
+        ? 'Choose a main scheme set.'
+        : `Waiting for ${hostName(view)} to choose a main scheme set.`;
     }
     return view.you.host
       ? 'Everyone is ready.'

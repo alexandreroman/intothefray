@@ -17,6 +17,7 @@
     type Index,
     type LobbyConfig,
     type ScenarioRef,
+    type SetRef,
     type View,
   } from '../../lib/types';
 
@@ -73,9 +74,30 @@
   const showExpertSet = $derived(
     isHost && !selfContained && difficulty === 'expert' && expertSets.length > 0,
   );
-  const recommended = $derived(chosen?.recommended ?? []);
+  // A scenario played with a main scheme set, as a Fear No Evil Underling is, takes one of them
+  // among its modular sets: that set is the scenario.
+  const mainSchemes = $derived(chosen?.mainSchemes ?? []);
+  const chosenMainScheme = $derived(
+    index.sets.find((s) => mainSchemes.includes(s.code) && config.modulars.includes(s.code)),
+  );
+  // The chosen main scheme set's recommendations are the scenario's.
+  const recommended = $derived([
+    ...(chosen?.recommended ?? []),
+    ...(chosenMainScheme?.recommended ?? []),
+  ]);
   // Guests see the chosen level only, read only.
   const levels = $derived(isHost ? LEVELS : LEVELS.filter((level) => level.value === difficulty));
+
+  /** Whether the Add a set menu offers the set: a modular set, or one main scheme set at most. */
+  function isAddable(set: SetRef): boolean {
+    if (config.modulars.includes(set.code)) {
+      return false;
+    }
+    if (set.kind === 'main_scheme') {
+      return mainSchemes.includes(set.code) && chosenMainScheme === undefined;
+    }
+    return set.kind === 'modular';
+  }
 
   // The full list is long: the Add a set menu groups it by pack, in release order as the villain
   // list does. A recommended set stays in its own pack, where its star marks it.
@@ -83,9 +105,7 @@
     index.packs
       .map((pack) => ({
         pack,
-        sets: index.sets.filter(
-          (s) => s.pack === pack.code && s.kind === 'modular' && !config.modulars.includes(s.code),
-        ),
+        sets: index.sets.filter((s) => s.pack === pack.code && isAddable(s)),
       }))
       .filter((group) => group.sets.length > 0),
   );
@@ -218,9 +238,11 @@
     configure({ difficulty: next, expert: next === 'expert' ? expertSet : '' });
   }
 
-  function addModular(code: string): void {
+  // A main scheme set brings its recommended sets, as a villain does, after the chosen ones.
+  function addModular(set: SetRef): void {
     menuOpen = false;
-    configure({ modulars: [...config.modulars, code] });
+    const added = [set.code, ...(set.recommended ?? [])];
+    configure({ modulars: [...new Set([...config.modulars, ...added])] });
   }
 
   function removeModular(code: string): void {
@@ -419,6 +441,9 @@
                 {#if recommended.includes(code)}
                   <span class="rec" title="Recommended for this scenario">★</span>
                 {/if}
+                {#if code === chosenMainScheme?.code}
+                  <span class="scheme">main scheme</span>
+                {/if}
                 {#if isHost}
                   <button
                     class="btn-ghost x"
@@ -458,10 +483,13 @@
                       <div role="group" aria-labelledby={headingId}>
                         <div class="mpk" id={headingId}>{localizedName(group.pack, lang)}</div>
                         {#each group.sets as set (set.code)}
-                          <button class="btn-ghost" onclick={() => addModular(set.code)}>
+                          <button class="btn-ghost" onclick={() => addModular(set)}>
                             {localizedName(set, lang)}
                             {#if recommended.includes(set.code)}
                               <span class="rec">★ recommended</span>
+                            {/if}
+                            {#if set.kind === 'main_scheme'}
+                              <span class="scheme">main scheme</span>
                             {/if}
                           </button>
                         {/each}
@@ -474,7 +502,11 @@
           </div>
           {#if isHost}
             <p class="hint">
-              The scenario's recommended sets (★) are added for you; change them freely.
+              {#if mainSchemes.length > 0 && chosenMainScheme === undefined}
+                Add a main scheme set: it sets the scenario.
+              {:else}
+                The scenario's recommended sets (★) are added for you; change them freely.
+              {/if}
             </p>
           {/if}
         </div>
@@ -768,7 +800,8 @@
     stroke-width: 2.6;
   }
 
-  .rec {
+  .rec,
+  .scheme {
     color: var(--spark);
     font-size: 11px;
   }
@@ -815,7 +848,8 @@
     font-weight: 400;
   }
 
-  .menu .rec {
+  .menu .rec,
+  .menu .scheme {
     margin-left: auto;
   }
 

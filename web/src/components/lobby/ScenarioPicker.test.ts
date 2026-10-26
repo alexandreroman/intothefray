@@ -451,3 +451,135 @@ describe('ScenarioPicker self-contained scenario', () => {
     });
   });
 });
+
+describe('ScenarioPicker main scheme sets', () => {
+  // An Underling is played with one of its main scheme sets; Civil War's scheme set belongs to no
+  // scenario of this index.
+  const fne: Index = {
+    ...index,
+    packs: [
+      { code: 'core', name: 'Core Set', file: 'core.json', position: 1 },
+      { code: 'fne', name: 'Fear No Evil', file: 'fne.json', position: 2 },
+    ],
+    scenarios: [
+      ...index.scenarios,
+      {
+        id: 'bullseye',
+        name: 'Bullseye',
+        pack: 'fne',
+        image: '',
+        supported: true,
+        recommended: [],
+        mainSchemes: ['art_museum_heist', 'the_getaway'],
+      },
+    ],
+    sets: [
+      ...index.sets,
+      { code: 'cops', name: 'Cops', pack: 'fne', kind: 'modular' },
+      {
+        code: 'art_museum_heist',
+        name: 'Art Museum Heist',
+        pack: 'fne',
+        kind: 'main_scheme',
+        recommended: ['cops', 'bomb_scare'],
+      },
+      {
+        code: 'the_getaway',
+        name: 'The Getaway',
+        pack: 'fne',
+        kind: 'main_scheme',
+        recommended: ['cops'],
+      },
+      {
+        code: 'civil_war',
+        name: 'Civil War',
+        pack: 'fne',
+        kind: 'main_scheme',
+        recommended: [],
+      },
+    ],
+  };
+  const bullseye: LobbyConfig = { ...rhino, scenario: 'bullseye', modulars: [] };
+
+  function renderFne(config: LobbyConfig, you: YouView = asHost) {
+    const onconfigure = vi.fn();
+    const result = render(ScenarioPicker, { view: viewOf(config, you), index: fne, onconfigure });
+    return { onconfigure, ...result };
+  }
+
+  async function openMenu() {
+    await fireEvent.click(screen.getByRole('button', { name: '+ Add a set' }));
+  }
+
+  function menuLabels(pack: string): string[] {
+    return within(screen.getByRole('group', { name: pack }))
+      .getAllByRole('button')
+      .map((button) => (button.textContent ?? '').replace(/\s+/g, ' ').trim());
+  }
+
+  it("offers the scenario's main scheme sets in their pack, in index order, never another", async () => {
+    renderFne(bullseye);
+    await openMenu();
+
+    expect(menuLabels('Fear No Evil')).toEqual([
+      'Cops',
+      'Art Museum Heist main scheme',
+      'The Getaway main scheme',
+    ]);
+  });
+
+  it('offers no other main scheme set once one is chosen, and stars its recommended sets', async () => {
+    renderFne({ ...bullseye, modulars: ['art_museum_heist'] });
+    await openMenu();
+
+    expect(menuLabels('Fear No Evil')).toEqual(['Cops ★ recommended']);
+  });
+
+  it('offers no main scheme set for a scenario without any', async () => {
+    renderFne(rhino);
+    await openMenu();
+
+    expect(menuLabels('Fear No Evil')).toEqual(['Cops']);
+  });
+
+  it('adds a main scheme set, then its recommended sets not chosen yet', async () => {
+    const { onconfigure } = renderFne({ ...bullseye, modulars: ['bomb_scare'] });
+    await openMenu();
+
+    await fireEvent.click(screen.getByRole('button', { name: /Art Museum Heist/ }));
+
+    expect(onconfigure).toHaveBeenCalledWith({
+      ...bullseye,
+      modulars: ['bomb_scare', 'art_museum_heist', 'cops'],
+    });
+  });
+
+  it('marks a chosen main scheme chip, and removes it alone', async () => {
+    const { onconfigure, container } = renderFne({
+      ...bullseye,
+      modulars: ['art_museum_heist', 'cops', 'bomb_scare'],
+    });
+
+    const chips = [...container.querySelectorAll('.chip')];
+    expect(chips.map((chip) => chip.querySelector('.scheme') !== null)).toEqual([
+      true,
+      false,
+      false,
+    ]);
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Remove Art Museum Heist' }));
+
+    expect(onconfigure).toHaveBeenCalledWith({ ...bullseye, modulars: ['cops', 'bomb_scare'] });
+  });
+
+  it('asks for a main scheme set in the hint until one is chosen', async () => {
+    const { rerender } = renderFne(bullseye);
+
+    expect(screen.getByText('Add a main scheme set: it sets the scenario.')).toBeTruthy();
+
+    await rerender({ view: viewOf({ ...bullseye, modulars: ['the_getaway'] }) });
+
+    expect(screen.queryByText('Add a main scheme set: it sets the scenario.')).toBeNull();
+    expect(screen.getByText(/recommended sets \(★\) are added for you/)).toBeTruthy();
+  });
+});
