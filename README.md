@@ -23,7 +23,8 @@ Everything below works today, except where noted.
   several decks, the player selector at the bottom left or the `Q`
   key picks the hand shown. An action is credited to the deck of the
   card or pile you touch, else to the selected deck
-- **Automated setup** — pick a scenario, a difficulty and the modular sets:
+- **Automated setup** — pick a scenario, a difficulty and the modular sets
+  (with a Fear No Evil Underling, the main scheme set too):
   villain, main scheme and decks are laid out for you, with each hero's side
   decks (Doctor Strange's Invocation deck and its discard pile, Daredevil's
   Sense deck...) shuffled beside the identity, and the cards a hero or a deck
@@ -60,7 +61,9 @@ Everything below works today, except where noted.
 - **The whole card range** — expansions are added as data files, card images
   load from `img.intothefray.xyz`. *Partly there:* the player cards of every
   pack are in, a few scenarios only so far (Rhino, Klaw, Ultron, Kingpin, Risky
-  Business, Mutagen Formula, Wrecking Crew)
+  Business, Mutagen Formula, Wrecking Crew, and Fear No Evil's five Underlings,
+  Bullseye, Electro, Hammerhead, Purple Man and Typhoid Mary, each with any of
+  its five main scheme sets)
 
 ## Prerequisites
 
@@ -206,12 +209,15 @@ no English image ("no image" in the report). The report prints how many
 faces the manifest covers, per language. Once the manifest exists, a
 `packs/` test fails when an embedded image is not under its base URL.
 
-The curated files are the scenarios (`scenarios/`), card overrides
+The curated files are the scenarios (`scenarios/`; `mainSchemes` lists the
+main scheme sets a scenario such as an Underling's is played with), card
+overrides
 (`cards.json`: face sizes, the Cerebro image ids of the identities whose
 Cerebro images are swapped, and the cards a deck containing a card puts aside
 at setup, such as Specialized Training's Specialists, listed on the card's code
 rather than a face code) and set data (`sets.json`: the cards a set starts in
-play at each difficulty, the sets the lobby leaves out, the hero side decks
+play at each difficulty, the sets the lobby leaves out, the main scheme sets
+(`mainScheme`, offered among the modular sets), the hero side decks
 such as Doctor Strange's Invocation deck, and the cards a hero set puts aside
 at setup). A side deck is a `hero_special` set linked to the hero of its pack
 whose set code, followed by `_`, starts its own (`doctor_strange` for

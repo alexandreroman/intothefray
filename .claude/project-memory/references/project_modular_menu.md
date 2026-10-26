@@ -17,6 +17,10 @@ type: project
   focusable items.
 - The scenario's recommended sets sit in their own pack, marked
   "★ recommended"; the menu has no group or ordering of its own for them.
+- With a scenario that names `mainSchemes` (Fear No Evil's Underlings),
+  the menu also offers those main scheme sets while none is chosen, marked
+  "main scheme" on the row and on the chip; adding one also adds its
+  recommended modulars, starred.
 - The menu stays whole inside the visible page: between the top bar and
   the lobby's start bar (`room` prop from `Lobby.svelte`), under its button
   or above it when only that side fits, else on the roomier side cut to
