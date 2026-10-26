@@ -124,9 +124,10 @@ func TestSetupSideDecks(t *testing.T) {
 	if strange := f.g.Table.Cards[identityOf(t, f.g, 0)]; strange.X != 680 || strange.Y != rowY0 {
 		t.Errorf("Doctor Strange at (%d, %d), want (680, %d)", strange.X, strange.Y, rowY0)
 	}
-	// The side piles leave the first player token under the deck.
-	if table.FirstPlayer != (Point{X: 30, Y: rowY0 + 220}) {
-		t.Errorf("first player = %+v, want (30, %d)", table.FirstPlayer, rowY0+220)
+	// The first player token follows the identity past the side piles: 680 +
+	// 140 + inPlayGap.
+	if table.FirstPlayer != (Point{X: 870, Y: rowY0 + 60}) {
+		t.Errorf("first player = %+v, want (870, %d)", table.FirstPlayer, rowY0+60)
 	}
 
 	sense := table.Piles[senseDeck]
@@ -176,8 +177,8 @@ func TestSetupTwoSideDecks(t *testing.T) {
 	if hercules := f.g.Table.Cards[identityOf(t, f.g, 0)]; hercules.X != 680 {
 		t.Errorf("Hercules at x %d, want 680", hercules.X)
 	}
-	if table.FirstPlayer.X != 30 {
-		t.Errorf("first player at x %d, want 30, under the deck", table.FirstPlayer.X)
+	if table.FirstPlayer.X != 870 {
+		t.Errorf("first player at x %d, want 870, right of Hercules", table.FirstPlayer.X)
 	}
 }
 
@@ -234,10 +235,11 @@ func TestSetupSetAsideHeroCards(t *testing.T) {
 // draw the same random numbers and so give the same tables and card ids.
 // They change only with the card data of the heroes and scenario they use,
 // with the fields of a card (the identity mark), or with the default
-// positions (the first player token under the deck, the villain row).
+// positions (the first player token beside the first identity, the villain
+// row).
 const (
-	spiderManSetupHash = "689af7071da837c3c42f667838b41ee7966fb766f344f6089d49191eea702ae1"
-	threeDeckSetupHash = "41b9e0c3210037445da3820f1030bc5ae4a8ab2445c07d3f2e6fd693a1aba7bc"
+	spiderManSetupHash = "dad18a09914ac4bd6436321880778467dc90c68088181ce8934d595171d4436c"
+	threeDeckSetupHash = "027d2eefcfde317abda21b68c2804c870a77f77fcc075be3725611f03bcfef8d"
 )
 
 func TestSetupWithoutSideDecksIsUnchanged(t *testing.T) {
