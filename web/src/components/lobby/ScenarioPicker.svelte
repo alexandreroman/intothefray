@@ -65,12 +65,20 @@
   // Guests see the chosen level only, read only.
   const levels = $derived(isHost ? LEVELS : LEVELS.filter((level) => level.value === difficulty));
 
-  // Recommended sets come first: the full list is long.
-  const addableModulars = $derived(
-    index.sets
-      .filter((s) => s.kind === 'modular' && !config.modulars.includes(s.code))
-      .sort((a, b) => Number(recommended.includes(b.code)) - Number(recommended.includes(a.code))),
+  // The full list is long: the Add a set menu groups it by pack, in release order as the villain
+  // list does. A recommended set stays in its own pack, where its star marks it.
+  const modularGroups = $derived(
+    index.packs
+      .map((pack) => ({
+        pack,
+        sets: index.sets.filter(
+          (s) => s.pack === pack.code && s.kind === 'modular' && !config.modulars.includes(s.code),
+        ),
+      }))
+      .filter((group) => group.sets.length > 0),
   );
+  // Each group of the menu is labelled by its pack's name.
+  const uid = $props.id();
 
   function packName(code: string): string {
     return packNames.get(code) ?? code;
@@ -381,13 +389,19 @@
                 >
                 {#if menuOpen}
                   <div class="menu">
-                    {#each addableModulars as set (set.code)}
-                      <button class="btn-ghost" onclick={() => addModular(set.code)}>
-                        {localizedName(set, lang)}
-                        {#if recommended.includes(set.code)}
-                          <span class="rec">★ recommended</span>
-                        {/if}
-                      </button>
+                    {#each modularGroups as group (group.pack.code)}
+                      {@const headingId = `${uid}-pack-${group.pack.code}`}
+                      <div role="group" aria-labelledby={headingId}>
+                        <div class="mpk" id={headingId}>{localizedName(group.pack, lang)}</div>
+                        {#each group.sets as set (set.code)}
+                          <button class="btn-ghost" onclick={() => addModular(set.code)}>
+                            {localizedName(set, lang)}
+                            {#if recommended.includes(set.code)}
+                              <span class="rec">★ recommended</span>
+                            {/if}
+                          </button>
+                        {/each}
+                      </div>
                     {/each}
                   </div>
                 {/if}
@@ -718,5 +732,29 @@
 
   .menu .rec {
     margin-left: auto;
+  }
+
+  /* A pack's name, then a rule to the edge, as in the villain list but sized to the menu. It stays
+     on top while its sets scroll under it, so it takes the menu's background. */
+  .menu .mpk {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px 4px;
+    background: var(--panel-2);
+    color: var(--text-soft);
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  /* The villain list's rule color is the menu's background: the menu's border color shows. */
+  .menu .mpk::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--line-strong);
   }
 </style>
