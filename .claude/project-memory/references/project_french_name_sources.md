@@ -20,9 +20,15 @@ type: project
   the card code plus a letter otherwise (Loki the Miscreant is
   `55030a`); an unknown code fails the build.
 
-**Why:** the sources often drop French accents or misspell names;
-curated names fix them by hand. Requiring an English subname dropped
-legitimate French alter ego names.
+- cgbuilder is the lowest, gap-filling source: a cgbuilder failure logs
+  a warning and the packs build without its names; a failure of any
+  other source stops the build.
+
+**Why:** fr.marvelcdb lists most content from Magneto onward under its
+English names; mc4db and cgbuilder carry the official French names,
+and the sources sometimes drop accents on capitals or misspell names,
+so curated names win. Alter egos get their French subname even where
+marvelcdb has none.
 
 **How to apply:** fix a bad French card name with a `cards` entry in
 `names.json`, never by editing `packs/dist/`.

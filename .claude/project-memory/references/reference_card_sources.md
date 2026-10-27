@@ -18,6 +18,19 @@ type: reference
   (`name`, `subname`, `card_set_name` in French, `real_name` in English)
   and `/api/public/packs/` (French pack names). Its images are the
   English ones.
+- mc4db in French: `?locale=fr` (not `_locale`) on
+  `/api/public/cards/?encounter=1`, `/api/public/packs/` and
+  `/api/public/sets` gives French `name`/`subname` and pack and set
+  names (`real_name`, `name_en` in English); card `card_set_name` stays
+  mostly English. Official packs have `creator` `FFG`; official sets sit
+  under `official`.
+- cgbuilder (`https://mc.cgbuilder.fr`, French fan site, HTML only):
+  `/cycle/` (pack names), `/liste_carte/{id}/` (cards of a pack, French
+  names, encounter set ids), `/set_modulaire/` (modular set names). Its
+  pack ids are not marvelcdb positions (Silk is 51 there, 52 at
+  marvelcdb), so packgen joins its packs to marvelcdb by French card
+  names. It lacks the encounter cards of Trickster Takeover and Fear No
+  Evil. Precedence: see [[project_french_name_sources]].
 - mc4db, a MarvelCDB fork run by Merlin at
   `https://mc4db.merlindumesnil.net`, is the fallback card source:
   marvelcdb is primary, and the generator adds the mc4db records of
