@@ -16,6 +16,7 @@
           "handSize": 5,
           "localized": {
             "fr": {
+              "name": "Magnéto",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/49001a.03aba3bcc1a6.avif"
               ]
@@ -59,6 +60,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Asteroïd M",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/49002.595dd10669b1.avif"
               ]
@@ -82,6 +84,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Casque de Magnéto",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/49003.ed3e31be4f45.avif"
               ]
@@ -105,6 +108,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Armure de Magnéto",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/49004.b800ddfde6e2.avif"
               ]
@@ -128,6 +132,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Cape de Magnéto",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/49005.29d94013dcac.avif"
               ]
@@ -151,6 +156,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Bulle Magnétique",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/49006.3e8f30f150cb.avif"
               ]
@@ -174,6 +180,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Enveloppé de Métal",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/49007.afbc509947db.avif"
               ]
@@ -197,6 +204,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Déflagration Électromagnétique",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/49008.524bb73ee1b2.avif"
               ]
@@ -220,6 +228,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Eclat de Métal",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/49009.3d980caa061c.avif"
               ]
@@ -243,6 +252,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Projectile Magnétique",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/49010.5624acf7a900.avif"
               ]
@@ -266,6 +276,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Maître du Magnétisme",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/49011.81e50f029779.avif"
               ]
@@ -336,6 +347,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Phénix",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/49014.62817485643d.avif"
               ]
@@ -359,6 +371,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Cyclope",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/49015.bd78d8bae83c.avif"
               ]
@@ -381,6 +394,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Toujours se Relever",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/49016.9f7113bc01a1.avif"
               ]
@@ -403,6 +417,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Prêt au Combat",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/49017.fa6dedeed6a8.avif"
               ]
@@ -447,6 +462,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Tu peux le Faire",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/49019.f84d1b4e8a9b.avif"
               ]
@@ -473,6 +489,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Nouvelles Recrues",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/49020.a8de62f610c2.avif"
               ]
@@ -496,6 +513,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "La Reine Blanche",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/49021.c056ebb23e63.avif"
               ]
@@ -518,6 +536,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Faire Face au Passé",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/49022.ad1f30022251.avif"
               ]
@@ -540,6 +559,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Vieilles Querelles",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/49027.2677d523bb1e.avif"
               ]
@@ -590,6 +610,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Le Martyr des Mutants",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/49029.5ff5e14e876a.avif"
               ]
@@ -659,6 +680,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Acolytes en Colère",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/49032.e21100eae063.avif"
               ]
@@ -729,6 +751,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Bling !",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/49035.15872362f865.avif"
               ]
@@ -774,6 +797,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Enfants de l'Atome",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/49037.b7ebf6030110.avif"
               ]
@@ -819,6 +843,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Séléné",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/49039.e4d7907d937f.avif"
               ]
@@ -842,6 +867,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Pion des Damnés",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/49040.d8707e41d19d.avif"
               ]
@@ -869,6 +895,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Le Cercle restreint",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/49041.1abf3c5bfc5b.avif"
               ]
@@ -892,6 +919,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Puissance et Décadence",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/49042.9704c3736663.avif"
               ]

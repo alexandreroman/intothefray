@@ -66,6 +66,17 @@ type SetDef struct {
 	MainScheme bool `json:"mainScheme,omitempty"`
 }
 
+// Names are the hand-written names of one language, for the packs, sets and
+// card faces the sources leave untranslated or misname. They win over the
+// sources.
+type Names struct {
+	Packs map[string]string `json:"packs,omitempty"` // by pack code
+	Sets  map[string]string `json:"sets,omitempty"`  // by set code
+	// Cards is keyed by marvelcdb face code: the card code of a single-faced
+	// card, the card code and a letter for each face of the others.
+	Cards map[string]string `json:"cards,omitempty"`
+}
+
 // Curated is the content of a curated data directory.
 type Curated struct {
 	Scenarios []ScenarioDef
@@ -73,10 +84,13 @@ type Curated struct {
 	// Sets is keyed by set code. Whether each set and card exists is checked
 	// at build time, against the generated catalog.
 	Sets map[string]SetDef
+	// Names is keyed by language code, e.g. "fr". Whether each pack, set and
+	// face exists is checked at build time too.
+	Names map[string]Names
 }
 
-// Load reads dir/scenarios/*.json and the optional dir/cards.json and
-// dir/sets.json.
+// Load reads dir/scenarios/*.json and the optional dir/cards.json,
+// dir/sets.json and dir/names.json.
 // Unknown fields are rejected so that typos in hand-written files surface.
 func Load(dir string) (Curated, error) {
 	var curated Curated
@@ -118,6 +132,15 @@ func Load(dir string) (Curated, error) {
 	}
 	if err := checkSetDefs(curated.Sets); err != nil {
 		return Curated{}, fmt.Errorf("%s: %w", setsPath, err)
+	}
+
+	namesPath := filepath.Join(dir, "names.json")
+	err = readStrict(namesPath, &curated.Names)
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return Curated{}, err
+	}
+	if err := checkNames(curated.Names); err != nil {
+		return Curated{}, fmt.Errorf("%s: %w", namesPath, err)
 	}
 	return curated, nil
 }
@@ -253,6 +276,29 @@ func checkSetDefs(defs map[string]SetDef) error {
 		}
 		if def.Side != nil && !validSideBack(def.Side.Back) {
 			return fmt.Errorf("set %q: side deck has an unknown back %q", code, def.Side.Back)
+		}
+	}
+	return nil
+}
+
+// checkNames rejects the empty names, which would leave the English name in
+// place without a word.
+func checkNames(names map[string]Names) error {
+	for _, lang := range slices.Sorted(maps.Keys(names)) {
+		for _, code := range slices.Sorted(maps.Keys(names[lang].Packs)) {
+			if names[lang].Packs[code] == "" {
+				return fmt.Errorf("%s pack %q: empty name", lang, code)
+			}
+		}
+		for _, code := range slices.Sorted(maps.Keys(names[lang].Sets)) {
+			if names[lang].Sets[code] == "" {
+				return fmt.Errorf("%s set %q: empty name", lang, code)
+			}
+		}
+		for _, code := range slices.Sorted(maps.Keys(names[lang].Cards)) {
+			if names[lang].Cards[code] == "" {
+				return fmt.Errorf("%s card %q: empty name", lang, code)
+			}
 		}
 	}
 	return nil

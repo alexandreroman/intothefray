@@ -16,6 +16,7 @@
           "handSize": 4,
           "localized": {
             "fr": {
+              "name": "Hercule",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/59001a.b025cc74d1d5.avif"
               ]
@@ -32,6 +33,7 @@
           "handSize": 6,
           "localized": {
             "fr": {
+              "name": "Hercule",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/59001b.a9c2e09970f7.avif"
               ]
@@ -59,6 +61,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Vaincre l'Hydre",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/59002.e38207ef6101.avif"
               ]
@@ -82,6 +85,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Incarner le Pathos",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/59003.fdffd6beb59b.avif"
               ]
@@ -105,6 +109,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Protéger l'Humanité",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/59004.cc8120bf9d3f.avif"
               ]
@@ -128,6 +133,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Peau du Lion de Némée",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/59005.34234cf8bec7.avif"
               ]
@@ -151,6 +157,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Bouclier de Persée",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/59006.288d11f4148a.avif"
               ]
@@ -174,6 +181,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Épée de Pélée",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/59007.12bda5d275e9.avif"
               ]
@@ -220,6 +228,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Le Don du Combat",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/59009.056416827e91.avif"
               ]
@@ -243,6 +252,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Fils de Zeus",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/59010.2c28044d909b.avif"
               ]
@@ -266,6 +276,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Sagesse d'Athéna",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/59011.110607291b3f.avif"
               ]
@@ -289,6 +300,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Olympe",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/59012.7f898349bcc4.avif"
               ]
@@ -312,6 +324,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Gantelets d'Hercules",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/59013.c8f5dc1864b8.avif"
               ]
@@ -335,6 +348,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Masse Dorée",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/59014.b0cc91f0fef9.avif"
               ]
@@ -358,6 +372,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Casque d'Herc",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/59015.ec7787a9e6fa.avif"
               ]
@@ -381,6 +396,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Lion de l'Olympe",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/59016.06787a0f9961.avif"
               ]
@@ -404,6 +420,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Prince du Pouvoir",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/59017.41008ff7016a.avif"
               ]
@@ -496,6 +513,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Campagne de Recrutement",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/59023.2b6b8adfa25f.avif"
               ]
@@ -518,6 +536,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "\"Vengez-Moi !\"",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/59024.0ca1927bac25.avif"
               ]
@@ -562,6 +581,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Rivalité Antique",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/59026.58c9cbe332f6.avif"
               ]
@@ -588,6 +608,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Évaluer la Menace",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/59028.01c59eca7c5b.avif"
               ]
@@ -610,6 +631,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Implorer Athéna",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/59035.312153bb6f11.avif"
               ]
@@ -656,6 +678,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Hydre de Lerne",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/59037.0129fc5491f1.avif"
               ]
@@ -683,6 +706,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Querelle Olympienne",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/59038.023cb51d0f96.avif"
               ]
@@ -706,6 +730,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Hache d'Arès",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/59039.bd9b05279a7a.avif"
               ]
@@ -729,6 +754,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Dieu de la Guerre",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/59040.a5de74b3499a.avif"
               ]
@@ -756,6 +782,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Tous Contre Tous",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/59041.b79fb67e28f6.avif"
               ]
@@ -779,6 +806,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Hécate",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/59042.cdbac23945fa.avif"
               ]
@@ -825,6 +853,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Policier Envoûté",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/59044.42f56d801191.avif"
               ]
@@ -852,6 +881,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Foule en Mouvement",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/59045.c7e3101da0c6.avif"
               ]

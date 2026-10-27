@@ -59,6 +59,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Physiologie Ionique",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/58002.e2ecdd3c3a35.avif"
               ]
@@ -82,6 +83,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Altruisme Actif",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/58003.131f94a1add2.avif"
               ]
@@ -105,6 +107,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Rayon Ionique",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/58004.d0bae17895c9.avif"
               ]
@@ -128,6 +131,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Frappe des Étoiles",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/58005.7ac2d4dc7af8.avif"
               ]
@@ -151,6 +155,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Siphon d'Énergie",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/58006.dcaa154a6082.avif"
               ]
@@ -174,6 +179,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Fans de Wonder Man",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/58007.0dd8f5c89b63.avif"
               ]
@@ -197,6 +203,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Ceinture à Réaction",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/58008.5512f556d55d.avif"
               ]
@@ -220,6 +227,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Monsieur Hollywood",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/58009.2e20020df04b.avif"
               ]
@@ -243,6 +251,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Lunettes de Soleil Iconiques",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/58010.244b8de4f615.avif"
               ]
@@ -266,6 +275,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "\"Mais d'Où tu Sors\"",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/58011.c5372c6db9a0.avif"
               ]
@@ -336,6 +346,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "La Sorcière Rouge",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/58014.35b409f87074.avif"
               ]
@@ -381,6 +392,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Bienveillance au Combat",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/58016.3d1434576290.avif"
               ]
@@ -403,6 +415,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Partout en Même Temps",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/58018.308b56708a07.avif"
               ]
@@ -425,6 +438,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Plus Fort Ensemble",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/58019.de36881ca7c5.avif"
               ]
@@ -447,6 +461,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Frappe Unie",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/58020.4579b3d7e023.avif"
               ]
@@ -469,6 +484,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Entraînement Héroïque",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/58021.9a4899bc9bed.avif"
               ]
@@ -492,6 +508,8 @@
           ],
           "localized": {
             "fr": {
+              "name": "Swordman",
+              "subname": "Jacques Duquesnes",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/58022.9873680f439c.avif"
               ]
@@ -536,6 +554,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Pacifisme",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/58025.50f9fdebed98.avif"
               ]
@@ -559,6 +578,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Le Moissoneur",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/58026.69c85551d8f5.avif"
               ]
@@ -586,6 +606,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Frère Contre Frère",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/58027.f26b58a99c84.avif"
               ]
@@ -609,6 +630,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Coup de Faux",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/58028.6fa5e3f69453.avif"
               ]
@@ -632,6 +654,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "La Mort ne Peut Mourir",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/58029.fdd16ce3eaaa.avif"
               ]
@@ -655,6 +678,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Prix Entre Deux Feux",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/58030.a7c967727640.avif"
               ]
@@ -677,6 +701,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Caméo",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/58031.a5fd6f8a172e.avif"
               ]
@@ -699,6 +724,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Effort Conjoint",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/58032.3d2d8ec1fca8.avif"
               ]
@@ -721,6 +747,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Défense Désarmante",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/58033.ebf058406455.avif"
               ]
@@ -743,6 +770,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Camp des Avengers",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/58034.1bfbdcd1cddd.avif"
               ]

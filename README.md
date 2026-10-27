@@ -185,9 +185,10 @@ the instance name.
 
 `make packs` downloads the card data from marvelcdb, Cerebro and
 [mc4db](https://mc4db.merlindumesnil.net), and the French names from
-fr.marvelcdb.com (all cached in `packs/.cache`), merges the hand-written
-files of `packs/curated/`, takes the card images from the image manifest,
-and writes the result to `packs/dist/`. Commit the regenerated files with
+mc4db, fr.marvelcdb.com and [cgbuilder](https://mc.cgbuilder.fr) (all
+cached in `packs/.cache`), merges the hand-written files of
+`packs/curated/`, takes the card images from the image manifest, and
+writes the result to `packs/dist/`. Commit the regenerated files with
 the change that caused them.
 
 The card images are served from `https://img.intothefray.xyz`, a
@@ -227,13 +228,53 @@ set-aside cards are listed on a face code or include the card itself. The cards
 of a side deck with a shared `back` (Doctor Strange's Invocation deck, Hercules'
 Labor and Gift decks, Daredevil's Sense deck, Storm's Weather deck) all get that
 back, whatever back the sources give them, and the table captions it with the
-deck's label.
+deck's label. The hand-written names (`names.json`, by language, then
+pack code, set code or marvelcdb face code: the card code of a
+single-faced card, the card code and a letter for each face of the
+others) name the packs, sets and card faces no source translates well;
+the generator fails when one names a pack, set or face it does not know,
+or is empty.
 
 A face keeps its English name and images, and its `localized` map holds
 the overrides of other languages (`localized.fr`: name, subname, images
 tried before the English ones). Pack, scenario and set entries of the
 index carry a localized name the same way. The generator's report
 includes the French coverage.
+
+Each French name comes from the first source that translates it, in this
+order: the curated `names.json`, mc4db in French (`?locale=fr`: cards,
+packs and sets), fr.marvelcdb, then cgbuilder. Card names come from the
+curated `names.json`, mc4db and fr.marvelcdb only, subnames from mc4db
+and fr.marvelcdb. A source counts only where its name differs from the
+English one by more than case, spacing or the kind of apostrophe
+("MaGog" does not translate "Magog"): mc4db and fr.marvelcdb list
+untranslated content under its English name, which must not hide a lower
+source. A French subname counts on a face without an English one too
+(fr.marvelcdb names alter egos marvelcdb leaves bare, e.g. "Amadeus
+Cho" for Brawn); an empty one never hides a lower source.
+mc4db packs and sets map to marvelcdb codes as below, the official ones
+only (pack creator `FFG`), the first pack winning when two map to the
+same code; a scenario takes the name of its villain set.
+
+cgbuilder, a French fan site without API, gives the names of its packs
+(`/cycle/`) and modular sets (`/set_modulaire/`), read from its HTML pages
+one at a time. Its pack ids are not marvelcdb positions, so the generator
+reads each pack's card list (`/liste_carte/{id}/`) and joins it by
+content: a cgbuilder pack takes the marvelcdb pack whose French card
+names, from the other sources, match those of the same numbers, when they
+match at least half its cards and more than any other pack does. A
+marvelcdb pack two cgbuilder packs would join is left out, with their
+cards. A cgbuilder set takes the marvelcdb set of more than half its
+cards in the joined packs. Alternate printings (numbered 1000 and up) are
+left out.
+
+cgbuilder only fills the gaps of the other sources, so it never stops
+the generator: a pack page without any card (an announced pack) is
+skipped, and any other cgbuilder failure, fetch or parse, is logged as a
+warning and the packs are built without cgbuilder names. A failure of
+any other source, mc4db in French included, stops the generator. Like
+the JSON sources, a cgbuilder page is cached only once parsed, so an
+error page is never replayed.
 
 marvelcdb is the primary card source. Where it lists a pack only in part
 (such as Fear No Evil, whose encounter cards it lacks), the generator

@@ -16,6 +16,7 @@
           "handSize": 5,
           "localized": {
             "fr": {
+              "name": "Le Soldat de l'Hiver",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/54001a.52730364d8f8.avif"
               ]
@@ -59,6 +60,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Bras Cybernétique",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/54002.990bae8ce4a0.avif"
               ]
@@ -106,6 +108,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Blocage du Bras",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/54004.1b21e66b36a9.avif"
               ]
@@ -129,6 +132,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Coup de Poing Métallique",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/54005.60e6dd59cae6.avif"
               ]
@@ -152,6 +156,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Décharge Électrique",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/54006.314819c06298.avif"
               ]
@@ -175,6 +180,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Refuge #30",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/54007.33da27dbf6c5.avif"
               ]
@@ -198,6 +204,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Infiltration Silencieuse",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/54008.109b0c985742.avif"
               ]
@@ -221,6 +228,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Armure de l'Hiver",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/54009.4bbbbe2b2401.avif"
               ]
@@ -244,6 +252,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Masque de l'Hiver",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/54010.128cbeb20cb6.avif"
               ]
@@ -267,6 +276,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Fusil de l'Hiver",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/54011.0db36c443fc6.avif"
               ]
@@ -336,6 +346,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Puissance de Feu",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/54014.436d98652c29.avif"
               ]
@@ -358,6 +369,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Chercher l'Affrontement",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/54016.440cb1403d4a.avif"
               ]
@@ -380,6 +392,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Posture Agresssive",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/54017.a0178ed6e28d.avif"
               ]
@@ -424,6 +437,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "L'Homme sur le Mur",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/54019.bc470e70cd0b.avif"
               ]
@@ -446,6 +460,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Arme de Poing du S.H.I.E.L.D.",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/54020.197b0148910d.avif"
               ]
@@ -468,6 +483,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Super Soldats",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/54022.9f27d59bb20b.avif"
               ]
@@ -490,6 +506,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Winter, Widow, Soldat, Espionne",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/54023.e087ff2ba03d.avif"
               ]
@@ -512,6 +529,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Programmation de la Chambre Rouge",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/54027.42adda1f958e.avif"
               ]
@@ -562,6 +580,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Brigade de Choc d'Hydra",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/54029.12ef5464502d.avif"
               ]
@@ -585,6 +604,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Armement High-Tech",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/54030.dad08fa87f0a.avif"
               ]
@@ -608,6 +628,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Mercenaire d'Hydra",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/54031.268608f247f2.avif"
               ]
@@ -654,6 +675,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Adjoint du S.H.I.E.L.D.",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/54033.93d934a46e17.avif"
               ]
@@ -699,6 +721,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Piégé Dans la Glace",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/54035.87fe37f6ff41.avif"
               ]
@@ -726,6 +749,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Mauvaises Conditions",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/54036.526fabb4426b.avif"
               ]
@@ -749,6 +773,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Voile Blanc",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/54037.68068cfce1c9.avif"
               ]

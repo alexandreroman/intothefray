@@ -10,14 +10,10 @@ import (
 	"github.com/alexandreroman/intothefray/internal/packgen/report"
 )
 
-const (
-	// officialCreator is the mc4db pack_creator of the official cards.
-	officialCreator = "FFG"
-	// officialTag marks the mc4db codes of the official packs and sets, which
-	// marvelcdb spells without it: fear_no_evil_by_ffg is fne,
-	// daredevil_by_ffg_nemesis is daredevil_nemesis.
-	officialTag = "_by_ffg"
-)
+// officialTag marks the mc4db codes of the official packs and sets, which
+// marvelcdb spells without it: fear_no_evil_by_ffg is fne,
+// daredevil_by_ffg_nemesis is daredevil_nemesis.
+const officialTag = "_by_ffg"
 
 // withFallback completes the marvelcdb records and packs with the official
 // mc4db records of the cards marvelcdb lacks. It lists the records it adds,
@@ -49,7 +45,7 @@ func withFallback(
 
 	cards = slices.Clone(mc)
 	for _, card := range mc4dbCards {
-		if card.PackCreator != officialCreator || knownBases[baseCode(card.Code)] {
+		if card.PackCreator != mc4db.OfficialCreator || knownBases[baseCode(card.Code)] {
 			continue
 		}
 		packCode, found := mapper.packCodeOf(card.PackCode)

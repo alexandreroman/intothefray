@@ -16,6 +16,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "L'Enchanteresse",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55001.79db0a57f0ff.avif"
               ]
@@ -40,6 +41,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "L'Enchanteresse",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55002.918df461d740.avif"
               ]
@@ -64,6 +66,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "L'Enchanteresse",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55003.95a8d51fa41e.avif"
               ]
@@ -88,6 +91,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Un Continent Exceptionnel",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55004a.2b23768e470f.avif"
               ]
@@ -108,6 +112,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Un Continent Exceptionnel",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55004b.b490744e04d6.avif"
               ]
@@ -136,6 +141,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Sorcière Souveraine",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55005a.eec261e52bf9.avif"
               ]
@@ -156,6 +162,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Sorcière Souveraine",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55005b.fbd17048935c.avif"
               ]
@@ -187,6 +194,7 @@
           },
           "localized": {
             "fr": {
+              "name": "L'Avenir du Désespoir",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55006.969a4f12fd37.avif"
               ]
@@ -210,6 +218,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Regard Hypnotique",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55007a.2695fe808cca.avif"
               ]
@@ -225,6 +234,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "L'Illusion de l'Envie",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55007b.57b23460f79d.avif"
               ]
@@ -252,6 +262,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Regard Hypnotique",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55008a.f7dae47b2f92.avif"
               ]
@@ -267,6 +278,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "L'illusion de l'Avarice",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55008b.cf1be8d84f7b.avif"
               ]
@@ -294,6 +306,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Regard Hypnotique",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55009a.0fdaddc07772.avif"
               ]
@@ -309,6 +322,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "L'illusion de l'Orgueil",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55009b.b073bb288561.avif"
               ]
@@ -336,6 +350,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Regard Hypnotique",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55010a.0fdaddc07772.avif"
               ]
@@ -351,6 +366,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "L'Illusion de la Paresse",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55010b.3b91a502cf87.avif"
               ]
@@ -378,6 +394,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Regard Hypnotique",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55011a.0fdaddc07772.avif"
               ]
@@ -393,6 +410,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "L'Illusion de la Colère",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55011b.874b315fe5dd.avif"
               ]
@@ -420,6 +438,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "L'Appel de la Séduction",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55012.e83ecd66af3f.avif"
               ]
@@ -443,6 +462,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Baiser de la Tentation",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55013.3d9a80676515.avif"
               ]
@@ -466,6 +486,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Philtre d'Amour",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55014.ba3de0d8806f.avif"
               ]
@@ -489,6 +510,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Séduit",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55015.8ce6604a59db.avif"
               ]
@@ -512,6 +534,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Couronne de l'Enchanteresse",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55016.f23e8a94b5b2.avif"
               ]
@@ -535,6 +558,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Laquais Envoûté",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55017.7cff234103a3.avif"
               ]
@@ -558,6 +582,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Brute Envoûté",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55018.936c2691eb0c.avif"
               ]
@@ -631,6 +656,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Loi de l'Attraction",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55021.4dbd0913cf85.avif"
               ]
@@ -658,6 +684,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Captivé",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55022.1192ad9d6f9d.avif"
               ]
@@ -681,6 +708,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "\"Obéis à mes Ordres",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55023.77e63dc709b8.avif"
               ]
@@ -704,6 +732,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Entraves Magiques",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55024.4b86679fa07e.avif"
               ]
@@ -727,6 +756,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Déflagration Magique",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55025.2550035d4afa.avif"
               ]
@@ -750,6 +780,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Éclats Magiques",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55026.4c52b3897b5c.avif"
               ]
@@ -774,6 +805,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Loki, Dieux des Mensonges",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55027a.19fbda5fc965.avif"
               ]
@@ -790,6 +822,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Loki, Dieux des Mensonges",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55027b.b05a96f79065.avif"
               ]
@@ -818,6 +851,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "La Guerre des Mondes",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55028a.e322305ce616.avif"
               ]
@@ -834,6 +868,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "La Guerre des Mondes",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55028b.ac30160dbc0c.avif"
               ]
@@ -862,6 +897,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Loki le Vaurien",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55029a.ed48cf6dc3d2.avif"
               ]
@@ -878,6 +914,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Incarnation Déclinante",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55029b.ce5d15abecc0.avif"
               ]
@@ -906,6 +943,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Loki le Mécréant",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55030a.d8fbac51025f.avif"
               ]
@@ -922,6 +960,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Incarnation Déclinante",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55030b.49c4139af71d.avif"
               ]
@@ -950,6 +989,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Loki le Valet",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55031a.deb38cc31848.avif"
               ]
@@ -966,6 +1006,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Incarnation Déclinante",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55031b.15b2cb950779.avif"
               ]
@@ -994,6 +1035,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Lokie le Misérable",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55032a.eb586a834b2d.avif"
               ]
@@ -1010,6 +1052,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Incarnation Déclinante",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55032b.1584c97d1f36.avif"
               ]
@@ -1038,6 +1081,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Nuisance et Discorde",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55033a.31f597978eaf.avif"
               ]
@@ -1058,6 +1102,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Nuisance et Discorde",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55033b.70f7731b7b74.avif"
               ]
@@ -1085,6 +1130,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Concentration Intense",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55034a.08d4e233cf61.avif"
               ]
@@ -1100,6 +1146,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Concentration Totale",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55034b.7d0d0c68a566.avif"
               ]
@@ -1127,6 +1174,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Couvert de Chaînes",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55035.1c772d9584c5.avif"
               ]
@@ -1150,6 +1198,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Sceptre Noir",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55036.9b782ed9d179.avif"
               ]
@@ -1173,6 +1222,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Compère Daugr",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55037.b0357771097b.avif"
               ]
@@ -1242,6 +1292,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Le Minotaure",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55040.334d5f199481.avif"
               ]
@@ -1265,6 +1316,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Le Mangog",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55041.656e6603d61e.avif"
               ]
@@ -1288,6 +1340,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Loup Fenris",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55042.ff402932c91a.avif"
               ]
@@ -1361,6 +1414,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Aura de Stase",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55045.9e115f07923c.avif"
               ]
@@ -1388,6 +1442,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Porte Entre les Mondes",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55046.0e1bf105bb55.avif"
               ]
@@ -1415,6 +1470,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Frandes Ambitions",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55047.983da674d693.avif"
               ]
@@ -1442,6 +1498,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Nouveau Jotunheim",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55048.463665d56e55.avif"
               ]
@@ -1465,6 +1522,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Arts Occultes",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55049.fecc5bedc9eb.avif"
               ]
@@ -1488,6 +1546,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Mauvais tour",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55050.2fa0089a2f43.avif"
               ]
@@ -1511,6 +1570,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Mensonses et Légendes",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55051.b748618e9805.avif"
               ]
@@ -1534,6 +1594,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Force Dominatrice",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55052.bada4178b9c3.avif"
               ]
@@ -1557,6 +1618,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Feindre la Retraite",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55053.11a55c021857.avif"
               ]
@@ -1580,6 +1642,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Renfort de Cavalerie",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55054.37ebb0a3cd63.avif"
               ]
@@ -1603,6 +1666,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Front Uni",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55055.38f5b41a3544.avif"
               ]
@@ -1626,6 +1690,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "L'Homme Absorbant",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55056.2b5200693ade.avif"
               ]
@@ -1672,6 +1737,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Le Tourbillon",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55058.bf7ab306fea7.avif"
               ]
@@ -1722,6 +1788,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Le Tango du Filou",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55060.ffbfec05c2c3.avif"
               ]
@@ -1749,6 +1816,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Le Maître des Marionnettes",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55061.5b76cf715db5.avif"
               ]
@@ -1772,6 +1840,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Triangle Amoureux",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55062.1b1268a2450d.avif"
               ]
@@ -1796,6 +1865,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "L'Homme Absorbant",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55063.b333e4cf0156.avif"
               ]
@@ -1844,6 +1914,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Le Tourbillon",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/55065.8bbf4185e474.avif"
               ]

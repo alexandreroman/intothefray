@@ -81,3 +81,65 @@ func TestFetchPacks(t *testing.T) {
 		t.Errorf("packs = %+v, want %+v", got, want)
 	}
 }
+
+func TestFetchFrenchCards(t *testing.T) {
+	client, base := serve(t, "/api/public/cards/?encounter=1&locale=fr", `[
+		{"code":"56108","name":"Ordre d'Arrestation","real_name":"Arrest Warrant","pack_code":"cw",
+		 "pack_creator":"FFG"}
+	]`)
+
+	got, err := FetchFrenchCards(context.Background(), client, base)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	want := []Card{{Card: marvelcdb.Card{Code: "56108", Name: "Ordre d'Arrestation", PackCode: "cw"}, PackCreator: "FFG"}}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("cards = %+v, want %+v", got, want)
+	}
+}
+
+func TestFetchFrenchPacks(t *testing.T) {
+	client, base := serve(t, "/api/public/packs/?locale=fr", `[
+		{"name":"Peur de Rien","code":"fear_no_evil_by_ffg","position":60,"creator":"FFG"},
+		{"name":"Hercule","code":"hercules_by_rainy","position":2032,"creator":"Rainy"},
+		{"name":"Weekly FFG 2025","code":"2025_weekly","position":3000,"creator":"FFG & Merlin"}
+	]`)
+
+	got, err := FetchFrenchPacks(context.Background(), client, base)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Official packs only.
+	want := []marvelcdb.Pack{{Code: "fear_no_evil_by_ffg", Name: "Peur de Rien", Position: 60}}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("packs = %+v, want %+v", got, want)
+	}
+}
+
+func TestFetchFrenchSets(t *testing.T) {
+	client, base := serve(t, "/api/public/sets?locale=fr", `{
+		"official": {
+			"villain": [{"code":"purple_man_by_ffg","name":"L'Homme Pourpre","name_en":"Purple Man"}],
+			"modular": [{"code":"infiltrate_the_museum","name":"Infiltrer le Musée","name_en":"Infiltrate the Museum"}]
+		},
+		"fanmade": {
+			"villain": [{"code":"mighty_thor_by_rainy","name":"Thor","name_en":"Thor"}]
+		}
+	}`)
+
+	got, err := FetchFrenchSets(context.Background(), client, base)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Official sets only, the kinds in alphabetical order.
+	want := []Set{
+		{Code: "infiltrate_the_museum", Name: "Infiltrer le Musée"},
+		{Code: "purple_man_by_ffg", Name: "L'Homme Pourpre"},
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("sets = %+v, want %+v", got, want)
+	}
+}

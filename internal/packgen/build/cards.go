@@ -1,7 +1,8 @@
 // Package build derives the packs and their index from the marvelcdb, mc4db
-// and Cerebro records, the French names of fr.marvelcdb, the curated data and
-// the image manifest, and lists the image sources of every face for the image
-// pipeline that writes that manifest.
+// and Cerebro records, the French names of mc4db, fr.marvelcdb and cgbuilder,
+// the curated data (French names included) and the image manifest, and lists
+// the image sources of every face for the image pipeline that writes that
+// manifest.
 package build
 
 import (

@@ -10,6 +10,7 @@ import (
 	"github.com/alexandreroman/intothefray/internal/pack"
 	"github.com/alexandreroman/intothefray/internal/packgen/cdn"
 	"github.com/alexandreroman/intothefray/internal/packgen/cerebro"
+	"github.com/alexandreroman/intothefray/internal/packgen/cgbuilder"
 	"github.com/alexandreroman/intothefray/internal/packgen/curated"
 	"github.com/alexandreroman/intothefray/internal/packgen/marvelcdb"
 	"github.com/alexandreroman/intothefray/internal/packgen/mc4db"
@@ -29,6 +30,14 @@ type Inputs struct {
 	// French names.
 	FrenchMC      []marvelcdb.Card
 	FrenchMCPacks []marvelcdb.Pack
+	// FrenchMC4DB, FrenchMC4DBPacks and FrenchMC4DBSets are the mc4db records
+	// in French, for the French names. They win over fr.marvelcdb.
+	FrenchMC4DB      []mc4db.Card
+	FrenchMC4DBPacks []marvelcdb.Pack
+	FrenchMC4DBSets  []mc4db.Set
+	// CGBuilder holds the French pack and set names of cgbuilder, used where
+	// no other source translates them.
+	CGBuilder cgbuilder.Site
 	// MC4DB and MC4DBPacks complete MC and MCPacks with the official cards
 	// marvelcdb lacks (see withFallback).
 	MC4DB      []mc4db.Card
@@ -62,7 +71,8 @@ func Build(in Inputs) (Result, error) {
 	}
 	fr := frenchSourcesOf(in)
 	cards, problems := buildCards(in.MC, in.Curated.Cards, in.Manifest)
-	localizeCards(cards, faceCodesOf(in.MC), fr)
+	faceCodes := faceCodesOf(in.MC)
+	localizeCards(cards, faceCodes, fr)
 	problems = append(problems, fallbackProblems...)
 
 	cardCodes := cardCodesOf(cards)
@@ -97,6 +107,9 @@ func Build(in Inputs) (Result, error) {
 	packs := assemblePacks(in.MCPacks, cards, sets, heroes, scenarios)
 	if len(packs) == 0 {
 		return Result{}, errors.New("build produced no pack")
+	}
+	if err := checkCuratedNames(in.Curated.Names, packs, sets, faceCodes); err != nil {
+		return Result{}, err
 	}
 
 	positions := make(map[string]int, len(packs))

@@ -1,6 +1,7 @@
 // Command packgen regenerates the card-pack files from marvelcdb, completed
 // with the official mc4db cards it lacks, and Cerebro, with the French names of
-// fr.marvelcdb. The card images come from the image manifest of the image CDN.
+// mc4db, fr.marvelcdb and cgbuilder. The card images come from the image
+// manifest of the image CDN.
 //
 // With -sources-only, it writes instead the image sources of every face, which
 // the intothefray-img pipeline turns into that manifest.
@@ -22,6 +23,7 @@ import (
 	"github.com/alexandreroman/intothefray/internal/packgen/build"
 	"github.com/alexandreroman/intothefray/internal/packgen/cdn"
 	"github.com/alexandreroman/intothefray/internal/packgen/cerebro"
+	"github.com/alexandreroman/intothefray/internal/packgen/cgbuilder"
 	"github.com/alexandreroman/intothefray/internal/packgen/curated"
 	"github.com/alexandreroman/intothefray/internal/packgen/fetch"
 	"github.com/alexandreroman/intothefray/internal/packgen/marvelcdb"
@@ -51,9 +53,9 @@ type options struct {
 	sourcesOnly bool
 }
 
-// inputsFunc gathers the source data of the packs. Tests replace the network
-// fetch with fixtures.
-type inputsFunc func(ctx context.Context, opts options) (build.Inputs, error)
+// inputsFunc gathers the source data of the packs, logging to logger. Tests
+// replace the network fetch with fixtures.
+type inputsFunc func(ctx context.Context, logger *slog.Logger, opts options) (build.Inputs, error)
 
 func main() {
 	os.Exit(execute())
@@ -93,7 +95,7 @@ func run(ctx context.Context, logger *slog.Logger, stdout io.Writer, opts option
 // they are.
 func writeSources(ctx context.Context, logger *slog.Logger, opts options, inputs inputsFunc) error {
 	logger.Info("fetching sources")
-	in, err := inputs(ctx, opts)
+	in, err := inputs(ctx, logger, opts)
 	if err != nil {
 		return err
 	}
@@ -121,7 +123,7 @@ func writePacks(ctx context.Context, logger *slog.Logger, stdout io.Writer, opts
 	}
 
 	logger.Info("fetching sources")
-	in, err := inputs(ctx, opts)
+	in, err := inputs(ctx, logger, opts)
 	if err != nil {
 		return err
 	}
@@ -145,14 +147,14 @@ func writePacks(ctx context.Context, logger *slog.Logger, stdout io.Writer, opts
 	return nil
 }
 
-func fetchInputs(ctx context.Context, opts options) (build.Inputs, error) {
+func fetchInputs(ctx context.Context, logger *slog.Logger, opts options) (build.Inputs, error) {
 	client := &fetch.Client{CacheDir: opts.cache, Refresh: opts.refresh, UserAgent: userAgent}
-	return fetchInputsWith(ctx, client, opts)
+	return fetchInputsWith(ctx, logger, client, opts)
 }
 
-// fetchInputsWith gathers the source data with client. The French data of
-// fr.marvelcdb only localizes the packs, so -sources-only does not fetch it.
-func fetchInputsWith(ctx context.Context, client *fetch.Client, opts options) (build.Inputs, error) {
+// fetchInputsWith gathers the source data with client. The French data only
+// localizes the packs, so -sources-only does not fetch it.
+func fetchInputsWith(ctx context.Context, logger *slog.Logger, client *fetch.Client, opts options) (build.Inputs, error) {
 	var in build.Inputs
 	var err error
 	if in.MC, err = marvelcdb.FetchCards(ctx, client, marvelcdb.BaseURL); err != nil {
@@ -162,10 +164,7 @@ func fetchInputsWith(ctx context.Context, client *fetch.Client, opts options) (b
 		return in, err
 	}
 	if !opts.sourcesOnly {
-		if in.FrenchMC, err = marvelcdb.FetchCards(ctx, client, marvelcdb.FrenchBaseURL); err != nil {
-			return in, err
-		}
-		if in.FrenchMCPacks, err = marvelcdb.FetchPacks(ctx, client, marvelcdb.FrenchBaseURL); err != nil {
+		if err := fetchFrenchInputs(ctx, logger, client, &in); err != nil {
 			return in, err
 		}
 	}
@@ -185,6 +184,40 @@ func fetchInputsWith(ctx context.Context, client *fetch.Client, opts options) (b
 		return in, err
 	}
 	return in, nil
+}
+
+// fetchFrenchInputs adds the French names of fr.marvelcdb, mc4db and cgbuilder
+// to in. cgbuilder only fills the gaps the other sources leave, from parsed
+// HTML pages, so a cgbuilder failure is logged as a warning and the packs are
+// built without its names; a failure of any other source fails.
+func fetchFrenchInputs(ctx context.Context, logger *slog.Logger, client *fetch.Client, in *build.Inputs) error {
+	var err error
+	if in.FrenchMC, err = marvelcdb.FetchCards(ctx, client, marvelcdb.FrenchBaseURL); err != nil {
+		return err
+	}
+	if in.FrenchMCPacks, err = marvelcdb.FetchPacks(ctx, client, marvelcdb.FrenchBaseURL); err != nil {
+		return err
+	}
+	if in.FrenchMC4DB, err = mc4db.FetchFrenchCards(ctx, client, mc4db.BaseURL); err != nil {
+		return err
+	}
+	if in.FrenchMC4DBPacks, err = mc4db.FetchFrenchPacks(ctx, client, mc4db.BaseURL); err != nil {
+		return err
+	}
+	if in.FrenchMC4DBSets, err = mc4db.FetchFrenchSets(ctx, client, mc4db.BaseURL); err != nil {
+		return err
+	}
+	site, err := cgbuilder.Fetch(ctx, client, cgbuilder.BaseURL)
+	if ctx.Err() != nil {
+		// Interrupted: stop rather than go on without cgbuilder.
+		return ctx.Err()
+	}
+	if err != nil {
+		logger.Warn("cgbuilder names left out", "error", err)
+		return nil
+	}
+	in.CGBuilder = site
+	return nil
 }
 
 func printReport(w io.Writer, result build.Result) {

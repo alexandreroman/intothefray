@@ -420,7 +420,12 @@
       "code": "aos",
       "name": "Agents of S.H.I.E.L.D.",
       "file": "aos.json",
-      "position": 50
+      "position": 50,
+      "localized": {
+        "fr": {
+          "name": "Agents du S.H.I.E.L.D."
+        }
+      }
     },
     {
       "code": "bp",
@@ -438,19 +443,34 @@
       "code": "falcon",
       "name": "Falcon",
       "file": "falcon.json",
-      "position": 53
+      "position": 53,
+      "localized": {
+        "fr": {
+          "name": "Le Faucon"
+        }
+      }
     },
     {
       "code": "winter",
       "name": "Winter Soldier",
       "file": "winter.json",
-      "position": 54
+      "position": 54,
+      "localized": {
+        "fr": {
+          "name": "Le Soldat de l'Hiver"
+        }
+      }
     },
     {
       "code": "tt",
       "name": "Trickster Takeover",
       "file": "tt.json",
-      "position": 55
+      "position": 55,
+      "localized": {
+        "fr": {
+          "name": "La Félonie du Filou"
+        }
+      }
     },
     {
       "code": "cw",
@@ -462,7 +482,12 @@
       "code": "synthezoid",
       "name": "Synthezoid Smackdown",
       "file": "synthezoid.json",
-      "position": 57
+      "position": 57,
+      "localized": {
+        "fr": {
+          "name": "Le Clash des Synthézoïdes"
+        }
+      }
     },
     {
       "code": "wonder_man",
@@ -474,13 +499,23 @@
       "code": "hercules",
       "name": "Hercules",
       "file": "hercules.json",
-      "position": 59
+      "position": 59,
+      "localized": {
+        "fr": {
+          "name": "Hercule"
+        }
+      }
     },
     {
       "code": "fne",
       "name": "Fear No Evil",
       "file": "fne.json",
-      "position": 60
+      "position": 60,
+      "localized": {
+        "fr": {
+          "name": "Peur de Rien"
+        }
+      }
     },
     {
       "code": "jj",
@@ -677,7 +712,12 @@
       "supported": false,
       "recommended": [
         "menagerie_medley"
-      ]
+      ],
+      "localized": {
+        "fr": {
+          "name": "Infiltrer le Musée"
+        }
+      }
     },
     {
       "id": "escape_the_museum",
@@ -687,7 +727,12 @@
       "supported": false,
       "recommended": [
         "menagerie_medley"
-      ]
+      ],
+      "localized": {
+        "fr": {
+          "name": "Fuir le Musée"
+        }
+      }
     },
     {
       "id": "nebula",
@@ -931,12 +976,7 @@
       "pack": "mojo",
       "image": "https://img.intothefray.xyz/cards/en/39001a.40bc46db963d.avif",
       "supported": false,
-      "recommended": [],
-      "localized": {
-        "fr": {
-          "name": "MaGog"
-        }
-      }
+      "recommended": []
     },
     {
       "id": "spiral",
@@ -1166,7 +1206,12 @@
       "supported": false,
       "recommended": [
         "trickster_magic"
-      ]
+      ],
+      "localized": {
+        "fr": {
+          "name": "L'Enchanteresse"
+        }
+      }
     },
     {
       "id": "god_of_lies",
@@ -1208,7 +1253,12 @@
       "pack": "cw",
       "image": "https://img.intothefray.xyz/cards/en/56168.ecb1207326c1.avif",
       "supported": false,
-      "recommended": []
+      "recommended": [],
+      "localized": {
+        "fr": {
+          "name": "Spider-Woman"
+        }
+      }
     },
     {
       "id": "she_hulk_leader",
@@ -1216,7 +1266,12 @@
       "pack": "synthezoid",
       "image": "https://img.intothefray.xyz/cards/en/57001.37e4200e7586.avif",
       "supported": false,
-      "recommended": []
+      "recommended": [],
+      "localized": {
+        "fr": {
+          "name": "Miss Hulk"
+        }
+      }
     },
     {
       "id": "vision_leader",
@@ -1284,7 +1339,12 @@
         "protection_racket",
         "stop_the_presses",
         "the_raft_breakout"
-      ]
+      ],
+      "localized": {
+        "fr": {
+          "name": "L'Homme Pourpre"
+        }
+      }
     },
     {
       "id": "typhoid_mary",
@@ -1299,7 +1359,12 @@
         "protection_racket",
         "stop_the_presses",
         "the_raft_breakout"
-      ]
+      ],
+      "localized": {
+        "fr": {
+          "name": "Mary Typhoïde"
+        }
+      }
     },
     {
       "id": "kingpin",
@@ -1310,7 +1375,12 @@
       "recommended": [
         "tombstone",
         "tracksuit_mafia"
-      ]
+      ],
+      "localized": {
+        "fr": {
+          "name": "Le Caïd"
+        }
+      }
     }
   ],
   "sets": [
@@ -1729,7 +1799,7 @@
       "kind": "modular",
       "localized": {
         "fr": {
-          "name": "Campage L'Ombre du Titan Fou"
+          "name": "Campagne L'Ombre du Titan Fou"
         }
       }
     },
@@ -2503,49 +2573,89 @@
       "code": "hellfire",
       "name": "Hellfire",
       "pack": "magneto",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Damnés"
+        }
+      }
     },
     {
       "code": "a.i.m._abduction",
       "name": "A.I.M. Abduction",
       "pack": "aos",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Enlèvement de l'A.I.M."
+        }
+      }
     },
     {
       "code": "a.i.m._science",
       "name": "A.I.M. Science",
       "pack": "aos",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Science de l'A.I.M."
+        }
+      }
     },
     {
       "code": "batrocs_brigade",
       "name": "Batroc's Brigade",
       "pack": "aos",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Brigade de Batroc"
+        }
+      }
     },
     {
       "code": "gravitational_pull",
       "name": "Gravitational Pull",
       "pack": "aos",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Attraction Gravitationnelle"
+        }
+      }
     },
     {
       "code": "hard_sound",
       "name": "Hard Sound",
       "pack": "aos",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Son Durci"
+        }
+      }
     },
     {
       "code": "pale_little_spider",
       "name": "Pale Little Spider",
       "pack": "aos",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Pâle Petite Araignée"
+        }
+      }
     },
     {
       "code": "power_of_the_atom",
       "name": "Power of the Atom",
       "pack": "aos",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Pouvoir de l'Atome"
+        }
+      }
     },
     {
       "code": "s.h.i.e.l.d.",
@@ -2563,31 +2673,56 @@
       "code": "scientist_supreme",
       "name": "Scientist Supreme",
       "pack": "aos",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Scientifique Suprême"
+        }
+      }
     },
     {
       "code": "supersonic",
       "name": "Supersonic",
       "pack": "aos",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Supersonique"
+        }
+      }
     },
     {
       "code": "the_leaper",
       "name": "The Leaper",
       "pack": "aos",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Le Sauteur"
+        }
+      }
     },
     {
       "code": "extreme_risk",
       "name": "Extreme Risk",
       "pack": "bp",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Risque Extrême"
+        }
+      }
     },
     {
       "code": "growing_strong",
       "name": "Growing Strong",
       "pack": "silk",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Force Croissante"
+        }
+      }
     },
     {
       "code": "techno",
@@ -2599,7 +2734,12 @@
       "code": "whiteout",
       "name": "Whiteout",
       "pack": "winter",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Voile Blanc"
+        }
+      }
     },
     {
       "code": "trickster_magic",
@@ -2611,25 +2751,45 @@
       "code": "atlanteans",
       "name": "Atlanteans",
       "pack": "cw",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Atlantes"
+        }
+      }
     },
     {
       "code": "cape_killer",
       "name": "Cape-Killer",
       "pack": "cw",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Tueurs de Capes"
+        }
+      }
     },
     {
       "code": "cloak_and_dagger_modular",
       "name": "Cloak \u0026 Dagger",
       "pack": "cw",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "La Cape et l'Épée"
+        }
+      }
     },
     {
       "code": "dangerous_recruits",
       "name": "Dangerous Recruits",
       "pack": "cw",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Dangereuses Recrues"
+        }
+      }
     },
     {
       "code": "defenders",
@@ -2647,7 +2807,12 @@
       "code": "heroes_for_hire",
       "name": "Heroes for Hire",
       "pack": "cw",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Héros à Louer"
+        }
+      }
     },
     {
       "code": "maria_hill_modular",
@@ -2659,13 +2824,23 @@
       "code": "martial_law",
       "name": "Martial Law",
       "pack": "cw",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Loi Martiale"
+        }
+      }
     },
     {
       "code": "mighty_avengers",
       "name": "Mighty Avengers",
       "pack": "cw",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Puissants Avengers"
+        }
+      }
     },
     {
       "code": "namor_modular",
@@ -2677,7 +2852,12 @@
       "code": "new_avengers",
       "name": "New Avengers",
       "pack": "cw",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Nouveaux Avengers"
+        }
+      }
     },
     {
       "code": "paladin",
@@ -2701,7 +2881,12 @@
       "code": "secret_avengers",
       "name": "Secret Avengers",
       "pack": "cw",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Avengers Secrets"
+        }
+      }
     },
     {
       "code": "spider_man_modular",
@@ -2713,13 +2898,23 @@
       "code": "the_initiative",
       "name": "The Initiative",
       "pack": "cw",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "L'Initiative"
+        }
+      }
     },
     {
       "code": "deadly_duo",
       "name": "Deadly Duo",
       "pack": "synthezoid",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Duo Mortel"
+        }
+      }
     },
     {
       "code": "moon_knight_modular",
@@ -2731,19 +2926,34 @@
       "code": "royal_guard",
       "name": "Royal Guard",
       "pack": "synthezoid",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Garde Royale"
+        }
+      }
     },
     {
       "code": "scarlet_twins",
       "name": "Scarlet Twins",
       "pack": "synthezoid",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Jumeaux Rouges"
+        }
+      }
     },
     {
       "code": "shield_ops",
       "name": "S.H.I.E.L.D. Ops",
       "pack": "synthezoid",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Opérations du S.H.I.E.L.D."
+        }
+      }
     },
     {
       "code": "synthezoid_registration",
@@ -2779,7 +2989,12 @@
       "code": "all_versus_all",
       "name": "All Versus All",
       "pack": "hercules",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Tous Contre Tous"
+        }
+      }
     },
     {
       "code": "art_museum_heist",
@@ -2789,25 +3004,45 @@
       "recommended": [
         "cops",
         "the_owl"
-      ]
+      ],
+      "localized": {
+        "fr": {
+          "name": "Cambriolage du Musée d'Art"
+        }
+      }
     },
     {
       "code": "cops",
       "name": "Cops",
       "pack": "fne",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Policiers"
+        }
+      }
     },
     {
       "code": "disasters",
       "name": "Disasters",
       "pack": "fne",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Désastres"
+        }
+      }
     },
     {
       "code": "drive",
       "name": "Drive",
       "pack": "fne",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Conduite"
+        }
+      }
     },
     {
       "code": "protection_racket",
@@ -2817,7 +3052,12 @@
       "recommended": [
         "disasters",
         "tracksuit_mafia"
-      ]
+      ],
+      "localized": {
+        "fr": {
+          "name": "Racket en Bande Organisée"
+        }
+      }
     },
     {
       "code": "stop_the_presses",
@@ -2827,7 +3067,12 @@
       "recommended": [
         "tombstone",
         "tracksuit_mafia"
-      ]
+      ],
+      "localized": {
+        "fr": {
+          "name": "Arrêtez les Rotatives !"
+        }
+      }
     },
     {
       "code": "the_getaway",
@@ -2837,13 +3082,23 @@
       "recommended": [
         "cops",
         "drive"
-      ]
+      ],
+      "localized": {
+        "fr": {
+          "name": "La Poursuite"
+        }
+      }
     },
     {
       "code": "the_owl",
       "name": "The Owl",
       "pack": "fne",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Le Hibou"
+        }
+      }
     },
     {
       "code": "the_raft_breakout",
@@ -2853,7 +3108,12 @@
       "recommended": [
         "the_owl",
         "tombstone"
-      ]
+      ],
+      "localized": {
+        "fr": {
+          "name": "L'Évasion du Raft"
+        }
+      }
     },
     {
       "code": "tombstone",
@@ -2865,7 +3125,12 @@
       "code": "tracksuit_mafia",
       "name": "Tracksuit Mafia",
       "pack": "fne",
-      "kind": "modular"
+      "kind": "modular",
+      "localized": {
+        "fr": {
+          "name": "Mafia des Survêtes"
+        }
+      }
     },
     {
       "code": "kree_fanatic",

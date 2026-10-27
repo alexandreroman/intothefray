@@ -16,6 +16,7 @@
           "handSize": 5,
           "localized": {
             "fr": {
+              "name": "Le Faucon",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/53001a.c966c349f530.avif"
               ]
@@ -59,6 +60,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Ailes-Rouges",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/53002.6e93428f1616.avif"
               ]
@@ -82,6 +84,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Oiseau de Proie",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/53003.2a5f563a91d5.avif"
               ]
@@ -105,6 +108,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Vue Panoramique",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/53004.d6cbe5f3e832.avif"
               ]
@@ -128,6 +132,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Toujours Plus Haut",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/53005.3c05626303ca.avif"
               ]
@@ -151,6 +156,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "La Nuée du Faucon",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/53006.6c5b59d9e3ad.avif"
               ]
@@ -174,6 +180,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Soupe Populaire",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/53007.d1c39acc146a.avif"
               ]
@@ -197,6 +204,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Evaluation aérienne",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/53008.e7bc1b99e1f1.avif"
               ]
@@ -220,6 +228,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Reconnaissance Aérienne",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/53009.cd9bf21cbe67.avif"
               ]
@@ -243,6 +252,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Connaissance du Terrain",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/53010.d7e519fa305f.avif"
               ]
@@ -266,6 +276,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Attirer Leur Attention",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/53011.173a51ad7916.avif"
               ]
@@ -289,6 +300,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Ligne de Grapin",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/53012.65f34f40f8bb.avif"
               ]
@@ -312,6 +324,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Microtissu de Vibranium",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/53013.e2f6ab97c034.avif"
               ]
@@ -335,6 +348,7 @@
           ],
           "localized": {
             "fr": {
+              "subname": "Lei Ling",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/53015.49bd5289ebdc.avif"
               ]
@@ -402,6 +416,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "La Force de la Diversité",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/53019.832a324bb288.avif"
               ]
@@ -424,6 +439,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Escadron en Vol",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/53020.9b711225c14a.avif"
               ]
@@ -446,6 +462,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Réserve de Ressources",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/53021.ce7789974cec.avif"
               ]
@@ -490,6 +507,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Ailier",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/53024.734fb64af9bc.avif"
               ]
@@ -512,6 +530,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Protecteur de Harlem",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/53029.a565f49136c9.avif"
               ]
@@ -535,6 +554,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "La Vipère",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/53030.2e5c089c5c8c.avif"
               ]
@@ -585,6 +605,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Soldat du Serpent",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/53032.f123799ab9cd.avif"
               ]
@@ -608,6 +629,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Propaconda",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/53033.fc164d7b4ac5.avif"
               ]
@@ -631,6 +653,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Bouclier de Captain America",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/53034.6a52d371cf71.avif"
               ]
@@ -654,6 +677,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Le Soldat de l'Hiver",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/53035.53e1ed77fb6c.avif"
               ]
@@ -698,6 +722,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Salle des Opérations",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/53037.ba7f5720fe1f.avif"
               ]
@@ -743,6 +768,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Réacteur Dorsal",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/53039.31c060d17f25.avif"
               ]
@@ -766,6 +792,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Module Tech",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/53040.5d222fb4353d.avif"
               ]
@@ -793,6 +820,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Innovation Technologique",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/53041.17563ed1635b.avif"
               ]
