@@ -1,4 +1,4 @@
-// Package fetch downloads JSON documents and caches the raw responses on disk.
+// Package fetch downloads documents and caches the raw responses on disk.
 package fetch
 
 import (
@@ -14,7 +14,7 @@ import (
 	"path/filepath"
 )
 
-// Client fetches JSON documents, reusing responses cached in CacheDir.
+// Client fetches documents, reusing responses cached in CacheDir.
 type Client struct {
 	// HTTP performs the requests; http.DefaultClient is used when nil.
 	HTTP *http.Client
@@ -29,28 +29,43 @@ type Client struct {
 // JSON decodes the JSON document served at url into v. The raw response is
 // cached in CacheDir/<sha256(url)>.json, so repeated runs do not hit the network.
 func (c *Client) JSON(ctx context.Context, url string, v any) error {
-	path := c.cachePath(url)
+	// Cache only a body that decodes, so an error page is never replayed.
+	decodeInto := func(body []byte) error { return decode(url, body, v) }
+	_, err := c.get(ctx, url, c.cachePath(url, ".json"), decodeInto)
+	return err
+}
 
+// Bytes returns the document served at url as is, e.g. an HTML page. The
+// response is cached in CacheDir/<sha256(url)>, without an extension since its
+// type is unknown.
+func (c *Client) Bytes(ctx context.Context, url string) ([]byte, error) {
+	accept := func([]byte) error { return nil }
+	return c.get(ctx, url, c.cachePath(url, ""), accept)
+}
+
+// get returns the body served at url, from the cache file at path when there
+// is one. A downloaded body is cached only when check accepts it; a cached one
+// is checked too, so a check error always reaches the caller.
+func (c *Client) get(ctx context.Context, url, path string, check func([]byte) error) ([]byte, error) {
 	body, err := c.readCache(path)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if body != nil {
-		return decode(url, body, v)
+		return body, check(body)
 	}
 
 	body, err = c.download(ctx, url)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	// Cache only a body that decodes, so an error page is never replayed.
-	if err := decode(url, body, v); err != nil {
-		return err
+	if err := check(body); err != nil {
+		return nil, err
 	}
 	if err := WriteFileAtomic(path, body); err != nil {
-		return fmt.Errorf("cache %s: %w", url, err)
+		return nil, fmt.Errorf("cache %s: %w", url, err)
 	}
-	return nil
+	return body, nil
 }
 
 func decode(url string, body []byte, v any) error {
@@ -60,9 +75,11 @@ func decode(url string, body []byte, v any) error {
 	return nil
 }
 
-func (c *Client) cachePath(url string) string {
+// cachePath returns the cache file of url, named after the hash of url and
+// ending with ext.
+func (c *Client) cachePath(url, ext string) string {
 	sum := sha256.Sum256([]byte(url))
-	return filepath.Join(c.CacheDir, hex.EncodeToString(sum[:])+".json")
+	return filepath.Join(c.CacheDir, hex.EncodeToString(sum[:])+ext)
 }
 
 // readCache returns nil, nil when there is nothing usable in the cache.

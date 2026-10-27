@@ -185,9 +185,10 @@ the instance name.
 
 `make packs` downloads the card data from marvelcdb, Cerebro and
 [mc4db](https://mc4db.merlindumesnil.net), and the French names from
-fr.marvelcdb.com (all cached in `packs/.cache`), merges the hand-written
-files of `packs/curated/`, takes the card images from the image manifest,
-and writes the result to `packs/dist/`. Commit the regenerated files with
+mc4db, fr.marvelcdb.com and [cgbuilder](https://mc.cgbuilder.fr) (all
+cached in `packs/.cache`), merges the hand-written files of
+`packs/curated/`, takes the card images from the image manifest, and
+writes the result to `packs/dist/`. Commit the regenerated files with
 the change that caused them.
 
 The card images are served from `https://img.intothefray.xyz`, a
@@ -227,13 +228,33 @@ set-aside cards are listed on a face code or include the card itself. The cards
 of a side deck with a shared `back` (Doctor Strange's Invocation deck, Hercules'
 Labor and Gift decks, Daredevil's Sense deck, Storm's Weather deck) all get that
 back, whatever back the sources give them, and the table captions it with the
-deck's label.
+deck's label. The hand-written names (`names.json`, by language, then
+pack or set code) name the packs and sets no source translates well; the
+generator fails when one names a pack or set it does not know.
 
 A face keeps its English name and images, and its `localized` map holds
 the overrides of other languages (`localized.fr`: name, subname, images
 tried before the English ones). Pack, scenario and set entries of the
 index carry a localized name the same way. The generator's report
 includes the French coverage.
+
+Each French name comes from the first source that translates it, in this
+order: the curated `names.json`, mc4db in French (`?locale=fr`: cards,
+packs and sets), fr.marvelcdb, then cgbuilder. Card names come from mc4db
+and fr.marvelcdb only. A source counts only where its name differs from
+the English one: mc4db and fr.marvelcdb list untranslated content under
+its English name, which must not hide a lower source. mc4db packs and
+sets map to marvelcdb codes as below; a scenario takes the name of its
+villain set.
+
+cgbuilder, a French fan site without API, gives the names of its packs
+(`/cycle/`) and modular sets (`/set_modulaire/`), read from its HTML pages
+one at a time. Its pack ids are not marvelcdb positions, so the generator
+reads each pack's card list (`/liste_carte/{id}/`) and joins it by
+content: a cgbuilder pack takes the marvelcdb pack whose French card
+names, from the other sources, match those of the same numbers, when they
+match at least half its cards and more than any other pack does. A
+cgbuilder set takes the marvelcdb set of more than half its cards.
 
 marvelcdb is the primary card source. Where it lists a pack only in part
 (such as Fear No Evil, whose encounter cards it lacks), the generator

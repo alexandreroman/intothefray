@@ -114,3 +114,64 @@ func TestJSONSendsUserAgent(t *testing.T) {
 		t.Errorf("User-Agent = %v, want packgen-test", got)
 	}
 }
+
+func TestBytesUsesCacheAndUserAgent(t *testing.T) {
+	var requests atomic.Int32
+	var agent atomic.Value
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests.Add(1)
+		agent.Store(r.UserAgent())
+		_, _ = w.Write([]byte("<html>Rhino</html>"))
+	}))
+	t.Cleanup(server.Close)
+
+	cacheDir := t.TempDir()
+	client := &Client{HTTP: server.Client(), CacheDir: cacheDir, UserAgent: "packgen-test"}
+	url := server.URL + "/cycle/"
+
+	for range 2 {
+		got, err := client.Bytes(context.Background(), url)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if string(got) != "<html>Rhino</html>" {
+			t.Fatalf("body = %q, want the page", got)
+		}
+	}
+	if n := requests.Load(); n != 1 {
+		t.Errorf("requests after two cached calls = %d, want 1", n)
+	}
+	if got := agent.Load(); got != "packgen-test" {
+		t.Errorf("User-Agent = %v, want packgen-test", got)
+	}
+
+	entries, err := os.ReadDir(cacheDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(entries) != 1 || strings.Contains(entries[0].Name(), ".") {
+		t.Errorf("cache entries = %v, want one file without extension", entries)
+	}
+}
+
+func TestBytesHTTPError(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.NotFound(w, r)
+	}))
+	t.Cleanup(server.Close)
+
+	cacheDir := t.TempDir()
+	client := &Client{HTTP: server.Client(), CacheDir: cacheDir}
+	url := server.URL + "/liste_carte/99/"
+
+	if _, err := client.Bytes(context.Background(), url); err == nil || !strings.Contains(err.Error(), "404") {
+		t.Fatalf("error = %v, want one naming the status", err)
+	}
+	entries, err := os.ReadDir(cacheDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(entries) != 0 {
+		t.Errorf("cache dir has %d entries, want none", len(entries))
+	}
+}

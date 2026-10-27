@@ -1,6 +1,7 @@
 // Command packgen regenerates the card-pack files from marvelcdb, completed
 // with the official mc4db cards it lacks, and Cerebro, with the French names of
-// fr.marvelcdb. The card images come from the image manifest of the image CDN.
+// mc4db, fr.marvelcdb and cgbuilder. The card images come from the image
+// manifest of the image CDN.
 //
 // With -sources-only, it writes instead the image sources of every face, which
 // the intothefray-img pipeline turns into that manifest.
@@ -22,6 +23,7 @@ import (
 	"github.com/alexandreroman/intothefray/internal/packgen/build"
 	"github.com/alexandreroman/intothefray/internal/packgen/cdn"
 	"github.com/alexandreroman/intothefray/internal/packgen/cerebro"
+	"github.com/alexandreroman/intothefray/internal/packgen/cgbuilder"
 	"github.com/alexandreroman/intothefray/internal/packgen/curated"
 	"github.com/alexandreroman/intothefray/internal/packgen/fetch"
 	"github.com/alexandreroman/intothefray/internal/packgen/marvelcdb"
@@ -150,8 +152,8 @@ func fetchInputs(ctx context.Context, opts options) (build.Inputs, error) {
 	return fetchInputsWith(ctx, client, opts)
 }
 
-// fetchInputsWith gathers the source data with client. The French data of
-// fr.marvelcdb only localizes the packs, so -sources-only does not fetch it.
+// fetchInputsWith gathers the source data with client. The French data only
+// localizes the packs, so -sources-only does not fetch it.
 func fetchInputsWith(ctx context.Context, client *fetch.Client, opts options) (build.Inputs, error) {
 	var in build.Inputs
 	var err error
@@ -162,10 +164,7 @@ func fetchInputsWith(ctx context.Context, client *fetch.Client, opts options) (b
 		return in, err
 	}
 	if !opts.sourcesOnly {
-		if in.FrenchMC, err = marvelcdb.FetchCards(ctx, client, marvelcdb.FrenchBaseURL); err != nil {
-			return in, err
-		}
-		if in.FrenchMCPacks, err = marvelcdb.FetchPacks(ctx, client, marvelcdb.FrenchBaseURL); err != nil {
+		if err := fetchFrenchInputs(ctx, client, &in); err != nil {
 			return in, err
 		}
 	}
@@ -185,6 +184,31 @@ func fetchInputsWith(ctx context.Context, client *fetch.Client, opts options) (b
 		return in, err
 	}
 	return in, nil
+}
+
+// fetchFrenchInputs adds the French names of fr.marvelcdb, mc4db and cgbuilder
+// to in.
+func fetchFrenchInputs(ctx context.Context, client *fetch.Client, in *build.Inputs) error {
+	var err error
+	if in.FrenchMC, err = marvelcdb.FetchCards(ctx, client, marvelcdb.FrenchBaseURL); err != nil {
+		return err
+	}
+	if in.FrenchMCPacks, err = marvelcdb.FetchPacks(ctx, client, marvelcdb.FrenchBaseURL); err != nil {
+		return err
+	}
+	if in.FrenchMC4DB, err = mc4db.FetchFrenchCards(ctx, client, mc4db.BaseURL); err != nil {
+		return err
+	}
+	if in.FrenchMC4DBPacks, err = mc4db.FetchFrenchPacks(ctx, client, mc4db.BaseURL); err != nil {
+		return err
+	}
+	if in.FrenchMC4DBSets, err = mc4db.FetchFrenchSets(ctx, client, mc4db.BaseURL); err != nil {
+		return err
+	}
+	if in.CGBuilder, err = cgbuilder.Fetch(ctx, client, cgbuilder.BaseURL); err != nil {
+		return err
+	}
+	return nil
 }
 
 func printReport(w io.Writer, result build.Result) {
