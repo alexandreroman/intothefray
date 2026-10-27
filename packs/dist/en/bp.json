@@ -82,6 +82,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Coup de Griffes",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/51003.7800f6d253b6.avif"
               ]
@@ -105,6 +106,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "À l'Affût",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/51004.53c4b869c88a.avif"
               ]
@@ -128,6 +130,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Wakanda Eternel!",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/51005.625ee7054cd0.avif"
               ]
@@ -174,6 +177,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "La Trompe de l'Elephant",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/51007.03e15b8fefb0.avif"
               ]
@@ -197,6 +201,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Reine Ramonda",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/51008.62b76fce748d.avif"
               ]
@@ -243,6 +248,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Perles Kimoyo",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/51010.2020cda13b9a.avif"
               ]
@@ -266,6 +272,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Griffes de Panthère",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/51011.83be5b51b3dd.avif"
               ]
@@ -289,6 +296,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Morsures d'Araignée",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/51012.3d8a785eff65.avif"
               ]
@@ -312,6 +320,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Costume en Vibranium",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/51013.159004216fb4.avif"
               ]
@@ -384,6 +393,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Mission Sous Couverture",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/51016.92766157b661.avif"
               ]
@@ -410,6 +420,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Montrer de la Compassion",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/51017.6da43894d41d.avif"
               ]
@@ -432,6 +443,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Le Raft",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/51018.cbc542e28f31.avif"
               ]
@@ -454,6 +466,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Kit d'Invisibilité",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/51019.192f6fa7bb2d.avif"
               ]
@@ -476,6 +489,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Opération d'Infiltration",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/51021.aeee18d427f6.avif"
               ]
@@ -564,6 +578,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Coeur de la Panthère",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/51025.6c44ab386bb9.avif"
               ]
@@ -608,6 +623,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "L'Ombre de T'Challa",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/51031.2585b768ddaa.avif"
               ]
@@ -658,6 +674,7 @@
           },
           "localized": {
             "fr": {
+              "name": "M.U.S.I.C. Manipulée",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/51033.01b247add0d7.avif"
               ]
@@ -704,6 +721,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Le Cri",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/51035.c4f57162ce6f.avif"
               ]
@@ -727,6 +745,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Rédemption",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/51036.a295e06ebc15.avif"
               ]
@@ -772,6 +791,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Cibleur",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/51038.74b7fb4286ac.avif"
               ]
@@ -817,6 +837,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Matraque Énergétique",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/51040.dfcf5d8dc101.avif"
               ]
@@ -844,6 +865,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Jouer Pour le Plaisir",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/51041.9f30fa214f0f.avif"
               ]
@@ -867,6 +889,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Risque Extrême",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/51042.ae70c0829333.avif"
               ]

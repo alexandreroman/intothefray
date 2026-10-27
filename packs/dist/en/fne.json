@@ -59,6 +59,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Toucher Parfait",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60002.8580c7ef4d9a.avif"
               ]
@@ -82,6 +83,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Odorat Amélioré",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60003.e5349c644890.avif"
               ]
@@ -105,6 +107,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Ouïe Augmentée",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60004.b441d6357939.avif"
               ]
@@ -128,6 +131,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Sens Radar",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60005.91ad46e42be4.avif"
               ]
@@ -151,6 +155,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Goût Supérieur",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60006.28a8497c70b2.avif"
               ]
@@ -198,6 +203,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Contre-Interrogatoire",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60008.b22562d2be88.avif"
               ]
@@ -221,6 +227,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Déposition",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60009.0fe95dffde26.avif"
               ]
@@ -244,6 +251,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Détecteur de Mensonge Vivant",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60010.b93ca1ad951e.avif"
               ]
@@ -267,6 +275,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "un Sale Quart d'Heure",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60011.327b2dab99ef.avif"
               ]
@@ -294,6 +303,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Concentrer ses Sens",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60012.dfbff00c5d7b.avif"
               ]
@@ -386,6 +396,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Soeur Maggie",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60016.56d02678da10.avif"
               ]
@@ -409,6 +420,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Lasso-Canne de Daredevil",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60017.c648352b1e83.avif"
               ]
@@ -432,6 +444,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "L'homme Sans Peur",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60018.f5c9991fcf62.avif"
               ]
@@ -479,6 +492,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "La Cape",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60020.7eb1611036b5.avif"
               ]
@@ -502,6 +516,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "l'Épée",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60021.c52861406ccc.avif"
               ]
@@ -547,6 +562,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Connais ton Ennemi",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60023.0e6dbf251fc8.avif"
               ]
@@ -573,6 +589,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Désescalade",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60024.c5fa866db8ed.avif"
               ]
@@ -595,6 +612,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Problèmes Judiciaires",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60026.78ed3265d8da.avif"
               ]
@@ -617,6 +635,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Se déplacer dans les Ombres",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60027.f9541f0eda90.avif"
               ]
@@ -639,6 +658,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Entraînement à la Furtivité",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60028.9d447c23a319.avif"
               ]
@@ -683,6 +703,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Planification d'Urgence",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60030.de75d608462f.avif"
               ]
@@ -705,6 +726,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Danser avec le Diable",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60031.2466d68fcb52.avif"
               ]
@@ -727,6 +749,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Surcharge Sensorielle",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60032.a9cd845fe9b4.avif"
               ]
@@ -777,6 +800,7 @@
           },
           "localized": {
             "fr": {
+              "name": "L'Homme le Plus Dangereux du Monde",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60034.f77436c11544.avif"
               ]
@@ -800,6 +824,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Saï Volé",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60035.1a925cd57c22.avif"
               ]
@@ -823,6 +848,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "L'Oeil sur la Cible",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60036.cb390499d9cd.avif"
               ]
@@ -890,6 +916,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Réflexes Innés",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60038.85845a8bb1c8.avif"
               ]
@@ -936,6 +963,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Réflexes Photographiques",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60040a.e1814752778a.avif"
               ]
@@ -956,7 +984,12 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/60040b.178141d9ff99.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Réflexes Photographiques"
+            }
+          }
         }
       ],
       "set": "echo",
@@ -972,7 +1005,12 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/60040c.d90fc435cc5d.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Réflexes Photographiques"
+            }
+          }
         }
       ],
       "set": "echo",
@@ -991,6 +1029,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Étudier la Cassette",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60041.fa2522f11173.avif"
               ]
@@ -1014,6 +1053,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "La Réz",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60042.a9f6578756c0.avif"
               ]
@@ -1037,6 +1077,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Langue des Signes Américaines",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60043.96768940ea14.avif"
               ]
@@ -1060,6 +1101,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Chorégraphie",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60044.24678fedefca.avif"
               ]
@@ -1083,6 +1125,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Katana d'Echo",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60045.8b20d2fd0d25.avif"
               ]
@@ -1129,6 +1172,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Mémoire Musculaire",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60047.c6188e99f006.avif"
               ]
@@ -1152,6 +1196,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Armée d'un Seul Homme",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60048.5cf084b0fc37.avif"
               ]
@@ -1174,6 +1219,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Capter Leur Attention",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60049.3f237b08e16e.avif"
               ]
@@ -1196,6 +1242,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Prendre des Risques",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60050.027f2cdb7288.avif"
               ]
@@ -1218,6 +1265,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "La Meilleure Attaque...",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60052.37d56e510ef7.avif"
               ]
@@ -1262,6 +1310,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Seul Contre Tous",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60054.4d1ebd37dcdc.avif"
               ]
@@ -1284,6 +1333,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Ne Vois et n'Entends Aucun Mal",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60055.644a975a7792.avif"
               ]
@@ -1306,6 +1356,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Élevée par le Caïd",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60060.63ab206e5332.avif"
               ]
@@ -1329,6 +1380,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Le Caïd",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60061.0e8d6263403a.avif"
               ]
@@ -1356,6 +1408,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Maître Manipulateur",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60062.2cf190f9649c.avif"
               ]
@@ -1379,6 +1432,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Homme de Main du Caïd",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60063.732f0710fa97.avif"
               ]
@@ -1402,6 +1456,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Pion du Caïd",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60064.f822486c83ef.avif"
               ]
@@ -1497,6 +1552,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Colonne Enrobée d'Adamantium",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60068a.f0c044d4a562.avif"
               ]
@@ -1512,6 +1568,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Colonne Endommagée",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60068b.fa9ac962ee83.avif"
               ]
@@ -1539,6 +1596,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Relever La Mise",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60069.b3a611217a26.avif"
               ]
@@ -1562,6 +1620,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Saï Mortel",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60070.85630fc51fed.avif"
               ]
@@ -1585,6 +1644,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Poursuite Incessante",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60071.1088aa1f793e.avif"
               ]
@@ -1635,6 +1695,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Soif de Sang Malsaine",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60073.49a36c3e6939.avif"
               ]
@@ -1658,6 +1719,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Tout est une Arme",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60074.f408d962e73e.avif"
               ]
@@ -1681,6 +1743,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Désir Irrépressible",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60075.af98b52b0fe8.avif"
               ]
@@ -1776,6 +1839,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Charge Électrique",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60079.94f7e7724466.avif"
               ]
@@ -1799,6 +1863,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Vidé de sa Charge",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60080.0ba247bee638.avif"
               ]
@@ -1849,6 +1914,7 @@
           },
           "localized": {
             "fr": {
+              "name": "En Charge",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60082.65b30f6ef599.avif"
               ]
@@ -1872,6 +1938,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Chaîne d'Éclair",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60083.0a72751a1408.avif"
               ]
@@ -1895,6 +1962,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Surcharge d'Énergie",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60084.1fec93bb73ee.avif"
               ]
@@ -1918,6 +1986,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Révélation Choc",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60085.bb3590ea4ebb.avif"
               ]
@@ -2013,6 +2082,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Mitrailleuse Énergétique",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60089.d85ebf2be291.avif"
               ]
@@ -2036,6 +2106,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Forte Tête",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60090.fd38ce155c27.avif"
               ]
@@ -2059,6 +2130,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Le Caméléon",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60091.fe83c608d501.avif"
               ]
@@ -2082,6 +2154,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Agents de la Maggia",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60092.f846c8640ddd.avif"
               ]
@@ -2105,6 +2178,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Sous-Chef de la Maggia",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60093.fa757101bd76.avif"
               ]
@@ -2132,6 +2206,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Consolider son Pouvoir",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60094.aeddc7ed97c2.avif"
               ]
@@ -2159,6 +2234,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Lutte de Pouvoir",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60095.f6cb0f6f3cab.avif"
               ]
@@ -2182,6 +2258,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "« Tête la Première ! »",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60096.74d174314022.avif"
               ]
@@ -2206,6 +2283,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "L'Homme Pourpre",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60097.2b5820ced618.avif"
               ]
@@ -2230,6 +2308,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "L'Homme Pourpre",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60098.426e90d94218.avif"
               ]
@@ -2254,6 +2333,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "L'Homme Pourpre",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60099.6cf35363e486.avif"
               ]
@@ -2277,6 +2357,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Convertie",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60100.537316a6ed5b.avif"
               ]
@@ -2300,6 +2381,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Pompier",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60101.0066f75c45a3.avif"
               ]
@@ -2323,6 +2405,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Juge",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60102.8d85c7269dd4.avif"
               ]
@@ -2346,6 +2429,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Agent de Sécurité",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60103.c5ef71605222.avif"
               ]
@@ -2369,6 +2453,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Skateur Punk",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60104.12c1ccb76b27.avif"
               ]
@@ -2392,6 +2477,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "« Battez-Vous ! »",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60105.87281aec1bd2.avif"
               ]
@@ -2415,6 +2501,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "« Protégez-Moi »",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60106.e10d67106201.avif"
               ]
@@ -2438,6 +2525,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "« Servez-Moi »",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60107.a89955d07cd4.avif"
               ]
@@ -2465,6 +2553,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Pouvoir de Suggestion",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60108.d075eef1763d.avif"
               ]
@@ -2488,6 +2577,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Influencer les Masses",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60109.88b0434ce39b.avif"
               ]
@@ -2512,6 +2602,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Mary Typhoïde",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60110a.5fc5711fa33c.avif"
               ]
@@ -2556,6 +2647,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Mary Typhoïde",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60111a.46e7736848ec.avif"
               ]
@@ -2599,6 +2691,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Psyché Perturbée",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60112.249f3996a527.avif"
               ]
@@ -2626,6 +2719,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Gagner la Confiance",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60113a.da77885e73c3.avif"
               ]
@@ -2668,6 +2762,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Télékinésie",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60114.3154f45f71b2.avif"
               ]
@@ -2691,6 +2786,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Frappe Psionique",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60115.7643b7cc3692.avif"
               ]
@@ -2714,6 +2810,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Nova Psi",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60116.8afb0fe5df0e.avif"
               ]
@@ -2737,6 +2834,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Armure Assemblée",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60117.efb7b9cd13c8.avif"
               ]
@@ -2760,6 +2858,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Pluie de Lames",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60118.9246a039dc33.avif"
               ]
@@ -2783,6 +2882,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Bouclier de Fortune",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60119.0ece3931ba38.avif"
               ]
@@ -2806,6 +2906,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Guetteur de la Main",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60120.fd17cfbe487e.avif"
               ]
@@ -2830,6 +2931,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Cambriolage du Musée d'Art",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60121a.6c7d491a7a42.avif"
               ]
@@ -2850,6 +2952,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Cambriolage du Musée d'Art",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60121b.200c2405ad36.avif"
               ]
@@ -2877,6 +2980,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Objet Impossible",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60122.b53169b20c1b.avif"
               ]
@@ -2900,6 +3004,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Poterie Inspirante",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60123.b5df9182e3b3.avif"
               ]
@@ -2923,6 +3028,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Réplique de Bouclier",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60124.118a2ccaae1b.avif"
               ]
@@ -2946,6 +3052,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Paysage Saisissant",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60125.1189cb3008d5.avif"
               ]
@@ -2969,6 +3076,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Voleuse d'Art",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60126.34bd9fb53c79.avif"
               ]
@@ -2992,6 +3100,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Épreuve de Force",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60127.0fed21363a0d.avif"
               ]
@@ -3016,6 +3125,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "La Poursuite",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60128a.cd56d1d352a3.avif"
               ]
@@ -3036,6 +3146,7 @@
           },
           "localized": {
             "fr": {
+              "name": "La Poursuite",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60128b.d5ff4cfed94b.avif"
               ]
@@ -3063,6 +3174,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "En Tête",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60129a.8172ba9035b5.avif"
               ]
@@ -3078,6 +3190,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Roue Contre Roue",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60129b.504b89f7b55e.avif"
               ]
@@ -3105,6 +3218,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Véhicule d'Escorte",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60130.f4c15e8af590.avif"
               ]
@@ -3132,6 +3246,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Camion-Citerne",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60131.b187161513f8.avif"
               ]
@@ -3155,6 +3270,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Mettre la Gomme",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60132.6c215cc36e57.avif"
               ]
@@ -3178,6 +3294,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Piétons",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60133.6b43762f0474.avif"
               ]
@@ -3202,6 +3319,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Racket en Bande Organisée",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60134a.3589bd85f1d0.avif"
               ]
@@ -3222,6 +3340,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Combat dans la Supérette",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60134b.71a729d1d5e3.avif"
               ]
@@ -3250,6 +3369,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "RACKET EN BANDE ORGANISÉE",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60135a.82d1086f78a2.avif"
               ]
@@ -3270,6 +3390,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Un Taureau dans un Magasin de Porcelaine",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60135b.297c9f4b05c9.avif"
               ]
@@ -3298,6 +3419,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Racket en Bande Organisée",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60136a.9d938b8b8d3e.avif"
               ]
@@ -3318,6 +3440,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Mis à Sécher",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60136b.a26feea81a9b.avif"
               ]
@@ -3346,6 +3469,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Racket en Bande Organisée",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60137a.8df77a4178a0.avif"
               ]
@@ -3366,6 +3490,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Rixe Chez le Prêteur sur Gages",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60137b.2da73953a0b9.avif"
               ]
@@ -3394,6 +3519,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Racket en Bande Organisée",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60138a.f3d8499e793b.avif"
               ]
@@ -3414,6 +3540,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Pour une Part de Pizza de Plus",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60138b.cc7d7c7c19eb.avif"
               ]
@@ -3441,6 +3568,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Gérant de Magasin",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60139.d086583238ec.avif"
               ]
@@ -3464,6 +3592,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "L'Homme-Taureau",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60140.b51124ecccda.avif"
               ]
@@ -3487,6 +3616,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Changement d'Adresse",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60141.d3587335c9a5.avif"
               ]
@@ -3511,6 +3641,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "L'Évasion du Raft",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60142a.a2b0aaef1092.avif"
               ]
@@ -3531,6 +3662,7 @@
           },
           "localized": {
             "fr": {
+              "name": "L'Évasion du Raft",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60142b.e28d8c15bfee.avif"
               ]
@@ -3558,6 +3690,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Passe-Partout",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60143.bc5463a990a5.avif"
               ]
@@ -3581,6 +3714,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "L'Homme Absorbant",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60144.70498cefa44e.avif"
               ]
@@ -3673,6 +3807,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Proxima Minuit",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60148.34a87ed47a88.avif"
               ]
@@ -3719,6 +3854,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Emprisonné",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60150.c7e3798e1acd.avif"
               ]
@@ -3743,6 +3879,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Arrêtez les Rotatives !",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60151a.deb6e3d23484.avif"
               ]
@@ -3763,6 +3900,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Arrêtez les Rotatives !",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60151b.9383d0c3f362.avif"
               ]
@@ -3909,6 +4047,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Entretien Exclusif",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60157.4479ff919e7a.avif"
               ]
@@ -3932,6 +4071,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Dernières Nouvelles",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60158.0faac2ae0af1.avif"
               ]
@@ -3956,6 +4096,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Le Caïd",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60159a.53fc6f2ce833.avif"
               ]
@@ -3972,6 +4113,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Le Caïd",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60159b.1e99e30b9143.avif"
               ]
@@ -4000,6 +4142,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Le Caïd",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60160a.ebf5aeddb882.avif"
               ]
@@ -4016,6 +4159,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Le Caïd",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60160b.a360a13d74c9.avif"
               ]
@@ -4044,6 +4188,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Le Gambit du Roi",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60161a.cf8ca2886fe6.avif"
               ]
@@ -4064,6 +4209,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Le Gambit du Roi",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60161b.be8c457a03c9.avif"
               ]
@@ -4092,6 +4238,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Fin de la Partie",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60162a.9730109451c0.avif"
               ]
@@ -4112,6 +4259,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Fin de la Partie",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60162b.588d493de155.avif"
               ]
@@ -4139,6 +4287,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Le Caïd",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60163a.c4d82b03204b.avif"
               ]
@@ -4154,6 +4303,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Soutien des Citoyens",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60163b.f2c6c9336287.avif"
               ]
@@ -4181,6 +4331,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Étreinte de l'Ours",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60164.0dce976ebb69.avif"
               ]
@@ -4227,6 +4378,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Canne du Caïd",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60166.a75f14e0057c.avif"
               ]
@@ -4250,6 +4402,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Montagne de Muscle",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60167.4702b261552b.avif"
               ]
@@ -4342,6 +4495,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "La Tâche",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60171.6a10da6863e6.avif"
               ]
@@ -4365,6 +4519,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "L'Homme aux Échasses",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60172.b2e3df8a8ca2.avif"
               ]
@@ -4392,6 +4547,7 @@
           },
           "localized": {
             "fr": {
+              "name": "L'Influence du Caïd",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60173.e0e38148839f.avif"
               ]
@@ -4419,6 +4575,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Crime Organisé",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60174.8c7e00364fcb.avif"
               ]
@@ -4442,6 +4599,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Sac à Malices",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60175.3540549d85cf.avif"
               ]
@@ -4465,6 +4623,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Haine Implacable",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60176.6201fde915d1.avif"
               ]
@@ -4488,6 +4647,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Incursion Mystique",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60177.19d23fa93c84.avif"
               ]
@@ -4511,6 +4671,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Submersion d'un Ferry",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60178.16d14e4f6407.avif"
               ]
@@ -4534,6 +4695,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Incendie d'un Immeuble",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60179.df011efb960d.avif"
               ]
@@ -4561,6 +4723,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Effondrement d'un Pont",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60180.292801440c8b.avif"
               ]
@@ -4584,6 +4747,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Passants en Danger",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60181.896baead386c.avif"
               ]
@@ -4607,6 +4771,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Policier",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60182.44f6bf0e36dd.avif"
               ]
@@ -4630,6 +4795,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Policier Véreux",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60183.0635a08a0fc0.avif"
               ]
@@ -4653,6 +4819,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Recherché",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60184.ed2ed0200daa.avif"
               ]
@@ -4680,6 +4847,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Cordon de Police",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60185.ffe3db616c6a.avif"
               ]
@@ -4703,6 +4871,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Voiture de Sport",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60186.dca53cf45cfd.avif"
               ]
@@ -4726,6 +4895,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Moto",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60187.3ccb67c6a932.avif"
               ]
@@ -4749,6 +4919,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Fourgon Utilitaire",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60188.100cc973eb1f.avif"
               ]
@@ -4776,6 +4947,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Embouteillage",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60189.ab6b89d981d3.avif"
               ]
@@ -4799,6 +4971,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Vol de Voiture",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60190.1f179fc7c22a.avif"
               ]
@@ -4822,6 +4995,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Sérum de Vol",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60191.cdba26cedac1.avif"
               ]
@@ -4845,6 +5019,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Monsieur Poisson",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60192.e45ab50098a3.avif"
               ]
@@ -4868,6 +5043,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Le Hibou",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60193.270397dc560f.avif"
               ]
@@ -4891,6 +5067,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Descente en Piqué",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60194.adae1a9419ad.avif"
               ]
@@ -4914,6 +5091,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Froid Comme la Glace",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60195.65345a0dd759.avif"
               ]
@@ -4937,6 +5115,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Dur Comme le Marbre",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60196.8e68794ca359.avif"
               ]
@@ -4961,6 +5140,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Le Scarabée",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60197.0d1d59e4785f.avif"
               ]
@@ -5011,6 +5191,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Personnes à Abattre",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60199.2cff895039a8.avif"
               ]
@@ -5057,6 +5238,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Kazimierz le Clown",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60201.8c38fd3b4bd1.avif"
               ]
@@ -5080,6 +5262,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Mafieux des Survêtes",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60202.58d1484d4cb0.avif"
               ]
@@ -5103,6 +5286,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Pote des Survêtes",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60203.9ab749308d67.avif"
               ]
@@ -5130,6 +5314,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Mafia des Survêtes",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60204.f21245514b06.avif"
               ]
@@ -5153,6 +5338,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Cambriolage du Musée d'Art",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60205a.fabb5dd39490.avif"
               ]
@@ -5168,6 +5354,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Cambriolage du Musée d'Art",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60205b.dd3c0611501f.avif"
               ]
@@ -5195,6 +5382,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "La Poursuite",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60206a.cc1fc9b13662.avif"
               ]
@@ -5210,6 +5398,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "La Poursuite",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60206b.11c5d7d0e41f.avif"
               ]
@@ -5237,6 +5426,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Racket en Bande Organisée",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60207a.79aec664f60f.avif"
               ]
@@ -5252,6 +5442,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Racket en Bande Organisée",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60207b.eba1b814ab5c.avif"
               ]
@@ -5279,6 +5470,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "L'Évasion du Raft",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60208a.ce22ce2369ca.avif"
               ]
@@ -5294,6 +5486,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "L'Évasion du Raft",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60208b.c58bb5f15e62.avif"
               ]
@@ -5321,6 +5514,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Arrêtez les Rotatives !",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60209a.4a16f1e7a8cf.avif"
               ]
@@ -5336,6 +5530,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Arrêtez les Rotatives !",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60209b.7d835f9e44f9.avif"
               ]
@@ -5364,6 +5559,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Mary Typhoïde",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/60210a.1566767a9880.avif"
               ]

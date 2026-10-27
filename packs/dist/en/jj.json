@@ -74,7 +74,12 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/61004.1c3b26324252.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "« Grave Erreur »"
+            }
+          }
         }
       ],
       "set": "jessica_jones",
@@ -90,7 +95,12 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/61005.28cde922cba8.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Découverte Capitale"
+            }
+          }
         }
       ],
       "set": "jessica_jones",
@@ -106,7 +116,12 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/61006.aef9520ef2e8.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Fouiner"
+            }
+          }
         }
       ],
       "set": "jessica_jones",
@@ -126,6 +141,11 @@
           "startingThreat": {
             "value": 6,
             "perPlayer": false
+          },
+          "localized": {
+            "fr": {
+              "name": "Rassembler les Pièces du Puzzle"
+            }
           }
         }
       ],
@@ -142,7 +162,12 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/61008.c4796d464997.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Demander une Faveur"
+            }
+          }
         }
       ],
       "set": "jessica_jones",
@@ -158,7 +183,12 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/61009.c844c360dc12.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Caméscope Numérique 4K"
+            }
+          }
         }
       ],
       "set": "jessica_jones",
@@ -174,7 +204,12 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/61010.c908af201eb0.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Preuve Indirecte"
+            }
+          }
         }
       ],
       "set": "jessica_jones",
@@ -190,7 +225,12 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/61011.cc2a605c569b.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Blouson en Cuir"
+            }
+          }
         }
       ],
       "set": "jessica_jones",
@@ -206,7 +246,12 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/61012.ebf59646828e.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "« Maintenant Je Suis Énervée »"
+            }
+          }
         }
       ],
       "set": "jessica_jones",
@@ -222,7 +267,12 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/61013.1b0dfb045f36.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Planeuse Réticente"
+            }
+          }
         }
       ],
       "set": "jessica_jones",
@@ -238,7 +288,12 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/61014.5ab961394e30.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "En Planque"
+            }
+          }
         }
       ],
       "set": "jessica_jones",
@@ -302,7 +357,12 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/61019.1cae1b8e9115.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Session Stratégie"
+            }
+          }
         }
       ],
       "back": "player",
@@ -321,6 +381,11 @@
           "startingThreat": {
             "value": 4,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Traquez-les Jusqu'au Dernier"
+            }
           }
         }
       ],
@@ -336,7 +401,12 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/61023.c3474ac42c49.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Lance-Grappin"
+            }
+          }
         }
       ],
       "back": "player",
@@ -351,7 +421,12 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/61024.e31f77d97a4e.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Le Piège se Referme"
+            }
+          }
         }
       ],
       "back": "player",
@@ -382,7 +457,12 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/61026.75e101870960.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Les Plaisirs de la Vie"
+            }
+          }
         }
       ],
       "back": "player",
@@ -397,7 +477,12 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/61027.381e15b40726.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Lien Indestructible"
+            }
+          }
         }
       ],
       "back": "player",
@@ -419,6 +504,11 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Deuxième Chance"
+            }
           }
         }
       ],
@@ -438,6 +528,11 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Défendre Notre Ville"
+            }
           }
         }
       ],
@@ -453,7 +548,12 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/61030.a91b78bf09e1.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Équilibre Professionnel"
+            }
+          }
         }
       ],
       "set": "jessica_jones",
@@ -469,7 +569,12 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/61031.e773edba149e.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "L'Homme Pourpre"
+            }
+          }
         }
       ],
       "set": "jessica_jones_nemesis",
@@ -489,6 +594,11 @@
           "startingThreat": {
             "value": 2,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Volonté Irrésistible"
+            }
           }
         }
       ],
@@ -553,7 +663,12 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/61034.5bbd9782af3b.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Agressivité Innée"
+            }
+          }
         }
       ],
       "back": "player",
@@ -568,7 +683,12 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/61035.fe6798f0c648.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Passage à Tabac"
+            }
+          }
         }
       ],
       "back": "player",
@@ -583,7 +703,12 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/61036.0c22b8dc0b36.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Perception Innée"
+            }
+          }
         }
       ],
       "back": "player",
@@ -598,7 +723,12 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/61037.b712fab013db.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Inspiration Innée"
+            }
+          }
         }
       ],
       "back": "player",
@@ -633,6 +763,11 @@
           "startingThreat": {
             "value": 3,
             "perPlayer": true
+          },
+          "localized": {
+            "fr": {
+              "name": "Clandestinité"
+            }
           }
         }
       ],
@@ -648,7 +783,12 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/61040.551a483c5546.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Menace Appréhendée"
+            }
+          }
         }
       ],
       "back": "player",

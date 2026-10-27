@@ -59,6 +59,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Feutrée Comme la Soie",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/52002.c8c66a3426a4.avif"
               ]
@@ -82,6 +83,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Coup de Chausson en Balancier",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/52003.b7ac7b97b46d.avif"
               ]
@@ -105,6 +107,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Collée au Mur",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/52004.c2a0258b81a8.avif"
               ]
@@ -132,6 +135,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Chercher le Scoop",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/52005.134eaa45b0e9.avif"
               ]
@@ -201,6 +205,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Mémoire Eidétique",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/52008.245bde607791.avif"
               ]
@@ -224,6 +229,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Toile Organique",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/52009.0100ae455fcc.avif"
               ]
@@ -247,6 +253,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Plus Malin",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/52010.8779104b56c7.avif"
               ]
@@ -270,6 +277,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Griffes d'Araignée",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/52011.2db131248382.avif"
               ]
@@ -293,6 +301,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Réflexes d'Araignée",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/52012.a3179496804c.avif"
               ]
@@ -362,6 +371,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "\"Arrête de te Faire du Mal !\"",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/52016.d8093b623bb5.avif"
               ]
@@ -406,6 +416,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Bouclier Énergétique",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/52018.061e5f0d0cb7.avif"
               ]
@@ -428,6 +439,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Prêt à Combattre",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/52019.1c08d6c780eb.avif"
               ]
@@ -450,6 +462,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Pistolet Étourdissant",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/52020.8a337d700525.avif"
               ]
@@ -495,6 +508,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Journalisme d'Investigation",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/52024.d379e8212e65.avif"
               ]
@@ -517,6 +531,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Sens Silk Surchargé",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/52028.a5788a2c7210.avif"
               ]
@@ -567,6 +582,7 @@
           },
           "localized": {
             "fr": {
+              "name": "La Grande Chasse",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/52030.266014a2c6ec.avif"
               ]
@@ -590,6 +606,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Traquer la Promise de l'Araignée",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/52031.3d8fbfcdeed5.avif"
               ]
@@ -659,6 +676,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Vanneur en Série",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/52034.fb4a6cc3fddb.avif"
               ]
@@ -708,6 +726,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Croissance Invulnérable",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/52036.974cf3cea461.avif"
               ]
@@ -731,6 +750,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Force Croissante",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/52037.eeaa96a4d76e.avif"
               ]
@@ -754,6 +774,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Proportions Titanesques",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/52038.b36b8cd1ba01.avif"
               ]

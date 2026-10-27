@@ -16,6 +16,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Miss Hulk",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57001.1361e663900d.avif"
               ]
@@ -40,6 +41,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Miss Hulk",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57002.1d944e7c3677.avif"
               ]
@@ -64,6 +66,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Miss Hulk",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57003.2ba76583460f.avif"
               ]
@@ -88,6 +91,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Miss Hulk",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57004.ed32ecb5cc14.avif"
               ]
@@ -112,6 +116,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Loi d'Enregistrement des Super-Héros",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57005a.cc7b59f52dd0.avif"
               ]
@@ -132,6 +137,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Faire Respecter la Loi",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57005b.c0a2c2767fe5.avif"
               ]
@@ -160,6 +166,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Tactiques Pro-Enregistrement",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57006a.eb998610ddc8.avif"
               ]
@@ -180,6 +187,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Puissants Avengers",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57006b.9e733023c6bf.avif"
               ]
@@ -207,6 +215,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Force Surhumaine",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57007.d46b8421fd9d.avif"
               ]
@@ -230,6 +239,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Rage Contrôlée",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57008.70921482c97d.avif"
               ]
@@ -253,6 +263,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Droite-Gauche",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57009.e185b8377e44.avif"
               ]
@@ -276,6 +287,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Piétinement",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57010.c599e3804de3.avif"
               ]
@@ -299,6 +311,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Frappe Gamma",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57011.7694c35558f7.avif"
               ]
@@ -326,6 +339,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Pratique de la Loi",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57012.a9a977394195.avif"
               ]
@@ -349,6 +363,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Opérateur du S.H.I.E.L.D.",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57013.a356e6102f68.avif"
               ]
@@ -372,6 +387,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Observation Stratégique",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57014.7c5272942b25.avif"
               ]
@@ -395,6 +411,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Réponse Rapide",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57015.eb130e55feeb.avif"
               ]
@@ -422,6 +439,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Sécurité Intérieure",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57016.cb19c63d6a3e.avif"
               ]
@@ -514,6 +532,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "La Justice Comme la Foudre",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57020.9036a5518955.avif"
               ]
@@ -541,6 +560,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Les Thunderbolts",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57021.7ac0886842e7.avif"
               ]
@@ -587,6 +607,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Épée de Taskmaster",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57023.0571967b9deb.avif"
               ]
@@ -610,6 +631,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Bouclier de Taskmaster",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57024.60c0b2a77642.avif"
               ]
@@ -633,6 +655,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Mouvement Imité",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57025.3d0d5dac08a8.avif"
               ]
@@ -660,6 +683,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Académie de Taskmaster",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57026.4ad1eb3a9533.avif"
               ]
@@ -683,6 +707,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Le Clown",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57027.276c14ac6bec.avif"
               ]
@@ -729,6 +754,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Plateforme Volante de Mad Jack",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57029.691151848276.avif"
               ]
@@ -752,6 +778,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Yo-Yo du Clown",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57030.96eb104b0674.avif"
               ]
@@ -779,6 +806,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Duo Mortel",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57031.fdd481d9c185.avif"
               ]
@@ -802,6 +830,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Vous Êtes Hors la Loi !",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57032.fd4848d5da40.avif"
               ]
@@ -825,6 +854,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Miss Hulk Tout Casser",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57033.0efdefc0faf0.avif"
               ]
@@ -848,6 +878,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Mets-Moi en Colère",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57034.8d55f3f9eace.avif"
               ]
@@ -871,6 +902,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Conseil Juridique",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57035.17a431057935.avif"
               ]
@@ -991,6 +1023,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Résistance des Super-Héros",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57044a.01b267068360.avif"
               ]
@@ -1128,6 +1161,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Gemme Solaire",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57047.4a445f2315b5.avif"
               ]
@@ -1151,6 +1185,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Cape de Vision",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57048.3f54bddb5753.avif"
               ]
@@ -1174,6 +1209,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Augmentation de Masse",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57049.31793546e94a.avif"
               ]
@@ -1197,6 +1233,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Contrôle de Densité",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57050.f8ef07c240c3.avif"
               ]
@@ -1220,6 +1257,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Faisceau Solaire",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57051.916b25ab6940.avif"
               ]
@@ -1243,6 +1281,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Frappe Hyperdense",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57052.8372310bae6a.avif"
               ]
@@ -1266,6 +1305,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Disruption de Phase",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57053.d3726551c397.avif"
               ]
@@ -1293,6 +1333,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Passer au Travers",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57054.b1bb7305006d.avif"
               ]
@@ -1385,6 +1426,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Super-Adolescents",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57058.76140b1f0f68.avif"
               ]
@@ -1481,6 +1523,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Super Vitesse",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57062.dabb68965cff.avif"
               ]
@@ -1504,6 +1547,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Invocation",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57063.a87ff8382132.avif"
               ]
@@ -1531,6 +1575,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Super-Fratrie",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57064.7eae4c7c18ec.avif"
               ]
@@ -1577,6 +1622,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Projection en Croissant",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57066.e8acc1e5fddd.avif"
               ]
@@ -1600,6 +1646,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Poing de Khonshu",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57067.4e28a7a57b87.avif"
               ]
@@ -1627,6 +1674,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Avatar de Khonshu",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57068.df270e44c386.avif"
               ]
@@ -1696,6 +1744,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Atlantes",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57071.f0418c132eb3.avif"
               ]
@@ -1719,6 +1768,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Dette de Sang",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57072.314391eff6c4.avif"
               ]
@@ -1746,6 +1796,7 @@
           },
           "localized": {
             "fr": {
+              "name": "La Garde Royale",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57073.eb91c0e2c673.avif"
               ]
@@ -1769,6 +1820,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Risque Calculé",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57074.922cbf128ea0.avif"
               ]
@@ -1792,6 +1844,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Frappe de Synthézoïde",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57075.2abfc9cf62e0.avif"
               ]
@@ -1815,6 +1868,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Déphasé",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57076.6ab7713b7c0a.avif"
               ]
@@ -1838,6 +1892,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Aide d'un Androïde",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/57077.a98d8ac2b699.avif"
               ]

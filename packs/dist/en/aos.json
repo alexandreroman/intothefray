@@ -250,7 +250,7 @@
           ],
           "localized": {
             "fr": {
-              "name": "Simulacre de Vie Modélisé",
+              "name": "Simulacre de Vie Modélisée",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50010.799907b3d342.avif"
               ]
@@ -548,7 +548,7 @@
           ],
           "localized": {
             "fr": {
-              "name": "Organization de Façade",
+              "name": "Organisation de Façade",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50028.b932390c7b84.avif"
               ]
@@ -571,6 +571,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Conférence de Presse",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50029.1ed4f5090851.avif"
               ]
@@ -594,6 +595,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Le Contrôleur",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50030.a6be812a2e41.avif"
               ]
@@ -621,6 +623,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Armée des Contrôlés",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50031.9ebd9c96d15d.avif"
               ]
@@ -644,6 +647,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Innocents Contrôlés",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50032.13be0bd83769.avif"
               ]
@@ -667,6 +671,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Disques Diaboliques",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50033.3dd46b823367.avif"
               ]
@@ -734,6 +739,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Assaut",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50035a.544cd504159c.avif"
               ]
@@ -749,6 +755,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Furtivité",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50035b.a95c278276a5.avif"
               ]
@@ -799,6 +806,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Feu Nourri",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50037.ce1f458f1454.avif"
               ]
@@ -822,6 +830,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Surveillance Discrète",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50038.9e744efa1b63.avif"
               ]
@@ -845,6 +854,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Tir en Rafale",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50039.21c52af554a9.avif"
               ]
@@ -868,6 +878,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Voiture Volante de Fury",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50040.c1dac2756e64.avif"
               ]
@@ -891,6 +902,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Refuge #221",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50041.78fd6e2da27a.avif"
               ]
@@ -914,6 +926,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Bouclier Électromagnétique",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50042.641918e2ebb2.avif"
               ]
@@ -937,6 +950,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Caméra Oculaire",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50043.9e23e99bc42c.avif"
               ]
@@ -960,6 +974,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Montre de Fury",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50044.66a107bda8d5.avif"
               ]
@@ -983,6 +998,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Analyse du Renseignement",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50045.7bd2f69c4701.avif"
               ]
@@ -1006,6 +1022,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Agent Secret",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50046.017ffc41966b.avif"
               ]
@@ -1029,6 +1046,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Informateur",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50050.a9f3798fd867.avif"
               ]
@@ -1051,6 +1069,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Renseignement",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50051.8f65875fa2ff.avif"
               ]
@@ -1073,6 +1092,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Poudre Prismatique",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50052.63eba80e54a7.avif"
               ]
@@ -1164,6 +1184,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Plan à Toute Épreuve",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50058.1d666083e271.avif"
               ]
@@ -1186,6 +1207,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Découvert",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50059.0ccc7fdffada.avif"
               ]
@@ -1236,6 +1258,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Obtenir le Mélange Éternel",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50061.59c2c80bc630.avif"
               ]
@@ -1259,6 +1282,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Soldat du Léviathan",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50062.1dbb4a76cb88.avif"
               ]
@@ -1282,6 +1306,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Chambre Froide",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50063.61809aa44241.avif"
               ]
@@ -1378,6 +1403,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "La Toile de la Veuve",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50067a.b3725ebc7df0.avif"
               ]
@@ -1398,6 +1424,7 @@
           },
           "localized": {
             "fr": {
+              "name": "La Toile de la Veuve",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50067b.e701bc20a4ce.avif"
               ]
@@ -1425,6 +1452,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Bracelet de Black Widow",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50068.78edebdd1ac1.avif"
               ]
@@ -1448,6 +1476,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Grappin",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50069.5375044e0db2.avif"
               ]
@@ -1471,6 +1500,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Les Lunettes de Vision Nocturne",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50070.f1b356e623ea.avif"
               ]
@@ -1494,6 +1524,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Filet Étourdissant",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50071.c54dfddb8942.avif"
               ]
@@ -1517,6 +1548,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Commando de l'A.I.M.",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50072.3f543a1d442c.avif"
               ]
@@ -1540,6 +1572,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Soudard de l'A.I.M.",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50073.2dc308632b6a.avif"
               ]
@@ -1567,6 +1600,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Défenses Automatisées",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50074.de5d3258ed6a.avif"
               ]
@@ -1594,6 +1628,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Détruire les Preuves",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50075.ed7ef9d6d3a7.avif"
               ]
@@ -1617,6 +1652,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Attaque Acrobatique",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50076.71f4e5c1f85f.avif"
               ]
@@ -1640,6 +1676,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Opération Secrète",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50077.50abb4e73117.avif"
               ]
@@ -1663,6 +1700,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Danse de la Mort",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50078.020570167e00.avif"
               ]
@@ -1686,6 +1724,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Morsure de la Veuve",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50079.c7f6746c03cc.avif"
               ]
@@ -1709,6 +1748,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Ravisseur de l'A.I.M.",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50080.e8c0ad6c7b6d.avif"
               ]
@@ -1736,6 +1776,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Enlever des Superhumains",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50081.6cade34dca20.avif"
               ]
@@ -1759,6 +1800,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Piégé !",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50082.fdd73d55217c.avif"
               ]
@@ -1782,6 +1824,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Scientifique de l'A.I.M.",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50083.e8cc61d0a0bc.avif"
               ]
@@ -1805,6 +1848,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Soldat de l'A.I.M.",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50084.feb023a3c914.avif"
               ]
@@ -1832,6 +1876,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Science Sans Conscience",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50085.a80788b82e29.avif"
               ]
@@ -1900,6 +1945,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Infiltrez l'Ambassade Insulaire de l'A.I.M.",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50087a.e4c3e6fe1827.avif"
               ]
@@ -1920,6 +1966,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Infiltrez l'Ambassade Insulaire de l'A.I.M.",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50087b.de9e16d44535.avif"
               ]
@@ -1948,6 +1995,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Localiser les Disparus",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50088a.b6c0fe8c546f.avif"
               ]
@@ -1968,6 +2016,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Localiser les Disparus",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50088b.54879f3fad10.avif"
               ]
@@ -1996,6 +2045,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Extraire les Captifs",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50089a.33a3a6c94b8e.avif"
               ]
@@ -2016,6 +2066,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Extraire les Captifs",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50089b.2909d9ef2c29.avif"
               ]
@@ -2043,6 +2094,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Niveau d'Alerte",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50090a.fbcd59194e83.avif"
               ]
@@ -2058,6 +2110,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Niveau d'Alerte",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50090b.5789801ad05e.avif"
               ]
@@ -2085,6 +2138,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Captif Secouru",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50091.143921c28c39.avif"
               ]
@@ -2108,6 +2162,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Réflexes Augmentés",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50092.35ffcf1eacf6.avif"
               ]
@@ -2131,6 +2186,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Garde de l'Ambassade",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50093.601b9a8a60df.avif"
               ]
@@ -2154,6 +2210,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Patrouille de l'Ambassade",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50094.d320a112c437.avif"
               ]
@@ -2181,6 +2238,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Infiltrer le Bureau de la Sécurité",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50095.4035d498317e.avif"
               ]
@@ -2204,6 +2262,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Coup de Pied Sauté",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50096.b49f9ce1b237.avif"
               ]
@@ -2227,6 +2286,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Caméras de Sécurité",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50097.ed5c0761c419.avif"
               ]
@@ -2323,6 +2383,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Brigade de Batroc",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50101.3bd1adfd17b6.avif"
               ]
@@ -2346,6 +2407,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Soldats de Fortune",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50102.a8f2a80c1283.avif"
               ]
@@ -2414,6 +2476,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Améliorer les Adaptoïdes",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50104a.0dd57369149d.avif"
               ]
@@ -2434,6 +2497,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Améliorer les Adaptoïdes",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50104b.d2be8b33316d.avif"
               ]
@@ -2461,6 +2525,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Cellule de Confinement",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50105a.040ce6d16673.avif"
               ]
@@ -2476,6 +2541,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Inhumain Volant",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50105b.e9bc370159a6.avif"
               ]
@@ -2503,6 +2569,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Cellule de Confinement",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50106a.0b6c74887876.avif"
               ]
@@ -2518,6 +2585,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Inhumain Psionique",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50106b.01d813ee2fde.avif"
               ]
@@ -2545,6 +2613,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Cellule de Confinement",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50107a.ae7b46ca6a50.avif"
               ]
@@ -2587,6 +2656,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Cellule de Confinement",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50108a.b5366124452d.avif"
               ]
@@ -2602,6 +2672,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Inhumain Puissant",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50108b.ac5a4e55d030.avif"
               ]
@@ -2629,6 +2700,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Amélioration de Vol",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50109.5498d4701833.avif"
               ]
@@ -2652,6 +2724,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Amélioration Psionique",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50110.4511e01ca25e.avif"
               ]
@@ -2675,6 +2748,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Amélioration Sarah Garza",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50111.0f085c71d8af.avif"
               ]
@@ -2698,6 +2772,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Amélioration de Puissance",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50112.a7e64eee7f23.avif"
               ]
@@ -2721,6 +2796,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Adaptoïde",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50113.57b61523c445.avif"
               ]
@@ -2744,6 +2820,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Unité Mobile Automatisée",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50114.5671726a13bb.avif"
               ]
@@ -2767,6 +2844,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Cristal de Concentration",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50115.a12aa1d25e83.avif"
               ]
@@ -2859,6 +2937,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Rétro-Ingénierie",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50119.3e0d772fcd4f.avif"
               ]
@@ -2882,6 +2961,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Geôlier de l'A.I.M.",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50120.3724817a6d28.avif"
               ]
@@ -2909,6 +2989,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Prise d'Otage",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50121.3d27de96b6de.avif"
               ]
@@ -2936,6 +3017,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Augmentation Psionique",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50122.9f4cd7028d52.avif"
               ]
@@ -2959,6 +3041,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "« Il est Vivant ! »",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50123.e37aa823c302.avif"
               ]
@@ -2982,6 +3065,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Rayon Psionique",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50124.ef1d7e6c60f1.avif"
               ]
@@ -3005,6 +3089,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Scientifique Suprême",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50125.5f32ec84406f.avif"
               ]
@@ -3055,6 +3140,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Immunité Diplomatique",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50127.3efcc8379d6c.avif"
               ]
@@ -3078,6 +3164,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Sanctions Diplomatiques",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50128.42d90b40835f.avif"
               ]
@@ -3146,6 +3233,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Intercepter les Agents Félons",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50130a.5c0ca93bcb86.avif"
               ]
@@ -3166,6 +3254,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Intercepter les Agents Félons",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50130b.24d03f28fdad.avif"
               ]
@@ -3193,6 +3282,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "La Justice et la Foudre",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50131a.ef3540b91091.avif"
               ]
@@ -3208,6 +3298,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Renfort des Thunderbolts",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50131b.126e39038ce5.avif"
               ]
@@ -3235,6 +3326,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Épée de Citizen V",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50132.f20dd5acb1ef.avif"
               ]
@@ -3281,6 +3373,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Badauds Innocents",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50134.7445cee385e5.avif"
               ]
@@ -3308,6 +3401,7 @@
           },
           "localized": {
             "fr": {
+              "name": "La Tempête s'Annonce",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50135.393ac864a594.avif"
               ]
@@ -3335,6 +3429,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Le Tonnerre Gronde",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50136.a0d20c9535a2.avif"
               ]
@@ -3358,6 +3453,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Toujours Debout",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50137.50ddcec247e3.avif"
               ]
@@ -3381,6 +3477,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Tape m'en Une",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50138.bd5899906d56.avif"
               ]
@@ -3431,6 +3528,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Dominer les Cieux",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50140.c3cd46b366f5.avif"
               ]
@@ -3454,6 +3552,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Attraction Gravitationnelle",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50141.8f786d3ba552.avif"
               ]
@@ -3477,6 +3576,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Manipulation Psychologique",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50142.9f2df9648d30.avif"
               ]
@@ -3523,6 +3623,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Objets en Son Solide",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50144.ff8e126890c9.avif"
               ]
@@ -3546,6 +3647,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Entraves de Son Durci",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50145.97ac2600c77c.avif"
               ]
@@ -3573,6 +3675,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Bulle Sonique",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50146.5cb8975fbf92.avif"
               ]
@@ -3596,6 +3699,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Son Durci",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50147.e6d9abdc2157.avif"
               ]
@@ -3642,6 +3746,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Saut de Main",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50149.acdaaecaa94f.avif"
               ]
@@ -3669,6 +3774,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Fierté de la Chambre Rouge",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50150.6fdfa323b995.avif"
               ]
@@ -3692,6 +3798,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Pâle Petite Araignée",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50151.01ff1b15181a.avif"
               ]
@@ -3715,6 +3822,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "L'Homme Radioactif",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50152.a3561790ec08.avif"
               ]
@@ -3738,6 +3846,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Exposé aux Radiations",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50153.10e36127f67b.avif"
               ]
@@ -3765,6 +3874,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Réaction Nucléaire Incontrôlable",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50154.c308527adc57.avif"
               ]
@@ -3788,6 +3898,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Pouvoire de l'Atome",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50155.729c96558cf2.avif"
               ]
@@ -3857,6 +3968,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Missiles à Têtes Chercheuses",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50158.756231564187.avif"
               ]
@@ -3884,6 +3996,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Combat Aérien",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50159.d3e6d2054be5.avif"
               ]
@@ -3907,6 +4020,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Supersonique",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50160.4ea44758030c.avif"
               ]
@@ -3980,6 +4094,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Batroc le Sauteur",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50163.6e06d96a86f1.avif"
               ]
@@ -4115,6 +4230,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Manipulations de Zemo",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50167a.efc58250fbbc.avif"
               ]
@@ -4135,6 +4251,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Manipulations de Zemo",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50167b.9fab2d546444.avif"
               ]
@@ -4163,6 +4280,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "L'Accusation",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50168a.36917ca8bbd2.avif"
               ]
@@ -4179,6 +4297,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "L'Accusation",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50168b.5e093703576f.avif"
               ]
@@ -4207,6 +4326,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Combattre Zemo",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50169a.c6b16240fd8b.avif"
               ]
@@ -4227,6 +4347,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Combattre Zemo",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50169b.4694be7ace3a.avif"
               ]
@@ -4254,6 +4375,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Épée du Baron Zemo",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50170.f62064f78fad.avif"
               ]
@@ -4277,6 +4399,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Ennemi Réticent",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50171.490e8013cc83.avif"
               ]
@@ -4300,6 +4423,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Agent du S.H.I.E.L.D.",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50172.a05d8430daf3.avif"
               ]
@@ -4327,6 +4451,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Conflit de Loyauté",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50173.b06ae85592c5.avif"
               ]
@@ -4354,6 +4479,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Affaiblir les Soutiens",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50174.9d760e7f95cf.avif"
               ]
@@ -4377,6 +4503,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Combat d'Intelligence",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50175.ab8aa1ed68c6.avif"
               ]
@@ -4400,6 +4527,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Le Droit du Plus Fort",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50176.b975fd1dc97d.avif"
               ]
@@ -4423,6 +4551,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Les Fins Justifient les Moyens",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50177.c3e86692026e.avif"
               ]
@@ -4446,6 +4575,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Soldat du S.H.I.E.L.D.",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50178.94d50e1866ce.avif"
               ]
@@ -4469,6 +4599,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Mandat d'Arrêt",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50179.63f7e5faa0e1.avif"
               ]
@@ -4496,6 +4627,7 @@
           },
           "localized": {
             "fr": {
+              "name": "Désavoué",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50180.8ea0620bab5d.avif"
               ]
@@ -4519,6 +4651,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Responsable Médical en Chef",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50181a.65a5268bc58a.avif"
               ]
@@ -4534,6 +4667,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Soutien du Responsable Médical",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50181b.b88378720c0e.avif"
               ]
@@ -4561,6 +4695,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Responsable de la Surveillance en Chef",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50182a.af0ade301a99.avif"
               ]
@@ -4576,6 +4711,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Soutien du Responsable de la Surveillance",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50182b.eb1ecc6c41b6.avif"
               ]
@@ -4603,6 +4739,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Responsable Tactique en Chef",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50183a.9a31b7a26027.avif"
               ]
@@ -4618,6 +4755,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Soutien du Responsable Tactique",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50183b.df5f443166ac.avif"
               ]
@@ -4645,6 +4783,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Ingérence de l'A.I.M. ([energy])",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50184a.c747f9e21594.avif"
               ]
@@ -4665,7 +4804,12 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/50184b.4e442c3ed58d.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Ingérence de l'A.I.M. ([mental])"
+            }
+          }
         }
       ],
       "set": "s.h.i.e.l.d._executive_board",
@@ -4681,7 +4825,12 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/50184c.8333fd2af2b3.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "name": "Ingérence de l'A.I.M. ([physical])"
+            }
+          }
         }
       ],
       "set": "s.h.i.e.l.d._executive_board",
@@ -4700,6 +4849,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Dossiers Médicaux",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50185.1d275c04d708.avif"
               ]
@@ -4723,6 +4873,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Sous Écoute",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50186.ef5fe523290a.avif"
               ]
@@ -4746,6 +4897,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Scanner de Sécurité",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50187.f62a2b4e034e.avif"
               ]
@@ -4769,6 +4921,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Argent",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50188.76b287242090.avif"
               ]
@@ -4792,6 +4945,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Chantage",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50189.a53f6afc9df0.avif"
               ]
@@ -4815,6 +4969,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Idéologie",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50190.67443ce5f2ea.avif"
               ]
@@ -4838,6 +4993,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Pass de Sécurité",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50191.6ce98ab7f1d8.avif"
               ]
@@ -4861,6 +5017,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Voyage",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50192.8e1d6b0f556b.avif"
               ]
@@ -4884,6 +5041,7 @@
           ],
           "localized": {
             "fr": {
+              "name": "Autorité",
               "images": [
                 "https://img.intothefray.xyz/cards/fr/50193.5d2da124a43b.avif"
               ]
