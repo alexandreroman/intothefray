@@ -66,11 +66,15 @@ type SetDef struct {
 	MainScheme bool `json:"mainScheme,omitempty"`
 }
 
-// Names are the hand-written names of one language, for the packs and sets
-// the sources leave untranslated or misname. They win over the sources.
+// Names are the hand-written names of one language, for the packs, sets and
+// card faces the sources leave untranslated or misname. They win over the
+// sources.
 type Names struct {
 	Packs map[string]string `json:"packs,omitempty"` // by pack code
 	Sets  map[string]string `json:"sets,omitempty"`  // by set code
+	// Cards is keyed by marvelcdb face code: the card code of a single-faced
+	// card, the card code and a letter for each face of the others.
+	Cards map[string]string `json:"cards,omitempty"`
 }
 
 // Curated is the content of a curated data directory.
@@ -80,8 +84,8 @@ type Curated struct {
 	// Sets is keyed by set code. Whether each set and card exists is checked
 	// at build time, against the generated catalog.
 	Sets map[string]SetDef
-	// Names is keyed by language code, e.g. "fr". Whether each pack and set
-	// exists is checked at build time too.
+	// Names is keyed by language code, e.g. "fr". Whether each pack, set and
+	// face exists is checked at build time too.
 	Names map[string]Names
 }
 
@@ -289,6 +293,11 @@ func checkNames(names map[string]Names) error {
 		for _, code := range slices.Sorted(maps.Keys(names[lang].Sets)) {
 			if names[lang].Sets[code] == "" {
 				return fmt.Errorf("%s set %q: empty name", lang, code)
+			}
+		}
+		for _, code := range slices.Sorted(maps.Keys(names[lang].Cards)) {
+			if names[lang].Cards[code] == "" {
+				return fmt.Errorf("%s card %q: empty name", lang, code)
 			}
 		}
 	}

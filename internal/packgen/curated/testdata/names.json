@@ -1,6 +1,7 @@
 {
   "fr": {
     "packs": {"core": "Boîte de base"},
-    "sets": {"rhino": "Rhino (FR)"}
+    "sets": {"rhino": "Rhino (FR)"},
+    "cards": {"01001a": "Spider-Man (FR)"}
   }
 }

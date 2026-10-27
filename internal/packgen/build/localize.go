@@ -50,11 +50,24 @@ type faceNames struct {
 // frenchSourcesOf indexes the French sources of in, whose cards and packs are
 // expected to be completed by withFallback already.
 func frenchSourcesOf(in Inputs) frenchSources {
-	cardSources := frenchSources{names: []nameSource{mc4dbFrenchNames(in), marvelcdbFrenchNames(in)}}
-	names := []nameSource{{packs: in.Curated.Names[french].Packs, sets: in.Curated.Names[french].Sets}}
-	names = append(names, cardSources.names...)
-	names = append(names, cgbuilderNames(in, cardSources))
+	// cgbuilder names no card: the other sources name them, and join its packs.
+	cardSources := frenchSources{names: []nameSource{
+		curatedFrenchNames(in.Curated.Names[french]),
+		mc4dbFrenchNames(in),
+		marvelcdbFrenchNames(in),
+	}}
+	names := slices.Concat(cardSources.names, []nameSource{cgbuilderNames(in, cardSources)})
 	return frenchSources{images: in.Manifest, names: names}
+}
+
+// curatedFrenchNames returns the hand-written French names. A curated card
+// name leaves the subname of the face to the other sources.
+func curatedFrenchNames(names curated.Names) nameSource {
+	cards := make(map[string]faceNames, len(names.Cards))
+	for code, name := range names.Cards {
+		cards[code] = faceNames{name: name}
+	}
+	return nameSource{cards: cards, packs: names.Packs, sets: names.Sets}
 }
 
 // marvelcdbFrenchNames returns the names of fr.marvelcdb. A set takes the set
@@ -170,12 +183,10 @@ func (fr frenchSources) faceName(faceCode, english string) string {
 }
 
 // faceSubname returns the French subname of a face, "" when untranslated. A
-// face without an English subname has none in French either: a source giving
-// one is wrong, e.g. "Lei Ling" for Aero (53015).
+// French subname counts even on a face without an English one: fr.marvelcdb
+// names the alter ego of some heroes that marvelcdb leaves without one, e.g.
+// "Amadeus Cho" for Brawn (10011).
 func (fr frenchSources) faceSubname(faceCode, english string) string {
-	if english == "" {
-		return ""
-	}
 	return fr.translation(english, func(source nameSource) string { return source.cards[faceCode].subname })
 }
 
@@ -294,9 +305,12 @@ func frenchCoverage(packs []pack.PackFile) report.Coverage {
 }
 
 // checkCuratedNames makes sure the curated names are in a language the build
-// localizes, and name packs and sets of the catalog: a misspelt code would be
-// silently ignored.
-func checkCuratedNames(names map[string]curated.Names, packs []pack.PackFile, sets map[string][]pack.Set) error {
+// localizes, and name packs and sets of the catalog and faces of the sources:
+// a misspelt code would be silently ignored. faceCodes maps a card code to the
+// marvelcdb code of each of its faces.
+func checkCuratedNames(
+	names map[string]curated.Names, packs []pack.PackFile, sets map[string][]pack.Set, faceCodes map[string][]string,
+) error {
 	packCodes := make(map[string]bool, len(packs))
 	for _, packFile := range packs {
 		packCodes[packFile.Code] = true
@@ -305,6 +319,12 @@ func checkCuratedNames(names map[string]curated.Names, packs []pack.PackFile, se
 	for _, packSets := range sets {
 		for _, set := range packSets {
 			setCodes[set.Code] = true
+		}
+	}
+	knownFaces := make(map[string]bool)
+	for _, codes := range faceCodes {
+		for _, code := range codes {
+			knownFaces[code] = true
 		}
 	}
 
@@ -320,6 +340,11 @@ func checkCuratedNames(names map[string]curated.Names, packs []pack.PackFile, se
 		for _, code := range slices.Sorted(maps.Keys(names[lang].Sets)) {
 			if !setCodes[code] {
 				return fmt.Errorf("curated %s name of set %s: the set is not in the catalog", lang, code)
+			}
+		}
+		for _, code := range slices.Sorted(maps.Keys(names[lang].Cards)) {
+			if !knownFaces[code] {
+				return fmt.Errorf("curated %s name of card %s: no card has this face code", lang, code)
 			}
 		}
 	}

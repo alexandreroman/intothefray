@@ -229,8 +229,11 @@ of a side deck with a shared `back` (Doctor Strange's Invocation deck, Hercules'
 Labor and Gift decks, Daredevil's Sense deck, Storm's Weather deck) all get that
 back, whatever back the sources give them, and the table captions it with the
 deck's label. The hand-written names (`names.json`, by language, then
-pack or set code) name the packs and sets no source translates well; the
-generator fails when one names a pack or set it does not know.
+pack code, set code or marvelcdb face code: the card code of a
+single-faced card, the card code and a letter for each face of the
+others) name the packs, sets and card faces no source translates well;
+the generator fails when one names a pack, set or face it does not know,
+or is empty.
 
 A face keeps its English name and images, and its `localized` map holds
 the overrides of other languages (`localized.fr`: name, subname, images
@@ -240,12 +243,15 @@ includes the French coverage.
 
 Each French name comes from the first source that translates it, in this
 order: the curated `names.json`, mc4db in French (`?locale=fr`: cards,
-packs and sets), fr.marvelcdb, then cgbuilder. Card names come from mc4db
-and fr.marvelcdb only. A source counts only where its name differs from
-the English one by more than case, spacing or the kind of apostrophe
+packs and sets), fr.marvelcdb, then cgbuilder. Card names come from the
+curated `names.json`, mc4db and fr.marvelcdb only, subnames from mc4db
+and fr.marvelcdb. A source counts only where its name differs from the
+English one by more than case, spacing or the kind of apostrophe
 ("MaGog" does not translate "Magog"): mc4db and fr.marvelcdb list
 untranslated content under its English name, which must not hide a lower
-source. A French subname counts only on a face with an English subname.
+source. A French subname counts on a face without an English one too
+(fr.marvelcdb names alter egos marvelcdb leaves bare, e.g. "Amadeus
+Cho" for Brawn); an empty one never hides a lower source.
 mc4db packs and sets map to marvelcdb codes as below, the official ones
 only (pack creator `FFG`), the first pack winning when two map to the
 same code; a scenario takes the name of its villain set.

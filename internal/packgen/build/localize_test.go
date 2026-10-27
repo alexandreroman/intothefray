@@ -320,17 +320,75 @@ func TestFrenchSourcesPrecedence(t *testing.T) {
 	}
 }
 
-func TestFaceSubnameNeedsAnEnglishOne(t *testing.T) {
+func TestFaceSubname(t *testing.T) {
 	fr := frenchSources{names: []nameSource{{cards: map[string]faceNames{
-		"53015": {name: "Aero", subname: "Lei Ling"},
+		"33011": {name: "Fauve", subname: "Hank Mccoy"},
 		"01050": {name: "Hulk", subname: "Bruce Banner (FR)"},
+		"01002": {name: "Chatte Noire", subname: ""},
 	}}}}
 
-	if got := fr.faceSubname("53015", ""); got != "" {
-		t.Errorf("subname of 53015 = %q, want none without an English one", got)
+	tests := []struct {
+		name     string
+		faceCode string
+		english  string
+		want     string
+	}{
+		{"without an English subname", "33011", "", "Hank Mccoy"},
+		{"with an English subname", "01050", "Bruce Banner", "Bruce Banner (FR)"},
+		{"same as English", "01050", "Bruce Banner (FR)", ""},
+		{"empty French subname", "01002", "Felicia Hardy", ""},
 	}
-	if got := fr.faceSubname("01050", "Bruce Banner"); got != "Bruce Banner (FR)" {
-		t.Errorf("subname of 01050 = %q, want Bruce Banner (FR)", got)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := fr.faceSubname(tt.faceCode, tt.english); got != tt.want {
+				t.Errorf("faceSubname(%q, %q) = %q, want %q", tt.faceCode, tt.english, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestCuratedCardNamesPrecedence(t *testing.T) {
+	tests := []struct {
+		name    string
+		curated string
+		mc4db   string
+		want    string
+	}{
+		{"curated first", "Intervention Éclair (curated)", "Intervention Éclair (mc4db)", "Intervention Éclair (curated)"},
+		{"then mc4db", "", "Intervention Éclair (mc4db)", "Intervention Éclair (mc4db)"},
+		{"then fr.marvelcdb", "", "", "Intervention Eclair (fr.marvelcdb)"},
+		{"English curated name skipped", "On the Double", "", "Intervention Eclair (fr.marvelcdb)"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			in := Inputs{
+				FrenchMC: []marvelcdb.Card{{Code: "50004", Name: "Intervention Eclair (fr.marvelcdb)"}},
+			}
+			if tt.curated != "" {
+				in.Curated.Names = map[string]curated.Names{"fr": {Cards: map[string]string{"50004": tt.curated}}}
+			}
+			if tt.mc4db != "" {
+				in.FrenchMC4DB = []mc4db.Card{{Card: marvelcdb.Card{Code: "50004", Name: tt.mc4db}}}
+			}
+
+			if got := frenchSourcesOf(in).faceName("50004", "On the Double"); got != tt.want {
+				t.Errorf("faceName = %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestCuratedCardNameKeepsTheSourceSubname(t *testing.T) {
+	fr := frenchSourcesOf(Inputs{
+		Curated:  curated.Curated{Names: map[string]curated.Names{"fr": {Cards: map[string]string{"01050": "Hulk (curated)"}}}},
+		FrenchMC: []marvelcdb.Card{{Code: "01050", Name: "Hulk", Subname: "Bruce Banner (FR)"}},
+	})
+
+	got := fr.faceOverride(pack.Face{Name: "Hulk", Subname: "Bruce Banner"}, "01050")
+
+	want := pack.Localized{Name: "Hulk (curated)", Subname: "Bruce Banner (FR)"}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("override = %+v, want %+v", got, want)
 	}
 }
 
@@ -466,11 +524,16 @@ func TestBuildCuratedNames(t *testing.T) {
 	in.Curated.Names = map[string]curated.Names{"fr": {
 		Packs: map[string]string{"core": "Base (curated)"},
 		Sets:  map[string]string{"klaw": "Klaw (curated)"},
+		Cards: map[string]string{"01097": "Effraction (curated)"},
 	}}
 
 	result, err := Build(in)
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	if got := faceOf(t, result.Packs, "01097", 0).Localized["fr"].Name; got != "Effraction (curated)" {
+		t.Errorf("card name = %q, want the curated one", got)
 	}
 
 	if got := result.Index.Packs[0].Localized["fr"].Name; got != "Base (curated)" {
@@ -492,6 +555,7 @@ func TestBuildRejectsUnknownCuratedNames(t *testing.T) {
 	}{
 		{"unknown pack", map[string]curated.Names{"fr": {Packs: map[string]string{"nope": "Non"}}}, "pack nope"},
 		{"unknown set", map[string]curated.Names{"fr": {Sets: map[string]string{"nope": "Non"}}}, "set nope"},
+		{"unknown card", map[string]curated.Names{"fr": {Cards: map[string]string{"01097a": "Non"}}}, "card 01097a"},
 		{"unknown language", map[string]curated.Names{"de": {}}, `language "de"`},
 	}
 	for _, tt := range tests {

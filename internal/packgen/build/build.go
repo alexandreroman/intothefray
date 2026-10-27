@@ -71,7 +71,8 @@ func Build(in Inputs) (Result, error) {
 	}
 	fr := frenchSourcesOf(in)
 	cards, problems := buildCards(in.MC, in.Curated.Cards, in.Manifest)
-	localizeCards(cards, faceCodesOf(in.MC), fr)
+	faceCodes := faceCodesOf(in.MC)
+	localizeCards(cards, faceCodes, fr)
 	problems = append(problems, fallbackProblems...)
 
 	cardCodes := cardCodesOf(cards)
@@ -107,7 +108,7 @@ func Build(in Inputs) (Result, error) {
 	if len(packs) == 0 {
 		return Result{}, errors.New("build produced no pack")
 	}
-	if err := checkCuratedNames(in.Curated.Names, packs, sets); err != nil {
+	if err := checkCuratedNames(in.Curated.Names, packs, sets, faceCodes); err != nil {
 		return Result{}, err
 	}
 

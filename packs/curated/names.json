@@ -1,11 +1,53 @@
 {
   "fr": {
-    "packs": {},
+    "packs": {
+      "synthezoid": "Le Clash des Synthézoïdes"
+    },
     "sets": {
       "she_hulk_leader": "Miss Hulk",
       "spider_woman_leader": "Spider-Woman",
       "enchantress_villain": "L'Enchanteresse",
       "scientist_supreme": "Scientifique Suprême"
+    },
+    "cards": {
+      "03033": "Défense Experte",
+      "04104": "Réflexes Photographiques",
+      "09006": "Études Mystiques",
+      "18010": "Épée de Gamora",
+      "28017": "Technique Éprouvée",
+      "34007": "Bouclier Télékinétique",
+      "34010": "Attaque Télékinétique",
+      "35012": "Régénération",
+      "49008": "Déflagration Électromagnétique",
+      "49039": "Séléné",
+      "50004": "Intervention Éclair",
+      "50008": "Équipe de Soutien",
+      "50010": "Simulacre de Vie Modélisée",
+      "50018": "Le Bellérophon",
+      "50042": "Bouclier Électromagnétique",
+      "50058": "Plan à Toute Épreuve",
+      "50062": "Soldat du Léviathan",
+      "50151": "Pâle Petite Araignée",
+      "51004": "À l'Affût",
+      "51040": "Matraque Énergétique",
+      "52012": "Réflexes d'Araignée",
+      "52018": "Bouclier Énergétique",
+      "52020": "Pistolet Étourdissant",
+      "54006": "Décharge Électrique",
+      "55026": "Éclats Magiques",
+      "55030a": "Loki le Mécréant",
+      "56050": "À Double Tranchant",
+      "56080": "Enrôlés",
+      "56085": "Ordre Exécutif",
+      "56148": "Frappe Héroïque",
+      "58005": "Frappe des Étoiles",
+      "58006": "Siphon d'Énergie",
+      "59007": "Épée de Pélée",
+      "59011": "Sagesse d'Athéna",
+      "59028": "Évaluer la Menace",
+      "59035": "Implorer Athéna",
+      "59039": "Hache d'Arès",
+      "59044": "Policier Envoûté"
     }
   }
 }

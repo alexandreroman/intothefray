@@ -55,6 +55,7 @@ func TestLoad(t *testing.T) {
 	wantNames := map[string]Names{"fr": {
 		Packs: map[string]string{"core": "Boîte de base"},
 		Sets:  map[string]string{"rhino": "Rhino (FR)"},
+		Cards: map[string]string{"01001a": "Spider-Man (FR)"},
 	}}
 	if !reflect.DeepEqual(loaded.Names, wantNames) {
 		t.Errorf("got names %+v, want %+v", loaded.Names, wantNames)
@@ -178,6 +179,7 @@ func TestLoadRejectsInvalidNames(t *testing.T) {
 	}{
 		{"empty pack name", `{"fr":{"packs":{"core":""}}}`, `fr pack "core": empty name`},
 		{"empty set name", `{"fr":{"sets":{"rhino":""}}}`, `fr set "rhino": empty name`},
+		{"empty card name", `{"fr":{"cards":{"01001a":""}}}`, `fr card "01001a": empty name`},
 		{"unknown field", `{"fr":{"scenarios":{"rhino":"Rhino"}}}`, `unknown field "scenarios"`},
 	}
 	for _, tt := range tests {
