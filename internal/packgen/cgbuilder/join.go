@@ -28,26 +28,19 @@ type Names struct {
 // the names of the cards of the same number: it takes the marvelcdb pack whose
 // names match most of its card numbers, when they are at least half of them
 // and more than any other pack matches. A cgbuilder pack without such a match,
-// or whose match is also another cgbuilder pack's, is left out.
+// or whose match is also another cgbuilder pack's, is left out, and its cards
+// do not name sets either.
 //
 // A cgbuilder set takes the marvelcdb set of most of its cards in the joined
 // packs, when more than half of them belong to it. A marvelcdb set that two
 // cgbuilder sets would name is left out.
 func Join(site Site, known []KnownCard) Names {
 	index := newKnownIndex(known)
-	packMatches := make(map[int]string) // marvelcdb pack code by cgbuilder pack ID
-	packClaims := make(map[string]int)  // cgbuilder packs per marvelcdb pack
-	for id, numbers := range cardsByPack(site.Cards) {
-		if code, found := index.bestPack(numbers); found {
-			packMatches[id] = code
-			packClaims[code]++
-		}
-	}
+	packMatches := index.joinPacks(site.Cards)
 
 	names := Names{Packs: make(map[string]string), Sets: make(map[string]string)}
 	for _, p := range site.Packs {
-		code, found := packMatches[p.ID]
-		if found && packClaims[code] == 1 {
+		if code, joined := packMatches[p.ID]; joined {
 			names.Packs[code] = p.Name
 		}
 	}
@@ -70,6 +63,26 @@ func Join(site Site, known []KnownCard) Names {
 		}
 	}
 	return names
+}
+
+// joinPacks maps each cgbuilder pack ID to its marvelcdb pack code. A
+// marvelcdb pack claimed by two cgbuilder packs is left out: one of them at
+// least is wrong.
+func (k knownIndex) joinPacks(cards []Card) map[int]string {
+	matches := make(map[int]string) // marvelcdb pack code by cgbuilder pack ID
+	claims := make(map[string]int)  // cgbuilder packs per marvelcdb pack
+	for id, numbers := range cardsByPack(cards) {
+		if code, found := k.bestPack(numbers); found {
+			matches[id] = code
+			claims[code]++
+		}
+	}
+	for id, code := range matches {
+		if claims[code] > 1 {
+			delete(matches, id)
+		}
+	}
+	return matches
 }
 
 // cardsByPack groups the face names of the cards by cgbuilder pack and number.
@@ -176,6 +189,12 @@ func (k knownIndex) setCodes(cards []Card, packMatches map[int]string) map[int]s
 		}
 	}
 	return codes
+}
+
+// SameName reports whether two spellings of a name differ only by case,
+// spacing or the kind of apostrophe, e.g. "Magog" and "MaGog".
+func SameName(a, b string) bool {
+	return normalize(a) == normalize(b)
 }
 
 // normalize makes two spellings of a name compare equal when they differ only

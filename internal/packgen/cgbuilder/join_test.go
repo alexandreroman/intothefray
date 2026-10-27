@@ -99,6 +99,10 @@ func TestJoinSkipsPackClaimedTwice(t *testing.T) {
 	if !reflect.DeepEqual(got.Packs, want) {
 		t.Errorf("packs = %v, want %v", got.Packs, want)
 	}
+	// Set 900 lies in pack 51, whose join to silk is ambiguous.
+	if len(got.Sets) != 0 {
+		t.Errorf("sets = %v, want none from the cards of an ambiguous pack", got.Sets)
+	}
 }
 
 func TestJoinSetNeedsMostCards(t *testing.T) {
@@ -124,5 +128,22 @@ func TestJoinSkipsUnlistedSets(t *testing.T) {
 func TestNormalize(t *testing.T) {
 	if got, want := normalize("  Soudard  de l’A.I.M. "), "soudard de l'a.i.m."; got != want {
 		t.Errorf("normalize = %q, want %q", got, want)
+	}
+}
+
+func TestSameName(t *testing.T) {
+	tests := []struct {
+		a, b string
+		want bool
+	}{
+		{"Magog", "MaGog", true},
+		{"Lady Deathstrike", "Lady  DeathStrike", true},
+		{"Soudard de l’A.I.M.", "Soudard de l'A.I.M.", true},
+		{"Bomb Scare", "Alerte à la Bombe", false},
+	}
+	for _, tt := range tests {
+		if got := SameName(tt.a, tt.b); got != tt.want {
+			t.Errorf("SameName(%q, %q) = %v, want %v", tt.a, tt.b, got, tt.want)
+		}
 	}
 }

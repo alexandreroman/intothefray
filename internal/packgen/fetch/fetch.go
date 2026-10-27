@@ -37,10 +37,11 @@ func (c *Client) JSON(ctx context.Context, url string, v any) error {
 
 // Bytes returns the document served at url as is, e.g. an HTML page. The
 // response is cached in CacheDir/<sha256(url)>, without an extension since its
-// type is unknown.
-func (c *Client) Bytes(ctx context.Context, url string) ([]byte, error) {
-	accept := func([]byte) error { return nil }
-	return c.get(ctx, url, c.cachePath(url, ""), accept)
+// type is unknown. Like JSON, it caches only a body that check accepts, so an
+// error page is never replayed; a cached body is checked too, and the error of
+// check is returned as is.
+func (c *Client) Bytes(ctx context.Context, url string, check func([]byte) error) ([]byte, error) {
+	return c.get(ctx, url, c.cachePath(url, ""), check)
 }
 
 // get returns the body served at url, from the cache file at path when there

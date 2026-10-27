@@ -225,6 +225,7 @@ func TestTranslationPrecedence(t *testing.T) {
 		{"first source wins", sources("Boîte de base", "Coffret de base"), "Boîte de base"},
 		{"empty name skipped", sources("", "Coffret de base"), "Coffret de base"},
 		{"English does not mask a lower French name", sources("Core Set", "Coffret de base"), "Coffret de base"},
+		{"English spelling does not mask either", sources("Core  set", "Coffret de base"), "Coffret de base"},
 		{"English only", sources("Core Set", ""), ""},
 		{"no source", sources(), ""},
 	}
@@ -319,6 +320,39 @@ func TestFrenchSourcesPrecedence(t *testing.T) {
 	}
 }
 
+func TestFaceSubnameNeedsAnEnglishOne(t *testing.T) {
+	fr := frenchSources{names: []nameSource{{cards: map[string]faceNames{
+		"53015": {name: "Aero", subname: "Lei Ling"},
+		"01050": {name: "Hulk", subname: "Bruce Banner (FR)"},
+	}}}}
+
+	if got := fr.faceSubname("53015", ""); got != "" {
+		t.Errorf("subname of 53015 = %q, want none without an English one", got)
+	}
+	if got := fr.faceSubname("01050", "Bruce Banner"); got != "Bruce Banner (FR)" {
+		t.Errorf("subname of 01050 = %q, want Bruce Banner (FR)", got)
+	}
+}
+
+func TestLocalizeIndexIgnoresCaseVariants(t *testing.T) {
+	index := pack.Index{Sets: []pack.SetRef{
+		{Code: "magog", Name: "Magog"},
+		{Code: "deathstrike", Name: "Lady Deathstrike"},
+	}}
+	fr := frenchSources{names: []nameSource{{sets: map[string]string{
+		"magog":       "MaGog",
+		"deathstrike": "Lady DeathStrike",
+	}}}}
+
+	localizeIndex(&index, nil, fr)
+
+	for _, set := range index.Sets {
+		if set.Localized != nil {
+			t.Errorf("set %s localized = %+v, want none for a case variant", set.Code, set.Localized)
+		}
+	}
+}
+
 func TestLocalizeCardsPrefersMC4DB(t *testing.T) {
 	mc := []marvelcdb.Card{
 		{Code: "50003", Name: "All-Points Bulletin", TypeCode: "event", PackCode: "aos", ImageSrc: "/a.png"},
@@ -375,13 +409,15 @@ func TestMC4DBFrenchCodes(t *testing.T) {
 			{Code: "fear_no_evil_by_ffg", Name: "Fear No Evil"},
 			{Code: "thor_by_ffg", Name: "Thor Hero Pack"},
 			{Code: "new_by_ffg", Name: "Brand New"},
+			{Code: "core_reprint_by_ffg", Name: "Core Set"},
 		},
 		FrenchMC4DBPacks: []marvelcdb.Pack{
 			{Code: "core", Name: "Boîte de base"},
 			{Code: "fear_no_evil_by_ffg", Name: "Peur de Rien"},
 			{Code: "thor_by_ffg", Name: "Thor (FR)"},
 			{Code: "new_by_ffg", Name: "Tout Neuf"},
-			{Code: "lost_by_ffg", Name: "Perdu"}, // not in the English list
+			{Code: "lost_by_ffg", Name: "Perdu"},             // not in the English list
+			{Code: "core_reprint_by_ffg", Name: "Réédition"}, // maps to core, already named
 		},
 		FrenchMC4DBSets: []mc4db.Set{
 			{Code: "purple_man_by_ffg", Name: "L'Homme Pourpre"},

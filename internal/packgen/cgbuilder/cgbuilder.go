@@ -19,8 +19,13 @@ import (
 const BaseURL = "https://mc.cgbuilder.fr"
 
 // variantNumbers is where the numbers of the alternate printings of a card
-// start, e.g. 11184 for card 184.
-const variantNumbers = 10000
+// start: the k-th printing of card n is numbered 1000·k+n, e.g. 1043, 2043 and
+// 3043 for card 43 of the core set, 11184 for card 184. A pack has fewer than
+// 1000 cards.
+const variantNumbers = 1000
+
+// ErrNoCard is the error of a card list page without any card.
+var ErrNoCard = errors.New("no card found on the card list page")
 
 // Pack is a cgbuilder pack. Its ID is not tied to the marvelcdb pack codes or
 // positions, though it often matches the position.
@@ -72,38 +77,52 @@ var (
 
 // Fetch reads the packs, their cards and the modular sets from the cgbuilder
 // site at base, i.e. BaseURL. It asks for one page at a time, one per pack and
-// two more, to spare the site.
+// two more, to spare the site. A pack whose page lists no card, e.g. one
+// announced before its release, is skipped and its page left out of the cache,
+// so the next run reads it again; Fetch fails when no pack has any card.
 func Fetch(ctx context.Context, c *fetch.Client, base string) (Site, error) {
 	var site Site
+	var err error
 
-	page, err := c.Bytes(ctx, base+"/cycle/")
-	if err != nil {
-		return Site{}, fmt.Errorf("fetch cgbuilder packs: %w", err)
-	}
-	if site.Packs, err = ParsePacks(page); err != nil {
+	if site.Packs, err = fetchPage(ctx, c, base+"/cycle/", ParsePacks); err != nil {
 		return Site{}, fmt.Errorf("cgbuilder packs: %w", err)
 	}
 
 	for _, p := range site.Packs {
-		page, err := c.Bytes(ctx, fmt.Sprintf("%s/liste_carte/%d/", base, p.ID))
-		if err != nil {
-			return Site{}, fmt.Errorf("fetch cgbuilder pack %d: %w", p.ID, err)
+		cards, err := fetchPage(ctx, c, fmt.Sprintf("%s/liste_carte/%d/", base, p.ID), ParseCards)
+		if errors.Is(err, ErrNoCard) {
+			continue
 		}
-		cards, err := ParseCards(page)
 		if err != nil {
 			return Site{}, fmt.Errorf("cgbuilder pack %d: %w", p.ID, err)
 		}
 		site.Cards = append(site.Cards, cards...)
 	}
-
-	page, err = c.Bytes(ctx, base+"/set_modulaire/")
-	if err != nil {
-		return Site{}, fmt.Errorf("fetch cgbuilder sets: %w", err)
+	if len(site.Cards) == 0 {
+		return Site{}, errors.New("cgbuilder packs: no card found on any card list page")
 	}
-	if site.Sets, err = ParseSets(page); err != nil {
+
+	if site.Sets, err = fetchPage(ctx, c, base+"/set_modulaire/", ParseSets); err != nil {
 		return Site{}, fmt.Errorf("cgbuilder sets: %w", err)
 	}
 	return site, nil
+}
+
+// fetchPage returns what parse reads from the page at url. The page is cached
+// only when parse accepts it, so a page of an unexpected layout, e.g. a
+// maintenance page, is never replayed.
+func fetchPage[T any](ctx context.Context, c *fetch.Client, url string, parse func([]byte) (T, error)) (T, error) {
+	var parsed T
+	check := func(page []byte) error {
+		var err error
+		parsed, err = parse(page)
+		return err
+	}
+	if _, err := c.Bytes(ctx, url, check); err != nil {
+		var zero T
+		return zero, err
+	}
+	return parsed, nil
 }
 
 // ParsePacks returns the packs of the cycle page. A page without any pack
@@ -124,8 +143,7 @@ func ParsePacks(page []byte) ([]Pack, error) {
 }
 
 // ParseCards returns the cards of a card list page, the alternate printings
-// left out. A page without any card fails, as the site layout has likely
-// changed.
+// left out. A page without any card fails with ErrNoCard.
 func ParseCards(page []byte) ([]Card, error) {
 	var cards []Card
 	for _, tag := range cardTag.FindAllSubmatch(page, -1) {
@@ -138,7 +156,7 @@ func ParseCards(page []byte) ([]Card, error) {
 		}
 	}
 	if len(cards) == 0 {
-		return nil, errors.New("no card found on the card list page")
+		return nil, ErrNoCard
 	}
 	return cards, nil
 }

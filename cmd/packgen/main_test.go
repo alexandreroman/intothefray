@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/fs"
 	"log/slog"
@@ -52,7 +54,7 @@ func fixtureInputs() build.Inputs {
 
 // fakeInputs returns in without any network access, and records whether it was called.
 func fakeInputs(in build.Inputs, called *bool) inputsFunc {
-	return func(context.Context, options) (build.Inputs, error) {
+	return func(context.Context, *slog.Logger, options) (build.Inputs, error) {
 		*called = true
 		return in, nil
 	}
@@ -189,8 +191,11 @@ func TestPrintManifestCoverage(t *testing.T) {
 
 // fakeSourceTransport answers every request with an empty list of the source,
 // and records the URLs it was asked for. The cgbuilder pages hold one pack,
-// one card and one set, as a page without any fails.
+// one card and one set, as a page without any fails; with cgbuilderDown, they
+// are error pages.
 type fakeSourceTransport struct {
+	cgbuilderDown bool
+
 	mu   sync.Mutex
 	urls []string
 }
@@ -201,7 +206,10 @@ func (ft *fakeSourceTransport) RoundTrip(req *http.Request) (*http.Response, err
 	ft.mu.Unlock()
 
 	body := "[]"
+	status := http.StatusOK
 	switch {
+	case req.URL.Host == "mc.cgbuilder.fr" && ft.cgbuilderDown:
+		status = http.StatusServiceUnavailable
 	case req.URL.Path == "/api/public/sets":
 		body = "{}"
 	case req.URL.Host == "mc.cgbuilder.fr":
@@ -211,8 +219,8 @@ func (ft *fakeSourceTransport) RoundTrip(req *http.Request) (*http.Response, err
 			`<a id="a_101" href="https://mc.cgbuilder.fr/set_modulaire/101/">Les Bombes</a>`
 	}
 	return &http.Response{
-		StatusCode: http.StatusOK,
-		Status:     "200 OK",
+		StatusCode: status,
+		Status:     fmt.Sprintf("%d %s", status, http.StatusText(status)),
 		Header:     make(http.Header),
 		Body:       io.NopCloser(strings.NewReader(body)),
 		Request:    req,
@@ -245,7 +253,7 @@ func TestFetchInputsFrenchOnlyForPacks(t *testing.T) {
 			client := &fetch.Client{HTTP: &http.Client{Transport: transport}, CacheDir: t.TempDir()}
 			opts := options{curatedDir: t.TempDir(), sourcesOnly: tt.sourcesOnly}
 
-			in, err := fetchInputsWith(context.Background(), client, opts)
+			in, err := fetchInputsWith(context.Background(), discardLogger(), client, opts)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -259,5 +267,25 @@ func TestFetchInputsFrenchOnlyForPacks(t *testing.T) {
 				t.Errorf("cgbuilder packs = %+v, want some: %v", in.CGBuilder.Packs, tt.wantFrench)
 			}
 		})
+	}
+}
+
+func TestFetchInputsGoesOnWithoutCGBuilder(t *testing.T) {
+	transport := &fakeSourceTransport{cgbuilderDown: true}
+	client := &fetch.Client{HTTP: &http.Client{Transport: transport}, CacheDir: t.TempDir()}
+	opts := options{curatedDir: t.TempDir()}
+	var logs bytes.Buffer
+	logger := slog.New(slog.NewTextHandler(&logs, nil))
+
+	in, err := fetchInputsWith(context.Background(), logger, client, opts)
+	if err != nil {
+		t.Fatalf("fetch failed with cgbuilder down: %v", err)
+	}
+
+	if len(in.CGBuilder.Packs) != 0 {
+		t.Errorf("cgbuilder packs = %+v, want none", in.CGBuilder.Packs)
+	}
+	if !strings.Contains(logs.String(), "level=WARN") || !strings.Contains(logs.String(), "cgbuilder") {
+		t.Errorf("logs = %q, want a cgbuilder warning", logs.String())
 	}
 }

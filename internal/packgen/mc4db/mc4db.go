@@ -16,6 +16,9 @@ import (
 // its images, which reach the image CDN through the intothefray-img pipeline.
 const BaseURL = "https://mc4db.merlindumesnil.net"
 
+// OfficialCreator is the creator mc4db gives the official packs and cards.
+const OfficialCreator = "FFG"
+
 // Card holds the mc4db card fields used by the pack build. mc4db shares the
 // marvelcdb schema and card codes, but not all pack and set codes. The image
 // paths are those of the English scans, relative to BaseURL, e.g.
@@ -57,21 +60,32 @@ func fetchCards(ctx context.Context, c *fetch.Client, url string) ([]Card, error
 // FetchPacks returns every pack, fan-made ones included, from the mc4db site at
 // base. mc4db packs share the marvelcdb schema, but not all their codes.
 func FetchPacks(ctx context.Context, c *fetch.Client, base string) ([]marvelcdb.Pack, error) {
-	return fetchPacks(ctx, c, base+"/api/public/packs/")
-}
-
-// FetchFrenchPacks returns the same packs as FetchPacks, named in French where
-// mc4db has a French name.
-func FetchFrenchPacks(ctx context.Context, c *fetch.Client, base string) ([]marvelcdb.Pack, error) {
-	return fetchPacks(ctx, c, base+"/api/public/packs/?locale=fr")
-}
-
-func fetchPacks(ctx context.Context, c *fetch.Client, url string) ([]marvelcdb.Pack, error) {
 	var packs []marvelcdb.Pack
-	if err := c.JSON(ctx, url, &packs); err != nil {
+	if err := c.JSON(ctx, base+"/api/public/packs/", &packs); err != nil {
 		return nil, fmt.Errorf("fetch mc4db packs: %w", err)
 	}
 	return packs, nil
+}
+
+// FetchFrenchPacks returns the official packs, those whose creator is
+// OfficialCreator, named in French where mc4db has a French name. The fan-made
+// packs are left out: some share the English name of an official pack, e.g.
+// hercules_by_rainy, but not its French one.
+func FetchFrenchPacks(ctx context.Context, c *fetch.Client, base string) ([]marvelcdb.Pack, error) {
+	var packs []struct {
+		marvelcdb.Pack
+		Creator string `json:"creator"`
+	}
+	if err := c.JSON(ctx, base+"/api/public/packs/?locale=fr", &packs); err != nil {
+		return nil, fmt.Errorf("fetch mc4db packs: %w", err)
+	}
+	var official []marvelcdb.Pack
+	for _, p := range packs {
+		if p.Creator == OfficialCreator {
+			official = append(official, p.Pack)
+		}
+	}
+	return official, nil
 }
 
 // FetchFrenchSets returns the sets of the official packs, named in French where

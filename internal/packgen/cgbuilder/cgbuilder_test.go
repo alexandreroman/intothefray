@@ -2,12 +2,14 @@ package cgbuilder
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/alexandreroman/intothefray/internal/packgen/fetch"
@@ -40,7 +42,7 @@ func TestParseCards(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// The alternate printing 11184 is left out.
+	// The alternate printings 1007 and 11184 are left out.
 	want := []Card{
 		{Pack: 50, Number: 1, Names: []string{"Maria Hill"}},
 		{Pack: 50, Number: 73, Names: []string{"Soudard de l'A.I.M."}, Set: 263},
@@ -68,8 +70,8 @@ func TestParseEmptyPagesFail(t *testing.T) {
 	if _, err := ParsePacks(page); err == nil {
 		t.Error("ParsePacks succeeded on a page without pack")
 	}
-	if _, err := ParseCards(page); err == nil {
-		t.Error("ParseCards succeeded on a page without card")
+	if _, err := ParseCards(page); !errors.Is(err, ErrNoCard) {
+		t.Errorf("ParseCards error = %v, want ErrNoCard on a page without card", err)
 	}
 	if _, err := ParseSets(page); err == nil {
 		t.Error("ParseSets succeeded on a page without set")
@@ -101,9 +103,13 @@ func TestFetch(t *testing.T) {
 		"/liste_carte/53/": "liste_carte.html",
 		"/set_modulaire/":  "set_modulaire.html",
 	}
+	// The handler runs on the server's goroutines, the checks on the test's.
+	var mu sync.Mutex
 	var requested []string
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mu.Lock()
 		requested = append(requested, r.URL.Path)
+		mu.Unlock()
 		name, found := pages[r.URL.Path]
 		if !found {
 			http.NotFound(w, r)
@@ -120,6 +126,8 @@ func TestFetch(t *testing.T) {
 	}
 
 	wantRequests := []string{"/cycle/", "/liste_carte/1/", "/liste_carte/53/", "/set_modulaire/"}
+	mu.Lock()
+	defer mu.Unlock()
 	if !reflect.DeepEqual(requested, wantRequests) {
 		t.Errorf("requests = %v, want %v", requested, wantRequests)
 	}
@@ -142,5 +150,77 @@ func TestFetchFailsOnMissingPack(t *testing.T) {
 	_, err := Fetch(context.Background(), client, server.URL)
 	if err == nil || !strings.Contains(err.Error(), "pack 1") {
 		t.Fatalf("error = %v, want one naming pack 1", err)
+	}
+}
+
+// servePages serves the fixture pages by path, a 404 for any other path, and
+// returns a client caching in cacheDir.
+func servePages(t *testing.T, pages map[string]string, cacheDir string) (*fetch.Client, string) {
+	t.Helper()
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		name, found := pages[r.URL.Path]
+		if !found {
+			http.NotFound(w, r)
+			return
+		}
+		_, _ = w.Write(readPage(t, name))
+	}))
+	t.Cleanup(server.Close)
+	return &fetch.Client{HTTP: server.Client(), CacheDir: cacheDir}, server.URL
+}
+
+func TestFetchSkipsPackWithoutCard(t *testing.T) {
+	cacheDir := t.TempDir()
+	client, base := servePages(t, map[string]string{
+		"/cycle/":          "cycle.html",
+		"/liste_carte/1/":  "liste_carte.html",
+		"/liste_carte/53/": "empty.html",
+		"/set_modulaire/":  "set_modulaire.html",
+	}, cacheDir)
+
+	site, err := Fetch(context.Background(), client, base)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(site.Packs) != 2 || len(site.Cards) != 3 {
+		t.Errorf("site = %d packs, %d cards, want 2, 3", len(site.Packs), len(site.Cards))
+	}
+	// The empty page is not cached: the cycle, one card list and the sets are.
+	entries, err := os.ReadDir(cacheDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(entries) != 3 {
+		t.Errorf("cache dir has %d entries, want 3", len(entries))
+	}
+}
+
+func TestFetchFailsWithoutAnyCard(t *testing.T) {
+	client, base := servePages(t, map[string]string{
+		"/cycle/":          "cycle.html",
+		"/liste_carte/1/":  "empty.html",
+		"/liste_carte/53/": "empty.html",
+		"/set_modulaire/":  "set_modulaire.html",
+	}, t.TempDir())
+
+	if _, err := Fetch(context.Background(), client, base); err == nil {
+		t.Fatal("Fetch succeeded without any card")
+	}
+}
+
+func TestFetchDoesNotCacheUnparsedPage(t *testing.T) {
+	cacheDir := t.TempDir()
+	client, base := servePages(t, map[string]string{"/cycle/": "empty.html"}, cacheDir)
+
+	if _, err := Fetch(context.Background(), client, base); err == nil {
+		t.Fatal("Fetch succeeded on a cycle page without pack")
+	}
+	entries, err := os.ReadDir(cacheDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(entries) != 0 {
+		t.Errorf("cache dir has %d entries, want none", len(entries))
 	}
 }

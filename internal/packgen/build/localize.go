@@ -13,6 +13,7 @@ import (
 	"github.com/alexandreroman/intothefray/internal/packgen/cgbuilder"
 	"github.com/alexandreroman/intothefray/internal/packgen/curated"
 	"github.com/alexandreroman/intothefray/internal/packgen/marvelcdb"
+	"github.com/alexandreroman/intothefray/internal/packgen/mc4db"
 	"github.com/alexandreroman/intothefray/internal/packgen/report"
 )
 
@@ -32,7 +33,8 @@ type frenchSources struct {
 
 // nameSource holds the names one source gives in French, by marvelcdb code.
 // fr.marvelcdb and mc4db list untranslated content under its English name, so a
-// name of a source counts only where it differs from English.
+// name of a source counts only where it differs from English by more than case,
+// spacing or the kind of apostrophe.
 type nameSource struct {
 	cards map[string]faceNames // by face code
 	packs map[string]string    // by pack code
@@ -80,7 +82,10 @@ func marvelcdbFrenchNames(in Inputs) nameSource {
 // mc4dbFrenchNames returns the names of mc4db in French. Its card codes are
 // marvelcdb face codes; its pack and set codes map to marvelcdb ones as the
 // fallback maps them. The set names of its cards are left aside: they are
-// often English where its set list has the French name.
+// often English where its set list has the French name. Its French pack list
+// holds the official packs only, so a fan-made pack never names an official
+// one; should two packs still map to one marvelcdb pack, the first one names
+// it.
 func mc4dbFrenchNames(in Inputs) nameSource {
 	source := nameSource{
 		cards: make(map[string]faceNames, len(in.FrenchMC4DB)),
@@ -90,7 +95,7 @@ func mc4dbFrenchNames(in Inputs) nameSource {
 	for _, card := range in.FrenchMC4DB {
 		// Fan-made cards name their creator; the official ones name FFG, or
 		// no one when marvelcdb has them too.
-		if card.PackCreator == "" || card.PackCreator == officialCreator {
+		if card.PackCreator == "" || card.PackCreator == mc4db.OfficialCreator {
 			source.cards[card.Code] = faceNames{name: card.Name, subname: card.Subname}
 		}
 	}
@@ -98,9 +103,14 @@ func mc4dbFrenchNames(in Inputs) nameSource {
 	// names map a pack to marvelcdb.
 	mapper := newPackMapper(in.MCPacks, in.MC4DBPacks)
 	for _, mc4dbPack := range in.FrenchMC4DBPacks {
-		if code, found := mapper.packCodeOf(mc4dbPack.Code); found {
-			source.packs[code] = mc4dbPack.Name
+		code, found := mapper.packCodeOf(mc4dbPack.Code)
+		if !found {
+			continue
 		}
+		if _, named := source.packs[code]; named {
+			continue
+		}
+		source.packs[code] = mc4dbPack.Name
 	}
 	for _, set := range in.FrenchMC4DBSets {
 		source.sets[strings.ReplaceAll(set.Code, officialTag, "")] = set.Name
@@ -142,11 +152,12 @@ func cardNumber(code string) (int, bool) {
 }
 
 // translation returns the first name of the sources, in precedence order,
-// that translates english: neither empty nor english itself. nameIn gives the
-// name of one source. It returns "" when no source translates english.
+// that translates english: neither empty nor a spelling of english itself,
+// e.g. "MaGog" for "Magog". nameIn gives the name of one source. It returns ""
+// when no source translates english.
 func (fr frenchSources) translation(english string, nameIn func(nameSource) string) string {
 	for _, source := range fr.names {
-		if name := nameIn(source); name != "" && name != english {
+		if name := nameIn(source); name != "" && !cgbuilder.SameName(name, english) {
 			return name
 		}
 	}
@@ -158,8 +169,13 @@ func (fr frenchSources) faceName(faceCode, english string) string {
 	return fr.translation(english, func(source nameSource) string { return source.cards[faceCode].name })
 }
 
-// faceSubname returns the French subname of a face, "" when untranslated.
+// faceSubname returns the French subname of a face, "" when untranslated. A
+// face without an English subname has none in French either: a source giving
+// one is wrong, e.g. "Lei Ling" for Aero (53015).
 func (fr frenchSources) faceSubname(faceCode, english string) string {
+	if english == "" {
+		return ""
+	}
 	return fr.translation(english, func(source nameSource) string { return source.cards[faceCode].subname })
 }
 

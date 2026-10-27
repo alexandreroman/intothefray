@@ -242,10 +242,13 @@ Each French name comes from the first source that translates it, in this
 order: the curated `names.json`, mc4db in French (`?locale=fr`: cards,
 packs and sets), fr.marvelcdb, then cgbuilder. Card names come from mc4db
 and fr.marvelcdb only. A source counts only where its name differs from
-the English one: mc4db and fr.marvelcdb list untranslated content under
-its English name, which must not hide a lower source. mc4db packs and
-sets map to marvelcdb codes as below; a scenario takes the name of its
-villain set.
+the English one by more than case, spacing or the kind of apostrophe
+("MaGog" does not translate "Magog"): mc4db and fr.marvelcdb list
+untranslated content under its English name, which must not hide a lower
+source. A French subname counts only on a face with an English subname.
+mc4db packs and sets map to marvelcdb codes as below, the official ones
+only (pack creator `FFG`), the first pack winning when two map to the
+same code; a scenario takes the name of its villain set.
 
 cgbuilder, a French fan site without API, gives the names of its packs
 (`/cycle/`) and modular sets (`/set_modulaire/`), read from its HTML pages
@@ -254,7 +257,18 @@ reads each pack's card list (`/liste_carte/{id}/`) and joins it by
 content: a cgbuilder pack takes the marvelcdb pack whose French card
 names, from the other sources, match those of the same numbers, when they
 match at least half its cards and more than any other pack does. A
-cgbuilder set takes the marvelcdb set of more than half its cards.
+marvelcdb pack two cgbuilder packs would join is left out, with their
+cards. A cgbuilder set takes the marvelcdb set of more than half its
+cards in the joined packs. Alternate printings (numbered 1000 and up) are
+left out.
+
+cgbuilder only fills the gaps of the other sources, so it never stops
+the generator: a pack page without any card (an announced pack) is
+skipped, and any other cgbuilder failure, fetch or parse, is logged as a
+warning and the packs are built without cgbuilder names. A failure of
+any other source, mc4db in French included, stops the generator. Like
+the JSON sources, a cgbuilder page is cached only once parsed, so an
+error page is never replayed.
 
 marvelcdb is the primary card source. Where it lists a pack only in part
 (such as Fear No Evil, whose encounter cards it lacks), the generator

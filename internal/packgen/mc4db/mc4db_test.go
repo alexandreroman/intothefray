@@ -101,7 +101,9 @@ func TestFetchFrenchCards(t *testing.T) {
 
 func TestFetchFrenchPacks(t *testing.T) {
 	client, base := serve(t, "/api/public/packs/?locale=fr", `[
-		{"name":"Peur de Rien","code":"fear_no_evil_by_ffg","position":60,"creator":"FFG"}
+		{"name":"Peur de Rien","code":"fear_no_evil_by_ffg","position":60,"creator":"FFG"},
+		{"name":"Hercule","code":"hercules_by_rainy","position":2032,"creator":"Rainy"},
+		{"name":"Weekly FFG 2025","code":"2025_weekly","position":3000,"creator":"FFG & Merlin"}
 	]`)
 
 	got, err := FetchFrenchPacks(context.Background(), client, base)
@@ -109,6 +111,7 @@ func TestFetchFrenchPacks(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	// Official packs only.
 	want := []marvelcdb.Pack{{Code: "fear_no_evil_by_ffg", Name: "Peur de Rien", Position: 60}}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("packs = %+v, want %+v", got, want)

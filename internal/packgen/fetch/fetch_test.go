@@ -2,6 +2,7 @@ package fetch
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -115,6 +116,8 @@ func TestJSONSendsUserAgent(t *testing.T) {
 	}
 }
 
+func acceptAll([]byte) error { return nil }
+
 func TestBytesUsesCacheAndUserAgent(t *testing.T) {
 	var requests atomic.Int32
 	var agent atomic.Value
@@ -130,7 +133,7 @@ func TestBytesUsesCacheAndUserAgent(t *testing.T) {
 	url := server.URL + "/cycle/"
 
 	for range 2 {
-		got, err := client.Bytes(context.Background(), url)
+		got, err := client.Bytes(context.Background(), url, acceptAll)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -164,8 +167,39 @@ func TestBytesHTTPError(t *testing.T) {
 	client := &Client{HTTP: server.Client(), CacheDir: cacheDir}
 	url := server.URL + "/liste_carte/99/"
 
-	if _, err := client.Bytes(context.Background(), url); err == nil || !strings.Contains(err.Error(), "404") {
+	if _, err := client.Bytes(context.Background(), url, acceptAll); err == nil || !strings.Contains(err.Error(), "404") {
 		t.Fatalf("error = %v, want one naming the status", err)
+	}
+	entries, err := os.ReadDir(cacheDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(entries) != 0 {
+		t.Errorf("cache dir has %d entries, want none", len(entries))
+	}
+}
+
+func TestBytesDoesNotCacheRejectedBody(t *testing.T) {
+	var requests atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		requests.Add(1)
+		_, _ = w.Write([]byte("<html>maintenance</html>"))
+	}))
+	t.Cleanup(server.Close)
+
+	cacheDir := t.TempDir()
+	client := &Client{HTTP: server.Client(), CacheDir: cacheDir}
+	url := server.URL + "/cycle/"
+	errRejected := errors.New("no pack on the page")
+	reject := func([]byte) error { return errRejected }
+
+	for range 2 {
+		if _, err := client.Bytes(context.Background(), url, reject); !errors.Is(err, errRejected) {
+			t.Fatalf("error = %v, want the check error", err)
+		}
+	}
+	if n := requests.Load(); n != 2 {
+		t.Errorf("requests = %d, want 2: a rejected page must not be cached", n)
 	}
 	entries, err := os.ReadDir(cacheDir)
 	if err != nil {
