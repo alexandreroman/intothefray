@@ -268,8 +268,9 @@ function groupUnitsOf(
 }
 
 function cardActions(card: CardView, context: Context, units: CardView[] | null): ActionItem[] {
-  // A card revealed on a deck lies there, out of play: it is neither exhausted nor marked (the
-  // server refuses it, inPlayCard), and its owner draws it from there.
+  // A card revealed on a deck lies there, out of play: it is neither exhausted nor given statuses
+  // or modifiers (the server refuses it, inPlayCard), and its owner draws it from there. It takes
+  // tokens, which count on it where it lies.
   const revealed = card.onPile !== undefined;
   const items: ActionItem[] = [];
   if (!revealed) {
@@ -287,8 +288,9 @@ function cardActions(card: CardView, context: Context, units: CardView[] | null)
   } else if (canFlip(card)) {
     items.push(flipItem(card));
   }
+  items.push(counterMenu(card, 'token'));
   if (!revealed) {
-    items.push(counterMenu(card, 'token'), counterMenu(card, 'status'), modifierMenu(card));
+    items.push(counterMenu(card, 'status'), modifierMenu(card));
   }
   items.push(...(units ? groupLeaveItems(units, context) : leaveItems(card, context)));
   return items;

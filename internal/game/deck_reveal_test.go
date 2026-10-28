@@ -571,12 +571,12 @@ func TestFlipFaceDownOfACardOffItsDeckLeavesItOnTheTable(t *testing.T) {
 }
 
 // TestRevealedCardIsNotInPlay refuses to exhaust a card revealed on a deck,
-// or to give it tokens, statuses or modifiers: it lies on its deck.
+// or to give it statuses or modifiers: it lies on its deck. Tokens are
+// allowed (see TestRevealedCardTakesTokens).
 func TestRevealedCardIsNotInPlay(t *testing.T) {
 	for _, deck := range revealedDecks {
 		for name, a := range map[string]Action{
 			"exhaust":  {Kind: ActExhaust},
-			"token":    {Kind: ActToken, Name: "dmg", Delta: 1},
 			"status":   {Kind: ActStatus, Name: "stunned", Delta: 1},
 			"modifier": {Kind: ActModifier, Name: "atk", Delta: 1},
 		} {
@@ -616,11 +616,180 @@ func TestApplyRefusesToMarkARevealedCard(t *testing.T) {
 	table.Cards["c7"].OnPile = PileEncounter
 	for _, a := range []Action{
 		{Kind: ActExhaust, Card: "c7", Exhausted: new(true)},
-		{Kind: ActToken, Card: "c7", Name: "thr", Delta: 1},
+		{Kind: ActStatus, Card: "c7", Name: "tough", Delta: 1},
+		{Kind: ActModifier, Card: "c7", Name: "atk", Delta: 1},
 		{Kind: ActReadyAll, Cards: []string{"c7"}},
 	} {
 		if err := apply(table, a); !errors.Is(err, ErrInvalid) {
 			t.Errorf("%s: err = %v, want ErrInvalid", a.Kind, err)
 		}
 	}
+}
+
+func TestApplyGivesTokensToARevealedCard(t *testing.T) {
+	table := newTestTable()
+	table.Cards["c7"].OnPile = PileEncounter
+
+	mustApply(t, table, Action{Kind: ActToken, Card: "c7", Name: "thr", Delta: 2})
+
+	if c := table.Cards["c7"]; c.Tokens["thr"] != 2 || c.OnPile != PileEncounter {
+		t.Errorf("c7 = %+v, want 2 threat on it, still revealed on %s", c, PileEncounter)
+	}
+}
+
+// TestRevealedCardTakesTokens counts on a card revealed on a deck: it takes
+// tokens where it lies, and everybody sees them.
+func TestRevealedCardTakesTokens(t *testing.T) {
+	for _, deck := range revealedDecks {
+		t.Run(deck.name, func(t *testing.T) {
+			f := newDoFixture(t)
+			id := f.revealTop(t, "h", deck.reveal, 1)
+
+			f.mustDo(t, "h", Action{Kind: ActToken, Card: id, Name: "gen", Delta: 2}, at(2))
+
+			checkRevealedOn(t, f.g.Table, id, deck.pile)
+			if got := f.g.Table.Cards[id].Tokens["gen"]; got != 2 {
+				t.Errorf("counters = %d, want 2", got)
+			}
+			for _, token := range []string{"h", "b", "nobody"} {
+				cards := f.g.ViewFor(token).Table.Cards
+				i := slices.IndexFunc(cards, func(c CardView) bool { return c.ID == id })
+				if i < 0 || cards[i].Tokens["gen"] != 2 {
+					t.Errorf("%s does not see the counters on the revealed card", token)
+				}
+			}
+			checkIntegrity(t, f.g.Table)
+			checkHistory(t, f.g)
+			checkReplay(t, f)
+		})
+	}
+}
+
+// revealWithCounters reveals the top card of p0's deck, a single-faced one
+// that a flip turns face down, and gives it two generic counters. It returns
+// its id.
+func (f *doFixture) revealWithCounters(t *testing.T) string {
+	t.Helper()
+	f.singleFacedOnTop(t, "h", "deck:p0", 1)
+	id := f.revealTop(t, "h", "deck:p0", 2)
+	f.mustDo(t, "h", Action{Kind: ActToken, Card: id, Name: "gen", Delta: 2}, at(3))
+	return id
+}
+
+// TestRevealedCardLosesItsTokensOffTheTable takes a card revealed on its deck,
+// with tokens on it, back into the deck, into a hand or onto the discard
+// pile: like any card leaving the table, it loses its tokens.
+func TestRevealedCardLosesItsTokensOffTheTable(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		// leave takes the card id, revealed on p0's deck, off the table.
+		leave func(t *testing.T, f *doFixture, id string)
+	}{
+		{"shuffle", func(t *testing.T, f *doFixture, _ string) {
+			f.mustDo(t, "h", Action{Kind: ActShuffle, Pile: "deck:p0"}, at(4))
+		}},
+		{"reorder of the top", func(t *testing.T, f *doFixture, id string) {
+			next := topCards(f.g.Table.Piles["deck:p0"], 1)[0]
+			f.mustDo(t, "h", Action{Kind: ActLook, Pile: "deck:p0", N: 2}, at(4))
+			f.mustDo(t, "h", Action{Kind: ActReorderTop, Pile: "deck:p0", Cards: []string{next, id}}, at(5))
+		}},
+		{"flip face down", func(t *testing.T, f *doFixture, id string) {
+			f.mustDo(t, "h", Action{Kind: ActFlip, Card: id}, at(4))
+		}},
+		{"put on top of its deck", func(t *testing.T, f *doFixture, id string) {
+			f.mustDo(t, "h", Action{Kind: ActToDeck, Card: id, Where: whereTop}, at(4))
+		}},
+		{"draw", func(t *testing.T, f *doFixture, _ string) {
+			f.mustDo(t, "h", Action{Kind: ActDraw, N: 1}, at(4))
+		}},
+		{"to hand", func(t *testing.T, f *doFixture, id string) {
+			f.mustDo(t, "h", Action{Kind: ActToHand, Card: id}, at(4))
+		}},
+		{"discard of the top", func(t *testing.T, f *doFixture, _ string) {
+			f.mustDo(t, "h", Action{Kind: ActDiscardTop, Pile: "deck:p0", N: 1}, at(4))
+		}},
+		{"discard", func(t *testing.T, f *doFixture, id string) {
+			f.mustDo(t, "h", Action{Kind: ActDiscard, Card: id}, at(4))
+		}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			f := newDoFixture(t)
+			id := f.revealWithCounters(t)
+
+			tc.leave(t, f, id)
+
+			c := f.g.Table.Cards[f.renamedID(t, id)]
+			if c.Zone == ZoneTable || c.Tokens != nil {
+				t.Errorf("revealed card = %+v, want it off the table with no tokens", c)
+			}
+			checkIntegrity(t, f.g.Table)
+			checkHistory(t, f.g)
+			checkReplay(t, f)
+		})
+	}
+}
+
+// TestRevealedCardKeepsItsTokensOnTheTable moves or plays a card revealed on
+// its deck, with tokens on it: it stays on the table, and keeps them.
+func TestRevealedCardKeepsItsTokensOnTheTable(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		// action takes the card id, revealed on p0's deck, off it.
+		action func(f *doFixture, id string) Action
+	}{
+		{"move", func(_ *doFixture, id string) Action {
+			return Action{Kind: ActMove, Card: id, X: 400, Y: 200}
+		}},
+		{"play", func(_ *doFixture, id string) Action {
+			return Action{Kind: ActPlay, Card: id, X: 400, Y: 200}
+		}},
+		{"play of the deck top", func(*doFixture, string) Action {
+			return Action{Kind: ActPlay, Pile: "deck:p0", X: 400, Y: 200}
+		}},
+		{"attach", func(f *doFixture, id string) Action {
+			return Action{Kind: ActAttach, Card: id, Target: f.villain()}
+		}},
+		{"play under a card", func(f *doFixture, id string) Action {
+			return Action{Kind: ActPlay, Card: id, Target: f.villain()}
+		}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			f := newDoFixture(t)
+			id := f.revealWithCounters(t)
+
+			f.mustDo(t, "h", tc.action(f, id), at(4))
+
+			c := f.g.Table.Cards[id]
+			if c.Zone != ZoneTable || c.OnPile != "" || c.Tokens["gen"] != 2 {
+				t.Errorf("revealed card = %+v, want it on the table, off its deck, with 2 counters", c)
+			}
+			checkIntegrity(t, f.g.Table)
+			checkHistory(t, f.g)
+			checkReplay(t, f)
+		})
+	}
+}
+
+// TestLaborSideDeckCountsOnItsRevealedCard counts the labors of Hercules on
+// the card revealed on his Labor side deck, which keeps them once played.
+func TestLaborSideDeckCountsOnItsRevealedCard(t *testing.T) {
+	f := heroGame(t, heroDeck(t, newCatalog(t), herculesIdentity, "Hercules"))
+	labor := f.sideDeckLabeled(t, "Labor")
+	id := f.revealTop(t, "h", labor, 1)
+
+	f.mustDo(t, "h", Action{Kind: ActToken, Card: id, Name: "gen", Delta: 1}, at(2))
+	f.mustDo(t, "h", Action{Kind: ActToken, Card: id, Name: "gen", Delta: 1}, at(3))
+
+	checkRevealedOn(t, f.g.Table, id, labor)
+	if got := f.g.Table.Cards[id].Tokens["gen"]; got != 2 {
+		t.Errorf("counters on the revealed labor = %d, want 2", got)
+	}
+
+	f.mustDo(t, "h", Action{Kind: ActPlay, Card: id, X: 400, Y: 200}, at(4))
+
+	if c := f.g.Table.Cards[id]; c.OnPile != "" || c.Tokens["gen"] != 2 {
+		t.Errorf("played labor = %+v, want it in play with 2 counters", c)
+	}
+	checkIntegrity(t, f.g.Table)
+	checkHistory(t, f.g)
 }

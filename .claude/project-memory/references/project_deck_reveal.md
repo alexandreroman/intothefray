@@ -28,11 +28,18 @@ type: project
   deck") and gives the reordered cards new ids, as a shuffle does, so
   nobody can follow the revealed card into the deck. A reorder with no
   revealed card only arranges the deck: no line, no undo, same ids.
-- A revealed card is not in play: it is neither exhausted (Ready all
-  leaves it out) nor given tokens, statuses or modifiers; the server
-  refuses those actions on it (`inPlayCard`), and its menu has no
-  Exhaust and no token, status or modifier submenus, their keys doing
-  nothing on it. Its menu keeps Flip, Discard, Move to and the arrow.
+- A revealed card carries tokens (damage, threat, counters,
+  acceleration): its menu has the token submenu and the token keys work
+  on it (e.g. counters on the card revealed on Hercules' Labor deck).
+  It is not in play otherwise: it is never exhausted (Ready all leaves it
+  out) and carries no status or modifier; the server refuses those
+  actions on it (`inPlayCard`), and its menu has no Exhaust, status or
+  modifier submenus, their keys doing nothing on it. Its menu also has
+  Flip, Discard, Move to and the arrow.
+- Its tokens stay on it when it is played or moved onto the table, and
+  go when it leaves the table: back into its deck (any deck action that
+  takes it, a Top X reorder, a Flip face down), into a hand or to a
+  discard pile.
 - On a player's own deck or side deck, the revealed card's menu starts
   with Draw (W, default): a draw of 1 from that deck (`pile` = its deck),
   which takes the revealed card. Other players, and a card revealed on
