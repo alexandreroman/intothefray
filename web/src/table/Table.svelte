@@ -75,12 +75,14 @@
     HAND_CARD_NARROW,
     HAND_REST_DROP,
     handInsets,
+    type HandInsets,
     handRestDrop,
     isLandscape,
     isOutOfPlay,
     chipsByFrame,
     ownerFrames,
     raisedHandCard,
+    restingFanWidth,
     restingStrip,
     smallHandCard,
     smallHandDrop,
@@ -627,15 +629,42 @@
   // The room between the resting hand's strip and the controls above it on a small screen, in px.
   const ABOVE_HAND = 8;
 
-  // The room between the hero selector and the hands right of it on a wide screen, in px.
-  const HANDS_AFTER_PICKER = 32;
+  // The room between the hands and the controls beside them on a wide screen, in px.
+  const CONTROLS_GAP = 32;
 
-  // On a wide screen the hands centre in the room right of the hero selector, never under it; two
-  // hands split that room in halves. On a small screen the selector sits above the resting hand.
-  const handsLeft = $derived(
-    pickerShown && !small.current ? TABLE_EDGE + pickerWidth + HANDS_AFTER_PICKER : 0,
+  // The width of the controls at the bottom right (the zoom control, the narrow Undo).
+  let cornerWidth = $state(0);
+
+  // On a wide screen the hands keep to the room between the hero selector, when it shows, and the
+  // controls at the bottom right, never under them. On a small screen those controls sit above the
+  // resting hand.
+  const handsRoom = $derived<HandInsets>(
+    small.current
+      ? { left: 0, right: 0 }
+      : {
+          left: pickerShown ? TABLE_EDGE + pickerWidth + CONTROLS_GAP : 0,
+          right: TABLE_EDGE + cornerWidth + CONTROLS_GAP,
+        },
   );
-  const handRooms = $derived(handInsets(handSeats.length, scrollerWidth, handsLeft));
+
+  // Two hands side by side: each is laid out for half the room, and keeps for its fan the width it
+  // shows at rest when active, inactive or not. The inactive one shrinks towards the other from the
+  // edge of that width (Hand.svelte), so neither moves as the active hand changes.
+  const handRooms = $derived.by(() => {
+    const handWidth = Math.max(0, scrollerWidth - handsRoom.left - handsRoom.right) / 2;
+    const fanWidths = handSeats.map((seat) =>
+      restingFanWidth(handOf(seat).length, handWidth, baseHandCard, raisedCard),
+    );
+    return handInsets(scrollerWidth, handsRoom, fanWidths);
+  });
+
+  /** The side the other hand shown lies on, if any. */
+  function neighbourOf(index: number): 'left' | 'right' | undefined {
+    if (handSeats.length < 2) {
+      return undefined;
+    }
+    return index === 0 ? 'right' : 'left';
+  }
 
   // Whether each hand shown is raised, by its place (two hands at most); only the active one ever is.
   let handsOpen = $state([false, false]);
@@ -1764,6 +1793,7 @@
     class:floatbar={small.current}
     bind:this={cornerBox}
     bind:clientHeight={cornerHeight}
+    bind:offsetWidth={cornerWidth}
   >
     {#if narrow.current}
       <div class="undo floatbar">
@@ -1841,6 +1871,7 @@
       active={seat === handSeat}
       onactivate={() => selectSeat(seat)}
       inset={handRooms[i]}
+      neighbour={neighbourOf(i)}
       bind:open={handsOpen[i]}
     />
   {/each}
@@ -2284,12 +2315,12 @@
     z-index: 30;
     position: relative;
     /*
-      A 298 px wide portrait card in its 10 px padding and 1 px border, never wider than 45 % of
+      A 358 px wide portrait card in its 10 px padding and 1 px border, never wider than 45 % of
       the table, nor so tall that it reaches the zoom control: the top bar and the corners keep
       200 px. Keep in step with previewCardWidth (layout.ts): the raised hand's cards follow this
       card.
     */
-    width: min(320px, 45%, calc((100dvh - 200px) * 5 / 7 + 20px));
+    width: min(380px, 45%, calc((100dvh - 200px) * 5 / 7 + 20px));
     padding: 10px;
     background: var(--panel);
     border: 1px solid var(--line-strong);
@@ -2300,9 +2331,9 @@
     transition: margin-top 0.2s ease;
   }
 
-  /* A landscape card: 418 px wide. */
+  /* A landscape card: 498 px wide. */
   .peek.land {
-    width: min(440px, 45%);
+    width: min(520px, 45%);
   }
 
   /* Out of the pointer's and the hovered card's way, in another corner (focus.ts). */

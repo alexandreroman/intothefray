@@ -371,10 +371,10 @@ export function restingStrip(cardHeight: number, drop: number): number {
   return Math.max(0, Math.round(HAND_REST_SCALE * (HAND_PADDING_Y + cardHeight) - drop));
 }
 
-// The preview's frame (.peek, Table.svelte): at most 320 px wide, its 10 px padding and 1 px border
+// The preview's frame (.peek, Table.svelte): at most 380 px wide, its 10 px padding and 1 px border
 // included, never wider than 45 % of the table area, nor taller than the window less 200 px. Keep
 // in step with .peek (Table.svelte).
-const PREVIEW_MAX_W = 320;
+const PREVIEW_MAX_W = 380;
 const PREVIEW_AREA_SHARE = 0.45;
 const PREVIEW_ROOM_Y = 200;
 const PREVIEW_PADDING = 10;
@@ -447,17 +447,55 @@ export interface HandInsets {
   right: number;
 }
 
+/** The room between two fans side by side, as seen, in px. */
+export const HANDS_GAP = 24;
+
 /**
- * The room of each of `count` hands side by side at the bottom of a table
- * `width` px wide, in order: the part of the table right of `left` split in
- * equal shares.
+ * Where each hand shown lies at the bottom of a table `width` px wide, as
+ * insets from its edges, within the room `room` leaves. One hand takes the
+ * whole room. Two hands take half of it each, so that their fans narrow as one
+ * hand's does in a narrower room, and are moved together: their fans, as wide
+ * as `fanWidths` as seen, sit side by side HANDS_GAP apart, centred together in
+ * the room. A hand may then reach past the room or under the other one; its
+ * fan does not.
  */
-export function handInsets(count: number, width: number, left: number): HandInsets[] {
-  const share = Math.max(0, width - left) / count;
-  return Array.from({ length: count }, (_, i) => ({
-    left: left + i * share,
-    right: Math.max(0, width - left - (i + 1) * share),
-  }));
+export function handInsets(width: number, room: HandInsets, fanWidths: number[]): HandInsets[] {
+  if (fanWidths.length !== 2) {
+    return fanWidths.map(() => room);
+  }
+  const [first, second] = fanWidths as [number, number];
+  const roomWidth = Math.max(0, width - room.left - room.right);
+  const handWidth = roomWidth / 2;
+  const start = room.left + (roomWidth - (first + HANDS_GAP + second)) / 2;
+  const middles = [start + first / 2, start + first + HANDS_GAP + second / 2];
+  return middles.map((middle) => {
+    const left = middle - handWidth / 2;
+    return { left, right: width - left - handWidth };
+  });
+}
+
+/** How wide the fan's cards spread, end to end, in px: a card's width for an empty hand. */
+export function fanSpan(slots: FanSlot[], cardWidth: number): number {
+  if (slots.length === 0) {
+    return cardWidth;
+  }
+  const xs = slots.map((slot) => slot.x);
+  return Math.max(...xs) - Math.min(...xs) + cardWidth;
+}
+
+/**
+ * How wide the fan of a resting hand of `n` cards shows on the screen, in px:
+ * its cards laid out for a hand `handWidth` wide (restingFanPositions), at the
+ * rest scale.
+ */
+export function restingFanWidth(
+  n: number,
+  handWidth: number,
+  restCard: { w: number },
+  raisedCard: { w: number },
+): number {
+  const slots = restingFanPositions(n, handWidth, restCard.w, raisedCard.w);
+  return handRestScale(restCard, raisedCard) * fanSpan(slots, raisedCard.w);
 }
 
 const toRadians = (degrees: number) => (degrees * Math.PI) / 180;

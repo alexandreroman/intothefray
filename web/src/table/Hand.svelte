@@ -21,6 +21,7 @@
   import {
     cardBox,
     fanPositions,
+    fanSpan,
     HAND_CARD,
     HAND_PADDING,
     HAND_REST_DROP,
@@ -45,6 +46,7 @@
     active = true,
     onactivate,
     inset = { left: 0, right: 0 },
+    neighbour,
   }: {
     /** The hand, in its order. */
     cards: TableCard[];
@@ -76,6 +78,8 @@
     onactivate?: () => void;
     /** The hand's room at the bottom of the table, in from its edges: the fan centres in it. */
     inset?: HandInsets;
+    /** The side the other hand shown lies on, if any: inactive, this one shrinks towards it. */
+    neighbour?: 'left' | 'right';
   } = $props();
 
   /** The cards in the given order, then any the order does not know (drawn meanwhile). */
@@ -116,12 +120,17 @@
   );
 
   // How wide the fan spreads, in the hand's own px (before the resting scale): the glow spans it.
-  const fanWidth = $derived.by(() => {
-    if (slots.length === 0) {
-      return cardSize.w;
+  const fanWidth = $derived(fanSpan(slots, cardSize.w));
+
+  // Where an inactive hand shrinks from, from the middle of its bottom edge: the edge of its fan as
+  // seen at rest on the side of the hand beside it, so that the room between the two fans stays the
+  // same whichever is active.
+  const innerX = $derived.by(() => {
+    const half = (fanWidth * restScale) / 2;
+    if (neighbour === 'left') {
+      return -half;
     }
-    const xs = slots.map((slot) => slot.x);
-    return Math.max(...xs) - Math.min(...xs) + cardSize.w;
+    return neighbour === 'right' ? half : 0;
   });
 
   // A table card of this seat's, dragged over a hand to go back to this one.
@@ -559,6 +568,7 @@
   style:margin-right="{inset.right}px"
   style:--seat={color}
   style:--fan-w="{fanWidth}px"
+  style:--inner-x="{innerX}px"
   style:--card-w="{cardSize.w}px"
   style:--card-h="{cardSize.h}px"
   style:--rest-drop="{restDrop}px"
@@ -666,11 +676,13 @@
   }
 
   /*
-    The hand of the other deck, beside the active one: the resting hand at 72 %, from the bottom
-    middle of the window (the first scale shrinks the drop with it), and dimmed.
+    The hand of the other deck, beside the active one: the resting hand at 72 %, from the bottom of
+    the window at --inner-x, its fan's edge on the side of the active hand (the 72 % scale shrinks
+    the drop with it), and dimmed.
   */
   .hand.inactive {
-    transform: scale(0.72) translateY(var(--rest-drop)) scale(var(--rest-scale));
+    transform: translateX(var(--inner-x)) scale(0.72) translateX(calc(-1 * var(--inner-x)))
+      translateY(var(--rest-drop)) scale(var(--rest-scale));
     opacity: 0.8;
   }
 
@@ -790,10 +802,14 @@
     filter: drop-shadow(2px 2px 3px #000000a0) drop-shadow(7px 7px 10px #00000060);
   }
 
-  /* The hovered card pops up larger, keeping its tilt on the arc. */
+  /*
+    The hovered card pops up larger, keeping its tilt on the arc. Scaled from below its bottom, its
+    top rises by a third of its height: the raised hand's cards, sized from the preview's (or half
+    a small screen), leave room enough for that above them in the window.
+  */
   .hand:not(.pinned, .inactive) .hcard:hover .fan,
   .hcard.locked .fan {
-    transform: translateY(calc(var(--ty) - 31px)) rotate(var(--rot)) scale(1.2);
+    transform: translateY(calc(var(--ty) - 31px)) rotate(var(--rot)) scale(1.3);
   }
 
   /* The card selected by a tap glows in the selection colour, as on the table. */

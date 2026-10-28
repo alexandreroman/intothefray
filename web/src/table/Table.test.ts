@@ -9,6 +9,7 @@ import { cutShort } from '../lib/overflowTip.testing';
 import { clearPrefMemory } from '../lib/prefs';
 import type { CardView as TableCard, Index, PackFace, PileView, View } from '../lib/types';
 import { fakeSession, infoFrom } from './fixtures.testing';
+import { HAND_CARD, HAND_REST_SCALE, HANDS_GAP } from './layout';
 
 // The card language, as each test chooses: Options does not offer French, so no stored choice gives it.
 const cardLang = vi.hoisted(() => ({ current: 'en' as Lang }));
@@ -1767,37 +1768,91 @@ describe('several decks', () => {
     expect(handsShown()).toEqual([['Your hand', true]]);
   });
 
-  it('lays the hands out right of the selector, splitting that room in halves', async () => {
+  /** Makes the table 2000 px wide, the hero selector 300 and the zoom control's corner 150. */
+  function mockWidths(): void {
     vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockImplementation(function (
       this: HTMLElement,
     ) {
       if (this.classList.contains('picker')) {
         return 300;
       }
-      return this.classList.contains('tablewrap') ? 1200 : 0;
+      if (this.classList.contains('corner')) {
+        return 150;
+      }
+      return this.classList.contains('tablewrap') ? 2000 : 0;
     });
+  }
+
+  /** The middle of each hand shown, in px from the table's left edge. */
+  function handMiddles(): number[] {
+    return hands().map(
+      (list) =>
+        (Number.parseFloat(list.style.marginLeft) +
+          2000 -
+          Number.parseFloat(list.style.marginRight)) /
+        2,
+    );
+  }
+
+  it('sets the two fans side by side between the controls, still as the active hand changes', async () => {
+    mockWidths();
+    // Ant-Man holds three cards.
+    const view = makeTwoDeckView();
+    view.table!.cards.push(
+      card('h2', { code: '01094', owner: 1, zone: 'hand' }),
+      card('h3', { code: '01094', owner: 1, zone: 'hand' }),
+    );
+    view.table!.hands = { p0: ['h0'], p1: ['h1', 'h2', 'h3'] };
     try {
-      render(Table, { session: fakeSession(), view: makeTwoDeckView() });
+      render(Table, { session: fakeSession(), view });
       await catalogLoaded();
 
-      // The selector's right edge at 16 + 300, then 32 px: the room starts at 348 and splits at 774.
-      await waitFor(() =>
-        expect(hands().map((list) => [list.style.marginLeft, list.style.marginRight])).toEqual([
-          ['348px', '426px'],
-          ['774px', '0px'],
-        ]),
-      );
+      // The room: from the selector's right edge (16 + 300) and 32 px, to 32 px left of the
+      // corner, 16 + 150 px from the right edge: 348 to 1802. The resting fans, as seen: one base
+      // card at HAND_REST_SCALE, and three 145 apart.
+      const one = HAND_REST_SCALE * HAND_CARD.w;
+      const three = HAND_REST_SCALE * (HAND_CARD.w + 2 * 145);
+      await waitFor(() => expect(handMiddles()[0]).toBeGreaterThan(0));
+      const [first, second] = handMiddles() as [number, number];
+      const left = first - one / 2;
+      const right = second + three / 2;
+      expect((left + right) / 2).toBeCloseTo((348 + 1802) / 2);
+      expect(second - three / 2 - (first + one / 2)).toBeCloseTo(HANDS_GAP);
+
+      // Each hand half the room wide, wherever it lies.
+      for (const list of hands()) {
+        const width =
+          2000 -
+          Number.parseFloat(list.style.marginLeft) -
+          Number.parseFloat(list.style.marginRight);
+        expect(width).toBeCloseTo((1802 - 348) / 2);
+      }
+      // The inactive hand shrinks towards the active one, from its fan's edge.
+      const antMan = screen.getByRole('list', { name: 'Your Ant-Man hand' });
+      expect(Number.parseFloat(antMan.style.getPropertyValue('--inner-x'))).toBeLessThan(0);
+
+      await fireEvent.keyDown(window, { key: 'q' });
+      expect(handMiddles()).toEqual([first, second]);
+      const spiderMan = screen.getByRole('list', { name: 'Your Spider-Man hand' });
+      expect(Number.parseFloat(spiderMan.style.getPropertyValue('--inner-x'))).toBeGreaterThan(0);
     } finally {
       vi.restoreAllMocks();
     }
   });
 
-  it('lays a single hand over the whole table without a selector', async () => {
-    render(Table, { session: fakeSession(), view: makeView() });
-    await catalogLoaded();
+  it('keeps a single hand clear of the zoom control without a selector', async () => {
+    mockWidths();
+    try {
+      render(Table, { session: fakeSession(), view: makeView() });
+      await catalogLoaded();
 
-    const single = screen.getByRole('list', { name: 'Your hand' });
-    expect([single.style.marginLeft, single.style.marginRight]).toEqual(['0px', '0px']);
+      const single = screen.getByRole('list', { name: 'Your hand' });
+      await waitFor(() =>
+        expect([single.style.marginLeft, single.style.marginRight]).toEqual(['0px', '198px']),
+      );
+    } finally {
+      vi.restoreAllMocks();
+    }
   });
 
   it('shows a spectator no hand and no selector in the All view', async () => {

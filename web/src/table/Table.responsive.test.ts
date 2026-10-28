@@ -237,6 +237,15 @@ describe('Table on a narrow screen', () => {
     expect(within(peek(container) as HTMLElement).getByLabelText('Card preview')).toBeTruthy();
   });
 
+  it("sizes the preview's frame for a 358 px portrait card, 498 px landscape, within 45 % of the table", () => {
+    const peekRule = /\n {2}\.peek \{([^}]*)\}/.exec(tableSource)?.[1] ?? '';
+    expect(peekRule).toMatch(
+      /width: min\(380px, 45%, calc\(\(100dvh - 200px\) \* 5 \/ 7 \+ 20px\)\);/,
+    );
+    const landRule = /\n {2}\.peek\.land \{([^}]*)\}/.exec(tableSource)?.[1] ?? '';
+    expect(landRule).toMatch(/width: min\(520px, 45%\);/);
+  });
+
   it('a click on a card shows the preview over the table, and its menu over the preview', async () => {
     mockScreen(TABLET);
     const { container } = render(Table, { session: fakeSession(), view: makeView() });
@@ -807,6 +816,7 @@ describe('Table on a small screen', () => {
     expect(hands).toEqual([hand()]);
     expect(hand().dataset.seat).toBe('0');
     expect(hand().style.marginLeft).toBe('0px');
+    expect(hand().style.marginRight).toBe('0px');
   });
 
   it('keeps the raised hand to half the window held sideways', () => {
@@ -880,13 +890,13 @@ describe('Table raised hand', () => {
     mockScrollerWidth(1000);
     render(Table, { session: fakeSession(), view: makeView() });
 
-    // The preview's card is 298 px wide: 80 % of it, 1.4 times as tall.
-    expect(hand().style.getPropertyValue('--card-w')).toBe('238px');
-    expect(hand().style.getPropertyValue('--card-h')).toBe('333px');
-    // At rest, as large as the desktop card at 82 % (185 / 238 of it), and dropped so that 87 px of
+    // The preview's card is 358 px wide: 80 % of it, 1.4 times as tall.
+    expect(hand().style.getPropertyValue('--card-w')).toBe('286px');
+    expect(hand().style.getPropertyValue('--card-h')).toBe('400px');
+    // At rest, as large as the desktop card at 82 % (185 / 286 of it), and dropped so that 87 px of
     // the cards show, as of the desktop card dropped by 140 px.
-    expect(Number(hand().style.getPropertyValue('--rest-scale'))).toBeCloseTo(0.6374, 4);
-    expect(hand().style.getPropertyValue('--rest-drop')).toBe('137px');
+    expect(Number(hand().style.getPropertyValue('--rest-scale'))).toBeCloseTo(0.5304, 4);
+    expect(hand().style.getPropertyValue('--rest-drop')).toBe('135px');
   });
 
   it("follows the preview on a phone, the controls staying above the resting hand's strip", () => {

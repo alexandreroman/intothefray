@@ -319,6 +319,16 @@ describe('Hand', () => {
     }
   });
 
+  it('pops the hovered card up, 1.3 times as large, keeping its tilt', () => {
+    const pop =
+      /\n {2}\.hand:not\(\.pinned, \.inactive\) \.hcard:hover \.fan,\n {2}\.hcard\.locked \.fan \{([^}]*)\}/.exec(
+        handSource,
+      )?.[1];
+    expect(pop).toMatch(
+      /transform: translateY\(calc\(var\(--ty\) - 31px\)\) rotate\(var\(--rot\)\) scale\(1\.3\);/,
+    );
+  });
+
   it('keeps a card popped under it, down to the bottom of the screen; the gap slot has no foot', () => {
     // A hand card dragged back over the fan, where it would slot in second.
     interaction.press({ kind: 'hand', id: 'h1' }, {
@@ -429,11 +439,30 @@ describe('Hand beside another one', () => {
 
     expect(handList().classList).toContain('inactive');
     expect(container.querySelector('.veil')).toBeNull();
-    // 72 % of the resting hand, from the bottom middle of the window.
-    expect(rule('.hand.inactive')).toMatch(
-      /transform: scale\(0\.72\) translateY\(var\(--rest-drop\)\) scale\(var\(--rest-scale\)\);/,
+    // 72 % of the resting hand, from the bottom of the window, towards the hand beside it (--inner-x).
+    const inactive = rule('.hand.inactive').replace(/\s+/g, ' ');
+    expect(inactive).toContain(
+      'transform: translateX(var(--inner-x)) scale(0.72) translateX(calc(-1 * var(--inner-x)))' +
+        ' translateY(var(--rest-drop)) scale(var(--rest-scale));',
     );
     expect(rule('.hand.inactive')).toMatch(/opacity: 0\.8;/);
+  });
+
+  it('shrinks towards the hand beside it, from the edge of its fan as seen', async () => {
+    vi.spyOn(Element.prototype, 'clientWidth', 'get').mockReturnValue(1200);
+    const props = { cards: CARDS, faceOf, captionOf, seat: 1, active: false };
+    const { rerender } = render(Hand, { ...props, neighbour: 'left' });
+    // Three base cards 145 apart, at HAND_REST_SCALE: the fan shows 0.82 × 475 px wide.
+    const half = (HAND_REST_SCALE * (HAND_CARD.w + 2 * 145)) / 2;
+    const innerX = () => Number.parseFloat(handList().style.getPropertyValue('--inner-x'));
+    expect(innerX()).toBeCloseTo(-half);
+
+    await rerender({ ...props, neighbour: 'right' });
+    expect(innerX()).toBeCloseTo(half);
+
+    // Alone, from the middle.
+    await rerender({ ...props, neighbour: undefined });
+    expect(innerX()).toBe(0);
   });
 
   it('never opens, and turns active when the pointer comes into its band', async () => {

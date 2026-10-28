@@ -10,7 +10,9 @@ import {
   HAND_REST_DROP,
   HAND_REST_SCALE,
   handRestDrop,
+  fanSpan,
   handInsets,
+  HANDS_GAP,
   handRestScale,
   isOutOfPlay,
   outOfPlayChips,
@@ -18,6 +20,7 @@ import {
   previewCardWidth,
   raisedHandCard,
   restingFanPositions,
+  restingFanWidth,
   restingStrip,
   smallHandCard,
   smallHandDrop,
@@ -420,8 +423,8 @@ describe("a small screen's hand", () => {
 
 describe('the raised hand', () => {
   it("measures the preview's card as .peek sizes it", () => {
-    // 320 px less 10 px of padding and 1 px of border each side.
-    expect(previewCardWidth({ w: 1500, h: 1080 })).toBe(298);
+    // 380 px less 10 px of padding and 1 px of border each side.
+    expect(previewCardWidth({ w: 1500, h: 1080 })).toBe(358);
     // 45 % of a narrow table area.
     expect(previewCardWidth({ w: 500, h: 1000 })).toBe(203);
     // A short window: 5/7 of its height less 200 px, plus the padding.
@@ -432,8 +435,8 @@ describe('the raised hand', () => {
 
   it("takes 80 % of the preview's card on a desktop", () => {
     expect(raisedHandCard(HAND_CARD, { w: 1500, h: 1080 }, { small: false })).toEqual({
-      w: 238,
-      h: 333,
+      w: 286,
+      h: 400,
     });
     expect(raisedHandCard(HAND_CARD, { w: 1500, h: 600 }, { small: false })).toEqual({
       w: 227,
@@ -519,23 +522,39 @@ describe('the raised hand', () => {
   });
 });
 
+describe('fanSpan', () => {
+  it("spans the fan's cards end to end, a card's width for an empty hand", () => {
+    expect(fanSpan(fanPositions(3, 1200), HAND_CARD.w)).toBe(HAND_CARD.w + 2 * 145);
+    expect(fanSpan([], HAND_CARD.w)).toBe(HAND_CARD.w);
+  });
+});
+
+describe('restingFanWidth', () => {
+  it('measures the resting fan as seen, at the rest scale', () => {
+    const raised = { w: 238, h: 333 };
+    const slots = restingFanPositions(4, 600, HAND_CARD.w, raised.w);
+    expect(restingFanWidth(4, 600, HAND_CARD, raised)).toBeCloseTo(
+      handRestScale(HAND_CARD, raised) * fanSpan(slots, raised.w),
+    );
+    // A single card shows as the base card at HAND_REST_SCALE.
+    expect(restingFanWidth(1, 600, HAND_CARD, raised)).toBeCloseTo(HAND_REST_SCALE * HAND_CARD.w);
+  });
+});
+
 describe('handInsets', () => {
-  it('gives one hand the whole room right of the selector', () => {
-    expect(handInsets(1, 1200, 300)).toEqual([{ left: 300, right: 0 }]);
-    expect(handInsets(1, 1200, 0)).toEqual([{ left: 0, right: 0 }]);
+  it('gives one hand the whole room', () => {
+    expect(handInsets(1200, { left: 300, right: 200 }, [400])).toEqual([{ left: 300, right: 200 }]);
   });
 
-  it('splits the room in two halves for two hands, in order', () => {
-    expect(handInsets(2, 1200, 300)).toEqual([
-      { left: 300, right: 450 },
-      { left: 750, right: 0 },
+  it('gives two hands half the room each, their fans side by side, centred together', () => {
+    // The room is 300..1100: each hand 400 wide, the fans 200 and 100 wide, 24 apart, from 538.
+    const insets = handInsets(1200, { left: 300, right: 100 }, [200, 100]);
+    expect(insets).toEqual([
+      { left: 438, right: 362 },
+      { left: 612, right: 188 },
     ]);
-  });
-
-  it('never gives a negative inset before the table is measured', () => {
-    expect(handInsets(2, 0, 300)).toEqual([
-      { left: 300, right: 0 },
-      { left: 300, right: 0 },
-    ]);
+    const middles = insets.map((inset) => (inset.left + 1200 - inset.right) / 2);
+    expect(middles).toEqual([638, 812]);
+    expect(middles[1]! - 100 / 2 - (middles[0]! + 200 / 2)).toBe(HANDS_GAP);
   });
 });
