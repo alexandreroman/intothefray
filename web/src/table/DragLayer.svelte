@@ -321,17 +321,39 @@
       }
     }
     if (from.kind === 'hand') {
-      const fan = root
-        ?.querySelector(`.hand .hcard[data-id="${from.card}"] .fan`)
-        ?.getBoundingClientRect();
-      if (fan && fan.width > 0 && fan.height > 0) {
-        handSize = { w: fan.width, h: fan.height };
-        return { x: (pressedAt.x - fan.left) / fan.width, y: (pressedAt.y - fan.top) / fan.height };
+      const card = root?.querySelector<HTMLElement>(`.hand .hcard[data-id="${from.card}"]`);
+      const fan = card?.querySelector<HTMLElement>('.fan');
+      const box = fan?.getBoundingClientRect();
+      if (card && fan && box && box.width > 0 && box.height > 0) {
+        const tilt = Number.parseFloat(card.style.getPropertyValue('--rot')) || 0;
+        handSize = uprightSize(fan, box, tilt);
+        // The pressed point keeps its offset from the card's middle: the ghost takes the card's place.
+        return {
+          x: 0.5 + (pressedAt.x - (box.left + box.width / 2)) / handSize.w,
+          y: 0.5 + (pressedAt.y - (box.top + box.height / 2)) / handSize.h,
+        };
       }
       handSize = { w: HAND_CARD.w, h: HAND_CARD.h };
     }
     // A pile's card is held by its middle, as in the prototype.
     return { x: 0.5, y: 0.5 };
+  }
+
+  /**
+   * The size a hand card's picture (.fan) shows on the screen, popped or not,
+   * as the ghost draws it, upright. Not its box, which takes in its tilt: at
+   * the ends of the fan, that box is far wider than the card, and the ghost
+   * would shrink into the card at the drop. With no layout (tests), its box.
+   */
+  function uprightSize(fan: HTMLElement, box: DOMRect, degrees: number): { w: number; h: number } {
+    if (!fan.offsetWidth || !fan.offsetHeight) {
+      return { w: box.width, h: box.height };
+    }
+    const angle = (degrees * Math.PI) / 180;
+    const ratio = fan.offsetHeight / fan.offsetWidth;
+    // A card w wide and h high, turned by that angle, spans w·|cos| + h·|sin| across.
+    const w = box.width / (Math.abs(Math.cos(angle)) + ratio * Math.abs(Math.sin(angle)));
+    return { w, h: w * ratio };
   }
 
   /** The box of the dragged card on the table, in table units. */

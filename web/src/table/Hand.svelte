@@ -433,8 +433,37 @@
     reordered = null;
     if (id !== null && open && isOnCard(id, at)) {
       interaction.keep(seat, id);
+      if (kept === id) {
+        settle(id);
+      }
     }
   }
+
+  // The kept card just dropped, shown popped at once (see settle), if any.
+  let settling = $state<string | null>(null);
+  let settleFrame = 0;
+
+  /**
+   * The dropped card shows popped at once, as the dragged card was, rather
+   * than growing into its pop from its slot at rest: measuring it on the drop
+   * (isOnCard) gave it its unpopped style, which the pop would transition
+   * from. The pop transition is off (.settling) until the browser has drawn
+   * it popped, two frames later; later pops and falls transition as usual.
+   */
+  function settle(id: string): void {
+    cancelAnimationFrame(settleFrame);
+    settling = id;
+    settleFrame = requestAnimationFrame(() => {
+      settleFrame = requestAnimationFrame(() => {
+        settleFrame = 0;
+        settling = null;
+      });
+    });
+  }
+
+  $effect(() => {
+    return () => cancelAnimationFrame(settleFrame);
+  });
 
   /**
    * The kept card stays focused while the pointer stays on its own hit area,
@@ -737,6 +766,7 @@
         data-id={card.id}
         class:locked={interaction.isLocked({ kind: 'hand', id: card.id })}
         class:kept={card.id === kept}
+        class:settling={card.id === settling}
         class:arriving={motion.drawing.has(card.id)}
         style:--x="{slot?.x ?? 0}px"
         style:--rot="{slot?.angle ?? 0}deg"
@@ -978,6 +1008,11 @@
   .hcard.kept .fan,
   .hcard.locked .fan {
     transform: translateY(calc(var(--ty) - 31px)) rotate(var(--rot)) scale(1.3);
+  }
+
+  /* A card just dropped by a reorder lands popped, as it was dragged: it does not grow into it. */
+  .hcard.settling .fan {
+    transition: none;
   }
 
   /* The card selected by a tap glows in the selection colour, as on the table. */

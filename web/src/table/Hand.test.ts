@@ -493,6 +493,24 @@ describe('Hand after a reorder', () => {
     expect(interaction.hovered).toEqual({ kind: 'hand', id: 'h3' });
   });
 
+  it('lands the moved card popped at once, with no pop transition, for two frames only', async () => {
+    render(Hand, { cards: CARDS, faceOf, captionOf, seat: 0 });
+    expect(rule('.hcard.settling .fan')).toMatch(/^\s*transition: none;\s*$/);
+
+    await dragFirstCardSecond({ clientX: 780, clientY: 800 });
+    expect(cardOf('h1').classList).toContain('settling');
+    expect(handList().querySelectorAll('.settling')).toHaveLength(1);
+
+    const nextFrame = () => new Promise((resolve) => requestAnimationFrame(resolve));
+    await nextFrame();
+    await tick();
+    expect(cardOf('h1').classList).toContain('settling');
+    await nextFrame();
+    await tick();
+    expect(cardOf('h1').classList).not.toContain('settling');
+    expect(cardOf('h1').classList).toContain('kept');
+  });
+
   it('keeps nothing when the pointer is off the moved card at the drop', async () => {
     render(Hand, { cards: CARDS, faceOf, captionOf, seat: 0 });
 
@@ -500,6 +518,7 @@ describe('Hand after a reorder', () => {
     await dragFirstCardSecond({ clientX: 850, clientY: 800 });
     expect(interaction.kept).toBeNull();
     expect(handList().querySelector('.kept')).toBeNull();
+    expect(handList().querySelector('.settling')).toBeNull();
   });
 
   it('keeps nothing when a table card is dropped into the hand', async () => {
