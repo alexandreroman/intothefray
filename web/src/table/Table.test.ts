@@ -1158,21 +1158,22 @@ describe('Table view modes', () => {
 
     const picker = screen.getByRole('radiogroup', { name: 'Player shown' });
     const swatches = within(picker).getAllByRole('radio');
-    // Swatches without a visible name: it is their label and tooltip. Only the chosen one is tabbed to.
+    // Each named with its player and hero, in its label and tooltip. Only the chosen one is tabbed to.
     expect(
       swatches.map((swatch) => [
         swatch.getAttribute('aria-label'),
         swatch.dataset.tip,
-        swatch.textContent,
         swatch.getAttribute('aria-checked'),
         swatch.tabIndex,
       ]),
     ).toEqual([
-      ['Alex · Spider-Man', 'Alex · Spider-Man', '', 'false', -1],
-      ['Sam · Ant-Man', 'Sam · Ant-Man', '', 'true', 0],
+      ['Alex · Spider-Man', 'Alex · Spider-Man', 'false', -1],
+      ['Sam · Ant-Man', 'Sam · Ant-Man', 'true', 0],
     ]);
+    // Only the current entry names its hero beside its avatar.
+    expect(picker.querySelector('[aria-checked="true"] .txt')?.textContent).toBe('Ant-Man');
     // Two players: no previous and next buttons.
-    expect(screen.queryByRole('button', { name: 'Next player' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Next hero' })).toBeNull();
 
     await fireEvent.click(within(picker).getByRole('radio', { name: 'Alex · Spider-Man' }));
     expect(shownIds()).toEqual(['enc', 'd0', 'v', 's', 'a']);
@@ -1200,11 +1201,11 @@ describe('Table view modes', () => {
         .getAllByRole('radio', { checked: true })
         .map((swatch) => swatch.getAttribute('aria-label'));
     expect(checked()).toEqual(['Sam · Ant-Man']);
-    await fireEvent.click(screen.getByRole('button', { name: 'Next player' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Next hero' }));
     expect(checked()).toEqual(['Kim']);
-    await fireEvent.click(screen.getByRole('button', { name: 'Next player' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Next hero' }));
     expect(checked()).toEqual(['Alex · Spider-Man']);
-    await fireEvent.click(screen.getByRole('button', { name: 'Previous player' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Previous hero' }));
     expect(checked()).toEqual(['Kim']);
   });
 
@@ -1360,13 +1361,13 @@ describe('several decks', () => {
       .map((image) => image.getAttribute('alt'));
   }
 
-  /** The player selector at the bottom left, in "Villain + player" only. */
+  /** The hero selector at the bottom left, as "Villain + player" names it. */
   function picker(): HTMLElement {
     return screen.getByRole('radiogroup', { name: 'Player shown' });
   }
 
-  function checkedDeck(): (string | null)[] {
-    return within(picker())
+  function checkedDeck(name = 'Player shown'): (string | null)[] {
+    return within(screen.getByRole('radiogroup', { name }))
       .getAllByRole('radio', { checked: true })
       .map((swatch) => swatch.getAttribute('aria-label'));
   }
@@ -1378,11 +1379,60 @@ describe('several decks', () => {
     expect(handNames()).toEqual(['Spider-Man']);
   });
 
-  it('shows no selector in the All view, even to a player with two decks', async () => {
+  it("lists the viewer's own decks in the selector of the All view, picking the hand shown", async () => {
     render(Table, { session: fakeSession(), view: makeTwoDeckView() });
-    await catalogLoaded();
+    await within(hand()).findByRole('img', { name: 'Spider-Man' });
 
-    expect(screen.queryByRole('radiogroup')).toBeNull();
+    const handPicker = screen.getByRole('radiogroup', { name: 'Hand shown' });
+    const swatches = within(handPicker).getAllByRole('radio');
+    expect(swatches.map((swatch) => swatch.getAttribute('aria-label'))).toEqual([
+      'Alex · Spider-Man',
+      'Alex · Ant-Man',
+    ]);
+    // Each with its hand size.
+    expect(swatches.map((swatch) => swatch.querySelector('.n')?.textContent)).toEqual(['1', '1']);
+    expect(checkedDeck('Hand shown')).toEqual(['Alex · Spider-Man']);
+
+    await fireEvent.click(within(handPicker).getByRole('radio', { name: 'Alex · Ant-Man' }));
+    expect(checkedDeck('Hand shown')).toEqual(['Alex · Ant-Man']);
+    expect(handNames()).toEqual(['Rhino']);
+    // Every row still shows.
+    expect(shownIds()).toEqual(expect.arrayContaining(['a', 'b', 'c']));
+  });
+
+  it("follows Q in the All view's selector", async () => {
+    render(Table, { session: fakeSession(), view: makeTwoDeckView() });
+    await within(hand()).findByRole('img', { name: 'Spider-Man' });
+
+    await fireEvent.keyDown(window, { key: 'q' });
+    expect(checkedDeck('Hand shown')).toEqual(['Alex · Ant-Man']);
+  });
+
+  it('keeps the Focus panel off the bottom left corner while the selector shows in the All view', async () => {
+    const rect = (left: number, top: number, width: number, height: number) =>
+      ({ left, top, width, height, right: left + width, bottom: top + height }) as DOMRect;
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: Element,
+    ) {
+      if (this.classList.contains('tablewrap')) {
+        return rect(0, 0, 1000, 800);
+      }
+      // Rhino lies under the bottom right corner.
+      return (this as HTMLElement).dataset.id === 'v' ? rect(800, 500, 140, 196) : rect(0, 0, 0, 0);
+    });
+    vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(320);
+    vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(450);
+    try {
+      render(Table, { session: fakeSession(), view: makeTwoDeckView() });
+      await catalogLoaded();
+      expect(screen.getByRole('radiogroup', { name: 'Hand shown' })).toBeTruthy();
+
+      await fireEvent.pointerEnter(surface().querySelector('.card[data-id="v"]') as HTMLElement);
+      // The bottom left corner holds the selector: the panel takes the top left one.
+      expect(preview().closest('.peek')?.classList).toContain('top-left');
+    } finally {
+      vi.restoreAllMocks();
+    }
   });
 
   it('lists every seat in the selector of the Villain + player view', async () => {

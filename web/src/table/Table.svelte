@@ -20,7 +20,6 @@
   import { playerColorVar } from '../lib/playerColor';
   import { getPref, setPref } from '../lib/prefs';
   import { SMALL_SCREEN_QUERY } from '../lib/screen';
-  import { selectionIndicator } from '../lib/selectionIndicator';
   import type { GameSession } from '../lib/session.svelte';
   import type {
     Action,
@@ -66,6 +65,7 @@
   import Flights from './Flights.svelte';
   import { backCaption, isHidden } from './face';
   import Hand from './Hand.svelte';
+  import HeroPicker, { type HeroEntry } from './HeroPicker.svelte';
   import { interaction, type PreviewChange } from './interaction.svelte';
   import { handleKey } from './keys';
   import KeysSheet from './KeysSheet.svelte';
@@ -106,6 +106,7 @@
     seatDeck,
     seatFullLabel,
     seatOf,
+    seatPlayer,
   } from './seats';
   import { tableCard, tablePile } from './screen';
   import { cardsInBand, isFree } from './selection';
@@ -328,8 +329,7 @@
   });
 
   // "Villain + player", when there is a choice to make: with one player, "All" already shows the
-  // villain and that player. The player selector at the bottom left, listing every seat, shows only
-  // then: "All" already shows every hero.
+  // villain and that player.
   const focused = $derived(viewMode === 'focus' && seats.length > 1 && shownSeat !== null);
 
   // The selected deck's hand, unless "Villain + player" shows another player's row: then no hand shows,
@@ -352,6 +352,30 @@
       : ALL_ROWS,
   );
 
+  // The hero selector at the bottom left (HeroPicker): in "Villain + player", every seat, its entry
+  // picking the row shown; in "All", the viewer's own decks, its entry picking the hand shown. It
+  // shows only with two entries or more: a single hero leaves nothing to pick.
+  const pickerEntries = $derived<HeroEntry[]>(
+    seatedDecks
+      .filter(({ seat }) => focused || own.includes(seat))
+      .map(({ seat, name, color }) => {
+        const deck = seatDeck(view, seat);
+        return {
+          seat,
+          label: name,
+          name: deck?.heroName ?? seatPlayer(view, seat)?.name ?? '',
+          image: deck?.heroImage,
+          color: playerColorVar(color),
+          handCount: deck?.handCount ?? 0,
+        };
+      }),
+  );
+  const pickerCurrent = $derived(focused ? shownSeat : selected);
+  const pickerShown = $derived(pickerEntries.length > 1 && pickerCurrent !== null);
+  // The selector's width in px while it shows, bound out of HeroPicker. Not used yet: the hands are
+  // to be laid out in the room right of it on a wide screen.
+  let pickerWidth = $state(0);
+
   // Shift + ← / → steps through the selector's heroes; in "All", through the viewer's own decks.
   const canStepHero = $derived(focused || own.length > 1);
 
@@ -364,7 +388,7 @@
     }
   }
 
-  /** Picks the seat `step` swatches after the current one in the player selector, round it. */
+  /** Picks the seat `step` seats after the current one, round the table. */
   function stepSeat(current: number, step: number): void {
     const choices = seatedDecks.map((deck) => deck.seat);
     const index = choices.indexOf(current);
@@ -378,28 +402,6 @@
     }
     const index = own.indexOf(selected);
     selectSeat(own[(index + step + own.length) % own.length] ?? selected);
-  }
-
-  // The arrow keys in the player swatches, as in any radio group.
-  const SEAT_STEPS: Record<string, number> = {
-    ArrowRight: 1,
-    ArrowDown: 1,
-    ArrowLeft: -1,
-    ArrowUp: -1,
-  };
-
-  /** Moves the choice, and the keyboard focus with it, to the next or previous swatch. */
-  async function onSeatKey(event: KeyboardEvent, current: number): Promise<void> {
-    const step = SEAT_STEPS[event.key];
-    if (step === undefined) {
-      return;
-    }
-    // Taken: the table's own shortcuts must not see it.
-    event.preventDefault();
-    const group = event.currentTarget as HTMLElement;
-    stepSeat(current, step);
-    await tick();
-    group.querySelector<HTMLElement>('[aria-checked="true"]')?.focus();
   }
 
   /** What lies at a height of the table, drawn where the view mode shows it; nothing when hidden. */
@@ -676,8 +678,8 @@
       size: { w: focusWidth, h: focusHeight },
       hovered: focusHovered,
       controls: homeControls,
-      // The player selector at the bottom left.
-      taken: focused ? ['bottom-left'] : [],
+      // The hero selector at the bottom left.
+      taken: pickerShown ? ['bottom-left'] : [],
     });
     focusCorner = next;
   }
@@ -701,7 +703,7 @@
       visibleHeight,
       focusWidth,
       focusHeight,
-      focused,
+      pickerShown,
       homeControls,
       barRoom,
     ];
@@ -1610,60 +1612,6 @@
   });
 </script>
 
-<!--
-  The player selector of "Villain + player": which player's row shows, and, on an own seat, which of
-  the viewer's decks is selected (its hand shows). One swatch in each seat's colour, named for screen
-  readers and in its tooltip only, as the name already shows above the player's deck.
--->
-{#snippet seatPicker(current: number)}
-  <div class="seatpick floatbar">
-    {#if seatedDecks.length > 2}
-      <button
-        class="btn-ghost step"
-        aria-label="Previous player"
-        data-tip="Previous player"
-        onclick={() => stepSeat(current, -1)}>←</button
-      >
-    {/if}
-    <div
-      class="seats"
-      role="radiogroup"
-      aria-label="Player shown"
-      tabindex="-1"
-      onkeydown={(event) => onSeatKey(event, current)}
-      use:selectionIndicator
-    >
-      <!-- The ring around the player shown, in their colour: it slides, and its colour fades. -->
-      <span
-        class="ring"
-        data-indicator
-        aria-hidden="true"
-        style:--seat={playerColorVar(seatColor(view, current) ?? 0)}
-      ></span>
-      {#each seatedDecks as { seat, name, color } (seat)}
-        <button
-          class="seat"
-          style:--seat={playerColorVar(color)}
-          role="radio"
-          aria-label={name}
-          data-tip={name}
-          aria-checked={seat === current}
-          tabindex={seat === current ? 0 : -1}
-          onclick={() => selectSeat(seat)}
-        ></button>
-      {/each}
-    </div>
-    {#if seatedDecks.length > 2}
-      <button
-        class="btn-ghost step"
-        aria-label="Next player"
-        data-tip="Next player"
-        onclick={() => stepSeat(current, 1)}>→</button
-      >
-    {/if}
-  </div>
-{/snippet}
-
 <svelte:window
   onpointermove={onPointerMove}
   onpointerdowncapture={(event) => interaction.pointerPressed(event)}
@@ -1821,8 +1769,17 @@
     />
   </div>
 
-  {#if focused && shownSeat !== null}
-    {@render seatPicker(shownSeat)}
+  {#if pickerShown && pickerCurrent !== null}
+    <div class="seatpick">
+      <HeroPicker
+        entries={pickerEntries}
+        current={pickerCurrent}
+        label={focused ? 'Player shown' : 'Hand shown'}
+        compact={small.current}
+        onpick={selectSeat}
+        bind:width={pickerWidth}
+      />
+    </div>
   {/if}
 
   {#if keySheetShown}
@@ -2173,9 +2130,6 @@
     justify-self: start;
     z-index: 30;
     margin: 0 0 var(--edge-bottom) var(--edge);
-    display: flex;
-    align-items: center;
-    gap: 4px;
   }
 
   /*
@@ -2185,49 +2139,6 @@
   */
   .app.compact .seatpick {
     margin-bottom: calc(var(--controls-bottom) + var(--bar-button) + 18px);
-  }
-
-  .seatpick .step {
-    height: var(--bar-button);
-    padding: 0 8px;
-    border: none;
-    border-radius: 8px;
-    color: var(--text-soft);
-  }
-
-  /* A round swatch of the seat colour; the player shown is ringed. */
-  .seatpick .seats {
-    position: relative;
-    height: var(--bar-button);
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-
-  .seatpick .seat {
-    width: 18px;
-    height: 18px;
-    margin: 5px;
-    padding: 0;
-    border: none;
-    border-radius: 50%;
-    background: var(--seat);
-    opacity: 0.6;
-  }
-
-  .seatpick .seat:hover {
-    opacity: 1;
-  }
-
-  .seatpick .seat[aria-checked='true'] {
-    opacity: 1;
-  }
-
-  .seatpick .ring {
-    border-radius: 50%;
-    box-shadow:
-      0 0 0 2px #141a28,
-      0 0 0 4px var(--seat);
   }
 
   /* As the zoom control: under the veil and the raised hand. */

@@ -25,6 +25,7 @@ import {
 import { knownCard, loadGameCards, loadIndex } from '../lib/catalog';
 import type { CardView as TableCard, PileView, View } from '../lib/types';
 import tableSource from './Table.svelte?raw';
+import pickerSource from './HeroPicker.svelte?raw';
 import sidePanelSource from './SidePanel.svelte?raw';
 import zoomSource from './ZoomControl.svelte?raw';
 import menuSource from './ContextMenu.svelte?raw';
@@ -362,15 +363,33 @@ describe('Table in the window', () => {
     expect(FOCUS_MARGINS.bottom).toBe(TABLE_EDGE_BOTTOM);
   });
 
-  it("gives the player selector the zoom control's height, so that their edges line up", () => {
+  it("gives the hero selector's step buttons the zoom control's button height", () => {
     const appRule = /\n {2}\.app \{([^}]*)\}/.exec(tableSource)?.[1];
     expect(appRule).toMatch(/--bar-button: 32px;/);
     const zoomButtonRule = /\n {2}button \{([^}]*)\}/.exec(zoomSource)?.[1];
     expect(zoomButtonRule).toMatch(/height: var\(--bar-button\);/);
-    const swatchesRule = /\n {2}\.seatpick \.seats \{([^}]*)\}/.exec(tableSource)?.[1];
-    expect(swatchesRule).toMatch(/height: var\(--bar-button\);/);
-    const stepRule = /\n {2}\.seatpick \.step \{([^}]*)\}/.exec(tableSource)?.[1];
+    const stepRule = /\n {2}\.step \{([^}]*)\}/.exec(pickerSource)?.[1];
     expect(stepRule).toMatch(/height: var\(--bar-button\);/);
+  });
+
+  it('draws smaller avatars, closer together, on a small screen', async () => {
+    mockScreen(PHONE);
+    const view = makeView();
+    view.you = { ...view.you, areas: ['p0', 'p1'] };
+    view.players = [
+      {
+        ...view.players[0]!,
+        decks: [
+          { area: 'p0', heroName: 'Spider-Man', ready: true, handCount: 0 },
+          { area: 'p1', heroName: 'Ant-Man', ready: true, handCount: 0 },
+        ],
+      },
+    ];
+    const { container } = render(Table, { session: fakeSession(), view });
+    expect(container.querySelector('.seatpick .picker')?.classList).toContain('compact');
+    const compactRule = /\n {2}\.compact \.heroes \{([^}]*)\}/.exec(pickerSource)?.[1];
+    expect(compactRule).toMatch(/--avatar: 30px;/);
+    expect(compactRule).toMatch(/--spacing: 14px;/);
   });
 });
 
