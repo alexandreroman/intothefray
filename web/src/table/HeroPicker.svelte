@@ -234,6 +234,19 @@
     box-shadow: 0 0 0 2px #3a4258;
   }
 
+  /*
+    The keyboard focus rings the avatar alone, round and outside the player-colour ring (which
+    reaches 4.5px past the avatar), rather than boxing the whole entry with its name.
+  */
+  .item:focus-visible {
+    outline: none;
+  }
+
+  .item:focus-visible .swatch {
+    outline: 2px solid var(--sel);
+    outline-offset: 6px;
+  }
+
   /* A hero not current is greyed; it takes its colours back as it becomes current. */
   .art {
     position: absolute;
