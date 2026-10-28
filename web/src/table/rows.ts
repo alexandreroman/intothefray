@@ -13,8 +13,8 @@ import type { PileView } from '../lib/types';
  */
 export const VILLAIN_ROW_HEIGHT = 470;
 
-/** The height of a player's row, in table units: row r ≥ 1 covers [470 + 330·(r−1), 470 + 330·r). */
-export const ROW_HEIGHT = 330;
+/** The height of a player's row, in table units: row r ≥ 1 covers [470 + 270·(r−1), 470 + 270·r). */
+export const ROW_HEIGHT = 270;
 
 export type ViewMode = 'all' | 'focus';
 

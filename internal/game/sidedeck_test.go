@@ -236,10 +236,10 @@ func TestSetupSetAsideHeroCards(t *testing.T) {
 // They change only with the card data of the heroes and scenario they use,
 // with the fields of a card (the identity mark), or with the default
 // positions (the first player token beside the first identity, the villain
-// row).
+// row, the height of a player's row).
 const (
-	spiderManSetupHash = "dad18a09914ac4bd6436321880778467dc90c68088181ce8934d595171d4436c"
-	threeDeckSetupHash = "027d2eefcfde317abda21b68c2804c870a77f77fcc075be3725611f03bcfef8d"
+	spiderManSetupHash = "6a7ac5ce222a221c8ba18ba22da19913126711199628c2bc0a7dbd3bb7cd5b76"
+	threeDeckSetupHash = "4873693c251c68db6054915a14381da3e3f8f5dc943baa80459c34cd8ca2c6f4"
 )
 
 func TestSetupWithoutSideDecksIsUnchanged(t *testing.T) {
@@ -490,7 +490,7 @@ func TestSideDeckViews(t *testing.T) {
 
 	// A face-down side card on the table hides its code, not its home: every
 	// viewer, its owner or not, sees which deck it came from.
-	f.mustDo(t, "b", Action{Kind: ActPlay, Card: sense, X: 800, Y: 830}, at(3))
+	f.mustDo(t, "b", Action{Kind: ActPlay, Card: sense, X: 800, Y: 770}, at(3))
 	f.g.Table.Cards[sense].FaceDown = true
 	for _, token := range []string{"h", "b", "nobody"} {
 		for _, cv := range f.g.ViewFor(token).Table.Cards {
