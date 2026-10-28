@@ -39,7 +39,10 @@ type: project
   height (`spreadRows`, web/src/table/rows.ts), in both views: the
   villain row and two player rows fill the visible height above the
   resting hand, with the same margin between every row, a 3rd and 4th
-  deck included. The pitch is computed in px at zoom 1, so zooming never
+  deck included. With a single deck, the villain row and its one player
+  row fill it: the villain row is drawn as high as leaves the player row's
+  270 at the bottom (310–470); a game with 2+ decks keeps the two-row
+  spacing in "Villain + player" too. The pitch is computed in px at zoom 1, so zooming never
   changes it; it stays within 270–470 units, and the villain row is drawn
   at least 310 high so the active counter clears the first player's row.
   Server positions never depend on a viewer's screen.

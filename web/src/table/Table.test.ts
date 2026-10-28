@@ -1172,6 +1172,33 @@ describe('Table view modes', () => {
     expect([top('v'), top('a'), top('b')]).toEqual(['30px', '430px', '830px']);
   });
 
+  it("spreads a single deck's row and the villain's over the height the table shows", async () => {
+    // 800 px tall: past the scroller's top padding (24) and the resting hand's strip (108), 668 px
+    // for the rows: the villain's row and the one player's row, 270 high, fill them, the villain's
+    // drawn 398 high, 390 on the grid.
+    vi.spyOn(Element.prototype, 'clientHeight', 'get').mockImplementation(function (this: Element) {
+      return this.classList.contains('tablewrap') ? 800 : 0;
+    });
+    const view = makeView({
+      cards: [
+        card('v', { code: '01094', back: 'villain', x: 360, y: 30 }),
+        card('b', { code: '01001', owner: 1, x: 360, y: 500 }),
+        card('h', { code: '01001', owner: 1, zone: 'hand', x: 0, y: 0 }),
+      ],
+      piles: [
+        pile('enc', { kind: 'encounter', x: 0, y: 30 }),
+        pile('d1', { owner: 1, x: 0, y: 500 }),
+      ],
+    });
+    render(Table, { session: fakeSession(), view });
+    await catalogLoaded();
+
+    const top = (id: string) =>
+      surface().querySelector<HTMLElement>(`[data-id="${id}"]`)?.style.top;
+    // Sam's row drawn at the villain's row's height, 390, his card 30 into it.
+    expect([top('v'), top('b')]).toEqual(['30px', '420px']);
+  });
+
   it('spreads the rows the same at any zoom', async () => {
     // The screen of the test above, zoomed out to 50 %: in table units, the rows are drawn where
     // they are at 100 %, the zoom only showing more of the table.

@@ -91,7 +91,7 @@ describe('groupAction', () => {
     // As close as they go: the villain's row drawn 310 high, its empty band from 260 squeezed into
     // 50; player 1's row from 310. A villain card in that band, drawn at 269.5, and a card of
     // player 1's, 30 into its row, drawn at 340.
-    const rows = spreadRows(rowPitch(0), 1);
+    const rows = spreadRows(rowPitch(0, 1), 1);
     const spread = [card('v', { x: 300, y: 300 }), card('p', { x: 100, y: 500 })];
     // Player 1's card dropped 20 lower: the villain card is drawn 20 lower too, at 289.5, which is
     // 384 on the table, not the 320 a table offset gives.

@@ -515,11 +515,14 @@
     (small.current && own.length > 0 ? restingRoom + ABOVE_HAND : TABLE_EDGE_BOTTOM) + cornerHeight,
   );
   const rowsBottom = $derived(Math.max(restingRoom, controlsRoom));
-  // The rows spread over the visible height they have, at zoom 1: zooming out shows more of the
-  // table, it does not spread its rows further (rowPitch).
-  const pitch = $derived(rowPitch(visibleHeight - SCROLL_PADDING - barStart - rowsBottom));
   // Numbers, so that the row map, which the layers re-measure on, changes only with them.
   const lastDeckRow = $derived(lastRow(piles));
+  // The rows spread over the visible height they have, at zoom 1: the villain's row and two players'
+  // rows, or a single deck's one, fill it. Zooming out shows more of the table, it does not spread
+  // its rows further (rowPitch).
+  const pitch = $derived(
+    rowPitch(visibleHeight - SCROLL_PADDING - barStart - rowsBottom, lastDeckRow),
+  );
   const shownRow = $derived(
     focused && shownSeat !== null ? rowOfSeat(piles, shownSeat) : undefined,
   );

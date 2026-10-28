@@ -76,17 +76,22 @@ const VILLAIN_CONTENT = 260;
 
 /**
  * The drawn height of a player's row, in table units, for `available` px of
- * visible height: the villain's row and two players' rows fill it, that is two
- * pitches and the last row's own band (its cards and the room under them).
- * The same pitch spaces every player's row, a third or a fourth deck's too,
- * on the 10-unit grid. Computed at zoom 1: zooming out shows more of the
- * table, it does not spread its rows.
+ * visible height, with players' rows down to `lastRow`: the villain's row and
+ * two players' rows fill it, that is two pitches and the last row's own band
+ * (its cards and the room under them). The same pitch spaces every player's
+ * row, a third or a fourth deck's too, on the 10-unit grid. With a single
+ * deck, the villain's row and its one player's row fill it: the one pitch,
+ * which the villain's row is drawn as high as (villainPitch), takes all the
+ * height above the player's band. Computed at zoom 1: zooming out shows more
+ * of the table, it does not spread its rows.
  */
-export function rowPitch(available: number): number {
-  let pitch = (available - ROW_HEIGHT) / 2;
-  // The villain's row is drawn higher than a pitch this short (villainPitch): the one pitch left
-  // takes what that row leaves.
-  if (pitch < MIN_VILLAIN_PITCH) {
+export function rowPitch(available: number, lastRow: number): number {
+  // A third or a fourth deck's row is drawn below the screen's height, a pitch apart.
+  const fittedRows = lastRow === 1 ? 1 : 2;
+  let pitch = (available - ROW_HEIGHT) / fittedRows;
+  // The villain's row is drawn higher than a pitch this short (villainPitch): with two players'
+  // rows, the one pitch left takes what that row leaves.
+  if (fittedRows === 2 && pitch < MIN_VILLAIN_PITCH) {
     pitch = available - ROW_HEIGHT - MIN_VILLAIN_PITCH;
   }
   const onGrid = Math.floor(pitch / GRID) * GRID;

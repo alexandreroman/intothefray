@@ -39,21 +39,42 @@ describe('rows', () => {
 
   it("fits the villain's row and two players' rows in the height available, on the grid", () => {
     // Two pitches and the last row's 270: (1078 − 270) / 2 = 404, 400 on the grid.
-    expect(rowPitch(1078)).toBe(400);
-    expect(rowPitch(1090)).toBe(410);
+    expect(rowPitch(1078, 2)).toBe(400);
+    expect(rowPitch(1090, 2)).toBe(410);
     // Never closer than the table's rows, nor further apart than the villain's row.
-    expect(rowPitch(0)).toBe(ROW_HEIGHT);
-    expect(rowPitch(800)).toBe(ROW_HEIGHT);
-    expect(rowPitch(5000)).toBe(VILLAIN_ROW_HEIGHT);
+    expect(rowPitch(0, 2)).toBe(ROW_HEIGHT);
+    expect(rowPitch(800, 2)).toBe(ROW_HEIGHT);
+    expect(rowPitch(5000, 2)).toBe(VILLAIN_ROW_HEIGHT);
+    // A third or a fourth deck's row is spaced the same, below the screen's height.
+    expect(rowPitch(1078, 3)).toBe(400);
+    expect(rowPitch(1078, 4)).toBe(400);
+  });
+
+  it("fits the villain's row and a single deck's row in the height available, on the grid", () => {
+    // One pitch and the player's row's 270: 668 − 270 = 398, 390 on the grid.
+    expect(rowPitch(668, 1)).toBe(390);
+    expect(villainPitch(rowPitch(668, 1))).toBe(390);
+    expect(rowPitch(680, 1)).toBe(410);
+    // The villain's row drawn at least 310 high, and never higher than it lies.
+    expect(villainPitch(rowPitch(0, 1))).toBe(310);
+    expect(villainPitch(rowPitch(575, 1))).toBe(310);
+    expect(villainPitch(rowPitch(5000, 1))).toBe(VILLAIN_ROW_HEIGHT);
+    for (let available = 0; available < 1000; available++) {
+      const villain = villainPitch(rowPitch(available, 1));
+      expect(villain % 10).toBe(0);
+      if (villain > 310) {
+        expect(villain + ROW_HEIGHT).toBeLessThanOrEqual(available);
+      }
+    }
   });
 
   it("leaves a pitch what the villain's row, drawn higher, leaves of the height", () => {
     // Halved, 850 would give 290: the villain's row 310 high, the one pitch left gets 270.
-    expect(rowPitch(850)).toBe(270);
-    expect(rowPitch(875)).toBe(290);
-    expect(rowPitch(890)).toBe(310);
+    expect(rowPitch(850, 2)).toBe(270);
+    expect(rowPitch(875, 2)).toBe(290);
+    expect(rowPitch(890, 2)).toBe(310);
     for (let available = 800; available < 1000; available++) {
-      const pitch = rowPitch(available);
+      const pitch = rowPitch(available, 2);
       if (pitch > ROW_HEIGHT) {
         expect(villainPitch(pitch) + pitch + ROW_HEIGHT).toBeLessThanOrEqual(available);
       }
@@ -98,7 +119,7 @@ describe('rows', () => {
     });
 
     it('draws the rows as close as they go on a screen with no room', () => {
-      const close = spreadRows(rowPitch(0), 2);
+      const close = spreadRows(rowPitch(0, 2), 2);
       // The villain's row 310 high, then 270 for each player's.
       expect(close.toDisplay(500)).toBe(340);
       expect(close.toDisplay(770)).toBe(610);
