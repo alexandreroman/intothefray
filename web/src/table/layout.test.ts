@@ -10,8 +10,8 @@ import {
   HAND_REST_DROP,
   HAND_REST_SCALE,
   handRestDrop,
-  fanSpan,
-  handInsets,
+  fanExtent,
+  fanOffsets,
   HANDS_GAP,
   handRestScale,
   isOutOfPlay,
@@ -522,39 +522,52 @@ describe('the raised hand', () => {
   });
 });
 
-describe('fanSpan', () => {
-  it("spans the fan's cards end to end, a card's width for an empty hand", () => {
-    expect(fanSpan(fanPositions(3, 1200), HAND_CARD.w)).toBe(HAND_CARD.w + 2 * 145);
-    expect(fanSpan([], HAND_CARD.w)).toBe(HAND_CARD.w);
+describe('fanExtent', () => {
+  it('reaches as far as the cards upright, with no tilt', () => {
+    const slots = [
+      { x: -100, y: 0, angle: 0 },
+      { x: 100, y: 0, angle: 0 },
+    ];
+    expect(fanExtent(slots, { w: 200, h: 280 })).toEqual({ left: -200, right: 200 });
+    // An empty hand keeps a card's room.
+    expect(fanExtent([], { w: 200, h: 280 })).toEqual({ left: -100, right: 100 });
+  });
+
+  it("takes in the end cards' top outer corners, tilted about a point below their bottom", () => {
+    // Turned 90° clockwise about a point 28 below its bottom middle (110 % of 280 under its top), a
+    // card 200 by 280 lies from 28 to 308 right of that point.
+    const extent = fanExtent([{ x: 0, y: 0, angle: 90 }], { w: 200, h: 280 });
+    expect(extent.left).toBeCloseTo(28);
+    expect(extent.right).toBeCloseTo(308);
+    // On a real fan the end cards stick out past their upright slots.
+    const fan = fanPositions(5, 1200);
+    const upright = Math.max(...fan.map((slot) => slot.x)) + HAND_CARD.w / 2;
+    const tilted = fanExtent(fan, HAND_CARD);
+    expect(tilted.right).toBeGreaterThan(upright + 20);
+    expect(tilted.left).toBeCloseTo(-tilted.right);
   });
 });
 
 describe('restingFanWidth', () => {
-  it('measures the resting fan as seen, at the rest scale', () => {
+  it('measures the resting fan as seen, tilted end cards included, at the rest scale', () => {
     const raised = { w: 238, h: 333 };
-    const slots = restingFanPositions(4, 600, HAND_CARD.w, raised.w);
+    const extent = fanExtent(restingFanPositions(4, 600, HAND_CARD.w, raised.w), raised);
     expect(restingFanWidth(4, 600, HAND_CARD, raised)).toBeCloseTo(
-      handRestScale(HAND_CARD, raised) * fanSpan(slots, raised.w),
+      handRestScale(HAND_CARD, raised) * (extent.right - extent.left),
     );
-    // A single card shows as the base card at HAND_REST_SCALE.
+    // A single card stands upright: it shows as the base card at HAND_REST_SCALE.
     expect(restingFanWidth(1, 600, HAND_CARD, raised)).toBeCloseTo(HAND_REST_SCALE * HAND_CARD.w);
   });
 });
 
-describe('handInsets', () => {
-  it('gives one hand the whole room', () => {
-    expect(handInsets(1200, { left: 300, right: 200 }, [400])).toEqual([{ left: 300, right: 200 }]);
+describe('fanOffsets', () => {
+  it('leaves a single fan in the middle', () => {
+    expect(fanOffsets([400])).toEqual([0]);
   });
 
-  it('gives two hands half the room each, their fans side by side, centred together', () => {
-    // The room is 300..1100: each hand 400 wide, the fans 200 and 100 wide, 24 apart, from 538.
-    const insets = handInsets(1200, { left: 300, right: 100 }, [200, 100]);
-    expect(insets).toEqual([
-      { left: 438, right: 362 },
-      { left: 612, right: 188 },
-    ]);
-    const middles = insets.map((inset) => (inset.left + 1200 - inset.right) / 2);
-    expect(middles).toEqual([638, 812]);
-    expect(middles[1]! - 100 / 2 - (middles[0]! + 200 / 2)).toBe(HANDS_GAP);
+  it('sets two fans side by side, HANDS_GAP apart, centred together', () => {
+    // 200 + 48 + 100 = 348 px in all, from -174 to 174.
+    expect(HANDS_GAP).toBe(48);
+    expect(fanOffsets([200, 100])).toEqual([-74, 124]);
   });
 });

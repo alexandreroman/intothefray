@@ -447,58 +447,76 @@ export interface HandInsets {
   right: number;
 }
 
-/** The room between two fans side by side, as seen, in px. */
-export const HANDS_GAP = 24;
+const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
+
+/** The room between two resting fans side by side, as seen, in px. */
+export const HANDS_GAP = 48;
 
 /**
- * Where each hand shown lies at the bottom of a table `width` px wide, as
- * insets from its edges, within the room `room` leaves. One hand takes the
- * whole room. Two hands take half of it each, so that their fans narrow as one
- * hand's does in a narrower room, and are moved together: their fans, as wide
- * as `fanWidths` as seen, sit side by side HANDS_GAP apart, centred together in
- * the room. A hand may then reach past the room or under the other one; its
- * fan does not.
+ * Where each of the resting fans shown lies, side by side: the offset of its
+ * middle from the middle of the hands' room, in px as seen, given each fan's
+ * width as seen (restingFanWidth). A single fan stays in the middle; two sit
+ * HANDS_GAP apart, centred together.
  */
-export function handInsets(width: number, room: HandInsets, fanWidths: number[]): HandInsets[] {
+export function fanOffsets(fanWidths: number[]): number[] {
   if (fanWidths.length !== 2) {
-    return fanWidths.map(() => room);
+    return fanWidths.map(() => 0);
   }
   const [first, second] = fanWidths as [number, number];
-  const roomWidth = Math.max(0, width - room.left - room.right);
-  const handWidth = roomWidth / 2;
-  const start = room.left + (roomWidth - (first + HANDS_GAP + second)) / 2;
-  const middles = [start + first / 2, start + first + HANDS_GAP + second / 2];
-  return middles.map((middle) => {
-    const left = middle - handWidth / 2;
-    return { left, right: width - left - handWidth };
-  });
+  const total = first + HANDS_GAP + second;
+  return [(first - total) / 2, (total - second) / 2];
 }
 
-/** How wide the fan's cards spread, end to end, in px: a card's width for an empty hand. */
-export function fanSpan(slots: FanSlot[], cardWidth: number): number {
+// A hand card turns on the arc about a point below its bottom middle, at this share of its height
+// from its top. Keep in step with .fan's transform-origin (Hand.svelte).
+const FAN_PIVOT = 1.1;
+
+/**
+ * How far the fan's cards reach left and right of the hand's middle, in px,
+ * as drawn: each card is tilted on the arc about a point below its bottom
+ * middle, so that the end cards' top outer corners reach past their slots. An
+ * empty hand keeps a card's room.
+ */
+export function fanExtent(
+  slots: FanSlot[],
+  card: { w: number; h: number },
+): { left: number; right: number } {
   if (slots.length === 0) {
-    return cardWidth;
+    return { left: -card.w / 2, right: card.w / 2 };
   }
-  const xs = slots.map((slot) => slot.x);
-  return Math.max(...xs) - Math.min(...xs) + cardWidth;
+  const xs = slots.flatMap((slot) => cornerXs(slot, card));
+  return { left: Math.min(...xs), right: Math.max(...xs) };
+}
+
+/** Where the corners of a card on its slot lie across, as drawn on the arc. */
+function cornerXs(slot: FanSlot, card: { w: number; h: number }): number[] {
+  const angle = toRadians(slot.angle);
+  const top = -FAN_PIVOT * card.h;
+  const bottom = (1 - FAN_PIVOT) * card.h;
+  const corners = [
+    { x: -card.w / 2, y: top },
+    { x: card.w / 2, y: top },
+    { x: -card.w / 2, y: bottom },
+    { x: card.w / 2, y: bottom },
+  ];
+  // Turned clockwise on the screen, where y grows downward.
+  return corners.map((corner) => slot.x + corner.x * Math.cos(angle) - corner.y * Math.sin(angle));
 }
 
 /**
  * How wide the fan of a resting hand of `n` cards shows on the screen, in px:
- * its cards laid out for a hand `handWidth` wide (restingFanPositions), at the
- * rest scale.
+ * its cards laid out for a hand `handWidth` wide (restingFanPositions), tilted
+ * end cards included, at the rest scale.
  */
 export function restingFanWidth(
   n: number,
   handWidth: number,
   restCard: { w: number },
-  raisedCard: { w: number },
+  raisedCard: { w: number; h: number },
 ): number {
-  const slots = restingFanPositions(n, handWidth, restCard.w, raisedCard.w);
-  return handRestScale(restCard, raisedCard) * fanSpan(slots, raisedCard.w);
+  const extent = fanExtent(restingFanPositions(n, handWidth, restCard.w, raisedCard.w), raisedCard);
+  return handRestScale(restCard, raisedCard) * (extent.right - extent.left);
 }
-
-const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
 
 /**
  * Lays out `n` cards of a hand, as the prototype does: the cards overlap by

@@ -469,13 +469,17 @@
       .map((element) => element.getBoundingClientRect());
   }
 
-  /** The bottom of the table under a hand, where an empty hand takes a drop; the whole table without a hand. */
+  /**
+   * The bottom of the table under a hand's resting fan (its middle, data-rest-x px right of the
+   * hand's), where an empty hand takes a drop; the whole table without a hand.
+   */
   function under(hand: HTMLElement | null, table: Rect): Rect {
     if (!hand) {
       return table;
     }
     const room = hand.getBoundingClientRect();
-    return { left: room.left, right: room.right, top: table.top, bottom: table.bottom };
+    const middle = (room.left + room.right) / 2 + Number(hand.dataset.restX ?? 0);
+    return { left: middle, right: middle, top: table.top, bottom: table.bottom };
   }
 
   /**

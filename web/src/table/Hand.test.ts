@@ -434,35 +434,58 @@ describe('Hand beside another one', () => {
     expect(rule('.hand.inactive::before')).toMatch(/opacity: 0\.6;/);
   });
 
-  it('is marked inactive, drawn smaller and dimmed, and draws no veil', () => {
+  it('is marked inactive, dimmed at the same size, and draws no veil', () => {
     const { container } = render(Hand, { cards: CARDS, faceOf, captionOf, seat: 1, active: false });
 
     expect(handList().classList).toContain('inactive');
     expect(container.querySelector('.veil')).toBeNull();
-    // 72 % of the resting hand, from the bottom of the window, towards the hand beside it (--inner-x).
-    const inactive = rule('.hand.inactive').replace(/\s+/g, ' ');
-    expect(inactive).toContain(
-      'transform: translateX(var(--inner-x)) scale(0.72) translateX(calc(-1 * var(--inner-x)))' +
-        ' translateY(var(--rest-drop)) scale(var(--rest-scale));',
-    );
     expect(rule('.hand.inactive')).toMatch(/opacity: 0\.8;/);
+    expect(rule('.hand.inactive')).not.toMatch(/transform/);
   });
 
-  it('shrinks towards the hand beside it, from the edge of its fan as seen', async () => {
+  it('rests at its place beside the other hand, and rises over the whole of its room', async () => {
     vi.spyOn(Element.prototype, 'clientWidth', 'get').mockReturnValue(1200);
-    const props = { cards: CARDS, faceOf, captionOf, seat: 1, active: false };
-    const { rerender } = render(Hand, { ...props, neighbour: 'left' });
-    // Three base cards 145 apart, at HAND_REST_SCALE: the fan shows 0.82 × 475 px wide.
-    const half = (HAND_REST_SCALE * (HAND_CARD.w + 2 * 145)) / 2;
-    const innerX = () => Number.parseFloat(handList().style.getPropertyValue('--inner-x'));
-    expect(innerX()).toBeCloseTo(-half);
+    const props = {
+      cards: CARDS,
+      faceOf,
+      captionOf,
+      seat: 1,
+      restPlace: { offset: 164, width: 600 },
+    };
+    const { rerender } = render(Hand, props);
+    const xs = () =>
+      handCards().map((item) => Number.parseFloat(item.style.getPropertyValue('--x')));
 
-    await rerender({ ...props, neighbour: 'right' });
-    expect(innerX()).toBeCloseTo(half);
+    // Laid out for half the room, 164 px right of its middle as seen: 200 px before the rest scale.
+    const resting = restingFanPositions(3, 600, HAND_CARD.w, HAND_CARD.w);
+    expect(xs()).toEqual(resting.map((slot) => slot.x + 164 / HAND_REST_SCALE));
+    expect(handList().dataset.restX).toBe('164');
+    // The glow follows the fan.
+    expect(Number.parseFloat(handList().style.getPropertyValue('--fan-x'))).toBeCloseTo(
+      164 / HAND_REST_SCALE,
+    );
 
-    // Alone, from the middle.
-    await rerender({ ...props, neighbour: undefined });
-    expect(innerX()).toBe(0);
+    await rerender({ ...props, open: true });
+    expect(xs()).toEqual(fanPositions(3, 1200).map((slot) => slot.x));
+  });
+
+  it('fades out while the other hand is raised, turning active by no pointer', async () => {
+    cardsAt600();
+    const onactivate = vi.fn();
+    const props = { cards: CARDS, faceOf, captionOf, seat: 1, active: false, onactivate };
+    const { rerender } = render(Hand, { ...props, hidden: true });
+    expect(handList().classList).toContain('hidden');
+    expect(rule('.hand.hidden')).toMatch(/opacity: 0;/);
+    expect(rule('.hand.hidden')).toMatch(/visibility: hidden;/);
+
+    await fireEvent.pointerMove(window, { clientX: 650, clientY: 800 });
+    expect(onactivate).not.toHaveBeenCalled();
+
+    // Back once the other one lowers.
+    await rerender({ ...props, hidden: false });
+    expect(handList().classList).not.toContain('hidden');
+    await fireEvent.pointerMove(window, { clientX: 652, clientY: 800 });
+    expect(onactivate).toHaveBeenCalled();
   });
 
   it('never opens, and turns active when the pointer comes into its band', async () => {

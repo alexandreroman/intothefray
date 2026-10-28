@@ -71,10 +71,10 @@
   import KeysSheet from './KeysSheet.svelte';
   import {
     contentWidth,
+    fanOffsets,
     HAND_CARD,
     HAND_CARD_NARROW,
     HAND_REST_DROP,
-    handInsets,
     type HandInsets,
     handRestDrop,
     isLandscape,
@@ -647,24 +647,20 @@
         },
   );
 
-  // Two hands side by side: each is laid out for half the room, and keeps for its fan the width it
-  // shows at rest when active, inactive or not. The inactive one shrinks towards the other from the
-  // edge of that width (Hand.svelte), so neither moves as the active hand changes.
-  const handRooms = $derived.by(() => {
-    const handWidth = Math.max(0, scrollerWidth - handsRoom.left - handsRoom.right) / 2;
-    const fanWidths = handSeats.map((seat) =>
-      restingFanWidth(handOf(seat).length, handWidth, baseHandCard, raisedCard),
-    );
-    return handInsets(scrollerWidth, handsRoom, fanWidths);
-  });
-
-  /** The side the other hand shown lies on, if any. */
-  function neighbourOf(index: number): 'left' | 'right' | undefined {
+  // Two resting hands side by side, both over the whole room: each fan is laid out for half of it,
+  // and the two sit HANDS_GAP apart, centred together (fanOffsets). Active or not, a resting hand
+  // has the same size: neither moves as the active hand changes. Raised, the active one spreads
+  // over the whole room.
+  const restPlaces = $derived.by(() => {
     if (handSeats.length < 2) {
-      return undefined;
+      return [];
     }
-    return index === 0 ? 'right' : 'left';
-  }
+    const width = Math.max(0, scrollerWidth - handsRoom.left - handsRoom.right) / 2;
+    const fanWidths = handSeats.map((seat) =>
+      restingFanWidth(handOf(seat).length, width, baseHandCard, raisedCard),
+    );
+    return fanOffsets(fanWidths).map((offset) => ({ offset, width }));
+  });
 
   // Whether each hand shown is raised, by its place (two hands at most); only the active one ever is.
   let handsOpen = $state([false, false]);
@@ -1870,8 +1866,9 @@
       label={handLabel(seat)}
       active={seat === handSeat}
       onactivate={() => selectSeat(seat)}
-      inset={handRooms[i]}
-      neighbour={neighbourOf(i)}
+      inset={handsRoom}
+      restPlace={restPlaces[i]}
+      hidden={handRaised && seat !== handSeat}
       bind:open={handsOpen[i]}
     />
   {/each}

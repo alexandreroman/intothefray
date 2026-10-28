@@ -4,11 +4,13 @@
   behind it dims. Touch has no hover: a tap raises the hand and pins it up
   until a tap on the table, Escape or a swipe down lowers it.
 
-  A player with two decks on a wide screen sees both hands side by side: the
-  one of the selected deck is active, as above; the other one is inactive,
-  smaller and dimmed. An inactive hand never rises and its cards take no
+  A player with two decks on a wide screen sees both resting hands side by
+  side: the one of the selected deck is active, as above; the other one is
+  inactive, dimmed. An inactive hand never rises and its cards take no
   pointer: the pointer coming into its band, or a tap on it, makes it the
-  active one (onactivate).
+  active one (onactivate). Both take the whole room the hands have: at rest
+  each fan keeps to its place in it (restPlace); raised, the active one
+  spreads over all of it, and the other one fades out meanwhile (hidden).
 -->
 <script lang="ts">
   import { tick, untrack } from 'svelte';
@@ -20,12 +22,13 @@
   import { interaction } from './interaction.svelte';
   import {
     cardBox,
+    fanExtent,
     fanPositions,
-    fanSpan,
     HAND_CARD,
     HAND_PADDING,
     HAND_REST_DROP,
     handRestScale,
+    type FanSlot,
     type HandInsets,
     restingFanPositions,
   } from './layout';
@@ -46,7 +49,8 @@
     active = true,
     onactivate,
     inset = { left: 0, right: 0 },
-    neighbour,
+    restPlace,
+    hidden = false,
   }: {
     /** The hand, in its order. */
     cards: TableCard[];
@@ -78,8 +82,14 @@
     onactivate?: () => void;
     /** The hand's room at the bottom of the table, in from its edges: the fan centres in it. */
     inset?: HandInsets;
-    /** The side the other hand shown lies on, if any: inactive, this one shrinks towards it. */
-    neighbour?: 'left' | 'right';
+    /**
+     * Where the resting fan lies beside the other hand shown, if any: its middle `offset` px right
+     * of the hand's middle as seen, laid out for a hand `width` px wide. In the middle, for the
+     * whole hand, without one.
+     */
+    restPlace?: { offset: number; width: number };
+    /** The other hand shown is raised over the room: this one fades out, and takes no pointer. */
+    hidden?: boolean;
   } = $props();
 
   /** The cards in the given order, then any the order does not know (drawn meanwhile). */
@@ -113,25 +123,24 @@
   // Raised, the fan spreads out for the raised cards; at rest, it is the base cards' fan.
   const restCard = $derived(restCardSize ?? cardSize);
   const restScale = $derived(handRestScale(restCard, cardSize));
-  const slots = $derived(
-    open
-      ? fanPositions(shown.length, width, cardSize.w)
-      : restingFanPositions(shown.length, width, restCard.w, cardSize.w),
-  );
+  const slots = $derived(open ? raisedSlots() : restingSlots());
 
-  // How wide the fan spreads, in the hand's own px (before the resting scale): the glow spans it.
-  const fanWidth = $derived(fanSpan(slots, cardSize.w));
+  /** The raised fan, over the whole hand. */
+  function raisedSlots(): FanSlot[] {
+    return fanPositions(shown.length, width, cardSize.w);
+  }
 
-  // Where an inactive hand shrinks from, from the middle of its bottom edge: the edge of its fan as
-  // seen at rest on the side of the hand beside it, so that the room between the two fans stays the
-  // same whichever is active.
-  const innerX = $derived.by(() => {
-    const half = (fanWidth * restScale) / 2;
-    if (neighbour === 'left') {
-      return -half;
-    }
-    return neighbour === 'right' ? half : 0;
-  });
+  /** The resting fan, at its place: the offset is seen at the rest scale, the slots are before it. */
+  function restingSlots(): FanSlot[] {
+    const offset = (restPlace?.offset ?? 0) / restScale;
+    return restingFanPositions(shown.length, restPlace?.width ?? width, restCard.w, cardSize.w).map(
+      (slot) => ({ ...slot, x: slot.x + offset }),
+    );
+  }
+
+  // Where the fan's cards reach, tilted end cards included, in the hand's own px (before the rest
+  // scale): the glow spans it.
+  const extent = $derived(fanExtent(slots, cardSize));
 
   // A table card of this seat's, dragged over a hand to go back to this one.
   const dropTarget = $derived(
@@ -354,7 +363,7 @@
 
   /** The pointer came into this inactive hand's band: it becomes the active one. */
   function activateUnder(at: { x: number; y: number }): void {
-    if (modal.open) {
+    if (modal.open || hidden) {
       return;
     }
     const band = bandOf(shownCards(), RESTING_MARGIN);
@@ -561,14 +570,16 @@
   class:open
   class:pinned
   class:inactive={!active}
+  class:hidden
   class:drop={dropTarget}
   aria-label={label}
   data-seat={seat}
+  data-rest-x={restPlace?.offset ?? 0}
   style:margin-left="{inset.left}px"
   style:margin-right="{inset.right}px"
   style:--seat={color}
-  style:--fan-w="{fanWidth}px"
-  style:--inner-x="{innerX}px"
+  style:--fan-x="{(extent.left + extent.right) / 2}px"
+  style:--fan-w="{extent.right - extent.left}px"
   style:--card-w="{cardSize.w}px"
   style:--card-h="{cardSize.h}px"
   style:--rest-drop="{restDrop}px"
@@ -672,18 +683,27 @@
     transform-origin: 50% 100%;
     transition:
       transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
-      opacity 0.22s;
+      opacity 0.22s,
+      visibility 0s;
   }
 
   /*
-    The hand of the other deck, beside the active one: the resting hand at 72 %, from the bottom of
-    the window at --inner-x, its fan's edge on the side of the active hand (the 72 % scale shrinks
-    the drop with it), and dimmed.
+    The hand of the other deck, beside the active one, dimmed. It shares the active hand's room: the
+    active one's background darkens the bottom of the table for both.
   */
   .hand.inactive {
-    transform: translateX(var(--inner-x)) scale(0.72) translateX(calc(-1 * var(--inner-x)))
-      translateY(var(--rest-drop)) scale(var(--rest-scale));
     opacity: 0.8;
+    background: none;
+  }
+
+  /* The other hand is raised over the room: this one fades out, then takes no pointer. */
+  .hand.hidden {
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+      opacity 0.22s,
+      visibility 0s 0.22s;
   }
 
   .hand.inactive .hcard {
@@ -694,7 +714,7 @@
   .hand::before {
     content: '';
     position: absolute;
-    left: 50%;
+    left: calc(50% + var(--fan-x));
     bottom: 0;
     width: calc(var(--fan-w) * 1.16);
     height: calc(var(--pad-top) + var(--card-h));

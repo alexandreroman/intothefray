@@ -9,7 +9,7 @@ import { cutShort } from '../lib/overflowTip.testing';
 import { clearPrefMemory } from '../lib/prefs';
 import type { CardView as TableCard, Index, PackFace, PileView, View } from '../lib/types';
 import { fakeSession, infoFrom } from './fixtures.testing';
-import { HAND_CARD, HAND_REST_SCALE, HANDS_GAP } from './layout';
+import { HAND_CARD, HANDS_GAP, restingFanWidth } from './layout';
 
 // The card language, as each test chooses: Options does not offer French, so no stored choice gives it.
 const cardLang = vi.hoisted(() => ({ current: 'en' as Lang }));
@@ -1724,11 +1724,16 @@ describe('several decks', () => {
       await fireEvent.pointerMove(window, { clientX: 950, clientY: 800 });
       expect(checkedDeck('Hand shown')).toEqual(['Alex · Ant-Man']);
       expect(antMan.classList).not.toContain('inactive');
-      // Under the pointer, it rises at once.
+      // Under the pointer, it rises at once; the other one fades out meanwhile.
       await waitFor(() => expect(antMan.classList).toContain('open'));
-      expect(screen.getByRole('list', { name: 'Your Spider-Man hand' }).classList).toContain(
-        'inactive',
-      );
+      const spiderMan = screen.getByRole('list', { name: 'Your Spider-Man hand' });
+      expect(spiderMan.classList).toContain('inactive');
+      expect(spiderMan.classList).toContain('hidden');
+      expect(antMan.classList).not.toContain('hidden');
+      // It comes back as the raised hand lowers.
+      await fireEvent.pointerMove(window, { clientX: 950, clientY: 100 });
+      expect(antMan.classList).not.toContain('open');
+      expect(spiderMan.classList).not.toContain('hidden');
 
       await fireEvent.click(surface().querySelector<HTMLElement>('.card[data-id="v"]')!);
       await choose('Exhaust');
@@ -1783,18 +1788,7 @@ describe('several decks', () => {
     });
   }
 
-  /** The middle of each hand shown, in px from the table's left edge. */
-  function handMiddles(): number[] {
-    return hands().map(
-      (list) =>
-        (Number.parseFloat(list.style.marginLeft) +
-          2000 -
-          Number.parseFloat(list.style.marginRight)) /
-        2,
-    );
-  }
-
-  it('sets the two fans side by side between the controls, still as the active hand changes', async () => {
+  it('sets the two resting fans side by side between the controls, still as the active hand changes', async () => {
     mockWidths();
     // Ant-Man holds three cards.
     const view = makeTwoDeckView();
@@ -1808,33 +1802,34 @@ describe('several decks', () => {
       await catalogLoaded();
 
       // The room: from the selector's right edge (16 + 300) and 32 px, to 32 px left of the
-      // corner, 16 + 150 px from the right edge: 348 to 1802. The resting fans, as seen: one base
-      // card at HAND_REST_SCALE, and three 145 apart.
-      const one = HAND_REST_SCALE * HAND_CARD.w;
-      const three = HAND_REST_SCALE * (HAND_CARD.w + 2 * 145);
-      await waitFor(() => expect(handMiddles()[0]).toBeGreaterThan(0));
-      const [first, second] = handMiddles() as [number, number];
-      const left = first - one / 2;
-      const right = second + three / 2;
-      expect((left + right) / 2).toBeCloseTo((348 + 1802) / 2);
+      // corner, 16 + 150 px from the right edge: 348 to 1802. Both hands take all of it.
+      await waitFor(() =>
+        expect(hands().map((list) => [list.style.marginLeft, list.style.marginRight])).toEqual([
+          ['348px', '198px'],
+          ['348px', '198px'],
+        ]),
+      );
+      // Each resting fan laid out for half the room, as seen with its tilted end cards.
+      const [spiderMan, antMan] = hands() as [HTMLElement, HTMLElement];
+      const raised = {
+        w: Number.parseFloat(spiderMan.style.getPropertyValue('--card-w')),
+        h: Number.parseFloat(spiderMan.style.getPropertyValue('--card-h')),
+      };
+      const half = (1802 - 348) / 2;
+      const one = restingFanWidth(1, half, HAND_CARD, raised);
+      const three = restingFanWidth(3, half, HAND_CARD, raised);
+      const restX = () => hands().map((list) => Number(list.dataset.restX));
+      const [first, second] = restX() as [number, number];
+      // Side by side, HANDS_GAP apart, centred together in the room.
       expect(second - three / 2 - (first + one / 2)).toBeCloseTo(HANDS_GAP);
-
-      // Each hand half the room wide, wherever it lies.
-      for (const list of hands()) {
-        const width =
-          2000 -
-          Number.parseFloat(list.style.marginLeft) -
-          Number.parseFloat(list.style.marginRight);
-        expect(width).toBeCloseTo((1802 - 348) / 2);
-      }
-      // The inactive hand shrinks towards the active one, from its fan's edge.
-      const antMan = screen.getByRole('list', { name: 'Your Ant-Man hand' });
-      expect(Number.parseFloat(antMan.style.getPropertyValue('--inner-x'))).toBeLessThan(0);
+      expect((first - one / 2 + second + three / 2) / 2).toBeCloseTo(0);
+      // Both the same size.
+      expect(antMan.style.getPropertyValue('--rest-scale')).toBe(
+        spiderMan.style.getPropertyValue('--rest-scale'),
+      );
 
       await fireEvent.keyDown(window, { key: 'q' });
-      expect(handMiddles()).toEqual([first, second]);
-      const spiderMan = screen.getByRole('list', { name: 'Your Spider-Man hand' });
-      expect(Number.parseFloat(spiderMan.style.getPropertyValue('--inner-x'))).toBeGreaterThan(0);
+      expect(restX()).toEqual([first, second]);
     } finally {
       vi.restoreAllMocks();
     }
