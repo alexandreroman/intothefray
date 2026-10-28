@@ -76,11 +76,13 @@ func applyKind(t *Table, a Action) error {
 	case ActFlip:
 		return applyFlip(t, a)
 	case ActToken:
-		return applyCounter(t, a, tokenNames, 0, math.MaxInt, func(c *Card) *map[string]int { return &c.Tokens })
+		return applyCounter(t.tableCard, a, tokenNames, 0, math.MaxInt, func(c *Card) *map[string]int { return &c.Tokens })
 	case ActStatus:
-		return applyCounter(t, a, statusNames, 0, math.MaxInt, func(c *Card) *map[string]int { return &c.Status })
+		return applyCounter(t.inPlayCard, a, statusNames, 0, math.MaxInt, func(c *Card) *map[string]int { return &c.Status })
 	case ActModifier:
-		return applyCounter(t, a, modifierNames, -maxCount, maxCount, func(c *Card) *map[string]int { return &c.Mods })
+		return applyCounter(t.inPlayCard, a, modifierNames, -maxCount, maxCount, func(c *Card) *map[string]int {
+			return &c.Mods
+		})
 	case ActChooseStage:
 		return applyChooseStage(t, a)
 	case ActDraw:
@@ -151,7 +153,8 @@ func (t *Table) tableCard(id string) (*Card, error) {
 
 // inPlayCard returns the table card with the given id when it is in play. A
 // card revealed on a pile lies on its deck, out of play: it is neither
-// exhausted nor given tokens, statuses or modifiers until it leaves it.
+// exhausted nor given statuses or modifiers until it leaves it. It may carry
+// tokens, which count on it where it lies (see applyCounter).
 func (t *Table) inPlayCard(id string) (*Card, error) {
 	c, err := t.tableCard(id)
 	if err != nil {
@@ -634,8 +637,9 @@ func landsFaceDown(pile *Pile) bool {
 // with a target, tucked under that table card as attach does. It lands face
 // up, but when dropped out of a pile that hides its cards (see landsFaceDown):
 // an explicit Play (a.FaceUp) lands it face up there too. A card revealed on a
-// deck is played as that deck's top card, face up, as everybody saw it. A
-// version of its owner's identity takes the identity over, and stays face up.
+// deck is played as that deck's top card, face up, as everybody saw it, with
+// the tokens it carries there (see inPlayCard). A version of its owner's
+// identity takes the identity over, and stays face up.
 func applyPlay(t *Table, a Action) error {
 	c, err := t.card(a.Card)
 	if err != nil {
@@ -661,7 +665,12 @@ func applyPlay(t *Table, a Action) error {
 	}
 
 	faceDown := !a.FaceUp && c.Zone == ZonePile && landsFaceDown(t.Piles[c.Pile])
+	// A revealed card stays on the table: like a moved card, it keeps its tokens.
+	tokens := c.Tokens
 	t.leave(c)
+	if revealed {
+		c.Tokens = tokens
+	}
 	if c.IdentityVersion {
 		t.takeOverIdentity(c)
 	}
@@ -777,12 +786,21 @@ func applyFlip(t *Table, a Action) error {
 	return nil
 }
 
-// applyCounter adds a.Delta to the counter a.Name of a card. The field
-// function selects the map (tokens, statuses or modifiers) and allowed lists
-// its valid names. The counter is clamped to [lowest, highest] and deleted at
-// 0: tokens and statuses never go below 0, modifiers are signed.
-func applyCounter(t *Table, a Action, allowed []string, lowest, highest int, field func(*Card) *map[string]int) error {
-	c, err := t.inPlayCard(a.Card)
+// applyCounter adds a.Delta to the counter a.Name of a card. The card function
+// looks the card up: any table card for tokens, a card revealed on a deck
+// included, a card in play only for statuses and modifiers (see inPlayCard).
+// The field function selects the map (tokens, statuses or modifiers) and
+// allowed lists its valid names. The counter is clamped to [lowest, highest]
+// and deleted at 0: tokens and statuses never go below 0, modifiers are
+// signed.
+func applyCounter(
+	card func(id string) (*Card, error),
+	a Action,
+	allowed []string,
+	lowest, highest int,
+	field func(*Card) *map[string]int,
+) error {
+	c, err := card(a.Card)
 	if err != nil {
 		return err
 	}

@@ -152,6 +152,13 @@ describe('CardView', () => {
     expect(container.querySelector('.st.tough')?.textContent).toBe('Tough ×2');
   });
 
+  it('renders the tokens of a card revealed on a deck', () => {
+    const card = tableCard({ onPile: 'deck:p0', tokens: { gen: 2 } });
+    const { container } = render(CardView, { card, face: face() });
+
+    expect(container.querySelector('.tok.gen')?.textContent).toBe('2');
+  });
+
   it('shows the Retaliate value on its tab, even at 1', () => {
     const two = render(CardView, { card: tableCard({ status: { retaliate: 2 } }), face: face() });
     expect(two.container.querySelector('.st.retaliate')?.textContent).toBe('Retaliate 2');

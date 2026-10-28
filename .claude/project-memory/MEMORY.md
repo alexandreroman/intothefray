@@ -72,6 +72,6 @@
 - [Add a set menu groups by pack](references/project_modular_menu.md) — modular sets under sticky pack names; ★ sets stay in their pack
 - [Close is the main button of a card box](references/project_card_box_close.md) — Close is primary in every card box footer; other buttons secondary
 - [Face-down cards](references/project_face_down_cards.md) — Flip toggles single-faced cards, turns stage cards over; hidden-deck Play lands face up
-- [Revealed card is its deck's top card](references/project_deck_reveal.md) — own hidden decks reveal; deck actions take it first
+- [Revealed card is its deck's top card](references/project_deck_reveal.md) — own hidden decks reveal; deck actions take it first; tokens only
 - [No compatibility for games in progress](references/feedback_no_live_game_compat.md) — action changes ignore stored histories; simplest design
 - [Memory notes carry no dates](references/feedback_timeless_memory.md) — timeless notes: decisions and reasons, no dates

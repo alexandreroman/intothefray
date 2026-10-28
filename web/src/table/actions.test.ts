@@ -410,13 +410,10 @@ describe('actionsFor', () => {
         ],
       });
 
-    it("is drawn by its deck's owner, and neither exhausted nor marked", () => {
+    it("is drawn by its deck's owner, takes tokens, and is neither exhausted nor given statuses or modifiers", () => {
       const items = itemsFor({ kind: 'card', id: 'mine-rev' }, revealedView());
 
-      expect(groups(items)).toEqual([
-        ['draw', 'flip'],
-        ['discard', 'moveTo'],
-      ]);
+      expect(groups(items)).toEqual([['draw', 'flip'], ['tokens'], ['discard', 'moveTo']]);
       const draw = item(items, 'draw');
       expect(draw).toMatchObject({ label: 'Draw', key: 'W', default: true });
       expect(actionOf(draw)).toEqual({ kind: 'draw', n: 1, pile: 'deck:p0' });
@@ -426,9 +423,22 @@ describe('actionsFor', () => {
       for (const id of ['sams-rev', 'enc-rev']) {
         expect(groups(itemsFor({ kind: 'card', id }, revealedView())), id).toEqual([
           ['flip'],
+          ['tokens'],
           ['discard', 'moveTo'],
         ]);
       }
+    });
+
+    it('puts a token on it', () => {
+      const tokens = item(itemsFor({ kind: 'card', id: 'mine-rev' }, revealedView()), 'tokens');
+      const counter = tokens.menu?.find((i) => i.id === 'gen');
+
+      expect(counter && actionOf(counter)).toEqual({
+        kind: 'token',
+        card: 'mine-rev',
+        name: 'gen',
+        delta: 1,
+      });
     });
 
     it('is drawn from a side deck it lies on', () => {
