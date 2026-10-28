@@ -10,7 +10,7 @@
   pointer: the pointer coming into its band, or a tap on it, makes it the
   active one (onactivate). Both take the whole room the hands have: at rest
   each fan keeps to its place in it (restPlace); raised, the active one
-  spreads over all of it, and the other one fades out meanwhile (hidden).
+  spreads over most of it, and the other one fades out meanwhile (hidden).
 -->
 <script lang="ts">
   import { tick, untrack } from 'svelte';
@@ -28,6 +28,7 @@
     HAND_PADDING,
     HAND_REST_DROP,
     handRestScale,
+    RAISED_FAN_SHARE,
     type FanSlot,
     type HandInsets,
     restingFanPositions,
@@ -125,9 +126,9 @@
   const restScale = $derived(handRestScale(restCard, cardSize));
   const slots = $derived(open ? raisedSlots() : restingSlots());
 
-  /** The raised fan, over the whole hand. */
+  /** The raised fan, over the middle of the hand (RAISED_FAN_SHARE of it). */
   function raisedSlots(): FanSlot[] {
-    return fanPositions(shown.length, width, cardSize.w);
+    return fanPositions(shown.length, RAISED_FAN_SHARE * width, cardSize.w);
   }
 
   /** The resting fan, at its place: the offset is seen at the rest scale, the slots are before it. */

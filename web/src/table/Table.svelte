@@ -650,7 +650,7 @@
   // Two resting hands side by side, both over the whole room: each fan is laid out for half of it,
   // and the two sit HANDS_GAP apart, centred together (fanOffsets). Active or not, a resting hand
   // has the same size: neither moves as the active hand changes. Raised, the active one spreads
-  // over the whole room.
+  // over the middle of the room (RAISED_FAN_SHARE).
   const restPlaces = $derived.by(() => {
     if (handSeats.length < 2) {
       return [];

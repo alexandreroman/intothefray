@@ -3,7 +3,13 @@ import { tick } from 'svelte';
 import Hand from './Hand.svelte';
 import handSource from './Hand.svelte?raw';
 import { interaction } from './interaction.svelte';
-import { fanPositions, HAND_CARD, HAND_REST_SCALE, restingFanPositions } from './layout';
+import {
+  fanPositions,
+  HAND_CARD,
+  HAND_REST_SCALE,
+  RAISED_FAN_SHARE,
+  restingFanPositions,
+} from './layout';
 import { motion } from './motion.svelte';
 import type { CardView as TableCard, PackFace } from '../lib/types';
 
@@ -83,9 +89,33 @@ describe('Hand', () => {
     expect(xs()).toEqual(resting);
 
     await rerender({ ...props, open: true });
-    const raisedFan = fanPositions(3, 1200, raised.w).map((slot) => `${slot.x}px`);
+    const raisedFan = fanPositions(3, RAISED_FAN_SHARE * 1200, raised.w).map(
+      (slot) => `${slot.x}px`,
+    );
     expect(xs()).toEqual(raisedFan);
     expect(raisedFan).not.toEqual(resting);
+  });
+
+  it('spreads the raised fan over 80 % of the hand, in its middle', async () => {
+    vi.spyOn(Element.prototype, 'clientWidth', 'get').mockReturnValue(1200);
+    const many = Array.from({ length: 12 }, (_, i) => handCard(`m${i}`, '01003'));
+    const raised = { w: 238, h: 333 };
+    render(Hand, {
+      cards: many,
+      faceOf,
+      captionOf,
+      seat: 0,
+      cardSize: raised,
+      restCardSize: HAND_CARD,
+      open: true,
+    });
+
+    expect(RAISED_FAN_SHARE).toBe(0.8);
+    const xs = handCards().map((item) => Number.parseFloat(item.style.getPropertyValue('--x')));
+    // Too many cards for 960 px: they close up more than they would over the whole 1200.
+    expect(xs).toEqual(fanPositions(12, 960, raised.w).map((slot) => slot.x));
+    expect(xs).not.toEqual(fanPositions(12, 1200, raised.w).map((slot) => slot.x));
+    expect(xs[0]).toBeCloseTo(-xs[11]!);
   });
 
   it('draws the resting hand as large as its base card at HAND_REST_SCALE', async () => {
@@ -443,7 +473,7 @@ describe('Hand beside another one', () => {
     expect(rule('.hand.inactive')).not.toMatch(/transform/);
   });
 
-  it('rests at its place beside the other hand, and rises over the whole of its room', async () => {
+  it('rests at its place beside the other hand, and rises over the middle of its room', async () => {
     vi.spyOn(Element.prototype, 'clientWidth', 'get').mockReturnValue(1200);
     const props = {
       cards: CARDS,
@@ -466,7 +496,7 @@ describe('Hand beside another one', () => {
     );
 
     await rerender({ ...props, open: true });
-    expect(xs()).toEqual(fanPositions(3, 1200).map((slot) => slot.x));
+    expect(xs()).toEqual(fanPositions(3, RAISED_FAN_SHARE * 1200).map((slot) => slot.x));
   });
 
   it('fades out while the other hand is raised, turning active by no pointer', async () => {
