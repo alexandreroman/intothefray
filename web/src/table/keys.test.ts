@@ -1061,7 +1061,7 @@ describe('a player with two decks', () => {
     expect(watcher.selectNextDeck).not.toHaveBeenCalled();
   });
 
-  it('Shift + ← / → steps the player selector to the previous / next hero, once per press', () => {
+  it('Shift + ← / → steps the hero selector to the previous / next hero, once per press', () => {
     const table = { ...keyTable(twoDeckView()), canStepHero: true };
     const next = keyDown('ArrowRight', { shiftKey: true });
     handleKey(next, table);

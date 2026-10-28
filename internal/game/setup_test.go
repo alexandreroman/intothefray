@@ -466,7 +466,7 @@ func TestSetupPlayers(t *testing.T) {
 
 	for seat := range 2 {
 		area := PlayerArea(seat)
-		rowY := 500 + 330*seat
+		rowY := 500 + 270*seat
 		if hand := table.Hands[area]; hand == nil || len(hand) != 0 {
 			t.Errorf("%s hand = %v, want empty and non-nil", area, hand)
 		}
@@ -514,7 +514,7 @@ func TestSetupPlayers(t *testing.T) {
 		t.Fatalf("identity cards = %d, want 2", len(identities))
 	}
 	for _, identity := range identities {
-		rowY := 500 + 330*identity.Owner
+		rowY := 500 + 270*identity.Owner
 		if identity.Code != "01001" || identity.Face != 1 || identity.Zone != ZoneTable ||
 			identity.X != 360 || identity.Y != rowY ||
 			identity.Home != "deck:"+string(PlayerArea(identity.Owner)) {

@@ -4,7 +4,7 @@ import { interaction } from './interaction.svelte';
 import { knownCard, loadGameCards } from '../lib/catalog';
 import { GameSession } from '../lib/session.svelte';
 import type { Arrow, CardView as TableCard, PackFace, PileView, View } from '../lib/types';
-import { card, infoFrom, placed, domRect } from './fixtures.testing';
+import { card, infoFrom, placed, domRect, tallTable } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -207,6 +207,7 @@ beforeEach(() => {
   zoom = 1;
   vi.mocked(loadGameCards).mockResolvedValue();
   vi.mocked(knownCard).mockImplementation(infoOf);
+  tallTable();
 });
 
 afterEach(() => {

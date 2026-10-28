@@ -25,6 +25,7 @@ import {
 import { knownCard, loadGameCards, loadIndex } from '../lib/catalog';
 import type { CardView as TableCard, PileView, View } from '../lib/types';
 import tableSource from './Table.svelte?raw';
+import pickerSource from './HeroPicker.svelte?raw';
 import sidePanelSource from './SidePanel.svelte?raw';
 import zoomSource from './ZoomControl.svelte?raw';
 import menuSource from './ContextMenu.svelte?raw';
@@ -236,6 +237,15 @@ describe('Table on a narrow screen', () => {
     expect(within(peek(container) as HTMLElement).getByLabelText('Card preview')).toBeTruthy();
   });
 
+  it("sizes the preview's frame for a 358 px portrait card, 498 px landscape, within 45 % of the table", () => {
+    const peekRule = /\n {2}\.peek \{([^}]*)\}/.exec(tableSource)?.[1] ?? '';
+    expect(peekRule).toMatch(
+      /width: min\(380px, 45%, calc\(\(100dvh - 200px\) \* 5 \/ 7 \+ 20px\)\);/,
+    );
+    const landRule = /\n {2}\.peek\.land \{([^}]*)\}/.exec(tableSource)?.[1] ?? '';
+    expect(landRule).toMatch(/width: min\(520px, 45%\);/);
+  });
+
   it('a click on a card shows the preview over the table, and its menu over the preview', async () => {
     mockScreen(TABLET);
     const { container } = render(Table, { session: fakeSession(), view: makeView() });
@@ -339,7 +349,7 @@ describe('Table in the window', () => {
     expect(appRule).toMatch(/overflow:\s*clip/);
   });
 
-  it('lines the preview, the zoom control and the player selector up on one edge', async () => {
+  it('lines the preview, the zoom control and the hero selector up on one edge', async () => {
     mockScreen(DESKTOP);
     const { container } = render(Table, { session: fakeSession(), view: makeView() });
     const app = container.querySelector<HTMLElement>('.app')!;
@@ -362,15 +372,70 @@ describe('Table in the window', () => {
     expect(FOCUS_MARGINS.bottom).toBe(TABLE_EDGE_BOTTOM);
   });
 
-  it("gives the player selector the zoom control's height, so that their edges line up", () => {
+  it("draws the hero selector above the raised hand's veil, under that hand; the zoom control under the veil", () => {
+    const zIndex = (source: string, selector: string) => {
+      const pattern = new RegExp(`\\n {2}${selector.replace(/[.]/g, '\\.')} \\{([^}]*)\\}`);
+      return Number(/z-index: (\d+);/.exec(pattern.exec(source)?.[1] ?? '')?.[1]);
+    };
+    const veil = zIndex(handSource, '.veil');
+    const raisedHand = zIndex(handSource, '.hand.open');
+    const picker = zIndex(tableSource, '.seatpick');
+    expect(veil).toBe(2550);
+    expect(raisedHand).toBe(2600);
+    expect(picker).toBeGreaterThan(veil);
+    expect(picker).toBeLessThan(raisedHand);
+    expect(zIndex(tableSource, '.corner')).toBeLessThan(veil);
+    // The hand's backdrop: raised, over the veil and under the selector; at rest, under the hand's
+    // cards and every control.
+    const raisedBackdrop = zIndex(handSource, '.backdrop.open');
+    expect(raisedBackdrop).toBeGreaterThan(veil);
+    expect(raisedBackdrop).toBeLessThan(picker);
+    const restingBackdrop = zIndex(handSource, '.backdrop');
+    expect(restingBackdrop).toBeLessThan(zIndex(handSource, '.hand'));
+    expect(restingBackdrop).toBeLessThan(zIndex(tableSource, '.corner'));
+  });
+
+  it("clips the hands to the table's column: their backdrop stops at its edges", () => {
+    const { container } = render(Table, { session: fakeSession(), view: makeView() });
+
+    const hand = screen.getByRole('list', { name: 'Your hand' });
+    const column = hand.parentElement!;
+    expect(column.classList).toContain('hands');
+    expect(column.parentElement).toBe(container.querySelector('.app'));
+    const rule = /\n {2}\.hands \{([^}]*)\}/.exec(tableSource)?.[1] ?? '';
+    expect(rule).toMatch(/grid-area: table;/);
+    expect(rule).toMatch(/overflow-x: clip;/);
+    // Only across: the resting hand still drops below the window, where the page clips it.
+    expect(rule).not.toMatch(/overflow(-y)?: (hidden|clip)/);
+  });
+
+  it("gives the hero selector's step buttons the zoom control's button height", () => {
     const appRule = /\n {2}\.app \{([^}]*)\}/.exec(tableSource)?.[1];
     expect(appRule).toMatch(/--bar-button: 32px;/);
     const zoomButtonRule = /\n {2}button \{([^}]*)\}/.exec(zoomSource)?.[1];
     expect(zoomButtonRule).toMatch(/height: var\(--bar-button\);/);
-    const swatchesRule = /\n {2}\.seatpick \.seats \{([^}]*)\}/.exec(tableSource)?.[1];
-    expect(swatchesRule).toMatch(/height: var\(--bar-button\);/);
-    const stepRule = /\n {2}\.seatpick \.step \{([^}]*)\}/.exec(tableSource)?.[1];
+    const stepRule = /\n {2}\.step \{([^}]*)\}/.exec(pickerSource)?.[1];
     expect(stepRule).toMatch(/height: var\(--bar-button\);/);
+  });
+
+  it('draws smaller avatars, closer together, on a small screen', async () => {
+    mockScreen(PHONE);
+    const view = makeView();
+    view.you = { ...view.you, areas: ['p0', 'p1'] };
+    view.players = [
+      {
+        ...view.players[0]!,
+        decks: [
+          { area: 'p0', heroName: 'Spider-Man', ready: true, handCount: 0 },
+          { area: 'p1', heroName: 'Ant-Man', ready: true, handCount: 0 },
+        ],
+      },
+    ];
+    const { container } = render(Table, { session: fakeSession(), view });
+    expect(container.querySelector('.seatpick .picker')?.classList).toContain('compact');
+    const compactRule = /\n {2}\.compact \.heroes \{([^}]*)\}/.exec(pickerSource)?.[1];
+    expect(compactRule).toMatch(/--avatar: 30px;/);
+    expect(compactRule).toMatch(/--spacing: 14px;/);
   });
 });
 
@@ -759,6 +824,23 @@ describe('Table on a small screen', () => {
     expect(hand().style.getPropertyValue('--pad-bottom')).toBe(`${HAND_PADDING.bottom}px`);
   });
 
+  it("shows only the selected deck's hand with two own decks, over the whole width", () => {
+    mockScreen(PHONE);
+    const view = makeView();
+    view.you = { ...view.you, areas: ['p0', 'p1'] };
+    view.players[0]!.decks.push({ area: 'p1', heroName: 'Ant-Man', ready: true, handCount: 0 });
+    view.table!.hands = { ...view.table!.hands, p1: [] };
+    render(Table, { session: fakeSession(), view });
+
+    // The selector shows, above the resting hand rather than beside it.
+    expect(screen.getByRole('radiogroup', { name: 'Hand shown' })).toBeTruthy();
+    const hands = screen.getAllByRole('list', { name: /hand$/ });
+    expect(hands).toEqual([hand()]);
+    expect(hand().dataset.seat).toBe('0');
+    expect(hand().style.marginLeft).toBe('0px');
+    expect(hand().style.marginRight).toBe('0px');
+  });
+
   it('keeps the raised hand to half the window held sideways', () => {
     mockScreen(LANDSCAPE_PHONE);
     render(Table, { session: fakeSession(), view: makeView() });
@@ -830,13 +912,13 @@ describe('Table raised hand', () => {
     mockScrollerWidth(1000);
     render(Table, { session: fakeSession(), view: makeView() });
 
-    // The preview's card is 298 px wide: 80 % of it, 1.4 times as tall.
-    expect(hand().style.getPropertyValue('--card-w')).toBe('238px');
-    expect(hand().style.getPropertyValue('--card-h')).toBe('333px');
-    // At rest, as large as the desktop card at 82 % (185 / 238 of it), and dropped so that 87 px of
+    // The preview's card is 358 px wide: 80 % of it, 1.4 times as tall.
+    expect(hand().style.getPropertyValue('--card-w')).toBe('286px');
+    expect(hand().style.getPropertyValue('--card-h')).toBe('400px');
+    // At rest, as large as the desktop card at 82 % (185 / 286 of it), and dropped so that 87 px of
     // the cards show, as of the desktop card dropped by 140 px.
-    expect(Number(hand().style.getPropertyValue('--rest-scale'))).toBeCloseTo(0.6374, 4);
-    expect(hand().style.getPropertyValue('--rest-drop')).toBe('137px');
+    expect(Number(hand().style.getPropertyValue('--rest-scale'))).toBeCloseTo(0.5304, 4);
+    expect(hand().style.getPropertyValue('--rest-drop')).toBe('135px');
   });
 
   it("follows the preview on a phone, the controls staying above the resting hand's strip", () => {

@@ -174,7 +174,7 @@ describe('KeysSheet', () => {
     ]);
   });
 
-  it('lists the hero stepping keys only when the player selector has heroes to step through', () => {
+  it('lists the hero stepping keys only when the hero selector has heroes to step through', () => {
     const anchor = document.body.appendChild(document.createElement('button'));
     render(KeysSheet, { props: { anchor, severalHeroes: true, onclose: vi.fn() } });
 

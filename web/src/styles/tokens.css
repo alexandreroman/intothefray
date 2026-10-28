@@ -365,7 +365,7 @@ a.btn-primary {
   background-color: var(--table-bg);
 }
 
-/* A bar floating over the table (zoom control, Undo, player selector): its buttons on a raised panel. */
+/* A bar floating over the table (zoom control, Undo, hero selector): its buttons on a raised panel. */
 .floatbar {
   padding: 4px;
   background: #141a28eb;

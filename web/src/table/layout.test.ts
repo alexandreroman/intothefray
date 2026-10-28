@@ -10,6 +10,9 @@ import {
   HAND_REST_DROP,
   HAND_REST_SCALE,
   handRestDrop,
+  fanExtent,
+  fanOffsets,
+  HANDS_GAP,
   handRestScale,
   isOutOfPlay,
   outOfPlayChips,
@@ -17,6 +20,7 @@ import {
   previewCardWidth,
   raisedHandCard,
   restingFanPositions,
+  restingFanWidth,
   restingStrip,
   smallHandCard,
   smallHandDrop,
@@ -419,8 +423,8 @@ describe("a small screen's hand", () => {
 
 describe('the raised hand', () => {
   it("measures the preview's card as .peek sizes it", () => {
-    // 320 px less 10 px of padding and 1 px of border each side.
-    expect(previewCardWidth({ w: 1500, h: 1080 })).toBe(298);
+    // 380 px less 10 px of padding and 1 px of border each side.
+    expect(previewCardWidth({ w: 1500, h: 1080 })).toBe(358);
     // 45 % of a narrow table area.
     expect(previewCardWidth({ w: 500, h: 1000 })).toBe(203);
     // A short window: 5/7 of its height less 200 px, plus the padding.
@@ -431,8 +435,8 @@ describe('the raised hand', () => {
 
   it("takes 80 % of the preview's card on a desktop", () => {
     expect(raisedHandCard(HAND_CARD, { w: 1500, h: 1080 }, { small: false })).toEqual({
-      w: 238,
-      h: 333,
+      w: 286,
+      h: 400,
     });
     expect(raisedHandCard(HAND_CARD, { w: 1500, h: 600 }, { small: false })).toEqual({
       w: 227,
@@ -515,5 +519,51 @@ describe('the raised hand', () => {
     expect(box).toBeLessThanOrEqual(restingStrip(HAND_CARD.h, HAND_REST_DROP));
     // Never above its raised place.
     expect(handRestDrop(HAND_CARD, 0, raised)).toBe(0);
+  });
+});
+
+describe('fanExtent', () => {
+  it('reaches as far as the cards upright, with no tilt', () => {
+    const slots = [
+      { x: -100, y: 0, angle: 0 },
+      { x: 100, y: 0, angle: 0 },
+    ];
+    expect(fanExtent(slots, { w: 200, h: 280 })).toEqual({ left: -200, right: 200 });
+    // An empty hand keeps a card's room.
+    expect(fanExtent([], { w: 200, h: 280 })).toEqual({ left: -100, right: 100 });
+  });
+
+  it("takes in the end cards' top outer corners, tilted about a point below their bottom", () => {
+    // Turned 90° clockwise about a point 28 below its bottom middle (110 % of 280 under its top), a
+    // card 200 by 280 lies from 28 to 308 right of that point.
+    const extent = fanExtent([{ x: 0, y: 0, angle: 90 }], { w: 200, h: 280 });
+    expect(extent.left).toBeCloseTo(28);
+    expect(extent.right).toBeCloseTo(308);
+    // On a real fan the end cards stick out past their upright slots.
+    const fan = fanPositions(5, 1200);
+    const upright = Math.max(...fan.map((slot) => slot.x)) + HAND_CARD.w / 2;
+    const tilted = fanExtent(fan, HAND_CARD);
+    expect(tilted.right).toBeGreaterThan(upright + 20);
+    expect(tilted.left).toBeCloseTo(-tilted.right);
+  });
+});
+
+describe('restingFanWidth', () => {
+  it('measures the resting fan as seen, tilted end cards included, at the rest scale', () => {
+    const raised = { w: 238, h: 333 };
+    const extent = fanExtent(restingFanPositions(4, 600, HAND_CARD.w, raised.w), raised);
+    expect(restingFanWidth(4, 600, HAND_CARD, raised)).toBeCloseTo(
+      handRestScale(HAND_CARD, raised) * (extent.right - extent.left),
+    );
+    // A single card stands upright: it shows as the base card at HAND_REST_SCALE.
+    expect(restingFanWidth(1, 600, HAND_CARD, raised)).toBeCloseTo(HAND_REST_SCALE * HAND_CARD.w);
+  });
+});
+
+describe('fanOffsets', () => {
+  it('sets two fans side by side, HANDS_GAP apart, centred together', () => {
+    // 200 + 48 + 100 = 348 px in all, from -174 to 174.
+    expect(HANDS_GAP).toBe(48);
+    expect(fanOffsets(200, 100)).toEqual([-74, 124]);
   });
 });

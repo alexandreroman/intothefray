@@ -44,11 +44,13 @@ import (
 // The villain's row is taller so that it reads apart from the players' rows:
 // about 1.2 portrait card heights (244 units, keeping the rows on the 10-unit
 // grid) lie empty between its cards and the owner label of the first
-// player's row. The client's focus view uses the same bands
-// (web/src/table/rows.ts).
+// player's row. A player's row is tight: under its portrait cards, 44 units
+// hold an exhausted card, turned 15° and so about 15 units lower, and the
+// owner frame, 10 units past the piles, on the 10-unit grid. The client's
+// focus view uses the same bands (web/src/table/rows.ts).
 const (
 	villainRowHeight = 470
-	rowHeight        = 330
+	rowHeight        = 270
 	rowContentY      = 30
 
 	// portraitWidth and portraitHeight are the size of a portrait card, and

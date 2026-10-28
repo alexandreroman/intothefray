@@ -1,6 +1,6 @@
 ---
 name: "Animated switches and card art thumbnails"
-description: "Every switch slides its selection indicator; hero and villain thumbnails show only the card's art"
+description: "Switches slide their selection indicator (hero selector: 0.3 s); hero and villain thumbnails show only the card's art"
 type: project
 ---
 
@@ -11,7 +11,10 @@ type: project
   no slide on first render and none under `prefers-reduced-motion`. The
   logic is the `use:selectionIndicator` action
   (`web/src/lib/selectionIndicator.ts`, styles in `styles/tokens.css`);
-  pill switches use `components/Segmented.svelte`.
+  pill switches use `components/Segmented.svelte`. The hero selector
+  (`table/HeroPicker.svelte`) has its own switch: its ring slides in
+  0.3 s with the names that fold and unfold, placed from the current
+  entry's index (see [[project_hero_selector]]).
 - Hero and villain thumbnails show only the illustration of the card:
   `components/CardArt.svelte` zooms the card image onto the art window
   (`ART_LEFT`, `ART_RIGHT`, `ART_TOP`, `ART_BOTTOM` in

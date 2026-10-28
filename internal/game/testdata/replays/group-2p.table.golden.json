@@ -1165,7 +1165,7 @@
       "home": "deck:p1",
       "zone": "table",
       "x": 360,
-      "y": 830,
+      "y": 770,
       "z": 3,
       "identity": true
     }
@@ -1190,7 +1190,7 @@
       "kind": "aside",
       "owner": 1,
       "x": 0,
-      "y": 830,
+      "y": 770,
       "cards": [
         "cx3a7hfr7",
         "cszysvnkv",
@@ -1228,7 +1228,7 @@
       "kind": "deck",
       "owner": 1,
       "x": 0,
-      "y": 830,
+      "y": 770,
       "cards": [
         "cxht678q4",
         "cgtbskpn9",
@@ -1261,7 +1261,7 @@
       "kind": "discard",
       "owner": 1,
       "x": 160,
-      "y": 830,
+      "y": 770,
       "cards": [
         "cab89hsja",
         "c4p53zsux"

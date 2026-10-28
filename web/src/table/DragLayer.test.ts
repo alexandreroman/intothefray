@@ -3,7 +3,7 @@ import Table from './Table.svelte';
 import { interaction } from './interaction.svelte';
 import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
 import type { CardView as TableCard, PackFace, View } from '../lib/types';
-import { card, pile, fakeSession, infoFrom, placed } from './fixtures.testing';
+import { card, pile, fakeSession, infoFrom, placed, tallTable } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -102,6 +102,32 @@ function makeView(
   };
 }
 
+/**
+ * Alex plays a second deck, Ant-Man (p1), whose card lies on the table: on a wide screen both
+ * hands show, Spider-Man's (active) at 300, Ant-Man's at 900.
+ */
+function twoHandsView(): View {
+  const view = makeView({
+    cards: [
+      ...CARDS,
+      card('second', { owner: 1, x: 200, y: 300 }),
+      card('h4', { owner: 1, zone: 'hand' }),
+    ],
+  });
+  view.you = { ...view.you, areas: ['p0', 'p1'] };
+  view.players[0]!.decks = [
+    { area: 'p0', heroName: 'Spider-Man', ready: true, handCount: 3 },
+    { area: 'p1', heroName: 'Ant-Man', ready: true, handCount: 1 },
+  ];
+  view.table = { ...view.table!, hands: { p0: ['h1', 'h2', 'h3'], p1: ['h4'] } };
+  return view;
+}
+
+/** The seat of the active hand. */
+function activeSeat(): string | undefined {
+  return document.querySelector<HTMLElement>('.hand:not(.inactive)')?.dataset.seat;
+}
+
 // A real DOMRect, as a browser measures it: its sides are getters on its prototype, which a
 // spread of the rect loses.
 function domRect(left: number, top: number, width: number, height: number): DOMRect {
@@ -109,7 +135,8 @@ function domRect(left: number, top: number, width: number, height: number): DOMR
 }
 
 // The screen, at zoom 1: the surface 20 px in from the left and 40 px down
-// from the top; the hand at the bottom, its three cards side by side.
+// from the top; the hand at the bottom, its three cards side by side. A
+// second hand, seat 1's, lies 600 px right of seat 0's.
 const SURFACE = { left: 20, top: 40 };
 const HAND_TOP = 700;
 
@@ -150,8 +177,10 @@ function layOut(view: () => View, zoom: number): void {
     }
     const hcard = this.closest<HTMLElement>('.hcard');
     if (hcard && !hcard.classList.contains('gap')) {
-      const index = [...document.querySelectorAll('.hand .hcard')].indexOf(hcard);
-      return domRect(300 + index * 140, HAND_TOP, 132, 185);
+      const hand = hcard.closest<HTMLElement>('.hand');
+      const index = [...(hand?.querySelectorAll('.hcard') ?? [])].indexOf(hcard);
+      const seat = Number(hand?.dataset.seat ?? 0);
+      return domRect(300 + seat * 600 + index * 140, HAND_TOP, 132, 185);
     }
     return domRect(0, 0, 0, 0);
   });
@@ -210,6 +239,7 @@ beforeEach(() => {
   localStorage.clear();
   vi.mocked(loadGameCards).mockResolvedValue();
   vi.mocked(knownCard).mockImplementation(infoOf);
+  tallTable();
 });
 
 afterEach(() => {
@@ -451,37 +481,34 @@ describe('dragging a table card', () => {
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'toHand', card: 'mine' }, 0);
   });
 
-  it('selection follows drag to own hand', async () => {
-    // Alex plays a second deck, Ant-Man (p1): its card goes to its own hand, which then shows.
-    const view = makeView({
-      cards: [
-        ...CARDS,
-        card('second', { owner: 1, x: 200, y: 300 }),
-        card('h4', { owner: 1, zone: 'hand' }),
-      ],
-    });
-    view.you = { ...view.you, areas: ['p0', 'p1'] };
-    view.players[0]!.decks = [
-      { area: 'p0', heroName: 'Spider-Man', ready: true, handCount: 3 },
-      { area: 'p1', heroName: 'Ant-Man', ready: true, handCount: 1 },
-    ];
-    view.table = { ...view.table!, hands: { p0: ['h1', 'h2', 'h3'], p1: ['h4'] } };
-    const { session } = await renderTable(view);
-    const handIds = () =>
-      [...document.querySelectorAll<HTMLElement>('.hand .hcard[data-id]')].map(
-        (slot) => slot.dataset.id,
-      );
-    expect(handIds()).toEqual(['h1', 'h2', 'h3']);
+  it("goes to its own deck's hand when dropped on the other one, and selects that deck", async () => {
+    const { session } = await renderTable(twoHandsView());
+    expect(activeSeat()).toBe('0');
 
+    // An Ant-Man card over Spider-Man's hand: Ant-Man's hand takes it.
     await press(placed('second'), 250, 400);
     await moveTo(450, 740);
-    expect(document.querySelector('.hand')?.classList).toContain('drop');
+    expect(document.querySelector('.hand[data-seat="1"]')?.classList).toContain('drop');
+    expect(document.querySelector('.hand[data-seat="0"]')?.classList).not.toContain('drop');
     expect(screen.getByText("Ant-Man's hand")).toBeTruthy();
 
     await release(450, 740);
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'toHand', card: 'second' }, 1);
-    expect(handIds()).not.toContain('h1');
-    expect(handIds()).toContain('h4');
+    expect(activeSeat()).toBe('1');
+  });
+
+  it('is taken by the inactive hand too, for its own deck', async () => {
+    const { session } = await renderTable(twoHandsView());
+
+    // A Spider-Man card over Ant-Man's inactive hand, which does not turn active under the drag.
+    await press(placed('mine'), 50, 400);
+    await moveTo(1100, 740);
+    expect(screen.getByText("Spider-Man's hand")).toBeTruthy();
+    expect(activeSeat()).toBe('0');
+
+    await release(1100, 740);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'toHand', card: 'mine' }, 0);
+    expect(activeSeat()).toBe('0');
   });
 
   it("goes to its owner's hand, which then shows, while another player's row shows", async () => {
@@ -1006,6 +1033,22 @@ describe('dragging a hand card', () => {
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'discard', card: 'h3' }, 0);
   });
 
+  it("slots back into its own hand only, whatever the other hand's cards", async () => {
+    const { session } = await renderTable(twoHandsView());
+    await press(handCard('h1'), 350, 780);
+    // Right of Spider-Man's other cards (300 and 440, h1 being out of the fan): it slots in last.
+    await moveTo(700, 760);
+    expect(interaction.handGap).toBe(2);
+    expect(document.querySelector('.hand[data-seat="1"] .hcard.gap')).toBeNull();
+    expect(document.querySelector('.hand[data-seat="0"] .hcard.gap')).not.toBeNull();
+
+    // Over Ant-Man's card, out of Spider-Man's hand: no slot, and no reorder there.
+    await moveTo(980, 760);
+    expect(interaction.handGap).toBeNull();
+    await release(980, 760);
+    expect(session.act).not.toHaveBeenCalledWith(expect.objectContaining({ kind: 'handOrder' }), 0);
+  });
+
   it('goes on top of its deck when dropped on it', async () => {
     const { session } = await renderTable();
     await press(handCard('h3'), 650, 780);
@@ -1166,13 +1209,15 @@ describe('the hand on touch', () => {
   });
 
   it('another hand shown keeps it raised', async () => {
+    // Three decks: one hand shows at a time.
     const view = makeView({ cards: [...CARDS, card('h4', { owner: 1, zone: 'hand' })] });
-    view.you = { ...view.you, areas: ['p0', 'p1'] };
+    view.you = { ...view.you, areas: ['p0', 'p1', 'p2'] };
     view.players[0]!.decks = [
       { area: 'p0', heroName: 'Spider-Man', ready: true, handCount: 3 },
       { area: 'p1', heroName: 'Ant-Man', ready: true, handCount: 1 },
+      { area: 'p2', heroName: 'Wasp', ready: true, handCount: 0 },
     ];
-    view.table = { ...view.table!, hands: { p0: ['h1', 'h2', 'h3'], p1: ['h4'] } };
+    view.table = { ...view.table!, hands: { p0: ['h1', 'h2', 'h3'], p1: ['h4'], p2: [] } };
     await renderTable(view);
     await raise();
     await tap(handCard('h2'), 500, 780);

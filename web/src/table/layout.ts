@@ -371,10 +371,10 @@ export function restingStrip(cardHeight: number, drop: number): number {
   return Math.max(0, Math.round(HAND_REST_SCALE * (HAND_PADDING_Y + cardHeight) - drop));
 }
 
-// The preview's frame (.peek, Table.svelte): at most 320 px wide, its 10 px padding and 1 px border
+// The preview's frame (.peek, Table.svelte): at most 380 px wide, its 10 px padding and 1 px border
 // included, never wider than 45 % of the table area, nor taller than the window less 200 px. Keep
 // in step with .peek (Table.svelte).
-const PREVIEW_MAX_W = 320;
+const PREVIEW_MAX_W = 380;
 const PREVIEW_AREA_SHARE = 0.45;
 const PREVIEW_ROOM_Y = 200;
 const PREVIEW_PADDING = 10;
@@ -441,7 +441,80 @@ export function handRestDrop(
   return Math.max(0, Math.round(scale * (raised.h + HAND_PADDING.bottom) - baseShown));
 }
 
+/** How far a hand's room lies in from the left and right edges of the table, in px. */
+export interface HandInsets {
+  left: number;
+  right: number;
+}
+
 const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
+
+/** The share of the hands' room a raised fan spreads over, in its middle: the rest stays clear. */
+export const RAISED_FAN_SHARE = 0.9;
+
+/** The room between two resting fans side by side, as seen, in px. */
+export const HANDS_GAP = 48;
+
+/**
+ * Where two resting fans lie side by side, HANDS_GAP apart and centred
+ * together: the offset of each one's middle from the middle of the hands'
+ * room, in px as seen, given each fan's width as seen (restingFanWidth).
+ */
+export function fanOffsets(first: number, second: number): [number, number] {
+  const total = first + HANDS_GAP + second;
+  return [(first - total) / 2, (total - second) / 2];
+}
+
+// A hand card turns on the arc about a point below its bottom middle, at this share of its height
+// from its top. Keep in step with .fan's transform-origin (Hand.svelte).
+const FAN_PIVOT = 1.1;
+
+/**
+ * How far the fan's cards reach left and right of the hand's middle, in px,
+ * as drawn: each card is tilted on the arc about a point below its bottom
+ * middle, so that the end cards' top outer corners reach past their slots. An
+ * empty hand keeps a card's room.
+ */
+export function fanExtent(
+  slots: FanSlot[],
+  card: { w: number; h: number },
+): { left: number; right: number } {
+  if (slots.length === 0) {
+    return { left: -card.w / 2, right: card.w / 2 };
+  }
+  const xs = slots.flatMap((slot) => cornerXs(slot, card));
+  return { left: Math.min(...xs), right: Math.max(...xs) };
+}
+
+/** Where the corners of a card on its slot lie across, as drawn on the arc. */
+function cornerXs(slot: FanSlot, card: { w: number; h: number }): number[] {
+  const angle = toRadians(slot.angle);
+  const top = -FAN_PIVOT * card.h;
+  const bottom = (1 - FAN_PIVOT) * card.h;
+  const corners = [
+    { x: -card.w / 2, y: top },
+    { x: card.w / 2, y: top },
+    { x: -card.w / 2, y: bottom },
+    { x: card.w / 2, y: bottom },
+  ];
+  // Turned clockwise on the screen, where y grows downward.
+  return corners.map((corner) => slot.x + corner.x * Math.cos(angle) - corner.y * Math.sin(angle));
+}
+
+/**
+ * How wide the fan of a resting hand of `n` cards shows on the screen, in px:
+ * its cards laid out for a hand `handWidth` wide (restingFanPositions), tilted
+ * end cards included, at the rest scale.
+ */
+export function restingFanWidth(
+  n: number,
+  handWidth: number,
+  restCard: { w: number },
+  raisedCard: { w: number; h: number },
+): number {
+  const extent = fanExtent(restingFanPositions(n, handWidth, restCard.w, raisedCard.w), raisedCard);
+  return handRestScale(restCard, raisedCard) * (extent.right - extent.left);
+}
 
 /**
  * Lays out `n` cards of a hand, as the prototype does: the cards overlap by

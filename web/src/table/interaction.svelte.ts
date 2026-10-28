@@ -158,6 +158,12 @@ class TableInteraction {
   handGap = $state<number | null>(null);
   /** The last drop, while it waits for the server. */
   landing = $state.raw<Landing | null>(null);
+  /**
+   * The hand card a reorder just dropped under a mouse or a pen, in the hand of that seat: it
+   * stays hovered, and popped, while the pointer stays on it, though its new neighbours overlap it
+   * there. Hand.svelte keeps it, and lets go of it.
+   */
+  kept = $state.raw<{ seat: number; id: string } | null>(null);
 
   /** The table cards the rubber band selected: pressing one of them drags them all. */
   group = $state.raw<ReadonlySet<string>>(new Set());
@@ -197,7 +203,8 @@ class TableInteraction {
    * hovered card (a hovered pile keeps its hover). Not while a dialog is
    * open, nor during a drag, nor while a selection, the context menu or the
    * pill holds the hover: what they are for must not change under them
-   * (spec 5.8).
+   * (spec 5.8). Nor while a reordered hand card is kept: the neighbour
+   * overlapping it under the pointer is not what the viewer points at.
    */
   rehover(element: TableElement | null, preview: PreviewChange = 'show'): void {
     if (
@@ -205,6 +212,7 @@ class TableInteraction {
       this.dragging ||
       this.locked ||
       this.contextMenu !== null ||
+      this.kept !== null ||
       this.#pillHolds()
     ) {
       return;
@@ -382,6 +390,19 @@ class TableInteraction {
   refused(action: number): void {
     if (this.landing?.action === action) {
       this.endLanding();
+    }
+  }
+
+  /**
+   * A reorder dropped that card of the seat's hand under the pointer: it is
+   * hovered, as if entered, and kept so (kept). Not when the hover may not
+   * change (rehover).
+   */
+  keep(seat: number, id: string): void {
+    this.kept = null;
+    this.rehover({ kind: 'hand', id });
+    if (this.hovered?.kind === 'hand' && this.hovered.id === id) {
+      this.kept = { seat, id };
     }
   }
 
@@ -676,6 +697,7 @@ class TableInteraction {
     this.touchMode = false;
     this.letGo();
     this.endLanding();
+    this.kept = null;
     this.clearGroup();
     this.band = null;
     this.#swallowClick = false;

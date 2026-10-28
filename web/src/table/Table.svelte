@@ -20,7 +20,6 @@
   import { playerColorVar } from '../lib/playerColor';
   import { getPref, setPref } from '../lib/prefs';
   import { SMALL_SCREEN_QUERY } from '../lib/screen';
-  import { selectionIndicator } from '../lib/selectionIndicator';
   import type { GameSession } from '../lib/session.svelte';
   import type {
     Action,
@@ -66,31 +65,35 @@
   import Flights from './Flights.svelte';
   import { backCaption, isHidden } from './face';
   import Hand from './Hand.svelte';
+  import HeroPicker, { type HeroEntry } from './HeroPicker.svelte';
   import { interaction, type PreviewChange } from './interaction.svelte';
   import { handleKey } from './keys';
   import KeysSheet from './KeysSheet.svelte';
   import {
     contentWidth,
+    fanOffsets,
     HAND_CARD,
     HAND_CARD_NARROW,
     HAND_REST_DROP,
+    type HandInsets,
     handRestDrop,
     isLandscape,
     isOutOfPlay,
     chipsByFrame,
     ownerFrames,
     raisedHandCard,
+    restingFanWidth,
     restingStrip,
     smallHandCard,
     smallHandDrop,
     surfaceSize,
   } from './layout';
   import {
-    ALL_ROWS,
-    focusRows,
     lastRow,
     rowOfSeat,
+    rowPitch,
     saveViewMode,
+    spreadRows,
     storedViewMode,
     type ViewMode,
   } from './rows';
@@ -105,7 +108,9 @@
     seatColor,
     seatDeck,
     seatFullLabel,
+    seatHero,
     seatOf,
+    seatPlayer,
   } from './seats';
   import { tableCard, tablePile } from './screen';
   import { cardsInBand, isFree } from './selection';
@@ -251,7 +256,7 @@
 
   // The viewer's own seats, one per deck (spec 5); none for a spectator.
   const own = $derived(ownSeats(view));
-  // The deck picked in the player selector, with Q or by dragging a card to its hand, kept while it is
+  // The deck picked in the hero selector, with Q or by dragging a card to its hand, kept while it is
   // still one of the viewer's.
   let pickedDeck = $state<number | null>(null);
   /** The selected deck: its hand shows, and an action on a shared card is credited to it. */
@@ -291,7 +296,7 @@
   let pickedSeat = $state<number | null>(null);
 
   /**
-   * Picks a seat, in the player selector or otherwise: "Villain + player" shows its row, and when it is
+   * Picks a seat, in the hero selector or otherwise: "Villain + player" shows its row, and when it is
    * one of the viewer's decks, that deck is selected. Another player's seat shows no hand and leaves the
    * selected deck, which shared-card actions stay credited to.
    */
@@ -328,8 +333,7 @@
   });
 
   // "Villain + player", when there is a choice to make: with one player, "All" already shows the
-  // villain and that player. The player selector at the bottom left, listing every seat, shows only
-  // then: "All" already shows every hero.
+  // villain and that player.
   const focused = $derived(viewMode === 'focus' && seats.length > 1 && shownSeat !== null);
 
   // The selected deck's hand, unless "Villain + player" shows another player's row: then no hand shows,
@@ -337,25 +341,57 @@
   const handSeat = $derived(
     focused && shownSeat !== null && !own.includes(shownSeat) ? null : selected,
   );
-  const handCards = $derived(
-    handSeat !== null
-      ? (view.table?.hands?.[areaOf(handSeat)] ?? []).flatMap((id) => {
-          const card = cardsById.get(id);
-          return card ? [card] : [];
-        })
-      : undefined,
-  );
+  // The hands shown: with exactly two own decks on a wide screen, both, side by side in seat order,
+  // the selected deck's being the active one; else handSeat's alone.
+  const handSeats = $derived.by(() => {
+    if (handSeat === null) {
+      return [];
+    }
+    return own.length === 2 && !small.current ? [...own].sort((a, b) => a - b) : [handSeat];
+  });
 
-  const rowMap = $derived(
-    focused && shownSeat !== null
-      ? focusRows(rowOfSeat(piles, shownSeat), lastRow(piles))
-      : ALL_ROWS,
+  /** The cards of a seat's hand, in its order. */
+  function handOf(seat: number): TableCard[] {
+    return (view.table?.hands?.[areaOf(seat)] ?? []).flatMap((id) => {
+      const card = cardsById.get(id);
+      return card ? [card] : [];
+    });
+  }
+
+  /** "Your hand", or, beside another one, "Your Spider-Man hand". */
+  function handLabel(seat: number): string {
+    const hero = handSeats.length > 1 ? seatHero(view, seat) : '';
+    return hero ? `Your ${hero} hand` : 'Your hand';
+  }
+
+  // The hero selector at the bottom left (HeroPicker): in "Villain + player", every seat, its entry
+  // picking the row shown; in "All", the viewer's own decks, its entry picking the hand shown. It
+  // shows only with two entries or more: a single hero leaves nothing to pick.
+  const pickerEntries = $derived<HeroEntry[]>(
+    seatedDecks
+      .filter(({ seat }) => focused || own.includes(seat))
+      .map(({ seat, name, color }) => {
+        const deck = seatDeck(view, seat);
+        return {
+          seat,
+          label: name,
+          name: deck?.heroName ?? seatPlayer(view, seat)?.name ?? '',
+          image: deck?.heroImage,
+          color: playerColorVar(color),
+          handCount: deck?.handCount ?? 0,
+        };
+      }),
   );
+  const pickerCurrent = $derived(focused ? shownSeat : selected);
+  const pickerShown = $derived(pickerEntries.length > 1 && pickerCurrent !== null);
+  // The selector's width in px while it shows, bound out of HeroPicker: on a wide screen, the hands
+  // keep to the room right of it. Stale once it is gone.
+  let pickerWidth = $state(0);
 
   // Shift + ← / → steps through the selector's heroes; in "All", through the viewer's own decks.
   const canStepHero = $derived(focused || own.length > 1);
 
-  /** Picks the previous or next hero (Shift + ← / →): in the player selector, else among own decks. */
+  /** Picks the previous or next hero (Shift + ← / →): in the hero selector, else among own decks. */
   function stepHero(step: -1 | 1): void {
     if (focused && shownSeat !== null) {
       stepSeat(shownSeat, step);
@@ -364,7 +400,7 @@
     }
   }
 
-  /** Picks the seat `step` swatches after the current one in the player selector, round it. */
+  /** Picks the seat `step` seats after the current one, round the table. */
   function stepSeat(current: number, step: number): void {
     const choices = seatedDecks.map((deck) => deck.seat);
     const index = choices.indexOf(current);
@@ -378,28 +414,6 @@
     }
     const index = own.indexOf(selected);
     selectSeat(own[(index + step + own.length) % own.length] ?? selected);
-  }
-
-  // The arrow keys in the player swatches, as in any radio group.
-  const SEAT_STEPS: Record<string, number> = {
-    ArrowRight: 1,
-    ArrowDown: 1,
-    ArrowLeft: -1,
-    ArrowUp: -1,
-  };
-
-  /** Moves the choice, and the keyboard focus with it, to the next or previous swatch. */
-  async function onSeatKey(event: KeyboardEvent, current: number): Promise<void> {
-    const step = SEAT_STEPS[event.key];
-    if (step === undefined) {
-      return;
-    }
-    // Taken: the table's own shortcuts must not see it.
-    event.preventDefault();
-    const group = event.currentTarget as HTMLElement;
-    stepSeat(current, step);
-    await tick();
-    group.querySelector<HTMLElement>('[aria-checked="true"]')?.focus();
   }
 
   /** What lies at a height of the table, drawn where the view mode shows it; nothing when hidden. */
@@ -453,18 +467,8 @@
     interaction.setTouchMode(touchMode.current);
   });
 
-  // ---- The zoom ----
-
-  // The zoom the viewer chose (buttons, keys, Ctrl + wheel), remembered; null until then, or since
-  // the % label went back to the fit on a phone: the table then shows the screen's default zoom.
-  let chosenZoom = $state(storedZoom());
-  const zoomMin = $derived(phone.current ? ZOOM_MIN_SMALL : ZOOM_MIN);
-
   // The scroller pads the surface, so that glows, tilted cards and outlines near an edge show.
   const SCROLL_PADDING = 24;
-  // Kept free for a vertical scrollbar when fitting. Measured with the scrollbar or without, the
-  // fit would make the scrollbar come and go, and the fit with it.
-  const SCROLLBAR_ROOM = 12;
 
   // On a small screen the top bar floats over the play area, and slides away as the table scrolls
   // down (TopBar): the table starts below it, and what floats at the top of the play area keeps
@@ -479,6 +483,61 @@
   let visibleHeight = $state(0);
   // The scroller's width, its scrollbar included, in px.
   let scrollerWidth = $state(0);
+
+  // ---- Where the rows are drawn ----
+
+  // Declared before the zoom, whose fit reads the rows as drawn as soon as the table starts, and
+  // so is what they depend on: the visible height, the resting hand's strip, the controls' height.
+
+  // The hand's base cards, which the resting hand shows: smaller on a narrow screen, and following
+  // the window on a small one, where the resting hand drops by as much of them as elsewhere.
+  const baseHandCard = $derived.by(() => {
+    if (small.current) {
+      return smallHandCard({ w: windowWidth, h: windowHeight });
+    }
+    return narrow.current ? HAND_CARD_NARROW : HAND_CARD;
+  });
+  const baseHandDrop = $derived(small.current ? smallHandDrop(baseHandCard.h) : HAND_REST_DROP);
+
+  // The room between the resting hand's strip and the controls above it on a small screen, in px
+  // (controlsBottom).
+  const ABOVE_HAND = 8;
+
+  // The height of the controls at the bottom right (the zoom control, the narrow Undo), measured:
+  // the rows keep clear of them, and the Focus panel at home sits above them.
+  let cornerHeight = $state(0);
+
+  // The room under the table's rows, in px: the resting hand's strip, or the controls at the bottom,
+  // whichever is higher. Both as whenever the viewer has decks: from own, not handSeats (which
+  // controlsBottom follows), so that showing another player's row keeps the rows where they are.
+  const restingRoom = $derived(own.length > 0 ? restingStrip(baseHandCard.h, baseHandDrop) : 0);
+  const controlsRoom = $derived(
+    (small.current && own.length > 0 ? restingRoom + ABOVE_HAND : TABLE_EDGE_BOTTOM) + cornerHeight,
+  );
+  const rowsBottom = $derived(Math.max(restingRoom, controlsRoom));
+  // Numbers, so that the row map, which the layers re-measure on, changes only with them.
+  const lastDeckRow = $derived(lastRow(piles));
+  // The rows spread over the visible height they have, at zoom 1: the villain's row and two players'
+  // rows, or a single deck's one, fill it. Zooming out shows more of the table, it does not spread
+  // its rows further (rowPitch).
+  const pitch = $derived(
+    rowPitch(visibleHeight - SCROLL_PADDING - barStart - rowsBottom, lastDeckRow),
+  );
+  const shownRow = $derived(
+    focused && shownSeat !== null ? rowOfSeat(piles, shownSeat) : undefined,
+  );
+  const rowMap = $derived(spreadRows(pitch, lastDeckRow, shownRow));
+
+  // ---- The zoom ----
+
+  // The zoom the viewer chose (buttons, keys, Ctrl + wheel), remembered; null until then, or since
+  // the % label went back to the fit on a phone: the table then shows the screen's default zoom.
+  let chosenZoom = $state(storedZoom());
+  const zoomMin = $derived(phone.current ? ZOOM_MIN_SMALL : ZOOM_MIN);
+
+  // Kept free for a vertical scrollbar when fitting. Measured with the scrollbar or without, the
+  // fit would make the scrollbar come and go, and the fit with it.
+  const SCROLLBAR_ROOM = 12;
 
   // The zoom that fits the content's width into the scroller, as they are now.
   const contentFit = $derived(
@@ -588,16 +647,6 @@
 
   // ---- The hand and the controls at the bottom ----
 
-  // The hand's base cards, which the resting hand shows: smaller on a narrow screen, and following
-  // the window on a small one, where the resting hand drops by as much of them as elsewhere.
-  const baseHandCard = $derived.by(() => {
-    if (small.current) {
-      return smallHandCard({ w: windowWidth, h: windowHeight });
-    }
-    return narrow.current ? HAND_CARD_NARROW : HAND_CARD;
-  });
-  const baseHandDrop = $derived(small.current ? smallHandDrop(baseHandCard.h) : HAND_REST_DROP);
-
   // The raised hand's cards, 80 % of the preview's. At rest, Hand.svelte draws them at the size of
   // the base card at HAND_REST_SCALE, on the base card's fan, and they drop so that as tall a part
   // of them shows as of the base card dropped by baseHandDrop.
@@ -606,18 +655,63 @@
   );
   const handDrop = $derived(handRestDrop(baseHandCard, baseHandDrop, raisedCard));
 
-  // The room between the resting hand's strip and the controls above it on a small screen, in px.
-  const ABOVE_HAND = 8;
+  // The room between the hands and the controls beside them on a wide screen, in px.
+  const CONTROLS_GAP = 32;
+
+  // The width of the controls at the bottom right (the zoom control, the narrow Undo).
+  let cornerWidth = $state(0);
+
+  // On a wide screen the hands keep to the room between the hero selector, when it shows, and the
+  // controls at the bottom right, never under them. On a small screen those controls sit above the
+  // resting hand.
+  const handsRoom = $derived<HandInsets>(
+    small.current
+      ? { left: 0, right: 0 }
+      : {
+          left: pickerShown ? TABLE_EDGE + pickerWidth + CONTROLS_GAP : 0,
+          right: TABLE_EDGE + cornerWidth + CONTROLS_GAP,
+        },
+  );
+
+  // Two resting hands side by side, both over the whole room: each fan is laid out for half of it,
+  // and the two sit HANDS_GAP apart, centred together (fanOffsets). Active or not, a resting hand
+  // has the same size: neither moves as the active hand changes. Raised, the active one spreads
+  // over the middle of the room (RAISED_FAN_SHARE).
+  const restPlaces = $derived.by(() => {
+    const [first, second] = handSeats;
+    if (first === undefined || second === undefined) {
+      return [];
+    }
+    const width = Math.max(0, scrollerWidth - handsRoom.left - handsRoom.right) / 2;
+    const fanWidth = (seat: number) =>
+      restingFanWidth(handOf(seat).length, width, baseHandCard, raisedCard);
+    return fanOffsets(fanWidth(first), fanWidth(second)).map((offset) => ({ offset, width }));
+  });
+
+  // Whether each hand shown is raised, by its place (two hands at most); only the active one ever is.
+  let handsOpen = $state([false, false]);
+  // A hand no longer shown takes its raised state with it: one shown again in its place starts down.
+  // The hands still shown keep theirs, as a hand pinned up by a tap shows another deck's.
+  $effect.pre(() => {
+    const count = handSeats.length;
+    untrack(() => {
+      if (handsOpen.slice(count).some(Boolean)) {
+        handsOpen = handsOpen.map((open, place) => place < count && open);
+      }
+    });
+  });
+  // The active hand is raised: the viewer is busy with it (Presence).
+  const handRaised = $derived(handsOpen[handSeats.indexOf(handSeat ?? -1)] ?? false);
 
   /**
    * The room under the controls at the bottom of the table (the zoom control,
-   * the narrow Undo, the player selector), in px. On a small screen they sit
+   * the narrow Undo, the hero selector), in px. On a small screen they sit
    * above the resting hand, which would cover them otherwise: above the strip
    * restingStrip gives for the base card, which the resting hand, drawn from its
    * raised cards (handRestDrop), does not rise past.
    */
   const controlsBottom = $derived(
-    small.current && handCards !== undefined
+    small.current && handSeats.length > 0
       ? restingStrip(baseHandCard.h, baseHandDrop) + ABOVE_HAND
       : TABLE_EDGE_BOTTOM,
   );
@@ -626,9 +720,8 @@
 
   // Bottom right, unless that hides the whole hovered element (focus.ts).
   let focusCorner = $state<Corner>(HOME);
-  // The height of the controls at the bottom right (the zoom control, the narrow Undo): the panel sits above them.
-  let cornerHeight = $state(0);
-  // What the panel at home clears: those controls, and how much higher than --edge-bottom they sit.
+  // What the panel at home clears: the controls at the bottom right (cornerHeight), and how much
+  // higher than --edge-bottom they sit.
   const homeControls = $derived(cornerHeight + controlsBottom - TABLE_EDGE_BOTTOM);
   // The controls' box at the bottom right: the keyboard shortcuts sheet lines up on its right edge.
   let cornerBox = $state<HTMLElement>();
@@ -676,8 +769,8 @@
       size: { w: focusWidth, h: focusHeight },
       hovered: focusHovered,
       controls: homeControls,
-      // The player selector at the bottom left.
-      taken: focused ? ['bottom-left'] : [],
+      // The hero selector at the bottom left.
+      taken: pickerShown ? ['bottom-left'] : [],
     });
     focusCorner = next;
   }
@@ -701,7 +794,7 @@
       visibleHeight,
       focusWidth,
       focusHeight,
-      focused,
+      pickerShown,
       homeControls,
       barRoom,
     ];
@@ -768,7 +861,8 @@
   /** Resolves once the transitions playing in the hand have ended, or were cancelled. */
   async function handSettled(): Promise<void> {
     // Some environments (tests) have no Web Animations: nothing plays there.
-    const playing = app?.querySelector('.hand')?.getAnimations?.({ subtree: true }) ?? [];
+    const hands = [...(app?.querySelectorAll('.hand') ?? [])];
+    const playing = hands.flatMap((hand) => hand.getAnimations?.({ subtree: true }) ?? []);
     await Promise.allSettled(playing.map((animation) => animation.finished));
   }
 
@@ -1524,7 +1618,6 @@
   let wrap = $state<HTMLElement>();
   let app = $state<HTMLElement>();
   let presenceLayer = $state<ReturnType<typeof Presence>>();
-  let handRaised = $state(false);
 
   // A new view or a zoom moves the elements under a pointer at rest: the ones
   // it lands on are not hovered by the viewer.
@@ -1609,60 +1702,6 @@
     return () => target.removeEventListener('wheel', onWheel);
   });
 </script>
-
-<!--
-  The player selector of "Villain + player": which player's row shows, and, on an own seat, which of
-  the viewer's decks is selected (its hand shows). One swatch in each seat's colour, named for screen
-  readers and in its tooltip only, as the name already shows above the player's deck.
--->
-{#snippet seatPicker(current: number)}
-  <div class="seatpick floatbar">
-    {#if seatedDecks.length > 2}
-      <button
-        class="btn-ghost step"
-        aria-label="Previous player"
-        data-tip="Previous player"
-        onclick={() => stepSeat(current, -1)}>←</button
-      >
-    {/if}
-    <div
-      class="seats"
-      role="radiogroup"
-      aria-label="Player shown"
-      tabindex="-1"
-      onkeydown={(event) => onSeatKey(event, current)}
-      use:selectionIndicator
-    >
-      <!-- The ring around the player shown, in their colour: it slides, and its colour fades. -->
-      <span
-        class="ring"
-        data-indicator
-        aria-hidden="true"
-        style:--seat={playerColorVar(seatColor(view, current) ?? 0)}
-      ></span>
-      {#each seatedDecks as { seat, name, color } (seat)}
-        <button
-          class="seat"
-          style:--seat={playerColorVar(color)}
-          role="radio"
-          aria-label={name}
-          data-tip={name}
-          aria-checked={seat === current}
-          tabindex={seat === current ? 0 : -1}
-          onclick={() => selectSeat(seat)}
-        ></button>
-      {/each}
-    </div>
-    {#if seatedDecks.length > 2}
-      <button
-        class="btn-ghost step"
-        aria-label="Next player"
-        data-tip="Next player"
-        onclick={() => stepSeat(current, 1)}>→</button
-      >
-    {/if}
-  </div>
-{/snippet}
 
 <svelte:window
   onpointermove={onPointerMove}
@@ -1751,7 +1790,7 @@
     {view}
     presence={session.presence}
     send={(fields) => session.sendPresence(fields)}
-    away={modal.open || (handCards !== undefined && handRaised)}
+    away={modal.open || handRaised}
     root={app}
     {zoom}
     {faceOf}
@@ -1785,6 +1824,7 @@
     class:floatbar={small.current}
     bind:this={cornerBox}
     bind:clientHeight={cornerHeight}
+    bind:offsetWidth={cornerWidth}
   >
     {#if narrow.current}
       <div class="undo floatbar">
@@ -1821,8 +1861,17 @@
     />
   </div>
 
-  {#if focused && shownSeat !== null}
-    {@render seatPicker(shownSeat)}
+  {#if pickerShown && pickerCurrent !== null}
+    <div class="seatpick">
+      <HeroPicker
+        entries={pickerEntries}
+        current={pickerCurrent}
+        label={focused ? 'Player shown' : 'Hand shown'}
+        compact={small.current}
+        onpick={selectSeat}
+        bind:width={pickerWidth}
+      />
+    </div>
   {/if}
 
   {#if keySheetShown}
@@ -1835,17 +1884,32 @@
     />
   {/if}
 
-  {#if handCards}
-    <Hand
-      cards={handCards}
-      {faceOf}
-      {captionOf}
-      cardSize={raisedCard}
-      restCardSize={baseHandCard}
-      restDrop={handDrop}
-      bind:open={handRaised}
-    />
-  {/if}
+  <!-- The hands, clipped to the table's column: their backdrop reaches its edges and no further. -->
+  <div class="hands">
+    <!--
+      Keyed by place, not by seat: a single hand stays the same one as Q or the selector shows
+      another deck's, so a hand pinned up by a tap stays up to read that one too.
+    -->
+    {#each handSeats as seat, i (i)}
+      <Hand
+        cards={handOf(seat)}
+        {faceOf}
+        {captionOf}
+        cardSize={raisedCard}
+        restCardSize={baseHandCard}
+        restDrop={handDrop}
+        {seat}
+        color={playerColorVar(seatColor(view, seat) ?? 0)}
+        label={handLabel(seat)}
+        active={seat === handSeat}
+        onactivate={() => selectSeat(seat)}
+        inset={handsRoom}
+        restPlace={restPlaces[i]}
+        hidden={handRaised && seat !== handSeat}
+        bind:open={handsOpen[i]}
+      />
+    {/each}
+  </div>
 
   <Flights {faceOf} {captionOf} />
 
@@ -1979,7 +2043,7 @@
     --content-gutter: 24px;
     /*
       The height of a button in the bars floating at the bottom of the table (the zoom control, the
-      narrow screen's Undo, the player selector): with the same padding and the same room under them
+      narrow screen's Undo, the hero selector): with the same padding and the same room under them
       (--edge-bottom), the bars share their top and bottom edges.
     */
     --bar-button: 32px;
@@ -2166,16 +2230,30 @@
     font-size: 13px;
   }
 
-  /* At the bottom left, as the zoom control at the bottom right: under the veil and the hand. */
+  /*
+    The hands' column: the table's, laid out as one cell for the hands and the veil, clipped across
+    only. It takes no pointer and makes no stacking context: the hands and the veil stack with the
+    page's layers.
+  */
+  .hands {
+    grid-area: table;
+    display: grid;
+    grid-template: 'table' minmax(0, 1fr) / minmax(0, 1fr);
+    overflow-x: clip;
+    pointer-events: none;
+  }
+
+  /*
+    At the bottom left, as the zoom control at the bottom right, but above the veil (Hand.svelte,
+    2550): the hero selector shows in full while a hand is raised, to pick another one. Below the
+    raised hand (2600), which covers it on a small screen.
+  */
   .seatpick {
     grid-area: table;
     align-self: end;
     justify-self: start;
-    z-index: 30;
+    z-index: 2575;
     margin: 0 0 var(--edge-bottom) var(--edge);
-    display: flex;
-    align-items: center;
-    gap: 4px;
   }
 
   /*
@@ -2185,49 +2263,6 @@
   */
   .app.compact .seatpick {
     margin-bottom: calc(var(--controls-bottom) + var(--bar-button) + 18px);
-  }
-
-  .seatpick .step {
-    height: var(--bar-button);
-    padding: 0 8px;
-    border: none;
-    border-radius: 8px;
-    color: var(--text-soft);
-  }
-
-  /* A round swatch of the seat colour; the player shown is ringed. */
-  .seatpick .seats {
-    position: relative;
-    height: var(--bar-button);
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-
-  .seatpick .seat {
-    width: 18px;
-    height: 18px;
-    margin: 5px;
-    padding: 0;
-    border: none;
-    border-radius: 50%;
-    background: var(--seat);
-    opacity: 0.6;
-  }
-
-  .seatpick .seat:hover {
-    opacity: 1;
-  }
-
-  .seatpick .seat[aria-checked='true'] {
-    opacity: 1;
-  }
-
-  .seatpick .ring {
-    border-radius: 50%;
-    box-shadow:
-      0 0 0 2px #141a28,
-      0 0 0 4px var(--seat);
   }
 
   /* As the zoom control: under the veil and the raised hand. */
@@ -2328,12 +2363,12 @@
     z-index: 30;
     position: relative;
     /*
-      A 298 px wide portrait card in its 10 px padding and 1 px border, never wider than 45 % of
+      A 358 px wide portrait card in its 10 px padding and 1 px border, never wider than 45 % of
       the table, nor so tall that it reaches the zoom control: the top bar and the corners keep
       200 px. Keep in step with previewCardWidth (layout.ts): the raised hand's cards follow this
       card.
     */
-    width: min(320px, 45%, calc((100dvh - 200px) * 5 / 7 + 20px));
+    width: min(380px, 45%, calc((100dvh - 200px) * 5 / 7 + 20px));
     padding: 10px;
     background: var(--panel);
     border: 1px solid var(--line-strong);
@@ -2344,9 +2379,9 @@
     transition: margin-top 0.2s ease;
   }
 
-  /* A landscape card: 418 px wide. */
+  /* A landscape card: 498 px wide. */
   .peek.land {
-    width: min(440px, 45%);
+    width: min(520px, 45%);
   }
 
   /* Out of the pointer's and the hovered card's way, in another corner (focus.ts). */

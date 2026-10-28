@@ -6,6 +6,7 @@
 import type { Action, CardView, View } from '../lib/types';
 import { pileTargets, sourceOf, type PileTarget, type Rect } from './drag';
 import { TABLE_LIMIT } from './layout';
+import { ALL_ROWS, type RowMap } from './rows';
 
 /**
  * Mirrors maxCount in internal/game/action.go: the most cards one action
@@ -66,7 +67,9 @@ export function groupUnits(selected: ReadonlySet<string>, cards: readonly CardVi
  * alone would send there: every unit moves by the lead's delta, or goes to
  * the same pile, deck or hand. A drop over a card moves the group there,
  * tucked under nothing. The delta is cut short so that every unit stays
- * within the table, offsets kept. One unit sends its own action; null when
+ * within the table, offsets kept. The offsets are those drawn, through
+ * `rows`: a group across rows drawn closer or further apart than they lie
+ * keeps its shape on the screen. One unit sends its own action; null when
  * the drop does nothing for a group (a play, a deal), moves nothing, or
  * carries more units than the server takes in one group.
  */
@@ -75,12 +78,13 @@ export function groupAction(
   lead: string,
   single: Action,
   cards: readonly CardView[],
+  rows: RowMap = ALL_ROWS,
 ): Action | null {
   let actions: Action[] | null;
   switch (single.kind) {
     case 'move':
     case 'attach':
-      actions = groupMoves(units, lead, single, cards);
+      actions = groupMoves(units, lead, single, cards, rows);
       break;
     case 'discard':
     case 'toPile':
@@ -101,34 +105,60 @@ export function groupAction(
   return actions[0] ?? null;
 }
 
-/** Every unit moved by the lead's delta, cut short at the table's edges; null when nothing moves. */
+/**
+ * Every unit moved by the lead's delta as drawn, cut short at the table's
+ * edges; null when nothing moves. Across the width, drawn and table units are
+ * the same; down the table, each unit lands on the height drawn at its drawn
+ * height plus the delta, which only the rows drawn as they lie keep as a
+ * table offset (rows.ts, spreadRows).
+ */
 function groupMoves(
   units: readonly string[],
   lead: string,
   single: Action,
   cards: readonly CardView[],
+  rows: RowMap,
 ): Action[] | null {
   const leadCard = cards.find((card) => card.id === lead);
   if (!leadCard || single.x === undefined || single.y === undefined) {
     return null;
   }
-  const moved: CardView[] = [];
+  const leadDrawn = rows.toDisplay(leadCard.y);
+  const landingDrawn = rows.toDisplay(single.y);
+  if (leadDrawn === null || landingDrawn === null) {
+    return null;
+  }
+  const moved: { card: CardView; drawnY: number }[] = [];
   for (const id of units) {
     const card = cards.find((c) => c.id === id);
-    if (!card) {
+    // A unit is a card drawn on the table: one in a hidden row has left the group (pruneGroup).
+    const drawnY = card ? rows.toDisplay(card.y) : null;
+    if (!card || drawnY === null) {
       return null;
     }
-    moved.push(card);
+    moved.push({ card, drawnY });
   }
-  const xs = moved.map((card) => card.x);
-  const ys = moved.map((card) => card.y);
-  // Mirrors the server's bounds: every corner within 0..TABLE_LIMIT.
+  const xs = moved.map(({ card }) => card.x);
+  const drawnYs = moved.map(({ drawnY }) => drawnY);
+  // Mirrors the server's bounds: every corner within 0..TABLE_LIMIT. The table's top is drawn at 0.
+  const drawnLimit = rows.toDisplay(TABLE_LIMIT) ?? Infinity;
   const dx = clamp(single.x - leadCard.x, -Math.min(...xs), TABLE_LIMIT - Math.max(...xs));
-  const dy = clamp(single.y - leadCard.y, -Math.min(...ys), TABLE_LIMIT - Math.max(...ys));
+  const dy = clamp(
+    landingDrawn - leadDrawn,
+    -Math.min(...drawnYs),
+    drawnLimit - Math.max(...drawnYs),
+  );
   if (dx === 0 && dy === 0) {
     return null;
   }
-  return moved.map((card) => ({ kind: 'move', card: card.id, x: card.x + dx, y: card.y + dy }));
+  // Rounded to the unit, not snapped: the lead lands on its spot, snapped where it was dropped, and
+  // the others keep their offsets to it, on the grid or not.
+  return moved.map(({ card, drawnY }) => ({
+    kind: 'move',
+    card: card.id,
+    x: card.x + dx,
+    y: Math.round(rows.toTable(drawnY + dy)),
+  }));
 }
 
 function clamp(value: number, low: number, high: number): number {

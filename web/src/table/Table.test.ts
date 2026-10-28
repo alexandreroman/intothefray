@@ -9,6 +9,7 @@ import { cutShort } from '../lib/overflowTip.testing';
 import { clearPrefMemory } from '../lib/prefs';
 import type { CardView as TableCard, Index, PackFace, PileView, View } from '../lib/types';
 import { fakeSession, infoFrom } from './fixtures.testing';
+import { HAND_CARD, HANDS_GAP, restingFanWidth } from './layout';
 
 // The card language, as each test chooses: Options does not offer French, so no stored choice gives it.
 const cardLang = vi.hoisted(() => ({ current: 'en' as Lang }));
@@ -90,7 +91,7 @@ function pile(id: string, extra: Partial<PileView>): PileView {
 
 /**
  * Rhino with two players; the viewer is Sam, seated second (p1). As the setup
- * lays them out: the villain's row at the top, Alex's row 330 below it, then
+ * lays them out: the villain's row at the top, Alex's row 270 below it, then
  * Sam's, each starting with its deck and discard pile.
  */
 function makeView(extra: { cards?: TableCard[]; piles?: PileView[] } = {}): View {
@@ -98,14 +99,14 @@ function makeView(extra: { cards?: TableCard[]; piles?: PileView[] } = {}): View
     card('v', { code: '01094', back: 'villain', x: 360, y: 30 }),
     card('s', { code: '01097', back: 'encounter', x: 520, y: 30 }),
     card('a', { code: '01001', owner: 0, x: 360, y: 500 }),
-    card('b', { code: '01001', owner: 1, x: 360, y: 830 }),
+    card('b', { code: '01001', owner: 1, x: 360, y: 770 }),
     card('h', { code: '01001', owner: 1, zone: 'hand', x: 0, y: 0 }),
   ];
   const piles = extra.piles ?? [
     pile('enc', { kind: 'encounter', x: 0, y: 30 }),
     pile('d0', { owner: 0, x: 0, y: 500 }),
-    pile('d1', { owner: 1, x: 0, y: 830 }),
-    pile('x1', { kind: 'discard', owner: 1, x: 160, y: 830, count: 0 }),
+    pile('d1', { owner: 1, x: 0, y: 770 }),
+    pile('x1', { kind: 'discard', owner: 1, x: 160, y: 770, count: 0 }),
   ];
   return {
     id: 'g1',
@@ -206,7 +207,7 @@ function withOutOfPlay(view: View): View {
       kind: 'aside',
       owner: 1,
       x: 0,
-      y: 830,
+      y: 770,
       count: 3,
       cards: ['q4', 'q5', 'q6'],
     }),
@@ -251,7 +252,9 @@ describe('Table', () => {
       [...surface().querySelectorAll<HTMLElement>(selector)].map((element) => element.dataset.id);
     expect(ids(':scope > .card:not(.pile)')).toEqual(['v', 's', 'a', 'b']);
     expect(ids(':scope > .pile')).toEqual(['enc', 'd0', 'd1', 'x1']);
-    expect(surface().querySelector('[data-id="b"]')?.getAttribute('style')).toContain('top: 830px');
+    // Sam's card lies 30 into the third row (from 740). jsdom's table shows no height, so the rows are
+    // drawn as close as they go: the villain's 310 high, a player's 270 (spreadRows).
+    expect(surface().querySelector('[data-id="b"]')?.getAttribute('style')).toContain('top: 610px');
   });
 
   it('loads the cards of its game once', async () => {
@@ -297,11 +300,11 @@ describe('Table', () => {
       '6 cards in hand',
       '5 cards in hand',
     ]);
-    // Around Sam's deck (0, 830) and discard pile (160, 830), 10 units off their edges.
+    // Around Sam's deck (0, 770) and discard pile (160, 770), drawn at 610, 10 units off their edges.
     const sam = boxes[2]!;
     expect([sam.style.left, sam.style.top, sam.style.width, sam.style.height]).toEqual([
       '-10px',
-      '820px',
+      '600px',
       '320px',
       '216px',
     ]);
@@ -312,7 +315,7 @@ describe('Table', () => {
     view.table?.piles.push(
       pile('vic', { kind: 'victory', x: 0, y: 30, count: 2, cards: ['q1', 'q2'] }),
       pile('saside', { kind: 'aside', x: 0, y: 30, count: 0 }),
-      pile('aside:p1', { kind: 'aside', owner: 1, x: 0, y: 830, count: 0 }),
+      pile('aside:p1', { kind: 'aside', owner: 1, x: 0, y: 770, count: 0 }),
     );
     render(Table, { session: fakeSession(), view });
     await catalogLoaded();
@@ -394,29 +397,29 @@ describe('Table', () => {
 
   it('leaves room past the rightmost and the lowest card', async () => {
     const view = makeView({
-      // A double-size card, 196 by 280, at 200, 300.
-      cards: [card('g', { code: '01010', x: 200, y: 300 })],
+      // A double-size card, 196 by 280, at 200, 200: in the villain's row, drawn where it lies.
+      cards: [card('g', { code: '01010', x: 200, y: 200 })],
       piles: [],
     });
     render(Table, { session: fakeSession(), view });
 
-    // 200 + 196 + 200 wide, 300 + 280 + 300 tall.
+    // 200 + 196 + 200 wide, 200 + 280 + 300 tall.
     await waitFor(() => {
       expect(surface().style.width).toBe('596px');
     });
-    expect(surface().style.height).toBe('880px');
+    expect(surface().style.height).toBe('780px');
   });
 
   it('sizes cards as std until the catalog is loaded', () => {
     vi.mocked(loadGameCards).mockReturnValue(new Promise(() => {}));
     const view = makeView({
-      cards: [card('g', { code: '01010', x: 0, y: 300 })],
+      cards: [card('g', { code: '01010', x: 0, y: 200 })],
       piles: [],
     });
     render(Table, { session: fakeSession(), view });
 
-    // 300 + 196 + 300, and the card itself gets the std box.
-    expect(surface().style.height).toBe('796px');
+    // 200 + 196 + 300, and the card itself gets the std box.
+    expect(surface().style.height).toBe('696px');
     expect(surface().querySelector<HTMLElement>('.card')?.style.height).toBe('196px');
     expect(knownCard).not.toHaveBeenCalled();
   });
@@ -426,16 +429,16 @@ describe('Table', () => {
     vi.mocked(loadGameCards).mockReturnValue(new Promise<void>((resolve) => (loaded = resolve)));
     // The main scheme is landscape (140 high), but counts as std (196) until its size is known.
     const view = makeView({
-      cards: [card('s', { code: '01097', x: 0, y: 300 })],
+      cards: [card('s', { code: '01097', x: 0, y: 200 })],
       piles: [],
     });
     render(Table, { session: fakeSession(), view });
-    expect(surface().style.height).toBe('796px');
+    expect(surface().style.height).toBe('696px');
 
     loaded();
-    // 300 + 140 + 300.
+    // 200 + 140 + 300.
     await waitFor(() => {
-      expect(surface().style.height).toBe('740px');
+      expect(surface().style.height).toBe('640px');
     });
   });
 
@@ -452,14 +455,14 @@ describe('Table', () => {
   it('after a failed load, every card is a std placeholder, as the surface is sized', async () => {
     vi.mocked(loadGameCards).mockRejectedValue(new Error('offline'));
     const view = makeView({
-      cards: [card('g', { code: '01010', x: 0, y: 300 })],
+      cards: [card('g', { code: '01010', x: 0, y: 200 })],
       piles: [],
     });
     render(Table, { session: fakeSession(), view });
     await screen.findByRole('alert');
 
-    // 300 + 196 + 300: the surface counts the card as std, and the card is drawn std.
-    expect(surface().style.height).toBe('796px');
+    // 200 + 196 + 300: the surface counts the card as std, and the card is drawn std.
+    expect(surface().style.height).toBe('696px');
     await Promise.resolve();
     expect(surface().querySelector<HTMLElement>('.card')?.style.height).toBe('196px');
     expect(within(surface()).queryByRole('img', { name: 'Giant form' })).toBeNull();
@@ -569,13 +572,13 @@ describe('Table', () => {
           kind: 'sideDeck',
           owner: 1,
           x: 360,
-          y: 830,
+          y: 770,
           count: 5,
           label: 'Invocation',
           topFaceUp: true,
           cards: ['i'],
         }),
-        pile('side:p1:1', { kind: 'sideDeck', owner: 1, x: 520, y: 830, count: 5, label: 'Sense' }),
+        pile('side:p1:1', { kind: 'sideDeck', owner: 1, x: 520, y: 770, count: 5, label: 'Sense' }),
       ],
     });
     render(Table, { session: fakeSession(), view });
@@ -590,16 +593,16 @@ describe('Table', () => {
     const view = makeView({
       cards: [
         card('v', { code: '01094', back: 'villain', x: 360, y: 30 }),
-        card('l', { owner: 1, home: 'side:p1:0', faceDown: true, x: 700, y: 830 }),
+        card('l', { owner: 1, home: 'side:p1:0', faceDown: true, x: 700, y: 770 }),
         // Its deck is not on the table: its back has no caption.
-        card('g', { owner: 1, home: 'side:p1:9', faceDown: true, x: 900, y: 830 }),
+        card('g', { owner: 1, home: 'side:p1:9', faceDown: true, x: 900, y: 770 }),
       ],
       piles: [
         pile('side:p1:0', {
           kind: 'sideDeck',
           owner: 1,
           x: 360,
-          y: 830,
+          y: 770,
           count: 2,
           label: 'Labor',
           back: 'player',
@@ -1141,14 +1144,75 @@ describe('Table view modes', () => {
     await fireEvent.click(viewButton('Villain + player'));
     expect(viewButton('Villain + player').getAttribute('aria-pressed')).toBe('true');
     expect(localStorage.getItem('itf-view')).toBe('focus');
-    // Sam, the viewer, by default: Alex's row is hidden, Sam's drawn right under the villain's.
+    // Sam, the viewer, by default: Alex's row is hidden, Sam's drawn right under the villain's, which
+    // jsdom's table of no height draws 310 high.
     expect(shownIds()).toEqual(['enc', 'd1', 'x1', 'v', 's', 'b']);
     const sam = surface().querySelector<HTMLElement>('[data-id="b"]')!;
-    expect(sam.style.top).toBe('500px');
+    expect(sam.style.top).toBe('340px');
     expect(ownerBoxes().map((box) => box.querySelector('.owner')?.textContent)).toEqual([
       'Villain',
       'Sam · Ant-Man',
     ]);
+  });
+
+  it('spreads the rows over the height the table shows, one pitch apart', async () => {
+    // 1210 px tall: past the scroller's top padding (24) and the resting hand's strip (108), 1078 px
+    // for the rows: the villain's row and two players' rows, the last one 270 high, fill them at a
+    // pitch of 404, 400 on the grid.
+    vi.spyOn(Element.prototype, 'clientHeight', 'get').mockImplementation(function (this: Element) {
+      return this.classList.contains('tablewrap') ? 1210 : 0;
+    });
+    render(Table, { session: fakeSession(), view: makeView() });
+    await catalogLoaded();
+
+    const top = (id: string) =>
+      surface().querySelector<HTMLElement>(`[data-id="${id}"]`)?.style.top;
+    // The villain's row where it lies; Alex's row drawn at the villain's row's height, 400; Sam's
+    // one pitch below it. Each card 30 into its row.
+    expect([top('v'), top('a'), top('b')]).toEqual(['30px', '430px', '830px']);
+  });
+
+  it("spreads a single deck's row and the villain's over the height the table shows", async () => {
+    // 800 px tall: past the scroller's top padding (24) and the resting hand's strip (108), 668 px
+    // for the rows: the villain's row and the one player's row, 270 high, fill them, the villain's
+    // drawn 398 high, 390 on the grid.
+    vi.spyOn(Element.prototype, 'clientHeight', 'get').mockImplementation(function (this: Element) {
+      return this.classList.contains('tablewrap') ? 800 : 0;
+    });
+    const view = makeView({
+      cards: [
+        card('v', { code: '01094', back: 'villain', x: 360, y: 30 }),
+        card('b', { code: '01001', owner: 1, x: 360, y: 500 }),
+        card('h', { code: '01001', owner: 1, zone: 'hand', x: 0, y: 0 }),
+      ],
+      piles: [
+        pile('enc', { kind: 'encounter', x: 0, y: 30 }),
+        pile('d1', { owner: 1, x: 0, y: 500 }),
+      ],
+    });
+    render(Table, { session: fakeSession(), view });
+    await catalogLoaded();
+
+    const top = (id: string) =>
+      surface().querySelector<HTMLElement>(`[data-id="${id}"]`)?.style.top;
+    // Sam's row drawn at the villain's row's height, 390, his card 30 into it.
+    expect([top('v'), top('b')]).toEqual(['30px', '420px']);
+  });
+
+  it('spreads the rows the same at any zoom', async () => {
+    // The screen of the test above, zoomed out to 50 %: in table units, the rows are drawn where
+    // they are at 100 %, the zoom only showing more of the table.
+    localStorage.setItem('itf-zoom', '0.5');
+    vi.spyOn(Element.prototype, 'clientHeight', 'get').mockImplementation(function (this: Element) {
+      return this.classList.contains('tablewrap') ? 1210 : 0;
+    });
+    render(Table, { session: fakeSession(), view: makeView() });
+    await catalogLoaded();
+
+    expect(zoomLabel().textContent).toBe('50%');
+    const top = (id: string) =>
+      surface().querySelector<HTMLElement>(`[data-id="${id}"]`)?.style.top;
+    expect([top('v'), top('a'), top('b')]).toEqual(['30px', '430px', '830px']);
   });
 
   it("picks the player whose row shows, at the bottom left, the viewer's own first", async () => {
@@ -1158,25 +1222,26 @@ describe('Table view modes', () => {
 
     const picker = screen.getByRole('radiogroup', { name: 'Player shown' });
     const swatches = within(picker).getAllByRole('radio');
-    // Swatches without a visible name: it is their label and tooltip. Only the chosen one is tabbed to.
+    // Each named with its player and hero, in its label and tooltip. Only the chosen one is tabbed to.
     expect(
       swatches.map((swatch) => [
         swatch.getAttribute('aria-label'),
         swatch.dataset.tip,
-        swatch.textContent,
         swatch.getAttribute('aria-checked'),
         swatch.tabIndex,
       ]),
     ).toEqual([
-      ['Alex · Spider-Man', 'Alex · Spider-Man', '', 'false', -1],
-      ['Sam · Ant-Man', 'Sam · Ant-Man', '', 'true', 0],
+      ['Alex · Spider-Man', 'Alex · Spider-Man', 'false', -1],
+      ['Sam · Ant-Man', 'Sam · Ant-Man', 'true', 0],
     ]);
+    // Only the current entry names its hero beside its avatar.
+    expect(picker.querySelector('[aria-checked="true"] .txt')?.textContent).toBe('Ant-Man');
     // Two players: no previous and next buttons.
-    expect(screen.queryByRole('button', { name: 'Next player' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Next hero' })).toBeNull();
 
     await fireEvent.click(within(picker).getByRole('radio', { name: 'Alex · Spider-Man' }));
     expect(shownIds()).toEqual(['enc', 'd0', 'v', 's', 'a']);
-    expect(surface().querySelector<HTMLElement>('[data-id="a"]')?.style.top).toBe('500px');
+    expect(surface().querySelector<HTMLElement>('[data-id="a"]')?.style.top).toBe('340px');
   });
 
   it('steps round the table with three players or more', async () => {
@@ -1190,7 +1255,7 @@ describe('Table view modes', () => {
       online: true,
       decks: [{ area: 'p2', ready: true, handCount: 0 }],
     });
-    view.table!.piles.push(pile('d2', { owner: 2, x: 0, y: 1160 }));
+    view.table!.piles.push(pile('d2', { owner: 2, x: 0, y: 1040 }));
     render(Table, { session: fakeSession(), view });
     await catalogLoaded();
 
@@ -1200,11 +1265,11 @@ describe('Table view modes', () => {
         .getAllByRole('radio', { checked: true })
         .map((swatch) => swatch.getAttribute('aria-label'));
     expect(checked()).toEqual(['Sam · Ant-Man']);
-    await fireEvent.click(screen.getByRole('button', { name: 'Next player' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Next hero' }));
     expect(checked()).toEqual(['Kim']);
-    await fireEvent.click(screen.getByRole('button', { name: 'Next player' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Next hero' }));
     expect(checked()).toEqual(['Alex · Spider-Man']);
-    await fireEvent.click(screen.getByRole('button', { name: 'Previous player' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Previous hero' }));
     expect(checked()).toEqual(['Kim']);
   });
 
@@ -1219,7 +1284,7 @@ describe('Table view modes', () => {
       online: true,
       decks: [{ area: 'p2', ready: true, handCount: 0 }],
     });
-    view.table!.piles.push(pile('d2', { owner: 2, x: 0, y: 1160 }));
+    view.table!.piles.push(pile('d2', { owner: 2, x: 0, y: 1040 }));
     render(Table, { session: fakeSession(), view });
     await catalogLoaded();
 
@@ -1239,6 +1304,26 @@ describe('Table view modes', () => {
     await waitFor(() => expect(document.activeElement).toBe(kim));
     await fireEvent.keyDown(kim, { key: 'ArrowUp' });
     await waitFor(() => expect(document.activeElement).toBe(sam));
+  });
+
+  it("brings the viewer's hand back down after another player's row, even pinned up by a tap", async () => {
+    localStorage.setItem('itf-view', 'focus');
+    const view = makeView();
+    view.table = { ...view.table!, hands: { p1: ['h'] } };
+    render(Table, { session: fakeSession(), view });
+    await catalogLoaded();
+    const hand = () => screen.queryByRole('list', { name: 'Your hand' });
+    const card = within(hand()!).getByRole('listitem');
+    await fireEvent.pointerDown(card, { pointerType: 'touch' });
+    await fireEvent.click(card);
+    expect(hand()?.classList).toContain('open');
+
+    const picker = screen.getByRole('radiogroup', { name: 'Player shown' });
+    await fireEvent.click(within(picker).getByRole('radio', { name: 'Alex · Spider-Man' }));
+    expect(hand()).toBeNull();
+
+    await fireEvent.click(within(picker).getByRole('radio', { name: 'Sam · Ant-Man' }));
+    expect(hand()?.classList).not.toContain('open');
   });
 
   it('offers no choice with one player: the table shows everything', async () => {
@@ -1281,19 +1366,19 @@ describe('Table view modes', () => {
     render(Table, { session, view: makeView() });
     await catalogLoaded();
 
-    // Sam's identity lies at 360, 830 on the table, drawn at 360, 500.
+    // Sam's identity lies at 360, 770 on the table, drawn at 360, 500.
     const sam = surface().querySelector<HTMLElement>('[data-id="b"]')!;
     await fireEvent.pointerDown(sam, { clientX: 400, clientY: 540, pointerType: 'mouse' });
     await fireEvent.pointerMove(window, { clientX: 500, clientY: 590, buttons: 1 });
     await fireEvent.pointerUp(window, { clientX: 500, clientY: 590 });
 
-    // Its corner drawn at 460, 550: 460, 880 on the table.
+    // Its corner drawn at 460, 550: 460, 820 on the table.
     expect(session.act).toHaveBeenCalledExactlyOnceWith(
       {
         kind: 'move',
         card: 'b',
         x: 460,
-        y: 880,
+        y: 820,
       },
       1,
     );
@@ -1312,16 +1397,16 @@ describe('several decks', () => {
         card('v', { code: '01094', back: 'villain', x: 360, y: 30 }),
         card('s', { code: '01097', back: 'encounter', x: 520, y: 30 }),
         card('a', { code: '01001', owner: 0, x: 360, y: 500 }),
-        card('b', { code: '01001', owner: 1, x: 360, y: 830 }),
-        card('c', { code: '01001', owner: 2, x: 360, y: 1160 }),
+        card('b', { code: '01001', owner: 1, x: 360, y: 770 }),
+        card('c', { code: '01001', owner: 2, x: 360, y: 1040 }),
         card('h0', { code: '01001', owner: 0, zone: 'hand' }),
         card('h1', { code: '01094', owner: 1, zone: 'hand' }),
       ],
       piles: [
         pile('enc', { kind: 'encounter', x: 0, y: 30 }),
         pile('d0', { owner: 0, x: 0, y: 500 }),
-        pile('d1', { owner: 1, x: 0, y: 830 }),
-        pile('d2', { owner: 2, x: 0, y: 1160 }),
+        pile('d1', { owner: 1, x: 0, y: 770 }),
+        pile('d2', { owner: 2, x: 0, y: 1040 }),
       ],
     });
     view.you = { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0', 'p1'] };
@@ -1350,8 +1435,16 @@ describe('several decks', () => {
     return view;
   }
 
+  /** Every hand shown, in order. */
+  function hands(): HTMLElement[] {
+    return screen.queryAllByRole('list', { name: /^Your .*hand$/ });
+  }
+
+  /** The active hand: the selected deck's. */
   function hand(): HTMLElement {
-    return screen.getByRole('list', { name: 'Your hand' });
+    const active = hands().filter((list) => !list.classList.contains('inactive'));
+    expect(active).toHaveLength(1);
+    return active[0]!;
   }
 
   function handNames(): (string | null)[] {
@@ -1360,13 +1453,13 @@ describe('several decks', () => {
       .map((image) => image.getAttribute('alt'));
   }
 
-  /** The player selector at the bottom left, in "Villain + player" only. */
+  /** The hero selector at the bottom left, as "Villain + player" names it. */
   function picker(): HTMLElement {
     return screen.getByRole('radiogroup', { name: 'Player shown' });
   }
 
-  function checkedDeck(): (string | null)[] {
-    return within(picker())
+  function checkedDeck(name = 'Player shown'): (string | null)[] {
+    return within(screen.getByRole('radiogroup', { name }))
       .getAllByRole('radio', { checked: true })
       .map((swatch) => swatch.getAttribute('aria-label'));
   }
@@ -1378,11 +1471,60 @@ describe('several decks', () => {
     expect(handNames()).toEqual(['Spider-Man']);
   });
 
-  it('shows no selector in the All view, even to a player with two decks', async () => {
+  it("lists the viewer's own decks in the selector of the All view, picking the hand shown", async () => {
     render(Table, { session: fakeSession(), view: makeTwoDeckView() });
-    await catalogLoaded();
+    await within(hand()).findByRole('img', { name: 'Spider-Man' });
 
-    expect(screen.queryByRole('radiogroup')).toBeNull();
+    const handPicker = screen.getByRole('radiogroup', { name: 'Hand shown' });
+    const swatches = within(handPicker).getAllByRole('radio');
+    expect(swatches.map((swatch) => swatch.getAttribute('aria-label'))).toEqual([
+      'Alex · Spider-Man',
+      'Alex · Ant-Man',
+    ]);
+    // Each with its hand size.
+    expect(swatches.map((swatch) => swatch.querySelector('.n')?.textContent)).toEqual(['1', '1']);
+    expect(checkedDeck('Hand shown')).toEqual(['Alex · Spider-Man']);
+
+    await fireEvent.click(within(handPicker).getByRole('radio', { name: 'Alex · Ant-Man' }));
+    expect(checkedDeck('Hand shown')).toEqual(['Alex · Ant-Man']);
+    expect(handNames()).toEqual(['Rhino']);
+    // Every row still shows.
+    expect(shownIds()).toEqual(expect.arrayContaining(['a', 'b', 'c']));
+  });
+
+  it("follows Q in the All view's selector", async () => {
+    render(Table, { session: fakeSession(), view: makeTwoDeckView() });
+    await within(hand()).findByRole('img', { name: 'Spider-Man' });
+
+    await fireEvent.keyDown(window, { key: 'q' });
+    expect(checkedDeck('Hand shown')).toEqual(['Alex · Ant-Man']);
+  });
+
+  it('keeps the Focus panel off the bottom left corner while the selector shows in the All view', async () => {
+    const rect = (left: number, top: number, width: number, height: number) =>
+      ({ left, top, width, height, right: left + width, bottom: top + height }) as DOMRect;
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: Element,
+    ) {
+      if (this.classList.contains('tablewrap')) {
+        return rect(0, 0, 1000, 800);
+      }
+      // Rhino lies under the bottom right corner.
+      return (this as HTMLElement).dataset.id === 'v' ? rect(800, 500, 140, 196) : rect(0, 0, 0, 0);
+    });
+    vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(320);
+    vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(450);
+    try {
+      render(Table, { session: fakeSession(), view: makeTwoDeckView() });
+      await catalogLoaded();
+      expect(screen.getByRole('radiogroup', { name: 'Hand shown' })).toBeTruthy();
+
+      await fireEvent.pointerEnter(surface().querySelector('.card[data-id="v"]') as HTMLElement);
+      // The bottom left corner holds the selector: the panel takes the top left one.
+      expect(preview().closest('.peek')?.classList).toContain('top-left');
+    } finally {
+      vi.restoreAllMocks();
+    }
   });
 
   it('lists every seat in the selector of the Villain + player view', async () => {
@@ -1415,7 +1557,7 @@ describe('several decks', () => {
     expect(checkedDeck()).toEqual(['Sam · She-Hulk']);
     expect(shownIds()).toContain('c');
     expect(shownIds()).not.toContain('b');
-    expect(screen.queryByRole('list', { name: 'Your hand' })).toBeNull();
+    expect(hands()).toEqual([]);
   });
 
   it("shows an own deck's hand again when its swatch is picked after another player's", async () => {
@@ -1423,7 +1565,7 @@ describe('several decks', () => {
     render(Table, { session: fakeSession(), view: makeTwoDeckView() });
     await within(hand()).findByRole('img', { name: 'Spider-Man' });
     await fireEvent.click(within(picker()).getByRole('radio', { name: 'Sam · She-Hulk' }));
-    expect(screen.queryByRole('list', { name: 'Your hand' })).toBeNull();
+    expect(hands()).toEqual([]);
 
     await fireEvent.click(within(picker()).getByRole('radio', { name: 'Alex · Spider-Man' }));
     expect(checkedDeck()).toEqual(['Alex · Spider-Man']);
@@ -1453,7 +1595,7 @@ describe('several decks', () => {
     render(Table, { session: fakeSession(), view: makeTwoDeckView() });
     await within(hand()).findByRole('img', { name: 'Spider-Man' });
     await fireEvent.click(within(picker()).getByRole('radio', { name: 'Sam · She-Hulk' }));
-    expect(screen.queryByRole('list', { name: 'Your hand' })).toBeNull();
+    expect(hands()).toEqual([]);
 
     await fireEvent.keyDown(window, { key: 'q' });
     expect(checkedDeck()).toEqual(['Alex · Ant-Man']);
@@ -1476,7 +1618,7 @@ describe('several decks', () => {
     await fireEvent.keyDown(window, { key: 'ArrowRight', shiftKey: true });
     expect(checkedDeck()).toEqual(['Sam · She-Hulk']);
     expect(shownIds()).toContain('c');
-    expect(screen.queryByRole('list', { name: 'Your hand' })).toBeNull();
+    expect(hands()).toEqual([]);
 
     // Round the table, both ways.
     await fireEvent.keyDown(window, { key: 'ArrowRight', shiftKey: true });
@@ -1614,13 +1756,190 @@ describe('several decks', () => {
     ]);
   });
 
+  /** Each hand shown, by its name, and whether it is the active one. */
+  function handsShown(): [string | null, boolean][] {
+    return hands().map((list) => [
+      list.getAttribute('aria-label'),
+      !list.classList.contains('inactive'),
+    ]);
+  }
+
+  it('shows both hands side by side on a wide screen, in seat order, the selected one active', async () => {
+    render(Table, { session: fakeSession(), view: makeTwoDeckView() });
+    await within(hand()).findByRole('img', { name: 'Spider-Man' });
+
+    expect(handsShown()).toEqual([
+      ['Your Spider-Man hand', true],
+      ['Your Ant-Man hand', false],
+    ]);
+    expect(hands().map((list) => list.dataset.seat)).toEqual(['0', '1']);
+
+    // Q changes the active hand; the hands keep their places.
+    await fireEvent.keyDown(window, { key: 'q' });
+    expect(handsShown()).toEqual([
+      ['Your Spider-Man hand', false],
+      ['Your Ant-Man hand', true],
+    ]);
+    expect(handNames()).toEqual(['Rhino']);
+  });
+
+  it('makes the inactive hand active when the pointer comes into its band, crediting shared cards to it', async () => {
+    // Spider-Man's hand card at 300..432 × 700..885 on the screen, Ant-Man's at 900..1032.
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: Element,
+    ) {
+      const seat = this.closest<HTMLElement>('.hand')?.dataset.seat;
+      if (seat === undefined || this.closest('.hcard') === null) {
+        return DOMRect.fromRect({ x: 0, y: 0, width: 0, height: 0 });
+      }
+      return DOMRect.fromRect({ x: seat === '1' ? 900 : 300, y: 700, width: 132, height: 185 });
+    });
+    const session = fakeSession();
+    try {
+      render(Table, { session, view: makeTwoDeckView() });
+      await catalogLoaded();
+      const antMan = screen.getByRole('list', { name: 'Your Ant-Man hand' });
+
+      // Beside it: nothing changes.
+      await fireEvent.pointerMove(window, { clientX: 700, clientY: 800 });
+      expect(checkedDeck('Hand shown')).toEqual(['Alex · Spider-Man']);
+
+      await fireEvent.pointerMove(window, { clientX: 950, clientY: 800 });
+      expect(checkedDeck('Hand shown')).toEqual(['Alex · Ant-Man']);
+      expect(antMan.classList).not.toContain('inactive');
+      // Under the pointer, it rises at once; the other one fades out meanwhile.
+      await waitFor(() => expect(antMan.classList).toContain('open'));
+      const spiderMan = screen.getByRole('list', { name: 'Your Spider-Man hand' });
+      expect(spiderMan.classList).toContain('inactive');
+      expect(spiderMan.classList).toContain('hidden');
+      expect(antMan.classList).not.toContain('hidden');
+      // It comes back as the raised hand lowers.
+      await fireEvent.pointerMove(window, { clientX: 950, clientY: 100 });
+      expect(antMan.classList).not.toContain('open');
+      expect(spiderMan.classList).not.toContain('hidden');
+
+      await fireEvent.click(surface().querySelector<HTMLElement>('.card[data-id="v"]')!);
+      await choose('Exhaust');
+      expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'exhaust', card: 'v' }, 1);
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
+
+  it("shows both hands in the Villain + player view on an own deck's row", async () => {
+    localStorage.setItem('itf-view', 'focus');
+    render(Table, { session: fakeSession(), view: makeTwoDeckView() });
+    await within(hand()).findByRole('img', { name: 'Spider-Man' });
+
+    await fireEvent.click(within(picker()).getByRole('radio', { name: 'Alex · Ant-Man' }));
+    expect(handsShown()).toEqual([
+      ['Your Spider-Man hand', false],
+      ['Your Ant-Man hand', true],
+    ]);
+  });
+
+  it('shows the selected hand alone with three own decks', async () => {
+    const view = makeTwoDeckView();
+    view.you = { ...view.you, areas: ['p0', 'p1', 'p2'] };
+    view.players = [
+      {
+        ...view.players[0]!,
+        decks: [
+          ...view.players[0]!.decks,
+          { area: 'p2', heroName: 'She-Hulk', ready: true, handCount: 0 },
+        ],
+      },
+    ];
+    render(Table, { session: fakeSession(), view });
+    await within(hand()).findByRole('img', { name: 'Spider-Man' });
+
+    expect(handsShown()).toEqual([['Your hand', true]]);
+  });
+
+  /** Makes the table 2000 px wide, the hero selector 300 and the zoom control's corner 150. */
+  function mockWidths(): void {
+    vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      if (this.classList.contains('picker')) {
+        return 300;
+      }
+      if (this.classList.contains('corner')) {
+        return 150;
+      }
+      return this.classList.contains('tablewrap') ? 2000 : 0;
+    });
+  }
+
+  it('sets the two resting fans side by side between the controls, still as the active hand changes', async () => {
+    mockWidths();
+    // Ant-Man holds three cards.
+    const view = makeTwoDeckView();
+    view.table!.cards.push(
+      card('h2', { code: '01094', owner: 1, zone: 'hand' }),
+      card('h3', { code: '01094', owner: 1, zone: 'hand' }),
+    );
+    view.table!.hands = { p0: ['h0'], p1: ['h1', 'h2', 'h3'] };
+    try {
+      render(Table, { session: fakeSession(), view });
+      await catalogLoaded();
+
+      // The room: from the selector's right edge (16 + 300) and 32 px, to 32 px left of the
+      // corner, 16 + 150 px from the right edge: 348 to 1802. Both hands take all of it.
+      await waitFor(() =>
+        expect(hands().map((list) => [list.style.marginLeft, list.style.marginRight])).toEqual([
+          ['348px', '198px'],
+          ['348px', '198px'],
+        ]),
+      );
+      // Each resting fan laid out for half the room, as seen with its tilted end cards.
+      const [spiderMan, antMan] = hands() as [HTMLElement, HTMLElement];
+      const raised = {
+        w: Number.parseFloat(spiderMan.style.getPropertyValue('--card-w')),
+        h: Number.parseFloat(spiderMan.style.getPropertyValue('--card-h')),
+      };
+      const half = (1802 - 348) / 2;
+      const one = restingFanWidth(1, half, HAND_CARD, raised);
+      const three = restingFanWidth(3, half, HAND_CARD, raised);
+      const restX = () => hands().map((list) => Number(list.dataset.restX));
+      const [first, second] = restX() as [number, number];
+      // Side by side, HANDS_GAP apart, centred together in the room.
+      expect(second - three / 2 - (first + one / 2)).toBeCloseTo(HANDS_GAP);
+      expect((first - one / 2 + second + three / 2) / 2).toBeCloseTo(0);
+      // Both the same size.
+      expect(antMan.style.getPropertyValue('--rest-scale')).toBe(
+        spiderMan.style.getPropertyValue('--rest-scale'),
+      );
+
+      await fireEvent.keyDown(window, { key: 'q' });
+      expect(restX()).toEqual([first, second]);
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
+
+  it('keeps a single hand clear of the zoom control without a selector', async () => {
+    mockWidths();
+    try {
+      render(Table, { session: fakeSession(), view: makeView() });
+      await catalogLoaded();
+
+      const single = screen.getByRole('list', { name: 'Your hand' });
+      await waitFor(() =>
+        expect([single.style.marginLeft, single.style.marginRight]).toEqual(['0px', '198px']),
+      );
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
+
   it('shows a spectator no hand and no selector in the All view', async () => {
     const view = makeTwoDeckView();
     view.you = { role: 'spectator', name: 'Kim', color: -1, host: false };
     render(Table, { session: fakeSession(), view });
     await catalogLoaded();
 
-    expect(screen.queryByRole('list', { name: 'Your hand' })).toBeNull();
+    expect(hands()).toEqual([]);
     expect(screen.queryByRole('radiogroup')).toBeNull();
   });
 });
@@ -1629,7 +1948,7 @@ describe('a selected group', () => {
   /** Sam's two cards on the table, both selected. */
   async function renderGroup() {
     const view = makeView();
-    view.table!.cards.push(card('b2', { code: '01001', owner: 1, x: 520, y: 830, z: 2 }));
+    view.table!.cards.push(card('b2', { code: '01001', owner: 1, x: 520, y: 770, z: 2 }));
     const session = fakeSession();
     render(Table, { session, view });
     await catalogLoaded();

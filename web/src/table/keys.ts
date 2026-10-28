@@ -27,7 +27,7 @@ import { ZOOM_STEP } from './zoom';
 const SLOT_ROW_HEIGHT = PORTRAIT_CARD.h;
 const SLOT_GAP = 50;
 
-// Shift + these arrows step through the heroes of the player selector, or in "All" the viewer's decks.
+// Shift + these arrows step through the heroes of the hero selector, or in "All" the viewer's decks.
 const HERO_STEPS: Record<string, -1 | 1> = {
   ArrowLeft: -1,
   ArrowRight: 1,
@@ -49,9 +49,9 @@ export interface KeyTable {
   showKeys: () => void;
   /** Selects the viewer's next own deck, whose hand then shows (Q, with two decks or more). */
   selectNextDeck: () => void;
-  /** Whether there are two heroes or more to step through: the player selector's, or in "All" own decks. */
+  /** Whether there are two heroes or more to step through: the hero selector's, or in "All" own decks. */
   canStepHero: boolean;
-  /** Picks the previous (-1) or next (1) hero: in the player selector, else among the viewer's decks. */
+  /** Picks the previous (-1) or next (1) hero: in the hero selector, else among the viewer's decks. */
   stepHero: (step: -1 | 1) => void;
   sizeOf: (card: CardView) => Size;
 }

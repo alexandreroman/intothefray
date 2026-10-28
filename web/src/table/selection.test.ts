@@ -5,6 +5,7 @@ import { interaction } from './interaction.svelte';
 import { TABLE_LIMIT } from './layout';
 import { cardsInBand, groupAction, groupPileTargets, groupUnits } from './selection';
 import { card } from './fixtures.testing';
+import { rowPitch, spreadRows } from './rows';
 
 function rect(left: number, top: number, width: number, height: number): Rect {
   return { left, top, right: left + width, bottom: top + height };
@@ -84,6 +85,27 @@ describe('groupAction', () => {
         { kind: 'move', card: 'b', x: 400, y: 200 },
       ],
     });
+  });
+
+  it('keeps the shape the group is drawn in, across rows drawn closer than they lie', () => {
+    // As close as they go: the villain's row drawn 310 high, its empty band from 260 squeezed into
+    // 50; player 1's row from 310. A villain card in that band, drawn at 269.5, and a card of
+    // player 1's, 30 into its row, drawn at 340.
+    const rows = spreadRows(rowPitch(0, 1), 1);
+    const spread = [card('v', { x: 300, y: 300 }), card('p', { x: 100, y: 500 })];
+    // Player 1's card dropped 20 lower: the villain card is drawn 20 lower too, at 289.5, which is
+    // 384 on the table, not the 320 a table offset gives.
+    const single: Action = { kind: 'move', card: 'p', x: 100, y: 520 };
+    const action = groupAction(['v', 'p'], 'p', single, spread, rows);
+    expect(action).toEqual({
+      kind: 'group',
+      actions: [
+        { kind: 'move', card: 'v', x: 300, y: 384 },
+        { kind: 'move', card: 'p', x: 100, y: 520 },
+      ],
+    });
+    const drawn = (y: number) => rows.toDisplay(y) ?? NaN;
+    expect(drawn(520) - drawn(384)).toBeCloseTo(drawn(500) - drawn(300), 1);
   });
 
   it('clampsDeltaInsideTable', () => {

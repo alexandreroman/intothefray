@@ -301,16 +301,16 @@ describe('the rubber band', () => {
   });
 
   it('cards of a row no longer shown drop out of the selection', async () => {
-    // "Villain + player": Alex's row (row 1, from 470) or Sam's (row 2, from 800) under the villain's.
+    // "Villain + player": Alex's row (row 1, from 470) or Sam's (row 2, from 740) under the villain's.
     localStorage.setItem('itf-view', 'focus');
     const piles: PileView[] = [
       { id: 'd0', kind: 'deck', owner: 0, x: 600, y: 500, count: 3 },
-      { id: 'd1', kind: 'deck', owner: 1, x: 600, y: 830, count: 3 },
+      { id: 'd1', kind: 'deck', owner: 1, x: 600, y: 770, count: 3 },
     ];
     const cards = [
       card('v', { code: '01094', owner: -1, back: 'villain', x: 300 }),
       card('mine', { y: 500 }),
-      card('sam', { owner: 1, y: 830 }),
+      card('sam', { owner: 1, y: 770 }),
     ];
     await renderTable(makeView({ cards, piles }));
     interaction.setGroup(new Set(['v', 'mine']));

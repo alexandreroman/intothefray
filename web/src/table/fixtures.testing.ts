@@ -90,3 +90,17 @@ export function domRect(left: number, top: number, width: number, height: number
     toJSON: () => ({}),
   };
 }
+
+/**
+ * Shows the table on a screen tall enough to draw its rows as far apart as they go (rowPitch, a
+ * pitch of 470): only the villain's row and player 1's row's cards are then drawn at their table
+ * heights, so that a test of what happens over them keeps the heights of the table. The 40 units
+ * under player 1's cards are drawn stretched, and every row after it lower than it lies. jsdom
+ * measures every element 0 high otherwise, which draws the rows as close as they go, the villain's
+ * row's empty band squeezed. Restored with the other mocks.
+ */
+export function tallTable(): void {
+  vi.spyOn(Element.prototype, 'clientHeight', 'get').mockImplementation(function (this: Element) {
+    return this.classList.contains('tablewrap') ? 2000 : 0;
+  });
+}

@@ -50,7 +50,7 @@
   import { backCaption, isHidden, pileBack } from './face';
   import { interaction, type DropOn, type Held, type Pressable } from './interaction.svelte';
   import { ACTIVE_COUNTER_BOX, cardBox, FIRST_PLAYER_BOX, HAND_CARD, type Box } from './layout';
-  import { ALL_ROWS, type RowMap } from './rows';
+  import { ALL_ROWS, drawnGap, type RowMap } from './rows';
   import { surfaceRect, tableCard, tablePile, toScreen, toTable } from './screen';
   import { areaOf, seatHero, seatOf } from './seats';
   import { groupAction, groupPileTargets, groupUnits } from './selection';
@@ -321,17 +321,39 @@
       }
     }
     if (from.kind === 'hand') {
-      const fan = root
-        ?.querySelector(`.hand .hcard[data-id="${from.card}"] .fan`)
-        ?.getBoundingClientRect();
-      if (fan && fan.width > 0 && fan.height > 0) {
-        handSize = { w: fan.width, h: fan.height };
-        return { x: (pressedAt.x - fan.left) / fan.width, y: (pressedAt.y - fan.top) / fan.height };
+      const card = root?.querySelector<HTMLElement>(`.hand .hcard[data-id="${from.card}"]`);
+      const fan = card?.querySelector<HTMLElement>('.fan');
+      const box = fan?.getBoundingClientRect();
+      if (card && fan && box && box.width > 0 && box.height > 0) {
+        const tilt = Number.parseFloat(card.style.getPropertyValue('--rot')) || 0;
+        handSize = uprightSize(fan, box, tilt);
+        // The pressed point keeps its offset from the card's middle: the ghost takes the card's place.
+        return {
+          x: 0.5 + (pressedAt.x - (box.left + box.width / 2)) / handSize.w,
+          y: 0.5 + (pressedAt.y - (box.top + box.height / 2)) / handSize.h,
+        };
       }
       handSize = { w: HAND_CARD.w, h: HAND_CARD.h };
     }
     // A pile's card is held by its middle, as in the prototype.
     return { x: 0.5, y: 0.5 };
+  }
+
+  /**
+   * The size a hand card's picture (.fan) shows on the screen, popped or not,
+   * as the ghost draws it, upright. Not its box, which takes in its tilt: at
+   * the ends of the fan, that box is far wider than the card, and the ghost
+   * would shrink into the card at the drop. With no layout (tests), its box.
+   */
+  function uprightSize(fan: HTMLElement, box: DOMRect, degrees: number): { w: number; h: number } {
+    if (!fan.offsetWidth || !fan.offsetHeight) {
+      return { w: box.width, h: box.height };
+    }
+    const angle = (degrees * Math.PI) / 180;
+    const ratio = fan.offsetHeight / fan.offsetWidth;
+    // A card w wide and h high, turned by that angle, spans w·|cos| + h·|sin| across.
+    const w = box.width / (Math.abs(Math.cos(angle)) + ratio * Math.abs(Math.sin(angle)));
+    return { w, h: w * ratio };
   }
 
   /** The box of the dragged card on the table, in table units. */
@@ -391,14 +413,22 @@
     if (action.kind !== 'group') {
       return action.x === undefined || action.y === undefined ? null : { x: action.x, y: action.y };
     }
-    // A group of moves moves every card by the same offset: its first move tells it.
+    // A group of moves moves every card by the same offset as drawn (groupAction): the pressed
+    // card's own move tells where it lands, else the first move, at its drawn offset.
+    const lead = from.kind === 'card' ? cardsById.get(from.card) : undefined;
+    const own = action.actions?.find((move) => move.card === lead?.id);
+    if (own?.x !== undefined && own.y !== undefined) {
+      return { x: own.x, y: own.y };
+    }
     const first = action.actions?.[0];
     const moved = first?.card === undefined ? undefined : cardsById.get(first.card);
-    const lead = from.kind === 'card' ? cardsById.get(from.card) : undefined;
     if (first?.x === undefined || first.y === undefined || !moved || !lead) {
       return null;
     }
-    return { x: lead.x + first.x - moved.x, y: lead.y + first.y - moved.y };
+    const landed = rowMap.toDisplay(first.y);
+    const y =
+      landed === null ? first.y : rowMap.toTable(landed + drawnGap(rowMap, moved.y, lead.y));
+    return { x: lead.x + first.x - moved.x, y };
   }
 
   function placedRect(selector: string): DOMRect | undefined {
@@ -413,20 +443,25 @@
     }
     const targets: DropRect[] = [];
     if (from.kind === 'hand') {
-      const others = [...root.querySelectorAll<HTMLElement>('.hand .hcard:not(.gap)')]
-        .filter((element) => element.dataset.id !== from.card)
-        .map((element) => element.getBoundingClientRect());
+      // A hand card slots back into its own hand only, among its other cards.
+      const hand = root.querySelector<HTMLElement>(`.hand[data-seat="${seatOf(from.area)}"]`);
+      const others = cardRects(hand, from.card);
       const middles = others.map((rect) => (rect.left + rect.right) / 2);
       targets.push({
         kind: 'hand',
         index: insertIndex(middles, at.x),
-        rect: handBand(others, table, window.innerHeight),
+        rect: handBand(others, under(hand, table), window.innerHeight),
       });
     } else if (goesToHand(from)) {
-      const hand = [...root.querySelectorAll<HTMLElement>('.hand .hcard')].map((element) =>
-        element.getBoundingClientRect(),
-      );
-      targets.push({ kind: 'toHand', rect: handBand(hand, table, window.innerHeight) });
+      // Any hand shown takes it, for its owner's hand; with no hand shown, the bottom of the table.
+      const hands = [...root.querySelectorAll<HTMLElement>('.hand')];
+      if (hands.length === 0) {
+        targets.push({ kind: 'toHand', rect: handBand([], table, window.innerHeight) });
+      }
+      for (const hand of hands) {
+        const rect = handBand(cardRects(hand), under(hand, table), window.innerHeight);
+        targets.push({ kind: 'toHand', rect });
+      }
     }
     const whole: TableRect = { kind: 'table', rect: table };
     targets.push(whole);
@@ -455,6 +490,26 @@
       }
     }
     return targets;
+  }
+
+  /** The cards of a hand on the screen, but the one left out; none without a hand. */
+  function cardRects(hand: HTMLElement | null, leftOut?: string): DOMRect[] {
+    return [...(hand?.querySelectorAll<HTMLElement>('.hcard:not(.gap)') ?? [])]
+      .filter((element) => element.dataset.id !== leftOut)
+      .map((element) => element.getBoundingClientRect());
+  }
+
+  /**
+   * The bottom of the table under a hand's resting fan (its middle, data-rest-x px right of the
+   * hand's), where an empty hand takes a drop; the whole table without a hand.
+   */
+  function under(hand: HTMLElement | null, table: Rect): Rect {
+    if (!hand) {
+      return table;
+    }
+    const room = hand.getBoundingClientRect();
+    const middle = (room.left + room.right) / 2 + Number(hand.dataset.restX ?? 0);
+    return { left: middle, right: middle, top: table.top, bottom: table.bottom };
   }
 
   /**
@@ -495,7 +550,7 @@
     if (single === null || units.length === 0 || from.kind !== 'card') {
       return single;
     }
-    return groupAction(units, from.card, single, cards);
+    return groupAction(units, from.card, single, cards, rowMap);
   }
 
   /** Outlines and labels what the drop would land on, and opens the gap in the hand. */
@@ -696,10 +751,10 @@
     if (from.kind !== 'card') {
       return [asPlayed(card, x, y)];
     }
-    // The cards tucked under it, and the rest of a group, keep their offsets.
+    // The cards tucked under it, and the rest of a group, keep their offsets as drawn.
     return lifted.flatMap((id) => {
       const k = cardsById.get(id);
-      return k ? [{ ...k, x: x + k.x - card.x, y: y + k.y - card.y }] : [];
+      return k ? [{ ...k, x: x + k.x - card.x, y: y + drawnGap(rowMap, card.y, k.y) }] : [];
     });
   }
 
