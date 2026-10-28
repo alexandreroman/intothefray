@@ -33,9 +33,11 @@ type: project
   active counter starts under its villain card (40 right of the card's
   left edge, 24 below it). A played card avoids every marker, so the first
   player's first played card lands past the token.
-- The villain's row is taller (470 units, player rows 330): about 1.2
+- The villain's row is taller (470 units, player rows 270): about 1.2
   portrait card heights (244 units, rows on the 10-unit grid) lie empty
   between its cards and the first player's row, so the two read apart.
+  A player's row leaves 44 units under its cards, enough for an exhausted
+  card and the owner frame, so the players' rows read close together.
 - Each owner's deck and discard sit in a frame in the seat colour labelled
   with the player's name ("Villain" in purple, as in the game, for the
   encounter piles; the deck's name for a scenario deck); the frame's

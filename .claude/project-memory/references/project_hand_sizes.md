@@ -19,13 +19,19 @@ type: project
   (`handRestScale`, `restingFanPositions`, `handRestDrop` in
   `web/src/table/layout.ts`). The small-screen controls clear the strip
   `restingStrip` gives for the base card.
-- The hover pop (`scale(1.2)`) and the preview's own size are independent
-  of the hand.
+- The preview shows at most a 358 px wide portrait card (a 380 px frame;
+  520 px for a landscape card), within 45 % of the table and the
+  window's height.
+- A hovered hand card pops at `scale(1.3)`; the pop and the preview's own
+  size are independent of the hand.
+- With two hands side by side, a raised hand spreads over 80 % of the
+  hands' room (`RAISED_FAN_SHARE`), centred in it (see
+  [[project_multi_deck]]).
 
 **Why:** decided with the user: the raised hand is for
 reading cards, so it follows the preview's size, while the resting hand
 stays a compact strip out of the way. The preview keeps its own size
-(at most a 298 px wide card) rather than growing with large screens.
+(at most a 358 px wide card) rather than growing with large screens.
 
 **How to apply:** `previewCardWidth` mirrors `.peek`'s CSS; change both
 together, and size hand changes through the base and raised cards.
