@@ -196,8 +196,8 @@ func TestSetupStages(t *testing.T) {
 	}
 
 	villain := cardWithCode(t, table, "01094")
-	if villain.Zone != ZoneTable || villain.X != 360 || villain.Y != 30 {
-		t.Errorf("Rhino I = %+v, want on the table at (360, 30)", villain)
+	if villain.Zone != ZoneTable || villain.X != 300 || villain.Y != 30 {
+		t.Errorf("Rhino I = %+v, want on the table at (300, 30)", villain)
 	}
 	for _, code := range []string{"01095", "01096"} {
 		if c := cardWithCode(t, table, code); c.Zone != ZoneStage {
@@ -206,9 +206,9 @@ func TestSetupStages(t *testing.T) {
 	}
 
 	scheme := cardWithCode(t, table, "01097")
-	// The main scheme lies 50 past the villain at 360–500.
-	if scheme.Zone != ZoneTable || scheme.Face != 0 || scheme.X != 550 || scheme.Y != 30 {
-		t.Errorf("main scheme = %+v, want on the table at (550, 30), face 0", scheme)
+	// The main scheme lies 40 past the villain at 300–412, up to the grid.
+	if scheme.Zone != ZoneTable || scheme.Face != 0 || scheme.X != 460 || scheme.Y != 30 {
+		t.Errorf("main scheme = %+v, want on the table at (460, 30), face 0", scheme)
 	}
 
 	if len(table.Stages) != 2 {
@@ -302,13 +302,13 @@ func TestSetupStandardAndExpertSets(t *testing.T) {
 		inPlay     []inPlayCard
 	}{
 		{"standard", pack.Standard, "standard", "", nil},
-		{"standard ii", pack.Standard, "standard_ii", "", []inPlayCard{{formidableFoe, 0, 800}}},
-		{"standard iii", pack.Standard, "standard_iii", "", []inPlayCard{{pursuedByThePast, 0, 800}}},
+		{"standard ii", pack.Standard, "standard_ii", "", []inPlayCard{{formidableFoe, 0, 660}}},
+		{"standard iii", pack.Standard, "standard_iii", "", []inPlayCard{{pursuedByThePast, 0, 660}}},
 		{"expert with standard", pack.Expert, "standard", "expert", nil},
 		{"expert ii with standard", pack.Expert, "standard", "expert_ii", nil},
-		{"expert ii with standard ii", pack.Expert, "standard_ii", "expert_ii", []inPlayCard{{formidableFoe, 1, 800}}},
-		{"expert with standard ii", pack.Expert, "standard_ii", "expert", []inPlayCard{{formidableFoe, 1, 800}}},
-		{"expert with standard iii", pack.Expert, "standard_iii", "expert", []inPlayCard{{pursuedByThePast, 0, 800}}},
+		{"expert ii with standard ii", pack.Expert, "standard_ii", "expert_ii", []inPlayCard{{formidableFoe, 1, 660}}},
+		{"expert with standard ii", pack.Expert, "standard_ii", "expert", []inPlayCard{{formidableFoe, 1, 660}}},
+		{"expert with standard iii", pack.Expert, "standard_iii", "expert", []inPlayCard{{pursuedByThePast, 0, 660}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -396,26 +396,26 @@ func TestSetupSetInPlayFollowsScenarioInPlay(t *testing.T) {
 	cfg.Difficulty, cfg.Standard, cfg.Expert = pack.Expert, "standard_ii", "expert"
 	table := startedGame(t, cfg).Table
 
-	// Ultron Drones take the first in-play slot. Portrait, they end at 940:
-	// Formidable Foe lies 50 past them.
-	if c := cardWithCode(t, table, "01140"); c.Zone != ZoneTable || c.X != 800 || c.Y != 30 {
-		t.Errorf("Ultron Drones = %+v, want on the table at (800, 30)", c)
+	// Ultron Drones take the first in-play slot. Portrait, they end at 772:
+	// Formidable Foe lies 40 past them, up to the grid.
+	if c := cardWithCode(t, table, "01140"); c.Zone != ZoneTable || c.X != 660 || c.Y != 30 {
+		t.Errorf("Ultron Drones = %+v, want on the table at (660, 30)", c)
 	}
 	foe := cardWithCode(t, table, "24049")
-	if foe.Zone != ZoneTable || foe.Face != 1 || foe.X != 990 || foe.Y != 30 {
-		t.Errorf("Formidable Foe = %+v, want in the villain row at (990, 30), face 1", foe)
+	if foe.Zone != ZoneTable || foe.Face != 1 || foe.X != 820 || foe.Y != 30 {
+		t.Errorf("Formidable Foe = %+v, want in the villain row at (820, 30), face 1", foe)
 	}
 }
 
 func TestPutInPlayLeavesTheGapPastEachCard(t *testing.T) {
 	b := &tableBuilder{cat: newCatalog(t), rng: newTestRNG(), table: newEmptyTable(1)}
 
-	// 01125 is landscape, 196 wide, and 24049 portrait, 140 wide: each card
-	// lies 50 past the previous one, up to the grid.
+	// 01125 is landscape, 157 wide, and 24049 portrait, 112 wide: each card
+	// lies 40 past the previous one, up to the grid.
 	for _, want := range []struct {
 		code string
 		x    int
-	}{{"01125", 800}, {"24049", 1050}, {"01125", 1240}} {
+	}{{"01125", 660}, {"24049", 860}, {"01125", 1020}} {
 		c, err := b.putInPlay(pack.FaceRef{Card: want.code}, PileEncounter)
 		if err != nil {
 			t.Fatal(err)
@@ -432,10 +432,10 @@ func TestCardWidth(t *testing.T) {
 		size pack.Size
 		want int
 	}{
-		{pack.SizeStd, 140},
-		{pack.SizeLand, 196},
-		{pack.SizeDoubleStd, 196},
-		{pack.SizeDoubleLand, 280},
+		{pack.SizeStd, 112},
+		{pack.SizeLand, 157},
+		{pack.SizeDoubleStd, 157},
+		{pack.SizeDoubleLand, 224},
 	}
 	for _, tt := range tests {
 		if got := cardWidth(tt.size); got != tt.want {
@@ -466,7 +466,7 @@ func TestSetupPlayers(t *testing.T) {
 
 	for seat := range 2 {
 		area := PlayerArea(seat)
-		rowY := 500 + 270*seat
+		rowY := 410 + 220*seat
 		if hand := table.Hands[area]; hand == nil || len(hand) != 0 {
 			t.Errorf("%s hand = %v, want empty and non-nil", area, hand)
 		}
@@ -498,7 +498,7 @@ func TestSetupPlayers(t *testing.T) {
 			t.Errorf("aside pile = %+v", aside)
 		}
 		disc := table.Piles["disc:"+string(area)]
-		if disc == nil || disc.X != 160 || disc.Y != rowY || len(disc.Cards) != 0 {
+		if disc == nil || disc.X != 130 || disc.Y != rowY || len(disc.Cards) != 0 {
 			t.Errorf("discard pile = %+v", disc)
 		}
 	}
@@ -514,18 +514,18 @@ func TestSetupPlayers(t *testing.T) {
 		t.Fatalf("identity cards = %d, want 2", len(identities))
 	}
 	for _, identity := range identities {
-		rowY := 500 + 270*identity.Owner
+		rowY := 410 + 220*identity.Owner
 		if identity.Code != "01001" || identity.Face != 1 || identity.Zone != ZoneTable ||
-			identity.X != 360 || identity.Y != rowY ||
+			identity.X != 300 || identity.Y != rowY ||
 			identity.Home != "deck:"+string(PlayerArea(identity.Owner)) {
-			t.Errorf("identity = %+v, want alter ego on the table at (360, %d)", identity, rowY)
+			t.Errorf("identity = %+v, want alter ego on the table at (300, %d)", identity, rowY)
 		}
 	}
 
 	// The first player token lies right of the identity of the first player,
 	// seat 0, centred on its height to the nearest grid line.
-	if table.FirstPlayer != (Point{X: 550, Y: 560}) {
-		t.Errorf("first player = %+v, want (550, 560)", table.FirstPlayer)
+	if table.FirstPlayer != (Point{X: 460, Y: 450}) {
+		t.Errorf("first player = %+v, want (460, 450)", table.FirstPlayer)
 	}
 }
 
@@ -534,7 +534,7 @@ func TestSetupVillainPiles(t *testing.T) {
 
 	want := map[string][2]int{
 		PileEncounter:        {0, 30},
-		PileEncounterDiscard: {160, 30},
+		PileEncounterDiscard: {130, 30},
 		PileVictory:          {0, 30},
 		PileScenarioAside:    {0, 30},
 	}
@@ -713,12 +713,12 @@ func TestStartRowsPerSeat(t *testing.T) {
 		}
 	}
 	// The first player token lies inPlayGap right of the identity of seat 0,
-	// clear of it even exhausted, and so well past the deck.
+	// up to the grid, clear of it even exhausted, and so well past the deck.
 	first := identities[0]
 	if first == nil {
 		t.Fatal("seat 0 has no identity")
 	}
-	if want := (Point{X: first.X + portraitWidth + inPlayGap, Y: first.Y + 60}); table.FirstPlayer != want {
+	if want := (Point{X: ceilToGrid(first.X + portraitWidth + inPlayGap), Y: first.Y + 40}); table.FirstPlayer != want {
 		t.Errorf("first player = %+v, want %+v, right of the identity of seat 0", table.FirstPlayer, want)
 	}
 	if deck := table.Piles["deck:p0"]; table.FirstPlayer.X < deck.X+portraitWidth {
@@ -811,11 +811,11 @@ func faceHeight(t *testing.T, cat *pack.Catalog, c *Card) int {
 	}
 	switch size := def.Faces[c.Face].Size; size {
 	case pack.SizeStd, pack.SizeDoubleLand:
-		return 196
+		return 157
 	case pack.SizeLand:
-		return 140
+		return 112
 	case pack.SizeDoubleStd:
-		return 280
+		return 224
 	default:
 		t.Fatalf("card %s has an unknown size %q", c.Code, size)
 		return 0
@@ -823,9 +823,9 @@ func faceHeight(t *testing.T, cat *pack.Catalog, c *Card) int {
 }
 
 func TestSetupLeavesRoomUnderTheVillainRow(t *testing.T) {
-	const pileHeight = 196
-	// About 1.2 portrait card heights (196 each), the first player's row on the 10-unit grid.
-	const wantGap = 244
+	const pileHeight = 157
+	// About 1.2 portrait card heights (157 each), the first player's row on the 10-unit grid.
+	const wantGap = 193
 
 	cat := newCatalog(t)
 	for _, players := range []int{1, 2} {
@@ -854,8 +854,8 @@ func TestSetupLeavesRoomUnderTheVillainRow(t *testing.T) {
 				t.Errorf("first player row at y %d (token %d), want on the 10-unit grid", deck.Y, table.FirstPlayer.Y)
 			}
 			// The first player token lies beside the first player's identity, centred on its height
-			// (63 below its top) to the nearest grid line, inside the row.
-			if want := deck.Y + 60; table.FirstPlayer.Y != want {
+			// (43 below its top) to the nearest grid line, inside the row.
+			if want := deck.Y + 40; table.FirstPlayer.Y != want {
 				t.Errorf("first player token at y %d, want beside the first player's identity at %d",
 					table.FirstPlayer.Y, want)
 			}

@@ -17,10 +17,10 @@ export interface Box {
 
 // A card on the table, by size, in table units. The hand and the preview have their own sizes.
 const SIZES: Record<Size, { w: number; h: number }> = {
-  std: { w: 140, h: 196 },
-  land: { w: 196, h: 140 },
-  dstd: { w: 196, h: 280 },
-  dland: { w: 280, h: 196 },
+  std: { w: 112, h: 157 },
+  land: { w: 157, h: 112 },
+  dstd: { w: 157, h: 224 },
+  dland: { w: 224, h: 157 },
 };
 
 /** Whether a card of that size lies landscape: wider than tall. */
@@ -32,7 +32,7 @@ export function isLandscape(size: Size): boolean {
 export const PORTRAIT_CARD = SIZES.std;
 
 /** A compact pile (a scenario deck or its discard pile), in table units. */
-const COMPACT_PILE = { w: 100, h: 140 } as const;
+const COMPACT_PILE = { w: 80, h: 112 } as const;
 
 /** The box a pile takes on the table: compact for a scenario deck, else a portrait card. */
 export function pileBox(pile: PileView): { w: number; h: number } {
@@ -45,8 +45,8 @@ export function pileBox(pile: PileView): { w: number; h: number } {
 const FREE_ROOM_RIGHT = 200;
 const FREE_ROOM_BOTTOM = 300;
 
-// The surface never grows past where a card can lie plus the largest card, 280 units long.
-const SURFACE_LIMIT = TABLE_LIMIT + 280;
+// The surface never grows past where a card can lie plus the largest card, 224 units long.
+const SURFACE_LIMIT = TABLE_LIMIT + 224;
 
 const OUT_OF_PLAY_KINDS: readonly PileKind[] = ['victory', 'aside'];
 
@@ -304,7 +304,7 @@ export const FIRST_PLAYER_BOX = { w: 84, h: 70 } as const;
 /** The active counter, in table units. */
 export const ACTIVE_COUNTER_BOX = { w: 70, h: 70 } as const;
 
-/** A card in the hand: about a third larger than a card on the table at 100 % (140 × 196). */
+/** A card in the hand: about two thirds larger than a card on the table at 100 % (112 × 157). */
 export const HAND_CARD = { w: 185, h: 259 } as const;
 
 /** A card in the hand on a narrow screen (900 px wide or less). */

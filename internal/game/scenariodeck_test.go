@@ -21,7 +21,7 @@ func scenarioFixture(t *testing.T) *doFixture {
 	}
 	tb.Piles["encd:w"] = &Pile{
 		ID: "encd:w", Kind: KindEncounterDiscard, Owner: NoOwner,
-		Label: "Wrecker", Compact: true, X: 120, Y: 30,
+		Label: "Wrecker", Compact: true, X: 100, Y: 30,
 	}
 	tb.Piles["sdeck:x"] = &Pile{
 		ID: "sdeck:x", Kind: KindScenarioDeck, Owner: NoOwner,

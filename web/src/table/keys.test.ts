@@ -60,7 +60,7 @@ function makeView(extra: Partial<View> & { cards?: TableCard[] } = {}): View {
       ],
       hands: { p0: ['h'] },
       stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
-      firstPlayer: { x: 860, y: 40 },
+      firstPlayer: { x: 700, y: 40 },
     },
     log: [],
     ...rest,
@@ -770,9 +770,9 @@ describe('keys on a hand card', () => {
   it('P plays to a free slot', async () => {
     const cards = [
       card('v', { code: '01094', owner: -1, back: 'villain' }),
-      // Past the deck at 0–140, a card at 190–330 and the encounter deck at 500–640 leave no room
-      // before 690, where only the first player token at 860–944 is in the way (makeView): the card
-      // lands 50 past the token, taken up to the grid, at 1000.
+      // Past the deck at 0–112, a card at 190–302 and the encounter deck at 500–612 leave no room
+      // before 660, where only the first player token at 700–784 is in the way (makeView): the card
+      // lands 40 past the token, taken up to the grid, at 830.
       card('a', { x: 190 }),
       // Below the viewer's row, or in another row: not in the way.
       card('low', { x: 1200, y: 200 }),
@@ -783,7 +783,7 @@ describe('keys on a hand card', () => {
     await fireEvent.pointerEnter(inHand('h'));
 
     await press('p');
-    expect(session.act).toHaveBeenCalledWith({ kind: 'play', card: 'h', x: 1000, y: 0 }, 0);
+    expect(session.act).toHaveBeenCalledWith({ kind: 'play', card: 'h', x: 830, y: 0 }, 0);
   });
 
   it('X and Backspace discard a hand card', async () => {
@@ -859,69 +859,69 @@ describe('freeSlot', () => {
   /** The free slot of seat 0 for the played card, on a table of these cards, piles and token. */
   const slot = (cards: TableCard[], piles: PileView[], firstPlayer: Point, active?: Point) =>
     freeSlot(played, { cards, piles, firstPlayer, active }, 0, sizeOf);
-  // Alex's row, as the setup lays it out: deck, discard, identity at 360.
+  // Alex's row, as the setup lays it out: deck, discard, identity at 300.
   const row = [
     pile('deck:p0', { owner: 0, x: 0, y: 360 }),
-    pile('disc:p0', { kind: 'discard', owner: 0, x: 160, y: 360 }),
+    pile('disc:p0', { kind: 'discard', owner: 0, x: 130, y: 360 }),
   ];
-  const identity = card('id', { x: 360, y: 360 });
-  // Doctor Strange's row: his Invocation deck and its discard pile push the identity to 680.
+  const identity = card('id', { x: 300, y: 360 });
+  // Doctor Strange's row: his Invocation deck and its discard pile push the identity to 560.
   const sides = [
-    pile('side:p0:0', { kind: 'sideDeck', owner: 0, x: 320, y: 360 }),
-    pile('side:p0:1', { kind: 'sideDiscard', owner: 0, x: 480, y: 360 }),
+    pile('side:p0:0', { kind: 'sideDeck', owner: 0, x: 260, y: 360 }),
+    pile('side:p0:1', { kind: 'sideDiscard', owner: 0, x: 390, y: 360 }),
   ];
-  const strange = card('id', { x: 680, y: 360 });
+  const strange = card('id', { x: 560, y: 360 });
 
-  it("starts 50 past the identity on a fresh row, the height of the viewer's deck", () => {
-    // The piles lie 20 apart and the identity 60 past them: no room for a card between them.
-    expect(slot([identity], row, underDeck)).toEqual({ x: 550, y: 360 });
+  it("starts 40 past the identity on a fresh row, the height of the viewer's deck", () => {
+    // The piles lie 18 apart and the identity 58 past them: no room for a card between them.
+    expect(slot([identity], row, underDeck)).toEqual({ x: 460, y: 360 });
     // Without the identity, past the discard pile.
-    expect(slot([], row, underDeck)).toEqual({ x: 350, y: 360 });
+    expect(slot([], row, underDeck)).toEqual({ x: 290, y: 360 });
   });
 
-  it('starts 50 past the identity wherever the side piles push it', () => {
-    expect(slot([strange], [...row, ...sides], underDeck)).toEqual({ x: 870, y: 360 });
+  it('starts 40 past the identity wherever the side piles push it', () => {
+    expect(slot([strange], [...row, ...sides], underDeck)).toEqual({ x: 720, y: 360 });
   });
 
   it('starts at 0 at the top of the table without a deck', () => {
     expect(slot([], [], underDeck)).toEqual({ x: 0, y: 0 });
   });
 
-  it('lands 50 past the last card of the row', () => {
-    // A card at 550–690 sends the next one to 740.
-    expect(slot([identity, card('a', { x: 550, y: 360 })], row, underDeck)).toEqual({
-      x: 740,
+  it('lands 40 past the last card of the row', () => {
+    // A card at 460–572 sends the next one to 620.
+    expect(slot([identity, card('a', { x: 460, y: 360 })], row, underDeck)).toEqual({
+      x: 620,
       y: 360,
     });
-    // Past one at 740–880 too, it lands at 930.
-    const cards = [identity, card('a', { x: 550, y: 360 }), card('b', { x: 740, y: 360 })];
-    expect(slot(cards, row, underDeck)).toEqual({ x: 930, y: 360 });
+    // Past one at 620–732 too, it lands at 780.
+    const cards = [identity, card('a', { x: 460, y: 360 }), card('b', { x: 620, y: 360 })];
+    expect(slot(cards, row, underDeck)).toEqual({ x: 780, y: 360 });
   });
 
   it('finds the last card whatever the order of the cards', () => {
-    const cards = [card('b', { x: 740, y: 360 }), card('a', { x: 550, y: 360 }), identity];
-    expect(slot(cards, row, underDeck)).toEqual({ x: 930, y: 360 });
-    const hole = [card('b', { x: 930, y: 360 }), card('a', { x: 550, y: 360 }), identity];
-    expect(slot(hole, row, underDeck)).toEqual({ x: 740, y: 360 });
+    const cards = [card('b', { x: 620, y: 360 }), card('a', { x: 460, y: 360 }), identity];
+    expect(slot(cards, row, underDeck)).toEqual({ x: 780, y: 360 });
+    const hole = [card('b', { x: 780, y: 360 }), card('a', { x: 460, y: 360 }), identity];
+    expect(slot(hole, row, underDeck)).toEqual({ x: 620, y: 360 });
   });
 
   it("the first player token is in the way when it lies in the viewer's row", () => {
-    // Dragged to 840–924, the token lies where 870, past Doctor Strange at 680–820, would be.
-    const firstPlayer = { x: 840, y: 360 };
-    expect(slot([strange], [...row, ...sides], firstPlayer)).toEqual({ x: 980, y: 360 });
+    // Dragged to 720–804, the token lies where 720, past Doctor Strange at 560–672, would be.
+    const firstPlayer = { x: 720, y: 360 };
+    expect(slot([strange], [...row, ...sides], firstPlayer)).toEqual({ x: 850, y: 360 });
     // Under the deck, where the setup puts it, or in another row, it is not.
-    expect(slot([identity], row, underDeck)).toEqual({ x: 550, y: 360 });
-    expect(slot([identity], row, { x: 550, y: 0 })).toEqual({ x: 550, y: 360 });
+    expect(slot([identity], row, underDeck)).toEqual({ x: 460, y: 360 });
+    expect(slot([identity], row, { x: 460, y: 0 })).toEqual({ x: 460, y: 360 });
   });
 
   it('freeSlot avoids the active counter', () => {
-    // The 70 wide counter at 840–910 lies where 870, past Doctor Strange at 680–820, would be.
-    const active = { x: 840, y: 360 };
-    expect(slot([strange], [...row, ...sides], underDeck)).toEqual({ x: 870, y: 360 });
-    expect(slot([strange], [...row, ...sides], underDeck, active)).toEqual({ x: 960, y: 360 });
+    // The 70 wide counter at 720–790 lies where 720, past Doctor Strange at 560–672, would be.
+    const active = { x: 720, y: 360 };
+    expect(slot([strange], [...row, ...sides], underDeck)).toEqual({ x: 720, y: 360 });
+    expect(slot([strange], [...row, ...sides], underDeck, active)).toEqual({ x: 830, y: 360 });
     // In another row, it is not in the way.
-    expect(slot([strange], [...row, ...sides], underDeck, { x: 840, y: 0 })).toEqual({
-      x: 870,
+    expect(slot([strange], [...row, ...sides], underDeck, { x: 720, y: 0 })).toEqual({
+      x: 720,
       y: 360,
     });
   });
@@ -937,66 +937,66 @@ describe('freeSlot', () => {
     expect(left!.right).toBeLessThanOrEqual(right!.left);
   });
 
-  it('fills a hole wide enough for a 140-wide card with 50 free on each side', () => {
-    // 550 needs 500–740 free: a card from 740 leaves it free, one from 730 does not.
-    expect(slot([identity, card('a', { x: 740, y: 360 })], row, underDeck)).toEqual({
-      x: 550,
+  it('fills a hole wide enough for a 112-wide card with 40 free on each side', () => {
+    // 460 needs 420–612 free: a card from 620 leaves it free, one from 610 does not.
+    expect(slot([identity, card('a', { x: 620, y: 360 })], row, underDeck)).toEqual({
+      x: 460,
       y: 360,
     });
-    expect(slot([identity, card('a', { x: 730, y: 360 })], row, underDeck)).toEqual({
-      x: 920,
+    expect(slot([identity, card('a', { x: 610, y: 360 })], row, underDeck)).toEqual({
+      x: 770,
       y: 360,
     });
-    // Between 690 and 930, 740 has 690–930 free.
-    const wide = [identity, card('a', { x: 550, y: 360 }), card('b', { x: 930, y: 360 })];
-    expect(slot(wide, row, underDeck)).toEqual({ x: 740, y: 360 });
-    // Between 690 and 920, it does not: the card goes past the last one, at 1110.
-    const narrow = [identity, card('a', { x: 550, y: 360 }), card('b', { x: 920, y: 360 })];
-    expect(slot(narrow, row, underDeck)).toEqual({ x: 1110, y: 360 });
+    // Between 572 and 780, 620 has 580–772 free.
+    const wide = [identity, card('a', { x: 460, y: 360 }), card('b', { x: 780, y: 360 })];
+    expect(slot(wide, row, underDeck)).toEqual({ x: 620, y: 360 });
+    // Between 572 and 770, it does not: the card goes past the last one, at 930.
+    const narrow = [identity, card('a', { x: 460, y: 360 }), card('b', { x: 770, y: 360 })];
+    expect(slot(narrow, row, underDeck)).toEqual({ x: 930, y: 360 });
   });
 
   it('makes room for the played card as wide as it lands', () => {
-    // Between 690 and 930, a portrait card has room at 740, a landscape side scheme, 196 wide, does not.
-    const cards = [identity, card('a', { x: 550, y: 360 }), card('b', { x: 930, y: 360 })];
+    // Between 572 and 780, a portrait card has room at 620, a landscape side scheme, 157 wide, does not.
+    const cards = [identity, card('a', { x: 460, y: 360 }), card('b', { x: 780, y: 360 })];
     const table = { cards, piles: row, firstPlayer: underDeck };
-    expect(freeSlot(played, table, 0, sizeOf)).toEqual({ x: 740, y: 360 });
+    expect(freeSlot(played, table, 0, sizeOf)).toEqual({ x: 620, y: 360 });
     const scheme = card('s', { code: '01108', owner: -1, back: 'encounter', zone: 'pile' });
-    expect(freeSlot(scheme, table, 0, sizeOf)).toEqual({ x: 1120, y: 360 });
+    expect(freeSlot(scheme, table, 0, sizeOf)).toEqual({ x: 940, y: 360 });
   });
 
   it('counts the visible width of a card: double size, face down, tilted when exhausted', () => {
-    // Double size, 196 wide: 550–746, then 50 more, up to the grid.
-    const double = card('a', { code: '01010', x: 550, y: 360 });
-    expect(slot([identity, double], row, underDeck)).toEqual({ x: 800, y: 360 });
-    // Face down, it is 140 wide again.
-    const faceDown = card('a', { code: '01010', faceDown: true, x: 550, y: 360 });
-    expect(slot([identity, faceDown], row, underDeck)).toEqual({ x: 740, y: 360 });
-    // Exhausted, it turns 15°: its bounding box spans 527–713, and 763 goes up to 770.
-    const exhausted = card('a', { x: 550, y: 360, exhausted: true });
-    expect(slot([identity, exhausted], row, underDeck)).toEqual({ x: 770, y: 360 });
-    // Its tilt counts on its left too: from 740, it reaches 717, before 740.
-    const tilted = card('a', { x: 740, y: 360, exhausted: true });
-    expect(slot([identity, tilted], row, underDeck)).toEqual({ x: 960, y: 360 });
+    // Double size, 157 wide: 460–617, then 40 more, up to the grid.
+    const double = card('a', { code: '01010', x: 460, y: 360 });
+    expect(slot([identity, double], row, underDeck)).toEqual({ x: 660, y: 360 });
+    // Face down, it is 112 wide again.
+    const faceDown = card('a', { code: '01010', faceDown: true, x: 460, y: 360 });
+    expect(slot([identity, faceDown], row, underDeck)).toEqual({ x: 620, y: 360 });
+    // Exhausted, it turns 15°: its bounding box spans 442–590, and 630 goes up to 640.
+    const exhausted = card('a', { x: 460, y: 360, exhausted: true });
+    expect(slot([identity, exhausted], row, underDeck)).toEqual({ x: 640, y: 360 });
+    // Its tilt counts on its left too: from 620, it reaches 602, before 612.
+    const tilted = card('a', { x: 620, y: 360, exhausted: true });
+    expect(slot([identity, tilted], row, underDeck)).toEqual({ x: 800, y: 360 });
   });
 
   it('a pile is in the way, but not an out-of-play pile, which is not drawn', () => {
-    const inPlay = pile('deck:p1', { owner: 1, x: 570, y: 360 });
-    expect(slot([identity], [...row, inPlay], underDeck)).toEqual({ x: 760, y: 360 });
-    const aside = pile('aside:p0', { kind: 'aside', owner: 0, x: 570, y: 360 });
-    expect(slot([identity], [...row, aside], underDeck)).toEqual({ x: 550, y: 360 });
+    const inPlay = pile('deck:p1', { owner: 1, x: 470, y: 360 });
+    expect(slot([identity], [...row, inPlay], underDeck)).toEqual({ x: 630, y: 360 });
+    const aside = pile('aside:p0', { kind: 'aside', owner: 0, x: 470, y: 360 });
+    expect(slot([identity], [...row, aside], underDeck)).toEqual({ x: 460, y: 360 });
   });
 
   it("only what reaches into the viewer's row counts", () => {
     const cards = [
       identity,
-      card('above', { x: 550, y: 160 }),
-      card('reaching', { x: 740, y: 170 }),
-      card('below', { x: 550, y: 560 }),
+      card('above', { x: 460, y: 200 }),
+      card('reaching', { x: 620, y: 210 }),
+      card('below', { x: 460, y: 520 }),
     ];
-    // "above" ends at 356, "reaching" at 366: only the second one is in the way.
-    expect(slot(cards, row, underDeck)).toEqual({ x: 550, y: 360 });
-    expect(slot([...cards, card('a', { x: 550, y: 400 })], row, underDeck)).toEqual({
-      x: 930,
+    // "above" ends at 357, "reaching" at 367: only the second one is in the way.
+    expect(slot(cards, row, underDeck)).toEqual({ x: 460, y: 360 });
+    expect(slot([...cards, card('a', { x: 460, y: 400 })], row, underDeck)).toEqual({
+      x: 780,
       y: 360,
     });
   });
@@ -1103,7 +1103,7 @@ describe('a player with two decks', () => {
     const table = keyTable(twoDeckView());
     interaction.hovered = { kind: 'hand', id: 'h4' };
     handleKey(keyDown('p'), table);
-    // 50 past p1's deck at 0–140, in its row.
-    expect(table.act).toHaveBeenCalledWith({ kind: 'play', card: 'h4', x: 190, y: 330 });
+    // 40 past p1's deck at 0–112, in its row.
+    expect(table.act).toHaveBeenCalledWith({ kind: 'play', card: 'h4', x: 160, y: 330 });
   });
 });

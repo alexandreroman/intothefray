@@ -290,12 +290,12 @@ describe('Table animations', () => {
     const { rerender } = render(Table, { session, view: makeView([]) });
     await settle();
 
-    await rerender({ session, view: makeView([], { firstPlayer: { x: 160, y: 240 } }) });
+    await rerender({ session, view: makeView([], { firstPlayer: { x: 160, y: 200 } }) });
     await waitFor(() => expect(animationsOf('.surface .marker')).toHaveLength(1));
     const [[keyframes, options]] = animationsOf('.surface .marker') as [
       [Keyframe[], KeyframeAnimationOptions],
     ];
-    expect(keyframes[0]).toMatchObject({ translate: '700px -200px' });
+    expect(keyframes[0]).toMatchObject({ translate: '700px -160px' });
     expect(keyframes[1]).toMatchObject({ translate: '0px 0px' });
     expect(options.duration).toBe(250);
   });

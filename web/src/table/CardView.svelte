@@ -220,7 +220,7 @@
 <style>
   .card {
     position: absolute;
-    border-radius: 6px;
+    border-radius: 5px;
     user-select: none;
     -webkit-user-select: none;
     touch-action: none;
@@ -236,7 +236,7 @@
     content: '';
     position: absolute;
     inset: -2px;
-    border-radius: 8px;
+    border-radius: 7px;
     pointer-events: none;
   }
 
@@ -266,20 +266,20 @@
     place in the pile. On a scheme, the threat sits in the top right corner instead, clear of
     its printed threat values, with the acceleration to its left along the top edge, above the
     modifiers on the right edge and clear of the status tabs on the left edge. The corner pile
-    is at most three tokens high (84px) and two wide (55px) on any other card, and two tokens
-    high (61px) on a scheme: the status tabs end above it, or lie along the top of a landscape
+    is at most three tokens high (67px) and two wide (44px) on any other card, and two tokens
+    high (44px) on a scheme: the status tabs end above it, or lie along the top of a landscape
     card, clear of it.
   */
   .tokens {
     position: absolute;
     z-index: 4;
     display: flex;
-    gap: 3px;
+    gap: 2px;
   }
 
   .tokens.bottom-right {
-    right: 6px;
-    bottom: 6px;
+    right: 5px;
+    bottom: 5px;
     flex-direction: column-reverse;
     align-items: flex-end;
   }
@@ -288,13 +288,13 @@
   .threat-row {
     display: flex;
     flex-direction: row-reverse;
-    gap: 3px;
+    gap: 2px;
   }
 
   /* The first token, the threat, is in the corner: the acceleration goes to its left. */
   .tokens.top-right {
-    right: 6px;
-    top: 6px;
+    right: 5px;
+    top: 5px;
     flex-direction: row-reverse;
   }
 
@@ -306,13 +306,13 @@
     --rim: #222;
     --ink: #fff;
     position: relative;
-    width: 26px;
-    height: 26px;
+    width: 21px;
+    height: 21px;
     border-radius: 50%;
     display: grid;
     place-items: center;
     font:
-      800 13px/1 system-ui,
+      800 10.5px/1 system-ui,
       sans-serif;
     color: var(--ink);
     text-shadow: 0 1px 1px #0008;
@@ -344,7 +344,7 @@
   .tok::before {
     content: '';
     position: absolute;
-    inset: 2.5px;
+    inset: 2px;
     border-radius: 50%;
     border: 1px solid #ffffff40;
     pointer-events: none;
@@ -376,7 +376,7 @@
   /*
     Acceleration is in the Fray red, brighter than damage, and marked with a double chevron
     pointing up before its count. The two chevrons stand 4 units apart, so their strokes keep a
-    gap at 7px; their round ends may reach past the 8 × 8 box.
+    gap at 6px; their round ends may reach past the 8 × 8 box.
   */
   .tok.acc {
     --hi: #ffab9f;
@@ -390,8 +390,8 @@
   }
 
   .tok.acc .chevrons {
-    width: 7px;
-    height: 7px;
+    width: 6px;
+    height: 6px;
     overflow: visible;
     fill: none;
     stroke: currentColor;
@@ -403,32 +403,32 @@
 
   /*
     Status cards: small tabs sticking out of the right edge, like real cards tucked under. They
-    end just above the corner pile at its highest, so its tokens never cover them: 6px in, three
-    tokens (84px) and a 3px gap. Above that, a portrait card has room for all five tabs (17px
-    high, 3px apart) in one column, which reads top to bottom.
+    end just above the corner pile at its highest, so its tokens never cover them: 5px in, three
+    tokens (67px) and a 2px gap. Above that, a portrait card has room for all five tabs (14px
+    high, 2px apart) in one column, which reads top to bottom.
   */
   .statuses {
     position: absolute;
-    right: -8px;
-    bottom: 93px;
+    right: -6px;
+    bottom: 74px;
     z-index: 4;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
     align-items: flex-start;
-    gap: 3px;
+    gap: 2px;
   }
 
   /*
     A landscape card is too low for a column above the corner pile: the tabs lie side by side
     along its top instead, the last one sticking out of the right edge. A row too long for the
-    card wraps downwards, its first tabs on the top row: the two rows end 43px from the top,
-    clear of the corner pile, which starts 50px from it.
+    card wraps downwards, its first tabs on the top row: the two rows end 35px from the top,
+    clear of the corner pile, which starts 40px from it.
   */
   .card.land .statuses {
-    top: 6px;
+    top: 5px;
     bottom: auto;
-    max-width: calc(100% + 2px);
+    max-width: calc(100% + 1px);
     flex-direction: row;
     flex-wrap: wrap;
     align-items: flex-start;
@@ -437,13 +437,13 @@
   /*
     On a scheme, the right corners hold the tokens: the tabs stick out of the left edge, from
     the top, where a portrait scheme has room for all five. The acceleration beside the threat
-    ends 61px from the right edge, past the widest tab.
+    ends 49px from the right edge, past the widest tab.
   */
   .card.scheme .statuses {
-    top: 6px;
+    top: 5px;
     right: auto;
     bottom: auto;
-    left: -8px;
+    left: -6px;
     max-width: none;
     flex-direction: column;
     align-items: flex-start;
@@ -454,24 +454,24 @@
     starts a second column inside the card, beside the bottom tab.
   */
   .card.land.scheme .statuses {
-    max-height: 77px;
+    max-height: 62px;
     flex-wrap: wrap;
   }
 
   .card.scheme .st {
-    border-radius: 6px 4px 4px 6px;
+    border-radius: 5px 3px 3px 5px;
   }
 
   .st {
     font-stretch: 75%;
     font-weight: 800;
-    font-size: 9px;
+    font-size: 8px;
     line-height: 1;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: #fff;
-    padding: 3px 5px 3px 6px;
-    border-radius: 4px 6px 6px 4px;
+    padding: 2px 4px 2px 5px;
+    border-radius: 3px 5px 5px 3px;
     border: 1px solid #0008;
     box-shadow:
       0 2px 4px #0009,
@@ -506,31 +506,31 @@
     Anchored at the bottom, the column grows upwards and still reads ATK to REC top to bottom.
     On a portrait scheme, whose left edge holds the statuses, they stick out of the right edge
     between the threat in the top corner (the acceleration lies to its left, along the top) and
-    the corner pile, at most two tokens high (61px).
-    That room holds five tabs (17px high, 3px apart): a column holds no more, which also keeps
+    the corner pile, at most two tokens high (44px).
+    That room holds five tabs (14px high, 2px apart): a column holds no more, which also keeps
     it clear of the stats on a portrait card. With all six stats, HP starts a second column
     inside the card, beside the bottom tab: higher up, it would cover the stats of a portrait
     card or the statuses of a scheme.
   */
   .mods {
     position: absolute;
-    bottom: 6px;
-    left: -8px;
+    bottom: 5px;
+    left: -6px;
     z-index: 4;
     display: flex;
     flex-direction: column;
     flex-wrap: wrap;
     justify-content: flex-end;
     align-items: flex-start;
-    gap: 3px;
-    max-height: 97px;
+    gap: 2px;
+    max-height: 78px;
   }
 
   .card.scheme .mods {
-    top: 38px;
+    top: 30px;
     bottom: auto;
     left: auto;
-    right: -8px;
+    right: -6px;
     /* The second column goes to the left; wrap-reverse swaps the cross axis: flex-start is right. */
     flex-wrap: wrap-reverse;
     align-items: flex-start;
@@ -538,18 +538,18 @@
 
   /*
     A landscape card, scheme or not, is too low for a column: they lie in a row along the bottom
-    from the left corner, wrapping upwards, and stop 12px short of the corner pile, which sits
-    6px in. On a landscape card other than a scheme it is up to two tokens wide (55px), where the
+    from the left corner, wrapping upwards, and stop 5px short of the corner pile, which sits
+    5px in. On a landscape card other than a scheme it is up to two tokens wide (44px), where the
     acceleration sits beside the threat. On a landscape scheme the threat and the acceleration
-    sit top right, so it is one token wide (26px): the wider row there stays two rows high, under
+    sit top right, so it is one token wide (21px): the wider row there stays two rows high, under
     the four status tabs of the scheme's left column.
   */
   .card.land .mods {
     top: auto;
     right: auto;
-    bottom: 6px;
-    left: 6px;
-    max-width: calc(100% - 73px);
+    bottom: 5px;
+    left: 5px;
+    max-width: calc(100% - 59px);
     max-height: none;
     justify-content: flex-start;
     flex-direction: row;
@@ -558,22 +558,22 @@
   }
 
   .card.land.scheme .mods {
-    max-width: calc(100% - 44px);
+    max-width: calc(100% - 36px);
   }
 
   .mod {
     /* "+1 ATK" never breaks between its number and its stat. */
     white-space: nowrap;
-    border-radius: 6px 4px 4px 6px;
+    border-radius: 5px 3px 3px 5px;
     background: linear-gradient(var(--line-strong), var(--panel-2));
   }
 
   .card.scheme .mod {
-    border-radius: 4px 6px 6px 4px;
+    border-radius: 3px 5px 5px 3px;
   }
 
   .card.land .mod {
-    border-radius: 4px;
+    border-radius: 3px;
   }
 
   /* A penalty is in the Fray red. */
@@ -583,9 +583,9 @@
 
   /* The small lock before the Locked label. */
   .st .lock {
-    width: 8px;
-    height: 8px;
-    margin-right: 3px;
+    width: 6px;
+    height: 6px;
+    margin-right: 2px;
     vertical-align: -1px;
     fill: none;
     stroke: currentColor;

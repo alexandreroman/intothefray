@@ -22,79 +22,82 @@ import (
 // (if the scenario has one), then the scenario decks no stage names, each with
 // its discard pile if it has one, then each stage in order: its own deck group
 // first, then the stage card, then the cards in play laid out "with" it, and
-// finally the other cards in play. A scenario deck is compact, 100 by 140, its
+// finally the other cards in play. A scenario deck is compact, 80 by 112, its
 // discard pile compactDiscardStepX right of it. A deck group lies pileZoneGap
 // after what precedes it; a stage card pileZoneGap after piles and inPlayGap
 // after a card; cards in play inPlayGap apart. The classic scenarios have no
-// deck group: the villain lies at 360, the main scheme at 550 and the first
-// card in play at 800. The active counter lies under its stage card,
+// deck group: the villain lies at 300, the main scheme at 460 and the first
+// card in play at 660. The active counter lies under its stage card,
 // activeGap below it.
 //
 // In a player's row, the villain's place is the identity's. A
 // hero with side decks lays them out after its discard pile, each followed by
 // its own discard pile if it has one, sidePileStepX apart as the deck and the
 // discard pile are. The identity then lies pileZoneGap after the end of the
-// last pile: without side piles, it sits at identityX. The first player token
-// lies right of the first player's identity, inPlayGap past it, centred on its
-// height (firstPlayerSpot).
+// last pile, taken up to the grid: without side piles, it sits at identityX.
+// The first player token lies right of the first player's identity, inPlayGap
+// past it, centred on its height (firstPlayerSpot).
 // Things sit rowContentY below the top of their row, leaving room for the
 // client's owner label above the piles. Out-of-play piles (victory display, set-aside cards) keep
 // a position for the model, on the first villain pile, but the client never draws them.
 //
 // The villain's row is taller so that it reads apart from the players' rows:
-// about 1.2 portrait card heights (244 units, keeping the rows on the 10-unit
+// about 1.2 portrait card heights (193 units, keeping the rows on the 10-unit
 // grid) lie empty between its cards and the owner label of the first
-// player's row. A player's row is tight: under its portrait cards, 44 units
-// hold an exhausted card, turned 15° and so about 15 units lower, and the
+// player's row. A player's row is tight: under its portrait cards, 33 units
+// hold an exhausted card, turned 15° and so about 12 units lower, and the
 // owner frame, 10 units past the piles, on the 10-unit grid. The client's
 // focus view uses the same bands (web/src/table/rows.ts).
 const (
-	villainRowHeight = 470
-	rowHeight        = 270
+	villainRowHeight = 380
+	rowHeight        = 220
 	rowContentY      = 30
 
 	// portraitWidth and portraitHeight are the size of a portrait card, and
 	// so of a pile; landscapeWidth is the width of a landscape card, such as
 	// a main scheme.
-	portraitWidth  = 140
-	portraitHeight = 196
-	landscapeWidth = 196
+	portraitWidth  = 112
+	portraitHeight = 157
+	landscapeWidth = 157
 	// pileZoneGap is the room between the last pile of a row and the
 	// cards in play after it.
-	pileZoneGap = 60
+	pileZoneGap = 50
 	// inPlayGap is the room between two cards in play, the same for the
 	// cards the setup puts in play and the cards played from the hand or a
 	// pile box (freeSlot, web/src/table/keys.ts). Turned 15° when exhausted,
-	// a portrait card reaches about 23 further on each side: 50 lets two
+	// a portrait card reaches about 18 further on each side: 40 lets two
 	// neighbours both be exhausted without overlapping.
-	inPlayGap = 50
+	inPlayGap = 40
 	// The first player token is 84 by 70 (FIRST_PLAYER_BOX,
 	// web/src/table/layout.ts): firstPlayerTokenHeight is its height.
 	firstPlayerTokenHeight = 70
 	// activeGap is the room between the bottom of a stage card and the
 	// active counter under it, 70 by 70 (web/src/table/layout.ts). It puts
-	// the counter's top on the grid, 14 units clear of the owner frame of
-	// the encounter piles, which reaches 10 units past them, and leaves the
-	// counter in the empty band of the villain's row.
-	activeGap = 24
-	// activeOffsetX takes the centre of the active counter under its stage card to the grid: 40 on a 140 wide card
-	// puts the 70 wide counter's centre at 75, not 70.
-	activeOffsetX = 40
+	// the counter's top on the grid, at 210, 13 units clear of the owner
+	// frame of the encounter piles, which reaches 10 units past them, and
+	// leaves the counter in the empty band of the villain's row.
+	activeGap = 23
+	// activeOffsetX takes the active counter under its stage card to the grid: 20 on a 112 wide card puts the 70
+	// wide counter's centre at 55, not 56.
+	activeOffsetX = 20
 
 	deckX      = 0
-	discardX   = 160
+	discardX   = 130
 	outOfPlayX = 0
-	identityX  = discardX + portraitWidth + pileZoneGap
-	// The first card in play of a villain's row with no stage before it: past a classic villain (identityX, where the
-	// villain lies as the identity does) and main scheme, landscape, rounded up to the grid as ceilToGrid does.
-	inPlayStartX = (identityX + portraitWidth + inPlayGap + landscapeWidth + inPlayGap +
-		gridSize - 1) / gridSize * gridSize
+	// The identity lies past the discard pile, taken up to the grid as ceilToGrid does: 300.
+	identityX = (discardX + portraitWidth + pileZoneGap + gridSize - 1) / gridSize * gridSize
+	// classicSchemeX is the x of a classic main scheme, past the villain (at identityX, where the villain lies as the
+	// identity does), taken up to the grid: 460.
+	classicSchemeX = (identityX + portraitWidth + inPlayGap + gridSize - 1) / gridSize * gridSize
+	// The first card in play of a villain's row with no stage before it: past a classic main scheme, landscape,
+	// taken up to the grid, where the first card in play of a classic villain's row lies: 660.
+	inPlayStartX = (classicSchemeX + landscapeWidth + inPlayGap + gridSize - 1) / gridSize * gridSize
 
 	// A scenario deck is compact, and its discard pile lies compactDiscardStepX right of it.
-	compactWidth        = 100
-	compactDiscardStepX = 120
+	compactWidth        = 80
+	compactDiscardStepX = 100
 
-	sidePileStepX = 160
+	sidePileStepX = 130
 )
 
 // villainRow is the row of the villain; a seat's row is playerRow.
@@ -725,7 +728,7 @@ func cardWidth(size pack.Size) int {
 		// A double-size portrait card is as wide as a landscape one.
 		return landscapeWidth
 	case pack.SizeDoubleLand:
-		return 280
+		return 224
 	default:
 		return portraitWidth
 	}
@@ -739,7 +742,7 @@ func cardHeight(size pack.Size) int {
 		// A landscape card is a portrait one turned a quarter.
 		return portraitWidth
 	case pack.SizeDoubleStd:
-		return 280
+		return 224
 	default:
 		// A double-size landscape card is as tall as a portrait one.
 		return portraitHeight
@@ -751,7 +754,7 @@ func cardHeight(size pack.Size) int {
 // inPlayGap past its right edge, as a card in play would lie, so that the
 // token stays clear of the identity even when it is exhausted, and centred on
 // its height. x is taken up to the grid as a card in play's is, y to the
-// nearest grid line: on a portrait identity, 60 below its top.
+// nearest grid line: on a portrait identity, 40 below its top.
 func firstPlayerSpot(identitySize pack.Size, x, y int) Point {
 	return Point{
 		X: ceilToGrid(x + cardWidth(identitySize) + inPlayGap),
@@ -814,8 +817,8 @@ func (b *tableBuilder) setupPlayer(seat int, deck *DeckChoice) error {
 		return invalid("card %s has no face", identityDef.Code)
 	}
 	// The identity follows the last pile: the discard pile (index 1) or the
-	// last side pile.
-	x := pileX(1+sidePiles) + portraitWidth + pileZoneGap
+	// last side pile, taken up to the grid.
+	x := ceilToGrid(pileX(1+sidePiles) + portraitWidth + pileZoneGap)
 	y := rowY(playerRow(seat))
 	b.placeOnTable(identity, face, x, y)
 	if seat == 0 {
