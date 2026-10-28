@@ -50,7 +50,7 @@
   import { backCaption, isHidden, pileBack } from './face';
   import { interaction, type DropOn, type Held, type Pressable } from './interaction.svelte';
   import { ACTIVE_COUNTER_BOX, cardBox, FIRST_PLAYER_BOX, HAND_CARD, type Box } from './layout';
-  import { ALL_ROWS, type RowMap } from './rows';
+  import { ALL_ROWS, drawnGap, type RowMap } from './rows';
   import { surfaceRect, tableCard, tablePile, toScreen, toTable } from './screen';
   import { areaOf, seatHero, seatOf } from './seats';
   import { groupAction, groupPileTargets, groupUnits } from './selection';
@@ -391,14 +391,22 @@
     if (action.kind !== 'group') {
       return action.x === undefined || action.y === undefined ? null : { x: action.x, y: action.y };
     }
-    // A group of moves moves every card by the same offset: its first move tells it.
+    // A group of moves moves every card by the same offset as drawn (groupAction): the pressed
+    // card's own move tells where it lands, else the first move, at its drawn offset.
+    const lead = from.kind === 'card' ? cardsById.get(from.card) : undefined;
+    const own = action.actions?.find((move) => move.card === lead?.id);
+    if (own?.x !== undefined && own.y !== undefined) {
+      return { x: own.x, y: own.y };
+    }
     const first = action.actions?.[0];
     const moved = first?.card === undefined ? undefined : cardsById.get(first.card);
-    const lead = from.kind === 'card' ? cardsById.get(from.card) : undefined;
     if (first?.x === undefined || first.y === undefined || !moved || !lead) {
       return null;
     }
-    return { x: lead.x + first.x - moved.x, y: lead.y + first.y - moved.y };
+    const landed = rowMap.toDisplay(first.y);
+    const y =
+      landed === null ? first.y : rowMap.toTable(landed + drawnGap(rowMap, moved.y, lead.y));
+    return { x: lead.x + first.x - moved.x, y };
   }
 
   function placedRect(selector: string): DOMRect | undefined {
@@ -520,7 +528,7 @@
     if (single === null || units.length === 0 || from.kind !== 'card') {
       return single;
     }
-    return groupAction(units, from.card, single, cards);
+    return groupAction(units, from.card, single, cards, rowMap);
   }
 
   /** Outlines and labels what the drop would land on, and opens the gap in the hand. */
@@ -721,10 +729,10 @@
     if (from.kind !== 'card') {
       return [asPlayed(card, x, y)];
     }
-    // The cards tucked under it, and the rest of a group, keep their offsets.
+    // The cards tucked under it, and the rest of a group, keep their offsets as drawn.
     return lifted.flatMap((id) => {
       const k = cardsById.get(id);
-      return k ? [{ ...k, x: x + k.x - card.x, y: y + k.y - card.y }] : [];
+      return k ? [{ ...k, x: x + k.x - card.x, y: y + drawnGap(rowMap, card.y, k.y) }] : [];
     });
   }
 

@@ -252,7 +252,9 @@ describe('Table', () => {
       [...surface().querySelectorAll<HTMLElement>(selector)].map((element) => element.dataset.id);
     expect(ids(':scope > .card:not(.pile)')).toEqual(['v', 's', 'a', 'b']);
     expect(ids(':scope > .pile')).toEqual(['enc', 'd0', 'd1', 'x1']);
-    expect(surface().querySelector('[data-id="b"]')?.getAttribute('style')).toContain('top: 770px');
+    // Sam's card lies 30 into the third row (from 740). jsdom's table shows no height, so the rows are
+    // drawn as close as they go: the villain's 310 high, a player's 270 (spreadRows).
+    expect(surface().querySelector('[data-id="b"]')?.getAttribute('style')).toContain('top: 610px');
   });
 
   it('loads the cards of its game once', async () => {
@@ -298,11 +300,11 @@ describe('Table', () => {
       '6 cards in hand',
       '5 cards in hand',
     ]);
-    // Around Sam's deck (0, 770) and discard pile (160, 770), 10 units off their edges.
+    // Around Sam's deck (0, 770) and discard pile (160, 770), drawn at 610, 10 units off their edges.
     const sam = boxes[2]!;
     expect([sam.style.left, sam.style.top, sam.style.width, sam.style.height]).toEqual([
       '-10px',
-      '760px',
+      '600px',
       '320px',
       '216px',
     ]);
@@ -395,29 +397,29 @@ describe('Table', () => {
 
   it('leaves room past the rightmost and the lowest card', async () => {
     const view = makeView({
-      // A double-size card, 196 by 280, at 200, 300.
-      cards: [card('g', { code: '01010', x: 200, y: 300 })],
+      // A double-size card, 196 by 280, at 200, 200: in the villain's row, drawn where it lies.
+      cards: [card('g', { code: '01010', x: 200, y: 200 })],
       piles: [],
     });
     render(Table, { session: fakeSession(), view });
 
-    // 200 + 196 + 200 wide, 300 + 280 + 300 tall.
+    // 200 + 196 + 200 wide, 200 + 280 + 300 tall.
     await waitFor(() => {
       expect(surface().style.width).toBe('596px');
     });
-    expect(surface().style.height).toBe('880px');
+    expect(surface().style.height).toBe('780px');
   });
 
   it('sizes cards as std until the catalog is loaded', () => {
     vi.mocked(loadGameCards).mockReturnValue(new Promise(() => {}));
     const view = makeView({
-      cards: [card('g', { code: '01010', x: 0, y: 300 })],
+      cards: [card('g', { code: '01010', x: 0, y: 200 })],
       piles: [],
     });
     render(Table, { session: fakeSession(), view });
 
-    // 300 + 196 + 300, and the card itself gets the std box.
-    expect(surface().style.height).toBe('796px');
+    // 200 + 196 + 300, and the card itself gets the std box.
+    expect(surface().style.height).toBe('696px');
     expect(surface().querySelector<HTMLElement>('.card')?.style.height).toBe('196px');
     expect(knownCard).not.toHaveBeenCalled();
   });
@@ -427,16 +429,16 @@ describe('Table', () => {
     vi.mocked(loadGameCards).mockReturnValue(new Promise<void>((resolve) => (loaded = resolve)));
     // The main scheme is landscape (140 high), but counts as std (196) until its size is known.
     const view = makeView({
-      cards: [card('s', { code: '01097', x: 0, y: 300 })],
+      cards: [card('s', { code: '01097', x: 0, y: 200 })],
       piles: [],
     });
     render(Table, { session: fakeSession(), view });
-    expect(surface().style.height).toBe('796px');
+    expect(surface().style.height).toBe('696px');
 
     loaded();
-    // 300 + 140 + 300.
+    // 200 + 140 + 300.
     await waitFor(() => {
-      expect(surface().style.height).toBe('740px');
+      expect(surface().style.height).toBe('640px');
     });
   });
 
@@ -453,14 +455,14 @@ describe('Table', () => {
   it('after a failed load, every card is a std placeholder, as the surface is sized', async () => {
     vi.mocked(loadGameCards).mockRejectedValue(new Error('offline'));
     const view = makeView({
-      cards: [card('g', { code: '01010', x: 0, y: 300 })],
+      cards: [card('g', { code: '01010', x: 0, y: 200 })],
       piles: [],
     });
     render(Table, { session: fakeSession(), view });
     await screen.findByRole('alert');
 
-    // 300 + 196 + 300: the surface counts the card as std, and the card is drawn std.
-    expect(surface().style.height).toBe('796px');
+    // 200 + 196 + 300: the surface counts the card as std, and the card is drawn std.
+    expect(surface().style.height).toBe('696px');
     await Promise.resolve();
     expect(surface().querySelector<HTMLElement>('.card')?.style.height).toBe('196px');
     expect(within(surface()).queryByRole('img', { name: 'Giant form' })).toBeNull();
@@ -1142,14 +1144,48 @@ describe('Table view modes', () => {
     await fireEvent.click(viewButton('Villain + player'));
     expect(viewButton('Villain + player').getAttribute('aria-pressed')).toBe('true');
     expect(localStorage.getItem('itf-view')).toBe('focus');
-    // Sam, the viewer, by default: Alex's row is hidden, Sam's drawn right under the villain's.
+    // Sam, the viewer, by default: Alex's row is hidden, Sam's drawn right under the villain's, which
+    // jsdom's table of no height draws 310 high.
     expect(shownIds()).toEqual(['enc', 'd1', 'x1', 'v', 's', 'b']);
     const sam = surface().querySelector<HTMLElement>('[data-id="b"]')!;
-    expect(sam.style.top).toBe('500px');
+    expect(sam.style.top).toBe('340px');
     expect(ownerBoxes().map((box) => box.querySelector('.owner')?.textContent)).toEqual([
       'Villain',
       'Sam · Ant-Man',
     ]);
+  });
+
+  it('spreads the rows over the height the table shows, one pitch apart', async () => {
+    // 1210 px tall: past the scroller's top padding (24) and the resting hand's strip (108), 1078 px
+    // for the rows: the villain's row and two players' rows, the last one 270 high, fill them at a
+    // pitch of 404, 400 on the grid.
+    vi.spyOn(Element.prototype, 'clientHeight', 'get').mockImplementation(function (this: Element) {
+      return this.classList.contains('tablewrap') ? 1210 : 0;
+    });
+    render(Table, { session: fakeSession(), view: makeView() });
+    await catalogLoaded();
+
+    const top = (id: string) =>
+      surface().querySelector<HTMLElement>(`[data-id="${id}"]`)?.style.top;
+    // The villain's row where it lies; Alex's row drawn at the villain's row's height, 400; Sam's
+    // one pitch below it. Each card 30 into its row.
+    expect([top('v'), top('a'), top('b')]).toEqual(['30px', '430px', '830px']);
+  });
+
+  it('spreads the rows the same at any zoom', async () => {
+    // The screen of the test above, zoomed out to 50 %: in table units, the rows are drawn where
+    // they are at 100 %, the zoom only showing more of the table.
+    localStorage.setItem('itf-zoom', '0.5');
+    vi.spyOn(Element.prototype, 'clientHeight', 'get').mockImplementation(function (this: Element) {
+      return this.classList.contains('tablewrap') ? 1210 : 0;
+    });
+    render(Table, { session: fakeSession(), view: makeView() });
+    await catalogLoaded();
+
+    expect(zoomLabel().textContent).toBe('50%');
+    const top = (id: string) =>
+      surface().querySelector<HTMLElement>(`[data-id="${id}"]`)?.style.top;
+    expect([top('v'), top('a'), top('b')]).toEqual(['30px', '430px', '830px']);
   });
 
   it("picks the player whose row shows, at the bottom left, the viewer's own first", async () => {
@@ -1178,7 +1214,7 @@ describe('Table view modes', () => {
 
     await fireEvent.click(within(picker).getByRole('radio', { name: 'Alex · Spider-Man' }));
     expect(shownIds()).toEqual(['enc', 'd0', 'v', 's', 'a']);
-    expect(surface().querySelector<HTMLElement>('[data-id="a"]')?.style.top).toBe('500px');
+    expect(surface().querySelector<HTMLElement>('[data-id="a"]')?.style.top).toBe('340px');
   });
 
   it('steps round the table with three players or more', async () => {

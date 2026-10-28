@@ -89,11 +89,11 @@
     surfaceSize,
   } from './layout';
   import {
-    ALL_ROWS,
-    focusRows,
     lastRow,
     rowOfSeat,
+    rowPitch,
     saveViewMode,
+    spreadRows,
     storedViewMode,
     type ViewMode,
   } from './rows';
@@ -364,12 +364,6 @@
     return hero ? `Your ${hero} hand` : 'Your hand';
   }
 
-  const rowMap = $derived(
-    focused && shownSeat !== null
-      ? focusRows(rowOfSeat(piles, shownSeat), lastRow(piles))
-      : ALL_ROWS,
-  );
-
   // The hero selector at the bottom left (HeroPicker): in "Villain + player", every seat, its entry
   // picking the row shown; in "All", the viewer's own decks, its entry picking the hand shown. It
   // shows only with two entries or more: a single hero leaves nothing to pick.
@@ -473,18 +467,8 @@
     interaction.setTouchMode(touchMode.current);
   });
 
-  // ---- The zoom ----
-
-  // The zoom the viewer chose (buttons, keys, Ctrl + wheel), remembered; null until then, or since
-  // the % label went back to the fit on a phone: the table then shows the screen's default zoom.
-  let chosenZoom = $state(storedZoom());
-  const zoomMin = $derived(phone.current ? ZOOM_MIN_SMALL : ZOOM_MIN);
-
   // The scroller pads the surface, so that glows, tilted cards and outlines near an edge show.
   const SCROLL_PADDING = 24;
-  // Kept free for a vertical scrollbar when fitting. Measured with the scrollbar or without, the
-  // fit would make the scrollbar come and go, and the fit with it.
-  const SCROLLBAR_ROOM = 12;
 
   // On a small screen the top bar floats over the play area, and slides away as the table scrolls
   // down (TopBar): the table starts below it, and what floats at the top of the play area keeps
@@ -499,6 +483,58 @@
   let visibleHeight = $state(0);
   // The scroller's width, its scrollbar included, in px.
   let scrollerWidth = $state(0);
+
+  // ---- Where the rows are drawn ----
+
+  // Declared before the zoom, whose fit reads the rows as drawn as soon as the table starts, and
+  // so is what they depend on: the visible height, the resting hand's strip, the controls' height.
+
+  // The hand's base cards, which the resting hand shows: smaller on a narrow screen, and following
+  // the window on a small one, where the resting hand drops by as much of them as elsewhere.
+  const baseHandCard = $derived.by(() => {
+    if (small.current) {
+      return smallHandCard({ w: windowWidth, h: windowHeight });
+    }
+    return narrow.current ? HAND_CARD_NARROW : HAND_CARD;
+  });
+  const baseHandDrop = $derived(small.current ? smallHandDrop(baseHandCard.h) : HAND_REST_DROP);
+
+  // The room between the resting hand's strip and the controls above it on a small screen, in px
+  // (controlsBottom).
+  const ABOVE_HAND = 8;
+
+  // The height of the controls at the bottom right (the zoom control, the narrow Undo), measured:
+  // the rows keep clear of them, and the Focus panel at home sits above them.
+  let cornerHeight = $state(0);
+
+  // The room under the table's rows, in px: the resting hand's strip, or the controls at the bottom,
+  // whichever is higher. Both as whenever the viewer has decks: from own, not handSeats (which
+  // controlsBottom follows), so that showing another player's row keeps the rows where they are.
+  const restingRoom = $derived(own.length > 0 ? restingStrip(baseHandCard.h, baseHandDrop) : 0);
+  const controlsRoom = $derived(
+    (small.current && own.length > 0 ? restingRoom + ABOVE_HAND : TABLE_EDGE_BOTTOM) + cornerHeight,
+  );
+  const rowsBottom = $derived(Math.max(restingRoom, controlsRoom));
+  // The rows spread over the visible height they have, at zoom 1: zooming out shows more of the
+  // table, it does not spread its rows further (rowPitch).
+  const pitch = $derived(rowPitch(visibleHeight - SCROLL_PADDING - barStart - rowsBottom));
+  // Numbers, so that the row map, which the layers re-measure on, changes only with them.
+  const lastDeckRow = $derived(lastRow(piles));
+  const shownRow = $derived(
+    focused && shownSeat !== null ? rowOfSeat(piles, shownSeat) : undefined,
+  );
+  const rowMap = $derived(spreadRows(pitch, lastDeckRow, shownRow));
+
+  // ---- The zoom ----
+
+  // The zoom the viewer chose (buttons, keys, Ctrl + wheel), remembered; null until then, or since
+  // the % label went back to the fit on a phone: the table then shows the screen's default zoom.
+  let chosenZoom = $state(storedZoom());
+  const zoomMin = $derived(phone.current ? ZOOM_MIN_SMALL : ZOOM_MIN);
+
+  // Kept free for a vertical scrollbar when fitting. Measured with the scrollbar or without, the
+  // fit would make the scrollbar come and go, and the fit with it.
+  const SCROLLBAR_ROOM = 12;
 
   // The zoom that fits the content's width into the scroller, as they are now.
   const contentFit = $derived(
@@ -608,16 +644,6 @@
 
   // ---- The hand and the controls at the bottom ----
 
-  // The hand's base cards, which the resting hand shows: smaller on a narrow screen, and following
-  // the window on a small one, where the resting hand drops by as much of them as elsewhere.
-  const baseHandCard = $derived.by(() => {
-    if (small.current) {
-      return smallHandCard({ w: windowWidth, h: windowHeight });
-    }
-    return narrow.current ? HAND_CARD_NARROW : HAND_CARD;
-  });
-  const baseHandDrop = $derived(small.current ? smallHandDrop(baseHandCard.h) : HAND_REST_DROP);
-
   // The raised hand's cards, 80 % of the preview's. At rest, Hand.svelte draws them at the size of
   // the base card at HAND_REST_SCALE, on the base card's fan, and they drop so that as tall a part
   // of them shows as of the base card dropped by baseHandDrop.
@@ -625,9 +651,6 @@
     raisedHandCard(baseHandCard, { w: scrollerWidth, h: windowHeight }, { small: small.current }),
   );
   const handDrop = $derived(handRestDrop(baseHandCard, baseHandDrop, raisedCard));
-
-  // The room between the resting hand's strip and the controls above it on a small screen, in px.
-  const ABOVE_HAND = 8;
 
   // The room between the hands and the controls beside them on a wide screen, in px.
   const CONTROLS_GAP = 32;
@@ -694,9 +717,8 @@
 
   // Bottom right, unless that hides the whole hovered element (focus.ts).
   let focusCorner = $state<Corner>(HOME);
-  // The height of the controls at the bottom right (the zoom control, the narrow Undo): the panel sits above them.
-  let cornerHeight = $state(0);
-  // What the panel at home clears: those controls, and how much higher than --edge-bottom they sit.
+  // What the panel at home clears: the controls at the bottom right (cornerHeight), and how much
+  // higher than --edge-bottom they sit.
   const homeControls = $derived(cornerHeight + controlsBottom - TABLE_EDGE_BOTTOM);
   // The controls' box at the bottom right: the keyboard shortcuts sheet lines up on its right edge.
   let cornerBox = $state<HTMLElement>();

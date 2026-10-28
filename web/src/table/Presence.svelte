@@ -37,7 +37,7 @@
   import MarkerToken from './MarkerToken.svelte';
   import { backCaption, pileBack } from './face';
   import { interaction, LANDING_MS } from './interaction.svelte';
-  import { ALL_ROWS, type RowMap } from './rows';
+  import { ALL_ROWS, drawnGap, type RowMap } from './rows';
   import { scrollerRect, surfaceRect, toScreen, toTable } from './screen';
 
   let {
@@ -432,7 +432,8 @@
 
   /**
    * The cards a player drags, each once, where their corner is, the cards
-   * tucked under the first keeping their offsets.
+   * tucked under the first, and the rest of a group, keeping their offsets as
+   * drawn.
    */
   function ghostsOf(drag: PresenceDrag, origin: DOMRect): TableCard[] {
     const corner = cornerOf(drag, origin);
@@ -449,7 +450,7 @@
         return hiddenCard(id, x, y);
       }
       if (card.zone === 'table' && first?.zone === 'table') {
-        return { ...card, x: x + card.x - first.x, y: y + card.y - first.y };
+        return { ...card, x: x + card.x - first.x, y: y + drawnGap(rowMap, first.y, card.y) };
       }
       return { ...card, zone: 'table', x, y, onPile: undefined, parent: undefined };
     });

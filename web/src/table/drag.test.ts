@@ -16,7 +16,7 @@ import {
   type DropRect,
   type Rect,
 } from './drag';
-import { focusRows } from './rows';
+import { spreadRows } from './rows';
 import { card } from './fixtures.testing';
 
 function rect(left: number, top: number, width: number, height: number): Rect {
@@ -139,15 +139,18 @@ describe('dropAction', () => {
   });
 
   it('dropAction snaps where the card is drawn, then maps it to the shown row', () => {
-    // "Villain + player" with the second of three players: row 2 (740 to 1010) drawn from 470.
-    const rows = focusRows(2, 3);
+    // "Villain + player" with the second of three players, rows as close as they go: the villain's
+    // row drawn 310 high, its empty band from 260 squeezed into 50, then row 2 (740 to 1010).
+    const rows = spreadRows(270, 3, 2);
     const yAt = (y: number) => dropAction(TABLE_CARD, TABLE, { x: 0, y }, DEAL_TO, rows)?.y;
     // At the bottom of the villain's row: snapped onto the top of the shown row, not into row 1.
-    expect(yAt(467)).toBe(740);
-    expect(yAt(464)).toBe(460);
-    expect(yAt(643)).toBe(910);
+    expect(yAt(307)).toBe(740);
+    expect(yAt(254)).toBe(250);
+    // In the villain's squeezed band, where it is drawn: 280 is 20 into it, 84 on the table.
+    expect(yAt(284)).toBe(340);
+    expect(yAt(483)).toBe(910);
     // At the bottom of the shown row, or below it: on its last grid line, never in the hidden row 3.
-    expect(yAt(735)).toBe(1000);
+    expect(yAt(575)).toBe(1000);
     expect(yAt(2000)).toBe(1000);
   });
 
