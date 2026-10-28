@@ -351,7 +351,7 @@ describe('Hand', () => {
 
   it('pops the hovered card up, 1.3 times as large, keeping its tilt', () => {
     const pop =
-      /\n {2}\.hand:not\(\.pinned, \.inactive\) \.hcard:hover \.fan,\n {2}\.hcard\.locked \.fan \{([^}]*)\}/.exec(
+      /\n {2}\.hand:not\(\.pinned, \.inactive, \.keeping\) \.hcard:hover \.fan,\n {2}\.hcard\.kept \.fan,\n {2}\.hcard\.locked \.fan \{([^}]*)\}/.exec(
         handSource,
       )?.[1];
     expect(pop).toMatch(
@@ -414,6 +414,122 @@ describe('Hand', () => {
     } finally {
       localStorage.clear();
     }
+  });
+});
+
+describe('Hand after a reorder', () => {
+  // Three cards on the fan, each over the one before it: h1 600..732, h2 680..812, h3 760..892.
+  let lefts: Record<string, number> = { h1: 600, h2: 680, h3: 760 };
+
+  beforeEach(() => {
+    lefts = { h1: 600, h2: 680, h3: 760 };
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: Element,
+    ) {
+      const id = this.closest<HTMLElement>('.hcard')?.dataset.id ?? '';
+      return DOMRect.fromRect({ x: lefts[id] ?? 0, y: 700, width: 132, height: 185 });
+    });
+  });
+
+  /** A mouse drags h1 over the raised fan, where it would slot in second, and drops it there. */
+  async function dragFirstCardSecond(at: { clientX: number; clientY: number }): Promise<void> {
+    interaction.press({ kind: 'hand', id: 'h1' }, {
+      button: 0,
+      pointerId: 1,
+      clientX: 650,
+      clientY: 800,
+      preventDefault: () => {},
+    } as unknown as PointerEvent);
+    await fireEvent.pointerMove(window, { clientX: 650, clientY: 800 });
+    interaction.lift('h1', ['h1']);
+    interaction.handGap = 1;
+    await fireEvent.pointerMove(window, at);
+    expect(handList().classList).toContain('open');
+
+    // Dropped (DragLayer): the hand shows its new order meanwhile, h1 lying under h3.
+    lefts = { h2: 600, h1: 680, h3: 760 };
+    interaction.letGo();
+    interaction.land({
+      action: 1,
+      element: { kind: 'hand', id: 'h1' },
+      card: 'h1',
+      lifted: [],
+      handOrder: ['h2', 'h1', 'h3'],
+    });
+    await tick();
+  }
+
+  function cardOf(id: string): HTMLElement {
+    const card = handCards().find((item) => item.dataset.id === id);
+    if (!card) {
+      throw new Error(`no hand card ${id}`);
+    }
+    return card;
+  }
+
+  it('keeps the moved card focused while the pointer stays on it, under its neighbour', async () => {
+    render(Hand, { cards: CARDS, faceOf, captionOf, seat: 0 });
+
+    // Where h1 lands, under h3 which lies over it.
+    await dragFirstCardSecond({ clientX: 780, clientY: 800 });
+    expect(handCards().map((item) => item.dataset.id)).toEqual(['h2', 'h1', 'h3']);
+    expect(cardOf('h1').classList).toContain('kept');
+    expect(handList().classList).toContain('keeping');
+    expect(interaction.hovered).toEqual({ kind: 'hand', id: 'h1' });
+
+    // The neighbour over it, entered there, takes neither the hover nor a redraw's rehover.
+    await fireEvent.pointerEnter(cardOf('h3'), { clientX: 780, clientY: 800 });
+    await fireEvent.pointerLeave(cardOf('h1'));
+    interaction.rehover({ kind: 'hand', id: 'h3' });
+    await fireEvent.pointerMove(window, { clientX: 800, clientY: 820 });
+    expect(cardOf('h1').classList).toContain('kept');
+    expect(interaction.hovered).toEqual({ kind: 'hand', id: 'h1' });
+
+    // Off it, on h3 only: h3 takes the hover, as :hover has it.
+    await fireEvent.pointerMove(window, { clientX: 850, clientY: 800 });
+    expect(cardOf('h1').classList).not.toContain('kept');
+    expect(handList().classList).not.toContain('keeping');
+    expect(interaction.kept).toBeNull();
+    expect(interaction.hovered).toEqual({ kind: 'hand', id: 'h3' });
+  });
+
+  it('keeps nothing when the pointer is off the moved card at the drop', async () => {
+    render(Hand, { cards: CARDS, faceOf, captionOf, seat: 0 });
+
+    // On h3 only, past h1's new place.
+    await dragFirstCardSecond({ clientX: 850, clientY: 800 });
+    expect(interaction.kept).toBeNull();
+    expect(handList().querySelector('.kept')).toBeNull();
+  });
+
+  it('keeps nothing when a table card is dropped into the hand', async () => {
+    render(Hand, { cards: CARDS, faceOf, captionOf, seat: 0 });
+    interaction.press({ kind: 'card', id: 't1' }, {
+      button: 0,
+      pointerId: 1,
+      clientX: 0,
+      clientY: 0,
+      preventDefault: () => {},
+    } as unknown as PointerEvent);
+    interaction.lift('t1', ['t1']);
+    interaction.dropOn = { kind: 'hand', id: 'p0' };
+    await fireEvent.pointerMove(window, { clientX: 650, clientY: 800 });
+
+    interaction.letGo();
+    await tick();
+    expect(interaction.kept).toBeNull();
+    expect(handList().querySelector('.kept')).toBeNull();
+  });
+
+  it('lets go of the moved card once the hand lowers', async () => {
+    render(Hand, { cards: CARDS, faceOf, captionOf, seat: 0 });
+    await dragFirstCardSecond({ clientX: 780, clientY: 800 });
+    expect(interaction.kept).toEqual({ seat: 0, id: 'h1' });
+
+    await fireEvent.pointerLeave(document.documentElement);
+    expect(handList().classList).not.toContain('open');
+    expect(interaction.kept).toBeNull();
+    expect(handList().querySelector('.kept')).toBeNull();
   });
 });
 
@@ -588,7 +704,7 @@ describe('Hand beside another one', () => {
       (match) => match[1] ?? '',
     );
     for (const selector of popRules.filter((selector) => selector.includes('.hcard:hover'))) {
-      expect(selector).toContain(':not(.pinned, .inactive)');
+      expect(selector).toContain(':not(.pinned, .inactive, .keeping)');
     }
   });
 

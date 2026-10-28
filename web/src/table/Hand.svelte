@@ -11,6 +11,9 @@
   active one (onactivate). Both take the whole room the hands have: at rest
   each fan keeps to its place in it (restPlace); raised, the active one
   spreads over most of it, and the other one fades out meanwhile (hidden).
+
+  A card a mouse or a pen drags to another place in the hand stays popped and
+  hovered there once dropped, while the pointer stays on it (kept).
 -->
 <script lang="ts">
   import { tick, untrack } from 'svelte';
@@ -161,13 +164,24 @@
   // decides on its own, and forgets it.
   let keptBand: Band | null = null;
 
+  // The card of this hand a drop would put back in it now, in another place or in its own: once
+  // dropped, it is kept focused (see keepReordered).
+  let reordered: string | null = null;
+
   // While something is dragged, the drag decides: the active hand rises only under
   // one of its cards brought back over it, or a table card going back to it.
   // Once the card is dropped, the pointer decides again (see below).
   $effect.pre(() => {
-    if (interaction.dragging) {
+    const dragged = interaction.dragging?.element;
+    if (dragged) {
       keptBand = null;
-      open = active && ((reordering && interaction.handGap !== null) || dropTarget);
+      // Another drag lets go of the card the last reorder kept.
+      if (interaction.kept?.seat === seat) {
+        interaction.kept = null;
+      }
+      const overGap = reordering && interaction.handGap !== null;
+      reordered = overGap && dragged.kind === 'hand' ? dragged.id : null;
+      open = active && (overGap || dropTarget);
     }
   });
   let list = $state<HTMLElement>();
@@ -214,6 +228,7 @@
       return;
     }
     if (active) {
+      followKept(event);
       followBand(pointer);
     } else {
       activateUnder(pointer);
@@ -399,6 +414,82 @@
     };
   }
 
+  // The card a reorder dropped in this hand, kept focused (interaction.kept), if any.
+  const kept = $derived(interaction.kept?.seat === seat ? interaction.kept.id : null);
+
+  // The card the pointer is on, as last entered and not left yet. It may lie over the kept card,
+  // whose hover it takes only once the pointer is off the kept card (followKept).
+  let under: string | null = null;
+
+  /**
+   * A card a mouse or a pen dropped back in this hand stays focused there,
+   * popped and hovered, as if the pointer had entered it. Without it, the
+   * gap the drag opened, wider than a slot, closes under the pointer at the
+   * drop, and the card next to the dropped one, over it on the fan, takes
+   * the hover and pops instead. Only when the pointer is on it.
+   */
+  function keepReordered(at: { x: number; y: number }): void {
+    const id = reordered;
+    reordered = null;
+    if (id !== null && open && isOnCard(id, at)) {
+      interaction.keep(seat, id);
+    }
+  }
+
+  /**
+   * The kept card stays focused while the pointer stays on its own hit area,
+   * under its neighbours or not. Off it, the hover goes to the card the
+   * pointer is on, if any, as :hover does.
+   */
+  function followKept(event: PointerEvent): void {
+    if (kept === null || isOnCard(kept, { x: event.clientX, y: event.clientY })) {
+      return;
+    }
+    letGoOfKept();
+    if (under !== null) {
+      interaction.enter({ kind: 'hand', id: under }, event);
+    }
+  }
+
+  /** Lets go of the kept card: its hover lingers out, as a card's the pointer left. */
+  function letGoOfKept(): void {
+    const id = kept;
+    interaction.kept = null;
+    const hovered = interaction.hovered;
+    if (hovered?.kind === 'hand' && hovered.id === id) {
+      interaction.leave();
+    }
+  }
+
+  // The kept card is let go of once the hand lowers or turns inactive, or once the card leaves it.
+  $effect(() => {
+    if (kept !== null && !(open && active && cards.some((card) => card.id === kept))) {
+      untrack(letGoOfKept);
+    }
+  });
+
+  // And once this hand goes: the kept card would hold the hover with no hand to let go of it.
+  $effect(() => {
+    return () => {
+      if (interaction.kept?.seat === seat) {
+        interaction.kept = null;
+      }
+    };
+  });
+
+  /**
+   * Whether the point is on that card's own hit area (.hit and .foot), whatever lies over it there.
+   * Measured upright: the box of a tilted card takes in a little more than the card.
+   */
+  function isOnCard(id: string, at: { x: number; y: number }): boolean {
+    const card = shownCards().find((item) => item.dataset.id === id);
+    const areas = [...(card?.querySelectorAll('.hit, .foot') ?? [])];
+    return areas.some((area) => {
+      const box = area.getBoundingClientRect();
+      return at.x >= box.left && at.x <= box.right && at.y >= box.top && at.y <= box.bottom;
+    });
+  }
+
   /** Opens the hand while the pointer is in its band, and lowers it once it is out. */
   function followBand(at: { x: number; y: number }): void {
     // A dialog freezes the table: the hand stays down under its backdrop. An inactive hand never rises.
@@ -427,13 +518,29 @@
 
   // Only the active hand's cards take the pointer: an inactive hand turns active first.
   function enterCard(id: string, event: PointerEvent): void {
-    if (active) {
-      interaction.enter({ kind: 'hand', id }, event);
+    if (!active) {
+      return;
     }
+    under = id;
+    if (kept !== null) {
+      // A neighbour over the kept card: the kept card keeps the hover.
+      if (isOnCard(kept, { x: event.clientX, y: event.clientY })) {
+        return;
+      }
+      letGoOfKept();
+    }
+    interaction.enter({ kind: 'hand', id }, event);
   }
 
-  function leaveCard(): void {
-    if (active) {
+  function leaveCard(id: string): void {
+    if (!active) {
+      return;
+    }
+    if (under === id) {
+      under = null;
+    }
+    // The kept card holds the hover until the pointer is off it (followKept).
+    if (kept === null) {
       interaction.leave();
     }
   }
@@ -514,6 +621,7 @@
     if (!touch) {
       if (pointer) {
         followBand(pointer);
+        keepReordered(pointer);
       }
     } else if (!(pinned && open)) {
       lower();
@@ -585,6 +693,7 @@
   class:open
   class:pinned
   class:inactive={!active}
+  class:keeping={kept !== null}
   class:hidden
   class:drop={dropTarget}
   aria-label={label}
@@ -627,12 +736,13 @@
         class="hcard"
         data-id={card.id}
         class:locked={interaction.isLocked({ kind: 'hand', id: card.id })}
+        class:kept={card.id === kept}
         class:arriving={motion.drawing.has(card.id)}
         style:--x="{slot?.x ?? 0}px"
         style:--rot="{slot?.angle ?? 0}deg"
         style:--ty="{slot?.y ?? 0}px"
         onpointerenter={(event) => enterCard(card.id, event)}
-        onpointerleave={leaveCard}
+        onpointerleave={() => leaveCard(card.id)}
         onpointerdown={(event) => pressCard(card.id, event)}
         onclick={() => tapped(card.id)}
       >
@@ -809,9 +919,12 @@
 
   /*
     A card selected by a tap stays up like a hovered one. The hand a tap pinned pops its selected
-    card only: a finger leaves a sticky :hover on the last card it tapped, deselected or not.
+    card only: a finger leaves a sticky :hover on the last card it tapped, deselected or not. A
+    card just reordered under a mouse or a pen (kept) stays up too, and pops alone: the neighbour
+    lying over it under the pointer does not.
   */
-  .hand:not(.pinned, .inactive) .hcard:hover,
+  .hand:not(.pinned, .inactive, .keeping) .hcard:hover,
+  .hcard.kept,
   .hcard.locked {
     z-index: 60;
   }
@@ -861,7 +974,8 @@
     top rises by a third of its height: the raised hand's cards, sized from the preview's (or half
     a small screen), leave room enough for that above them in the window.
   */
-  .hand:not(.pinned, .inactive) .hcard:hover .fan,
+  .hand:not(.pinned, .inactive, .keeping) .hcard:hover .fan,
+  .hcard.kept .fan,
   .hcard.locked .fan {
     transform: translateY(calc(var(--ty) - 31px)) rotate(var(--rot)) scale(1.3);
   }
