@@ -122,7 +122,7 @@ export function seatColor(view: View, seat: number): number | null {
 }
 
 /**
- * How the seat reads in the player selector and on its owner frame: the
+ * How the seat reads in the hero selector and on its owner frame: the
  * player's name plus the deck's hero whatever the number of decks ("Sam ·
  * Captain Marvel"), the name alone while the deck has no hero. Empty for a
  * seat nobody sits at.

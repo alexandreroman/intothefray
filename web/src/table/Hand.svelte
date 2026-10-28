@@ -77,7 +77,7 @@
     color?: string;
     /** The hand's accessible name. */
     label?: string;
-    /** Whether this is the hand in use; an inactive one shows beside it, smaller, and never rises. */
+    /** Whether this is the hand in use; an inactive one shows beside it, dimmed, and never rises. */
     active?: boolean;
     /** Makes this inactive hand the active one: the pointer came into its band, or a finger tapped it. */
     onactivate?: () => void;
@@ -241,7 +241,7 @@
     const onCard = list?.contains(target) ?? false;
     swipe = touch && pinned && onCard ? { pointerId: event.pointerId, y: event.clientY } : null;
     // A tap on the table (an empty spot, a card, a pile) lowers the hand, and goes on to do what it
-    // does there: one tap leaves the hand for the table. Elsewhere (the player selector, the zoom),
+    // does there: one tap leaves the hand for the table. Elsewhere (the hero selector, the zoom),
     // the hand stays up.
     if (pinned && target.closest('.tablewrap') !== null) {
       lower();
@@ -312,7 +312,7 @@
     }
   });
 
-  // Another hand shown (Q, the player selector) keeps the pinned hand up, to read that one too: a
+  // Another hand shown (Q, the hero selector) keeps the pinned hand up, to read that one too: a
   // hand with no card left goes down, and the selection of a card no longer shown goes.
   $effect(() => {
     if (pinned && cards.length === 0) {

@@ -218,6 +218,13 @@ describe('HeroPicker', () => {
     const reduced = /@media \(prefers-reduced-motion: reduce\) \{([^]*?)\n {2}\}/.exec(
       pickerSource,
     )?.[1];
-    expect(reduced).toMatch(/\.ring,\s*\.name,\s*\.txt,\s*\.art \{\s*transition: none;/);
+    const stopped = /\n {4}([^{}]+)\{\s*transition: none;\s*\}/.exec(reduced ?? '')?.[1] ?? '';
+    const stoppedSelectors = stopped.split(',').map((selector) => selector.trim());
+    // Every rule with a transition, repeated as it is: a shorter selector would lose to it.
+    const animated = [...pickerSource.matchAll(/\n {2}([^{}@\s][^{}]*)\{([^}]*)\}/g)]
+      .filter((match) => /transition:(?!\s*none)/.test(match[2] ?? ''))
+      .map((match) => (match[1] ?? '').replace(/\/\*[^]*?\*\//g, '').trim());
+    expect(animated).toEqual(['.art', '.item .name', '.txt', '.ring']);
+    expect(stoppedSelectors).toEqual(expect.arrayContaining(animated));
   });
 });

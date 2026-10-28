@@ -82,7 +82,7 @@ describe('chooseCorner', () => {
   });
 
   it('then top left, then top right, skipping the corners other controls take', () => {
-    // The player selector takes the bottom left: the next is the top left.
+    // The hero selector takes the bottom left: the next is the top left.
     expect(chooseCorner(choice({ hovered: UNDER_HOME, taken: ['bottom-left'] }))).toBe('top-left');
     // A small card in the overlap of home and the top right panel (684–984 × 12–432):
     // the bottom left is taken, the top left is clear.

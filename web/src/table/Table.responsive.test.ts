@@ -349,7 +349,7 @@ describe('Table in the window', () => {
     expect(appRule).toMatch(/overflow:\s*clip/);
   });
 
-  it('lines the preview, the zoom control and the player selector up on one edge', async () => {
+  it('lines the preview, the zoom control and the hero selector up on one edge', async () => {
     mockScreen(DESKTOP);
     const { container } = render(Table, { session: fakeSession(), view: makeView() });
     const app = container.querySelector<HTMLElement>('.app')!;

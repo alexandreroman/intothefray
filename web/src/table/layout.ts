@@ -456,16 +456,11 @@ export const RAISED_FAN_SHARE = 0.8;
 export const HANDS_GAP = 48;
 
 /**
- * Where each of the resting fans shown lies, side by side: the offset of its
- * middle from the middle of the hands' room, in px as seen, given each fan's
- * width as seen (restingFanWidth). A single fan stays in the middle; two sit
- * HANDS_GAP apart, centred together.
+ * Where two resting fans lie side by side, HANDS_GAP apart and centred
+ * together: the offset of each one's middle from the middle of the hands'
+ * room, in px as seen, given each fan's width as seen (restingFanWidth).
  */
-export function fanOffsets(fanWidths: number[]): number[] {
-  if (fanWidths.length !== 2) {
-    return fanWidths.map(() => 0);
-  }
-  const [first, second] = fanWidths as [number, number];
+export function fanOffsets(first: number, second: number): [number, number] {
   const total = first + HANDS_GAP + second;
   return [(first - total) / 2, (total - second) / 2];
 }

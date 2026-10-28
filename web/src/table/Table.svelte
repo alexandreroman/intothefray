@@ -256,7 +256,7 @@
 
   // The viewer's own seats, one per deck (spec 5); none for a spectator.
   const own = $derived(ownSeats(view));
-  // The deck picked in the player selector, with Q or by dragging a card to its hand, kept while it is
+  // The deck picked in the hero selector, with Q or by dragging a card to its hand, kept while it is
   // still one of the viewer's.
   let pickedDeck = $state<number | null>(null);
   /** The selected deck: its hand shows, and an action on a shared card is credited to it. */
@@ -296,7 +296,7 @@
   let pickedSeat = $state<number | null>(null);
 
   /**
-   * Picks a seat, in the player selector or otherwise: "Villain + player" shows its row, and when it is
+   * Picks a seat, in the hero selector or otherwise: "Villain + player" shows its row, and when it is
    * one of the viewer's decks, that deck is selected. Another player's seat shows no hand and leaves the
    * selected deck, which shared-card actions stay credited to.
    */
@@ -397,7 +397,7 @@
   // Shift + ← / → steps through the selector's heroes; in "All", through the viewer's own decks.
   const canStepHero = $derived(focused || own.length > 1);
 
-  /** Picks the previous or next hero (Shift + ← / →): in the player selector, else among own decks. */
+  /** Picks the previous or next hero (Shift + ← / →): in the hero selector, else among own decks. */
   function stepHero(step: -1 | 1): void {
     if (focused && shownSeat !== null) {
       stepSeat(shownSeat, step);
@@ -652,24 +652,34 @@
   // has the same size: neither moves as the active hand changes. Raised, the active one spreads
   // over the middle of the room (RAISED_FAN_SHARE).
   const restPlaces = $derived.by(() => {
-    if (handSeats.length < 2) {
+    const [first, second] = handSeats;
+    if (first === undefined || second === undefined) {
       return [];
     }
     const width = Math.max(0, scrollerWidth - handsRoom.left - handsRoom.right) / 2;
-    const fanWidths = handSeats.map((seat) =>
-      restingFanWidth(handOf(seat).length, width, baseHandCard, raisedCard),
-    );
-    return fanOffsets(fanWidths).map((offset) => ({ offset, width }));
+    const fanWidth = (seat: number) =>
+      restingFanWidth(handOf(seat).length, width, baseHandCard, raisedCard);
+    return fanOffsets(fanWidth(first), fanWidth(second)).map((offset) => ({ offset, width }));
   });
 
   // Whether each hand shown is raised, by its place (two hands at most); only the active one ever is.
   let handsOpen = $state([false, false]);
+  // A hand no longer shown takes its raised state with it: one shown again in its place starts down.
+  // The hands still shown keep theirs, as a hand pinned up by a tap shows another deck's.
+  $effect.pre(() => {
+    const count = handSeats.length;
+    untrack(() => {
+      if (handsOpen.slice(count).some(Boolean)) {
+        handsOpen = handsOpen.map((open, place) => place < count && open);
+      }
+    });
+  });
   // The active hand is raised: the viewer is busy with it (Presence).
   const handRaised = $derived(handsOpen[handSeats.indexOf(handSeat ?? -1)] ?? false);
 
   /**
    * The room under the controls at the bottom of the table (the zoom control,
-   * the narrow Undo, the player selector), in px. On a small screen they sit
+   * the narrow Undo, the hero selector), in px. On a small screen they sit
    * above the resting hand, which would cover them otherwise: above the strip
    * restingStrip gives for the base card, which the resting hand, drawn from its
    * raised cards (handRestDrop), does not rise past.
@@ -2005,7 +2015,7 @@
     --content-gutter: 24px;
     /*
       The height of a button in the bars floating at the bottom of the table (the zoom control, the
-      narrow screen's Undo, the player selector): with the same padding and the same room under them
+      narrow screen's Undo, the hero selector): with the same padding and the same room under them
       (--edge-bottom), the bars share their top and bottom edges.
     */
     --bar-button: 32px;

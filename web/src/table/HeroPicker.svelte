@@ -350,11 +350,12 @@
       box-shadow 0.3s ease;
   }
 
+  /* The same selectors as the rules above, or theirs would win and still animate. */
   @media (prefers-reduced-motion: reduce) {
-    .ring,
-    .name,
+    .art,
+    .item .name,
     .txt,
-    .art {
+    .ring {
       transition: none;
     }
   }

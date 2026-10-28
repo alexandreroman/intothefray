@@ -19,14 +19,14 @@ const CORNERS: readonly Corner[] = [HOME, 'bottom-left', 'top-left', 'top-right'
 /**
  * The room between the play area's right and bottom edges and what floats in
  * its corners, in px: the panel, the zoom control (and the narrow screen's
- * Undo), the keyboard shortcuts sheet and the player selector all keep it, so
+ * Undo), the keyboard shortcuts sheet and the hero selector all keep it, so
  * that their edges line up. The table sets it as --edge.
  */
 export const TABLE_EDGE = 16;
 
 /**
  * The room under what sits at the bottom of the window, in px: the zoom
- * control, the player selector, the panel in a bottom corner and, on a wide
+ * control, the hero selector, the panel in a bottom corner and, on a wide
  * screen, the history's Undo button all keep it, so that their bottom edges
  * line up. The table sets it as --edge-bottom.
  */
@@ -93,7 +93,7 @@ export interface CornerChoice {
   hovered: Rect | null;
   /** The height of the controls at home, under the panel (the zoom control, the narrow Undo), in px. */
   controls: number;
-  /** The corners other controls take: the player selector. */
+  /** The corners other controls take: the hero selector. */
   taken: readonly Corner[];
 }
 

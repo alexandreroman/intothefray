@@ -20,9 +20,10 @@ Everything below works today, except where noted.
   four decks in all at the table and any split between players; each
   deck has its own deck link and its own Ready
 - **Several hands** — at the table each deck has its own row. With
-  several decks, the player selector at the bottom left or the `Q`
-  key picks the hand shown. An action is credited to the deck of the
-  card or pile you touch, else to the selected deck
+  several decks, the hero selector at the bottom left or the `Q` key
+  picks the hand shown; with two decks on a wide screen, both hands
+  show side by side. An action is credited to the deck of the card or
+  pile you touch, else to the selected deck
 - **Automated setup** — pick a scenario, a difficulty and the modular sets
   (with a Fear No Evil Underling, the main scheme set too):
   villain, main scheme and decks are laid out for you, with each hero's side

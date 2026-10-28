@@ -561,13 +561,9 @@ describe('restingFanWidth', () => {
 });
 
 describe('fanOffsets', () => {
-  it('leaves a single fan in the middle', () => {
-    expect(fanOffsets([400])).toEqual([0]);
-  });
-
   it('sets two fans side by side, HANDS_GAP apart, centred together', () => {
     // 200 + 48 + 100 = 348 px in all, from -174 to 174.
     expect(HANDS_GAP).toBe(48);
-    expect(fanOffsets([200, 100])).toEqual([-74, 124]);
+    expect(fanOffsets(200, 100)).toEqual([-74, 124]);
   });
 });

@@ -1243,6 +1243,26 @@ describe('Table view modes', () => {
     await waitFor(() => expect(document.activeElement).toBe(sam));
   });
 
+  it("brings the viewer's hand back down after another player's row, even pinned up by a tap", async () => {
+    localStorage.setItem('itf-view', 'focus');
+    const view = makeView();
+    view.table = { ...view.table!, hands: { p1: ['h'] } };
+    render(Table, { session: fakeSession(), view });
+    await catalogLoaded();
+    const hand = () => screen.queryByRole('list', { name: 'Your hand' });
+    const card = within(hand()!).getByRole('listitem');
+    await fireEvent.pointerDown(card, { pointerType: 'touch' });
+    await fireEvent.click(card);
+    expect(hand()?.classList).toContain('open');
+
+    const picker = screen.getByRole('radiogroup', { name: 'Player shown' });
+    await fireEvent.click(within(picker).getByRole('radio', { name: 'Alex · Spider-Man' }));
+    expect(hand()).toBeNull();
+
+    await fireEvent.click(within(picker).getByRole('radio', { name: 'Sam · Ant-Man' }));
+    expect(hand()?.classList).not.toContain('open');
+  });
+
   it('offers no choice with one player: the table shows everything', async () => {
     localStorage.setItem('itf-view', 'focus');
     const view = makeView();
