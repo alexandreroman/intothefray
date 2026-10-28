@@ -725,6 +725,7 @@
   class:keeping={kept !== null}
   class:hidden
   class:drop={dropTarget}
+  class:empty={shown.length === 0}
   aria-label={label}
   data-seat={seat}
   data-rest-x={restPlace?.offset ?? 0}
@@ -904,10 +905,22 @@
       transparent
     );
     pointer-events: none;
+    transition: opacity 0.22s;
   }
 
   .hand.inactive::before {
     opacity: 0.6;
+  }
+
+  /* No card shown, no glow: a gap slot for a card brought back over the fan counts as one. */
+  .hand.empty::before {
+    opacity: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hand::before {
+      transition: none;
+    }
   }
 
   /* In use, the hand is above everything, other players' cursors included. */

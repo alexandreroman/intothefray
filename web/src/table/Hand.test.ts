@@ -315,6 +315,16 @@ describe('Hand', () => {
     expect(handList().classList).not.toContain('open');
   });
 
+  it('an empty hand shows no glow; a hand with cards does', async () => {
+    const { rerender } = render(Hand, { cards: [], faceOf, captionOf, seat: 0 });
+
+    expect(handList().classList).toContain('empty');
+    expect(rule('.hand.empty::before')).toMatch(/opacity: 0;/);
+
+    await rerender({ cards: CARDS });
+    expect(handList().classList).not.toContain('empty');
+  });
+
   it('hovering a card hovers it, with no preview', async () => {
     render(Hand, { cards: CARDS, faceOf, captionOf, seat: 0 });
 
