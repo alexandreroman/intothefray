@@ -884,23 +884,26 @@ describe('Table animations', () => {
     });
 
     it("a card drawn into the viewer's other deck, whose hand is not shown, leaves its pile", async () => {
-      // Sam plays two decks: p1, whose hand shows, and p2, which draws.
-      const twoDecks = (cards: TableCard[], hand: string[], count: number): View => {
+      // Sam plays three decks, so that one hand shows: p1's, while p2 draws.
+      const threeDecks = (cards: TableCard[], hand: string[], count: number): View => {
         const base = makeView(cards, {
           piles: [...PILES, { id: 'deck:p2', kind: 'deck', owner: 2, x: 480, y: 0, count }],
-          hands: { p1: [], p2: hand },
+          hands: { p1: [], p2: hand, p3: [] },
         });
-        base.you = { ...base.you, areas: ['p1', 'p2'] };
-        base.players[1]!.decks.push({ area: 'p2', ready: true, handCount: hand.length });
+        base.you = { ...base.you, areas: ['p1', 'p2', 'p3'] };
+        base.players[1]!.decks.push(
+          { area: 'p2', ready: true, handCount: hand.length },
+          { area: 'p3', ready: true, handCount: 0 },
+        );
         return base;
       };
       const session = fakeSession();
-      const { rerender, container } = render(Table, { session, view: twoDecks([], [], 30) });
+      const { rerender, container } = render(Table, { session, view: threeDecks([], [], 30) });
       await settle();
 
       await rerender({
         session,
-        view: twoDecks([card('d', { owner: 2, zone: 'hand' })], ['d'], 29),
+        view: threeDecks([card('d', { owner: 2, zone: 'hand' })], ['d'], 29),
       });
       await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
       const [[keyframes]] = animationsOf('.fly') as [[Keyframe[], KeyframeAnimationOptions]];

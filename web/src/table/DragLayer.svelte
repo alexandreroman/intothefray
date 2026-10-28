@@ -413,20 +413,25 @@
     }
     const targets: DropRect[] = [];
     if (from.kind === 'hand') {
-      const others = [...root.querySelectorAll<HTMLElement>('.hand .hcard:not(.gap)')]
-        .filter((element) => element.dataset.id !== from.card)
-        .map((element) => element.getBoundingClientRect());
+      // A hand card slots back into its own hand only, among its other cards.
+      const hand = root.querySelector<HTMLElement>(`.hand[data-seat="${seatOf(from.area)}"]`);
+      const others = cardRects(hand, from.card);
       const middles = others.map((rect) => (rect.left + rect.right) / 2);
       targets.push({
         kind: 'hand',
         index: insertIndex(middles, at.x),
-        rect: handBand(others, table, window.innerHeight),
+        rect: handBand(others, under(hand, table), window.innerHeight),
       });
     } else if (goesToHand(from)) {
-      const hand = [...root.querySelectorAll<HTMLElement>('.hand .hcard')].map((element) =>
-        element.getBoundingClientRect(),
-      );
-      targets.push({ kind: 'toHand', rect: handBand(hand, table, window.innerHeight) });
+      // Any hand shown takes it, for its owner's hand; with no hand shown, the bottom of the table.
+      const hands = [...root.querySelectorAll<HTMLElement>('.hand')];
+      if (hands.length === 0) {
+        targets.push({ kind: 'toHand', rect: handBand([], table, window.innerHeight) });
+      }
+      for (const hand of hands) {
+        const rect = handBand(cardRects(hand), under(hand, table), window.innerHeight);
+        targets.push({ kind: 'toHand', rect });
+      }
     }
     const whole: TableRect = { kind: 'table', rect: table };
     targets.push(whole);
@@ -455,6 +460,22 @@
       }
     }
     return targets;
+  }
+
+  /** The cards of a hand on the screen, but the one left out; none without a hand. */
+  function cardRects(hand: HTMLElement | null, leftOut?: string): DOMRect[] {
+    return [...(hand?.querySelectorAll<HTMLElement>('.hcard:not(.gap)') ?? [])]
+      .filter((element) => element.dataset.id !== leftOut)
+      .map((element) => element.getBoundingClientRect());
+  }
+
+  /** The bottom of the table under a hand, where an empty hand takes a drop; the whole table without a hand. */
+  function under(hand: HTMLElement | null, table: Rect): Rect {
+    if (!hand) {
+      return table;
+    }
+    const room = hand.getBoundingClientRect();
+    return { left: room.left, right: room.right, top: table.top, bottom: table.bottom };
   }
 
   /**

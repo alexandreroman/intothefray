@@ -10,6 +10,7 @@ import {
   HAND_REST_DROP,
   HAND_REST_SCALE,
   handRestDrop,
+  handInsets,
   handRestScale,
   isOutOfPlay,
   outOfPlayChips,
@@ -515,5 +516,26 @@ describe('the raised hand', () => {
     expect(box).toBeLessThanOrEqual(restingStrip(HAND_CARD.h, HAND_REST_DROP));
     // Never above its raised place.
     expect(handRestDrop(HAND_CARD, 0, raised)).toBe(0);
+  });
+});
+
+describe('handInsets', () => {
+  it('gives one hand the whole room right of the selector', () => {
+    expect(handInsets(1, 1200, 300)).toEqual([{ left: 300, right: 0 }]);
+    expect(handInsets(1, 1200, 0)).toEqual([{ left: 0, right: 0 }]);
+  });
+
+  it('splits the room in two halves for two hands, in order', () => {
+    expect(handInsets(2, 1200, 300)).toEqual([
+      { left: 300, right: 450 },
+      { left: 750, right: 0 },
+    ]);
+  });
+
+  it('never gives a negative inset before the table is measured', () => {
+    expect(handInsets(2, 0, 300)).toEqual([
+      { left: 300, right: 0 },
+      { left: 300, right: 0 },
+    ]);
   });
 });

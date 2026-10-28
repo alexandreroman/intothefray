@@ -3,6 +3,12 @@
   sits low and veiled; it rises when the pointer comes near it, and the table
   behind it dims. Touch has no hover: a tap raises the hand and pins it up
   until a tap on the table, Escape or a swipe down lowers it.
+
+  A player with two decks on a wide screen sees both hands side by side: the
+  one of the selected deck is active, as above; the other one is inactive,
+  smaller and dimmed. An inactive hand never rises and its cards take no
+  pointer: the pointer coming into its band, or a tap on it, makes it the
+  active one (onactivate).
 -->
 <script lang="ts">
   import { tick, untrack } from 'svelte';
@@ -19,9 +25,11 @@
     HAND_PADDING,
     HAND_REST_DROP,
     handRestScale,
+    type HandInsets,
     restingFanPositions,
   } from './layout';
   import { motion } from './motion.svelte';
+  import { areaOf } from './seats';
 
   let {
     cards,
@@ -31,6 +39,12 @@
     restCardSize,
     restDrop = HAND_REST_DROP,
     open = $bindable(false),
+    seat,
+    color = 'transparent',
+    label = 'Your hand',
+    active = true,
+    onactivate,
+    inset = { left: 0, right: 0 },
   }: {
     /** The hand, in its order. */
     cards: TableCard[];
@@ -50,6 +64,18 @@
     restDrop?: number;
     /** Whether the hand is raised. */
     open?: boolean;
+    /** The seat whose hand this is. */
+    seat: number;
+    /** The CSS colour of the seat's player, which the fan glows in. */
+    color?: string;
+    /** The hand's accessible name. */
+    label?: string;
+    /** Whether this is the hand in use; an inactive one shows beside it, smaller, and never rises. */
+    active?: boolean;
+    /** Makes this inactive hand the active one: the pointer came into its band, or a finger tapped it. */
+    onactivate?: () => void;
+    /** The hand's room at the bottom of the table, in from its edges: the fan centres in it. */
+    inset?: HandInsets;
   } = $props();
 
   /** The cards in the given order, then any the order does not know (drawn meanwhile). */
@@ -57,6 +83,12 @@
     const ordered = order.flatMap((id) => cards.filter((card) => card.id === id));
     return [...ordered, ...cards.filter((card) => !order.includes(card.id))];
   }
+
+  // A card of this hand is being dragged: only its own hand takes it back, in another order.
+  const reordering = $derived.by(() => {
+    const dragged = interaction.dragging?.element;
+    return dragged?.kind === 'hand' && cards.some((card) => card.id === dragged.id);
+  });
 
   // A card dragged out of the hand leaves the fan, and stays out until the
   // server answers its drop. Brought back over the fan, the other cards make
@@ -66,7 +98,7 @@
     const ordered = order ? inOrder(order) : cards;
     const others: (TableCard | 'gap')[] = ordered.filter((card) => !interaction.isLifted(card.id));
     const gap = interaction.handGap;
-    if (interaction.dragging?.element.kind === 'hand' && gap !== null) {
+    if (reordering && gap !== null) {
       others.splice(Math.min(gap, others.length), 0, 'gap');
     }
     return others;
@@ -83,8 +115,19 @@
       : restingFanPositions(shown.length, width, restCard.w, cardSize.w),
   );
 
-  // A table card of the viewer's own, dragged over the hand to go back to it.
-  const dropTarget = $derived(interaction.dropOn?.kind === 'hand');
+  // How wide the fan spreads, in the hand's own px (before the resting scale): the glow spans it.
+  const fanWidth = $derived.by(() => {
+    if (slots.length === 0) {
+      return cardSize.w;
+    }
+    const xs = slots.map((slot) => slot.x);
+    return Math.max(...xs) - Math.min(...xs) + cardSize.w;
+  });
+
+  // A table card of this seat's, dragged over a hand to go back to this one.
+  const dropTarget = $derived(
+    interaction.dropOn?.kind === 'hand' && interaction.dropOn.id === areaOf(seat),
+  );
 
   // A band of the screen the pointer keeps the hand up in (see followBand), down to the bottom of
   // the window.
@@ -98,14 +141,13 @@
   // decides on its own, and forgets it.
   let keptBand: Band | null = null;
 
-  // While something is dragged, the drag decides: the hand rises only under a
-  // hand card brought back over it, or a table card going back to it. Once
-  // the card is dropped, the pointer decides again (see below).
+  // While something is dragged, the drag decides: the active hand rises only under
+  // one of its cards brought back over it, or a table card going back to it.
+  // Once the card is dropped, the pointer decides again (see below).
   $effect.pre(() => {
-    const drag = interaction.dragging;
-    if (drag) {
+    if (interaction.dragging) {
       keptBand = null;
-      open = (drag.element.kind === 'hand' && interaction.handGap !== null) || dropTarget;
+      open = active && ((reordering && interaction.handGap !== null) || dropTarget);
     }
   });
   let list = $state<HTMLElement>();
@@ -148,8 +190,13 @@
     }
     // A mouse or a pen takes over from the finger that pinned the hand.
     pinned = false;
-    if (!interaction.dragging) {
+    if (interaction.dragging) {
+      return;
+    }
+    if (active) {
       followBand(pointer);
+    } else {
+      activateUnder(pointer);
     }
   }
 
@@ -204,7 +251,15 @@
    * the selected card lets go of it.
    */
   function tapped(id: string): void {
-    if (!touch || modal.open) {
+    if (modal.open) {
+      return;
+    }
+    // An inactive hand only turns active; it rises at the next tap, as any resting hand.
+    if (!active) {
+      onactivate?.();
+      return;
+    }
+    if (!touch) {
       return;
     }
     const wasOpen = open;
@@ -245,50 +300,128 @@
       untrack(lower);
     }
   });
+  // Only the active hand looks after the selection: the cards of the other one are never selected.
   $effect(() => {
     const hovered = interaction.hovered;
     const shownIds = new Set(cards.map((card) => card.id));
-    if (interaction.locked && hovered?.kind === 'hand' && !shownIds.has(hovered.id)) {
+    if (active && interaction.locked && hovered?.kind === 'hand' && !shownIds.has(hovered.id)) {
       untrack(() => interaction.release());
     }
   });
 
+  // A hand turning inactive goes down, even pinned up, its selected card with it. One turning active
+  // under a resting mouse or pen follows it at once: it rises when the pointer is in its band, as the
+  // pointer that made it active is. Only a change counts: the props may be handed over again unchanged.
+  let wasActive = untrack(() => active);
+  $effect(() => {
+    if (active === wasActive) {
+      return;
+    }
+    wasActive = active;
+    if (active) {
+      untrack(() => {
+        if (pointer && !touch && !interaction.dragging) {
+          followBand(pointer);
+        }
+      });
+    } else {
+      untrack(deactivate);
+    }
+  });
+
+  function deactivate(): void {
+    pinned = false;
+    open = false;
+    keptBand = null;
+    const hovered = interaction.hovered;
+    if (
+      interaction.locked &&
+      hovered?.kind === 'hand' &&
+      cards.some((card) => card.id === hovered.id)
+    ) {
+      interaction.release();
+    }
+  }
+
+  /** The pointer came into this inactive hand's band: it becomes the active one. */
+  function activateUnder(at: { x: number; y: number }): void {
+    if (modal.open) {
+      return;
+    }
+    const band = bandOf(shownCards(), RESTING_MARGIN);
+    if (band !== null && isIn(band, at)) {
+      onactivate?.();
+    }
+  }
+
+  function shownCards(): HTMLElement[] {
+    return [...(list?.querySelectorAll<HTMLElement>('.hcard') ?? [])];
+  }
+
+  /**
+   * The band of the cards, `margin` px around them, or null while none of them can be measured.
+   * A card flying in (drawn, or brought back from the table) is drawn away from its slot
+   * meanwhile: the band is the resting cards'. Once it has landed, the band is measured again.
+   * Each card is measured by its fan, the card as seen: the slot stays upright, and the tilted
+   * cards at the ends of the arc stick out of it.
+   */
+  function bandOf(cardsShown: HTMLElement[], margin: number): Band | null {
+    const boxes = cardsShown
+      .filter((card) => !isMoving(card))
+      .map((card) => (card.querySelector('.fan') ?? card).getBoundingClientRect());
+    if (boxes.length === 0) {
+      return null;
+    }
+    return {
+      left: Math.min(...boxes.map((box) => box.left)) - margin,
+      right: Math.max(...boxes.map((box) => box.right)) + margin,
+      top: Math.min(...boxes.map((box) => box.top)) - margin,
+    };
+  }
+
   /** Opens the hand while the pointer is in its band, and lowers it once it is out. */
   function followBand(at: { x: number; y: number }): void {
-    // A dialog freezes the table: the hand stays down under its backdrop.
-    if (modal.open) {
+    // A dialog freezes the table: the hand stays down under its backdrop. An inactive hand never rises.
+    if (modal.open || !active) {
       keptBand = null;
       open = false;
       return;
     }
-    const cardsShown = [...(list?.querySelectorAll<HTMLElement>('.hcard') ?? [])];
+    const cardsShown = shownCards();
     if (cardsShown.length === 0) {
       keptBand = null;
       open = false;
       return;
     }
-    // A card flying in (drawn, or brought back from the table) is drawn away from its slot
-    // meanwhile: the band is the resting cards'. Once it has landed, the band is measured again.
-    // Each card is measured by its fan, the card as seen: the slot stays upright, and the tilted
-    // cards at the ends of the arc stick out of it.
-    const boxes = cardsShown
-      .filter((card) => !isMoving(card))
-      .map((card) => (card.querySelector('.fan') ?? card).getBoundingClientRect());
-    if (boxes.length === 0) {
+    const band = bandOf(cardsShown, open ? OPEN_MARGIN : RESTING_MARGIN);
+    if (band === null) {
       return;
     }
-    const margin = open ? OPEN_MARGIN : RESTING_MARGIN;
-    const band = {
-      left: Math.min(...boxes.map((box) => box.left)) - margin,
-      right: Math.max(...boxes.map((box) => box.right)) + margin,
-      top: Math.min(...boxes.map((box) => box.top)) - margin,
-    };
     const inKeptBand = keptBand !== null && isIn(keptBand, at);
     if (!inKeptBand) {
       keptBand = null;
     }
     open = isIn(band, at) || inKeptBand;
     openBand = open ? band : null;
+  }
+
+  // Only the active hand's cards take the pointer: an inactive hand turns active first.
+  function enterCard(id: string, event: PointerEvent): void {
+    if (active) {
+      interaction.enter({ kind: 'hand', id }, event);
+    }
+  }
+
+  function leaveCard(): void {
+    if (active) {
+      interaction.leave();
+    }
+  }
+
+  function pressCard(id: string, event: PointerEvent): void {
+    if (active) {
+      interaction.press({ kind: 'hand', id }, event);
+    }
   }
 
   function isIn(band: Band, at: { x: number; y: number }): boolean {
@@ -409,14 +542,23 @@
   onkeydown={onKey}
 />
 
-<div class="veil" class:open></div>
+<!-- The table dims once, under the active hand. -->
+{#if active}
+  <div class="veil" class:open></div>
+{/if}
 
 <ul
   class="hand"
   class:open
   class:pinned
+  class:inactive={!active}
   class:drop={dropTarget}
-  aria-label="Your hand"
+  aria-label={label}
+  data-seat={seat}
+  style:margin-left="{inset.left}px"
+  style:margin-right="{inset.right}px"
+  style:--seat={color}
+  style:--fan-w="{fanWidth}px"
   style:--card-w="{cardSize.w}px"
   style:--card-h="{cardSize.h}px"
   style:--rest-drop="{restDrop}px"
@@ -453,9 +595,9 @@
         style:--x="{slot?.x ?? 0}px"
         style:--rot="{slot?.angle ?? 0}deg"
         style:--ty="{slot?.y ?? 0}px"
-        onpointerenter={(event) => interaction.enter({ kind: 'hand', id: card.id }, event)}
-        onpointerleave={() => interaction.leave()}
-        onpointerdown={(event) => interaction.press({ kind: 'hand', id: card.id }, event)}
+        onpointerenter={(event) => enterCard(card.id, event)}
+        onpointerleave={leaveCard}
+        onpointerdown={(event) => pressCard(card.id, event)}
         onclick={() => tapped(card.id)}
       >
         <!-- What the pointer hovers: the card at rest, which the pop does not move. -->
@@ -483,7 +625,7 @@
   /* The table behind the open hand dims a little to put the hand forward. */
   .veil {
     grid-area: table;
-    /* Above the table and everything on it, below the open hand. */
+    /* Above the table and everything on it but the hero selector (Table.svelte), below the open hand. */
     z-index: 2550;
     pointer-events: none;
     background: linear-gradient(to top, #07090fe6 0%, #07090f9e 40%, #07090f66 100%);
@@ -518,7 +660,43 @@
     /* Low enough that only the top part of the cards shows. */
     transform: translateY(var(--rest-drop)) scale(var(--rest-scale));
     transform-origin: 50% 100%;
-    transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition:
+      transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+      opacity 0.22s;
+  }
+
+  /*
+    The hand of the other deck, beside the active one: the resting hand at 72 %, from the bottom
+    middle of the window (the first scale shrinks the drop with it), and dimmed.
+  */
+  .hand.inactive {
+    transform: scale(0.72) translateY(var(--rest-drop)) scale(var(--rest-scale));
+    opacity: 0.8;
+  }
+
+  .hand.inactive .hcard {
+    cursor: pointer;
+  }
+
+  /* The fan glows from below in its player's colour, behind the cards: nothing lies on top of them. */
+  .hand::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: calc(var(--fan-w) * 1.16);
+    height: calc(var(--pad-top) + var(--card-h));
+    transform: translateX(-50%);
+    background: radial-gradient(
+      farthest-side at 50% 100%,
+      color-mix(in srgb, var(--seat) 38%, transparent),
+      transparent
+    );
+    pointer-events: none;
+  }
+
+  .hand.inactive::before {
+    opacity: 0.6;
   }
 
   /* In use, the hand is above everything, other players' cursors included. */
@@ -567,7 +745,7 @@
     A card selected by a tap stays up like a hovered one. The hand a tap pinned pops its selected
     card only: a finger leaves a sticky :hover on the last card it tapped, deselected or not.
   */
-  .hand:not(.pinned) .hcard:hover,
+  .hand:not(.pinned, .inactive) .hcard:hover,
   .hcard.locked {
     z-index: 60;
   }
@@ -613,7 +791,7 @@
   }
 
   /* The hovered card pops up larger, keeping its tilt on the arc. */
-  .hand:not(.pinned) .hcard:hover .fan,
+  .hand:not(.pinned, .inactive) .hcard:hover .fan,
   .hcard.locked .fan {
     transform: translateY(calc(var(--ty) - 31px)) rotate(var(--rot)) scale(1.2);
   }

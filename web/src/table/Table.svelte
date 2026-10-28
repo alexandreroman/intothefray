@@ -74,6 +74,7 @@
     HAND_CARD,
     HAND_CARD_NARROW,
     HAND_REST_DROP,
+    handInsets,
     handRestDrop,
     isLandscape,
     isOutOfPlay,
@@ -105,6 +106,7 @@
     seatColor,
     seatDeck,
     seatFullLabel,
+    seatHero,
     seatOf,
     seatPlayer,
   } from './seats';
@@ -337,14 +339,28 @@
   const handSeat = $derived(
     focused && shownSeat !== null && !own.includes(shownSeat) ? null : selected,
   );
-  const handCards = $derived(
-    handSeat !== null
-      ? (view.table?.hands?.[areaOf(handSeat)] ?? []).flatMap((id) => {
-          const card = cardsById.get(id);
-          return card ? [card] : [];
-        })
-      : undefined,
-  );
+  // The hands shown: with exactly two own decks on a wide screen, both, side by side in seat order,
+  // the selected deck's being the active one; else handSeat's alone.
+  const handSeats = $derived.by(() => {
+    if (handSeat === null) {
+      return [];
+    }
+    return own.length === 2 && !small.current ? [...own].sort((a, b) => a - b) : [handSeat];
+  });
+
+  /** The cards of a seat's hand, in its order. */
+  function handOf(seat: number): TableCard[] {
+    return (view.table?.hands?.[areaOf(seat)] ?? []).flatMap((id) => {
+      const card = cardsById.get(id);
+      return card ? [card] : [];
+    });
+  }
+
+  /** "Your hand", or, beside another one, "Your Spider-Man hand". */
+  function handLabel(seat: number): string {
+    const hero = handSeats.length > 1 ? seatHero(view, seat) : '';
+    return hero ? `Your ${hero} hand` : 'Your hand';
+  }
 
   const rowMap = $derived(
     focused && shownSeat !== null
@@ -372,8 +388,8 @@
   );
   const pickerCurrent = $derived(focused ? shownSeat : selected);
   const pickerShown = $derived(pickerEntries.length > 1 && pickerCurrent !== null);
-  // The selector's width in px while it shows, bound out of HeroPicker. Not used yet: the hands are
-  // to be laid out in the room right of it on a wide screen.
+  // The selector's width in px while it shows, bound out of HeroPicker: on a wide screen, the hands
+  // keep to the room right of it. Stale once it is gone.
   let pickerWidth = $state(0);
 
   // Shift + ← / → steps through the selector's heroes; in "All", through the viewer's own decks.
@@ -611,6 +627,21 @@
   // The room between the resting hand's strip and the controls above it on a small screen, in px.
   const ABOVE_HAND = 8;
 
+  // The room between the hero selector and the hands right of it on a wide screen, in px.
+  const HANDS_AFTER_PICKER = 32;
+
+  // On a wide screen the hands centre in the room right of the hero selector, never under it; two
+  // hands split that room in halves. On a small screen the selector sits above the resting hand.
+  const handsLeft = $derived(
+    pickerShown && !small.current ? TABLE_EDGE + pickerWidth + HANDS_AFTER_PICKER : 0,
+  );
+  const handRooms = $derived(handInsets(handSeats.length, scrollerWidth, handsLeft));
+
+  // Whether each hand shown is raised, by its place (two hands at most); only the active one ever is.
+  let handsOpen = $state([false, false]);
+  // The active hand is raised: the viewer is busy with it (Presence).
+  const handRaised = $derived(handsOpen[handSeats.indexOf(handSeat ?? -1)] ?? false);
+
   /**
    * The room under the controls at the bottom of the table (the zoom control,
    * the narrow Undo, the player selector), in px. On a small screen they sit
@@ -619,7 +650,7 @@
    * raised cards (handRestDrop), does not rise past.
    */
   const controlsBottom = $derived(
-    small.current && handCards !== undefined
+    small.current && handSeats.length > 0
       ? restingStrip(baseHandCard.h, baseHandDrop) + ABOVE_HAND
       : TABLE_EDGE_BOTTOM,
   );
@@ -770,7 +801,8 @@
   /** Resolves once the transitions playing in the hand have ended, or were cancelled. */
   async function handSettled(): Promise<void> {
     // Some environments (tests) have no Web Animations: nothing plays there.
-    const playing = app?.querySelector('.hand')?.getAnimations?.({ subtree: true }) ?? [];
+    const hands = [...(app?.querySelectorAll('.hand') ?? [])];
+    const playing = hands.flatMap((hand) => hand.getAnimations?.({ subtree: true }) ?? []);
     await Promise.allSettled(playing.map((animation) => animation.finished));
   }
 
@@ -1526,7 +1558,6 @@
   let wrap = $state<HTMLElement>();
   let app = $state<HTMLElement>();
   let presenceLayer = $state<ReturnType<typeof Presence>>();
-  let handRaised = $state(false);
 
   // A new view or a zoom moves the elements under a pointer at rest: the ones
   // it lands on are not hovered by the viewer.
@@ -1699,7 +1730,7 @@
     {view}
     presence={session.presence}
     send={(fields) => session.sendPresence(fields)}
-    away={modal.open || (handCards !== undefined && handRaised)}
+    away={modal.open || handRaised}
     root={app}
     {zoom}
     {faceOf}
@@ -1792,17 +1823,27 @@
     />
   {/if}
 
-  {#if handCards}
+  <!--
+    Keyed by place, not by seat: a single hand stays the same one as Q or the selector shows
+    another deck's, so a hand pinned up by a tap stays up to read that one too.
+  -->
+  {#each handSeats as seat, i (i)}
     <Hand
-      cards={handCards}
+      cards={handOf(seat)}
       {faceOf}
       {captionOf}
       cardSize={raisedCard}
       restCardSize={baseHandCard}
       restDrop={handDrop}
-      bind:open={handRaised}
+      {seat}
+      color={playerColorVar(seatColor(view, seat) ?? 0)}
+      label={handLabel(seat)}
+      active={seat === handSeat}
+      onactivate={() => selectSeat(seat)}
+      inset={handRooms[i]}
+      bind:open={handsOpen[i]}
     />
-  {/if}
+  {/each}
 
   <Flights {faceOf} {captionOf} />
 
@@ -2123,12 +2164,16 @@
     font-size: 13px;
   }
 
-  /* At the bottom left, as the zoom control at the bottom right: under the veil and the hand. */
+  /*
+    At the bottom left, as the zoom control at the bottom right, but above the veil (Hand.svelte,
+    2550): the hero selector shows in full while a hand is raised, to pick another one. Below the
+    raised hand (2600), which covers it on a small screen.
+  */
   .seatpick {
     grid-area: table;
     align-self: end;
     justify-self: start;
-    z-index: 30;
+    z-index: 2575;
     margin: 0 0 var(--edge-bottom) var(--edge);
   }
 

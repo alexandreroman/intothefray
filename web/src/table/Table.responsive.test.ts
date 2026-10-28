@@ -363,6 +363,21 @@ describe('Table in the window', () => {
     expect(FOCUS_MARGINS.bottom).toBe(TABLE_EDGE_BOTTOM);
   });
 
+  it("draws the hero selector above the raised hand's veil, under that hand; the zoom control under the veil", () => {
+    const zIndex = (source: string, selector: string) => {
+      const pattern = new RegExp(`\\n {2}${selector.replace(/[.]/g, '\\.')} \\{([^}]*)\\}`);
+      return Number(/z-index: (\d+);/.exec(pattern.exec(source)?.[1] ?? '')?.[1]);
+    };
+    const veil = zIndex(handSource, '.veil');
+    const raisedHand = zIndex(handSource, '.hand.open');
+    const picker = zIndex(tableSource, '.seatpick');
+    expect(veil).toBe(2550);
+    expect(raisedHand).toBe(2600);
+    expect(picker).toBeGreaterThan(veil);
+    expect(picker).toBeLessThan(raisedHand);
+    expect(zIndex(tableSource, '.corner')).toBeLessThan(veil);
+  });
+
   it("gives the hero selector's step buttons the zoom control's button height", () => {
     const appRule = /\n {2}\.app \{([^}]*)\}/.exec(tableSource)?.[1];
     expect(appRule).toMatch(/--bar-button: 32px;/);
@@ -776,6 +791,22 @@ describe('Table on a small screen', () => {
     expect(hand().style.getPropertyValue('--rest-scale')).toBe(`${HAND_REST_SCALE}`);
     expect(hand().style.getPropertyValue('--pad-top')).toBe(`${HAND_PADDING.top}px`);
     expect(hand().style.getPropertyValue('--pad-bottom')).toBe(`${HAND_PADDING.bottom}px`);
+  });
+
+  it("shows only the selected deck's hand with two own decks, over the whole width", () => {
+    mockScreen(PHONE);
+    const view = makeView();
+    view.you = { ...view.you, areas: ['p0', 'p1'] };
+    view.players[0]!.decks.push({ area: 'p1', heroName: 'Ant-Man', ready: true, handCount: 0 });
+    view.table!.hands = { ...view.table!.hands, p1: [] };
+    render(Table, { session: fakeSession(), view });
+
+    // The selector shows, above the resting hand rather than beside it.
+    expect(screen.getByRole('radiogroup', { name: 'Hand shown' })).toBeTruthy();
+    const hands = screen.getAllByRole('list', { name: /hand$/ });
+    expect(hands).toEqual([hand()]);
+    expect(hand().dataset.seat).toBe('0');
+    expect(hand().style.marginLeft).toBe('0px');
   });
 
   it('keeps the raised hand to half the window held sideways', () => {

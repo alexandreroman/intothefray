@@ -441,6 +441,25 @@ export function handRestDrop(
   return Math.max(0, Math.round(scale * (raised.h + HAND_PADDING.bottom) - baseShown));
 }
 
+/** How far a hand's room lies in from the left and right edges of the table, in px. */
+export interface HandInsets {
+  left: number;
+  right: number;
+}
+
+/**
+ * The room of each of `count` hands side by side at the bottom of a table
+ * `width` px wide, in order: the part of the table right of `left` split in
+ * equal shares.
+ */
+export function handInsets(count: number, width: number, left: number): HandInsets[] {
+  const share = Math.max(0, width - left) / count;
+  return Array.from({ length: count }, (_, i) => ({
+    left: left + i * share,
+    right: Math.max(0, width - left - (i + 1) * share),
+  }));
+}
+
 const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
 
 /**
