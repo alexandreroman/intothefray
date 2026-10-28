@@ -465,29 +465,47 @@ describe('Hand beside another one', () => {
   });
 
   it('draws its backdrop across the whole table, behind its cards, once for two hands', async () => {
-    render(Hand, { cards: CARDS, faceOf, captionOf, seat: 0, inset: { left: 300, right: 200 } });
+    const { container } = render(Hand, {
+      cards: CARDS,
+      faceOf,
+      captionOf,
+      seat: 0,
+      inset: { left: 300, right: 200 },
+    });
 
-    // Not on its own box, whose sides lie in from the table's: past them, both ways, far enough
-    // to reach the window's edges under the rest scale.
+    // An element of its own, not the hand's box, whose sides lie in from the table's.
     expect(rule('.hand')).not.toMatch(/background/);
-    const backdrop = rule('.hand::after');
-    expect(backdrop).toMatch(/background: linear-gradient\(to top, #07090fe6 0%/);
-    expect(backdrop).toMatch(/left: -400vw;/);
-    expect(backdrop).toMatch(/right: -400vw;/);
-    expect(backdrop).toMatch(/z-index: -1;/);
-    expect(backdrop).toMatch(/pointer-events: none;/);
-    // The inactive hand shares the active one's.
-    expect(rule('.hand.inactive::after')).toMatch(/content: none;/);
+    const backdrop = container.querySelector<HTMLElement>('.backdrop');
+    expect(backdrop).not.toBeNull();
+    expect(backdrop?.style.marginLeft).toBe('');
+    const look = rule('.backdrop');
+    expect(look).toMatch(/grid-area: table;/);
+    expect(look).toMatch(/background: linear-gradient\(to top, #07090fe6 0%/);
+    expect(look).toMatch(/pointer-events: none;/);
+    // As tall as the hand, dropped and shrunk with it, from the bottom, across the whole width.
+    expect(look).toMatch(
+      /min-height: calc\(var\(--pad-top\) \+ var\(--card-h\) \+ var\(--pad-bottom\)\);/,
+    );
+    expect(look).toMatch(
+      /transform: translateY\(var\(--rest-drop\)\) scaleY\(var\(--rest-scale\)\);/,
+    );
+    expect(rule('.backdrop.open')).toMatch(/transform: none;/);
+    for (const name of ['--pad-top', '--card-h', '--pad-bottom', '--rest-drop', '--rest-scale']) {
+      expect(backdrop?.style.getPropertyValue(name)).toBe(handList().style.getPropertyValue(name));
+    }
 
     // Tinted while a table card would go to a hand, this one or the other one.
-    expect(rule('.hand.tinted::after')).toMatch(
-      /background: linear-gradient\(to top, #123349f0 0%/,
-    );
-    expect(handList().classList).not.toContain('tinted');
+    expect(rule('.backdrop.tinted')).toMatch(/background: linear-gradient\(to top, #123349f0 0%/);
+    expect(backdrop?.classList).not.toContain('tinted');
     interaction.dropOn = { kind: 'hand', id: 'p1' };
     await tick();
-    expect(handList().classList).toContain('tinted');
+    expect(backdrop?.classList).toContain('tinted');
     expect(handList().classList).not.toContain('drop');
+  });
+
+  it('leaves the backdrop to the active hand', () => {
+    const { container } = render(Hand, { cards: CARDS, faceOf, captionOf, seat: 1, active: false });
+    expect(container.querySelector('.backdrop')).toBeNull();
   });
 
   it('is marked inactive, dimmed at the same size, and draws no veil', () => {

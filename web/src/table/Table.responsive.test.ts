@@ -385,6 +385,14 @@ describe('Table in the window', () => {
     expect(picker).toBeGreaterThan(veil);
     expect(picker).toBeLessThan(raisedHand);
     expect(zIndex(tableSource, '.corner')).toBeLessThan(veil);
+    // The hand's backdrop: raised, over the veil and under the selector; at rest, under the hand's
+    // cards and every control.
+    const raisedBackdrop = zIndex(handSource, '.backdrop.open');
+    expect(raisedBackdrop).toBeGreaterThan(veil);
+    expect(raisedBackdrop).toBeLessThan(picker);
+    const restingBackdrop = zIndex(handSource, '.backdrop');
+    expect(restingBackdrop).toBeLessThan(zIndex(handSource, '.hand'));
+    expect(restingBackdrop).toBeLessThan(zIndex(tableSource, '.corner'));
   });
 
   it("clips the hands to the table's column: their backdrop stops at its edges", () => {

@@ -144,7 +144,7 @@
   const extent = $derived(fanExtent(slots, cardSize));
 
   // A table card of this seat's, dragged over a hand to go back to this one: the active hand rises
-  // for it. Any hand's tints the backdrop (.tinted).
+  // for it. Any hand's tints the backdrop (.backdrop.tinted).
   const dropTarget = $derived(
     interaction.dropOn?.kind === 'hand' && interaction.dropOn.id === areaOf(seat),
   );
@@ -562,9 +562,22 @@
   onkeydown={onKey}
 />
 
-<!-- The table dims once, under the active hand. -->
+<!--
+  The table dims once, under the active hand, and the bottom of the table darkens once behind it,
+  across the whole table.
+-->
 {#if active}
   <div class="veil" class:open></div>
+  <div
+    class="backdrop"
+    class:open
+    class:tinted={interaction.dropOn?.kind === 'hand'}
+    style:--card-h="{cardSize.h}px"
+    style:--rest-drop="{restDrop}px"
+    style:--rest-scale={restScale}
+    style:--pad-top="{HAND_PADDING.top}px"
+    style:--pad-bottom="{HAND_PADDING.bottom}px"
+  ></div>
 {/if}
 
 <ul
@@ -574,7 +587,6 @@
   class:inactive={!active}
   class:hidden
   class:drop={dropTarget}
-  class:tinted={interaction.dropOn?.kind === 'hand'}
   aria-label={label}
   data-seat={seat}
   data-rest-x={restPlace?.offset ?? 0}
@@ -690,29 +702,37 @@
   }
 
   /*
-    The hand darkens the bottom of the table behind its cards, across the whole table whatever its
-    room: far past its sides, which the rest scale draws closer to its middle, out to the edges of
-    the table's column, which clips it (.hands, Table.svelte).
+    The bottom of the table darkens behind the hand's cards, across the whole table whatever the
+    hand's room: as tall as the hand, dropped and shrunk from the bottom with it, its width left
+    whole. An element of its own, under the hand's cards: raised, between the veil (2550) and the
+    hero selector (2575, Table.svelte), so that the selector shows in full; at rest, under the
+    controls at the bottom of the table (30), as the resting hand.
   */
-  .hand::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: -400vw;
-    right: -400vw;
-    z-index: -1;
+  .backdrop {
+    grid-area: table;
+    align-self: end;
+    z-index: 19;
+    min-height: calc(var(--pad-top) + var(--card-h) + var(--pad-bottom));
     background: linear-gradient(to top, #07090fe6 0%, #07090fa0 55%, transparent 100%);
     pointer-events: none;
+    transform: translateY(var(--rest-drop)) scaleY(var(--rest-scale));
+    transform-origin: 50% 100%;
+    transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
 
-  /* The hand of the other deck, beside the active one, dimmed. The active hand's backdrop is its. */
+  .backdrop.open {
+    transform: none;
+    z-index: 2560;
+  }
+
+  /* A table card would go back to a hand, this one or the other one. */
+  .backdrop.tinted {
+    background: linear-gradient(to top, #123349f0 0%, #123349a0 60%, transparent 100%);
+  }
+
+  /* The hand of the other deck, beside the active one, dimmed. */
   .hand.inactive {
     opacity: 0.8;
-  }
-
-  .hand.inactive::after {
-    content: none;
   }
 
   /* The other hand is raised over the room: this one fades out, then takes no pointer. */
@@ -754,11 +774,6 @@
   .hand.open {
     transform: none;
     z-index: 2600;
-  }
-
-  /* A table card would go back to a hand, this one or the other one. */
-  .hand.tinted::after {
-    background: linear-gradient(to top, #123349f0 0%, #123349a0 60%, transparent 100%);
   }
 
   /* Placed around the middle of the hand, below its top padding: --x is the card's middle. */
