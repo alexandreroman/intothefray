@@ -96,7 +96,7 @@ describe('Hand', () => {
     expect(raisedFan).not.toEqual(resting);
   });
 
-  it('spreads the raised fan over 80 % of the hand, in its middle', async () => {
+  it('spreads the raised fan over 90 % of the hand, in its middle', async () => {
     vi.spyOn(Element.prototype, 'clientWidth', 'get').mockReturnValue(1200);
     const many = Array.from({ length: 12 }, (_, i) => handCard(`m${i}`, '01003'));
     const raised = { w: 238, h: 333 };
@@ -110,10 +110,10 @@ describe('Hand', () => {
       open: true,
     });
 
-    expect(RAISED_FAN_SHARE).toBe(0.8);
+    expect(RAISED_FAN_SHARE).toBe(0.9);
     const xs = handCards().map((item) => Number.parseFloat(item.style.getPropertyValue('--x')));
-    // Too many cards for 960 px: they close up more than they would over the whole 1200.
-    expect(xs).toEqual(fanPositions(12, 960, raised.w).map((slot) => slot.x));
+    // Too many cards for 1080 px: they close up more than they would over the whole 1200.
+    expect(xs).toEqual(fanPositions(12, 1080, raised.w).map((slot) => slot.x));
     expect(xs).not.toEqual(fanPositions(12, 1200, raised.w).map((slot) => slot.x));
     expect(xs[0]).toBeCloseTo(-xs[11]!);
   });

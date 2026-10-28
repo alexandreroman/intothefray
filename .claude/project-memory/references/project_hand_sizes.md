@@ -24,7 +24,7 @@ type: project
   window's height.
 - A hovered hand card pops at `scale(1.3)`; the pop and the preview's own
   size are independent of the hand.
-- With two hands side by side, a raised hand spreads over 80 % of the
+- With two hands side by side, a raised hand spreads over 90 % of the
   hands' room (`RAISED_FAN_SHARE`), centred in it (see
   [[project_multi_deck]]).
 

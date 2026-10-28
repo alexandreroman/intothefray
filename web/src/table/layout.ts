@@ -450,7 +450,7 @@ export interface HandInsets {
 const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
 
 /** The share of the hands' room a raised fan spreads over, in its middle: the rest stays clear. */
-export const RAISED_FAN_SHARE = 0.8;
+export const RAISED_FAN_SHARE = 0.9;
 
 /** The room between two resting fans side by side, as seen, in px. */
 export const HANDS_GAP = 48;
