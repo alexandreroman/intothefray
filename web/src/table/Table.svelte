@@ -1859,29 +1859,32 @@
     />
   {/if}
 
-  <!--
-    Keyed by place, not by seat: a single hand stays the same one as Q or the selector shows
-    another deck's, so a hand pinned up by a tap stays up to read that one too.
-  -->
-  {#each handSeats as seat, i (i)}
-    <Hand
-      cards={handOf(seat)}
-      {faceOf}
-      {captionOf}
-      cardSize={raisedCard}
-      restCardSize={baseHandCard}
-      restDrop={handDrop}
-      {seat}
-      color={playerColorVar(seatColor(view, seat) ?? 0)}
-      label={handLabel(seat)}
-      active={seat === handSeat}
-      onactivate={() => selectSeat(seat)}
-      inset={handsRoom}
-      restPlace={restPlaces[i]}
-      hidden={handRaised && seat !== handSeat}
-      bind:open={handsOpen[i]}
-    />
-  {/each}
+  <!-- The hands, clipped to the table's column: their backdrop reaches its edges and no further. -->
+  <div class="hands">
+    <!--
+      Keyed by place, not by seat: a single hand stays the same one as Q or the selector shows
+      another deck's, so a hand pinned up by a tap stays up to read that one too.
+    -->
+    {#each handSeats as seat, i (i)}
+      <Hand
+        cards={handOf(seat)}
+        {faceOf}
+        {captionOf}
+        cardSize={raisedCard}
+        restCardSize={baseHandCard}
+        restDrop={handDrop}
+        {seat}
+        color={playerColorVar(seatColor(view, seat) ?? 0)}
+        label={handLabel(seat)}
+        active={seat === handSeat}
+        onactivate={() => selectSeat(seat)}
+        inset={handsRoom}
+        restPlace={restPlaces[i]}
+        hidden={handRaised && seat !== handSeat}
+        bind:open={handsOpen[i]}
+      />
+    {/each}
+  </div>
 
   <Flights {faceOf} {captionOf} />
 
@@ -2200,6 +2203,19 @@
     border: 1px solid var(--accent);
     border-radius: 999px;
     font-size: 13px;
+  }
+
+  /*
+    The hands' column: the table's, laid out as one cell for the hands and the veil, clipped across
+    only. It takes no pointer and makes no stacking context: the hands and the veil stack with the
+    page's layers.
+  */
+  .hands {
+    grid-area: table;
+    display: grid;
+    grid-template: 'table' minmax(0, 1fr) / minmax(0, 1fr);
+    overflow-x: clip;
+    pointer-events: none;
   }
 
   /*

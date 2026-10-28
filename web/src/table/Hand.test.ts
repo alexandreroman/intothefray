@@ -464,6 +464,32 @@ describe('Hand beside another one', () => {
     expect(rule('.hand.inactive::before')).toMatch(/opacity: 0\.6;/);
   });
 
+  it('draws its backdrop across the whole table, behind its cards, once for two hands', async () => {
+    render(Hand, { cards: CARDS, faceOf, captionOf, seat: 0, inset: { left: 300, right: 200 } });
+
+    // Not on its own box, whose sides lie in from the table's: past them, both ways, far enough
+    // to reach the window's edges under the rest scale.
+    expect(rule('.hand')).not.toMatch(/background/);
+    const backdrop = rule('.hand::after');
+    expect(backdrop).toMatch(/background: linear-gradient\(to top, #07090fe6 0%/);
+    expect(backdrop).toMatch(/left: -400vw;/);
+    expect(backdrop).toMatch(/right: -400vw;/);
+    expect(backdrop).toMatch(/z-index: -1;/);
+    expect(backdrop).toMatch(/pointer-events: none;/);
+    // The inactive hand shares the active one's.
+    expect(rule('.hand.inactive::after')).toMatch(/content: none;/);
+
+    // Tinted while a table card would go to a hand, this one or the other one.
+    expect(rule('.hand.tinted::after')).toMatch(
+      /background: linear-gradient\(to top, #123349f0 0%/,
+    );
+    expect(handList().classList).not.toContain('tinted');
+    interaction.dropOn = { kind: 'hand', id: 'p1' };
+    await tick();
+    expect(handList().classList).toContain('tinted');
+    expect(handList().classList).not.toContain('drop');
+  });
+
   it('is marked inactive, dimmed at the same size, and draws no veil', () => {
     const { container } = render(Hand, { cards: CARDS, faceOf, captionOf, seat: 1, active: false });
 

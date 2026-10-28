@@ -387,6 +387,20 @@ describe('Table in the window', () => {
     expect(zIndex(tableSource, '.corner')).toBeLessThan(veil);
   });
 
+  it("clips the hands to the table's column: their backdrop stops at its edges", () => {
+    const { container } = render(Table, { session: fakeSession(), view: makeView() });
+
+    const hand = screen.getByRole('list', { name: 'Your hand' });
+    const column = hand.parentElement!;
+    expect(column.classList).toContain('hands');
+    expect(column.parentElement).toBe(container.querySelector('.app'));
+    const rule = /\n {2}\.hands \{([^}]*)\}/.exec(tableSource)?.[1] ?? '';
+    expect(rule).toMatch(/grid-area: table;/);
+    expect(rule).toMatch(/overflow-x: clip;/);
+    // Only across: the resting hand still drops below the window, where the page clips it.
+    expect(rule).not.toMatch(/overflow(-y)?: (hidden|clip)/);
+  });
+
   it("gives the hero selector's step buttons the zoom control's button height", () => {
     const appRule = /\n {2}\.app \{([^}]*)\}/.exec(tableSource)?.[1];
     expect(appRule).toMatch(/--bar-button: 32px;/);

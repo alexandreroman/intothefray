@@ -143,7 +143,8 @@
   // scale): the glow spans it.
   const extent = $derived(fanExtent(slots, cardSize));
 
-  // A table card of this seat's, dragged over a hand to go back to this one.
+  // A table card of this seat's, dragged over a hand to go back to this one: the active hand rises
+  // for it. Any hand's tints the backdrop (.tinted).
   const dropTarget = $derived(
     interaction.dropOn?.kind === 'hand' && interaction.dropOn.id === areaOf(seat),
   );
@@ -573,6 +574,7 @@
   class:inactive={!active}
   class:hidden
   class:drop={dropTarget}
+  class:tinted={interaction.dropOn?.kind === 'hand'}
   aria-label={label}
   data-seat={seat}
   data-rest-x={restPlace?.offset ?? 0}
@@ -678,7 +680,6 @@
     list-style: none;
     overflow: visible;
     pointer-events: none;
-    background: linear-gradient(to top, #07090fe6 0%, #07090fa0 55%, transparent 100%);
     /* Low enough that only the top part of the cards shows. */
     transform: translateY(var(--rest-drop)) scale(var(--rest-scale));
     transform-origin: 50% 100%;
@@ -689,12 +690,29 @@
   }
 
   /*
-    The hand of the other deck, beside the active one, dimmed. It shares the active hand's room: the
-    active one's background darkens the bottom of the table for both.
+    The hand darkens the bottom of the table behind its cards, across the whole table whatever its
+    room: far past its sides, which the rest scale draws closer to its middle, out to the edges of
+    the table's column, which clips it (.hands, Table.svelte).
   */
+  .hand::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -400vw;
+    right: -400vw;
+    z-index: -1;
+    background: linear-gradient(to top, #07090fe6 0%, #07090fa0 55%, transparent 100%);
+    pointer-events: none;
+  }
+
+  /* The hand of the other deck, beside the active one, dimmed. The active hand's backdrop is its. */
   .hand.inactive {
     opacity: 0.8;
-    background: none;
+  }
+
+  .hand.inactive::after {
+    content: none;
   }
 
   /* The other hand is raised over the room: this one fades out, then takes no pointer. */
@@ -738,8 +756,8 @@
     z-index: 2600;
   }
 
-  /* A table card would go back to it. */
-  .hand.drop {
+  /* A table card would go back to a hand, this one or the other one. */
+  .hand.tinted::after {
     background: linear-gradient(to top, #123349f0 0%, #123349a0 60%, transparent 100%);
   }
 
