@@ -104,8 +104,8 @@ func TestSetupSideDecks(t *testing.T) {
 
 	invocation := table.Piles[invocationDeck]
 	if invocation == nil || invocation.Kind != KindSideDeck || invocation.Owner != 0 ||
-		invocation.Label != "Invocation" || !invocation.TopFaceUp || invocation.X != 320 || invocation.Y != rowY0 {
-		t.Fatalf("Invocation deck = %+v, want p0's face-up side deck at (320, %d)", invocation, rowY0)
+		invocation.Label != "Invocation" || !invocation.TopFaceUp || invocation.X != 260 || invocation.Y != rowY0 {
+		t.Fatalf("Invocation deck = %+v, want p0's face-up side deck at (260, %d)", invocation, rowY0)
 	}
 	invocationCodes := []string{"09032", "09033", "09034", "09035", "09036"}
 	if got := codesOf(table, invocation.Cards); !slices.Equal(got, invocationCodes) {
@@ -118,28 +118,29 @@ func TestSetupSideDecks(t *testing.T) {
 	}
 	discard := table.Piles[invocationDiscard]
 	if discard == nil || discard.Kind != KindSideDiscard || discard.Owner != 0 || discard.Label != "Invocation" ||
-		discard.TopFaceUp || len(discard.Cards) != 0 || discard.X != 480 || discard.Y != rowY0 {
-		t.Errorf("Invocation discard = %+v, want p0's empty side discard at (480, %d)", discard, rowY0)
+		discard.TopFaceUp || len(discard.Cards) != 0 || discard.X != 390 || discard.Y != rowY0 {
+		t.Errorf("Invocation discard = %+v, want p0's empty side discard at (390, %d)", discard, rowY0)
 	}
-	if strange := f.g.Table.Cards[identityOf(t, f.g, 0)]; strange.X != 680 || strange.Y != rowY0 {
-		t.Errorf("Doctor Strange at (%d, %d), want (680, %d)", strange.X, strange.Y, rowY0)
+	if strange := f.g.Table.Cards[identityOf(t, f.g, 0)]; strange.X != 560 || strange.Y != rowY0 {
+		t.Errorf("Doctor Strange at (%d, %d), want (560, %d)", strange.X, strange.Y, rowY0)
 	}
-	// The first player token follows the identity past the side piles: 680 +
-	// 140 + inPlayGap.
-	if table.FirstPlayer != (Point{X: 870, Y: rowY0 + 60}) {
-		t.Errorf("first player = %+v, want (870, %d)", table.FirstPlayer, rowY0+60)
+	// The identity lies pileZoneGap past the side discard pile, 390 + 112 + 50,
+	// up to the grid. The first player token follows it: 560 + 112 + inPlayGap,
+	// up to the grid.
+	if table.FirstPlayer != (Point{X: 720, Y: rowY0 + 40}) {
+		t.Errorf("first player = %+v, want (720, %d)", table.FirstPlayer, rowY0+40)
 	}
 
 	sense := table.Piles[senseDeck]
 	if sense == nil || sense.Kind != KindSideDeck || sense.Owner != 1 || sense.Label != "Sense" ||
-		!sense.TopFaceUp || len(sense.Cards) != 5 || sense.X != 320 || sense.Y != rowY1 {
-		t.Errorf("Sense deck = %+v, want p1's face-up side deck of 5 at (320, %d)", sense, rowY1)
+		!sense.TopFaceUp || len(sense.Cards) != 5 || sense.X != 260 || sense.Y != rowY1 {
+		t.Errorf("Sense deck = %+v, want p1's face-up side deck of 5 at (260, %d)", sense, rowY1)
 	}
 	if _, ok := table.Piles["sided:p1:0"]; ok {
 		t.Error("the Sense deck has a discard pile")
 	}
-	if daredevil := f.g.Table.Cards[identityOf(t, f.g, 1)]; daredevil.X != 520 {
-		t.Errorf("Daredevil at x %d, want 520", daredevil.X)
+	if daredevil := f.g.Table.Cards[identityOf(t, f.g, 1)]; daredevil.X != 430 {
+		t.Errorf("Daredevil at x %d, want 430", daredevil.X)
 	}
 
 	// The decks hold none of the side deck cards.
@@ -161,7 +162,7 @@ func TestSetupTwoSideDecks(t *testing.T) {
 	y := rowY(playerRow(0))
 
 	labels := map[string]bool{}
-	for i, x := range []int{320, 480} {
+	for i, x := range []int{260, 390} {
 		pile := table.Piles[sideDeckID(0, i)]
 		if pile == nil || pile.Kind != KindSideDeck || pile.X != x || pile.Y != y || len(pile.Cards) != 3 {
 			t.Fatalf("side deck %d = %+v, want 3 cards at (%d, %d)", i, pile, x, y)
@@ -174,11 +175,11 @@ func TestSetupTwoSideDecks(t *testing.T) {
 	if !labels["Labor"] || !labels["Gift"] {
 		t.Errorf("side deck labels = %v, want Labor and Gift", labels)
 	}
-	if hercules := f.g.Table.Cards[identityOf(t, f.g, 0)]; hercules.X != 680 {
-		t.Errorf("Hercules at x %d, want 680", hercules.X)
+	if hercules := f.g.Table.Cards[identityOf(t, f.g, 0)]; hercules.X != 560 {
+		t.Errorf("Hercules at x %d, want 560", hercules.X)
 	}
-	if table.FirstPlayer.X != 870 {
-		t.Errorf("first player at x %d, want 870, right of Hercules", table.FirstPlayer.X)
+	if table.FirstPlayer.X != 720 {
+		t.Errorf("first player at x %d, want 720, right of Hercules", table.FirstPlayer.X)
 	}
 }
 
@@ -238,8 +239,8 @@ func TestSetupSetAsideHeroCards(t *testing.T) {
 // positions (the first player token beside the first identity, the villain
 // row, the height of a player's row).
 const (
-	spiderManSetupHash = "6a7ac5ce222a221c8ba18ba22da19913126711199628c2bc0a7dbd3bb7cd5b76"
-	threeDeckSetupHash = "4873693c251c68db6054915a14381da3e3f8f5dc943baa80459c34cd8ca2c6f4"
+	spiderManSetupHash = "fa51258c45c3cac3fab174438345c363ab5224fa8a6a2b6c47ee02caf79c14df"
+	threeDeckSetupHash = "723ae6f6087aacc2b4fd6c10f6a038019c4ed0a2bbc92a873cb28895e97f0b1f"
 )
 
 func TestSetupWithoutSideDecksIsUnchanged(t *testing.T) {

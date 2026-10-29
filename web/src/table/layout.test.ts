@@ -51,51 +51,51 @@ const alwaysStd = (): Size => 'std';
 const nothingShows = { w: 0, h: 0 };
 
 describe('cardBox sizes', () => {
-  it('returns the four sizes, 40 % larger than the hand cards', () => {
-    expect(cardBox('std', {})).toEqual({ w: 140, h: 196, rotated: false });
-    expect(cardBox('land', {})).toEqual({ w: 196, h: 140, rotated: false });
-    expect(cardBox('dstd', {})).toEqual({ w: 196, h: 280, rotated: false });
-    expect(cardBox('dland', {})).toEqual({ w: 280, h: 196, rotated: false });
+  it('returns the four sizes, a portrait card being 112x157', () => {
+    expect(cardBox('std', {})).toEqual({ w: 112, h: 157, rotated: false });
+    expect(cardBox('land', {})).toEqual({ w: 157, h: 112, rotated: false });
+    expect(cardBox('dstd', {})).toEqual({ w: 157, h: 224, rotated: false });
+    expect(cardBox('dland', {})).toEqual({ w: 224, h: 157, rotated: false });
   });
 
-  it('forces a face-down card to 140x196', () => {
+  it('forces a face-down card to 112x157', () => {
     for (const size of ['std', 'land', 'dstd', 'dland'] as const) {
-      expect(cardBox(size, { faceDown: true })).toEqual({ w: 140, h: 196, rotated: false });
+      expect(cardBox(size, { faceDown: true })).toEqual({ w: 112, h: 157, rotated: false });
     }
   });
 
   it('keeps a portrait slot for a landscape card on a pile', () => {
-    expect(cardBox('land', { onPile: true })).toEqual({ w: 140, h: 196, rotated: true });
-    expect(cardBox('dland', { onPile: true })).toEqual({ w: 196, h: 280, rotated: true });
+    expect(cardBox('land', { onPile: true })).toEqual({ w: 112, h: 157, rotated: true });
+    expect(cardBox('dland', { onPile: true })).toEqual({ w: 157, h: 224, rotated: true });
   });
 
   it('leaves a portrait card on a pile unrotated', () => {
-    expect(cardBox('std', { onPile: true })).toEqual({ w: 140, h: 196, rotated: false });
+    expect(cardBox('std', { onPile: true })).toEqual({ w: 112, h: 157, rotated: false });
   });
 });
 
 describe('surfaceSize', () => {
   it('leaves 200 free past the rightmost item and 300 under the lowest one', () => {
     const cards = [card({ x: 50, y: 300 }), card({ x: 400, y: 10 })];
-    expect(surfaceSize(cards, [], alwaysStd, nothingShows)).toEqual({ w: 740, h: 796 });
+    expect(surfaceSize(cards, [], alwaysStd, nothingShows)).toEqual({ w: 712, h: 757 });
   });
 
-  it('uses the size of each card, a face-down card being 140x196', () => {
+  it('uses the size of each card, a face-down card being 112x157', () => {
     expect(surfaceSize([card({ x: 100 })], [], () => 'dland', nothingShows)).toEqual({
-      w: 580,
-      h: 496,
+      w: 524,
+      h: 457,
     });
     const faceDown = [card({ x: 100, faceDown: true })];
-    expect(surfaceSize(faceDown, [], () => 'dland', nothingShows)).toEqual({ w: 440, h: 496 });
+    expect(surfaceSize(faceDown, [], () => 'dland', nothingShows)).toEqual({ w: 412, h: 457 });
   });
 
-  it('counts piles as 140x196 boxes, but not the out-of-play piles, which are not drawn', () => {
+  it('counts piles as 112x157 boxes, but not the out-of-play piles, which are not drawn', () => {
     const piles = [
       pile({ x: 160, y: 360 }),
       pile({ id: 'vic', kind: 'victory', x: 2000, y: 2000 }),
       pile({ id: 'aside', kind: 'aside', x: 3000, y: 3000 }),
     ];
-    expect(surfaceSize([], piles, alwaysStd, nothingShows)).toEqual({ w: 500, h: 856 });
+    expect(surfaceSize([], piles, alwaysStd, nothingShows)).toEqual({ w: 472, h: 817 });
   });
 
   it('ignores the cards that are not on the table', () => {
@@ -106,7 +106,7 @@ describe('surfaceSize', () => {
 
   it('never grows past where a card at the server bound of 20000 ends', () => {
     const cards = [card({ x: 20_000, y: 20_000 })];
-    expect(surfaceSize(cards, [], alwaysStd, nothingShows)).toEqual({ w: 20_280, h: 20_280 });
+    expect(surfaceSize(cards, [], alwaysStd, nothingShows)).toEqual({ w: 20_224, h: 20_224 });
     expect(surfaceSize(cards, [], alwaysStd, { w: 30_000, h: 25_000 })).toEqual({
       w: 30_000,
       h: 25_000,
@@ -117,43 +117,43 @@ describe('surfaceSize', () => {
     const cards = [card({ x: 400 })];
     expect(surfaceSize(cards, [], alwaysStd, { w: 1200, h: 900 })).toEqual({ w: 1200, h: 900 });
     // Too narrow for the card, tall enough: free room on the right only.
-    expect(surfaceSize(cards, [], alwaysStd, { w: 300, h: 200 })).toEqual({ w: 740, h: 200 });
+    expect(surfaceSize(cards, [], alwaysStd, { w: 300, h: 200 })).toEqual({ w: 712, h: 200 });
   });
 
   it('adds free room only once the items no longer fit in what shows', () => {
-    // The lowest item ends at 556: in a 744 tall view, the table does not scroll.
+    // The lowest item ends at 517: in a 744 tall view, the table does not scroll.
     const cards = [card({ x: 0, y: 360 })];
     expect(surfaceSize(cards, [], alwaysStd, { w: 1200, h: 744 }).h).toBe(744);
     // Right at the edge, it still fits.
-    expect(surfaceSize(cards, [], alwaysStd, { w: 1200, h: 556 }).h).toBe(556);
+    expect(surfaceSize(cards, [], alwaysStd, { w: 1200, h: 517 }).h).toBe(517);
     // One unit past it, there is room to drop a card under it.
-    expect(surfaceSize(cards, [], alwaysStd, { w: 1200, h: 555 }).h).toBe(856);
-    expect(surfaceSize(cards, [], alwaysStd, { w: 139, h: 744 }).w).toBe(340);
+    expect(surfaceSize(cards, [], alwaysStd, { w: 1200, h: 516 }).h).toBe(817);
+    expect(surfaceSize(cards, [], alwaysStd, { w: 111, h: 744 }).w).toBe(312);
   });
 });
 
 describe('an exhausted card', () => {
-  // A std card turned 15 degrees: its bounding box is 140·cos + 196·sin wide and
-  // 140·sin + 196·cos tall, around the same centre.
-  const turnedWidth = 140 * Math.cos(Math.PI / 12) + 196 * Math.sin(Math.PI / 12);
-  const turnedHeight = 140 * Math.sin(Math.PI / 12) + 196 * Math.cos(Math.PI / 12);
+  // A std card turned 15 degrees: its bounding box is 112·cos + 157·sin wide and
+  // 112·sin + 157·cos tall, around the same centre.
+  const turnedWidth = 112 * Math.cos(Math.PI / 12) + 157 * Math.sin(Math.PI / 12);
+  const turnedHeight = 112 * Math.sin(Math.PI / 12) + 157 * Math.cos(Math.PI / 12);
 
   it('shows a bounding box grown around its centre', () => {
-    const box = visualBox({ id: 'a', x: 400, y: 300, w: 140, h: 196, exhausted: true });
-    expect(box.left).toBeCloseTo(470 - turnedWidth / 2);
-    expect(box.right).toBeCloseTo(470 + turnedWidth / 2);
-    expect(box.bottom).toBeCloseTo(398 + turnedHeight / 2);
-    expect(visualBox({ id: 'b', x: 400, y: 300, w: 140, h: 196 })).toEqual({
+    const box = visualBox({ id: 'a', x: 400, y: 300, w: 112, h: 157, exhausted: true });
+    expect(box.left).toBeCloseTo(456 - turnedWidth / 2);
+    expect(box.right).toBeCloseTo(456 + turnedWidth / 2);
+    expect(box.bottom).toBeCloseTo(378.5 + turnedHeight / 2);
+    expect(visualBox({ id: 'b', x: 400, y: 300, w: 112, h: 157 })).toEqual({
       left: 400,
-      right: 540,
-      bottom: 496,
+      right: 512,
+      bottom: 457,
     });
   });
 
   it('makes the surface wider and taller, rounded up to whole units', () => {
     const cards = [card({ x: 400, y: 300, exhausted: true })];
-    const right = Math.ceil(470 + turnedWidth / 2);
-    const bottom = Math.ceil(398 + turnedHeight / 2);
+    const right = Math.ceil(456 + turnedWidth / 2);
+    const bottom = Math.ceil(378.5 + turnedHeight / 2);
     expect(surfaceSize(cards, [], alwaysStd, nothingShows)).toEqual({
       w: right + 200,
       h: bottom + 300,
@@ -171,7 +171,7 @@ describe('isOutOfPlay', () => {
 });
 
 describe('footprints', () => {
-  it('lists the table cards with their sizes, then the drawn piles as 140x196', () => {
+  it('lists the table cards with their sizes, then the drawn piles as 112x157', () => {
     const cards = [
       card({ id: 'a', x: 10, y: 20 }),
       card({ id: 'b', x: 200, faceDown: true }),
@@ -182,9 +182,9 @@ describe('footprints', () => {
       pile({ id: 'vic', kind: 'victory', owner: -1, x: 700 }),
     ];
     expect(footprints(cards, piles, () => 'land')).toEqual([
-      { id: 'a', x: 10, y: 20, w: 196, h: 140 },
-      { id: 'b', x: 200, y: 0, w: 140, h: 196 },
-      { id: 'enc', x: 500, y: 0, w: 140, h: 196 },
+      { id: 'a', x: 10, y: 20, w: 157, h: 112 },
+      { id: 'b', x: 200, y: 0, w: 112, h: 157 },
+      { id: 'enc', x: 500, y: 0, w: 112, h: 157 },
     ]);
   });
 });
@@ -193,13 +193,13 @@ describe('ownerFrames', () => {
   it("frames each owner's deck and discard pile, 10 units off their edges", () => {
     const piles = [
       pile({ id: 'enc', kind: 'encounter', owner: -1, x: 0, y: 30 }),
-      pile({ id: 'encd', kind: 'encounterDiscard', owner: -1, x: 160, y: 30 }),
+      pile({ id: 'encd', kind: 'encounterDiscard', owner: -1, x: 130, y: 30 }),
       pile({ id: 'deck:p0', kind: 'deck', owner: 0, x: 0, y: 360 }),
-      pile({ id: 'disc:p0', kind: 'discard', owner: 0, x: 160, y: 360 }),
+      pile({ id: 'disc:p0', kind: 'discard', owner: 0, x: 130, y: 360 }),
     ];
     expect(ownerFrames(piles)).toEqual([
-      { owner: -1, x: -10, y: 20, w: 320, h: 216 },
-      { owner: 0, x: -10, y: 350, w: 320, h: 216 },
+      { owner: -1, x: -10, y: 20, w: 262, h: 177 },
+      { owner: 0, x: -10, y: 350, w: 262, h: 177 },
     ]);
   });
 
@@ -209,17 +209,17 @@ describe('ownerFrames', () => {
       pile({ id: 'aside:p1', kind: 'aside', owner: 1, x: 900, y: 690 }),
       pile({ id: 'vic', kind: 'victory', owner: -1, x: 0, y: 30 }),
     ];
-    expect(ownerFrames(piles)).toEqual([{ owner: 1, x: -10, y: 680, w: 160, h: 216 }]);
+    expect(ownerFrames(piles)).toEqual([{ owner: 1, x: -10, y: 680, w: 132, h: 177 }]);
   });
 
   it('frames the side decks and their discard piles with the deck and discard pile', () => {
     const piles = [
       pile({ id: 'deck:p0', kind: 'deck', owner: 0, x: 0, y: 360 }),
-      pile({ id: 'disc:p0', kind: 'discard', owner: 0, x: 160, y: 360 }),
-      pile({ id: 'side:p0:0', kind: 'sideDeck', owner: 0, x: 360, y: 360, label: 'Invocation' }),
-      pile({ id: 'sided:p0:0', kind: 'sideDiscard', owner: 0, x: 520, y: 360 }),
+      pile({ id: 'disc:p0', kind: 'discard', owner: 0, x: 130, y: 360 }),
+      pile({ id: 'side:p0:0', kind: 'sideDeck', owner: 0, x: 260, y: 360, label: 'Invocation' }),
+      pile({ id: 'sided:p0:0', kind: 'sideDiscard', owner: 0, x: 390, y: 360 }),
     ];
-    expect(ownerFrames(piles)).toEqual([{ owner: 0, x: -10, y: 350, w: 680, h: 216 }]);
+    expect(ownerFrames(piles)).toEqual([{ owner: 0, x: -10, y: 350, w: 522, h: 177 }]);
   });
 });
 
@@ -369,9 +369,9 @@ describe('contentWidth', () => {
 
   it('reaches the right edge of the last card, pile or frame', () => {
     const cards = [card({ id: 'a', x: 300 }), card({ id: 'b', x: 1500 })];
-    expect(contentWidth(cards, [], std)).toBe(1640);
+    expect(contentWidth(cards, [], std)).toBe(1612);
     // A frame reaches 10 units past its piles.
-    expect(contentWidth([], [pile({ id: 'd', kind: 'deck', x: 160 })], std)).toBe(310);
+    expect(contentWidth([], [pile({ id: 'd', kind: 'deck', x: 130 })], std)).toBe(252);
   });
 
   it('leaves out the out-of-play piles and the cards off the table, and is 0 for an empty table', () => {
@@ -383,9 +383,9 @@ describe('contentWidth', () => {
   it('takes in the turned box of an exhausted card', () => {
     const turned = contentWidth([card({ x: 0, exhausted: true })], [], std);
     expect(turned).toBe(
-      Math.ceil(visualBox({ id: 'c', x: 0, y: 0, w: 140, h: 196, exhausted: true }).right),
+      Math.ceil(visualBox({ id: 'c', x: 0, y: 0, w: 112, h: 157, exhausted: true }).right),
     );
-    expect(turned).toBeGreaterThan(140);
+    expect(turned).toBeGreaterThan(112);
   });
 });
 

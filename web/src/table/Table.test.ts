@@ -91,22 +91,22 @@ function pile(id: string, extra: Partial<PileView>): PileView {
 
 /**
  * Rhino with two players; the viewer is Sam, seated second (p1). As the setup
- * lays them out: the villain's row at the top, Alex's row 270 below it, then
- * Sam's, each starting with its deck and discard pile.
+ * lays them out: the villain's row at the top, Alex's row from 380, then
+ * Sam's from 600, each starting with its deck and discard pile.
  */
 function makeView(extra: { cards?: TableCard[]; piles?: PileView[] } = {}): View {
   const cards = extra.cards ?? [
-    card('v', { code: '01094', back: 'villain', x: 360, y: 30 }),
-    card('s', { code: '01097', back: 'encounter', x: 520, y: 30 }),
-    card('a', { code: '01001', owner: 0, x: 360, y: 500 }),
-    card('b', { code: '01001', owner: 1, x: 360, y: 770 }),
+    card('v', { code: '01094', back: 'villain', x: 300, y: 30 }),
+    card('s', { code: '01097', back: 'encounter', x: 460, y: 30 }),
+    card('a', { code: '01001', owner: 0, x: 300, y: 410 }),
+    card('b', { code: '01001', owner: 1, x: 300, y: 630 }),
     card('h', { code: '01001', owner: 1, zone: 'hand', x: 0, y: 0 }),
   ];
   const piles = extra.piles ?? [
     pile('enc', { kind: 'encounter', x: 0, y: 30 }),
-    pile('d0', { owner: 0, x: 0, y: 500 }),
-    pile('d1', { owner: 1, x: 0, y: 770 }),
-    pile('x1', { kind: 'discard', owner: 1, x: 160, y: 770, count: 0 }),
+    pile('d0', { owner: 0, x: 0, y: 410 }),
+    pile('d1', { owner: 1, x: 0, y: 630 }),
+    pile('x1', { kind: 'discard', owner: 1, x: 130, y: 630, count: 0 }),
   ];
   return {
     id: 'g1',
@@ -202,12 +202,12 @@ function withOutOfPlay(view: View): View {
   view.table!.piles.push(
     pile('vic', { kind: 'victory', x: 0, y: 30, count: 2, cards: ['q1', 'q2'] }),
     pile('saside', { kind: 'aside', x: 0, y: 30, count: 0, cards: [] }),
-    pile('aside:p0', { kind: 'aside', owner: 0, x: 0, y: 500, count: 1, cards: ['q3'] }),
+    pile('aside:p0', { kind: 'aside', owner: 0, x: 0, y: 410, count: 1, cards: ['q3'] }),
     pile('aside:p1', {
       kind: 'aside',
       owner: 1,
       x: 0,
-      y: 770,
+      y: 630,
       count: 3,
       cards: ['q4', 'q5', 'q6'],
     }),
@@ -252,9 +252,9 @@ describe('Table', () => {
       [...surface().querySelectorAll<HTMLElement>(selector)].map((element) => element.dataset.id);
     expect(ids(':scope > .card:not(.pile)')).toEqual(['v', 's', 'a', 'b']);
     expect(ids(':scope > .pile')).toEqual(['enc', 'd0', 'd1', 'x1']);
-    // Sam's card lies 30 into the third row (from 740). jsdom's table shows no height, so the rows are
-    // drawn as close as they go: the villain's 310 high, a player's 270 (spreadRows).
-    expect(surface().querySelector('[data-id="b"]')?.getAttribute('style')).toContain('top: 610px');
+    // Sam's card lies 30 into the third row (from 600). jsdom's table shows no height, so the rows are
+    // drawn as close as they go: the villain's 270 high, a player's 220 (spreadRows).
+    expect(surface().querySelector('[data-id="b"]')?.getAttribute('style')).toContain('top: 520px');
   });
 
   it('loads the cards of its game once', async () => {
@@ -300,13 +300,13 @@ describe('Table', () => {
       '6 cards in hand',
       '5 cards in hand',
     ]);
-    // Around Sam's deck (0, 770) and discard pile (160, 770), drawn at 610, 10 units off their edges.
+    // Around Sam's deck (0, 630) and discard pile (130, 630), drawn at 520, 10 units off their edges.
     const sam = boxes[2]!;
     expect([sam.style.left, sam.style.top, sam.style.width, sam.style.height]).toEqual([
       '-10px',
-      '600px',
-      '320px',
-      '216px',
+      '510px',
+      '262px',
+      '177px',
     ]);
   });
 
@@ -315,7 +315,7 @@ describe('Table', () => {
     view.table?.piles.push(
       pile('vic', { kind: 'victory', x: 0, y: 30, count: 2, cards: ['q1', 'q2'] }),
       pile('saside', { kind: 'aside', x: 0, y: 30, count: 0 }),
-      pile('aside:p1', { kind: 'aside', owner: 1, x: 0, y: 770, count: 0 }),
+      pile('aside:p1', { kind: 'aside', owner: 1, x: 0, y: 630, count: 0 }),
     );
     render(Table, { session: fakeSession(), view });
     await catalogLoaded();
@@ -397,17 +397,17 @@ describe('Table', () => {
 
   it('leaves room past the rightmost and the lowest card', async () => {
     const view = makeView({
-      // A double-size card, 196 by 280, at 200, 200: in the villain's row, drawn where it lies.
+      // A double-size card, 157 by 224, at 200, 200: in the villain's row, drawn where it lies.
       cards: [card('g', { code: '01010', x: 200, y: 200 })],
       piles: [],
     });
     render(Table, { session: fakeSession(), view });
 
-    // 200 + 196 + 200 wide, 200 + 280 + 300 tall.
+    // 200 + 157 + 200 wide, 200 + 224 + 300 tall.
     await waitFor(() => {
-      expect(surface().style.width).toBe('596px');
+      expect(surface().style.width).toBe('557px');
     });
-    expect(surface().style.height).toBe('780px');
+    expect(surface().style.height).toBe('724px');
   });
 
   it('sizes cards as std until the catalog is loaded', () => {
@@ -418,27 +418,27 @@ describe('Table', () => {
     });
     render(Table, { session: fakeSession(), view });
 
-    // 200 + 196 + 300, and the card itself gets the std box.
-    expect(surface().style.height).toBe('696px');
-    expect(surface().querySelector<HTMLElement>('.card')?.style.height).toBe('196px');
+    // 200 + 157 + 300, and the card itself gets the std box.
+    expect(surface().style.height).toBe('657px');
+    expect(surface().querySelector<HTMLElement>('.card')?.style.height).toBe('157px');
     expect(knownCard).not.toHaveBeenCalled();
   });
 
   it('does not keep the size measured before the catalog is loaded', async () => {
     let loaded = () => {};
     vi.mocked(loadGameCards).mockReturnValue(new Promise<void>((resolve) => (loaded = resolve)));
-    // The main scheme is landscape (140 high), but counts as std (196) until its size is known.
+    // The main scheme is landscape (112 high), but counts as std (157) until its size is known.
     const view = makeView({
       cards: [card('s', { code: '01097', x: 0, y: 200 })],
       piles: [],
     });
     render(Table, { session: fakeSession(), view });
-    expect(surface().style.height).toBe('696px');
+    expect(surface().style.height).toBe('657px');
 
     loaded();
-    // 200 + 140 + 300.
+    // 200 + 112 + 300.
     await waitFor(() => {
-      expect(surface().style.height).toBe('640px');
+      expect(surface().style.height).toBe('612px');
     });
   });
 
@@ -461,10 +461,10 @@ describe('Table', () => {
     render(Table, { session: fakeSession(), view });
     await screen.findByRole('alert');
 
-    // 200 + 196 + 300: the surface counts the card as std, and the card is drawn std.
-    expect(surface().style.height).toBe('696px');
+    // 200 + 157 + 300: the surface counts the card as std, and the card is drawn std.
+    expect(surface().style.height).toBe('657px');
     await Promise.resolve();
-    expect(surface().querySelector<HTMLElement>('.card')?.style.height).toBe('196px');
+    expect(surface().querySelector<HTMLElement>('.card')?.style.height).toBe('157px');
     expect(within(surface()).queryByRole('img', { name: 'Giant form' })).toBeNull();
   });
 
@@ -571,14 +571,14 @@ describe('Table', () => {
         pile('side:p1:0', {
           kind: 'sideDeck',
           owner: 1,
-          x: 360,
-          y: 770,
+          x: 260,
+          y: 630,
           count: 5,
           label: 'Invocation',
           topFaceUp: true,
           cards: ['i'],
         }),
-        pile('side:p1:1', { kind: 'sideDeck', owner: 1, x: 520, y: 770, count: 5, label: 'Sense' }),
+        pile('side:p1:1', { kind: 'sideDeck', owner: 1, x: 390, y: 630, count: 5, label: 'Sense' }),
       ],
     });
     render(Table, { session: fakeSession(), view });
@@ -592,17 +592,17 @@ describe('Table', () => {
   it("captions a side deck's own back on its pile and on its face-down cards", async () => {
     const view = makeView({
       cards: [
-        card('v', { code: '01094', back: 'villain', x: 360, y: 30 }),
-        card('l', { owner: 1, home: 'side:p1:0', faceDown: true, x: 700, y: 770 }),
+        card('v', { code: '01094', back: 'villain', x: 300, y: 30 }),
+        card('l', { owner: 1, home: 'side:p1:0', faceDown: true, x: 700, y: 630 }),
         // Its deck is not on the table: its back has no caption.
-        card('g', { owner: 1, home: 'side:p1:9', faceDown: true, x: 900, y: 770 }),
+        card('g', { owner: 1, home: 'side:p1:9', faceDown: true, x: 900, y: 630 }),
       ],
       piles: [
         pile('side:p1:0', {
           kind: 'sideDeck',
           owner: 1,
-          x: 360,
-          y: 770,
+          x: 260,
+          y: 630,
           count: 2,
           label: 'Labor',
           back: 'player',
@@ -634,7 +634,7 @@ describe('Table', () => {
         return rect(0, 0, 1000, 800);
       }
       // Rhino lies under the bottom right corner.
-      return (this as HTMLElement).dataset.id === 'v' ? rect(800, 500, 140, 196) : rect(0, 0, 0, 0);
+      return (this as HTMLElement).dataset.id === 'v' ? rect(800, 500, 112, 157) : rect(0, 0, 0, 0);
     });
     vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(320);
     vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(450);
@@ -1077,7 +1077,7 @@ describe('Table surface size', () => {
   }
 
   it('fills what shows of the table, in table units at the zoom', async () => {
-    // One card, from 800 to 940: the surface needs 1140 units of width.
+    // One card, from 800 to 912: the surface needs 1112 units of width.
     const view = makeView({ cards: [card('v', { code: '01094', x: 800, y: 0 })], piles: [] });
     const { container } = render(Table, { session: fakeSession(), view });
     await waitFor(() => {
@@ -1090,7 +1090,7 @@ describe('Table surface size', () => {
 
     await resizeTable(container, 648, 1848);
     // 600 by 1800 px at 90 % are 666.7 by 2000 units: the card needs more width.
-    expect([surface().style.width, surface().style.height]).toEqual(['1140px', '2000px']);
+    expect([surface().style.width, surface().style.height]).toEqual(['1112px', '2000px']);
   });
 
   it('zooms around the pointer, keeping the table spot under it in place', async () => {
@@ -1145,10 +1145,10 @@ describe('Table view modes', () => {
     expect(viewButton('Villain + player').getAttribute('aria-pressed')).toBe('true');
     expect(localStorage.getItem('itf-view')).toBe('focus');
     // Sam, the viewer, by default: Alex's row is hidden, Sam's drawn right under the villain's, which
-    // jsdom's table of no height draws 310 high.
+    // jsdom's table of no height draws 270 high.
     expect(shownIds()).toEqual(['enc', 'd1', 'x1', 'v', 's', 'b']);
     const sam = surface().querySelector<HTMLElement>('[data-id="b"]')!;
-    expect(sam.style.top).toBe('340px');
+    expect(sam.style.top).toBe('300px');
     expect(ownerBoxes().map((box) => box.querySelector('.owner')?.textContent)).toEqual([
       'Villain',
       'Sam · Ant-Man',
@@ -1156,38 +1156,38 @@ describe('Table view modes', () => {
   });
 
   it('spreads the rows over the height the table shows, one pitch apart', async () => {
-    // 1210 px tall: past the scroller's top padding (24) and the resting hand's strip (108), 1078 px
-    // for the rows: the villain's row and two players' rows, the last one 270 high, fill them at a
-    // pitch of 404, 400 on the grid.
+    // 1080 px tall: past the scroller's top padding (24) and the resting hand's strip (108), 948 px
+    // for the rows: the villain's row and two players' rows, the last one 220 high, fill them at a
+    // pitch of 364, 360 on the grid.
     vi.spyOn(Element.prototype, 'clientHeight', 'get').mockImplementation(function (this: Element) {
-      return this.classList.contains('tablewrap') ? 1210 : 0;
+      return this.classList.contains('tablewrap') ? 1080 : 0;
     });
     render(Table, { session: fakeSession(), view: makeView() });
     await catalogLoaded();
 
     const top = (id: string) =>
       surface().querySelector<HTMLElement>(`[data-id="${id}"]`)?.style.top;
-    // The villain's row where it lies; Alex's row drawn at the villain's row's height, 400; Sam's
+    // The villain's row where it lies; Alex's row drawn at the villain's row's height, 360; Sam's
     // one pitch below it. Each card 30 into its row.
-    expect([top('v'), top('a'), top('b')]).toEqual(['30px', '430px', '830px']);
+    expect([top('v'), top('a'), top('b')]).toEqual(['30px', '390px', '750px']);
   });
 
   it("spreads a single deck's row and the villain's over the height the table shows", async () => {
-    // 800 px tall: past the scroller's top padding (24) and the resting hand's strip (108), 668 px
-    // for the rows: the villain's row and the one player's row, 270 high, fill them, the villain's
-    // drawn 398 high, 390 on the grid.
+    // 700 px tall: past the scroller's top padding (24) and the resting hand's strip (108), 568 px
+    // for the rows: the villain's row and the one player's row, 220 high, fill them, the villain's
+    // drawn 348 high, 340 on the grid.
     vi.spyOn(Element.prototype, 'clientHeight', 'get').mockImplementation(function (this: Element) {
-      return this.classList.contains('tablewrap') ? 800 : 0;
+      return this.classList.contains('tablewrap') ? 700 : 0;
     });
     const view = makeView({
       cards: [
-        card('v', { code: '01094', back: 'villain', x: 360, y: 30 }),
-        card('b', { code: '01001', owner: 1, x: 360, y: 500 }),
+        card('v', { code: '01094', back: 'villain', x: 300, y: 30 }),
+        card('b', { code: '01001', owner: 1, x: 300, y: 410 }),
         card('h', { code: '01001', owner: 1, zone: 'hand', x: 0, y: 0 }),
       ],
       piles: [
         pile('enc', { kind: 'encounter', x: 0, y: 30 }),
-        pile('d1', { owner: 1, x: 0, y: 500 }),
+        pile('d1', { owner: 1, x: 0, y: 410 }),
       ],
     });
     render(Table, { session: fakeSession(), view });
@@ -1195,8 +1195,8 @@ describe('Table view modes', () => {
 
     const top = (id: string) =>
       surface().querySelector<HTMLElement>(`[data-id="${id}"]`)?.style.top;
-    // Sam's row drawn at the villain's row's height, 390, his card 30 into it.
-    expect([top('v'), top('b')]).toEqual(['30px', '420px']);
+    // Sam's row drawn at the villain's row's height, 340, his card 30 into it.
+    expect([top('v'), top('b')]).toEqual(['30px', '370px']);
   });
 
   it('spreads the rows the same at any zoom', async () => {
@@ -1204,7 +1204,7 @@ describe('Table view modes', () => {
     // they are at 100 %, the zoom only showing more of the table.
     localStorage.setItem('itf-zoom', '0.5');
     vi.spyOn(Element.prototype, 'clientHeight', 'get').mockImplementation(function (this: Element) {
-      return this.classList.contains('tablewrap') ? 1210 : 0;
+      return this.classList.contains('tablewrap') ? 1080 : 0;
     });
     render(Table, { session: fakeSession(), view: makeView() });
     await catalogLoaded();
@@ -1212,7 +1212,7 @@ describe('Table view modes', () => {
     expect(zoomLabel().textContent).toBe('50%');
     const top = (id: string) =>
       surface().querySelector<HTMLElement>(`[data-id="${id}"]`)?.style.top;
-    expect([top('v'), top('a'), top('b')]).toEqual(['30px', '430px', '830px']);
+    expect([top('v'), top('a'), top('b')]).toEqual(['30px', '390px', '750px']);
   });
 
   it("picks the player whose row shows, at the bottom left, the viewer's own first", async () => {
@@ -1241,7 +1241,7 @@ describe('Table view modes', () => {
 
     await fireEvent.click(within(picker).getByRole('radio', { name: 'Alex · Spider-Man' }));
     expect(shownIds()).toEqual(['enc', 'd0', 'v', 's', 'a']);
-    expect(surface().querySelector<HTMLElement>('[data-id="a"]')?.style.top).toBe('340px');
+    expect(surface().querySelector<HTMLElement>('[data-id="a"]')?.style.top).toBe('300px');
   });
 
   it('steps round the table with three players or more', async () => {
@@ -1255,7 +1255,7 @@ describe('Table view modes', () => {
       online: true,
       decks: [{ area: 'p2', ready: true, handCount: 0 }],
     });
-    view.table!.piles.push(pile('d2', { owner: 2, x: 0, y: 1040 }));
+    view.table!.piles.push(pile('d2', { owner: 2, x: 0, y: 850 }));
     render(Table, { session: fakeSession(), view });
     await catalogLoaded();
 
@@ -1284,7 +1284,7 @@ describe('Table view modes', () => {
       online: true,
       decks: [{ area: 'p2', ready: true, handCount: 0 }],
     });
-    view.table!.piles.push(pile('d2', { owner: 2, x: 0, y: 1040 }));
+    view.table!.piles.push(pile('d2', { owner: 2, x: 0, y: 850 }));
     render(Table, { session: fakeSession(), view });
     await catalogLoaded();
 
@@ -1366,19 +1366,19 @@ describe('Table view modes', () => {
     render(Table, { session, view: makeView() });
     await catalogLoaded();
 
-    // Sam's identity lies at 360, 770 on the table, drawn at 360, 500.
+    // Sam's identity lies at 300, 630 on the table, drawn at 300, 300.
     const sam = surface().querySelector<HTMLElement>('[data-id="b"]')!;
-    await fireEvent.pointerDown(sam, { clientX: 400, clientY: 540, pointerType: 'mouse' });
-    await fireEvent.pointerMove(window, { clientX: 500, clientY: 590, buttons: 1 });
-    await fireEvent.pointerUp(window, { clientX: 500, clientY: 590 });
+    await fireEvent.pointerDown(sam, { clientX: 340, clientY: 340, pointerType: 'mouse' });
+    await fireEvent.pointerMove(window, { clientX: 440, clientY: 390, buttons: 1 });
+    await fireEvent.pointerUp(window, { clientX: 440, clientY: 390 });
 
-    // Its corner drawn at 460, 550: 460, 820 on the table.
+    // Its corner drawn at 400, 350: 400, 680 on the table.
     expect(session.act).toHaveBeenCalledExactlyOnceWith(
       {
         kind: 'move',
         card: 'b',
-        x: 460,
-        y: 820,
+        x: 400,
+        y: 680,
       },
       1,
     );
@@ -1394,19 +1394,19 @@ describe('several decks', () => {
   function makeTwoDeckView(): View {
     const view = makeView({
       cards: [
-        card('v', { code: '01094', back: 'villain', x: 360, y: 30 }),
-        card('s', { code: '01097', back: 'encounter', x: 520, y: 30 }),
-        card('a', { code: '01001', owner: 0, x: 360, y: 500 }),
-        card('b', { code: '01001', owner: 1, x: 360, y: 770 }),
-        card('c', { code: '01001', owner: 2, x: 360, y: 1040 }),
+        card('v', { code: '01094', back: 'villain', x: 300, y: 30 }),
+        card('s', { code: '01097', back: 'encounter', x: 460, y: 30 }),
+        card('a', { code: '01001', owner: 0, x: 300, y: 410 }),
+        card('b', { code: '01001', owner: 1, x: 300, y: 630 }),
+        card('c', { code: '01001', owner: 2, x: 300, y: 850 }),
         card('h0', { code: '01001', owner: 0, zone: 'hand' }),
         card('h1', { code: '01094', owner: 1, zone: 'hand' }),
       ],
       piles: [
         pile('enc', { kind: 'encounter', x: 0, y: 30 }),
-        pile('d0', { owner: 0, x: 0, y: 500 }),
-        pile('d1', { owner: 1, x: 0, y: 770 }),
-        pile('d2', { owner: 2, x: 0, y: 1040 }),
+        pile('d0', { owner: 0, x: 0, y: 410 }),
+        pile('d1', { owner: 1, x: 0, y: 630 }),
+        pile('d2', { owner: 2, x: 0, y: 850 }),
       ],
     });
     view.you = { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0', 'p1'] };
@@ -1510,7 +1510,7 @@ describe('several decks', () => {
         return rect(0, 0, 1000, 800);
       }
       // Rhino lies under the bottom right corner.
-      return (this as HTMLElement).dataset.id === 'v' ? rect(800, 500, 140, 196) : rect(0, 0, 0, 0);
+      return (this as HTMLElement).dataset.id === 'v' ? rect(800, 500, 112, 157) : rect(0, 0, 0, 0);
     });
     vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(320);
     vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(450);
@@ -1948,7 +1948,7 @@ describe('a selected group', () => {
   /** Sam's two cards on the table, both selected. */
   async function renderGroup() {
     const view = makeView();
-    view.table!.cards.push(card('b2', { code: '01001', owner: 1, x: 520, y: 770, z: 2 }));
+    view.table!.cards.push(card('b2', { code: '01001', owner: 1, x: 460, y: 630, z: 2 }));
     const session = fakeSession();
     render(Table, { session, view });
     await catalogLoaded();

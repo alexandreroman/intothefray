@@ -91,7 +91,7 @@ function layOut(view: () => View): void {
         table?.cards.find((c) => c.id === id && c.zone === 'table') ??
         table?.piles.find((p) => p.id === id);
       if (placed) {
-        return domRect(SURFACE.left + placed.x, SURFACE.top + placed.y, 140, 196);
+        return domRect(SURFACE.left + placed.x, SURFACE.top + placed.y, 112, 157);
       }
     }
     const hcard = this.closest<HTMLElement>('.hcard');

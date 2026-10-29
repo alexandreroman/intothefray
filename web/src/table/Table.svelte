@@ -2118,7 +2118,7 @@
     content: '';
     position: absolute;
     inset: 1%;
-    border-radius: 7px;
+    border-radius: 6px;
     pointer-events: none;
     z-index: 1;
   }
@@ -2138,7 +2138,7 @@
   .table :global(.card > .rring) {
     position: absolute;
     inset: 1%;
-    border-radius: 7px;
+    border-radius: 6px;
     pointer-events: none;
     z-index: 1;
     box-shadow:
@@ -2150,7 +2150,7 @@
   .table :global(.card > .sring) {
     position: absolute;
     inset: 1%;
-    border-radius: 7px;
+    border-radius: 6px;
     pointer-events: none;
     z-index: 1;
     box-shadow:
@@ -2167,6 +2167,27 @@
   .table :global(.card.drop-pile)::before {
     outline: 3px dashed var(--sel);
     outline-offset: 3px;
+  }
+
+  /*
+    The backs of the cards and piles the table draws, and of their drag ghosts (DragLayer,
+    Presence), are 80 % of a hand card: their frame, label and deck caption shrink with them, so
+    a long caption ("INVOCATION") fits. CardBack keeps the hand's sizes for the hand and the flights.
+  */
+  .app :global(.card .back) {
+    font-size: 10px;
+    letter-spacing: 0.8px;
+    box-shadow:
+      inset 0 0 0 6px var(--bg),
+      inset 0 0 0 7px var(--frame);
+  }
+
+  .app :global(.card .caption) {
+    max-width: calc(100% - 13px);
+    padding: 3px 9px 3px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    letter-spacing: 0.8px;
   }
 
   /* The 10-unit grid shows more clearly while something is dragged. */

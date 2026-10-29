@@ -108,7 +108,7 @@
   .card {
     position: absolute;
     z-index: 0;
-    border-radius: 6px;
+    border-radius: 5px;
     /* Something to drag (.grab), or else a menu to open a box from; nothing on an inert pile. */
     cursor: pointer;
     user-select: none;
@@ -139,7 +139,7 @@
   .slot {
     width: 100%;
     height: 100%;
-    border-radius: 6px;
+    border-radius: 5px;
     border: 2px dashed var(--line);
   }
 
@@ -150,14 +150,14 @@
   .count {
     position: absolute;
     z-index: 2;
-    bottom: -9px;
+    bottom: -7px;
     left: 50%;
     transform: translateX(-50%);
     background: #000c;
     border: 1px solid var(--line);
     border-radius: 999px;
-    font-size: 11px;
-    padding: 0 7px;
+    font-size: 9px;
+    padding: 0 6px;
     white-space: nowrap;
   }
 </style>

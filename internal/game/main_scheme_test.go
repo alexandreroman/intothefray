@@ -100,8 +100,8 @@ func TestSetupMainSchemeStage(t *testing.T) {
 		t.Errorf("villain stage = %v, want %v", got, want)
 	}
 	villain := cardWithCode(t, table, "60065")
-	if villains.Current != villain.ID || villain.Zone != ZoneTable || villain.Face != 0 || villain.X != 360 {
-		t.Errorf("Bullseye I = %+v, want the current villain at x 360, face 0", villain)
+	if villains.Current != villain.ID || villain.Zone != ZoneTable || villain.Face != 0 || villain.X != 300 {
+		t.Errorf("Bullseye I = %+v, want the current villain at x 300, face 0", villain)
 	}
 	for _, code := range []string{"60066", "60067"} {
 		if c := cardWithCode(t, table, code); c.Zone != ZoneStage {
@@ -116,11 +116,11 @@ func TestSetupMainSchemeStage(t *testing.T) {
 	if got, want := stageCodes(table, schemes), []string{"60121"}; !slices.Equal(got, want) {
 		t.Errorf("scheme stage = %v, want %v", got, want)
 	}
-	// The main scheme lies 50 past the villain at 360–500, as a classic one.
+	// The main scheme lies 40 past the villain at 300–412, up to the grid, as a classic one.
 	scheme := cardWithCode(t, table, "60121")
-	if schemes.Current != scheme.ID || scheme.Zone != ZoneTable || scheme.Face != 0 || scheme.X != 550 ||
+	if schemes.Current != scheme.ID || scheme.Zone != ZoneTable || scheme.Face != 0 || scheme.X != 460 ||
 		scheme.Y != 30 {
-		t.Errorf("Art Museum Heist = %+v, want the current scheme at (550, 30), face 0", scheme)
+		t.Errorf("Art Museum Heist = %+v, want the current scheme at (460, 30), face 0", scheme)
 	}
 	if scheme.Home != PileEncounter {
 		t.Errorf("Art Museum Heist home = %q, want the encounter deck", scheme.Home)

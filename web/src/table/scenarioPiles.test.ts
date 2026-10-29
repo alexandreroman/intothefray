@@ -33,7 +33,7 @@ const WRECKER = [
     kind: 'encounterDiscard',
     label: 'Wrecker',
     compact: true,
-    x: 120,
+    x: 100,
     y: 30,
     cards: ['d1'],
   }),
@@ -48,7 +48,7 @@ const WRECKER = [
     kind: 'encounterDiscard',
     label: 'Thunderball',
     compact: true,
-    x: 420,
+    x: 400,
     y: 30,
   }),
   pile('sdeck:weapons', {
@@ -104,9 +104,9 @@ function run(items: ActionItem[], id: string): Action {
 }
 
 describe('pileBox', () => {
-  it('compact is 100x140', () => {
-    expect(pileBox(pile('enc:w', { compact: true }))).toEqual({ w: 100, h: 140 });
-    expect(pileBox(pile('enc'))).toEqual({ w: 140, h: 196 });
+  it('compact is 80x112', () => {
+    expect(pileBox(pile('enc:w', { compact: true }))).toEqual({ w: 80, h: 112 });
+    expect(pileBox(pile('enc'))).toEqual({ w: 112, h: 157 });
   });
 
   it('sizes the footprints', () => {
@@ -115,7 +115,7 @@ describe('pileBox', () => {
       [pile('a', { compact: true }), pile('b')],
       () => 'std',
     );
-    expect([compact?.w, compact?.h, normal?.w, normal?.h]).toEqual([100, 140, 140, 196]);
+    expect([compact?.w, compact?.h, normal?.w, normal?.h]).toEqual([80, 112, 112, 157]);
   });
 });
 
@@ -123,18 +123,18 @@ describe('scenario deck frames', () => {
   it('one frame per scenario deck named by its label', () => {
     const frames = ownerFrames(WRECKER);
     expect(frames).toEqual([
-      { owner: -1, label: 'Wrecker', x: -10, y: 20, w: 240, h: 160 },
-      { owner: -1, label: 'Thunderball', x: 290, y: 20, w: 240, h: 160 },
-      { owner: -1, label: 'Experimental Weapons', x: 590, y: 20, w: 120, h: 160 },
+      { owner: -1, label: 'Wrecker', x: -10, y: 20, w: 200, h: 132 },
+      { owner: -1, label: 'Thunderball', x: 290, y: 20, w: 200, h: 132 },
+      { owner: -1, label: 'Experimental Weapons', x: 590, y: 20, w: 100, h: 132 },
     ]);
   });
 
   it('keeps Villain for the classic piles', () => {
     const classic = [
       pile('enc', { kind: 'encounter' }),
-      pile('encd', { kind: 'encounterDiscard', x: 160 }),
+      pile('encd', { kind: 'encounterDiscard', x: 130 }),
     ];
-    expect(ownerFrames(classic)).toEqual([{ owner: -1, x: -10, y: -10, w: 320, h: 216 }]);
+    expect(ownerFrames(classic)).toEqual([{ owner: -1, x: -10, y: -10, w: 262, h: 177 }]);
   });
 
   it('chips on the first villain frame', () => {

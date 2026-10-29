@@ -718,7 +718,7 @@
       "owner": -1,
       "home": "enc",
       "zone": "table",
-      "x": 550,
+      "x": 460,
       "y": 30,
       "z": 1
     },
@@ -1011,7 +1011,7 @@
       "owner": -1,
       "home": "enc",
       "zone": "table",
-      "x": 360,
+      "x": 300,
       "y": 30,
       "z": 0
     },
@@ -1080,8 +1080,8 @@
       "owner": 0,
       "home": "deck:p0",
       "zone": "table",
-      "x": 360,
-      "y": 500,
+      "x": 300,
+      "y": 410,
       "z": 2,
       "identity": true
     },
@@ -1164,8 +1164,8 @@
       "owner": 1,
       "home": "deck:p1",
       "zone": "table",
-      "x": 360,
-      "y": 770,
+      "x": 300,
+      "y": 630,
       "z": 3,
       "identity": true
     }
@@ -1176,7 +1176,7 @@
       "kind": "aside",
       "owner": 0,
       "x": 0,
-      "y": 500,
+      "y": 410,
       "cards": [
         "c9vqye7uf",
         "c7sqzvnsj",
@@ -1190,7 +1190,7 @@
       "kind": "aside",
       "owner": 1,
       "x": 0,
-      "y": 770,
+      "y": 630,
       "cards": [
         "cx3a7hfr7",
         "cszysvnkv",
@@ -1204,7 +1204,7 @@
       "kind": "deck",
       "owner": 0,
       "x": 0,
-      "y": 500,
+      "y": 410,
       "cards": [
         "cpaavspaf",
         "cdgvjtgjt",
@@ -1228,7 +1228,7 @@
       "kind": "deck",
       "owner": 1,
       "x": 0,
-      "y": 770,
+      "y": 630,
       "cards": [
         "cxht678q4",
         "cgtbskpn9",
@@ -1252,16 +1252,16 @@
       "id": "disc:p0",
       "kind": "discard",
       "owner": 0,
-      "x": 160,
-      "y": 500,
+      "x": 130,
+      "y": 410,
       "cards": []
     },
     "disc:p1": {
       "id": "disc:p1",
       "kind": "discard",
       "owner": 1,
-      "x": 160,
-      "y": 770,
+      "x": 130,
+      "y": 630,
       "cards": [
         "cab89hsja",
         "c4p53zsux"
@@ -1312,7 +1312,7 @@
       "id": "encd",
       "kind": "encounterDiscard",
       "owner": -1,
-      "x": 160,
+      "x": 130,
       "y": 30,
       "cards": []
     },
@@ -1361,8 +1361,8 @@
     }
   ],
   "firstPlayer": {
-    "x": 550,
-    "y": 560
+    "x": 460,
+    "y": 450
   },
   "nextZ": 12
 }

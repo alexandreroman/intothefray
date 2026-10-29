@@ -157,16 +157,16 @@ func stageX(t *testing.T, table *Table, key string) int {
 
 func TestClassicLayoutUnchanged(t *testing.T) {
 	table := mustScenarioTable(t, "classic")
-	if got := stageX(t, table, "villain"); got != 360 {
-		t.Errorf("villain x = %d, want 360", got)
+	if got := stageX(t, table, "villain"); got != 300 {
+		t.Errorf("villain x = %d, want 300", got)
 	}
-	if got := stageX(t, table, "scheme"); got != 550 {
-		t.Errorf("scheme x = %d, want 550", got)
+	if got := stageX(t, table, "scheme"); got != 460 {
+		t.Errorf("scheme x = %d, want 460", got)
 	}
-	if got := table.Cards[cardWithCode(t, table, "20004").ID].X; got != 800 {
-		t.Errorf("first in-play x = %d, want 800", got)
+	if got := table.Cards[cardWithCode(t, table, "20004").ID].X; got != 660 {
+		t.Errorf("first in-play x = %d, want 660", got)
 	}
-	if table.Piles[PileEncounter] == nil || table.Piles[PileEncounterDiscard].X != 160 {
+	if table.Piles[PileEncounter] == nil || table.Piles[PileEncounterDiscard].X != 130 {
 		t.Errorf("classic encounter piles = %+v", table.Piles)
 	}
 	if table.Active != nil {
@@ -188,8 +188,8 @@ func TestScenarioDeckGroups(t *testing.T) {
 		cards int
 	}{
 		{"enc:da", KindEncounter, 0, "Deck A", 5},
-		{"encd:da", KindEncounterDiscard, 120, "Deck A", 0},
-		{"sdeck:db", KindScenarioDeck, 730, "Deck B", 5},
+		{"encd:da", KindEncounterDiscard, 100, "Deck A", 0},
+		{"sdeck:db", KindScenarioDeck, 600, "Deck B", 5},
 	} {
 		p := table.Piles[want.id]
 		if p == nil {
@@ -208,24 +208,24 @@ func TestScenarioDeckGroups(t *testing.T) {
 	if table.Piles["sdisc:db"] != nil {
 		t.Error("deck without discard has a discard pile")
 	}
-	// v1 280, its side scheme 470 (landscape, ends 666), the deck of v2 730, v2 after it, then its side scheme and the
+	// v1 230, its side scheme 390 (landscape, ends 547), the deck of v2 600, v2 after it, then its side scheme and the
 	// main scheme, each inPlayGap past the previous card.
-	for key, want := range map[string]int{"v1": 280, "v2": 890, "scheme": 1330} {
+	for key, want := range map[string]int{"v1": 230, "v2": 730, "scheme": 1090} {
 		if got := stageX(t, table, key); got != want {
 			t.Errorf("stage %s x = %d, want %d", key, got, want)
 		}
 	}
-	if got := table.Cards[cardWithCode(t, table, "10003").ID].X; got != 470 {
-		t.Errorf("side scheme of v1 x = %d, want 470", got)
+	if got := table.Cards[cardWithCode(t, table, "10003").ID].X; got != 390 {
+		t.Errorf("side scheme of v1 x = %d, want 390", got)
 	}
-	if got := table.Cards[cardWithCode(t, table, "10006").ID].X; got != 1080 {
-		t.Errorf("side scheme of v2 x = %d, want 1080", got)
+	if got := table.Cards[cardWithCode(t, table, "10006").ID].X; got != 890 {
+		t.Errorf("side scheme of v2 x = %d, want 890", got)
 	}
 }
 
 func TestActiveStartsUnderVillain(t *testing.T) {
 	table := mustScenarioTable(t, "twice")
-	want := Point{X: 280 + 40, Y: 30 + 196 + 24}
+	want := Point{X: 230 + 20, Y: 30 + 157 + 23}
 	if table.Active == nil || *table.Active != want {
 		t.Errorf("Active = %+v, want %+v", table.Active, want)
 	}

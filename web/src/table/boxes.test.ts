@@ -71,8 +71,8 @@ describe('a player with two decks', () => {
     const tiles = tileActions(card('c', 1), pileOf('deck:p1'), contextOf(view));
     expect(tiles.map((tile) => tile.id)).toEqual(['draw', 'play', 'discard', 'bottom']);
     // Played to the row of its own deck, not the selected one's, face up though its deck hides it.
-    // 50 past p1's deck at 0–140, in its row.
-    expect(tiles[1]?.run()).toEqual({ kind: 'play', card: 'c', x: 190, y: 330, faceUp: true });
+    // 40 past p1's deck at 0–112, in its row.
+    expect(tiles[1]?.run()).toEqual({ kind: 'play', card: 'c', x: 160, y: 330, faceUp: true });
 
     const aside = tileActions(card('a', 1), pileOf('aside:p1'), contextOf(view));
     expect(aside.map((tile) => tile.id)).toEqual(['play', 'discard', 'bottom', 'shuffle']);
@@ -90,7 +90,7 @@ describe('a player with two decks', () => {
     const tiles = tileActions(won, victory, contextOf(view));
     const play = tiles.find((tile) => tile.id === 'play');
     // Seat 1's row, though seat 0 is selected.
-    expect(play?.run()).toEqual({ kind: 'play', card: 'v', x: 190, y: 330, faceUp: true });
+    expect(play?.run()).toEqual({ kind: 'play', card: 'v', x: 160, y: 330, faceUp: true });
   });
 
   it("keeps another player's deck and set-aside cards out", () => {

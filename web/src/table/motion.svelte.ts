@@ -1232,16 +1232,16 @@ class TableMotion {
       pile.append(copy);
       this.#copies.set(copy, pileSubject(id));
       const side = i % 2 ? 1 : -1;
-      const reach = 26 + Math.floor(i / 2) * 10;
+      const reach = 21 + Math.floor(i / 2) * 8;
       const animation = this.#run(
         copy,
         [
           { transform: 'translate(0, 0) rotate(0deg)', visibility: 'visible' },
           {
-            transform: `translate(${side * reach}px, ${-4 - i}px) rotate(${side * (6 + i * 2)}deg)`,
+            transform: `translate(${side * reach}px, ${-3 - i}px) rotate(${side * (6 + i * 2)}deg)`,
             offset: 0.45,
           },
-          { transform: `translate(${side * 4}px, -2px) rotate(${side * 2}deg)`, offset: 0.8 },
+          { transform: `translate(${side * 3}px, -2px) rotate(${side * 2}deg)`, offset: 0.8 },
           { transform: 'translate(0, 0) rotate(0deg)', visibility: 'visible' },
         ],
         { duration: RIFFLE_MS, delay: delay + i * RIFFLE_STAGGER_MS, easing: RIFFLE_EASING },

@@ -71,8 +71,8 @@ describe('PileView', () => {
     expect(el.querySelector('.count')?.textContent).toBe('12');
     expect(el.style.left).toBe('120px');
     expect(el.style.top).toBe('20px');
-    expect(el.style.width).toBe('140px');
-    expect(el.style.height).toBe('196px');
+    expect(el.style.width).toBe('112px');
+    expect(el.style.height).toBe('157px');
     expect(el.dataset.id).toBe('enc');
   });
 
@@ -139,8 +139,8 @@ describe('PileView', () => {
 
     expect(screen.getByRole('img', { name: 'Bomb Scare' })).toBeTruthy();
     const el = pileElement(container);
-    expect(el.style.width).toBe('140px');
-    expect(el.style.height).toBe('196px');
+    expect(el.style.width).toBe('112px');
+    expect(el.style.height).toBe('157px');
     expect(el.querySelector('.land-in-portrait img')).toBeTruthy();
   });
 

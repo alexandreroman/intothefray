@@ -19,13 +19,13 @@ import {
 import { areaOf, ownSeats } from './seats';
 import { ZOOM_STEP } from './zoom';
 
-// The free slot of a player's row: room for the played card with 50 free on
+// The free slot of a player's row: room for the played card with 40 free on
 // each side, as the setup leaves between the cards it puts in play
 // (internal/game/setup.go). Turned 15° when exhausted, a portrait card reaches
-// about 23 further on each side: 50 lets two neighbours both be exhausted
+// about 18 further on each side: 40 lets two neighbours both be exhausted
 // without overlapping. The row is as high as a portrait card.
 const SLOT_ROW_HEIGHT = PORTRAIT_CARD.h;
-const SLOT_GAP = 50;
+const SLOT_GAP = 40;
 
 // Shift + these arrows step through the heroes of the hero selector, or in "All" the viewer's decks.
 const HERO_STEPS: Record<string, -1 | 1> = {
@@ -299,8 +299,8 @@ function handSeatOf(id: string, view: View): number | undefined {
 /**
  * The free slot for a played card, from the hand or from a pile box: the
  * first spot of the player's row, from its deck on, where the card, as wide as
- * it lands, keeps 50 free on each side. The spots tried are the deck's x and
- * the spot 50 past the right edge of each thing in the row, taken up to the
+ * it lands, keeps 40 free on each side. The spots tried are the deck's x and
+ * the spot 40 past the right edge of each thing in the row, taken up to the
  * grid, from left to right: the card lands right after the last card or pile
  * of the row, or in the first hole wide enough before it. On a fresh row, the
  * deck, the discard pile, any side piles and the identity lie closer together

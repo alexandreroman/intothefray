@@ -140,18 +140,18 @@ describe('dropAction', () => {
 
   it('dropAction snaps where the card is drawn, then maps it to the shown row', () => {
     // "Villain + player" with the second of three players, rows as close as they go: the villain's
-    // row drawn 310 high, its empty band from 260 squeezed into 50, then row 2 (740 to 1010).
-    const rows = spreadRows(270, 3, 2);
+    // row drawn 270 high, its empty band from 210 squeezed into 60, then row 2 (600 to 820).
+    const rows = spreadRows(220, 3, 2);
     const yAt = (y: number) => dropAction(TABLE_CARD, TABLE, { x: 0, y }, DEAL_TO, rows)?.y;
     // At the bottom of the villain's row: snapped onto the top of the shown row, not into row 1.
-    expect(yAt(307)).toBe(740);
-    expect(yAt(254)).toBe(250);
-    // In the villain's squeezed band, where it is drawn: 280 is 20 into it, 84 on the table.
-    expect(yAt(284)).toBe(340);
-    expect(yAt(483)).toBe(910);
+    expect(yAt(267)).toBe(600);
+    expect(yAt(204)).toBe(200);
+    // In the villain's squeezed band, where it is drawn: 240 is 30 into it, 85 on the table.
+    expect(yAt(244)).toBe(290);
+    expect(yAt(443)).toBe(770);
     // At the bottom of the shown row, or below it: on its last grid line, never in the hidden row 3.
-    expect(yAt(575)).toBe(1000);
-    expect(yAt(2000)).toBe(1000);
+    expect(yAt(486)).toBe(810);
+    expect(yAt(2000)).toBe(810);
   });
 
   it('drop on card attaches', () => {

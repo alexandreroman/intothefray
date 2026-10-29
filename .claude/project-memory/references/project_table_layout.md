@@ -18,34 +18,37 @@ type: project
   scenario deck it is linked to and followed by the cards in play with it,
   then the other cards in play. A scenario with several villains stays on
   this one long row (Wrecking Crew: four villain groups, Breakout last).
-- A scenario deck and its discard pile are drawn smaller (100×140 table
-  units, the discard 120 right of its deck), in a frame of their own named
+- A scenario deck and its discard pile are drawn smaller (80×112 table
+  units, the discard 100 right of its deck), in a frame of their own named
   after the deck.
-- A played card (hand key P, card box Play) lands 50 units past the last
+- A played card (hand key P, card box Play) lands 40 units past the last
   card or pile of its row (past the identity on a fresh row), or in the
-  first hole wide enough; setup spaces the villain, the main scheme and the
-  cards it puts in play with the same 50 gap from each card's width. 50
+  first hole wide enough; setup spaces the main scheme and the cards it
+  puts in play with the same 40 gap from each card's width, and lays a
+  villain 50 past the piles before it, rounded up to the 10-unit grid. 40
   lets two neighbouring portrait cards both be exhausted (turned 15°)
-  without overlapping.
+  without overlapping. A player's deck lies at x 0, its discard at 130,
+  side piles 130 apart, the identity (and a classic villain) at 300, a
+  classic main scheme at 460.
 - The first player token starts right of the first player's identity,
-  50 units past its right edge (clear of it when exhausted), centred on
-  its height to the grid: (550, 560) on a row without side piles. The
-  active counter starts under its villain card (40 right of the card's
-  left edge, 24 below it). A played card avoids every marker, so the first
-  player's first played card lands past the token.
-- On the server the villain's row is 470 units high and a player's row
-  270 (44 units under its cards, enough for an exhausted card and the
+  40 units past its right edge (clear of it when exhausted), centred on
+  its height to the grid: (460, 450) on a row without side piles. The
+  active counter starts under its villain card (20 right of the card's
+  left edge, 23 below it, its top at 210). A played card avoids every
+  marker, so the first player's first played card lands past the token.
+- On the server the villain's row is 380 units high and a player's row
+  220 (33 units under its cards, enough for an exhausted card and the
   owner frame). The client draws the rows spread evenly over the screen's
   height (`spreadRows`, web/src/table/rows.ts), in both views: the
   villain row and two player rows fill the visible height above the
   resting hand, with the same margin between every row, a 3rd and 4th
   deck included. With a single deck, the villain row and its one player
   row fill it: the villain row is drawn as high as leaves the player row's
-  270 at the bottom (310–470); a game with 2+ decks keeps the two-row
-  spacing in "Villain + player" too. The pitch is computed in px at zoom 1, so zooming never
-  changes it; it stays within 270–470 units, and the villain row is drawn
-  at least 310 high so the active counter clears the first player's row.
-  Server positions never depend on a viewer's screen.
+  220 at the bottom (270–380); a game with 2+ decks keeps the two-row
+  spacing in "Villain + player" too. The pitch is computed in px at zoom
+  1, so zooming never changes it; it stays within 220–380 units, and the
+  villain row is drawn at least 270 high so the active counter clears the
+  first player's row. Server positions never depend on a viewer's screen.
 - Each owner's deck and discard sit in a frame in the seat colour labelled
   with the player's name ("Villain" in purple, as in the game, for the
   encounter piles; the deck's name for a scenario deck); the frame's
@@ -54,10 +57,17 @@ type: project
   table: chips on their owner's frame open them (see
   [[project_action_bars]]); the villain's chips sit on the first villain
   frame.
-- A portrait table card is 140×196 table units, chosen for readability;
-  the hand and the preview have their own sizes. Tokens sit inside the
-  card: damage, threat and counters pile up from its bottom right corner,
-  damage in the corner; a scheme's threat sits in its top right corner.
+- A portrait table card is 112×157 table units (landscape 157×112, double
+  cards 157×224 and 224×157), small enough for much of the play to fit on
+  screen at 100 %. The size lives in table units, on the server and the
+  client alike: the gaps, the rows and the setup positions are sized from
+  it, never a display scale. The hand and the preview have their own
+  sizes. Everything drawn on a table card or pile (tokens, status and
+  modifier tabs, count pill) is sized for that card. Tokens sit
+  inside the card: damage, threat and counters pile up from its bottom
+  right corner, damage in the corner; a scheme's threat sits in its top
+  right corner. The owner names, out-of-play chips, the first player token
+  and the active counter have sizes of their own.
 - On a wide screen the history panel shows at the right; it can be
   collapsed to a slim strip that keeps Undo, remembered per viewer
   (`itf-history-collapsed`). The card preview floats over the play area at

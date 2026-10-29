@@ -64,7 +64,7 @@
       "owner": -1,
       "home": "enc",
       "zone": "table",
-      "x": 360,
+      "x": 300,
       "y": 30,
       "z": 30
     },
@@ -906,8 +906,8 @@
       "owner": -1,
       "home": "enc",
       "zone": "table",
-      "x": 910,
-      "y": 100,
+      "x": 970,
+      "y": 190,
       "z": 33,
       "parent": "cwwnhqp2r",
       "status": {
@@ -1089,7 +1089,7 @@
       "owner": 0,
       "home": "deck:p0",
       "zone": "table",
-      "x": 360,
+      "x": 300,
       "y": 50,
       "z": 29,
       "parent": "c3r5d8tff"
@@ -1171,7 +1171,7 @@
       "kind": "aside",
       "owner": 0,
       "x": 0,
-      "y": 500,
+      "y": 410,
       "cards": [
         "c9vqye7uf",
         "c7sqzvnsj",
@@ -1186,7 +1186,7 @@
       "kind": "aside",
       "owner": 1,
       "x": 0,
-      "y": 770,
+      "y": 630,
       "cards": [
         "cx3a7hfr7",
         "cszysvnkv",
@@ -1200,7 +1200,7 @@
       "kind": "deck",
       "owner": 0,
       "x": 0,
-      "y": 500,
+      "y": 410,
       "cards": [
         "c6j5v2csn",
         "ccak7dtd9",
@@ -1217,7 +1217,7 @@
       "kind": "deck",
       "owner": 1,
       "x": 0,
-      "y": 770,
+      "y": 630,
       "cards": [
         "c3h6azg9d",
         "c8h9try23",
@@ -1237,8 +1237,8 @@
       "id": "disc:p0",
       "kind": "discard",
       "owner": 0,
-      "x": 160,
-      "y": 500,
+      "x": 130,
+      "y": 410,
       "cards": [
         "cekpkknhp"
       ]
@@ -1247,8 +1247,8 @@
       "id": "disc:p1",
       "kind": "discard",
       "owner": 1,
-      "x": 160,
-      "y": 770,
+      "x": 130,
+      "y": 630,
       "cards": []
     },
     "enc": {
@@ -1293,7 +1293,7 @@
       "id": "encd",
       "kind": "encounterDiscard",
       "owner": -1,
-      "x": 160,
+      "x": 130,
       "y": 30,
       "cards": [
         "cnrc4hea3"

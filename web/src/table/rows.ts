@@ -11,13 +11,13 @@ import type { PileView } from '../lib/types';
 import { GRID } from './layout';
 
 /**
- * The height of the villain's row, in table units: it covers [0, 470), leaving
+ * The height of the villain's row, in table units: it covers [0, 380), leaving
  * room between its cards and the first player's row.
  */
-export const VILLAIN_ROW_HEIGHT = 470;
+export const VILLAIN_ROW_HEIGHT = 380;
 
-/** The height of a player's row, in table units: row r ≥ 1 covers [470 + 270·(r−1), 470 + 270·r). */
-export const ROW_HEIGHT = 270;
+/** The height of a player's row, in table units: row r ≥ 1 covers [380 + 220·(r−1), 380 + 220·r). */
+export const ROW_HEIGHT = 220;
 
 export type ViewMode = 'all' | 'focus';
 
@@ -65,14 +65,15 @@ const MIN_PITCH = ROW_HEIGHT;
 const MAX_PITCH = VILLAIN_ROW_HEIGHT;
 
 // The villain's row is never drawn less high than this, in table units: its active counter, whose
-// top lies at 250, ends at 320, and player 1's identity is drawn 30 below the top of its row.
-const MIN_VILLAIN_PITCH = 310;
+// top lies at 210, ends at 280, and player 1's identity is drawn 30 below the top of its row.
+const MIN_VILLAIN_PITCH = 270;
 
 // The top part of a row that is drawn as it is, in table units: a player's row, down to the bottom
-// of its cards (30 below its top, 196 high); the villain's row, down to the active counter's top.
-// What lies below, an empty band, is drawn squeezed or stretched to the row's drawn height.
-const ROW_CONTENT = 230;
-const VILLAIN_CONTENT = 260;
+// of its cards (30 below its top, 157 high, up to the grid); the villain's row, down to the active
+// counter's top. What lies below, an empty band, is drawn squeezed or stretched to the row's drawn
+// height.
+const ROW_CONTENT = 190;
+const VILLAIN_CONTENT = 210;
 
 /**
  * The drawn height of a player's row, in table units, for `available` px of
@@ -147,8 +148,8 @@ function tableOffset(band: Band, offset: number): number {
  * right under it, the others hidden. Within a row, its content is drawn as
  * it is and its empty tail squeezed or stretched to the drawn height, so that
  * a card dropped in a gap lands near where it was dropped: drops snap to the
- * table's grid (drag.ts, spotOf), whose lines a stretched tail draws up to 60
- * units apart.
+ * table's grid (drag.ts, spotOf), whose lines a stretched tail draws up to
+ * about 63 units apart.
  *
  * The last row of the table runs on downward as it is, so a card dropped
  * below it stays with its player. A shown row that is not the last one ends
