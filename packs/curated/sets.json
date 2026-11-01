@@ -31,5 +31,9 @@
   "iceman": {"setAside": ["46002"]},
   "valk": {"setAside": ["25002"]},
   "rogue": {"setAside": ["38002"]},
-  "ironheart": {"setAside": ["29002", "29003"]}
+  "ironheart": {"setAside": ["29002", "29003"]},
+  "taskmaster": {"exclude": ["10098"]},
+  "hydra_camp": {"unlisted": true},
+  "expcamp": {"unlisted": true},
+  "exper_weapon": {"unlisted": true}
 }

@@ -1,0 +1,49 @@
+{
+  "id": "absorbing_man",
+  "villainSet": "absorbing_man",
+  "piles": [
+    {
+      "key": "villain",
+      "label": "Villain",
+      "cards": [
+        "04076",
+        "04077",
+        "04078"
+      ]
+    },
+    {
+      "key": "scheme",
+      "label": "Main scheme",
+      "cards": [
+        "04079"
+      ]
+    }
+  ],
+  "start": {
+    "standard": {
+      "top": {
+        "villain": {
+          "card": "04076",
+          "face": 0
+        },
+        "scheme": {
+          "card": "04079",
+          "face": 0
+        }
+      }
+    },
+    "expert": {
+      "top": {
+        "villain": {
+          "card": "04077",
+          "face": 0
+        },
+        "scheme": {
+          "card": "04079",
+          "face": 0
+        }
+      }
+    }
+  },
+  "setAside": []
+}

@@ -53,8 +53,9 @@ make packs        # card packs; needs packs/images/manifest.json
   cerebro, cgbuilder, build, cdn, curated, report, write)
 - `packs/` — `curated/` hand-written scenarios, card overrides, set
   data (`sets.json`: cards a set starts in play, sets kept out of the
-  lobby, main scheme sets, hero side decks, cards a hero sets aside) and
-  localized pack, set and card names (`names.json`),
+  lobby, main scheme sets, hero side decks, cards a hero sets aside,
+  cards a source misfiles in a set) and localized pack, set and card
+  names (`names.json`),
   `dist/` generated JSON (committed, never edited by hand), and the
   `packs` Go package (`packs.go`) that embeds it
 - `web/` — Svelte 5 + Vite SPA (standalone pnpm project; screens, lib,

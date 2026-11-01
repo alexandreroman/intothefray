@@ -155,8 +155,8 @@ func TestEmbeddedCoreSet(t *testing.T) {
 				supported++
 			}
 		}
-		if supported != 12 {
-			t.Errorf("supported scenarios = %d, want 12", supported)
+		if supported != 17 {
+			t.Errorf("supported scenarios = %d, want 17", supported)
 		}
 	})
 }
@@ -409,26 +409,8 @@ func TestEmbeddedWreckingCrew(t *testing.T) {
 	threats := []int{6, 5, 3, 4}
 	for _, tt := range tests {
 		t.Run(string(tt.difficulty), func(t *testing.T) {
-			g, err := game.NewGame("g1", "h", "Host", time.Unix(0, 0))
-			if err != nil {
-				t.Fatal(err)
-			}
-			if _, err := g.Join("b", "Bob"); err != nil {
-				t.Fatal(err)
-			}
 			cfg := game.LobbyConfig{Scenario: "wrecking_crew", Difficulty: tt.difficulty, Modulars: []string{}}
-			if err := g.Configure("h", cfg, cat); err != nil {
-				t.Fatal(err)
-			}
-			for token, hero := range map[string]string{"h": "01001a", "b": "01010a"} {
-				choice := game.DeckChoice{Name: "Deck", Hero: hero, HeroName: hero}
-				if err := g.SetDeck(token, 0, choice, cat); err != nil {
-					t.Fatal(err)
-				}
-			}
-			if err := g.Start("h", cat, 1, time.Unix(0, 0)); err != nil {
-				t.Fatal(err)
-			}
+			g := startEmbeddedGame(t, cat, cfg, "01001a", "01010a")
 			table := g.Table
 			if _, ok := table.Piles["enc"]; ok {
 				t.Error("classic enc pile exists")
@@ -516,6 +498,212 @@ func TestEmbeddedWreckingCrew(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestEmbeddedRiseOfRedSkull checks the five scenarios of The Rise of Red
+// Skull: their scenario decks, set-aside and in-play cards, and the sets the
+// pack keeps out of the lobby or trims.
+func TestEmbeddedRiseOfRedSkull(t *testing.T) {
+	cat, err := packs.Catalog()
+	if err != nil {
+		t.Fatalf("Catalog() error = %v", err)
+	}
+
+	t.Run("index", func(t *testing.T) {
+		for _, id := range []string{"crossbones", "absorbing_man", "taskmaster", "zola", "red_skull"} {
+			i := slices.IndexFunc(cat.Index().Scenarios, func(ref pack.ScenarioRef) bool { return ref.ID == id })
+			if i < 0 {
+				t.Errorf("scenario ref %s not found", id)
+				continue
+			}
+			if ref := cat.Index().Scenarios[i]; !ref.Supported || ref.SelfContained || ref.Pack != "trors" {
+				t.Errorf("%s ref = %+v, want supported, not self-contained, in pack trors", id, ref)
+			}
+		}
+		for _, code := range []string{"hydra_camp", "expcamp", "exper_weapon"} {
+			if set, ok := cat.Set(code); !ok || !set.Unlisted {
+				t.Errorf("set %s = %+v, want unlisted", code, set)
+			}
+		}
+		if set, _ := cat.Set("taskmaster"); slices.Contains(set.Cards, "10098") {
+			t.Errorf("set taskmaster lists the player-side Shang-Chi 10098: %v", set.Cards)
+		}
+	})
+
+	tests := []struct {
+		scenario string
+		// deck is the scenario deck and the cards it holds, out of the
+		// encounter deck.
+		deck      string
+		deckCards []string
+		inPlay    []string
+		setAside  []string
+	}{
+		{
+			scenario:  "crossbones",
+			deck:      "sdeck:weapons",
+			deckCards: []string{"04072", "04073", "04074", "04075"},
+		},
+		{
+			scenario:  "red_skull",
+			deck:      "sdeck:side_schemes",
+			deckCards: []string{"04140", "04141", "04142", "04143", "04144"},
+			inPlay:    []string{"04139"},
+			setAside:  []string{"04130"},
+		},
+		{
+			scenario: "taskmaster",
+			setAside: []string{"04097", "04098", "04099", "04100"},
+		},
+	}
+	for _, tt := range tests {
+		for _, difficulty := range []pack.Difficulty{pack.Standard, pack.Expert} {
+			t.Run(tt.scenario+"/"+string(difficulty), func(t *testing.T) {
+				cfg := game.LobbyConfig{Scenario: tt.scenario, Difficulty: difficulty, Modulars: []string{}}
+				table := startEmbeddedGame(t, cat, cfg, "01001a").Table
+
+				if tt.deck != "" {
+					deck := table.Piles[tt.deck]
+					if deck == nil {
+						t.Fatalf("no pile %s", tt.deck)
+					}
+					var codes []string
+					for _, id := range deck.Cards {
+						codes = append(codes, table.Cards[id].Code)
+					}
+					slices.Sort(codes)
+					if !slices.Equal(codes, tt.deckCards) {
+						t.Errorf("%s holds %v, want %v", tt.deck, codes, tt.deckCards)
+					}
+					if table.Piles[strings.Replace(tt.deck, "sdeck:", "sdisc:", 1)] == nil {
+						t.Errorf("%s has no discard pile", tt.deck)
+					}
+				}
+				// Each card lies in one place only: a deck card is out of
+				// the encounter deck.
+				want := map[string][]string{}
+				for _, code := range tt.deckCards {
+					want[code] = []string{tt.deck}
+				}
+				for _, code := range tt.inPlay {
+					want[code] = []string{"table"}
+				}
+				for _, code := range tt.setAside {
+					want[code] = []string{game.PileScenarioAside}
+				}
+				for code, places := range want {
+					if got := placesOf(table, code); !slices.Equal(got, places) {
+						t.Errorf("copies of %s lie in %v, want %v", code, got, places)
+					}
+				}
+			})
+		}
+	}
+
+	// With the sets a lobby would bring, every card of the encounter sets and
+	// of the scenario decks' sets exists exactly as many times as printed,
+	// and the player-side Shang-Chi the Taskmaster set excludes nowhere.
+	for _, id := range []string{"crossbones", "absorbing_man", "taskmaster", "zola", "red_skull"} {
+		for _, difficulty := range []pack.Difficulty{pack.Standard, pack.Expert} {
+			t.Run(id+"/"+string(difficulty)+"/copies", func(t *testing.T) {
+				cfg := game.DefaultConfig(cat, id)
+				cfg.Difficulty = difficulty
+				if difficulty == pack.Expert {
+					cfg.Expert = "expert"
+				}
+				if id == "taskmaster" {
+					cfg.Modulars = append(cfg.Modulars, "hydra_patrol")
+				}
+				table := startEmbeddedGame(t, cat, cfg, "01001a").Table
+
+				scenario, _ := cat.Scenario(id)
+				setCodes := append([]string{scenario.VillainSet, cfg.Standard, cfg.Expert}, cfg.Modulars...)
+				for _, deck := range scenario.Decks {
+					setCodes = append(setCodes, deck.Sets...)
+				}
+				checkEmbeddedSetCopies(t, cat, table, setCodes)
+				if got := placesOf(table, "10098"); len(got) != 0 {
+					t.Errorf("10098 lies in %v, want nowhere", got)
+				}
+			})
+		}
+	}
+}
+
+// checkEmbeddedSetCopies verifies that every card of the given sets is on the
+// table exactly as many times as its quantity. Empty set codes are skipped.
+func checkEmbeddedSetCopies(t *testing.T, cat *pack.Catalog, table *game.Table, setCodes []string) {
+	t.Helper()
+	counts := map[string]int{}
+	for _, c := range table.Cards {
+		counts[c.Code]++
+	}
+	for _, setCode := range setCodes {
+		if setCode == "" {
+			continue
+		}
+		set, ok := cat.Set(setCode)
+		if !ok {
+			t.Fatalf("no set %q", setCode)
+		}
+		for _, code := range set.Cards {
+			card, _, err := cat.Card(code)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got := counts[card.Code]; got != card.Quantity {
+				t.Errorf("set %s: %d copies of %s, want %d", setCode, got, card.Code, card.Quantity)
+			}
+		}
+	}
+}
+
+// startEmbeddedGame starts a game with the given lobby configuration and one
+// deck of each hero, the first the host's, the others each another player's.
+func startEmbeddedGame(t *testing.T, cat *pack.Catalog, cfg game.LobbyConfig, heroes ...string) *game.Game {
+	t.Helper()
+	g, err := game.NewGame("g1", "h", "Host", time.Unix(0, 0))
+	if err != nil {
+		t.Fatal(err)
+	}
+	tokens := []string{"h"}
+	for i := 1; i < len(heroes); i++ {
+		token := fmt.Sprintf("p%d", i)
+		if _, err := g.Join(token, fmt.Sprintf("Player %d", i)); err != nil {
+			t.Fatal(err)
+		}
+		tokens = append(tokens, token)
+	}
+	if err := g.Configure("h", cfg, cat); err != nil {
+		t.Fatal(err)
+	}
+	for i, hero := range heroes {
+		choice := game.DeckChoice{Name: "Deck", Hero: hero, HeroName: hero}
+		if err := g.SetDeck(tokens[i], 0, choice, cat); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := g.Start("h", cat, 1, time.Unix(0, 0)); err != nil {
+		t.Fatal(err)
+	}
+	return g
+}
+
+// placesOf returns where each copy of a card lies: the id of its pile, or
+// "table".
+func placesOf(table *game.Table, code string) []string {
+	var places []string
+	for _, c := range table.Cards {
+		if c.Code != code {
+			continue
+		}
+		if c.Zone == game.ZoneTable {
+			places = append(places, "table")
+		} else {
+			places = append(places, c.Pile)
+		}
+	}
+	return places
 }
 
 // loadPackFiles decodes every embedded English pack file.

@@ -1,6 +1,6 @@
 ---
 name: "Scenario decks and several villains"
-description: "Curated scenario decks, any number of villain stages, a movable active counter turned by hand; The Wrecking Crew uses them"
+description: "Curated scenario decks kept apart from the classic encounter deck, several villain stages, a manual active counter; Wrecking Crew, Crossbones, Red Skull"
 type: project
 ---
 
@@ -20,12 +20,17 @@ type: project
   dragged by hand, animated for everyone, no history line and no Undo.
   `active` names the stage it starts under. Nothing moves it
   automatically: the rotation stays manual.
+- The cards a scenario deck takes (its sets' cards and its listed cards)
+  stay out of the classic encounter deck, so a villain-set card a deck
+  lists exists once, in that deck.
 - A self-contained scenario uses only its own cards: the lobby offers no
   modular, Standard or Expert set, and setup adds no obligation and no
   nemesis set.
 - The Wrecking Crew (`wrecking_crew.json`) is the first user: four
   villains, each with its own encounter deck, discard pile and side
   scheme, Breakout last, the active counter under Wrecker, self-contained.
+  Crossbones and Red Skull use non-encounter decks next to the classic
+  encounter deck (see [[project_red_skull_scenarios]]).
 
 **Why:** user decision: generic building blocks rather than a one-off
 case, so that Sinister Six, Four Horsemen, Tower Defense and the
@@ -36,6 +41,5 @@ automation; the Wrecking Crew rules insert states the setup.
 
 **How to apply:** add a scenario with extra decks or several villains as
 curated data, never as per-scenario code, checked against its rules
-insert. A non-encounter scenario deck has no drag source on the table:
-its first curated user may need one. See [[project_setup_scope]] and
+insert. See [[project_setup_scope]] and
 [[project_table_layout]].

@@ -4110,8 +4110,7 @@
           ]
         }
       ],
-      "set": "taskmaster",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     }
   ],
@@ -4170,7 +4169,8 @@
         "04164",
         "04165",
         "04166"
-      ]
+      ],
+      "unlisted": true
     },
     {
       "code": "exper_weapon",
@@ -4181,7 +4181,8 @@
         "04073",
         "04074",
         "04075"
-      ]
+      ],
+      "unlisted": true
     },
     {
       "code": "hawkeye",
@@ -4235,7 +4236,8 @@
         "04160",
         "04161",
         "04162"
-      ]
+      ],
+      "unlisted": true
     },
     {
       "code": "hydra_patrol",
@@ -4322,8 +4324,7 @@
         "04105",
         "04106",
         "04107",
-        "04108",
-        "10098"
+        "04108"
       ]
     },
     {
@@ -4373,6 +4374,325 @@
       "set": "spider_woman",
       "obligation": "04053",
       "nemesis": "spider_woman_nemesis"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "crossbones",
+      "name": "Crossbones",
+      "pack": "trors",
+      "villainSet": "crossbones",
+      "piles": [
+        {
+          "key": "villain",
+          "label": "Villain",
+          "cards": [
+            "04058",
+            "04059",
+            "04060"
+          ]
+        },
+        {
+          "key": "scheme",
+          "label": "Main scheme",
+          "cards": [
+            "04061",
+            "04062",
+            "04063"
+          ]
+        }
+      ],
+      "start": {
+        "expert": {
+          "top": {
+            "scheme": {
+              "card": "04061",
+              "face": 0
+            },
+            "villain": {
+              "card": "04059",
+              "face": 0
+            }
+          }
+        },
+        "standard": {
+          "top": {
+            "scheme": {
+              "card": "04061",
+              "face": 0
+            },
+            "villain": {
+              "card": "04058",
+              "face": 0
+            }
+          }
+        }
+      },
+      "recommended": [
+        "hydra_assault",
+        "legions_of_hydra",
+        "weap_master"
+      ],
+      "decks": [
+        {
+          "key": "weapons",
+          "label": "Experimental Weapons",
+          "sets": [
+            "exper_weapon"
+          ],
+          "discard": true
+        }
+      ]
+    },
+    {
+      "id": "absorbing_man",
+      "name": "Absorbing Man",
+      "pack": "trors",
+      "villainSet": "absorbing_man",
+      "piles": [
+        {
+          "key": "villain",
+          "label": "Villain",
+          "cards": [
+            "04076",
+            "04077",
+            "04078"
+          ]
+        },
+        {
+          "key": "scheme",
+          "label": "Main scheme",
+          "cards": [
+            "04079"
+          ]
+        }
+      ],
+      "start": {
+        "expert": {
+          "top": {
+            "scheme": {
+              "card": "04079",
+              "face": 0
+            },
+            "villain": {
+              "card": "04077",
+              "face": 0
+            }
+          }
+        },
+        "standard": {
+          "top": {
+            "scheme": {
+              "card": "04079",
+              "face": 0
+            },
+            "villain": {
+              "card": "04076",
+              "face": 0
+            }
+          }
+        }
+      },
+      "recommended": [
+        "hydra_patrol"
+      ]
+    },
+    {
+      "id": "taskmaster",
+      "name": "Taskmaster",
+      "pack": "trors",
+      "villainSet": "taskmaster",
+      "piles": [
+        {
+          "key": "villain",
+          "label": "Villain",
+          "cards": [
+            "04093",
+            "04094",
+            "04095"
+          ]
+        },
+        {
+          "key": "scheme",
+          "label": "Main scheme",
+          "cards": [
+            "04096"
+          ]
+        }
+      ],
+      "start": {
+        "expert": {
+          "top": {
+            "scheme": {
+              "card": "04096",
+              "face": 0
+            },
+            "villain": {
+              "card": "04094",
+              "face": 0
+            }
+          }
+        },
+        "standard": {
+          "top": {
+            "scheme": {
+              "card": "04096",
+              "face": 0
+            },
+            "villain": {
+              "card": "04093",
+              "face": 0
+            }
+          }
+        }
+      },
+      "setAside": [
+        "04097",
+        "04098",
+        "04099",
+        "04100"
+      ],
+      "recommended": [
+        "weap_master"
+      ]
+    },
+    {
+      "id": "zola",
+      "name": "Zola",
+      "pack": "trors",
+      "villainSet": "zola",
+      "piles": [
+        {
+          "key": "villain",
+          "label": "Villain",
+          "cards": [
+            "04109",
+            "04110",
+            "04111"
+          ]
+        },
+        {
+          "key": "scheme",
+          "label": "Main scheme",
+          "cards": [
+            "04112",
+            "04113"
+          ]
+        }
+      ],
+      "start": {
+        "expert": {
+          "top": {
+            "scheme": {
+              "card": "04112",
+              "face": 0
+            },
+            "villain": {
+              "card": "04110",
+              "face": 0
+            }
+          }
+        },
+        "standard": {
+          "top": {
+            "scheme": {
+              "card": "04112",
+              "face": 0
+            },
+            "villain": {
+              "card": "04109",
+              "face": 0
+            }
+          }
+        }
+      },
+      "recommended": [
+        "under_attack"
+      ]
+    },
+    {
+      "id": "red_skull",
+      "name": "Red Skull",
+      "pack": "trors",
+      "villainSet": "red_skull",
+      "piles": [
+        {
+          "key": "villain",
+          "label": "Villain",
+          "cards": [
+            "04125",
+            "04126",
+            "04127"
+          ]
+        },
+        {
+          "key": "scheme",
+          "label": "Main scheme",
+          "cards": [
+            "04128",
+            "04129"
+          ]
+        }
+      ],
+      "start": {
+        "expert": {
+          "top": {
+            "scheme": {
+              "card": "04128",
+              "face": 0
+            },
+            "villain": {
+              "card": "04126",
+              "face": 0
+            }
+          },
+          "inPlay": [
+            {
+              "card": "04139",
+              "face": 0
+            }
+          ]
+        },
+        "standard": {
+          "top": {
+            "scheme": {
+              "card": "04128",
+              "face": 0
+            },
+            "villain": {
+              "card": "04125",
+              "face": 0
+            }
+          },
+          "inPlay": [
+            {
+              "card": "04139",
+              "face": 0
+            }
+          ]
+        }
+      },
+      "setAside": [
+        "04130"
+      ],
+      "recommended": [
+        "hydra_assault",
+        "hydra_patrol"
+      ],
+      "decks": [
+        {
+          "key": "side_schemes",
+          "label": "Side-scheme",
+          "cards": [
+            "04140",
+            "04141",
+            "04142",
+            "04143",
+            "04144"
+          ],
+          "discard": true
+        }
+      ]
     }
   ]
 }

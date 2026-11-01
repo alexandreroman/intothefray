@@ -621,7 +621,7 @@
       "name": "Crossbones",
       "pack": "trors",
       "image": "https://img.intothefray.xyz/cards/en/04058.fbecd4eb32ef.avif",
-      "supported": false,
+      "supported": true,
       "recommended": [
         "hydra_assault",
         "legions_of_hydra",
@@ -633,7 +633,7 @@
       "name": "Absorbing Man",
       "pack": "trors",
       "image": "https://img.intothefray.xyz/cards/en/04076.a282bd9e86a9.avif",
-      "supported": false,
+      "supported": true,
       "recommended": [
         "hydra_patrol"
       ],
@@ -648,7 +648,7 @@
       "name": "Taskmaster",
       "pack": "trors",
       "image": "https://img.intothefray.xyz/cards/en/04093.fbcd1bb19907.avif",
-      "supported": false,
+      "supported": true,
       "recommended": [
         "weap_master"
       ]
@@ -658,7 +658,7 @@
       "name": "Zola",
       "pack": "trors",
       "image": "https://img.intothefray.xyz/cards/en/04109.1d65b99ee188.avif",
-      "supported": false,
+      "supported": true,
       "recommended": [
         "under_attack"
       ]
@@ -668,7 +668,7 @@
       "name": "Red Skull",
       "pack": "trors",
       "image": "https://img.intothefray.xyz/cards/en/04125.e8ed8e43e145.avif",
-      "supported": false,
+      "supported": true,
       "recommended": [
         "hydra_assault",
         "hydra_patrol"
@@ -1496,28 +1496,6 @@
       }
     },
     {
-      "code": "expcamp",
-      "name": "Expert Campaign",
-      "pack": "trors",
-      "kind": "modular",
-      "localized": {
-        "fr": {
-          "name": "Set Campagne Experte"
-        }
-      }
-    },
-    {
-      "code": "exper_weapon",
-      "name": "Experimental Weapons",
-      "pack": "trors",
-      "kind": "modular",
-      "localized": {
-        "fr": {
-          "name": "Armes Expérimentales"
-        }
-      }
-    },
-    {
       "code": "hydra_assault",
       "name": "Hydra Assault",
       "pack": "trors",
@@ -1525,17 +1503,6 @@
       "localized": {
         "fr": {
           "name": "Offensive d'Hydra"
-        }
-      }
-    },
-    {
-      "code": "hydra_camp",
-      "name": "Hydra Campaign",
-      "pack": "trors",
-      "kind": "modular",
-      "localized": {
-        "fr": {
-          "name": "Campagne Hydra"
         }
       }
     },

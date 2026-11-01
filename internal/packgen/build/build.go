@@ -66,6 +66,10 @@ func Build(in Inputs) (Result, error) {
 	var fallback []report.Fallback
 	var fallbackProblems []report.Unsupported
 	in.MC, in.MCPacks, fallback, fallbackProblems = withFallback(in.MC, in.MCPacks, in.MC4DB, in.MC4DBPacks)
+	var err error
+	if in.MC, err = excludeSetCards(in.MC, in.Curated.Sets); err != nil {
+		return Result{}, err
+	}
 	if err := checkCerebroOverrides(in.Curated.Cards, in.CB); err != nil {
 		return Result{}, err
 	}
@@ -125,6 +129,30 @@ func Build(in Inputs) (Result, error) {
 		Fallback: fallback,
 		Coverage: []report.Coverage{frenchCoverage(packs)},
 	}, nil
+}
+
+// excludeSetCards takes the cards the curated sets exclude out of their set
+// in the source records: they become set-less cards, which no set lists and
+// which get the back of a card without a set. Each excluded card must be in
+// its set in the sources, or the exclusion would silently do nothing.
+func excludeSetCards(mc []marvelcdb.Card, defs map[string]curated.SetDef) ([]marvelcdb.Card, error) {
+	canonical := canonicalCodes(mc)
+	records := slices.Clone(mc)
+	for _, setCode := range slices.Sorted(maps.Keys(defs)) {
+		for _, code := range defs[setCode].Exclude {
+			found := false
+			for i := range records {
+				if canonical[records[i].Code] == code && records[i].SetCode == setCode {
+					records[i].SetCode, records[i].SetName, records[i].SetType = "", "", ""
+					found = true
+				}
+			}
+			if !found {
+				return nil, fmt.Errorf("curated set %s: excluded card %s is not in the set", setCode, code)
+			}
+		}
+	}
+	return records, nil
 }
 
 func cardCodesOf(cards map[string][]pack.Card) map[string]bool {

@@ -1,0 +1,35 @@
+---
+name: "Rise of Red Skull scenarios"
+description: "Crossbones, Absorbing Man, Taskmaster, Zola and Red Skull are curated; searches and random setups stay manual"
+type: project
+---
+
+# Rise of Red Skull scenarios
+
+- The five villains of The Rise of Red Skull (`trors`) are curated
+  scenarios: Crossbones, Absorbing Man, Taskmaster, Zola and Red Skull.
+  Each has a "Villain" stage (I, II, III) and a "Main scheme" stage with
+  every main scheme in stage order; Standard starts on stage I, Expert on
+  stage II, the main scheme on its first card, face 0. None is
+  self-contained: the lobby offers the modular, Standard and Expert sets.
+- Crossbones has an "Experimental Weapons" scenario deck (set
+  `exper_weapon`), Red Skull a "Side-scheme" deck (the five side schemes
+  of his set but The Red House, which starts in play); both are shuffled,
+  have their own discard pile and are not encounter decks. Taskmaster sets
+  aside his four captive allies, Red Skull The Sleeper.
+- A weapon discarded to the deck's own discard pile, instead of the
+  encounter discard pile the rulebook names, is an accepted deviation.
+- Manual: Absorbing Man's random starting environment, Taskmaster's Hydra
+  Patrol (the host adds the modular set, players search its side scheme),
+  Zola's Hydra Prison and Ultimate Bio-Servants, and revealing weapons and
+  side schemes (Reveal on the scenario deck, then drag the card).
+- Campaign mode is out of scope.
+
+**Why:** user decision: as little automation as possible; whatever a
+Setup text makes players search for stays manual, as Klaw's Defense
+Network does.
+
+**How to apply:** check further scenarios with extra decks against their
+rulebook in the same way, as curated data only. See
+[[project_scenario_decks]], [[project_set_setup]],
+[[project_set_exclude]] and [[project_setup_scope]].

@@ -499,12 +499,46 @@ func (b *tableBuilder) setupScenario(cfg LobbyConfig) (pack.Scenario, error) {
 	if !classic {
 		return scenario, b.requireNoVillainLeftover(scenario.VillainSet)
 	}
+	// The cards the scenario decks take stay out of the classic encounter
+	// deck too. They are not added to apart, which the scenario decks
+	// themselves leave out.
+	taken, err := b.scenarioDeckCodes(scenario)
+	if err != nil {
+		return pack.Scenario{}, err
+	}
 	for _, setCode := range encounterSets {
-		if err := b.addSetToPile(setCode, PileEncounter, skips[setCode]); err != nil {
+		skip := map[string]bool{}
+		maps.Copy(skip, skips[setCode])
+		maps.Copy(skip, taken)
+		if err := b.addSetToPile(setCode, PileEncounter, skip); err != nil {
 			return pack.Scenario{}, err
 		}
 	}
 	return scenario, nil
+}
+
+// scenarioDeckCodes returns the canonical codes of the cards the scenario
+// decks take: the cards of their sets and the cards they list.
+func (b *tableBuilder) scenarioDeckCodes(scenario pack.Scenario) (map[string]bool, error) {
+	codes := map[string]bool{}
+	for _, deck := range scenario.Decks {
+		listed := slices.Clone(deck.Cards)
+		for _, setCode := range deck.Sets {
+			set, ok := b.cat.Set(setCode)
+			if !ok {
+				return nil, invalid("unknown set %q", setCode)
+			}
+			listed = append(listed, set.Cards...)
+		}
+		for _, code := range listed {
+			canonical, err := b.canonical(code)
+			if err != nil {
+				return nil, err
+			}
+			codes[canonical] = true
+		}
+	}
+	return codes, nil
 }
 
 // setupMainScheme sets up the main scheme cards of a main scheme set, in set

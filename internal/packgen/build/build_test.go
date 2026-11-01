@@ -330,6 +330,41 @@ func TestBuildMergesCuratedSets(t *testing.T) {
 	}
 }
 
+func TestBuildExcludesCuratedSetCards(t *testing.T) {
+	in := standardSetsInputs(t, map[string]curated.SetDef{
+		"standard_ii": {Exclude: []string{"09006"}},
+	})
+	// A player ally the sources list in an encounter set, as marvelcdb lists
+	// a player-side Shang-Chi in Taskmaster's set.
+	in.MC = append(in.MC, marvelcdb.Card{
+		Code: "09006", Name: "Ally 09006", TypeCode: "ally", FactionCode: "hero", PackCode: "core",
+		SetCode: "standard_ii", SetName: "standard_ii", SetType: "standard",
+		ImageSrc: "/09006.png", Quantity: 1,
+	})
+	addImage(in.Manifest, "09006", "en")
+
+	result, err := Build(in)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	packFile := result.Packs[0]
+	i := slices.IndexFunc(packFile.Sets, func(set pack.Set) bool { return set.Code == "standard_ii" })
+	if i < 0 {
+		t.Fatal("set standard_ii not found")
+	}
+	if got, want := packFile.Sets[i].Cards, []string{"09003", "09004"}; !slices.Equal(got, want) {
+		t.Errorf("got standard_ii cards %v, want %v", got, want)
+	}
+	j := slices.IndexFunc(packFile.Cards, func(card pack.Card) bool { return card.Code == "09006" })
+	if j < 0 {
+		t.Fatal("excluded card 09006 left the pack, want it kept for the decks")
+	}
+	if card := packFile.Cards[j]; card.Set != "" || card.Back != pack.BackPlayer {
+		t.Errorf("got excluded card in set %q with back %q, want no set and a player back", card.Set, card.Back)
+	}
+}
+
 func TestBuildRejectsInvalidCuratedSets(t *testing.T) {
 	inPlay := func(card string, face int) curated.SetDef {
 		return curated.SetDef{InPlay: map[pack.Difficulty][]pack.FaceRef{
@@ -350,6 +385,19 @@ func TestBuildRejectsInvalidCuratedSets(t *testing.T) {
 			"main scheme set without main scheme",
 			map[string]curated.SetDef{"standard_ii": {MainScheme: true}},
 			"standard_ii: main scheme set has no main scheme card",
+		},
+		{
+			"excluded card of another set",
+			map[string]curated.SetDef{"standard_ii": {Exclude: []string{"09005"}}},
+			"curated set standard_ii: excluded card 09005 is not in the set",
+		},
+		{
+			"excluded card in play",
+			map[string]curated.SetDef{"standard_ii": {
+				Exclude: []string{"09003"},
+				InPlay:  inPlay("09003", 0).InPlay,
+			}},
+			"09003 is not in the set",
 		},
 	}
 	for _, tt := range tests {

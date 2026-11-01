@@ -34,7 +34,8 @@
 - [Caddy as the local web server](references/project_caddy_entry_point.md) — Caddy serves web/dist from disk, single local entry point
 - [mise pins the frontend toolchain](references/project_mise_versions.md) — root mise.toml is the only node/pnpm version source
 - [Random player name](references/project_player_name.md) — no name prompt; random "Adjective Noun" name in itf-name; 16 chars, no emoji
-- [Standard and Expert set setup](references/project_set_setup.md) — Setup-keyword set cards start in play via sets.json; Standard PvP unlisted
+- [Standard and Expert set setup](references/project_set_setup.md) — Setup-keyword cards in play via sets.json; unlisted sets
+- [Cards excluded from a set](references/project_set_exclude.md) — sets.json `exclude` drops a source's misfiled card (Shang-Chi 10098)
 - [Hero side decks](references/project_hero_side_decks.md) — curated side decks, only Invocation has a discard; set-aside hero cards
 - [Per-game card pool](references/project_card_pool.md) — table loads GET /api/games/{id}/cards; SPA ships pack index only
 - [Card image preload](references/project_image_preload.md) — browser-native: low-priority Image per pool face; immutable CDN cache
@@ -53,7 +54,8 @@
 - [French name sources](references/project_french_name_sources.md) — curated > mc4db FR > fr.marvelcdb > cgbuilder; curated card names; cgbuilder non-fatal
 - [Fear No Evil scenarios](references/project_fear_no_evil_scenarios.md) — Kingpin, Underlings as villains; scenario = main scheme set
 - [Green Goblin scenarios](references/project_green_goblin_scenarios.md) — Risky Business, Mutagen Formula curated; Goblin Thralls by hand
-- [Scenario decks and several villains](references/project_scenario_decks.md) — curated decks, several villains, manual active counter; Wrecking Crew
+- [Rise of Red Skull scenarios](references/project_red_skull_scenarios.md) — five villains curated; weapons and side-scheme decks; searches manual
+- [Scenario decks and several villains](references/project_scenario_decks.md) — deck cards out of the classic deck; several villains
 - [Action menu organisation](references/project_action_bars.md) — click opens the action menu; hand plays by drag and keys; out-of-play chips
 - [Identity card stays on the table](references/project_identity_stays.md) — identity never leaves the table, like a stage card
 - [Compact top bar hides on scroll](references/project_top_bar_auto_hide.md) — ≤600px wide or ≤500px tall: hides on scroll down, back on scroll up

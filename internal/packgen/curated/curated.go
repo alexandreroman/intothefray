@@ -68,6 +68,11 @@ type SetDef struct {
 	// MainScheme makes the set a main scheme set, which the sources list as a
 	// villain set although it has no villain card.
 	MainScheme bool `json:"mainScheme,omitempty"`
+	// Exclude lists the cards the sources wrongly put in the set, e.g. a
+	// player-side reprint of an encounter card. They become cards without a
+	// set, with the back such a card has, and stay in their pack, where a
+	// deck may still use them.
+	Exclude []string `json:"exclude,omitempty"`
 }
 
 // Names are the hand-written names of one language, for the packs, sets and
