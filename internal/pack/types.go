@@ -24,6 +24,34 @@ const (
 	BackVillain   Back = "villain"
 )
 
+// DiscardRule tells where the cards of a side deck or a scenario deck go when
+// they are discarded.
+type DiscardRule string
+
+// Supported discard rules. The zero value sends the cards to their owner's
+// discard pile: the player's for a side deck, the encounter discard pile for
+// a scenario deck (Crossbones' Experimental Weapons).
+const (
+	// DiscardOwner is the default: the owner's discard pile.
+	DiscardOwner DiscardRule = ""
+	// DiscardOwn gives the deck a discard pile of its own (Invocation, Red
+	// Skull's side schemes, each Wrecking Crew encounter deck).
+	DiscardOwn DiscardRule = "own"
+	// DiscardNone never discards the cards: one tucked under a card leaving
+	// the table goes to the bottom of its deck (Weather, Sense, Labor, Gift).
+	DiscardNone DiscardRule = "none"
+)
+
+// Valid reports whether r is one of the supported discard rules.
+func (r DiscardRule) Valid() bool {
+	switch r {
+	case DiscardOwner, DiscardOwn, DiscardNone:
+		return true
+	default:
+		return false
+	}
+}
+
 // Difficulty selects the scenario setup variant.
 type Difficulty string
 
@@ -96,9 +124,9 @@ type Set struct {
 // SideDeck describes how a hero's extra deck (a "side deck" in the rules
 // reference) is set up. Its cards are always shuffled at setup.
 type SideDeck struct {
-	Label     string `json:"label"`               // "Invocation": "Invocation deck"
-	TopFaceUp bool   `json:"topFaceUp,omitempty"` // top card faceup for everyone
-	Discard   bool   `json:"discard,omitempty"`   // has its own discard pile
+	Label     string      `json:"label"`               // "Invocation": "Invocation deck"
+	TopFaceUp bool        `json:"topFaceUp,omitempty"` // top card faceup for everyone
+	Discard   DiscardRule `json:"discard,omitempty"`   // where its cards are discarded
 	// Back is the printed back all the set's cards share, captioned with the
 	// deck's label, as Hercules' Labor deck has; empty for a side deck whose
 	// cards keep their own backs.
@@ -143,8 +171,8 @@ type ScenarioDeck struct {
 	Cards []string `json:"cards,omitempty"`
 	// Ordered keeps the listed order instead of shuffling the deck at setup.
 	Ordered bool `json:"ordered,omitempty"`
-	// Discard gives the deck a discard pile.
-	Discard bool `json:"discard,omitempty"`
+	// Discard tells where the deck's cards are discarded.
+	Discard DiscardRule `json:"discard,omitempty"`
 	// Encounter makes the deck an encounter deck: dealt from, boosts dealt
 	// from, revealed, like the classic encounter deck.
 	Encounter bool `json:"encounter,omitempty"`

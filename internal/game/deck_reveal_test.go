@@ -234,7 +234,7 @@ func TestDiscardTopTakesTheRevealedCardFirst(t *testing.T) {
 			f := newDoFixture(t)
 			id := f.revealTop(t, "h", deck.reveal, 1)
 			top := topCards(f.g.Table.Piles[deck.pile], 1)[0]
-			discardID, _ := discardPileOf(deck.pile)
+			discardID := discardOf(f.g.Table.Piles[deck.pile])
 
 			f.mustDo(t, "h", Action{Kind: ActDiscardTop, Pile: deck.pile, N: 2}, at(2))
 

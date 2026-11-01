@@ -453,9 +453,10 @@ export interface PileTarget {
  * The piles a dragged card can go to, as its Move to ▾ menu has them: its
  * home deck, on top (the viewer's own cards and encounter cards only), and
  * its discard pile, when it has one; none when it stays on the table. The top
- * card of one of the viewer's decks goes to that deck's discard pile, the
- * encounter deck's to the encounter discard pile. A scenario deck's top card
- * also takes its own deck, where a drop does nothing.
+ * card of a deck goes to the pile that deck discards to (deckDiscardOf): a
+ * player's deck to its discard pile, the encounter deck's to the encounter
+ * discard pile, a side or scenario deck's to the pile it names. A scenario
+ * deck's top card also takes its own deck, where a drop does nothing.
  */
 export function pileTargets(drag: DragSource, view: View): PileTarget[] {
   const table = view.table;
@@ -468,16 +469,21 @@ export function pileTargets(drag: DragSource, view: View): PileTarget[] {
   }
   const exists = (target: PileTarget) => table.piles.some((p) => p.id === target.pile);
   if (drag.kind === 'encounter' || drag.kind === 'deck') {
-    const targets: PileTarget[] = [
-      { pile: deckDiscardOf(drag.pile), drop: 'discard', label: 'Discard' },
-    ];
+    const deck = table.piles.find((p) => p.id === drag.pile);
+    if (!deck) {
+      return [];
+    }
+    const targets: PileTarget[] = [];
+    const discard = deckDiscardOf(deck, table.piles);
+    if (discard !== null) {
+      targets.push({ pile: discard, drop: 'discard', label: 'Discard' });
+    }
     // A drop on the scenario deck itself does nothing (onPile): without this target, it would
     // play the card at the deck's spot. Its label never shows.
-    const deck = table.piles.find((p) => p.id === drag.pile);
-    if (deck?.kind === 'scenarioDeck') {
+    if (deck.kind === 'scenarioDeck') {
       targets.push({ pile: deck.id, drop: 'top', label: 'Top of deck' });
     }
-    return targets.filter(exists);
+    return targets;
   }
 
   const card = table.cards.find((c) => c.id === drag.card);

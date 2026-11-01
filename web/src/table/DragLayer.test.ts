@@ -1706,6 +1706,7 @@ describe('the card under a still pointer after the viewer acts', () => {
           y: 300,
           count: 3,
           label: 'Invocation',
+          discard: 'sided:p0:0',
         }),
         pile('sided:p0:0', {
           kind: 'sideDiscard',

@@ -1018,6 +1018,7 @@ describe('side decks', () => {
       label: 'Invocation',
       topFaceUp: true,
       cards: ['inv-top'],
+      discard: 'sided:p0:0',
     }),
     pile('sided:p0:0', {
       kind: 'sideDiscard',
@@ -1027,7 +1028,13 @@ describe('side decks', () => {
       cards: ['u'],
     }),
     pile('side:p0:1', { kind: 'sideDeck', owner: 0, count: 5, label: 'Sense', topFaceUp: true }),
-    pile('side:p1:0', { kind: 'sideDeck', owner: 1, count: 5, label: 'Invocation' }),
+    pile('side:p1:0', {
+      kind: 'sideDeck',
+      owner: 1,
+      count: 5,
+      label: 'Invocation',
+      discard: 'sided:p1:0',
+    }),
     pile('sided:p1:0', {
       kind: 'sideDiscard',
       owner: 1,
@@ -1377,16 +1384,39 @@ describe('withSign', () => {
 
 describe('the discard pile of an encounter card', () => {
   const scenarioPiles = [
-    pile('enc:w', { kind: 'scenarioDeck' }),
+    pile('enc:w', { kind: 'encounter', discard: 'encd:w' }),
     pile('encd:w', { kind: 'encounterDiscard' }),
   ];
 
-  it('is the discard pile of its home scenario deck', () => {
+  it('is the discard pile its home scenario deck names', () => {
     expect(discardPileOf(card('a', { owner: -1, home: 'enc:w' }), scenarioPiles)).toBe('encd:w');
   });
 
-  it('is none when its home scenario deck has no discard pile', () => {
+  it('is none when its home scenario deck names none', () => {
     expect(discardPileOf(card('a', { owner: -1, home: 'enc:w' }), [pile('enc:w', {})])).toBeNull();
+    // A discard pile named by id alone is not the deck's.
+    expect(
+      discardPileOf(card('a', { owner: -1, home: 'enc:w' }), [
+        pile('enc:w', { kind: 'encounter' }),
+        pile('encd:w', { kind: 'encounterDiscard' }),
+      ]),
+    ).toBeNull();
+  });
+
+  it('is the encounter discard pile for a weapon of a deck without a discard pile of its own', () => {
+    const piles = [
+      pile('sdeck:weapons', { kind: 'scenarioDeck', discard: 'encd' }),
+      pile('encd', { kind: 'encounterDiscard' }),
+    ];
+    expect(discardPileOf(card('a', { owner: -1, home: 'sdeck:weapons' }), piles)).toBe('encd');
+  });
+
+  it("is its owner's discard pile for a card of a side deck naming it", () => {
+    const piles = [
+      pile('side:p0:0', { kind: 'sideDeck', owner: 0, discard: 'disc:p0' }),
+      pile('disc:p0', { kind: 'discard', owner: 0 }),
+    ];
+    expect(discardPileOf(card('a', { owner: 0, home: 'side:p0:0' }), piles)).toBe('disc:p0');
   });
 
   it('is none for a card without a home on a table without an encounter discard pile', () => {

@@ -7,8 +7,7 @@
       "label": "Experimental Weapons",
       "sets": [
         "exper_weapon"
-      ],
-      "discard": true
+      ]
     }
   ],
   "piles": [

@@ -16,7 +16,7 @@
       "sets": [
         "wrecker"
       ],
-      "discard": true,
+      "discard": "own",
       "encounter": true
     },
     {
@@ -25,7 +25,7 @@
       "sets": [
         "thunderball"
       ],
-      "discard": true,
+      "discard": "own",
       "encounter": true
     },
     {
@@ -34,7 +34,7 @@
       "sets": [
         "piledriver"
       ],
-      "discard": true,
+      "discard": "own",
       "encounter": true
     },
     {
@@ -43,7 +43,7 @@
       "sets": [
         "bulldozer"
       ],
-      "discard": true,
+      "discard": "own",
       "encounter": true
     }
   ],

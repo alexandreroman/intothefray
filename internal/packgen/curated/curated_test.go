@@ -46,7 +46,7 @@ func TestLoad(t *testing.T) {
 		}},
 		"standard_pvp": {Unlisted: true},
 		"doctor_strange_invocation_deck": {
-			Side: &pack.SideDeck{Label: "Invocation", TopFaceUp: true, Discard: true},
+			Side: &pack.SideDeck{Label: "Invocation", TopFaceUp: true, Discard: pack.DiscardOwn},
 		},
 		"storm_weather_deck": {Side: &pack.SideDeck{Label: "Weather"}},
 		"valk":               {SetAside: []string{"25002"}},
@@ -147,7 +147,7 @@ func TestLoadRejectsInvalidSets(t *testing.T) {
 		{"unknown field", `{"standard_pvp":{"hidden":true}}`, `unknown field "hidden"`},
 		{
 			"side deck without label",
-			`{"storm_weather_deck":{"side":{"discard":true}}}`,
+			`{"storm_weather_deck":{"side":{"discard":"own"}}}`,
 			`set "storm_weather_deck": side deck has no label`,
 		},
 		{"unknown side field", `{"storm_weather_deck":{"side":{"label":"Weather","faceUp":true}}}`, `unknown field "faceUp"`},
@@ -156,6 +156,12 @@ func TestLoadRejectsInvalidSets(t *testing.T) {
 			`{"hercules_labor_deck":{"side":{"label":"Labor","back":"side"}}}`,
 			`set "hercules_labor_deck": side deck has an unknown back "side"`,
 		},
+		{
+			"side deck with an unknown discard rule",
+			`{"hercules_labor_deck":{"side":{"label":"Labor","discard":"victory"}}}`,
+			`set "hercules_labor_deck": side deck has an unknown discard rule "victory"`,
+		},
+		{"side deck with a boolean discard", `{"hercules_labor_deck":{"side":{"label":"Labor","discard":true}}}`, "discard"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -240,7 +246,7 @@ func TestLoadRejectsEncounterDeckNotSelfContained(t *testing.T) {
 	wantScenarioError(t, `{"id":"x","villainSet":"x","decks":[{"key":"a","label":"A","sets":["s"],"encounter":true}]}`,
 		"selfContained")
 	if err := loadScenario(t, `{"id":"x","villainSet":"x","selfContained":true,`+
-		`"decks":[{"key":"a","label":"A","sets":["s"],"encounter":true}],`+emptyStart+`}`); err != nil {
+		`"decks":[{"key":"a","label":"A","sets":["s"],"encounter":true,"discard":"own"}],`+emptyStart+`}`); err != nil {
 		t.Fatalf("got error %v, want none for a self-contained scenario", err)
 	}
 }
@@ -257,6 +263,18 @@ func TestLoadRejectsBadDecks(t *testing.T) {
 		{"empty key", `{"id":"x","villainSet":"x","decks":[{"label":"A","sets":["s"]}]}`, "no key"},
 		{"empty label", `{"id":"x","villainSet":"x","decks":[{"key":"a","sets":["s"]}]}`, "no label"},
 		{"empty deck", `{"id":"x","villainSet":"x","decks":[{"key":"a","label":"A"}]}`, "neither sets nor cards"},
+		{
+			"unknown discard rule",
+			`{"id":"x","villainSet":"x","decks":[{"key":"a","label":"A","sets":["s"],"discard":"victory"}]}`,
+			`deck "a" has an unknown discard rule "victory"`,
+		},
+		{
+			// Without a classic encounter deck, there is no encounter discard pile to default to.
+			"owner's discard without an encounter discard pile",
+			`{"id":"x","villainSet":"x","selfContained":true,"decks":[` +
+				`{"key":"e","label":"E","sets":["s"],"encounter":true,"discard":"none"},` + deckA + `]}`,
+			`deck "a" needs a discard rule`,
+		},
 		{
 			"stage naming no deck",
 			`{"id":"x","villainSet":"x","piles":[{"key":"v","label":"V","cards":[],"deck":"b"}],"decks":[` + deckA + `]}`,
@@ -391,7 +409,7 @@ func TestLoadRejectsBadSets(t *testing.T) {
 		{
 			"scenario with an encounter deck",
 			`{"id":"x","villainSet":"x","selfContained":true,"sets":["a"],` +
-				`"decks":[{"key":"a","label":"A","sets":["s"],"encounter":true}],` + emptyStart + `}`,
+				`"decks":[{"key":"a","label":"A","sets":["s"],"encounter":true,"discard":"own"}],` + emptyStart + `}`,
 			"encounter sets need a scenario without an encounter deck",
 		},
 	}

@@ -7,9 +7,11 @@ import (
 )
 
 // scenarioFixture is a started game whose table gains the encounter deck
-// "enc:w" (Wrecker, with its discard "encd:w") and the scenario deck "sdeck:x"
-// (Experimental Weapons, with no discard pile). Cards w1..w3 and x1..x2 lie in
-// their decks, the last one on top.
+// "enc:w" (Wrecker, with its own discard pile "encd:w") and the scenario deck
+// "sdeck:x" (Experimental Weapons, with no discard pile of its own: its cards
+// are discarded to the encounter discard pile). Cards w1..w3 and x1..x2 lie in
+// their decks, the last one on top. The game starts from that table, so that
+// Undo rebuilds it.
 func scenarioFixture(t *testing.T) *doFixture {
 	t.Helper()
 	f := newDoFixture(t)
@@ -17,7 +19,7 @@ func scenarioFixture(t *testing.T) *doFixture {
 	code := tb.Cards[tb.Piles[PileEncounter].Cards[0]].Code
 	tb.Piles["enc:w"] = &Pile{
 		ID: "enc:w", Kind: KindEncounter, Owner: NoOwner,
-		Label: "Wrecker", Compact: true, X: 0, Y: 30,
+		Label: "Wrecker", Compact: true, X: 0, Y: 30, Discard: "encd:w",
 	}
 	tb.Piles["encd:w"] = &Pile{
 		ID: "encd:w", Kind: KindEncounterDiscard, Owner: NoOwner,
@@ -25,7 +27,7 @@ func scenarioFixture(t *testing.T) *doFixture {
 	}
 	tb.Piles["sdeck:x"] = &Pile{
 		ID: "sdeck:x", Kind: KindScenarioDeck, Owner: NoOwner,
-		Label: "Experimental Weapons", Compact: true, X: 300, Y: 30,
+		Label: "Experimental Weapons", Compact: true, X: 300, Y: 30, Discard: PileEncounterDiscard,
 	}
 	add := func(deck string, ids ...string) {
 		for _, id := range ids {
@@ -35,6 +37,7 @@ func scenarioFixture(t *testing.T) *doFixture {
 	}
 	add("enc:w", "w1", "w2", "w3")
 	add("sdeck:x", "x1", "x2")
+	f.g.History = newHistory(testSeed, tb, testNow)
 	return f
 }
 
@@ -69,6 +72,8 @@ func TestDiscardGoesToHomeDiscard(t *testing.T) {
 func TestNoDiscardScenarioDeck(t *testing.T) {
 	f := scenarioFixture(t)
 	tb := f.g.Table
+	// A deck whose cards are never discarded ("none").
+	tb.Piles["sdeck:x"].Discard = ""
 	// Draw x2 out onto the table, then tuck x1 under it: leaving the table sends x1 to the bottom of its deck.
 	tb.Piles["sdeck:x"].Cards = []string{"x1"}
 	tb.Cards["x2"].Zone, tb.Cards["x2"].Pile = ZoneTable, ""
@@ -89,6 +94,139 @@ func TestNoDiscardScenarioDeck(t *testing.T) {
 	}
 }
 
+// TestWeaponDiscardGoesToEncounterDiscard discards a card of a deck with no
+// discard pile of its own, played to the table: it goes to the encounter
+// discard pile, its owner's, and Undo brings it back.
+func TestWeaponDiscardGoesToEncounterDiscard(t *testing.T) {
+	f := scenarioFixture(t)
+	tb := f.g.Table
+	f.mustDo(t, "h", Action{Kind: ActPlay, Pile: "sdeck:x", X: 500, Y: 300}, at(1))
+
+	f.mustDo(t, "h", Action{Kind: ActDiscard, Card: "x2"}, at(2))
+	if got := topCards(tb.Piles[PileEncounterDiscard], 1); !slices.Equal(got, []string{"x2"}) {
+		t.Errorf("encounter discard top = %v, want [x2]", got)
+	}
+	if c := tb.Cards["x2"]; c.Zone != ZonePile || c.Pile != PileEncounterDiscard || c.Home != "sdeck:x" {
+		t.Errorf("x2 = %+v, want on the encounter discard pile, at home in sdeck:x", c)
+	}
+	if got, want := f.lastLog().Text, "discarded "+f.nameOf(t, "x2"); got != want {
+		t.Errorf("line = %q, want %q", got, want)
+	}
+	checkIntegrity(t, tb)
+
+	f.mustDo(t, "h", Action{Kind: ActUndo}, at(3))
+	tb = f.g.Table
+	if c := tb.Cards["x2"]; c.Zone != ZoneTable || c.X != 500 || c.Y != 300 {
+		t.Errorf("x2 after undo = %+v, want back on the table at (500,300)", c)
+	}
+	if slices.Contains(tb.Piles[PileEncounterDiscard].Cards, "x2") {
+		t.Error("x2 is still on the encounter discard pile after undo")
+	}
+	checkIntegrity(t, tb)
+}
+
+// TestTuckedWeaponGoesToEncounterDiscard discards a table card a weapon is
+// tucked under: the weapon follows to the encounter discard pile, not to the
+// bottom of its deck.
+func TestTuckedWeaponGoesToEncounterDiscard(t *testing.T) {
+	f := scenarioFixture(t)
+	tb := f.g.Table
+	f.mustDo(t, "h", Action{Kind: ActDeal, Pile: "enc:w", Area: "p1", X: 500, Y: 300}, at(1))
+	f.mustDo(t, "h", Action{Kind: ActPlay, Pile: "sdeck:x", Target: "w3", X: 500, Y: 320}, at(2))
+
+	if pile, bottom, ok := tb.tuckedDestination(tb.Cards["x2"]); !ok || bottom || pile.ID != PileEncounterDiscard {
+		t.Errorf("tucked destination = %v %t %t, want the top of the encounter discard pile", pile, bottom, ok)
+	}
+	f.mustDo(t, "h", Action{Kind: ActDiscard, Card: "w3"}, at(3))
+	if got := tb.Piles[PileEncounterDiscard].Cards; !slices.Equal(got, []string{"x2"}) {
+		t.Errorf("encounter discard = %v, want [x2]", got)
+	}
+	if got := tb.Piles["encd:w"].Cards; !slices.Equal(got, []string{"w3"}) {
+		t.Errorf("encd:w = %v, want [w3]", got)
+	}
+	if got := tb.Piles["sdeck:x"].Cards; !slices.Equal(got, []string{"x1"}) {
+		t.Errorf("sdeck:x = %v, want [x1]: nothing under the deck", got)
+	}
+	checkIntegrity(t, tb)
+}
+
+// TestRevealedWeaponDiscardGoesToEncounterDiscard discards the card revealed
+// on a deck with no discard pile of its own.
+func TestRevealedWeaponDiscardGoesToEncounterDiscard(t *testing.T) {
+	f := scenarioFixture(t)
+	tb := f.g.Table
+	f.mustDo(t, "h", Action{Kind: ActReveal, Pile: "sdeck:x"}, at(1))
+
+	f.mustDo(t, "h", Action{Kind: ActDiscard, Card: "x2"}, at(2))
+	if got := tb.Piles[PileEncounterDiscard].Cards; !slices.Equal(got, []string{"x2"}) {
+		t.Errorf("encounter discard = %v, want [x2]", got)
+	}
+	if c := tb.Cards["x2"]; c.OnPile != "" || c.Pile != PileEncounterDiscard {
+		t.Errorf("x2 = %+v, want on the encounter discard pile", c)
+	}
+	checkIntegrity(t, tb)
+}
+
+// TestDiscardTopOfWeaponsDeck discards the top cards of a deck with no
+// discard pile of its own onto the encounter discard pile.
+func TestDiscardTopOfWeaponsDeck(t *testing.T) {
+	f := scenarioFixture(t)
+	tb := f.g.Table
+
+	f.mustDo(t, "b", Action{Kind: ActDiscardTop, Pile: "sdeck:x", N: 1}, at(1))
+	if got := tb.Piles[PileEncounterDiscard].Cards; !slices.Equal(got, []string{"x2"}) {
+		t.Errorf("encounter discard = %v, want [x2]", got)
+	}
+	if got := tb.Piles["sdeck:x"].Cards; !slices.Equal(got, []string{"x1"}) {
+		t.Errorf("sdeck:x = %v, want [x1]", got)
+	}
+	if got, want := f.lastLog().Text, "discarded the top card of the Experimental Weapons deck"; got != want {
+		t.Errorf("line = %q, want %q", got, want)
+	}
+	checkIntegrity(t, tb)
+
+	f.mustDo(t, "b", Action{Kind: ActUndo}, at(2))
+	tb = f.g.Table
+	if got := tb.Piles["sdeck:x"].Cards; !slices.Equal(got, []string{"x1", "x2"}) {
+		t.Errorf("sdeck:x after undo = %v, want [x1 x2]", got)
+	}
+	if n := len(tb.Piles[PileEncounterDiscard].Cards); n != 0 {
+		t.Errorf("encounter discard holds %d cards after undo, want 0", n)
+	}
+}
+
+// TestShuffleBackTakesTheDiscardedWeapon shuffles the encounter discard pile
+// back into the encounter deck: the weapon discarded there goes with it,
+// under a new id, still at home in its own deck.
+func TestShuffleBackTakesTheDiscardedWeapon(t *testing.T) {
+	f := scenarioFixture(t)
+	tb := f.g.Table
+	before := len(tb.Piles[PileEncounter].Cards)
+	f.mustDo(t, "h", Action{Kind: ActDiscardTop, Pile: "sdeck:x", N: 1}, at(1))
+
+	f.mustDo(t, "h", Action{Kind: ActShuffleBack, Pile: PileEncounterDiscard}, at(2))
+	if n := len(tb.Piles[PileEncounterDiscard].Cards); n != 0 {
+		t.Errorf("encounter discard holds %d cards, want 0", n)
+	}
+	enc := tb.Piles[PileEncounter].Cards
+	if len(enc) != before+1 {
+		t.Fatalf("encounter deck holds %d cards, want %d", len(enc), before+1)
+	}
+	if _, ok := tb.Cards["x2"]; ok || slices.Contains(enc, "x2") {
+		t.Error("x2 kept its id in the encounter deck")
+	}
+	weapons := 0
+	for _, id := range enc {
+		if tb.Cards[id].Home == "sdeck:x" {
+			weapons++
+		}
+	}
+	if weapons != 1 {
+		t.Errorf("encounter deck holds %d weapons, want 1", weapons)
+	}
+	checkIntegrity(t, tb)
+}
+
 func TestShuffleBackScenarioDeck(t *testing.T) {
 	f := scenarioFixture(t)
 	f.mustDo(t, "h", Action{Kind: ActDiscardTop, Pile: "enc:w", N: 2}, at(1))
@@ -107,8 +245,8 @@ func TestShuffleBackScenarioDeck(t *testing.T) {
 	if d, ok := deckOfDiscard("sdisc:x"); !ok || d != "sdeck:x" {
 		t.Errorf("deckOfDiscard(sdisc:x) = %q %t", d, ok)
 	}
-	if d, ok := discardPileOf("sdeck:x"); !ok || d != "sdisc:x" {
-		t.Errorf("discardPileOf(sdeck:x) = %q %t", d, ok)
+	if d := discardOf(f.g.Table.Piles["sdeck:x"]); d != PileEncounterDiscard {
+		t.Errorf("discardOf(sdeck:x) = %q, want %s", d, PileEncounterDiscard)
 	}
 }
 
@@ -244,8 +382,11 @@ func TestViewSendsScenarioHome(t *testing.T) {
 		t.Fatal("x2 is not in the view")
 	}
 	for _, p := range view.Piles {
-		if p.ID == "sdeck:x" && (p.Label != "Experimental Weapons" || !p.Compact) {
-			t.Errorf("pile view = %+v, want its label and compact", p)
+		if p.ID == "sdeck:x" && (p.Label != "Experimental Weapons" || !p.Compact || p.Discard != PileEncounterDiscard) {
+			t.Errorf("pile view = %+v, want its label, compact and its discard pile", p)
+		}
+		if p.ID == "enc:w" && p.Discard != "encd:w" {
+			t.Errorf("pile view = %+v, want its own discard pile", p)
 		}
 	}
 }

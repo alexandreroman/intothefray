@@ -85,6 +85,7 @@ function makeView(): View {
           count: 4,
           label: 'Invocation',
           topFaceUp: true,
+          discard: 'sided:p0:0',
         }),
         pile('sided:p0:0', {
           kind: 'sideDiscard',

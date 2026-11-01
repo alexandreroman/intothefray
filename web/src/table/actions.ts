@@ -692,11 +692,8 @@ export function arrowItem(card: string): ActionItem {
 // The piles a card goes to, as the server names them (internal/game/state.go).
 
 const SIDE_DECK_PREFIX = 'side:';
-const SIDE_DISCARD_PREFIX = 'sided:';
 const SCENARIO_ENCOUNTER_PREFIX = 'enc:';
-const SCENARIO_ENCOUNTER_DISCARD_PREFIX = 'encd:';
 const SCENARIO_DECK_PREFIX = 'sdeck:';
-const SCENARIO_DISCARD_PREFIX = 'sdisc:';
 
 /**
  * The deck a card goes back to: the side or scenario deck it belongs to (`home`), else the
@@ -710,40 +707,36 @@ export function homeDeckOf(card: CardView): string {
 }
 
 /**
- * The discard pile a card goes to, as discardPileID has it: a side or scenario deck's card
- * to that deck's discard pile, or nowhere (null) when the deck has none; an encounter card
- * without a home to the encounter discard pile, when the table has one.
+ * The discard pile a card goes to, as discardPileID has it: a side or scenario deck's card to
+ * the pile that deck names, or nowhere (null) when it names none; an encounter card without a
+ * home to the encounter discard pile, when the table has one.
  */
 export function discardPileOf(card: CardView, piles: readonly PileView[]): string | null {
   const home = homeDeckOf(card);
   if (isSideDeckId(home) || isScenarioDeckId(home)) {
-    const discard = deckDiscardOf(home);
-    return piles.some((pile) => pile.id === discard) ? discard : null;
+    const deck = piles.find((pile) => pile.id === home);
+    return deck ? deckDiscardOf(deck, piles) : null;
   }
   const discard = card.owner === -1 ? 'encd' : discardId(card.owner);
   return card.owner === -1 && !piles.some((pile) => pile.id === discard) ? null : discard;
 }
 
 /**
- * The discard pile paired with a deck, by id: "deck:p0" with "disc:p0", a side
- * deck "side:p0:1" with "sided:p0:1", the encounter deck with "encd", a scenario
- * deck "enc:w" with "encd:w" and "sdeck:x" with "sdisc:x". It may not exist: only
- * some side and scenario decks have one.
+ * The discard pile the top cards of a deck go to, as discardOf has it on the server: the pile a
+ * side or scenario deck names (`discard`), the encounter discard pile for the encounter deck, its
+ * owner's discard pile for a player's deck. Null when there is none on the table: a side or
+ * scenario deck may never discard its cards.
  */
-export function deckDiscardOf(deck: string): string {
-  if (deck === 'enc') {
-    return 'encd';
+export function deckDiscardOf(deck: PileView, piles: readonly PileView[]): string | null {
+  let discard: string | undefined;
+  if (isSideDeckId(deck.id) || isScenarioDeckId(deck.id)) {
+    discard = deck.discard;
+  } else if (deck.id === 'enc') {
+    discard = 'encd';
+  } else if (deck.kind === 'deck') {
+    discard = discardId(deck.owner);
   }
-  if (isSideDeckId(deck)) {
-    return SIDE_DISCARD_PREFIX + deck.slice(SIDE_DECK_PREFIX.length);
-  }
-  if (deck.startsWith(SCENARIO_ENCOUNTER_PREFIX)) {
-    return SCENARIO_ENCOUNTER_DISCARD_PREFIX + deck.slice(SCENARIO_ENCOUNTER_PREFIX.length);
-  }
-  if (deck.startsWith(SCENARIO_DECK_PREFIX)) {
-    return SCENARIO_DISCARD_PREFIX + deck.slice(SCENARIO_DECK_PREFIX.length);
-  }
-  return deck.replace(/^deck:/, 'disc:');
+  return discard !== undefined && piles.some((pile) => pile.id === discard) ? discard : null;
 }
 
 /** Whether the pile id is a side deck's: "side:p0:1". */
@@ -845,8 +838,8 @@ function pileActions(pile: PileView, context: Context): ActionItem[] | { text: s
         items.push(revealItem(pile, context));
       }
       items.push(lookTopItem(pile, pileName, context.table), searchItem(pile));
-      // Only a side deck with its own discard pile discards from the top.
-      if (hasPile(context.table, deckDiscardOf(pile.id))) {
+      // Only a side deck whose cards are discarded somewhere discards from the top.
+      if (deckDiscardOf(pile, context.table.piles) !== null) {
         items.push(discardOneItem(pile), discardTopItem(pile, pileName, context.table));
       }
       items.push(shuffleItem(pile));
@@ -861,8 +854,8 @@ function pileActions(pile: PileView, context: Context): ActionItem[] | { text: s
         lookTopItem(pile, pileName, context.table),
         searchItem(pile),
       ];
-      // A scenario deck may have no discard pile.
-      if (hasPile(context.table, deckDiscardOf(pile.id))) {
+      // A scenario deck may never discard its cards.
+      if (deckDiscardOf(pile, context.table.piles) !== null) {
         items.push(discardOneItem(pile), discardTopItem(pile, pileName, context.table));
       }
       items.push(shuffleItem(pile));

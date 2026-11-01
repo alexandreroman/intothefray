@@ -581,6 +581,7 @@ describe('diffViews', () => {
         label: 'Invocation',
         topFaceUp: true,
         cards: [top],
+        discard: 'sided:p0:0',
       });
     const onPile = (id: string) => card(id, { code: '09032', zone: 'pile', home: 'side:p0:0' });
     const withTop = (top: string, cards: CardView[], count?: number) =>
@@ -709,7 +710,13 @@ describe('diffViews', () => {
 
     describe('a side card tucked under a card that leaves the table', () => {
       const invocation = (count: number): PileView =>
-        pile('side:p0:0', { kind: 'sideDeck', x: 360, count, label: 'Invocation' });
+        pile('side:p0:0', {
+          kind: 'sideDeck',
+          x: 360,
+          count,
+          label: 'Invocation',
+          discard: 'sided:p0:0',
+        });
       const used = (cards: string[]): PileView =>
         pile('sided:p0:0', {
           kind: 'sideDiscard',
@@ -802,7 +809,13 @@ describe('diffViews', () => {
   it('shuffle of a side deck or its discard pile names the pile after its label', () => {
     const piles = [
       pile('deck:p0'),
-      pile('side:p0:0', { kind: 'sideDeck', x: 360, count: 4, label: 'Invocation' }),
+      pile('side:p0:0', {
+        kind: 'sideDeck',
+        x: 360,
+        count: 4,
+        label: 'Invocation',
+        discard: 'sided:p0:0',
+      }),
       pile('sided:p0:0', { kind: 'sideDiscard', x: 520, count: 1, label: 'Invocation' }),
       pile('side:p1:0', { kind: 'sideDeck', owner: 1, x: 360, count: 5, label: 'Invocation' }),
     ];
@@ -1670,7 +1683,13 @@ describe('diffViews', () => {
 
     it('a side card shuffled into its side deck flies there and the side deck riffles', () => {
       const invocation = (count: number) =>
-        pile('side:p0:0', { kind: 'sideDeck', x: 360, count, label: 'Invocation' });
+        pile('side:p0:0', {
+          kind: 'sideDeck',
+          x: 360,
+          count,
+          label: 'Invocation',
+          discard: 'sided:p0:0',
+        });
       const side = card('s', { code: '01001', home: 'side:p0:0', x: 300 });
       const prev = view({ cards: [side], piles: [deck(10), invocation(4)] });
       const next = view({

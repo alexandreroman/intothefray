@@ -4439,8 +4439,7 @@
           "label": "Experimental Weapons",
           "sets": [
             "exper_weapon"
-          ],
-          "discard": true
+          ]
         }
       ]
     },
@@ -4693,7 +4692,7 @@
             "04143",
             "04144"
           ],
-          "discard": true
+          "discard": "own"
         }
       ]
     }

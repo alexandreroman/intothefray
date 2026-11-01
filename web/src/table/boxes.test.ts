@@ -156,10 +156,16 @@ describe('side decks', () => {
   // Alex's Iron Man (p0) has an Invocation deck with its discard pile and a Sense deck without
   // one; Sam (p2) has an Invocation deck and its discard pile.
   const SIDE_PILES: PileView[] = [
-    pile('side:p0:0', { kind: 'sideDeck', owner: 0, label: 'Invocation', topFaceUp: true }),
+    pile('side:p0:0', {
+      kind: 'sideDeck',
+      owner: 0,
+      label: 'Invocation',
+      topFaceUp: true,
+      discard: 'sided:p0:0',
+    }),
     pile('sided:p0:0', { kind: 'sideDiscard', owner: 0, label: 'Invocation' }),
     pile('side:p0:1', { kind: 'sideDeck', owner: 0, label: 'Sense' }),
-    pile('side:p2:0', { kind: 'sideDeck', owner: 2, label: 'Invocation' }),
+    pile('side:p2:0', { kind: 'sideDeck', owner: 2, label: 'Invocation', discard: 'sided:p2:0' }),
     pile('sided:p2:0', { kind: 'sideDiscard', owner: 2, label: 'Invocation' }),
   ];
 

@@ -14,11 +14,11 @@ type: project
   self-contained: the lobby offers the modular, Standard and Expert sets.
 - Crossbones has an "Experimental Weapons" scenario deck (set
   `exper_weapon`), Red Skull a "Side-scheme" deck (the five side schemes
-  of his set but The Red House, which starts in play); both are shuffled,
-  have their own discard pile and are not encounter decks. Taskmaster sets
+  of his set but The Red House, which starts in play); both are shuffled
+  and are not encounter decks. The side-scheme deck has its own discard
+  pile; a discarded weapon goes to the encounter discard pile, as the
+  rulebook says (see [[project_discard_destinations]]). Taskmaster sets
   aside his four captive allies, Red Skull The Sleeper.
-- A weapon discarded to the deck's own discard pile, instead of the
-  encounter discard pile the rulebook names, is an accepted deviation.
 - Taskmaster's scenario requires the Hydra Patrol set (`sets` in
   `taskmaster.json`): setup shuffles it into the encounter deck, and the
   lobby offers only Weapon Master as his modular set.

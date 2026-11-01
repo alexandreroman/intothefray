@@ -681,3 +681,37 @@ func TestSideDeckSharedBacks(t *testing.T) {
 		}
 	}
 }
+
+// TestSideCardDiscardGoesToItsOwnersDiscard discards a card of a side deck
+// with no discard rule, the default: it goes to its owner's discard pile, and
+// so does a card of that deck tucked under it.
+func TestSideCardDiscardGoesToItsOwnersDiscard(t *testing.T) {
+	f := newDoFixture(t)
+	tb := f.g.Table
+	code := tb.Cards[tb.Piles["deck:p1"].Cards[0]].Code
+	tb.Piles["side:p1:0"] = &Pile{
+		ID: "side:p1:0", Kind: KindSideDeck, Owner: 1, Label: "Web", X: 390, Y: 630, Discard: "disc:p1",
+	}
+	tb.Cards["s1"] = &Card{ID: "s1", Code: code, Owner: 1, Home: "side:p1:0", Zone: ZoneTable, X: 600, Y: 600, Z: 50}
+	tb.Cards["s2"] = &Card{
+		ID: "s2", Code: code, Owner: 1, Home: "side:p1:0", Zone: ZoneTable, Parent: "s1", X: 600, Y: 620, Z: 49,
+	}
+	f.g.History = newHistory(testSeed, tb, testNow)
+
+	if pile, bottom, ok := tb.tuckedDestination(tb.Cards["s2"]); !ok || bottom || pile.ID != "disc:p1" {
+		t.Errorf("tucked destination = %v %t %t, want the top of disc:p1", pile, bottom, ok)
+	}
+	f.mustDo(t, "b", Action{Kind: ActDiscard, Card: "s1"}, at(1))
+	if got := tb.Piles["disc:p1"].Cards; !slices.Equal(got, []string{"s2", "s1"}) {
+		t.Errorf("disc:p1 = %v, want [s2 s1]", got)
+	}
+	if got := tb.Piles["side:p1:0"].Cards; len(got) != 0 {
+		t.Errorf("side:p1:0 = %v, want it empty", got)
+	}
+	checkIntegrity(t, tb)
+
+	f.mustDo(t, "b", Action{Kind: ActUndo}, at(2))
+	if c := f.g.Table.Cards["s1"]; c.Zone != ZoneTable {
+		t.Errorf("s1 after undo = %+v, want back on the table", c)
+	}
+}

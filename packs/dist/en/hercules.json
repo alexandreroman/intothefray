@@ -937,6 +937,7 @@
       ],
       "side": {
         "label": "Gift",
+        "discard": "none",
         "back": "encounter"
       }
     },
@@ -951,6 +952,7 @@
       ],
       "side": {
         "label": "Labor",
+        "discard": "none",
         "back": "player"
       }
     },

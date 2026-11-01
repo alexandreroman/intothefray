@@ -161,6 +161,11 @@ export interface PileView {
    * that back captioned with the deck's label.
    */
   back?: Back;
+  /**
+   * The pile the cards of a side deck or a scenario deck are discarded to: its own discard pile,
+   * or its owner's ("disc:p0", "encd"); absent when they are never discarded.
+   */
+  discard?: string;
 }
 
 /** One deck slot of a player: a seat at the table once the game starts. */
