@@ -406,7 +406,6 @@ func TestEmbeddedWreckingCrew(t *testing.T) {
 	}
 	keys := []string{"wrecker", "thunderball", "piledriver", "bulldozer"}
 	sideSchemes := []string{"07004", "07019", "07034", "07048"}
-	threats := []int{6, 5, 3, 4}
 	for _, tt := range tests {
 		t.Run(string(tt.difficulty), func(t *testing.T) {
 			cfg := game.LobbyConfig{Scenario: "wrecking_crew", Difficulty: tt.difficulty, Modulars: []string{}}
@@ -428,18 +427,21 @@ func TestEmbeddedWreckingCrew(t *testing.T) {
 						t.Errorf("%s deck holds an obligation %s", key, code)
 					}
 				}
-				var threat *int
+				// Players place the starting threat by hand.
+				found := false
 				for _, c := range table.Cards {
 					if c.Code == sideSchemes[i] {
+						found = true
 						if c.Zone != game.ZoneTable {
 							t.Errorf("%s not in play", c.Code)
 						}
-						n := c.Tokens["thr"]
-						threat = &n
+						if len(c.Tokens) != 0 {
+							t.Errorf("%s tokens = %v, want none", c.Code, c.Tokens)
+						}
 					}
 				}
-				if threat == nil || *threat != threats[i] {
-					t.Errorf("%s threat = %v, want %d", sideSchemes[i], threat, threats[i])
+				if !found {
+					t.Errorf("side scheme %s not found", sideSchemes[i])
 				}
 			}
 			for i, key := range keys {
@@ -594,6 +596,12 @@ func TestEmbeddedRiseOfRedSkull(t *testing.T) {
 				for code, places := range want {
 					if got := placesOf(table, code); !slices.Equal(got, places) {
 						t.Errorf("copies of %s lie in %v, want %v", code, got, places)
+					}
+				}
+				// Players place the starting threat by hand.
+				for _, c := range table.Cards {
+					if slices.Contains(tt.inPlay, c.Code) && len(c.Tokens) != 0 {
+						t.Errorf("%s tokens = %v, want none", c.Code, c.Tokens)
 					}
 				}
 			})

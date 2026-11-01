@@ -580,7 +580,10 @@ func TestSetupKlawSideSchemeStaysInEncounterDeck(t *testing.T) {
 	}
 }
 
-func TestStartingThreatScalesWithPlayers(t *testing.T) {
+// TestSetupPlacesNoStartingThreat checks that a card the setup places carries
+// no tokens, even when its face prints a starting threat: players place all
+// threat by hand.
+func TestSetupPlacesNoStartingThreat(t *testing.T) {
 	cat := newCatalog(t)
 	b := &tableBuilder{cat: cat, rng: newTestRNG(), table: newEmptyTable(3)}
 
@@ -592,25 +595,7 @@ func TestStartingThreatScalesWithPlayers(t *testing.T) {
 	if err := b.placeFace(c, def, 0, 0, 0); err != nil {
 		t.Fatal(err)
 	}
-	if c.Tokens["thr"] != 6 {
-		t.Errorf("threat = %d, want 6", c.Tokens["thr"])
-	}
-}
-
-func TestZeroStartingThreatIsNotStored(t *testing.T) {
-	cat := newCatalog(t)
-	b := &tableBuilder{cat: cat, rng: newTestRNG(), table: newEmptyTable(2)}
-
-	// 01097 face 1 (Rhino's main scheme, stage 1B) prints a starting threat
-	// of 0.
-	c, def, err := b.newEncounterCard("01097")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := b.placeFace(c, def, 1, 0, 0); err != nil {
-		t.Fatal(err)
-	}
-	if c.Tokens != nil {
+	if len(c.Tokens) != 0 {
 		t.Errorf("tokens = %v, want none", c.Tokens)
 	}
 }
@@ -723,19 +708,6 @@ func TestStartRowsPerSeat(t *testing.T) {
 	}
 	if deck := table.Piles["deck:p0"]; table.FirstPlayer.X < deck.X+portraitWidth {
 		t.Errorf("first player at x %d, want past the deck of seat 0 at %d", table.FirstPlayer.X, deck.X)
-	}
-
-	// Starting threat per player counts the seats, one per hero.
-	b := &tableBuilder{cat: newCatalog(t), rng: newTestRNG(), table: table}
-	c, def, err := b.newEncounterCard("01108") // 2 per player
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := b.placeFace(c, def, 0, 0, 0); err != nil {
-		t.Fatal(err)
-	}
-	if c.Tokens["thr"] != 6 {
-		t.Errorf("threat = %d, want 6", c.Tokens["thr"])
 	}
 }
 

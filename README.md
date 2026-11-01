@@ -39,9 +39,10 @@ Everything below works today, except where noted.
   encounter deck, with their own discard piles, and are not dealt from: any
   player drags one to play its top card face up, or under the card it is
   dropped on. The main scheme starts on its stage 1A: players resolve its
-  Setup text themselves. They also place the counters: the main scheme's
-  starting threat when they advance it to 1B (1A prints none), and counters
-  such as Criminal Enterprise's infamy.
+  Setup text themselves. They also place all threat and counters by hand: the
+  main scheme's starting threat when they advance it to 1B (1A prints none),
+  the starting threat of every side scheme the setup puts in play, and
+  counters such as Criminal Enterprise's infamy.
   Only the environments the scenario puts into play as it starts (Criminal
   Enterprise, Ultron Drones, Public Support) and the side schemes its printed
   setup puts in play are placed for you; other cards the Setup text names, such

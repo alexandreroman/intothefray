@@ -802,24 +802,12 @@ func ceilToGrid(v int) int {
 }
 
 // placeFace puts a new encounter card on the table, face up on the given
-// face, with the starting threat that face prints, if any.
+// face, with no tokens: players place the starting threat by hand.
 func (b *tableBuilder) placeFace(c *Card, def pack.Card, face, x, y int) error {
 	if face < 0 || face >= len(def.Faces) {
 		return invalid("card %s has no face %d", def.Code, face)
 	}
 	b.placeOnTable(c, face, x, y)
-
-	threat := def.Faces[face].StartingThreat
-	if threat == nil {
-		return nil
-	}
-	amount := threat.Value
-	if threat.PerPlayer {
-		amount *= len(b.table.Hands)
-	}
-	if amount > 0 {
-		c.Tokens = map[string]int{"thr": amount}
-	}
 	return nil
 }
 

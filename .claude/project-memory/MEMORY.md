@@ -27,7 +27,7 @@
 - [Product constraints](references/project_constraints.md) — anti-cheat, images on img.intothefray.xyz, 24 h expiry, pack scope, accepted limits
 - [Card image CDN](references/project_image_cdn.md) — img.intothefray.xyz is the only image origin; filled by intothefray-img `make publish`; AVIF
 - [Card data sources](references/reference_card_sources.md) — marvelcdb primary, mc4db fallback; fr.marvelcdb names; image sources.json
-- [Automated setup scope](references/project_setup_scope.md) — scheme on 1A, environments and printed side schemes placed; players resolve Setup
+- [Automated setup scope](references/project_setup_scope.md) — scheme on 1A, environments and printed side schemes placed, no threat
 - [Replayable board state](references/project_replayable_state.md) — seed at start, full action history, snapshots every 10 actions
 - [Moving card stacks](references/project_stack_moves.md) — top card moves the whole stack; a tucked card detaches; new tucks go under the stack
 - [Optional Casper support](references/project_casper_optional.md) — wiring only in .casper.json and scripts/casper.sh; APP_INSTANCE names the tab
