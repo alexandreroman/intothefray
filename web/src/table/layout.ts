@@ -317,8 +317,8 @@ const SMALL_HAND_CARD_MAX_W = 151;
 const SMALL_HAND_CARD_SHARE = 0.25;
 const HAND_CARD_RATIO = HAND_CARD.h / HAND_CARD.w;
 
-/** The hand's padding above and below its cards, in px: Hand.svelte draws it. */
-export const HAND_PADDING = { top: 26, bottom: 18 } as const;
+/** The hand's padding above, below and on each side of its cards, in px: Hand.svelte draws it. */
+export const HAND_PADDING = { top: 26, bottom: 18, side: 18 } as const;
 const HAND_PADDING_Y = HAND_PADDING.top + HAND_PADDING.bottom;
 
 /**
@@ -449,8 +449,15 @@ export interface HandInsets {
 
 const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
 
-/** The share of the hands' room a raised fan spreads over, in its middle: the rest stays clear. */
+/**
+ * The share of the hands' room a raised fan spreads over, in its middle, on a
+ * wide screen: the rest stays clear. On a narrow one it fills the whole table
+ * instead (filledFanPositions).
+ */
 export const RAISED_FAN_SHARE = 0.9;
+
+/** The least share of each card's width a filled fan shows, beside the next card (filledHandCard). */
+export const FILLED_FAN_MIN_SHOW = 0.25;
 
 /** The room between two resting fans side by side, as seen, in px. */
 export const HANDS_GAP = 48;
@@ -532,15 +539,74 @@ export function fanPositions(n: number, width: number, cardWidth: number = HAND_
     return [];
   }
   const gaps = Math.max(1, n - 1);
-  const step = Math.min(FAN_MAX_STEP_DEG, FAN_MAX_TOTAL_DEG / gaps);
   const roomy = cardWidth - FAN_OVERLAP;
   // A card up to the desktop's keeps the prototype's room; a larger one keeps a room in proportion
   // to its width, as its corners swing out in proportion.
   const sideRoom = FAN_SIDE_ROOM * Math.max(1, cardWidth / HAND_CARD.w);
   const fitted = (width - sideRoom - (1 + FAN_TILT_ROOM) * cardWidth) / gaps;
   // Never below 0: with no room at all, the cards pile up rather than swap places.
-  const pitch = Math.max(0, Math.min(roomy, fitted));
+  return arcSlots(n, Math.max(0, Math.min(roomy, fitted)));
+}
 
+/**
+ * Lays out `n` cards of a raised hand over the whole of `width`, as
+ * fanPositions does, but for its pitch: the largest that keeps the fan as
+ * drawn (fanExtent, tilted end cards included) within `width`, the cards
+ * still overlapping by 40 at least. The end cards' outer corners reach the
+ * farthest, so that the drawn width grows with the pitch by one pitch per
+ * gap from that of the cards piled up. Never below 0: with no room at all,
+ * the cards pile up.
+ */
+export function filledFanPositions(
+  n: number,
+  width: number,
+  card: { w: number; h: number },
+): FanSlot[] {
+  if (n <= 0) {
+    return [];
+  }
+  const gaps = Math.max(1, n - 1);
+  const piled = fanExtent(arcSlots(n, 0), card);
+  const fitted = (width - (piled.right - piled.left)) / gaps;
+  return arcSlots(n, Math.max(0, Math.min(card.w - FAN_OVERLAP, fitted)));
+}
+
+/**
+ * The raised card of a filled fan of `n` cards over `width`
+ * (filledFanPositions): `card`, shrunk so that each card shows at least
+ * FILLED_FAN_MIN_SHOW of its width beside the next one, never below `base`.
+ * The fan of piled cards is drawn in proportion to the card, so that the
+ * widest card that fits follows from that of a card 1 px wide.
+ */
+export function filledHandCard(
+  card: { w: number; h: number },
+  base: { w: number; h: number },
+  n: number,
+  width: number,
+): { w: number; h: number } {
+  if (n <= 1) {
+    return card;
+  }
+  const piled = fanExtent(arcSlots(n, 0), { w: 1, h: HAND_CARD_RATIO });
+  const widest = Math.floor(width / ((n - 1) * FILLED_FAN_MIN_SHOW + piled.right - piled.left));
+  // The sizes themselves, so that an unchanged card keeps its rest scale exactly (handRestScale).
+  if (widest >= card.w) {
+    return card;
+  }
+  if (widest <= base.w) {
+    return base;
+  }
+  return { w: widest, h: Math.round(widest * HAND_CARD_RATIO) };
+}
+
+/**
+ * Lays out `n` cards `pitch` apart on the fan's arc: they turn 5 degrees
+ * apart, 44 at most in total, and each sags by how far a circle of radius
+ * 1260 falls away from its top at its angle.
+ */
+function arcSlots(n: number, pitch: number): FanSlot[] {
+  const gaps = Math.max(1, n - 1);
+  const step = Math.min(FAN_MAX_STEP_DEG, FAN_MAX_TOTAL_DEG / gaps);
   return Array.from({ length: n }, (_, i) => {
     const t = i - (n - 1) / 2;
     const angle = t * step;

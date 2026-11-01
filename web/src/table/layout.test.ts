@@ -4,6 +4,9 @@ import {
   cardBox,
   contentWidth,
   fanPositions,
+  FILLED_FAN_MIN_SHOW,
+  filledFanPositions,
+  filledHandCard,
   footprints,
   HAND_CARD,
   HAND_CARD_NARROW,
@@ -418,6 +421,93 @@ describe("a small screen's hand", () => {
     expect(restingStrip(HAND_CARD.h, HAND_REST_DROP)).toBe(108);
     expect(restingStrip(136, 74)).toBe(74);
     expect(restingStrip(10, 500)).toBe(0);
+  });
+});
+
+describe('filledFanPositions', () => {
+  const card = { w: 140, h: 196 };
+  const widthOf = (extent: { left: number; right: number }) => extent.right - extent.left;
+  const pitchOf = (fan: { x: number }[]) => fan[1]!.x - fan[0]!.x;
+
+  it('spreads the cards so that the fan as drawn spans the whole width', () => {
+    for (const [n, width] of [
+      [7, 339],
+      [7, 732],
+      [12, 864],
+      [30, 900],
+    ] as const) {
+      const fan = filledFanPositions(n, width, card);
+      expect(pitchOf(fan)).toBeLessThan(card.w - 40);
+      expect(widthOf(fanExtent(fan, card))).toBeCloseTo(width, 6);
+    }
+  });
+
+  it('overlaps the cards by 40 at least when there is room', () => {
+    const fan = filledFanPositions(3, 1200, card);
+    expect(pitchOf(fan)).toBeCloseTo(100);
+    expect(widthOf(fanExtent(fan, card))).toBeLessThan(1200);
+  });
+
+  it('piles the cards up rather than reversing them when there is no room', () => {
+    for (const p of filledFanPositions(7, 100, card)) {
+      expect(p.x).toBeCloseTo(0);
+    }
+  });
+
+  it('turns and sags the cards as fanPositions does', () => {
+    for (const n of [3, 7, 30]) {
+      const filled = filledFanPositions(n, 600, card);
+      fanPositions(n, 600, card.w).forEach((slot, i) => {
+        expect(filled[i]!.angle).toBe(slot.angle);
+        expect(filled[i]!.y).toBe(slot.y);
+      });
+    }
+  });
+
+  it('puts a single card upright at the centre, and returns nothing for no card', () => {
+    expect(filledFanPositions(1, 900, card)).toEqual([{ x: 0, y: 0, angle: 0 }]);
+    expect(filledFanPositions(0, 900, card)).toEqual([]);
+  });
+});
+
+describe('filledHandCard', () => {
+  const raised = { w: 238, h: 333 };
+  const pitchOf = (fan: { x: number }[]) => fan[1]!.x - fan[0]!.x;
+
+  it('shrinks the raised card for each card to show a quarter of its width at least', () => {
+    expect(FILLED_FAN_MIN_SHOW).toBe(0.25);
+    for (const [n, width] of [
+      [7, 564],
+      [10, 732],
+      [15, 864],
+    ] as const) {
+      const shrunk = filledHandCard(raised, HAND_CARD_NARROW, n, width);
+      expect(shrunk.w).toBeLessThan(raised.w);
+      expect(shrunk.w).toBeGreaterThan(HAND_CARD_NARROW.w);
+      expect(shrunk.h).toBe(Math.round((shrunk.w * HAND_CARD.h) / HAND_CARD.w));
+      // Within the rounding of its height, and as large as fits: 1 px wider, it would not.
+      const pitch = pitchOf(filledFanPositions(n, width, shrunk));
+      expect(pitch).toBeGreaterThanOrEqual(0.25 * shrunk.w - 0.5);
+      const wider = {
+        w: shrunk.w + 1,
+        h: Math.round(((shrunk.w + 1) * HAND_CARD.h) / HAND_CARD.w),
+      };
+      expect(pitchOf(filledFanPositions(n, width, wider))).toBeLessThan(0.25 * wider.w);
+    }
+  });
+
+  it('keeps the raised card itself when the fan has room for it', () => {
+    expect(filledHandCard(raised, HAND_CARD_NARROW, 3, 732)).toBe(raised);
+  });
+
+  it('is never smaller than the base card, and then the base card itself', () => {
+    expect(filledHandCard(raised, HAND_CARD_NARROW, 30, 339)).toBe(HAND_CARD_NARROW);
+    expect(filledHandCard(HAND_CARD_NARROW, HAND_CARD_NARROW, 12, 339)).toBe(HAND_CARD_NARROW);
+  });
+
+  it('keeps the raised card for one card or none', () => {
+    expect(filledHandCard(raised, HAND_CARD_NARROW, 1, 100)).toBe(raised);
+    expect(filledHandCard(raised, HAND_CARD_NARROW, 0, 100)).toBe(raised);
   });
 });
 

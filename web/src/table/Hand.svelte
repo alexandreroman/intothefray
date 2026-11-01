@@ -27,6 +27,7 @@
     cardBox,
     fanExtent,
     fanPositions,
+    filledFanPositions,
     HAND_CARD,
     HAND_PADDING,
     HAND_REST_DROP,
@@ -55,6 +56,7 @@
     inset = { left: 0, right: 0 },
     restPlace,
     hidden = false,
+    fill = false,
   }: {
     /** The hand, in its order. */
     cards: TableCard[];
@@ -94,6 +96,12 @@
     restPlace?: { offset: number; width: number };
     /** The other hand shown is raised over the room: this one fades out, and takes no pointer. */
     hidden?: boolean;
+    /**
+     * On a narrow screen the raised fan spreads over the whole table, less the hand's side padding,
+     * centred on it, over the controls beside the hands' room, which the veil covers while the hand
+     * is raised.
+     */
+    fill?: boolean;
   } = $props();
 
   /** The cards in the given order, then any the order does not know (drawn meanwhile). */
@@ -122,16 +130,27 @@
     return others;
   });
 
-  // The whole hand's width, padding included: fanPositions keeps that padding free.
+  // The whole hand's width, padding included: fanPositions keeps that padding free, and so does a
+  // fan filling the table (raisedSlots).
   let width = $state(0);
   // Raised, the fan spreads out for the raised cards; at rest, it is the base cards' fan.
   const restCard = $derived(restCardSize ?? cardSize);
   const restScale = $derived(handRestScale(restCard, cardSize));
   const slots = $derived(open ? raisedSlots() : restingSlots());
 
-  /** The raised fan, over the middle of the hand (RAISED_FAN_SHARE of it). */
+  /**
+   * The raised fan, over the middle of the hand (RAISED_FAN_SHARE of it), or over the whole table
+   * when it fills it: the hand keeps its margins, so its slots move over to the table's middle.
+   */
   function raisedSlots(): FanSlot[] {
-    return fanPositions(shown.length, RAISED_FAN_SHARE * width, cardSize.w);
+    if (!fill) {
+      return fanPositions(shown.length, RAISED_FAN_SHARE * width, cardSize.w);
+    }
+    const tableWidth = width + inset.left + inset.right;
+    const shift = (inset.right - inset.left) / 2;
+    return filledFanPositions(shown.length, tableWidth - 2 * HAND_PADDING.side, cardSize).map(
+      (slot) => ({ ...slot, x: slot.x + shift }),
+    );
   }
 
   /** The resting fan, at its place: the offset is seen at the rest scale, the slots are before it. */
@@ -740,6 +759,7 @@
   style:--rest-scale={restScale}
   style:--pad-top="{HAND_PADDING.top}px"
   style:--pad-bottom="{HAND_PADDING.bottom}px"
+  style:--pad-side="{HAND_PADDING.side}px"
   bind:this={list}
   bind:clientWidth={width}
 >
@@ -829,7 +849,7 @@
     */
     min-height: calc(var(--pad-top) + var(--card-h) + var(--pad-bottom));
     margin: 0;
-    padding: var(--pad-top) 18px var(--pad-bottom);
+    padding: var(--pad-top) var(--pad-side) var(--pad-bottom);
     list-style: none;
     overflow: visible;
     pointer-events: none;

@@ -5,11 +5,15 @@ import { FOCUS_MARGINS, TABLE_EDGE, TABLE_EDGE_BOTTOM } from './focus';
 import { interaction } from './interaction.svelte';
 import {
   fanPositions,
+  filledHandCard,
   HAND_CARD,
   HAND_CARD_NARROW,
   HAND_PADDING,
   HAND_REST_DROP,
   HAND_REST_SCALE,
+  handRestDrop,
+  handRestScale,
+  raisedHandCard,
   restingStrip,
 } from './layout';
 import { TOP_BAR_HEIGHT } from '../lib/autoHide.svelte';
@@ -817,11 +821,12 @@ describe('Table on a small screen', () => {
     expect(handRule).toMatch(
       /transform: translateY\(var\(--rest-drop\)\) scale\(var\(--rest-scale\)\);/,
     );
-    expect(handRule).toMatch(/padding: var\(--pad-top\) 18px var\(--pad-bottom\);/);
-    expect(handSource).not.toMatch(/0\.82|26px/);
+    expect(handRule).toMatch(/padding: var\(--pad-top\) var\(--pad-side\) var\(--pad-bottom\);/);
+    expect(handSource).not.toMatch(/0\.82|26px|18px/);
     expect(hand().style.getPropertyValue('--rest-scale')).toBe(`${HAND_REST_SCALE}`);
     expect(hand().style.getPropertyValue('--pad-top')).toBe(`${HAND_PADDING.top}px`);
     expect(hand().style.getPropertyValue('--pad-bottom')).toBe(`${HAND_PADDING.bottom}px`);
+    expect(hand().style.getPropertyValue('--pad-side')).toBe(`${HAND_PADDING.side}px`);
   });
 
   it("shows only the selected deck's hand with two own decks, over the whole width", () => {
@@ -934,6 +939,46 @@ describe('Table raised hand', () => {
     expect(hand().style.getPropertyValue('--rest-drop')).toBe('71px');
     const app = container.querySelector<HTMLElement>('.app')!;
     expect(app.style.getPropertyValue('--controls-bottom')).toBe(`${restingStrip(136, 74) + 8}px`);
+  });
+
+  /** Sam's hand of `n` cards. */
+  function viewWithHandOf(n: number): View {
+    const view = makeView();
+    const cards = Array.from({ length: n }, (_, i) => handCard(`h${i + 1}`));
+    view.table!.cards = [...cards, IN_PLAY];
+    view.table!.hands = { p0: cards.map((card) => card.id) };
+    view.players[0]!.decks[0]!.handCount = n;
+    return view;
+  }
+
+  it('shrinks the raised cards of a long hand to fit the whole table on a narrow screen', () => {
+    mockScreen(TABLET);
+    mockScrollerWidth(800);
+    render(Table, { session: fakeSession(), view: viewWithHandOf(12) });
+
+    // Over the table less 18 px of padding each side, each card shows a quarter of its width.
+    const raised = raisedHandCard(HAND_CARD_NARROW, { w: 800, h: TABLET.height }, { small: false });
+    const shrunk = filledHandCard(raised, HAND_CARD_NARROW, 12, 764);
+    expect(shrunk.w).toBeLessThan(raised.w);
+    expect(shrunk.w).toBeGreaterThan(HAND_CARD_NARROW.w);
+    expect(hand().style.getPropertyValue('--card-w')).toBe(`${shrunk.w}px`);
+    expect(hand().style.getPropertyValue('--card-h')).toBe(`${shrunk.h}px`);
+    // At rest, as large as the narrow card at 82 %, as tall a part of it showing.
+    expect(Number(hand().style.getPropertyValue('--rest-scale'))).toBeCloseTo(
+      handRestScale(HAND_CARD_NARROW, shrunk),
+    );
+    expect(hand().style.getPropertyValue('--rest-drop')).toBe(
+      `${handRestDrop(HAND_CARD_NARROW, HAND_REST_DROP, shrunk)}px`,
+    );
+  });
+
+  it('keeps the raised cards of a long hand on a wide screen', () => {
+    mockScreen(DESKTOP);
+    mockScrollerWidth(1000);
+    render(Table, { session: fakeSession(), view: viewWithHandOf(12) });
+
+    expect(hand().style.getPropertyValue('--card-w')).toBe('286px');
+    expect(hand().style.getPropertyValue('--rest-drop')).toBe('135px');
   });
 
   it('keeps the base cards while the table area is not measured', () => {

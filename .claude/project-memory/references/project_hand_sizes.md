@@ -24,14 +24,24 @@ type: project
   window's height.
 - A hovered hand card pops at `scale(1.3)`; the pop and the preview's own
   size are independent of the hand.
-- With two hands side by side, a raised hand spreads over 90 % of the
-  hands' room (`RAISED_FAN_SHARE`), centred in it (see
-  [[project_multi_deck]]).
+- On a wide screen a raised hand spreads over 90 % of the hands' room
+  (`RAISED_FAN_SHARE`), centred in it (see [[project_multi_deck]]).
+- On a narrow (≤ 900 px wide) or small screen, a raised hand's fan fills
+  the whole table less the hand's 18 px side padding, centred on the
+  table, over the bottom right controls (under the veil while it is
+  raised): its pitch is the widest that keeps the drawn fan, tilted end
+  cards included, within that width (`filledFanPositions`). Its cards
+  shrink so that each shows at least a quarter of its width
+  (`FILLED_FAN_MIN_SHOW`, `filledHandCard`), never below the base card.
+  The resting hand looks the same at every width.
 
 **Why:** decided with the user: the raised hand is for
 reading cards, so it follows the preview's size, while the resting hand
 stays a compact strip out of the way. The preview keeps its own size
-(at most a 358 px wide card) rather than growing with large screens.
+(at most a 358 px wide card) rather than growing with large screens. On a
+narrow screen, room matters more than size: the user wants the raised
+hand to use the screen's width and accepts smaller cards to keep each one
+readable.
 
 **How to apply:** `previewCardWidth` mirrors `.peek`'s CSS; change both
 together, and size hand changes through the base and raised cards.
