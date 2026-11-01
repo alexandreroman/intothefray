@@ -4807,7 +4807,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "Ingérence de l'A.I.M. ([mental])"
+              "name": "Ingérence de l'A.I.M. ([mental])",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/50184b.1d275c04d708.avif"
+              ]
             }
           }
         }
@@ -4828,7 +4831,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "Ingérence de l'A.I.M. ([physical])"
+              "name": "Ingérence de l'A.I.M. ([physical])",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/50184c.ef5fe523290a.avif"
+              ]
             }
           }
         }
@@ -4851,7 +4857,7 @@
             "fr": {
               "name": "Dossiers Médicaux",
               "images": [
-                "https://img.intothefray.xyz/cards/fr/50185.1d275c04d708.avif"
+                "https://img.intothefray.xyz/cards/fr/50185.f62a2b4e034e.avif"
               ]
             }
           }
@@ -4875,7 +4881,7 @@
             "fr": {
               "name": "Sous Écoute",
               "images": [
-                "https://img.intothefray.xyz/cards/fr/50186.ef5fe523290a.avif"
+                "https://img.intothefray.xyz/cards/fr/50186.76b287242090.avif"
               ]
             }
           }
@@ -4899,7 +4905,7 @@
             "fr": {
               "name": "Scanner de Sécurité",
               "images": [
-                "https://img.intothefray.xyz/cards/fr/50187.f62a2b4e034e.avif"
+                "https://img.intothefray.xyz/cards/fr/50187.a53f6afc9df0.avif"
               ]
             }
           }
@@ -4923,7 +4929,7 @@
             "fr": {
               "name": "Argent",
               "images": [
-                "https://img.intothefray.xyz/cards/fr/50188.76b287242090.avif"
+                "https://img.intothefray.xyz/cards/fr/50188.67443ce5f2ea.avif"
               ]
             }
           }
@@ -4947,7 +4953,7 @@
             "fr": {
               "name": "Chantage",
               "images": [
-                "https://img.intothefray.xyz/cards/fr/50189.a53f6afc9df0.avif"
+                "https://img.intothefray.xyz/cards/fr/50189.6ce98ab7f1d8.avif"
               ]
             }
           }
@@ -4971,7 +4977,7 @@
             "fr": {
               "name": "Idéologie",
               "images": [
-                "https://img.intothefray.xyz/cards/fr/50190.67443ce5f2ea.avif"
+                "https://img.intothefray.xyz/cards/fr/50190.8e1d6b0f556b.avif"
               ]
             }
           }
@@ -4995,7 +5001,7 @@
             "fr": {
               "name": "Pass de Sécurité",
               "images": [
-                "https://img.intothefray.xyz/cards/fr/50191.6ce98ab7f1d8.avif"
+                "https://img.intothefray.xyz/cards/fr/50191.5d2da124a43b.avif"
               ]
             }
           }
@@ -5019,7 +5025,7 @@
             "fr": {
               "name": "Voyage",
               "images": [
-                "https://img.intothefray.xyz/cards/fr/50192.8e1d6b0f556b.avif"
+                "https://img.intothefray.xyz/cards/fr/50192.5eaab7c53ce7.avif"
               ]
             }
           }
@@ -5043,7 +5049,7 @@
             "fr": {
               "name": "Autorité",
               "images": [
-                "https://img.intothefray.xyz/cards/fr/50193.5d2da124a43b.avif"
+                "https://img.intothefray.xyz/cards/fr/50193.bf237382376a.avif"
               ]
             }
           }

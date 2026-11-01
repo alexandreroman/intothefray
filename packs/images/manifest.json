@@ -21594,7 +21594,7 @@
         "from": "cerebro"
       },
       "fr": {
-        "key": "cards/fr/50185.1d275c04d708.avif",
+        "key": "cards/fr/50185.f62a2b4e034e.avif",
         "from": "octgn"
       }
     },
@@ -21604,7 +21604,7 @@
         "from": "cerebro"
       },
       "fr": {
-        "key": "cards/fr/50186.ef5fe523290a.avif",
+        "key": "cards/fr/50186.76b287242090.avif",
         "from": "octgn"
       }
     },
@@ -21614,7 +21614,7 @@
         "from": "cerebro"
       },
       "fr": {
-        "key": "cards/fr/50187.f62a2b4e034e.avif",
+        "key": "cards/fr/50187.a53f6afc9df0.avif",
         "from": "octgn"
       }
     },
@@ -21624,7 +21624,7 @@
         "from": "cerebro"
       },
       "fr": {
-        "key": "cards/fr/50188.76b287242090.avif",
+        "key": "cards/fr/50188.67443ce5f2ea.avif",
         "from": "octgn"
       }
     },
@@ -21634,7 +21634,7 @@
         "from": "cerebro"
       },
       "fr": {
-        "key": "cards/fr/50189.a53f6afc9df0.avif",
+        "key": "cards/fr/50189.6ce98ab7f1d8.avif",
         "from": "octgn"
       }
     },
@@ -21644,7 +21644,7 @@
         "from": "cerebro"
       },
       "fr": {
-        "key": "cards/fr/50190.67443ce5f2ea.avif",
+        "key": "cards/fr/50190.8e1d6b0f556b.avif",
         "from": "octgn"
       }
     },
@@ -21654,7 +21654,7 @@
         "from": "cerebro"
       },
       "fr": {
-        "key": "cards/fr/50191.6ce98ab7f1d8.avif",
+        "key": "cards/fr/50191.5d2da124a43b.avif",
         "from": "octgn"
       }
     },
@@ -21664,7 +21664,7 @@
         "from": "cerebro"
       },
       "fr": {
-        "key": "cards/fr/50192.8e1d6b0f556b.avif",
+        "key": "cards/fr/50192.5eaab7c53ce7.avif",
         "from": "octgn"
       }
     },
@@ -21674,7 +21674,7 @@
         "from": "cerebro"
       },
       "fr": {
-        "key": "cards/fr/50193.5d2da124a43b.avif",
+        "key": "cards/fr/50193.bf237382376a.avif",
         "from": "octgn"
       }
     },
@@ -40422,12 +40422,20 @@
       "en": {
         "key": "cards/en/50184b.4e442c3ed58d.avif",
         "from": "cerebro"
+      },
+      "fr": {
+        "key": "cards/fr/50184b.1d275c04d708.avif",
+        "from": "octgn"
       }
     },
     "50184c": {
       "en": {
         "key": "cards/en/50184c.8333fd2af2b3.avif",
         "from": "cerebro"
+      },
+      "fr": {
+        "key": "cards/fr/50184c.ef5fe523290a.avif",
+        "from": "octgn"
       }
     },
     "51001a": {
@@ -41404,12 +41412,20 @@
       "en": {
         "key": "cards/en/60040b.178141d9ff99.avif",
         "from": "cerebro"
+      },
+      "fr": {
+        "key": "cards/fr/60040b.dac3c02ac213.avif",
+        "from": "octgn"
       }
     },
     "60040c": {
       "en": {
         "key": "cards/en/60040c.d90fc435cc5d.avif",
         "from": "cerebro"
+      },
+      "fr": {
+        "key": "cards/fr/60040c.66f600e16be6.avif",
+        "from": "octgn"
       }
     },
     "60068a": {
