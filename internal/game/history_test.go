@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"maps"
+	"reflect"
 	"slices"
 	"strings"
 	"testing"
@@ -1410,5 +1412,66 @@ func TestReplayChecksThePlayers(t *testing.T) {
 	}
 	if _, err := Replay(f.cat, setup, nil); err != nil {
 		t.Errorf("Replay of the valid setup = %v", err)
+	}
+}
+
+func TestUndoRestoresVillainBeforeStageChange(t *testing.T) {
+	f := newDoFixture(t)
+	rhino := f.villain()
+	f.mustDo(t, "h", Action{Kind: ActToken, Card: rhino, Name: "dmg", Delta: 4}, at(1))
+	f.mustDo(t, "h", Action{Kind: ActToken, Card: rhino, Name: "gen", Delta: 2}, at(2))
+	f.mustDo(t, "h", Action{Kind: ActStatus, Card: rhino, Name: "tough", Delta: 1}, at(3))
+	f.mustDo(t, "h", Action{Kind: ActModifier, Card: rhino, Name: "atk", Delta: -1}, at(4))
+	before := f.g.Table.Clone()
+	stage := f.g.Table.stage(pileKeyVillain)
+	next := stage.Cards[1]
+
+	f.mustDo(t, "h", Action{Kind: ActChooseStage, Stage: stage.Key, Card: next}, at(5))
+
+	c := f.g.Table.Cards[next]
+	if want := map[string]int{"gen": 2}; !maps.Equal(c.Tokens, want) {
+		t.Errorf("Rhino II tokens = %v, want %v", c.Tokens, want)
+	}
+	if want := map[string]int{"tough": 1}; !maps.Equal(c.Status, want) {
+		t.Errorf("Rhino II status = %v, want %v", c.Status, want)
+	}
+	if want := map[string]int{"atk": -1}; !maps.Equal(c.Mods, want) {
+		t.Errorf("Rhino II mods = %v, want %v", c.Mods, want)
+	}
+	if prev := f.g.Table.Cards[rhino]; prev.Tokens != nil || prev.Status != nil || prev.Mods != nil {
+		t.Errorf("Rhino I = %+v, want without counters", prev)
+	}
+
+	f.mustDo(t, "h", Action{Kind: ActUndo}, at(6))
+
+	if !reflect.DeepEqual(before, f.g.Table) {
+		t.Errorf("table after undo differs from the table before the stage change: Rhino I = %+v, Rhino II = %+v",
+			f.g.Table.Cards[rhino], f.g.Table.Cards[next])
+	}
+}
+
+func TestStageChangeOfOneWreckingCrewVillainLeavesTheOthers(t *testing.T) {
+	cat := newCatalog(t)
+	f := &doFixture{g: startedGame(t, DefaultConfig(cat, "wrecking_crew")), cat: cat}
+	villains := []string{"wrecker", "thunderball", "piledriver", "bulldozer"}
+	for i, key := range villains {
+		id := f.g.Table.stage(key).Current
+		f.mustDo(t, "h", Action{Kind: ActToken, Card: id, Name: "dmg", Delta: i + 1}, at(i))
+		f.mustDo(t, "h", Action{Kind: ActStatus, Card: id, Name: "stunned", Delta: 1}, at(i))
+	}
+	before := f.g.Table.Clone()
+	stage := f.g.Table.stage("thunderball")
+	next := stage.Cards[1]
+
+	f.mustDo(t, "h", Action{Kind: ActChooseStage, Stage: stage.Key, Card: next}, at(10))
+
+	if c := f.g.Table.Cards[next]; c.Tokens != nil || !maps.Equal(c.Status, map[string]int{"stunned": 1}) {
+		t.Errorf("Thunderball II tokens = %v, status = %v, want no damage and stunned", c.Tokens, c.Status)
+	}
+	for _, key := range []string{"wrecker", "piledriver", "bulldozer"} {
+		id := f.g.Table.stage(key).Current
+		if !reflect.DeepEqual(before.Cards[id], f.g.Table.Cards[id]) {
+			t.Errorf("%s = %+v, want untouched %+v", key, f.g.Table.Cards[id], before.Cards[id])
+		}
 	}
 }

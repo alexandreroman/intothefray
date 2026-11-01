@@ -2,6 +2,7 @@ package game
 
 import (
 	"cmp"
+	"maps"
 	"math"
 	"slices"
 	"strings"
@@ -707,12 +708,19 @@ func (t *Table) takeOverIdentity(c *Card) {
 // neither an exhaust nor a Ready all readies it.
 const statusLocked = "locked"
 
+// Tokens a stage change treats apart: a villain loses its damage, a main
+// scheme keeps only its acceleration.
+const (
+	tokenDamage       = "dmg"
+	tokenAcceleration = "acc"
+)
+
 // Counter names a card can carry.
 var (
 	// tokenNames are the tokens a card can carry: damage, threat, generic
 	// counters and acceleration, which players put on the main scheme when the
 	// encounter deck runs out (bookkeeping only, like the others).
-	tokenNames = []string{"dmg", "thr", "gen", "acc"}
+	tokenNames = []string{tokenDamage, "thr", "gen", tokenAcceleration}
 	// statusNames are the statuses a card can carry, each with a count. The
 	// count of "retaliate" is the card's Retaliate value: sources add up.
 	statusNames = []string{"stunned", "confused", "tough", "retaliate", statusLocked}
@@ -865,8 +873,8 @@ func applyChooseStage(t *Table, a Action) error {
 	chosen.Face = a.Face
 	chosen.FaceDown = false
 	chosen.Exhausted = false
+	carryStageCounters(stage, previous, chosen)
 
-	// Tokens, statuses and modifiers stay on the previous card, so going back restores them.
 	t.removeArrows(previous.ID)
 	previous.Zone = ZoneStage
 	previous.X, previous.Y, previous.Z = 0, 0, 0
@@ -875,6 +883,40 @@ func applyChooseStage(t *Table, a Action) error {
 	previous.Exhausted = false
 	stage.Current = chosen.ID
 	return nil
+}
+
+// carryStageCounters moves to chosen the counters of previous that survive a
+// stage change, replacing its own, and clears previous, which leaves the game.
+// As the rules have it, a villain keeps everything but its excess damage, and
+// a main scheme keeps only its acceleration tokens (its threat does not carry
+// over). Undo restores previous through the action history.
+func carryStageCounters(stage *Stage, previous, chosen *Card) {
+	if stage.Villain {
+		tokens := maps.Clone(previous.Tokens)
+		delete(tokens, tokenDamage)
+		chosen.Tokens = nilIfEmpty(tokens)
+		chosen.Status = nilIfEmpty(maps.Clone(previous.Status))
+		chosen.Mods = nilIfEmpty(maps.Clone(previous.Mods))
+	} else {
+		chosen.Tokens = nil
+		if n := previous.Tokens[tokenAcceleration]; n > 0 {
+			chosen.Tokens = map[string]int{tokenAcceleration: n}
+		}
+		chosen.Status = nil
+		chosen.Mods = nil
+	}
+	previous.Tokens = nil
+	previous.Status = nil
+	previous.Mods = nil
+}
+
+// nilIfEmpty returns m, or nil when it has no entry: cards carry no empty
+// counter maps.
+func nilIfEmpty(m map[string]int) map[string]int {
+	if len(m) == 0 {
+		return nil
+	}
+	return m
 }
 
 // stage returns the stage with the given key, or nil.

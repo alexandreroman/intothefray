@@ -3,6 +3,7 @@ package game
 import (
 	"errors"
 	"fmt"
+	"maps"
 	"math/rand/v2"
 	"slices"
 	"strings"
@@ -220,9 +221,29 @@ func TestSetupStages(t *testing.T) {
 	if got := codesOf(table, table.Stages[0].Cards); !slices.Equal(got, []string{"01094", "01095", "01096"}) {
 		t.Errorf("villain stage cards = %v", got)
 	}
+	if !table.Stages[0].Villain || table.Stages[1].Villain {
+		t.Errorf("villain flags = %v %v, want the villain stage marked, not the main scheme",
+			table.Stages[0].Villain, table.Stages[1].Villain)
+	}
 	if villain.Owner != NoOwner || villain.Home != PileEncounter || villain.Faces != 1 ||
 		villain.Back != pack.BackVillain {
 		t.Errorf("Rhino I owner/home/faces/back = %d %q %d %q", villain.Owner, villain.Home, villain.Faces, villain.Back)
+	}
+}
+
+func TestSetupMarksVillainStagesOfWreckingCrew(t *testing.T) {
+	g := startedGame(t, DefaultConfig(newCatalog(t), "wrecking_crew"))
+
+	want := map[string]bool{
+		"wrecker": true, "thunderball": true, "piledriver": true, "bulldozer": true,
+		"scheme": false,
+	}
+	got := map[string]bool{}
+	for _, stage := range g.Table.Stages {
+		got[stage.Key] = stage.Villain
+	}
+	if !maps.Equal(got, want) {
+		t.Errorf("villain flags by stage = %v, want %v", got, want)
 	}
 }
 

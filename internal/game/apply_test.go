@@ -2,6 +2,7 @@ package game
 
 import (
 	"errors"
+	"maps"
 	"reflect"
 	"slices"
 	"strings"
@@ -623,7 +624,9 @@ func newStageTable() *Table {
 		ID: "c21", Owner: NoOwner, Zone: ZoneTable, X: 280, Y: 20, Z: 6, Parent: "c20",
 	}
 	table.Cards["c22"] = &Card{ID: "c22", Owner: NoOwner, Zone: ZoneStage, Faces: 2}
-	table.Stages = []*Stage{{Key: "villain", Label: "Villain", Current: "c20", Cards: []string{"c20", "c22"}}}
+	table.Stages = []*Stage{
+		{Key: "villain", Label: "Villain", Current: "c20", Cards: []string{"c20", "c22"}, Villain: true},
+	}
 	return table
 }
 
@@ -722,20 +725,33 @@ func TestFlipSetsTheRecordedSide(t *testing.T) {
 	}
 }
 
-func TestChooseStageKeepsTokensOnPreviousCard(t *testing.T) {
+func TestChooseStageCarriesVillainCounters(t *testing.T) {
 	table := newStageTable()
+	prev := table.Cards["c20"]
+	prev.Tokens = map[string]int{"dmg": 3, "thr": 1, "gen": 2, "acc": 1}
+	prev.Status = map[string]int{"stunned": 1, "tough": 1, "retaliate": 2}
+	prev.Mods = map[string]int{"atk": -1, "sch": 2}
 
 	mustApply(t, table, Action{Kind: ActChooseStage, Stage: "villain", Card: "c22", Face: 1})
 
-	next, prev, attachment := table.Cards["c22"], table.Cards["c20"], table.Cards["c21"]
+	next, attachment := table.Cards["c22"], table.Cards["c21"]
 	if next.Zone != ZoneTable || next.X != 280 || next.Y != 0 || next.Z != 7 {
 		t.Errorf("c22 = %+v, want on the table at the position of c20", next)
 	}
 	if next.Face != 1 || next.Exhausted {
 		t.Errorf("c22 face = %d, exhausted = %v, want face 1, ready", next.Face, next.Exhausted)
 	}
-	if prev.Zone != ZoneStage || prev.Tokens["dmg"] != 3 || prev.Status["tough"] != 1 {
-		t.Errorf("c20 = %+v, want in the stage zone keeping dmg=3 and tough=1", prev)
+	if want := map[string]int{"thr": 1, "gen": 2, "acc": 1}; !maps.Equal(next.Tokens, want) {
+		t.Errorf("c22 tokens = %v, want %v (no damage)", next.Tokens, want)
+	}
+	if want := map[string]int{"stunned": 1, "tough": 1, "retaliate": 2}; !maps.Equal(next.Status, want) {
+		t.Errorf("c22 status = %v, want %v", next.Status, want)
+	}
+	if want := map[string]int{"atk": -1, "sch": 2}; !maps.Equal(next.Mods, want) {
+		t.Errorf("c22 mods = %v, want %v", next.Mods, want)
+	}
+	if prev.Zone != ZoneStage || prev.Tokens != nil || prev.Status != nil || prev.Mods != nil {
+		t.Errorf("c20 = %+v, want in the stage zone without counters", prev)
 	}
 	if prev.Exhausted || prev.X != 0 || prev.Y != 0 {
 		t.Errorf("c20 = %+v, want ready and without a position", prev)
@@ -745,6 +761,52 @@ func TestChooseStageKeepsTokensOnPreviousCard(t *testing.T) {
 	}
 	if table.Stages[0].Current != "c22" {
 		t.Errorf("current = %q, want c22", table.Stages[0].Current)
+	}
+}
+
+func TestChooseStageCarriesOnlyAccelerationOfMainScheme(t *testing.T) {
+	table := newStageTable()
+	stage := table.Stages[0]
+	stage.Key, stage.Label, stage.Villain = "scheme", "Main scheme", false
+	prev := table.Cards["c20"]
+	prev.Tokens = map[string]int{"thr": 5, "acc": 2, "gen": 1}
+	prev.Status = map[string]int{"stunned": 1}
+	prev.Mods = map[string]int{"sch": 1}
+
+	mustApply(t, table, Action{Kind: ActChooseStage, Stage: "scheme", Card: "c22", Face: 0})
+
+	next := table.Cards["c22"]
+	if want := map[string]int{"acc": 2}; !maps.Equal(next.Tokens, want) {
+		t.Errorf("c22 tokens = %v, want %v", next.Tokens, want)
+	}
+	if next.Status != nil || next.Mods != nil {
+		t.Errorf("c22 status = %v, mods = %v, want none", next.Status, next.Mods)
+	}
+	if prev.Zone != ZoneStage || prev.Tokens != nil || prev.Status != nil || prev.Mods != nil {
+		t.Errorf("c20 = %+v, want in the stage zone without counters", prev)
+	}
+	if table.Cards["c21"].Parent != "c22" {
+		t.Errorf("attachment parent = %q, want c22", table.Cards["c21"].Parent)
+	}
+}
+
+func TestChooseStageReplacesCountersOfChosenCard(t *testing.T) {
+	table := newStageTable() // c20 has 3 dmg and tough
+	next := table.Cards["c22"]
+	next.Tokens = map[string]int{"dmg": 1, "thr": 4}
+	next.Status = map[string]int{"confused": 1}
+	next.Mods = map[string]int{"hp": 3}
+
+	mustApply(t, table, Action{Kind: ActChooseStage, Stage: "villain", Card: "c22", Face: 0})
+
+	if next.Tokens != nil {
+		t.Errorf("c22 tokens = %v, want none", next.Tokens)
+	}
+	if want := map[string]int{"tough": 1}; !maps.Equal(next.Status, want) {
+		t.Errorf("c22 status = %v, want %v", next.Status, want)
+	}
+	if next.Mods != nil {
+		t.Errorf("c22 mods = %v, want none", next.Mods)
 	}
 }
 

@@ -11,6 +11,9 @@ import (
 // faceTypeMainScheme is the marvelcdb type of a main scheme face.
 const faceTypeMainScheme = "main_scheme"
 
+// faceTypeVillain is the marvelcdb type of a villain face.
+const faceTypeVillain = "villain"
+
 // topCount writes "the top card" or "the top N cards".
 func topCount(n int) string {
 	if n == 1 {
