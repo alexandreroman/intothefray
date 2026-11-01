@@ -10,7 +10,6 @@ import {
   HAND_CARD,
   HAND_PADDING,
   HAND_REST_SCALE,
-  RAISED_FAN_SHARE,
   restingFanPositions,
 } from './layout';
 import { motion } from './motion.svelte';
@@ -92,14 +91,12 @@ describe('Hand', () => {
     expect(xs()).toEqual(resting);
 
     await rerender({ ...props, open: true });
-    const raisedFan = fanPositions(3, RAISED_FAN_SHARE * 1200, raised.w).map(
-      (slot) => `${slot.x}px`,
-    );
+    const raisedFan = filledFanPositions(3, 1200 - 36, raised).map((slot) => `${slot.x}px`);
     expect(xs()).toEqual(raisedFan);
     expect(raisedFan).not.toEqual(resting);
   });
 
-  it('spreads the raised fan over 90 % of the hand, in its middle', async () => {
+  it('spreads the raised fan over the whole hand less its padding, in its middle', async () => {
     vi.spyOn(Element.prototype, 'clientWidth', 'get').mockReturnValue(1200);
     const many = Array.from({ length: 12 }, (_, i) => handCard(`m${i}`, '01003'));
     const raised = { w: 238, h: 333 };
@@ -113,11 +110,12 @@ describe('Hand', () => {
       open: true,
     });
 
-    expect(RAISED_FAN_SHARE).toBe(0.9);
     const xs = handCards().map((item) => Number.parseFloat(item.style.getPropertyValue('--x')));
-    // Too many cards for 1080 px: they close up more than they would over the whole 1200.
-    expect(xs).toEqual(fanPositions(12, 1080, raised.w).map((slot) => slot.x));
-    expect(xs).not.toEqual(fanPositions(12, 1200, raised.w).map((slot) => slot.x));
+    // Too many cards for 1164 px: they close up for the fan as drawn to span it.
+    const fan = filledFanPositions(12, 1164, raised);
+    expect(xs).toEqual(fan.map((slot) => slot.x));
+    const extent = fanExtent(fan, raised);
+    expect(extent.right - extent.left).toBeCloseTo(1164, 6);
     expect(xs[0]).toBeCloseTo(-xs[11]!);
   });
 
@@ -665,7 +663,7 @@ describe('Hand beside another one', () => {
     expect(rule('.hand.inactive')).not.toMatch(/transform/);
   });
 
-  it('rests at its place beside the other hand, and rises over the middle of its room', async () => {
+  it('rests at its place beside the other hand, and rises over the whole room', async () => {
     vi.spyOn(Element.prototype, 'clientWidth', 'get').mockReturnValue(1200);
     const props = {
       cards: CARDS,
@@ -688,7 +686,7 @@ describe('Hand beside another one', () => {
     );
 
     await rerender({ ...props, open: true });
-    expect(xs()).toEqual(fanPositions(3, RAISED_FAN_SHARE * 1200).map((slot) => slot.x));
+    expect(xs()).toEqual(filledFanPositions(3, 1164, HAND_CARD).map((slot) => slot.x));
   });
 
   it('fades out while the other hand is raised, turning active by no pointer', async () => {
@@ -815,9 +813,9 @@ describe('Hand beside another one', () => {
   });
 });
 
-describe('Hand filling the table', () => {
-  // A narrow table 768 px wide: the hand's room is 408 px wide, 100 px in from its left edge and
-  // 260 px from its right one, where the controls lie.
+describe('Hand raised beside the controls', () => {
+  // A table 768 px wide: the hand's room is 408 px wide, 100 px in from its left edge, beside the
+  // hero selector, and 260 px from its right one, beside the controls.
   const inset = { left: 100, right: 260 };
   const raised = { w: 162, h: 227 };
   const many = Array.from({ length: 7 }, (_, i) => handCard(`m${i}`, '01003'));
@@ -845,39 +843,26 @@ describe('Hand filling the table', () => {
     );
   });
 
-  it("raises its fan over the whole table less the hand's padding, centred on the table", async () => {
-    const { rerender } = render(Hand, { ...props, fill: true });
-    await rerender({ ...props, fill: true, open: true });
+  it("raises its fan from its room's left edge to the table's right edge, over the controls", async () => {
+    const { rerender } = render(Hand, props);
+    await rerender({ ...props, open: true });
 
-    // 768 px less 18 px each side, moved 80 px right: from the room's middle to the table's.
-    const fan = filledFanPositions(7, 732, raised);
-    expect(xs()).toEqual(fan.map((slot) => slot.x + 80));
+    // 408 + 260 px less 18 px each side, moved 130 px right: from the room's middle to the fan's.
+    const fan = filledFanPositions(7, 632, raised);
+    expect(xs()).toEqual(fan.map((slot) => slot.x + 130));
     // The glow follows the fan.
     const extent = fanExtent(fan, raised);
     expect(Number.parseFloat(handList().style.getPropertyValue('--fan-x'))).toBeCloseTo(
-      (extent.left + extent.right) / 2 + 80,
+      (extent.left + extent.right) / 2 + 130,
     );
-    expect(Number.parseFloat(handList().style.getPropertyValue('--fan-w'))).toBeCloseTo(732, 6);
+    expect(Number.parseFloat(handList().style.getPropertyValue('--fan-w'))).toBeCloseTo(632, 6);
     // The hand keeps its room.
     expect(handList().style.marginLeft).toBe('100px');
     expect(handList().style.marginRight).toBe('260px');
   });
 
-  it('raises its fan over the middle of its room without fill', async () => {
-    const { rerender } = render(Hand, props);
-    await rerender({ ...props, open: true });
-    expect(xs()).toEqual(fanPositions(7, RAISED_FAN_SHARE * 408, raised.w).map((slot) => slot.x));
-  });
-
-  it('rests as it does without fill', () => {
-    const { unmount } = render(Hand, props);
-    const resting = xs();
-    expect(resting).toEqual(
-      restingFanPositions(7, 408, HAND_CARD.w, raised.w).map((slot) => slot.x),
-    );
-
-    unmount();
-    render(Hand, { ...props, fill: true });
-    expect(xs()).toEqual(resting);
+  it('rests in the middle of its room', () => {
+    render(Hand, props);
+    expect(xs()).toEqual(restingFanPositions(7, 408, HAND_CARD.w, raised.w).map((slot) => slot.x));
   });
 });

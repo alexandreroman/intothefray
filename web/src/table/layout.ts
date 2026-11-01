@@ -449,14 +449,7 @@ export interface HandInsets {
 
 const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
 
-/**
- * The share of the hands' room a raised fan spreads over, in its middle, on a
- * wide screen: the rest stays clear. On a narrow one it fills the whole table
- * instead (filledFanPositions).
- */
-export const RAISED_FAN_SHARE = 0.9;
-
-/** The least share of each card's width a filled fan shows, beside the next card (filledHandCard). */
+/** The least share of each card's width a raised fan shows, beside the next card (filledHandCard). */
 export const FILLED_FAN_MIN_SHOW = 0.25;
 
 /** The room between two resting fans side by side, as seen, in px. */
@@ -524,11 +517,12 @@ export function restingFanWidth(
 }
 
 /**
- * Lays out `n` cards of a hand, as the prototype does: the cards overlap by
- * 40, more when the row does not fit `width` (keeping 112 plus a third of a
- * card for the tilted outer cards, the 112 growing with a card wider than
- * 185), and turn 5 degrees apart, 44 at most in total. Each card sags by how
- * far a circle of radius 1260 falls away from its top at that angle.
+ * Lays out `n` cards of a resting hand (restingFanPositions), as the
+ * prototype does: the cards overlap by 40, more when the row does not fit
+ * `width` (keeping 112 plus a third of a card for the tilted outer cards, the
+ * 112 growing with a card wider than 185), and turn 5 degrees apart, 44 at
+ * most in total. Each card sags by how far a circle of radius 1260 falls away
+ * from its top at that angle.
  *
  * Coordinates are relative to the fan centre, the middle of the middle card:
  * `x` grows to the right, `y` grows downward (outer cards sit lower), `angle`
@@ -572,11 +566,11 @@ export function filledFanPositions(
 }
 
 /**
- * The raised card of a filled fan of `n` cards over `width`
- * (filledFanPositions): `card`, shrunk so that each card shows at least
- * FILLED_FAN_MIN_SHOW of its width beside the next one, never below `base`.
- * The fan of piled cards is drawn in proportion to the card, so that the
- * widest card that fits follows from that of a card 1 px wide.
+ * The raised card of a fan of `n` cards over `width` (filledFanPositions):
+ * `card`, shrunk so that each card shows at least FILLED_FAN_MIN_SHOW of its
+ * width beside the next one, never below `base`. The fan of piled cards is
+ * drawn in proportion to the card, so that the widest card that fits follows
+ * from that of a card 1 px wide.
  */
 export function filledHandCard(
   card: { w: number; h: number },

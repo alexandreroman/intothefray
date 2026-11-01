@@ -31,12 +31,13 @@ type: project
   side, in seat order, the same size, about 48 px apart between their
   tilted end cards, in the room between the hero selector and the bottom
   right controls (zoom, Undo). The selected deck's hand is active; the
-  other is dimmed and never rises, and the pointer entering it selects
-  its deck (in "Villain + player" that also shows that deck's row). A raised hand spreads over the whole room and the other hand
-  fades out until it lowers. Each fan glows from below in its player's
-  colour. With 1, 3 or 4 decks, or on a small screen, only the selected
-  deck's hand shows. A card dropped on any shown hand goes to its own
-  deck's hand.
+  other is dimmed and never rises, and the pointer entering it selects its
+  deck (in "Villain + player" that also shows that deck's row). A raised
+  hand spreads from the room's left edge to the table's right edge (see
+  [[project_hand_sizes]]) and the other hand fades out until it lowers.
+  Each fan glows from below in its player's colour. With 1, 3 or 4 decks,
+  or on a small screen, only the selected deck's hand shows. A card
+  dropped on any shown hand goes to its own deck's hand.
 - Owner frames always name the hero ("Sam · Captain Marvel"); history
   lines ("… to Alex (Spider-Man)") and box titles ("Your Spider-Man
   deck") name it only when the player has several decks.

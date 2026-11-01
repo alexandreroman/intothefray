@@ -656,34 +656,16 @@
     raisedHandCard(baseHandCard, { w: scrollerWidth, h: windowHeight }, { small: small.current }),
   );
 
-  // Raised on a narrow or a small screen, the active hand's fan fills the whole table, less the
-  // hand's side padding (Hand's fill), over the controls beside the hands' room, which the veil
-  // covers meanwhile. Its cards then shrink as the hand grows, never below the base card, so that
-  // each one shows a part of itself (filledHandCard).
-  const fillsTable = $derived(narrow.current || small.current);
-
-  /**
-   * The raised card of a seat's hand: raisedCard, shrunk to fit its fan when it fills the table.
-   * At rest, the hand shows the base card all the same (handRestScale, handRestDrop).
-   */
-  function raisedCardOf(seat: number): { w: number; h: number } {
-    if (!fillsTable) {
-      return raisedCard;
-    }
-    const fanWidth = scrollerWidth - 2 * HAND_PADDING.side;
-    return filledHandCard(raisedCard, baseHandCard, handOf(seat).length, fanWidth);
-  }
-
   // The room between the hands and the controls beside them on a wide screen, in px.
   const CONTROLS_GAP = 32;
 
   // The width of the controls at the bottom right (the zoom control, the narrow Undo).
   let cornerWidth = $state(0);
 
-  // On a wide screen the hands keep to the room between the hero selector, when it shows, and the
-  // controls at the bottom right, never under them. On a small screen those controls sit above the
-  // resting hand. A raised hand filling the table (fillsTable) keeps its room too, but spreads its
-  // fan over the whole table.
+  // On a wide screen the resting hands keep to the room between the hero selector, when it shows,
+  // and the controls at the bottom right, never under them. On a small screen those controls sit
+  // above the resting hand. A raised hand's fan reaches on to the table's right edge, over those
+  // controls, which the veil covers meanwhile; the hero selector stays clear, to pick another hand.
   const handsRoom = $derived<HandInsets>(
     small.current
       ? { left: 0, right: 0 }
@@ -693,10 +675,22 @@
         },
   );
 
+  /**
+   * The raised card of a seat's hand: raisedCard, shrunk as the hand grows, never below the base
+   * card, so that each card of its fan shows a part of itself (filledHandCard). The fan spreads from
+   * the left edge of the hands' room to the table's right edge, less the hand's side padding
+   * (Hand.svelte's raisedSlots). At rest, the hand shows the base card all the same (handRestScale,
+   * handRestDrop).
+   */
+  function raisedCardOf(seat: number): { w: number; h: number } {
+    const fanWidth = scrollerWidth - handsRoom.left - 2 * HAND_PADDING.side;
+    return filledHandCard(raisedCard, baseHandCard, handOf(seat).length, fanWidth);
+  }
+
   // Two resting hands side by side, both over the whole room: each fan is laid out for half of it,
   // and the two sit HANDS_GAP apart, centred together (fanOffsets). Active or not, a resting hand
   // has the same size: neither moves as the active hand changes. Raised, the active one spreads
-  // over the middle of the room (RAISED_FAN_SHARE), or over the whole table (fillsTable).
+  // from the left edge of the room to the table's right edge (raisedCardOf).
   const restPlaces = $derived.by(() => {
     const [first, second] = handSeats;
     if (first === undefined || second === undefined) {
@@ -1927,7 +1921,6 @@
         inset={handsRoom}
         restPlace={restPlaces[i]}
         hidden={handRaised && seat !== handSeat}
-        fill={fillsTable}
         bind:open={handsOpen[i]}
       />
     {/each}

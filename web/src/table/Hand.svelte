@@ -26,13 +26,11 @@
   import {
     cardBox,
     fanExtent,
-    fanPositions,
     filledFanPositions,
     HAND_CARD,
     HAND_PADDING,
     HAND_REST_DROP,
     handRestScale,
-    RAISED_FAN_SHARE,
     type FanSlot,
     type HandInsets,
     restingFanPositions,
@@ -56,7 +54,6 @@
     inset = { left: 0, right: 0 },
     restPlace,
     hidden = false,
-    fill = false,
   }: {
     /** The hand, in its order. */
     cards: TableCard[];
@@ -86,7 +83,10 @@
     active?: boolean;
     /** Makes this inactive hand the active one: the pointer came into its band, or a finger tapped it. */
     onactivate?: () => void;
-    /** The hand's room at the bottom of the table, in from its edges: the fan centres in it. */
+    /**
+     * The hand's room at the bottom of the table, in from its edges: the resting fan centres in it.
+     * The raised fan reaches past its right edge to the table's (raisedSlots).
+     */
     inset?: HandInsets;
     /**
      * Where the resting fan lies beside the other hand shown, if any: its middle `offset` px right
@@ -96,12 +96,6 @@
     restPlace?: { offset: number; width: number };
     /** The other hand shown is raised over the room: this one fades out, and takes no pointer. */
     hidden?: boolean;
-    /**
-     * On a narrow screen the raised fan spreads over the whole table, less the hand's side padding,
-     * centred on it, over the controls beside the hands' room, which the veil covers while the hand
-     * is raised.
-     */
-    fill?: boolean;
   } = $props();
 
   /** The cards in the given order, then any the order does not know (drawn meanwhile). */
@@ -130,8 +124,7 @@
     return others;
   });
 
-  // The whole hand's width, padding included: fanPositions keeps that padding free, and so does a
-  // fan filling the table (raisedSlots).
+  // The whole hand's width, padding included: both fans keep that padding free.
   let width = $state(0);
   // Raised, the fan spreads out for the raised cards; at rest, it is the base cards' fan.
   const restCard = $derived(restCardSize ?? cardSize);
@@ -139,18 +132,17 @@
   const slots = $derived(open ? raisedSlots() : restingSlots());
 
   /**
-   * The raised fan, over the middle of the hand (RAISED_FAN_SHARE of it), or over the whole table
-   * when it fills it: the hand keeps its margins, so its slots move over to the table's middle.
+   * The raised fan, as wide as its room allows, less the hand's side padding: from the left edge of
+   * the hand's room, which keeps the hero selector clear, to the table's right edge, over the
+   * controls at the bottom right, which the veil covers while the hand is raised. The hand keeps
+   * its margins, so its slots move over to the middle of that room.
    */
   function raisedSlots(): FanSlot[] {
-    if (!fill) {
-      return fanPositions(shown.length, RAISED_FAN_SHARE * width, cardSize.w);
-    }
-    const tableWidth = width + inset.left + inset.right;
-    const shift = (inset.right - inset.left) / 2;
-    return filledFanPositions(shown.length, tableWidth - 2 * HAND_PADDING.side, cardSize).map(
-      (slot) => ({ ...slot, x: slot.x + shift }),
-    );
+    const room = width + inset.right - 2 * HAND_PADDING.side;
+    return filledFanPositions(shown.length, room, cardSize).map((slot) => ({
+      ...slot,
+      x: slot.x + inset.right / 2,
+    }));
   }
 
   /** The resting fan, at its place: the offset is seen at the rest scale, the slots are before it. */
