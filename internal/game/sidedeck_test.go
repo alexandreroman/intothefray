@@ -235,12 +235,12 @@ func TestSetupSetAsideHeroCards(t *testing.T) {
 // set-aside cards, recorded before side decks existed: those setups must
 // draw the same random numbers and so give the same tables and card ids.
 // They change only with the card data of the heroes and scenario they use,
-// with the fields of a card (the identity mark), or with the default
-// positions (the first player token beside the first identity, the villain
-// row, the height of a player's row).
+// with the fields of a card (the identity mark) or of a stage (the villain
+// mark), or with the default positions (the first player token beside the
+// first identity, the villain row, the height of a player's row).
 const (
-	spiderManSetupHash = "fa51258c45c3cac3fab174438345c363ab5224fa8a6a2b6c47ee02caf79c14df"
-	threeDeckSetupHash = "723ae6f6087aacc2b4fd6c10f6a038019c4ed0a2bbc92a873cb28895e97f0b1f"
+	spiderManSetupHash = "d7674e766f03177419157ebea21a54bb7a35cd96704a256a1e82a6b65dd8fad6"
+	threeDeckSetupHash = "12091dade8191b93a65feb69250c2922c6b6d0f33caf23a169737786bd49fc9e"
 )
 
 func TestSetupWithoutSideDecksIsUnchanged(t *testing.T) {

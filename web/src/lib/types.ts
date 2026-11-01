@@ -229,6 +229,7 @@ export interface Stage {
   label: string;
   current: string;
   cards: string[];
+  villain?: boolean; // a villain's stage: decides what carries over on a stage change
 }
 
 export interface Arrow {

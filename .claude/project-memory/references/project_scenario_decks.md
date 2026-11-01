@@ -51,4 +51,5 @@ automation; the Wrecking Crew rules insert states the setup.
 **How to apply:** add a scenario with extra decks or several villains as
 curated data, never as per-scenario code, checked against its rules
 insert. See [[project_setup_scope]] and
-[[project_table_layout]].
+[[project_table_layout]]; stage changes follow
+[[project_stage_carry_over]].

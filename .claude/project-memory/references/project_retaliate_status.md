@@ -26,4 +26,5 @@ type: project
 ("Retaliate 1"), not a status card like Stunned or Tough.
 
 **How to apply:** a status whose count is a value gets its own tab text
-in `statusText` (CardView.svelte); see also [[project_stat_modifiers]].
+in `statusText` (CardView.svelte); see also [[project_stat_modifiers]]
+and [[project_stage_carry_over]].

@@ -204,6 +204,10 @@ type Stage struct {
 	Label   string   `json:"label"`
 	Current string   `json:"current"`
 	Cards   []string `json:"cards"`
+	// Villain marks the stage of a villain, whose cards are villains. Set at
+	// setup, it decides what carries over on a stage change (see
+	// applyChooseStage).
+	Villain bool `json:"villain,omitempty"`
 }
 
 // Arrow points from one card to another, drawn by the player at Seat.
