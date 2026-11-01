@@ -41946,12 +41946,20 @@
       "en": {
         "key": "cards/en/61033b.c0238d817a5b.avif",
         "from": "cerebro"
+      },
+      "fr": {
+        "key": "cards/fr/61033b.0df022320085.avif",
+        "from": "octgn"
       }
     },
     "61033c": {
       "en": {
         "key": "cards/en/61033c.0c0477ebe54b.avif",
         "from": "cerebro"
+      },
+      "fr": {
+        "key": "cards/fr/61033c.4aa4306b3050.avif",
+        "from": "octgn"
       }
     },
     "62001a": {

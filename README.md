@@ -216,11 +216,12 @@ The curated files are the scenarios (`scenarios/`; `mainSchemes` lists the
 main scheme sets a scenario such as an Underling's is played with), card
 overrides
 (`cards.json`: face sizes, the Cerebro image ids of the identities whose
-Cerebro images are swapped, and the cards a deck containing a card puts aside
-at setup, such as Specialized Training's Specialists, listed on the card's code
-rather than a face code) and set data (`sets.json`: the cards a set starts in
-play at each difficulty, the sets the lobby leaves out, the main scheme sets
-(`mainScheme`, offered among the modular sets), the hero side decks
+Cerebro images are swapped, the OCTGN image file stems (`octgn`) of the faces
+whose records carry a wrong OCTGN id, and the cards a deck containing a card
+puts aside at setup, such as Specialized Training's Specialists, listed on the
+card's code rather than a face code) and set data (`sets.json`: the cards a set
+starts in play at each difficulty, the sets the lobby leaves out, the main
+scheme sets (`mainScheme`, offered among the modular sets), the hero side decks
 such as Doctor Strange's Invocation deck, and the cards a hero set puts aside
 at setup). A side deck is a `hero_special` set linked to the hero of its pack
 whose set code, followed by `_`, starts its own (`doctor_strange` for

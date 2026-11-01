@@ -35,6 +35,9 @@ func TestLoad(t *testing.T) {
 	if got := loaded.Cards["01001a"].Cerebro; got != "01001B" {
 		t.Errorf("got override Cerebro image %q, want 01001B", got)
 	}
+	if got := loaded.Cards["01043b"].Octgn; got != "9129d847" {
+		t.Errorf("got override OCTGN stem %q, want 9129d847", got)
+	}
 
 	wantSets := map[string]SetDef{
 		"standard_ii": {InPlay: map[pack.Difficulty][]pack.FaceRef{

@@ -71,8 +71,10 @@ type: reference
 - marvelcdb gives the three Suggestion cards of Jessica Jones (61033a/b/c,
   distinct cards) one `octgn_id`, while the OCTGN packs give each its own
   id (the guid's tail is the card code: `…9a864661033b`, `…61033c`). The
-  derived stems `<id>.b`/`<id>.c` match no OCTGN file, so 61033b and
-  61033c have no French image.
+  derived stems `<id>.b`/`<id>.c` match no OCTGN file, so `octgn`
+  overrides in `packs/curated/cards.json` give 61033b and 61033c their
+  real OCTGN stems; the same override fixes any face whose record carries
+  a wrong OCTGN id.
 - Reprint codes (marvelcdb `duplicate_of_code`, e.g. 61018 of 12031) are
   not faces of `sources.json`: they use the original card's images, and
   their files in the OCTGN packs match no face.

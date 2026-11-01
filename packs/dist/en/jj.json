@@ -760,7 +760,14 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/61033b.c0238d817a5b.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61033b.0df022320085.avif"
+              ]
+            }
+          }
         }
       ],
       "set": "jessica_jones_nemesis",
@@ -776,7 +783,14 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/61033c.0c0477ebe54b.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61033c.4aa4306b3050.avif"
+              ]
+            }
+          }
         }
       ],
       "set": "jessica_jones_nemesis",
