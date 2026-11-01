@@ -72,6 +72,16 @@ func setupCatalog(t *testing.T) *pack.Catalog {
 			},
 			{Code: "vs_d_side", Name: "Decks side schemes", Kind: "modular", Cards: []string{"21001", "21002"}},
 			{Code: "req", Name: "Required", Kind: "modular", Cards: []string{"22001"}},
+			// Side decks, one per discard rule.
+			{Code: "side_owner", Name: "Web", Kind: "hero_special", Cards: []string{}, Side: &pack.SideDeck{Label: "Web"}},
+			{
+				Code: "side_own", Name: "Tech", Kind: "hero_special", Cards: []string{},
+				Side: &pack.SideDeck{Label: "Tech", Discard: pack.DiscardOwn},
+			},
+			{
+				Code: "side_none", Name: "Gift", Kind: "hero_special", Cards: []string{},
+				Side: &pack.SideDeck{Label: "Gift", Discard: pack.DiscardNone},
+			},
 		},
 		Heroes: []pack.Hero{{Identity: "01001", Set: "hset", Obligation: "01090", Nemesis: "nem"}},
 		Scenarios: []pack.Scenario{
@@ -94,7 +104,7 @@ func setupCatalog(t *testing.T) *pack.Catalog {
 					{Key: "scheme", Label: "Scheme", Cards: []string{"10010"}},
 				},
 				Decks: []pack.ScenarioDeck{
-					{Key: "da", Label: "Deck A", Sets: []string{"sa"}, Encounter: true, Discard: true},
+					{Key: "da", Label: "Deck A", Sets: []string{"sa"}, Encounter: true, Discard: pack.DiscardOwn},
 					{Key: "db", Label: "Deck B", Cards: []string{"12001", "12002"}},
 				},
 				Start: map[pack.Difficulty]pack.Start{pack.Standard: {
@@ -125,9 +135,9 @@ func setupCatalog(t *testing.T) *pack.Catalog {
 					{Key: "scheme", Label: "Scheme", Cards: []string{"20002"}},
 				},
 				Decks: []pack.ScenarioDeck{
-					{Key: "ss", Label: "Side schemes", Sets: []string{"vs_d_side"}, Discard: true},
+					{Key: "ss", Label: "Side schemes", Sets: []string{"vs_d_side"}, Discard: pack.DiscardOwn},
 					{Key: "wx", Label: "Weapons", Cards: []string{"21003"}},
-					{Key: "mx", Label: "Modular", Sets: []string{"sa"}},
+					{Key: "mx", Label: "Modular", Sets: []string{"sa"}, Discard: pack.DiscardNone},
 				},
 				Start: map[pack.Difficulty]pack.Start{pack.Standard: {
 					Top: map[string]pack.FaceRef{"villain": {Card: "20001"}, "scheme": {Card: "20002"}},
@@ -397,6 +407,66 @@ func TestScenarioDeckCardsStayOutOfClassicDeck(t *testing.T) {
 	}
 	if n := len(table.Piles[PileEncounter].Cards); n != 2 {
 		t.Errorf("encounter deck has %d cards, want the 2 copies of 20003", n)
+	}
+}
+
+// TestScenarioDeckDiscardRules checks the pile each scenario deck records for
+// its discarded cards: its own discard pile, the encounter discard pile, its
+// owner's, when the scenario keeps the classic one, or none.
+func TestScenarioDeckDiscardRules(t *testing.T) {
+	for _, tt := range []struct {
+		scenario, deck, discard string
+	}{
+		{"decks", "sdeck:ss", "sdisc:ss"},
+		{"decks", "sdeck:wx", PileEncounterDiscard},
+		{"decks", "sdeck:mx", ""},
+		{"twice", "enc:da", "encd:da"},
+		// Its own encounter deck leaves the scenario no encounter discard pile.
+		{"twice", "sdeck:db", ""},
+	} {
+		t.Run(tt.scenario+"/"+tt.deck, func(t *testing.T) {
+			table := mustScenarioTable(t, tt.scenario)
+			deck := table.Piles[tt.deck]
+			if deck == nil {
+				t.Fatalf("no pile %s", tt.deck)
+			}
+			if deck.Discard != tt.discard {
+				t.Errorf("%s discard = %q, want %q", tt.deck, deck.Discard, tt.discard)
+			}
+			if tt.discard != "" && table.Piles[tt.discard] == nil {
+				t.Errorf("no pile %s", tt.discard)
+			}
+		})
+	}
+	table := mustScenarioTable(t, "decks")
+	for _, id := range []string{"sdisc:wx", "sdisc:mx"} {
+		if table.Piles[id] != nil {
+			t.Errorf("deck without a discard pile of its own has %s", id)
+		}
+	}
+}
+
+// TestSidePilesDiscardRules checks the pile each side deck records for its
+// discarded cards: its owner's discard pile, its own, or none.
+func TestSidePilesDiscardRules(t *testing.T) {
+	b := &tableBuilder{cat: setupCatalog(t), rng: newTestRNG(), table: newEmptyTable(2)}
+	hero := pack.Hero{Identity: "01001", Set: "hset", SideDecks: []string{"side_owner", "side_own", "side_none"}}
+	if _, err := b.addSidePiles(1, hero); err != nil {
+		t.Fatal(err)
+	}
+	for id, want := range map[string]string{
+		"side:p1:0": "disc:p1",
+		"side:p1:1": "sided:p1:1",
+		"side:p1:2": "",
+	} {
+		if got := b.table.Piles[id].Discard; got != want {
+			t.Errorf("%s discard = %q, want %q", id, got, want)
+		}
+	}
+	for _, id := range []string{"sided:p1:0", "sided:p1:2"} {
+		if b.table.Piles[id] != nil {
+			t.Errorf("side deck without a discard pile of its own has %s", id)
+		}
 	}
 }
 

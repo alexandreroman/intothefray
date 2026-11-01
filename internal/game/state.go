@@ -190,6 +190,12 @@ type Pile struct {
 	Back pack.Back `json:"back,omitempty"`
 	// Compact is a scenario deck or discard pile, drawn 80 x 112.
 	Compact bool `json:"compact,omitempty"`
+	// Discard is the id of the pile the cards of a side deck or a scenario
+	// deck are discarded to, set at setup from the deck's discard rule: its
+	// own discard pile, its owner's (the encounter discard pile for a
+	// scenario deck), or empty when they are never discarded. The other decks
+	// always discard to the same pile (see discardOf).
+	Discard string `json:"discard,omitempty"`
 }
 
 // Stage is a scheme or villain stage track.

@@ -817,6 +817,7 @@
       ],
       "side": {
         "label": "Weather",
+        "discard": "none",
         "back": "player"
       }
     }

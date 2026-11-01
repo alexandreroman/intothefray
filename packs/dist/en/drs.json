@@ -854,7 +854,7 @@
       "side": {
         "label": "Invocation",
         "topFaceUp": true,
-        "discard": true,
+        "discard": "own",
         "back": "player"
       }
     },

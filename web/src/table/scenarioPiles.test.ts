@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Action, CardView, PileView, View } from '../lib/types';
-import { actionsFor, deckDiscardOf, discardPileOf, type ActionItem } from './actions';
+import { actionsFor, discardPileOf, type ActionItem } from './actions';
 import { narratedName } from './animate';
 import { pileLabel } from './boxes';
 import { dropAction, pileTargets, sourceOf } from './drag';
@@ -26,9 +26,19 @@ function card(id: string, extra: Partial<CardView> = {}): CardView {
   };
 }
 
-/** A Wrecking Crew table: two encounter scenario decks with discards, a deck with none, no classic one. */
+/**
+ * A Wrecking Crew table: two encounter scenario decks with their own discard piles, a deck that
+ * never discards its cards, no classic encounter deck.
+ */
 const WRECKER = [
-  pile('enc:wrecker', { kind: 'encounter', label: 'Wrecker', compact: true, x: 0, y: 30 }),
+  pile('enc:wrecker', {
+    kind: 'encounter',
+    label: 'Wrecker',
+    compact: true,
+    x: 0,
+    y: 30,
+    discard: 'encd:wrecker',
+  }),
   pile('encd:wrecker', {
     kind: 'encounterDiscard',
     label: 'Wrecker',
@@ -43,6 +53,7 @@ const WRECKER = [
     compact: true,
     x: 300,
     y: 30,
+    discard: 'encd:thunderball',
   }),
   pile('encd:thunderball', {
     kind: 'encounterDiscard',
@@ -221,7 +232,7 @@ describe('scenarioDeck', () => {
 
   it('discards onto its sdisc:<key> when it has one', () => {
     const view = makeView([
-      pile('sdeck:x', { kind: 'scenarioDeck', label: 'X', compact: true }),
+      pile('sdeck:x', { kind: 'scenarioDeck', label: 'X', compact: true, discard: 'sdisc:x' }),
       pile('sdisc:x', { kind: 'scenarioDiscard', label: 'X', compact: true }),
     ]);
     expect(run(menu('sdeck:x', view), 'discard1')).toEqual({
@@ -229,8 +240,26 @@ describe('scenarioDeck', () => {
       pile: 'sdeck:x',
       n: 1,
     });
-    expect(deckDiscardOf('sdeck:x')).toBe('sdisc:x');
     expect(discardPileOf(card('c', { home: 'sdeck:x' }), view.table?.piles ?? [])).toBe('sdisc:x');
+  });
+
+  it('discards onto the encounter discard pile when it names it', () => {
+    const view = makeView([
+      pile('enc', { kind: 'encounter' }),
+      pile('encd', { kind: 'encounterDiscard' }),
+      pile('sdeck:weapons', {
+        kind: 'scenarioDeck',
+        label: 'Experimental Weapons',
+        compact: true,
+        discard: 'encd',
+      }),
+    ]);
+    const items = menu('sdeck:weapons', view);
+    expect(run(items, 'discard1')).toEqual({ kind: 'discardTop', pile: 'sdeck:weapons', n: 1 });
+    expect(items.map((it) => it.id)).toContain('discardTop');
+    expect(discardPileOf(card('c', { home: 'sdeck:weapons' }), view.table?.piles ?? [])).toBe(
+      'encd',
+    );
   });
 
   it('a card of a deck without a discard is never discarded', () => {

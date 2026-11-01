@@ -52,7 +52,7 @@ func TestPackFileRoundTrip(t *testing.T) {
 			{Code: "valk", Name: "Valkyrie", Kind: "hero", Cards: []string{"25001", "25002"}, SetAside: []string{"25002"}},
 			{
 				Code: "doctor_strange_invocation_deck", Name: "Invocation", Kind: "hero_special", Cards: []string{"09032"},
-				Side: &SideDeck{Label: "Invocation", TopFaceUp: true, Discard: true},
+				Side: &SideDeck{Label: "Invocation", TopFaceUp: true, Discard: DiscardOwn},
 			},
 			{
 				Code: "storm_weather_deck", Name: "Weather", Kind: "hero_special", Cards: []string{"36002"},

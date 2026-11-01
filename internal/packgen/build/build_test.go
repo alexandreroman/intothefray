@@ -467,7 +467,7 @@ func heroSetsInputs(t *testing.T, defs map[string]curated.SetDef) Inputs {
 }
 
 func TestBuildMergesSideDecksAndSetAsideCards(t *testing.T) {
-	web := &pack.SideDeck{Label: "Web", TopFaceUp: true, Discard: true}
+	web := &pack.SideDeck{Label: "Web", TopFaceUp: true, Discard: pack.DiscardOwn}
 	tech := &pack.SideDeck{Label: "Tech"}
 	in := heroSetsInputs(t, map[string]curated.SetDef{
 		"spider_man_web_deck":  {Side: web},

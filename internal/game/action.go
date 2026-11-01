@@ -643,18 +643,15 @@ func resolveReorderTop(t *Table, who actor, a Action, rng *rand.Rand) (Action, e
 	return a, nil
 }
 
-// resolveDiscardTop records the cards to discard, top first. Only a deck with
-// a discard pile can be discarded from: a side deck may have none.
+// resolveDiscardTop records the cards to discard, top first. Only a deck
+// whose cards are discarded somewhere can be discarded from (see discardOf):
+// a side deck or a scenario deck may never discard its cards.
 func resolveDiscardTop(t *Table, who actor, a Action) (Action, error) {
 	pile, err := ownPile(t, who, a.Pile)
 	if err != nil {
 		return a, err
 	}
-	discardID, ok := discardPileOf(pile.ID)
-	if !ok {
-		return a, invalid("pile %q is not a deck", pile.ID)
-	}
-	if _, ok := t.Piles[discardID]; !ok {
+	if _, ok := t.Piles[discardOf(pile)]; !ok {
 		return a, invalid("pile %q has no discard pile", pile.ID)
 	}
 	if a.N > len(pile.Cards) {

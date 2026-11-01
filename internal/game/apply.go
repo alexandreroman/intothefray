@@ -185,14 +185,17 @@ func isScenarioDeckID(id string) bool {
 	return strings.HasPrefix(id, scenarioEncounterPrefix) || strings.HasPrefix(id, scenarioDeckPrefix)
 }
 
-// discardPileID returns the id of the pile where c is discarded: the discard
-// pile of its side deck or scenario deck for a card of one, which may not
-// exist, or else the discard pile of its owner (the encounter discard pile for
-// a card owned by nobody).
-func discardPileID(c *Card) string {
+// discardPileID returns the id of the pile where c is discarded: for a card
+// of a side deck or a scenario deck, the pile that deck records (see
+// Pile.Discard), empty when its cards are never discarded; else the discard
+// pile of its owner (the encounter discard pile for a card owned by nobody).
+// A card keeps its home wherever it is discarded to.
+func (t *Table) discardPileID(c *Card) string {
 	if isSideDeckID(c.Home) || isScenarioDeckID(c.Home) {
-		discardID, _ := discardPileOf(c.Home)
-		return discardID
+		if home, ok := t.Piles[c.Home]; ok {
+			return home.Discard
+		}
+		return ""
 	}
 	if c.Owner == NoOwner {
 		return PileEncounterDiscard
@@ -201,12 +204,12 @@ func discardPileID(c *Card) string {
 }
 
 // tuckedDestination returns the pile a card tucked under a card leaving the
-// table goes to: its discard pile, on top. A side deck or scenario deck card
-// whose deck has no discard pile goes to the bottom of its deck instead (bottom is
-// then true), as Daredevil's Sense cards do, so that it never keeps its host
-// on the table. ok is false when there is no such pile.
+// table goes to: the pile it is discarded to, on top. A side deck or scenario
+// deck card whose cards are never discarded goes to the bottom of its deck
+// instead (bottom is then true), as Daredevil's Sense cards do, so that it
+// never keeps its host on the table. ok is false when there is no such pile.
 func (t *Table) tuckedDestination(c *Card) (pile *Pile, bottom, ok bool) {
-	if pile, ok := t.Piles[discardPileID(c)]; ok {
+	if pile, ok := t.Piles[t.discardPileID(c)]; ok {
 		return pile, false, true
 	}
 	if isSideDeckID(c.Home) || isScenarioDeckID(c.Home) {
@@ -586,7 +589,7 @@ func applyDiscard(t *Table, a Action) error {
 	if err != nil {
 		return err
 	}
-	pile, ok := t.Piles[discardPileID(c)]
+	pile, ok := t.Piles[t.discardPileID(c)]
 	if !ok {
 		return invalid("no discard pile for card %q", c.ID)
 	}
@@ -1150,35 +1153,34 @@ func deckOfDiscard(discardID string) (string, bool) {
 	return "", false
 }
 
-// discardPileOf returns the id of the discard pile of a deck pile. A side
-// deck or scenario deck may have no discard pile: the id it returns then
-// names no pile.
-func discardPileOf(deckID string) (string, bool) {
-	if deckID == PileEncounter {
-		return PileEncounterDiscard, true
+// discardOf returns the id of the pile the top cards of deck are discarded
+// to: the pile a side deck or a scenario deck records (see Pile.Discard),
+// empty when its cards are never discarded, the encounter discard pile for
+// the encounter deck, the seat's discard pile for a player's deck, and empty
+// for a pile that is no deck.
+func discardOf(deck *Pile) string {
+	switch {
+	case isSideDeckID(deck.ID) || isScenarioDeckID(deck.ID):
+		return deck.Discard
+	case deck.ID == PileEncounter:
+		return PileEncounterDiscard
+	case deck.Kind == KindDeck:
+		return playerDiscardID(PlayerArea(deck.Owner))
+	default:
+		return ""
 	}
-	for _, prefixes := range deckDiscardPrefixes {
-		if rest, ok := strings.CutPrefix(deckID, prefixes.deck); ok {
-			return prefixes.discard + rest, true
-		}
-	}
-	return "", false
 }
 
 // applyDiscardTop discards the recorded cards, wherever they are in the deck
 // (see applyDraw), in the recorded order.
 func applyDiscardTop(t *Table, a Action) error {
-	discardID, ok := discardPileOf(a.Pile)
-	if !ok {
-		return invalid("pile %q is not a deck", a.Pile)
-	}
 	deck, err := t.pile(a.Pile)
 	if err != nil {
 		return err
 	}
-	discard, err := t.pile(discardID)
-	if err != nil {
-		return err
+	discard, ok := t.Piles[discardOf(deck)]
+	if !ok {
+		return invalid("pile %q has no discard pile", deck.ID)
 	}
 	if err := checkInPile(deck, a.Cards); err != nil {
 		return err

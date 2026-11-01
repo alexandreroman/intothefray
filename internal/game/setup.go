@@ -616,7 +616,12 @@ func (b *tableBuilder) requireNoVillainLeftover(setCode string) error {
 }
 
 // addDeckGroup lays out the piles of a scenario deck at the cursor of the
-// villain's row: the deck, then its discard pile compactDiscardStepX right of it.
+// villain's row: the deck, then its own discard pile, if it has one,
+// compactDiscardStepX right of it. The deck records where its cards are
+// discarded (see Pile.Discard): to its own discard pile, else to the
+// encounter discard pile, its owner's, unless its rule is "none" or the
+// scenario has no classic encounter deck (setupScenario then removes that
+// pile before laying out the decks).
 func (b *tableBuilder) addDeckGroup(deck pack.ScenarioDeck) {
 	deckID, discardID := scenarioDeckIDs(deck.Key, deck.Encounter)
 	deckKind, discardKind := KindScenarioDeck, KindScenarioDiscard
@@ -627,10 +632,16 @@ func (b *tableBuilder) addDeckGroup(deck pack.ScenarioDeck) {
 	x := b.slot(compactWidth, pileZoneGap, deckX)
 	pile := b.table.addPile(deckID, deckKind, NoOwner, x, y)
 	pile.Label, pile.Compact = deck.Label, true
-	if deck.Discard {
-		pile = b.table.addPile(discardID, discardKind, NoOwner, x+compactDiscardStepX, y)
-		pile.Label, pile.Compact = deck.Label, true
-		b.inPlayRight = pile.X + compactWidth
+	switch deck.Discard {
+	case pack.DiscardOwn:
+		discard := b.table.addPile(discardID, discardKind, NoOwner, x+compactDiscardStepX, y)
+		discard.Label, discard.Compact = deck.Label, true
+		b.inPlayRight = discard.X + compactWidth
+		pile.Discard = discardID
+	case pack.DiscardOwner:
+		if _, ok := b.table.Piles[PileEncounterDiscard]; ok {
+			pile.Discard = PileEncounterDiscard
+		}
 	}
 	b.lastPile = true
 }
@@ -906,8 +917,11 @@ func pileX(i int) int {
 }
 
 // addSidePiles creates the empty side decks of seat's hero, each followed by
-// its discard pile when it has one, from left to right after the discard
-// pile. It returns the number of piles it created.
+// its own discard pile when it has one, from left to right after the discard
+// pile. Each side deck records where its cards are discarded (see
+// Pile.Discard): to its own discard pile, to the seat's discard pile by
+// default, or nowhere for the rule "none". It returns the number of piles it
+// created.
 func (b *tableBuilder) addSidePiles(seat int, hero pack.Hero) (int, error) {
 	y := rowY(playerRow(seat))
 	count := 0
@@ -922,10 +936,14 @@ func (b *tableBuilder) addSidePiles(seat int, hero pack.Hero) (int, error) {
 		deck.TopFaceUp = set.Side.TopFaceUp
 		deck.Back = set.Side.Back
 		count++
-		if set.Side.Discard {
+		switch set.Side.Discard {
+		case pack.DiscardOwn:
 			discard := b.table.addPile(sideDiscardID(seat, i), KindSideDiscard, seat, pileX(2+count), y)
 			discard.Label = set.Side.Label
+			deck.Discard = discard.ID
 			count++
+		case pack.DiscardOwner:
+			deck.Discard = playerDiscardID(PlayerArea(seat))
 		}
 	}
 	return count, nil

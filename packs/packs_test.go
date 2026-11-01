@@ -538,8 +538,10 @@ func TestEmbeddedRiseOfRedSkull(t *testing.T) {
 		// encounter deck.
 		deck      string
 		deckCards []string
-		inPlay    []string
-		setAside  []string
+		// discard is the pile the deck's cards are discarded to.
+		discard  string
+		inPlay   []string
+		setAside []string
 		// encounterSets are the sets the scenario requires, every copy of
 		// whose cards lies in the classic encounter deck.
 		encounterSets []string
@@ -548,11 +550,13 @@ func TestEmbeddedRiseOfRedSkull(t *testing.T) {
 			scenario:  "crossbones",
 			deck:      "sdeck:weapons",
 			deckCards: []string{"04072", "04073", "04074", "04075"},
+			discard:   game.PileEncounterDiscard,
 		},
 		{
 			scenario:  "red_skull",
 			deck:      "sdeck:side_schemes",
 			deckCards: []string{"04140", "04141", "04142", "04143", "04144"},
+			discard:   "sdisc:side_schemes",
 			inPlay:    []string{"04139"},
 			setAside:  []string{"04130"},
 		},
@@ -581,8 +585,8 @@ func TestEmbeddedRiseOfRedSkull(t *testing.T) {
 					if !slices.Equal(codes, tt.deckCards) {
 						t.Errorf("%s holds %v, want %v", tt.deck, codes, tt.deckCards)
 					}
-					if table.Piles[strings.Replace(tt.deck, "sdeck:", "sdisc:", 1)] == nil {
-						t.Errorf("%s has no discard pile", tt.deck)
+					if deck.Discard != tt.discard || table.Piles[tt.discard] == nil {
+						t.Errorf("%s discards to %q, want the existing pile %s", tt.deck, deck.Discard, tt.discard)
 					}
 				}
 				// Each card lies in one place only: a deck card is out of
@@ -1004,16 +1008,20 @@ func TestEmbeddedHeroSetup(t *testing.T) {
 		}{
 			{"09001", []sideDeck{
 				{"doctor_strange_invocation_deck", pack.SideDeck{
-					Label: "Invocation", TopFaceUp: true, Discard: true, Back: pack.BackPlayer,
+					Label: "Invocation", TopFaceUp: true, Discard: pack.DiscardOwn, Back: pack.BackPlayer,
 				}},
 			}},
-			{"36001", []sideDeck{{"storm_weather_deck", pack.SideDeck{Label: "Weather", Back: pack.BackPlayer}}}},
+			{"36001", []sideDeck{{"storm_weather_deck", pack.SideDeck{
+				Label: "Weather", Discard: pack.DiscardNone, Back: pack.BackPlayer,
+			}}}},
 			{"59001", []sideDeck{
-				{"hercules_labor_deck", pack.SideDeck{Label: "Labor", Back: pack.BackPlayer}},
-				{"hercules_gift_deck", pack.SideDeck{Label: "Gift", Back: pack.BackEncounter}},
+				{"hercules_labor_deck", pack.SideDeck{Label: "Labor", Discard: pack.DiscardNone, Back: pack.BackPlayer}},
+				{"hercules_gift_deck", pack.SideDeck{Label: "Gift", Discard: pack.DiscardNone, Back: pack.BackEncounter}},
 			}},
 			{"60001", []sideDeck{
-				{"daredevil_sense_deck", pack.SideDeck{Label: "Sense", TopFaceUp: true, Back: pack.BackPlayer}},
+				{"daredevil_sense_deck", pack.SideDeck{
+					Label: "Sense", TopFaceUp: true, Discard: pack.DiscardNone, Back: pack.BackPlayer,
+				}},
 			}},
 		}
 		for _, tt := range tests {

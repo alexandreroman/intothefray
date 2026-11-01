@@ -36,9 +36,11 @@ Everything below works today, except where noted.
   with its own encounter deck, discard pile and side scheme, and the active
   counter, which players move by hand like the first player token; Crossbones'
   Experimental Weapons deck and Red Skull's side-scheme deck lie next to the
-  encounter deck, with their own discard piles, and are not dealt from: any
-  player drags one to play its top card face up, or under the card it is
-  dropped on. The main scheme starts on its stage 1A: players resolve its
+  encounter deck and are not dealt from: any player drags one to play its top
+  card face up, or under the card it is dropped on. Red Skull's side-scheme
+  deck has its own discard pile; a discarded Experimental Weapon goes to the
+  encounter discard pile, so shuffling that pile back takes it into the
+  encounter deck. The main scheme starts on its stage 1A: players resolve its
   Setup text themselves. They also place all threat and counters by hand: the
   main scheme's starting threat when they advance it to 1B (1A prints none),
   the starting threat of every side scheme the setup puts in play, and

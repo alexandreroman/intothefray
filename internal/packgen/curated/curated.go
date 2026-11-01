@@ -172,12 +172,22 @@ func checkScenarioDef(def ScenarioDef) error {
 			return fmt.Errorf("deck %q has no label", deck.Key)
 		case len(deck.Sets) == 0 && len(deck.Cards) == 0:
 			return fmt.Errorf("deck %q has neither sets nor cards", deck.Key)
+		case !deck.Discard.Valid():
+			return fmt.Errorf("deck %q has an unknown discard rule %q", deck.Key, deck.Discard)
 		}
 		decks[deck.Key] = true
 		encounter = encounter || deck.Encounter
 	}
 	if encounter && !def.SelfContained {
 		return errors.New("an encounter deck needs a selfContained scenario")
+	}
+	// An encounter deck of the scenario replaces the classic one and its
+	// discard pile: the owner's discard pile a deck defaults to is missing.
+	for _, deck := range def.Decks {
+		if encounter && deck.Discard == pack.DiscardOwner {
+			return fmt.Errorf("deck %q needs a discard rule (%q or %q): the scenario has no encounter discard pile",
+				deck.Key, pack.DiscardOwn, pack.DiscardNone)
+		}
 	}
 	if err := checkSets(def, encounter); err != nil {
 		return err
@@ -300,7 +310,8 @@ func checkStarts(starts map[pack.Difficulty]pack.Start, piles []pack.Pile, stage
 
 // checkSetDefs rejects the in-play cards listed under an unknown difficulty,
 // which setup would silently ignore, the side decks without a label, which
-// the table could not name, and the side decks with an unknown back.
+// the table could not name, and the side decks with an unknown back or
+// discard rule.
 func checkSetDefs(defs map[string]SetDef) error {
 	for _, code := range slices.Sorted(maps.Keys(defs)) {
 		def := defs[code]
@@ -314,6 +325,9 @@ func checkSetDefs(defs map[string]SetDef) error {
 		}
 		if def.Side != nil && !validSideBack(def.Side.Back) {
 			return fmt.Errorf("set %q: side deck has an unknown back %q", code, def.Side.Back)
+		}
+		if def.Side != nil && !def.Side.Discard.Valid() {
+			return fmt.Errorf("set %q: side deck has an unknown discard rule %q", code, def.Side.Discard)
 		}
 	}
 	return nil

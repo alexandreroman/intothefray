@@ -814,6 +814,7 @@ describe('side decks', () => {
       label: 'Invocation',
       topFaceUp: true,
       cards: ['inv-top'],
+      discard: 'sided:p0:0',
     }),
     pile('sided:p0:0', {
       kind: 'sideDiscard',
@@ -913,11 +914,16 @@ describe('side decks', () => {
 });
 
 describe('a scenario deck', () => {
-  // Crossbones' Experimental Weapons deck, with its discard pile, belongs to nobody; so does the
-  // Wrecker's encounter deck, dealt from.
+  // A scenario deck with its own discard pile, as Red Skull's side-scheme deck has, belongs to
+  // nobody; so does the Wrecker's encounter deck, dealt from.
   const piles = [
     pile('deck:p0', { owner: 0 }),
-    pile('sdeck:weapons', { kind: 'scenarioDeck', count: 4, label: 'Experimental Weapons' }),
+    pile('sdeck:weapons', {
+      kind: 'scenarioDeck',
+      count: 4,
+      label: 'Experimental Weapons',
+      discard: 'sdisc:weapons',
+    }),
     pile('sdisc:weapons', {
       kind: 'scenarioDiscard',
       count: 0,
@@ -988,5 +994,63 @@ describe('a scenario deck', () => {
     expect(handAreaOf(weapons, view)).toBeNull();
     const hand: DropRect = { kind: 'toHand', rect: rect(0, 0, 1, 1) };
     expect(dropAction(weapons, hand, AT_ORIGIN, DEAL_TO)).toBeNull();
+  });
+});
+
+describe('a scenario deck without a discard pile of its own', () => {
+  // Crossbones' Experimental Weapons: a weapon is discarded to the encounter discard pile.
+  const piles = [
+    pile('enc', { kind: 'encounter' }),
+    pile('encd', { kind: 'encounterDiscard', count: 0, cards: [] }),
+    pile('sdeck:weapons', {
+      kind: 'scenarioDeck',
+      count: 3,
+      label: 'Experimental Weapons',
+      discard: 'encd',
+    }),
+  ];
+  const cards = [card('weapon', { owner: -1, back: 'encounter', home: 'sdeck:weapons' })];
+  const view = makeView({ cards, piles });
+  const weapons: DragSource = { kind: 'deck', pile: 'sdeck:weapons' };
+  const of = (drag: DragSource) => pileTargets(drag, view).map((t) => [t.pile, t.drop]);
+
+  it('discards its top card to the encounter discard pile, and takes its own deck', () => {
+    expect(of(weapons)).toEqual([
+      ['encd', 'discard'],
+      ['sdeck:weapons', 'top'],
+    ]);
+    const discard: DropRect = {
+      kind: 'pile',
+      pile: 'encd',
+      drop: 'discard',
+      label: 'Discard',
+      rect: rect(0, 0, 1, 1),
+    };
+    expect(dropAction(weapons, discard, AT_ORIGIN, DEAL_TO)).toEqual({
+      kind: 'discardTop',
+      pile: 'sdeck:weapons',
+      n: 1,
+    });
+  });
+
+  it('offers a played weapon the top of its deck and the encounter discard pile', () => {
+    expect(of({ kind: 'card', card: 'weapon', x: 0, y: 0 })).toEqual([
+      ['sdeck:weapons', 'top'],
+      ['encd', 'discard'],
+    ]);
+  });
+
+  it('offers no discard when the deck never discards its cards', () => {
+    const none = makeView({
+      cards,
+      piles: [
+        ...piles.filter((p) => p.id !== 'sdeck:weapons'),
+        pile('sdeck:weapons', { kind: 'scenarioDeck', count: 3, label: 'Experimental Weapons' }),
+      ],
+    });
+    expect(pileTargets(weapons, none).map((t) => t.pile)).toEqual(['sdeck:weapons']);
+    expect(
+      pileTargets({ kind: 'card', card: 'weapon', x: 0, y: 0 }, none).map((t) => t.pile),
+    ).toEqual(['sdeck:weapons']);
   });
 });
