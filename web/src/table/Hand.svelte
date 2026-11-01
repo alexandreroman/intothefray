@@ -581,7 +581,7 @@
     }
     // The kept card holds the hover until the pointer is off it (followKept).
     if (kept === null) {
-      interaction.leave();
+      interaction.leave({ kind: 'hand', id });
     }
   }
 

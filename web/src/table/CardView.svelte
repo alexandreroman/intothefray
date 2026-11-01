@@ -125,7 +125,7 @@
   onpointerleave={() => {
     // Edge-on as it turns, the card slips from under the pointer, which still rests on it.
     if (!motion.isTurning(card.id)) {
-      interaction.leave();
+      interaction.leave(element);
     }
   }}
   onpointerdown={(event) => interaction.press(element, event)}

@@ -78,7 +78,7 @@
   style:width="{slot.w}px"
   style:height="{slot.h}px"
   onpointerenter={onEnter}
-  onpointerleave={() => interaction.leave()}
+  onpointerleave={() => interaction.leave(element)}
   onpointerdown={(event) => interaction.press(element, event)}
 >
   {#if empty}
