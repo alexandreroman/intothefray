@@ -1,0 +1,61 @@
+{
+  "id": "crossbones",
+  "villainSet": "crossbones",
+  "decks": [
+    {
+      "key": "weapons",
+      "label": "Experimental Weapons",
+      "sets": [
+        "exper_weapon"
+      ],
+      "discard": true
+    }
+  ],
+  "piles": [
+    {
+      "key": "villain",
+      "label": "Villain",
+      "cards": [
+        "04058",
+        "04059",
+        "04060"
+      ]
+    },
+    {
+      "key": "scheme",
+      "label": "Main scheme",
+      "cards": [
+        "04061",
+        "04062",
+        "04063"
+      ]
+    }
+  ],
+  "start": {
+    "standard": {
+      "top": {
+        "villain": {
+          "card": "04058",
+          "face": 0
+        },
+        "scheme": {
+          "card": "04061",
+          "face": 0
+        }
+      }
+    },
+    "expert": {
+      "top": {
+        "villain": {
+          "card": "04059",
+          "face": 0
+        },
+        "scheme": {
+          "card": "04061",
+          "face": 0
+        }
+      }
+    }
+  },
+  "setAside": []
+}

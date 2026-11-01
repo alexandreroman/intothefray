@@ -325,6 +325,48 @@ func TestScenarioWithUnknownDeckSetIsUnsupported(t *testing.T) {
 	}
 }
 
+func TestScenarioCopiesSetsAndDropsThemFromRecommended(t *testing.T) {
+	f := newScenarioFixture(t)
+	def := rhinoDef()
+	def.Sets = []string{"bomb_scare"}
+
+	scenarios, refs, problems := buildScenarios([]curated.ScenarioDef{def}, f.cards, f.sets, f.cb)
+
+	if len(problems) != 0 {
+		t.Fatalf("got problems %+v, want none", problems)
+	}
+	ref := findRef(t, refs, "rhino")
+	if !reflect.DeepEqual(ref.Sets, []string{"bomb_scare"}) || !reflect.DeepEqual(ref.Recommended, []string{}) {
+		t.Errorf("got ref sets %v, recommended %v; want [bomb_scare] and []", ref.Sets, ref.Recommended)
+	}
+	got := scenarios["core"]
+	if len(got) != 1 {
+		t.Fatalf("got %d scenarios, want 1", len(got))
+	}
+	if !reflect.DeepEqual(got[0].Sets, []string{"bomb_scare"}) || len(got[0].Recommended) != 0 {
+		t.Errorf("got scenario sets %v, recommended %v; want [bomb_scare] and none", got[0].Sets, got[0].Recommended)
+	}
+}
+
+func TestScenarioWithUnknownSetIsUnsupported(t *testing.T) {
+	f := newScenarioFixture(t)
+	def := rhinoDef()
+	def.Sets = []string{"nowhere"}
+
+	scenarios, refs, problems := buildScenarios([]curated.ScenarioDef{def}, f.cards, f.sets, f.cb)
+
+	if findRef(t, refs, "rhino").Supported {
+		t.Error("rhino is supported despite an unknown encounter set")
+	}
+	if len(scenarios) != 0 {
+		t.Errorf("got scenarios %v, want none", scenarios)
+	}
+	if len(problems) != 1 || problems[0].Code != "nowhere" ||
+		!strings.Contains(problems[0].Reason, "unknown set nowhere") {
+		t.Errorf("got problems %+v, want one about the unknown set nowhere", problems)
+	}
+}
+
 // underlingFixture has an underling set with two villain cards and a main
 // scheme set, in pack p.
 func underlingFixture() (map[string][]pack.Card, map[string][]pack.Set) {

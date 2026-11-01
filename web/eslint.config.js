@@ -6,7 +6,7 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default defineConfig(
-  { ignores: ['dist/', 'public/packs/', 'node_modules/'] },
+  { ignores: ['dist/', 'node_modules/'] },
   js.configs.recommended,
   tseslint.configs.recommended,
   svelte.configs.recommended,

@@ -127,6 +127,58 @@ func TestRevealScenarioDeck(t *testing.T) {
 	}
 }
 
+// TestPlayFromScenarioDeck plays the top of a scenario deck that is not an
+// encounter deck: any player may, and the card lands face up, at a point or
+// tucked under a table card.
+func TestPlayFromScenarioDeck(t *testing.T) {
+	f := scenarioFixture(t)
+	tb := f.g.Table
+
+	f.mustDo(t, "b", Action{Kind: ActPlay, Pile: "sdeck:x", X: 500, Y: 300}, at(1))
+	if c := tb.Cards["x2"]; c.Zone != ZoneTable || c.FaceDown || c.X != 500 || c.Y != 300 {
+		t.Errorf("x2 = %+v, want it played face up at (500,300)", c)
+	}
+	if got, want := f.lastLog().Text, "played "+f.nameOf(t, "x2"); got != want {
+		t.Errorf("line = %q, want %q", got, want)
+	}
+
+	villain := f.villain()
+	f.mustDo(t, "h", Action{Kind: ActPlay, Pile: "sdeck:x", Target: villain, X: 40, Y: 60}, at(2))
+	if c := tb.Cards["x1"]; c.Zone != ZoneTable || c.FaceDown || c.Parent != villain {
+		t.Errorf("x1 = %+v, want it face up under the villain", c)
+	}
+	want := "played " + f.nameOf(t, "x1") + " under " + f.nameOf(t, villain)
+	if got := f.lastLog().Text; got != want {
+		t.Errorf("line = %q, want %q", got, want)
+	}
+	if got := len(tb.Piles["sdeck:x"].Cards); got != 0 {
+		t.Errorf("sdeck:x holds %d cards, want 0", got)
+	}
+	checkIntegrity(t, tb)
+
+	err := f.do("h", Action{Kind: ActPlay, Pile: "enc:w", X: 500, Y: 300}, at(3))
+	if !errors.Is(err, ErrInvalid) {
+		t.Errorf("play from an encounter deck: err = %v, want ErrInvalid", err)
+	}
+}
+
+// TestPlayFromScenarioDeckTakesTheRevealedCard plays the top of a scenario
+// deck with a card revealed on it: that card, its top card.
+func TestPlayFromScenarioDeckTakesTheRevealedCard(t *testing.T) {
+	f := scenarioFixture(t)
+	tb := f.g.Table
+	f.mustDo(t, "h", Action{Kind: ActReveal, Pile: "sdeck:x"}, at(1))
+
+	f.mustDo(t, "b", Action{Kind: ActPlay, Pile: "sdeck:x", Target: f.villain(), X: 40, Y: 60}, at(2))
+	if c := tb.Cards["x2"]; c.Zone != ZoneTable || c.OnPile != "" || c.FaceDown || c.Parent != f.villain() {
+		t.Errorf("x2 = %+v, want the revealed card played face up under the villain", c)
+	}
+	if got := tb.Piles["sdeck:x"].Cards; !slices.Equal(got, []string{"x1"}) {
+		t.Errorf("sdeck:x = %v, want [x1]", got)
+	}
+	checkIntegrity(t, tb)
+}
+
 func TestShuffleInTarget(t *testing.T) {
 	f := scenarioFixture(t)
 	tb := f.g.Table

@@ -911,3 +911,82 @@ describe('side decks', () => {
     });
   });
 });
+
+describe('a scenario deck', () => {
+  // Crossbones' Experimental Weapons deck, with its discard pile, belongs to nobody; so does the
+  // Wrecker's encounter deck, dealt from.
+  const piles = [
+    pile('deck:p0', { owner: 0 }),
+    pile('sdeck:weapons', { kind: 'scenarioDeck', count: 4, label: 'Experimental Weapons' }),
+    pile('sdisc:weapons', {
+      kind: 'scenarioDiscard',
+      count: 0,
+      label: 'Experimental Weapons',
+      cards: [],
+    }),
+    pile('sdeck:schemes', { kind: 'scenarioDeck', count: 0, label: 'Side-scheme' }),
+  ];
+  const view = makeView({ piles });
+  const weapons: DragSource = { kind: 'deck', pile: 'sdeck:weapons' };
+
+  it('is dragged by any player, never by a spectator, nor when it is empty', () => {
+    expect(sourceOf({ kind: 'pile', id: 'sdeck:weapons' }, view)).toEqual(weapons);
+    expect(sourceOf({ kind: 'pile', id: 'sdeck:schemes' }, view)).toBeNull();
+    const spectating = makeView({ piles, spectator: true });
+    expect(sourceOf({ kind: 'pile', id: 'sdeck:weapons' }, spectating)).toBeNull();
+  });
+
+  it('plays its top card where it lands on the table, face up as the server plays it', () => {
+    expect(dropAction(weapons, TABLE, { x: 304, y: 296 }, DEAL_TO)).toEqual({
+      kind: 'play',
+      pile: 'sdeck:weapons',
+      x: 300,
+      y: 300,
+    });
+  });
+
+  it('plays its top card tucked under the card it is dropped on, in one action', () => {
+    const onCard: DropRect = { kind: 'card', card: 'x', z: 1, rect: rect(0, 0, 1, 1) };
+    expect(dropAction(weapons, onCard, { x: 44, y: 62 }, DEAL_TO)).toEqual({
+      kind: 'play',
+      pile: 'sdeck:weapons',
+      target: 'x',
+      x: 40,
+      y: 60,
+      placed: true,
+    });
+  });
+
+  it('takes its own deck, where a drop leaves it, and discards to its own discard pile', () => {
+    expect(pileTargets(weapons, view).map((t) => [t.pile, t.drop])).toEqual([
+      ['sdisc:weapons', 'discard'],
+      ['sdeck:weapons', 'top'],
+    ]);
+    const own: DropRect = {
+      kind: 'pile',
+      pile: 'sdeck:weapons',
+      drop: 'top',
+      label: 'Top of deck',
+      rect: rect(0, 0, 1, 1),
+    };
+    expect(dropAction(weapons, own, AT_ORIGIN, DEAL_TO)).toBeNull();
+    const discard: DropRect = {
+      kind: 'pile',
+      pile: 'sdisc:weapons',
+      drop: 'discard',
+      label: 'Discard',
+      rect: rect(0, 0, 1, 1),
+    };
+    expect(dropAction(weapons, discard, AT_ORIGIN, DEAL_TO)).toEqual({
+      kind: 'discardTop',
+      pile: 'sdeck:weapons',
+      n: 1,
+    });
+  });
+
+  it('goes to no hand', () => {
+    expect(handAreaOf(weapons, view)).toBeNull();
+    const hand: DropRect = { kind: 'toHand', rect: rect(0, 0, 1, 1) };
+    expect(dropAction(weapons, hand, AT_ORIGIN, DEAL_TO)).toBeNull();
+  });
+});

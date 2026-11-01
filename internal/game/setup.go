@@ -386,6 +386,11 @@ func (b *tableBuilder) setupScenario(cfg LobbyConfig) (pack.Scenario, error) {
 	b.selfContained = scenario.SelfContained
 
 	classic := !slices.ContainsFunc(scenario.Decks, func(d pack.ScenarioDeck) bool { return d.Encounter })
+	// The encounter sets the scenario requires join the classic encounter
+	// deck only.
+	if !classic && len(scenario.Sets) > 0 {
+		return pack.Scenario{}, invalid("scenario %q has encounter sets but no classic encounter deck", scenario.ID)
+	}
 	if classic {
 		b.inPlayRight = discardX + portraitWidth
 		b.lastPile = true
@@ -472,7 +477,10 @@ func (b *tableBuilder) setupScenario(cfg LobbyConfig) (pack.Scenario, error) {
 		apart[c.Code] = true
 	}
 
+	// The sets the scenario requires come right after the villain set, so a
+	// scenario without any draws the same card ids for a seed.
 	encounterSets := []string{scenario.VillainSet}
+	encounterSets = append(encounterSets, scenario.Sets...)
 	encounterSets = append(encounterSets, cfg.Modulars...)
 	if cfg.Standard != "" {
 		encounterSets = append(encounterSets, cfg.Standard)
@@ -499,12 +507,46 @@ func (b *tableBuilder) setupScenario(cfg LobbyConfig) (pack.Scenario, error) {
 	if !classic {
 		return scenario, b.requireNoVillainLeftover(scenario.VillainSet)
 	}
+	// The cards the scenario decks take stay out of the classic encounter
+	// deck too. They are not added to apart, which the scenario decks
+	// themselves leave out.
+	taken, err := b.scenarioDeckCodes(scenario)
+	if err != nil {
+		return pack.Scenario{}, err
+	}
 	for _, setCode := range encounterSets {
-		if err := b.addSetToPile(setCode, PileEncounter, skips[setCode]); err != nil {
+		skip := map[string]bool{}
+		maps.Copy(skip, skips[setCode])
+		maps.Copy(skip, taken)
+		if err := b.addSetToPile(setCode, PileEncounter, skip); err != nil {
 			return pack.Scenario{}, err
 		}
 	}
 	return scenario, nil
+}
+
+// scenarioDeckCodes returns the canonical codes of the cards the scenario
+// decks take: the cards of their sets and the cards they list.
+func (b *tableBuilder) scenarioDeckCodes(scenario pack.Scenario) (map[string]bool, error) {
+	codes := map[string]bool{}
+	for _, deck := range scenario.Decks {
+		listed := slices.Clone(deck.Cards)
+		for _, setCode := range deck.Sets {
+			set, ok := b.cat.Set(setCode)
+			if !ok {
+				return nil, invalid("unknown set %q", setCode)
+			}
+			listed = append(listed, set.Cards...)
+		}
+		for _, code := range listed {
+			canonical, err := b.canonical(code)
+			if err != nil {
+				return nil, err
+			}
+			codes[canonical] = true
+		}
+	}
+	return codes, nil
 }
 
 // setupMainScheme sets up the main scheme cards of a main scheme set, in set
@@ -768,24 +810,12 @@ func ceilToGrid(v int) int {
 }
 
 // placeFace puts a new encounter card on the table, face up on the given
-// face, with the starting threat that face prints, if any.
+// face, with no tokens: players place the starting threat by hand.
 func (b *tableBuilder) placeFace(c *Card, def pack.Card, face, x, y int) error {
 	if face < 0 || face >= len(def.Faces) {
 		return invalid("card %s has no face %d", def.Code, face)
 	}
 	b.placeOnTable(c, face, x, y)
-
-	threat := def.Faces[face].StartingThreat
-	if threat == nil {
-		return nil
-	}
-	amount := threat.Value
-	if threat.PerPlayer {
-		amount *= len(b.table.Hands)
-	}
-	if amount > 0 {
-		c.Tokens = map[string]int{"thr": amount}
-	}
 	return nil
 }
 

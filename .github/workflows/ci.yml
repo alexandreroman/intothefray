@@ -52,7 +52,7 @@ jobs:
       # configure-pages reads the site settings to find its base path.
       pages: read
     steps:
-      # The full checkout is needed: the web build copies ../packs/dist.
+      # The full checkout is needed: the web build reads ../packs/dist.
       - uses: actions/checkout@v7
         with:
           persist-credentials: false

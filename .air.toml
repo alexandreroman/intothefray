@@ -1,8 +1,13 @@
 [build]
   cmd = "go build -o ./tmp/intothefray ./cmd/intothefray"
   bin = "./tmp/intothefray"
-  include_ext = ["go"]
-  exclude_dir = ["tmp", "web", "docs", "packs/.cache"]
+  # The binary embeds packs/dist, so regenerated packs (make packs) rebuild it too. The other JSON
+  # files are packgen inputs (packs/curated, packs/images) and test data, kept out of the watch.
+  include_ext = ["go", "json"]
+  exclude_dir = ["tmp", "web", "docs", "packs/.cache", "packs/curated", "packs/images"]
+  # Air's default (_test.go), plus the testdata directories: golden files rewritten by tests
+  # (go test -update) must not rebuild the server.
+  exclude_regex = ["_test\\.go$", "/testdata/"]
   delay = 200
   # Give the server time to drain connections during graceful shutdown.
   kill_delay = "500ms"

@@ -8,9 +8,7 @@
     "pnpm": ">=12"
   },
   "scripts": {
-    "prebuild": "node scripts/copy-packs.mjs",
     "build": "vite build",
-    "prewatch": "node scripts/copy-packs.mjs",
     "watch": "vite build --watch",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "lint": "eslint . && prettier --check .",

@@ -59,6 +59,7 @@ export interface ScenarioRef {
   recommended: string[];
   selfContained?: boolean;
   mainSchemes?: string[]; // the main scheme sets it is played with, one chosen as a modular set
+  sets?: string[]; // the encounter sets its rules add to the villain set, never offered as modular sets
   localized?: Record<string, PackLocalized>; // name only, by language code
 }
 

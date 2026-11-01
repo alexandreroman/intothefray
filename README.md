@@ -34,10 +34,15 @@ Everything below works today, except where noted.
   Specialized Training...) on its set-aside pile. A scenario can bring its own
   decks and several villains: The Wrecking Crew lays out its four villains, each
   with its own encounter deck, discard pile and side scheme, and the active
-  counter, which players move by hand like the first player token. The main
-  scheme starts on its stage 1A: players resolve its Setup text themselves. They
-  also place the counters: the main scheme's starting threat when they advance
-  it to 1B (1A prints none), and counters such as Criminal Enterprise's infamy.
+  counter, which players move by hand like the first player token; Crossbones'
+  Experimental Weapons deck and Red Skull's side-scheme deck lie next to the
+  encounter deck, with their own discard piles, and are not dealt from: any
+  player drags one to play its top card face up, or under the card it is
+  dropped on. The main scheme starts on its stage 1A: players resolve its
+  Setup text themselves. They also place all threat and counters by hand: the
+  main scheme's starting threat when they advance it to 1B (1A prints none),
+  the starting threat of every side scheme the setup puts in play, and
+  counters such as Criminal Enterprise's infamy.
   Only the environments the scenario puts into play as it starts (Criminal
   Enterprise, Ultron Drones, Public Support) and the side schemes its printed
   setup puts in play are placed for you; other cards the Setup text names, such
@@ -62,10 +67,11 @@ Everything below works today, except where noted.
   (no peeking at hands, deck order or face-down cards)
 - **The whole card range** — expansions are added as data files, card images
   load from `img.intothefray.xyz`. *Partly there:* the player cards of every
-  pack are in, a few scenarios only so far (Rhino, Klaw, Ultron, Kingpin, Risky
-  Business, Mutagen Formula, Wrecking Crew, and Fear No Evil's five Underlings,
-  Bullseye, Electro, Hammerhead, Purple Man and Typhoid Mary, each with any of
-  its five main scheme sets)
+  pack are in, a few scenarios only so far: Rhino, Klaw, Ultron, Kingpin, Risky
+  Business, Mutagen Formula and Wrecking Crew; Fear No Evil's five Underlings
+  (Bullseye, Electro, Hammerhead, Purple Man and Typhoid Mary), each with any
+  of its five main scheme sets; The Rise of Red Skull's Crossbones, Absorbing
+  Man, Taskmaster, Zola and Red Skull
 
 ## Prerequisites
 
@@ -213,8 +219,10 @@ faces the manifest covers, per language. Once the manifest exists, a
 `packs/` test fails when an embedded image is not under its base URL.
 
 The curated files are the scenarios (`scenarios/`; `mainSchemes` lists the
-main scheme sets a scenario such as an Underling's is played with), card
-overrides
+main scheme sets a scenario such as an Underling's is played with, and `sets`
+the encounter sets its rules require besides the villain set, such as
+Taskmaster's Hydra Patrol, which the setup shuffles into the encounter deck
+and the lobby does not offer as modular sets), card overrides
 (`cards.json`: face sizes, the Cerebro image ids of the identities whose
 Cerebro images are swapped, the OCTGN image file stems (`octgn`) of the faces
 whose records carry a wrong OCTGN id, and the cards a deck containing a card
@@ -223,9 +231,13 @@ card's code rather than a face code) and set data (`sets.json`: the cards a set
 starts in play at each difficulty, the sets the lobby leaves out, the main
 scheme sets (`mainScheme`, offered among the modular sets), the hero side decks
 such as Doctor Strange's Invocation deck, and the cards a hero set puts aside
-at setup). A side deck is a `hero_special` set linked to the hero of its pack
-whose set code, followed by `_`, starts its own (`doctor_strange` for
-`doctor_strange_invocation_deck`); the generator fails when a side deck matches
+at setup). A set's `exclude` lists the cards the sources wrongly put in it,
+such as marvelcdb's player-side Shang-Chi in Taskmaster's set: they become
+cards without a set, with the back of such a card, and stay in their pack;
+the generator fails when one is not in the set. A side deck is a
+`hero_special` set linked to the hero of its pack whose set code, followed by
+`_`, starts its own (`doctor_strange` for `doctor_strange_invocation_deck`);
+the generator fails when a side deck matches
 no hero or several, when a set-aside card is unknown, or when a card's
 set-aside cards are listed on a face code or include the card itself. The cards
 of a side deck with a shared `back` (Doctor Strange's Invocation deck, Hercules'

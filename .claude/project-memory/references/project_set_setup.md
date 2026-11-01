@@ -1,6 +1,6 @@
 ---
 name: "Standard and Expert set setup"
-description: "Setup-keyword cards of Standard/Expert sets start in play from curated sets.json; Standard PvP is unlisted"
+description: "Setup-keyword cards of Standard/Expert sets start in play from sets.json; Standard PvP and the Red Skull campaign sets are unlisted"
 type: project
 ---
 
@@ -12,7 +12,10 @@ Formidable Foe (Standard II) on side A in Standard and side B in Expert,
 Pursued by the Past (Standard III) on side A at both difficulties. Drawing
 Near (Standard III obligation) is an ordinary encounter card and goes into
 the encounter deck. Standard PvP (Civil War) is unlisted: the lobby does not
-offer it and lobby validation rejects it.
+offer it and lobby validation rejects it. The Rise of Red Skull's campaign
+sets (Hydra Campaign, Expert Campaign) and Crossbones' Experimental Weapons
+deck are unlisted too: they are not modular sets. Cards a source puts in
+the wrong set are a separate matter (see [[project_set_exclude]]).
 
 **Why:** these rules come from the card text (marvelcdb); the PvP set
 belongs to Civil War's player-vs-player mode, which the co-op table does not

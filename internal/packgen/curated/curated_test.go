@@ -50,6 +50,7 @@ func TestLoad(t *testing.T) {
 		},
 		"storm_weather_deck": {Side: &pack.SideDeck{Label: "Weather"}},
 		"valk":               {SetAside: []string{"25002"}},
+		"taskmaster":         {Exclude: []string{"10098"}},
 	}
 	if !reflect.DeepEqual(loaded.Sets, wantSets) {
 		t.Errorf("got sets %+v, want %+v", loaded.Sets, wantSets)
@@ -372,5 +373,32 @@ func TestLoadRejectsBadMainSchemes(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) { wantScenarioError(t, tt.content, tt.want) })
+	}
+}
+
+func TestLoadRejectsBadSets(t *testing.T) {
+	tests := []struct{ name, content, want string }{
+		{
+			"duplicate encounter set",
+			`{"id":"x","villainSet":"x","sets":["a","b","a"],` + emptyStart + `}`,
+			`duplicate encounter set "a"`,
+		},
+		{
+			"villain set",
+			`{"id":"x","villainSet":"x","sets":["x"],` + emptyStart + `}`,
+			`encounter set "x" is the villain set`,
+		},
+		{
+			"scenario with an encounter deck",
+			`{"id":"x","villainSet":"x","selfContained":true,"sets":["a"],` +
+				`"decks":[{"key":"a","label":"A","sets":["s"],"encounter":true}],` + emptyStart + `}`,
+			"encounter sets need a scenario without an encounter deck",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) { wantScenarioError(t, tt.content, tt.want) })
+	}
+	if err := loadScenario(t, `{"id":"x","villainSet":"x","sets":["a"],`+emptyStart+`}`); err != nil {
+		t.Fatalf("got error %v, want none for a scenario with an encounter set", err)
 	}
 }

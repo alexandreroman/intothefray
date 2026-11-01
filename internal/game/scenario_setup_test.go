@@ -13,7 +13,9 @@ import (
 )
 
 // setupCatalog returns a small catalog: a classic scenario, a self-contained one with two villains whose decks and
-// side schemes lie in the row, one whose encounter deck leaves a villain-set card over, and one with an ordered deck.
+// side schemes lie in the row, one whose encounter deck leaves a villain-set card over, one with an ordered deck, and
+// a classic one whose scenario decks take villain-set cards, by set and by card, and a modular set's cards, and two
+// that require an encounter set: a classic one and a self-contained one with its own encounter deck.
 func setupCatalog(t *testing.T) *pack.Catalog {
 	t.Helper()
 	card := func(code, kind string, size pack.Size, qty int) pack.Card {
@@ -47,6 +49,11 @@ func setupCatalog(t *testing.T) *pack.Catalog {
 			// A classic scenario.
 			card("20001", "villain", pack.SizeStd, 1), card("20002", "main_scheme", pack.SizeLand, 1),
 			card("20003", "minion", pack.SizeStd, 2), card("20004", "environment", pack.SizeStd, 1),
+			// A classic scenario with scenario decks.
+			card("21001", "side_scheme", pack.SizeLand, 1), card("21002", "side_scheme", pack.SizeLand, 1),
+			card("21003", "attachment", pack.SizeStd, 2),
+			// An encounter set a scenario requires.
+			card("22001", "minion", pack.SizeStd, 2),
 		},
 		Sets: []pack.Set{
 			{Code: "hset", Name: "Hero", Kind: "hero", Cards: []string{"01001"}},
@@ -59,6 +66,12 @@ func setupCatalog(t *testing.T) *pack.Catalog {
 			},
 			{Code: "vs_l", Name: "Leftover", Kind: "villain", Cards: []string{"10001", "10002", "13001"}},
 			{Code: "vs_o", Name: "Ordered", Kind: "villain", Cards: []string{"10001", "10002"}},
+			{
+				Code: "vs_d", Name: "Decks", Kind: "villain",
+				Cards: []string{"20001", "20002", "20003", "21001", "21002", "21003"},
+			},
+			{Code: "vs_d_side", Name: "Decks side schemes", Kind: "modular", Cards: []string{"21001", "21002"}},
+			{Code: "req", Name: "Required", Kind: "modular", Cards: []string{"22001"}},
 		},
 		Heroes: []pack.Hero{{Identity: "01001", Set: "hset", Obligation: "01090", Nemesis: "nem"}},
 		Scenarios: []pack.Scenario{
@@ -104,6 +117,40 @@ func setupCatalog(t *testing.T) *pack.Catalog {
 					{Key: "ob", Label: "Ordered", Cards: []string{"12001", "12002", "11001"}, Ordered: true},
 				},
 				Start: map[pack.Difficulty]pack.Start{pack.Standard: {Top: map[string]pack.FaceRef{"v1": {Card: "10001"}}}},
+			},
+			{
+				ID: "decks", VillainSet: "vs_d",
+				Piles: []pack.Pile{
+					{Key: "villain", Label: "Villain", Cards: []string{"20001"}},
+					{Key: "scheme", Label: "Scheme", Cards: []string{"20002"}},
+				},
+				Decks: []pack.ScenarioDeck{
+					{Key: "ss", Label: "Side schemes", Sets: []string{"vs_d_side"}, Discard: true},
+					{Key: "wx", Label: "Weapons", Cards: []string{"21003"}},
+					{Key: "mx", Label: "Modular", Sets: []string{"sa"}},
+				},
+				Start: map[pack.Difficulty]pack.Start{pack.Standard: {
+					Top: map[string]pack.FaceRef{"villain": {Card: "20001"}, "scheme": {Card: "20002"}},
+				}},
+			},
+			{
+				ID: "required", VillainSet: "vs_c", Sets: []string{"req"},
+				Piles: []pack.Pile{
+					{Key: "villain", Label: "Villain", Cards: []string{"20001"}},
+					{Key: "scheme", Label: "Scheme", Cards: []string{"20002"}},
+				},
+				Start: map[pack.Difficulty]pack.Start{pack.Standard: {
+					Top:    map[string]pack.FaceRef{"villain": {Card: "20001"}, "scheme": {Card: "20002"}},
+					InPlay: []pack.FaceRef{{Card: "20004"}},
+				}},
+			},
+			{
+				ID: "required_own_deck", VillainSet: "vs_o", SelfContained: true, Sets: []string{"req"},
+				Piles: []pack.Pile{{Key: "v1", Label: "One", Cards: []string{"10001", "10002"}}},
+				Decks: []pack.ScenarioDeck{{Key: "da", Label: "Deck A", Sets: []string{"sa"}, Encounter: true}},
+				Start: map[pack.Difficulty]pack.Start{pack.Standard: {
+					Top: map[string]pack.FaceRef{"v1": {Card: "10001"}},
+				}},
 			},
 		},
 	}
@@ -326,5 +373,97 @@ func TestStageCardsHaveTheirDeckAsHome(t *testing.T) {
 	}
 	if tucked.Parent != "" || tucked.Zone != ZonePile || tucked.Pile != "sdeck:db" {
 		t.Errorf("tucked card = %+v, want back in sdeck:db", tucked)
+	}
+}
+
+func TestScenarioDeckCardsStayOutOfClassicDeck(t *testing.T) {
+	table := mustScenarioTable(t, "decks")
+
+	piles := map[string][]string{}
+	for _, c := range table.Cards {
+		if c.Zone == ZonePile {
+			piles[c.Code] = append(piles[c.Code], c.Pile)
+		}
+	}
+	for code, want := range map[string][]string{
+		"20003": {PileEncounter, PileEncounter},
+		"21001": {"sdeck:ss"},
+		"21002": {"sdeck:ss"},
+		"21003": {"sdeck:wx", "sdeck:wx"},
+	} {
+		if got := piles[code]; !slices.Equal(got, want) {
+			t.Errorf("copies of %s lie in %v, want %v", code, got, want)
+		}
+	}
+	if n := len(table.Piles[PileEncounter].Cards); n != 2 {
+		t.Errorf("encounter deck has %d cards, want the 2 copies of 20003", n)
+	}
+}
+
+func TestScenarioDeckSetsStayOutOfClassicDeck(t *testing.T) {
+	cat := setupCatalog(t)
+	b := &tableBuilder{cat: cat, rng: newTestRNG(), table: newEmptyTable(1)}
+	// The deck "mx" takes the cards of "sa", also chosen as a modular set.
+	cfg := LobbyConfig{Scenario: "decks", Difficulty: pack.Standard, Modulars: []string{"sa"}}
+	scenario, err := b.setupScenario(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := b.setupScenarioDecks(scenario); err != nil {
+		t.Fatal(err)
+	}
+
+	checkSetCopies(t, cat, b.table, []string{"vs_d", "sa"})
+	for _, c := range b.table.Cards {
+		var want string
+		switch c.Code {
+		case "11001", "11002":
+			want = "sdeck:mx"
+		case "21001", "21002":
+			want = "sdeck:ss"
+		default:
+			continue
+		}
+		if c.Pile != want {
+			t.Errorf("a copy of %s lies in %q, want %s", c.Code, c.Pile, want)
+		}
+	}
+}
+
+func TestRequiredSetJoinsClassicEncounterDeck(t *testing.T) {
+	table := mustScenarioTable(t, "required")
+
+	var copies int
+	for _, c := range table.Cards {
+		if c.Code != "22001" {
+			continue
+		}
+		copies++
+		if c.Zone != ZonePile || c.Pile != PileEncounter || c.Home != PileEncounter {
+			t.Errorf("a copy of 22001 lies in %q (home %q), want the encounter deck", c.Pile, c.Home)
+		}
+	}
+	if copies != 2 {
+		t.Errorf("got %d copies of 22001, want 2", copies)
+	}
+	if n := len(table.Piles[PileEncounter].Cards); n != 4 {
+		t.Errorf("encounter deck has %d cards, want the 2 copies of 20003 and of 22001", n)
+	}
+}
+
+func TestRequiredSetNeedsClassicEncounterDeck(t *testing.T) {
+	_, err := scenarioTable(t, "required_own_deck")
+	if !errors.Is(err, ErrInvalid) || !strings.Contains(err.Error(), "no classic encounter deck") {
+		t.Errorf("got error %v, want an invalid scenario without a classic encounter deck", err)
+	}
+}
+
+func TestConfigRejectsRequiredSetAsModular(t *testing.T) {
+	cfg := LobbyConfig{Scenario: "required", Difficulty: pack.Standard, Modulars: []string{"req"}}
+
+	err := validateConfig(cfg, setupCatalog(t))
+
+	if !errors.Is(err, ErrInvalid) || !strings.Contains(err.Error(), `"req" is already part of scenario "required"`) {
+		t.Errorf("got error %v, want the required set rejected as a modular set", err)
 	}
 }

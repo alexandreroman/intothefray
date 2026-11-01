@@ -37,6 +37,9 @@ type CardOverride struct {
 type ScenarioDef struct {
 	ID         string `json:"id"`
 	VillainSet string `json:"villainSet"`
+	// Sets lists the encounter sets the scenario's rules add to the villain
+	// set, e.g. Taskmaster's Hydra Patrol.
+	Sets []string `json:"sets,omitempty"`
 	// Covers lists other candidate sets whose scenario entries are merged
 	// into this one, for scenarios made of several villain or leader sets.
 	Covers   []string                       `json:"covers,omitempty"`
@@ -68,6 +71,11 @@ type SetDef struct {
 	// MainScheme makes the set a main scheme set, which the sources list as a
 	// villain set although it has no villain card.
 	MainScheme bool `json:"mainScheme,omitempty"`
+	// Exclude lists the cards the sources wrongly put in the set, e.g. a
+	// player-side reprint of an encounter card. They become cards without a
+	// set, with the back such a card has, and stay in their pack, where a
+	// deck may still use them.
+	Exclude []string `json:"exclude,omitempty"`
 }
 
 // Names are the hand-written names of one language, for the packs, sets and
@@ -171,6 +179,9 @@ func checkScenarioDef(def ScenarioDef) error {
 	if encounter && !def.SelfContained {
 		return errors.New("an encounter deck needs a selfContained scenario")
 	}
+	if err := checkSets(def, encounter); err != nil {
+		return err
+	}
 	if err := checkMainSchemes(def); err != nil {
 		return err
 	}
@@ -199,6 +210,29 @@ func checkScenarioDef(def ScenarioDef) error {
 		return fmt.Errorf("active names unknown stage %q", def.Active)
 	}
 	return checkStarts(def.Start, def.Piles, stages)
+}
+
+// checkSets rejects the encounter sets listed twice or naming the villain set,
+// and those of a scenario with its own encounter deck: they join the classic
+// encounter deck only.
+func checkSets(def ScenarioDef, encounter bool) error {
+	if len(def.Sets) == 0 {
+		return nil
+	}
+	if encounter {
+		return errors.New("encounter sets need a scenario without an encounter deck")
+	}
+	listed := make(map[string]bool, len(def.Sets))
+	for _, code := range def.Sets {
+		if code == def.VillainSet {
+			return fmt.Errorf("encounter set %q is the villain set", code)
+		}
+		if listed[code] {
+			return fmt.Errorf("duplicate encounter set %q", code)
+		}
+		listed[code] = true
+	}
+	return nil
 }
 
 // checkMainSchemes rejects the main scheme sets listed twice, those of a

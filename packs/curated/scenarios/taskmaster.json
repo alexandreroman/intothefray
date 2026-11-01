@@ -1,0 +1,57 @@
+{
+  "id": "taskmaster",
+  "villainSet": "taskmaster",
+  "sets": [
+    "hydra_patrol"
+  ],
+  "piles": [
+    {
+      "key": "villain",
+      "label": "Villain",
+      "cards": [
+        "04093",
+        "04094",
+        "04095"
+      ]
+    },
+    {
+      "key": "scheme",
+      "label": "Main scheme",
+      "cards": [
+        "04096"
+      ]
+    }
+  ],
+  "start": {
+    "standard": {
+      "top": {
+        "villain": {
+          "card": "04093",
+          "face": 0
+        },
+        "scheme": {
+          "card": "04096",
+          "face": 0
+        }
+      }
+    },
+    "expert": {
+      "top": {
+        "villain": {
+          "card": "04094",
+          "face": 0
+        },
+        "scheme": {
+          "card": "04096",
+          "face": 0
+        }
+      }
+    }
+  },
+  "setAside": [
+    "04097",
+    "04098",
+    "04099",
+    "04100"
+  ]
+}

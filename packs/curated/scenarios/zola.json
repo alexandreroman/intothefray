@@ -1,0 +1,50 @@
+{
+  "id": "zola",
+  "villainSet": "zola",
+  "piles": [
+    {
+      "key": "villain",
+      "label": "Villain",
+      "cards": [
+        "04109",
+        "04110",
+        "04111"
+      ]
+    },
+    {
+      "key": "scheme",
+      "label": "Main scheme",
+      "cards": [
+        "04112",
+        "04113"
+      ]
+    }
+  ],
+  "start": {
+    "standard": {
+      "top": {
+        "villain": {
+          "card": "04109",
+          "face": 0
+        },
+        "scheme": {
+          "card": "04112",
+          "face": 0
+        }
+      }
+    },
+    "expert": {
+      "top": {
+        "villain": {
+          "card": "04110",
+          "face": 0
+        },
+        "scheme": {
+          "card": "04112",
+          "face": 0
+        }
+      }
+    }
+  },
+  "setAside": []
+}
