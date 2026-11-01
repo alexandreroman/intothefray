@@ -13,7 +13,14 @@
           "images": [
             "https://img.intothefray.xyz/cards/en/62001a.0650949d9204.avif"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/62001a.6b7d35397676.avif"
+              ]
+            }
+          }
         },
         {
           "name": "Luke Cage",
@@ -22,7 +29,14 @@
           "images": [
             "https://img.intothefray.xyz/cards/en/62001b.2205dc2d8e84.avif"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/62001b.82110b32713a.avif"
+              ]
+            }
+          }
         }
       ],
       "set": "luke_cage",
@@ -42,7 +56,14 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/62002.5b36a849989c.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/62002.deeefec6e782.avif"
+              ]
+            }
+          }
         }
       ],
       "set": "luke_cage",
@@ -61,7 +82,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "Héros de Harlem"
+              "name": "Héros de Harlem",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/62003.d1a7f6d99908.avif"
+              ]
             }
           }
         }
@@ -82,7 +106,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "Tarte aux Gnons"
+              "name": "Tarte aux Gnons",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/62004.9c08ddc34c4c.avif"
+              ]
             }
           }
         }
@@ -103,7 +130,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "« Luttez avec moi ! »"
+              "name": "« Luttez avec moi ! »",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/62005.4e028a4b61a9.avif"
+              ]
             }
           }
         }
@@ -124,7 +154,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "« Doux Noël ! »"
+              "name": "« Doux Noël ! »",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/62006.efb85024feed.avif"
+              ]
             }
           }
         }
@@ -145,7 +178,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "Salle de Fogwell"
+              "name": "Salle de Fogwell",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/62007.c607a3fa89bc.avif"
+              ]
             }
           }
         }
@@ -166,7 +202,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "Expérience de Burstein"
+              "name": "Expérience de Burstein",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/62008.5c56f5b180ae.avif"
+              ]
             }
           }
         }
@@ -187,7 +226,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "Chercher les Embrouilles"
+              "name": "Chercher les Embrouilles",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/62009.3a0d95b6547a.avif"
+              ]
             }
           }
         }
@@ -208,7 +250,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "Bracelet Métallique"
+              "name": "Bracelet Métallique",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/62010.a5b3049ffe06.avif"
+              ]
             }
           }
         }
@@ -226,7 +271,14 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/62011.fd6451283ba2.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/62011.473cf087dcb7.avif"
+              ]
+            }
+          }
         }
       ],
       "set": "luke_cage",
@@ -243,7 +295,14 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/62012.d892cae7af26.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/62012.07e906646ddd.avif"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -258,7 +317,14 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/62013.ed9aa04b8504.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/62013.9f0d388a9f9f.avif"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -274,7 +340,14 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/62014.4a023b0e2239.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/62014.44381059a0b6.avif"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -292,7 +365,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "Prendre Position"
+              "name": "Prendre Position",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/62015.5b327fb14a3e.avif"
+              ]
             }
           }
         }
@@ -312,7 +388,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "Formation Défensive"
+              "name": "Formation Défensive",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/62018.ef02cb195039.avif"
+              ]
             }
           }
         }
@@ -332,7 +411,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "Noble Dessein"
+              "name": "Noble Dessein",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/62019.efc1955a52f2.avif"
+              ]
             }
           }
         }
@@ -350,7 +432,14 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/62020.2078fa29a4b9.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/62020.3f639269f354.avif"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -369,7 +458,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "Miss Hulk"
+              "name": "Miss Hulk",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/62021.e77f5b27c067.avif"
+              ]
             }
           }
         }
@@ -389,7 +481,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "Duo de Choc"
+              "name": "Duo de Choc",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/62022.6dc22dd00856.avif"
+              ]
             }
           }
         }
@@ -409,7 +504,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "Power Man et Iron Fist"
+              "name": "Power Man et Iron Fist",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/62023.fa6bd4be2b4c.avif"
+              ]
             }
           }
         }
@@ -429,7 +527,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "Blessure Interne"
+              "name": "Blessure Interne",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/62028.4f3a6fc7a207.avif"
+              ]
             }
           }
         }
@@ -447,7 +548,14 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/62029.7c59f75aef3c.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/62029.cca2610e9609.avif"
+              ]
+            }
+          }
         }
       ],
       "set": "luke_cage_nemesis",
@@ -470,7 +578,10 @@
           },
           "localized": {
             "fr": {
-              "name": "Murmures Venimeux"
+              "name": "Murmures Venimeux",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/62030.b1c923498331.avif"
+              ]
             }
           }
         }
@@ -491,7 +602,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "Mâchoires Augmentées"
+              "name": "Mâchoires Augmentées",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/62031.4775cf235d58.avif"
+              ]
             }
           }
         }
@@ -509,7 +623,14 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/62032.8aff2346be21.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/62032.0a8dd401154e.avif"
+              ]
+            }
+          }
         }
       ],
       "set": "luke_cage_nemesis",
@@ -525,7 +646,14 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/62033.eb2d360361b1.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/62033.fccd0482d179.avif"
+              ]
+            }
+          }
         }
       ],
       "set": "luke_cage_nemesis",
@@ -544,7 +672,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "Avantage de Taille"
+              "name": "Avantage de Taille",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/62034.38d4f9e41cfb.avif"
+              ]
             }
           }
         }
@@ -564,7 +695,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "Observer"
+              "name": "Observer",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/62035.72efcbcb27fc.avif"
+              ]
             }
           }
         }
@@ -584,7 +718,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "S'endurcir"
+              "name": "S'endurcir",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/62036.daa75d712634.avif"
+              ]
             }
           }
         }
@@ -604,7 +741,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "Ceinture Noire"
+              "name": "Ceinture Noire",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/62037.51e2e78e3cc0.avif"
+              ]
             }
           }
         }

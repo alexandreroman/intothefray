@@ -13,7 +13,14 @@
           "images": [
             "https://img.intothefray.xyz/cards/en/61001a.2ae96eb1f57b.avif"
           ],
-          "handSize": 5
+          "handSize": 5,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61001a.5839b974ff77.avif"
+              ]
+            }
+          }
         },
         {
           "name": "Jessica Jones",
@@ -22,7 +29,14 @@
           "images": [
             "https://img.intothefray.xyz/cards/en/61001b.cb4ff71c3272.avif"
           ],
-          "handSize": 6
+          "handSize": 6,
+          "localized": {
+            "fr": {
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61001b.a4ebf982545f.avif"
+              ]
+            }
+          }
         }
       ],
       "set": "jessica_jones",
@@ -42,7 +56,14 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/61002.0775ef89bc73.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61002.0439090c828d.avif"
+              ]
+            }
+          }
         }
       ],
       "set": "jessica_jones",
@@ -58,7 +79,14 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/61003.874090163f26.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61003.0cfb3683beec.avif"
+              ]
+            }
+          }
         }
       ],
       "set": "jessica_jones",
@@ -77,7 +105,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "« Grave Erreur »"
+              "name": "« Grave Erreur »",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61004.aa472b3c3880.avif"
+              ]
             }
           }
         }
@@ -98,7 +129,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "Découverte Capitale"
+              "name": "Découverte Capitale",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61005.95736fa7fdd2.avif"
+              ]
             }
           }
         }
@@ -119,7 +153,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "Fouiner"
+              "name": "Fouiner",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61006.6ac92a3ca60f.avif"
+              ]
             }
           }
         }
@@ -144,7 +181,10 @@
           },
           "localized": {
             "fr": {
-              "name": "Rassembler les Pièces du Puzzle"
+              "name": "Rassembler les Pièces du Puzzle",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61007.99b8948e9941.avif"
+              ]
             }
           }
         }
@@ -165,7 +205,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "Demander une Faveur"
+              "name": "Demander une Faveur",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61008.5b18aabad9cb.avif"
+              ]
             }
           }
         }
@@ -186,7 +229,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "Caméscope Numérique 4K"
+              "name": "Caméscope Numérique 4K",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61009.12150f33e92f.avif"
+              ]
             }
           }
         }
@@ -207,7 +253,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "Preuve Indirecte"
+              "name": "Preuve Indirecte",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61010.474cc4120671.avif"
+              ]
             }
           }
         }
@@ -228,7 +277,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "Blouson en Cuir"
+              "name": "Blouson en Cuir",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61011.4a35610e25ff.avif"
+              ]
             }
           }
         }
@@ -249,7 +301,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "« Maintenant Je Suis Énervée »"
+              "name": "« Maintenant Je Suis Énervée »",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61012.62db4293d6a6.avif"
+              ]
             }
           }
         }
@@ -270,7 +325,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "Planeuse Réticente"
+              "name": "Planeuse Réticente",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61013.0347b77ac72f.avif"
+              ]
             }
           }
         }
@@ -291,7 +349,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "En Planque"
+              "name": "En Planque",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61014.6af783e6c964.avif"
+              ]
             }
           }
         }
@@ -310,7 +371,14 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/61015.1d11f421ee92.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61015.dfcf40106af8.avif"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -326,7 +394,14 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/61016.6145f8e1305d.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61016.3a6d77b85c3f.avif"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -342,7 +417,14 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/61017.aae9ec58a270.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61017.a2c6af26022f.avif"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -360,7 +442,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "Session Stratégie"
+              "name": "Session Stratégie",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61019.cb9a17690ec8.avif"
+              ]
             }
           }
         }
@@ -384,7 +469,10 @@
           },
           "localized": {
             "fr": {
-              "name": "Traquez-les Jusqu'au Dernier"
+              "name": "Traquez-les Jusqu'au Dernier",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61020.375f9a45e652.avif"
+              ]
             }
           }
         }
@@ -404,7 +492,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "Lance-Grappin"
+              "name": "Lance-Grappin",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61023.7f722bebde8a.avif"
+              ]
             }
           }
         }
@@ -424,7 +515,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "Le Piège se Referme"
+              "name": "Le Piège se Referme",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61024.67bf2343096e.avif"
+              ]
             }
           }
         }
@@ -442,7 +536,14 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/61025.ebbe41817aca.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61025.bd0a607a12cb.avif"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -460,7 +561,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "Les Plaisirs de la Vie"
+              "name": "Les Plaisirs de la Vie",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61026.d9d0617b1329.avif"
+              ]
             }
           }
         }
@@ -480,7 +584,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "Lien Indestructible"
+              "name": "Lien Indestructible",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61027.fa1d84472e92.avif"
+              ]
             }
           }
         }
@@ -507,7 +614,10 @@
           },
           "localized": {
             "fr": {
-              "name": "Deuxième Chance"
+              "name": "Deuxième Chance",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61028.60b08d8a7b9f.avif"
+              ]
             }
           }
         }
@@ -531,7 +641,10 @@
           },
           "localized": {
             "fr": {
-              "name": "Défendre Notre Ville"
+              "name": "Défendre Notre Ville",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61029.7670e39a10d5.avif"
+              ]
             }
           }
         }
@@ -551,7 +664,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "Équilibre Professionnel"
+              "name": "Équilibre Professionnel",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61030.9f97e8cc7d3c.avif"
+              ]
             }
           }
         }
@@ -572,7 +688,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "L'Homme Pourpre"
+              "name": "L'Homme Pourpre",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61031.cff04c0d8909.avif"
+              ]
             }
           }
         }
@@ -597,7 +716,10 @@
           },
           "localized": {
             "fr": {
-              "name": "Volonté Irrésistible"
+              "name": "Volonté Irrésistible",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61032.b24e78a162b3.avif"
+              ]
             }
           }
         }
@@ -615,7 +737,14 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/61033a.dd6e778546c8.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61033a.f23be5c0c566.avif"
+              ]
+            }
+          }
         }
       ],
       "set": "jessica_jones_nemesis",
@@ -631,7 +760,14 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/61033b.c0238d817a5b.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61033b.0df022320085.avif"
+              ]
+            }
+          }
         }
       ],
       "set": "jessica_jones_nemesis",
@@ -647,7 +783,14 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/61033c.0c0477ebe54b.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61033c.4aa4306b3050.avif"
+              ]
+            }
+          }
         }
       ],
       "set": "jessica_jones_nemesis",
@@ -666,7 +809,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "Agressivité Innée"
+              "name": "Agressivité Innée",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61034.1964761c5209.avif"
+              ]
             }
           }
         }
@@ -686,7 +832,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "Passage à Tabac"
+              "name": "Passage à Tabac",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61035.15bb60343b99.avif"
+              ]
             }
           }
         }
@@ -706,7 +855,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "Perception Innée"
+              "name": "Perception Innée",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61036.00c27d1421a9.avif"
+              ]
             }
           }
         }
@@ -726,7 +878,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "Inspiration Innée"
+              "name": "Inspiration Innée",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61037.eb7e3e809052.avif"
+              ]
             }
           }
         }
@@ -744,7 +899,14 @@
           "size": "std",
           "images": [
             "https://img.intothefray.xyz/cards/en/61038.9e8562dbff34.avif"
-          ]
+          ],
+          "localized": {
+            "fr": {
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61038.d6bc88eba6f9.avif"
+              ]
+            }
+          }
         }
       ],
       "back": "player",
@@ -766,7 +928,10 @@
           },
           "localized": {
             "fr": {
-              "name": "Clandestinité"
+              "name": "Clandestinité",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61039.4138bd15dbdd.avif"
+              ]
             }
           }
         }
@@ -786,7 +951,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "Menace Appréhendée"
+              "name": "Menace Appréhendée",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/61040.919a9e2aee83.avif"
+              ]
             }
           }
         }

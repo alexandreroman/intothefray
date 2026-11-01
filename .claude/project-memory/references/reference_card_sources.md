@@ -68,6 +68,21 @@ type: reference
   bare id and the others add their letter (`<id>.b`, `<id>.c`). Distinct
   cards sharing a number (01043a-d, 01144a-c, 47007a-c) each have their
   own `octgn_id`, and their stem is the bare id whatever their letter.
+- marvelcdb gives the three Suggestion cards of Jessica Jones (61033a/b/c,
+  distinct cards) one `octgn_id`, while the OCTGN packs give each its own
+  id (the guid's tail is the card code: `…9a864661033b`, `…61033c`). The
+  derived stems `<id>.b`/`<id>.c` match no OCTGN file, so `octgn`
+  overrides in `packs/curated/cards.json` give 61033b and 61033c their
+  real OCTGN stems; the same override fixes any face whose record carries
+  a wrong OCTGN id. Photographic Reflexes (60040a/b/c) is the same case.
+- The OCTGN FR pack 050 (Agents of S.H.I.E.L.D.) numbers its files in
+  print order: A.I.M. Interference 50184b/c are `…050185`/`…050186`, and
+  the evidence cards 50185-50193 are `…050187`-`…050195`, two past their
+  marvelcdb ids. `octgn` overrides map them. A FR pack file matching no
+  face, other than a reprint or a rules card, signals such a shift.
+- Reprint codes (marvelcdb `duplicate_of_code`, e.g. 61018 of 12031) are
+  not faces of `sources.json`: they use the original card's images, and
+  their files in the OCTGN packs match no face.
 - Cerebro swaps the A/B images of some identities (Groot, Rocket and the
   X-Men wave: Colossus, Shadowcat, Cyclops, Phoenix, Wolverine, Storm,
   Gambit, Rogue): its `XXXXXA.jpg` shows the alter-ego. `cerebro`

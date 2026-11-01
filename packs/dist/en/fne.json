@@ -987,7 +987,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "Réflexes Photographiques"
+              "name": "Réflexes Photographiques",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/60040b.dac3c02ac213.avif"
+              ]
             }
           }
         }
@@ -1008,7 +1011,10 @@
           ],
           "localized": {
             "fr": {
-              "name": "Réflexes Photographiques"
+              "name": "Réflexes Photographiques",
+              "images": [
+                "https://img.intothefray.xyz/cards/fr/60040c.66f600e16be6.avif"
+              ]
             }
           }
         }

@@ -155,6 +155,35 @@ func TestSourcesCerebroOverride(t *testing.T) {
 	}
 }
 
+func TestSourcesOctgnOverride(t *testing.T) {
+	in := Inputs{
+		// Distinct cards whose records wrongly share one OCTGN id: the derived
+		// stems of the later ones match no OCTGN image.
+		MC: []marvelcdb.Card{
+			{Code: "61033a", TypeCode: "event", PackCode: "jj", OctgnID: "8646061033"},
+			{Code: "61033b", TypeCode: "event", PackCode: "jj", OctgnID: "8646061033"},
+			{Code: "61033c", TypeCode: "event", PackCode: "jj", OctgnID: "8646061033"},
+		},
+		Curated: curated.Curated{Cards: map[string]curated.CardOverride{
+			"61033b": {Octgn: "864661033b"},
+			"61033c": {Octgn: "864661033c"},
+		}},
+	}
+
+	faces := sourcesOf(t, in)
+
+	want := map[string]string{
+		"61033a": "8646061033",
+		"61033b": "864661033b",
+		"61033c": "864661033c",
+	}
+	for code, stem := range want {
+		if got := sourceOf(t, faces, code).Octgn; got != stem {
+			t.Errorf("face %s OCTGN stem = %q, want %q", code, got, stem)
+		}
+	}
+}
+
 func TestSourcesLandscape(t *testing.T) {
 	in := Inputs{
 		MC: []marvelcdb.Card{

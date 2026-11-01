@@ -22,6 +22,10 @@ type CardOverride struct {
 	// Cerebro is the Cerebro image id to use for the face instead of the one
 	// matching its code, for cards whose Cerebro images are swapped.
 	Cerebro string `json:"cerebro,omitempty"`
+	// Octgn is the OCTGN image file stem to use for the face instead of the
+	// one derived from its octgn_id, for cards whose source records carry a
+	// wrong OCTGN id. It is only valid on the code of a face.
+	Octgn string `json:"octgn,omitempty"`
 	// SetAside lists the cards that a deck containing this card puts aside,
 	// out of play, at setup. It is only valid on the code of a card, not on
 	// the code of one of its faces.

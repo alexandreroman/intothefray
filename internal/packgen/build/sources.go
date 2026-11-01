@@ -10,7 +10,8 @@ import (
 // order, for the image pipeline's sources.json. Faces are listed before any
 // card is dropped: the pipeline is what finds them an image. The curated
 // Cerebro overrides apply, so swapped Cerebro images stay fixed; like Build, it
-// fails when one names an image Cerebro does not have.
+// fails when one names an image Cerebro does not have. The curated OCTGN
+// overrides apply too, for faces whose records carry a wrong OCTGN id.
 func Sources(in Inputs) ([]cdn.SourceFace, error) {
 	// The same merged records as Build, so every face it builds is listed.
 	mc, _, _, _ := withFallback(in.MC, in.MCPacks, in.MC4DB, in.MC4DBPacks)
@@ -32,11 +33,20 @@ func Sources(in Inputs) ([]cdn.SourceFace, error) {
 				Landscape: size == pack.SizeLand || size == pack.SizeDoubleLand,
 				Cerebro:   cerebroImage(entry, override.Cerebro, cerebroIDs),
 				Record:    recordImage(entry),
-				Octgn:     cdn.OctgnStem(entry.OctgnID, entry.Code, sharedID),
+				Octgn:     octgnStem(entry, override.Octgn, sharedID),
 			})
 		}
 	}
 	return faces, nil
+}
+
+// octgnStem returns the OCTGN image file stem of a face: the curated one when
+// set, else the one derived from the face's OCTGN id.
+func octgnStem(entry marvelcdb.Card, override string, sharedID bool) string {
+	if override != "" {
+		return override
+	}
+	return cdn.OctgnStem(entry.OctgnID, entry.Code, sharedID)
 }
 
 // octgnGroup gathers the faces of one base code that have the same OCTGN id.
