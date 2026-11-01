@@ -47,6 +47,8 @@ const GLOW_MS = 1100;
 const RIFFLE_MS = 620;
 const RIFFLE_COPIES = 6;
 const RIFFLE_STAGGER_MS = 40;
+/** From the first copy leaving the pile to the last one back on it. */
+const RIFFLE_SPAN_MS = (RIFFLE_COPIES - 1) * RIFFLE_STAGGER_MS + RIFFLE_MS;
 const RIFFLE_EASING = 'cubic-bezier(.3, .7, .3, 1)';
 const PILE_BOUNCE_MS = 700;
 /** A copy of a discarded card flies to its pile; several leave one after the other. */
@@ -1253,6 +1255,14 @@ class TableMotion {
       };
       animation?.finished.then(remove, remove);
     }
+    // The copies live in the pile's stacking context, so the pile itself rises over its neighbours (all at
+    // level 0) while they fan out, then drops back to its stylesheet level.
+    this.#run(
+      pile,
+      [{ zIndex: 1 }, { zIndex: 1 }],
+      { duration: RIFFLE_SPAN_MS, delay },
+      pileSubject(id),
+    );
     this.#run(
       pile,
       [
