@@ -212,7 +212,11 @@ describe('scenarioDeck', () => {
     expect(items.find((it) => it.default)?.id).toBe('reveal');
     expect(run(items, 'reveal')).toEqual({ kind: 'reveal', pile: 'sdeck:weapons' });
     expect(items.map((it) => it.id)).not.toContain('discard1');
-    expect(sourceOf({ kind: 'pile', id: 'sdeck:weapons' }, makeView())).toBeNull();
+    // Not dealt from: a drag plays its top card (drag.ts).
+    expect(sourceOf({ kind: 'pile', id: 'sdeck:weapons' }, makeView())).toEqual({
+      kind: 'deck',
+      pile: 'sdeck:weapons',
+    });
   });
 
   it('discards onto its sdisc:<key> when it has one', () => {

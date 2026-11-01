@@ -21,8 +21,11 @@ type: project
   encounter discard pile the rulebook names, is an accepted deviation.
 - Manual: Absorbing Man's random starting environment, Taskmaster's Hydra
   Patrol (the host adds the modular set, players search its side scheme),
-  Zola's Hydra Prison and Ultimate Bio-Servants, and revealing weapons and
-  side schemes (Reveal on the scenario deck, then drag the card).
+  Zola's Hydra Prison and Ultimate Bio-Servants, and bringing weapons and
+  side schemes into play: a drag of the scenario deck plays its top card
+  face up (under the card it is dropped on, if any), or Reveal on the deck
+  lays it face up over the deck, then a drag of that card moves it or
+  attaches it.
 - Campaign mode is out of scope.
 
 **Why:** user decision: as little automation as possible; whatever a

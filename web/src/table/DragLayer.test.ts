@@ -123,6 +123,22 @@ function twoHandsView(): View {
   return view;
 }
 
+/** Crossbones' Experimental Weapons deck, which belongs to nobody, at 940, 340 on the screen. */
+function weaponsView(): View {
+  const view = makeView();
+  view.table!.piles.push(
+    pile('sdeck:x', {
+      kind: 'scenarioDeck',
+      owner: -1,
+      x: 920,
+      y: 300,
+      count: 4,
+      label: 'Experimental Weapons',
+    }),
+  );
+  return view;
+}
+
 /** The seat of the active hand. */
 function activeSeat(): string | undefined {
   return document.querySelector<HTMLElement>('.hand:not(.inactive)')?.dataset.seat;
@@ -955,6 +971,68 @@ describe("dragging the top card of the viewer's deck", () => {
   });
 });
 
+describe('dragging a scenario deck', () => {
+  it('plays its top card where it lands, showing only its back until then', async () => {
+    const { session } = await renderTable(weaponsView());
+    await press(placed('sdeck:x'), 1010, 410);
+    await moveTo(300, 450);
+    const [ghost] = ghosts();
+    expect(ghost?.querySelector('[alt="Encounter card back"]')).not.toBeNull();
+
+    await release(300, 450);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      { kind: 'play', pile: 'sdeck:x', x: 220, y: 330 },
+      0,
+    );
+  });
+
+  it('plays its top card tucked under the card it is dropped on', async () => {
+    const { session } = await renderTable(weaponsView());
+    await press(placed('sdeck:x'), 1010, 410);
+    // Over "other", at 420, 340 on the screen.
+    await moveTo(470, 420);
+    expect(placed('other').classList).toContain('drop-target');
+    expect(screen.getByText('Under Spider-Man')).toBeTruthy();
+
+    await release(470, 420);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      {
+        kind: 'play',
+        pile: 'sdeck:x',
+        target: 'other',
+        x: expect.any(Number),
+        y: expect.any(Number),
+        placed: true,
+      },
+      0,
+    );
+  });
+
+  it('sends nothing when dropped back on its deck', async () => {
+    const { session } = await renderTable(weaponsView());
+    await press(placed('sdeck:x'), 1010, 410);
+    await moveTo(1000, 420);
+    expect(placed('sdeck:x').classList).not.toContain('drop-pile');
+    await release(1000, 420);
+    expect(session.act).not.toHaveBeenCalled();
+  });
+
+  it('is not taken by the hand: dropped over it, it is played on the table there', async () => {
+    const { session } = await renderTable(weaponsView());
+    await press(placed('sdeck:x'), 1010, 410);
+    await moveTo(450, 740);
+    expect(document.querySelector('.hand')?.classList).not.toContain('drop');
+    expect(screen.queryByText('Hand')).toBeNull();
+
+    await release(450, 740);
+    // Held by its middle: its corner at 394, 661.5 on the screen, 374, 621.5 on the table.
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      { kind: 'play', pile: 'sdeck:x', x: 370, y: 620 },
+      0,
+    );
+  });
+});
+
 describe('dragging a hand card', () => {
   it('plays it where it lands on the table', async () => {
     const { session } = await renderTable();
@@ -1295,6 +1373,13 @@ describe('telling the other players about the drag', () => {
     await press(placed('enc'), 70, 100);
     await moveTo(300, 150);
     expect(dragsSent(session)).toEqual([expect.objectContaining({ cards: ['enc'] })]);
+  });
+
+  it("carries a scenario deck's pile id for its unknown top card", async () => {
+    const { session } = await renderTable(weaponsView());
+    await press(placed('sdeck:x'), 1010, 410);
+    await moveTo(300, 450);
+    expect(dragsSent(session)).toEqual([expect.objectContaining({ cards: ['sdeck:x'] })]);
   });
 
   it('carries 50 cards at most', async () => {

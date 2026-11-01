@@ -1421,6 +1421,25 @@ describe('diffViews', () => {
       expect(diffViews(prev, next)).toContainEqual({ kind: 'flip', id: 'rev' });
     });
 
+    it("a scenario deck's top card played face up enters from that deck and turns over", () => {
+      const weapons = (count: number) =>
+        pile('sdeck:x', { kind: 'scenarioDeck', owner: -1, count, label: 'Experimental Weapons' });
+      const prev = view({ cards: [card('v1', { owner: -1 })], piles: [deck(10), weapons(4)] });
+      const played = card('w', { code: '01097', back: 'encounter', owner: -1, parent: 'v1' });
+      const next = view({
+        cards: [card('v1', { owner: -1 }), played],
+        piles: [deck(10), weapons(3)],
+      });
+
+      expect(diffViews(prev, next)).toEqual([
+        { kind: 'enter', id: 'w', fromPile: 'sdeck:x' },
+        { kind: 'flip', id: 'w' },
+      ]);
+      // The viewer's own drop already lies there: it only turns over.
+      const ownDrop: OwnDrop = { element: { kind: 'pile', id: 'sdeck:x' }, card: null, lifted: [] };
+      expect(diffViews(prev, next, ownDrop)).toEqual([{ kind: 'flip', id: 'w' }]);
+    });
+
     it('no more cards fly into a deck than it grew by', () => {
       const prev = view({
         cards: [card('a', { x: 100 }), card('b', { x: 300 })],

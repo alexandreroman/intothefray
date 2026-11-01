@@ -628,7 +628,8 @@ func isPlainTargetPile(id string) bool {
 // landsFaceDown reports whether a card dropped out of pile lands face down: a
 // player's deck, or a side deck that does not show its top card, hides its
 // cards from everyone, its owner included, until the card is flipped. An
-// explicit Play (Action.FaceUp) lands it face up all the same.
+// explicit Play (Action.FaceUp) lands it face up all the same. A card out of
+// a scenario deck lands face up, for everyone to see.
 func landsFaceDown(pile *Pile) bool {
 	return pile.Kind == KindDeck || pile.Kind == KindSideDeck && !pile.TopFaceUp
 }

@@ -17,6 +17,7 @@ import {
   deckName,
   discardPileOf,
   homeDeckOf,
+  isScenarioDeckId,
   isSideDeckId,
   staysOnTable,
 } from './actions';
@@ -89,7 +90,9 @@ export type DragSource =
   | { kind: 'encounter'; pile: string }
   /**
    * The unknown top card of one of the viewer's own decks: drawn, discarded, or played face down,
-   * or face up from a side deck that shows its top card (the server's landsFaceDown).
+   * or face up from a side deck that shows its top card (the server's landsFaceDown). Also the top
+   * card of a scenario deck that is not an encounter deck, which belongs to nobody: discarded, or
+   * played face up.
    */
   | { kind: 'deck'; pile: string }
   /** A marker (the first player token, the active counter), from where it lies. */
@@ -202,13 +205,17 @@ export function dropAction(
 /**
  * A table card goes back to its owner's hand; the top card of the viewer's
  * deck is drawn, from the side deck it was dragged from (a deck's draw names
- * no pile: the server draws from the credited seat's deck).
+ * no pile: the server draws from the credited seat's deck). A scenario deck
+ * belongs to no hand.
  */
 function toHand(drag: DragSource): Action | null {
   switch (drag.kind) {
     case 'card':
       return { kind: 'toHand', card: drag.card };
     case 'deck':
+      if (isScenarioDeckId(drag.pile)) {
+        return null;
+      }
       return isSideDeckId(drag.pile)
         ? { kind: 'draw', n: 1, pile: drag.pile }
         : { kind: 'draw', n: 1 };
@@ -237,9 +244,9 @@ function onCard(
       // Played and tucked in one action: one undo step.
       return { kind: 'play', card: drag.card, target: card, x, y, placed: true };
     case 'deck':
-      // A side deck's top card is played and tucked as a hand card is: the server plays the
-      // deck's top card, which the client may not know.
-      if (isSideDeckId(drag.pile)) {
+      // A side or scenario deck's top card is played and tucked as a hand card is: the server
+      // plays the deck's top card, which the client may not know.
+      if (isSideDeckId(drag.pile) || isScenarioDeckId(drag.pile)) {
         return { kind: 'play', pile: drag.pile, target: card, x, y, placed: true };
       }
       // A deck's top card is played face down where it lands, over that card.
@@ -270,6 +277,7 @@ function onPile(drag: CardSource, pile: string, drop: PileDrop): Action | null {
   if (drag.kind === 'pile' && drag.pile === pile) {
     return null;
   }
+  // A deck's top card is discarded on its discard pile; dropped back on its deck, it stays there.
   if (drag.kind === 'encounter' || drag.kind === 'deck') {
     return drop === 'discard' ? { kind: 'discardTop', pile: drag.pile, n: 1 } : null;
   }
@@ -349,7 +357,8 @@ export function dealRecipient(piles: readonly PileView[], y: number, viewer: Are
  * out-of-play pile, or a card that is no longer there. During a drag from a
  * pile, `taken` is the card taken from it: the drag follows that card while
  * it is still in the pile, whatever lands on top of it. Any player can move
- * a marker.
+ * a marker, and drag the top card of a scenario deck that is not an
+ * encounter deck.
  */
 export function sourceOf(element: Pressable, view: View, taken?: string): DragSource | null {
   const table = view.table;
@@ -390,6 +399,10 @@ export function sourceOf(element: Pressable, view: View, taken?: string): DragSo
       // A deck is private to its owner, as checkPile has it; so is a side deck.
       if (pile.kind === 'deck' || pile.kind === 'sideDeck') {
         return seats.includes(pile.owner) ? { kind: 'deck', pile: pile.id } : null;
+      }
+      // A scenario deck belongs to nobody: anyone plays its top card.
+      if (pile.kind === 'scenarioDeck') {
+        return { kind: 'deck', pile: pile.id };
       }
       // Out-of-play piles are not drawn on the table: only a discard pile is dragged from.
       const open =
@@ -441,7 +454,8 @@ export interface PileTarget {
  * home deck, on top (the viewer's own cards and encounter cards only), and
  * its discard pile, when it has one; none when it stays on the table. The top
  * card of one of the viewer's decks goes to that deck's discard pile, the
- * encounter deck's to the encounter discard pile.
+ * encounter deck's to the encounter discard pile. A scenario deck's top card
+ * also takes its own deck, where a drop does nothing.
  */
 export function pileTargets(drag: DragSource, view: View): PileTarget[] {
   const table = view.table;
@@ -454,12 +468,16 @@ export function pileTargets(drag: DragSource, view: View): PileTarget[] {
   }
   const exists = (target: PileTarget) => table.piles.some((p) => p.id === target.pile);
   if (drag.kind === 'encounter' || drag.kind === 'deck') {
-    const discard: PileTarget = {
-      pile: deckDiscardOf(drag.pile),
-      drop: 'discard',
-      label: 'Discard',
-    };
-    return [discard].filter(exists);
+    const targets: PileTarget[] = [
+      { pile: deckDiscardOf(drag.pile), drop: 'discard', label: 'Discard' },
+    ];
+    // A drop on the scenario deck itself does nothing (onPile): without this target, it would
+    // play the card at the deck's spot. Its label never shows.
+    const deck = table.piles.find((p) => p.id === drag.pile);
+    if (deck?.kind === 'scenarioDeck') {
+      targets.push({ pile: deck.id, drop: 'top', label: 'Top of deck' });
+    }
+    return targets.filter(exists);
   }
 
   const card = table.cards.find((c) => c.id === drag.card);

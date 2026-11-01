@@ -581,17 +581,19 @@ func resolveReveal(t *Table, who actor, a Action) (Action, error) {
 }
 
 // resolvePlay checks a play, which may tuck the card under a target card. A
-// play from the top of the player's own deck or side deck names the deck
-// rather than a card, as the client does not know its cards: resolve records
-// the top card, whatever card the client names, so that a rebuild plays that
-// card. A card revealed on the deck is its top card (see applyPlay).
+// play from the top of the player's own deck or side deck, or of a scenario
+// deck that is not an encounter deck (anyone's to use), names the deck rather
+// than a card, as the client does not know its cards: resolve records the top
+// card, whatever card the client names, so that a rebuild plays that card. A
+// card revealed on the deck is its top card (see applyPlay). An encounter
+// deck is dealt from instead (see resolveDeal).
 func resolvePlay(t *Table, who actor, a Action) (Action, error) {
 	if a.Pile != "" {
 		deck, err := ownPile(t, who, a.Pile)
 		if err != nil {
 			return a, err
 		}
-		if deck.Kind != KindDeck && deck.Kind != KindSideDeck {
+		if deck.Kind != KindDeck && deck.Kind != KindSideDeck && deck.Kind != KindScenarioDeck {
 			return a, invalid("only a deck's top card is played from its pile, not %q's", deck.ID)
 		}
 		cards := t.deckCards(deck)
