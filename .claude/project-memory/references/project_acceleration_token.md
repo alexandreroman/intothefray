@@ -27,4 +27,5 @@ type: project
 like damage, threat and counters.
 
 **How to apply:** see [[project_stat_modifiers]] for keeping the server
-and web counter lists in step.
+and web counter lists in step; acceleration tokens follow a main scheme
+to its next stage (see [[project_stage_carry_over]]).

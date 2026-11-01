@@ -9,8 +9,9 @@ type: project
 Into The Fray is a browser-only online card table for Marvel Champions:
 The Card Game, solo or 1 to 4 players, plus spectators. It is a pure
 sandbox: it shows cards and lets players move them like on a real table,
-and never applies or checks game rules (standard setup is the only
-automated step).
+and never applies or checks game rules. Two steps are automated: standard
+setup, and moving the tokens, statuses and modifiers the rules carry over
+when a stage's card changes (see [[project_stage_carry_over]]).
 
 **Why:** existing options are heavy or desktop-only (Tabletop Simulator,
 OCTGN) or hard to use (DragnCards: actions hard to find, others' moves
